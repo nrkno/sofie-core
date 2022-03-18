@@ -22,7 +22,7 @@ import { VerifiedRundownPlaylistContentAccess } from '../lib'
 import { checkStudioExists } from '../../../lib/collections/optimizations'
 
 /*
-This file contains actions that can be performed on an ingest-device (MOS-device)
+This file contains actions that can be performed on an ingest-device
 */
 export namespace IngestActions {
 	/**

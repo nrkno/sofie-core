@@ -68,6 +68,12 @@ export interface SelectedShowStyleVariant {
 	compound: ShowStyleCompound
 }
 
+export interface SelectedShowStyleVariant {
+	variant: ShowStyleVariant
+	base: ShowStyleBase
+	compound: ShowStyleCompound
+}
+
 export async function selectShowStyleVariant(
 	context: StudioUserContext,
 	ingestRundown: ExtendedIngestRundown

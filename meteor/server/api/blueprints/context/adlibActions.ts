@@ -44,6 +44,7 @@ import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { Piece, Pieces } from '../../../../lib/collections/Pieces'
 import { WatchedPackagesHelper } from './watchedPackages'
+import { MediaObjects } from '../../../../lib/collections/MediaObjects'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -61,6 +62,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the next partInstance */
 	public nextPartState: ActionPartChange = ActionPartChange.NONE
 	public takeAfterExecute: boolean
+	public queuedPartInstanceId: PartInstanceId | undefined = undefined
 
 	constructor(
 		contextInfo: UserContextInfo,
@@ -406,6 +408,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		)
 
 		this.nextPartState = ActionPartChange.SAFE_CHANGE
+		this.queuedPartInstanceId = newPartInstance._id
 
 		return clone(unprotectObject(newPartInstance))
 	}
@@ -543,5 +546,10 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 
 		return unprotectStringArray(stoppedIds)
+	}
+
+	hackGetMediaObjectDuration(mediaId: string): number | undefined {
+		return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
+			?.mediainfo?.format?.duration
 	}
 }

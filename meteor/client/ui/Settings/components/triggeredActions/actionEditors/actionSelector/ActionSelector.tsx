@@ -85,6 +85,9 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 				result.push(t('Off'))
 			}
 			break
+		case ClientActions.miniShelfQueueAdLib:
+			result.push(t('Forward: {{forward}}', { forward: action.forward }))
+			break
 		default:
 			assertNever(action)
 			return action
@@ -124,6 +127,8 @@ function hasArguments(action: SomeAction): boolean {
 			return false
 		case ClientActions.showEntireCurrentSegment:
 			return true
+		case ClientActions.miniShelfQueueAdLib:
+			return true
 		default:
 			assertNever(action)
 			return action
@@ -162,6 +167,8 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 			return t('Go to On Air line')
 		case ClientActions.showEntireCurrentSegment:
 			return t('Show entire On Air Segment')
+		case ClientActions.miniShelfQueueAdLib:
+			return t('MiniShelf queue AdLib')
 		default:
 			assertNever(action)
 			return action
@@ -351,6 +358,25 @@ function getActionParametersEditor(
 							onChange({
 								...action,
 								on: newVal,
+							})
+						}}
+					/>
+				</div>
+			)
+		case ClientActions.miniShelfQueueAdLib:
+			return (
+				<div className="mts">
+					<EditAttribute
+						className="form-control"
+						modifiedClassName="bghl"
+						type={'toggle'}
+						label={t('Forward')}
+						overrideDisplayValue={action.forward}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								forward: newVal,
 							})
 						}}
 					/>

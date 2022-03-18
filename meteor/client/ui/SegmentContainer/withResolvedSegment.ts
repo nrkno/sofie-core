@@ -33,6 +33,7 @@ import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { RundownViewLayout } from '../../../lib/collections/RundownLayouts'
 import { getMinimumReactivePieceNotesForPart } from './getMinimumReactivePieceNotesForPart'
 import { SegmentViewMode } from './SegmentViewModes'
+import { AdlibSegmentUi } from '../../lib/shelf'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -84,10 +85,14 @@ export interface IProps {
 	isLastSegment: boolean
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
+	adLibSegmentUi?: AdlibSegmentUi
 	isFollowingOnAirSegment: boolean
 	rundownViewLayout: RundownViewLayout | undefined
 	countdownToSegmentRequireLayers: string[] | undefined
 	fixedSegmentDuration: boolean | undefined
+	minishelfRegisterHotkeys?: boolean
+	studioMode: boolean
+	showDurationSourceLayers?: Set<string>
 }
 
 export interface ITrackedProps {
@@ -319,9 +324,26 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
 				!_.isEqual(props.countdownToSegmentRequireLayers, nextProps.countdownToSegmentRequireLayers) ||
 				props.rundownViewLayout !== nextProps.rundownViewLayout ||
-				props.fixedSegmentDuration !== nextProps.fixedSegmentDuration
+				props.fixedSegmentDuration !== nextProps.fixedSegmentDuration ||
+				props.minishelfRegisterHotkeys !== nextProps.minishelfRegisterHotkeys ||
+				!_.isEqual(props.adLibSegmentUi?.pieces, nextProps.adLibSegmentUi?.pieces)
 			) {
 				return true
+			}
+
+			const findNextOrCurrentPart = (parts: PartUi[]) => {
+				return (
+					parts.find(
+						(i) =>
+							i.instance._id === props.playlist.currentPartInstanceId ||
+							i.instance._id === nextProps.playlist.currentPartInstanceId
+					) ||
+					parts.find(
+						(i) =>
+							i.instance._id === props.playlist.nextPartInstanceId ||
+							i.instance._id === nextProps.playlist.nextPartInstanceId
+					)
+				)
 			}
 			// Check rundown changes that are important to the segment
 			if (
@@ -331,17 +353,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 						nextProps.playlist.nextSegmentId === props.segmentId)) ||
 				((props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
 					props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId) &&
-					data.parts &&
-					(data.parts.find(
-						(i) =>
-							i.instance._id === props.playlist.currentPartInstanceId ||
-							i.instance._id === nextProps.playlist.currentPartInstanceId
-					) ||
-						data.parts.find(
-							(i) =>
-								i.instance._id === props.playlist.nextPartInstanceId ||
-								i.instance._id === nextProps.playlist.nextPartInstanceId
-						))) ||
+					((data.parts && findNextOrCurrentPart(data.parts)) || data.segmentui?.showShelf)) ||
 				props.playlist.holdState !== nextProps.playlist.holdState ||
 				props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
 				props.playlist.activationId !== nextProps.playlist.activationId ||

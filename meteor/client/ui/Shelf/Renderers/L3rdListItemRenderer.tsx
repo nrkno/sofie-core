@@ -8,10 +8,10 @@ import { IBlueprintPieceType, NoraContent, PieceLifespan } from '@sofie-automati
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
-import { AdLibPieceUi } from '../AdLibPanel'
 import { assertNever, protectString } from '../../../../lib/lib'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
 import { PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
+import { AdLibPieceUi } from '../../../lib/shelf'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
 
 export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (

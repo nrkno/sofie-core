@@ -46,6 +46,7 @@ export default function renderThumbnail(props: IProps) {
 		case SourceLayerType.AUDIO:
 		case SourceLayerType.SCRIPT:
 		case SourceLayerType.TRANSITION:
+		case SourceLayerType.METADATA:
 		case SourceLayerType.UNKNOWN:
 		case undefined:
 			return DefaultThumbnailRenderer(props)

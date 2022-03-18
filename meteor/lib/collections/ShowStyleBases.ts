@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { IBlueprintShowStyleBase } from '@sofie-automation/blueprints-integration'
+import { IBlueprintShowStyleBase, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
 import { OrganizationId } from './Organization'
@@ -10,6 +10,9 @@ export interface HotkeyDefinition {
 	_id: string
 	key: string
 	label: string
+	platformKey?: string
+	sourceLayerType?: SourceLayerType
+	buttonColor?: string
 }
 /** A string, identifying a ShowStyleBase */
 export type ShowStyleBaseId = ProtectedString<'ShowStyleBaseId'>

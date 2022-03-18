@@ -19,6 +19,8 @@ export interface ISettings {
 	autoRewindLeavingSegment: boolean
 	/** Disable blur border in RundownView */
 	disableBlurBorder: boolean
+	/** Disable blur border in the standalone Shelf */
+	disableBlurBorderInShelf: boolean // TODOSYNC: TV2 check: Is this not used by anyone? to be removed?
 	/** Default time scale zooming for the UI. Default: 1  */
 	defaultTimeScale: number
 	// Allow grabbing the entire timeline
@@ -55,6 +57,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	frameRate: 25,
 	autoRewindLeavingSegment: true,
 	disableBlurBorder: false,
+	disableBlurBorderInShelf: true,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
 	enableUserAccounts: false,

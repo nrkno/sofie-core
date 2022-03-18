@@ -5,7 +5,6 @@ import { RundownAPI } from '../../../lib/api/rundown'
 
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer, IOutputLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
-import { AdLibPieceUi } from './AdLibPanel'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { unprotectString } from '../../../lib/lib'
@@ -13,8 +12,9 @@ import renderItem from './Renderers/ItemRendererFactory'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { Studio } from '../../../lib/collections/Studios'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
-import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { contextMenuHoldToDisplayTime, ensureHasTrailingSlash } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 export interface IAdLibListItem extends AdLibPieceUi {
 	status: RundownAPI.PieceStatusCode
@@ -82,7 +82,7 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						status: this.props.piece.status,
 						message: this.props.piece.message,
 						metadata: this.props.piece.contentMetaData,
-						mediaPreviewUrl: this.props.studio.settings.mediaPreviewsUrl,
+						mediaPreviewUrl: ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl)!,
 						packageInfos: this.props.piece.contentPackageInfos,
 						studio: this.props.studio,
 					})}

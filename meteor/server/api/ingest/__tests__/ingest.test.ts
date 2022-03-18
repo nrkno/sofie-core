@@ -77,7 +77,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		)
 	})
 
-	beforeEach(() => {
+	afterEach(() => {
 		Settings.preserveUnsyncedPlayingSegmentContents = false
 	})
 
@@ -1350,7 +1350,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			const resyncRundown = async () => {
 				try {
 					await ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id)
-				} catch (e) {
+				} catch (e: any) {
 					if (e.toString().match(/does not support the method "reloadRundown"/)) {
 						// This is expected
 

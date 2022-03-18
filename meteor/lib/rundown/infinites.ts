@@ -542,6 +542,7 @@ export function processAndPrunePieceInstanceTimings(
 	}
 
 	const groupedPieces = _.groupBy(
+		// TODOSYNC tv2 to write some tests and restore: keepDisabledPieces ? pieces.filter((p) => !(p.disabled && p.hidden)) : pieces.filter((p) => !p.disabled),
 		keepDisabledPieces ? pieces : pieces.filter((p) => !p.disabled),
 		// At this stage, if a Piece is disabled, the `keepDisabledPieces` must be turned on. If that's the case
 		// we split out the disabled Pieces onto the sourceLayerId they actually exist on, instead of putting them

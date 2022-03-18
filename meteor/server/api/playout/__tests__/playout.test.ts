@@ -271,9 +271,6 @@ describe('Playout API', () => {
 			expect(rundownId1).toBeTruthy()
 			expect(playlistId1).toBeTruthy()
 
-			// const getRundown0 = () => {
-			// 	return Rundowns.findOne(rundownId0) as Rundown
-			// }
 			const getPlaylist0 = () => {
 				const playlist = RundownPlaylists.findOne(playlistId0) as RundownPlaylist
 				playlist.activationId = playlist.activationId ?? undefined

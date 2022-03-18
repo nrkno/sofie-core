@@ -24,7 +24,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { PartInstances } from '../../../lib/collections/PartInstances'
-import { AdlibSegmentUi, AdLibPieceUi, AdLibPanelToolbar } from './AdLibPanel'
+import { AdLibPanelToolbar } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
@@ -36,6 +36,7 @@ import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../R
 import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { getShowHiddenSourceLayers } from '../../lib/localStorage'
+import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -129,6 +130,7 @@ const AdLibListView = withTranslation()(
 										rundownId: protectString(''),
 										_rank: layer._rank,
 										content: { timelineObjects: [] },
+										noHotKey: false,
 									})
 								)
 						)
@@ -338,6 +340,10 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					content: content,
 					adlibAction: action,
 					uniquenessId: action.display.uniquenessId,
+					tags: action.display.tags,
+					currentPieceTags: action.display.currentPieceTags,
+					nextPieceTags: action.display.nextPieceTags,
+					noHotKey: action.display.noHotKey,
 					expectedPackages: action.expectedPackages,
 				})
 			})
@@ -453,7 +459,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				!this.props.sourceLayerLookup[adlibPiece.sourceLayerId].isQueueable
 			) {
 				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
-				return
+				queue = false
 			}
 
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId && adlibPiece.isGlobal) {

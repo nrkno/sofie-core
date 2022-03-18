@@ -8,12 +8,16 @@ import { getRandomId, protectString } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
-import { PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PieceLifespan, PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
+import { DBPart, PartId, Parts } from '../../lib/collections/Parts'
+import { SegmentId } from '../../lib/collections/Segments'
+import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
+import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 
 // Set up mocks for tests in this suite
 let mockCurrentTime = 0
@@ -21,6 +25,7 @@ let origGetCurrentTime
 jest.mock('../logging')
 
 import '../cronjobs'
+
 import '../api/peripheralDevice'
 import { Meteor } from 'meteor/meteor'
 
@@ -177,6 +182,125 @@ describe('cronjobs', () => {
 				_id: dataCache1Id,
 			})
 			expect(IngestDataCache.findOne(dataCache0Id)).toBeUndefined()
+		})
+		testInFiber('Removes old PartInstances and PieceInstances', async () => {
+			const rundown0Id = protectString<RundownId>(Random.id())
+			const segment0Id = protectString<SegmentId>(Random.id())
+			const part0: DBPart = {
+				_id: protectString<PartId>(Random.id()),
+				_rank: 0,
+				rundownId: rundown0Id,
+				segmentId: segment0Id,
+				externalId: '',
+				title: '',
+				expectedDurationWithPreroll: undefined,
+			}
+			const part1: DBPart = {
+				_id: protectString<PartId>(Random.id()),
+				_rank: 1,
+				rundownId: rundown0Id,
+				segmentId: segment0Id,
+				externalId: '',
+				title: '',
+				expectedDurationWithPreroll: undefined,
+			}
+			Parts.insert(part0)
+			const partInstance0: PartInstance = {
+				_id: protectString(`${part0._id}_${Random.id()}`),
+				rundownId: part0.rundownId,
+				segmentId: part0.segmentId,
+				takeCount: 1,
+				rehearsal: false,
+				isTemporary: false,
+				part: part0,
+				reset: true,
+				timings: {
+					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
+				},
+				playlistActivationId: protectString(''),
+				segmentPlayoutId: protectString(''),
+			}
+			const partInstance1: PartInstance = {
+				_id: protectString(`${part0._id}_${Random.id()}`),
+				rundownId: part0.rundownId,
+				segmentId: part0.segmentId,
+				takeCount: 1,
+				rehearsal: false,
+				isTemporary: false,
+				part: part0,
+				playlistActivationId: protectString(''),
+				segmentPlayoutId: protectString(''),
+			}
+			const partInstance2: PartInstance = {
+				_id: protectString(`${part0._id}_${Random.id()}`),
+				rundownId: part1.rundownId,
+				segmentId: part1.segmentId,
+				takeCount: 1,
+				rehearsal: false,
+				isTemporary: false,
+				part: part1,
+				reset: true,
+				timings: {
+					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
+				},
+				playlistActivationId: protectString(''),
+				segmentPlayoutId: protectString(''),
+			}
+			PartInstances.insert(partInstance0)
+			PartInstances.insert(partInstance1)
+			PartInstances.insert(partInstance2)
+			const pieceInstance0: PieceInstance = {
+				_id: protectString(`${partInstance0._id}_piece0`),
+				rundownId: partInstance0.part.rundownId,
+				partInstanceId: partInstance0._id,
+				piece: {
+					_id: protectString(`${partInstance0._id}_piece_inner1`),
+					startPartId: partInstance2.part._id,
+					content: {
+						timelineObjects: [],
+					},
+					externalId: '',
+					name: 'abc',
+					sourceLayerId: '',
+					outputLayerId: '',
+					status: -1,
+					enable: { start: 0 },
+					lifespan: PieceLifespan.OutOnSegmentChange,
+					invalid: false,
+					pieceType: IBlueprintPieceType.Normal,
+				},
+				playlistActivationId: protectString(''),
+			}
+			const pieceInstance1: PieceInstance = {
+				_id: protectString(`${partInstance2._id}_piece0`),
+				rundownId: partInstance2.part.rundownId,
+				partInstanceId: partInstance2._id,
+				piece: {
+					_id: protectString(`${partInstance2._id}_piece_inner1`),
+					startPartId: partInstance2.part._id,
+					content: {
+						timelineObjects: [],
+					},
+					externalId: '',
+					name: 'abc',
+					sourceLayerId: '',
+					outputLayerId: '',
+					status: -1,
+					enable: { start: 0 },
+					lifespan: PieceLifespan.OutOnSegmentChange,
+					invalid: false,
+					pieceType: IBlueprintPieceType.Normal,
+				},
+				playlistActivationId: protectString(''),
+			}
+			PieceInstances.insert(pieceInstance0)
+			PieceInstances.insert(pieceInstance1)
+			await runCronjobs()
+			expect(PartInstances.findOne(partInstance0._id)).toBeDefined()
+			expect(PartInstances.findOne(partInstance1._id)).toBeDefined()
+			expect(PartInstances.findOne(partInstance2._id)).toBeUndefined()
+			expect(PieceInstances.findOne(pieceInstance0._id)).toBeDefined()
+			expect(PieceInstances.findOne(pieceInstance1._id)).toBeUndefined()
 		})
 		testInFiber('Removes old entries in UserActionsLog', async () => {
 			// reasonably fresh entry

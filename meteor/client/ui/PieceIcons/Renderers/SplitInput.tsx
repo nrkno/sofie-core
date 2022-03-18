@@ -2,6 +2,7 @@ import * as React from 'react'
 import { PieceGeneric } from '../../../../lib/collections/Pieces'
 import { SplitsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../../lib/rundown'
+import classNames from 'classnames'
 
 export default class SplitInputIcon extends React.Component<{
 	abbreviation?: string
@@ -56,8 +57,13 @@ export default class SplitInputIcon extends React.Component<{
 				xmlns="http://www.w3.org/2000/svg"
 				preserveAspectRatio="none"
 			>
-				<rect width="126.5" height="44.5" className={this.getLeftSourceType(this.props.piece)} />
-				<rect width="126.5" height="44.5" y="44.5" className={this.getRightSourceType(this.props.piece)} />
+				<rect width="126.5" height="44.5" className={classNames('upper', this.getLeftSourceType(this.props.piece))} />
+				<rect
+					width="126.5"
+					height="44.5"
+					y="44.5"
+					className={classNames('lower', this.getRightSourceType(this.props.piece))}
+				/>
 				{!this.props.hideLabel && (
 					<text
 						x="9.6414976"

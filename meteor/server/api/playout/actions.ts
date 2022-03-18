@@ -17,7 +17,6 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 	logger.info('Activating rundown ' + cache.Playlist.doc._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 	rehearsal = !!rehearsal
-	// if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(403, `Rundown "${rundown._id}" is active and not in rehersal, cannot reactivate!`)
 
 	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
 		cache.Studio.doc._id,
@@ -124,13 +123,18 @@ export async function deactivateRundownPlaylist(cache: CacheForPlayout): Promise
 		if (rundown) {
 			const showStyle = await cache.activationCache.getShowStyleCompound(rundown)
 			const { blueprint } = await loadShowStyleBlueprint(showStyle)
+
+			const context = new RundownEventContext(cache.Studio.doc, showStyle, rundown)
+
 			try {
 				if (blueprint.onRundownDeActivate) {
-					await blueprint.onRundownDeActivate(new RundownEventContext(cache.Studio.doc, showStyle, rundown))
+					await blueprint.onRundownDeActivate(context)
 				}
 			} catch (err) {
 				logger.error(`Error in showStyleBlueprint.onRundownDeActivate: ${stringifyError(err)}`)
 			}
+
+			context.wipeCache().catch(logger.error)
 		}
 	})
 }
@@ -170,6 +174,7 @@ export async function deactivateRundownPlaylistInner(cache: CacheForPlayout): Pr
 			previousPartInstanceId: null,
 			currentPartInstanceId: null,
 			holdState: RundownHoldState.NONE,
+			nextSegmentId: undefined,
 		},
 		$unset: {
 			activationId: 1,

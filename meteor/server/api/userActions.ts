@@ -440,7 +440,7 @@ export async function executeAction(
 	actionId: string,
 	userData: any,
 	triggerMode?: string
-): Promise<ClientAPI.ClientResponse<void>> {
+): Promise<ClientAPI.ClientResponse<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }>> {
 	check(rundownPlaylistId, String)
 	check(actionDocId, String)
 	check(actionId, String)
@@ -593,9 +593,10 @@ export function userSaveEvaluation(context: MethodContext, evaluation: Evaluatio
 export async function userStoreRundownSnapshot(
 	context: MethodContext,
 	playlistId: RundownPlaylistId,
-	reason: string
+	reason: string,
+	full?: boolean
 ): Promise<ClientAPI.ClientResponse<SnapshotId>> {
-	return ClientAPI.responseSuccess(await storeRundownPlaylistSnapshot(context, playlistId, reason))
+	return ClientAPI.responseSuccess(await storeRundownPlaylistSnapshot(context, playlistId, reason, full))
 }
 export async function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 	const playlist = checkAccessAndGetPlaylist(context, playlistId)
@@ -617,6 +618,7 @@ export async function resyncRundown(context: MethodContext, rundownId: RundownId
 
 	return ClientAPI.responseSuccess(await ServerRundownAPI.resyncRundown(context, rundown._id))
 }
+
 export function mediaRestartWorkflow(context: MethodContext, workflowId: MediaWorkFlowId) {
 	return ClientAPI.responseSuccess(MediaManagerAPI.restartWorkflow(context, workflowId))
 }
@@ -1035,8 +1037,8 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	async saveEvaluation(_userEvent: string, evaluation: EvaluationBase) {
 		return makePromise(() => userSaveEvaluation(this, evaluation))
 	}
-	async storeRundownSnapshot(_userEvent: string, playlistId: RundownPlaylistId, reason: string) {
-		return userStoreRundownSnapshot(this, playlistId, reason)
+	async storeRundownSnapshot(_userEvent: string, playlistId: RundownPlaylistId, reason: string, full?: boolean) {
+		return userStoreRundownSnapshot(this, playlistId, reason, full)
 	}
 	async removeRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
 		return removeRundownPlaylist(this, playlistId)

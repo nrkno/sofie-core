@@ -26,7 +26,6 @@ import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { literal, normalizeArray, getCurrentTime, applyToArray } from '../../lib/lib'
 import { PieceId } from '../../lib/collections/Pieces'
-import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata } from '../../lib/rundown/pieces'
@@ -37,6 +36,7 @@ import { FindOptions } from '../../lib/typings/meteor'
 import { getShowHiddenSourceLayers } from './localStorage'
 import { Rundown, RundownId } from '../../lib/collections/Rundowns'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '../../lib/rundown/timings'
+import { AdLibPieceUi } from './shelf'
 
 interface PieceGroupMetadataExt extends PieceGroupMetadata {
 	id: PieceId

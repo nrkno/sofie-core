@@ -7,7 +7,12 @@ import ClassNames from 'classnames'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Studio } from '../../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi, LIVE_LINE_TIME_PADDING } from '../SegmentTimelineContainer'
-import { WithTiming, withTiming } from '../../RundownView/RundownTiming/withTiming'
+import {
+	TimingDataResolution,
+	TimingTickResolution,
+	WithTiming,
+	withTiming,
+} from '../../RundownView/RundownTiming/withTiming'
 import { RundownTiming } from '../../RundownView/RundownTiming/RundownTiming'
 
 import { RundownUtils } from '../../../lib/rundown'
@@ -70,6 +75,7 @@ interface IProps {
 	isPreview?: boolean
 	cropDuration?: number
 	className?: string
+	showDurationSourceLayers?: Set<string>
 }
 
 interface IState {
@@ -449,6 +455,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								liveLinePadding={SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)}
 								indexOffset={currentIndex}
 								isPreview={this.props.isPreview || false}
+								showDurationSourceLayers={this.props.showDurationSourceLayers}
 							/>
 						)
 					}
@@ -474,16 +481,17 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	private renderEndOfSegment = (t: TFunction, innerPart: Part, isEndOfShow: boolean, isEndOfLoopingShow?: boolean) => {
+		const isNext =
+			this.state.isLive &&
+			((!this.props.isLastSegment && !this.props.isLastInSegment) || !!this.props.playlist.nextPartInstanceId) &&
+			!innerPart.invalid
 		return (
 			<>
 				{this.props.isLastInSegment && !this.props.isBudgetGap && (
 					<div
 						className={ClassNames('segment-timeline__part__nextline', 'segment-timeline__part__nextline--endline', {
 							'auto-next': innerPart.autoNext,
-							'is-next':
-								this.state.isLive &&
-								((!this.props.isLastSegment && !this.props.isLastInSegment) ||
-									!!this.props.playlist.nextPartInstanceId),
+							'is-next': isNext,
 							'show-end': isEndOfShow,
 						})}
 					>
@@ -501,10 +509,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				{!isEndOfShow && this.props.isLastInSegment && !innerPart.invalid && (
 					<div
 						className={ClassNames('segment-timeline__part__segment-end', {
-							'is-next':
-								this.state.isLive &&
-								((!this.props.isLastSegment && !this.props.isLastInSegment) ||
-									!!this.props.playlist.nextPartInstanceId),
+							'is-next': isNext,
 						})}
 					>
 						<div className="segment-timeline__part__segment-end__label">
@@ -569,7 +574,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						'segment-timeline__part',
 						{
 							live: this.state.isLive,
-							next: this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive,
+							next: (this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive) && !innerPart.invalid,
 							invalid: innerPart.invalid && !innerPart.gap,
 							floated: innerPart.floated,
 							gap: innerPart.gap,
@@ -597,6 +602,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 					{this.renderTimelineOutputGroups(this.props.part)}
 					{innerPart.invalid ? <div className="segment-timeline__part__invalid-cover"></div> : null}
 					{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
+
 					{this.props.playlist.nextTimeOffset &&
 						this.state.isNext && ( // This is the off-set line
 							<div
@@ -711,7 +717,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 export const SegmentTimelinePart = withTranslation()(
 	withTiming<IProps & WithTranslation, IState>((props: IProps) => {
 		return {
-			isHighResolution: false,
+			tickResolution: TimingTickResolution.Synced,
+			dataResolution: TimingDataResolution.High,
 			filter: (durations: RundownTimingContext) => {
 				durations = durations || {}
 

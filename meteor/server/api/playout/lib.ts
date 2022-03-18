@@ -310,7 +310,7 @@ export async function setNextPart(
 			newInstanceId = nextPartInstance._id
 			cache.PartInstances.update(newInstanceId, {
 				$set: {
-					consumesNextSegmentId: nextPartInfo.consumesNextSegmentId,
+					consumesNextSegmentId: nextPartInfo.consumesNextSegmentId ?? false,
 				},
 			})
 			await syncPlayheadInfinitesForNextPartInstance(cache)
@@ -361,8 +361,8 @@ export async function setNextPart(
 			cache.Playlist.doc.currentPartInstanceId,
 			cache.Playlist.doc.previousPartInstanceId,
 		])
-		// reset any previous instances of this part
 
+		// reset any previous instances of this part
 		resetPartInstancesWithPieceInstances(cache, {
 			_id: { $nin: selectedPartInstanceIds },
 			rundownId: nextPart.rundownId,

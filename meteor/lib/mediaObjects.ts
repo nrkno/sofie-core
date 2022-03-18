@@ -8,6 +8,7 @@ import {
 	ExpectedPackageStatusAPI,
 	PackageInfo,
 	NoteSeverity,
+	LiveSpeakContent,
 } from '@sofie-automation/blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
@@ -144,7 +145,9 @@ export function getAcceptedFormats(settings: IStudioSettings | undefined): Array
 export function getMediaObjectMediaId(piece: Pick<IBlueprintPieceGeneric, 'content'>, sourceLayer: ISourceLayer) {
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
+			return (piece.content as VTContent)?.fileName?.toUpperCase()
 		case SourceLayerType.LIVE_SPEAK:
+			return (piece.content as LiveSpeakContent)?.fileName?.toUpperCase()
 		case SourceLayerType.TRANSITION:
 			return (piece.content as VTContent)?.fileName?.toUpperCase()
 		case SourceLayerType.GRAPHICS:
@@ -181,6 +184,7 @@ export function checkPieceContentStatus(
 	const settings: IStudioSettings | undefined = studio?.settings
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
+	const sourceDuration = piece.content.sourceDuration
 	const ignoreMediaAudioStatus = piece.content && piece.content.ignoreAudioFormat
 	if (!ignoreMediaStatus && sourceLayer && studio) {
 		if (piece.expectedPackages) {
@@ -390,7 +394,12 @@ export function checkPieceContentStatus(
 												count: frames,
 											})
 										)
-									} else if (scan.format && anomalies[0].end === Number(scan.format.duration)) {
+									} else if (
+										scan.format &&
+										anomalies[0].end === Number(scan.format.duration) &&
+										(sourceDuration === undefined ||
+											Math.round(anomalies[0].start) * 1000 < sourceDuration)
+									) {
 										const freezeStartsAt = Math.round(anomalies[0].start)
 										messages.push(
 											t('This clip ends with {{type}} frames after {{count}} second', {
@@ -409,22 +418,27 @@ export function checkPieceContentStatus(
 										)
 									}
 								} else if (anomalies.length > 0) {
-									const dur = anomalies.map((b) => b.duration).reduce((a, b) => a + b, 0)
-									const frames = Math.ceil((dur * 1000) / timebase)
-									messages.push(
-										t('{{frames}} {{type}} frame detected in clip', {
-											frames,
-											type,
-											count: frames,
-										})
-									)
+									const dur = anomalies
+										.filter((a) => sourceDuration === undefined || a.start * 1000 < sourceDuration)
+										.map((b) => b.duration)
+										.reduce((a, b) => a + b, 0)
+									const frames = Math.round((dur * 1000) / timebase)
+									if (frames > 0) {
+										messages.push(
+											t('{{frames}} {{type}} frame detected in clip', {
+												frames,
+												type,
+												count: frames,
+											})
+										)
+									}
 								}
 							}
-							if (deepScan?.blacks) {
-								addFrameWarning(deepScan.blacks, t('black'), t)
+							if (deepScan?.blacks?.length) {
+								addFrameWarning(deepScan.blacks, 'black', t)
 							}
-							if (deepScan?.freezes) {
-								addFrameWarning(deepScan.freezes, t('freeze'), t)
+							if (deepScan?.freezes?.length) {
+								addFrameWarning(deepScan.freezes, 'freeze', t)
 							}
 						}
 					}
@@ -447,6 +461,7 @@ export function checkPieceContentStatus(
 			switch (sourceLayer.type) {
 				case SourceLayerType.VT:
 				case SourceLayerType.LIVE_SPEAK:
+				case SourceLayerType.TRANSITION:
 					// If the fileName is not set...
 					if (!fileName) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
@@ -549,7 +564,9 @@ export function checkPieceContentStatus(
 												} else if (
 													mediaObject.mediainfo &&
 													mediaObject.mediainfo.format &&
-													arr[0].end === Number(mediaObject.mediainfo.format.duration)
+													arr[0].end === Number(mediaObject.mediainfo.format.duration) &&
+													(sourceDuration === undefined ||
+														Math.round(arr[0].start) * 1000 < sourceDuration)
 												) {
 													const freezeStartsAt = Math.round(arr[0].start)
 													messages.push(
@@ -562,7 +579,10 @@ export function checkPieceContentStatus(
 															}
 														)
 													)
-												} else {
+												} else if (
+													sourceDuration === undefined ||
+													Math.round(arr[0].start) * 1000 < sourceDuration
+												) {
 													messages.push(
 														t('{{frames}} {{type}} frame detected within the clip', {
 															frames,
@@ -572,21 +592,30 @@ export function checkPieceContentStatus(
 													)
 												}
 											} else if (arr.length > 0) {
-												const dur = arr.map((b) => b.duration).reduce((a, b) => a + b, 0)
+												const dur = arr
+													.filter(
+														(a) =>
+															sourceDuration === undefined ||
+															a.start * 1000 < sourceDuration
+													)
+													.map((b) => b.duration)
+													.reduce((a, b) => a + b, 0)
 												const frames = Math.ceil((dur * 1000) / timebase)
-												messages.push(
-													t('{{frames}} {{type}} frame detected in clip', {
-														frames,
-														type,
-														count: frames,
-													})
-												)
+												if (frames > 0) {
+													messages.push(
+														t('{{frames}} {{type}} frame detected in clip', {
+															frames,
+															type,
+															count: frames,
+														})
+													)
+												}
 											}
 										}
-										if (mediaObject.mediainfo.blacks) {
+										if (!piece.content.ignoreBlackFrames && mediaObject.mediainfo.blacks?.length) {
 											addFrameWarning(mediaObject.mediainfo.blacks, t('black'), t)
 										}
-										if (mediaObject.mediainfo.freezes) {
+										if (!piece.content.ignoreFreezeFrame && mediaObject.mediainfo.freezes?.length) {
 											addFrameWarning(mediaObject.mediainfo.freezes, t('freeze'), t)
 										}
 									}

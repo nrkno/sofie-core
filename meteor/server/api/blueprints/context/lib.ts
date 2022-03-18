@@ -54,4 +54,5 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 	displayDurationGroup: true,
 	displayDuration: true,
 	identifier: true,
+	hackListenToMediaObjectUpdates: true,
 })

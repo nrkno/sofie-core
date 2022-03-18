@@ -5,9 +5,9 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { useTranslation, withTranslation } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
-import { DBSegment, Segment, SegmentId } from '../../../lib/collections/Segments'
+import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { DBPart, PartId } from '../../../lib/collections/Parts'
-import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
+import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 
@@ -40,7 +40,6 @@ import { literal, normalizeArray, unprotectString, protectString } from '../../.
 import { RundownAPI } from '../../../lib/api/rundown'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import {
-	PartInstance,
 	PartInstances,
 	PartInstanceId,
 	findPartInstanceOrWrapToTemporary,
@@ -57,9 +56,9 @@ import {
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
-import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
+import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
 import { getShelfFollowsOnAir, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { sortAdlibs } from '../../../lib/Rundown'
 
@@ -85,6 +84,7 @@ interface IListViewStateHeader {
 	sourceLayers: {
 		[key: string]: ISourceLayer
 	}
+	liveSegment?: AdlibSegmentUi
 }
 
 /**
@@ -99,20 +99,20 @@ interface IListViewStateHeader {
 export function matchFilter(
 	item: AdLibPieceUi,
 	showStyleBase: ShowStyleBase,
-	uiSegments: Array<AdlibSegmentUi>,
+	liveSegment?: AdlibSegmentUi,
 	filter?: RundownLayoutFilterBase,
 	searchFilter?: string,
 	uniquenessIds?: Set<string>
 ) {
 	if (!searchFilter && !filter) return true
-	const liveSegment = uiSegments.find((i) => i.isLive === true)
 	const uppercaseLabel = item.name.toUpperCase()
 	if (filter) {
 		// Filter currentSegment only
 		if (
 			filter.currentSegment === true &&
 			item.partId &&
-			((liveSegment && liveSegment.parts.find((i) => item.partId === i.part._id) === undefined) || !liveSegment)
+			((liveSegment && liveSegment._id !== item.segmentId) || !liveSegment)
+			// TODOSYNC: NRK had checked liveSegment.parts.find((i) => item.partId === i.part._id) === undefined)
 		) {
 			return false
 		}
@@ -214,6 +214,8 @@ const AdLibListView = withTranslation()(
 				[key: string]: ISourceLayer
 			} = {}
 
+			const liveSegment = props.uiSegments.find((i) => i.isLive === true)
+
 			if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
 				props.showStyleBase.outputLayers.forEach((outputLayer) => {
 					tOLayers[outputLayer._id] = outputLayer
@@ -225,9 +227,10 @@ const AdLibListView = withTranslation()(
 				return {
 					outputLayers: tOLayers,
 					sourceLayers: tSLayers,
+					liveSegment,
 				}
 			}
-			return null
+			return { liveSegment }
 		}
 
 		scrollToCurrentSegment() {
@@ -265,7 +268,7 @@ const AdLibListView = withTranslation()(
 									matchFilter(
 										item,
 										this.props.showStyleBase,
-										this.props.uiSegments,
+										this.state.liveSegment,
 										this.props.filter,
 										this.props.searchFilter,
 										uniquenessIds
@@ -300,7 +303,7 @@ const AdLibListView = withTranslation()(
 						matchFilter(
 							item,
 							this.props.showStyleBase,
-							this.props.uiSegments,
+							this.state.liveSegment,
 							this.props.filter,
 							this.props.searchFilter,
 							uniquenessIds
@@ -435,28 +438,6 @@ export function AdLibPanelToolbar(props: IToolbarPropsHeader) {
 	)
 }
 
-export interface AdLibPieceUi extends AdLibPiece {
-	sourceLayer?: ISourceLayer
-	outputLayer?: IOutputLayer
-	isGlobal?: boolean
-	isHidden?: boolean
-	isSticky?: boolean
-	isAction?: boolean
-	isClearSourceLayer?: boolean
-	adlibAction?: AdLibAction | RundownBaselineAdLibAction
-	contentMetaData?: any
-	contentPackageInfos?: ScanInfoForPackages
-	message?: string | null
-}
-
-export interface AdlibSegmentUi extends DBSegment {
-	/** Pieces belonging to this part */
-	parts: Array<PartInstance>
-	pieces: Array<AdLibPieceUi>
-	isLive: boolean
-	isNext: boolean
-}
-
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
@@ -479,10 +460,11 @@ interface IState {
 	searchFilter: string | undefined
 }
 
-type SourceLayerLookup = { [id: string]: ISourceLayer }
+export type SourceLayerLookup = { [id: string]: ISourceLayer }
 
 export interface AdLibFetchAndFilterProps {
 	uiSegments: Array<AdlibSegmentUi>
+	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
 	liveSegment: AdlibSegmentUi | undefined
 	sourceLayerLookup: SourceLayerLookup
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
@@ -492,7 +474,7 @@ interface IAdLibPanelTrackedProps extends AdLibFetchAndFilterProps {
 	studio: Studio
 }
 
-function actionToAdLibPieceUi(
+export function actionToAdLibPieceUi(
 	action: AdLibAction | RundownBaselineAdLibAction,
 	sourceLayers: _.Dictionary<ISourceLayer>,
 	outputLayers: _.Dictionary<IOutputLayer>
@@ -528,8 +510,9 @@ function actionToAdLibPieceUi(
 		tags: action.display.tags,
 		currentPieceTags: action.display.currentPieceTags,
 		nextPieceTags: action.display.nextPieceTags,
-		lifespan: PieceLifespan.WithinPart, // value doesn't matter
 		uniquenessId: action.display.uniquenessId,
+		lifespan: PieceLifespan.WithinPart, // value doesn't matter
+		noHotKey: action.display.noHotKey,
 		expectedPackages: action.expectedPackages,
 	})
 }
@@ -541,6 +524,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	if (!props.playlist || !props.showStyleBase) {
 		return {
 			uiSegments: [],
+			uiSegmentMap: new Map(),
 			liveSegment: undefined,
 			sourceLayerLookup,
 			rundownBaselineAdLibs: [],
@@ -549,7 +533,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 	const segments = RundownPlaylistCollectionUtil.getSegments(props.playlist)
 
-	const { uiSegments, liveSegment, uiPartSegmentMap, uiPartMap } = memoizedIsolatedAutorun(
+	const { uiSegments, liveSegment, uiPartSegmentMap, uiPartMap, uiSegmentMap } = memoizedIsolatedAutorun(
 		(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null, segments: Segment[]) => {
 			// This is a map of partIds mapped onto segments they are part of
 			const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
@@ -558,6 +542,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 			if (!segments) {
 				return {
 					uiSegments: [],
+					uiSegmentMap: new Map(),
 					liveSegment: undefined,
 					uiPartSegmentMap,
 					uiPartMap,
@@ -622,6 +607,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 			return {
 				uiSegments,
+				uiSegmentMap,
 				liveSegment,
 				uiPartSegmentMap,
 				uiPartMap,
@@ -633,7 +619,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 		segments
 	)
 
-	uiSegments.forEach((segment) => (segment.pieces.length = 0))
+	uiSegments.forEach((segment) => (segment.pieces = []))
 
 	const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(props.playlist)
 	const partIds = Array.from(uiPartSegmentMap.keys())
@@ -660,6 +646,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 					...piece,
 					sourceLayer: sourceLayerLookup[piece.sourceLayerId],
 					outputLayer: outputLayerLookup[piece.outputLayerId],
+					segmentId: segment._id,
 				})
 			}
 		})
@@ -696,7 +683,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 	adlibActions.forEach((action) => {
 		const segment = uiPartSegmentMap.get(action.partId)
 		if (segment) {
-			segment.pieces.push(action.piece)
+			segment.pieces.push({ ...action.piece, segmentId: segment._id })
 		}
 	})
 
@@ -776,6 +763,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 									outputLayerId: '',
 									_rank: 0,
 									content: { timelineObjects: [] },
+									noHotKey: false,
 								})
 							)
 					)
@@ -854,6 +842,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 								outputLayerId: '',
 								_rank: 0,
 								content: { timelineObjects: [] },
+								noHotKey: false,
 							})
 						)
 				},
@@ -866,6 +855,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchA
 
 	return {
 		uiSegments: props.filter && props.filter.rundownBaseline === 'only' ? [] : uiSegments,
+		uiSegmentMap: props.filter && props.filter.rundownBaseline === 'only' ? new Map() : uiSegmentMap,
 		liveSegment,
 		sourceLayerLookup,
 		rundownBaselineAdLibs,
@@ -920,7 +910,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		componentWillUnmount() {
 			this._cleanUp()
 
-			this.usedHotkeys.length = 0
+			this.usedHotkeys = []
 
 			RundownViewEventBus.off(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
 		}
@@ -1003,6 +993,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			) {
 				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 				return
+				// TODOSYNC: TV2 uses queue = false, to be discussed
 			}
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId

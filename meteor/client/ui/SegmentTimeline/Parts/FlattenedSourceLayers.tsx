@@ -67,6 +67,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps) {
 									scrollWidth={props.scrollWidth}
 									layerIndex={props.layerIndex}
 									isPreview={props.isPreview}
+									showDurationSourceLayers={props.showDurationSourceLayers}
 								/>
 							)
 						})

@@ -42,6 +42,7 @@ interface IOutputGroupProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	indexOffset: number
 	isPreview: boolean
+	showDurationSourceLayers?: Set<string>
 }
 
 export function OutputGroup(props: IOutputGroupProps) {
@@ -86,6 +87,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 							onPieceClick={props.onPieceClick}
 							onPieceDoubleClick={props.onPieceDoubleClick}
 							isPreview={props.isPreview}
+							showDurationSourceLayers={props.showDurationSourceLayers}
 						/>
 					)
 				})
@@ -122,6 +124,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 						onPieceClick={props.onPieceClick}
 						onPieceDoubleClick={props.onPieceDoubleClick}
 						isPreview={props.isPreview}
+						showDurationSourceLayers={props.showDurationSourceLayers}
 					/>
 				)
 			}

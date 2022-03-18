@@ -28,7 +28,7 @@ import update from 'immutability-helper'
 
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { AdLibPieceUi } from './AdLibPanel'
+import { AdLibPieceUi } from '../../lib/shelf'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { IAdLibListItem } from './AdLibListItem'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'

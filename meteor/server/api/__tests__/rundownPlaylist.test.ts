@@ -15,6 +15,7 @@ import {
 } from '../../../lib/collections/RundownPlaylists'
 import { produceRundownPlaylistInfoFromRundown, updateRundownsInPlaylist } from '../rundownPlaylist'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
+import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 
 describe('Rundown', () => {
@@ -39,13 +40,25 @@ describe('Rundown', () => {
 		expect(rundownId02).toEqual('rundown02')
 		// The setupDefaultRundown doesn't set _rank, set expectedStart so that they will get a default order from that:
 		Rundowns.update(rundownId00, {
-			$set: { playlistId: playlistId0, playlistIdIsSetInSofie: true, expectedStart: 1000 },
+			$set: {
+				playlistId: playlistId0,
+				playlistIdIsSetInSofie: true,
+				timing: { type: PlaylistTimingType.ForwardTime, expectedStart: 1000 },
+			},
 		})
 		Rundowns.update(rundownId01, {
-			$set: { playlistId: playlistId0, playlistIdIsSetInSofie: true, expectedStart: 2000 },
+			$set: {
+				playlistId: playlistId0,
+				playlistIdIsSetInSofie: true,
+				timing: { type: PlaylistTimingType.ForwardTime, expectedStart: 2000 },
+			},
 		})
 		Rundowns.update(rundownId02, {
-			$set: { playlistId: playlistId0, playlistIdIsSetInSofie: true, expectedStart: 3000 },
+			$set: {
+				playlistId: playlistId0,
+				playlistIdIsSetInSofie: true,
+				timing: { type: PlaylistTimingType.ForwardTime, expectedStart: 3000 },
+			},
 		})
 
 		const rundown00 = Rundowns.findOne(rundownId00) as Rundown

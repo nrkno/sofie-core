@@ -226,6 +226,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								</div>
 								<div className="mod mvs mhs">
 									<label className="field">
+										{t('Toggled Label')}
+										<EditAttribute
+											modifiedClassName="bghl"
+											attribute={`actionButtons.${index}.labelToggled`}
+											obj={item}
+											type="text"
+											collection={RundownLayouts}
+											className="input text-input input-l"
+										/>
+									</label>
+								</div>
+								<div className="mod mvs mhs">
+									<label className="field">
 										{t('Type')}
 										<EditAttribute
 											modifiedClassName="bghl"
@@ -385,7 +398,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											<Link
 												target="_blank"
 												className="pill-link"
-												to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}
+												to={this.props.customRegion.navigationLink(studio._id, item._id)}
 											>
 												{studio.name}
 											</Link>
