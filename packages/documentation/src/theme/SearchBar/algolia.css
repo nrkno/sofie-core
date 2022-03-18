@@ -399,10 +399,9 @@
 	float: left;
 	width: 30%;
 	display: none;
-	padding-left: 0;
 	text-align: right;
 	position: relative;
-	padding: 5.33333px 10.66667px 5.33333px 0;
+	padding: 5.33333px 10.66667px;
 	color: #777;
 	font-size: 0.9em;
 	word-wrap: break-word;
