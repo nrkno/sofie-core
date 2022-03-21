@@ -483,6 +483,45 @@ describe('ensureNextPartIsValid', () => {
 			PartInstances.remove(instanceId)
 		}
 	})
+	testInFiber('Next part instance is orphaned: "deleted" and manually set', () => {
+		// Insert a temporary instance
+		const instanceId: PartInstanceId = protectString('orphaned_first_part')
+		PartInstances.insert(
+			literal<DBPartInstance>({
+				_id: instanceId,
+				rundownId: rundownId,
+				segmentId: protectString('mock_segment1'),
+				playlistActivationId: protectString('active'),
+				segmentPlayoutId: protectString(''),
+				takeCount: 0,
+				rehearsal: false,
+				part: literal<DBPart>({
+					_id: protectString('orphan_1'),
+					_rank: 1.5,
+					rundownId: rundownId,
+					segmentId: protectString('mock_segment1'),
+					externalId: 'o1',
+					title: 'Orphan 1',
+				}),
+				orphaned: 'deleted',
+			})
+		)
+
+		try {
+			resetPartIds(null, instanceId, true)
+
+			ensureNextPartIsValid()
+
+			expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
+			expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
+				expect.objectContaining({ PlaylistId: rundownPlaylistId }),
+				expect.objectContaining({ _id: 'mock_part1' })
+			)
+		} finally {
+			// Cleanup to not mess with other tests
+			PartInstances.remove(instanceId)
+		}
+	})
 	testInFiber('Next part is invalid, but instance is not', () => {
 		// Insert a temporary instance
 		const instanceId: PartInstanceId = protectString('orphaned_first_part')

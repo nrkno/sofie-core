@@ -15,8 +15,12 @@ export async function ensureNextPartIsValid(cache: CacheForPlayout): Promise<voi
 	if (playlist && playlist.activationId) {
 		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-		if (playlist.nextPartManual && nextPartInstance?.part?.isPlayable()) {
-			// Manual next part is always valid. This includes orphaned (adlib-part) partinstances
+		if (
+			playlist.nextPartManual &&
+			nextPartInstance?.part?.isPlayable() &&
+			nextPartInstance.orphaned !== 'deleted'
+		) {
+			// Manual next part is almost always valid. This includes orphaned (adlib-part) partinstances
 			span?.end()
 			return
 		}
