@@ -166,6 +166,7 @@ export const RundownTimingProvider = withTracker<
 		refreshDecimator: number
 
 		private timingCalculator: RundownTimingCalculator = new RundownTimingCalculator()
+		/** last time (ms rounded down to full seconds) for which the timeupdateSynced event was dispatched */
 		private lastSyncedTime: number = 0
 
 		constructor(props: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
@@ -193,14 +194,14 @@ export const RundownTimingProvider = withTracker<
 			this.updateDurations(calmedDownNow, false)
 			this.dispatchHREvent(calmedDownNow)
 
-			const isLowResolution = this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0
-			if (isLowResolution) {
+			const dispatchLowResolution = this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0
+			if (dispatchLowResolution) {
 				this.dispatchLREvent(calmedDownNow)
 			}
 
 			const syncedEventTimeNow = Math.floor(now / 1000) * 1000
-			const isSynced = Math.abs(syncedEventTimeNow - this.lastSyncedTime) >= 1000
-			if (isSynced) {
+			const dispatchSynced = Math.abs(syncedEventTimeNow - this.lastSyncedTime) >= 1000
+			if (dispatchSynced) {
 				this.lastSyncedTime = syncedEventTimeNow
 				this.updateDurations(syncedEventTimeNow, true)
 				this.dispatchSyncedEvent(syncedEventTimeNow)
