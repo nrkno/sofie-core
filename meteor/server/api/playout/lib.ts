@@ -21,7 +21,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { Segment, DBSegment, SegmentId, SegmentOrphanedReason } from '../../../lib/collections/Segments'
+import { Segment, DBSegment, SegmentId, SegmentOrphanedReason, Segments } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import {
 	PartInstance,
@@ -44,7 +44,9 @@ import { Settings } from '../../../lib/Settings'
 import { runIngestOperationWithCache, UpdateIngestRundownAction } from '../ingest/lockFunction'
 import { updateSegmentFromIngestData } from '../ingest/generation'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { MongoQuery } from '../../../lib/typings/meteor'
+import { MongoFieldSpecifierOnes, MongoQuery } from '../../../lib/typings/meteor'
+import { FilterQuery } from 'mongodb'
+import { partial } from 'underscore'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 
@@ -486,27 +488,22 @@ export function setNextSegment(cache: CacheForPlayout, nextSegment: Segment | nu
  */
 function cleanupOrphanedItems(cache: CacheForPlayout) {
 	const playlist = cache.Playlist.doc
-	const selectedPartInstanceIds = _.compact([playlist.currentPartInstanceId, playlist.nextPartInstanceId])
 
-	const removePartInstanceIds: PartInstanceId[] = []
+	const selectedPartInstancesSegmentIds = new Set<SegmentId>()
+	const selectedPartInstances = getSelectedPartInstancesFromCache(cache)
+	if (selectedPartInstances.currentPartInstance)
+		selectedPartInstancesSegmentIds.add(selectedPartInstances.currentPartInstance.segmentId)
+	if (selectedPartInstances.nextPartInstance)
+		selectedPartInstancesSegmentIds.add(selectedPartInstances.nextPartInstance.segmentId)
 
 	// Cleanup any orphaned segments once they are no longer being played. This also cleans up any adlib-parts, that have been marked as deleted as a deferred cleanup operation
 	const segments = cache.Segments.findFetch((s) => !!s.orphaned)
 	const orphanedSegmentIds = new Set(segments.map((s) => s._id))
-	const groupedPartInstances = _.groupBy(
-		cache.PartInstances.findFetch((p) => orphanedSegmentIds.has(p.segmentId)),
-		(p) => p.segmentId
-	)
+
 	const alterSegmentsFromRundowns = new Map<RundownId, { deleted: SegmentId[]; hidden: SegmentId[] }>()
 	for (const segment of segments) {
-		const partInstances = groupedPartInstances[unprotectString(segment._id)] || []
-		const partInstanceIds = new Set(partInstances.map((p) => p._id))
-
-		// Not in current or next. Previous can be reset as it will still be in the db, but not shown in the ui
-		if (
-			(!playlist.currentPartInstanceId || !partInstanceIds.has(playlist.currentPartInstanceId)) &&
-			(!playlist.nextPartInstanceId || !partInstanceIds.has(playlist.nextPartInstanceId))
-		) {
+		// If the segment is orphaned and not the segment for the next or current partinstance
+		if (!selectedPartInstancesSegmentIds.has(segment._id)) {
 			let rundownSegments = alterSegmentsFromRundowns.get(segment.rundownId)
 			if (!rundownSegments) {
 				rundownSegments = { deleted: [], hidden: [] }
@@ -597,6 +594,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 		}
 	}
 
+	const removePartInstanceIds: PartInstanceId[] = []
 	// Cleanup any orphaned partinstances once they are no longer being played (and the segment isnt orphaned)
 	const orphanedInstances = cache.SomePartInstances.findFetch((p) => p.orphaned === 'deleted' && !p.reset)
 	for (const partInstance of orphanedInstances) {
@@ -605,7 +603,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 			continue
 		}
 
-		if (!selectedPartInstanceIds.includes(partInstance._id)) {
+		if (partInstance._id !== playlist.currentPartInstanceId && partInstance._id !== playlist.nextPartInstanceId) {
 			removePartInstanceIds.push(partInstance._id)
 		}
 	}
