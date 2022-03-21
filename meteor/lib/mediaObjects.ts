@@ -443,10 +443,10 @@ export function checkPieceContentStatus(
 								}
 							}
 							if (deepScan?.blacks?.length) {
-								addFrameWarning(deepScan.blacks, 'black', t)
+								addFrameWarning(deepScan.blacks, t('black'), t)
 							}
 							if (deepScan?.freezes?.length) {
-								addFrameWarning(deepScan.freezes, 'freeze', t)
+								addFrameWarning(deepScan.freezes, t('freeze'), t)
 							}
 						}
 					}
