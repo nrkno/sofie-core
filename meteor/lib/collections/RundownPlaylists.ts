@@ -12,7 +12,7 @@ import {
 import { Rundowns, Rundown, DBRundown } from './Rundowns'
 import { Segments, Segment, DBSegment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
-import { PartInstance, PartInstances, SegmentPlayoutId } from './PartInstances'
+import { PartInstance, PartInstances } from './PartInstances'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { ReadonlyDeep } from 'type-fest'
@@ -317,12 +317,13 @@ export class RundownPlaylistCollectionUtil {
 			}
 		).fetch()
 	}
+	/** Return a list of PartInstances, omitting the reset ones (ie only the ones that are relevant) */
 	static getActivePartInstances(
 		playlist: Pick<RundownPlaylist, '_id'>,
 		selector?: MongoQuery<PartInstance>,
 		options?: FindOptions<PartInstance>
 	): PartInstance[] {
-		const newSelector = {
+		const newSelector: MongoQuery<PartInstance> = {
 			...selector,
 			reset: { $ne: true },
 		}
@@ -337,9 +338,6 @@ export class RundownPlaylistCollectionUtil {
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
 
-	static getPartInstancesForSegmentPlayout(rundownId: RundownId, segmentPlayoutId: SegmentPlayoutId) {
-		return PartInstances.find({ rundownId, segmentPlayoutId }, { sort: { takeCount: 1 } }).fetch()
-	}
 	static _sortSegments<TSegment extends Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>(
 		segments: Array<TSegment>,
 		rundowns: Array<ReadonlyDeep<DBRundown>>
