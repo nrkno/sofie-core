@@ -763,11 +763,24 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 					if (this.props.showStyleBase) {
 						// Hide duplicates;
-						// only the first adLib found with a given uniquenessId will be displayed
-						const uniqueAdlibs = new Map<string, BucketAdLibItem>()
+						// Step 1: Only the first adLib found with a given externalId will be displayed,
+						// adlibs with the same externalId are considered to be cariants of the same adlibs.
+						const adLibPieceGroupedOnExternalIds = new Map<string, BucketAdLibItem>()
 						for (const adLibPiece of this.state.adLibPieces) {
-							const uniquenessId = adLibPiece.uniquenessId || unprotectString(adLibPiece._id)
+							const existingAdlib = adLibPieceGroupedOnExternalIds.get(adLibPiece.externalId)
+							if (
+								!existingAdlib ||
+								// If the existing is disabled and we're not, we should use our one:
+								(this.adLibIsDisabled(existingAdlib) && !this.adLibIsDisabled(adLibPiece))
+							) {
+								adLibPieceGroupedOnExternalIds.set(adLibPiece.externalId, adLibPiece)
+							}
+						}
 
+						// Step 2: only the first adLib found with a given uniquenessId will be displayed:
+						const uniqueAdlibs = new Map<string, BucketAdLibItem>()
+						for (const adLibPiece of adLibPieceGroupedOnExternalIds.values()) {
+							const uniquenessId = adLibPiece.uniquenessId ?? unprotectString(adLibPiece._id)
 							const existingAdlib = uniqueAdlibs.get(uniquenessId)
 							if (
 								!existingAdlib ||

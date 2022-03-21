@@ -4,7 +4,7 @@ import {
 	TimelineObjRundown,
 	TimelineObjType,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	IBlueprintActionManifest,
@@ -316,8 +316,7 @@ export function postProcessBucketAdLib(
 	blueprintId: BlueprintId,
 	bucketId: BucketId,
 	rank: number | undefined,
-	importVersions: RundownImportVersions,
-	uniquenessId: string | undefined
+	importVersions: RundownImportVersions
 ): BucketAdLib {
 	const id: PieceId = protectString(
 		getHash(
@@ -334,7 +333,6 @@ export function postProcessBucketAdLib(
 		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
-		uniquenessId: uniquenessId ?? unprotectString(id),
 		_rank: rank || itemOrig._rank,
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
@@ -354,8 +352,7 @@ export function postProcessBucketAction(
 	blueprintId: BlueprintId,
 	bucketId: BucketId,
 	rank: number | undefined,
-	importVersions: RundownImportVersions,
-	uniquenessId: string | undefined
+	importVersions: RundownImportVersions
 ): BucketAdLibAction {
 	const id: AdLibActionId = protectString(
 		getHash(
@@ -371,7 +368,6 @@ export function postProcessBucketAction(
 		showStyleVariantId: itemOrig.allVariants ? null : innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
-		uniquenessId: uniquenessId ?? unprotectString(id),
 		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank),
 	}
 

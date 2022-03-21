@@ -123,8 +123,6 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 	let actionIdsToRemove = allOldAdLibActions.map((p) => p._id)
 
 	let newRank: number | undefined = undefined
-	// This is used to give all the adlibs the same uniquenessId, so that only one of them is shown
-	let bucketItemUniquenessId: string | undefined = undefined
 	let onlyGenerateOneItem = false
 
 	const ps: Promise<any>[] = []
@@ -222,10 +220,8 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 					blueprint.blueprintId,
 					data.bucketId,
 					newRank,
-					importVersions,
-					bucketItemUniquenessId
+					importVersions
 				)
-				if (!bucketItemUniquenessId) bucketItemUniquenessId = action.uniquenessId
 
 				ps.push(
 					context.directCollections.BucketAdLibActions.replace(action),
@@ -243,10 +239,8 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 					blueprint.blueprintId,
 					data.bucketId,
 					newRank,
-					importVersions,
-					bucketItemUniquenessId
+					importVersions
 				)
-				if (!bucketItemUniquenessId) bucketItemUniquenessId = adlib.uniquenessId
 
 				ps.push(
 					context.directCollections.BucketAdLibPieces.replace(adlib),
