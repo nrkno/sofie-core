@@ -1,5 +1,6 @@
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
@@ -24,13 +25,14 @@ export async function allowedToMoveRundownOutOfPlaylist(
 	const partInstanceIds = _.compact([playlist.currentPartInstanceId, playlist.nextPartInstanceId])
 	if (!playlist.activationId || partInstanceIds.length === 0) return true
 
-	const selectedPartInstancesInRundown = await context.directCollections.PartInstances.findFetch(
-		{
-			_id: { $in: partInstanceIds },
-			rundownId: rundown._id,
-		},
-		{ projection: { _id: 1 } }
-	)
+	const selectedPartInstancesInRundown: Pick<DBPartInstance, '_id'>[] =
+		await context.directCollections.PartInstances.findFetch(
+			{
+				_id: { $in: partInstanceIds },
+				rundownId: rundown._id,
+			},
+			{ projection: { _id: 1 } }
+		)
 
 	return selectedPartInstancesInRundown.length === 0
 }
