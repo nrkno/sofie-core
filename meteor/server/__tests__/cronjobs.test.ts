@@ -3,17 +3,30 @@ import { testInFiber, runAllTimers, beforeAllInFiber } from '../../__mocks__/hel
 import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { IngestDataCache, IngestCacheType, IngestDataCacheObjId } from '../../lib/collections/IngestDataCache'
-import { Random } from 'meteor/random'
-import { getRandomId, protectString } from '../../lib/lib'
+import { getRandomId, getRandomString, protectString } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
-import { PieceLifespan, PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintPieceType,
+	PieceLifespan,
+	PlaylistTimingType,
+	StatusCode,
+	TSR,
+} from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import {
+	PeripheralDevices,
+	PeripheralDeviceId,
+	PeripheralDeviceType,
+	PeripheralDeviceCategory,
+} from '../../lib/collections/PeripheralDevices'
 import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
+import { DBPart, PartId, Parts } from '../../lib/collections/Parts'
+import { SegmentId } from '../../lib/collections/Segments'
+import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
+import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 
 // Set up mocks for tests in this suite
 let mockCurrentTime = 0
@@ -21,10 +34,10 @@ let origGetCurrentTime
 jest.mock('../logging')
 
 import '../cronjobs'
-import { DBPart, Part, PartId, Parts } from '../../lib/collections/Parts'
-import { SegmentId } from '../../lib/collections/Segments'
-import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+
+import '../api/peripheralDevice'
+import { Meteor } from 'meteor/meteor'
+import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 describe('cronjobs', () => {
 	beforeEach(() => {
@@ -115,7 +128,7 @@ describe('cronjobs', () => {
 
 		testInFiber('Remove IngestDataCache objects that are not connected to any Rundown', async () => {
 			// Set up a mock rundown, a detached IngestDataCache object and an object attached to the mock rundown
-			const rundown0Id = protectString<RundownId>(Random.id())
+			const rundown0Id = protectString<RundownId>(getRandomString())
 			// Mock Rundown 0
 			Rundowns.insert({
 				_id: rundown0Id,
@@ -143,7 +156,7 @@ describe('cronjobs', () => {
 				},
 			})
 			// Detached IngestDataCache object 0
-			const dataCache0Id = protectString<IngestDataCacheObjId>(Random.id())
+			const dataCache0Id = protectString<IngestDataCacheObjId>(getRandomString())
 			IngestDataCache.insert({
 				_id: dataCache0Id,
 				data: {
@@ -158,7 +171,7 @@ describe('cronjobs', () => {
 				type: IngestCacheType.RUNDOWN,
 			})
 			// Attached IngestDataCache object 1
-			const dataCache1Id = protectString<IngestDataCacheObjId>(Random.id())
+			const dataCache1Id = protectString<IngestDataCacheObjId>(getRandomString())
 			IngestDataCache.insert({
 				_id: dataCache1Id,
 				data: {
@@ -181,33 +194,35 @@ describe('cronjobs', () => {
 			expect(IngestDataCache.findOne(dataCache0Id)).toBeUndefined()
 		})
 		testInFiber('Removes old PartInstances and PieceInstances', async () => {
-			const rundown0Id = protectString<RundownId>(Random.id())
-			const segment0Id = protectString<SegmentId>(Random.id())
+			const rundown0Id = getRandomId<RundownId>()
+			const segment0Id = getRandomId<SegmentId>()
 			const part0: DBPart = {
-				_id: protectString<PartId>(Random.id()),
+				_id: getRandomId<PartId>(),
 				_rank: 0,
 				rundownId: rundown0Id,
 				segmentId: segment0Id,
 				externalId: '',
 				title: '',
+				expectedDurationWithPreroll: undefined,
 			}
 			const part1: DBPart = {
-				_id: protectString<PartId>(Random.id()),
+				_id: getRandomId<PartId>(),
 				_rank: 1,
 				rundownId: rundown0Id,
 				segmentId: segment0Id,
 				externalId: '',
 				title: '',
+				expectedDurationWithPreroll: undefined,
 			}
 			Parts.insert(part0)
 			const partInstance0: PartInstance = {
-				_id: protectString(`${part0._id}_${Random.id()}`),
+				_id: protectString(`${part0._id}_${getRandomId()}`),
 				rundownId: part0.rundownId,
 				segmentId: part0.segmentId,
 				takeCount: 1,
 				rehearsal: false,
 				isTemporary: false,
-				part: new Part(part0),
+				part: part0,
 				reset: true,
 				timings: {
 					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
@@ -216,24 +231,24 @@ describe('cronjobs', () => {
 				segmentPlayoutId: protectString(''),
 			}
 			const partInstance1: PartInstance = {
-				_id: protectString(`${part0._id}_${Random.id()}`),
+				_id: protectString(`${part0._id}_${getRandomId()}`),
 				rundownId: part0.rundownId,
 				segmentId: part0.segmentId,
 				takeCount: 1,
 				rehearsal: false,
 				isTemporary: false,
-				part: new Part(part0),
+				part: part0,
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
 			const partInstance2: PartInstance = {
-				_id: protectString(`${part0._id}_${Random.id()}`),
+				_id: protectString(`${part0._id}_${getRandomId()}`),
 				rundownId: part1.rundownId,
 				segmentId: part1.segmentId,
 				takeCount: 1,
 				rehearsal: false,
 				isTemporary: false,
-				part: new Part(part1),
+				part: part1,
 				reset: true,
 				timings: {
 					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
@@ -251,9 +266,8 @@ describe('cronjobs', () => {
 				piece: {
 					_id: protectString(`${partInstance0._id}_piece_inner1`),
 					startPartId: partInstance2.part._id,
-					content: {
-						timelineObjects: [],
-					},
+					content: {},
+					timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 					externalId: '',
 					name: 'abc',
 					sourceLayerId: '',
@@ -262,6 +276,7 @@ describe('cronjobs', () => {
 					enable: { start: 0 },
 					lifespan: PieceLifespan.OutOnSegmentChange,
 					invalid: false,
+					pieceType: IBlueprintPieceType.Normal,
 				},
 				playlistActivationId: protectString(''),
 			}
@@ -272,9 +287,8 @@ describe('cronjobs', () => {
 				piece: {
 					_id: protectString(`${partInstance2._id}_piece_inner1`),
 					startPartId: partInstance2.part._id,
-					content: {
-						timelineObjects: [],
-					},
+					content: {},
+					timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 					externalId: '',
 					name: 'abc',
 					sourceLayerId: '',
@@ -283,6 +297,7 @@ describe('cronjobs', () => {
 					enable: { start: 0 },
 					lifespan: PieceLifespan.OutOnSegmentChange,
 					invalid: false,
+					pieceType: IBlueprintPieceType.Normal,
 				},
 				playlistActivationId: protectString(''),
 			}
@@ -297,7 +312,7 @@ describe('cronjobs', () => {
 		})
 		testInFiber('Removes old entries in UserActionsLog', async () => {
 			// reasonably fresh entry
-			const userAction0 = protectString<UserActionsLogItemId>(Random.id())
+			const userAction0 = protectString<UserActionsLogItemId>(getRandomString())
 			UserActionsLog.insert({
 				_id: userAction0,
 				organizationId: null,
@@ -310,7 +325,7 @@ describe('cronjobs', () => {
 				timestamp: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
 			})
 			// stale entry
-			const userAction1 = protectString<UserActionsLogItemId>(Random.id())
+			const userAction1 = protectString<UserActionsLogItemId>(getRandomString())
 			UserActionsLog.insert({
 				_id: userAction1,
 				organizationId: null,
@@ -332,7 +347,7 @@ describe('cronjobs', () => {
 		})
 		testInFiber('Removes old entries in Snapshots', async () => {
 			// reasonably fresh entry
-			const snapshot0 = protectString<SnapshotId>(Random.id())
+			const snapshot0 = protectString<SnapshotId>(getRandomString())
 			Snapshots.insert({
 				_id: snapshot0,
 				organizationId: null,
@@ -345,7 +360,7 @@ describe('cronjobs', () => {
 				created: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
 			})
 			// stale entry
-			const snapshot1 = protectString<SnapshotId>(Random.id())
+			const snapshot1 = protectString<SnapshotId>(getRandomString())
 			Snapshots.insert({
 				_id: snapshot1,
 				organizationId: null,
@@ -366,12 +381,12 @@ describe('cronjobs', () => {
 			expect(Snapshots.findOne(snapshot1)).toBeUndefined()
 		})
 		testInFiber('Attempts to restart CasparCG when job is enabled', async () => {
-			const mockPlayoutGw = protectString<PeripheralDeviceId>(Random.id())
+			const mockPlayoutGw = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
 				_id: mockPlayoutGw,
 				organizationId: null,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
+				category: PeripheralDeviceCategory.PLAYOUT,
 				configManifest: {
 					deviceConfig: [],
 				},
@@ -382,18 +397,18 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'Playout gateway',
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				subType: TSR.DeviceType.ABSTRACT,
 				token: '',
 			})
-			const mockCasparCg = protectString<PeripheralDeviceId>(Random.id())
+			const mockCasparCg = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
 				_id: mockCasparCg,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
+				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.CASPARCG,
 				configManifest: {
 					deviceConfig: [],
@@ -405,17 +420,17 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'CasparCG',
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				token: '',
 			})
-			const mockATEM = protectString<PeripheralDeviceId>(Random.id())
+			const mockATEM = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
 				_id: mockATEM,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
+				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.ATEM,
 				configManifest: {
 					deviceConfig: [],
@@ -427,7 +442,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'ATEM',
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				token: '',
 			})
@@ -446,17 +461,29 @@ describe('cronjobs', () => {
 				functionName: 'restartCasparCG',
 			})
 
+			// Emulate that the restart was successful:
+			pendingCommands.forEach((cmd) => {
+				Meteor.call(
+					'peripheralDevice.functionReply',
+					cmd.deviceId, // deviceId
+					'', // deviceToken
+					cmd._id, // commandId
+					null, // err
+					null // result
+				)
+			})
+
 			await runAllTimers()
 			// make sure that the cronjob ends
 			expect(logger.info).toHaveBeenLastCalledWith('Nightly cronjob: done')
 		})
 		testInFiber('Does not attempt to restart CasparCG when job is disabled', async () => {
-			const mockPlayoutGw = protectString<PeripheralDeviceId>(Random.id())
+			const mockPlayoutGw = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
 				_id: mockPlayoutGw,
 				organizationId: null,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
+				category: PeripheralDeviceCategory.PLAYOUT,
 				configManifest: {
 					deviceConfig: [],
 				},
@@ -467,18 +494,18 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'Playout gateway',
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				subType: TSR.DeviceType.ABSTRACT,
 				token: '',
 			})
-			const mockCasparCg = protectString<PeripheralDeviceId>(Random.id())
+			const mockCasparCg = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
 				_id: mockCasparCg,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
+				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.CASPARCG,
 				configManifest: {
 					deviceConfig: [],
@@ -490,17 +517,17 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'CasparCG',
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				token: '',
 			})
-			const mockATEM = protectString<PeripheralDeviceId>(Random.id())
+			const mockATEM = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
 				_id: mockATEM,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
+				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.ATEM,
 				configManifest: {
 					deviceConfig: [],
@@ -512,7 +539,7 @@ describe('cronjobs', () => {
 				lastSeen: 0,
 				name: 'ATEM',
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+					statusCode: StatusCode.GOOD,
 				},
 				token: '',
 			})

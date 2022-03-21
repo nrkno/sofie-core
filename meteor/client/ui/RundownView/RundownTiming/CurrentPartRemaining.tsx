@@ -24,8 +24,9 @@ let prevDisplayTime: number | undefined = undefined
  * @extends React.Component<WithTiming<{}>>
  */
 export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
-	tickResolution: TimingTickResolution.Synced,
-	dataResolution: TimingDataResolution.Synced,
+	// TODOSYNC: TV2 uses TimingTickResolution.Synced for these
+	tickResolution: TimingTickResolution.High,
+	dataResolution: TimingDataResolution.High,
 })(
 	class CurrentPartRemaining extends React.Component<WithTiming<IPartRemainingProps>> {
 		render() {

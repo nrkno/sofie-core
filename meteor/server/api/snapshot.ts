@@ -29,9 +29,10 @@ import {
 	protectString,
 	getRandomId,
 	unprotectString,
-	makePromise,
 	ProtectedString,
 	protectStringArray,
+	assertNever,
+	stringifyError,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -39,7 +40,6 @@ import { logger } from '../logging'
 import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { ServerPeripheralDeviceAPI } from './peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
 import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
@@ -47,10 +47,15 @@ import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { VTContent } from '@sofie-automation/blueprints-integration'
+import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import { ExpectedPackageDB, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import {
+	ExpectedPackageDB,
+	ExpectedPackageDBType,
+	ExpectedPackages,
+	getExpectedPackageId,
+} from '../../lib/collections/ExpectedPackages'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { importIngestRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
@@ -60,22 +65,23 @@ import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/Rundown
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { PartInstances, PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInstances'
+import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/1_0_1'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
-import { OrganizationContentWriteAccess } from '../security/organization'
+import { BasicAccessContext, OrganizationContentWriteAccess } from '../security/organization'
 import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
 import { getPartId, getSegmentId } from './ingest/lib'
 import { Piece as Piece_1_11_0 } from '../migration/deprecatedDataTypes/1_11_0'
-import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
+import { AdLibActions, AdLibAction, AdLibActionId } from '../../lib/collections/AdLibActions'
 import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
+	RundownBaselineAdLibActionId,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
 import { saveIntoDb, sumChanges } from '../lib/database'
@@ -89,6 +95,7 @@ import {
 	PackageContainerPackageStatuses,
 } from '../../lib/collections/PackageContainerPackageStatus'
 import { PackageInfoDB, PackageInfos } from '../../lib/collections/PackageInfos'
+import { checkStudioExists } from '../../lib/collections/optimizations'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
@@ -431,9 +438,7 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 					const startTime = getCurrentTime()
 
 					// defer to another fiber
-					const deviceSnapshot = await makePromise(() =>
-						ServerPeripheralDeviceAPI.executeFunction(device._id, 'getSnapshot')
-					)
+					const deviceSnapshot = await PeripheralDeviceAPI.executeFunction(device._id, 'getSnapshot')
 
 					logger.info('Got snapshot from device "' + device._id + '"')
 					return {
@@ -483,11 +488,11 @@ async function handleResponse(response: ServerResponse, snapshotFcn: () => Promi
 		response.end(content)
 	} catch (e) {
 		response.setHeader('Content-Type', 'text/plain')
-		response.statusCode = e.errorCode || 500
-		response.end('Error: ' + e.toString())
+		response.statusCode = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
+		response.end('Error: ' + stringifyError(e))
 
-		if (e.errorCode !== 404) {
-			logger.error(e)
+		if (response.statusCode !== 404) {
+			logger.error(stringifyError(e))
 		}
 	}
 }
@@ -570,9 +575,10 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 	// @ts-ignore is's not really a snapshot here:
 	if (snapshot.externalId && snapshot.segments && snapshot.type === 'mos') {
 		// Special: Not a snapshot, but a datadump of a MOS rundown
-		const studio = Studios.findOne(Meteor.settings.manualSnapshotIngestStudioId || 'studio0')
-		if (studio) {
-			importIngestRundown(studio._id, snapshot)
+		const studioId: StudioId = Meteor.settings.manualSnapshotIngestStudioId || 'studio0'
+		const studioExists = checkStudioExists(studioId)
+		if (studioExists) {
+			importIngestRundown(studioId, snapshot as unknown as IngestRundown)
 			return
 		}
 		throw new Meteor.Error(500, `No Studio found`)
@@ -686,10 +692,10 @@ export async function restoreFromRundownPlaylistSnapshot(
 	// Migrate old data:
 	// 1.12.0 Release 24:
 	const partSegmentIds: { [partId: string]: SegmentId } = {}
-	_.each(snapshot.parts, (part) => {
+	for (const part of snapshot.parts) {
 		partSegmentIds[unprotectString(part._id)] = part.segmentId
-	})
-	_.each(snapshot.pieces, (piece) => {
+	}
+	for (const piece of snapshot.pieces) {
 		const pieceOld = piece as any as Partial<Piece_1_11_0>
 		if (pieceOld.rundownId) {
 			piece.startRundownId = pieceOld.rundownId
@@ -700,77 +706,124 @@ export async function restoreFromRundownPlaylistSnapshot(
 			delete pieceOld.partId
 			piece.startSegmentId = partSegmentIds[unprotectString(piece.startPartId)]
 		}
-	})
+	}
 
 	// List any ids that need updating on other documents
-	const rundownIdMap: { [key: string]: RundownId } = {}
+	const rundownIdMap = new Map<RundownId, RundownId>()
 	const getNewRundownId = (oldRundownId: RundownId) => {
-		return rundownIdMap[unprotectString(oldRundownId)]
-	}
-	_.each(snapshot.rundowns, (rd) => {
-		const oldId = rd._id
-		rundownIdMap[unprotectString(oldId)] = rd._id = getRandomId()
-	})
-	const partIdMap: { [key: string]: PartId } = {}
-	_.each(snapshot.parts, (part) => {
-		const oldId = part._id
-		partIdMap[unprotectString(oldId)] = part._id = part.externalId
-			? getPartId(getNewRundownId(part.rundownId), part.externalId)
-			: getRandomId()
-	})
-	const partInstanceIdMap: { [key: string]: PartInstanceId } = {}
-	_.each(snapshot.partInstances, (partInstance) => {
-		const oldId = partInstance._id
-		partInstanceIdMap[unprotectString(oldId)] = partInstance._id = getRandomId()
-		partInstance.part._id = partIdMap[unprotectString(partInstance.part._id)] || getRandomId()
-	})
-	const segmentIdMap: { [key: string]: SegmentId } = {}
-	_.each(snapshot.segments, (segment) => {
-		const oldId = segment._id
-		segmentIdMap[unprotectString(oldId)] = segment._id = getSegmentId(
-			getNewRundownId(segment.rundownId),
-			segment.externalId
-		)
-	})
-	const pieceIdMap: { [key: string]: PieceId } = {}
-	_.each(snapshot.pieces, (piece) => {
-		const oldId = piece._id
-		piece.startRundownId = rundownIdMap[unprotectString(piece.startRundownId)]
-		piece.startPartId = partIdMap[unprotectString(piece.startPartId)]
-		piece.startSegmentId = segmentIdMap[unprotectString(piece.startSegmentId)]
-		pieceIdMap[unprotectString(oldId)] = piece._id = getRandomId()
-	})
-	_.each(snapshot.adLibPieces, (piece) => {
-		const oldId = piece._id
-		piece.rundownId = rundownIdMap[unprotectString(piece.rundownId)]
-		if (piece.partId) piece.partId = partIdMap[unprotectString(piece.partId)]
-		pieceIdMap[unprotectString(oldId)] = piece._id = getRandomId()
-	})
-
-	const pieceInstanceIdMap: { [key: string]: PieceInstanceId } = {}
-	_.each(snapshot.pieceInstances, (pieceInstance) => {
-		const oldId = pieceInstance._id
-		pieceInstanceIdMap[unprotectString(oldId)] = pieceInstance._id = getRandomId()
-		pieceInstance.piece._id = pieceIdMap[unprotectString(pieceInstance.piece._id)] || getRandomId()
-		if (pieceInstance.infinite) {
-			pieceInstance.infinite.infinitePieceId = pieceIdMap[unprotectString(pieceInstance.infinite.infinitePieceId)]
+		const rundownId = rundownIdMap.get(oldRundownId)
+		if (!rundownId) {
+			throw new Meteor.Error(500, `Could not find new rundownId for "${oldRundownId}"`)
 		}
-	})
+		return rundownId
+	}
+	for (const rd of snapshot.rundowns) {
+		const oldId = rd._id
+		rd._id = getRandomId()
+		rundownIdMap.set(oldId, rd._id)
+	}
+	const partIdMap = new Map<PartId, PartId>()
+	for (const part of snapshot.parts) {
+		const oldId = part._id
+		part._id = part.externalId ? getPartId(getNewRundownId(part.rundownId), part.externalId) : getRandomId()
+
+		partIdMap.set(oldId, part._id)
+	}
+	const partInstanceIdMap = new Map<PartInstanceId, PartInstanceId>()
+	for (const partInstance of snapshot.partInstances) {
+		const oldId = partInstance._id
+		partInstance._id = getRandomId()
+		partInstanceIdMap.set(oldId, partInstance._id)
+		partInstance.part._id = partIdMap.get(partInstance.part._id) || getRandomId()
+	}
+	const segmentIdMap = new Map<SegmentId, SegmentId>()
+	for (const segment of snapshot.segments) {
+		const oldId = segment._id
+		segment._id = getSegmentId(getNewRundownId(segment.rundownId), segment.externalId)
+		segmentIdMap.set(oldId, segment._id)
+	}
+	type AnyPieceId = PieceId | AdLibActionId | RundownBaselineAdLibActionId
+	const pieceIdMap = new Map<AnyPieceId, AnyPieceId>()
+	for (const piece of snapshot.pieces) {
+		const oldId = piece._id
+		piece.startRundownId = getNewRundownId(piece.startRundownId)
+		piece.startPartId =
+			partIdMap.get(piece.startPartId) ||
+			getRandomIdAndWarn(`piece.startPartId=${piece.startPartId} of piece=${piece._id}`)
+		piece.startSegmentId =
+			segmentIdMap.get(piece.startSegmentId) ||
+			getRandomIdAndWarn(`piece.startSegmentId=${piece.startSegmentId} of piece=${piece._id}`)
+		piece._id = getRandomId()
+		pieceIdMap.set(oldId, piece._id)
+	}
+	for (const adlib of [
+		...snapshot.adLibPieces,
+		...snapshot.adLibActions,
+		...snapshot.baselineAdlibs,
+		...snapshot.baselineAdLibActions,
+	]) {
+		const oldId = adlib._id
+		if (adlib.partId) adlib.partId = partIdMap.get(adlib.partId)
+		adlib._id = getRandomId()
+		pieceIdMap.set(oldId, adlib._id)
+	}
+
+	for (const pieceInstance of snapshot.pieceInstances) {
+		pieceInstance._id = getRandomId()
+
+		pieceInstance.piece._id = (pieceIdMap.get(pieceInstance.piece._id) || getRandomId()) as PieceId // Note: don't warn if not found, as the piece may have been deleted
+		if (pieceInstance.infinite) {
+			pieceInstance.infinite.infinitePieceId =
+				pieceIdMap.get(pieceInstance.infinite.infinitePieceId) || getRandomId() // Note: don't warn if not found, as the piece may have been deleted
+		}
+	}
 
 	if (snapshot.playlist.currentPartInstanceId) {
 		snapshot.playlist.currentPartInstanceId =
-			partInstanceIdMap[unprotectString(snapshot.playlist.currentPartInstanceId)] ||
-			snapshot.playlist.currentPartInstanceId
+			partInstanceIdMap.get(snapshot.playlist.currentPartInstanceId) || snapshot.playlist.currentPartInstanceId
 	}
 	if (snapshot.playlist.nextPartInstanceId) {
 		snapshot.playlist.nextPartInstanceId =
-			partInstanceIdMap[unprotectString(snapshot.playlist.nextPartInstanceId)] ||
-			snapshot.playlist.nextPartInstanceId
+			partInstanceIdMap.get(snapshot.playlist.nextPartInstanceId) || snapshot.playlist.nextPartInstanceId
 	}
 	if (snapshot.playlist.previousPartInstanceId) {
 		snapshot.playlist.previousPartInstanceId =
-			partInstanceIdMap[unprotectString(snapshot.playlist.previousPartInstanceId)] ||
-			snapshot.playlist.previousPartInstanceId
+			partInstanceIdMap.get(snapshot.playlist.previousPartInstanceId) || snapshot.playlist.previousPartInstanceId
+	}
+
+	for (const expectedPackage of snapshot.expectedPackages) {
+		switch (expectedPackage.fromPieceType) {
+			case ExpectedPackageDBType.PIECE:
+			case ExpectedPackageDBType.ADLIB_PIECE:
+			case ExpectedPackageDBType.ADLIB_ACTION:
+			case ExpectedPackageDBType.BASELINE_ADLIB_PIECE:
+			case ExpectedPackageDBType.BASELINE_ADLIB_ACTION: {
+				expectedPackage.pieceId =
+					pieceIdMap.get(expectedPackage.pieceId) ||
+					getRandomIdAndWarn(`expectedPackage.pieceId=${expectedPackage.pieceId}`)
+				expectedPackage._id = getExpectedPackageId(expectedPackage.pieceId, expectedPackage.blueprintPackageId)
+
+				break
+			}
+			case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS: {
+				expectedPackage._id = getExpectedPackageId(
+					expectedPackage.rundownId,
+					expectedPackage.blueprintPackageId
+				)
+				break
+			}
+			case ExpectedPackageDBType.BUCKET_ADLIB:
+			case ExpectedPackageDBType.BUCKET_ADLIB_ACTION:
+			case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS: {
+				// ignore, these are not present in the rundown snapshot anyway.
+				logger.warn(`Unexpected ExpectedPackage in snapshot: ${JSON.stringify(expectedPackage)}`)
+				break
+			}
+
+			default:
+				assertNever(expectedPackage)
+				break
+		}
 	}
 
 	const rundownIds = snapshot.rundowns.map((r) => r._id)
@@ -789,17 +842,17 @@ export async function restoreFromRundownPlaylistSnapshot(
 	>(objs: undefined | T[], updateId: boolean): T[] {
 		const updateIds = (obj: T) => {
 			if (obj.rundownId) {
-				obj.rundownId = rundownIdMap[unprotectString(obj.rundownId)]
+				obj.rundownId = getNewRundownId(obj.rundownId)
 			}
 
 			if (obj.partId) {
-				obj.partId = partIdMap[unprotectString(obj.partId)]
+				obj.partId = partIdMap.get(obj.partId) || getRandomId()
 			}
 			if (obj.segmentId) {
-				obj.segmentId = segmentIdMap[unprotectString(obj.segmentId)]
+				obj.segmentId = segmentIdMap.get(obj.segmentId) || getRandomId()
 			}
 			if (obj.partInstanceId) {
-				obj.partInstanceId = partInstanceIdMap[unprotectString(obj.partInstanceId)]
+				obj.partInstanceId = partInstanceIdMap.get(obj.partInstanceId) || getRandomId()
 			}
 
 			if (updateId) {
@@ -856,9 +909,18 @@ export async function restoreFromRundownPlaylistSnapshot(
 			{ rundownId: { $in: rundownIds } },
 			updateItemIds(snapshot.expectedPlayoutItems || [], false)
 		),
+		saveIntoDb(
+			ExpectedPackages,
+			{ rundownId: { $in: rundownIds } },
+			updateItemIds(snapshot.expectedPackages || [], false)
+		),
 	])
 
 	logger.info(`Restore done`)
+}
+function getRandomIdAndWarn<T extends ProtectedString<any>>(name: string): T {
+	logger.warn(`Couldn't find "${name}" when restoring snapshot`)
+	return getRandomId<T>()
 }
 async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void> {
 	logger.info(`Restoring from system snapshot "${snapshot.snapshot.name}"`)
@@ -879,6 +941,12 @@ async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void
 	snapshot.showStyleVariants = _.map(snapshot.showStyleVariants, (showStyleVariant) => {
 		return migrateConfigToBlueprintConfigOnObject(showStyleVariant)
 	})
+	if (snapshot.blueprints) {
+		snapshot.blueprints = _.map(snapshot.blueprints, (bp) => {
+			bp.hasCode = !!bp.code
+			return bp
+		})
+	}
 
 	const changes = sumChanges(
 		...(await Promise.all([
@@ -923,14 +991,13 @@ export async function internalStoreSystemSnapshot(
 	return storeSnaphot(s, organizationId, reason)
 }
 export async function storeRundownPlaylistSnapshot(
-	context: MethodContext,
+	access: BasicAccessContext,
 	playlistId: RundownPlaylistId,
 	reason: string,
 	full?: boolean
 ): Promise<SnapshotId> {
 	check(playlistId, String)
-	const { organizationId } = OrganizationContentWriteAccess.snapshot(context)
-	return internalStoreRundownPlaylistSnapshot(organizationId, playlistId, reason, full)
+	return internalStoreRundownPlaylistSnapshot(access.organizationId, playlistId, reason, full)
 }
 /** Take and store a rundoen playlist snapshot. For internal use only, performs no access control. */
 export async function internalStoreRundownPlaylistSnapshot(
@@ -1064,11 +1131,11 @@ PickerPOST.route('/snapshot/restore', async (params, req: IncomingMessage, respo
 		response.end(content)
 	} catch (e) {
 		response.setHeader('Content-Type', 'text/plain')
-		response.statusCode = e.errorCode || 500
-		response.end('Error: ' + e.toString())
+		response.statusCode = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
+		response.end('Error: ' + stringifyError(e))
 
-		if (e.errorCode !== 404) {
-			logger.error(e)
+		if (response.statusCode !== 404) {
+			logger.error(stringifyError(e))
 		}
 	}
 })
@@ -1102,7 +1169,9 @@ class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
 		return storeSystemSnapshot(this, studioId, reason)
 	}
 	async storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
-		return storeRundownPlaylistSnapshot(this, playlistId, reason)
+		check(playlistId, String)
+		const access = OrganizationContentWriteAccess.snapshot(this)
+		return storeRundownPlaylistSnapshot(access, playlistId, reason)
 	}
 	async storeDebugSnapshot(studioId: StudioId, reason: string) {
 		return storeDebugSnapshot(this, studioId, reason)

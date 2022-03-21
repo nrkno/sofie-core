@@ -125,13 +125,15 @@ class RundownLayoutsRegistry {
 	}
 
 	private wrapToCustomizableRegionLayout(
-		layouts: Map<RundownLayoutType, LayoutDescriptor>
+		layouts: Map<RundownLayoutType, LayoutDescriptor>,
+		t: TFunction
 	): CustomizableRegionLayout[] {
 		return Array.from(layouts.entries()).map(([layoutType, descriptor]) => {
 			return literal<CustomizableRegionLayout>({
 				_id: layoutType,
 				type: layoutType,
 				...descriptor,
+				filtersTitle: descriptor.filtersTitle ? t(descriptor.filtersTitle) : undefined,
 			})
 		})
 	}
@@ -141,31 +143,31 @@ class RundownLayoutsRegistry {
 			{
 				_id: CustomizableRegions.RundownView,
 				title: t('Rundown View Layouts'),
-				layouts: this.wrapToCustomizableRegionLayout(this.rundownViewLayouts),
+				layouts: this.wrapToCustomizableRegionLayout(this.rundownViewLayouts, t),
 				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?rundownViewLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.Shelf,
 				title: t('Shelf Layouts'),
-				layouts: this.wrapToCustomizableRegionLayout(this.shelfLayouts),
+				layouts: this.wrapToCustomizableRegionLayout(this.shelfLayouts, t),
 				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}/shelf?layout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.MiniShelf,
 				title: t('Mini Shelf Layouts'),
-				layouts: this.wrapToCustomizableRegionLayout(this.miniShelfLayouts),
+				layouts: this.wrapToCustomizableRegionLayout(this.miniShelfLayouts, t),
 				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?miniShelfLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.RundownHeader,
 				title: t('Rundown Header Layouts'),
-				layouts: this.wrapToCustomizableRegionLayout(this.rundownHeaderLayouts),
+				layouts: this.wrapToCustomizableRegionLayout(this.rundownHeaderLayouts, t),
 				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?rundownHeaderLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.PresenterView,
 				title: t('Presenter View Layouts'),
-				layouts: this.wrapToCustomizableRegionLayout(this.presenterViewLayouts),
+				layouts: this.wrapToCustomizableRegionLayout(this.presenterViewLayouts, t),
 				navigationLink: (studioId, layoutId) => `/countdowns/${studioId}/presenter?presenterLayout=${layoutId}`,
 			},
 		]
@@ -182,7 +184,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.FILTER,
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 			RundownLayoutElementType.NEXT_INFO,
-			RundownLayoutElementType.KEYBOARD_PREVIEW,
+			// RundownLayoutElementType.KEYBOARD_PREVIEW, // This is used by TV2
 		],
 	})
 	registry.registerShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
@@ -194,7 +196,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 			RundownLayoutElementType.NEXT_INFO,
 			RundownLayoutElementType.TEXT_LABEL,
-			RundownLayoutElementType.KEYBOARD_PREVIEW,
+			// RundownLayoutElementType.KEYBOARD_PREVIEW, // This is used by TV2
 			RundownLayoutElementType.MINI_RUNDOWN,
 		],
 	})

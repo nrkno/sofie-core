@@ -105,6 +105,7 @@ describe('Context', () => {
 		const userNotesContextMethods = {
 			notifyUserError: () => undefined,
 			notifyUserWarning: () => undefined,
+			notifyUserInfo: () => undefined,
 		}
 		const validUserNotesContext = Object.assign({}, validCommonContext, userNotesContextMethods)
 
@@ -144,6 +145,18 @@ describe('Context', () => {
 
 		it('should return false for an object where notifyUserWarning is not a function', () => {
 			const invalid = Object.assign({}, validUserNotesContext, { notifyUserWarning: { hehe: 'lol' } })
+
+			expect(isUserNotesContext(invalid)).toBe(false)
+		})
+
+		it('should return false for an object where notifyUserInfo is missing', () => {
+			const invalid = Object.assign({}, validUserNotesContext, { notifyUserInfo: undefined })
+
+			expect(isUserNotesContext(invalid)).toBe(false)
+		})
+
+		it('should return false for an object where notifyUserInfo is not a function', () => {
+			const invalid = Object.assign({}, validUserNotesContext, { notifyUserInfo: { hehe: 'lol' } })
 
 			expect(isUserNotesContext(invalid)).toBe(false)
 		})

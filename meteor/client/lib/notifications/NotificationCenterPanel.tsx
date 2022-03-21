@@ -9,7 +9,7 @@ import { ContextMenuTrigger, ContextMenu, MenuItem } from '@jstarpl/react-contex
 import * as _ from 'underscore'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { translateMessage, isTranslatableMessage } from '../../../lib/api/TranslatableMessage'
+import { translateMessage, isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { CriticalIcon, WarningIcon, CollapseChevrons, InformationIcon } from '../ui/icons/notifications'
 import update from 'immutability-helper'
 import { i18nTranslator } from '../../ui/i18n'
@@ -417,7 +417,11 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 			})
 
 			return this.state.displayList ? (
-				<div className="notification-pop-ups">
+				<div
+					className={ClassNames('notification-pop-ups', {
+						'notification-pop-ups--empty': displayList.length === 0,
+					})}
+				>
 					<VelocityReact.VelocityTransitionGroup
 						enter={{
 							animation: {

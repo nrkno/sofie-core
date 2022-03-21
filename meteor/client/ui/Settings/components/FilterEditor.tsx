@@ -16,10 +16,9 @@ import {
 	RundownLayoutEndWords,
 	RundownLayoutExternalFrame,
 	RundownLayoutFilterBase,
+	RundownLayoutNextInfo,
 	RundownLayoutPartName,
 	RundownLayoutPartTiming,
-	RundownLayoutKeyboardPreview,
-	RundownLayoutNextInfo,
 	RundownLayoutPieceCountdown,
 	RundownLayoutPlaylistEndTimer,
 	RundownLayoutPlaylistName,
@@ -33,9 +32,8 @@ import {
 	RundownLayoutSytemStatus,
 	RundownLayoutTextLabel,
 	RundownLayoutTimeOfDay,
-	DashboardPanelUnit,
-	DashboardPanelBase,
 	RundownLayoutMiniRundown,
+	RundownLayoutKeyboardPreview,
 } from '../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -71,7 +69,7 @@ export default withTranslation()(
 			})
 		}
 
-		renderFilter(
+		renderRundownLayoutFilter(
 			item: RundownLayoutBase,
 			tab: RundownLayoutFilterBase,
 			index: number,
@@ -141,7 +139,7 @@ export default withTranslation()(
 									</label>
 								</div>
 							)}
-							{this.renderDashboardLayoutSettings(item, index, { scale: 0 })}
+							{this.renderDashboardLayoutSettings(item, index)}
 							{!isList && (
 								<React.Fragment>
 									<div className="mod mvs mhs">
@@ -567,7 +565,20 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Display Rank')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.rank`}
+								obj={item}
+								type="float"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -663,7 +674,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, { scale: 0 })}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
 					{isDashboardLayout && (
 						<React.Fragment>
 							<div className="mod mvs mhs">
@@ -721,7 +732,74 @@ export default withTranslation()(
 							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
 						/>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
+
+		renderNextInfo(
+			item: RundownLayoutBase,
+			tab: RundownLayoutNextInfo,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.name`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Show segment name')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.showSegmentName`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Show part title')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.showPartTitle`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide for dynamically inserted parts')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideForDynamicallyInsertedParts`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -789,7 +867,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -896,35 +974,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
-				</React.Fragment>
-			)
-		}
-
-		renderNextBreakTiming(
-			item: RundownLayoutBase,
-			tab: RundownLayoutNextBreakTiming,
-			index: number,
-			isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Name')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.name`}
-								obj={item}
-								type="text"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-						</label>
-					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -971,11 +1021,54 @@ export default withTranslation()(
 						t('Script Source Layers'),
 						t('Source layers containing script')
 					)}
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
 
+		renderSegmentTiming(
+			item: RundownLayoutBase,
+			tab: RundownLayoutSegmentTiming,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			const { t } = this.props
+
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Type')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${this.props.index}.timingType`}
+								obj={this.props.item}
+								options={['count_down', 'count_up']}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Label')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideLabel`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
+				</React.Fragment>
+			)
+		}
 		renderSegmentCountDown(
 			item: RundownLayoutBase,
 			tab: RundownLayoutSegmentTiming,
@@ -1015,7 +1108,7 @@ export default withTranslation()(
 						</label>
 					</div>
 					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1059,7 +1152,7 @@ export default withTranslation()(
 						</label>
 					</div>
 					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1100,7 +1193,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1141,7 +1234,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1169,7 +1262,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1211,7 +1304,7 @@ export default withTranslation()(
 							></EditAttribute>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1267,7 +1360,7 @@ export default withTranslation()(
 							<span className="text-s dimmed">{t('Use color of primary piece as background of panel')}</span>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1309,7 +1402,7 @@ export default withTranslation()(
 							></EditAttribute>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1337,7 +1430,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1365,7 +1458,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1406,7 +1499,7 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
@@ -1494,118 +1587,64 @@ export default withTranslation()(
 			)
 		}
 
-		renderDashboardLayoutSettings(
-			item: RundownLayoutBase,
-			index: number,
-			options?: {
-				[P in keyof DashboardPanelBase]?: 0
-			}
-		) {
+		renderDashboardLayoutSettings(item: RundownLayoutBase, index: number, scalable?: boolean) {
 			const { t } = this.props
 
 			return (
 				<React.Fragment>
-					{!options?.x && (
-						<div className="mod mvs mhs">
-							<label className="field">
-								{t('X')}
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.x`}
-									obj={item}
-									type="float"
-									collection={RundownLayouts}
-									className="input text-input input-l"
-								/>
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.xUnit`}
-									obj={item}
-									options={Object.values(DashboardPanelUnit)}
-									type="dropdown"
-									collection={RundownLayouts}
-									className="input text-input"
-									mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
-								/>
-							</label>
-						</div>
-					)}
-					{!options?.y && (
-						<div className="mod mvs mhs">
-							<label className="field">
-								{t('Y')}
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.y`}
-									obj={item}
-									type="float"
-									collection={RundownLayouts}
-									className="input text-input input-l"
-								/>
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.yUnit`}
-									obj={item}
-									options={Object.values(DashboardPanelUnit)}
-									type="dropdown"
-									collection={RundownLayouts}
-									className="input text-input"
-									mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
-								/>
-							</label>
-						</div>
-					)}
-					{!options?.width && (
-						<div className="mod mvs mhs">
-							<label className="field">
-								{t('Width')}
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.width`}
-									obj={item}
-									type="float"
-									collection={RundownLayouts}
-									className="input text-input input-l"
-								/>
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.widthUnit`}
-									obj={item}
-									options={Object.values(DashboardPanelUnit)}
-									type="dropdown"
-									collection={RundownLayouts}
-									className="input text-input"
-									mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
-								/>
-							</label>
-						</div>
-					)}
-					{!options?.height && (
-						<div className="mod mvs mhs">
-							<label className="field">
-								{t('Height')}
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.height`}
-									obj={item}
-									type="float"
-									collection={RundownLayouts}
-									className="input text-input input-l"
-								/>
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.heightUnit`}
-									obj={item}
-									options={Object.values(DashboardPanelUnit)}
-									type="dropdown"
-									collection={RundownLayouts}
-									className="input text-input"
-									mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
-								/>
-							</label>
-						</div>
-					)}
-					{!options?.scale && (
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('X')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.x`}
+								obj={item}
+								type="float"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Y')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.y`}
+								obj={item}
+								type="float"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Width')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.width`}
+								obj={item}
+								type="float"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Height')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.height`}
+								obj={item}
+								type="float"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							/>
+						</label>
+					</div>
+					{scalable && (
 						<div className="mod mvs mhs">
 							<label className="field">
 								{t('Scale')}
@@ -1622,37 +1661,22 @@ export default withTranslation()(
 					)}
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Display Rank')}
+							{t('Custom Classes')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={`filters.${index}.rank`}
+								attribute={`filters.${index}.customClasses`}
 								obj={item}
-								type="float"
+								type="text"
 								collection={RundownLayouts}
 								className="input text-input input-l"
+								mutateDisplayValue={(v: string[] | undefined) => v?.join(',')}
+								mutateUpdateValue={(v: string | undefined) => v?.split(',')}
 							/>
+							<span className="text-s dimmed">
+								Add custom css classes for customization. Separate classes with a &lsquo;,&rsquo;
+							</span>
 						</label>
 					</div>
-					{!options?.customClasses && (
-						<div className="mod mvs mhs">
-							<label className="field">
-								{t('Custom Classes')}
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute={`filters.${index}.customClasses`}
-									obj={item}
-									type="text"
-									collection={RundownLayouts}
-									className="input text-input input-l"
-									mutateDisplayValue={(v: string[] | undefined) => v?.join(',')}
-									mutateUpdateValue={(v: string | undefined) => v?.split(',')}
-								/>
-								<span className="text-s dimmed">
-									Add custom css classes for customization. Separate classes with a &lsquo;,&rsquo;
-								</span>
-							</label>
-						</div>
-					)}
 				</React.Fragment>
 			)
 		}
@@ -1680,14 +1704,14 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
 
-		renderNextInfo(
+		renderNextBreakTiming(
 			item: RundownLayoutBase,
-			tab: RundownLayoutNextInfo,
+			tab: RundownLayoutNextBreakTiming,
 			index: number,
 			isRundownLayout: boolean,
 			isDashboardLayout: boolean
@@ -1708,50 +1732,10 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Show segment name')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.showSegmentName`}
-								obj={item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							/>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Show part title')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.showPartTitle`}
-								obj={item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							/>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Hide for dynamically inserted parts')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.hideForDynamicallyInsertedParts`}
-								obj={item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							/>
-						</label>
-					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, { height: 0 })}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
 		}
-
 		renderMiniRundown(
 			item: RundownLayoutBase,
 			tab: RundownLayoutMiniRundown,
@@ -1775,9 +1759,62 @@ export default withTranslation()(
 							/>
 						</label>
 					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index, true)}
 				</React.Fragment>
 			)
+		}
+
+		renderFilter(
+			item: RundownLayoutBase,
+			filter: RundownLayoutElementBase,
+			index: number,
+			isRundownLayout: boolean,
+			isDashboardLayout: boolean
+		) {
+			if (RundownLayoutsAPI.isFilter(filter)) {
+				return this.renderRundownLayoutFilter(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isExternalFrame(filter)) {
+				return this.renderFrame(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isAdLibRegion(filter)) {
+				return this.renderAdLibRegion(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isPieceCountdown(filter)) {
+				return this.renderPieceCountdown(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isKeyboardMap(filter)) {
+				return this.renderKeyboardLayout(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isNextInfo(filter)) {
+				return this.renderNextInfo(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isPlaylistStartTimer(filter)) {
+				return this.renderPlaylistStartTimer(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isPlaylistEndTimer(filter)) {
+				return this.renderPlaylistEndTimer(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isEndWords(filter)) {
+				return this.renderEndWords(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isSegmentTiming(filter)) {
+				return this.renderSegmentTiming(item, filter, index, isRundownLayout, isDashboardLayout)
+				// return this.this.renderSegmentCountDown(item, filter, index, isRundownLayout, isDashboardLayout) // TODOSYNC: TV2 uses a different methid for this
+			} else if (RundownLayoutsAPI.isPartTiming(filter)) {
+				return this.renderPartTiming(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isTextLabel(filter)) {
+				return this.renderTextLabel(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isPlaylistName(filter)) {
+				return this.renderPlaylistName(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isStudioName(filter)) {
+				return this.renderStudioName(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isSegmentName(filter)) {
+				return this.renderSegmentName(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isPartName(filter)) {
+				return this.renderPartName(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isColoredBox(filter)) {
+				return this.renderColoredBox(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isTimeOfDay(filter)) {
+				return this.renderTimeOfDay(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isShowStyleDisplay(filter)) {
+				return this.renderShowStyleDisplay(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isSystemStatus(filter)) {
+				return this.renderSystemStatus(item, filter, index, isRundownLayout, isDashboardLayout)
+			} else if (RundownLayoutsAPI.isMiniRundown(filter)) {
+				return this.renderMiniRundown(item, filter, index, isRundownLayout, isDashboardLayout)
+			}
 		}
 
 		render() {
@@ -1827,169 +1864,7 @@ export default withTranslation()(
 							</label>
 						</div>
 					</div>
-					{RundownLayoutsAPI.isFilter(this.props.filter)
-						? this.renderFilter(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isExternalFrame(this.props.filter)
-						? this.renderFrame(this.props.item, this.props.filter, this.props.index, isRundownLayout, isDashboardLayout)
-						: RundownLayoutsAPI.isAdLibRegion(this.props.filter)
-						? this.renderAdLibRegion(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isPieceCountdown(this.props.filter)
-						? this.renderPieceCountdown(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isKeyboardMap(this.props.filter)
-						? this.renderKeyboardLayout(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isNextInfo(this.props.filter)
-						? this.renderNextInfo(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isPlaylistStartTimer(this.props.filter)
-						? this.renderPlaylistStartTimer(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isPlaylistEndTimer(this.props.filter)
-						? this.renderPlaylistEndTimer(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isEndWords(this.props.filter)
-						? this.renderEndWords(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isSegmentTiming(this.props.filter)
-						? this.renderSegmentCountDown(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isPartTiming(this.props.filter)
-						? this.renderPartTiming(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isTextLabel(this.props.filter)
-						? this.renderTextLabel(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isPlaylistName(this.props.filter)
-						? this.renderPlaylistName(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isStudioName(this.props.filter)
-						? this.renderStudioName(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isSegmentName(this.props.filter)
-						? this.renderSegmentName(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isPartName(this.props.filter)
-						? this.renderPartName(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isColoredBox(this.props.filter)
-						? this.renderColoredBox(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isTimeOfDay(this.props.filter)
-						? this.renderTimeOfDay(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isShowStyleDisplay(this.props.filter)
-						? this.renderShowStyleDisplay(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isSystemStatus(this.props.filter)
-						? this.renderSystemStatus(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: RundownLayoutsAPI.isMiniRundown(this.props.filter)
-						? this.renderMiniRundown(
-								this.props.item,
-								this.props.filter,
-								this.props.index,
-								isRundownLayout,
-								isDashboardLayout
-						  )
-						: undefined}
+					{this.renderFilter(this.props.item, this.props.filter, this.props.index, isRundownLayout, isDashboardLayout)}
 				</div>
 			)
 		}

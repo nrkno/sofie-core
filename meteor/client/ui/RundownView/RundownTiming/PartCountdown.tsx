@@ -5,7 +5,7 @@ import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface IPartCountdownProps {
 	partId?: PartId

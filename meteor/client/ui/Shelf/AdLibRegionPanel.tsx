@@ -7,14 +7,16 @@ import {
 	RundownLayoutAdLibRegionRole,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition, IDashboardPanelTrackedProps } from './DashboardPanel'
+import { dashboardElementStyle, IDashboardPanelTrackedProps } from './DashboardPanel'
 import ClassNames from 'classnames'
-import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, matchFilter } from './AdLibPanel'
+import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './AdLibPanel'
+import { matchFilter } from './AdLibListView'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import {
 	AdLibPieceUi,
 	getNextPieceInstancesGrouped,
@@ -132,7 +134,9 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 	take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+			doUserAction(t, e, UserAction.TAKE, (e) =>
+				MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+			)
 		}
 	}
 
@@ -185,14 +189,12 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		return (
 			<div
 				className="adlib-region-panel"
-				style={_.extend(
-					RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-						? dashboardElementPosition(this.props.panel as DashboardLayoutAdLibRegion)
-						: {},
-					{
-						visibility: this.props.visible ? 'visible' : 'hidden',
-					}
-				)}
+				style={{
+					visibility: this.props.visible ? 'visible' : 'hidden',
+					...(RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+						? dashboardElementStyle(this.props.panel as DashboardLayoutAdLibRegion)
+						: {}),
+				}}
 			>
 				<div
 					className={ClassNames('adlib-region-panel__image-container', {
@@ -230,7 +232,7 @@ export const AdLibRegionPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
-		const studio = props.playlist.getStudio()
+		const studio = RundownPlaylistCollectionUtil.getStudio(props.playlist)
 		const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
 			props.playlist,
 			props.showStyleBase

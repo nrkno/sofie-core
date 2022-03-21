@@ -4,12 +4,13 @@ import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import { dropDeprecatedDatabases, getDeprecatedDatabases } from './deprecatedDatabases/1_32_0'
 import semver from 'semver'
 import * as _ from 'underscore'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 // Release 32
 export const addSteps = addMigrationSteps('1.32.0', [
-	ensureCollectionProperty('Studios', {}, 'packageContainers', {}),
-	ensureCollectionProperty('Studios', {}, 'previewContainerIds', {}),
-	ensureCollectionProperty('Studios', {}, 'thumbnailContainerIds', {}),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'packageContainers', {}),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'previewContainerIds', {}),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'thumbnailContainerIds', {}),
 
 	{
 		id: 'Drop removed collections r32',

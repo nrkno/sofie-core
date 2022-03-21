@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import ClassNames from 'classnames'
 import {
 	DashboardLayoutTextLabel,
@@ -8,7 +7,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 interface ITextLabelPanelProps {
@@ -35,14 +34,7 @@ export class TextLabelPanel extends MeteorReactComponent<ITextLabelPanelProps, I
 					'text-label-panel',
 					isDashboardLayout ? (panel as DashboardLayoutTextLabel).customClasses : undefined
 				)}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutTextLabel) }),
-								fontSize: ((panel as DashboardLayoutTextLabel).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutTextLabel) : {}}
 			>
 				<div className="wrapper">
 					<span className="text">{this.props.panel.text}</span>

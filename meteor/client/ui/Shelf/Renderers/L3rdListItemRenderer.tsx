@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import ClassNames from 'classnames'
-import { RundownAPI } from '../../../../lib/api/rundown'
 import { RundownUtils } from '../../../lib/rundown'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
-import { NoraContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, NoraContent, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
@@ -13,6 +12,7 @@ import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInsp
 import { PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
 import { AdLibPieceUi } from '../../../lib/shelf'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -108,7 +108,7 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 
 	const handleOnMouseLeave = () => setShowMiniInspector(false)
 
-	const virtualPiece: PieceInstancePiece = useMemo(
+	const virtualPiece: Omit<PieceInstancePiece, 'timelineObjectsString'> = useMemo(
 		() => ({
 			...props.adLibListItem,
 			enable: {
@@ -116,6 +116,7 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 			},
 			startPartId: protectString(''),
 			invalid: !!props.adLibListItem.invalid,
+			pieceType: IBlueprintPieceType.Normal,
 		}),
 		[props.adLibListItem]
 	)
@@ -139,9 +140,9 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 					'adlib-panel__list-view__list__table__cell--icon',
 					props.layer && RundownUtils.getSourceLayerClassName(props.layer.type),
 					{
-						'source-missing': props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
-						'source-broken': props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': props.status === RundownAPI.PieceStatusCode.UNKNOWN,
+						'source-missing': props.status === PieceStatusCode.SOURCE_MISSING,
+						'source-broken': props.status === PieceStatusCode.SOURCE_BROKEN,
+						'unknown-state': props.status === PieceStatusCode.UNKNOWN,
 					}
 				)}
 				ref={itemIcon}
@@ -178,7 +179,7 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 				{typeof sourceDuration === 'string' ? (
 					sourceDuration
 				) : typeof sourceDuration === 'number' ? (
-					<StyledTimecode time={sourceDuration} />
+					<StyledTimecode time={sourceDuration} studioSettings={props.studio?.settings} />
 				) : (
 					sourceDuration
 				)}

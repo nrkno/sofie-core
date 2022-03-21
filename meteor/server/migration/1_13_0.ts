@@ -4,6 +4,7 @@ import * as semver from 'semver'
 import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/1_13_0'
 import * as _ from 'underscore'
 import { removeCollectionProperty } from './lib'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 /*
  * **************************************************************************************
@@ -16,7 +17,7 @@ import { removeCollectionProperty } from './lib'
  */
 // Release 25
 export const addSteps = addMigrationSteps('1.13.0', [
-	removeCollectionProperty('Studios', {}, 'testToolsConfig.recording'),
+	removeCollectionProperty(CollectionName.Studios, {}, 'testToolsConfig.recording'),
 
 	{
 		id: 'Drop removed collections r25',

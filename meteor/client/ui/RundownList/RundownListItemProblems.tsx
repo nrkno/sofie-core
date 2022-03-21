@@ -1,5 +1,5 @@
 import React from 'react'
-import { INoteBase } from '../../../lib/api/notes'
+import { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 
 interface IRundownListItemProblemsProps {

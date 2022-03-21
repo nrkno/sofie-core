@@ -47,6 +47,7 @@ import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMe
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
 import { Spinner } from '../lib/Spinner'
+import { isRunningInPWA } from '../lib/lib'
 
 const NullComponent = () => null
 
@@ -163,9 +164,49 @@ export const App = translateWithTracker(() => {
 				document.querySelector('.rundown.active') === null
 			) {
 				// forceReload is marked as deprecated, but it's still usable
-				// tslint:disable-next-line
+				// @ts-ignore
 				setTimeout(() => window.location.reload(true))
 			}
+		}
+
+		private mountPWAFullScreenTrigger() {
+			document.addEventListener(
+				'mousedown',
+				(event) => {
+					event.preventDefault()
+
+					document.documentElement
+						.requestFullscreen({
+							navigationUI: 'auto',
+						})
+						.then(() => {
+							document.addEventListener(
+								'fullscreenchange',
+								() => {
+									this.mountPWAFullScreenTrigger()
+								},
+								{
+									once: true,
+								}
+							)
+						})
+						.catch((e) => console.error('Could not get FullScreen when running as a PWA', e))
+
+					// Use Keyboard API to lock the keyboard and disable all browser shortcuts
+					if ('keyboard' in navigator) {
+						// @ts-expect-error: Keyboard API isn't yet available in TypeScript DOM library,
+						// but we check for it's availability so it should be fine.
+						// Keyboard Lock: https://wicg.github.io/keyboard-lock/
+						navigator.keyboard
+							.lock()
+							.catch((e) => console.error('Could not get Keyboard Lock when running as a PWA', e))
+					}
+				},
+				{
+					once: true,
+					passive: false,
+				}
+			)
 		}
 
 		componentDidMount() {
@@ -188,10 +229,17 @@ export const App = translateWithTracker(() => {
 
 			setInterval(this.cronJob, CRON_INTERVAL)
 
-			document.body.classList.add('tv2')
 			const uiZoom = getUIZoom()
 			if (uiZoom !== 1) {
 				document.documentElement.style.fontSize = uiZoom * 16 + 'px'
+			}
+
+			if (isRunningInPWA()) {
+				this.mountPWAFullScreenTrigger()
+			} else {
+				window.addEventListener('appinstalled', () => {
+					this.mountPWAFullScreenTrigger()
+				})
 			}
 		}
 

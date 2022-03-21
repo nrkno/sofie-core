@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { stringifyError } from './lib'
 
 export interface LoggerInstanceFixed {
 	error: LeveledLogMethodFixed
@@ -30,21 +31,10 @@ let logger: LoggerInstanceFixed
 if (Meteor.isServer) {
 	const getLogMethod = (type) => {
 		return (...args) => {
-			args = _.map(args, (arg) => {
-				if (_.isObject(arg)) {
-					if (arg.toString) {
-						return arg.toString() + ' ' + arg.stack
-					}
-					try {
-						return JSON.stringify(arg)
-					} catch (e) {
-						return `[object: cant stringify: ${e}]`
-					}
-				} else {
-					return '' + arg
-				}
+			const stringifiedArgs: string[] = _.map(args, (arg) => {
+				return stringifyError(arg)
 			})
-			return Meteor.call('logger', type, ...args)
+			return Meteor.call('logger', type, ...stringifiedArgs)
 		}
 	}
 
@@ -69,6 +59,7 @@ if (Meteor.isServer) {
 } else {
 	const getLogMethod = (type) => {
 		return (...args) => {
+			// TODO: Should we also send errors and warnings to the server?
 			console.log(type, ...args)
 			return logger
 		}

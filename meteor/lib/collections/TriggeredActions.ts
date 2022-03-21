@@ -1,13 +1,14 @@
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintTriggeredActions, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
-import { registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
+import { ProtectedStringProperties } from '../lib'
 import { ShowStyleBaseId } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { PeripheralDeviceId } from './PeripheralDevices'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-/** A string, identifying a ShowStyleVariant */
-export type TriggeredActionId = ProtectedString<'TriggeredActionId'>
+import { TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { TriggeredActionId }
 
 export type DBBlueprintTrigger = SomeBlueprintTrigger & {
 	deviceId?: PeripheralDeviceId
@@ -24,9 +25,9 @@ export interface DBTriggeredActions extends ProtectedStringProperties<IBlueprint
 	_rundownVersionHash: string
 }
 
+/** Note: Use DBTriggeredActions instead */
 export type TriggeredActionsObj = DBTriggeredActions
-export const TriggeredActions = createMongoCollection<TriggeredActionsObj, DBTriggeredActions>('triggeredActions')
-registerCollection('TriggeredActions', TriggeredActions)
+export const TriggeredActions = createMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions)
 
 registerIndex(TriggeredActions, {
 	showStyleBaseId: 1,

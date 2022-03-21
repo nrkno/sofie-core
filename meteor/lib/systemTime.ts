@@ -19,7 +19,7 @@ export class TimeJumpDetector {
 	private wallTime: number = TimeJumpDetector.getWallTime()
 	private monotonicTime: number = TimeJumpDetector.getMonotonicTime()
 
-	constructor(private jumpCheckInterval: number, private onJumpDetected: () => void) {}
+	constructor(private jumpCheckInterval: number, private onJumpDetected: (syncDiff: number) => void) {}
 
 	public start() {
 		Meteor.setInterval(() => {
@@ -29,12 +29,14 @@ export class TimeJumpDetector {
 		}, this.jumpCheckInterval)
 	}
 
+	/** Returns the actual time of the OS, which could be influenced (jump) by an NTP sync. */
 	private static getWallTime() {
 		return Date.now()
 	}
 
+	/** Returns a Monotonic Time, which is not influenced by any NTP-sync  */
 	private static getMonotonicTime() {
-		return Meteor.isServer ? Number(process.hrtime.bigint() / BigInt(1000000)) : performance.now()
+		return Meteor.isServer ? Number(process.hrtime.bigint() / BigInt(1000000)) : Date.now()
 	}
 
 	private detectTimeJump() {
@@ -42,12 +44,11 @@ export class TimeJumpDetector {
 		const monotonicTime = TimeJumpDetector.getMonotonicTime()
 		const currentDiff = wallTime - monotonicTime
 		const previousDiff = this.wallTime - this.monotonicTime
-		const syncDiff = Math.abs(currentDiff - previousDiff)
-		if (syncDiff > TARGET_TIME_SYNC_QUALITY) {
-			logger.verbose(`Time jump or skew of ${Math.round(syncDiff)} ms detected`)
+		const syncDiff = currentDiff - previousDiff
+		if (Math.abs(syncDiff) > TARGET_TIME_SYNC_QUALITY) {
 			this.wallTime = wallTime
 			this.monotonicTime = monotonicTime
-			this.onJumpDetected()
+			this.onJumpDetected(syncDiff)
 		}
 	}
 }
@@ -56,7 +57,11 @@ if (Meteor.isServer) {
 	// handled in systemTime, but we want to log jumps anyway
 	if (!Meteor.isTest) {
 		Meteor.startup(() => {
-			const timeJumpDetector = new TimeJumpDetector(JUMP_CHECK_INTERVAL * 6, () => {})
+			const timeJumpDetector = new TimeJumpDetector(JUMP_CHECK_INTERVAL * 6, (syncDiff) => {
+				logger.warn(`Time jump or skew of ${Math.round(syncDiff)} ms detected`)
+				// But we're not doing anything more
+				// TODO: Should we trigger peripheralDevices to resync? And clients?
+			})
 			timeJumpDetector.start()
 		})
 	}
@@ -65,16 +70,15 @@ if (Meteor.isServer) {
 	const updateDiffTime = (force?: boolean) => {
 		// Calculate an "adjusted standard deviation", something that increases over time.
 		// Using this we can decide wether a new measurement is better or worse than previous one. (the lower, the better)
-		const currentSyncDegradation =
-			systemTime.stdDev + (performance.now() - systemTime.lastSync) * ASSUMED_CLOCK_DRIFT
+		const currentSyncDegradation = systemTime.stdDev + (Date.now() - systemTime.lastSync) * ASSUMED_CLOCK_DRIFT
 
 		// If the sync is assumed to have degraded enough, it's time to resync
 		if (currentSyncDegradation > TARGET_TIME_SYNC_QUALITY || force) {
-			const sentTime = performance.now()
+			const sentTime = Date.now()
 			MeteorCall.peripheralDevice
 				.getTimeDiff()
 				.then((stat) => {
-					const replyTime = performance.now()
+					const replyTime = Date.now()
 
 					const diff = Math.round(Date.now() + (sentTime - replyTime) / 2 - stat.currentTime)
 					const stdDev = Math.abs(Math.round(sentTime - replyTime)) / 2 // Not really a standard deviation calculation, but it's what we can do with just one measuring point..
@@ -93,7 +97,7 @@ if (Meteor.isServer) {
 						// Store the result into the global variable `systemTime` (used in getCurrentTime()):
 						systemTime.diff = diff
 						systemTime.stdDev = stdDev
-						systemTime.lastSync = performance.now()
+						systemTime.lastSync = Date.now()
 						systemTime.hasBeenSet = true
 					}
 				})
@@ -124,7 +128,10 @@ if (Meteor.isServer) {
 			}
 		}, SYNC_TIME)
 
-		const timeJumpDetector = new TimeJumpDetector(JUMP_CHECK_INTERVAL, () => updateDiffTime(true))
+		const timeJumpDetector = new TimeJumpDetector(JUMP_CHECK_INTERVAL, (syncDiff) => {
+			logger.verbose(`Time jump or skew of ${Math.round(syncDiff)} ms detected, resyncing with server.`)
+			updateDiffTime(true)
+		})
 		timeJumpDetector.start()
 	})
 }

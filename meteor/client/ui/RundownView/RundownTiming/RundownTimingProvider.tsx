@@ -5,13 +5,13 @@ import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Part, PartId } from '../../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../../lib/lib'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
-import { RundownTimingCalculator, RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
-import { Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { RundownTimingCalculator, RundownTimingContext } from '../../../lib/rundownTiming'
 import _ from 'underscore'
-import { DBSegment } from '../../../../lib/collections/Segments'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15
@@ -67,25 +67,29 @@ export const RundownTimingProvider = withTracker<
 	let currentRundown: Rundown | undefined
 	const segmentEntryPartInstances: PartInstance[] = []
 	if (props.playlist) {
-		rundowns = props.playlist.getRundowns()
-		const { parts: incomingParts, segments: incomingSegments } = props.playlist.getSegmentsAndPartsSync()
+		rundowns = RundownPlaylistCollectionUtil.getRundowns(props.playlist)
+		const { parts: incomingParts, segments: incomingSegments } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(
+			props.playlist
+		)
 		parts = incomingParts
 		segments = incomingSegments
-		const partInstances = props.playlist.getActivePartInstances()
+		const partInstances = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist)
 
-		const currentPartInstance = partInstances.find((p) => p._id === props.playlist!.currentPartInstanceId)
-		const previousPartInstance = partInstances.find((p) => p._id === props.playlist!.previousPartInstanceId)
+		const currentPartInstance = partInstances.find((p) => p._id === props.playlist?.currentPartInstanceId)
+		const previousPartInstance = partInstances.find((p) => p._id === props.playlist?.previousPartInstanceId)
+
 		currentRundown = currentPartInstance ? rundowns.find((r) => r._id === currentPartInstance.rundownId) : rundowns[0]
+		// These are needed to retrieve the start time of a segment for calculating the remaining budget, in case the first partInstance was removed
 		segmentEntryPartInstances.push(
 			..._.compact([
 				currentPartInstance &&
-					props.playlist.getPartInstancesForSegmentPlayout(
+					RundownPlaylistCollectionUtil.getPartInstancesForSegmentPlayout(
 						currentPartInstance.rundownId,
 						currentPartInstance.segmentPlayoutId
 					)[0],
 				previousPartInstance &&
 					previousPartInstance.segmentPlayoutId !== currentPartInstance?.segmentPlayoutId &&
-					props.playlist.getPartInstancesForSegmentPlayout(
+					RundownPlaylistCollectionUtil.getPartInstancesForSegmentPlayout(
 						previousPartInstance.rundownId,
 						previousPartInstance.segmentPlayoutId
 					)[0],
@@ -267,8 +271,7 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		updateDurations(now: number, isLowResolution: boolean) {
-			const { playlist, rundowns, currentRundown, parts, partInstancesMap, segmentEntryPartInstances, segments } =
-				this.props
+			const { playlist, rundowns, currentRundown, parts, partInstancesMap } = this.props
 			const updatedDurations = this.timingCalculator.updateDurations(
 				now,
 				isLowResolution,
@@ -277,9 +280,9 @@ export const RundownTimingProvider = withTracker<
 				currentRundown,
 				parts,
 				partInstancesMap,
-				segments,
-				this.props.defaultDuration,
-				segmentEntryPartInstances
+				//  segments, // TODOSYNC
+				this.props.defaultDuration
+				// segmentEntryPartInstances // TODOSYNC
 			)
 			if (!isLowResolution) {
 				this.durations = Object.assign(this.durations, updatedDurations)

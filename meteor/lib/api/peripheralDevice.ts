@@ -3,14 +3,15 @@ import { getCurrentTime, getRandomId } from '../lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
-import {
-	ExpectedPackageStatusAPI,
-	IngestPlaylist,
-	TSR,
-	StatusCode as BPStatusCode,
-} from '@sofie-automation/blueprints-integration'
+import { ExpectedPackageStatusAPI, IngestPlaylist, TSR } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '../collections/PartInstances'
-import { PeripheralDeviceId, PeripheralDevice } from '../collections/PeripheralDevices'
+import {
+	PeripheralDeviceId,
+	PeripheralDevice,
+	PeripheralDeviceStatusObject,
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '../collections/PeripheralDevices'
 import { PieceInstanceId } from '../collections/PieceInstances'
 import { MediaWorkFlowId, MediaWorkFlow } from '../collections/MediaWorkFlows'
 import { MediaObject } from '../collections/MediaObjects'
@@ -471,33 +472,8 @@ export interface MediaWorkFlowStepRevision {
 	_rev: string
 }
 export namespace PeripheralDeviceAPI {
-	export const StatusCode = BPStatusCode
+	export type StatusObject = PeripheralDeviceStatusObject
 
-	// Note The actual type of a device is determined by the Category, Type and SubType
-
-	export interface StatusObject {
-		statusCode: BPStatusCode
-		messages?: Array<string>
-	}
-	// Note The actual type of a device is determined by the Category, Type and SubType
-	export enum DeviceCategory {
-		INGEST = 'ingest',
-		PLAYOUT = 'playout',
-		MEDIA_MANAGER = 'media_manager',
-		PACKAGE_MANAGER = 'package_manager',
-	}
-	export enum DeviceType {
-		// Ingest devices:
-		MOS = 'mos',
-		SPREADSHEET = 'spreadsheet',
-		INEWS = 'inews',
-		// Playout devices:
-		PLAYOUT = 'playout',
-		// Media-manager devices:
-		MEDIA_MANAGER = 'media_manager',
-		// Package_manager devices:
-		PACKAGE_MANAGER = 'package_manager',
-	}
 	export type DeviceSubType = SUBTYPE_PROCESS | TSR.DeviceType | MOS_DeviceType | Spreadsheet_DeviceType
 
 	/** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */
@@ -507,8 +483,8 @@ export namespace PeripheralDeviceAPI {
 	export type Spreadsheet_DeviceType = 'spreadsheet_connection'
 
 	export interface InitOptions {
-		category: DeviceCategory
-		type: DeviceType
+		category: PeripheralDeviceCategory
+		type: PeripheralDeviceType
 		subType: DeviceSubType
 
 		name: string
@@ -535,114 +511,96 @@ export namespace PeripheralDeviceAPI {
 	}
 	export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
 
-	export function executeFunctionWithCustomTimeout(
+	export async function executeFunctionWithCustomTimeout(
 		deviceId: PeripheralDeviceId,
-		cb: (err, result) => void,
 		timeoutTime0: number | undefined,
-		functionName: string,
-		...args: any[]
-	) {
-		const timeoutTime: number = timeoutTime0 || 3000 // also handles null
-
-		const commandId: PeripheralDeviceCommandId = getRandomId()
-
-		let subscription: Meteor.SubscriptionHandle | null = null
-		if (Meteor.isClient) {
-			subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId)
-		}
-		// logger.debug('command created: ' + functionName)
-
-		let observer: Meteor.LiveQueryHandle | null = null
-		let timeoutCheck: number = 0
-		// we've sent the command, let's just wait for the reply
-		const checkReply = () => {
-			const cmd = PeripheralDeviceCommands.findOne(commandId)
-			// if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
-			// logger.debug('checkReply')
-
-			if (cmd) {
-				const cmdId = cmd._id
-				const cleanup = () => {
-					if (observer) {
-						observer.stop()
-						observer = null
-					}
-					if (subscription) subscription.stop()
-					if (timeoutCheck) {
-						Meteor.clearTimeout(timeoutCheck)
-						timeoutCheck = 0
-					}
-					PeripheralDeviceCommands.remove(cmdId)
-				}
-
-				if (cmd.hasReply) {
-					// We've got a reply!
-
-					// Do cleanup before the callback to ensure it doesn't get a timeout during the callback:
-					cleanup()
-
-					// Handle result
-					if (cmd.replyError) {
-						cb(cmd.replyError, null)
-					} else {
-						cb(null, cmd.reply)
-					}
-				} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) {
-					// Timeout
-
-					// Do cleanup:
-					cleanup()
-
-					cb(
-						`Timeout after ${timeoutTime} ms when executing the function "${cmd.functionName}" on device "${cmd.deviceId}"`,
-						null
-					)
-				}
-			}
-		}
-
-		observer = PeripheralDeviceCommands.find({
-			_id: commandId,
-		}).observeChanges({
-			added: checkReply,
-			changed: checkReply,
-		})
-		timeoutCheck = Meteor.setTimeout(checkReply, timeoutTime)
-
-		PeripheralDeviceCommands.insert({
-			_id: commandId,
-			deviceId: deviceId,
-			time: getCurrentTime(),
-			functionName,
-			args: args,
-			hasReply: false,
-		})
-	}
-
-	export function executeFunction(
-		deviceId: PeripheralDeviceId,
-		cb: (err, result) => void,
-		functionName: string,
-		...args: any[]
-	) {
-		return executeFunctionWithCustomTimeout(deviceId, cb, undefined, functionName, ...args)
-	}
-	/** Same as executeFunction, but returns a promise instead */
-	export async function executeFunctionAsync(
-		deviceId: PeripheralDeviceId,
 		functionName: string,
 		...args: any[]
 	): Promise<any> {
 		return new Promise<any>((resolve, reject) => {
-			executeFunction(
-				deviceId,
-				(err, result) => {
-					if (err) reject(err)
-					else resolve(result)
-				},
+			const timeoutTime: number = timeoutTime0 || 3000 // also handles null
+
+			const commandId: PeripheralDeviceCommandId = getRandomId()
+
+			let subscription: Meteor.SubscriptionHandle | null = null
+			if (Meteor.isClient) {
+				subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId)
+			}
+			// logger.debug('command created: ' + functionName)
+
+			let observer: Meteor.LiveQueryHandle | null = null
+			let timeoutCheck: number = 0
+			// we've sent the command, let's just wait for the reply
+			const checkReply = () => {
+				const cmd = PeripheralDeviceCommands.findOne(commandId)
+				// if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
+				// logger.debug('checkReply')
+
+				if (cmd) {
+					const cmdId = cmd._id
+					const cleanup = () => {
+						if (observer) {
+							observer.stop()
+							observer = null
+						}
+						if (subscription) subscription.stop()
+						if (timeoutCheck) {
+							Meteor.clearTimeout(timeoutCheck)
+							timeoutCheck = 0
+						}
+						PeripheralDeviceCommands.remove(cmdId)
+					}
+
+					if (cmd.hasReply) {
+						// We've got a reply!
+
+						// Do cleanup before the callback to ensure it doesn't get a timeout during the callback:
+						cleanup()
+
+						// Handle result
+						if (cmd.replyError) {
+							reject(cmd.replyError)
+						} else {
+							resolve(cmd.reply)
+						}
+					} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) {
+						// Timeout
+
+						// Do cleanup:
+						cleanup()
+
+						reject(
+							`Timeout after ${timeoutTime} ms when executing the function "${cmd.functionName}" on device "${cmd.deviceId}"`
+						)
+					}
+				}
+			}
+
+			observer = PeripheralDeviceCommands.find({
+				_id: commandId,
+			}).observeChanges({
+				added: checkReply,
+				changed: checkReply,
+			})
+			timeoutCheck = Meteor.setTimeout(checkReply, timeoutTime)
+
+			PeripheralDeviceCommands.insert({
+				_id: commandId,
+				deviceId: deviceId,
+				time: getCurrentTime(),
 				functionName,
-				...args
-			)
+				args: args,
+				hasReply: false,
+			})
 		})
+	}
+
+	/** Same as executeFunction, but returns a promise instead */
+	export async function executeFunction(
+		deviceId: PeripheralDeviceId,
+		functionName: string,
+		...args: any[]
+	): Promise<any> {
+		return executeFunctionWithCustomTimeout(deviceId, undefined, functionName, ...args)
 	}
 }

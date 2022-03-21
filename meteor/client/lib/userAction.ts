@@ -5,6 +5,7 @@ import { Meteor } from 'meteor/meteor'
 import { eventContextForLog } from './clientAPI'
 import { assertNever } from '../../lib/lib'
 import { UserAction } from '../../lib/userAction'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export { UserAction }
 
@@ -181,7 +182,7 @@ export function doUserAction<Result>(
 							undefined,
 							NoticeLevel.CRITICAL,
 							t('Action {{actionName}} failed: {{error}}', {
-								error: res.message || res.error,
+								error: translateMessage(res.error.message || res.error, t),
 								actionName: actionName,
 							}),
 							'userAction'

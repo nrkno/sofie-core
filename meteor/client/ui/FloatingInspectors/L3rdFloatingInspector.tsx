@@ -10,7 +10,7 @@ import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { FloatingInspectorTimeInformationRow } from './FloatingInspectorHelpers/FloatingInspectorTimeInformationRow'
 
 interface IProps {
-	piece: PieceInstancePiece
+	piece: Omit<PieceInstancePiece, 'timelineObjectsString'>
 	pieceRenderedDuration: number | null
 	pieceRenderedIn: number | null
 	showMiniInspector: boolean
@@ -27,7 +27,6 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	content,
 	floatingInspectorStyle,
 	showMiniInspector,
-	itemElement,
 	piece,
 	pieceRenderedIn,
 	pieceRenderedDuration,
@@ -80,11 +79,11 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 		(piece.name !== graphicContent?.fileName ? graphicContent?.fileName : undefined)
 
 	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
-		showMiniInspector && !!itemElement ? (
+		showMiniInspector ? (
 			<NoraFloatingInspector noraContent={noraContent} style={floatingInspectorStyle} displayOn={displayOn} />
 		) : null
 	) : (
-		<FloatingInspector shown={showMiniInspector && !!itemElement} displayOn={displayOn}>
+		<FloatingInspector shown={showMiniInspector} displayOn={displayOn}>
 			<div className={'segment-timeline__mini-inspector ' + typeClass} style={floatingInspectorStyle}>
 				{templateName && (
 					<div className="mini-inspector__header">

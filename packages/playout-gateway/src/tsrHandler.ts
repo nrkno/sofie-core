@@ -28,9 +28,11 @@ import * as cp from 'child_process'
 import * as _ from 'underscore'
 import { CoreConnection, PeripheralDeviceAPI as P } from '@sofie-automation/server-core-integration'
 import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
-import { LoggerInstance } from './index'
+import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
+import { FinishedTrace, sendTrace } from './influxdb'
+
 const debug = Debug('playout-gateway')
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -40,7 +42,6 @@ export interface TSRSettings {
 	devices: {
 		[deviceId: string]: DeviceOptionsAny
 	}
-	initializeAsClear: boolean
 	mappings: Mappings
 	errorReporting?: boolean
 	multiThreading?: boolean
@@ -105,7 +106,7 @@ const INIT_TIMEOUT = 10000
  * Represents a connection between Gateway and TSR
  */
 export class TSRHandler {
-	logger: LoggerInstance
+	logger: Logger
 	tsr!: Conductor
 	// private _config: TSRConfig
 	private _coreHandler!: CoreHandler
@@ -124,7 +125,7 @@ export class TSRHandler {
 	private _triggerUpdateDevicesCheckAgain = false
 	private _triggerUpdateDevicesTimeout: NodeJS.Timeout | undefined
 
-	constructor(logger: LoggerInstance) {
+	constructor(logger: Logger) {
 		this.logger = logger
 	}
 
@@ -144,7 +145,6 @@ export class TSRHandler {
 			getCurrentTime: (): number => {
 				return this._coreHandler.core.getCurrentTime()
 			},
-			initializeAsClear: settings.initializeAsClear !== false,
 			multiThreadedResolver: settings.multiThreadedResolver === true,
 			useCacheWhenResolving: settings.useCacheWhenResolving === true,
 			proActiveResolve: true,
@@ -172,16 +172,16 @@ export class TSRHandler {
 				cmdReply.response &&
 				cmdReply.response.code === 404
 			) {
-				this.logger.warn('TSR', e, ...args)
+				this.logger.warn(`TSR: ${e.toString()}`, args)
 			} else {
-				this.logger.error('TSR', e, ...args)
+				this.logger.error(`TSR: ${e.toString()}`, args)
 			}
 		})
 		this.tsr.on('info', (msg, ...args) => {
-			this.logger.info('TSR', msg, ...args)
+			this.logger.info(`TSR: ${msg + ''}`, args)
 		})
 		this.tsr.on('warning', (msg, ...args) => {
-			this.logger.warn('TSR', msg, ...args)
+			this.logger.warn(`TSR: ${msg + ''}`, args)
 		})
 		this.tsr.on('debug', (...args: any[]) => {
 			if (this._coreHandler.logDebug) {
@@ -242,7 +242,16 @@ export class TSRHandler {
 				.catch((e) => {
 					this.logger.error('Error in reportResolveDone', e)
 				})
+
+			sendTrace({
+				measurement: 'playout-gateway.tlResolveDone',
+				tags: {},
+				start: Date.now() - resolveDuration,
+				duration: resolveDuration,
+				ended: Date.now(),
+			})
 		})
+		this.tsr.on('timeTrace', (trace: FinishedTrace) => sendTrace(trace))
 
 		this.logger.debug('tsr init')
 		await this.tsr.init()
@@ -265,13 +274,13 @@ export class TSRHandler {
 
 		const timelineObserver = this._coreHandler.core.observe('studioTimeline')
 		timelineObserver.added = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings(true)
 		}
 		timelineObserver.changed = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings(true)
 		}
 		timelineObserver.removed = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings(true)
 		}
 		this._observers.push(timelineObserver)
 
@@ -292,9 +301,12 @@ export class TSRHandler {
 			debug('triggerUpdateDevices from deviceObserver added')
 			this._triggerUpdateDevices()
 		}
-		deviceObserver.changed = () => {
-			debug('triggerUpdateDevices from deviceObserver changed')
-			this._triggerUpdateDevices()
+		deviceObserver.changed = (_id, _oldFields, _clearedFields, newFields) => {
+			// Only react to changes in the .settings property:
+			if (newFields['settings'] !== undefined) {
+				debug('triggerUpdateDevices from deviceObserver changed')
+				this._triggerUpdateDevices()
+			}
 		}
 		deviceObserver.removed = () => {
 			debug('triggerUpdateDevices from deviceObserver removed')
@@ -319,7 +331,7 @@ export class TSRHandler {
 			tsrHandler.sendStatus()
 		})
 	}
-	destroy(): Promise<void> {
+	async destroy(): Promise<void> {
 		return this.tsr.destroy()
 	}
 	getTimeline():
@@ -328,7 +340,11 @@ export class TSRHandler {
 				_id: string // Studio id
 				mappingsHash: string
 				timelineHash: string
-				timeline: TimelineObjGeneric[]
+				// this is the old way of storing the timeline, kept for backwards-compatibility
+				timeline?: TimelineObjGeneric[]
+				timelineBlob: string
+				generated: number
+				published: number
 		  }
 		| undefined {
 		const studioId = this._getStudioId()
@@ -373,6 +389,10 @@ export class TSRHandler {
 
 			this.logger.info('ErrorReporting: ' + this._multiThreaded)
 		}
+		if (this.tsr.estimateResolveTimeMultiplier !== this._coreHandler.estimateResolveTimeMultiplier) {
+			this.tsr.estimateResolveTimeMultiplier = this._coreHandler.estimateResolveTimeMultiplier
+			this.logger.info('estimateResolveTimeMultiplier: ' + this._coreHandler.estimateResolveTimeMultiplier)
+		}
 		if (this._multiThreaded !== this._coreHandler.multithreading) {
 			this._multiThreaded = this._coreHandler.multithreading
 
@@ -390,12 +410,12 @@ export class TSRHandler {
 			this._triggerUpdateDevices()
 		}
 	}
-	private _triggerupdateTimelineAndMappings() {
+	private _triggerupdateTimelineAndMappings(fromTlChange?: boolean) {
 		if (!this._initialized) return
 
-		this._updateTimelineAndMappings()
+		this._updateTimelineAndMappings(fromTlChange)
 	}
-	private _updateTimelineAndMappings() {
+	private _updateTimelineAndMappings(fromTlChange?: boolean) {
 		const timeline = this.getTimeline()
 		const mappingsObject = this.getMappings()
 
@@ -416,8 +436,29 @@ export class TSRHandler {
 		}
 
 		this.logger.debug(`Trigger new resolving`)
+		if (fromTlChange) {
+			const trace = {
+				measurement: 'playout-gateway:timelineReceived',
+				start: timeline.generated,
+				tags: {},
+				ended: Date.now(),
+				duration: Date.now() - timeline.generated,
+			}
+			sendTrace(trace)
+			sendTrace({
+				measurement: 'playout-gateway:timelinePublicationLatency',
+				start: timeline.published,
+				tags: {},
+				ended: Date.now(),
+				duration: Date.now() - timeline.published,
+			})
+		}
 
-		const transformedTimeline = this._transformTimeline(timeline.timeline)
+		const transformedTimeline = timeline.timelineBlob
+			? this._transformTimeline(JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>)
+			: timeline.timeline
+			? this._transformTimeline(timeline.timeline)
+			: []
 		this.tsr.timelineHash = timeline.timelineHash
 		this.tsr.setTimelineAndMappings(transformedTimeline, mappingsObject.mappings)
 	}
@@ -491,7 +532,7 @@ export class TSRHandler {
 
 		let ps: Promise<any>[] = []
 		const promiseOperations: { [id: string]: true } = {}
-		const keepTrack = <T>(p: Promise<T>, name: string) => {
+		const keepTrack = async <T>(p: Promise<T>, name: string) => {
 			promiseOperations[name] = true
 			return p.then((result) => {
 				delete promiseOperations[name]
@@ -553,7 +594,7 @@ export class TSRHandler {
 							this.logger.info('old', oldDevice.deviceOptions)
 							this.logger.info('new', deviceOptions)
 							ps.push(
-								keepTrack(this._removeDevice(deviceId), 'remove_' + deviceId).then(() => {
+								keepTrack(this._removeDevice(deviceId), 'remove_' + deviceId).then(async () => {
 									return keepTrack(this._addDevice(deviceId, deviceOptions), 're-add_' + deviceId)
 								})
 							)
@@ -647,6 +688,11 @@ export class TSRHandler {
 					deviceStatus = connectedOrStatus
 				}
 				coreTsrHandler.statusChanged(deviceStatus)
+
+				// When the status has changed, the deviceName might have changed:
+				device.reloadProps().catch((err) => {
+					this.logger.error(`Error in reloadProps: ${err}`)
+				})
 				// hack to make sure atem has media after restart
 				if (
 					(deviceStatus.statusCode === P.StatusCode.GOOD ||
@@ -740,10 +786,8 @@ export class TSRHandler {
 			const onClearMediaObjectCollection = (collectionId: string) => {
 				coreTsrHandler.onClearMediaObjectCollection(collectionId)
 			}
-			let deviceName = device.deviceName
-			const deviceInstanceId = device.instanceId
 			const fixError = (e: any): string => {
-				const name = `Device "${deviceName || deviceId}" (${deviceInstanceId})`
+				const name = `Device "${device.deviceName || deviceId}" (${device.instanceId})`
 				if (e.reason) e.reason = name + ': ' + e.reason
 				if (e.message) e.message = name + ': ' + e.message
 				if (e.stack) {
@@ -754,8 +798,6 @@ export class TSRHandler {
 				return e
 			}
 			await coreTsrHandler.init()
-
-			deviceName = device.deviceName
 
 			device.onChildClose = () => {
 				// Called if a child is closed / crashed
@@ -797,6 +839,8 @@ export class TSRHandler {
 					this.logger.info('debug: ' + fixError(e), ...args)
 				}
 			})
+
+			await device.device.on('timeTrace', (trace: FinishedTrace) => sendTrace(trace))
 
 			// now initialize it
 			await this.tsr.initDevice(deviceId, options)

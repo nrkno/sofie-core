@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { TFunction } from 'i18next'
 import { TriggerType } from '@sofie-automation/blueprints-integration'
 import { DBBlueprintTrigger } from '../../../../../../lib/collections/TriggeredActions'
@@ -12,12 +12,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 interface IProps {
+	index: number
 	trigger: DBBlueprintTrigger
 	opened?: boolean
-	onChangeTrigger: (newVal: DBBlueprintTrigger) => void
-	onRemove: () => void
-	onFocus: () => void
-	onClose: () => void
+	onChangeTrigger: (index: number, newVal: DBBlueprintTrigger) => void
+	onRemove: (index: number) => void
+	onFocus: (index: number) => void
+	onClose: (index: number) => void
 }
 
 function getTriggerTypes(t: TFunction): Record<string, TriggerType> {
@@ -26,16 +27,9 @@ function getTriggerTypes(t: TFunction): Record<string, TriggerType> {
 	}
 }
 
-export const TriggerEditor = function TriggerEditor({
-	opened,
-	trigger,
-	onFocus,
-	onClose,
-	onRemove,
-	onChangeTrigger,
-}: IProps) {
+export const TriggerEditor = function TriggerEditor({ opened, trigger, index, ...props }: IProps) {
 	const { t } = useTranslation()
-	const [localTrigger, setLocalTrigger] = useState<DBBlueprintTrigger>(trigger)
+	const [localTrigger, setLocalTrigger] = useState<DBBlueprintTrigger>({ ...trigger })
 	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
 	const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
 	const { styles, attributes, update } = usePopper(referenceElement, popperElement, {
@@ -50,6 +44,13 @@ export const TriggerEditor = function TriggerEditor({
 		],
 	})
 
+	const onFocus = useCallback(() => props.onFocus(index), [index])
+	const onRemove = useCallback(() => props.onRemove(index), [index])
+	const onChangeTrigger = useCallback(
+		(changeLocalTrigger: DBBlueprintTrigger) => props.onChangeTrigger(index, changeLocalTrigger),
+		[index]
+	)
+
 	useEffect(() => {
 		function closeHandler(e: MouseEvent) {
 			const composedPath = e.composedPath()
@@ -59,7 +60,7 @@ export const TriggerEditor = function TriggerEditor({
 				!composedPath.includes(popperElement) &&
 				!composedPath.includes(referenceElement)
 			) {
-				onClose()
+				props.onClose(index)
 			}
 		}
 
@@ -70,7 +71,7 @@ export const TriggerEditor = function TriggerEditor({
 		return () => {
 			document.body.removeEventListener('click', closeHandler)
 		}
-	}, [popperElement, referenceElement, opened])
+	}, [popperElement, referenceElement, opened, trigger])
 
 	const triggerPreview =
 		trigger.type === TriggerType.hotkey ? (

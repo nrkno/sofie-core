@@ -32,10 +32,10 @@ legally()
 	.then((licenses) => {
 		let ok = true
 
-		for (const [package, info] of Object.entries(licenses)) {
+		for (const [packageName, info] of Object.entries(licenses)) {
 			let exclude = false
 			for (const excludePackage of excludePackages) {
-				if (package.match(new RegExp(`^${excludePackage}@`))) {
+				if (packageName.match(new RegExp(`^${excludePackage}@`))) {
 					exclude = true
 				}
 			}
@@ -51,7 +51,7 @@ legally()
 				}
 			}
 			if (!foundApproved) {
-				console.log(`Unapproved License: "${info.package}" in ${package}`)
+				console.log(`Unapproved License: "${info.package}" in ${packageName}`)
 				ok = false
 			}
 		}

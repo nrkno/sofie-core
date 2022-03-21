@@ -20,6 +20,7 @@ module.exports = {
 		},
 	},
 	coverageDirectory: './coverage/',
+	coverageProvider: 'v8',
 	collectCoverage: true,
 	preset: 'ts-jest',
 }

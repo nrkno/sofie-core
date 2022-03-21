@@ -2,7 +2,12 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { DBSegment, Segment } from '../../../lib/collections/Segments'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylistId,
+	RundownPlaylist,
+	RundownPlaylists,
+	RundownPlaylistCollectionUtil,
+} from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
@@ -20,19 +25,21 @@ import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { Part } from '../../../lib/collections/Parts'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
-import { parse as queryStringParse } from 'query-string'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import {
 	DashboardLayout,
 	RundownLayoutBase,
-	RundownLayoutId,
 	RundownLayoutPresenterView,
 	RundownLayouts,
 } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { Studio, Studios } from '../../../lib/collections/Studios'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
-import { ShowStyleVariant, ShowStyleVariantId, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
-import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
+import { parse as queryStringParse } from 'query-string'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -110,7 +117,7 @@ function getShowStyleBaseIdSegmentPartUi(
 
 	const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === partInstance.segmentId)
 	if (currentRundown && segmentIndex >= 0) {
-		const rundownOrder = playlist.getRundownIDs()
+		const rundownOrder = RundownPlaylistCollectionUtil.getRundownIDs(playlist)
 		const rundownIndex = rundownOrder.indexOf(partInstance.rundownId)
 		showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 		showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
@@ -188,15 +195,15 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 	const presenterLayoutId = protectString((params['presenterLayout'] as string) || '')
 
 	if (playlist) {
-		rundowns = playlist.getRundowns()
-		const orderedSegmentsAndParts = playlist.getSegmentsAndPartsSync()
+		rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
+		const orderedSegmentsAndParts = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
 		rundownIds = rundowns.map((rundown) => rundown._id)
 		const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
 		for (const rundown of rundowns) {
 			rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
 		}
 		showStyleBaseIds = rundowns.map((rundown) => rundown.showStyleBaseId)
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+		const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 		const partInstance = currentPartInstance || nextPartInstance
 		if (partInstance) {
 			// This is to register a reactive dependency on Rundown-spanning PieceInstances, that we may miss otherwise.
@@ -296,36 +303,25 @@ export class PresenterScreenBase extends MeteorReactComponent<
 			const playlist = RundownPlaylists.findOne(this.props.playlistId, {
 				fields: {
 					_id: 1,
+					activationId: 1,
 				},
-			}) as Pick<RundownPlaylist, '_id' | 'getRundownIDs' | 'getRundowns'> | undefined
+			}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
 			if (playlist) {
 				this.subscribe(PubSub.rundowns, {
 					playlistId: playlist._id,
 				})
-				const rundowns = playlist.getRundowns(undefined, {
-					fields: {
-						_id: 1,
-						showStyleBaseId: 1,
-						showStyleVariantId: 1,
-					},
-				}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
 
 				this.autorun(() => {
-					const rundownIds = playlist.getRundownIDs()
-					const showStyleBaseIds = (
-						playlist.getRundowns(undefined, {
-							fields: {
-								showStyleBaseId: 1,
-							},
-						}) as Pick<Rundown, 'showStyleBaseId'>[]
-					).map((r) => r.showStyleBaseId)
-					const showStyleVariantIds = (
-						playlist!.getRundowns(undefined, {
-							fields: {
-								showStyleVariantId: 1,
-							},
-						}) as Pick<Rundown, 'showStyleVariantId'>[]
-					).map((r) => r.showStyleVariantId)
+					const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
+						fields: {
+							_id: 1,
+							showStyleBaseId: 1,
+							showStyleVariantId: 1,
+						},
+					}) as Array<Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>>
+					const rundownIds = rundowns.map((r) => r._id)
+					const showStyleBaseIds = rundowns.map((r) => r.showStyleBaseId)
+					const showStyleVariantIds = rundowns.map((r) => r.showStyleVariantId)
 
 					this.subscribe(PubSub.segments, {
 						rundownId: { $in: rundownIds },
@@ -335,6 +331,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					})
 					this.subscribe(PubSub.partInstances, {
 						rundownId: { $in: rundownIds },
+						playlistActivationId: playlist.activationId,
 						reset: { $ne: true },
 					})
 					this.subscribe(PubSub.showStyleBases, {
@@ -349,7 +346,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					})
 					this.subscribe(PubSub.rundownLayouts, {
 						showStyleBaseId: {
-							$in: rundowns.map((i) => i.showStyleBaseId),
+							$in: showStyleBaseIds,
 						},
 					})
 
@@ -362,17 +359,11 @@ export class PresenterScreenBase extends MeteorReactComponent<
 								previousPartInstanceId: 1,
 							},
 						}) as
-							| Pick<
-									RundownPlaylist,
-									| '_id'
-									| 'currentPartInstanceId'
-									| 'nextPartInstanceId'
-									| 'previousPartInstanceId'
-									| 'getSelectedPartInstances'
-							  >
+							| Pick<RundownPlaylist, '_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId'>
 							| undefined
 						if (playlistR) {
-							const { nextPartInstance, currentPartInstance } = playlistR.getSelectedPartInstances()
+							const { nextPartInstance, currentPartInstance } =
+								RundownPlaylistCollectionUtil.getSelectedPartInstances(playlistR)
 							if (currentPartInstance) {
 								this.subscribe(PubSub.pieceInstances, {
 									rundownId: currentPartInstance.rundownId,
@@ -451,12 +442,8 @@ export class PresenterScreenBase extends MeteorReactComponent<
 			const nextPart = this.props.nextPartInstance
 			const nextSegment = this.props.nextSegment
 
-			const expectedDuration = PlaylistTiming.getExpectedDuration(playlist.timing)
 			const expectedStart = PlaylistTiming.getExpectedStart(playlist.timing)
-			const overUnderClock = expectedDuration
-				? (this.props.timingDurations.asDisplayedPlaylistDuration || 0) - expectedDuration
-				: (this.props.timingDurations.asDisplayedPlaylistDuration || 0) -
-				  (this.props.timingDurations.totalPlaylistDuration || 0)
+			const overUnderClock = getPlaylistTimingDiff(playlist, this.props.timingDurations) ?? 0
 
 			return (
 				<div className="presenter-screen">
@@ -475,6 +462,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 										partInstanceId={currentPart.instance._id}
 										showStyleBaseId={currentShowStyleBaseId}
 										rundownIds={this.props.rundownIds}
+										playlistActivationId={this.props.playlist?.activationId}
 									/>
 								</div>
 								<div className="presenter-screen__part__piece-name">
@@ -483,6 +471,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 										partInstanceId={currentPart.instance._id}
 										showStyleBaseId={currentShowStyleBaseId}
 										rundownIds={this.props.rundownIds}
+										playlistActivationId={this.props.playlist?.activationId}
 									/>
 								</div>
 								<div className="presenter-screen__part__piece-countdown">
@@ -491,8 +480,9 @@ export class PresenterScreenBase extends MeteorReactComponent<
 										showStyleBaseId={currentShowStyleBaseId}
 										rundownIds={this.props.rundownIds}
 										partAutoNext={currentPart.instance.part.autoNext || false}
-										partExpectedDuration={currentPart.instance.part.expectedDuration}
+										partExpectedDuration={calculatePartInstanceExpectedDurationWithPreroll(currentPart.instance)}
 										partStartedPlayback={currentPart.instance.timings?.startedPlayback}
+										playlistActivationId={this.props.playlist?.activationId}
 									/>
 								</div>
 								<div className="presenter-screen__part__part-countdown">
@@ -520,11 +510,16 @@ export class PresenterScreenBase extends MeteorReactComponent<
 										partInstanceId={nextPart.instance._id}
 										showStyleBaseId={nextShowStyleBaseId}
 										rundownIds={this.props.rundownIds}
+										playlistActivationId={this.props.playlist?.activationId}
 									/>
 								</div>
 								<div className="presenter-screen__part__piece-name">
 									{currentPart && currentPart.instance.part.autoNext ? (
-										<img className="presenter-screen__part__auto-next-icon" src="/icons/auto-presenter-screen.svg" />
+										<img
+											className="presenter-screen__part__auto-next-icon"
+											src="/icons/auto-presenter-screen.svg"
+											alt="Autonext"
+										/>
 									) : null}
 									{nextPart && nextShowStyleBaseId && nextPart.instance.part.title ? (
 										<PieceNameContainer
@@ -532,6 +527,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 											partInstanceId={nextPart.instance._id}
 											showStyleBaseId={nextShowStyleBaseId}
 											rundownIds={this.props.rundownIds}
+											playlistActivationId={this.props.playlist?.activationId}
 										/>
 									) : (
 										'_'
@@ -549,7 +545,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 								over: Math.floor(overUnderClock / 1000) >= 0,
 							})}
 						>
-							{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true)}
+							{RundownUtils.formatDiffToTimecode(overUnderClock, true, false, true, true, true, undefined, true, true)}
 						</div>
 					</div>
 				</div>

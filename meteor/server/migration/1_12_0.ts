@@ -10,14 +10,15 @@ import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Timeline } from '../../lib/collections/Timeline'
 import { ensureCollectionProperty, removeCollectionProperty } from './lib'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 // Release 24
 export const addSteps = addMigrationSteps('1.12.0', [
-	ensureCollectionProperty('Studios', {}, 'routeSets', {}, undefined),
-	ensureCollectionProperty('Studios', {}, 'organizationId', null, undefined),
-	ensureCollectionProperty('PeripheralDevices', {}, 'organizationId', null, undefined),
-	ensureCollectionProperty('ShowStyleBases', {}, 'organizationId', null, undefined),
-	removeCollectionProperty('ShowStyleBases', {}, 'runtimeArguments'),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'routeSets', {}),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'organizationId', null),
+	ensureCollectionProperty(CollectionName.PeripheralDevices, {}, 'organizationId', null),
+	ensureCollectionProperty(CollectionName.ShowStyleBases, {}, 'organizationId', null),
+	removeCollectionProperty(CollectionName.ShowStyleBases, {}, 'runtimeArguments'),
 
 	{
 		id: 'Pieces properties',
@@ -74,7 +75,7 @@ export const addSteps = addMigrationSteps('1.12.0', [
 		canBeRunAutomatically: true,
 		validate: () => {
 			const badCount = Timeline.find({
-				timeline: { $exists: false },
+				timelineBlob: { $exists: false },
 			}).count()
 			if (badCount > 0) {
 				return `${badCount} timeline objects need to be deleted`
@@ -83,7 +84,7 @@ export const addSteps = addMigrationSteps('1.12.0', [
 		},
 		migrate: () => {
 			Timeline.remove({
-				timeline: { $exists: false },
+				timelineBlob: { $exists: false },
 			})
 		},
 	},

@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
-import { BulkWriteOperation } from 'mongodb'
+import type { AnyBulkWriteOperation } from 'mongodb'
 import _ from 'underscore'
-import { AsyncTransformedCollection } from '../../lib/collections/lib'
+import { AsyncMongoCollection } from '../../lib/collections/lib'
 import { DBObj, normalizeArrayToMap, ProtectedString, deleteAllUndefinedProperties } from '../../lib/lib'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { profiler } from '../api/profiler'
@@ -44,11 +44,11 @@ export function anythingChanged(changes: Changes): boolean {
  * @param filter The filter defining the data subset to be affected in db
  * @param newData The new data
  */
-export async function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj>(
-	collection: AsyncTransformedCollection<DocClass, DBInterface>,
+export async function saveIntoDb<DBInterface extends DBObj>(
+	collection: AsyncMongoCollection<DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
-	options?: SaveIntoDbHooks<DocClass, DBInterface>
+	options?: SaveIntoDbHooks<DBInterface>
 ): Promise<Changes> {
 	const preparedChanges = prepareSaveIntoDb(collection, filter, newData, options)
 
@@ -62,11 +62,11 @@ export interface PreparedChanges<T> {
 	unchanged: T[]
 }
 
-function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj>(
-	collection: AsyncTransformedCollection<DocClass, DBInterface>,
+function prepareSaveIntoDb<DBInterface extends DBObj>(
+	collection: AsyncMongoCollection<DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
-	optionsOrg?: SaveIntoDbHooks<DocClass, DBInterface>
+	optionsOrg?: SaveIntoDbHooks<DBInterface>
 ): PreparedChanges<DBInterface> {
 	const preparedChanges: PreparedChanges<DBInterface> = {
 		inserted: [],
@@ -90,10 +90,10 @@ function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 
 	return preparedChanges
 }
-async function savePreparedChanges<DocClass extends DBInterface, DBInterface extends DBObj>(
+async function savePreparedChanges<DBInterface extends DBObj>(
 	preparedChanges: PreparedChanges<DBInterface>,
-	collection: AsyncTransformedCollection<DocClass, DBInterface>,
-	options: SaveIntoDbHooks<DocClass, DBInterface>
+	collection: AsyncMongoCollection<DBInterface>,
+	options: SaveIntoDbHooks<DBInterface>
 ): Promise<Changes> {
 	const change: Changes = {
 		added: 0,
@@ -111,8 +111,8 @@ async function savePreparedChanges<DocClass extends DBInterface, DBInterface ext
 		newObjIds[id] = true
 	}
 
-	const updates: BulkWriteOperation<DBInterface>[] = []
-	const removedDocs: DocClass['_id'][] = []
+	const updates: AnyBulkWriteOperation<DBInterface>[] = []
+	const removedDocs: DBInterface['_id'][] = []
 
 	_.each(preparedChanges.changed || [], (oUpdate) => {
 		checkInsertId(oUpdate._id)
@@ -172,11 +172,11 @@ async function savePreparedChanges<DocClass extends DBInterface, DBInterface ext
 	return change
 }
 
-export interface SaveIntoDbHooks<DocClass, DBInterface> {
+export interface SaveIntoDbHooks<DBInterface> {
 	beforeInsert?: (o: DBInterface) => DBInterface
-	beforeUpdate?: (o: DBInterface, pre?: DocClass) => DBInterface
-	beforeRemove?: (o: DocClass) => DBInterface
-	beforeDiff?: (o: DBInterface, oldObj: DocClass) => DBInterface
+	beforeUpdate?: (o: DBInterface, pre?: DBInterface) => DBInterface
+	beforeRemove?: (o: DBInterface) => DBInterface
+	beforeDiff?: (o: DBInterface, oldObj: DBInterface) => DBInterface
 	afterInsert?: (o: DBInterface) => void
 	afterUpdate?: (o: DBInterface) => void
 	afterRemove?: (o: DBInterface) => void
@@ -189,11 +189,11 @@ interface SaveIntoDbHandlers<DBInterface> {
 	remove: (o: DBInterface) => void
 	unchanged?: (o: DBInterface) => void
 }
-export function saveIntoBase<DocClass extends DBInterface, DBInterface extends DBObj>(
+function saveIntoBase<DBInterface extends DBObj>(
 	collectionName: string,
-	oldDocs: DocClass[],
+	oldDocs: DBInterface[],
 	newData: Array<DBInterface>,
-	options: SaveIntoDbHooks<DocClass, DBInterface> & SaveIntoDbHandlers<DBInterface>
+	options: SaveIntoDbHooks<DBInterface> & SaveIntoDbHandlers<DBInterface>
 ): ChangedIds<DBInterface['_id']> {
 	const span = profiler.startSpan(`DBCache.saveIntoBase.${collectionName}`)
 

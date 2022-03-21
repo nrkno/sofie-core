@@ -7,7 +7,7 @@ import { RundownUtils } from '../../../lib/rundown'
 import { withTiming, WithTiming } from './withTiming'
 import ClassNames from 'classnames'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
+import { getPlaylistTimingDiff } from '../../../lib/rundownTiming'
 
 interface IEndTimingProps {
 	rundownPlaylist: RundownPlaylist
@@ -31,22 +31,8 @@ export const PlaylistEndTiming = withTranslation()(
 				const { t } = this.props
 				const { rundownPlaylist, expectedStart, expectedEnd, expectedDuration } = this.props
 
+				const overUnderClock = getPlaylistTimingDiff(rundownPlaylist, this.props.timingDurations) ?? 0
 				const now = this.props.timingDurations.currentTime ?? getCurrentTime()
-
-				const frontAnchor = PlaylistTiming.isPlaylistTimingForwardTime(rundownPlaylist.timing)
-					? Math.max(now, rundownPlaylist.startedPlayback ?? expectedStart!)
-					: now
-
-				const backAnchor = PlaylistTiming.isPlaylistTimingForwardTime(rundownPlaylist.timing)
-					? expectedEnd ?? (rundownPlaylist.startedPlayback ?? expectedStart!) + (expectedDuration ?? 0)
-					: expectedEnd ?? 0
-
-				const diff = PlaylistTiming.isPlaylistTimingNone(rundownPlaylist.timing)
-					? (this.props.timingDurations.asPlayedPlaylistDuration || 0) -
-					  (expectedDuration ?? this.props.timingDurations.totalPlaylistDuration ?? 0)
-					: frontAnchor + (this.props.timingDurations.remainingPlaylistDuration || 0) - backAnchor
-
-				const floorTimeForDiff: boolean = diff > 0
 
 				return (
 					<React.Fragment>
@@ -119,15 +105,25 @@ export const PlaylistEndTiming = withTranslation()(
 								</span>
 							) : null)}
 						{!this.props.hideDiff ? (
-							this.props.timingDurations ? ( // TEMPORARY: disable the diff counter for playlists longer than one rundown -- Jan Starzak, 2021-05-06
+							this.props.timingDurations ? (
 								<span
 									className={ClassNames('timing-clock heavy-light right', {
-										heavy: diff < 0,
-										light: diff > 0,
+										heavy: overUnderClock < 0,
+										light: overUnderClock >= 0,
 									})}
 								>
 									{!this.props.hideDiffLabel && <span className="timing-clock-label right">{t('Diff')}</span>}
-									{RundownUtils.formatDiffToTimecode(diff, true, false, true, true, false, undefined, floorTimeForDiff)}
+									{RundownUtils.formatDiffToTimecode(
+										overUnderClock,
+										true,
+										false,
+										true,
+										true,
+										true,
+										undefined,
+										true,
+										true
+									)}
 								</span>
 							) : null
 						) : null}

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownCollectionUtil, RundownId } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
@@ -159,12 +159,12 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 			// this is fine, we'll probably have it eventually and the component can render without it
 		}
 		try {
-			showStyle = props.rundown.getShowStyleBase()
+			showStyle = RundownCollectionUtil.getShowStyleBase(props.rundown)
 		} catch (e) {
 			// this is fine, we'll probably have it eventually and the component can render without it
 		}
 		try {
-			showStyleVariant = props.rundown.getShowStyleVariant()
+			showStyleVariant = RundownCollectionUtil.getShowStyleVariant(props.rundown)
 		} catch (e) {
 			// this is fine, we'll probably have it eventually and the component can render without it
 		}

@@ -22,7 +22,6 @@ export const defaultColorPickerPalette = [
 	'#e82c2c',
 	'#ecf0f1',
 	'#95a5a6',
-	// Added for TV 2
 	'#ac29a5',
 	'#00a97f',
 	'#005919',

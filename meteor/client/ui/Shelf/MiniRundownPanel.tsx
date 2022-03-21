@@ -10,10 +10,10 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { Segment } from '../../../lib/collections/Segments'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { Meteor } from 'meteor/meteor'
 
 interface IMiniRundownPanelProps {
@@ -125,7 +125,7 @@ export const MiniRundownPanel = withTracker<IMiniRundownPanelProps, IState, IMin
 			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInstanceId)
 		}
 
-		const allSegments: Segment[] = props.playlist.getSegments()
+		const allSegments: Segment[] = RundownPlaylistCollectionUtil.getSegments(props.playlist)
 
 		return { currentPartInstance, nextPartInstance, allSegments }
 	},
@@ -169,7 +169,7 @@ function getContainerClass(props, isDashboardLayout: boolean): string[] | undefi
 }
 
 function getContainerStyle(props, isDashboardLayout: boolean): any {
-	return _.extend(isDashboardLayout ? dashboardElementPosition({ ...(props.panel as DashboardLayoutNextInfo) }) : {}, {
+	return _.extend(isDashboardLayout ? dashboardElementStyle({ ...(props.panel as DashboardLayoutNextInfo) }) : {}, {
 		visibility: props.visible ? 'visible' : 'hidden',
 	})
 }

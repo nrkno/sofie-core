@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import _ from 'underscore'
 import {
 	IAdLibFilterLink,
@@ -21,15 +21,15 @@ import { useTranslation } from 'react-i18next'
 
 interface IProps {
 	action: SomeAction
+	index: number
 	showStyleBase: ShowStyleBase | undefined
 	triggeredAction: TriggeredActionsObj
-	index: number
 	readonly?: boolean
 	opened?: boolean
-	onRemove: () => void
-	onFocus?: () => void
-	onActionFocus?: () => void
-	onClose?: () => void
+	onRemove: (index: number) => void
+	onFocus?: (index: number) => void
+	onActionFocus?: (index: number) => void
+	onClose?: (index: number) => void
 }
 
 function isFinal(
@@ -43,6 +43,8 @@ function isFinal(
 	}
 }
 
+type ChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
+
 export const ActionEditor: React.FC<IProps> = function ActionEditor({
 	action,
 	readonly,
@@ -50,9 +52,9 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 	triggeredAction,
 	showStyleBase,
 	onFocus,
-	onActionFocus,
-	onRemove,
-	onClose: onOuterClose,
+	onActionFocus: onOuterActionFocus,
+	onRemove: onRemoveAction,
+	onClose: onOuterCloseAction,
 	opened,
 }: IProps): React.ReactElement | null {
 	const [openFilterIndex, setOpenFilterIndex] = useState(-1)
@@ -62,15 +64,18 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 		setOpenFilterIndex(-1)
 	}
 
-	function onFilterChange(filterIndex, newVal) {
-		action.filterChain.splice(filterIndex, 1, newVal)
+	const onFilterChange = useCallback(
+		(filterIndex: number, newVal: ChainLink) => {
+			action.filterChain.splice(filterIndex, 1, newVal)
 
-		TriggeredActions.update(triggeredAction._id, {
-			$set: {
-				[`actions.${index}`]: action,
-			},
-		})
-	}
+			TriggeredActions.update(triggeredAction._id, {
+				$set: {
+					[`actions.${index}`]: action,
+				},
+			})
+		},
+		[action]
+	)
 
 	function onFilterInsertNext(filterIndex) {
 		if (action.filterChain.length === filterIndex + 1) {
@@ -95,7 +100,7 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 		}
 
 		setOpenFilterIndex(filterIndex + 1)
-		if (typeof onFocus === 'function') onFocus()
+		if (typeof onFocus === 'function') onFocus(index)
 	}
 
 	function onFilterRemove(filterIndex) {
@@ -128,18 +133,30 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 		)
 	}
 
+	const onRemove = useCallback(() => onRemoveAction(index), [index])
+	const onOuterClose = useCallback(() => onOuterCloseAction && onOuterCloseAction(index), [index])
+	const onActionFocus = useCallback(() => {
+		onOuterActionFocus && onOuterActionFocus(index)
+		onFocus && onFocus(index)
+	}, [onOuterActionFocus, onFocus, index])
+	const onSetFilter = useCallback(() => onFilterInsertNext(-1), [onFilterInsertNext])
+	const onFilterFocus = useCallback(
+		(chainIndex: number) => {
+			setOpenFilterIndex(chainIndex)
+			onFocus && onFocus(index)
+		},
+		[onFocus]
+	)
+
 	return (
 		<div className="triggered-action-entry__action">
 			<ActionSelector
 				action={action}
 				opened={opened}
-				onFocus={() => {
-					onActionFocus && onActionFocus()
-					onFocus && onFocus()
-				}}
+				onFocus={onActionFocus}
 				onChange={onChange}
 				onRemove={onRemove}
-				onSetFilter={() => onFilterInsertNext(-1)}
+				onSetFilter={onSetFilter}
 				onClose={onOuterClose}
 			/>
 			{action.filterChain.map((chainLink, chainIndex) =>
@@ -148,31 +165,27 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 						link={chainLink}
 						readonly={readonly}
 						key={chainIndex}
+						index={chainIndex}
 						opened={openFilterIndex === chainIndex}
-						onChange={(newVal) => onFilterChange(chainIndex, newVal)}
+						onChange={onFilterChange}
 						showStyleBase={showStyleBase}
-						onFocus={() => {
-							setOpenFilterIndex(chainIndex)
-							if (typeof onFocus === 'function') onFocus()
-						}}
+						onFocus={onFilterFocus}
 						onClose={onClose}
-						onInsertNext={() => onFilterInsertNext(chainIndex)}
-						onRemove={() => onFilterRemove(chainIndex)}
+						onInsertNext={onFilterInsertNext}
+						onRemove={onFilterRemove}
 					/>
 				) : chainLink.object === 'view' ? (
 					<ViewFilter
+						index={chainIndex}
 						link={chainLink}
 						readonly={readonly}
 						key={chainIndex}
-						onFocus={() => {
-							setOpenFilterIndex(chainIndex)
-							if (typeof onFocus === 'function') onFocus()
-						}}
+						onFocus={onFilterFocus}
 						onClose={onClose}
 						opened={openFilterIndex === chainIndex}
 						final={action.filterChain.length === 1 && isFinal(action, chainLink)}
-						onInsertNext={() => onFilterInsertNext(chainIndex)}
-						onRemove={() => onFilterRemove(chainIndex)}
+						onInsertNext={onFilterInsertNext}
+						onRemove={onFilterRemove}
 					/>
 				) : chainLink.object === 'rundownPlaylist' ? (
 					<RundownPlaylistFilter link={chainLink} key={chainIndex} />

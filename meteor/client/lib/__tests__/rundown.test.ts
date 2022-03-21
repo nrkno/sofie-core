@@ -5,7 +5,11 @@ import {
 	setupDefaultRundownPlaylist,
 } from '../../../__mocks__/helpers/database'
 import { RundownUtils } from '../rundown'
-import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	RundownPlaylistId,
+	RundownPlaylistCollectionUtil,
+} from '../../../lib/collections/RundownPlaylists'
 
 describe('client/lib/rundown', () => {
 	let env: DefaultEnvironment
@@ -19,11 +23,11 @@ describe('client/lib/rundown', () => {
 		const playlist = RundownPlaylists.findOne(playlistId)
 		if (!playlist) throw new Error('Rundown not found')
 
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+		const { currentPartInstance, nextPartInstance } =
+			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
-		const rundowns = playlist.getRundowns()
-		const segments = playlist.getSegments()
-		const parts = playlist.getAllOrderedParts()
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
+		const { parts, segments } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
 		const rundown = rundowns[0]
 		const segment = segments[0]
 

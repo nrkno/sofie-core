@@ -9,13 +9,12 @@ import {
 } from '../../lib/collections/ExternalMessageQueue'
 import {
 	ExternalMessageQueueObjSOAP,
-	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,
 	ExternalMessageQueueObjRabbitMQ,
+	StatusCode,
 } from '@sofie-automation/blueprints-integration'
-import { getCurrentTime, removeNullyProperties, getRandomId, protectString, omit } from '../../lib/lib'
+import { getCurrentTime } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
-import { Rundown } from '../../lib/collections/Rundowns'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
@@ -24,79 +23,12 @@ import { StatusObject, setSystemStatus } from '../systemStatus/systemStatus'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-import { MongoModifier } from '../../lib/typings/meteor'
-import { ReadonlyDeep } from 'type-fest'
-import { StatusCode } from '../../lib/api/systemStatus'
-
-export function queueExternalMessages(
-	rundown: ReadonlyDeep<Rundown>,
-	messages: Array<IBlueprintExternalMessageQueueObj>
-) {
-	const playlist = rundown.getRundownPlaylist()
-
-	_.each(messages, (message: IBlueprintExternalMessageQueueObj) => {
-		// check the output:
-		if (!message) throw new Meteor.Error('Falsy result!')
-		if (!message.type) throw new Meteor.Error('attribute .type missing!')
-		if (!message.receiver) throw new Meteor.Error('attribute .receiver missing!')
-		if (!message.message) throw new Meteor.Error('attribute .message missing!')
-
-		// Save the output into the message queue, for later processing:
-		if (message._id) {
-			// Overwrite an existing message
-			const messageId = protectString(message._id)
-
-			const existingMessage = ExternalMessageQueue.findOne(messageId)
-			if (!existingMessage) throw new Meteor.Error(`ExternalMessage ${message._id} not found!`)
-			if (existingMessage.studioId !== rundown.studioId)
-				throw new Meteor.Error(`ExternalMessage ${message._id} is not in the right studio!`)
-			if (existingMessage.rundownId !== rundown._id)
-				throw new Meteor.Error(`ExternalMessage ${message._id} is not in the right rundown!`)
-
-			if (!playlist.rehearsal) {
-				const m: MongoModifier<ExternalMessageQueueObj> = {
-					$set: {
-						...omit(message, '_id'),
-					},
-				}
-				if (message.queueForLaterReason === undefined) {
-					m.$unset = {
-						queueForLaterReason: 1,
-					}
-				}
-				ExternalMessageQueue.update(existingMessage._id, m)
-				triggerdoMessageQueue() // trigger processing of the queue
-			}
-		} else {
-			const now = getCurrentTime()
-			let message2: ExternalMessageQueueObj = {
-				_id: getRandomId(),
-
-				...omit(message, '_id'),
-
-				studioId: rundown.studioId,
-				rundownId: rundown._id,
-
-				created: now,
-				tryCount: 0,
-				expires: now + 35 * 24 * 3600 * 1000, // 35 days
-				manualRetry: false,
-			}
-			message2 = removeNullyProperties(message2)
-			if (!playlist.rehearsal) {
-				// Don't save the message when running rehearsals
-				ExternalMessageQueue.insert(message2)
-				triggerdoMessageQueue() // trigger processing of the queue
-			}
-		}
-	})
-}
 
 let runMessageQueue = true
 let errorOnLastRunCount: number = 0
 
 let triggerdoMessageQueueTimeout: number = 0
-export function triggerdoMessageQueue(time?: number) {
+function triggerdoMessageQueue(time?: number) {
 	if (!time) time = 1000
 	if (triggerdoMessageQueueTimeout) {
 		Meteor.clearTimeout(triggerdoMessageQueueTimeout)
@@ -108,9 +40,6 @@ export function triggerdoMessageQueue(time?: number) {
 		}, time)
 	}
 }
-Meteor.startup(() => {
-	triggerdoMessageQueue(5000)
-})
 function doMessageQueue() {
 	const tryInterval = 1 * 60 * 1000 // 1 minute
 	const limit = errorOnLastRunCount === 0 ? 100 : 5 // if there were errors on last send, don't run too many next time
@@ -256,6 +185,11 @@ function updateExternalMessageQueueStatus(): void {
 	}
 }
 
+ExternalMessageQueue.find({}).observeChanges({
+	added: () => triggerdoMessageQueue(),
+	changed: () => triggerdoMessageQueue(),
+	removed: () => triggerdoMessageQueue(),
+})
 ExternalMessageQueue.find({
 	sent: { $not: { $gt: 0 } },
 	tryCount: { $gt: 3 },
@@ -266,6 +200,7 @@ ExternalMessageQueue.find({
 })
 Meteor.startup(() => {
 	updateExternalMessageQueueStatus()
+	triggerdoMessageQueue(5000)
 })
 
 async function removeExternalMessage(context: MethodContext, messageId: ExternalMessageQueueObjId): Promise<void> {

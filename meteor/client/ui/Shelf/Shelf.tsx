@@ -41,7 +41,6 @@ export enum ShelfTabs {
 	ADLIB_LAYOUT_FILTER = 'adlib_layout_filter',
 	GLOBAL_ADLIB = 'global_adlib',
 	SYSTEM_HOTKEYS = 'system_hotkeys',
-	KEYBOARD = 'keyboard_preview',
 }
 export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
@@ -67,12 +66,6 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	showBuckets: boolean
 
 	onChangeExpanded: (value: boolean) => void
-	onRegisterHotkeys: (
-		hotkeys: Array<{
-			key: string
-			label: string
-		}>
-	) => void
 	onChangeBottomMargin?: (newBottomMargin: string) => void
 }
 
@@ -133,7 +126,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+			doUserAction(t, e, UserAction.TAKE, (e) =>
+				MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+			)
 		}
 	}
 
@@ -171,6 +166,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			if (defaultTab) {
 				this.setState({
 					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${defaultTab._id}`,
+				})
+			} else if (this.props.rundownLayout.filters.length >= 0) {
+				// there is no AdLib dab so some default needs to be selected
+				this.setState({
+					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${this.props.rundownLayout.filters[0]._id}`,
 				})
 			}
 		}
@@ -457,7 +457,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							</ErrorBoundary>
 						</ContextMenuTrigger>
 					) : null}
-
 					{shelfDisplayOptions.buckets ? (
 						<ErrorBoundary>
 							<RundownViewBuckets

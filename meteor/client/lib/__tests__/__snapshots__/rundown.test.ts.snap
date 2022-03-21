@@ -12,36 +12,34 @@ Object {
   "isNextSegment": false,
   "parts": Array [
     Object {
-      "instance": PartInstance {
-        "_id": "randomId9002_part0_0_tmp_instance",
+      "instance": Object {
+        "_id": "randomId9008_part0_0_tmp_instance",
         "isTemporary": true,
-        "part": Part {
-          "_id": "randomId9002_part0_0",
+        "part": Object {
+          "_id": "randomId9008_part0_0",
           "_rank": 0,
           "externalId": "MOCK_PART_0_0",
-          "rundownId": "randomId9002",
-          "segmentId": "randomId9002_segment0",
+          "rundownId": "randomId9008",
+          "segmentId": "randomId9008_segment0",
           "title": "Part 0 0",
         },
         "playlistActivationId": "",
         "rehearsal": false,
-        "rundownId": "randomId9002",
-        "segmentId": "randomId9002_segment0",
+        "rundownId": "randomId9008",
+        "segmentId": "randomId9008_segment0",
         "segmentPlayoutId": "",
         "takeCount": -1,
       },
-      "partId": "randomId9002_part0_0",
+      "partId": "randomId9008_part0_0",
       "pieces": Array [
         Object {
           "instance": Object {
-            "_id": "randomId9002_part0_0_tmp_instance_randomId9002_piece001",
+            "_id": "randomId9008_part0_0_tmp_instance_randomId9008_piece001",
             "isTemporary": true,
-            "partInstanceId": "randomId9002_part0_0_tmp_instance",
+            "partInstanceId": "randomId9008_part0_0_tmp_instance",
             "piece": Object {
-              "_id": "randomId9002_piece001",
-              "content": Object {
-                "timelineObjects": Array [],
-              },
+              "_id": "randomId9008_piece001",
+              "content": Object {},
               "enable": Object {
                 "start": 0,
               },
@@ -50,15 +48,17 @@ Object {
               "lifespan": "part-only",
               "name": "Piece 001",
               "outputLayerId": "pgm",
+              "pieceType": "normal",
               "sourceLayerId": "vt0",
-              "startPartId": "randomId9002_part0_0",
-              "startRundownId": "randomId9002",
-              "startSegmentId": "randomId9002_segment0",
+              "startPartId": "randomId9008_part0_0",
+              "startRundownId": "randomId9008",
+              "startSegmentId": "randomId9008_segment0",
               "status": 0,
+              "timelineObjectsString": "[]",
             },
             "playlistActivationId": "",
             "priority": 5,
-            "rundownId": "randomId9002",
+            "rundownId": "randomId9008",
           },
           "outputLayer": Object {
             "_id": "pgm",
@@ -86,14 +86,12 @@ Object {
                 "pieces": Array [
                   Object {
                     "instance": Object {
-                      "_id": "randomId9002_part0_1_tmp_instance_randomId9002_piece010",
+                      "_id": "randomId9008_part0_1_tmp_instance_randomId9008_piece010",
                       "isTemporary": true,
-                      "partInstanceId": "randomId9002_part0_1_tmp_instance",
+                      "partInstanceId": "randomId9008_part0_1_tmp_instance",
                       "piece": Object {
-                        "_id": "randomId9002_piece010",
-                        "content": Object {
-                          "timelineObjects": Array [],
-                        },
+                        "_id": "randomId9008_piece010",
+                        "content": Object {},
                         "enable": Object {
                           "start": 0,
                         },
@@ -102,15 +100,17 @@ Object {
                         "lifespan": "part-only",
                         "name": "Piece 010",
                         "outputLayerId": "pgm",
+                        "pieceType": "normal",
                         "sourceLayerId": "cam0",
-                        "startPartId": "randomId9002_part0_1",
-                        "startRundownId": "randomId9002",
-                        "startSegmentId": "randomId9002_segment0",
+                        "startPartId": "randomId9008_part0_1",
+                        "startRundownId": "randomId9008",
+                        "startSegmentId": "randomId9008_segment0",
                         "status": 0,
+                        "timelineObjectsString": "[]",
                       },
                       "playlistActivationId": "",
                       "priority": 5,
-                      "rundownId": "randomId9002",
+                      "rundownId": "randomId9008",
                     },
                     "outputLayer": [Circular],
                     "renderedDuration": null,
@@ -143,36 +143,34 @@ Object {
       "willProbablyAutoNext": false,
     },
     Object {
-      "instance": PartInstance {
-        "_id": "randomId9002_part0_1_tmp_instance",
+      "instance": Object {
+        "_id": "randomId9008_part0_1_tmp_instance",
         "isTemporary": true,
-        "part": Part {
-          "_id": "randomId9002_part0_1",
+        "part": Object {
+          "_id": "randomId9008_part0_1",
           "_rank": 1,
           "externalId": "MOCK_PART_0_1",
-          "rundownId": "randomId9002",
-          "segmentId": "randomId9002_segment0",
+          "rundownId": "randomId9008",
+          "segmentId": "randomId9008_segment0",
           "title": "Part 0 1",
         },
         "playlistActivationId": "",
         "rehearsal": false,
-        "rundownId": "randomId9002",
-        "segmentId": "randomId9002_segment0",
+        "rundownId": "randomId9008",
+        "segmentId": "randomId9008_segment0",
         "segmentPlayoutId": "",
         "takeCount": -1,
       },
-      "partId": "randomId9002_part0_1",
+      "partId": "randomId9008_part0_1",
       "pieces": Array [
         Object {
           "instance": Object {
-            "_id": "randomId9002_part0_1_tmp_instance_randomId9002_piece010",
+            "_id": "randomId9008_part0_1_tmp_instance_randomId9008_piece010",
             "isTemporary": true,
-            "partInstanceId": "randomId9002_part0_1_tmp_instance",
+            "partInstanceId": "randomId9008_part0_1_tmp_instance",
             "piece": Object {
-              "_id": "randomId9002_piece010",
-              "content": Object {
-                "timelineObjects": Array [],
-              },
+              "_id": "randomId9008_piece010",
+              "content": Object {},
               "enable": Object {
                 "start": 0,
               },
@@ -181,15 +179,17 @@ Object {
               "lifespan": "part-only",
               "name": "Piece 010",
               "outputLayerId": "pgm",
+              "pieceType": "normal",
               "sourceLayerId": "cam0",
-              "startPartId": "randomId9002_part0_1",
-              "startRundownId": "randomId9002",
-              "startSegmentId": "randomId9002_segment0",
+              "startPartId": "randomId9008_part0_1",
+              "startRundownId": "randomId9008",
+              "startSegmentId": "randomId9008_segment0",
               "status": 0,
+              "timelineObjectsString": "[]",
             },
             "playlistActivationId": "",
             "priority": 5,
-            "rundownId": "randomId9002",
+            "rundownId": "randomId9008",
           },
           "outputLayer": Object {
             "_id": "pgm",
@@ -206,14 +206,12 @@ Object {
                 "pieces": Array [
                   Object {
                     "instance": Object {
-                      "_id": "randomId9002_part0_0_tmp_instance_randomId9002_piece001",
+                      "_id": "randomId9008_part0_0_tmp_instance_randomId9008_piece001",
                       "isTemporary": true,
-                      "partInstanceId": "randomId9002_part0_0_tmp_instance",
+                      "partInstanceId": "randomId9008_part0_0_tmp_instance",
                       "piece": Object {
-                        "_id": "randomId9002_piece001",
-                        "content": Object {
-                          "timelineObjects": Array [],
-                        },
+                        "_id": "randomId9008_piece001",
+                        "content": Object {},
                         "enable": Object {
                           "start": 0,
                         },
@@ -222,15 +220,17 @@ Object {
                         "lifespan": "part-only",
                         "name": "Piece 001",
                         "outputLayerId": "pgm",
+                        "pieceType": "normal",
                         "sourceLayerId": "vt0",
-                        "startPartId": "randomId9002_part0_0",
-                        "startRundownId": "randomId9002",
-                        "startSegmentId": "randomId9002_segment0",
+                        "startPartId": "randomId9008_part0_0",
+                        "startRundownId": "randomId9008",
+                        "startSegmentId": "randomId9008_segment0",
                         "status": 0,
+                        "timelineObjectsString": "[]",
                       },
                       "playlistActivationId": "",
                       "priority": 5,
-                      "rundownId": "randomId9002",
+                      "rundownId": "randomId9008",
                     },
                     "outputLayer": [Circular],
                     "renderedDuration": null,
@@ -275,7 +275,7 @@ Object {
     },
   ],
   "segmentExtended": Object {
-    "_id": "randomId9002_segment0",
+    "_id": "randomId9008_segment0",
     "_rank": 0,
     "externalId": "MOCK_SEGMENT_0",
     "externalModified": 1,
@@ -296,14 +296,12 @@ Object {
             "pieces": Array [
               Object {
                 "instance": Object {
-                  "_id": "randomId9002_part0_0_tmp_instance_randomId9002_piece001",
+                  "_id": "randomId9008_part0_0_tmp_instance_randomId9008_piece001",
                   "isTemporary": true,
-                  "partInstanceId": "randomId9002_part0_0_tmp_instance",
+                  "partInstanceId": "randomId9008_part0_0_tmp_instance",
                   "piece": Object {
-                    "_id": "randomId9002_piece001",
-                    "content": Object {
-                      "timelineObjects": Array [],
-                    },
+                    "_id": "randomId9008_piece001",
+                    "content": Object {},
                     "enable": Object {
                       "start": 0,
                     },
@@ -312,15 +310,17 @@ Object {
                     "lifespan": "part-only",
                     "name": "Piece 001",
                     "outputLayerId": "pgm",
+                    "pieceType": "normal",
                     "sourceLayerId": "vt0",
-                    "startPartId": "randomId9002_part0_0",
-                    "startRundownId": "randomId9002",
-                    "startSegmentId": "randomId9002_segment0",
+                    "startPartId": "randomId9008_part0_0",
+                    "startRundownId": "randomId9008",
+                    "startSegmentId": "randomId9008_segment0",
                     "status": 0,
+                    "timelineObjectsString": "[]",
                   },
                   "playlistActivationId": "",
                   "priority": 5,
-                  "rundownId": "randomId9002",
+                  "rundownId": "randomId9008",
                 },
                 "outputLayer": [Circular],
                 "renderedDuration": null,
@@ -339,14 +339,12 @@ Object {
             "pieces": Array [
               Object {
                 "instance": Object {
-                  "_id": "randomId9002_part0_1_tmp_instance_randomId9002_piece010",
+                  "_id": "randomId9008_part0_1_tmp_instance_randomId9008_piece010",
                   "isTemporary": true,
-                  "partInstanceId": "randomId9002_part0_1_tmp_instance",
+                  "partInstanceId": "randomId9008_part0_1_tmp_instance",
                   "piece": Object {
-                    "_id": "randomId9002_piece010",
-                    "content": Object {
-                      "timelineObjects": Array [],
-                    },
+                    "_id": "randomId9008_piece010",
+                    "content": Object {},
                     "enable": Object {
                       "start": 0,
                     },
@@ -355,15 +353,17 @@ Object {
                     "lifespan": "part-only",
                     "name": "Piece 010",
                     "outputLayerId": "pgm",
+                    "pieceType": "normal",
                     "sourceLayerId": "cam0",
-                    "startPartId": "randomId9002_part0_1",
-                    "startRundownId": "randomId9002",
-                    "startSegmentId": "randomId9002_segment0",
+                    "startPartId": "randomId9008_part0_1",
+                    "startRundownId": "randomId9008",
+                    "startSegmentId": "randomId9008_segment0",
                     "status": 0,
+                    "timelineObjectsString": "[]",
                   },
                   "playlistActivationId": "",
                   "priority": 5,
-                  "rundownId": "randomId9002",
+                  "rundownId": "randomId9008",
                 },
                 "outputLayer": [Circular],
                 "renderedDuration": null,
@@ -377,7 +377,7 @@ Object {
         "used": true,
       },
     },
-    "rundownId": "randomId9002",
+    "rundownId": "randomId9008",
     "sourceLayers": Object {
       "cam0": Object {
         "_id": "cam0",
@@ -387,6 +387,22 @@ Object {
         "name": "Camera",
         "pieces": Array [],
         "type": 1,
+      },
+      "graphics0": Object {
+        "_id": "graphics0",
+        "_rank": 3,
+        "followingItems": Array [],
+        "name": "Graphic",
+        "pieces": Array [],
+        "type": 5,
+      },
+      "transition0": Object {
+        "_id": "transition0",
+        "_rank": 2,
+        "followingItems": Array [],
+        "name": "Transition",
+        "pieces": Array [],
+        "type": 13,
       },
       "vt0": Object {
         "_id": "vt0",

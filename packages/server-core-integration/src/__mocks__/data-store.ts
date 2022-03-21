@@ -2,8 +2,7 @@
 let store: {[key: string]: any} = {}
 class Store {
 	private _store: any
-	constructor (name: string, options: any) {
-		options = options
+	constructor (name: string, _options: any) {
 		if (!store[name]) {
 			store[name] = {}
 		}

@@ -1,8 +1,7 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
-import { lazyIgnore, ProtectedString } from './lib'
+import { getRandomString, lazyIgnore, ProtectedString } from './lib'
 
 /** The ReactiveStore is a Reactive key-value store.
  * Keeps track of when the reactive values aren't in use anymore and automatically cleans them up.
@@ -17,7 +16,7 @@ export class ReactiveStore<Key extends ProtectedString<any> | string, Value> {
 		}
 	> = {}
 	private _depsToBatchInvalidate: Tracker.Dependency[] = []
-	private _name = Random.id()
+	private _name = getRandomString()
 
 	constructor(
 		private options: {

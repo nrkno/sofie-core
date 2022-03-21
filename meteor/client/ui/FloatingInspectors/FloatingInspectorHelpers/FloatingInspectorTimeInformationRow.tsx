@@ -1,14 +1,14 @@
 import React from 'react'
 import { PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
 import { RundownUtils } from '../../../lib/rundown'
-import { IBlueprintPiece, IBlueprintPieceGeneric, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import { useTranslation } from 'react-i18next'
 import { Time } from '../../../../lib/lib'
 import Moment from 'react-moment'
 
 interface IProps {
-	piece: PieceInstancePiece
+	piece: Omit<PieceInstancePiece, 'timelineObjectsString'>
 	pieceRenderedDuration: number | null
 	pieceRenderedIn: number | null
 	changed?: Time
@@ -18,7 +18,7 @@ export const FloatingInspectorTimeInformationRow: React.FunctionComponent<IProps
 	const durationText: string =
 		!props.pieceRenderedDuration && !props.piece.enable.duration
 			? getLifeSpanText(props.piece)
-			: getDuration(props.piece as IBlueprintPiece, props.pieceRenderedDuration)
+			: getDuration(props.piece, props.pieceRenderedDuration)
 
 	return (
 		<tr>
@@ -39,7 +39,7 @@ export const FloatingInspectorTimeInformationRow: React.FunctionComponent<IProps
 	)
 }
 
-function getLifeSpanText(piece: IBlueprintPieceGeneric): string {
+function getLifeSpanText(piece: Omit<PieceInstancePiece, 'timelineObjectsString'>): string {
 	const { t } = useTranslation()
 	switch (piece.lifespan) {
 		case PieceLifespan.WithinPart:
@@ -59,7 +59,10 @@ function getLifeSpanText(piece: IBlueprintPieceGeneric): string {
 	}
 }
 
-function getDuration(piece: IBlueprintPiece, pieceRenderedDuration: number | null): string {
+function getDuration(
+	piece: Omit<PieceInstancePiece, 'timelineObjectsString'>,
+	pieceRenderedDuration: number | null
+): string {
 	return RundownUtils.formatTimeToShortTime(
 		pieceRenderedDuration ||
 			(_.isNumber(piece.enable.duration) ? parseFloat(piece.enable.duration as any as string) : 0)

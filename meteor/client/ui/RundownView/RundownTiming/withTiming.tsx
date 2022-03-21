@@ -2,20 +2,21 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { RundownTiming } from './RundownTiming'
-import { RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
+import { RundownTimingContext } from '../../../lib/rundownTiming'
 
 export type TimingFilterFunction = (durations: RundownTimingContext) => any
 
 export enum TimingTickResolution {
 	/** Once per second */
 	Synced = 0,
-	Low,
-	High,
+	Low = 1,
+	High = 2,
 }
 
 export enum TimingDataResolution {
 	Synced = 0,
-	High,
+	// TODOSYNC: Add description for these, maybe also describe why there's no "low" here?
+	High = 2,
 }
 
 export interface WithTimingOptions {
@@ -42,7 +43,7 @@ type IWrappedComponent<IProps, IState> =
  * 		new (props: IProps, context: any ) => React.Component<IProps, IState>
  */
 export function withTiming<IProps, IState>(
-	options?: WithTimingOptions | ((props: IProps) => WithTimingOptions)
+	options?: Partial<WithTimingOptions> | ((props: IProps) => Partial<WithTimingOptions>)
 ): (
 	WrappedComponent: IWrappedComponent<IProps, IState>
 ) => new (props: IProps, context: any) => React.Component<IProps, IState> {
