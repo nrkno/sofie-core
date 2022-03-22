@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { DBPart, PartId } from '../../lib/collections/Parts'
-import { Segment, SegmentId } from '../../lib/collections/Segments'
+import { SegmentId } from '../../lib/collections/Segments'
 import {
 	unprotectObjectArray,
 	protectString,
@@ -57,7 +57,6 @@ import {
 	fetchShowStyleBaseLight,
 	fetchStudioLight,
 } from '../../lib/collections/optimizations'
-import { partial } from 'underscore'
 import { BeforePartMap } from './ingest/commit'
 import { CacheForIngest } from './ingest/cache'
 import { BulkWriteOperation } from 'mongodb'
@@ -176,13 +175,6 @@ export function allowedToMoveRundownOutOfPlaylist(
 	)
 }
 
-export interface ChangeInfo {
-	segmentId: SegmentId
-	oldPartIdsAndRanks: Array<{ id: PartId; rank: number }> | null // Null if the Parts havent changed, and so can be loaded locally
-}
-
-export type ChangedSegmentsRankInfo = Array<ChangeInfo>
-
 /**
  * Update the ranks of all PartInstances in the given segments.
  * Syncs the ranks from matching Parts to PartInstances.
@@ -190,7 +182,7 @@ export type ChangedSegmentsRankInfo = Array<ChangeInfo>
  */
 export async function updatePartInstanceRanks(
 	cache: CacheForIngest,
-	/*changedSegments: ChangedSegmentsRankInfo*/ changedSegmentIds: ReadonlyDeep<SegmentId[]>,
+	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
 	beforePartMap: BeforePartMap
 ) {
 	const groupedPartInstances = _.groupBy(
@@ -353,7 +345,7 @@ function calculateNewRanksForParts(
 		// position them all 0..n
 		let i = 0
 		for (const partInfo of orphanedPartInstances) {
-			changedRanks.set(partInfo.instanceId, { rank: i++, deleted: undefined })
+			changedRanks.set(partInfo.instanceId, { rank: i++, deleted: true })
 		}
 
 		return changedRanks
@@ -368,7 +360,10 @@ function calculateNewRanksForParts(
 		const firstPartRank = newParts.length > 0 ? _.min(newParts, (p) => p._rank)._rank : 0
 		let i = firstPartRank - orphanedPartInstances.length
 		for (const partInfo of orphanedPartInstances) {
-			changedRanks.set(partInfo.instanceId, { rank: i++, deleted: undefined })
+			changedRanks.set(partInfo.instanceId, {
+				rank: i++,
+				deleted: changedRanks.get(partInfo.instanceId)?.deleted,
+			})
 		}
 	} else {
 		// they need interleaving
@@ -419,7 +414,10 @@ function calculateNewRanksForParts(
 
 				const orphanedPart = remainingPreviousParts[o]
 				if (orphanedPart.instanceId && orphanedPart.rank !== newRank) {
-					changedRanks.set(orphanedPart.instanceId, { rank: newRank, deleted: undefined })
+					changedRanks.set(orphanedPart.instanceId, {
+						rank: newRank,
+						deleted: changedRanks.get(orphanedPart.instanceId)?.deleted,
+					})
 				}
 			}
 		}

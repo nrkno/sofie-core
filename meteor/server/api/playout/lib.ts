@@ -12,7 +12,6 @@ import {
 	protectString,
 	applyToArray,
 	getRandomId,
-	unprotectString,
 	assertNever,
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
@@ -21,7 +20,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { Segment, DBSegment, SegmentId, SegmentOrphanedReason, Segments } from '../../../lib/collections/Segments'
+import { Segment, DBSegment, SegmentId, SegmentOrphanedReason } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import {
 	PartInstance,
@@ -44,9 +43,7 @@ import { Settings } from '../../../lib/Settings'
 import { runIngestOperationWithCache, UpdateIngestRundownAction } from '../ingest/lockFunction'
 import { updateSegmentFromIngestData } from '../ingest/generation'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { MongoFieldSpecifierOnes, MongoQuery } from '../../../lib/typings/meteor'
-import { FilterQuery } from 'mongodb'
-import { partial } from 'underscore'
+import { MongoQuery } from '../../../lib/typings/meteor'
 
 export const LOW_PRIO_DEFER_TIME = 40 // ms
 

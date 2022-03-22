@@ -12,16 +12,16 @@ import { updatePartInstanceRanks } from '../rundown'
 import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import { Part, PartId, Parts } from '../../../lib/collections/Parts'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
-import { PlayoutLockFunctionPriority, runPlayoutOperationWithCache } from '../playout/lockFunction'
 import { CacheForIngest } from '../ingest/cache'
-import { BeforePartMap, BeforePartMapItem } from '../ingest/commit'
+import { BeforePartMapItem } from '../ingest/commit'
+import { getRundownId } from '../ingest/lib'
 
 require('../rundown') // include in order to create the Meteor methods needed
 
 describe('updatePartInstanceRanks', () => {
 	let env: DefaultEnvironment
 	let playlistId!: RundownPlaylistId
-	let rundownExternalId!: string
+	const rundownExternalId: string = 'rundown00'
 	let rundownId!: RundownId
 	let segmentId!: SegmentId
 
@@ -29,7 +29,7 @@ describe('updatePartInstanceRanks', () => {
 		env = await setupDefaultStudioEnvironment()
 
 		// Set up a playlist:
-		const info = setupDefaultRundownPlaylist(env, protectString('rundown00'))
+		const info = setupDefaultRundownPlaylist(env, getRundownId(env.studio._id, rundownExternalId))
 		const playlist0 = RundownPlaylists.findOne(info.playlistId) as RundownPlaylist
 		expect(playlist0).toBeTruthy()
 
@@ -40,7 +40,6 @@ describe('updatePartInstanceRanks', () => {
 
 		const rundown = Rundowns.findOne(rundownId) as Rundown
 		expect(rundown).toBeTruthy()
-		rundownExternalId = rundown.externalId
 
 		const segment0 = Segments.findOne({ rundownId }) as Segment
 		expect(segment0).toBeTruthy()

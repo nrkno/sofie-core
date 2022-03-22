@@ -9,7 +9,6 @@ import { CommitIngestData } from './lockFunction'
 import { ensureNextPartIsValid } from './updateNext'
 import {
 	orphanedHiddenSegmentPropertiesToPreserve,
-	Segment,
 	SegmentId,
 	SegmentOrphanedReason,
 	Segments,
@@ -29,8 +28,8 @@ import { reportRundownDataHasChanged } from '../blueprints/events'
 import { removeSegmentContents } from './cleanup'
 import { Settings } from '../../../lib/Settings'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../../cache/CacheCollection'
-import { DBPartInstance, PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
-import { DBPart, Part, PartId, Parts } from '../../../lib/collections/Parts'
+import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { DBPart, PartId, Parts } from '../../../lib/collections/Parts'
 import { RundownNote } from '../../../lib/api/notes'
 import {
 	PlaylistLock,
@@ -51,7 +50,6 @@ import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import _ from 'underscore'
-import { BulkWriteOperation } from 'mongodb'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
@@ -370,7 +368,7 @@ export async function CommitIngestOperation(
 					])
 
 					// ensure instances are updated for rundown changes
-					updatePartInstancesSegmentIds(ingestCache, data.renamedSegments)
+					await updatePartInstancesSegmentIds(ingestCache, data.renamedSegments)
 					await updatePartInstancesBasicProperties(ingestCache.Parts, ingestCache.RundownId, newPlaylist)
 
 					// Update the playout to use the updated rundown
