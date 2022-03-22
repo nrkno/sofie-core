@@ -255,7 +255,7 @@ function sendResponseCode(res: ServerResponse, code: number, description: string
 
 function webNrcsRundownRoute(res: ServerResponse, parsedUrl: URL) {
 	// the "path" will contain the initial forward slash, so we need to strip that out
-	const externalId = decodeURIComponent(parsedUrl.pathname.substr(1))
+	const externalId = decodeURIComponent(parsedUrl.pathname.substring(1))
 	if (externalId === null) {
 		sendResponseCode(res, 400, 'Needs an External ID to be provided')
 		return
