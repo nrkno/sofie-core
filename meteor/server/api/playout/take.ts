@@ -132,7 +132,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 		},
 	})
 
-	cache.SomePartInstances.update(takePartInstance._id, {
+	cache.PartInstances.update(takePartInstance._id, {
 		$set: {
 			isTaken: true,
 			'timings.take': now,
@@ -141,7 +141,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	})
 
 	if (cache.Playlist.doc.previousPartInstanceId) {
-		cache.SomePartInstances.update(cache.Playlist.doc.previousPartInstanceId, {
+		cache.PartInstances.update(cache.Playlist.doc.previousPartInstanceId, {
 			$set: {
 				'timings.takeOut': now,
 			},
@@ -199,7 +199,7 @@ export function resetPreviousSegment(cache: CacheForPlayout) {
 		// Reset the old segment
 		const segmentId = previousPartInstance.segmentId
 		const resetIds = new Set(
-			cache.SomePartInstances.update((p) => !p.reset && p.segmentId === segmentId, {
+			cache.PartInstances.update((p) => !p.reset && p.segmentId === segmentId, {
 				$set: {
 					reset: true,
 				},
@@ -225,7 +225,7 @@ function afterTakeUpdateTimingsAndEvents(
 
 	// todo: should this be changed back to Meteor.defer, at least for the blueprint stuff?
 	if (takePartInstance) {
-		cache.SomePartInstances.update(takePartInstance._id, {
+		cache.PartInstances.update(takePartInstance._id, {
 			$set: {
 				'timings.takeDone': takeDoneTime,
 			},
@@ -338,7 +338,7 @@ export function updatePartInstanceOnTake(
 		partInstanceM.$set.previousPartEndState = previousPartEndState
 	}
 
-	cache.SomePartInstances.update(takePartInstance._id, partInstanceM)
+	cache.PartInstances.update(takePartInstance._id, partInstanceM)
 }
 
 export async function afterTake(

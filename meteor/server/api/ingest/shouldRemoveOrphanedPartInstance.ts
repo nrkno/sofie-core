@@ -71,7 +71,7 @@ export async function shouldRemoveOrphanedPartInstance(
 		)
 	}
 	if (changed) {
-		cache.SomePartInstances.update(orphanedPartInstance._id, {
+		cache.PartInstances.update(orphanedPartInstance._id, {
 			$set: {
 				'part.notes': notes,
 			},
@@ -79,7 +79,7 @@ export async function shouldRemoveOrphanedPartInstance(
 	}
 
 	if (shouldRemoveInstance && !isTooCloseToAutonext(playlistPartInstances.currentPartInstance)) {
-		cache.SomePartInstances.update(orphanedPartInstance._id, {
+		cache.PartInstances.update(orphanedPartInstance._id, {
 			$set: {
 				reset: true,
 			},

@@ -306,7 +306,7 @@ export async function setNextPart(
 		let newInstanceId: PartInstanceId
 		if (nextPartInfo.type === 'partinstance') {
 			newInstanceId = nextPartInfo.instance._id
-			cache.SomePartInstances.update(newInstanceId, {
+			cache.PartInstances.update(newInstanceId, {
 				$unset: {
 					consumesNextSegmentId: 1,
 				},
@@ -315,7 +315,7 @@ export async function setNextPart(
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
-			cache.SomePartInstances.update(newInstanceId, {
+			cache.PartInstances.update(newInstanceId, {
 				$set: {
 					consumesNextSegmentId: nextPartInfo.consumesNextSegmentId,
 				},
@@ -330,7 +330,7 @@ export async function setNextPart(
 					? currentPartInstance.segmentPlayoutId
 					: getRandomId()
 
-			cache.SomePartInstances.insert({
+			cache.PartInstances.insert({
 				_id: newInstanceId,
 				takeCount: newTakeCount,
 				playlistActivationId: cache.Playlist.doc.activationId,
@@ -397,7 +397,7 @@ export async function setNextPart(
 	}
 
 	// Remove any instances which havent been taken
-	const instancesIdsToRemove = cache.SomePartInstances.remove(
+	const instancesIdsToRemove = cache.PartInstances.remove(
 		(p) =>
 			!p.isTaken &&
 			p._id !== cache.Playlist.doc.nextPartInstanceId &&
@@ -413,7 +413,7 @@ export async function setNextPart(
 			const resetPartInstanceIds = new Set<PartInstanceId>()
 			if (currentPartInstance) {
 				// Always clean the current segment, anything after the current part (except the next part)
-				const trailingInOldSegment = cache.SomePartInstances.findFetch(
+				const trailingInOldSegment = cache.PartInstances.findFetch(
 					(p) =>
 						!p.reset &&
 						p._id !== currentPartInstance._id &&
@@ -434,7 +434,7 @@ export async function setNextPart(
 					nextPartInstance.part._rank < currentPartInstance.part._rank)
 			) {
 				// clean the whole segment if new, or jumping backwards
-				const newSegmentParts = cache.SomePartInstances.findFetch(
+				const newSegmentParts = cache.PartInstances.findFetch(
 					(p) =>
 						!p.reset &&
 						p._id !== nextPartInstance._id &&
@@ -596,7 +596,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 
 	const removePartInstanceIds: PartInstanceId[] = []
 	// Cleanup any orphaned partinstances once they are no longer being played (and the segment isnt orphaned)
-	const orphanedInstances = cache.SomePartInstances.findFetch((p) => p.orphaned === 'deleted' && !p.reset)
+	const orphanedInstances = cache.PartInstances.findFetch((p) => p.orphaned === 'deleted' && !p.reset)
 	for (const partInstance of orphanedInstances) {
 		if (Settings.preserveUnsyncedPlayingSegmentContents && orphanedSegmentIds.has(partInstance.segmentId)) {
 			// If the segment is also orphaned, then don't delete it until it is clear
@@ -620,7 +620,7 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
  * @param selector if not provided, all partInstances will be reset
  */
 function resetPartInstancesWithPieceInstances(cache: CacheForPlayout, selector?: MongoQuery<PartInstance>) {
-	const partInstancesToReset = cache.SomePartInstances.update(
+	const partInstancesToReset = cache.PartInstances.update(
 		selector
 			? {
 					...selector,
@@ -697,7 +697,7 @@ function resetPartInstancesWithPieceInstances(cache: CacheForPlayout, selector?:
 
 export function onPartHasStoppedPlaying(cache: CacheForPlayout, partInstance: PartInstance, stoppedPlayingTime: Time) {
 	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
-		cache.SomePartInstances.update(partInstance._id, {
+		cache.PartInstances.update(partInstance._id, {
 			$set: {
 				'timings.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
 			},

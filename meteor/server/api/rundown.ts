@@ -270,27 +270,27 @@ export async function updatePartInstanceRanks(
 export function updatePartInstanceRanksAfterAdlib(cache: CacheForPlayout, segmentId: SegmentId) {
 	const newParts = cache.Parts.findFetch((p) => p.segmentId === segmentId)
 	const segmentPartInstances = _.sortBy(
-		cache.SomePartInstances.findFetch((p) => p.segmentId === segmentId),
+		cache.PartInstances.findFetch((p) => p.segmentId === segmentId),
 		(p) => p.part._rank
 	)
 
 	const newRanks = calculateNewRanksForParts(segmentId, null, newParts, segmentPartInstances)
 	for (const [instanceId, info] of newRanks.entries()) {
 		if (info.deleted) {
-			cache.SomePartInstances.update(instanceId, {
+			cache.PartInstances.update(instanceId, {
 				$set: {
 					orphaned: 'deleted',
 					'part._rank': info.rank,
 				},
 			})
 		} else if (info.deleted === undefined) {
-			cache.SomePartInstances.update(instanceId, {
+			cache.PartInstances.update(instanceId, {
 				$set: {
 					'part._rank': info.rank,
 				},
 			})
 		} else {
-			cache.SomePartInstances.update(instanceId, {
+			cache.PartInstances.update(instanceId, {
 				$set: {
 					'part._rank': info.rank,
 				},

@@ -895,7 +895,7 @@ export namespace ServerPlayoutAPI {
 					throw new Meteor.Error(501, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
 			},
 			async (cache) => {
-				const playingPartInstance = cache.SomePartInstances.findOne(partInstanceId)
+				const playingPartInstance = cache.PartInstances.findOne(partInstanceId)
 				if (!playingPartInstance)
 					throw new Meteor.Error(
 						404,
@@ -1211,7 +1211,7 @@ export namespace ServerPlayoutAPI {
 		const playlist = cache.Playlist.doc
 
 		const currentPartInstance = playlist.currentPartInstanceId
-			? cache.SomePartInstances.findOne(playlist.currentPartInstanceId)
+			? cache.PartInstances.findOne(playlist.currentPartInstanceId)
 			: undefined
 		if (!currentPartInstance)
 			throw new Meteor.Error(501, `Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`)
@@ -1294,7 +1294,7 @@ export namespace ServerPlayoutAPI {
 					throw new Meteor.Error(403, `Pieces can be only manipulated in a current part!`)
 			},
 			async (cache) => {
-				const partInstance = cache.SomePartInstances.findOne(partInstanceId)
+				const partInstance = cache.PartInstances.findOne(partInstanceId)
 				if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 				const lastStartedPlayback = partInstance.timings?.startedPlayback
 				if (!lastStartedPlayback)

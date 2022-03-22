@@ -72,7 +72,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		}
 
 		const pieceChanges = this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
-		const partChanges = this._partInstanceCache.updateOtherCacheWithData(cache.SomePartInstances)
+		const partChanges = this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
 
 		logChanges('PartInstances', partChanges)
 		logChanges('PieceInstances', pieceChanges)

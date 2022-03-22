@@ -78,7 +78,7 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 				cache.Playlist.doc.previousPartInstanceId,
 			])
 		)
-		cache.SomePartInstances.update((p) => partInstancesToPreserve.has(p._id), {
+		cache.PartInstances.update((p) => partInstancesToPreserve.has(p._id), {
 			$set: { playlistActivationId: cache.Playlist.doc.activationId },
 		})
 		cache.PieceInstances.update((p) => partInstancesToPreserve.has(p.partInstanceId), {
@@ -86,7 +86,7 @@ export async function activateRundownPlaylist(cache: CacheForPlayout, rehearsal:
 		})
 
 		if (cache.Playlist.doc.nextPartInstanceId) {
-			const nextPartInstance = cache.SomePartInstances.findOne(cache.Playlist.doc.nextPartInstanceId)
+			const nextPartInstance = cache.PartInstances.findOne(cache.Playlist.doc.nextPartInstanceId)
 			if (!nextPartInstance)
 				throw new Meteor.Error(
 					404,
@@ -179,7 +179,7 @@ export async function deactivateRundownPlaylistInner(cache: CacheForPlayout): Pr
 	await setNextPart(cache, null)
 
 	if (currentPartInstance) {
-		cache.SomePartInstances.update(currentPartInstance._id, {
+		cache.PartInstances.update(currentPartInstance._id, {
 			$set: {
 				'timings.takeOut': getCurrentTime(),
 			},

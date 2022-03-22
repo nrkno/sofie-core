@@ -115,7 +115,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 	public readonly Segments: DbCacheReadCollection<Segment, DBSegment>
 	public readonly Parts: DbCacheReadCollection<Part, DBPart>
-	public readonly SomePartInstances: DbCacheWriteCollection<PartInstance, DBPartInstance>
+	public readonly PartInstances: DbCacheWriteCollection<PartInstance, DBPartInstance>
 	public readonly PieceInstances: DbCacheWriteCollection<PieceInstance, PieceInstance>
 
 	protected constructor(
@@ -138,7 +138,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		this.Segments = segments
 		this.Parts = parts
 
-		this.SomePartInstances = partInstances
+		this.PartInstances = partInstances
 		this.PieceInstances = pieceInstances
 	}
 
@@ -343,13 +343,13 @@ export function getSelectedPartInstancesFromCache(cache: CacheForPlayout): {
 
 	return {
 		currentPartInstance: playlist.currentPartInstanceId
-			? cache.SomePartInstances.findOne(playlist.currentPartInstanceId)
+			? cache.PartInstances.findOne(playlist.currentPartInstanceId)
 			: undefined,
 		nextPartInstance: playlist.nextPartInstanceId
-			? cache.SomePartInstances.findOne(playlist.nextPartInstanceId)
+			? cache.PartInstances.findOne(playlist.nextPartInstanceId)
 			: undefined,
 		previousPartInstance: playlist.previousPartInstanceId
-			? cache.SomePartInstances.findOne(playlist.previousPartInstanceId)
+			? cache.PartInstances.findOne(playlist.previousPartInstanceId)
 			: undefined,
 	}
 }

@@ -101,7 +101,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			return undefined
 		}
 
-		const partInstance = this._cache.SomePartInstances.findOne(partInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(partInstanceId)
 		return clone(unprotectObject(partInstance))
 	}
 	getPieceInstances(part: 'current' | 'next'): IBlueprintPieceInstance[] {
@@ -119,7 +119,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			return []
 		}
 
-		const partInstance = this._cache.SomePartInstances.findOne(partInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(partInstanceId)
 		if (!partInstance) {
 			return []
 		}
@@ -178,7 +178,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 
 		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInstanceId) {
-			const currentPartInstance = this._cache.SomePartInstances.findOne(
+			const currentPartInstance = this._cache.PartInstances.findOne(
 				this._cache.Playlist.doc.currentPartInstanceId
 			)
 
@@ -201,7 +201,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Cannot find PartInstance from invalid PieceInstance')
 		}
 
-		const cached = this._cache.SomePartInstances.findOne(partInstanceId)
+		const cached = this._cache.PartInstances.findOne(partInstanceId)
 		if (cached) {
 			return clone(unprotectObject(cached))
 		}
@@ -239,7 +239,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Cannot insert piece when no active part')
 		}
 
-		const partInstance = this._cache.SomePartInstances.findOne(partInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(partInstanceId)
 		if (!partInstance) {
 			throw new Error('Cannot queue part when no partInstance')
 		}
@@ -335,7 +335,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 	queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): IBlueprintPartInstance {
 		const currentPartInstance = this._cache.Playlist.doc.currentPartInstanceId
-			? this._cache.SomePartInstances.findOne(this._cache.Playlist.doc.currentPartInstanceId)
+			? this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInstanceId)
 			: undefined
 		if (!currentPartInstance) {
 			throw new Error('Cannot queue part when no current partInstance')
@@ -422,7 +422,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('PartInstance could not be found')
 		}
 
-		const partInstance = this._cache.SomePartInstances.findOne(partInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(partInstanceId)
 		if (!partInstance) {
 			throw new Error('PartInstance could not be found')
 		}
@@ -440,7 +440,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 		}
 
-		this._cache.SomePartInstances.update(partInstance._id, update)
+		this._cache.PartInstances.update(partInstance._id, update)
 
 		this.nextPartState = Math.max(
 			this.nextPartState,
@@ -451,7 +451,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			part === 'current' ? ActionPartChange.SAFE_CHANGE : ActionPartChange.NONE
 		)
 
-		return clone(unprotectObject(this._cache.SomePartInstances.findOne(partInstance._id)!))
+		return clone(unprotectObject(this._cache.PartInstances.findOne(partInstance._id)!))
 	}
 
 	stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): string[] {
@@ -505,7 +505,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		if (!this._cache.Playlist.doc.currentPartInstanceId) {
 			return []
 		}
-		const partInstance = this._cache.SomePartInstances.findOne(this._cache.Playlist.doc.currentPartInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInstanceId)
 		if (!partInstance) {
 			throw new Error('Cannot stop pieceInstances when no current partInstance')
 		}
