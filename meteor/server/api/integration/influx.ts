@@ -36,22 +36,25 @@ const versions = getVersions()
 let timeout: number | undefined = undefined
 let bufferedTraces: Influx.IPoint[] = []
 
-export interface Trace {
-	/** id of this trace, should be formatted as namespace:id */
-	measurement: string
+export interface TimeTrace {
+	measurement: FinishedTrace['measurement']
+	tags: FinishedTrace['tags']
+
 	/** timestamp of when trace was started */
 	start: number
+}
+export interface FinishedTrace {
+	/** id of this trace, should be formatted as namespace:id */
+	measurement: string
 	/** Tags to differentiate data sources */
 	tags?: Record<string, string>
-}
-export interface FinishedTrace extends Trace {
-	/** timestamp of when trace was ended */
-	ended: number
-	/** duration of the trace */
-	duration: number
+	timestamp: number
+
+	/** metrics */
+	fields?: Record<string, number>
 }
 
-export function startTrace(measurement: string, tags?: Record<string, string>): Trace {
+export function startTrace(measurement: string, tags?: Record<string, string>): TimeTrace {
 	return {
 		measurement,
 		tags,
@@ -59,16 +62,22 @@ export function startTrace(measurement: string, tags?: Record<string, string>): 
 	}
 }
 
-export function endTrace(trace: Trace): FinishedTrace {
+export function endTrace(trace: TimeTrace): FinishedTrace | null {
+	const duration = Date.now() - trace.start
+	if (Number.isNaN(duration)) return null
+
 	return {
-		...trace,
-		ended: Date.now(),
-		duration: Date.now() - trace.start,
+		measurement: trace.measurement,
+		tags: trace.tags,
+		timestamp: trace.start,
+		fields: {
+			duration: duration,
+		},
 	}
 }
 
-export function sendTrace(trace: FinishedTrace) {
-	if (!client || Number.isNaN(trace.duration)) return
+export function sendTrace(trace: FinishedTrace | null) {
+	if (!client || !trace) return
 
 	const point = {
 		measurement: 'core:' + trace.measurement,
@@ -78,9 +87,9 @@ export function sendTrace(trace: FinishedTrace) {
 			...versions,
 		},
 		fields: {
-			duration: trace.duration,
+			...trace.fields,
 		},
-		timestamp: trace.start * 1e6,
+		timestamp: trace.timestamp * 1e6,
 	}
 
 	bufferedTraces.push(point)
