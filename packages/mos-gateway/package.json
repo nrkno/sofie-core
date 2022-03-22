@@ -6,13 +6,13 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/tv2/tv-automation-server-core.git",
 		"directory": "packages/mos-gateway"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/tv2/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/mos-gateway#readme",
+	"homepage": "https://github.com/tv2/tv-automation-server-core/blob/master/packages/mos-gateway#readme",
 	"author": {
 		"name": "Johan Nyman",
 		"email": "johan@superfly.tv",
@@ -63,7 +63,7 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/server-core-integration": "1.41.0-in-development",
+		"@sofie-automation/server-core-integration": "npm:@tv2media/server-core-integration@1.41.0",
 		"mos-connection": "^1.0.5",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",

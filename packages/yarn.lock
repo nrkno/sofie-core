@@ -3116,10 +3116,16 @@
     webpack-sources "^1.4.3"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.41.0-in-development"
+  version "0.0.0"
+  uid ""
+
+"@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.41.0":
+  version "1.41.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.41.0.tgz#cbd487b86d92f116ed787f229ab4408940563e11"
+  integrity sha512-2m+2jI1bWUYfMXUlGzy7jzOpoQPiKM/O6RVgVy2d26vaid+8qKgNF/V81yclTKywle3BdItFAHqqrUdG97eCtg==
   dependencies:
     moment "2.29.1"
-    timeline-state-resolver-types "7.0.0-nightly-release41-20220218-125111-9691037c3.0"
+    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@1.0.0-release37"
     tslib "^2.3.1"
     type-fest "^2.11.1"
 
@@ -3146,7 +3152,7 @@
 "@sofie-automation/corelib@link:corelib":
   version "1.41.0-in-development"
   dependencies:
-    "@sofie-automation/blueprints-integration" "link:blueprints-integration"
+    "@sofie-automation/blueprints-integration" "npm:@tv2media/blueprints-integration@1.41.0"
     fast-clone "^1.5.13"
     i18next "^19.9.2"
     influx "^5.9.2"
@@ -3156,6 +3162,18 @@
     tslib "^2.1.0"
     type-fest "^2.11.1"
     underscore "^1.13.2"
+
+"@sofie-automation/server-core-integration@npm:@tv2media/server-core-integration@1.41.0":
+  version "1.41.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/server-core-integration/-/server-core-integration-1.41.0.tgz#90ccf0e62e73e4510c729fd22d7efc46c6359376"
+  integrity sha512-xURJLhCVFQuVC9ZzU/VdMQBGhnpD4h2HjJVK8Qz4NQ+R5ry45WLZrBrDdBMl+gJdqtFcxMTJ9dfV8RlwQFqdow==
+  dependencies:
+    data-store "^4.0.3"
+    ejson "^2.2.2"
+    faye-websocket "^0.11.4"
+    got "^11.8.2"
+    tslib "^2.3.1"
+    underscore "^1.12.1"
 
 "@svgr/babel-plugin-add-jsx-attribute@^5.4.0":
   version "5.4.0"
@@ -3394,9 +3412,9 @@
   integrity sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==
 
 "@tv2media/v-connection@^5.1.1":
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-5.1.1.tgz#beb47a90d81a3bad0d0670fb876bdaeb00e313c0"
-  integrity sha512-BzSsDfk0jQ5xApfPfDawPRguyBK98wdbdC5OZwYxk4WZtFMYu/8io/1pE4OJdHdGu6Wu2Wl19gGjIm7Buf1rYw==
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-5.1.2.tgz#fb6b839fd129e496af4fa968857b632a883b91d3"
+  integrity sha512-auKVbVSksxv9SVa2T4a7/bQXzvayhNQOYqcD7L+Pa2aO0LYDGwsyy/NzR7rBKnASnG+bqAjbokFRar4awoNMJA==
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -14639,17 +14657,24 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.0.0-nightly-release41-20220218-125111-9691037c3.0:
-  version "7.0.0-nightly-release41-20220218-125111-9691037c3.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0-nightly-release41-20220218-125111-9691037c3.0.tgz#795d2b89ce933bde2811bf19a7bdc85ee1180178"
-  integrity sha512-4tFPlnlgT6NoKyj3SxSwYCzF3hetATRKDFHDCgzA0ZEvW97sthL8IBlejVZrPZ4urh14a9wIkOrtiT/JgxMSZw==
+"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@1.0.0-release37":
+  version "1.0.0-release37"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-1.0.0-release37.tgz#3271b202cd0c4e03ae418c76019276238eede7db"
+  integrity sha512-HdCWUQ0EJ7LwlaH9eRtURwzXknIvo3U8kInzus9Vx0M0HoUixYgfV5Z80w/PVSYdUk0L95kW2oLZB4ECB1M7Pg==
+  dependencies:
+    tslib "^2.1.0"
+
+"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@1.41.0":
+  version "1.41.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-1.41.0.tgz#d6db847575795e7eeb9d0f75fbaae27436bb1a03"
+  integrity sha512-hUYOCCQCl/3xxmWS5dPKLITkcVnm6hokrUgu6zUFqzLj24MTgpxPV6i2GHpRYDyajuyWS3lrjrJLiFsSGO3TRg==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.0.0-nightly-release41-20220218-125111-9691037c3.0:
-  version "7.0.0-nightly-release41-20220218-125111-9691037c3.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.0.0-nightly-release41-20220218-125111-9691037c3.0.tgz#a38a005aac3fd8b3d7baa1f9a1f4793dca8c3de3"
-  integrity sha512-TL+ITJ5oA5EwA48NvkgkOqyhI9bW7pEtwu0mVgYT7mlXiAyHExO2pg3dAZAlvrX1349bzGom+C9SJPKdjzzQcA==
+"timeline-state-resolver@npm:@tv2media/timeline-state-resolver@1.41.0":
+  version "1.41.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver/-/timeline-state-resolver-1.41.0.tgz#04e0f5d72f68ddf391f8c5bb9bb82c0b706dfd7e"
+  integrity sha512-lkcpksIt4lBetOVOqxEKGyCBaB5gq8twJz1ObKZjsq98GcnmMa4XtVRuy2Q2Zfd1ksceEJQyb8ZziMvJq6DaZQ==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
     atem-connection "2.4.0"
@@ -14671,7 +14696,7 @@ timeline-state-resolver@7.0.0-nightly-release41-20220218-125111-9691037c3.0:
     sprintf-js "^1.1.2"
     superfly-timeline "8.2.1"
     threadedclass "^1.0.1"
-    timeline-state-resolver-types "7.0.0-nightly-release41-20220218-125111-9691037c3.0"
+    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@1.41.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
@@ -15377,9 +15402,9 @@ use-latest@^1.0.0:
     use-isomorphic-layout-effect "^1.0.0"
 
 utf-8-validate@^5.0.8:
-  version "5.0.8"
-  resolved "https://registry.yarnpkg.com/utf-8-validate/-/utf-8-validate-5.0.8.tgz#4a735a61661dbb1c59a0868c397d2fe263f14e58"
-  integrity sha512-k4dW/Qja1BYDl2qD4tOMB9PFVha/UJtxTc1cXYOe3WwA/2m0Yn4qB7wLMpJyLJ/7DR0XnTut3HsCSzDT4ZvKgA==
+  version "5.0.9"
+  resolved "https://registry.yarnpkg.com/utf-8-validate/-/utf-8-validate-5.0.9.tgz#ba16a822fbeedff1a58918f2a6a6b36387493ea3"
+  integrity sha512-Yek7dAy0v3Kl0orwMlvi7TPtiCNrdfHNd7Gcc/pLq4BLXqfAmd0J7OWMizUQnTTJsyjKn02mU7anqwfmUP4J8Q==
   dependencies:
     node-gyp-build "^4.3.0"
 

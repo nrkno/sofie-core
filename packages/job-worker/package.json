@@ -7,13 +7,13 @@
 	"private": true,
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/tv2/tv-automation-server-core.git",
 		"directory": "packages/job-worker"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/tv2/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/job-worker#readme",
+	"homepage": "https://github.com/tv2/tv-automation-server-core/blob/master/packages/job-worker#readme",
 	"scripts": {
 		"dev": "nodemon --config nodemon.json src/index.ts",
 		"dev:debug": "nodemon --config nodemon.json --inspect-brk src/index.ts",

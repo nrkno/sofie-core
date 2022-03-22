@@ -1,18 +1,18 @@
 {
 	"name": "playout-gateway",
-	"version": "1.41.0-in-development",
+	"version": "1.41.0",
 	"private": true,
 	"description": "Connect to Core, play stuff",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/tv2/tv-automation-server-core.git",
 		"directory": "packages/playout-gateway"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/tv2/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/playout-gateway#readme",
+	"homepage": "https://github.com/tv2/tv-automation-server-core/blob/master/packages/playout-gateway#readme",
 	"author": {
 		"name": "Johan Nyman",
 		"email": "johan@superfly.tv",
@@ -56,12 +56,12 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "1.41.0-in-development",
-		"@sofie-automation/server-core-integration": "1.41.0-in-development",
+		"@sofie-automation/blueprints-integration": "npm:@tv2media/blueprints-integration@1.41.0",
+		"@sofie-automation/server-core-integration": "npm:@tv2media/server-core-integration@1.41.0",
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.2",
-		"timeline-state-resolver": "7.0.0-nightly-release41-20220218-125111-9691037c3.0",
+		"timeline-state-resolver": "npm:@tv2media/timeline-state-resolver@1.41.0",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
 		"winston": "^3.5.1"

@@ -9911,12 +9911,12 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.0.0-nightly-release41-20220218-125111-9691037c3.0:
-  version "7.0.0-nightly-release41-20220218-125111-9691037c3.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0-nightly-release41-20220218-125111-9691037c3.0.tgz#795d2b89ce933bde2811bf19a7bdc85ee1180178"
-  integrity sha512-4tFPlnlgT6NoKyj3SxSwYCzF3hetATRKDFHDCgzA0ZEvW97sthL8IBlejVZrPZ4urh14a9wIkOrtiT/JgxMSZw==
+"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@1.0.0-release37":
+  version "1.0.0-release37"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-1.0.0-release37.tgz#3271b202cd0c4e03ae418c76019276238eede7db"
+  integrity sha512-HdCWUQ0EJ7LwlaH9eRtURwzXknIvo3U8kInzus9Vx0M0HoUixYgfV5Z80w/PVSYdUk0L95kW2oLZB4ECB1M7Pg==
   dependencies:
-    tslib "^2.3.1"
+    tslib "^2.1.0"
 
 timers-browserify@^2.0.12:
   version "2.0.12"
