@@ -72,7 +72,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		height: number
 	} | null = null
 	private _labelEl: HTMLTextAreaElement
-	private activeTouch: React.Touch | null = null
+	private pointerId: number | null = null
 
 	constructor(props: IDashboardButtonProps) {
 		super(props)
@@ -230,12 +230,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private setRef = (el: HTMLDivElement | null) => {
 		this.element = el
-
-		if (this.element) {
-			this.element.addEventListener('touchstart', this.handleTouchStart)
-			this.element.addEventListener('touchend', this.handleTouchEnd)
-			this.element.addEventListener('touchcancel', this.handleTouchCancel)
-		}
 	}
 
 	private handleOnMouseEnter = (_e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
@@ -355,45 +349,22 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	private handleTouchStart = (e: TouchEvent) => {
-		this.activeTouch = e.changedTouches.item(0) || null
-		e.preventDefault()
-		e.stopPropagation()
-		e.stopImmediatePropagation()
-		if (this.activeTouch) {
-			this.setState({
-				active: true,
-			})
+	private handleOnPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (e.pointerType !== 'mouse') {
+			this.pointerId = e.pointerId
 		}
 	}
 
-	private handleTouchCancel = (e: TouchEvent) => {
-		const targetTouch = Array.from(e.changedTouches).find((touch) => touch.identifier === this.activeTouch?.identifier)
-		if (targetTouch) {
-			this.activeTouch = null
-
-			this.setState({
-				active: false,
-			})
+	private handleOnPointerOut = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (e.pointerId === this.pointerId) {
+			this.pointerId = null
 		}
 	}
 
-	private handleTouchEnd = (e: TouchEvent) => {
-		const targetTouch = Array.from(e.changedTouches).find((touch) => touch.identifier === this.activeTouch?.identifier)
-		if (
-			targetTouch &&
-			targetTouch.screenX === this.activeTouch?.screenX &&
-			targetTouch.screenY === this.activeTouch?.screenY
-		) {
+	private handleOnPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (e.pointerId === this.pointerId) {
 			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
 			e.preventDefault()
-			e.stopPropagation()
-			e.stopImmediatePropagation()
-			this.activeTouch = null
-
-			this.setState({
-				active: false,
-			})
 		}
 	}
 
@@ -447,6 +418,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onMouseEnter={this.handleOnMouseEnter}
 				onMouseLeave={this.handleOnMouseLeave}
 				onMouseMove={this.handleOnMouseMove}
+				onPointerDown={this.handleOnPointerDown}
+				onPointerOut={this.handleOnPointerOut}
+				onPointerUp={this.handleOnPointerUp}
 				onTouchStart={!this.props.canOverflowHorizontally ? this.handleOnMouseEnter : undefined}
 				onTouchEnd={!this.props.canOverflowHorizontally ? this.handleOnMouseLeave : undefined}
 				onTouchMove={!this.props.canOverflowHorizontally ? this.handleOnTouchMove : undefined}
