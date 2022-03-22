@@ -79,8 +79,8 @@ export interface ISourceLayerItemProps {
 	layerIndex: number
 	/** The studio this content belongs to */
 	studio: Studio | undefined
-	/** Source layers on which to display the piece duration next to any labels */
-	showDurationSourceLayers?: Set<string>
+	/** If source duration of piece's content should be displayed next to any labels */
+	showDuration?: boolean
 }
 interface ISourceLayerItemState {
 	/** Whether hover-scrub / inspector is shown */

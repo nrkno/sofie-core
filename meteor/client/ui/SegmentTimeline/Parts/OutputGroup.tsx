@@ -51,6 +51,10 @@ export function OutputGroup(props: IOutputGroupProps) {
 			? props.collapsedOutputs[props.layer._id] === true
 			: props.layer.isDefaultCollapsed
 
+	function shouldShowDuration(sourceLayer: ISourceLayerExtended): boolean {
+		return !!props.showDurationSourceLayers && props.showDurationSourceLayers.has(sourceLayer._id)
+	}
+
 	function renderInside(isOutputGroupCollapsed) {
 		if (props.sourceLayers !== undefined) {
 			if (!props.layer.isFlattened) {
@@ -87,7 +91,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 							onPieceClick={props.onPieceClick}
 							onPieceDoubleClick={props.onPieceDoubleClick}
 							isPreview={props.isPreview}
-							showDurationSourceLayers={props.showDurationSourceLayers}
+							showDuration={shouldShowDuration(sourceLayer)}
 						/>
 					)
 				})
@@ -124,7 +128,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 						onPieceClick={props.onPieceClick}
 						onPieceDoubleClick={props.onPieceDoubleClick}
 						isPreview={props.isPreview}
-						showDurationSourceLayers={props.showDurationSourceLayers}
+						shouldShowDuration={shouldShowDuration}
 					/>
 				)
 			}
