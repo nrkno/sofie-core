@@ -3,7 +3,7 @@ import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { VTContent, TSR, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { VTContent, TSR, NoteSeverity, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import CoreIcon from '@nrk/core-icons/jsx'
@@ -2364,7 +2364,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const displayMode = userSegmentDisplaymode ?? segment.displayAs ?? DEFAULT_SEGMENT_VIEW_MODE
 
 			const showDurationSourceLayers = this.state.rundownViewLayout?.showDurationSourceLayers
-				? new Set(this.state.rundownViewLayout?.showDurationSourceLayers)
+				? new Set<ISourceLayer['_id']>(this.state.rundownViewLayout?.showDurationSourceLayers)
 				: undefined
 
 			return displayMode === SegmentViewMode.Storyboard ? (

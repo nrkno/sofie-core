@@ -39,7 +39,7 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownTimingContext } from '../../lib/rundownTiming'
-import { IOutputLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 
@@ -86,7 +86,7 @@ interface IProps {
 	lastValidPartIndex: number | undefined
 	budgetDuration?: number
 	showCountdownToSegment: boolean
-	showDurationSourceLayers?: Set<string>
+	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 	fixedSegmentDuration: boolean | undefined
 }
 interface IStateHeader {

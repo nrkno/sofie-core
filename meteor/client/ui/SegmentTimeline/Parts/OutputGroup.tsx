@@ -9,6 +9,7 @@ import { SourceLayer } from './SourceLayer'
 import classNames from 'classnames'
 import { DEBUG_MODE } from '../SegmentTimelineDebugMode'
 import { RundownUtils } from '../../../lib/rundown'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
@@ -42,7 +43,7 @@ interface IOutputGroupProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	indexOffset: number
 	isPreview: boolean
-	showDurationSourceLayers?: Set<string>
+	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
 
 export function OutputGroup(props: IOutputGroupProps) {

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import {
 	RundownPlaylist,
 	RundownPlaylistCollectionUtil,
@@ -92,7 +92,7 @@ export interface IProps {
 	fixedSegmentDuration: boolean | undefined
 	minishelfRegisterHotkeys?: boolean
 	studioMode: boolean
-	showDurationSourceLayers?: Set<string>
+	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
 
 export interface ITrackedProps {
