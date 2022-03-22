@@ -4,7 +4,6 @@ import { logger } from '../../logging'
 import { Blueprint } from '../../../lib/collections/Blueprints'
 import { SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { Meteor } from 'meteor/meteor'
 
 export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
 	const vm = new VM({
@@ -22,9 +21,7 @@ export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
 				try {
 					return value(...args)
 				} catch (e) {
-					let msg = `Error in Blueprint "${blueprint._id}".${key}: "${stringifyError(e)}"`
-					if ((e instanceof Error || e instanceof Meteor.Error) && e.stack) msg += '\n' + e.stack
-					logger.error(msg)
+					logger.error(`Error in Blueprint "${blueprint._id}".${key}: "${stringifyError(e)}"`)
 					throw e
 				}
 			}

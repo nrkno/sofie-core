@@ -7,7 +7,8 @@ import { PartEndState } from './api'
 import { ActionUserData } from './action'
 import { NoteSeverity } from './lib'
 
-export interface IBlueprintRundownPlaylistInfo {
+/** Playlist, as generated from Blueprints */
+export interface IBlueprintResultRundownPlaylist {
 	/** Rundown playlist slug - user-presentable name */
 	name: string
 
@@ -19,6 +20,26 @@ export interface IBlueprintRundownPlaylistInfo {
 	loop?: boolean
 	/** Should time-of-day clocks be used instead of countdowns by default */
 	timeOfDayCountdowns?: boolean
+
+	/** Arbitraty data used by rundowns */
+	metaData?: unknown
+}
+/** Playlist, when reported from Core  */
+export interface IBlueprintRundownPlaylist extends IBlueprintResultRundownPlaylist {
+	_id: string
+	/** External ID (source) of the playlist */
+	externalId: string
+	created: Time
+	modified: Time
+	/** If the playlist is active or not */
+	isActive: boolean
+	/** Is the playlist in rehearsal mode (can be used, when active: true) */
+	rehearsal: boolean
+	/** Actual time of playback starting */
+	startedPlayback?: Time
+
+	/** The number of rundowns in the playlist */
+	rundownCount: number
 }
 
 export enum PlaylistTimingType {

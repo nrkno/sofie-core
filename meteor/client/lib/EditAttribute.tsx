@@ -9,8 +9,7 @@ import { TransformedCollection } from '../../lib/typings/meteor'
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
-import { Random } from 'meteor/random'
-import { assertNever } from '../../lib/lib'
+import { assertNever, getRandomString } from '../../lib/lib'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -670,7 +669,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 			this.handleBlurText = this.handleBlurText.bind(this)
 			this.handleEscape = this.handleEscape.bind(this)
 
-			this._id = Random.id()
+			this._id = getRandomString()
 		}
 		handleChangeDropdown(event) {
 			// because event.target.value is always a string, use the original value instead

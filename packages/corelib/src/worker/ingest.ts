@@ -65,7 +65,7 @@ export interface IngestRemoveRundownProps extends IngestPropsBase {
 }
 export interface IngestUpdateRundownProps extends IngestPropsBase {
 	ingestRundown: IngestRundown
-	isCreateAction: boolean
+	isCreateAction: boolean // TODO: Document what isCreateAction means
 }
 export interface IngestUpdateRundownMetaDataProps extends IngestPropsBase {
 	ingestRundown: Omit<IngestRundown, 'segments'>
@@ -75,7 +75,7 @@ export interface IngestRemoveSegmentProps extends IngestPropsBase {
 }
 export interface IngestUpdateSegmentProps extends IngestPropsBase {
 	ingestSegment: IngestSegment
-	isCreateAction: boolean
+	isCreateAction: boolean // TODO: Document what isCreateAction means
 }
 export interface IngestUpdateSegmentRanksProps extends IngestPropsBase {
 	newRanks: { [segmentExternalId: string]: number }
@@ -87,7 +87,7 @@ export interface IngestRemovePartProps extends IngestPropsBase {
 export interface IngestUpdatePartProps extends IngestPropsBase {
 	segmentExternalId: string
 	ingestPart: IngestPart
-	isCreateAction: boolean
+	isCreateAction: boolean // TODO: Document what isCreateAction means
 }
 export type IngestRegenerateRundownProps = IngestPropsBase
 export interface IngestRegenerateSegmentProps extends IngestPropsBase {
@@ -101,7 +101,7 @@ export interface RemoveOrphanedSegmentsProps extends IngestPropsBase {
 
 export interface MosRundownProps extends IngestPropsBase {
 	mosRunningOrder: MOS.IMOSRunningOrder
-	isCreateAction: boolean
+	isCreateAction: boolean // TODO: Document what isCreateAction means
 }
 export interface MosRundownMetadataProps extends IngestPropsBase {
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase

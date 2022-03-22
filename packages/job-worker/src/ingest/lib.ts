@@ -9,7 +9,6 @@ import { CacheForIngest } from './cache'
 import { logger } from '../logging'
 import { ExtendedIngestRundown, IngestRundown } from '@sofie-automation/blueprints-integration'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { convertRundownToBlueprints } from '../blueprints/context/lib'
 
 export function getRundownId(studio: ReadonlyDeep<DBStudio> | StudioId, rundownExternalId: string): RundownId {
@@ -71,11 +70,4 @@ export function extendIngestRundownCore(
 		coreData: existingDbRundown && convertRundownToBlueprints(existingDbRundown),
 	}
 	return extendedIngestRundown
-}
-export function modifyPlaylistExternalId(
-	playlistExternalId: string | undefined,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>
-): string | undefined {
-	if (playlistExternalId) return `${showStyleBase._id}_${playlistExternalId}`
-	else return undefined
 }

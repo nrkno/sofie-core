@@ -2,6 +2,7 @@ import { JobContext } from '../../jobs'
 import { removeRundownFromDb } from '../../rundownPlaylists'
 import { RundownLock } from '../../jobs/lock'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 class FakeRundownLock extends RundownLock {
 	constructor(rundownId: RundownId) {
@@ -21,7 +22,7 @@ export async function removeRundownPlaylistFromDb(
 	context: JobContext,
 	playlistIds: RundownPlaylistId[]
 ): Promise<void> {
-	const rundowns = await context.directCollections.Rundowns.findFetch(
+	const rundowns: Pick<DBRundown, '_id'>[] = await context.directCollections.Rundowns.findFetch(
 		{ playlistId: { $in: playlistIds } },
 		{ projection: { _id: 1 } }
 	)

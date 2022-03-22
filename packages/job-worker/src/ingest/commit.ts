@@ -32,6 +32,7 @@ import _ = require('underscore')
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import {
+	DBSegment,
 	orphanedHiddenSegmentPropertiesToPreserve,
 	SegmentOrphanedReason,
 } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -291,16 +292,32 @@ export async function CommitIngestOperation(
 						if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
 							// Protect live segment from being hidden
 							logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
-							orphanHiddenSegmentIds.add(segmentId)
+							switch (segment.document.orphaned) {
+								case SegmentOrphanedReason.DELETED:
+									orphanDeletedSegmentIds.add(segmentId)
+									break
+								default:
+									orphanHiddenSegmentIds.add(segmentId)
+									break
+							}
 						} else {
 							// This ensures that it doesn't accidently get played while hidden
 							ingestCache.Parts.update({ segmentId }, { $set: { invalid: true } })
 						}
-					} else if (ingestCache.Parts.findFetch({ segmentId }).length === 0) {
-						// No parts in segment, hide it
-						ingestCache.Segments.update(segmentId, {
-							$set: { isHidden: true },
-						})
+					} else if (
+						!orphanDeletedSegmentIds.has(segmentId) &&
+						ingestCache.Parts.findFetch({ segmentId }).length === 0
+					) {
+						if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+							// Protect live segment from being hidden
+							logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
+							orphanHiddenSegmentIds.add(segmentId)
+						} else {
+							// No parts in segment, hide it
+							ingestCache.Segments.update(segmentId, {
+								$set: { isHidden: true },
+							})
+						}
 					}
 				}
 
@@ -320,7 +337,7 @@ export async function CommitIngestOperation(
 				if (orphanHiddenSegmentIds.size) {
 					const preserveSomeProperties = Object.keys(orphanedHiddenSegmentPropertiesToPreserve).length > 0
 					const oldSegments = preserveSomeProperties
-						? normalizeArrayToMap(
+						? normalizeArrayToMap<Partial<DBSegment>, '_id'>(
 								await context.directCollections.Segments.findFetch(
 									{ _id: { $in: [...orphanHiddenSegmentIds] }, rundownId: ingestCache.RundownId },
 									{

@@ -660,10 +660,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							/>
 						)}
 						{this.props.autoNextPart ? (
-							<div className="rundown-view__part__icon rundown-view__part__icon--auto-next"></div>
-						) : (
-							<div className="rundown-view__part__icon rundown-view__part__icon--next"></div>
-						)}
+							<div className="rundown-view__part__icon rundown-view__part__icon--auto-next">{t('Auto')}</div>
+						) : null}
 						{this.props.playlist.holdState && this.props.playlist.holdState !== RundownHoldState.COMPLETE ? (
 							<div className="segment-timeline__liveline__status segment-timeline__liveline__status--hold">
 								{t('Hold')}

@@ -216,6 +216,7 @@ export function produceRundownPlaylistInfoFromRundown(
 
 			outOfOrderTiming: playlistInfo.playlist.outOfOrderTiming,
 			timeOfDayCountdowns: playlistInfo.playlist.timeOfDayCountdowns,
+			metaData: playlistInfo.playlist.metaData,
 
 			modified: getCurrentTime(),
 		}
@@ -308,9 +309,10 @@ export async function moveRundownIntoPlaylist(
 	if (!rundown || rundown.studioId !== context.studioId) throw new Error(`Rundown "${data.rundownId}" not found`)
 
 	if (data.intoPlaylistId) {
-		const tmpIntoPlaylist = await context.directCollections.RundownPlaylists.findOne(data.intoPlaylistId, {
-			projection: { studioId: 1 },
-		})
+		const tmpIntoPlaylist: Pick<DBRundownPlaylist, '_id' | 'studioId'> | undefined =
+			await context.directCollections.RundownPlaylists.findOne(data.intoPlaylistId, {
+				projection: { studioId: 1 },
+			})
 		if (!tmpIntoPlaylist || tmpIntoPlaylist.studioId !== context.studioId)
 			throw new Error(`RundownPlaylist "${data.intoPlaylistId}" not found`)
 	}

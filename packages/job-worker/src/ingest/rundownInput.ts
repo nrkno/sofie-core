@@ -39,6 +39,7 @@ import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist
 import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 export async function handleRemovedRundown(context: JobContext, data: IngestRemoveRundownProps): Promise<void> {
 	return runIngestJob(
@@ -78,7 +79,7 @@ export async function handleUserRemoveRundown(context: JobContext, data: UserRem
 				await removeRundownFromDb(context, lock)
 
 				// check if the playlist is now empty
-				const rundownCount = await context.directCollections.Rundowns.findFetch(
+				const rundownCount: Pick<DBRundown, '_id'>[] = await context.directCollections.Rundowns.findFetch(
 					{ playlistId: rundown.playlistId },
 					{ projection: { _id: 1 } }
 				)

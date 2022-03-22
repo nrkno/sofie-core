@@ -156,7 +156,7 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		return this.removeInner(selector)
 	}
 	private async removeInner(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number> {
-		const docs = await this.findFetchInner(selector, { projection: { _id: 1 } })
+		const docs: Pick<TDoc, '_id'>[] = await this.findFetchInner(selector, { projection: { _id: 1 } })
 		for (const doc of docs) {
 			this.#documents.delete(doc._id)
 		}

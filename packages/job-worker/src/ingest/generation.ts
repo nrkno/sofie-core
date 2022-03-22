@@ -14,7 +14,7 @@ import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/Show
 import { getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { ShowStyleUserContext, StudioUserContext, SegmentUserContext } from '../blueprints/context'
+import { StudioUserContext, SegmentUserContext, GetRundownContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import {
 	postProcessAdLibActions,
@@ -30,14 +30,7 @@ import { logger } from '../logging'
 import _ = require('underscore')
 import { CacheForIngest } from './cache'
 import { LocalIngestSegment, LocalIngestRundown } from './ingestCache'
-import {
-	getSegmentId,
-	getPartId,
-	getRundown,
-	canSegmentBeUpdated,
-	extendIngestRundownCore,
-	modifyPlaylistExternalId,
-} from './lib'
+import { getSegmentId, getPartId, getRundown, canSegmentBeUpdated, extendIngestRundownCore } from './lib'
 import { JobContext } from '../jobs'
 import { CommitIngestData } from './lock'
 import { SelectedShowStyleVariant, selectShowStyleVariant } from './rundown'
@@ -556,7 +549,7 @@ export async function getRundownFromIngestData(
 			pkg.fromPieceType === ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
 	)
 
-	const blueprintContext = new ShowStyleUserContext(
+	const blueprintContext = new GetRundownContext(
 		{
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			identifier: `showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
@@ -565,11 +558,34 @@ export async function getRundownFromIngestData(
 		context.getStudioBlueprintConfig(),
 		showStyle.compound,
 		context.getShowStyleBlueprintConfig(showStyle.compound),
-		rundownBaselinePackages
+		rundownBaselinePackages,
+		async () => {
+			// Note: This can cause a mild race-condition, in the case of two Rundowns being created at the same time.
+			// But we're just ignoreing that for now.
+			return context.directCollections.RundownPlaylists.findFetch({
+				studioId: context.studioId,
+			})
+		},
+		async () => {
+			return context.directCollections.Rundowns.findFetch(
+				{
+					studioId: context.studioId,
+				},
+				{
+					projection: {
+						_id: 1,
+						playlistId: 1,
+					},
+				}
+			) as Promise<Pick<DBRundown, '_id' | 'playlistId'>[]>
+		},
+		async () => {
+			return cache.Rundown.doc
+		}
 	)
 	let rundownRes: BlueprintResultRundown | null = null
 	try {
-		rundownRes = showStyleBlueprint.blueprint.getRundown(blueprintContext, extendedIngestRundown)
+		rundownRes = await showStyleBlueprint.blueprint.getRundown(blueprintContext, extendedIngestRundown)
 	} catch (err) {
 		logger.error(`Error in showStyleBlueprint.getRundown: ${stringifyError(err)}`)
 		rundownRes = null
@@ -600,10 +616,6 @@ export async function getRundownFromIngestData(
 				name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			},
 		})
-	)
-	rundownRes.rundown.playlistExternalId = modifyPlaylistExternalId(
-		rundownRes.rundown.playlistExternalId,
-		showStyle.base
 	)
 
 	const peripheralDevice = await pPeripheralDevice

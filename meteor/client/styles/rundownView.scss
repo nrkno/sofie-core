@@ -120,46 +120,16 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	.rundown-view__part__icon {
 		display: inline-block;
 		margin-left: 0.2em;
-
-		&.rundown-view__part__icon--next {
-			position: relative;
-			width: 0;
-			height: 0;
-			top: -2px;
-			border-width: 5px 0 5px 9px;
-			border-style: solid;
-			border-color: transparent transparent transparent $general-next-color;
-
-			&::after {
-				content: ' ';
-				position: absolute;
-				top: -5px;
-				right: -1px;
-				height: 10px;
-				width: 0;
-				border-left: 2px solid $general-next-color;
-			}
-		}
+		vertical-align: bottom;
+		line-height: 1em;
 
 		&.rundown-view__part__icon--auto-next {
 			position: relative;
-			width: 0;
-			height: 0;
-			top: -2px;
-			left: 4px;
-			border-width: 5px 0 5px 9px;
-			border-style: solid;
-			border-color: transparent transparent transparent $general-next-color;
-
-			&::after {
-				content: ' ';
-				position: absolute;
-				top: -5px;
-				left: -13px;
-				height: 10px;
-				width: 0;
-				border-left: 2px solid $general-next-color;
-			}
+			color: $general-next-color;
+			text-transform: uppercase;
+			font-weight: 800;
+			font-size: 0.5em;
+			top: -0.35em;
 		}
 	}
 
@@ -606,8 +576,7 @@ svg.icon {
 				&:hover {
 					background-color: #8c8c8c;
 					color: #fff;
-				}	
-		
+				}
 			}
 		}
 	}
@@ -1163,6 +1132,10 @@ svg.icon {
 
 			> .overtime {
 				color: $general-late-color;
+			}
+
+			> .rundown-view__part__icon {
+				top: -0.2em;
 			}
 		}
 

@@ -11,6 +11,7 @@ import {
 	IBlueprintSegmentDB,
 	IBlueprintPieceDB,
 	IBlueprintSegmentRundown,
+	IBlueprintRundownPlaylist,
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { OnGenerateTimelineObj } from './timeline'
@@ -117,6 +118,15 @@ export interface IShowStyleContext extends ICommonContext, IStudioContext {
 }
 
 export interface IShowStyleUserContext extends IUserNotesContext, IShowStyleContext, IPackageInfoContext {}
+
+export interface IGetRundownContext extends IShowStyleUserContext {
+	/** Returns a list of the Playlists in the studio */
+	getPlaylists: () => Promise<Readonly<IBlueprintRundownPlaylist[]>>
+	/** Returns the Playlist in which the Rundown currently is in. If it's a new Rundown, this will return undefined. */
+	getCurrentPlaylist: () => Promise<Readonly<IBlueprintRundownPlaylist> | undefined>
+	/** Returns a randomized string, intended to be used as ids. */
+	getRandomId: () => string
+}
 
 /** Rundown */
 

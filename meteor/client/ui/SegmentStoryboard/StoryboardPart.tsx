@@ -19,6 +19,7 @@ import { StoryboardPartTransitions } from './StoryboardPartTransitions'
 import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
 import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
 import { SegmentEnd } from '../../lib/ui/icons/segment'
+import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
 
 interface IProps {
 	className?: string
@@ -236,6 +237,7 @@ export function StoryboardPart({
 			)}
 			{isLivePart && displayLiveLineCounter ? (
 				<div className="segment-storyboard__part-timer segment-storyboard__part-timer--live">
+					<AutoNextStatus />
 					<CurrentPartRemaining
 						currentPartInstanceId={part.instance._id}
 						speaking={getAllowSpeaking()}

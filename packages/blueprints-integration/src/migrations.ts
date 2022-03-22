@@ -78,9 +78,10 @@ export interface ShowStyleVariantPart {
 
 interface MigrationContextWithTriggeredActions {
 	getAllTriggeredActions: () => IBlueprintTriggeredActions[]
-	getTriggeredAction: (triggeredActionsId: string) => IBlueprintTriggeredActions | undefined
+	getTriggeredAction: (triggeredActionId: string) => IBlueprintTriggeredActions | undefined
+	getTriggeredActionId: (triggeredActionId: string) => string
 	setTriggeredAction: (triggeredActions: IBlueprintTriggeredActions) => void
-	removeTriggeredAction: (triggeredActionsId: string) => void
+	removeTriggeredAction: (triggeredActionId: string) => void
 }
 
 export interface MigrationContextShowStyle extends MigrationContextWithTriggeredActions {
