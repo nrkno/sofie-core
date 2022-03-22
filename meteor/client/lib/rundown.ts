@@ -443,6 +443,7 @@ export namespace RundownUtils {
 								pieceInstanceFieldOptions
 						  ).fetch()
 						: undefined,
+					undefined,
 					pieceInstanceFieldOptions,
 					pieceInstanceSimulation
 				)

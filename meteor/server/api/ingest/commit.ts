@@ -8,7 +8,6 @@ import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { CommitIngestData } from './lockFunction'
 import { ensureNextPartIsValid } from './updateNext'
 import {
-	DBSegment,
 	orphanedHiddenSegmentPropertiesToPreserve,
 	SegmentId,
 	SegmentOrphanedReason,
@@ -24,7 +23,7 @@ import {
 	produceRundownPlaylistInfoFromRundown,
 	removeRundownsFromDb,
 } from '../rundownPlaylist'
-import { clone, max, protectString, unprotectString } from '../../../lib/lib'
+import { clone, max, normalizeArrayToMap, protectString, unprotectString } from '../../../lib/lib'
 import { reportRundownDataHasChanged } from '../blueprints/events'
 import { removeSegmentContents } from './cleanup'
 import { Settings } from '../../../lib/Settings'
@@ -284,16 +283,35 @@ export async function CommitIngestOperation(
 								if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
 									// Protect live segment from being hidden
 									logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
-									orphanHiddenSegmentIds.add(segmentId)
+									switch (segment.document.orphaned) {
+										case SegmentOrphanedReason.DELETED:
+											orphanDeletedSegmentIds.add(segmentId)
+											break
+										default:
+											orphanHiddenSegmentIds.add(segmentId)
+											break
+									}
 								} else {
 									// This ensures that it doesn't accidently get played while hidden
 									ingestCache.Parts.update({ segmentId }, { $set: { invalid: true } })
 								}
-							} else if (ingestCache.Parts.findFetch({ segmentId }).length === 0) {
-								// No parts in segment, hide it
-								ingestCache.Segments.update(segmentId, {
-									$set: { isHidden: true },
-								})
+							} else if (
+								!orphanDeletedSegmentIds.has(segmentId) &&
+								ingestCache.Parts.findFetch({ segmentId }).length === 0
+							) {
+								// No parts in segment
+
+								if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+									// Protect live segment from being hidden
+									logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
+									orphanHiddenSegmentIds.add(segmentId)
+								} else {
+									// We can hide it
+									ingestCache.Segments.update(segmentId, {
+										$set: { isHidden: true },
+										$unset: { orphaned: 1 },
+									})
+								}
 							}
 						}
 
@@ -314,17 +332,15 @@ export async function CommitIngestOperation(
 							const preserveSomeProperties =
 								Object.keys(orphanedHiddenSegmentPropertiesToPreserve).length > 0
 							const oldSegments = preserveSomeProperties
-								? Segments.find(
-										{ _id: { $in: [...orphanHiddenSegmentIds] } },
-										{
-											fields: { _id: 1, ...orphanedHiddenSegmentPropertiesToPreserve },
-										}
+								? normalizeArrayToMap(
+										Segments.find(
+											{ _id: { $in: [...orphanHiddenSegmentIds] } },
+											{
+												fields: { _id: 1, ...orphanedHiddenSegmentPropertiesToPreserve },
+											}
+										).fetch(),
+										'_id'
 								  )
-										.fetch()
-										.reduce((map, current) => {
-											map.set(current._id!, current)
-											return map
-										}, new Map<SegmentId, DBSegment>())
 								: undefined
 							orphanHiddenSegmentIds.forEach((segmentId) => {
 								ingestCache.Segments.update(segmentId, {

@@ -1,3 +1,5 @@
+import { setMockRandomId } from '../lib/lib'
+
 export class RandomMock {
 	static mockIds: Array<string> = []
 	static mockI: number = 9000
@@ -13,6 +15,8 @@ export class RandomMock {
 	}
 }
 export function setup() {
+	setMockRandomId(() => RandomMock.id())
+
 	return {
 		Random: RandomMock,
 	}

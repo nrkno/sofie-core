@@ -11,7 +11,9 @@ export type SegmentId = ProtectedString<'SegmentId'>
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
 
 export enum SegmentOrphanedReason {
+	/** Segment is deleted from the NRCS but we still need it */
 	DELETED = 'deleted',
+	/** Segment should be hidden, but it is still playing */
 	HIDDEN = 'hidden',
 }
 

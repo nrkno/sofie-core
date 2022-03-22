@@ -18,16 +18,17 @@ interface IProps {
 	readonly?: boolean
 	type: EditAttributeType
 	values?: Record<string, any>
+	index: number
 	onChangeField: (newField: any) => void
 	onChange: (newValue: any) => void
-	onFocus?: () => void
-	onInsertNext?: () => void
-	onRemove?: () => void
-	onClose: () => void
+	onFocus?: (index: number) => void
+	onInsertNext?: (index: number) => void
+	onRemove?: (index: number) => void
+	onClose: (index: number) => void
 }
 
 export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProps): React.ReactElement | null {
-	const { opened, onClose, onFocus } = props
+	const { index, opened, onClose, onFocus } = props
 	const [referenceElement, setReferenceElement] = useState<HTMLDListElement | null>(null)
 	const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null)
 	const { styles, attributes, update } = usePopper(referenceElement, popperElement, {
@@ -51,7 +52,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 				!composedPath.includes(popperElement) &&
 				!composedPath.includes(referenceElement)
 			) {
-				onClose()
+				onClose(index)
 			}
 		}
 
@@ -62,7 +63,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 		return () => {
 			document.body.removeEventListener('click', closeHandler)
 		}
-	}, [popperElement, referenceElement, opened])
+	}, [popperElement, referenceElement, opened, index])
 
 	useLayoutEffect(() => {
 		update && update().catch(console.error)
@@ -79,7 +80,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 				ref={setReferenceElement}
 				tabIndex={0}
 				role="button"
-				onClick={() => !props.readonly && typeof onFocus === 'function' && onFocus()}
+				onClick={() => !props.readonly && onFocus && onFocus(index)}
 			>
 				<dt>{props.fieldLabel}</dt>
 				<dd>{props.valueLabel}</dd>
@@ -118,15 +119,18 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 					</div>
 					<div className="mts">
 						{!props.final ? (
-							<button className="btn right btn-tight btn-primary" onClick={props.onInsertNext}>
+							<button
+								className="btn right btn-tight btn-primary"
+								onClick={() => props.onInsertNext && props.onInsertNext(index)}
+							>
 								<FontAwesomeIcon icon={faAngleRight} />
 							</button>
 						) : (
-							<button className="btn right btn-tight btn-primary" onClick={props.onClose}>
+							<button className="btn right btn-tight btn-primary" onClick={() => props.onClose(index)}>
 								<FontAwesomeIcon icon={faCheck} />
 							</button>
 						)}
-						<button className="btn btn-tight btn-secondary" onClick={props.onRemove}>
+						<button className="btn btn-tight btn-secondary" onClick={() => props.onRemove && props.onRemove(index)}>
 							<FontAwesomeIcon icon={faTrash} />
 						</button>
 					</div>

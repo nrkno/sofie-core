@@ -10,7 +10,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
-import { literal, protectString } from '../../../lib/lib'
+import { assertNever, literal, protectString } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { parseMosPluginMessageXml, MosPluginMessage, fixMosData } from '../../lib/parsers/mos/mosXml2Js'
@@ -141,7 +141,7 @@ export const ExternalFramePanel = withTranslation()(
 			}
 		}
 
-		actMOSMessage = (e: any, message: any) => {
+		actMOSMessage = (e: any, message: string) => {
 			const data: MosPluginMessage | undefined = parseMosPluginMessageXml(message)
 
 			if (data) {
@@ -273,8 +273,8 @@ export const ExternalFramePanel = withTranslation()(
 						}),
 						true
 					)
-						.then((e) => {
-							if (e.type === SofieExternalMessageType.ACK) {
+						.then((response) => {
+							if (response.type === SofieExternalMessageType.ACK) {
 								this.initialized = true
 								this.sendSofieCurrentState()
 							}
@@ -289,10 +289,25 @@ export const ExternalFramePanel = withTranslation()(
 							type: SofieExternalMessageType.ACK,
 						})
 					)
-					const randomEl = document.querySelector('button')
+					// select a button on the right-hand side bar, as these are fixed in the viewport and won't cause
+					// any automatic scroll behavior
+					const randomEl = document.querySelector<HTMLButtonElement>('button.status-bar__controls__button')
 					if (randomEl) randomEl.focus()
 					break
 				}
+				case SofieExternalMessageType.ACK:
+				case SofieExternalMessageType.NAK:
+					// noop
+					break
+				case SofieExternalMessageType.CURRENT_PART_CHANGED:
+				case SofieExternalMessageType.NEXT_PART_CHANGED:
+				case SofieExternalMessageType.KEYBOARD_EVENT:
+				case SofieExternalMessageType.WELCOME:
+					console.warn('Sofie ExternalFramePanel API Message received in unusual direction', message)
+					break
+				default:
+					assertNever(message.type)
+					break
 			}
 		}
 
@@ -312,14 +327,15 @@ export const ExternalFramePanel = withTranslation()(
 
 		sendSofieMessage = (data: SofieExternalMessage, uninitialized?: boolean) => {
 			if (this.frame && this.frame.contentWindow && (this.initialized || uninitialized)) {
-				this.frame.contentWindow.postMessage(data, '*')
+				const url = new URL(this.props.panel.url)
+				this.frame.contentWindow.postMessage(data, `${url.protocol}//${url.host}`) // host already contains the port number, if specified
 			}
 		}
 
 		sendMOSMessage = (data: string) => {
 			if (this.frame && this.frame.contentWindow) {
 				const url = new URL(this.props.panel.url)
-				this.frame.contentWindow.postMessage(data, `${url.protocol}//${url.host}${url.port ? ':' + url.port : ''}`)
+				this.frame.contentWindow.postMessage(data, `${url.protocol}//${url.host}`) // host already contains the port number, if specified
 			}
 		}
 
@@ -413,12 +429,16 @@ export const ExternalFramePanel = withTranslation()(
 					e.dataTransfer.types.indexOf('text/plain') >= 0 &&
 					e.dataTransfer.files.length === 0
 				) {
-					const idx = e.dataTransfer.types.indexOf('text/plain')
-					e.dataTransfer.items.item(idx).getAsString((text: string) => {
-						if (text.trim().endsWith('</mos>')) {
-							this.actMOSMessage(e, e.dataTransfer!.getData('Text'))
-						}
-					})
+					for (let i = 0; i < e.dataTransfer.items.length; i++) {
+						const dataTransferItem = e.dataTransfer.items[i]
+						// skip, if not of text/plain type
+						if (dataTransferItem.type !== 'text/plain') continue
+						dataTransferItem.getAsString((text: string) => {
+							if (text.trim().endsWith('</mos>')) {
+								this.actMOSMessage(e, text)
+							}
+						})
+					}
 				}
 			}
 			// else if (

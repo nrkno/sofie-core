@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { lazyIgnore } from '../../lib/lib'
+import { logger } from '../logging'
 
 type PartialOrNull<T> = {
 	[P in keyof T]?: T[P] | null
@@ -39,10 +40,24 @@ export function setUpOptimizedObserver<Data extends any[], Context extends Conte
 				() => {
 					const o = optimizedObservers[identifier]
 					if (o) {
+						const start = Date.now()
 						const result = manipulateData(context)
+						const manipulateTime = Date.now()
+						const manipulateDuration = manipulateTime - start
 
 						for (const dataReceiver of o.dataReceivers) {
 							dataReceiver(result)
+						}
+						const publishTime = Date.now() - manipulateTime
+						const totalTime = Date.now() - start
+
+						/** Limit for what to consider a slow observer */
+						const SLOW_OBSERVE_TIME = 50 // ms
+
+						if (totalTime > SLOW_OBSERVE_TIME) {
+							logger.debug(
+								`Slow optimized observer ${identifier}. Total: ${totalTime}, manipulate: ${manipulateDuration}, publish: ${publishTime} (receivers: ${o.dataReceivers.length})`
+							)
 						}
 					}
 				},

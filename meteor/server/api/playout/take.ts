@@ -98,6 +98,7 @@ export async function takeNextPartInnerSync(cache: CacheForPlayout, now: number)
 	const nextPart = selectNextPart(
 		cache.Playlist.doc,
 		takePartInstance,
+		null,
 		getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 	)
 

@@ -2,6 +2,57 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.38.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-1...v1.38.2) (2022-03-22)
+
+
+### Bug Fixes
+
+* add debug tracing of slow observers ([099ad98](https://github.com/nrkno/tv-automation-server-core/commit/099ad983f93135fdac67c389a2d2279224187c14))
+* avoid regenerating segments when only the rank changes ([#688](https://github.com/nrkno/tv-automation-server-core/issues/688)) ([5256ccf](https://github.com/nrkno/tv-automation-server-core/commit/5256ccf38ce698f4c3cf1fc59f111693afeebbc4))
+* defer cleanupOrphanedItems until after the playout-cache has been saved ([688e274](https://github.com/nrkno/tv-automation-server-core/commit/688e274f3b0aa4fa891fc59680e5bbb39723e7e1))
+* if the next partinstance is manually chosen and deleted, then it is no longer valid ([40f8c9a](https://github.com/nrkno/tv-automation-server-core/commit/40f8c9a5fd135d5ab431f6978f5eec829f2b497a))
+* monitor, log and report the number of connections to Core. ([b6fe040](https://github.com/nrkno/tv-automation-server-core/commit/b6fe04078637793f2ffc9bd14ecb23b2ee0d99f2))
+* segments getting stuck as 'orphaned: hidden' and 'isHidden: true' ([ef4fc6f](https://github.com/nrkno/tv-automation-server-core/commit/ef4fc6f1d5d43c2c94cf6e7a77f0476f07ba8f1d))
+
+### [1.38.2-1](https://github.com/nrkno/sofie-core/compare/v1.38.2-0...v1.38.2-1) (2022-03-10)
+
+
+### Features
+
+* use a better meteor reactivity debounce ([436b656](https://github.com/nrkno/sofie-core/commit/436b65614f580d21668bac76c65810991f29354c))
+
+
+### Bug Fixes
+
+* add Tab key to be default-disabled when keyboard Triggers are registered ([d8efbb1](https://github.com/nrkno/sofie-core/commit/d8efbb1d775069f51ac0a5484cc033b832b467fa))
+* Collect and pass all pieces into getPieceInstancesForPartInstance to improve performance ([77f4d49](https://github.com/nrkno/sofie-core/commit/77f4d49ea6cd9a674d9005e299e810c4e97cc9be))
+* **ExternalFramePanel:** re-focusing messes up with scroll position ([60447ba](https://github.com/nrkno/sofie-core/commit/60447ba04c47e9b8f29eb168237c27ae0afb2c9d))
+* fix bug introduced by changing a forEach to a for-loop. ([3d46553](https://github.com/nrkno/sofie-core/commit/3d46553ad4d56afc06444e27c588b30ecbc1e4e3))
+* ignore infinite continuations when checking if hold is allowed ([dffb2af](https://github.com/nrkno/sofie-core/commit/dffb2aff83deb7c061b2006f3a082c09ef5ea95c))
+* improve performance of mongoWhere ([4b4963a](https://github.com/nrkno/sofie-core/commit/4b4963a4bc3b3f7a790fbed35cfec6a335eec315))
+* move calculation of currentPartInstancePieceInstances out of loop, to improve performance ([02607a4](https://github.com/nrkno/sofie-core/commit/02607a49118c67a2b1875cd1dcd40b379e6788f9))
+* nexted-partinstance not being cleared if it was the last part in the rundown and gets deleted ([2c42b10](https://github.com/nrkno/sofie-core/commit/2c42b10e9dd7b2e89d16abae7e7e272f5db1e92f))
+* orphaned-deleted segment alternating between deleted and hidden ([2ad1200](https://github.com/nrkno/sofie-core/commit/2ad1200fc51e64021ccc3432d7048172ab72eaf1))
+* **Prompter:** prioritize Script text for anchoring vs anchoring of segment/part titles ([cae1a78](https://github.com/nrkno/sofie-core/commit/cae1a78a96044491bc9e62b30bfbdc1afaa8881e))
+* **Prompter:** when anchoring Prompter script, do not add additional margin ([b13e8f7](https://github.com/nrkno/sofie-core/commit/b13e8f736905fbc315d0075a3364278f3612ebbe))
+* refactor: move out inline-defined-array-function. ([2e63283](https://github.com/nrkno/sofie-core/commit/2e632831c395c5d7a5593612eb0d83eb25c50913))
+* replace Random.id() in favor for a custom one, for performance reasons. ([5b50cfc](https://github.com/nrkno/sofie-core/commit/5b50cfce8b429a0423e87f2e0d3c1dc563d77ac0))
+* scroll position anchoring during Rundown modifications ([3b4aa64](https://github.com/nrkno/sofie-core/commit/3b4aa64691b406757a738d95b81e935e07ad4af3))
+* slow down reactivity on Prompter ([83e2ad6](https://github.com/nrkno/sofie-core/commit/83e2ad683c6ee77bc359de0f73a128ef31ee9a51))
+* sync onEnd infinites into adlib part-instance when sycning ingest changes ([939f3b6](https://github.com/nrkno/sofie-core/commit/939f3b6d5dfba211b82071a9d77fe1af57d36121))
+
+### [1.38.2-0](https://github.com/nrkno/sofie-core/compare/v1.38.1...v1.38.2-0) (2022-02-11)
+
+
+### Bug Fixes
+
+* **Action Triggers, Shelf:** Collection fetch optimizations and new AdLib sorting can cause a Pick[1] & Pick[2] to match the same AdLib ([0cbcc60](https://github.com/nrkno/sofie-core/commit/0cbcc6011ce587241783053af77af53bac64d3b8))
+* add more variance to piece ids, to avoid the same id being used on different sourceLayers for different part types ([91d802c](https://github.com/nrkno/sofie-core/commit/91d802c450f94c7a329ade3c31975346a12b017b))
+* temporary logging fix ([95fa5e3](https://github.com/nrkno/sofie-core/commit/95fa5e37cbf33a030b266753731ce0e682719457))
+* when nexted-part is invalid, but the instance still exists then it is still valid ([22d7da1](https://github.com/nrkno/sofie-core/commit/22d7da1b189b33c98673cf0bef3ef066ff0afb11))
+
+### [1.38.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0...v1.38.1) (2022-01-27)
+
 ## [1.38.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.2...v1.38.0) (2022-01-26)
 
 

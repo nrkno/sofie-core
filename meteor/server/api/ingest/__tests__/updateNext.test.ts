@@ -460,7 +460,7 @@ describe('ensureNextPartIsValid', () => {
 					_id: protectString('orphan_1'),
 					_rank: 1.5,
 					rundownId: rundownId,
-					segmentId: protectString('mock_segment4'),
+					segmentId: protectString('mock_segment1'),
 					externalId: 'o1',
 					title: 'Orphan 1',
 				}),
@@ -481,6 +481,142 @@ describe('ensureNextPartIsValid', () => {
 		} finally {
 			// Cleanup to not mess with other tests
 			PartInstances.remove(instanceId)
+		}
+	})
+	testInFiber('Next part instance is orphaned: "deleted" and manually set', () => {
+		// Insert a temporary instance
+		const instanceId: PartInstanceId = protectString('orphaned_first_part')
+		PartInstances.insert(
+			literal<DBPartInstance>({
+				_id: instanceId,
+				rundownId: rundownId,
+				segmentId: protectString('mock_segment1'),
+				playlistActivationId: protectString('active'),
+				segmentPlayoutId: protectString(''),
+				takeCount: 0,
+				rehearsal: false,
+				part: literal<DBPart>({
+					_id: protectString('orphan_1'),
+					_rank: 1.5,
+					rundownId: rundownId,
+					segmentId: protectString('mock_segment1'),
+					externalId: 'o1',
+					title: 'Orphan 1',
+				}),
+				orphaned: 'deleted',
+			})
+		)
+
+		try {
+			resetPartIds(null, instanceId, true)
+
+			ensureNextPartIsValid()
+
+			expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
+			expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
+				expect.objectContaining({ PlaylistId: rundownPlaylistId }),
+				expect.objectContaining({ _id: 'mock_part1' })
+			)
+		} finally {
+			// Cleanup to not mess with other tests
+			PartInstances.remove(instanceId)
+		}
+	})
+	testInFiber('Next part is invalid, but instance is not', () => {
+		// Insert a temporary instance
+		const instanceId: PartInstanceId = protectString('orphaned_first_part')
+		const part = literal<DBPart>({
+			_id: protectString('orphan_1'),
+			_rank: 1.5,
+			rundownId: rundownId,
+			segmentId: protectString('mock_segment1'),
+			externalId: 'o1',
+			title: 'Orphan 1',
+		})
+		PartInstances.insert(
+			literal<DBPartInstance>({
+				_id: instanceId,
+				rundownId: rundownId,
+				segmentId: protectString('mock_segment1'),
+				playlistActivationId: protectString('active'),
+				segmentPlayoutId: protectString(''),
+				takeCount: 0,
+				rehearsal: false,
+				part: part,
+			})
+		)
+		Parts.insert({
+			...part,
+			invalid: true,
+		})
+
+		try {
+			resetPartIds('mock_part_instance1', instanceId, false)
+
+			ensureNextPartIsValid()
+
+			expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(0)
+		} finally {
+			// Cleanup to not mess with other tests
+			PartInstances.remove(instanceId)
+			Parts.remove(part._id)
+		}
+	})
+	testInFiber('Next part is last in rundown and gets deleted', () => {
+		// Insert a temporary instance
+		const instanceId: PartInstanceId = protectString('tmp_part_1_instance')
+		const part = literal<DBPart>({
+			_id: protectString('tmp_part_1'),
+			_rank: 99,
+			rundownId: rundownId,
+			segmentId: protectString('mock_segment4'),
+			externalId: 'tmp1',
+			title: 'Tmp Part 1',
+		})
+		PartInstances.insert(
+			literal<DBPartInstance>({
+				_id: instanceId,
+				rundownId: rundownId,
+				segmentId: protectString('mock_segment4'),
+				playlistActivationId: protectString('active'),
+				segmentPlayoutId: protectString(''),
+				takeCount: 0,
+				rehearsal: false,
+				part: part,
+			})
+		)
+		Parts.insert(part)
+
+		try {
+			// make sure it finds the part we expect
+			resetPartIds('mock_part_instance9', null, false)
+			ensureNextPartIsValid()
+
+			expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
+			expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
+				expect.objectContaining({ PlaylistId: rundownPlaylistId }),
+				expect.objectContaining({ _id: 'tmp_part_1' })
+			)
+			jest.clearAllMocks()
+
+			// set as the part we expect
+			resetPartIds('mock_part_instance9', instanceId, false)
+
+			// remove the last part
+			Parts.remove(part._id)
+
+			// make sure the next part gets cleared
+			ensureNextPartIsValid()
+
+			expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
+			expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
+				expect.objectContaining({ PlaylistId: rundownPlaylistId }),
+				null
+			)
+		} finally {
+			// Cleanup to not mess with other tests
+			PartInstances.remove(instanceId)
+			Parts.remove(part._id)
 		}
 	})
 })
