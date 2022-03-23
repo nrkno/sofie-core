@@ -214,50 +214,55 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			playlist.previousPartInstanceId,
 		])
 
-		const segmentIds = _.uniq(
-			(
-				await PartInstances.findFetchAsync(
+		const partInstancesCollection = Promise.resolve().then(async () => {
+			// Future: We could optimise away this query if we tracked the segmentIds of these PartInstances on the playlist
+			const segmentIds = _.uniq(
+				(
+					await PartInstances.findFetchAsync(
+						{
+							_id: { $in: selectedPartInstanceIds },
+						},
+						{
+							fields: {
+								segmentId: 1,
+							},
+						}
+					)
+				).map((p) => p.segmentId)
+			)
+
+			const partInstancesSelector: MongoQuery<PartInstance> = {
+				rundownId: { $in: rundownIds },
+				$or: [
 					{
-						// TODO - do we need the Segment for previousPartInstanceId?
-						_id: { $in: selectedPartInstanceIds },
+						segmentId: { $in: segmentIds },
+						reset: { $ne: true },
 					},
 					{
-						fields: {
-							segmentId: 1,
-						},
-					}
-				)
-			).map((p) => p.segmentId)
-		)
+						_id: { $in: selectedPartInstanceIds },
+					},
+				],
+			}
+			// TODO - is this correct? If the playlist isnt active do we want any of these?
+			if (playlist.activationId) partInstancesSelector.playlistActivationId = playlist.activationId
+
+			return DbCacheWriteCollection.createFromDatabase(PartInstances, partInstancesSelector)
+		})
 
 		// If there is an ingestCache, then avoid loading some bits from the db for that rundown
 		const loadRundownIds = ingestCache ? rundownIds.filter((id) => id !== ingestCache.RundownId) : rundownIds
 
-		const partInstancesSelector: MongoQuery<PartInstance> = {
-			rundownId: { $in: rundownIds },
-			$or: [
-				{
-					segmentId: { $in: segmentIds },
-					reset: { $ne: true },
-				},
-				{
-					_id: { $in: selectedPartInstanceIds },
-				},
-			],
-		}
 		const pieceInstancesSelector: MongoQuery<PieceInstance> = {
 			rundownId: { $in: rundownIds },
 			partInstanceId: { $in: selectedPartInstanceIds },
 		}
-		if (playlist.activationId) {
-			// TODO - is this correct? If the playlist isnt active do we want any of these?
-			partInstancesSelector.playlistActivationId = playlist.activationId
-			pieceInstancesSelector.playlistActivationId = playlist.activationId
-		}
+		// TODO - is this correct? If the playlist isnt active do we want any of these?
+		if (playlist.activationId) pieceInstancesSelector.playlistActivationId = playlist.activationId
+
 		const [segments, parts, ...collections] = await Promise.all([
 			DbCacheReadCollection.createFromDatabase(Segments, { rundownId: { $in: loadRundownIds } }),
 			DbCacheReadCollection.createFromDatabase(Parts, { rundownId: { $in: loadRundownIds } }),
-			DbCacheWriteCollection.createFromDatabase(PartInstances, partInstancesSelector),
+			partInstancesCollection,
 			DbCacheWriteCollection.createFromDatabase(PieceInstances, pieceInstancesSelector),
 			// Future: This could be defered until we get to updateTimeline. It could be a small performance boost
 			DbCacheWriteCollection.createFromDatabase(Timeline, { _id: playlist.studioId }),

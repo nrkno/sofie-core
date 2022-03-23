@@ -259,6 +259,10 @@ export async function updatePartInstanceRanks(
 	logger.debug(`updatePartRanks: ${writeOps.length} PartInstances updated`)
 }
 
+/**
+ * Update the ranks of all PartInstances in the given segments.
+ * Syncs the ranks from matching Parts to PartInstances.
+ */
 export function updatePartInstanceRanksAfterAdlib(cache: CacheForPlayout, segmentId: SegmentId) {
 	const newParts = cache.Parts.findFetch((p) => p.segmentId === segmentId)
 	const segmentPartInstances = _.sortBy(

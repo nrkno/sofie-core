@@ -544,10 +544,16 @@ function canRemoveSegment(
 	return true
 }
 
+/**
+ * Update the segmentId property for any PartInstances following any segments being 'renamed'
+ * @param cache Ingest cache
+ * @param renamedSegments Map of <fromSegmentId, toSegmentId>
+ */
 async function updatePartInstancesSegmentIds(
 	cache: CacheForIngest,
 	renamedSegments: ReadonlyMap<SegmentId, SegmentId>
 ) {
+	// A set of rules which can be translated to mongo queries for PartInstances to update
 	const renameRules = new Map<
 		SegmentId,
 		{
@@ -556,6 +562,7 @@ async function updatePartInstancesSegmentIds(
 		}
 	>()
 
+	// Add whole segment renames to the set of rules
 	for (const [fromSegmentId, toSegmentId] of renamedSegments) {
 		const rule = renameRules.get(toSegmentId) ?? { partIds: [], fromSegmentId: null }
 		renameRules.set(toSegmentId, rule)
@@ -563,7 +570,7 @@ async function updatePartInstancesSegmentIds(
 		rule.fromSegmentId = fromSegmentId
 	}
 
-	// const changedPartIds = new Map<PartId, SegmentId>()
+	// Some parts may have gotten a different segmentId to the base rule, so track those seperately in the rules
 	for (const [id, doc] of cache.Parts.documents) {
 		if (doc?.updated) {
 			const rule = renameRules.get(doc.document.segmentId) ?? { partIds: [], fromSegmentId: null }
@@ -573,30 +580,33 @@ async function updatePartInstancesSegmentIds(
 		}
 	}
 
-	await PartInstances.bulkWriteAsync(
-		Array.from(renameRules.entries()).map(([newSegmentId, rule]) => ({
-			updateMany: {
-				filter: {
-					$or: _.compact([
-						rule.fromSegmentId
-							? {
-									segmentId: rule.fromSegmentId,
-							  }
-							: undefined,
-						{
-							'part._id': { $in: rule.partIds },
+	// Perform a mongo update to modify the PartInstances
+	if (renameRules.size > 0) {
+		await PartInstances.bulkWriteAsync(
+			Array.from(renameRules.entries()).map(([newSegmentId, rule]) => ({
+				updateMany: {
+					filter: {
+						$or: _.compact([
+							rule.fromSegmentId
+								? {
+										segmentId: rule.fromSegmentId,
+								  }
+								: undefined,
+							{
+								'part._id': { $in: rule.partIds },
+							},
+						]),
+					},
+					update: {
+						$set: {
+							segmentId: newSegmentId,
+							'part.segmentId': newSegmentId,
 						},
-					]),
-				},
-				update: {
-					$set: {
-						segmentId: newSegmentId,
-						'part.segmentId': newSegmentId,
 					},
 				},
-			},
-		}))
-	)
+			}))
+		)
+	}
 }
 
 /**
@@ -607,19 +617,23 @@ async function updatePartInstancesBasicProperties(
 	rundownId: RundownId,
 	playlist: ReadonlyDeep<RundownPlaylist>
 ) {
+	// Get a list of all the Parts that are known to exist
 	const knownPartIds = partCache.findFetch({}, { fields: { _id: 1 } }).map((p) => p._id)
 
-	// Find all the partInstances which are not reset, and are not orphaned, but their Part no longer exists
-	const partInstancesToOrphan = await PartInstances.findFetchAsync({
-		reset: { $ne: true },
-		rundownId: rundownId,
-		orphaned: { $exists: false },
-		'part._id': { $nin: knownPartIds },
-	})
+	// Find all the partInstances which are not reset, and are not orphaned, but their Part no longer exist (ie they should be orphaned)
+	const partInstancesToOrphan: Array<Pick<PartInstance, '_id'>> = await PartInstances.findFetchAsync(
+		{
+			reset: { $ne: true },
+			rundownId: rundownId,
+			orphaned: { $exists: false },
+			'part._id': { $nin: knownPartIds },
+		},
+		{ fields: { _id: 1 } }
+	)
 
+	// Figure out which of the PartInstances should be reset and which should be marked as orphaned: deleted
 	const instancesToReset: PartInstanceId[] = []
 	const instancesToOrphan: PartInstanceId[] = []
-	// const writeOps: BulkWriteOperation<DBPartInstance>[] = []
 	for (const partInstance of partInstancesToOrphan) {
 		if (playlist.currentPartInstanceId !== partInstance._id && playlist.nextPartInstanceId !== partInstance._id) {
 			instancesToReset.push(partInstance._id)
