@@ -7,7 +7,7 @@ import {
 } from '../../../__mocks__/helpers/database'
 import { protectString } from '../../../lib/lib'
 import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { updatePartInstanceRanks } from '../rundown'
 import { Segment, SegmentId, Segments } from '../../../lib/collections/Segments'
 import { Part, PartId, Parts } from '../../../lib/collections/Parts'
@@ -20,7 +20,7 @@ require('../rundown') // include in order to create the Meteor methods needed
 
 describe('updatePartInstanceRanks', () => {
 	let env: DefaultEnvironment
-	let playlistId!: RundownPlaylistId
+	// let playlistId!: RundownPlaylistId
 	const rundownExternalId: string = 'rundown00'
 	let rundownId!: RundownId
 	let segmentId!: SegmentId
@@ -35,7 +35,7 @@ describe('updatePartInstanceRanks', () => {
 
 		RundownPlaylists.update(info.playlistId, { $set: { activationId: protectString('active') } })
 
-		playlistId = info.playlistId
+		// playlistId = info.playlistId
 		rundownId = info.rundownId
 
 		const rundown = Rundowns.findOne(rundownId) as Rundown
