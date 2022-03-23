@@ -668,6 +668,19 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 				} else {
 					throw new Error('An $or filter must be an array')
 				}
+			} else if (key === '$and') {
+				if (Array.isArray(s) && s.length >= 1) {
+					let ok2 = true
+					for (const innerSelector of s) {
+						ok2 = ok2 && mongoWhere(o, innerSelector)
+						if (!ok2) break
+					}
+					ok = ok2
+				} else {
+					throw new Error('An $and filter must be an array')
+				}
+			} else if (key.startsWith('$')) {
+				throw new Error(`Operand "${key}" is not implemented`)
 			} else {
 				const oAttr = o[key]
 

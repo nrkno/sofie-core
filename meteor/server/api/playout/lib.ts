@@ -648,10 +648,18 @@ function resetPartInstancesWithPieceInstances(cache: CacheForPlayout, selector?:
 
 	// Reset anything which wasnt loaded into the cache
 	cache.deferAfterSave(async () => {
+		const partInstanceIdsInCache = cache.PartInstances.findFetch().map((p) => p._id)
+
 		const resetInDb = await PartInstances.findFetchAsync(
 			{
-				...selector,
-				reset: { $ne: true },
+				$and: [
+					selector ?? {},
+					{
+						// Not any which are in the cache, as they have already been done if needed
+						_id: { $nin: partInstanceIdsInCache },
+						reset: { $ne: true },
+					},
+				],
 			},
 			{ fields: { _id: 1 } }
 		).then((ps) => ps.map((p) => p._id))
