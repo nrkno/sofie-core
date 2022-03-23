@@ -35,6 +35,7 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 						this.props.className,
 						Math.floor((displayTimecode || 0) / 1000) > 0 ? this.props.heavyClassName : undefined
 					)}
+					role="timer"
 				>
 					{RundownUtils.formatDiffToTimecode(displayTimecode || 0, true, false, true, false, true, '', false, true)}
 				</span>

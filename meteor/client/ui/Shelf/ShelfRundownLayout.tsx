@@ -39,7 +39,7 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps) {
 	const { rundownLayout, onSwitchTab } = props
 	return (
 		<>
-			<div className="rundown-view__shelf__tabs">
+			<div className="rundown-view__shelf__tabs" role="tablist">
 				<OverflowingContainer className="rundown-view__shelf__tabs__tab-group">
 					{!rundownLayout ? (
 						<>
@@ -49,6 +49,7 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps) {
 								})}
 								onClick={() => onSwitchTab(ShelfTabs.ADLIB)}
 								tabIndex={0}
+								role="tab"
 							>
 								{t('AdLib')}
 							</div>
@@ -58,6 +59,7 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps) {
 								})}
 								onClick={() => onSwitchTab(ShelfTabs.GLOBAL_ADLIB)}
 								tabIndex={0}
+								role="tab"
 							>
 								{t('Global AdLib')}
 							</div>
@@ -74,6 +76,7 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps) {
 									key={panel._id}
 									onClick={() => onSwitchTab(`${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`)}
 									tabIndex={0}
+									role="tab"
 								>
 									{panel.name}
 								</div>
@@ -86,11 +89,12 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps) {
 					})}
 					onClick={() => onSwitchTab(ShelfTabs.SYSTEM_HOTKEYS)}
 					tabIndex={0}
+					role="tab"
 				>
 					{t('Shortcuts')}
 				</div>
 			</div>
-			<div className="rundown-view__shelf__panel super-dark">
+			<div className="rundown-view__shelf__panel super-dark" role="tabpanel">
 				{!rundownLayout ? (
 					<>
 						<AdLibPanel

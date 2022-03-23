@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/ui/icons/segmentZoomIcon'
 import { Storyboard } from '../../lib/ui/icons/segment'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
@@ -16,6 +17,7 @@ interface IProps {
 }
 
 export function SegmentTimelineZoomButtons(props: IProps) {
+	const { t } = useTranslation()
 	const zoomIn = (e: React.MouseEvent<HTMLElement>) => {
 		props.onZoomChange(props.timeScale * 2, e)
 	}
@@ -59,6 +61,7 @@ export function SegmentTimelineZoomButtons(props: IProps) {
 			<button
 				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--switch-mode segment-timeline__timeline-zoom-buttons__button--switch-mode--storyboard"
 				onClick={switchViewMode}
+				title={t('Switch to Storyboard mode')}
 			>
 				<Storyboard />
 			</button>
@@ -66,18 +69,21 @@ export function SegmentTimelineZoomButtons(props: IProps) {
 				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
 				onClick={zoomOut}
 				disabled={props.timeScale <= props.maxTimeScale && !props.isLiveSegment}
+				title={t('Zoom Out')}
 			>
 				<ZoomOutIcon />
 			</button>
 			<button
 				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--all"
 				onClick={zoomNormalize}
+				title={t('Show All')}
 			>
 				<ZoomShowAll />
 			</button>
 			<button
 				className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--in"
 				onClick={zoomIn}
+				title={t('Zoom In')}
 			>
 				<ZoomInIcon />
 			</button>

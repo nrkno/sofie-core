@@ -1030,7 +1030,7 @@ const RundownHeader = withTranslation()(
 								)}
 								<div className="flex-col right horizontal-align-right">
 									<div className="links mod close">
-										<NavLink to="/rundowns">
+										<NavLink to="/rundowns" title={t('Exit')}>
 											<CoreIcon.NrkClose />
 										</NavLink>
 									</div>
@@ -2170,7 +2170,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					{this.props.playlist?.loop && (
 						<PlaylistLoopingHeader position="start" multiRundown={this.props.matchedSegments.length > 1} />
 					)}
-					<div className="segment-timeline-container">{this.renderSegments()}</div>
+					<div className="segment-timeline-container" role="main" aria-labelledby="rundown-playlist-name">
+						{this.renderSegments()}
+					</div>
 					{this.props.playlist?.loop && (
 						<PlaylistLoopingHeader
 							position="end"

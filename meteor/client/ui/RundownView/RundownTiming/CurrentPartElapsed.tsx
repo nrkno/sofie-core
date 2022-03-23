@@ -26,7 +26,7 @@ export const CurrentPartElapsed = withTiming<IPartElapsedProps, {}>({
 					: 0
 
 			return (
-				<span className={ClassNames(this.props.className)}>
+				<span className={ClassNames(this.props.className)} role="timer">
 					{RundownUtils.formatDiffToTimecode(displayTimecode || 0, true, false, true, false, true, '', false, true)}
 				</span>
 			)
