@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import Moment from 'react-moment'
 import { Time, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -10,9 +9,14 @@ import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { withTranslation } from 'react-i18next'
+import { parse as queryStringParse } from 'query-string'
+
+const PARAM_DATE_FORMAT = 'YYYY-MM-DD'
+const PARAM_NAME_FROM_DATE = 'fromDate'
 
 interface IUserActionsListProps {
 	logItems: UserActionsLogItem[]
+	startDate?: number
 	onItemClick?: (item: UserActionsLogItem) => void
 	renderButtons?: (item: UserActionsLogItem) => React.ReactElement
 }
@@ -53,6 +57,9 @@ export const UserActionsList = withTranslation()(
 					{this.renderMessageHead()}
 					<tbody>
 						{_.map(this.props.logItems, (msg) => {
+							const formattedTimestamp = moment(msg.timestamp).format('YYYY/MM/DD HH:mm:ss.SSS')
+							const anchorId = `t${msg.timestamp}`
+							const selfLink = `${location.pathname}?${PARAM_NAME_FROM_DATE}=${this.props.startDate}#${anchorId}`
 							return (
 								<tr
 									className={this.props.onItemClick ? 'clickable' : undefined}
@@ -60,7 +67,9 @@ export const UserActionsList = withTranslation()(
 									onClick={() => this.props.onItemClick && this.props.onItemClick(msg)}
 								>
 									<td className="user-action-log__timestamp">
-										<Moment format="YYYY/MM/DD HH:mm:ss.SSS">{msg.timestamp}</Moment>
+										<a id={anchorId} href={selfLink}>
+											{formattedTimestamp}
+										</a>
 									</td>
 									<td className="user-action-log__executionTime">
 										<table>
@@ -143,9 +152,23 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 		constructor(props) {
 			super(props)
 
-			this.state = {
-				dateFrom: moment().startOf('day').valueOf(),
-				dateTo: moment().add(1, 'days').startOf('day').valueOf(),
+			// use from and to from querystring if given
+			const queryParams = queryStringParse(location.search, {
+				arrayFormat: 'comma',
+			})
+
+			const qsStartDate = moment(queryParams[PARAM_NAME_FROM_DATE], PARAM_DATE_FORMAT, true)
+
+			if (qsStartDate.isValid()) {
+				this.state = {
+					dateFrom: qsStartDate.startOf('day').valueOf(),
+					dateTo: qsStartDate.add(1, 'days').startOf('day').valueOf(),
+				}
+			} else {
+				this.state = {
+					dateFrom: moment().startOf('day').valueOf(),
+					dateTo: moment().add(1, 'days').startOf('day').valueOf(),
+				}
 			}
 		}
 		componentDidMount() {
@@ -185,16 +208,15 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 		}
 
 		renderUserActivity() {
+			const { dateFrom, dateTo } = this.state
+			const logItems = this.props.log.filter(({ timestamp }) => timestamp >= dateFrom && timestamp < dateTo)
+
 			return (
 				<div>
 					<div className="paging">
-						<DatePickerFromTo from={this.state.dateFrom} to={this.state.dateTo} onChange={this.handleChangeDate} />
+						<DatePickerFromTo from={dateFrom} to={dateTo} onChange={this.handleChangeDate} />
 					</div>
-					<UserActionsList
-						logItems={_.filter(this.props.log, (ua) => {
-							return ua.timestamp >= this.state.dateFrom && ua.timestamp < this.state.dateTo
-						})}
-					/>
+					<UserActionsList logItems={logItems} startDate={dateFrom} />
 				</div>
 			)
 		}
