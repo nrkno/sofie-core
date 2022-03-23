@@ -56,18 +56,8 @@ export async function resetRundownPlaylist(cache: CacheForPlayout): Promise<void
 	// Remove all dunamically inserted pieces (adlibs etc)
 	// const rundownIds = new Set(getRundownIDsFromCache(cache))
 
-	const partInstancesToRemove = cache.PartInstances.remove((p) => p.rehearsal)
-	if (partInstancesToRemove.length) {
-		const cachedRemovedPieceInstances = cache.PieceInstances.remove({
-			partInstanceId: { $in: partInstancesToRemove },
-		})
-		cache.deferAfterSave(() => {
-			PieceInstances.remove({
-				partInstanceId: { $in: partInstancesToRemove },
-				_id: { $nin: cachedRemovedPieceInstances },
-			})
-		})
-	}
+	// Cleanup existing PartInstances and PieceInstances
+	removePartInstancesWithPieceInstances(cache, { rehearsal: true })
 	resetPartInstancesWithPieceInstances(cache)
 
 	cache.Playlist.update({
@@ -612,6 +602,55 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 }
 
 /**
+ * Remove selected partInstances with their pieceInstances
+ */
+function removePartInstancesWithPieceInstances(cache: CacheForPlayout, selector: MongoQuery<PartInstance>) {
+	const partInstancesToRemove = cache.PartInstances.remove(selector)
+
+	// Reset any in the cache now
+	if (partInstancesToRemove.length) {
+		cache.PieceInstances.remove({
+			partInstanceId: { $in: partInstancesToRemove },
+		})
+	}
+
+	// Defer ones which arent loaded
+	cache.deferAfterSave(async () => {
+		// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
+		const partInstanceIdsInCache = cache.PartInstances.findFetch().map((p) => p._id)
+
+		// Find all the partInstances which are not loaded, but should be removed
+		const removeFromDb = await PartInstances.findFetchAsync(
+			{
+				$and: [
+					selector,
+					{
+						// Not any which are in the cache, as they have already been done if needed
+						_id: { $nin: partInstanceIdsInCache },
+					},
+				],
+			},
+			{ fields: { _id: 1 } }
+		).then((ps) => ps.map((p) => p._id))
+
+		// Do the remove
+		const allToRemove = [...removeFromDb, ...partInstancesToRemove]
+		await Promise.all([
+			removeFromDb.length > 0
+				? PartInstances.removeAsync({
+						_id: { $in: removeFromDb },
+				  })
+				: undefined,
+			allToRemove.length > 0
+				? PieceInstances.removeAsync({
+						partInstanceId: { $in: allToRemove },
+				  })
+				: undefined,
+		])
+	})
+}
+
+/**
  * Reset selected or all partInstances with their pieceInstances
  * @param cache
  * @param selector if not provided, all partInstances will be reset
@@ -632,24 +671,25 @@ function resetPartInstancesWithPieceInstances(cache: CacheForPlayout, selector?:
 	)
 
 	// Reset any in the cache now
-	const cachedResetPieceInstances = partInstancesToReset.length
-		? cache.PieceInstances.update(
-				{
-					partInstanceId: { $in: partInstancesToReset },
-					reset: { $ne: true },
+	if (partInstancesToReset.length) {
+		cache.PieceInstances.update(
+			{
+				partInstanceId: { $in: partInstancesToReset },
+				reset: { $ne: true },
+			},
+			{
+				$set: {
+					reset: true,
 				},
-				{
-					$set: {
-						reset: true,
-					},
-				}
-		  )
-		: []
+			}
+		)
+	}
 
-	// Reset anything which wasnt loaded into the cache
+	// Defer ones which arent loaded
 	cache.deferAfterSave(async () => {
 		const partInstanceIdsInCache = cache.PartInstances.findFetch().map((p) => p._id)
 
+		// Find all the partInstances which are not loaded, but should be reset
 		const resetInDb = await PartInstances.findFetchAsync(
 			{
 				$and: [
@@ -664,39 +704,40 @@ function resetPartInstancesWithPieceInstances(cache: CacheForPlayout, selector?:
 			{ fields: { _id: 1 } }
 		).then((ps) => ps.map((p) => p._id))
 
+		// Do the reset
 		const allToReset = [...resetInDb, ...partInstancesToReset]
-
-		if (allToReset.length > 0) {
-			await Promise.all([
-				PartInstances.updateAsync(
-					{
-						_id: { $in: resetInDb },
-						reset: { $ne: true },
-					},
-					{
-						$set: {
-							reset: true,
+		await Promise.all([
+			resetInDb.length
+				? PartInstances.updateAsync(
+						{
+							_id: { $in: resetInDb },
+							reset: { $ne: true },
 						},
-					},
-					{
-						multi: true,
-					}
-				),
-				PieceInstances.updateAsync(
-					{
-						partInstanceId: { $in: allToReset },
-						reset: { $ne: true },
-						_id: { $nin: cachedResetPieceInstances },
-					},
-					{
-						$set: {
-							reset: true,
+						{
+							$set: {
+								reset: true,
+							},
 						},
-					},
-					{ multi: true }
-				),
-			])
-		}
+						{
+							multi: true,
+						}
+				  )
+				: undefined,
+			allToReset.length
+				? PieceInstances.updateAsync(
+						{
+							partInstanceId: { $in: allToReset },
+							reset: { $ne: true },
+						},
+						{
+							$set: {
+								reset: true,
+							},
+						},
+						{ multi: true }
+				  )
+				: undefined,
+		])
 	})
 }
 
