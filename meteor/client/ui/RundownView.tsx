@@ -1030,7 +1030,7 @@ const RundownHeader = withTranslation()(
 								)}
 								<div className="flex-col right horizontal-align-right">
 									<div className="links mod close">
-										<NavLink to="/rundowns" aria-label={t('Exit')}>
+										<NavLink to="/rundowns" title={t('Exit')}>
 											<CoreIcon.NrkClose />
 										</NavLink>
 									</div>
