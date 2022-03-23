@@ -49,7 +49,7 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps) {
 								})}
 								onClick={() => onSwitchTab(ShelfTabs.ADLIB)}
 								tabIndex={0}
-                role="tab"
+								role="tab"
 							>
 								{t('AdLib')}
 							</div>
@@ -59,7 +59,7 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps) {
 								})}
 								onClick={() => onSwitchTab(ShelfTabs.GLOBAL_ADLIB)}
 								tabIndex={0}
-                role="tab"
+								role="tab"
 							>
 								{t('Global AdLib')}
 							</div>
