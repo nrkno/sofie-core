@@ -218,10 +218,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 		RundownViewEventBus.on(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.on(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
-		RundownViewEventBus.on(RundownViewEvents.SHELF_STATE, (e) => {
-			this.blurActiveElement()
-			this.props.onChangeExpanded(e.state === 'toggle' ? !this.props.isExpanded : e.state)
-		})
 	}
 
 	componentWillUnmount() {
