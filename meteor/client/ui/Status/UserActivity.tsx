@@ -7,6 +7,7 @@ import moment from 'moment'
 import { PubSub } from '../../../lib/api/pubsub'
 import { useTranslation } from 'react-i18next'
 import { parse as queryStringParse } from 'query-string'
+import { Link } from 'react-router-dom'
 
 const PARAM_DATE_FORMAT = 'YYYY-MM-DD'
 const PARAM_NAME_FROM_DATE = 'fromDate'
@@ -54,7 +55,9 @@ export function UserActionsList(props: IUserActionsListProps) {
 				{props.logItems.map((msg) => {
 					const formattedTimestamp = moment(msg.timestamp).format('YYYY/MM/DD HH:mm:ss.SSS')
 					const anchorId = `t${msg.timestamp}`
-					const selfLink = `${location.pathname}?${PARAM_NAME_FROM_DATE}=${props.startDate}#${anchorId}`
+					const selfLink = `${location.pathname}?${PARAM_NAME_FROM_DATE}=${moment(props.startDate).format(
+						PARAM_DATE_FORMAT
+					)}#${anchorId}`
 					return (
 						<tr
 							className={props.onItemClick ? 'clickable' : undefined}
@@ -62,36 +65,38 @@ export function UserActionsList(props: IUserActionsListProps) {
 							onClick={() => props.onItemClick && props.onItemClick(msg)}
 						>
 							<td className="user-action-log__timestamp">
-								<a id={anchorId} href={selfLink}>
+								<Link id={anchorId} to={selfLink}>
 									{formattedTimestamp}
-								</a>
+								</Link>
 							</td>
 							<td className="user-action-log__executionTime">
 								<table>
-									{msg.executionTime ? (
-										<tr>
-											<td>{t('Core')}:</td>
-											<td>{msg.executionTime} ms</td>
-										</tr>
-									) : null}
-									{msg.workerTime ? (
-										<tr>
-											<td>{t('Worker')}:</td>
-											<td>{msg.workerTime} ms</td>
-										</tr>
-									) : null}
-									{msg.gatewayDuration ? (
-										<tr>
-											<td>{t('Gateway')}:</td>
-											<td>{msg.gatewayDuration.join(', ')} ms</td>
-										</tr>
-									) : null}
-									{msg.timelineResolveDuration ? (
-										<tr>
-											<td>{t('TSR')}:</td>
-											<td>{msg.timelineResolveDuration.join(', ')} ms</td>
-										</tr>
-									) : null}
+									<tbody>
+										{msg.executionTime ? (
+											<tr>
+												<td>{t('Core')}:</td>
+												<td>{msg.executionTime} ms</td>
+											</tr>
+										) : null}
+										{msg.workerTime ? (
+											<tr>
+												<td>{t('Worker')}:</td>
+												<td>{msg.workerTime} ms</td>
+											</tr>
+										) : null}
+										{msg.gatewayDuration ? (
+											<tr>
+												<td>{t('Gateway')}:</td>
+												<td>{msg.gatewayDuration.join(', ')} ms</td>
+											</tr>
+										) : null}
+										{msg.timelineResolveDuration ? (
+											<tr>
+												<td>{t('TSR')}:</td>
+												<td>{msg.timelineResolveDuration.join(', ')} ms</td>
+											</tr>
+										) : null}
+									</tbody>
 								</table>
 							</td>
 							<td className="user-action-log__userId">{msg.userId}</td>
@@ -179,7 +184,7 @@ function UserActivity() {
 			targetElement.scrollIntoView()
 			setFound(true)
 		}
-	}, [!found])
+	}, [found, logItems.length])
 
 	return (
 		<div className="mhl gutter external-message-status">
