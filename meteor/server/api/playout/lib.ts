@@ -517,66 +517,80 @@ function cleanupOrphanedItems(cache: CacheForPlayout) {
 			// This is not valid as the rundownId won't match the externalId, so ingest will fail
 			// For now do nothing
 		} else if (rundown) {
-			Meteor.defer(async () => {
-				try {
-					await runIngestOperationWithCache(
-						'cleanupOrphanedItems:defer',
-						rundown.studioId,
-						rundown.externalId,
-						(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
-						async (ingestCache, ingestRundown) => {
-							// Find the segments that are still orphaned (in case they have resynced before this executes)
-							// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
-							const stillOrphanedSegments = ingestCache.Segments.findFetch((s) => !!s.orphaned)
+			cache.deferAfterSave(() => {
+				runIngestOperationWithCache(
+					'cleanupOrphanedItems:defer',
+					rundown.studioId,
+					rundown.externalId,
+					(ingestRundown) => ingestRundown ?? UpdateIngestRundownAction.DELETE,
+					async (ingestCache, ingestRundown) => {
+						// Find the segments that are still orphaned (in case they have resynced before this executes)
+						// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
+						const stillOrphanedSegments = ingestCache.Segments.findFetch((s) => !!s.orphaned)
 
-							const stillHiddenSegments = stillOrphanedSegments
-								.filter(
-									(s) =>
-										s.orphaned === SegmentOrphanedReason.HIDDEN &&
-										candidateSegmentIds.hidden.includes(s._id)
-								)
-								.map((s) => s._id)
-
-							const stillDeletedSegments = stillOrphanedSegments
-								.filter(
-									(s) =>
-										s.orphaned === SegmentOrphanedReason.DELETED &&
-										candidateSegmentIds.deleted.includes(s._id)
-								)
-								.map((s) => s._id)
-
-							const hiddenSegmentsExternalIds = cache.Segments.findFetch({
-								_id: { $in: stillHiddenSegments },
-							}).map((s) => s.externalId)
-
-							const hiddenIngestSegments = ingestRundown?.segments?.filter((s) =>
-								hiddenSegmentsExternalIds.includes(s.externalId)
+						const stillHiddenSegments = stillOrphanedSegments
+							.filter(
+								(s) =>
+									s.orphaned === SegmentOrphanedReason.HIDDEN &&
+									candidateSegmentIds.hidden.includes(s._id)
 							)
+							.map((s) => s._id)
 
-							const changedHiddenSegments: SegmentId[] = []
+						const stillDeletedSegments = stillOrphanedSegments
+							.filter(
+								(s) =>
+									s.orphaned === SegmentOrphanedReason.DELETED &&
+									candidateSegmentIds.deleted.includes(s._id)
+							)
+							.map((s) => s._id)
 
-							if (hiddenIngestSegments) {
-								for (const s of hiddenIngestSegments) {
-									const changes = await updateSegmentFromIngestData(ingestCache, s, false)
-									changedHiddenSegments.push(...(changes?.changedSegmentIds || []))
-								}
-							}
+						const hiddenSegmentsExternalIds = cache.Segments.findFetch({
+							_id: { $in: stillHiddenSegments },
+						}).map((s) => s.externalId)
 
-							return {
-								changedSegmentIds: changedHiddenSegments,
-								removedSegmentIds: stillDeletedSegments,
-								renamedSegments: new Map(),
+						const hiddenIngestSegments = ingestRundown?.segments?.filter((s) =>
+							hiddenSegmentsExternalIds.includes(s.externalId)
+						)
 
-								removeRundown: false,
+						const changedHiddenSegments: SegmentId[] = []
 
-								showStyle: undefined,
-								blueprint: undefined,
+						if (hiddenIngestSegments) {
+							for (const s of hiddenIngestSegments) {
+								const changes = await updateSegmentFromIngestData(ingestCache, s, false)
+								changedHiddenSegments.push(...(changes?.changedSegmentIds || []))
 							}
 						}
-					)
-				} catch (e) {
+
+						// Make sure any orphaned hidden segments arent marked as hidden
+						for (const segmentId of stillHiddenSegments) {
+							if (!changedHiddenSegments.includes(segmentId)) {
+								const segment = ingestCache.Segments.findOne(segmentId)
+								if (segment?.isHidden && segment.orphaned === SegmentOrphanedReason.HIDDEN) {
+									ingestCache.Segments.update(segmentId, { $unset: { orphaned: 1 } })
+									changedHiddenSegments.push(segmentId)
+								}
+							}
+						}
+
+						if (changedHiddenSegments.length === 0 && stillDeletedSegments.length === 0) {
+							// Nothing could have changed, so take a shortcut and skip any saving
+							return null
+						}
+
+						return {
+							changedSegmentIds: changedHiddenSegments,
+							removedSegmentIds: stillDeletedSegments,
+							renamedSegments: new Map(),
+
+							removeRundown: false,
+
+							showStyle: undefined,
+							blueprint: undefined,
+						}
+					}
+				).catch((e) => {
 					logger.error('cleanupOrphanedItems:defer error', e)
-				}
+				})
 			})
 		}
 	}

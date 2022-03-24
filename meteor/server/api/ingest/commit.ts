@@ -302,14 +302,17 @@ export async function CommitIngestOperation(
 								!orphanDeletedSegmentIds.has(segmentId) &&
 								ingestCache.Parts.findFetch({ segmentId }).length === 0
 							) {
+								// No parts in segment
+
 								if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
 									// Protect live segment from being hidden
 									logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
 									orphanHiddenSegmentIds.add(segmentId)
 								} else {
-									// No parts in segment, hide it
+									// We can hide it
 									ingestCache.Segments.update(segmentId, {
 										$set: { isHidden: true },
+										$unset: { orphaned: 1 },
 									})
 								}
 							}
