@@ -42,6 +42,9 @@ export interface IStudioSettings {
 	preserveUnsyncedPlayingSegmentContents?: boolean
 	/** Allow resets while a rundown is on-air */
 	allowRundownResetOnAir?: boolean
+
+	/** Preserve unsynced segments psoition in the rundown, relative to the other segments */
+	preserveOrphanedSegmentPositionInRundown?: boolean
 }
 export type MappingsHash = ProtectedString<'MappingsHash'>
 
