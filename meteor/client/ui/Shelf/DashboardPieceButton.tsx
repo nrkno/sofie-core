@@ -351,7 +351,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private handleOnPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') {
-			this.pointerId = e.pointerId
+			const pointerCopy = e.pointerId
+			this.pointerId = pointerCopy
 		}
 	}
 
