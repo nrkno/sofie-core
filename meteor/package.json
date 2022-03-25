@@ -177,11 +177,6 @@
 			"server": "server/main.ts"
 		}
 	},
-	"standard-version": {
-		"scripts": {
-			"postbump": "yarn libs:syncVersionsAndChangelogs"
-		}
-	},
 	"resolutions": {
 		"url-parse": "^1.5.9"
 	}
