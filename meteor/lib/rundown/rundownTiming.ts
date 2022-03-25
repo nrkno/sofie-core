@@ -175,8 +175,14 @@ export class RundownTimingCalculator {
 						partInstance.timings?.startedPlayback
 			})
 
+			const segmentsStartedPlayback: Record<string, number> = {}
 			parts.forEach((origPart, itIndex) => {
 				const partInstance = this.getPartInstanceOrGetCachedTemp(partInstancesMap, origPart)
+
+				const segmentId = unprotectString(partInstance.segmentId)
+				if (segmentsStartedPlayback[segmentId] === undefined && partInstance.timings?.startedPlayback) {
+					segmentsStartedPlayback[segmentId] = partInstance.timings?.startedPlayback
+				}
 
 				if (partInstance.segmentId !== lastSegmentId) {
 					this.untimedSegments.add(partInstance.segmentId)
@@ -299,12 +305,13 @@ export class RundownTimingCalculator {
 						Settings.defaultDisplayDuration
 					partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
 					this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
+					const segmentStartedPlayback = segmentsStartedPlayback[segmentId] || lastStartedPlayback
 					if (segmentUsesBudget) {
 						currentRemaining = Math.max(
 							0,
 							this.segmentBudgetDurations[unprotectString(partInstance.segmentId)] -
 								segmentDisplayDuration -
-								(now - lastStartedPlayback)
+								(now - segmentStartedPlayback)
 						)
 						segmentBudgetDurationLeft = 0
 					} else {
