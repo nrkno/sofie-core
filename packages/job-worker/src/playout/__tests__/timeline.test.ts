@@ -21,7 +21,7 @@ import {
 } from '../playout'
 import { fixSnapshot } from '../../__mocks__/helpers/snapshot'
 import { runJobWithPlayoutCache } from '../lock'
-import { updateTimeline } from '../timeline'
+import { updateTimeline } from '../timeline/generate'
 import { getSelectedPartInstances, getSortedPartsForRundown } from './lib'
 import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'

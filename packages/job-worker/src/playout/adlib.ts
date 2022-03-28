@@ -23,7 +23,7 @@ import {
 	getSelectedPartInstancesFromCache,
 } from './cache'
 import { runJobWithPlayoutCache } from './lock'
-import { updateTimeline } from './timeline'
+import { updateTimeline } from './timeline/generate'
 import { selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
 import {

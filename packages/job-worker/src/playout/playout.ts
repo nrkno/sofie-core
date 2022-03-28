@@ -39,7 +39,7 @@ import {
 	setNextSegment as libSetNextSegment,
 	updateExpectedDurationWithPrerollForPartInstance,
 } from './lib'
-import { saveTimeline, updateStudioTimeline, updateTimeline } from './timeline'
+import { saveTimeline, updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { IBlueprintPieceType, PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'

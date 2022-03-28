@@ -12,7 +12,7 @@ const syncPlayheadInfinitesForNextPartInstanceMock = jest.spyOn(Infinites, 'sync
 const takeNextPartMock = jest.spyOn(TakeApi, 'takeNextPartInnerSync')
 
 jest.mock('../../playout/timeline')
-import { updateTimeline } from '../../playout/timeline'
+import { updateTimeline } from '../timeline/generate'
 type TupdateTimeline = jest.MockedFunction<typeof updateTimeline>
 const updateTimelineMock = updateTimeline as TupdateTimeline
 

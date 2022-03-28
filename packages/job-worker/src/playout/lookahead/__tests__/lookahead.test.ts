@@ -5,7 +5,7 @@ import { DBStudio, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/
 import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getCurrentTime } from '../../../lib'
-import { SelectedPartInstancesTimelineInfo } from '../../../playout/timeline'
+import { SelectedPartInstancesTimelineInfo } from '../../timeline/generate'
 import { getLookeaheadObjects } from '..'
 import { LookaheadMode, PlaylistTimingType, TSR } from '@sofie-automation/blueprints-integration'
 import { setupDefaultJobEnvironment, MockJobContext } from '../../../__mocks__/context'

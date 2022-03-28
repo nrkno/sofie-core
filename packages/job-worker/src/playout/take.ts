@@ -14,7 +14,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { getResolvedPieces } from './pieces'
 import { clone, getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { updateTimeline } from './timeline'
+import { updateTimeline } from './timeline/generate'
 import {
 	PieceInstanceId,
 	PieceInstanceInfiniteId,

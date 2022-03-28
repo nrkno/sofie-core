@@ -12,7 +12,7 @@ import {
 	hasPieceInstanceDefinitelyEnded,
 	SelectedPartInstancesTimelineInfo,
 	SelectedPartInstanceTimelineInfo,
-} from '../timeline'
+} from '../timeline/generate'
 import {
 	OnGenerateTimelineObjExt,
 	TimelineObjRundown,
