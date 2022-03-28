@@ -286,7 +286,8 @@ export namespace BucketsAPI {
 				externalId: '', // TODO - is this ok?
 				bucketId: bucketId,
 				studioId: studioId,
-				showStyleVariantId: rundown.showStyleVariantId,
+				showStyleBaseId: rundown.showStyleBaseId,
+				showStyleVariantId: action.allVariants ? null : rundown.showStyleVariantId,
 				importVersions: rundown.importVersions,
 			}
 		}

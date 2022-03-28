@@ -13,7 +13,6 @@ import { RundownId } from '../../../lib/collections/Rundowns'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { getCurrentTime, getHash, protectString, Subtract, ProtectedString } from '../../../lib/lib'
-import { logger } from '../../logging'
 import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../../lib/collections/Studios'
 import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
@@ -133,25 +132,25 @@ function generateExpectedMediaItemsFull(
 export async function cleanUpExpectedMediaItemForBucketAdLibPiece(adLibIds: PieceId[]): Promise<void> {
 	check(adLibIds, [String])
 
-	const removedItems = await ExpectedMediaItems.removeAsync({
+	await ExpectedMediaItems.removeAsync({
 		bucketAdLibPieceId: {
 			$in: adLibIds,
 		},
 	})
-
-	logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib items`)
+	// disabled to reduce spam:
+	// logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib items`)
 }
 
 export async function cleanUpExpectedMediaItemForBucketAdLibActions(actionIds: AdLibActionId[]): Promise<void> {
 	check(actionIds, [String])
 
-	const removedItems = await ExpectedMediaItems.removeAsync({
+	await ExpectedMediaItems.removeAsync({
 		bucketAdLibActionId: {
 			$in: actionIds,
 		},
 	})
-
-	logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib actions`)
+	// disabled to reduce spam:
+	// logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib actions`)
 }
 
 export async function updateExpectedMediaItemForBucketAdLibPiece(adLibId: PieceId): Promise<void> {
