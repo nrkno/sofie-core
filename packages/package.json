@@ -62,7 +62,7 @@
 	},
 	"name": "packages",
 	"resolutions": {
-		"node-license-validator/**/minimist": "^1.2.3",
+		"node-license-validator/**/minimist": "^1.2.6",
 		"lerna/**/trim-newlines": "^4.0.1",
 		"**/data-store/set-value": "^4.1.0"
 	}
