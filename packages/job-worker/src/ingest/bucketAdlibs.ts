@@ -1,4 +1,4 @@
-import { BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketId, PieceId, AdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ShowStyleUserContext } from '../blueprints/context'
 import { IBlueprintActionManifest, IBlueprintAdLibPiece } from '@sofie-automation/blueprints-integration'
@@ -46,10 +46,14 @@ export async function handleBucketRemoveAdlibPiece(
 	if (!piece || piece.studioId !== context.studioId)
 		throw new Error(`Bucket Piece "${data.pieceId}" not found in this studio`)
 
+	const idsToUpdate: PieceId[] = [piece._id]
+	// Also remove adlibs that are grouped together with this adlib in the GUI:
+	;(await getGroupedAdlibs(context, piece)).forEach(({ _id }) => idsToUpdate.push(_id))
+
 	await Promise.all([
-		context.directCollections.BucketAdLibPieces.remove(piece._id),
-		cleanUpExpectedMediaItemForBucketAdLibPiece(context, [piece._id]),
-		cleanUpExpectedPackagesForBucketAdLibs(context, [piece._id]),
+		context.directCollections.BucketAdLibPieces.remove({ _id: { $in: idsToUpdate } }),
+		cleanUpExpectedMediaItemForBucketAdLibPiece(context, idsToUpdate),
+		cleanUpExpectedPackagesForBucketAdLibs(context, idsToUpdate),
 	])
 }
 
@@ -61,10 +65,14 @@ export async function handleBucketRemoveAdlibAction(
 	if (!action || action.studioId !== context.studioId)
 		throw new Error(`Bucket Action "${data.actionId}" not found in this studio`)
 
+	const idsToUpdate: AdLibActionId[] = [action._id]
+	// Also remove adlibs that are grouped together with this adlib in the GUI:
+	;(await getGroupedAdlibActions(context, action)).forEach(({ _id }) => idsToUpdate.push(_id))
+
 	await Promise.all([
-		context.directCollections.BucketAdLibActions.remove(action._id),
-		cleanUpExpectedMediaItemForBucketAdLibActions(context, [action._id]),
-		cleanUpExpectedPackagesForBucketAdLibsActions(context, [action._id]),
+		context.directCollections.BucketAdLibActions.remove({ _id: { $in: idsToUpdate } }),
+		cleanUpExpectedMediaItemForBucketAdLibActions(context, idsToUpdate),
+		cleanUpExpectedPackagesForBucketAdLibsActions(context, idsToUpdate),
 	])
 }
 
@@ -291,8 +299,8 @@ export async function handleBucketActionRegenerateExpectedPackages(
 }
 
 export async function handleBucketActionModify(context: JobContext, data: BucketActionModifyProps): Promise<void> {
-	const action = await context.directCollections.BucketAdLibActions.findOne(data.actionId)
-	if (!action || action.studioId !== context.studioId)
+	const orgAction = await context.directCollections.BucketAdLibActions.findOne(data.actionId)
+	if (!orgAction || orgAction.studioId !== context.studioId)
 		throw new Error(`Bucket Action "${data.actionId}" not found in this studio`)
 
 	const newProps = omit(
@@ -302,38 +310,79 @@ export async function handleBucketActionModify(context: JobContext, data: Bucket
 		'importVersions',
 		'showStyleVariantId'
 	)
-	await context.directCollections.BucketAdLibActions.update(action._id, {
-		$set: newProps,
-	})
 
-	const newAction = {
-		...action,
-		...newProps,
+	// Also update adlibs that are grouped together with this adlib in the GUI:
+	const actionsToUpdate = await getGroupedAdlibActions(context, orgAction)
+
+	for (const action of actionsToUpdate) {
+		const newAction = {
+			...action,
+			...newProps,
+		}
+		await Promise.all([
+			context.directCollections.BucketAdLibActions.update(action._id, {
+				$set: newProps,
+			}),
+			updateExpectedMediaItemForBucketAdLibAction(context, newAction),
+			updateExpectedPackagesForBucketAdLibAction(context, newAction),
+		])
 	}
-
-	await Promise.all([
-		updateExpectedMediaItemForBucketAdLibAction(context, newAction),
-		updateExpectedPackagesForBucketAdLibAction(context, newAction),
-	])
 }
 
 export async function handleBucketPieceModify(context: JobContext, data: BucketPieceModifyProps): Promise<void> {
-	const piece = await context.directCollections.BucketAdLibPieces.findOne(data.pieceId)
-	if (!piece || piece.studioId !== context.studioId)
+	const orgPiece = await context.directCollections.BucketAdLibPieces.findOne(data.pieceId)
+	if (!orgPiece || orgPiece.studioId !== context.studioId)
 		throw new Error(`Bucket Piece "${data.pieceId}" not found in this studio`)
 
 	const newProps = omit(data.props as Partial<BucketAdLib>, '_id', 'studioId', 'importVersions', 'showStyleVariantId')
-	await context.directCollections.BucketAdLibPieces.update(piece._id, {
-		$set: newProps,
-	})
 
-	const newPiece = {
-		...piece,
-		...newProps,
+	// Also update adlibs that are grouped together with this adlib in the GUI:
+	const piecesToUpdate = await getGroupedAdlibs(context, orgPiece)
+
+	for (const piece of piecesToUpdate) {
+		await context.directCollections.BucketAdLibPieces.update(piece._id, {
+			$set: newProps,
+		})
+
+		const newPiece = {
+			...piece,
+			...newProps,
+		}
+
+		await Promise.all([
+			updateExpectedMediaItemForBucketAdLibPiece(context, newPiece),
+			updateExpectedPackagesForBucketAdLibPiece(context, newPiece),
+		])
 	}
+}
+/** Returns BucketAdlibActions that are grouped together with this adlib in the GUI */
+async function getGroupedAdlibActions(context: JobContext, oldAdLib: BucketAdLibAction): Promise<BucketAdLibAction[]> {
+	return context.directCollections.BucketAdLibActions.findFetch({
+		bucketId: oldAdLib.bucketId,
+		studioId: oldAdLib.studioId,
+		$or: [
+			{
+				externalId: oldAdLib.externalId,
+			},
+			{
+				uniquenessId: oldAdLib.uniquenessId,
+			},
+		],
+	})
+}
 
-	await Promise.all([
-		updateExpectedMediaItemForBucketAdLibPiece(context, newPiece),
-		updateExpectedPackagesForBucketAdLibPiece(context, newPiece),
-	])
+/** Returns BucketAdlibs that are grouped together with this adlib in the GUI */
+async function getGroupedAdlibs(context: JobContext, oldAdLib: BucketAdLib): Promise<BucketAdLib[]> {
+	return context.directCollections.BucketAdLibPieces.findFetch({
+		bucketId: oldAdLib.bucketId,
+		studioId: oldAdLib.studioId,
+		$or: [
+			{
+				externalId: oldAdLib.externalId,
+			},
+			{
+				uniquenessId: oldAdLib.uniquenessId,
+			},
+		],
+	})
 }
