@@ -5,6 +5,7 @@
 	"engines": {
 		"node": ">=14.18.0"
 	},
+	"homepage": "https://github.com/nrkno/sofie-core",
 	"scripts": {
 		"preinstall": "node -v",
 		"debug": "meteor run ",

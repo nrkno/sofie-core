@@ -12,10 +12,12 @@ const execPromise = (command) =>
 
 const isPrerelase = !!process.argv.find((arg) => arg === "--prerelease");
 const isDryRun = !!process.argv.find((arg) => arg === "--dry-run");
+
 const packageFile = JSON.parse(
 	await readFile("./meteor/package.json", { encoding: "utf-8" })
 );
 const currentVersion = packageFile.version;
+const repoUrl = packageFile.homepage || REPO_URL;
 
 // find last valid tag
 const tags = (await execPromise("git tag -l --sort=-v:refname")).split("\n");
@@ -89,9 +91,7 @@ if (Object.keys(changes)) {
 		for (const change of commits) {
 			md += `\n* ${change.scope ? `**${change.scope}** ` : ""}${
 				change.description
-			} [${
-				change.short
-			}](${REPO_URL}/nrkno/sofie-core/commit/${change.hash.trim()})`;
+			} [${change.short}](${repoUrl}/commit/${change.hash.trim()})`;
 		}
 	}
 }
@@ -107,17 +107,15 @@ if (!isDryRun) {
 	await writeFile("./CHANGELOG.md", HEADER + md + oldContent);
 
 	// update the package.json
-	packageFile.version = nextVersion;
-	writeFile(
-		"./meteor/package.json",
-		JSON.stringify(packageFile, undefined, "\t")
-	);
+	await execPromise("cd ./packages && yarn version " + nextVersion);
 
 	// update the library files
 	await execPromise("cd ./packages && yarn sync-version-and-changelog");
 
 	// git commit
-	await execPromise(`git add *`);
+	await execPromise(
+		`git add */package.json */yarn.lock CHANGELOG.md */CHANGELOG.md`
+	);
 
 	await execPromise(`git commit -m "chore(release): v${nextVersion}"`);
 
