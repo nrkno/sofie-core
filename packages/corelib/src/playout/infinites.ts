@@ -496,10 +496,7 @@ export interface PieceInstanceWithTimings extends PieceInstance {
 }
 
 function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number | string {
-	const offset = newPiece.piece.prerollDuration
-	if (!offset) return start
-
-	return typeof start === 'number' ? start + offset : `#${getPieceGroupId(newPiece)}.start + ${offset}`
+	return typeof start === 'number' ? start : `#${getPieceGroupId(newPiece)}.start`
 }
 
 function isClear(piece?: PieceInstance): boolean {

@@ -473,19 +473,19 @@ export namespace RundownUtils {
 						renderedInPoint: 0,
 					}
 
-					const { pieceGroup, capObjs } = createPieceGroupAndCap(piece)
-					pieceGroup.metaData = literal<PieceGroupMetadataExt>({
+					const { controlObj, capObjs } = createPieceGroupAndCap(playlist._id, piece)
+					controlObj.metaData = literal<PieceGroupMetadataExt>({
 						id: piece.piece._id,
 						pieceId: piece._id,
 						isPieceTimeline: true,
 					})
-					partTimeline.push(pieceGroup)
+					partTimeline.push(controlObj)
 					partTimeline.push(...capObjs)
 
 					// if there is an userDuration override, override it for the timeline
 					if (piece.userDuration) {
-						delete pieceGroup.enable.duration
-						pieceGroup.enable.end = piece.userDuration.end
+						delete controlObj.enable.duration
+						controlObj.enable.end = piece.userDuration.end
 					}
 
 					// find the target output layer

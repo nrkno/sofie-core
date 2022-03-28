@@ -8,7 +8,7 @@ import { TimelineObjGeneric, TimelineObjRundown } from '@sofie-automation/coreli
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration/dist'
-import { clone, getRandomId, literal, normalizeArray, flatten, applyToArray } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomId, literal, normalizeArray, applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import { logger } from '../logging'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
@@ -184,13 +184,7 @@ export function getResolvedPieces(
 		nowInPart
 	)
 
-	const objs = flatten(
-		preprocessedPieces.map((piece) => {
-			const r = createPieceGroupAndCap(piece)
-			return [r.pieceGroup, ...r.capObjs]
-		})
-	)
-	objs.forEach((o) => {
+	const deNowify = (o: TimelineObjRundown) => {
 		applyToArray(o.enable, (enable) => {
 			if (enable.start === 'now' && partStarted) {
 				// Emulate playout starting now. TODO - ensure didnt break other uses
@@ -199,7 +193,14 @@ export function getResolvedPieces(
 				enable.start = 1
 			}
 		})
-	})
+		return o
+	}
+
+	const objs: TimelineObjGeneric[] = []
+	for (const piece of preprocessedPieces) {
+		const { controlObj, capObjs } = createPieceGroupAndCap(cache.PlaylistId, piece)
+		objs.push(deNowify(controlObj), ...capObjs.map(deNowify))
+	}
 
 	const resolvedPieces = resolvePieceTimeline(
 		transformTimeline(objs),

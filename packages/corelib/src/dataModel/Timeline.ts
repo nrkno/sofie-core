@@ -73,7 +73,9 @@ export interface TimelineObjPartAbstract extends TimelineObjRundown {
 		}
 	}
 }
-export interface TimelineObjPieceAbstract extends TimelineObjRundown {
+export interface TimelineObjPieceAbstract extends Omit<TimelineObjRundown, 'enable'> {
+	enable: TimelineEnableExt
+
 	// used for sending callbacks
 	content: {
 		deviceType: TSR.DeviceType.ABSTRACT

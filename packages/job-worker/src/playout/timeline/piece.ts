@@ -6,16 +6,13 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	TimelineObjRundown,
 	OnGenerateTimelineObjExt,
-	TimelineObjPieceAbstract,
 	TimelineObjType,
 	TimelineObjGroupPart,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { assertNever, clone, literal } from '@sofie-automation/corelib/dist/lib'
-import { getPieceFirstObjectId } from '@sofie-automation/corelib/dist/playout/ids'
+import { assertNever, clone } from '@sofie-automation/corelib/dist/lib'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import { createPieceGroupAndCap } from '@sofie-automation/corelib/dist/playout/pieces'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
@@ -30,7 +27,7 @@ export function transformPieceGroupAndObjects(
 	nowInPart: number,
 	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	pieceEnable: TSR.Timeline.TimelineEnable,
-	firstObjClasses: string[],
+	controlObjClasses: string[],
 	isInHold: boolean,
 	includeHoldExceptObjects: boolean
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
@@ -39,13 +36,19 @@ export function transformPieceGroupAndObjects(
 		typeof partGroup.enable.start === 'number' && hasPieceInstanceDefinitelyEnded(pieceInstance, nowInPart)
 
 	// create a piece group for the pieces and then place all of them there
-	const { pieceGroup, capObjs } = createPieceGroupAndCap(pieceInstance, partGroup, pieceEnable)
-	const timelineObjs = [pieceGroup, ...capObjs]
+	const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(
+		playlistId,
+		pieceInstance,
+		controlObjClasses,
+		partGroup,
+		pieceEnable
+	)
+	const timelineObjs = [controlObj, ...capObjs]
 
 	if (!pieceInstance.piece.virtual && !hasDefinitelyEnded) {
-		timelineObjs.push(createPieceGroupFirstObject(playlistId, pieceInstance, pieceGroup, firstObjClasses))
-
 		const pieceObjects: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
+
+		timelineObjs.push(childGroup)
 
 		const objects = deserializePieceTimelineObjectsBlob(pieceInstance.piece.timelineObjectsString)
 		for (const o of objects) {
@@ -70,7 +73,7 @@ export function transformPieceGroupAndObjects(
 
 			pieceObjects.push({
 				...clone<TimelineObjectCoreExt>(o),
-				inGroup: pieceGroup.id,
+				inGroup: childGroup.id,
 				objectType: TimelineObjType.RUNDOWN,
 				pieceInstanceId: unprotectString(pieceInstance._id),
 				infinitePieceInstanceId: pieceInstance.infinite?.infiniteInstanceId,
@@ -85,37 +88,6 @@ export function transformPieceGroupAndObjects(
 	return timelineObjs
 }
 
-export function createPieceGroupFirstObject(
-	playlistId: RundownPlaylistId,
-	pieceInstance: ReadonlyDeep<PieceInstance>,
-	pieceGroup: TimelineObjRundown & OnGenerateTimelineObjExt,
-	firstObjClasses?: string[]
-): TimelineObjPieceAbstract & OnGenerateTimelineObjExt {
-	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt>({
-		id: getPieceFirstObjectId(pieceInstance),
-		pieceInstanceId: unprotectString(pieceInstance._id),
-		infinitePieceInstanceId: pieceInstance.infinite?.infiniteInstanceId,
-		partInstanceId: pieceGroup.partInstanceId,
-		objectType: TimelineObjType.RUNDOWN,
-		enable: { start: 0 },
-		layer: pieceInstance.piece.sourceLayerId + '_firstobject',
-		content: {
-			deviceType: TSR.DeviceType.ABSTRACT,
-			type: 'callback',
-			callBack: 'piecePlaybackStarted',
-			callBackData: {
-				rundownPlaylistId: playlistId,
-				pieceInstanceId: pieceInstance._id,
-				dynamicallyInserted: pieceInstance.dynamicallyInserted !== undefined,
-			},
-			callBackStopped: 'piecePlaybackStopped', // Will cause a callback to be called, when the object stops playing:
-		},
-		classes: firstObjClasses,
-		inGroup: pieceGroup.id,
-	})
-	return firstObject
-}
-
 export function getPieceEnableInsidePart(
 	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	partTimings: PartCalculatedTimings
@@ -125,15 +97,15 @@ export function getPieceEnableInsidePart(
 		// timed pieces should be offset based on the preroll of the part
 		pieceEnable.start += partTimings.toPartDelay
 
-		if (pieceInstance.piece.prerollDuration) {
-			// Offset pre-programmed pieces by their own preroll
-			pieceEnable.start -= pieceInstance.piece.prerollDuration
+		// if (pieceInstance.piece.prerollDuration) {
+		// 	// Offset pre-programmed pieces by their own preroll
+		// 	pieceEnable.start -= pieceInstance.piece.prerollDuration
 
-			// Duration needs to be extended to compensate
-			if (typeof pieceEnable.duration === 'number') {
-				pieceEnable.duration += pieceInstance.piece.prerollDuration
-			}
-		}
+		// 	// Duration needs to be extended to compensate
+		// 	if (typeof pieceEnable.duration === 'number') {
+		// 		pieceEnable.duration += pieceInstance.piece.prerollDuration
+		// 	}
+		// }
 	}
 	return pieceEnable
 }
