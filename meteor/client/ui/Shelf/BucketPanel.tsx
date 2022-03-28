@@ -189,7 +189,7 @@ export function actionToAdLibPieceUi(
 		status: PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
-		externalId: unprotectString(action._id),
+		externalId: action.externalId || unprotectString(action._id),
 		rundownId: protectString(''), // value doesn't matter
 		bucketId: action.bucketId,
 		showStyleBaseId: action.showStyleBaseId,
