@@ -326,11 +326,25 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				props.rundownViewLayout !== nextProps.rundownViewLayout ||
 				props.fixedSegmentDuration !== nextProps.fixedSegmentDuration ||
 				props.minishelfRegisterHotkeys !== nextProps.minishelfRegisterHotkeys ||
-				!_.isEqual(props.adLibSegmentUi?.pieces, nextProps.adLibSegmentUi?.pieces)
+				!_.isEqual(props.adLibSegmentUi?.pieces, nextProps.adLibSegmentUi?.pieces) ||
+				props.adLibSegmentUi?.showShelf !== nextProps.adLibSegmentUi?.showShelf
 			) {
 				return true
 			}
-
+			// Check RundownViewLayout changes that are important to the segment
+			if (
+				!_.isEqual(
+					props.rundownViewLayout?.visibleSourceLayers,
+					nextProps.rundownViewLayout?.visibleSourceLayers
+				) ||
+				!_.isEqual(
+					props.rundownViewLayout?.visibleOutputLayers,
+					nextProps.rundownViewLayout?.visibleOutputLayers
+				) ||
+				!_.isEqual(props.rundownViewLayout?.liveLineProps, nextProps.rundownViewLayout?.liveLineProps)
+			) {
+				return true
+			}
 			const findNextOrCurrentPart = (parts: PartUi[]) => {
 				return (
 					parts.find(
@@ -353,7 +367,8 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 						nextProps.playlist.nextSegmentId === props.segmentId)) ||
 				((props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
 					props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId) &&
-					((data.parts && findNextOrCurrentPart(data.parts)) || data.segmentui?.showShelf)) ||
+					data.parts &&
+					findNextOrCurrentPart(data.parts)) ||
 				props.playlist.holdState !== nextProps.playlist.holdState ||
 				props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
 				props.playlist.activationId !== nextProps.playlist.activationId ||
