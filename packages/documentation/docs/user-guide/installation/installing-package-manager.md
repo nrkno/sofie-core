@@ -30,7 +30,14 @@ Package Manager is a suite of standalone applications, separate from _Sofie&nbsp
 git clone https://github.com/nrkno/sofie-package-manager.git
 cd tv-automation-package-manager
 yarn install
-yarn start:single-app -- -- --basePath "C:\Your\Path\To\CasparCG&nbsp;Server\media-folder (i.e. sofie-demo-media)"
+yarn build
+yarn start:single-app -- -- --basePath "C:\your\path\to\casparcg-server\media-folder (i.e. sofie-demo-media)"
+```
+
+Note: if Powershell throws `Unknown argument: basePath` error, add one more pair of dashes (`--`) before the basePath argument:
+
+```bash
+yarn start:single-app -- -- -- --basePath "C:\your\path\to\casparcg-server\media-folder (i.e. sofie-demo-media)"
 ```
 
 On first startup, Package Manager will exit with the following message:

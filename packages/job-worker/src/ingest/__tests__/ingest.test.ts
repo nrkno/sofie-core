@@ -2678,8 +2678,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 				expect(parts0).toHaveLength(0) // <- FAIL, length is 2
 			}
 
-			console.log('pre-updated')
-
 			// Trigger an 'resync' of the rundown
 			rundownData.segments.splice(0, 1)
 			await handleUpdatedRundown(context, {

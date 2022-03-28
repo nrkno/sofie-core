@@ -5,7 +5,9 @@ import { SegmentId, RundownId } from './Ids'
 import { SegmentNote } from './Notes'
 
 export enum SegmentOrphanedReason {
+	/** Segment is deleted from the NRCS but we still need it */
 	DELETED = 'deleted',
+	/** Segment should be hidden, but it is still playing */
 	HIDDEN = 'hidden',
 }
 

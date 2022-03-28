@@ -16,8 +16,13 @@ export async function ensureNextPartIsValid(context: JobContext, cache: CacheFor
 	if (playlist && playlist.activationId) {
 		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-		if (playlist.nextPartManual && nextPartInstance?.part && isPartPlayable(nextPartInstance.part)) {
-			// Manual next part is always valid. This includes orphaned (adlib-part) partinstances
+		if (
+			playlist.nextPartManual &&
+			nextPartInstance?.part &&
+			isPartPlayable(nextPartInstance.part) &&
+			nextPartInstance.orphaned !== 'deleted'
+		) {
+			// Manual next part is almost always valid. This includes orphaned (adlib-part) partinstances
 			span?.end()
 			return
 		}

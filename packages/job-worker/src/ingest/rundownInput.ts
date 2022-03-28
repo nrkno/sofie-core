@@ -471,8 +471,26 @@ export async function handleRemoveOrphanedSegemnts(
 				hiddenSegmentIds
 			)
 
+			const changedHiddenSegments = result?.changedSegmentIds ?? []
+
+			// Make sure any orphaned hidden segments arent marked as hidden
+			for (const segmentId of stillHiddenSegments) {
+				if (!changedHiddenSegments.includes(segmentId)) {
+					const segment = ingestCache.Segments.findOne(segmentId)
+					if (segment?.isHidden && segment.orphaned === SegmentOrphanedReason.HIDDEN) {
+						ingestCache.Segments.update(segmentId, { $unset: { orphaned: 1 } })
+						changedHiddenSegments.push(segmentId)
+					}
+				}
+			}
+
+			if (changedHiddenSegments.length === 0 && stillDeletedSegments.length === 0) {
+				// Nothing could have changed, so take a shortcut and skip any saving
+				return null
+			}
+
 			return {
-				changedSegmentIds: result?.changedSegmentIds ?? [],
+				changedSegmentIds: changedHiddenSegments,
 				removedSegmentIds: stillDeletedSegments,
 				renamedSegments: new Map(),
 				removeRundown: false,
