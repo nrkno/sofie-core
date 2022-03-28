@@ -10,7 +10,9 @@ import { MongoFieldSpecifierOnes } from '../typings/meteor'
 export type SegmentId = ProtectedString<'SegmentId'>
 
 export enum SegmentOrphanedReason {
+	/** Segment is deleted from the NRCS but we still need it */
 	DELETED = 'deleted',
+	/** Segment should be hidden, but it is still playing */
 	HIDDEN = 'hidden',
 }
 

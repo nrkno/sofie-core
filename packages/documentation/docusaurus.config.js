@@ -39,7 +39,7 @@ module.exports = {
 					docsPluginId: 'default',
 				},
 				{
-					href: 'https://github.com/nrkno/Sofie-TV-automation/',
+					href: 'https://github.com/nrkno/sofie-core',
 					label: 'GitHub',
 					position: 'right',
 				},

@@ -67,10 +67,19 @@ export async function diffAndApplyChanges(
 	// Updated segments that has had their segment.externalId changed:
 	const renamedSegments = applyExternalIdDiff(cache, segmentDiff)
 
+	// Figure out which segments need to be regenerated
+	const segmentsToRegenerate = Object.values(segmentDiff.added)
+	for (const changedSegment of Object.values(segmentDiff.changed)) {
+		// Rank changes are handled above
+		if (!segmentDiff.onlyRankChanged[changedSegment.externalId]) {
+			segmentsToRegenerate.push(changedSegment)
+		}
+	}
+
 	// Create/Update segments
 	const segmentChanges = await calculateSegmentsFromIngestData(
 		cache,
-		_.sortBy([...Object.values(segmentDiff.added), ...Object.values(segmentDiff.changed)], (se) => se.rank),
+		_.sortBy(segmentsToRegenerate, (se) => se.rank),
 		null
 	)
 
