@@ -367,7 +367,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				(props.playlist.nextSegmentId === props.segmentId || nextProps.playlist.nextSegmentId === props.segmentId)) ||
 			((props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
 				props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId) &&
-				(data.parts && findNextOrCurentPart(data.parts))) ||
+				data.parts &&
+				findNextOrCurentPart(data.parts)) ||
 			props.playlist.holdState !== nextProps.playlist.holdState ||
 			props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
 			props.playlist.activationId !== nextProps.playlist.activationId ||
