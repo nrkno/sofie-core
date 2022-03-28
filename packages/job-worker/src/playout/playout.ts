@@ -1016,7 +1016,7 @@ function timelineTriggerTimeInner(
 	let lastTakeTime: number | undefined
 
 	// ------------------------------
-	const timeline = cache.Timeline.findOne(context.studioId)
+	const timeline = cache.Timeline.doc
 	if (timeline) {
 		const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
 		let tlChanged = false
@@ -1277,7 +1277,7 @@ async function shouldUpdateStudioBaselineInner(context: JobContext, cache: Cache
 
 	if (cache.getActiveRundownPlaylists().length > 0) return false
 
-	const timeline = cache.Timeline.findOne(studio._id)
+	const timeline = cache.Timeline.doc
 	const blueprint = studio.blueprintId ? await context.directCollections.Blueprints.findOne(studio.blueprintId) : null
 	if (!blueprint) return 'missingBlueprint'
 

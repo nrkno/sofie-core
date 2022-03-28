@@ -152,7 +152,6 @@ function processAndSaveTimelineObjects(
 	versions: TimelineCompleteGenerationVersions,
 	forceNowToTime: Time | undefined
 ): void {
-	const studio = context.studio
 	processTimelineObjects(context, timelineObjs)
 
 	/** The timestamp that "now" was set to */
@@ -180,9 +179,7 @@ function processAndSaveTimelineObjects(
 		setNowToTimeInObjects(timelineObjs, theNowTime)
 	}
 
-	const timeline = cache.Timeline.findOne({
-		_id: studio._id,
-	})
+	const timeline = cache.Timeline.doc
 	const oldTimelineObjsMap = normalizeArray(
 		(timeline?.timelineBlob !== undefined && deserializeTimelineBlob(timeline.timelineBlob)) || [],
 		'id'
