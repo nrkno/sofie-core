@@ -1,10 +1,4 @@
-import {
-	RundownPlaylistId,
-	RundownId,
-	SegmentId,
-	PartId,
-	PartInstanceId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId, SegmentId, PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MockJobContext, setupDefaultJobEnvironment } from '../__mocks__/context'
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../__mocks__/presetCollections'
@@ -12,13 +6,18 @@ import { updatePartInstanceRanks } from '../rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { runJobWithPlayoutCache } from '../playout/lock'
+import { JobContext } from '../jobs'
+import { CacheForIngest } from '../ingest/cache'
+import { BeforePartMapItem } from '../ingest/commit'
+import { getRundownId } from '../ingest/lib'
+import { runWithRundownLock } from '../ingest/lock'
 
 // require('../rundown') // include in order to create the Meteor methods needed
 
 describe('updatePartInstanceRanks', () => {
 	let context: MockJobContext
-	let playlistId!: RundownPlaylistId
+	// let playlistId!: RundownPlaylistId
+	const rundownExternalId = 'rundown00'
 	let rundownId!: RundownId
 	let segmentId!: SegmentId
 
@@ -28,12 +27,16 @@ describe('updatePartInstanceRanks', () => {
 		await setupMockShowStyleCompound(context)
 
 		// Set up a playlist:
-		const info = await setupDefaultRundownPlaylist(context)
+		const info = await setupDefaultRundownPlaylist(
+			context,
+			undefined,
+			getRundownId(context.studio._id, rundownExternalId)
+		)
 		await context.directCollections.RundownPlaylists.update(info.playlistId, {
 			$set: { activationId: protectString('active') },
 		})
 
-		playlistId = info.playlistId
+		// playlistId = info.playlistId
 		rundownId = info.rundownId
 
 		const segment0 = (await context.directCollections.Segments.findOne({ rundownId })) as DBSegment
@@ -109,6 +112,22 @@ describe('updatePartInstanceRanks', () => {
 		}
 	}
 
+	async function updateRanksForSegment(
+		context: JobContext,
+		segmentId: SegmentId,
+		initialRanks: BeforePartMapItem[]
+	): Promise<void> {
+		await runWithRundownLock(context, rundownId, async (_rundown, lock) => {
+			const cache = await CacheForIngest.create(context, lock, rundownExternalId)
+
+			const changeMap = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
+			changeMap.set(segmentId, initialRanks)
+			await updatePartInstanceRanks(context, cache, [segmentId], changeMap)
+
+			await cache.saveAllToDatabase()
+		})
+	}
+
 	test('sync from parts: no change', async () => {
 		const initialRanks = await getPartRanks()
 		expect(initialRanks).toHaveLength(5)
@@ -118,9 +137,7 @@ describe('updatePartInstanceRanks', () => {
 		const initialInstanceRanks = await getPartInstanceRanks()
 		expect(initialInstanceRanks).toHaveLength(5)
 
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(context, segmentId, initialRanks)
 
 		const newInstanceRanks = await getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
@@ -169,9 +186,7 @@ describe('updatePartInstanceRanks', () => {
 		await updatePartRank(initialInstanceRanks, 'part03', 4)
 		await updatePartRank(initialInstanceRanks, 'part04', 2)
 
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(context, segmentId, initialRanks)
 
 		const newInstanceRanks = await getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
@@ -181,9 +196,7 @@ describe('updatePartInstanceRanks', () => {
 		await updatePartRank(initialInstanceRanks, 'part02', 0)
 		await updatePartRank(initialInstanceRanks, 'part05', 1)
 
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(context, segmentId, initialRanks)
 
 		const newInstanceRanks2 = await getPartInstanceRanks()
 		expect(newInstanceRanks2).toEqual(initialInstanceRanks)
@@ -204,9 +217,7 @@ describe('updatePartInstanceRanks', () => {
 		await context.directCollections.Parts.remove(protectString('part03'))
 		await updatePartRank(initialInstanceRanks, 'part03', 2.5)
 
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(context, segmentId, initialRanks)
 
 		const newInstanceRanks = await getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
@@ -229,9 +240,7 @@ describe('updatePartInstanceRanks', () => {
 		await context.directCollections.Parts.remove(protectString('part01'))
 		await updatePartRank(initialInstanceRanks, 'part01', 0)
 
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(context, segmentId, initialRanks)
 
 		const newInstanceRanks = await getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
@@ -273,9 +282,7 @@ describe('updatePartInstanceRanks', () => {
 			rank: 2.666666666666667,
 		})
 
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(context, segmentId, initialRanks)
 
 		const newInstanceRanks = await getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
@@ -297,9 +304,7 @@ describe('updatePartInstanceRanks', () => {
 			e.orphaned = 'deleted'
 		}
 
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(context, segmentId, initialRanks)
 
 		const newInstanceRanks = await getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)
@@ -317,9 +322,7 @@ describe('updatePartInstanceRanks', () => {
 		await updatePartInstanceRank(initialInstanceRanks, 'part04', -2)
 		await updatePartInstanceRank(initialInstanceRanks, 'part05', -1)
 
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks2 }])
-		)
+		await updateRanksForSegment(context, segmentId, initialRanks2)
 
 		const newInstanceRanks2 = await getPartInstanceRanks()
 		expect(newInstanceRanks2).toEqual(initialInstanceRanks)
@@ -350,9 +353,7 @@ describe('updatePartInstanceRanks', () => {
 		await updatePartInstanceRank(initialInstanceRanks, 'part04', -1.5)
 		await updatePartInstanceRank(initialInstanceRanks, 'part05', -0.5)
 
-		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
-			updatePartInstanceRanks(cache, [{ segmentId, oldPartIdsAndRanks: initialRanks }])
-		)
+		await updateRanksForSegment(context, segmentId, initialRanks)
 
 		const newInstanceRanks = await getPartInstanceRanks()
 		expect(newInstanceRanks).toEqual(initialInstanceRanks)

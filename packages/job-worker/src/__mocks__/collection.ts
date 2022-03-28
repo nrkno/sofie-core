@@ -166,11 +166,21 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 	async update(selector: MongoQuery<TDoc> | TDoc['_id'], modifier: MongoModifier<TDoc>): Promise<number> {
 		this.#ops.push({ type: 'update', args: [selector, modifier] })
 
+		return this.updateInner(selector, modifier, false)
+	}
+	private async updateInner(
+		selector: MongoQuery<TDoc> | TDoc['_id'],
+		modifier: MongoModifier<TDoc>,
+		single: boolean
+	) {
 		const docs = await this.findFetchInner(selector)
 
 		for (const doc of docs) {
 			const newDoc = mongoModify(selector, doc, modifier)
 			this.#documents.set(doc._id, newDoc)
+
+			// For an 'updateOne
+			if (single) break
 		}
 
 		return docs.length
@@ -191,7 +201,11 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 		this.#ops.push({ type: 'bulkWrite', args: [ops.length] })
 
 		for (const op of ops) {
-			if ('replaceOne' in op) {
+			if ('updateMany' in op) {
+				await this.updateInner(op.updateMany.filter, op.updateMany.update, false)
+			} else if ('updateOne' in op) {
+				await this.updateInner(op.updateOne.filter, op.updateOne.update, true)
+			} else if ('replaceOne' in op) {
 				await this.replaceInner(op.replaceOne.replacement as any)
 			} else if ('deleteMany' in op) {
 				await this.removeInner(op.deleteMany.filter)
