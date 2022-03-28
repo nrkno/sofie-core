@@ -2,6 +2,7 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { getRundownId } from '../../ingest/lib'
 import { CacheForIngest } from '../../ingest/cache'
 import { CacheForStudio } from '../../studio/cache'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
@@ -18,7 +19,7 @@ describe('DatabaseCaches', () => {
 			const bulkWrite = jest.spyOn(context.directCollections.Parts, 'bulkWrite')
 
 			let dbObj: DBPart | undefined
-			const lock = await context.lockRundown(protectString('testRundown'))
+			const lock = await context.lockRundown(getRundownId(context.studioId, 'testRundown'))
 			try {
 				const cache = await CacheForIngest.create(context, lock, 'testRundown')
 
@@ -125,7 +126,7 @@ describe('DatabaseCaches', () => {
 		test('Multiple saves', async () => {
 			const bulkWrite = jest.spyOn(context.directCollections.Parts, 'bulkWrite')
 
-			const lock = await context.lockRundown(protectString('testRundown'))
+			const lock = await context.lockRundown(getRundownId(context.studioId, 'testRundown'))
 			try {
 				const cache = await CacheForIngest.create(context, lock, 'testRundown')
 
@@ -188,12 +189,12 @@ describe('DatabaseCaches', () => {
 				cache.Parts.update(id, { $set: { title: 'updated' } })
 				// add new defered functions:
 				const deferFcn1 = jest.fn(async () => {
-					await expect(context.directCollections.Timelines.findOne(id)).resolves.toMatchObject({
-						title: protectString('Parts'),
+					await expect(context.directCollections.Parts.findOne(id)).resolves.toMatchObject({
+						title: protectString('Test'),
 					})
 				})
 				const deferAfterSaveFcn1 = jest.fn(async () => {
-					await expect(context.directCollections.Timelines.findOne(id)).resolves.toMatchObject({
+					await expect(context.directCollections.Parts.findOne(id)).resolves.toMatchObject({
 						title: 'updated',
 					})
 				})
@@ -253,7 +254,7 @@ describe('DatabaseCaches', () => {
 		})
 
 		test('Assert no changes', async () => {
-			const lock = await context.lockRundown(protectString('testRundown'))
+			const lock = await context.lockRundown(getRundownId(context.studioId, 'testRundown'))
 			try {
 				{
 					const cache = await CacheForIngest.create(context, lock, 'testRundown')
