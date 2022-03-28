@@ -3116,7 +3116,7 @@
     webpack-sources "^1.4.3"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.41.0-in-testing.0"
+  version "1.42.0-in-development"
   dependencies:
     moment "2.29.1"
     timeline-state-resolver-types "7.0.0-release41.0"
@@ -3144,7 +3144,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.41.0-in-testing.0"
+  version "1.42.0-in-development"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     fast-clone "^1.5.13"
@@ -14353,13 +14353,13 @@ stylehacks@^5.0.3:
     browserslist "^4.16.6"
     postcss-selector-parser "^6.0.4"
 
-superfly-timeline@8.2.1:
-  version "8.2.1"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.1.tgz#07c0dfee351ae0597c9dcf0a33794ff53f90829e"
-  integrity sha512-cwd5mGL/2KP8JSBxdxU1bIG4zB3KtWUB/DwhyxBKtTQksAxgplZmWxSqkrE69LfmEQ/8nYBct2NFZ0fCTZzEnQ==
+superfly-timeline@8.2.1, superfly-timeline@8.2.7:
+  version "8.2.7"
+  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.7.tgz#ddd49c64ddecf8464b6dfa98c3f7fbff799f9a44"
+  integrity sha512-CtI7+6hrrURjGlQ7ZQkVv0CtNkFTSM94XAPipiXH49MjMW7eq+C6Q5JsyOyMz2blMTVdU4ZdSy/wUuOqpgm/0g==
   dependencies:
-    tslib "^2.2.0"
-    underscore "^1.13.1"
+    tslib "^2.3.1"
+    underscore "^1.13.2"
 
 supports-color@^5.3.0, supports-color@^5.5.0:
   version "5.5.0"
@@ -15108,7 +15108,7 @@ underscore-deep-extend@^1.1.5:
   resolved "https://registry.yarnpkg.com/underscore-deep-extend/-/underscore-deep-extend-1.1.5.tgz#962ba1f8b3bb2e2afd182ed86f2e5275543c52bd"
   integrity sha1-liuh+LO7Lir9GC7Yby5SdVQ8Ur0=
 
-underscore@^1.12.0, underscore@^1.12.1, underscore@^1.13.1, underscore@^1.13.2, underscore@^1.9.1:
+underscore@^1.12.0, underscore@^1.12.1, underscore@^1.13.2, underscore@^1.9.1:
   version "1.13.2"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.13.2.tgz#276cea1e8b9722a8dbed0100a407dda572125881"
   integrity sha512-ekY1NhRzq0B08g4bGuX4wd2jZx5GnKz6mKSqFL4nqBlfyMGiG10gDFhDTMEfYmDL6Jy0FUIZp7wiRB+0BP7J2g==
