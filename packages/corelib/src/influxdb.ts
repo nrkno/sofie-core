@@ -24,8 +24,7 @@ export interface FinishedTrace {
 	/** id of this trace, should be formatted as namespace:id */
 	measurement: string
 	/** Tags to differentiate data sources */
-	tags: Record<string, string>
-
+	tags?: Record<string, string>
 	timestamp: number
 
 	/** metrics */
