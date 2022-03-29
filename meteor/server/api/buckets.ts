@@ -314,8 +314,8 @@ export namespace BucketsAPI {
 		await bucketSyncFunction(adLibAction.bucketId, 'saveAdLibActionIntoBucket', async () => {
 			await BucketAdLibActions.insertAsync(adLibAction)
 			await Promise.all([
-				updateExpectedMediaItemForBucketAdLibAction(adLibAction._id),
-				updateExpectedPackagesForBucketAdLibAction(adLibAction._id),
+				updateExpectedMediaItemForBucketAdLibAction(adLibAction),
+				updateExpectedPackagesForBucketAdLibAction(adLibAction),
 			])
 		})
 

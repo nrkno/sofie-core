@@ -198,8 +198,8 @@ export async function updateBucketAdlibFromIngestData(
 							},
 							action
 						),
-						updateExpectedMediaItemForBucketAdLibAction(action._id),
-						updateExpectedPackagesForBucketAdLibAction(action._id)
+						updateExpectedMediaItemForBucketAdLibAction(action),
+						updateExpectedPackagesForBucketAdLibAction(action)
 					)
 
 					// Preserve this one
@@ -226,8 +226,8 @@ export async function updateBucketAdlibFromIngestData(
 							},
 							adlib
 						),
-						updateExpectedMediaItemForBucketAdLibPiece(adlib._id),
-						updateExpectedPackagesForBucketAdLib(adlib._id)
+						updateExpectedMediaItemForBucketAdLibPiece(adlib),
+						updateExpectedPackagesForBucketAdLib(adlib)
 					)
 
 					// Preserve this one
