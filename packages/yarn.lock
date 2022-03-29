@@ -3150,7 +3150,7 @@
     fast-clone "^1.5.13"
     i18next "^19.9.2"
     influx "^5.9.2"
-    mos-connection "^1.0.5"
+    mos-connection "^1.0.6"
     object-path "^0.11.8"
     timecode "0.0.4"
     tslib "^2.1.0"
@@ -10661,21 +10661,10 @@ monitor-event-loop-delay@^1.0.0:
   resolved "https://registry.yarnpkg.com/monitor-event-loop-delay/-/monitor-event-loop-delay-1.0.0.tgz#b5ab78165a3bb93f2b275c50d01430c7f155d1f7"
   integrity sha512-YRIr1exCIfBDLZle8WHOfSo7Xg3M+phcZfq9Fx1L6Abo+atGp7cge5pM7PjyBn4s1oZI/BRD4EMrzQBbPpVb5Q==
 
-mos-connection@1.0.6-nightly-fix-invalid-usc2-20220329-125125-e25d618.0:
-  version "1.0.6-nightly-fix-invalid-usc2-20220329-125125-e25d618.0"
-  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.6-nightly-fix-invalid-usc2-20220329-125125-e25d618.0.tgz#e13081afee70bd730e61ae8722f18a438a2af361"
-  integrity sha512-9j8doEfvbe6ensN5ACbw0/GBngElokoFOGRe146jDTP7jfA0wDtPGlChJs2hi3xLgaJbOkcK2wbzfcwzh3Am8A==
-  dependencies:
-    iconv-lite "^0.6.2"
-    moment "^2.29.1"
-    tslib "^2.2.0"
-    xml-js "^1.6.11"
-    xmlbuilder "^15.1.1"
-
-mos-connection@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.5.tgz#c67a54752351590181e0918ff3962614ff60990b"
-  integrity sha512-oCIDIaf4BvzOrFSaZ4bGwIb5jyhU0q5ARN4iF9L/BT+6pfMzOLV6x5Z8zC7y4iQpE7q3OvmYrZ34VoVR6GqpuQ==
+mos-connection@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.6.tgz#bae6918e9554fb83ed3d30a5f065116ba85f66ed"
+  integrity sha512-Ia/BvwQD+jBwBKPf0dV9Jr4R5Ufx2W/CuzL5OqbPeEutbbNDR0qVBnJxixk7d9ZoggVshnUk+fvuCp/MXu9dgA==
   dependencies:
     iconv-lite "^0.6.2"
     moment "^2.29.1"
