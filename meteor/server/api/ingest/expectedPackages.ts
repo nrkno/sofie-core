@@ -1,4 +1,4 @@
-import { check } from '../../../lib/check'
+import { check, Match } from '../../../lib/check'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
@@ -46,6 +46,7 @@ import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { StudioLight } from '../../../lib/collections/optimizations'
+import { isProtectedString } from '../../../lib/lib'
 
 export function updateExpectedPackagesOnRundown(cache: CacheForIngest): void {
 	// @todo: this call is for backwards compatibility and soon to be removed
@@ -322,25 +323,47 @@ function generateExpectedPackageBases(
 	return bases
 }
 
-export async function updateExpectedPackagesForBucketAdLib(adlibId: BucketAdLibId): Promise<void> {
-	check(adlibId, String)
+export async function updateExpectedPackagesForBucketAdLib(adLibOrId: BucketAdLibId | BucketAdLib): Promise<void> {
+	check(adLibOrId, Match.OneOf(String, Object))
 
-	const adlib = await BucketAdLibs.findOneAsync(adlibId)
-	if (!adlib) {
-		await cleanUpExpectedPackagesForBucketAdLibs([adlibId])
-		throw new Meteor.Error(404, `Bucket Adlib "${adlibId}" not found!`)
+	let adLib: BucketAdLib | undefined
+	let adLibId: PieceId
+
+	if (isProtectedString(adLibOrId)) {
+		adLibId = adLibOrId
+		adLib = await BucketAdLibs.findOneAsync(adLibId)
+	} else {
+		adLib = adLibOrId
+		adLibId = adLib._id
 	}
-	const studio = await Studios.findOneAsync(adlib.studioId)
-	if (!studio) throw new Meteor.Error(404, `Studio "${adlib.studioId}" not found!`)
 
-	const packages = generateExpectedPackagesForBucketAdlib(studio, [adlib])
+	if (!adLib) {
+		await cleanUpExpectedPackagesForBucketAdLibs([adLibId])
+		throw new Meteor.Error(404, `Bucket Adlib "${adLibId}" not found!`)
+	}
+	const studio = await Studios.findOneAsync(adLib.studioId)
+	if (!studio) throw new Meteor.Error(404, `Studio "${adLib.studioId}" not found!`)
 
-	await saveIntoDb(ExpectedPackages, { pieceId: adlibId }, packages)
+	const packages = generateExpectedPackagesForBucketAdlib(studio, [adLib])
+
+	await saveIntoDb(ExpectedPackages, { pieceId: adLibId }, packages)
 }
-export async function updateExpectedPackagesForBucketAdLibAction(actionId: BucketAdLibActionId): Promise<void> {
-	check(actionId, String)
+export async function updateExpectedPackagesForBucketAdLibAction(
+	actionOrId: BucketAdLibActionId | BucketAdLibAction
+): Promise<void> {
+	check(actionOrId, Match.OneOf(String, Object))
 
-	const action = await BucketAdLibActions.findOneAsync(actionId)
+	let action: BucketAdLibAction | undefined
+	let actionId: BucketAdLibActionId
+
+	if (isProtectedString(actionOrId)) {
+		actionId = actionOrId
+		action = await BucketAdLibActions.findOneAsync(actionId)
+	} else {
+		action = actionOrId
+		actionId = action._id
+	}
+
 	if (!action) {
 		await cleanUpExpectedPackagesForBucketAdLibsActions([actionId])
 		throw new Meteor.Error(404, `Bucket Action "${actionId}" not found!`)

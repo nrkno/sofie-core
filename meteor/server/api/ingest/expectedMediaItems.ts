@@ -1,4 +1,4 @@
-import { check } from '../../../lib/check'
+import { check, Match } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import {
 	ExpectedMediaItems,
@@ -12,8 +12,8 @@ import {
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { getCurrentTime, getHash, protectString, Subtract, ProtectedString } from '../../../lib/lib'
-import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
+import { getCurrentTime, getHash, protectString, Subtract, ProtectedString, isProtectedString } from '../../../lib/lib'
+import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../../lib/collections/Studios'
 import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
 import {
@@ -21,7 +21,7 @@ import {
 	SomeContent,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
-import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
+import { BucketAdLibAction, BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
 import { CacheForIngest } from './cache'
 import { saveIntoCache } from '../../cache/lib'
 import { saveIntoDb } from '../../lib/database'
@@ -153,24 +153,34 @@ export async function cleanUpExpectedMediaItemForBucketAdLibActions(actionIds: A
 	// logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib actions`)
 }
 
-export async function updateExpectedMediaItemForBucketAdLibPiece(adLibId: PieceId): Promise<void> {
-	check(adLibId, String)
+export async function updateExpectedMediaItemForBucketAdLibPiece(adLibOrId: PieceId | BucketAdLib): Promise<void> {
+	check(adLibOrId, Match.OneOf(String, Object))
 
-	const piece = await BucketAdLibs.findOneAsync(adLibId)
-	if (!piece) {
+	let adLib: BucketAdLib | undefined
+	let adLibId: PieceId
+
+	if (isProtectedString(adLibOrId)) {
+		adLibId = adLibOrId
+		adLib = await BucketAdLibs.findOneAsync(adLibId)
+	} else {
+		adLib = adLibOrId
+		adLibId = adLib._id
+	}
+
+	if (!adLib) {
 		await cleanUpExpectedMediaItemForBucketAdLibPiece([adLibId])
 		throw new Meteor.Error(404, `Bucket AdLib "${adLibId}" not found!`)
 	}
 
 	const result = generateExpectedMediaItems<ExpectedMediaItemBucketPiece>(
-		piece._id,
+		adLib._id,
 		{
-			bucketId: piece.bucketId,
-			bucketAdLibPieceId: piece._id,
+			bucketId: adLib.bucketId,
+			bucketAdLibPieceId: adLib._id,
 		},
-		piece.studioId,
-		piece.name,
-		piece.content,
+		adLib.studioId,
+		adLib.name,
+		adLib.content,
 		PieceType.ADLIB
 	)
 
@@ -183,10 +193,22 @@ export async function updateExpectedMediaItemForBucketAdLibPiece(adLibId: PieceI
 	)
 }
 
-export async function updateExpectedMediaItemForBucketAdLibAction(actionId: AdLibActionId): Promise<void> {
-	check(actionId, String)
+export async function updateExpectedMediaItemForBucketAdLibAction(
+	actionOrId: AdLibActionId | BucketAdLibAction
+): Promise<void> {
+	check(actionOrId, Match.OneOf(String, Object))
 
-	const action = await BucketAdLibActions.findOneAsync(actionId)
+	let action: BucketAdLibAction | undefined
+	let actionId: AdLibActionId
+
+	if (isProtectedString(actionOrId)) {
+		actionId = actionOrId
+		action = await BucketAdLibActions.findOneAsync(actionId)
+	} else {
+		action = actionOrId
+		actionId = action._id
+	}
+
 	if (!action) {
 		await cleanUpExpectedMediaItemForBucketAdLibActions([actionId])
 		throw new Meteor.Error(404, `Bucket Action "${actionId}" not found!`)
