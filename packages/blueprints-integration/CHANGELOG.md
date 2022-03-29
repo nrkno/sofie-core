@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2...v1.38.3) (2022-03-29)
+
+
+### Features
+
+* cherry-pick/back-port of fix/bucket-items-showstyle-variants from release41 to release38 ([a6ba452](https://github.com/nrkno/tv-automation-server-core/commit/a6ba45240eb5b852de6dd14bce1c6fd47d932f7c))
+
+
+
+
+
 ## [1.38.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0...v1.38.1) (2022-01-27)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
