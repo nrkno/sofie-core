@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.38.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2...v1.38.3) (2022-03-29)
+
+
+### Features
+
+* cherry-pick/back-port of fix/bucket-items-showstyle-variants from release41 to release38 ([a6ba452](https://github.com/nrkno/tv-automation-server-core/commit/a6ba45240eb5b852de6dd14bce1c6fd47d932f7c))
+
+
+### Bug Fixes
+
+* don't override externalId for Bucked ([b99187c](https://github.com/nrkno/tv-automation-server-core/commit/b99187cf0c12197cf7c80511fb7a85f0eec5a649))
+* send in adlib / action directly, to avoid having to wait for them to be inserted into database before ([90ca5a6](https://github.com/nrkno/tv-automation-server-core/commit/90ca5a69461bdd035085fba879538b004e8a2b42))
+* When removing or modifying a bucket adlib, the grouped adlibs ("behind it" in the GUI) should also be updated ([fd32755](https://github.com/nrkno/tv-automation-server-core/commit/fd32755b563cc77af09eb94bb427644799d35295))
+
 ### [1.38.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-1...v1.38.2) (2022-03-22)
 
 
