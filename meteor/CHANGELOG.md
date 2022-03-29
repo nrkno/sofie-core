@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.38.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-1...v1.38.2) (2022-03-22)
+
+
+### Bug Fixes
+
+* add debug tracing of slow observers ([099ad98](https://github.com/nrkno/tv-automation-server-core/commit/099ad983f93135fdac67c389a2d2279224187c14))
+* avoid regenerating segments when only the rank changes ([#688](https://github.com/nrkno/tv-automation-server-core/issues/688)) ([5256ccf](https://github.com/nrkno/tv-automation-server-core/commit/5256ccf38ce698f4c3cf1fc59f111693afeebbc4))
+* defer cleanupOrphanedItems until after the playout-cache has been saved ([688e274](https://github.com/nrkno/tv-automation-server-core/commit/688e274f3b0aa4fa891fc59680e5bbb39723e7e1))
+* if the next partinstance is manually chosen and deleted, then it is no longer valid ([40f8c9a](https://github.com/nrkno/tv-automation-server-core/commit/40f8c9a5fd135d5ab431f6978f5eec829f2b497a))
+* monitor, log and report the number of connections to Core. ([b6fe040](https://github.com/nrkno/tv-automation-server-core/commit/b6fe04078637793f2ffc9bd14ecb23b2ee0d99f2))
+* segments getting stuck as 'orphaned: hidden' and 'isHidden: true' ([ef4fc6f](https://github.com/nrkno/tv-automation-server-core/commit/ef4fc6f1d5d43c2c94cf6e7a77f0476f07ba8f1d))
+
 ### [1.38.2-1](https://github.com/nrkno/sofie-core/compare/v1.38.2-0...v1.38.2-1) (2022-03-10)
 
 
