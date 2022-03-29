@@ -12,7 +12,7 @@ import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
 import { Mongo } from 'meteor/mongo'
 
-const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
+export const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
 
 interface ITimelineViewProps {
 	match?: {
