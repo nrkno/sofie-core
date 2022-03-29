@@ -54,6 +54,7 @@ import { moveRundownIntoPlaylist, restoreRundownsInPlaylistToDefaultOrder } from
 import { getShowStyleCompound } from './showStyles'
 import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
 import { SnapshotId } from '../../lib/collections/Snapshots'
+import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -746,7 +747,9 @@ export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylis
 export async function bucketAdlibImport(
 	context: MethodContext,
 	studioId: StudioId,
-	showStyleVariantId: ShowStyleVariantId,
+	showStyleBaseId: ShowStyleBaseId,
+	/** Optional: if set, only create adlib for this variant (otherwise: for all variants in ShowStyleBase)*/
+	showStyleVariantId: ShowStyleVariantId | undefined,
 	bucketId: BucketId,
 	ingestItem: IngestAdlib
 ): Promise<ClientAPI.ClientResponse<undefined>> {
@@ -757,16 +760,32 @@ export async function bucketAdlibImport(
 	const pStudio = studioLight ? Studios.findOneAsync(studioLight._id) : Promise.resolve(undefined)
 
 	check(studioId, String)
-	check(showStyleVariantId, String)
+	check(showStyleBaseId, String)
+	check(showStyleVariantId, Match.Optional(String))
 	check(bucketId, String)
-	// TODO - validate IngestAdlib
 
 	if (!studioLight) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
-	const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
-	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
 
-	if (studioLight.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
-		throw new Meteor.Error(500, `ShowStyle Variant "${showStyleVariantId}" not supported by studio "${studioId}"`)
+	let showStyleBase: ShowStyleBase
+
+	if (showStyleVariantId) {
+		const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
+		if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
+		if (showStyleCompound._id !== showStyleBaseId) {
+			throw new Meteor.Error(
+				500,
+				`ShowStyle Variant "${showStyleVariantId}" is not part of ShowStyleBase "${showStyleBaseId}"`
+			)
+		}
+		showStyleBase = showStyleCompound
+	} else {
+		const showStyleBase0 = await ShowStyleBases.findOneAsync(showStyleBaseId)
+		if (!showStyleBase0) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found`)
+		showStyleBase = showStyleBase0
+	}
+
+	if (studioLight.supportedShowStyleBase.indexOf(showStyleBaseId) === -1) {
+		throw new Meteor.Error(500, `ShowStyle base "${showStyleBaseId}" not supported by studio "${studioId}"`)
 	}
 
 	const bucket = await Buckets.findOneAsync(bucketId)
@@ -776,7 +795,7 @@ export async function bucketAdlibImport(
 	if (!studio)
 		throw new Meteor.Error(404, `Studio "${studioLight._id}" not found (even though the studioLight was found)`)
 
-	await updateBucketAdlibFromIngestData(showStyleCompound, studio, bucketId, ingestItem)
+	await updateBucketAdlibFromIngestData(showStyleBase, showStyleVariantId, studio, bucketId, ingestItem)
 
 	return ClientAPI.responseSuccess(undefined)
 }
@@ -1069,7 +1088,8 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	async bucketAdlibImport(
 		_userEvent: string,
 		studioId: StudioId,
-		showStyleVariantId: ShowStyleVariantId,
+		showStyleBaseId: ShowStyleBaseId,
+		showStyleVariantId: ShowStyleVariantId | undefined,
 		bucketId: BucketId,
 		ingestItem: IngestAdlib
 	) {
@@ -1078,7 +1098,8 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 			bucketAdlibImport,
 			this,
 			studioId,
-			showStyleVariantId,
+			showStyleBaseId,
+			showStyleVariantId || undefined, // null -> undefined
 			bucketId,
 			ingestItem
 		)

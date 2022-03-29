@@ -17,7 +17,7 @@ import { RundownImportVersions } from '../../../lib/collections/Rundowns'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PartId } from '../../../lib/collections/Parts'
 import { BucketId } from '../../../lib/collections/Buckets'
-import { AdLibAction } from '../../../lib/collections/AdLibActions'
+import { AdLibAction, AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { prefixAllObjectIds } from '../playout/lib'
@@ -260,15 +260,17 @@ export function postProcessBucketAdLib(
 	rank: number | undefined,
 	importVersions: RundownImportVersions
 ): BucketAdLib {
+	const id: PieceId = protectString(
+		getHash(
+			`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
+		)
+	)
 	const piece: BucketAdLib = {
 		...itemOrig,
-		_id: protectString(
-			getHash(
-				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
-			)
-		),
+		_id: id,
 		externalId,
 		studioId: innerContext.studioIdProtected,
+		showStyleBaseId: innerContext.showStyleCompound._id,
 		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
@@ -298,16 +300,18 @@ export function postProcessBucketAction(
 	rank: number | undefined,
 	importVersions: RundownImportVersions
 ): BucketAdLibAction {
+	const id: AdLibActionId = protectString(
+		getHash(
+			`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
+		)
+	)
 	const action: BucketAdLibAction = {
 		...itemOrig,
-		_id: protectString(
-			getHash(
-				`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
-			)
-		),
+		_id: id,
 		externalId,
 		studioId: innerContext.studioIdProtected,
-		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
+		showStyleBaseId: innerContext.showStyleCompound._id,
+		showStyleVariantId: itemOrig.allVariants ? null : innerContext.showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
 		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank),

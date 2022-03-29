@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { BucketPanel } from './BucketPanel'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { ISourceLayer, IOutputLayer } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
@@ -57,7 +57,8 @@ export interface BucketAdLibActionUi extends AdLibPiece {
 	adlibAction: BucketAdLibAction
 	contentMetaData?: any
 	message?: string | null
-	showStyleVariantId: ShowStyleVariantId
+	showStyleBaseId: ShowStyleBaseId
+	showStyleVariantId: ShowStyleVariantId | null
 	studioId: StudioId
 }
 

@@ -7,6 +7,7 @@ import { StudioId } from './Studios'
 import { ShowStyleVariantId } from './ShowStyleVariants'
 import { BucketId } from './Buckets'
 import { registerIndex } from '../database'
+import { ShowStyleBaseId } from './ShowStyleBases'
 
 export type BucketAdLibId = PieceId
 export interface BucketAdLib extends IBlueprintAdLibPiece {
@@ -18,7 +19,10 @@ export interface BucketAdLib extends IBlueprintAdLibPiece {
 	 * the adLib will be shown as disabled
 	 */
 	studioId: StudioId
-	showStyleVariantId: ShowStyleVariantId
+	/** Which ShowStyleBase the adlib action is valid for */
+	showStyleBaseId: ShowStyleBaseId
+	/** if showStyleVariantId is null, the adlibAction can be used with any variant */
+	showStyleVariantId: ShowStyleVariantId | null
 	importVersions: RundownImportVersions // TODO - is this good?
 }
 
