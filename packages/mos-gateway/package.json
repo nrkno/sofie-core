@@ -64,7 +64,7 @@
 	],
 	"dependencies": {
 		"@sofie-automation/server-core-integration": "^1.41.0-in-testing.0",
-		"mos-connection": "^1.0.5",
+		"mos-connection": "1.0.6-nightly-fix-invalid-usc2-20220329-125125-e25d618.0",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
 		"winston": "^3.5.1"
