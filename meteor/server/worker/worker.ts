@@ -194,7 +194,7 @@ Meteor.startup(() => {
 	if (Meteor.isDevelopment) {
 		// Ensure meteor restarts when the _force_restart file changes
 		try {
-			// eslint-disable-next-line node/no-unpublished-require
+			// eslint-disable-next-line node/no-missing-require, node/no-unpublished-require
 			require('../_force_restart')
 		} catch (e) {
 			// ignore
