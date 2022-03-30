@@ -9,7 +9,7 @@ console.log('process started') // This is a message all Sofie processes log upon
 let logger: Winston.Logger
 if (logPath) {
 	const transportConsole = new Winston.transports.Console({
-		level: logLevel || 'verbose',
+		level: logLevel || 'silly',
 		handleExceptions: true,
 		handleRejections: true,
 	})

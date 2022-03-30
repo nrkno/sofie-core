@@ -190,13 +190,13 @@ export class TSRHandler {
 					data: [],
 				}
 				if (args.length) {
-					_.each(args, (arg) => {
-						if (_.isObject(arg)) {
+					for (const arg of args) {
+						if (typeof arg === 'object') {
 							msg.data.push(JSON.stringify(arg))
 						} else {
 							msg.data.push(arg)
 						}
-					})
+					}
 				} else {
 					msg.data.push('>empty message<')
 				}
@@ -837,12 +837,28 @@ export class TSRHandler {
 				this.logger.error(fixError(e), ...args)
 			})
 
-			await device.device.on('debug', (e: any, ...args: any[]) => {
+			await device.device.on('debug', (...args: any[]) => {
 				// Don't log if the "main" debug flag (_coreHandler.logDebug) is set to avoid duplicates,
 				// because then the tsr is also logging debug messages from the devices.
 
-				if (device.debugLogging && !this._coreHandler.logDebug) {
-					this.logger.debug(fixError(e), ...args)
+				if (device.debugLogging) {
+					const msg: any = {
+						message: `debug: Device "${device.deviceName || deviceId}" (${device.instanceId})`,
+						data: [],
+					}
+					if (args.length) {
+						for (const arg of args) {
+							if (typeof arg === 'object') {
+								msg.data.push(JSON.stringify(arg))
+							} else {
+								msg.data.push(arg)
+							}
+						}
+					} else {
+						msg.data.push('>empty message<')
+					}
+
+					this.logger.debug(msg)
 				}
 			})
 
