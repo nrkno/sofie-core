@@ -96,16 +96,6 @@ export function getPieceEnableInsidePart(
 	if (typeof pieceEnable.start === 'number' && !pieceInstance.dynamicallyInserted) {
 		// timed pieces should be offset based on the preroll of the part
 		pieceEnable.start += partTimings.toPartDelay
-
-		// if (pieceInstance.piece.prerollDuration) {
-		// 	// Offset pre-programmed pieces by their own preroll
-		// 	pieceEnable.start -= pieceInstance.piece.prerollDuration
-
-		// 	// Duration needs to be extended to compensate
-		// 	if (typeof pieceEnable.duration === 'number') {
-		// 		pieceEnable.duration += pieceInstance.piece.prerollDuration
-		// 	}
-		// }
 	}
 	return pieceEnable
 }
