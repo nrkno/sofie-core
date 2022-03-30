@@ -1,6 +1,6 @@
 {
 	"name": "playout-gateway",
-	"version": "1.38.1",
+	"version": "1.38.3",
 	"private": true,
 	"description": "Connect to Core, play stuff",
 	"license": "MIT",
@@ -57,7 +57,7 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "^1.38.1",
+		"@sofie-automation/blueprints-integration": "^1.38.3",
 		"@sofie-automation/server-core-integration": "^1.38.1",
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
