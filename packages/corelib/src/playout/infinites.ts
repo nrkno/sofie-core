@@ -15,7 +15,7 @@ import { DBRundown } from '../dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
 import { assertNever, flatten, getRandomId, literal, max, normalizeArrayToMapFunc } from '../lib'
 import { protectString } from '../protectedString'
-import { getPieceGroupId } from './ids'
+import { getPieceControlObjectId } from './ids'
 import { DBShowStyleBase } from '../dataModel/ShowStyleBase'
 import _ = require('underscore')
 import { MongoQuery } from '../mongo'
@@ -496,7 +496,7 @@ export interface PieceInstanceWithTimings extends PieceInstance {
 }
 
 function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number | string {
-	return typeof start === 'number' ? start : `#${getPieceGroupId(newPiece)}.start`
+	return typeof start === 'number' ? start : `#${getPieceControlObjectId(newPiece)}.start`
 }
 
 function isClear(piece?: PieceInstance): boolean {

@@ -43,12 +43,11 @@ export function transformPieceGroupAndObjects(
 		partGroup,
 		pieceEnable
 	)
-	const timelineObjs = [controlObj, ...capObjs]
+	// We need all these objects so that we can resolve all the piece timings in this timeline
+	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = [controlObj, childGroup, ...capObjs]
 
 	if (!pieceInstance.piece.virtual && !hasDefinitelyEnded) {
 		const pieceObjects: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
-
-		timelineObjs.push(childGroup)
 
 		const objects = deserializePieceTimelineObjectsBlob(pieceInstance.piece.timelineObjectsString)
 		for (const o of objects) {
@@ -93,7 +92,7 @@ export function getPieceEnableInsidePart(
 	partTimings: PartCalculatedTimings
 ): IBlueprintPiece['enable'] {
 	const pieceEnable = { ...pieceInstance.piece.enable }
-	if (typeof pieceEnable.start === 'number' && !pieceInstance.adLibSourceId) {
+	if (typeof pieceEnable.start === 'number' && !pieceInstance.dynamicallyInserted) {
 		// timed pieces should be offset based on the preroll of the part
 		pieceEnable.start += partTimings.toPartDelay
 

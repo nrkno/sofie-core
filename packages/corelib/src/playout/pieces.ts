@@ -21,6 +21,9 @@ export interface PieceTimelineMetadata {
 export interface PieceGroupMetadata extends PieceTimelineMetadata {
 	pieceId: PieceInstanceId
 }
+export interface PieceTriggerMetadata extends PieceTimelineMetadata {
+	triggerPieceInstanceId: PieceInstanceId
+}
 
 export function createPieceGroupAndCap(
 	playlistId: RundownPlaylistId,
@@ -40,9 +43,9 @@ export function createPieceGroupAndCap(
 	partGroup?: TimelineObjRundown,
 	pieceEnable?: TSR.Timeline.TimelineEnable
 ): {
-	controlObj: TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceGroupMetadata>
-	childGroup: TimelineObjGroupRundown & OnGenerateTimelineObjExt
-	capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt>
+	controlObj: TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceTimelineMetadata>
+	childGroup: TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceGroupMetadata>
+	capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>
 } {
 	if (pieceEnable) {
 		pieceEnable = clone(pieceEnable)
@@ -57,7 +60,7 @@ export function createPieceGroupAndCap(
 		}
 	}
 
-	const controlObj = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceGroupMetadata>>({
+	const controlObj = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
 		id: getPieceControlObjectId(pieceInstance),
 		pieceInstanceId: unprotectString(pieceInstance._id),
 		infinitePieceInstanceId: pieceInstance.infinite?.infiniteInstanceId,
@@ -80,12 +83,12 @@ export function createPieceGroupAndCap(
 		classes: controlObjClasses,
 		inGroup: partGroup && partGroup.id,
 		metaData: {
-			pieceId: pieceInstance._id,
 			isPieceTimeline: true,
 		},
 	})
 
-	const childGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt>({
+	const piecePreroll = pieceInstance.piece.prerollDuration ?? 0
+	const childGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceGroupMetadata>>({
 		id: getPieceGroupId(pieceInstance),
 		content: {
 			deviceType: TSR.DeviceType.ABSTRACT,
@@ -100,19 +103,45 @@ export function createPieceGroupAndCap(
 		objectType: TimelineObjType.RUNDOWN,
 		enable: {
 			// TODO - better rules for this
-			start: `#${controlObj.id}.start - ${pieceInstance.piece.prerollDuration ?? 0}`,
+			start: `#${controlObj.id}.start - ${piecePreroll}`,
 			end: `#${controlObj.id}.end - ${/*pieceInstance.piece.postrollDuration??*/ 0}`,
 		},
 		layer: '',
+		metaData: {
+			pieceId: pieceInstance._id,
+			isPieceTimeline: true,
+		},
 	})
 
-	const capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
+	const capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>> = []
 
-	let nowObj: (TimelineObjRundown & OnGenerateTimelineObjExt) | undefined
+	let nowObj: (TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>) | undefined
+	if (controlObj.enable.start === 'now' && piecePreroll > 0) {
+		const startNowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTriggerMetadata>>({
+			objectType: TimelineObjType.RUNDOWN,
+			id: `${controlObj.id}_start_now`,
+			enable: {
+				start: 'now',
+			},
+			layer: '',
+			content: {
+				deviceType: TSR.DeviceType.ABSTRACT,
+			},
+			partInstanceId: controlObj.partInstanceId,
+			metaData: {
+				isPieceTimeline: true,
+				triggerPieceInstanceId: pieceInstance._id,
+			},
+		})
+		capObjs.push(startNowObj)
+
+		controlObj.enable.start = `#${startNowObj.id} + ${piecePreroll}`
+	}
+
 	if (pieceInstance.resolvedEndCap === 'now') {
 		// TODO - there could already be a piece with a cap of 'now' that we could use as our end time
 		// As the cap is for 'now', rather than try to get tsr to understand `end: 'now'`, we can create a 'now' object to tranlate it
-		nowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt>({
+		nowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
 			objectType: TimelineObjType.RUNDOWN,
 			id: `${controlObj.id}_cap_now`,
 			enable: {
@@ -149,26 +178,28 @@ export function createPieceGroupAndCap(
 
 		if (!updatedControlObj && pieceInstance.resolvedEndCap !== undefined) {
 			// Create a wrapper group to apply the end cap
-			const pieceEndCapGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt>({
-				objectType: TimelineObjType.RUNDOWN,
-				id: `${controlObj.id}_cap`,
-				enable: {
-					start: 0,
-					end: nowObj ? `#${nowObj.id}.start` : pieceInstance.resolvedEndCap,
-				},
-				layer: '',
-				children: [],
-				content: {
-					deviceType: TSR.DeviceType.ABSTRACT,
-					type: TimelineContentTypeOther.GROUP,
-				},
-				isGroup: true,
-				inGroup: partGroup && partGroup.id,
-				partInstanceId: controlObj.partInstanceId,
-				metaData: literal<PieceTimelineMetadata>({
-					isPieceTimeline: true,
-				}),
-			})
+			const pieceEndCapGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>(
+				{
+					objectType: TimelineObjType.RUNDOWN,
+					id: `${controlObj.id}_cap`,
+					enable: {
+						start: 0,
+						end: nowObj ? `#${nowObj.id}.start` : pieceInstance.resolvedEndCap,
+					},
+					layer: '',
+					children: [],
+					content: {
+						deviceType: TSR.DeviceType.ABSTRACT,
+						type: TimelineContentTypeOther.GROUP,
+					},
+					isGroup: true,
+					inGroup: partGroup && partGroup.id,
+					partInstanceId: controlObj.partInstanceId,
+					metaData: literal<PieceTimelineMetadata>({
+						isPieceTimeline: true,
+					}),
+				}
+			)
 			capObjs.push(pieceEndCapGroup)
 			controlObj.inGroup = pieceEndCapGroup.id
 		}
