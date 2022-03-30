@@ -2,9 +2,16 @@ import * as React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { deserializeTimelineBlob, RoutedTimeline } from '../../../lib/collections/Timeline'
-import { applyToArray, clone, protectString } from '../../../lib/lib'
+import { applyToArray, protectString } from '../../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
-import { TimelineState, Resolver, ResolvedTimelineObjectInstance } from 'superfly-timeline'
+import {
+	TimelineState,
+	Resolver,
+	ResolvedTimelineObjectInstance,
+	ResolvedTimeline,
+	ResolvedTimelineObject,
+	ResolvedStates,
+} from 'superfly-timeline'
 import { TimelineContentObject, transformTimeline } from '@sofie-automation/corelib/dist/playout/timeline'
 import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { StudioSelect } from './StudioSelect'
@@ -12,7 +19,8 @@ import { StudioId } from '../../../lib/collections/Studios'
 import { Mongo } from 'meteor/mongo'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import Classnames from 'classnames'
 
 const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
 
@@ -49,46 +57,7 @@ function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
 	const now = useTracker(() => getCurrentTimeReactive(), [], Date.now())
 	const tlComplete = useTracker(() => StudioTimeline.findOne(studioId), [studioId])
 
-	const [viewTime, setViewTime] = useState<number | null>(null)
-	const selectViewTime = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-		const val = Number(e.target.value)
-		setViewTime(isNaN(val) ? null : val)
-	}, [])
-
-	const [layerFilterText, setLayerFilterText] = useState<string>('')
-	const changeLayerFilter = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-		setLayerFilterText(e.target.value)
-		if (e.target.value === '') {
-			this.setState({
-				layerFilter: undefined,
-				layerFilterText: e.target.value,
-			})
-			return
-		}
-
-		if (e.target.value.match(/^\/.+\/$/)) {
-			this.setState({
-				layerFilter: new RegExp(e.target.value.substr(1, e.target.value.length - 2)),
-				layerFilterText: e.target.value,
-			})
-		} else {
-			this.setState({
-				layerFilter: e.target.value,
-				layerFilterText: e.target.value,
-			})
-		}
-	}, [])
-	const layerFilter = useMemo<RegExp | string | undefined>(() => {
-		if (!layerFilterText || typeof layerFilterText !== 'string') {
-			return undefined
-		} else if (layerFilterText.match(/^\/.+\/$/)) {
-			return new RegExp(layerFilterText.substr(1, layerFilterText.length - 2))
-		} else {
-			return layerFilterText
-		}
-	}, [layerFilterText])
-
-	const [allStates, errorMsg] = useMemo(() => {
+	const [resolvedTl, errorMsgResolve] = useMemo(() => {
 		try {
 			const timelineObj = tlComplete && deserializeTimelineBlob(tlComplete.timelineBlob)
 			console.log('regen timeline', tlComplete?.timelineHash, tlComplete?.generated)
@@ -96,42 +65,134 @@ function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
 			let timeline: TimelineContentObject[] = []
 			if (tlComplete && timelineObj) {
 				timeline = transformTimeline(
-					timelineObj
-						.map((o) => {
-							const obj = clone(o)
-							applyToArray(o.enable, (enable) => {
+					timelineObj.sort((a, b) => {
+						if (a.id > b.id) {
+							return 1
+						}
+						if (a.id < b.id) {
+							return -1
+						}
+						return 0
+					})
+				)
+
+				// Replace now's with concrete times approximating now
+				for (const obj of timeline) {
+					// is part group/cap object
+					applyToArray(obj.enable, (enable) => {
+						if (enable.start === 'now') {
+							enable.start = now
+						}
+					})
+
+					const groupStart = !Array.isArray(obj.enable) ? obj.enable.start : null
+					if (typeof groupStart === 'number') {
+						const relativeNow = now - groupStart
+						// is a piece group or piece related object
+						for (const child of obj.children || []) {
+							applyToArray(child.enable, (enable) => {
 								if (enable.start === 'now') {
-									enable.start = now
+									enable.start = relativeNow
 								}
 							})
-							return obj
-						})
-						.sort((a, b) => {
-							if (a.id > b.id) {
-								return 1
-							}
-							if (a.id < b.id) {
-								return -1
-							}
-							return 0
-						})
-				)
+						}
+					}
+				}
 			}
 
 			// TODO - dont repeat unless changed
 			const tl = Resolver.resolveTimeline(timeline, { time: tlComplete?.generated || now })
-			return [Resolver.resolveAllStates(tl), undefined]
+			return [tl, undefined]
 		} catch (e) {
-			return [undefined, `Failed to update timeline:\n${e}`]
+			return [undefined, `Failed to resolveTimeline:\n${e}`]
 		}
 	}, [tlComplete, now])
+
+	const [allStates, errorMsgStates] = useMemo(() => {
+		try {
+			const states = resolvedTl ? Resolver.resolveAllStates(resolvedTl) : undefined
+			return [states, undefined]
+		} catch (e) {
+			return [undefined, `Failed to resolveAllStates:\n${e}`]
+		}
+	}, [resolvedTl, now])
+
+	return (
+		<div>
+			<div>
+				{errorMsgResolve ? <p>{errorMsgResolve} </p> : ''}
+
+				<h2 className="mhn">Timeline state</h2>
+				{errorMsgStates ? <p>{errorMsgStates}</p> : <TimelineStateTable allStates={allStates} now={now} />}
+
+				<div>
+					<h2 className="mhn">Instances</h2>
+					<TimelineInstancesTable resolvedTl={resolvedTl} />
+				</div>
+			</div>
+		</div>
+	)
+}
+
+type FilterInputValue = RegExp | string | undefined
+interface FilterInputProps {
+	filterChanged: (val: FilterInputValue) => void
+}
+function FilterInput({ filterChanged }: FilterInputProps) {
+	const [filterText, setFilterText] = useState<string>('')
+	const changeFilter = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		setFilterText(e.target.value)
+	}, [])
+	const [isError, setIsError] = useState(false)
+
+	useEffect(() => {
+		if (!filterText || typeof filterText !== 'string') {
+			filterChanged(undefined)
+			setIsError(false)
+		} else if (filterText.match(/^\/.+\/$/)) {
+			try {
+				filterChanged(new RegExp(filterText.substr(1, filterText.length - 2)))
+				setIsError(false)
+			} catch (e) {
+				setIsError(true)
+			}
+		} else {
+			filterChanged(filterText)
+			setIsError(false)
+		}
+	}, [filterText])
+
+	return (
+		<input
+			type="text"
+			value={filterText}
+			onChange={changeFilter}
+			placeholder="Text or /RegEx/"
+			className={Classnames({
+				'highlight-is-error': isError,
+			})}
+		/>
+	)
+}
+
+interface TimelineStateTableProps {
+	now: number
+	allStates: ResolvedStates | undefined
+}
+function TimelineStateTable({ allStates, now }: TimelineStateTableProps) {
+	const [viewTime, setViewTime] = useState<number | null>(null)
+	const selectViewTime = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+		const val = Number(e.target.value)
+		setViewTime(isNaN(val) ? null : val)
+	}, [])
 
 	const state = allStates ? Resolver.getState(allStates, viewTime ?? now) : undefined
 	const times = _.uniq((allStates?.nextEvents ?? []).map((e) => e.time))
 
+	const [layerFilter, setLayerFilter] = useState<FilterInputValue>(undefined)
+
 	return (
 		<div>
-			<h2 className="mhn">Timeline state</h2>
 			<div className="flex-row mbl">
 				<div className="col mrl">
 					Time:{' '}
@@ -145,33 +206,23 @@ function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
 					</select>
 				</div>
 				<div className="col">
-					Layer Filter:{' '}
-					<input type="text" value={layerFilterText} onChange={changeLayerFilter} placeholder="Text or /RegEx/" />
+					Layer Filter: <FilterInput filterChanged={setLayerFilter} />
 				</div>
 			</div>
-
-			<div>
-				{errorMsg ? (
-					<p>{errorMsg}</p>
-				) : (
-					<div>
-						<table className="testtools-timelinetable">
-							<tbody>
-								<tr>
-									<th>Layer</th>
-									<th>id</th>
-									<th>Enable</th>
-									<th>Instance Times</th>
-									<th>type</th>
-									<th>classes</th>
-									<th>content</th>
-								</tr>
-								{state ? renderTimelineState(state, layerFilter) : ''}
-							</tbody>
-						</table>
-					</div>
-				)}
-			</div>
+			<table className="testtools-timelinetable">
+				<tbody>
+					<tr>
+						<th>Layer</th>
+						<th>id</th>
+						<th>Enable</th>
+						<th>Instance Times</th>
+						<th>type</th>
+						<th>classes</th>
+						<th>content</th>
+					</tr>
+					{state ? renderTimelineState(state, layerFilter) : ''}
+				</tbody>
+			</table>
 		</div>
 	)
 }
@@ -202,6 +253,59 @@ function renderTimelineState(state: TimelineState, filter: RegExp | string | und
 			<td>{o.content.type}</td>
 			<td>{(o.classes || []).join('<br />')}</td>
 			<td style={{ whiteSpace: 'pre' }}>{JSON.stringify(o.content, undefined, '\t')}</td>
+		</tr>
+	))
+}
+
+interface TimelineInstancesTableProps {
+	resolvedTl: ResolvedTimeline | undefined
+}
+function TimelineInstancesTable({ resolvedTl }: TimelineInstancesTableProps) {
+	const [idFilter, setIdFilter] = useState<FilterInputValue>(undefined)
+
+	return (
+		<div>
+			<div className="flex-row mbl">
+				<div className="col">
+					Id Filter: <FilterInput filterChanged={setIdFilter} />
+				</div>
+			</div>
+			<table className="testtools-timelinetable">
+				<tbody>
+					<tr>
+						<th>Id</th>
+						<th>Layer</th>
+						<th>Parent</th>
+						<th>Instance Times</th>
+					</tr>
+					{resolvedTl ? renderTimelineInstances(resolvedTl, idFilter) : ''}
+				</tbody>
+			</table>
+		</div>
+	)
+}
+
+function renderTimelineInstances(resolvedTl: ResolvedTimeline, filter: RegExp | string | undefined) {
+	const sortedObjects = _.sortBy(Object.values(resolvedTl.objects), (o) => `${o.layer}:::${o.id}`)
+
+	let filteredObjects: ResolvedTimelineObject[] = sortedObjects
+	if (filter) {
+		if (typeof filter === 'string') {
+			filteredObjects = filteredObjects.filter((o) => o.id.includes(filter))
+		} else {
+			filteredObjects = filteredObjects.filter((o) => !!o.id.match(filter))
+		}
+	}
+
+	return filteredObjects.map((o) => (
+		<tr key={o.id}>
+			<td>{o.id}</td>
+			<td>{o.layer}</td>
+			<td>{o.resolved?.parentId ?? ''}</td>
+			<td>
+				{o.resolved?.instances?.map((instance) => <p key={instance.id}>{`${instance.start} - ${instance.end}`}</p>) ??
+					'NONE'}
+			</td>
 		</tr>
 	))
 }
