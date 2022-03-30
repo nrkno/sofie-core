@@ -7105,10 +7105,10 @@ meteor-babel@^7.10.7:
     reify "^0.20.12"
     typescript "^4.2.2"
 
-meteor-node-stubs@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/meteor-node-stubs/-/meteor-node-stubs-1.1.0.tgz#cbb9656a37eb08ab52f577201920fe5e0137c2bb"
-  integrity sha512-YvMQb4zcfWA82wFdRVTyxq28GO+Us7GSdtP+bTtC/mV35yipKnWo4W4665O57AmLVFnz4zR+WIZW11b4sfCtJw==
+meteor-node-stubs@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/meteor-node-stubs/-/meteor-node-stubs-1.2.1.tgz#9e5b160243b396bdf101f32cf4e3495e21da0732"
+  integrity sha512-7nn69joWB8Sd8T9i5+nWGJ9wWEdR5JtsweoHsbrjdnvNQiD9/qNJU7ld7m2yAUDkPp7NIJhfNTKq1lnS4vnOEg==
   dependencies:
     assert "^2.0.0"
     browserify-zlib "^0.2.0"
