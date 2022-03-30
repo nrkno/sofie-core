@@ -11,7 +11,6 @@ import { StudioId } from '../collections/Studios'
 import { MediaWorkFlowId } from '../collections/MediaWorkFlows'
 import { SnapshotId } from '../collections/Snapshots'
 import { SegmentId } from '../collections/Segments'
-import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
 import { BucketId, Bucket } from '../collections/Buckets'
 import { IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { BucketAdLib } from '../collections/BucketAdlibs'
@@ -19,6 +18,8 @@ import { AdLibActionId, AdLibActionCommon } from '../collections/AdLibActions'
 import { BucketAdLibAction } from '../collections/BucketAdlibActions'
 import { PeripheralDeviceId } from '../collections/PeripheralDevices'
 import { RundownBaselineAdLibActionId } from '../collections/RundownBaselineAdLibActions'
+import { ShowStyleBaseId } from '../collections/ShowStyleBases'
+import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(
@@ -122,7 +123,8 @@ export interface NewUserActionAPI extends MethodContext {
 	bucketAdlibImport(
 		_userEvent: string,
 		studioId: StudioId,
-		showStyleVariantId: ShowStyleVariantId,
+		showStyleBaseId: ShowStyleBaseId,
+		showStyleVariantId: ShowStyleVariantId | undefined,
 		bucketId: BucketId,
 		ingestItem: IngestAdlib
 	): Promise<ClientAPI.ClientResponse<void>>

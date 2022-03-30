@@ -82,6 +82,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 # [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
+## [1.38.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2...v1.38.3) (2022-03-29)
+* cherry-pick/back-port of fix/bucket-items-showstyle-variants from release41 to release38 ([a6ba452](https://github.com/nrkno/tv-automation-server-core/commit/a6ba45240eb5b852de6dd14bce1c6fd47d932f7c))
 
 
 ### Features

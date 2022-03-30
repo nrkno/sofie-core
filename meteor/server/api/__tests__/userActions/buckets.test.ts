@@ -42,6 +42,7 @@ describe('User Actions - Buckets', () => {
 				},
 				name: `Mock Bucket AdLib ${i}`,
 				outputLayerId: env.showStyleBase.outputLayers[0]._id,
+				showStyleBaseId: env.showStyleBaseId,
 				showStyleVariantId: env.showStyleVariantId,
 				sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 				studioId: env.studio._id,

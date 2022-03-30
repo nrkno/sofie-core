@@ -53,10 +53,13 @@ export namespace BucketsAPI {
 			throw new Meteor.Error(403, `Not allowed to edit bucket: ${adlib.bucketId}`)
 
 		await bucketSyncFunction(adlib.bucketId, 'removeBucketAdLib', async () => {
+			const idsToUpdate: PieceId[] = [id]
+			// Also remove adlibs that are grouped together with this adlib in the GUI:
+			;(await getGroupedAdlibs(adlib)).forEach(({ _id }) => idsToUpdate.push(_id))
 			await Promise.all([
-				BucketAdLibs.removeAsync({ _id: id }),
-				cleanUpExpectedMediaItemForBucketAdLibPiece([id]),
-				cleanUpExpectedPackagesForBucketAdLibs([id]),
+				BucketAdLibs.removeAsync({ _id: { $in: idsToUpdate } }),
+				cleanUpExpectedMediaItemForBucketAdLibPiece(idsToUpdate),
+				cleanUpExpectedPackagesForBucketAdLibs(idsToUpdate),
 			])
 		})
 	}
@@ -71,10 +74,14 @@ export namespace BucketsAPI {
 			throw new Meteor.Error(403, `Not allowed to edit bucket: ${adlib.bucketId}`)
 
 		await bucketSyncFunction(adlib.bucketId, 'removeBucketAdLibAction', async () => {
+			const idsToUpdate: AdLibActionId[] = [adlib._id]
+			// Also remove adlibs that are grouped together with this adlib in the GUI:
+			;(await getGroupedAdlibActions(adlib)).forEach(({ _id }) => idsToUpdate.push(_id))
+
 			await Promise.all([
-				BucketAdLibActions.removeAsync({ _id: id }),
-				cleanUpExpectedMediaItemForBucketAdLibActions([id]),
-				cleanUpExpectedPackagesForBucketAdLibsActions([id]),
+				BucketAdLibActions.removeAsync({ _id: { $in: idsToUpdate } }),
+				cleanUpExpectedMediaItemForBucketAdLibActions(idsToUpdate),
+				cleanUpExpectedPackagesForBucketAdLibsActions(idsToUpdate),
 			])
 		})
 	}
@@ -206,13 +213,25 @@ export namespace BucketsAPI {
 				throw new Meteor.Error(`Could not find studio: "${action.studioId}"`)
 			}
 
-			await BucketAdLibActions.updateAsync(id, {
-				$set: _.omit(action, ['_id']),
-			})
-			await Promise.all([
-				updateExpectedMediaItemForBucketAdLibAction(id),
-				updateExpectedPackagesForBucketAdLibAction(id),
-			])
+			const idsToUpdate: AdLibActionId[] = [id]
+			// Also update adlibs that are grouped together with this adlib in the GUI:
+			;(await getGroupedAdlibActions(oldAdLib)).forEach(({ _id }) => idsToUpdate.push(_id))
+
+			await BucketAdLibActions.updateAsync(
+				{ _id: { $in: idsToUpdate } },
+				{
+					$set: _.omit(action, ['_id']),
+				},
+				{
+					multi: true,
+				}
+			)
+			for (const _id of idsToUpdate) {
+				await Promise.all([
+					updateExpectedMediaItemForBucketAdLibAction(id),
+					updateExpectedPackagesForBucketAdLibAction(id),
+				])
+			}
 		})
 	}
 
@@ -286,7 +305,8 @@ export namespace BucketsAPI {
 				externalId: '', // TODO - is this ok?
 				bucketId: bucketId,
 				studioId: studioId,
-				showStyleVariantId: rundown.showStyleVariantId,
+				showStyleBaseId: rundown.showStyleBaseId,
+				showStyleVariantId: action.allVariants ? null : rundown.showStyleVariantId,
 				importVersions: rundown.importVersions,
 			}
 		}
@@ -294,8 +314,8 @@ export namespace BucketsAPI {
 		await bucketSyncFunction(adLibAction.bucketId, 'saveAdLibActionIntoBucket', async () => {
 			await BucketAdLibActions.insertAsync(adLibAction)
 			await Promise.all([
-				updateExpectedMediaItemForBucketAdLibAction(adLibAction._id),
-				updateExpectedPackagesForBucketAdLibAction(adLibAction._id),
+				updateExpectedMediaItemForBucketAdLibAction(adLibAction),
+				updateExpectedPackagesForBucketAdLibAction(adLibAction),
 			])
 		})
 
@@ -335,13 +355,23 @@ export namespace BucketsAPI {
 				throw new Meteor.Error(`Could not find studio: "${adlib.studioId}"`)
 			}
 
-			await BucketAdLibs.updateAsync(id, {
-				$set: _.omit(adlib, ['_id']),
-			})
-			await Promise.all([
-				updateExpectedMediaItemForBucketAdLibPiece(id),
-				updateExpectedPackagesForBucketAdLib(id),
-			])
+			const idsToUpdate: PieceId[] = [id]
+			// Also update adlibs that are grouped together with this adlib in the GUI:
+			;(await getGroupedAdlibs(oldAdLib)).forEach(({ _id }) => idsToUpdate.push(_id))
+
+			await BucketAdLibs.updateAsync(
+				{ _id: { $in: idsToUpdate } },
+				{
+					$set: _.omit(adlib, ['_id']),
+				},
+				{ multi: true }
+			)
+			for (const _id of idsToUpdate) {
+				await Promise.all([
+					updateExpectedMediaItemForBucketAdLibPiece(id),
+					updateExpectedPackagesForBucketAdLib(id),
+				])
+			}
 		})
 	}
 
@@ -356,4 +386,34 @@ export namespace BucketsAPI {
 			await Promise.all([Buckets.removeAsync(bucket._id), emptyBucketInner(bucket)])
 		})
 	}
+}
+/** Returns BucketAdlibActions that are grouped together with this adlib in the GUI */
+async function getGroupedAdlibActions(oldAdLib: BucketAdLibAction): Promise<BucketAdLibAction[]> {
+	return BucketAdLibActions.findFetchAsync({
+		bucketId: oldAdLib.bucketId,
+		studioId: oldAdLib.studioId,
+		$or: [
+			{
+				externalId: oldAdLib.externalId,
+			},
+			{
+				uniquenessId: oldAdLib.uniquenessId,
+			},
+		],
+	})
+}
+/** Returns BucketAdlibs that are grouped together with this adlib in the GUI */
+async function getGroupedAdlibs(oldAdLib: BucketAdLib): Promise<BucketAdLib[]> {
+	return BucketAdLibs.findFetchAsync({
+		bucketId: oldAdLib.bucketId,
+		studioId: oldAdLib.studioId,
+		$or: [
+			{
+				externalId: oldAdLib.externalId,
+			},
+			{
+				uniquenessId: oldAdLib.uniquenessId,
+			},
+		],
+	})
 }

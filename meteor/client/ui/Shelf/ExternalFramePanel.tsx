@@ -221,12 +221,13 @@ export const ExternalFramePanel = withTranslation()(
 			if (!targetRundown) {
 				throw new Meteor.Error('Target rundown could not be determined!')
 			}
-
+			const showStyleBaseId = targetRundown.showStyleBaseId
 			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e) =>
 				MeteorCall.userAction.bucketAdlibImport(
 					e,
 					playlist.studioId,
-					targetRundown!.showStyleVariantId,
+					showStyleBaseId,
+					undefined,
 					targetBucket ? targetBucket._id : protectString(''),
 					literal<IngestAdlib>({
 						externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
