@@ -100,9 +100,8 @@ export function createPieceGroupAndCap(
 		partInstanceId: pieceInstance.partInstanceId,
 		objectType: TimelineObjType.RUNDOWN,
 		enable: {
-			// TODO - better rules for this
 			start: `#${controlObj.id}.start - ${piecePreroll}`,
-			end: `#${controlObj.id}.end - ${/*pieceInstance.piece.postrollDuration??*/ 0}`,
+			end: `#${controlObj.id}.end + ${/*pieceInstance.piece.postrollDuration??*/ 0}`,
 		},
 		layer: '',
 		metaData: {
@@ -115,12 +114,14 @@ export function createPieceGroupAndCap(
 
 	let nowObj: (TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>) | undefined
 	if (controlObj.enable.start === 'now' && piecePreroll > 0) {
+		// Use a dedicated now object, as we need to delay the start of the control object to allow the piece_group to preroll
 		const startNowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
 			objectType: TimelineObjType.RUNDOWN,
 			id: `${controlObj.id}_start_now`,
 			enable: {
 				start: 'now',
 			},
+			inGroup: partGroup && partGroup.id,
 			layer: '',
 			content: {
 				deviceType: TSR.DeviceType.ABSTRACT,
@@ -134,6 +135,9 @@ export function createPieceGroupAndCap(
 		capObjs.push(startNowObj)
 
 		controlObj.enable.start = `#${startNowObj.id} + ${piecePreroll}`
+	} else {
+		// No preroll necessary, so let the control object trigger the de-nowify
+		controlObj.metaData.triggerPieceInstanceId = pieceInstance._id
 	}
 
 	if (pieceInstance.resolvedEndCap === 'now') {

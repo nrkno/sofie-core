@@ -78,7 +78,7 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { runJobWithStudioCache } from '../studio/lock'
 import { shouldUpdateStudioBaselineInner as libShouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
 import { CacheForStudio } from '../studio/cache'
-import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
+import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
@@ -982,36 +982,25 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 						(id): id is PartInstanceId => id !== null
 					)
 
-					// We only need the PartInstances and PieceInstances, so load just them
-					const [partInstanceCache, pieceInstanceCache] = await Promise.all([
-						DbCacheReadCollection.createFromDatabase(context, context.directCollections.PartInstances, {
-							rundownId: { $in: rundownIDs },
-							_id: {
-								$in: partInstanceIDs,
-							},
-						}),
-						DbCacheWriteCollection.createFromDatabase(context, context.directCollections.PieceInstances, {
+					// We only need the PieceInstances, so load just them
+					const pieceInstanceCache = await DbCacheWriteCollection.createFromDatabase(
+						context,
+						context.directCollections.PieceInstances,
+						{
 							rundownId: { $in: rundownIDs },
 							partInstanceId: {
 								$in: partInstanceIDs,
 							},
-						}),
-					])
+						}
+					)
 
 					// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
-					timelineTriggerTimeInner(
-						context,
-						studioCache,
-						data.results,
-						partInstanceCache,
-						pieceInstanceCache,
-						activePlaylist
-					)
+					timelineTriggerTimeInner(context, studioCache, data.results, pieceInstanceCache, activePlaylist)
 
 					await pieceInstanceCache.updateDatabaseWithData()
 				})
 			} else {
-				timelineTriggerTimeInner(context, studioCache, data.results, undefined, undefined, undefined)
+				timelineTriggerTimeInner(context, studioCache, data.results, undefined, undefined)
 			}
 		})
 	}
@@ -1021,7 +1010,6 @@ function timelineTriggerTimeInner(
 	context: JobContext,
 	cache: CacheForStudio,
 	results: OnTimelineTriggerTimeProps['results'],
-	partInstanceCache: DbCacheReadCollection<DBPartInstance> | undefined,
 	pieceInstanceCache: DbCacheWriteCollection<PieceInstance> | undefined,
 	activePlaylist: DBRundownPlaylist | undefined
 ) {
@@ -1052,7 +1040,7 @@ function timelineTriggerTimeInner(
 
 				const objPieceInstanceId = (obj.metaData as Partial<PieceTimelineMetadata> | undefined)
 					?.triggerPieceInstanceId
-				if (objPieceInstanceId && activePlaylist && pieceInstanceCache && partInstanceCache) {
+				if (objPieceInstanceId && activePlaylist && pieceInstanceCache) {
 					logger.debug('Update PieceInstance: ', {
 						pieceId: objPieceInstanceId,
 						time: new Date(o.time).toTimeString(),
@@ -1064,20 +1052,11 @@ function timelineTriggerTimeInner(
 						pieceInstance.dynamicallyInserted &&
 						pieceInstance.piece.enable.start === 'now'
 					) {
-						const partInstance = partInstanceCache.findOne(pieceInstance.partInstanceId)
-						if (partInstance && partInstance.timings?.startedPlayback) {
-							const time = o.time - partInstance.timings.startedPlayback
-
-							pieceInstanceCache.update(pieceInstance._id, {
-								$set: {
-									'piece.enable.start': time,
-								},
-							})
-						} else {
-							logger.warn(
-								`Failed to update PieceInstance, as PartInstance was missing or had not startedPlayback`
-							)
-						}
+						pieceInstanceCache.update(pieceInstance._id, {
+							$set: {
+								'piece.enable.start': o.time,
+							},
+						})
 
 						const takeTime = pieceInstance.dynamicallyInserted
 						lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)

@@ -1,4 +1,5 @@
 import { TSR, OnGenerateTimelineObj, TimelineObjectCoreExt, Time } from '@sofie-automation/blueprints-integration'
+import { SetRequired } from 'type-fest'
 import { ProtectedString, protectString, unprotectString } from '../protectedString'
 import {
 	PartInstanceId,
@@ -19,7 +20,7 @@ export type TimelineHash = ProtectedString<'TimelineHash'>
 export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
 
 export interface OnGenerateTimelineObjExt<TMetadata = unknown, TKeyframeMetadata = unknown>
-	extends OnGenerateTimelineObj<TMetadata, TKeyframeMetadata> {
+	extends SetRequired<OnGenerateTimelineObj<TMetadata, TKeyframeMetadata>, 'metaData'> {
 	/** The id of the partInstance this object belongs to */
 	partInstanceId: PartInstanceId | null
 	/** If this is from an infinite piece, the id of the infinite instance */

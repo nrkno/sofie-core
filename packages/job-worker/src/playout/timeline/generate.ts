@@ -465,6 +465,7 @@ function transformBaselineItemsIntoTimeline(
 		// the baseline objects are layed out without any grouping
 		for (const o of objects) {
 			timelineObjs.push({
+				metaData: undefined,
 				...o,
 				objectType: TimelineObjType.RUNDOWN,
 				partInstanceId: null,

@@ -143,5 +143,6 @@ export function createPartGroupFirstObject(
 		inGroup: partGroup.id,
 		partInstanceId: partGroup.partInstanceId,
 		classes: (partInstance.part.classes || []).concat(previousPart ? previousPart.part.classesForNext || [] : []),
+		metaData: undefined,
 	})
 }

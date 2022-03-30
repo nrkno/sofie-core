@@ -565,15 +565,15 @@ export function processAndPrunePieceInstanceTimings(
 
 		// Step through time
 		const activePieces: PieceInstanceOnInfiniteLayers = {}
-		for (const [start, pieces] of piecesByStart) {
+		for (const [newPiecesStart, pieces] of piecesByStart) {
 			const newPieces = findPieceInstancesOnInfiniteLayers(pieces)
 
 			// Apply the updates
 			// Note: order is important, the higher layers must be done first
-			updateWithNewPieces(results, activePieces, newPieces, start, includeVirtual, 'other')
-			updateWithNewPieces(results, activePieces, newPieces, start, includeVirtual, 'onSegmentEnd')
-			updateWithNewPieces(results, activePieces, newPieces, start, includeVirtual, 'onRundownEnd')
-			updateWithNewPieces(results, activePieces, newPieces, start, includeVirtual, 'onShowStyleEnd')
+			updateWithNewPieces(results, activePieces, newPieces, newPiecesStart, includeVirtual, 'other')
+			updateWithNewPieces(results, activePieces, newPieces, newPiecesStart, includeVirtual, 'onSegmentEnd')
+			updateWithNewPieces(results, activePieces, newPieces, newPiecesStart, includeVirtual, 'onRundownEnd')
+			updateWithNewPieces(results, activePieces, newPieces, newPiecesStart, includeVirtual, 'onShowStyleEnd')
 		}
 	}
 
@@ -584,7 +584,7 @@ function updateWithNewPieces(
 	results: PieceInstanceWithTimings[],
 	activePieces: PieceInstanceOnInfiniteLayers,
 	newPieces: PieceInstanceOnInfiniteLayers,
-	start: number | 'now',
+	newPiecesStart: number | 'now',
 	includeVirtual: boolean | undefined,
 	key: keyof PieceInstanceOnInfiniteLayers
 ): void {
@@ -592,7 +592,7 @@ function updateWithNewPieces(
 	if (newPiece) {
 		const activePiece = activePieces[key]
 		if (activePiece) {
-			activePiece.resolvedEndCap = offsetFromStart(start, newPiece)
+			activePiece.resolvedEndCap = offsetFromStart(newPiecesStart, newPiece)
 		}
 		// track the new piece
 		activePieces[key] = newPiece
@@ -614,10 +614,10 @@ function updateWithNewPieces(
 				// when start === 0, we are likely to have multiple infinite continuations. Only stop the 'other' if it should not be considered for being on air
 				if (
 					activePieces.other &&
-					(start !== 0 || isCandidateBetterToBeContinued(activePieces.other, newPiece))
+					(newPiecesStart !== 0 || isCandidateBetterToBeContinued(activePieces.other, newPiece))
 				) {
 					// These modes should stop the 'other' when they start if not hidden behind a higher priority onEnd
-					activePieces.other.resolvedEndCap = offsetFromStart(start, newPiece)
+					activePieces.other.resolvedEndCap = offsetFromStart(newPiecesStart, newPiece)
 					activePieces.other = undefined
 				}
 			}

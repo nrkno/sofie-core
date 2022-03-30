@@ -63,6 +63,7 @@ export function buildTimelineObjsForRundown(
 				!activePlaylist.nextPartInstanceId ? TimelineObjClassesCore.NoNextPart : undefined,
 			].filter((v): v is TimelineObjClassesCore => v !== undefined),
 			partInstanceId: null,
+			metaData: undefined,
 		})
 	)
 
