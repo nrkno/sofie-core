@@ -15,14 +15,12 @@ import { unprotectString } from '../protectedString'
 import { PieceInstanceWithTimings } from './infinites'
 
 export interface PieceTimelineMetadata {
-	isPieceTimeline: boolean
-}
-
-export interface PieceGroupMetadata extends PieceTimelineMetadata {
-	pieceId: PieceInstanceId
-}
-export interface PieceTriggerMetadata extends PieceTimelineMetadata {
-	triggerPieceInstanceId: PieceInstanceId
+	/** Indicate that this is a PieceTimeline object */
+	isPieceTimeline: true
+	/** If this object should be used as timing for a PieceInstance */
+	pieceInstanceGroupId?: PieceInstanceId
+	/** If this object should be used to in onTriggerTime to de-now a PieceInstance */
+	triggerPieceInstanceId?: PieceInstanceId
 }
 
 export function createPieceGroupAndCap(
@@ -44,7 +42,7 @@ export function createPieceGroupAndCap(
 	pieceEnable?: TSR.Timeline.TimelineEnable
 ): {
 	controlObj: TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceTimelineMetadata>
-	childGroup: TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceGroupMetadata>
+	childGroup: TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>
 	capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>
 } {
 	if (pieceEnable) {
@@ -88,7 +86,7 @@ export function createPieceGroupAndCap(
 	})
 
 	const piecePreroll = pieceInstance.piece.prerollDuration ?? 0
-	const childGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceGroupMetadata>>({
+	const childGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
 		id: getPieceGroupId(pieceInstance),
 		content: {
 			deviceType: TSR.DeviceType.ABSTRACT,
@@ -108,8 +106,8 @@ export function createPieceGroupAndCap(
 		},
 		layer: '',
 		metaData: {
-			pieceId: pieceInstance._id,
 			isPieceTimeline: true,
+			pieceInstanceGroupId: pieceInstance._id,
 		},
 	})
 
@@ -117,7 +115,7 @@ export function createPieceGroupAndCap(
 
 	let nowObj: (TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>) | undefined
 	if (controlObj.enable.start === 'now' && piecePreroll > 0) {
-		const startNowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTriggerMetadata>>({
+		const startNowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
 			objectType: TimelineObjType.RUNDOWN,
 			id: `${controlObj.id}_start_now`,
 			enable: {

@@ -25,11 +25,7 @@ import {
 	PieceInstanceWithTimings,
 	processAndPrunePieceInstanceTimings,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import {
-	createPieceGroupAndCap,
-	PieceGroupMetadata,
-	PieceTimelineMetadata,
-} from '@sofie-automation/corelib/dist/playout/pieces'
+import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	if (a.pieceType === IBlueprintPieceType.OutTransition && b.pieceType !== IBlueprintPieceType.OutTransition) {
@@ -85,14 +81,16 @@ function resolvePieceTimeline(
 	const unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
 		const obj = obj0 as any as TimelineObjRundown
-		const id = unprotectString((obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
+		const pieceInstanceId = unprotectString(
+			(obj.metaData as Partial<PieceTimelineMetadata> | undefined)?.pieceInstanceGroupId
+		)
 
-		if (!id) return
+		if (!pieceInstanceId) return
 
-		const pieceInstance = pieceInstanceMap[id]
+		const pieceInstance = pieceInstanceMap[pieceInstanceId]
 		// Erm... How?
 		if (!pieceInstance) {
-			unresolvedIds.push(id)
+			unresolvedIds.push(pieceInstanceId)
 			return
 		}
 
@@ -115,7 +113,7 @@ function resolvePieceTimeline(
 					resolvedDuration: undefined,
 				})
 			)
-			unresolvedIds.push(id)
+			unresolvedIds.push(pieceInstanceId)
 		}
 	})
 

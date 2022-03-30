@@ -109,7 +109,6 @@ export function createPartGroup(
 		},
 		children: [],
 		isGroup: true,
-		isPartGroup: true,
 		partInstanceId: partInstance._id,
 		metaData: literal<PieceTimelineMetadata>({
 			isPieceTimeline: true,

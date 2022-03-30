@@ -79,7 +79,7 @@ import { runJobWithStudioCache } from '../studio/lock'
 import { shouldUpdateStudioBaselineInner as libShouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
 import { CacheForStudio } from '../studio/cache'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
-import { PieceTriggerMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
+import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
@@ -1050,7 +1050,7 @@ function timelineTriggerTimeInner(
 				// TODO - we should do the same for the partInstance.
 				// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
 
-				const objPieceInstanceId = (obj.metaData as Partial<PieceTriggerMetadata> | undefined)
+				const objPieceInstanceId = (obj.metaData as Partial<PieceTimelineMetadata> | undefined)
 					?.triggerPieceInstanceId
 				if (objPieceInstanceId && activePlaylist && pieceInstanceCache && partInstanceCache) {
 					logger.debug('Update PieceInstance: ', {

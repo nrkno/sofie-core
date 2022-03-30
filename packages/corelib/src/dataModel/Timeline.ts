@@ -57,9 +57,8 @@ export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
 }
 export type TimelineObjGroupRundown = TimelineObjGroup & Omit<TimelineObjRundown, 'enable'>
 
-export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
-	isPartGroup: true
-}
+export type TimelineObjGroupPart = TimelineObjGroupRundown
+
 export interface TimelineObjPartAbstract extends TimelineObjRundown {
 	// used for sending callbacks
 	content: {

@@ -29,7 +29,7 @@ import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
-import { createPieceGroupAndCap, PieceGroupMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
+import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
@@ -39,7 +39,7 @@ import { Rundown, RundownId } from '../../lib/collections/Rundowns'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 
-interface PieceGroupMetadataExt extends PieceGroupMetadata {
+interface PieceTimelineMetadataExt extends PieceTimelineMetadata {
 	id: PieceId
 }
 
@@ -474,9 +474,9 @@ export namespace RundownUtils {
 					}
 
 					const { controlObj, capObjs } = createPieceGroupAndCap(playlist._id, piece)
-					controlObj.metaData = literal<PieceGroupMetadataExt>({
+					controlObj.metaData = literal<PieceTimelineMetadataExt>({
 						id: piece.piece._id,
-						pieceId: piece._id,
+						pieceInstanceGroupId: piece._id,
 						isPieceTimeline: true,
 					})
 					partTimeline.push(controlObj)
@@ -557,7 +557,7 @@ export namespace RundownUtils {
 				const objs = Object.values(tlResolved.objects)
 				for (let i = 0; i < objs.length; i++) {
 					const obj = objs[i]
-					const obj0 = obj as unknown as TimelineObjectCoreExt<PieceGroupMetadataExt>
+					const obj0 = obj as unknown as TimelineObjectCoreExt<PieceTimelineMetadataExt>
 					if (obj.resolved.resolved && obj0.metaData) {
 						// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
 						const piece = piecesLookup.get(obj0.metaData.id)
