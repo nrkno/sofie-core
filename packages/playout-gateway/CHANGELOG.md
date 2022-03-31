@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.38.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.3...v1.38.4) (2022-03-31)
+
+
+### Bug Fixes
+
+* PGW: debug-messages was logged as info-messages ([b143094](https://github.com/nrkno/tv-automation-server-core/commit/b1430946d3ef76680935290ed6acea935ce165de))
+
+
+
+
+
 ## [1.38.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2...v1.38.3) (2022-03-29)
 
 **Note:** Version bump only for package playout-gateway

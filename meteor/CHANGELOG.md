@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.38.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.3...v1.38.4) (2022-03-31)
+
+
+### Bug Fixes
+
+* bug when grouping bucket items for remove/modifying ([93cdfd8](https://github.com/nrkno/tv-automation-server-core/commit/93cdfd81629bcb718b763f3c1c4e4370c3a973b6))
+* PGW: debug-messages was logged as info-messages ([b143094](https://github.com/nrkno/tv-automation-server-core/commit/b1430946d3ef76680935290ed6acea935ce165de))
+
 ### [1.38.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2...v1.38.3) (2022-03-29)
 
 
