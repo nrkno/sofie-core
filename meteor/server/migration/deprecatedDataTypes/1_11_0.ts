@@ -80,8 +80,6 @@ export interface RundownPieceGeneric extends PieceGeneric {
 	partId?: PartId
 }
 export interface Piece extends RundownPieceGeneric {
-	// ProtectedStringProperties<Omit<IBlueprintPieceDB, '_id' | 'partId' | 'continuesRefId'>, 'infiniteId'> {
-
 	partId: PartId
 	userDuration?: Pick<BPTimeline.TimelineEnable, 'duration' | 'end'>
 	infiniteMode?: PieceLifespan
@@ -93,4 +91,3 @@ export interface Piece extends RundownPieceGeneric {
 	stoppedPlayback?: number
 	overflows?: boolean
 }
-// export const Timeline: TransformedCollection<TimelineObjGeneric , TimelineObjGeneric> = Timeline120

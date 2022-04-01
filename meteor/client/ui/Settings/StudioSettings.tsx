@@ -48,12 +48,12 @@ import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { unprotectString, protectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
-import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { ConfigManifestEntryType, MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
 import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/corelib/dist/constants'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
+import { MongoCollection } from '../../../lib/collections/lib'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -207,7 +207,7 @@ interface IDeviceMappingSettingsProps {
 
 const DeviceMappingSettings = withTranslation()(
 	class DeviceMappingSettings extends React.Component<Translated<IDeviceMappingSettingsProps>> {
-		renderOptionalInput(attribute: string, obj: any, collection: TransformedCollection<any, any>) {
+		renderOptionalInput(attribute: string, obj: any, collection: MongoCollection<any>) {
 			return (
 				<EditAttribute
 					modifiedClassName="bghl"

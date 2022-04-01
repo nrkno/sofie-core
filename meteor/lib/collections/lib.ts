@@ -1,13 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import {
+	FieldNames,
+	FindOneOptions,
 	FindOptions,
 	Mongocursor,
 	MongoModifier,
 	MongoQuery,
-	TransformedCollection,
 	UpdateOptions,
 	UpsertOptions,
+	UserId,
 } from '../typings/meteor'
 import {
 	stringifyObjects,
@@ -17,10 +19,11 @@ import {
 	sleep,
 	registerCollection,
 	stringifyError,
+	IndexSpecifier,
 } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
-import type { AnyBulkWriteOperation, Collection as RawCollection } from 'mongodb'
+import type { AnyBulkWriteOperation, Collection as RawCollection, Db as RawDb } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 const ObserveChangeBufferTimeout = 2000
@@ -81,17 +84,19 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
 	}
 }
 
+/**
+ * Create a fully featured MongoCollection
+ * @param name Name of the collection in mongodb
+ * @param options Open options
+ */
 export function createMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
-	name: CollectionName | null,
+	name: CollectionName,
 	options?: {
 		connection?: Object | null
 		idGeneration?: string
 	}
 ): AsyncMongoCollection<DBInterface> {
-	const collection: TransformedCollection<DBInterface, DBInterface> = new Mongo.Collection<DBInterface>(
-		name,
-		options
-	) as any
+	const collection: MongoCollection<DBInterface> = new Mongo.Collection<DBInterface>(name, options) as any
 
 	let collection2: AsyncMongoCollection<DBInterface>
 	if ((collection as any)._isMock) {
@@ -101,13 +106,16 @@ export function createMongoCollection<DBInterface extends { _id: ProtectedString
 		collection2 = new WrappedAsyncMongoCollection(collection, name)
 	}
 
-	if (name) {
-		registerCollection(name, collection2)
-	}
+	registerCollection(name, collection2)
 
 	return collection2
 }
 
+/**
+ * Wrap an existing Mongo.Collection to have async methods. Primarily to convert the built-in Users collection
+ * @param collection Collection to wrap
+ * @param name Name of the collection
+ */
 export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: Mongo.Collection<DBInterface>,
 	name: CollectionName
@@ -115,21 +123,25 @@ export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<a
 	return new WrappedAsyncMongoCollection<DBInterface>(collection as any, name)
 }
 
+/**
+ * Create a sync in-memory Mongo Collection (for ui temporary storage)
+ * @param name Name of the collection (for logging)
+ */
 export function createInMemoryMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	name: string
-): TransformedCollection<DBInterface, DBInterface> {
+): MongoCollection<DBInterface> {
 	const collection = new Mongo.Collection(null)
-	return new WrappedTransformedCollection<DBInterface>(collection as any, name)
+	return new WrappedMongoCollection<DBInterface>(collection as any, name)
 }
 
-class WrappedTransformedCollection<DBInterface extends { _id: ProtectedString<any> }>
-	implements TransformedCollection<DBInterface, DBInterface>
+class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
+	implements MongoCollection<DBInterface>
 {
-	readonly #collection: TransformedCollection<DBInterface, DBInterface>
+	readonly #collection: MongoCollection<DBInterface>
 
 	public readonly name: string | null
 
-	constructor(collection: TransformedCollection<DBInterface, DBInterface>, name: string | null) {
+	constructor(collection: MongoCollection<DBInterface>, name: string | null) {
 		this.#collection = collection
 		this.name = name
 	}
@@ -144,27 +156,27 @@ class WrappedTransformedCollection<DBInterface extends { _id: ProtectedString<an
 		throw new Meteor.Error((e && e.error) || 500, `Collection "${this.name}": ${str}`)
 	}
 
-	allow(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['allow']>): boolean {
+	allow(...args: Parameters<MongoCollection<DBInterface>['allow']>): boolean {
 		return this.#collection.allow(...args)
 	}
-	deny(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['deny']>): boolean {
+	deny(...args: Parameters<MongoCollection<DBInterface>['deny']>): boolean {
 		return this.#collection.deny(...args)
 	}
-	find(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['find']>): Mongocursor<DBInterface> {
+	find(...args: Parameters<MongoCollection<DBInterface>['find']>): Mongocursor<DBInterface> {
 		try {
 			return this.#collection.find(...args)
 		} catch (e) {
 			this.wrapMongoError(e)
 		}
 	}
-	findOne(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['findOne']>): DBInterface | undefined {
+	findOne(...args: Parameters<MongoCollection<DBInterface>['findOne']>): DBInterface | undefined {
 		try {
 			return this.#collection.findOne(...args)
 		} catch (e) {
 			this.wrapMongoError(e)
 		}
 	}
-	insert(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['insert']>): DBInterface['_id'] {
+	insert(...args: Parameters<MongoCollection<DBInterface>['insert']>): DBInterface['_id'] {
 		try {
 			return this.#collection.insert(...args)
 		} catch (e) {
@@ -174,24 +186,24 @@ class WrappedTransformedCollection<DBInterface extends { _id: ProtectedString<an
 	rawCollection(): RawCollection<DBInterface> {
 		return this.#collection.rawCollection()
 	}
-	rawDatabase(): any {
+	rawDatabase(): RawDb {
 		return this.#collection.rawDatabase()
 	}
-	remove(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['remove']>): number {
+	remove(...args: Parameters<MongoCollection<DBInterface>['remove']>): number {
 		try {
 			return this.#collection.remove(...args)
 		} catch (e) {
 			this.wrapMongoError(e)
 		}
 	}
-	update(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['update']>): number {
+	update(...args: Parameters<MongoCollection<DBInterface>['update']>): number {
 		try {
 			return this.#collection.update(...args)
 		} catch (e) {
 			this.wrapMongoError(e)
 		}
 	}
-	upsert(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['upsert']>): {
+	upsert(...args: Parameters<MongoCollection<DBInterface>['upsert']>): {
 		numberAffected?: number
 		insertedId?: DBInterface['_id']
 	} {
@@ -202,14 +214,14 @@ class WrappedTransformedCollection<DBInterface extends { _id: ProtectedString<an
 		}
 	}
 
-	_ensureIndex(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['_ensureIndex']>): void {
+	_ensureIndex(...args: Parameters<MongoCollection<DBInterface>['_ensureIndex']>): void {
 		try {
 			return this.#collection._ensureIndex(...args)
 		} catch (e) {
 			this.wrapMongoError(e)
 		}
 	}
-	_dropIndex(...args: Parameters<TransformedCollection<DBInterface, DBInterface>['_dropIndex']>): void {
+	_dropIndex(...args: Parameters<MongoCollection<DBInterface>['_dropIndex']>): void {
 		try {
 			return this.#collection._dropIndex(...args)
 		} catch (e) {
@@ -219,7 +231,7 @@ class WrappedTransformedCollection<DBInterface extends { _id: ProtectedString<an
 }
 
 class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
-	extends WrappedTransformedCollection<DBInterface>
+	extends WrappedMongoCollection<DBInterface>
 	implements AsyncMongoCollection<DBInterface>
 {
 	async findFetchAsync(
@@ -348,12 +360,12 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 
 /** This is for the mock mongo collection, as internally it is sync and so we dont need or want to play around with fibers */
 class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
-	extends WrappedTransformedCollection<DBInterface>
+	extends WrappedMongoCollection<DBInterface>
 	implements AsyncMongoCollection<DBInterface>
 {
 	private readonly realSleep: (time: number) => Promise<void>
 
-	constructor(collection: TransformedCollection<DBInterface, DBInterface>, name: string | null) {
+	constructor(collection: MongoCollection<DBInterface>, name: string | null) {
 		super(collection, name)
 
 		if (!this._isMock) throw new Meteor.Error(500, 'WrappedMockCollection is only valid for a mock collection')
@@ -463,8 +475,11 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 	}
 }
 
+/**
+ * A minimal Async wrapping around the base Mongo.Collection type
+ */
 export interface AsyncMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
-	extends TransformedCollection<DBInterface, DBInterface> {
+	extends MongoCollection<DBInterface> {
 	name: string | null
 
 	findFetchAsync(selector: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<Array<DBInterface>>
@@ -496,4 +511,73 @@ export interface AsyncMongoCollection<DBInterface extends { _id: ProtectedString
 	removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number>
 
 	bulkWriteAsync(ops: Array<AnyBulkWriteOperation<DBInterface>>): Promise<void>
+}
+
+export interface MongoCollection<DBInterface extends { _id: ProtectedString<any> }> {
+	allow(options: {
+		insert?: (userId: UserId, doc: DBInterface) => boolean
+		update?: (
+			userId: UserId,
+			doc: DBInterface,
+			fieldNames: FieldNames<DBInterface>,
+			modifier: MongoModifier<DBInterface>
+		) => boolean
+		remove?: (userId: UserId, doc: DBInterface) => boolean
+		fetch?: string[]
+		transform?: Function
+	}): boolean
+	deny(options: {
+		insert?: (userId: UserId, doc: DBInterface) => boolean
+		update?: (
+			userId: UserId,
+			doc: DBInterface,
+			fieldNames: string[],
+			modifier: MongoModifier<DBInterface>
+		) => boolean
+		remove?: (userId: UserId, doc: DBInterface) => boolean
+		fetch?: string[]
+		transform?: Function
+	}): boolean
+
+	find(
+		selector?: MongoQuery<DBInterface> | DBInterface['_id'],
+		options?: FindOptions<DBInterface>
+	): Mongocursor<DBInterface>
+	findOne(
+		selector?: MongoQuery<DBInterface> | DBInterface['_id'],
+		options?: FindOneOptions<DBInterface>
+	): DBInterface | undefined
+	insert(doc: DBInterface /*, callback?: Function*/): DBInterface['_id']
+	rawCollection(): RawCollection<DBInterface>
+	rawDatabase(): RawDb
+	remove(selector: MongoQuery<DBInterface> | DBInterface['_id'] /*, callback?: Function*/): number
+	update(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		modifier: MongoModifier<DBInterface>,
+		options?: UpdateOptions
+		/*callback?: Function*/
+	): number
+	upsert(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		modifier: MongoModifier<DBInterface>,
+		options?: UpsertOptions
+		/*callback?: Function*/
+	): {
+		numberAffected?: number
+		insertedId?: DBInterface['_id']
+	}
+	_ensureIndex(
+		keys: IndexSpecifier<DBInterface> | string,
+		options?: {
+			[key: string]: any
+		}
+	): void
+
+	_dropIndex(
+		keys:
+			| {
+					[key: string]: number | string
+			  }
+			| string
+	): void
 }

@@ -5,12 +5,12 @@ import { Pieces } from '../../lib/collections/Pieces'
 import { Part, Parts } from '../../lib/collections/Parts'
 import { Piece as Piece_1_11_0 } from './deprecatedDataTypes/1_11_0'
 import { unprotectString, ProtectedString, objectPathSet } from '../../lib/lib'
-import { TransformedCollection } from '../../lib/typings/meteor'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Timeline } from '../../lib/collections/Timeline'
 import { ensureCollectionProperty, removeCollectionProperty } from './lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { AsyncMongoCollection } from '../../lib/collections/lib'
 
 // Release 24
 export const addSteps = addMigrationSteps('1.12.0', [
@@ -92,9 +92,8 @@ export const addSteps = addMigrationSteps('1.12.0', [
 ])
 
 function migrateConfigToBlueprintConfig<
-	T extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any>; blueprintConfig: IBlueprintConfig }
->(id: string, collection: TransformedCollection<T, DBInterface>) {
+>(id: string, collection: AsyncMongoCollection<DBInterface>) {
 	return {
 		id,
 		canBeRunAutomatically: true,
@@ -107,7 +106,7 @@ function migrateConfigToBlueprintConfig<
 		},
 		migrate: () => {
 			const documents = collection.find({ config: { $exists: true } }).fetch() as Array<
-				T & { config: Array<{ _id: string; value: any }> }
+				DBInterface & { config: Array<{ _id: string; value: any }> }
 			>
 			for (const document of documents) {
 				const newDocument = migrateConfigToBlueprintConfigOnObject(document)
