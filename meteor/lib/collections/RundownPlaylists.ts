@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
 import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
 import { normalizeArrayFunc, unprotectString } from '../lib'
@@ -197,8 +196,8 @@ export class RundownPlaylistCollectionUtil {
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
 	static getSegmentsAndPartsSync(
 		playlist: Pick<RundownPlaylist, '_id'>,
-		segmentsQuery?: Mongo.Query<Segment>,
-		partsQuery?: Mongo.Query<DBPart>,
+		segmentsQuery?: MongoQuery<Segment>,
+		partsQuery?: MongoQuery<DBPart>,
 		segmentsOptions?: FindOptions<DBSegment>,
 		partsOptions?: FindOptions<DBPart>
 	): { segments: Segment[]; parts: Part[] } {

@@ -45,6 +45,7 @@ import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/
 import { Mongo } from 'meteor/mongo'
 import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { Match } from 'meteor/check'
+import { MongoQuery } from '../../../lib/typings/meteor'
 
 class AbstractMigrationContextWithTriggeredActions {
 	protected showStyleBaseId: ShowStyleBaseId | null = null
@@ -241,7 +242,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	getDevice(deviceId: string): TSR.DeviceOptionsAny | undefined {
 		check(deviceId, String)
 
-		const selector: Mongo.Selector<PeripheralDevice> = {
+		const selector: MongoQuery<PeripheralDevice> = {
 			type: PeripheralDeviceType.PLAYOUT,
 			studioId: this.studio._id,
 		}
@@ -299,7 +300,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(500, `Device id "${deviceId}" is invalid`)
 		}
 
-		const selector: Mongo.Selector<PeripheralDevice> = {
+		const selector: MongoQuery<PeripheralDevice> = {
 			type: PeripheralDeviceType.PLAYOUT,
 			studioId: this.studio._id,
 		}

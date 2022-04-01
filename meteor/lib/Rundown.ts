@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { Pieces, Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
@@ -12,7 +11,7 @@ import {
 	buildPastInfinitePiecesForThisPartQuery,
 	PieceInstanceWithTimings,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import { FindOptions } from './typings/meteor'
+import { FindOptions, MongoQuery } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
 import { getCurrentTime, mongoWhereFilter, ProtectedString, protectString, unprotectString } from './lib'
 import {
@@ -236,9 +235,9 @@ export function getPieceInstancesForPartInstance(
  *
  * @export
  * @param {RundownPlaylist} playlist
- * @param {(Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>)} [segmentsQuery]
- * @param {(Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>)} [partsQuery]
- * @param {Mongo.Query<PartInstance>} [partInstancesQuery]
+ * @param {(MongoQuery<DBSegment> | Mongo.QueryWithModifiers<DBSegment>)} [segmentsQuery]
+ * @param {(MongoQuery<DBPart> | Mongo.QueryWithModifiers<DBPart>)} [partsQuery]
+ * @param {MongoQuery<PartInstance>} [partInstancesQuery]
  * @param {FindOptions<DBSegment>} [segmentsOptions]
  * @param {FindOptions<DBPart>} [partsOptions]
  * @param {FindOptions<PartInstance>} [partInstancesOptions]
@@ -246,9 +245,9 @@ export function getPieceInstancesForPartInstance(
  */
 export function getSegmentsWithPartInstances(
 	playlist: RundownPlaylist,
-	segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>,
-	partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>,
-	partInstancesQuery?: Mongo.Query<PartInstance>,
+	segmentsQuery?: MongoQuery<DBSegment>,
+	partsQuery?: MongoQuery<DBPart>,
+	partInstancesQuery?: MongoQuery<PartInstance>,
 	segmentsOptions?: FindOptions<DBSegment>,
 	partsOptions?: FindOptions<DBPart>,
 	partInstancesOptions?: FindOptions<PartInstance>

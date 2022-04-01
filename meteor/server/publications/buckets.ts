@@ -9,6 +9,7 @@ import { BucketAdLibs, BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { FindOptions } from '../../lib/typings/meteor'
 import { BucketAdLibActions, BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { StudioReadAccess } from '../security/studio'
+import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 
 meteorPublish(PubSub.buckets, function (selector: MongoQuery<Bucket>, _token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -16,10 +17,8 @@ meteorPublish(PubSub.buckets, function (selector: MongoQuery<Bucket>, _token) {
 		fields: {},
 	}
 	if (
-		(typeof selector.studioId === 'string' &&
-			selector.studioId &&
-			StudioReadAccess.studioContent(selector, this)) ||
-		(typeof selector._id === 'string' && selector._id && BucketSecurity.allowReadAccess(this, selector._id))
+		(isProtectedString(selector.studioId) && selector.studioId && StudioReadAccess.studioContent(selector, this)) ||
+		(isProtectedString(selector._id) && selector._id && BucketSecurity.allowReadAccess(this, selector._id))
 	) {
 		return Buckets.find(selector, modifier)
 	}
@@ -31,7 +30,7 @@ meteorPublish(PubSub.bucketAdLibPieces, function (selector: MongoQuery<BucketAdL
 	const modifier: FindOptions<BucketAdLib> = {
 		fields: {},
 	}
-	if (typeof selector.bucketId === 'string' && BucketSecurity.allowReadAccess(this, selector.bucketId)) {
+	if (isProtectedString(selector.bucketId) && BucketSecurity.allowReadAccess(this, selector.bucketId)) {
 		return BucketAdLibs.find(selector, modifier)
 	}
 	return null
@@ -39,10 +38,10 @@ meteorPublish(PubSub.bucketAdLibPieces, function (selector: MongoQuery<BucketAdL
 
 meteorPublish(PubSub.bucketAdLibActions, function (selector: MongoQuery<BucketAdLibAction>, _token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<BucketAdLib> = {
+	const modifier: FindOptions<BucketAdLibAction> = {
 		fields: {},
 	}
-	if (typeof selector.bucketId === 'string' && BucketSecurity.allowReadAccess(this, selector.bucketId)) {
+	if (isProtectedString(selector.bucketId) && BucketSecurity.allowReadAccess(this, selector.bucketId)) {
 		return BucketAdLibActions.find(selector, modifier)
 	}
 	return null

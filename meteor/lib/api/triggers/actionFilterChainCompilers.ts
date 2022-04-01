@@ -8,7 +8,6 @@ import {
 	ITranslatableMessage,
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
-import { Mongo } from 'meteor/mongo'
 import { AdLibAction, AdLibActions } from '../../collections/AdLibActions'
 import { AdLibPiece, AdLibPieces } from '../../collections/AdLibPieces'
 import { DBPart, PartId, Parts } from '../../collections/Parts'
@@ -552,16 +551,14 @@ export function compileAdLibFilter(
 				}
 			}
 
-			if (!skip) {
+			if (!skip && currentRundownId) {
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === true)
 					rundownBaselineAdLibItems = RundownBaselineAdLibPieces.find(
 						{
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
-							...{
-								rundownId: currentRundownId,
-							},
-						} as Mongo.QueryWithModifiers<RundownBaselineAdLibItem>,
+							rundownId: currentRundownId,
+						} as MongoSelector<RundownBaselineAdLibItem>,
 						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, 'rundownBaselineAdLibItem'))
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === false)
@@ -569,10 +566,8 @@ export function compileAdLibFilter(
 						{
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
-							...{
-								rundownId: currentRundownId,
-							},
-						} as Mongo.QueryWithModifiers<AdLibPiece>,
+							rundownId: currentRundownId,
+						} as MongoSelector<AdLibPiece>,
 						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, 'adLibPiece'))
 			}
@@ -592,16 +587,14 @@ export function compileAdLibFilter(
 				}
 			}
 
-			if (!skip) {
+			if (!skip && currentRundownId) {
 				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === true)
 					rundownBaselineAdLibActions = RundownBaselineAdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
-							...{
-								rundownId: currentRundownId,
-							},
-						} as Mongo.QueryWithModifiers<RundownBaselineAdLibAction>,
+							rundownId: currentRundownId,
+						} as MongoSelector<RundownBaselineAdLibAction>,
 						adLibActionTypeFilter.options
 					).map((item) => wrapRundownBaselineAdLibAction(item, 'rundownBaselineAdLibAction'))
 				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === false)
@@ -609,10 +602,8 @@ export function compileAdLibFilter(
 						{
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
-							...{
-								rundownId: currentRundownId,
-							},
-						} as Mongo.QueryWithModifiers<AdLibAction>,
+							rundownId: currentRundownId,
+						} as MongoSelector<AdLibAction>,
 						adLibActionTypeFilter.options
 					).map((item) => wrapAdLibAction(item, 'adLibAction'))
 			}

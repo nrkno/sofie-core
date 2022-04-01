@@ -38,7 +38,7 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
 
 		if (newHash !== obj[hashName]) {
 			logger.debug('Updating hash:', id, hashName + ':', newHash)
-			const update = {}
+			const update: Partial<DBInterface> = {}
 			update[hashName] = newHash
 			collection.update(id, { $set: update })
 		}
@@ -113,6 +113,13 @@ export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<a
 	name: CollectionName
 ): AsyncMongoCollection<DBInterface> {
 	return new WrappedAsyncMongoCollection<DBInterface>(collection as any, name)
+}
+
+export function createInMemoryMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
+	name: string
+): TransformedCollection<DBInterface, DBInterface> {
+	const collection = new Mongo.Collection(null)
+	return new WrappedTransformedCollection<DBInterface>(collection as any, name)
 }
 
 class WrappedTransformedCollection<DBInterface extends { _id: ProtectedString<any> }>
