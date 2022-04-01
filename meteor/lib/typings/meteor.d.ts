@@ -41,7 +41,7 @@ export interface FindOneOptions<DBInterface> {
 	skip?: number
 	fields?: MongoFieldSpecifier<DBInterface>
 	reactive?: boolean
-	transform?: Function
+	// transform?: Function
 }
 export interface FindOptions<DBInterface> extends FindOneOptions<DBInterface> {
 	limit?: number
