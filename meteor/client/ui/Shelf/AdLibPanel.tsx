@@ -132,7 +132,6 @@ function actionToAdLibPieceUi(
 		nextPieceTags: action.display.nextPieceTags,
 		uniquenessId: action.display.uniquenessId,
 		lifespan: PieceLifespan.WithinPart, // value doesn't matter
-		noHotKey: action.display.noHotKey,
 		expectedPackages: action.expectedPackages,
 	})
 }
@@ -421,7 +420,6 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 									outputLayerId: '',
 									_rank: 0,
 									content: {},
-									noHotKey: false,
 								})
 							)
 					)
@@ -500,7 +498,6 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 								outputLayerId: '',
 								_rank: 0,
 								content: {},
-								noHotKey: false,
 							})
 						)
 				},
