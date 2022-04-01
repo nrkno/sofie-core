@@ -19,7 +19,6 @@ import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../Rundo
 import { Studio } from '../../../lib/collections/Studios'
 import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
 import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
-import { getElementWidth } from '../../utils/dimensions'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
@@ -93,8 +92,6 @@ interface ISourceLayerItemState {
 	cursorRawPosition: { clientX: number; clientY: number }
 	/** Timecode under cursor */
 	cursorTimePosition: number
-	/** Width of the element (px) excluding padding  */
-	elementWidth: number
 	/** A reference to this element (&self) */
 	itemElement: HTMLDivElement | null
 	/** Width of the child element anchored to the left side of this element */
@@ -106,9 +103,6 @@ interface ISourceLayerItemState {
 }
 export const SourceLayerItem = withTranslation()(
 	class SourceLayerItem extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
-		private _resizeObserver: ResizeObserver | undefined
-		private itemElement: HTMLDivElement | undefined
-
 		constructor(props) {
 			super(props)
 			this.state = {
@@ -126,7 +120,6 @@ export const SourceLayerItem = withTranslation()(
 					clientY: 0,
 				},
 				cursorTimePosition: 0,
-				elementWidth: 0,
 				itemElement: null,
 				leftAnchoredWidth: 0,
 				rightAnchoredWidth: 0,
@@ -138,18 +131,16 @@ export const SourceLayerItem = withTranslation()(
 			this.setState({
 				itemElement: e,
 			})
-			this.itemElement = e
 		}
 
 		convertTimeToPixels = (time: number) => {
 			return Math.round(this.props.timeScale * time)
 		}
 
-		getSourceDurationLabelAlignment = (): SourceDurationLabelAlignment => {
+		private getSourceDurationLabelAlignment = (): SourceDurationLabelAlignment => {
 			if (this.props.part && this.props.partStartsAt !== undefined && !this.props.isLiveLine) {
-				return this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth - 10
-					? 'left'
-					: 'right'
+				const elementWidth = this.getElementAbsoluteWidth()
+				return this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > elementWidth - 10 ? 'left' : 'right'
 			}
 			return 'right'
 		}
@@ -424,45 +415,6 @@ export const SourceLayerItem = withTranslation()(
 		// 	}
 		// }
 
-		private measureElement = () => {
-			if (!this.itemElement) return
-			const width = getElementWidth(this.itemElement) || 0
-			if (this.state.elementWidth !== width) {
-				this.setState({
-					elementWidth: width,
-				})
-			}
-		}
-
-		private onResize = (entries: ResizeObserverEntry[]) => {
-			const firstEntry = entries && entries[0]
-
-			if (firstEntry && firstEntry.contentRect && firstEntry.contentRect.width) {
-				const width = firstEntry.contentRect!.width
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
-			}
-		}
-
-		private mountResizeObserver() {
-			if (this.props.isLiveLine && !this._resizeObserver && this.itemElement) {
-				this._resizeObserver = new ResizeObserver(this.onResize)
-				this._resizeObserver.observe(this.itemElement)
-
-				this.measureElement()
-			}
-		}
-
-		private unmountResizeObserver() {
-			if (this._resizeObserver) {
-				this._resizeObserver.disconnect()
-				this._resizeObserver = undefined
-			}
-		}
-
 		private highlightTimeout: NodeJS.Timer
 
 		private onHighlight = (e: HighlightEvent) => {
@@ -480,11 +432,6 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		componentDidMount() {
-			if (this.props.isLiveLine) {
-				this.mountResizeObserver()
-			} else if (this.itemElement) {
-				this.measureElement()
-			}
 			RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		}
 
@@ -508,14 +455,6 @@ export const SourceLayerItem = withTranslation()(
 						})
 					}
 				}
-			}
-
-			if (this.props.isLiveLine && this.state.itemElement && !this._resizeObserver) {
-				this.mountResizeObserver()
-			} else if (!this.props.isLiveLine && this._resizeObserver) {
-				this.unmountResizeObserver()
-			} else if (!this.props.isLiveLine) {
-				this.measureElement()
 			}
 		}
 
