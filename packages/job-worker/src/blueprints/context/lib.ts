@@ -235,7 +235,6 @@ export function convertAdLibPieceToBlueprints(adLib: AdLibPiece): IBlueprintAdLi
 		nextPieceTags: clone(adLib.nextPieceTags),
 		uniquenessId: adLib.uniquenessId,
 		invertOnAirState: adLib.invertOnAirState,
-		noHotKey: adLib.noHotKey,
 	}
 
 	return obj

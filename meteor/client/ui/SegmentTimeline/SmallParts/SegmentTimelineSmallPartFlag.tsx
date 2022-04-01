@@ -46,7 +46,7 @@ export const SegmentTimelineSmallPartFlag = ({
 	isLastSegment: boolean
 	isLastInSegment: boolean
 	timelineWidth: number
-	showDurationSourceLayers?: Set<string>
+	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }) => {
 	const flagRef = useRef<HTMLDivElement>(null)
 

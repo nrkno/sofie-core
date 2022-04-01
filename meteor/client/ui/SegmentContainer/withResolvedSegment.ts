@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import {
 	RundownPlaylist,
 	RundownPlaylistCollectionUtil,
@@ -90,9 +90,8 @@ export interface IProps {
 	rundownViewLayout: RundownViewLayout | undefined
 	countdownToSegmentRequireLayers: string[] | undefined
 	fixedSegmentDuration: boolean | undefined
-	minishelfRegisterHotkeys?: boolean
 	studioMode: boolean
-	showDurationSourceLayers?: Set<string>
+	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
 
 export interface ITrackedProps {
@@ -325,12 +324,25 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				!_.isEqual(props.countdownToSegmentRequireLayers, nextProps.countdownToSegmentRequireLayers) ||
 				props.rundownViewLayout !== nextProps.rundownViewLayout ||
 				props.fixedSegmentDuration !== nextProps.fixedSegmentDuration ||
-				props.minishelfRegisterHotkeys !== nextProps.minishelfRegisterHotkeys ||
-				!_.isEqual(props.adLibSegmentUi?.pieces, nextProps.adLibSegmentUi?.pieces)
+				!_.isEqual(props.adLibSegmentUi?.pieces, nextProps.adLibSegmentUi?.pieces) ||
+				props.adLibSegmentUi?.showShelf !== nextProps.adLibSegmentUi?.showShelf
 			) {
 				return true
 			}
-
+			// Check RundownViewLayout changes that are important to the segment
+			if (
+				!_.isEqual(
+					props.rundownViewLayout?.visibleSourceLayers,
+					nextProps.rundownViewLayout?.visibleSourceLayers
+				) ||
+				!_.isEqual(
+					props.rundownViewLayout?.visibleOutputLayers,
+					nextProps.rundownViewLayout?.visibleOutputLayers
+				) ||
+				!_.isEqual(props.rundownViewLayout?.liveLineProps, nextProps.rundownViewLayout?.liveLineProps)
+			) {
+				return true
+			}
 			const findNextOrCurrentPart = (parts: PartUi[]) => {
 				return (
 					parts.find(
@@ -353,7 +365,8 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 						nextProps.playlist.nextSegmentId === props.segmentId)) ||
 				((props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
 					props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId) &&
-					((data.parts && findNextOrCurrentPart(data.parts)) || data.segmentui?.showShelf)) ||
+					data.parts &&
+					findNextOrCurrentPart(data.parts)) ||
 				props.playlist.holdState !== nextProps.playlist.holdState ||
 				props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
 				props.playlist.activationId !== nextProps.playlist.activationId ||

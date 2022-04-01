@@ -39,9 +39,9 @@ export interface ICustomLayerItemProps {
 	getItemLabelOffsetLeft?: () => React.CSSProperties
 	getItemLabelOffsetRight?: () => React.CSSProperties
 	getItemDuration?: (returnInfinite?: boolean) => number
-	setAnchoredElsWidths?: (rightAnchoredWidth: number, leftAnchoredWidth: number) => void
+	setAnchoredElsWidths?: (leftAnchoredWidth: number, rightAnchoredWidth: number) => void
 	getSourceDurationLabelAlignment?: () => SourceDurationLabelAlignment
-	showDurationSourceLayers?: Set<string>
+	showDuration?: boolean
 }
 export interface ISourceLayerItemState {}
 
@@ -205,7 +205,7 @@ export class CustomLayerItemRenderer<
 		const innerPiece = uiPiece.instance.piece
 		const content = innerPiece.content
 		const duration = content && content.sourceDuration
-		if (duration && this.props.showDurationSourceLayers?.has(innerPiece.sourceLayerId)) {
+		if (duration && this.props.showDuration) {
 			return (
 				<span className="segment-timeline__piece__label__duration">{`(${RundownUtils.formatDiffToTimecode(
 					duration,
