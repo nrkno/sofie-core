@@ -2243,14 +2243,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		queueNextMinishelfAdLib = (e: any) => {
-			this.queueMinishelfAdLib(e, true)
-		}
-
-		queuePrevMinishelfAdLib = (e: any) => {
-			this.queueMinishelfAdLib(e, false)
-		}
-
 		renderSegments() {
 			if (!this.props.matchedSegments) {
 				return null
