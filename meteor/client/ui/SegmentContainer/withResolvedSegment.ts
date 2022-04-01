@@ -90,7 +90,6 @@ export interface IProps {
 	rundownViewLayout: RundownViewLayout | undefined
 	countdownToSegmentRequireLayers: string[] | undefined
 	fixedSegmentDuration: boolean | undefined
-	minishelfRegisterHotkeys?: boolean
 	studioMode: boolean
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
@@ -325,7 +324,6 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				!_.isEqual(props.countdownToSegmentRequireLayers, nextProps.countdownToSegmentRequireLayers) ||
 				props.rundownViewLayout !== nextProps.rundownViewLayout ||
 				props.fixedSegmentDuration !== nextProps.fixedSegmentDuration ||
-				props.minishelfRegisterHotkeys !== nextProps.minishelfRegisterHotkeys ||
 				!_.isEqual(props.adLibSegmentUi?.pieces, nextProps.adLibSegmentUi?.pieces) ||
 				props.adLibSegmentUi?.showShelf !== nextProps.adLibSegmentUi?.showShelf
 			) {

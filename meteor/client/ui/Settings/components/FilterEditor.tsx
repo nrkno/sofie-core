@@ -354,19 +354,6 @@ export default withTranslation()(
 						<React.Fragment>
 							<div className="mod mvs mhs">
 								<label className="field">
-									{t('Register Shortcuts for this Panel')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.assignHotKeys`}
-										obj={item}
-										type="checkbox"
-										collection={RundownLayouts}
-										className="mod mas"
-									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
 									{t('Hide Panel from view')}
 									<EditAttribute
 										modifiedClassName="bghl"
@@ -675,23 +662,6 @@ export default withTranslation()(
 						</label>
 					</div>
 					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
-					{isDashboardLayout && (
-						<React.Fragment>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Register Shortcuts for this Panel')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`filters.${index}.assignHotKeys`}
-										obj={item}
-										type="checkbox"
-										collection={RundownLayouts}
-										className="mod mas"
-									/>
-								</label>
-							</div>
-						</React.Fragment>
-					)}
 				</React.Fragment>
 			)
 		}

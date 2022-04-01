@@ -2338,12 +2338,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				)
 			})
 		}
-		minishelfRegisterHotkeys() {
-			const filter = this.state.miniShelfLayout?.filters[0]
-			if (!filter || !RundownLayoutsAPI.isDashboardLayoutFilter(filter)) return false
-
-			return !!filter.assignHotKeys
-		}
 
 		renderSegmentComponent(
 			segment: DBSegment,
@@ -2424,7 +2418,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
 					fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
 					adLibSegmentUi={this.state.uiSegmentMap.get(segment._id)}
-					minishelfRegisterHotkeys={this.minishelfRegisterHotkeys()}
 					studioMode={this.state.studioMode}
 					showDurationSourceLayers={showDurationSourceLayers}
 				/>

@@ -749,7 +749,6 @@ export const SegmentTimelineContainer = withResolvedSegment(
 							adLibSegmentUi={this.props.adLibSegmentUi}
 							hotkeyGroup={unprotectString(this.props.segmentui._id) + '_RundownViewShelf'}
 							studioMode={this.props.studioMode}
-							registerHotkeys={this.props.minishelfRegisterHotkeys}
 						/>
 					)}
 				</React.Fragment>

@@ -311,7 +311,6 @@ export type DashboardLayoutFilter = DashboardPanel<
 		buttonHeightScale: number
 
 		includeClearInRundownBaseline: boolean
-		assignHotKeys: boolean
 		overflowHorizontally?: boolean
 		showAsTimeline?: boolean
 		hide?: boolean
@@ -327,8 +326,6 @@ export type DashboardLayoutFilter = DashboardPanel<
 export interface MiniShelfLayoutFilter extends RundownLayoutFilterBase {
 	buttonWidthScale: number
 	buttonHeightScale: number
-
-	assignHotKeys: boolean
 }
 
 export interface RundownLayoutBase {
