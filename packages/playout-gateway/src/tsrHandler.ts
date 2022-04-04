@@ -836,7 +836,7 @@ export class TSRHandler {
 				// because then the tsr is also logging debug messages from the devices.
 
 				if (device.debugLogging && !this._coreHandler.logDebug) {
-					this.logger.info('debug: ' + fixError(e), ...args)
+					this.logger.debug(fixError(e), ...args)
 				}
 			})
 
