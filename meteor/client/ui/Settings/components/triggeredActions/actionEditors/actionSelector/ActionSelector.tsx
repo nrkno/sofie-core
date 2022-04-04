@@ -168,7 +168,7 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 		case ClientActions.showEntireCurrentSegment:
 			return t('Show entire On Air Segment')
 		case ClientActions.miniShelfQueueAdLib:
-			return t('MiniShelf queue AdLib')
+			return t('Queue AdLib from Minishelf')
 		default:
 			assertNever(action)
 			return action
