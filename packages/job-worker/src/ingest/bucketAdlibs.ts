@@ -105,10 +105,8 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 			identifier: `studioId=${context.studioId},showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
 			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT
 		},
-		studio,
-		context.getStudioBlueprintConfig(),
+		context,
 		showStyle,
-		context.getShowStyleBlueprintConfig(showStyle),
 		watchedPackages
 	)
 

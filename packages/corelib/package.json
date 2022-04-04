@@ -41,7 +41,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "npm:@tv2media/blueprints-integration@1.41.0",
+		"@sofie-automation/blueprints-integration": "npm:@tv2media/blueprints-integration@1.41.2",
 		"fast-clone": "^1.5.13",
 		"i18next": "^19.9.2",
 		"influx": "^5.9.2",

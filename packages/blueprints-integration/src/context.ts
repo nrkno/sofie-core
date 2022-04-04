@@ -2,16 +2,16 @@ import { Time } from './common'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import { PackageInfo } from './packageInfo'
 import {
+	IBlueprintMutatablePart,
 	IBlueprintPart,
 	IBlueprintPartInstance,
 	IBlueprintPiece,
+	IBlueprintPieceDB,
 	IBlueprintPieceInstance,
 	IBlueprintResolvedPieceInstance,
-	IBlueprintMutatablePart,
-	IBlueprintSegmentDB,
-	IBlueprintPieceDB,
-	IBlueprintSegmentRundown,
 	IBlueprintRundownPlaylist,
+	IBlueprintSegmentDB,
+	IBlueprintSegmentRundown,
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { OnGenerateTimelineObj } from './timeline'
@@ -102,7 +102,7 @@ export interface IPackageInfoContext {
 	 * eg, baseline packages can be accessed when generating the baseline objects, piece/adlib packages can be access when regenerating the segment they are from
 	 */
 	getPackageInfo: (packageId: string) => Readonly<PackageInfo.Any[]>
-	// hackGetMediaObjectDuration: (mediaId: string) => number | undefined // TODOSYNC: rework this, or remove it
+	hackGetMediaObjectDuration: (mediaId: string) => Promise<number | undefined>
 }
 
 export interface IStudioBaselineContext extends IStudioContext, IPackageInfoContext {}

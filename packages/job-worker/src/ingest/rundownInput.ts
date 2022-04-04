@@ -1,19 +1,4 @@
 import { PeripheralDeviceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import {
-	IngestRegenerateRundownProps,
-	IngestRegenerateSegmentProps,
-	IngestRemovePartProps,
-	IngestRemoveRundownProps,
-	IngestRemoveSegmentProps,
-	IngestUpdatePartProps,
-	IngestUpdateRundownMetaDataProps,
-	IngestUpdateRundownProps,
-	IngestUpdateSegmentProps,
-	IngestUpdateSegmentRanksProps,
-	RemoveOrphanedSegmentsProps,
-	UserRemoveRundownProps,
-	UserUnsyncRundownProps,
-} from '@sofie-automation/corelib/dist/worker/ingest'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
@@ -40,6 +25,22 @@ import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import {
+	IngestRegenerateRundownProps,
+	IngestRegenerateSegmentProps,
+	IngestReloadSegmentProps,
+	IngestRemovePartProps,
+	IngestRemoveRundownProps,
+	IngestRemoveSegmentProps,
+	IngestUpdatePartProps,
+	IngestUpdateRundownMetaDataProps,
+	IngestUpdateRundownProps,
+	IngestUpdateSegmentProps,
+	IngestUpdateSegmentRanksProps,
+	RemoveOrphanedSegmentsProps,
+	UserRemoveRundownProps,
+	UserUnsyncRundownProps,
+} from '@sofie-automation/corelib/dist/worker/ingest'
 
 export async function handleRemovedRundown(context: JobContext, data: IngestRemoveRundownProps): Promise<void> {
 	return runIngestJob(
@@ -379,6 +380,24 @@ export async function handleUpdatedSegment(context: JobContext, data: IngestUpda
 			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segmentExternalId)
 			if (!ingestSegment) throw new Error(`IngestSegment "${segmentExternalId}" is missing!`)
 			return updateSegmentFromIngestData(context, cache, ingestSegment, data.isCreateAction)
+		}
+	)
+}
+
+export async function handleReloadSegment(context: JobContext, data: IngestReloadSegmentProps): Promise<void> {
+	return runIngestJob(
+		context,
+		data,
+		(rundown) => {
+			if (!rundown) {
+				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
+			}
+			return rundown
+		},
+		async (context, cache, ingestRundown) => {
+			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === data.segmentExternalId)
+			if (!ingestSegment) throw new Error(`IngestSegment "${data.segmentExternalId}" is missing!`)
+			return updateSegmentFromIngestData(context, cache, ingestSegment, false)
 		}
 	)
 }

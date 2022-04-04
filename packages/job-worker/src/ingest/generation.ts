@@ -128,10 +128,8 @@ export async function calculateSegmentsFromIngestData(
 					// This isn't much entropy, blueprints may want to add more for each Part they generate
 					identifier: `rundownId=${rundown._id}`,
 				},
-				context.studio,
-				context.getStudioBlueprintConfig(),
+				context,
 				showStyle,
-				context.getShowStyleBlueprintConfig(showStyle),
 				rundown,
 				watchedPackages
 			)
@@ -606,10 +604,8 @@ export async function getRundownFromIngestData(
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			identifier: `showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
 		},
-		context.studio,
-		context.getStudioBlueprintConfig(),
+		context,
 		showStyle.compound,
-		context.getShowStyleBlueprintConfig(showStyle.compound),
 		rundownBaselinePackages,
 		async () => {
 			// Note: This can cause a mild race-condition, in the case of two Rundowns being created at the same time.

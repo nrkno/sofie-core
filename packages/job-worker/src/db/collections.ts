@@ -38,6 +38,7 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
+import { MediaObjects } from '@sofie-automation/corelib/dist/dataModel/MediaObjects'
 
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
@@ -90,6 +91,8 @@ export interface IDirectCollections {
 	PackageInfos: ICollection<PackageInfoDB>
 
 	ExternalMessageQueue: ICollection<ExternalMessageQueueObj>
+
+	MediaObjects: ICollection<MediaObjects>
 }
 
 export function getMongoCollections(client: MongoClient, dbName: string): Readonly<IDirectCollections> {
@@ -129,6 +132,8 @@ export function getMongoCollections(client: MongoClient, dbName: string): Readon
 			PackageInfos: wrapMongoCollection(database.collection(CollectionName.PackageInfos)),
 
 			ExternalMessageQueue: wrapMongoCollection(database.collection(CollectionName.ExternalMessageQueue)),
+
+			MediaObjects: wrapMongoCollection(database.collection(CollectionName.MediaObjects)),
 		})
 	)
 	return collections

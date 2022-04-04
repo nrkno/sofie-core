@@ -163,23 +163,40 @@ export class StudioContext extends CommonContext implements IStudioContext {
 }
 
 export class StudioBaselineContext extends StudioContext implements IStudioBaselineContext {
+	private readonly jobContext: JobContext
+
 	constructor(
 		contextInfo: UserContextInfo,
+		context: JobContext,
 		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprintConfig: ProcessedStudioConfig,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, studio, studioBlueprintConfig)
+		super(contextInfo, studio, context.getStudioBlueprintConfig())
+		this.jobContext = context
 	}
 
 	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
 
-	// hackGetMediaObjectDuration(mediaId: string): number | undefined {
-	// 	return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
-	// 		?.mediainfo?.format?.duration
-	// }
+	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
+		return getMediaObjectDuration(this.jobContext, mediaId, this.studioId)
+	}
+}
+
+export async function getMediaObjectDuration(
+	context: JobContext,
+	mediaId: string,
+	studioId: string
+): Promise<number | undefined> {
+	return context.directCollections.MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId }).then(
+		(result) => {
+			if (result === undefined) {
+				return undefined
+			}
+			return result.mediainfo?.format?.duration
+		}
+	)
 }
 
 export class StudioUserContext extends StudioContext implements IStudioUserContext {
@@ -242,18 +259,25 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 export class ShowStyleUserContext extends ShowStyleContext implements IShowStyleUserContext {
 	public readonly notes: INoteBase[] = []
+
 	private readonly tempSendNotesIntoBlackHole: boolean
+	protected readonly jobContext: JobContext
 
 	constructor(
 		contextInfo: UserContextInfo,
-		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprintConfig: ProcessedStudioConfig,
+		context: JobContext,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig)
+		super(
+			contextInfo,
+			context.studio,
+			context.getStudioBlueprintConfig(),
+			showStyleCompound,
+			context.getShowStyleBlueprintConfig(showStyleCompound)
+		)
 		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
+		this.jobContext = context
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }): void {
@@ -301,25 +325,23 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
 
-	// hackGetMediaObjectDuration(mediaId: string): number | undefined {
-	// 	return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
-	// 		?.mediainfo?.format?.duration
-	// }
+	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
+		return getMediaObjectDuration(this.jobContext, mediaId, this.studioId)
+	}
 }
 export class GetRundownContext extends ShowStyleUserContext implements IGetRundownContext {
 	private cachedPlaylistsInStudio: Promise<Readonly<IBlueprintRundownPlaylist>[]> | undefined
+
 	constructor(
 		contextInfo: UserContextInfo,
-		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprintConfig: ProcessedStudioConfig,
+		context: JobContext,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		watchedPackages: WatchedPackagesHelper,
 		private getPlaylistsInStudio: () => Promise<DBRundownPlaylist[]>,
 		private getRundownsInStudio: () => Promise<Pick<Rundown, '_id' | 'playlistId'>[]>,
 		private getExistingRundown: () => Promise<ReadonlyObjectDeep<Rundown> | undefined>
 	) {
-		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig, watchedPackages)
+		super(contextInfo, context, showStyleCompound, watchedPackages)
 	}
 	private async _getPlaylistsInStudio() {
 		if (!this.cachedPlaylistsInStudio) {
@@ -457,16 +479,24 @@ export interface RawPartNote extends INoteBase {
 export class SegmentUserContext extends RundownContext implements ISegmentUserContext {
 	public readonly notes: RawPartNote[] = []
 
+	private readonly jobContext: JobContext
+
 	constructor(
 		contextInfo: ContextInfo,
-		studio: ReadonlyDeep<DBStudio>,
-		studioBlueprintConfig: ProcessedStudioConfig,
+		context: JobContext,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
-		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: ReadonlyDeep<DBRundown>,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, studio, studioBlueprintConfig, showStyleCompound, showStyleBlueprintConfig, rundown)
+		super(
+			contextInfo,
+			context.studio,
+			context.getStudioBlueprintConfig(),
+			showStyleCompound,
+			context.getShowStyleBlueprintConfig(showStyleCompound),
+			rundown
+		)
+		this.jobContext = context
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
@@ -505,10 +535,9 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
 
-	// hackGetMediaObjectDuration(mediaId: string): number | undefined {
-	// 	return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
-	// 		?.mediainfo?.format?.duration
-	// }
+	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
+		return getMediaObjectDuration(this.jobContext, mediaId, this.studioId)
+	}
 }
 
 // /** Events */

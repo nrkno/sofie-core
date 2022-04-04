@@ -1,15 +1,19 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { literal } from '../../../lib/lib'
-import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
+import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { lazyIgnore, literal } from '../../../lib/lib'
+import { IngestPart, IngestPlaylist, IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { Segments } from '../../../lib/collections/Segments'
+import { SegmentId, Segments } from '../../../lib/collections/Segments'
 import { RundownIngestDataCache } from './ingestCache'
-import { fetchStudioIdFromDevice, checkAccessAndGetPeripheralDevice, runIngestOperation } from './lib'
+import { checkAccessAndGetPeripheralDevice, fetchStudioIdFromDevice, runIngestOperation } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
+import { Parts } from '../../../lib/collections/Parts'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace RundownInput {
 	export async function dataPlaylistGet(
@@ -357,71 +361,48 @@ async function listIngestRundowns(peripheralDevice: PeripheralDevice): Promise<s
 	return rundowns.map((r) => r.externalId)
 }
 
-// This hack is temporarily disabled for now, we'll either replace it with the packagesInfo data flow, or re-enable it with a few more hacks to go with it
 // hackGetMediaObjectDuration stuff
-// Meteor.startup(() => {
-// 	if (Meteor.isServer) {
-// 		MediaObjects.find({}, { fields: { _id: 1, mediaId: 1, mediainfo: 1 } }).observe({
-// 			added: onMediaObjectChanged,
-// 			changed: onMediaObjectChanged,
-// 		})
-// 	}
-// })
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		MediaObjects.find({}, { fields: { _id: 1, mediaId: 1, mediainfo: 1 } }).observe({
+			added: onMediaObjectChanged,
+			changed: onMediaObjectChanged,
+		})
+	}
+})
 
-// function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObject) {
-// 	if (
-// 		!oldDocument ||
-// 		(newDocument.mediainfo?.format?.duration &&
-// 			oldDocument.mediainfo?.format?.duration !== newDocument.mediainfo.format.duration)
-// 	) {
-// 		const segmentsToUpdate = new Map<SegmentId, RundownId>()
-// 		const rundownIdsInStudio = Rundowns.find({ studio: newDocument.studioId }, { fields: { _id: 1 } })
-// 			.fetch()
-// 			.map((rundown) => rundown._id)
-// 		Parts.find({
-// 			rundownId: { $in: rundownIdsInStudio },
-// 			'hackListenToMediaObjectUpdates.mediaId': newDocument.mediaId,
-// 		}).forEach((part) => {
-// 			segmentsToUpdate.set(part.segmentId, part.rundownId)
-// 		})
-// 		segmentsToUpdate.forEach((rundownId, segmentId) => {
-// 			lazyIgnore(
-// 				`updateSegmentFromMediaObject_${segmentId}`,
-// 				async () => updateSegmentFromCache(rundownId, segmentId),
-// 				200
-// 			)
-// 		})
-// 	}
-// }
-// async function updateSegmentFromCache(rundownId: RundownId, segmentId: SegmentId) {
-// 	const rundown = Rundowns.findOne({ _id: rundownId })
-// 	if (!rundown) throw new Meteor.Error(`Could not find rundown ${rundownId} in updateSegmentFromCache`)
+function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObject) {
+	if (
+		!oldDocument ||
+		(newDocument.mediainfo?.format?.duration &&
+			oldDocument.mediainfo?.format?.duration !== newDocument.mediainfo.format.duration)
+	) {
+		const segmentsToUpdate = new Map<SegmentId, RundownId>()
+		const rundownIdsInStudio = Rundowns.find({ studio: newDocument.studioId }, { fields: { _id: 1 } })
+			.fetch()
+			.map((rundown) => rundown._id)
+		Parts.find({
+			rundownId: { $in: rundownIdsInStudio },
+			'hackListenToMediaObjectUpdates.mediaId': newDocument.mediaId,
+		}).forEach((part) => {
+			segmentsToUpdate.set(part.segmentId, part.rundownId)
+		})
+		segmentsToUpdate.forEach((rundownId, segmentId) => {
+			lazyIgnore(
+				`updateSegmentFromMediaObject_${segmentId}`,
+				async () => updateSegmentFromCache(newDocument.studioId, rundownId, segmentId),
+				200
+			)
+		})
+	}
+}
+async function updateSegmentFromCache(studioId: StudioId, rundownId: RundownId, segmentId: SegmentId) {
+	const rundown = Rundowns.findOne({ _id: rundownId })
+	if (!rundown) throw new Meteor.Error(`Could not find rundown ${rundownId} in updateSegmentFromCache`)
 
-// 	return runIngestOperationWithCache(
-// 		'updateSegmentFromCache',
-// 		rundown.studioId,
-// 		rundown.externalId,
-// 		(ingestRundown) => {
-// 			if (!ingestRundown) {
-// 				throw new Meteor.Error(
-// 					404,
-// 					`Rundown "${rundown.externalId}" does not have a Segment "${segmentId}" to update`
-// 				)
-// 			}
-// 			return ingestRundown
-// 		},
-// 		async (cache, ingestRundown) => {
-// 			const segment = cache.Segments.findOne({ _id: segmentId })
-// 			if (!segment) {
-// 				throw new Meteor.Error(
-// 					404,
-// 					`Rundown "${rundown.externalId}" does not have a Segment "${segmentId}" to update`
-// 				)
-// 			}
-
-// 			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segment.externalId)
-// 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segment.externalId}" is missing!`)
-// 			return updateSegmentFromIngestData(cache, ingestSegment, false)
-// 		}
-// 	)
-// }
+	await runIngestOperation(studioId, IngestJobs.ReloadSegment, {
+		segmentExternalId: unprotectString(segmentId),
+		rundownExternalId: rundown.externalId,
+		peripheralDeviceId: null,
+	})
+}

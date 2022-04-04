@@ -3119,10 +3119,10 @@
   version "0.0.0"
   uid ""
 
-"@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.41.0":
-  version "1.41.0"
-  resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.41.0.tgz#cbd487b86d92f116ed787f229ab4408940563e11"
-  integrity sha512-2m+2jI1bWUYfMXUlGzy7jzOpoQPiKM/O6RVgVy2d26vaid+8qKgNF/V81yclTKywle3BdItFAHqqrUdG97eCtg==
+"@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.41.2":
+  version "1.41.2"
+  resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.41.2.tgz#7c9552b59653180eb1bcbac784e8d3c7bbbaf46b"
+  integrity sha512-lZseNPtrKDKuAboQyEL5qypU3RkfdCTHPdXSQKQz53+8fcc/59AJPAwQWETnJbpuJ2wfOzBTDBFsMmVYady2cA==
   dependencies:
     moment "2.29.1"
     timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@1.0.0-release37"
@@ -3152,7 +3152,7 @@
 "@sofie-automation/corelib@link:corelib":
   version "1.41.0-in-development"
   dependencies:
-    "@sofie-automation/blueprints-integration" "npm:@tv2media/blueprints-integration@1.41.0"
+    "@sofie-automation/blueprints-integration" "npm:@tv2media/blueprints-integration@1.41.2"
     fast-clone "^1.5.13"
     i18next "^19.9.2"
     influx "^5.9.2"

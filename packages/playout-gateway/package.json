@@ -56,7 +56,7 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "npm:@tv2media/blueprints-integration@1.41.0",
+		"@sofie-automation/blueprints-integration": "npm:@tv2media/blueprints-integration@1.41.2",
 		"@sofie-automation/server-core-integration": "npm:@tv2media/server-core-integration@1.41.0",
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
