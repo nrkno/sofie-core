@@ -1178,10 +1178,15 @@ const HotkeyLegendSettings = withTranslation()(
 						>
 							<th className="settings-studio-custom-config-table__name c2">{hotkeyHelper.shortcutLabel(item.key)}</th>
 							<td className="settings-studio-custom-config-table__value c3">{item.label}</td>
-							<td className="settings-studio-custom-config-table__value c2">{item.platformKey || ''}</td>
-							<td className="settings-studio-custom-config-table__value c2">
-								{item.sourceLayerType !== undefined ? SourceLayerType[item.sourceLayerType] : ''}
-							</td>
+							{Settings.enableKeyboardPreview && (
+								<>
+									<td className="settings-studio-custom-config-table__value c2">{item.platformKey || ''}</td>
+									<td className="settings-studio-custom-config-table__value c2">
+										{item.sourceLayerType !== undefined ? SourceLayerType[item.sourceLayerType] : ''}
+									</td>
+								</>
+							)}
+
 							<td className="settings-studio-custom-config-table__actions table-item-actions c3">
 								<button className="action-btn" onClick={() => this.editItem(item)}>
 									<FontAwesomeIcon icon={faPencilAlt} />
