@@ -488,7 +488,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					Math.abs(
 						(this.props.piece.renderedInPoint || 0) +
 							(vtContent.sourceDuration - seek) -
-							(this.props.part.instance.part.expectedDuration || 0)
+							(this.props.partExpectedDuration || 0)
 					) > 500))
 		) {
 			const lastFreeze = this.state.freezes && this.state.freezes[this.state.freezes.length - 1]
