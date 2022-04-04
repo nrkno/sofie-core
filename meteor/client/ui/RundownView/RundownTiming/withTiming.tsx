@@ -126,10 +126,11 @@ export function withTiming<IProps, IState>(
 				return (
 					<WrappedComponent
 						{...this.props}
-						timingDurations={rundownTimingDataFromDataResolution(expandedOptions.dataResolution, {
+						timingDurations={rundownTimingDataFromDataResolution(
+							expandedOptions.dataResolution,
 							highResDurations,
-							lowResDurations,
-						})}
+							lowResDurations
+						)}
 					/>
 				)
 			}
@@ -164,12 +165,13 @@ function rundownTimingEventFromTickResolution(resolution: TimingTickResolution):
  */
 function rundownTimingDataFromDataResolution(
 	resolution: TimingDataResolution,
-	durations: { highResDurations: RundownTimingContext; lowResDurations: RundownTimingContext }
+	highResDurations: RundownTimingContext,
+	lowResDurations: RundownTimingContext
 ): RundownTimingContext {
 	switch (resolution) {
 		case TimingDataResolution.High:
-			return durations.highResDurations
+			return highResDurations
 		case TimingDataResolution.Synced:
-			return durations.lowResDurations
+			return lowResDurations
 	}
 }
