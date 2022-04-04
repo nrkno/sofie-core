@@ -10,19 +10,18 @@ import {
 	sleep,
 } from '../lib/lib'
 import { RandomMock } from './random'
-import {
-	UpsertOptions,
-	UpdateOptions,
-	FindOptions,
-	ObserveChangesCallbacks,
-	ObserveCallbacks,
-	FindOneOptions,
-} from '../lib/typings/meteor'
+import { FindOptions, FindOneOptions } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import type { AnyBulkWriteOperation } from 'mongodb'
-import { AsyncMongoCollection } from '../lib/collections/lib'
+import {
+	AsyncMongoCollection,
+	ObserveCallbacks,
+	ObserveChangesCallbacks,
+	UpdateOptions,
+	UpsertOptions,
+} from '../lib/collections/lib'
 const clone = require('fast-clone')
 
 export namespace MongoMock {

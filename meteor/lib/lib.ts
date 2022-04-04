@@ -5,6 +5,8 @@ import { ITranslatableMessage } from '@sofie-automation/corelib/dist/Translatabl
 import { Meteor } from 'meteor/meteor'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from './logging'
+import { MongoQuery } from './typings/meteor'
+import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
@@ -486,4 +488,8 @@ export enum LogLevel {
 	WARN = 'warn',
 	ERROR = 'error',
 	NONE = 'crit',
+}
+
+export function convertCorelibToMeteorMongoQuery<T>(query: CoreLibMongoQuery<T>): MongoQuery<T> {
+	return query as any
 }

@@ -52,6 +52,9 @@
 		"type-fest": "^2.11.1",
 		"underscore": "^1.13.2"
 	},
+	"peerDependencies": {
+		"mongodb": "^4.4.1"
+	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"husky": {
 		"hooks": {

@@ -13,7 +13,14 @@ import {
 } from '@sofie-automation/corelib/dist/playout/infinites'
 import { FindOptions, MongoQuery } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
-import { getCurrentTime, mongoWhereFilter, ProtectedString, protectString, unprotectString } from './lib'
+import {
+	convertCorelibToMeteorMongoQuery,
+	getCurrentTime,
+	mongoWhereFilter,
+	ProtectedString,
+	protectString,
+	unprotectString,
+} from './lib'
 import {
 	RundownPlaylist,
 	RundownPlaylistActivationId,
@@ -95,7 +102,7 @@ export function fetchPiecesThatMayBeActiveForPart(
 		// Fast-path: if we already have the pieces, we can use them directly:
 		piecesStartingInPart = mongoWhereFilter(allPieces, selector)
 	} else {
-		piecesStartingInPart = Pieces.find(selector).fetch()
+		piecesStartingInPart = Pieces.find(convertCorelibToMeteorMongoQuery(selector)).fetch()
 	}
 
 	const partsBeforeThisInSegment = Array.from(partsBeforeThisInSegmentSet.values())
@@ -112,7 +119,9 @@ export function fetchPiecesThatMayBeActiveForPart(
 		// Fast-path: if we already have the pieces, we can use them directly:
 		infinitePieces = infinitePieceQuery ? mongoWhereFilter(allPieces, infinitePieceQuery) : []
 	} else {
-		infinitePieces = infinitePieceQuery ? Pieces.find(infinitePieceQuery).fetch() : []
+		infinitePieces = infinitePieceQuery
+			? Pieces.find(convertCorelibToMeteorMongoQuery(infinitePieceQuery)).fetch()
+			: []
 	}
 
 	return piecesStartingInPart.concat(infinitePieces) // replace spread with concat, as 3x is faster (https://stackoverflow.com/questions/48865710/spread-operator-vs-array-concat)

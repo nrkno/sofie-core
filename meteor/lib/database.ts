@@ -1,7 +1,6 @@
-import { IndexSpecifier } from './typings/meteor'
 import { ProtectedString } from './lib'
 import { Meteor } from 'meteor/meteor'
-import { AsyncMongoCollection } from './collections/lib'
+import { AsyncMongoCollection, IndexSpecifier } from './collections/lib'
 
 interface CollectionsIndexes {
 	[collectionName: string]: CollectionIndexes<any>
