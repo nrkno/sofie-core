@@ -32,7 +32,7 @@ interface IListViewPropsHeader {
  * Applies a filter to an adLib to determine whether it matches filter criteria.
  * @param item AdLib to test against filter.
  * @param showStyleBase
- * @param uiSegments All segments to search for live segment.
+ * @param liveSegment The live segment.
  * @param filter Filter to match against.
  * @param searchFilter Text to try to match against adLib label.
  * @param uniquenessIds Set of uniquenessIds, for a given set only one adLib per uniquness Id will be matched by this filter.
@@ -53,7 +53,6 @@ export function matchFilter(
 			filter.currentSegment === true &&
 			item.partId &&
 			((liveSegment && liveSegment._id !== item.segmentId) || !liveSegment)
-			// TODOSYNC: NRK had checked liveSegment.parts.find((i) => item.partId === i.part._id) === undefined)
 		) {
 			return false
 		}

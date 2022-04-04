@@ -1,12 +1,13 @@
 import { BlueprintMapping, IBlueprintConfig, PackageContainer, TSR } from '@sofie-automation/blueprints-integration'
-import { ProtectedString, ProtectedStringProperties } from '../protectedString'
-import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId } from './Ids'
+import { ProtectedString } from '../protectedString'
+import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, PeripheralDeviceId } from './Ids'
 
 export interface MappingsExt {
 	[layerName: string]: MappingExt
 }
-// TODOSYNC: make deviceId be a known ProtectedString type
-export type MappingExt = ProtectedStringProperties<BlueprintMapping, 'deviceId'>
+export interface MappingExt extends Omit<BlueprintMapping, 'deviceId'> {
+	deviceId: PeripheralDeviceId
+}
 
 export interface IStudioSettings {
 	/** The framerate (frames per second) used to convert internal timing information (in milliseconds)
@@ -123,7 +124,6 @@ export enum StudioRouteBehavior {
 export enum StudioRouteType {
 	/** Default */
 	REROUTE = 0,
-	// TODOSYNC: What is the purpose of this?
 	/** Replace all properties with a new mapping */
 	REMAP = 1,
 }
