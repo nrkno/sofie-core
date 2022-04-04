@@ -28,6 +28,7 @@ import {
 	updateExpectedPackagesForBucketAdLibAction,
 } from './ingest/expectedPackages'
 import { ExpectedPackageDBType, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import { MongoQuery } from '../../lib/typings/meteor'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 
@@ -389,31 +390,46 @@ export namespace BucketsAPI {
 }
 /** Returns BucketAdlibActions that are grouped together with this adlib in the GUI */
 async function getGroupedAdlibActions(oldAdLib: BucketAdLibAction): Promise<BucketAdLibAction[]> {
-	return BucketAdLibActions.findFetchAsync({
+	const selector: MongoQuery<BucketAdLibAction> = {
 		bucketId: oldAdLib.bucketId,
 		studioId: oldAdLib.studioId,
-		$or: [
+	}
+	if (oldAdLib.uniquenessId) {
+		selector.$or = [
 			{
 				externalId: oldAdLib.externalId,
 			},
 			{
 				uniquenessId: oldAdLib.uniquenessId,
 			},
-		],
-	})
+		]
+	} else if (oldAdLib.externalId) {
+		selector.externalId = oldAdLib.externalId
+	} else {
+		return []
+	}
+
+	return BucketAdLibActions.findFetchAsync(selector)
 }
 /** Returns BucketAdlibs that are grouped together with this adlib in the GUI */
 async function getGroupedAdlibs(oldAdLib: BucketAdLib): Promise<BucketAdLib[]> {
-	return BucketAdLibs.findFetchAsync({
+	const selector: MongoQuery<BucketAdLib> = {
 		bucketId: oldAdLib.bucketId,
 		studioId: oldAdLib.studioId,
-		$or: [
+	}
+	if (oldAdLib.uniquenessId) {
+		selector.$or = [
 			{
 				externalId: oldAdLib.externalId,
 			},
 			{
 				uniquenessId: oldAdLib.uniquenessId,
 			},
-		],
-	})
+		]
+	} else if (oldAdLib.externalId) {
+		selector.externalId = oldAdLib.externalId
+	} else {
+		return []
+	}
+	return BucketAdLibs.findFetchAsync(selector)
 }
