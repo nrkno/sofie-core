@@ -245,6 +245,7 @@ export function convertAdLibActionToBlueprints(action: AdLibAction): IBlueprintA
 		actionId: action.actionId,
 		userData: clone(action.userData),
 		partId: unprotectString(action.partId),
+		allVariants: action.allVariants,
 		userDataManifest: clone(action.userDataManifest),
 		display: clone(action.display), // TODO - type mismatch
 		triggerModes: clone(action.triggerModes), // TODO - type mismatch

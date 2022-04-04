@@ -1,16 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-# lint meteor
-cd meteor
-
-if echo "$OSTYPE" | grep -E -q "msys|cygwin" ; then
-	# we're on a windows machine
-	meteor.bat yarn lint-staged
-else
-	meteor yarn lint-staged
-fi;
-
-# lint the packages
-cd ../packages
-yarn lerna run --concurrency 1 --stream precommit --exclude-dependents
+yarn --cwd packages lint-staged
