@@ -33,6 +33,7 @@ import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/Buck
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { logger } from '../logging'
 import { createShowStyleCompound } from '../showStyles'
+import { MongoQuery } from '../db'
 
 function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
 	return !!(adlib as IBlueprintActionManifest).actionId
@@ -357,32 +358,47 @@ export async function handleBucketPieceModify(context: JobContext, data: BucketP
 }
 /** Returns BucketAdlibActions that are grouped together with this adlib in the GUI */
 async function getGroupedAdlibActions(context: JobContext, oldAdLib: BucketAdLibAction): Promise<BucketAdLibAction[]> {
-	return context.directCollections.BucketAdLibActions.findFetch({
+	const selector: MongoQuery<BucketAdLibAction> = {
 		bucketId: oldAdLib.bucketId,
 		studioId: oldAdLib.studioId,
-		$or: [
+	}
+	if (oldAdLib.uniquenessId) {
+		selector.$or = [
 			{
 				externalId: oldAdLib.externalId,
 			},
 			{
 				uniquenessId: oldAdLib.uniquenessId,
 			},
-		],
-	})
+		]
+	} else if (oldAdLib.externalId) {
+		selector.externalId = oldAdLib.externalId
+	} else {
+		return []
+	}
+
+	return context.directCollections.BucketAdLibActions.findFetch(selector)
 }
 
 /** Returns BucketAdlibs that are grouped together with this adlib in the GUI */
 async function getGroupedAdlibs(context: JobContext, oldAdLib: BucketAdLib): Promise<BucketAdLib[]> {
-	return context.directCollections.BucketAdLibPieces.findFetch({
+	const selector: MongoQuery<BucketAdLib> = {
 		bucketId: oldAdLib.bucketId,
 		studioId: oldAdLib.studioId,
-		$or: [
+	}
+	if (oldAdLib.uniquenessId) {
+		selector.$or = [
 			{
 				externalId: oldAdLib.externalId,
 			},
 			{
 				uniquenessId: oldAdLib.uniquenessId,
 			},
-		],
-	})
+		]
+	} else if (oldAdLib.externalId) {
+		selector.externalId = oldAdLib.externalId
+	} else {
+		return []
+	}
+	return context.directCollections.BucketAdLibPieces.findFetch(selector)
 }
