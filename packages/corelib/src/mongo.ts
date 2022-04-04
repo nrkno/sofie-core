@@ -23,20 +23,16 @@ export interface FindOneOptions<TDoc> {
 	sort?: SortSpecifier<TDoc>
 	skip?: number
 	fields?: MongoFieldSpecifier<TDoc>
-	// reactive?: boolean
 }
 export interface FindOptions<TDoc> extends FindOneOptions<TDoc> {
 	limit?: number
 }
-/** Mongo Selector. Contains everything that can be sent into collection.find(selector) */
-export type MongoSelector<_TDoc> = any // Mongo.Selector<TDoc>
 /**
  * Subset of MongoSelector, only allows direct queries, not QueryWithModifiers such as $explain etc.
  * Used for simplified expressions (ie not using $and, $or etc..)
  * */
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
-export type MongoQueryKey<_TDoc> = any //RegExp | T | Mongo.FieldExpression<T> // Allowed properties in a Mongo.Query
 
 /** End of hacks */
 
