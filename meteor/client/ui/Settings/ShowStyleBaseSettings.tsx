@@ -51,6 +51,7 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { defaultColorPickerPalette } from '../../lib/colorPicker'
 import { UploadButton } from '../../lib/uploadButton'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
+import { Settings } from '../../../lib/Settings'
 
 interface IProps {
 	match: {
@@ -1223,47 +1224,51 @@ const HotkeyLegendSettings = withTranslation()(
 												></EditAttribute>
 											</label>
 										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Host Key')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'hotkeyLegend.' + index + '.platformKey'}
-													obj={this.props.showStyleBase}
-													type="text"
-													collection={ShowStyleBases}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">{t('Source Layer type')}</label>
-											<EditAttribute
-												modifiedClassName="bghl"
-												attribute={'hotkeyLegend.' + index + '.sourceLayerType'}
-												obj={this.props.showStyleBase}
-												type="dropdown"
-												options={SourceLayerType}
-												optionsAreNumbers
-												collection={ShowStyleBases}
-												className="input text-input input-l dropdown"
-												mutateUpdateValue={(v) => (v ? v : undefined)}
-											/>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Key color')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'hotkeyLegend.' + index + '.buttonColor'}
-													obj={this.props.showStyleBase}
-													options={defaultColorPickerPalette}
-													type="colorpicker"
-													collection={ShowStyleBases}
-													className="input text-input input-s"
-												></EditAttribute>
-											</label>
-										</div>
+										{Settings.enableKeyboardPreview && (
+											<>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Host Key')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={'hotkeyLegend.' + index + '.platformKey'}
+															obj={this.props.showStyleBase}
+															type="text"
+															collection={ShowStyleBases}
+															className="input text-input input-l"
+														></EditAttribute>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">{t('Source Layer type')}</label>
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={'hotkeyLegend.' + index + '.sourceLayerType'}
+														obj={this.props.showStyleBase}
+														type="dropdown"
+														options={SourceLayerType}
+														optionsAreNumbers
+														collection={ShowStyleBases}
+														className="input text-input input-l dropdown"
+														mutateUpdateValue={(v) => (v ? v : undefined)}
+													/>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Key color')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={'hotkeyLegend.' + index + '.buttonColor'}
+															obj={this.props.showStyleBase}
+															options={defaultColorPickerPalette}
+															type="colorpicker"
+															collection={ShowStyleBases}
+															className="input text-input input-s"
+														></EditAttribute>
+													</label>
+												</div>
+											</>
+										)}
 									</div>
 									<div className="mod alright">
 										<button className="btn btn-primary" onClick={() => this.finishEditItem(item)}>
