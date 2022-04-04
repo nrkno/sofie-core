@@ -55,31 +55,20 @@ export interface TSRDevice {
 
 // ----------------------------------------------------------------------------
 // interface copied from Core lib/collections/Timeline.ts
+
+export type TimelineEnableExt = TimelineTypes.TimelineEnable & { setFromNow?: boolean }
 export interface TimelineObjGeneric extends TimelineObjectCoreExt {
-	/** Unique _id (generally obj.studioId + '_' + obj.id) */
-	_id: string
 	/** Unique within a timeline (ie within a studio) */
 	id: string
-
-	/** Studio installation Id */
-	studioId: string
+	/** Set when the id of the object is prefixed */
+	originalId?: string
 
 	objectType: TimelineObjType
 
-	enable: TimelineTypes.TimelineEnable & {
-		setFromNow?: boolean
-	}
+	enable: TimelineEnableExt | TimelineEnableExt[]
 
+	/** The id of the group object this object is in  */
 	inGroup?: string
-
-	metadata?: {
-		[key: string]: any
-	}
-
-	/** Only set to true when an object is inserted by lookahead */
-	isLookahead?: boolean
-	/** Set when an object is on a virtual layer for lookahead, so that it can be routed correctly */
-	originalLLayer?: string | number
 }
 export enum TimelineObjType {
 	/** Objects played in a rundown */
@@ -91,9 +80,29 @@ export enum TimelineObjType {
 	/** "Magic object", used to calculate a hash of the timeline */
 	STAT = 'stat',
 }
-export interface TimelineComplete {
+
+/** This is the data-object published from Core */
+export interface RoutedTimeline {
 	_id: string
-	timeline: Array<TimelineObjGeneric>
+	/** Hash of the studio mappings */
+	mappingsHash: string
+
+	/** Hash of the Timeline */
+	timelineHash: string
+
+	/** serialized JSON Array containing all timeline-objects */
+	timelineBlob: string
+	generated: number
+	/** The point in time the data was published */
+	published: number
+
+	// this is the old way of storing the timeline, kept for backwards-compatibility
+	timeline?: TimelineObjGeneric[]
+}
+export interface RoutedMappings {
+	_id: string
+	mappingsHash: string | undefined
+	mappings: Mappings
 }
 // ----------------------------------------------------------------------------
 
@@ -334,38 +343,18 @@ export class TSRHandler {
 	async destroy(): Promise<void> {
 		return this.tsr.destroy()
 	}
-	getTimeline():
-		| {
-				// Copied from Core:
-				_id: string // Studio id
-				mappingsHash: string
-				timelineHash: string
-				// this is the old way of storing the timeline, kept for backwards-compatibility
-				timeline?: TimelineObjGeneric[]
-				timelineBlob: string
-				generated: number
-				published: number
-		  }
-		| undefined {
+	getTimeline(): RoutedTimeline | undefined {
 		const studioId = this._getStudioId()
 		if (!studioId) {
 			this.logger.warn('no studioId')
 			return undefined
 		}
 
-		const timeline = this._coreHandler.core.getCollection('studioTimeline').findOne((o: TimelineComplete) => {
-			return o._id === studioId
-		})
+		const timeline = this._coreHandler.core.getCollection('studioTimeline').findOne(studioId)
 
 		return timeline as any
 	}
-	getMappings():
-		| {
-				_id: string // Studio id
-				mappingsHash: string
-				mappings: Mappings
-		  }
-		| undefined {
+	getMappings(): RoutedMappings | undefined {
 		const studioId = this._getStudioId()
 		if (!studioId) {
 			// this.logger.warn('no studioId')
@@ -457,7 +446,7 @@ export class TSRHandler {
 		const transformedTimeline = timeline.timelineBlob
 			? this._transformTimeline(JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>)
 			: timeline.timeline
-			? this._transformTimeline(timeline.timeline)
+			? this._transformTimeline(clone(timeline.timeline))
 			: []
 		this.tsr.timelineHash = timeline.timelineHash
 		this.tsr.setTimelineAndMappings(transformedTimeline, mappingsObject.mappings)
@@ -961,8 +950,8 @@ export class TSRHandler {
 		// _transformTimeline (timeline: Array<TimelineObj>): Array<TimelineContentObject> | null {
 
 		const transformObject = (obj: TimelineObjGeneric): TimelineContentObjectTmp => {
-			const transformedObj: any = clone(_.omit(obj, ['_id', 'studioId']))
-			transformedObj.id = obj.id || obj._id
+			// TODO - this cast to any feels dangerous. Are any of these 'fixes' necessary?
+			const transformedObj: any = obj
 
 			if (!transformedObj.content) transformedObj.content = {}
 			if (transformedObj.isGroup) {

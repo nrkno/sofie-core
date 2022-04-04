@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { PackageInfo } from '../../coreSystem'
 import { initInfluxdb } from '@sofie-automation/corelib/dist/influxdb'
-export { startTrace, endTrace, sendTrace, Trace, FinishedTrace } from '@sofie-automation/corelib/dist/influxdb'
+export { startTrace, endTrace, sendTrace, TimeTrace, FinishedTrace } from '@sofie-automation/corelib/dist/influxdb'
 
 const config = {
 	host: process.env.INFLUX_HOST || Meteor.settings.influxHost,

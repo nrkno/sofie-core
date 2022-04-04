@@ -31,7 +31,7 @@ export const PartCountdown = withTiming<IPartCountdownProps, {}>()(function Part
 	return shouldShow ? (
 		<>
 			{props.label}
-			<span>
+			<span role="timer">
 				{props.useWallClock ? (
 					<Moment
 						interval={0}

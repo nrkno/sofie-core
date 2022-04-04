@@ -8,11 +8,7 @@ import {
 	LookaheadMode,
 	OnGenerateTimelineObj,
 } from '@sofie-automation/blueprints-integration'
-import {
-	hasPieceInstanceDefinitelyEnded,
-	SelectedPartInstancesTimelineInfo,
-	SelectedPartInstanceTimelineInfo,
-} from '../timeline'
+import { SelectedPartInstancesTimelineInfo, SelectedPartInstanceTimelineInfo } from '../timeline/generate'
 import {
 	OnGenerateTimelineObjExt,
 	TimelineObjRundown,
@@ -29,6 +25,7 @@ import _ = require('underscore')
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/corelib/dist/constants'
 import { prefixSingleObjectId } from '../lib'
 import { LookaheadTimelineObject } from './findObjects'
+import { hasPieceInstanceDefinitelyEnded } from '../timeline/lib'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 

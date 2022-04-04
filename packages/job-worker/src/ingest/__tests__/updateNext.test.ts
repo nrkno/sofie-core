@@ -478,6 +478,42 @@ describe('ensureNextPartIsValid', () => {
 			expect.objectContaining({ _id: 'mock_part1' })
 		)
 	})
+	test('Next part instance is orphaned: "deleted" and manually set', async () => {
+		// Insert a temporary instance
+		const instanceId: PartInstanceId = protectString('orphaned_first_part')
+		await context.directCollections.PartInstances.insertOne(
+			literal<DBPartInstance>({
+				_id: instanceId,
+				rundownId: rundownId,
+				segmentId: protectString('mock_segment1'),
+				playlistActivationId: protectString('active'),
+				segmentPlayoutId: protectString(''),
+				takeCount: 0,
+				rehearsal: false,
+				part: literal<DBPart>({
+					_id: protectString('orphan_1'),
+					_rank: 1.5,
+					rundownId: rundownId,
+					segmentId: protectString('mock_segment1'),
+					externalId: 'o1',
+					title: 'Orphan 1',
+					expectedDurationWithPreroll: undefined,
+				}),
+				orphaned: 'deleted',
+			})
+		)
+
+		await resetPartIds(null, instanceId, true)
+
+		await ensureNextPartIsValid()
+
+		expect(setNextPartInnerMock).toHaveBeenCalledTimes(1)
+		expect(setNextPartInnerMock).toHaveBeenCalledWith(
+			context,
+			expect.objectContaining({ PlaylistId: rundownPlaylistId }),
+			expect.objectContaining({ _id: 'mock_part1' })
+		)
+	})
 	test('Next part is invalid, but instance is not', async () => {
 		// Insert a temporary instance
 		const instanceId: PartInstanceId = protectString('orphaned_first_part')

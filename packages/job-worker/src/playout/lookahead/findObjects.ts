@@ -92,6 +92,7 @@ export function findLookaheadObjectsForPart(
 		if (obj) {
 			allObjs.push(
 				literal<LookaheadTimelineObject>({
+					metaData: undefined,
 					...obj,
 					objectType: TimelineObjType.RUNDOWN,
 					pieceInstanceId: getBestPieceInstanceId(rawPiece),
@@ -155,6 +156,7 @@ export function findLookaheadObjectsForPart(
 
 				res.push(
 					literal<LookaheadTimelineObject>({
+						metaData: undefined,
 						...obj,
 						objectType: TimelineObjType.RUNDOWN,
 						pieceInstanceId: getBestPieceInstanceId(piece),

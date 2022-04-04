@@ -1,5 +1,5 @@
 import { runJobWithPlayoutCache } from '../../playout/lock'
-import { updateTimeline, updateStudioTimeline } from '../../playout/timeline'
+import { updateTimeline, updateStudioTimeline } from '../../playout/timeline/generate'
 import { JobContext } from '../../jobs'
 import { adLibPieceStart, startStickyPieceOnSourceLayer, takePieceAsAdlibNow } from '../../playout/adlib'
 import { StudioJobs, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'

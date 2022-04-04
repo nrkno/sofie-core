@@ -431,8 +431,7 @@ export const ExternalFramePanel = withTranslation()(
 					e.dataTransfer.types.indexOf('text/plain') >= 0 &&
 					e.dataTransfer.files.length === 0
 				) {
-					for (let i = 0; i < e.dataTransfer.items.length; i++) {
-						const dataTransferItem = e.dataTransfer.items[i]
+					for (const dataTransferItem of e.dataTransfer.items) {
 						// skip, if not of text/plain type
 						if (dataTransferItem.type !== 'text/plain') continue
 						dataTransferItem.getAsString((text: string) => {

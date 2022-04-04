@@ -1,24 +1,13 @@
-import {
-	PieceId,
-	RundownPlaylistActivationId,
-	RundownPlaylistId,
-	PartInstanceId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceId, RundownPlaylistActivationId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	PieceInstance,
 	PieceInstancePiece,
 	ResolvedPieceInstance,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import {
-	OnGenerateTimelineObjExt,
-	TimelineObjGeneric,
-	TimelineObjPieceAbstract,
-	TimelineObjRundown,
-	TimelineObjType,
-} from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { TimelineObjGeneric, TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceLifespan, TSR, IBlueprintPieceType } from '@sofie-automation/blueprints-integration/dist'
+import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration/dist'
 import { clone, getRandomId, literal, normalizeArray, flatten, applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import { logger } from '../logging'
@@ -30,7 +19,6 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import _ = require('underscore')
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
-import { getPieceFirstObjectId } from '@sofie-automation/corelib/dist/playout/ids'
 import { getCurrentTime } from '../lib'
 import { transformTimeline, TimelineContentObject } from '@sofie-automation/corelib/dist/playout/timeline'
 import {
@@ -83,37 +71,6 @@ export function sortPieceInstancesByStart(pieces: PieceInstance[], nowInPart: nu
 export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[] {
 	pieces.sort((a, b) => comparePieceStart(a, b, 0))
 	return pieces
-}
-
-export function createPieceGroupFirstObject(
-	playlistId: RundownPlaylistId,
-	pieceInstance: ReadonlyDeep<PieceInstance>,
-	pieceGroup: TimelineObjRundown & OnGenerateTimelineObjExt,
-	firstObjClasses?: string[]
-): TimelineObjPieceAbstract & OnGenerateTimelineObjExt {
-	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt>({
-		id: getPieceFirstObjectId(pieceInstance),
-		pieceInstanceId: unprotectString(pieceInstance._id),
-		infinitePieceInstanceId: pieceInstance.infinite?.infiniteInstanceId,
-		partInstanceId: pieceGroup.partInstanceId,
-		objectType: TimelineObjType.RUNDOWN,
-		enable: { start: 0 },
-		layer: pieceInstance.piece.sourceLayerId + '_firstobject',
-		content: {
-			deviceType: TSR.DeviceType.ABSTRACT,
-			type: 'callback',
-			callBack: 'piecePlaybackStarted',
-			callBackData: {
-				rundownPlaylistId: playlistId,
-				pieceInstanceId: pieceInstance._id,
-				dynamicallyInserted: pieceInstance.dynamicallyInserted !== undefined,
-			},
-			callBackStopped: 'piecePlaybackStopped', // Will cause a callback to be called, when the object stops playing:
-		},
-		classes: firstObjClasses,
-		inGroup: pieceGroup.id,
-	})
-	return firstObject
 }
 
 function resolvePieceTimeline(
@@ -274,17 +231,6 @@ export function getResolvedPiecesFromFullTimeline(
 
 	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInstanceId) {
 		pieceInstances.push(...cache.PieceInstances.findFetch((p) => p.partInstanceId === playlist.nextPartInstanceId))
-
-		// If a segment is queued and we're about to consume it, remove nextSegmentId from playlist
-		if (playlist.nextSegmentId) {
-			const consumedPartsInstancesInNextSegment = cache.PartInstances.findFetch({
-				_id: { $in: pieceInstances.map((p) => p.partInstanceId) },
-				segmentId: playlist.nextSegmentId,
-			})
-			if (consumedPartsInstancesInNextSegment.length) {
-				cache.Playlist.update({ $unset: { nextSegmentId: true } })
-			}
-		}
 	}
 
 	const transformedObjs = transformTimeline(objs)

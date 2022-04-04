@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.41.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.5...v1.41.0-in-testing.0) (2022-03-28)
+
+
+
+# [1.40.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
+
+
+### Bug Fixes
+
+* add getCurrentPlaylist to blueprint getRundown-context ([4a43e14](https://github.com/nrkno/tv-automation-server-core/commit/4a43e14287d41ae7775a7301b5be1ab7bd227e96))
+* add getRandomId() to context ([7990014](https://github.com/nrkno/tv-automation-server-core/commit/79900144636a34f40c465c4501ef0bdcad6f116e))
+* mongo client 4.2 typings break on timelineObjects ([#671](https://github.com/nrkno/tv-automation-server-core/issues/671)) ([ce9d4b3](https://github.com/nrkno/tv-automation-server-core/commit/ce9d4b3a862d93f61e895c27e65f25609679a4ff))
+
+
+### Features
+
+* better handling of non-unqiue externalId for pieces and other types ([#685](https://github.com/nrkno/tv-automation-server-core/issues/685)) ([02a891e](https://github.com/nrkno/tv-automation-server-core/commit/02a891e66dd8c9aa01b2ceb1634ac425ab18217d))
+
+
+
+# [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
+
+
+### Bug Fixes
+
+* blueprints-integration typing issue ([7c3a93a](https://github.com/nrkno/tv-automation-server-core/commit/7c3a93af23f08a7c4b6b41ce28e6b2624fb135a7))
+* blueprints-integration: allow getRundown to be async, to be able to call async functions therein ([b166cca](https://github.com/nrkno/tv-automation-server-core/commit/b166cca3376ee4d3ae747dac9a8268ea9131898a))
+* change context type of getRundown ([52f981a](https://github.com/nrkno/tv-automation-server-core/commit/52f981ab485cfcf06fa4a01ed1feeac1ef2d0742))
+* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+
+
+### Features
+
+* update blueprint interface to support a new way of assigning rundowns to playlists ([3bf092e](https://github.com/nrkno/tv-automation-server-core/commit/3bf092e2f56a1e448d0909430f155d6e7c48ac9a))
+
+
+
+
+
 # [1.40.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
 
 

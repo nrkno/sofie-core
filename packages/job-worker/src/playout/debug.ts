@@ -8,7 +8,7 @@ import { getSelectedPartInstancesFromCache } from './cache'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { setNextPart } from './lib'
 import { runJobWithPlayoutCache } from './lock'
-import { updateTimeline } from './timeline'
+import { updateTimeline } from './timeline/generate'
 
 /**
  * Ensure that the infinite pieces on the nexted-part are correct

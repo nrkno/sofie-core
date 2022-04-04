@@ -154,7 +154,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 								}}
 								runOnMount={true}
 							>
-								<dialog open={true} className={'border-box overlay-m ' + this.props.className || ''}>
+								<dialog open={true} className={'border-box overlay-m ' + this.props.className || ''} role="alertdialog">
 									<div
 										className={'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'}
 									>

@@ -1,5 +1,5 @@
 import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DbCacheWriteObject } from '../cache/CacheObject'
+import { DbCacheWriteObject, DbCacheWriteOptionalObject } from '../cache/CacheObject'
 import { CacheBase, ReadOnlyCache } from '../cache/CacheBase'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
@@ -123,7 +123,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForStudioBase {
 	private toBeRemoved = false
 
-	public readonly Timeline: DbCacheWriteCollection<TimelineComplete>
+	public readonly Timeline: DbCacheWriteOptionalObject<TimelineComplete>
 
 	public readonly Segments: DbCacheReadCollection<DBSegment>
 	public readonly Parts: DbCacheReadCollection<DBPart>
@@ -143,7 +143,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		parts: DbCacheReadCollection<DBPart>,
 		partInstances: DbCacheWriteCollection<DBPartInstance>,
 		pieceInstances: DbCacheWriteCollection<PieceInstance>,
-		timeline: DbCacheWriteCollection<TimelineComplete>,
+		timeline: DbCacheWriteOptionalObject<TimelineComplete>,
 		baselineObjects: DbCacheReadCollection<RundownBaselineObj>
 	) {
 		super(context, playlistLock, playlistId, peripheralDevices, playlist, rundowns)
@@ -246,7 +246,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			DbCacheReadCollection<DBPart>,
 			DbCacheWriteCollection<DBPartInstance>,
 			DbCacheWriteCollection<PieceInstance>,
-			DbCacheWriteCollection<TimelineComplete>,
+			DbCacheWriteOptionalObject<TimelineComplete>,
 			DbCacheReadCollection<RundownBaselineObj>
 		]
 	> {
@@ -256,30 +256,56 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			playlist.previousPartInstanceId,
 		])
 
+		const partInstancesCollection = Promise.resolve().then(async () => {
+			// Future: We could optimise away this query if we tracked the segmentIds of these PartInstances on the playlist
+			const segmentIds = _.uniq(
+				(
+					await context.directCollections.PartInstances.findFetch(
+						{
+							_id: { $in: selectedPartInstanceIds },
+						},
+						{
+							projection: {
+								segmentId: 1,
+							},
+						}
+					)
+				).map((p) => p.segmentId)
+			)
+
+			const partInstancesSelector: MongoQuery<DBPartInstance> = {
+				rundownId: { $in: rundownIds },
+				$or: [
+					{
+						segmentId: { $in: segmentIds },
+						reset: { $ne: true },
+					},
+					{
+						_id: { $in: selectedPartInstanceIds },
+					},
+				],
+			}
+			// TODO - is this correct? If the playlist isnt active do we want any of these?
+			if (playlist.activationId) partInstancesSelector.playlistActivationId = playlist.activationId
+
+			return DbCacheWriteCollection.createFromDatabase(
+				context,
+				context.directCollections.PartInstances,
+				partInstancesSelector
+			)
+		})
+
 		// If there is an ingestCache, then avoid loading some bits from the db for that rundown
 		const loadRundownIds = ingestCache ? rundownIds.filter((id) => id !== ingestCache.RundownId) : rundownIds
 		const baselineFromIngest = ingestCache && ingestCache.RundownBaselineObjs.getIfLoaded()
 		const loadBaselineIds = baselineFromIngest ? loadRundownIds : rundownIds
 
-		const partInstancesSelector: MongoQuery<DBPartInstance> = {
-			rundownId: { $in: rundownIds },
-			$or: [
-				{
-					reset: { $ne: true },
-				},
-				{
-					_id: { $in: selectedPartInstanceIds },
-				},
-			],
-		}
 		const pieceInstancesSelector: MongoQuery<PieceInstance> = {
 			rundownId: { $in: rundownIds },
 			partInstanceId: { $in: selectedPartInstanceIds },
 		}
-		if (playlist.activationId) {
-			partInstancesSelector.playlistActivationId = playlist.activationId
-			pieceInstancesSelector.playlistActivationId = playlist.activationId
-		}
+		// TODO - is this correct? If the playlist isnt active do we want any of these?
+		if (playlist.activationId) pieceInstancesSelector.playlistActivationId = playlist.activationId
 
 		const [segments, parts, baselineObjects, ...collections] = await Promise.all([
 			DbCacheReadCollection.createFromDatabase(context, context.directCollections.Segments, {
@@ -291,20 +317,18 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			DbCacheReadCollection.createFromDatabase(context, context.directCollections.RundownBaselineObjects, {
 				rundownId: { $in: loadBaselineIds },
 			}),
-			DbCacheWriteCollection.createFromDatabase(
-				context,
-				context.directCollections.PartInstances,
-				partInstancesSelector
-			),
+			partInstancesCollection,
 			DbCacheWriteCollection.createFromDatabase(
 				context,
 				context.directCollections.PieceInstances,
 				pieceInstancesSelector
 			),
 			// Future: This could be defered until we get to updateTimeline. It could be a small performance boost
-			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Timelines, {
-				_id: playlist.studioId,
-			}),
+			DbCacheWriteOptionalObject.createOptionalFromDatabase(
+				context,
+				context.directCollections.Timelines,
+				context.studioId
+			),
 		])
 
 		if (ingestCache) {

@@ -10,6 +10,7 @@ import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from '../jobs'
 
 type DeferredFunction<Cache> = (cache: Cache) => void | Promise<void>
+type DeferredAfterSaveFunction<Cache extends CacheBase<any>> = (cache: ReadOnlyCache<Cache>) => void | Promise<void>
 
 type DbCacheWritable<TDoc extends { _id: ProtectedString<any> }> =
 	| DbCacheWriteCollection<TDoc>
@@ -31,7 +32,7 @@ export type ReadOnlyCache<T extends CacheBase<any>> = Omit<
 /** This cache contains data relevant in a studio */
 export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 	protected _deferredFunctions: DeferredFunction<T>[] = []
-	protected _deferredAfterSaveFunctions: (() => void | Promise<void>)[] = []
+	protected _deferredAfterSaveFunctions: DeferredAfterSaveFunction<any>[] = []
 
 	constructor(protected readonly context: JobContext) {
 		context.trackCache(this)
@@ -94,7 +95,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 
 		// Execute cache.deferAfterSave()'s
 		for (let i = 0; i < this._deferredAfterSaveFunctions.length; i++) {
-			await this._deferredAfterSaveFunctions[i]()
+			await this._deferredAfterSaveFunctions[i](this as any)
 		}
 		this._deferredAfterSaveFunctions.length = 0 // clear the array
 
@@ -187,7 +188,7 @@ export interface ICacheBase<T> {
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
 	defer: (fcn: DeferredFunction<T>) => void
 	/** Defer provided function to after cache.saveAllToDatabase().
-	 * Note that at the time of execution, the cache is no longer available.
+	 * Note that at the time of execution, the cache is not mutable.
 	 * */
 	deferAfterSave: (fcn: () => void | Promise<void>) => void
 }
@@ -195,7 +196,7 @@ export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheB
 	defer(fcn: DeferredFunction<T>): void {
 		this._deferredFunctions.push(fcn)
 	}
-	deferAfterSave(fcn: () => void | Promise<void>): void {
+	deferAfterSave(fcn: DeferredAfterSaveFunction<T>): void {
 		this._deferredAfterSaveFunctions.push(fcn)
 	}
 }

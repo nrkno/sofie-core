@@ -156,7 +156,7 @@ describe('Playout API', () => {
 
 		await resetRundownPlaylist(context, { playlistId: playlistId0 })
 
-		expect(Timeline.operations).toMatchObject([{ args: [{ _id: 'mockStudio0' }, undefined], type: 'findFetch' }])
+		expect(Timeline.operations).toMatchObject([{ args: ['mockStudio0', undefined], type: 'findOne' }])
 		Timeline.clearOpLog()
 
 		const orgRundownData = await getAllRundownData(await getRundown0())
@@ -182,8 +182,8 @@ describe('Playout API', () => {
 		}
 
 		expect(Timeline.operations).toMatchObject([
-			{ args: [{ _id: 'mockStudio0' }, undefined], type: 'findFetch' },
-			{ args: [1], type: 'bulkWrite' },
+			{ args: ['mockStudio0', undefined], type: 'findOne' },
+			{ args: ['mockStudio0'], type: 'replace' },
 		])
 		Timeline.clearOpLog()
 
@@ -202,8 +202,8 @@ describe('Playout API', () => {
 		}
 
 		expect(Timeline.operations).toMatchObject([
-			{ args: [{ _id: 'mockStudio0' }, undefined], type: 'findFetch' },
-			{ args: [1], type: 'bulkWrite' },
+			{ args: ['mockStudio0', undefined], type: 'findOne' },
+			{ args: ['mockStudio0'], type: 'replace' },
 		])
 		Timeline.clearOpLog()
 
@@ -225,8 +225,8 @@ describe('Playout API', () => {
 		})
 
 		expect(Timeline.operations).toMatchObject([
-			{ args: [{ _id: 'mockStudio0' }, undefined], type: 'findFetch' },
-			{ args: [1], type: 'bulkWrite' },
+			{ args: ['mockStudio0', undefined], type: 'findOne' },
+			{ args: ['mockStudio0'], type: 'replace' },
 		])
 		Timeline.clearOpLog()
 

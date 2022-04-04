@@ -44,6 +44,14 @@ export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefin
 	}
 }
 
+export function min<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefined {
+	if (vals.length <= 1) {
+		return vals[0]
+	} else {
+		return _.min(vals, iterator) as T
+	}
+}
+
 export function assertNever(_never: never): void {
 	// Do nothing. This is a type guard
 }
