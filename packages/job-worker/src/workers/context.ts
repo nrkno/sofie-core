@@ -267,6 +267,14 @@ export class JobContextImpl implements JobContext {
 			loadedDocs.push(doc)
 		}
 
+		loadedDocs.sort((a, b) => {
+			if (a.name > b.name) return 1
+			if (a.name < b.name) return -1
+			if (a._id > b._id) return 1
+			if (a._id < b._id) return -1
+			return 0
+		})
+
 		return loadedDocs
 	}
 	async getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<DBShowStyleVariant>> {
