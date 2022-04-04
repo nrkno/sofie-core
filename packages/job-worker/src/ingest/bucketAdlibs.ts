@@ -358,21 +358,26 @@ export async function handleBucketPieceModify(context: JobContext, data: BucketP
 }
 /** Returns BucketAdlibActions that are grouped together with this adlib in the GUI */
 async function getGroupedAdlibActions(context: JobContext, oldAdLib: BucketAdLibAction): Promise<BucketAdLibAction[]> {
-	const selector: MongoQuery<BucketAdLibAction> = {
-		bucketId: oldAdLib.bucketId,
-		studioId: oldAdLib.studioId,
-	}
+	let selector: MongoQuery<BucketAdLibAction>
 	if (oldAdLib.uniquenessId) {
-		selector.$or = [
-			{
-				externalId: oldAdLib.externalId,
-			},
-			{
-				uniquenessId: oldAdLib.uniquenessId,
-			},
-		]
+		selector = {
+			bucketId: oldAdLib.bucketId,
+			studioId: oldAdLib.studioId,
+			$or: [
+				{
+					externalId: oldAdLib.externalId,
+				},
+				{
+					uniquenessId: oldAdLib.uniquenessId,
+				},
+			],
+		}
 	} else if (oldAdLib.externalId) {
-		selector.externalId = oldAdLib.externalId
+		selector = {
+			bucketId: oldAdLib.bucketId,
+			studioId: oldAdLib.studioId,
+			externalId: oldAdLib.externalId,
+		}
 	} else {
 		return []
 	}
@@ -382,21 +387,26 @@ async function getGroupedAdlibActions(context: JobContext, oldAdLib: BucketAdLib
 
 /** Returns BucketAdlibs that are grouped together with this adlib in the GUI */
 async function getGroupedAdlibs(context: JobContext, oldAdLib: BucketAdLib): Promise<BucketAdLib[]> {
-	const selector: MongoQuery<BucketAdLib> = {
-		bucketId: oldAdLib.bucketId,
-		studioId: oldAdLib.studioId,
-	}
+	let selector: MongoQuery<BucketAdLib>
 	if (oldAdLib.uniquenessId) {
-		selector.$or = [
-			{
-				externalId: oldAdLib.externalId,
-			},
-			{
-				uniquenessId: oldAdLib.uniquenessId,
-			},
-		]
+		selector = {
+			bucketId: oldAdLib.bucketId,
+			studioId: oldAdLib.studioId,
+			$or: [
+				{
+					externalId: oldAdLib.externalId,
+				},
+				{
+					uniquenessId: oldAdLib.uniquenessId,
+				},
+			],
+		}
 	} else if (oldAdLib.externalId) {
-		selector.externalId = oldAdLib.externalId
+		selector = {
+			bucketId: oldAdLib.bucketId,
+			studioId: oldAdLib.studioId,
+			externalId: oldAdLib.externalId,
+		}
 	} else {
 		return []
 	}
