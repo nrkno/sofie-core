@@ -27,6 +27,25 @@ function calculatePartPreroll(pieces: CalculateTimingsPiece[]): number {
 
 	return Math.max(0, ...candidates)
 }
+/**
+ * Calculate the total post-roll duration of a PartInstance
+ */
+function calculatePartPostroll(pieces: CalculateTimingsPiece[]): number {
+	const candidates: number[] = []
+	for (const piece of pieces) {
+		if (!piece.postrollDuration) {
+			continue
+		}
+		if (piece.enable.duration) {
+			// presume it ends before we do a take
+			continue
+		}
+
+		candidates.push(piece.postrollDuration)
+	}
+
+	return Math.max(0, ...candidates)
+}
 
 /**
  * Numbers are relative to the start of toPartGroup. Nothing should ever be negative, the pieces of toPartGroup will be delayed to allow for other things to complete.
@@ -36,9 +55,10 @@ export interface PartCalculatedTimings {
 	inTransitionStart: number | null // The start time within the toPartGroup of the inTransition
 	toPartDelay: number // How long after the start of toPartGroup should piece time 0 be
 	fromPartRemaining: number // How long after the start of toPartGroup should fromPartGroup continue?
+	fromPartPostroll: number
 }
 
-export type CalculateTimingsPiece = Pick<Piece, 'enable' | 'prerollDuration' | 'pieceType'>
+export type CalculateTimingsPiece = Pick<Piece, 'enable' | 'prerollDuration' | 'postrollDuration' | 'pieceType'>
 export type CalculateTimingsFromPart = Pick<
 	DBPart,
 	'autoNext' | 'autoNextOverlap' | 'disableNextInTransition' | 'outTransition'
@@ -52,6 +72,7 @@ export type CalculateTimingsToPart = Pick<DBPart, 'inTransition'>
 export function calculatePartTimings(
 	holdState: RundownHoldState | undefined,
 	fromPart: CalculateTimingsFromPart | undefined,
+	fromPiece: CalculateTimingsPiece[] | undefined,
 	toPart: CalculateTimingsToPart,
 	toPiece: CalculateTimingsPiece[]
 	// toPartPreroll: number
@@ -60,6 +81,7 @@ export function calculatePartTimings(
 	const isInHold = holdState !== RundownHoldState.NONE && holdState !== undefined
 
 	const toPartPreroll = calculatePartPreroll(toPiece)
+	const fromPartPostroll = fromPart && fromPiece ? calculatePartPostroll(fromPiece) : 0
 
 	let inTransition: Omit<IBlueprintPartInTransition, 'blockTakeDuration'> | undefined
 	let allowTransitionPiece: boolean | undefined
@@ -88,7 +110,8 @@ export function calculatePartTimings(
 			// delay the new part for a bit
 			toPartDelay: takeOffset,
 			// The old part needs to continue for a while
-			fromPartRemaining: takeOffset,
+			fromPartRemaining: takeOffset + fromPartPostroll,
+			fromPartPostroll: fromPartPostroll,
 		}
 	} else {
 		// The amount of time needed to complete the outTransition before the 'take' point
@@ -105,7 +128,8 @@ export function calculatePartTimings(
 		return {
 			inTransitionStart: allowTransitionPiece ? takeOffset : null,
 			toPartDelay: takeOffset + inTransition.partContentDelayDuration,
-			fromPartRemaining: takeOffset + inTransition.previousPartKeepaliveDuration,
+			fromPartRemaining: takeOffset + inTransition.previousPartKeepaliveDuration + fromPartPostroll,
+			fromPartPostroll: fromPartPostroll,
 		}
 	}
 }
@@ -119,6 +143,7 @@ export function getPartTimingsOrDefaults(
 	} else {
 		return calculatePartTimings(
 			RundownHoldState.NONE,
+			undefined,
 			undefined,
 			partInstance.part,
 			pieceInstances.map((p) => p.piece)
@@ -136,7 +161,7 @@ export function calculatePartExpectedDurationWithPreroll(
 ): number | undefined {
 	if (part.expectedDuration === undefined) return undefined
 
-	const timings = calculatePartTimings(undefined, {}, part, pieces)
+	const timings = calculatePartTimings(undefined, {}, [], part, pieces)
 
 	return calculatePartExpectedDurationWithPrerollInner(part.expectedDuration, timings)
 }

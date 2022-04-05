@@ -1,9 +1,4 @@
-import {
-	TSR,
-	IBlueprintPiece,
-	TimelineObjectCoreExt,
-	TimelineObjHoldMode,
-} from '@sofie-automation/blueprints-integration'
+import { TSR, TimelineObjectCoreExt, TimelineObjHoldMode } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -118,9 +113,10 @@ export function createPieceGroupFirstObject(
 
 export function getPieceEnableInsidePart(
 	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
-	partTimings: PartCalculatedTimings
-): IBlueprintPiece['enable'] {
-	const pieceEnable = { ...pieceInstance.piece.enable }
+	partTimings: PartCalculatedTimings,
+	partGroupId: string
+): TSR.Timeline.TimelineEnable {
+	const pieceEnable: TSR.Timeline.TimelineEnable = { ...pieceInstance.piece.enable }
 	if (typeof pieceEnable.start === 'number' && !pieceInstance.adLibSourceId) {
 		// timed pieces should be offset based on the preroll of the part
 		pieceEnable.start += partTimings.toPartDelay
@@ -133,6 +129,18 @@ export function getPieceEnableInsidePart(
 			if (typeof pieceEnable.duration === 'number') {
 				pieceEnable.duration += pieceInstance.piece.prerollDuration
 			}
+		}
+	}
+	if (partTimings.fromPartPostroll) {
+		if (!pieceEnable.duration) {
+			// reference parent id? i.e. #parent.end - partPostRoll + piecePostRoll
+			pieceEnable.duration = `#${partGroupId} - ${partTimings.fromPartPostroll}`
+
+			if (pieceInstance.piece.postrollDuration) {
+				pieceEnable.duration += ' + ' + pieceInstance.piece.postrollDuration
+			}
+		} else if (typeof pieceEnable.duration === 'number' && pieceInstance.piece.postrollDuration) {
+			pieceEnable.duration += pieceInstance.piece.postrollDuration
 		}
 	}
 	return pieceEnable

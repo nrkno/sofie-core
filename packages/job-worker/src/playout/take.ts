@@ -352,6 +352,9 @@ export function updatePartInstanceOnTake(
 			partPlayoutTimings: calculatePartTimings(
 				cache.Playlist.doc.holdState,
 				currentPartInstance?.part,
+				cache.PieceInstances.findFetch((p) => p.partInstanceId === currentPartInstance?._id).map(
+					(p) => p.piece
+				),
 				takePartInstance.part,
 				cache.PieceInstances.findFetch((p) => p.partInstanceId === takePartInstance._id).map((p) => p.piece)
 			),
