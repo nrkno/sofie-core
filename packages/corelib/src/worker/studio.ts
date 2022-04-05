@@ -50,6 +50,9 @@ export enum StudioJobs {
 
 	DebugRegenerateNextPartInstance = 'debugRegenerateNextPartInstance',
 	DebugSyncInfinitesForNextPartInstance = 'debugSyncInfinitesForNextPartInstance',
+
+	GeneratePlaylistSnapshot = 'generatePlaylistSnapshot',
+	RestorePlaylistSnapshot = 'restorePlaylistSnapshot',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -150,6 +153,28 @@ export interface OrderMoveRundownToPlaylistProps {
 export type DebugRegenerateNextPartInstanceProps = RundownPlayoutPropsBase
 export type DebugSyncInfinitesForNextPartInstanceProps = RundownPlayoutPropsBase
 
+export interface GeneratePlaylistSnapshotProps extends RundownPlayoutPropsBase {
+	// Include all Instances, or just recent ones
+	full: boolean
+}
+export interface GeneratePlaylistSnapshotResult {
+	/**
+	 * Stringified JSON of the snapshot
+	 * Note: it is kept as a string to avoid needing to parse it the very large blob unnecesarily
+	 */
+	snapshotJson: string
+}
+export interface RestorePlaylistSnapshotProps {
+	/**
+	 * Stringified JSON of the snapshot
+	 * Note: it is kept as a string to avoid needing to parse it the very large blob unnecesarily
+	 */
+	snapshotJson: string
+}
+export interface RestorePlaylistSnapshotResult {
+	playlistId: RundownPlaylistId
+}
+
 /**
  * Set of valid functions, of form:
  * `id: (data) => return`
@@ -191,6 +216,9 @@ export type StudioJobFunc = {
 
 	[StudioJobs.DebugRegenerateNextPartInstance]: (data: DebugRegenerateNextPartInstanceProps) => void
 	[StudioJobs.DebugSyncInfinitesForNextPartInstance]: (data: DebugSyncInfinitesForNextPartInstanceProps) => void
+
+	[StudioJobs.GeneratePlaylistSnapshot]: (data: GeneratePlaylistSnapshotProps) => GeneratePlaylistSnapshotResult
+	[StudioJobs.RestorePlaylistSnapshot]: (data: RestorePlaylistSnapshotProps) => RestorePlaylistSnapshotResult
 }
 
 export function getStudioQueueName(id: StudioId): string {
