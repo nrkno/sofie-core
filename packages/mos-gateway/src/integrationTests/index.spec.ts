@@ -2,12 +2,24 @@ import { Connector } from '../connector'
 import * as Winston from 'winston'
 
 test('Simple test', async () => {
-	const logger = new Winston.Logger({
+	const logger = Winston.createLogger({
 		transports: [new Winston.transports.Console()],
 	})
+
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore
 	logger.info = console.log
+
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore
 	logger.debug = console.log
+
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore
 	logger.error = console.log
+
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-ignore
 	logger.warn = console.log
 
 	const c: Connector = new Connector(logger)
