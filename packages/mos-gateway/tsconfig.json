@@ -1,6 +1,7 @@
 {
-  "extends": "./config/tsconfig.base",
-  "exclude": [
-    "node_modules/**"
-  ]
+	"extends": "./tsconfig.build.json",
+	"exclude": ["node_modules/**"],
+	"compilerOptions": {
+		"types": ["jest", "node"]
+	}
 }

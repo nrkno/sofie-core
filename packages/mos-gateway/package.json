@@ -30,7 +30,9 @@
 		"buildstart": "yarn build && yarn start",
 		"buildinspect": "yarn build && yarn inspect",
 		"build:main": "tsc -p tsconfig.build.json",
-		"lint": "tslint --project tsconfig.json --config tslint.json",
+		"lint:raw": "eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
+		"lint": "yarn lint:raw .",
+		"lint-fix": "yarn lint --fix",
 		"unit": "jest",
 		"test": "yarn lint && yarn unit",
 		"test:integration": "yarn lint && jest --config=jest-integration.config.js",
@@ -69,12 +71,13 @@
 		"underscore": "^1.12.1",
 		"winston": "^3.5.1"
 	},
+	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
-			"prettier"
+			"prettier --write"
 		],
 		"*.{ts,tsx}": [
-			"yarn lint"
+			"yarn lint:raw --fix"
 		]
 	}
 }
