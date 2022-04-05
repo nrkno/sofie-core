@@ -488,19 +488,25 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					Math.abs(
 						(this.props.piece.renderedInPoint || 0) +
 							(vtContent.sourceDuration - seek) -
-							(this.props.part.instance.part.expectedDuration || 0)
+							(this.props.partExpectedDuration || 0)
 					) > 500))
 		) {
-			const lastFreeze = this.state.freezes && this.state.freezes[this.state.freezes.length - 1]
-			const endingFreezeStart =
-				lastFreeze &&
-				lastFreeze.start >= vtContent.sourceDuration &&
-				lastFreeze.start < vtContent.sourceDuration + (vtContent.postrollDuration || 0) &&
-				lastFreeze.start
-			const endOfContentAt =
-				(this.props.piece.renderedInPoint || 0) +
-				((endingFreezeStart || vtContent.sourceDuration + (vtContent.postrollDuration || 0)) - seek)
-			const counter = endOfContentAt - livePositionInPart
+			let endOfContentAt: number = vtContent.sourceDuration + (vtContent.postrollDuration || 0)
+
+			const TBD_COUNTDOWN_TO_FREEZE = false // TODOSYNC: To be implemented by tv2, a setting that enables this
+			if (TBD_COUNTDOWN_TO_FREEZE) {
+				const lastFreeze = this.state.freezes && this.state.freezes[this.state.freezes.length - 1]
+				const endingFreezeStart =
+					lastFreeze &&
+					lastFreeze.start >= vtContent.sourceDuration &&
+					lastFreeze.start < vtContent.sourceDuration + (vtContent.postrollDuration || 0) &&
+					lastFreeze.start
+
+				// Count down to the ending freeze frame of the content, instead of using the planned end:
+				if (endingFreezeStart) endOfContentAt = endingFreezeStart
+			}
+
+			const counter = (this.props.piece.renderedInPoint || 0) + endOfContentAt - seek - livePositionInPart
 
 			if (counter > 0) {
 				countdown = (

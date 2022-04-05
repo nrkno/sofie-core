@@ -32,6 +32,7 @@ import { Part } from '../../../../lib/collections/Parts'
 import { RundownTimingContext } from '../../../lib/rundownTiming'
 import { OutputGroup } from './OutputGroup'
 import { InvalidPartCover } from './InvalidPartCover'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -76,7 +77,7 @@ interface IProps {
 	isPreview?: boolean
 	cropDuration?: number
 	className?: string
-	showDurationSourceLayers?: Set<string>
+	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
 
 interface IState {
@@ -588,6 +589,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 					data-obj-id={this.props.part.instance._id}
 					id={SegmentTimelinePartElementId + this.props.part.instance._id}
 					style={{ ...this.getPartStyle(), ...invalidReasonColorVars }}
+					role="region"
+					aria-roledescription={t('part')}
+					aria-label={this.props.part.instance.part.title}
 				>
 					{DEBUG_MODE && (
 						<div className="segment-timeline__debug-info">

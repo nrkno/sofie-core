@@ -9,7 +9,6 @@
 			"documentation"
 		],
 		"nohoist": [
-			"**/timeline-state-resolver-types",
 			"**/timecode"
 		]
 	},
@@ -28,7 +27,7 @@
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
 		"license-validate": "yarn sofie-licensecheck --allowPackages \"caniuse-lite@1.0.30001309;mos-gateway@$(node -p \"require('mos-gateway/package.json').version\");playout-gateway@$(node -p \"require('playout-gateway/package.json').version\");sofie-documentation@$(node -p \"require('sofie-documentation/package.json').version\");@sofie-automation/corelib@$(node -p \"require('@sofie-automation/corelib/package.json').version\");@sofie-automation/job-worker@$(node -p \"require('@sofie-automation/job-worker/package.json').version\")\"",
 		"lint": "lerna run --concurrency 4 --stream lint",
-		"unit": "lerna run --concurrency 2 --stream unit",
+		"unit": "lerna run --concurrency 2 --stream unit -- --coverage=false",
 		"test": "lerna run --concurrency 2 --stream test",
 		"docs:typedoc": "yarn typedoc .",
 		"docs:serve": "lerna run --scope sofie-documentation --stream start",
@@ -62,7 +61,7 @@
 	},
 	"name": "packages",
 	"resolutions": {
-		"node-license-validator/**/minimist": "^1.2.3",
+		"node-license-validator/**/minimist": "^1.2.6",
 		"lerna/**/trim-newlines": "^4.0.1",
 		"**/data-store/set-value": "^4.1.0"
 	}

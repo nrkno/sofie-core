@@ -35,6 +35,9 @@ export interface ISettings {
 		port?: number
 		maxAllowedDiff: number
 	}
+
+	/** The KeyboardPreview is a feature that is not implemented in the main Fork */
+	enableKeyboardPreview: boolean
 }
 
 /**
@@ -54,6 +57,7 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	followOnAirSegmentsHistory: 0,
 	maximumDataAge: 1000 * 60 * 60 * 24 * 100, // 100 days
 	enableNTPTimeChecker: null,
+	enableKeyboardPreview: false,
 })
 
 /**

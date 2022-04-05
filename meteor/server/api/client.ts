@@ -276,6 +276,7 @@ export namespace ServerClientAPI {
 				transaction.end()
 			}
 
+			if (!influxTrace.tags) influxTrace.tags = {}
 			influxTrace.tags['error'] = errStr
 			sendTrace(endTrace(influxTrace))
 

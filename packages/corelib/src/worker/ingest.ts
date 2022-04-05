@@ -7,6 +7,7 @@ import {
 	PieceId,
 	RundownId,
 	SegmentId,
+	ShowStyleBaseId,
 	ShowStyleVariantId,
 	StudioId,
 } from '../dataModel/Ids'
@@ -156,7 +157,8 @@ export type UserUnsyncRundownProps = UserRundownPropsBase
 
 export interface BucketItemImportProps {
 	bucketId: BucketId
-	showStyleVariantId: ShowStyleVariantId
+	showStyleBaseId: ShowStyleBaseId
+	showStyleVariantIds?: ShowStyleVariantId[]
 	payload: IngestAdlib
 }
 export interface BucketActionRegenerateExpectedPackagesProps {

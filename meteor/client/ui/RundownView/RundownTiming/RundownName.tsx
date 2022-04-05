@@ -53,6 +53,7 @@ export const RundownName = withTranslation()(
 												rundownPlaylistName: rundownPlaylist.name,
 										  })
 								}
+								id="rundown-playlist-name"
 							>
 								{rundownPlaylist.loop && <LoopingIcon />} <strong>{currentRundown.name}</strong> {rundownPlaylist.name}
 							</span>
@@ -66,6 +67,7 @@ export const RundownName = withTranslation()(
 										  })
 										: rundownPlaylist.name
 								}
+								id="rundown-playlist-name"
 							>
 								{rundownPlaylist.loop && <LoopingIcon />} {rundownPlaylist.name}
 							</span>

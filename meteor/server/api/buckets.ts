@@ -6,6 +6,7 @@ import { BucketSecurity } from '../security/buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { Studios } from '../../lib/collections/Studios'
 import { ShowStyleVariantId, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { AdLibAction, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibActions, BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { Rundowns } from '../../lib/collections/Rundowns'
@@ -169,7 +170,8 @@ export namespace BucketsAPI {
 				externalId: '', // TODO - is this ok?
 				bucketId: access.bucket._id,
 				studioId: access.studioId,
-				showStyleVariantId: rundown.showStyleVariantId,
+				showStyleBaseId: rundown.showStyleBaseId,
+				showStyleVariantId: action.allVariants ? null : rundown.showStyleVariantId,
 				importVersions: rundown.importVersions,
 			}
 		}
@@ -227,26 +229,35 @@ export namespace BucketsAPI {
 
 	export async function importAdlibToBucket(
 		access: BucketSecurity.BucketContentAccess,
-		showStyleVariantId: ShowStyleVariantId,
+		showStyleBaseId: ShowStyleBaseId,
+		/** Optional: if set, only create adlib for this variant (otherwise: for all variants in ShowStyleBase)*/
+		showStyleVariantId: ShowStyleVariantId | undefined,
 		ingestItem: IngestAdlib
 	): Promise<void> {
 		const studioLight = access.studio
 
-		// TODO - validate IngestAdlib
+		if (showStyleVariantId) {
+			const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
+			if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
+			if (showStyleCompound._id !== showStyleBaseId) {
+				throw new Meteor.Error(
+					500,
+					`ShowStyle Variant "${showStyleVariantId}" is not part of ShowStyleBase "${showStyleBaseId}"`
+				)
+			}
+		}
 
-		const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
-		if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
-
-		if (studioLight.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
+		if (studioLight.supportedShowStyleBase.indexOf(showStyleBaseId) === -1) {
 			throw new Meteor.Error(
 				500,
-				`ShowStyle Variant "${showStyleVariantId}" not supported by studio "${access.studioId}"`
+				`ShowStyle base "${showStyleBaseId}" not supported by studio "${access.studioId}"`
 			)
 		}
 
 		await runIngestOperation(access.studioId, IngestJobs.BucketItemImport, {
 			bucketId: access.bucket._id,
-			showStyleVariantId: showStyleVariantId,
+			showStyleBaseId: showStyleBaseId,
+			showStyleVariantIds: showStyleVariantId ? [showStyleVariantId] : undefined,
 			payload: ingestItem,
 		})
 	}

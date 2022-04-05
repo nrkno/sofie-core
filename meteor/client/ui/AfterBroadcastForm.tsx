@@ -77,9 +77,9 @@ export function AfterBroadcastForm(props: IProps) {
 	}
 
 	return (
-		<div className="afterbroadcastform-container">
+		<div className="afterbroadcastform-container" role="complementary" aria-labelledby="evaluation-header">
 			<div className="afterbroadcastform">
-				<h2>{t('Evaluation')}</h2>
+				<h2 id="evaluation-header">{t('Evaluation')}</h2>
 
 				<p>
 					<em>{t('Please take a minute to fill in this form.')}</em>

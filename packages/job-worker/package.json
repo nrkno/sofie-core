@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/job-worker",
-	"version": "1.41.0-in-development",
+	"version": "1.42.0-in-development",
 	"description": "Worker for things",
 	"main": "dist/index.js",
 	"license": "MIT",
@@ -19,7 +19,8 @@
 		"dev:debug": "nodemon --config nodemon.json --inspect-brk src/index.ts",
 		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
-		"lint": "eslint . --ext .ts --ext .js --ignore-pattern dist",
+		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "yarn lint:raw .",
 		"unit": "jest",
 		"test": "yarn lint && yarn unit",
 		"watch": "jest --watch",
@@ -42,7 +43,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
+		"@sofie-automation/blueprints-integration": "npm:@tv2media/blueprints-integration@1.41.3",
 		"@sofie-automation/corelib": "link:../corelib",
 		"debounce-fn": "^4.0.0",
 		"deepmerge": "^4.2.2",
@@ -69,7 +70,7 @@
 			"prettier --write"
 		],
 		"*.{ts,tsx}": [
-			"yarn lint --fix"
+			"yarn lint:raw"
 		]
 	}
 }

@@ -32,7 +32,7 @@ function typeConvertUrlParameters(args: any[]) {
 		else if (val === 'true') val = true
 		else if (val === 'false') val = false
 		else {
-			val = unescape(val)
+			val = decodeURIComponent(val)
 
 			if (!_.isNaN(Number(val))) {
 				val = Number(val)

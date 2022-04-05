@@ -34,7 +34,6 @@ interface IRundownViewShelfProps {
 	adLibSegmentUi: AdlibSegmentUi
 	hotkeyGroup: string
 	studioMode: boolean
-	registerHotkeys?: boolean
 }
 
 interface IRundownViewShelfTrackedProps {

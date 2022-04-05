@@ -72,6 +72,8 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 								src={'/blueprints/assets/' + content.icon}
 								className="segment-timeline__piece__label__transition-icon"
 								onError={this.iconFailed}
+								alt={this.props.piece.instance.piece.name}
+								role="presentation"
 							/>
 						)}
 					</span>

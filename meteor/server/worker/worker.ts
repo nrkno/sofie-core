@@ -191,6 +191,16 @@ async function logLine(msg: LogEntry): Promise<void> {
 
 let worker: Promisify<IpcJobWorker> | undefined
 Meteor.startup(() => {
+	if (Meteor.isDevelopment) {
+		// Ensure meteor restarts when the _force_restart file changes
+		try {
+			// eslint-disable-next-line node/no-missing-require, node/no-unpublished-require
+			require('../_force_restart')
+		} catch (e) {
+			// ignore
+		}
+	}
+
 	if (!process.env.MONGO_URL) throw new Error('MONGO_URL must be defined to launch Sofie')
 	// Note: MONGO_OPLOG_URL isn't required for the worker, but is required for meteor to not lag badly
 	if (!process.env.MONGO_OPLOG_URL) throw new Error('MONGO_OPLOG_URL must be defined to launch Sofie')

@@ -22,7 +22,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS } from '@sofie-automation/corelib/dist/constants'
 import { logger } from '../logging'
 import { getCurrentTime } from '../lib'
@@ -40,18 +40,7 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 	// Remove all dunamically inserted pieces (adlibs etc)
 	// const rundownIds = new Set(getRundownIDsFromCache(cache))
 
-	const partInstancesToRemove = cache.PartInstances.remove((p) => p.rehearsal)
-	if (partInstancesToRemove.length) {
-		const cachedRemovedPieceInstances = cache.PieceInstances.remove({
-			partInstanceId: { $in: partInstancesToRemove },
-		})
-		cache.deferAfterSave(async () => {
-			await context.directCollections.PieceInstances.remove({
-				partInstanceId: { $in: partInstancesToRemove },
-				_id: { $nin: cachedRemovedPieceInstances },
-			})
-		})
-	}
+	removePartInstancesWithPieceInstances(context, cache, { rehearsal: true })
 	resetPartInstancesWithPieceInstances(context, cache)
 
 	cache.Playlist.update({
@@ -430,20 +419,9 @@ export async function setNextPart(
 			}
 
 			if (resetPartInstanceIds.size > 0) {
-				cache.PartInstances.update(
-					(p) => resetPartInstanceIds.has(p._id),
-					(p) => {
-						p.reset = true
-						return p
-					}
-				)
-				cache.PieceInstances.update(
-					(p) => resetPartInstanceIds.has(p.partInstanceId),
-					(p) => {
-						p.reset = true
-						return p
-					}
-				)
+				resetPartInstancesWithPieceInstances(context, cache, {
+					_id: { $in: Array.from(resetPartInstanceIds) },
+				})
 			}
 		}
 	}
@@ -483,27 +461,22 @@ export function setNextSegment(context: JobContext, cache: CacheForPlayout, next
  */
 async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout) {
 	const playlist = cache.Playlist.doc
-	const selectedPartInstanceIds = _.compact([playlist.currentPartInstanceId, playlist.nextPartInstanceId])
 
-	const removePartInstanceIds: PartInstanceId[] = []
+	const selectedPartInstancesSegmentIds = new Set<SegmentId>()
+	const selectedPartInstances = getSelectedPartInstancesFromCache(cache)
+	if (selectedPartInstances.currentPartInstance)
+		selectedPartInstancesSegmentIds.add(selectedPartInstances.currentPartInstance.segmentId)
+	if (selectedPartInstances.nextPartInstance)
+		selectedPartInstancesSegmentIds.add(selectedPartInstances.nextPartInstance.segmentId)
 
 	// Cleanup any orphaned segments once they are no longer being played. This also cleans up any adlib-parts, that have been marked as deleted as a deferred cleanup operation
 	const segments = cache.Segments.findFetch((s) => !!s.orphaned)
 	const orphanedSegmentIds = new Set(segments.map((s) => s._id))
-	const groupedPartInstances = _.groupBy(
-		cache.PartInstances.findFetch((p) => orphanedSegmentIds.has(p.segmentId)),
-		(p) => unprotectString(p.segmentId)
-	)
+
 	const alterSegmentsFromRundowns = new Map<RundownId, { deleted: SegmentId[]; hidden: SegmentId[] }>()
 	for (const segment of segments) {
-		const partInstances = groupedPartInstances[unprotectString(segment._id)] || []
-		const partInstanceIds = new Set(partInstances.map((p) => p._id))
-
-		// Not in current or next. Previous can be reset as it will still be in the db, but not shown in the ui
-		if (
-			(!playlist.currentPartInstanceId || !partInstanceIds.has(playlist.currentPartInstanceId)) &&
-			(!playlist.nextPartInstanceId || !partInstanceIds.has(playlist.nextPartInstanceId))
-		) {
+		// If the segment is orphaned and not the segment for the next or current partinstance
+		if (!selectedPartInstancesSegmentIds.has(segment._id)) {
 			let rundownSegments = alterSegmentsFromRundowns.get(segment.rundownId)
 			if (!rundownSegments) {
 				rundownSegments = { deleted: [], hidden: [] }
@@ -540,6 +513,7 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 		}
 	}
 
+	const removePartInstanceIds: PartInstanceId[] = []
 	// Cleanup any orphaned partinstances once they are no longer being played (and the segment isnt orphaned)
 	const orphanedInstances = cache.PartInstances.findFetch((p) => p.orphaned === 'deleted' && !p.reset)
 	for (const partInstance of orphanedInstances) {
@@ -548,16 +522,68 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 			continue
 		}
 
-		if (!selectedPartInstanceIds.includes(partInstance._id)) {
+		if (partInstance._id !== playlist.currentPartInstanceId && partInstance._id !== playlist.nextPartInstanceId) {
 			removePartInstanceIds.push(partInstance._id)
 		}
 	}
 
 	// Cleanup any instances from above
 	if (removePartInstanceIds.length > 0) {
-		cache.PartInstances.update({ _id: { $in: removePartInstanceIds } }, { $set: { reset: true } })
-		cache.PieceInstances.update({ partInstanceId: { $in: removePartInstanceIds } }, { $set: { reset: true } })
+		resetPartInstancesWithPieceInstances(context, cache, { _id: { $in: removePartInstanceIds } })
 	}
+}
+
+/**
+ * Remove selected partInstances with their pieceInstances
+ */
+function removePartInstancesWithPieceInstances(
+	context: JobContext,
+	cache: CacheForPlayout,
+	selector: MongoQuery<DBPartInstance>
+): void {
+	const partInstancesToRemove = cache.PartInstances.remove(selector)
+
+	// Reset any in the cache now
+	if (partInstancesToRemove.length) {
+		cache.PieceInstances.remove({
+			partInstanceId: { $in: partInstancesToRemove },
+		})
+	}
+
+	// Defer ones which arent loaded
+	cache.deferAfterSave(async (cache) => {
+		// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
+		const partInstanceIdsInCache = cache.PartInstances.findFetch({}).map((p) => p._id)
+
+		// Find all the partInstances which are not loaded, but should be removed
+		const removeFromDb = await context.directCollections.PartInstances.findFetch(
+			{
+				$and: [
+					selector,
+					{
+						// Not any which are in the cache, as they have already been done if needed
+						_id: { $nin: partInstanceIdsInCache },
+					},
+				],
+			},
+			{ projection: { _id: 1 } }
+		).then((ps) => ps.map((p) => p._id))
+
+		// Do the remove
+		const allToRemove = [...removeFromDb, ...partInstancesToRemove]
+		await Promise.all([
+			removeFromDb.length > 0
+				? context.directCollections.PartInstances.remove({
+						_id: { $in: removeFromDb },
+				  })
+				: undefined,
+			allToRemove.length > 0
+				? context.directCollections.PieceInstances.remove({
+						partInstanceId: { $in: allToRemove },
+				  })
+				: undefined,
+		])
+	})
 }
 
 /**
@@ -583,8 +609,10 @@ function resetPartInstancesWithPieceInstances(
 			},
 		}
 	)
+
+	// Reset any in the cache now
 	if (partInstancesToReset.length) {
-		const cachedResetPieceInstances = cache.PieceInstances.update(
+		cache.PieceInstances.update(
 			{
 				partInstanceId: { $in: partInstancesToReset },
 				reset: { $ne: true },
@@ -595,21 +623,58 @@ function resetPartInstancesWithPieceInstances(
 				},
 			}
 		)
-		cache.deferAfterSave(async () => {
-			await context.directCollections.PieceInstances.update(
-				{
-					partInstanceId: { $in: partInstancesToReset },
-					reset: { $ne: true },
-					_id: { $nin: cachedResetPieceInstances },
-				},
-				{
-					$set: {
-						reset: true,
-					},
-				}
-			)
-		})
 	}
+
+	// Defer ones which arent loaded
+	cache.deferAfterSave(async (cache) => {
+		const partInstanceIdsInCache = cache.PartInstances.findFetch({}).map((p) => p._id)
+
+		// Find all the partInstances which are not loaded, but should be reset
+		const resetInDb = await context.directCollections.PartInstances.findFetch(
+			{
+				$and: [
+					selector ?? {},
+					{
+						// Not any which are in the cache, as they have already been done if needed
+						_id: { $nin: partInstanceIdsInCache },
+						reset: { $ne: true },
+					},
+				],
+			},
+			{ projection: { _id: 1 } }
+		).then((ps) => ps.map((p) => p._id))
+
+		// Do the reset
+		const allToReset = [...resetInDb, ...partInstancesToReset]
+		await Promise.all([
+			resetInDb.length
+				? context.directCollections.PartInstances.update(
+						{
+							_id: { $in: resetInDb },
+							reset: { $ne: true },
+						},
+						{
+							$set: {
+								reset: true,
+							},
+						}
+				  )
+				: undefined,
+			allToReset.length
+				? context.directCollections.PieceInstances.update(
+						{
+							partInstanceId: { $in: allToReset },
+							reset: { $ne: true },
+						},
+						{
+							$set: {
+								reset: true,
+							},
+						}
+				  )
+				: undefined,
+		])
+	})
 }
 
 export function onPartHasStoppedPlaying(

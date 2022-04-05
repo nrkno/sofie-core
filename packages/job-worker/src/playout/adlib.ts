@@ -23,7 +23,7 @@ import {
 	getSelectedPartInstancesFromCache,
 } from './cache'
 import { runJobWithPlayoutCache } from './lock'
-import { updateTimeline } from './timeline'
+import { updateTimeline } from './timeline/generate'
 import { selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
 import {
@@ -32,7 +32,7 @@ import {
 	getResolvedPieces,
 	setupPieceInstanceInfiniteProperties,
 } from './pieces'
-import { updatePartInstanceRanks } from '../rundown'
+import { updatePartInstanceRanksAfterAdlib } from '../rundown'
 import {
 	fetchPiecesThatMayBeActiveForPart,
 	getPieceInstancesForPart,
@@ -559,7 +559,7 @@ export async function innerStartQueuedAdLib(
 		cache.PieceInstances.insert(pieceInstance)
 	})
 
-	updatePartInstanceRanks(cache, [{ segmentId: newPartInstance.part.segmentId, oldPartIdsAndRanks: null }])
+	updatePartInstanceRanksAfterAdlib(cache, newPartInstance.part.segmentId)
 
 	// Find and insert any rundown defined infinites that we should inherit
 	newPartInstance = cache.PartInstances.findOne(newPartInstance._id) as DBPartInstance

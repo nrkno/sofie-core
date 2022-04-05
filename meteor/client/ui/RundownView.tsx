@@ -3,7 +3,7 @@ import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { VTContent, TSR, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { VTContent, TSR, NoteSeverity, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import CoreIcon from '@nrk/core-icons/jsx'
@@ -1034,7 +1034,7 @@ const RundownHeader = withTranslation()(
 								)}
 								<div className="flex-col right horizontal-align-right">
 									<div className="links mod close">
-										<NavLink to="/rundowns">
+										<NavLink to="/rundowns" title={t('Exit')}>
 											<CoreIcon.NrkClose />
 										</NavLink>
 									</div>
@@ -1952,7 +1952,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		eventQueueMiniShelfAdLib = (e: MiniShelfQueueAdLibEvent) => {
-			this.queueMinishelfAdLib(e, e.forward)
+			this.queueMinishelfAdLib(e.context, e.forward)
 		}
 
 		onActivate = () => {
@@ -2243,14 +2243,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		queueNextMinishelfAdLib = (e: any) => {
-			this.queueMinishelfAdLib(e, true)
-		}
-
-		queuePrevMinishelfAdLib = (e: any) => {
-			this.queueMinishelfAdLib(e, false)
-		}
-
 		renderSegments() {
 			if (!this.props.matchedSegments) {
 				return null
@@ -2338,12 +2330,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				)
 			})
 		}
-		minishelfRegisterHotkeys() {
-			const filter = this.state.miniShelfLayout?.filters[0]
-			if (!filter || !RundownLayoutsAPI.isDashboardLayoutFilter(filter)) return false
-
-			return !!filter.assignHotKeys
-		}
 
 		renderSegmentComponent(
 			segment: DBSegment,
@@ -2364,7 +2350,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const displayMode = userSegmentDisplaymode ?? segment.displayAs ?? DEFAULT_SEGMENT_VIEW_MODE
 
 			const showDurationSourceLayers = this.state.rundownViewLayout?.showDurationSourceLayers
-				? new Set(this.state.rundownViewLayout?.showDurationSourceLayers)
+				? new Set<ISourceLayer['_id']>(this.state.rundownViewLayout?.showDurationSourceLayers)
 				: undefined
 
 			return displayMode === SegmentViewMode.Storyboard ? (
@@ -2424,7 +2410,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
 					fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
 					adLibSegmentUi={this.state.uiSegmentMap.get(segment._id)}
-					minishelfRegisterHotkeys={this.minishelfRegisterHotkeys()}
 					studioMode={this.state.studioMode}
 					showDurationSourceLayers={showDurationSourceLayers}
 				/>
@@ -2445,7 +2430,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					{this.props.playlist?.loop && (
 						<PlaylistLoopingHeader position="start" multiRundown={this.props.matchedSegments.length > 1} />
 					)}
-					<div className="segment-timeline-container">{this.renderSegments()}</div>
+					<div className="segment-timeline-container" role="main" aria-labelledby="rundown-playlist-name">
+						{this.renderSegments()}
+					</div>
 					{this.props.playlist?.loop && (
 						<PlaylistLoopingHeader
 							position="end"

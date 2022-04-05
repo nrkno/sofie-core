@@ -220,12 +220,13 @@ export const ExternalFramePanel = withTranslation()(
 			if (!targetRundown) {
 				throw new Meteor.Error('Target rundown could not be determined!')
 			}
+			const showStyleBaseId = targetRundown.showStyleBaseId
 
 			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e) =>
 				MeteorCall.userAction.bucketAdlibImport(
 					e,
 					targetBucket ? targetBucket._id : protectString(''),
-					targetRundown!.showStyleVariantId,
+					showStyleBaseId,
 					literal<IngestAdlib>({
 						externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
 						name: mosItem.ObjectSlug ? mosItem.ObjectSlug.toString() : '',
@@ -431,8 +432,7 @@ export const ExternalFramePanel = withTranslation()(
 					e.dataTransfer.types.indexOf('text/plain') >= 0 &&
 					e.dataTransfer.files.length === 0
 				) {
-					for (let i = 0; i < e.dataTransfer.items.length; i++) {
-						const dataTransferItem = e.dataTransfer.items[i]
+					for (const dataTransferItem of e.dataTransfer.items) {
 						// skip, if not of text/plain type
 						if (dataTransferItem.type !== 'text/plain') continue
 						dataTransferItem.getAsString((text: string) => {

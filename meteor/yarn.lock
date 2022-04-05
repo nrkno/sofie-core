@@ -1182,10 +1182,10 @@
   version "0.0.0"
   uid ""
 
-"@sofie-automation/sorensen@^1.2.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@sofie-automation/sorensen/-/sorensen-1.3.0.tgz#495858e80dd31299676c8278aa8eaabe6be961e2"
-  integrity sha512-ZFWKmqE9iTA2UorA21bhXnbBnEwz08blUrnQwV3jBqeCuzLJvzZ7sOwVXWbr9Yfc2v4jFthFqo3AbRMGc8mkug==
+"@sofie-automation/sorensen@^1.3.2":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@sofie-automation/sorensen/-/sorensen-1.3.2.tgz#ff2c45fa66e6d063a23aba3170235d9a3adcead6"
+  integrity sha512-kNoGg7mvX4tnNSJ6s24ZpLcZdVylnEUregyvcsAr6HHs8IRd+t02h9tZxrRaWcEsEokSe3NuDRjkntTz/aV6+g==
 
 "@tokenizer/token@^0.3.0":
   version "0.3.0"
@@ -7333,10 +7333,10 @@ monitor-event-loop-delay@^1.0.0:
   resolved "https://registry.yarnpkg.com/monitor-event-loop-delay/-/monitor-event-loop-delay-1.0.0.tgz#b5ab78165a3bb93f2b275c50d01430c7f155d1f7"
   integrity sha512-YRIr1exCIfBDLZle8WHOfSo7Xg3M+phcZfq9Fx1L6Abo+atGp7cge5pM7PjyBn4s1oZI/BRD4EMrzQBbPpVb5Q==
 
-mos-connection@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.5.tgz#c67a54752351590181e0918ff3962614ff60990b"
-  integrity sha512-oCIDIaf4BvzOrFSaZ4bGwIb5jyhU0q5ARN4iF9L/BT+6pfMzOLV6x5Z8zC7y4iQpE7q3OvmYrZ34VoVR6GqpuQ==
+mos-connection@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.6.tgz#bae6918e9554fb83ed3d30a5f065116ba85f66ed"
+  integrity sha512-Ia/BvwQD+jBwBKPf0dV9Jr4R5Ufx2W/CuzL5OqbPeEutbbNDR0qVBnJxixk7d9ZoggVshnUk+fvuCp/MXu9dgA==
   dependencies:
     iconv-lite "^0.6.2"
     moment "^2.29.1"

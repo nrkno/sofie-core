@@ -528,12 +528,14 @@ export interface IBlueprintAdLibPiece<TMetadata = unknown> extends IBlueprintPie
 	currentPieceTags?: string[]
 	/** Piece tags to use to determine if action is set as next */
 	nextPieceTags?: string[]
-	/** String that can be used to identify adlibs that are equivalent to each other */
+	/**
+	 * String that can be used to identify adlibs that are equivalent to each other,
+	 * if there are multiple Adlibs with the same uniquenessId,
+	 * only one of them should be displayed in the GUI.
+	 */
 	uniquenessId?: string
 	/** When not playing, display in the UI as playing, and vice versa. Useful for Adlibs that toggle something off when taken */
 	invertOnAirState?: boolean
-	/** Do not assign a hotkey to this adlib */
-	noHotKey?: boolean
 }
 /** The AdLib piece sent from Core */
 export interface IBlueprintAdLibPieceDB<TMetadata = unknown> extends IBlueprintAdLibPiece<TMetadata> {

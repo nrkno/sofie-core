@@ -132,7 +132,6 @@ function actionToAdLibPieceUi(
 		nextPieceTags: action.display.nextPieceTags,
 		uniquenessId: action.display.uniquenessId,
 		lifespan: PieceLifespan.WithinPart, // value doesn't matter
-		noHotKey: action.display.noHotKey,
 		expectedPackages: action.expectedPackages,
 	})
 }
@@ -421,7 +420,6 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 									outputLayerId: '',
 									_rank: 0,
 									content: {},
-									noHotKey: false,
 								})
 							)
 					)
@@ -500,7 +498,6 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 								outputLayerId: '',
 								_rank: 0,
 								content: {},
-								noHotKey: false,
 							})
 						)
 				},
@@ -655,7 +652,7 @@ export function AdLibPanel({
 			) {
 				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 				return
-				// TODOSYNC: TV2 uses queue = false, to be discussed
+				// TODOSYNC: TV2 uses queue = false
 			}
 			if (currentPartInstanceId) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {

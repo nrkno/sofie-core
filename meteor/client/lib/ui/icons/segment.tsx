@@ -41,7 +41,15 @@ export const SmallPartFlag = (props: React.SVGProps<SVGSVGElement>) => (
 )
 
 export const Storyboard = (props: React.SVGProps<SVGSVGElement>) => (
-	<svg width="27" height="27" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+	<svg
+		width="27"
+		height="27"
+		viewBox="0 0 27 27"
+		fill="none"
+		xmlns="http://www.w3.org/2000/svg"
+		role="presentation"
+		{...props}
+	>
 		<rect y="0" width="27" height="27" rx="3" fill="#00000000" className="btn-bkg" />
 		<path
 			fillRule="evenodd"
@@ -64,7 +72,15 @@ export const Storyboard = (props: React.SVGProps<SVGSVGElement>) => (
 )
 
 export const Timeline = (props: React.SVGProps<SVGSVGElement>) => (
-	<svg width="27" height="27" viewBox="0 0 27 27" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+	<svg
+		width="27"
+		height="27"
+		viewBox="0 0 27 27"
+		fill="none"
+		xmlns="http://www.w3.org/2000/svg"
+		role="presentation"
+		{...props}
+	>
 		<rect y="0" width="27" height="27" rx="3" fill="#00000000" className="btn-bkg" />
 		<rect x="4" y="9" width="13" height="2" fill="#BABABA" className="btn-icon" />
 		<rect x="7" y="12" width="13" height="2" fill="#BABABA" className="btn-icon" />

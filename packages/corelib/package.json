@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/corelib",
-	"version": "1.41.0-in-development",
+	"version": "1.42.0-in-development",
 	"private": true,
 	"description": "Internal library for some types shared by core and workers",
 	"main": "dist/index.js",
@@ -18,7 +18,8 @@
 	"scripts": {
 		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
-		"lint": "eslint . --ext .ts --ext .js --ignore-pattern dist",
+		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "yarn lint:raw .",
 		"unit": "jest",
 		"test": "yarn lint && yarn unit",
 		"watch": "jest --watch",
@@ -41,11 +42,11 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "npm:@tv2media/blueprints-integration@1.41.2",
+		"@sofie-automation/blueprints-integration": "npm:@tv2media/blueprints-integration@1.41.3",
 		"fast-clone": "^1.5.13",
 		"i18next": "^19.9.2",
 		"influx": "^5.9.2",
-		"mos-connection": "^1.0.5",
+		"mos-connection": "^1.0.6",
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",
 		"tslib": "^2.1.0",
@@ -63,7 +64,7 @@
 			"prettier --write"
 		],
 		"*.{ts,tsx}": [
-			"yarn lint --fix"
+			"yarn lint:raw"
 		]
 	}
 }

@@ -2589,6 +2589,20 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								{t('Allow Rundowns to be reset while on-air')}
 							</label>
 						</div>
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.preserveOrphanedSegmentPositionInRundown"
+									obj={this.props.studio}
+									type="checkbox"
+									collection={Studios}
+								></EditAttribute>
+								{t(
+									'Preserve position of segments when unsynced relative to other segments. Note: this has only been tested for the iNews gateway'
+								)}
+							</label>
+						</div>
 					</div>
 					<div className="row">
 						<div className="col c12 r1-c12">

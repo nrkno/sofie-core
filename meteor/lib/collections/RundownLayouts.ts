@@ -1,4 +1,4 @@
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { RundownLayoutId, UserId, ShowStyleBaseId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -311,7 +311,6 @@ export type DashboardLayoutFilter = DashboardPanel<
 		buttonHeightScale: number
 
 		includeClearInRundownBaseline: boolean
-		assignHotKeys: boolean
 		overflowHorizontally?: boolean
 		showAsTimeline?: boolean
 		hide?: boolean
@@ -327,8 +326,6 @@ export type DashboardLayoutFilter = DashboardPanel<
 export interface MiniShelfLayoutFilter extends RundownLayoutFilterBase {
 	buttonWidthScale: number
 	buttonHeightScale: number
-
-	assignHotKeys: boolean
 }
 
 export interface RundownLayoutBase {
@@ -365,7 +362,7 @@ export interface RundownViewLayout extends RundownLayoutBase {
 	/** Always show planned segment duration instead of counting up/down when the segment is live */
 	fixedSegmentDuration: boolean
 	/** SourceLayer ids for which a piece duration label should be shown */
-	showDurationSourceLayers: string[]
+	showDurationSourceLayers: ISourceLayer['_id'][]
 	/** Show only the listed source layers in the RundownView (sourceLayerIds) */
 	visibleSourceLayers?: string[]
 	/** Show only the listed output groups in the RundownView (outputLayerIds) */
