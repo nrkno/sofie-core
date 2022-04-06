@@ -417,9 +417,15 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private handleOnPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') {
-			this.pointerId = e.pointerId
-			e.preventDefault()
+			const pointerCopy = e.pointerId
+			this.pointerId = pointerCopy
 		} else {
+			this.pointerId = null
+		}
+	}
+
+	private handleOnPointerOut = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (e.pointerId === this.pointerId) {
 			this.pointerId = null
 		}
 	}
@@ -482,8 +488,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onPointerEnter={this.handleOnPointerEnter}
 				onPointerLeave={this.handleOnPointerLeave}
 				onMouseMove={this.handleOnMouseMove}
-				onTouchStart={!this.props.canOverflowHorizontally ? this.handleOnTouchStart : undefined}
-				onTouchEnd={!this.props.canOverflowHorizontally ? this.handleOnTouchEnd : undefined}
+				onPointerDown={this.handleOnPointerDown}
+				onPointerOut={this.handleOnPointerOut}
+				onPointerUp={this.handleOnPointerUp}
+				onTouchStart={!this.props.canOverflowHorizontally ? this.handleOnMouseEnter : undefined}
+				onTouchEnd={!this.props.canOverflowHorizontally ? this.handleOnMouseLeave : undefined}
 				onTouchMove={!this.props.canOverflowHorizontally ? this.handleOnTouchMove : undefined}
 				onPointerDown={this.handleOnPointerDown}
 				onPointerUp={this.handleOnPointerUp}
