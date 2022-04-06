@@ -12,7 +12,7 @@ require('../../userActions') // include in order to create the Meteor methods ne
 
 describe('User Actions - Media Manager', () => {
 	let env: DefaultEnvironment
-	function setupMockWorkFlow(env: DefaultEnvironment) {
+	function setupMockWorkFlow() {
 		const workFlowId: MediaWorkFlowId = getRandomId()
 		const workFlow = {
 			_id: workFlowId,
@@ -45,7 +45,7 @@ describe('User Actions - Media Manager', () => {
 		jest.resetAllMocks()
 	})
 	testInFiber('Restart workflow', async () => {
-		const { workFlowId } = setupMockWorkFlow(env)
+		const { workFlowId } = setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
@@ -79,7 +79,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Abort worfklow', async () => {
-		const { workFlowId } = setupMockWorkFlow(env)
+		const { workFlowId } = setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
@@ -113,7 +113,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Prioritize workflow', async () => {
-		const { workFlowId } = setupMockWorkFlow(env)
+		const { workFlowId } = setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
@@ -147,7 +147,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Restart all workflows', async () => {
-		setupMockWorkFlow(env)
+		setupMockWorkFlow()
 
 		{
 			// should execute function on all the target devices
@@ -168,7 +168,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Abort all workflows', async () => {
-		setupMockWorkFlow(env)
+		setupMockWorkFlow()
 
 		{
 			// should execute function on all the target devices

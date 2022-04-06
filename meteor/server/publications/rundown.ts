@@ -126,21 +126,6 @@ meteorPublish(PubSub.pieces, function (selector: MongoQuery<Piece>, token?: stri
 	return null
 })
 
-meteorPublish(PubSub.piecesSimple, function (selector: MongoQuery<Piece>, token?: string) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<Piece> = {
-		fields: {
-			metaData: 0,
-			// @ts-ignore
-			'content.timelineObjects': 0,
-		},
-	}
-	if (RundownReadAccess.rundownContent({ rundownId: selector.startRundownId }, { userId: this.userId, token })) {
-		return Pieces.find(selector, modifier)
-	}
-	return null
-})
-
 meteorPublish(PubSub.adLibPieces, function (selector: MongoQuery<AdLibPiece>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<AdLibPiece> = {

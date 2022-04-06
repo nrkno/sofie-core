@@ -185,7 +185,7 @@ export namespace MeteorMock {
 				}
 			})
 		} else {
-			return waitForPromise(Promise.resolve(fcn.call(getMethodContext(), ...args)))
+			return waitForPromiseLocal(Promise.resolve(fcn.call(getMethodContext(), ...args)))
 		}
 	}
 	export function apply(
@@ -268,13 +268,6 @@ export namespace MeteorMock {
 	}
 	export let users: any = undefined
 
-	// export let users = new Mongo.Collection('Meteor.users')
-	// export const users = {}
-	/*
-	export function subscribe () {
-
-	}
-	*/
 	// -- Mock functions: --------------------------
 	/**
 	 * Run the Meteor.startup() functions
@@ -286,15 +279,15 @@ export namespace MeteorMock {
 
 		waitTimeNoFakeTimers(10) // So that any observers or defers has had time to run.
 	}
-	export function mockLoginUser(user: Meteor.User) {
-		mockUser = user
+	export function mockLoginUser(newUser: Meteor.User) {
+		mockUser = newUser
 	}
 	export function mockSetUsersCollection(usersCollection) {
 		users = usersCollection
 	}
 
 	// locally defined function here, so there are no import to the rest of the code
-	const waitForPromise: <T>(p: Promise<T>) => T = wrapAsync(function waitForPromises<T>(
+	const waitForPromiseLocal: <T>(p: Promise<T>) => T = wrapAsync(function waitForPromises<T>(
 		p: Promise<T>,
 		cb: (err: any | null, result?: any) => T
 	) {

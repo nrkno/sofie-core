@@ -52,7 +52,7 @@ export function makePlaylistFromRundown_1_0_0(
 ): DBRundownPlaylist {
 	const rundown = rundown0 as any as Rundown
 	if (!newPlaylistId) newPlaylistId = protectString('pl_' + rundown._id)
-	const playlist = literal<DBRundownPlaylist>({
+	return literal<DBRundownPlaylist>({
 		_id: newPlaylistId,
 		externalId: rundown.externalId,
 		activationId: rundown['active'] ? getRandomId() : undefined,
@@ -75,5 +75,4 @@ export function makePlaylistFromRundown_1_0_0(
 		studioId: rundown.studioId,
 		modified: rundown.modified,
 	})
-	return playlist
 }

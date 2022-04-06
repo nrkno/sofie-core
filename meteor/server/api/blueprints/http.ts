@@ -53,7 +53,7 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 
 	res.end(content)
 })
-PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerPOST.route('/blueprints/restore', (_params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
@@ -73,8 +73,8 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 			throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 		}
 
-		const isBlueprintManifestSet = (collection: string | object): collection is BlueprintManifestSet =>
-			typeof collection === 'object' && 'blueprints' in collection
+		const isBlueprintManifestSet = (obj: string | object): obj is BlueprintManifestSet =>
+			typeof obj === 'object' && 'blueprints' in obj
 		if (!isBlueprintManifestSet(collection))
 			throw new Meteor.Error(400, 'Restore Blueprint: Malformed request body')
 

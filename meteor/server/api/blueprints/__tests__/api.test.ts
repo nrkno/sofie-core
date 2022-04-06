@@ -16,13 +16,13 @@ const DEFAULT_CONTEXT: MethodContext = {
 	isSimulation: false,
 	connection: {
 		id: 'mockConnectionId',
-		close: () => {},
-		onClose: () => {},
+		close: () => undefined,
+		onClose: () => undefined,
 		clientAddress: '127.0.0.1',
 		httpHeaders: {},
 	},
-	setUserId: () => {},
-	unblock: () => {},
+	setUserId: () => undefined,
+	unblock: () => undefined,
 }
 
 describe('Test blueprint management api', () => {
