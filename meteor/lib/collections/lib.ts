@@ -179,7 +179,7 @@ class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
 		options?: FindOptions<DBInterface>
 	): MongoCursor<DBInterface> {
 		try {
-			return this.#collection.find(selector as any, options as any) as MongoCursor<DBInterface>
+			return this.#collection.find((selector ?? {}) as any, options as any) as MongoCursor<DBInterface>
 		} catch (e) {
 			this.wrapMongoError(e)
 		}
@@ -189,7 +189,7 @@ class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
 		options?: FindOneOptions<DBInterface>
 	): DBInterface | undefined {
 		try {
-			return this.#collection.findOne(selector as any, options as any)
+			return this.#collection.findOne((selector ?? {}) as any, options as any)
 		} catch (e) {
 			this.wrapMongoError(e)
 		}

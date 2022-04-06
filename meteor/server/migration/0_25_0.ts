@@ -63,22 +63,22 @@ export const addSteps = addMigrationSteps('0.25.0', [
 			if (dbs) {
 				const ps: Promise<unknown>[] = []
 
-				dbs.SegmentLines.find().forEach((doc) => {
+				dbs.SegmentLines.find({}).forEach((doc) => {
 					ps.push(Parts.insertIgnoreAsync(doc))
 				})
 				dbs.SegmentLines.remove({})
 
-				dbs.SegmentLineItems.find().forEach((doc) => {
+				dbs.SegmentLineItems.find({}).forEach((doc) => {
 					ps.push(Pieces.insertIgnoreAsync(doc))
 				})
 				dbs.SegmentLineItems.remove({})
 
-				dbs.SegmentLineAdLibItems.find().forEach((doc) => {
+				dbs.SegmentLineAdLibItems.find({}).forEach((doc) => {
 					ps.push(AdLibPieces.insertIgnoreAsync(doc))
 				})
 				dbs.SegmentLineAdLibItems.remove({})
 
-				dbs.RunningOrderBaselineItems.find().forEach((doc) => {
+				dbs.RunningOrderBaselineItems.find({}).forEach((doc) => {
 					ps.push(RundownBaselineObjs.insertIgnoreAsync(doc))
 				})
 				dbs.RunningOrderBaselineItems.remove({})
@@ -86,7 +86,7 @@ export const addSteps = addMigrationSteps('0.25.0', [
 				// dbs.RunningOrderBaselineAdLibItems.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(RundownBaselineAdLibPieces, doc)) })
 				// dbs.RunningOrderBaselineAdLibItems.remove({})
 
-				dbs.StudioInstallations.find().forEach((doc) => {
+				dbs.StudioInstallations.find({}).forEach((doc) => {
 					ps.push(Studios.insertIgnoreAsync(doc))
 				})
 				dbs.StudioInstallations.remove({})
