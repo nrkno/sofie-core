@@ -52,6 +52,19 @@ function deepMatch(object: any, attrs: any, deep: boolean): boolean {
 	return true
 }
 
+export async function promiseWithTimeout<T>(promiseName: string, promise: Promise<T>): Promise<T> {
+	const timeoutPromise = new Promise<T>((_, reject) => {
+		setTimeout(
+			() => {
+				reject(`No reply from NRCS on "${promiseName}" message`)
+			},
+			// 2.5s is slightly less than a 3s timeout in the core
+			2500
+		)
+	})
+	return Promise.race([promise, timeoutPromise])
+}
+
 import * as _ from 'underscore'
 import { MosHandler } from './mosHandler'
 import { DeviceConfig } from './connector'
@@ -349,32 +362,38 @@ export class CoreMosDeviceHandler {
 	}
 	async setStoryStatus(roId: string, storyId: string, status: IMOSObjectStatus): Promise<any> {
 		// console.log('setStoryStatus')
-		return this._mosDevice
-			.sendStoryStatus({
-				RunningOrderId: new MosString128(roId),
-				ID: new MosString128(storyId),
-				Status: status,
-				Time: new MosTime(),
-			})
-			.then((result) => {
-				// console.log('got result', result)
-				return this.fixMosData(result)
-			})
+		return promiseWithTimeout(
+			'sendStoryStatus',
+			this._mosDevice
+				.sendStoryStatus({
+					RunningOrderId: new MosString128(roId),
+					ID: new MosString128(storyId),
+					Status: status,
+					Time: new MosTime(),
+				})
+				.then((result) => {
+					// console.log('got result', result)
+					return this.fixMosData(result)
+				})
+		)
 	}
 	async setItemStatus(roId: string, storyId: string, itemId: string, status: IMOSObjectStatus): Promise<any> {
 		// console.log('setStoryStatus')
-		return this._mosDevice
-			.sendItemStatus({
-				RunningOrderId: new MosString128(roId),
-				StoryId: new MosString128(storyId),
-				ID: new MosString128(itemId),
-				Status: status,
-				Time: new MosTime(),
-			})
-			.then((result) => {
-				// console.log('got result', result)
-				return this.fixMosData(result)
-			})
+		return promiseWithTimeout(
+			'sendItemStatus',
+			this._mosDevice
+				.sendItemStatus({
+					RunningOrderId: new MosString128(roId),
+					StoryId: new MosString128(storyId),
+					ID: new MosString128(itemId),
+					Status: status,
+					Time: new MosTime(),
+				})
+				.then((result) => {
+					// console.log('got result', result)
+					return this.fixMosData(result)
+				})
+		)
 	}
 	async replaceStoryItem(
 		roID: string,
@@ -383,73 +402,76 @@ export class CoreMosDeviceHandler {
 		itemDiff?: DeepPartial<IMOSItem>
 	): Promise<any> {
 		// console.log(roID, storyID, item)
-		return this._mosDevice
-			.sendItemReplace({
-				roID: new MosString128(roID),
-				storyID: new MosString128(storyID),
-				item,
-			})
-			.then((result) => this.fixMosData(result))
-			.then((result: any) => {
-				if (!itemDiff) {
-					return result
-				} else {
-					if (
-						!result ||
-						!result.mos ||
-						!result.mos.roAck ||
-						!result.mos.roAck.roStatus ||
-						result.mos.roAck.roStatus.toString() !== 'OK'
-					) {
-						return Promise.reject(result)
+		return promiseWithTimeout(
+			'sendItemReplace',
+			this._mosDevice
+				.sendItemReplace({
+					roID: new MosString128(roID),
+					storyID: new MosString128(storyID),
+					item,
+				})
+				.then((result) => this.fixMosData(result))
+				.then((result: any) => {
+					if (!itemDiff) {
+						return result
 					} else {
-						// When the result of the replaceStoryItem operation comes in,
-						// it is not confirmed if the change actually was performed or not.
-						// Therefore we put a "pendingChange" on watch, so that this operation does not resolve
-						// until the change actually has been applied (using onStoryReplace, onItemReplace or onFullStory)
+						if (
+							!result ||
+							!result.mos ||
+							!result.mos.roAck ||
+							!result.mos.roAck.roStatus ||
+							result.mos.roAck.roStatus.toString() !== 'OK'
+						) {
+							return Promise.reject(result)
+						} else {
+							// When the result of the replaceStoryItem operation comes in,
+							// it is not confirmed if the change actually was performed or not.
+							// Therefore we put a "pendingChange" on watch, so that this operation does not resolve
+							// until the change actually has been applied (using onStoryReplace, onItemReplace or onFullStory)
 
-						const pendingChange: IStoryItemChange = {
-							roID,
-							storyID,
-							itemID: item.ID.toString(),
-							timestamp: Date.now(),
+							const pendingChange: IStoryItemChange = {
+								roID,
+								storyID,
+								itemID: item.ID.toString(),
+								timestamp: Date.now(),
 
-							resolve: () => {
-								return
-							},
-							reject: () => {
-								return
-							},
+								resolve: () => {
+									return
+								},
+								reject: () => {
+									return
+								},
 
-							itemDiff,
+								itemDiff,
+							}
+							this._coreParentHandler.logger.debug(
+								`creating pending change: ${pendingChange.storyID}:${pendingChange.itemID}`
+							)
+							const promise = new Promise<IMOSROAck>((promiseResolve, promiseReject) => {
+								pendingChange.resolve = (value) => {
+									this.removePendingChange(pendingChange)
+									this._coreParentHandler.logger.debug(
+										`pending change resolved: ${pendingChange.storyID}:${pendingChange.itemID}`
+									)
+									promiseResolve(value || result)
+								}
+								pendingChange.reject = (reason) => {
+									this.removePendingChange(pendingChange)
+									this._coreParentHandler.logger.debug(
+										`pending change rejected: ${pendingChange.storyID}:${pendingChange.itemID}`
+									)
+									promiseReject(reason)
+								}
+							})
+							this.addPendingChange(pendingChange)
+							setTimeout(() => {
+								pendingChange.reject('Pending change timed out')
+							}, this._pendingChangeTimeout)
+							return promise
 						}
-						this._coreParentHandler.logger.debug(
-							`creating pending change: ${pendingChange.storyID}:${pendingChange.itemID}`
-						)
-						const promise = new Promise<IMOSROAck>((promiseResolve, promiseReject) => {
-							pendingChange.resolve = (value) => {
-								this.removePendingChange(pendingChange)
-								this._coreParentHandler.logger.debug(
-									`pending change resolved: ${pendingChange.storyID}:${pendingChange.itemID}`
-								)
-								promiseResolve(value || result)
-							}
-							pendingChange.reject = (reason) => {
-								this.removePendingChange(pendingChange)
-								this._coreParentHandler.logger.debug(
-									`pending change rejected: ${pendingChange.storyID}:${pendingChange.itemID}`
-								)
-								promiseReject(reason)
-							}
-						})
-						this.addPendingChange(pendingChange)
-						setTimeout(() => {
-							pendingChange.reject('Pending change timed out')
-						}, this._pendingChangeTimeout)
-						return promise
 					}
-				}
-			})
+				})
+		)
 	}
 	async test(a: string): Promise<string> {
 		return new Promise((resolve) => {
