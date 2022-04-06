@@ -1173,7 +1173,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	const params = queryStringParse(location.search)
 
-	const DEFAULT_DISPLAY_OPTIONS = props.onlyShelf ? 'layout,shelfLayout' : 'buckets,layout,shelfLayout,inspector' // TODOSYNC: TV2 had removed buckets,inspector. check why
+	const DEFAULT_DISPLAY_OPTIONS = 'layout,shelfLayout'
 
 	const displayOptions = ((params['display'] as string) || DEFAULT_DISPLAY_OPTIONS).split(',')
 	const bucketDisplayFilter = !(params['buckets'] as string)

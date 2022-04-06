@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { KeyboardLayouts } from './KeyboardLayout'
 
 /**
  * This is an object specifying installation-wide, User Interface settings.
@@ -38,6 +39,12 @@ export interface ISettings {
 
 	/** The KeyboardPreview is a feature that is not implemented in the main Fork */
 	enableKeyboardPreview: boolean
+
+	// Keyboard map layout (what physical layout to use for the keyboard)
+	keyboardMapLayout: KeyboardLayouts.Names
+
+	// Name of the installation. Used to include custom implementations that differ from the main Fork. I.e. custom CSS etc. Leave undefined if no custom implementation is needed
+	installationName?: string
 }
 
 /**
@@ -57,7 +64,9 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	followOnAirSegmentsHistory: 0,
 	maximumDataAge: 1000 * 60 * 60 * 24 * 100, // 100 days
 	enableNTPTimeChecker: null,
-	enableKeyboardPreview: false,
+	enableKeyboardPreview: true,
+	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
+	installationName: 'tv2',
 })
 
 /**

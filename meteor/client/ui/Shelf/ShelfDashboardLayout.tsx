@@ -31,6 +31,8 @@ import { StudioNamePanel } from './StudioNamePanel'
 import { SegmentNamePanel } from './SegmentNamePanel'
 import { PartNamePanel } from './PartNamePanel'
 import { ColoredBoxPanel } from './ColoredBoxPanel'
+import { KeyboardPreviewPanel } from './Keyboard/KeyboardPreviewPanel'
+import { Settings } from '../../../lib/Settings'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -230,16 +232,16 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							)
 						} else if (RundownLayoutsAPI.isColoredBox(panel)) {
 							return <ColoredBoxPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
-							// } else if (RundownLayoutsAPI.isKeyboardMap(panel)) {
-							// 	return (
-							// 		<KeyboardPreviewPanel
-							// 			key={panel._id}
-							// 			visible={true}
-							// 			showStyleBase={props.showStyleBase}
-							// 			layout={rundownLayout}
-							// 			panel={panel}
-							// 		/>
-							// 	)
+						} else if (Settings.enableKeyboardPreview && RundownLayoutsAPI.isKeyboardMap(panel)) {
+							return (
+								<KeyboardPreviewPanel
+									key={panel._id}
+									visible={true}
+									showStyleBase={props.showStyleBase}
+									layout={rundownLayout}
+									panel={panel}
+								/>
+							)
 						} else if (RundownLayoutsAPI.isMiniRundown(panel)) {
 							return (
 								<MiniRundownPanel
