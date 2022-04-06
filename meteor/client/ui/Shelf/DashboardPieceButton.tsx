@@ -246,6 +246,24 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		this.element = el
 	}
 
+	private handleOnMouseEnter = (_e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+		if (this.element) {
+			const { top, left, width, height } = this.element.getBoundingClientRect()
+			this.positionAndSize = {
+				top,
+				left,
+				width,
+				height,
+			}
+		}
+		this.setState({ isHovered: true })
+	}
+
+	private handleOnMouseLeave = (_e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+		this.setState({ isHovered: false })
+		this.positionAndSize = null
+	}
+
 	private handleOnPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (this.element) {
 			const { top, left, width, height } = this.element.getBoundingClientRect()
@@ -494,8 +512,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onTouchStart={!this.props.canOverflowHorizontally ? this.handleOnMouseEnter : undefined}
 				onTouchEnd={!this.props.canOverflowHorizontally ? this.handleOnMouseLeave : undefined}
 				onTouchMove={!this.props.canOverflowHorizontally ? this.handleOnTouchMove : undefined}
-				onPointerDown={this.handleOnPointerDown}
-				onPointerUp={this.handleOnPointerUp}
 				data-obj-id={this.props.piece._id}
 			>
 				<div className="dashboard-panel__panel__button__content">
