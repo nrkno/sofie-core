@@ -487,7 +487,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				}
 			}
 		case PlayoutActions.deactivateRundownPlaylist:
-			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+			if (isActionTriggeredFromUiContext(action)) {
 				return createRundownPlaylistSoftDeactivateAction()
 			}
 			return createUserActionWithCtx(action, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, async (e, ctx) =>
@@ -557,4 +557,8 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 			// Nothing
 		},
 	}
+}
+
+function isActionTriggeredFromUiContext(action: SomeAction): boolean {
+	return Meteor.isClient && action.filterChain.every((link) => link.object === 'view')
 }
