@@ -88,7 +88,7 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 				matchedDocs = []
 			}
 		} else {
-			matchedDocs = Array.from(this.#documents.values()).filter((doc) => mongoWhere(doc, selector))
+			matchedDocs = Array.from(this.#documents.values()).filter((doc) => mongoWhere(doc, selector as any))
 		}
 
 		if (options) {
