@@ -80,7 +80,7 @@ import { runJobWithStudioCache } from '../studio/lock'
 import { shouldUpdateStudioBaselineInner as libShouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
 import { CacheForStudio } from '../studio/cache'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
-import { PieceGroupMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
+import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
@@ -1039,14 +1039,15 @@ function timelineTriggerTimeInner(
 				// TODO - we should do the same for the partInstance.
 				// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
 
-				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
-				if (objPieceId && activePlaylist && pieceInstanceCache) {
+				const objPieceInstanceId = (obj.metaData as Partial<PieceTimelineMetadata> | undefined)
+					?.triggerPieceInstanceId
+				if (objPieceInstanceId && activePlaylist && pieceInstanceCache) {
 					logger.debug('Update PieceInstance: ', {
-						pieceId: objPieceId,
+						pieceId: objPieceInstanceId,
 						time: new Date(o.time).toTimeString(),
 					})
 
-					const pieceInstance = pieceInstanceCache.findOne(objPieceId)
+					const pieceInstance = pieceInstanceCache.findOne(objPieceInstanceId)
 					if (
 						pieceInstance &&
 						pieceInstance.dynamicallyInserted &&

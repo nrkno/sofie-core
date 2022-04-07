@@ -244,7 +244,7 @@ export interface SelectedPartInstanceTimelineInfo {
 	pieceInstances: PieceInstanceWithTimings[]
 }
 
-export function getPartInstanceTimelineInfo(
+function getPartInstanceTimelineInfo(
 	cache: CacheForPlayout,
 	currentTime: Time,
 	showStyle: ReadonlyDeep<DBShowStyleBase>,
@@ -395,18 +395,20 @@ async function getTimelineRundown(
 }
 
 /**
- * Fix the timeline objects, adds properties like deviceId and studioId to the timeline objects
- * @param studio
+ * Process the timeline objects, to provide some basic validation. Also flattens the nested objects into a single array
+ * Note: Input array is mutated in place
+ * @param context
  * @param timelineObjs Array of timeline objects
  */
 function processTimelineObjects(context: JobContext, timelineObjs: Array<TimelineObjGeneric>): void {
 	const span = context.startSpan('processTimelineObjects')
+
 	// first, split out any grouped objects, to make the timeline shallow:
 	const fixObjectChildren = (o: TimelineObjGeneric): void => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
 		if (o.isGroup && o.children && o.children.length) {
 			const children = o.children as TSR.TSRTimelineObjBase[]
-			_.each(children, (child: TSR.TSRTimelineObjBase) => {
+			for (const child of children) {
 				const childFixed: TimelineObjGeneric = {
 					...child,
 					objectType: o.objectType,
@@ -416,21 +418,24 @@ function processTimelineObjects(context: JobContext, timelineObjs: Array<Timelin
 				timelineObjs.push(childFixed)
 
 				fixObjectChildren(childFixed)
-			})
+			}
 			delete o.children
 		}
 
 		if (o.keyframes) {
-			_.each(o.keyframes, (kf, i) => {
+			o.keyframes.forEach((kf, i) => {
 				kf.id = `${o.id}_keyframe_${i}`
 			})
 		}
 	}
-	_.each(timelineObjs, (o: TimelineObjGeneric) => {
-		fixObjectChildren(o)
-	})
+
+	for (const obj of timelineObjs) {
+		fixObjectChildren(obj)
+	}
+
 	if (span) span.end()
 }
+
 /**
  * goes through timelineObjs and forces the "now"-values to the absolute time specified
  * @param timelineObjs Array of (flat) timeline objects
@@ -448,6 +453,9 @@ function setNowToTimeInObjects(timelineObjs: Array<TimelineObjGeneric>, now: Tim
 	})
 }
 
+/**
+ * Convert RundownBaselineObj into TimelineObjects for the timeline
+ */
 function transformBaselineItemsIntoTimeline(
 	objs: RundownBaselineObj[]
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
@@ -457,6 +465,7 @@ function transformBaselineItemsIntoTimeline(
 		// the baseline objects are layed out without any grouping
 		for (const o of objects) {
 			timelineObjs.push({
+				metaData: undefined,
 				...o,
 				objectType: TimelineObjType.RUNDOWN,
 				partInstanceId: null,

@@ -1,4 +1,5 @@
 import { TSR, OnGenerateTimelineObj, TimelineObjectCoreExt, Time } from '@sofie-automation/blueprints-integration'
+import { SetRequired } from 'type-fest'
 import { ProtectedString, protectString, unprotectString } from '../protectedString'
 import {
 	PartInstanceId,
@@ -19,7 +20,7 @@ export type TimelineHash = ProtectedString<'TimelineHash'>
 export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
 
 export interface OnGenerateTimelineObjExt<TMetadata = unknown, TKeyframeMetadata = unknown>
-	extends OnGenerateTimelineObj<TMetadata, TKeyframeMetadata> {
+	extends SetRequired<OnGenerateTimelineObj<TMetadata, TKeyframeMetadata>, 'metaData'> {
 	/** The id of the partInstance this object belongs to */
 	partInstanceId: PartInstanceId | null
 	/** If this is from an infinite piece, the id of the infinite instance */
@@ -57,9 +58,8 @@ export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
 }
 export type TimelineObjGroupRundown = TimelineObjGroup & Omit<TimelineObjRundown, 'enable'>
 
-export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
-	isPartGroup: true
-}
+export type TimelineObjGroupPart = TimelineObjGroupRundown
+
 export interface TimelineObjPartAbstract extends TimelineObjRundown {
 	// used for sending callbacks
 	content: {
@@ -73,7 +73,9 @@ export interface TimelineObjPartAbstract extends TimelineObjRundown {
 		}
 	}
 }
-export interface TimelineObjPieceAbstract extends TimelineObjRundown {
+export interface TimelineObjPieceAbstract extends Omit<TimelineObjRundown, 'enable'> {
+	enable: TimelineEnableExt
+
 	// used for sending callbacks
 	content: {
 		deviceType: TSR.DeviceType.ABSTRACT

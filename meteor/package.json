@@ -98,7 +98,7 @@
 		"react-timer-hoc": "^2.3.0",
 		"semver": "^7.3.5",
 		"soap": "^0.43.0",
-		"superfly-timeline": "8.2.1",
+		"superfly-timeline": "^8.2.7",
 		"threadedclass": "^1.0.1",
 		"timecode": "0.0.4",
 		"type-fest": "^2.11.1",
