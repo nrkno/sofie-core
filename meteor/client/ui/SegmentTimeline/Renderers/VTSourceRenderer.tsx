@@ -407,7 +407,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				<span
 					className={ClassNames(
 						'segment-timeline__piece__label',
-						'with-duration',
+						'with-duration', // TODO: This class is being used even though this.renderDuration() may not render a duration
 						`with-duration--${this.getSourceDurationLabelAlignment()}`,
 						{
 							'overflow-label': end !== '',

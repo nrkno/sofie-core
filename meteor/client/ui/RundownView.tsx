@@ -2108,6 +2108,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		queueAdLibPiece = (adlibPiece: AdLibPieceUi, e: any) => {
 			const { t } = this.props
+			// TODO: Refactor this code to reduce code duplication
 
 			if (adlibPiece.invalid) {
 				NotificationCenter.push(
