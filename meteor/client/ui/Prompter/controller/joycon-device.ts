@@ -1,9 +1,8 @@
 import { ControllerAbstract } from './lib'
 import { PrompterConfigMode, PrompterViewInner } from '../PrompterView'
 import Spline from 'cubic-spline'
-import { isUndefined } from 'underscore'
 
-type JoyconWithData = {index: number, mode: JoyconMode, axes: readonly number[], buttons: number[]}
+type JoyconWithData = { index: number; mode: JoyconMode; axes: readonly number[]; buttons: number[] }
 type JoyconMode = 'L' | 'R' | 'LR' | null
 
 /**
@@ -20,14 +19,14 @@ export class JoyConController extends ControllerAbstract {
 	private speedMap = [1, 2, 3, 4, 5, 8, 12, 30]
 	private reverseSpeedMap = [1, 2, 3, 4, 5, 8, 12, 30]
 	private deadBand = 0.25
-	
+
 	private speedSpline: Spline
 	private reverseSpeedSpline: Spline
 
 	private updateSpeedHandle: number | null = null
 	private currentPosition = 0
 	private lastInputValue = ''
-	private lastButtonInputs: {[index: number]: {mode: JoyconMode, buttons: number[]}} = {}
+	private lastButtonInputs: { [index: number]: { mode: JoyconMode; buttons: number[] } } = {}
 
 	constructor(view: PrompterViewInner) {
 		super(view)
@@ -190,12 +189,10 @@ export class JoyConController extends ControllerAbstract {
 
 	private getJoycons() {
 		const joyconInputs: JoyconWithData[] = []
-		let joyconshash = ''
 		if (navigator.getGamepads) {
 			const gamepads = navigator.getGamepads()
 			if (!(gamepads && typeof gamepads === 'object' && gamepads.length)) return
 
-			
 			for (const o of gamepads) {
 				if (
 					o &&
@@ -205,27 +202,25 @@ export class JoyConController extends ControllerAbstract {
 					o.id.match('STANDARD GAMEPAD Vendor: 057e')
 				) {
 					const mode =
-					o.axes.length === 4
-						? 'LR' // for documentation: L+R mode is also identified as Vendor: 057e Product: 200e
-						: o.id.match('Product: 2006')
-						? 'L'
-						: o.id.match('Product: 2007')
-						? 'R'
-						: null
-					joyconInputs.push({index: o.index, mode, axes: o.axes, buttons: o.buttons.map(i => i.value) })
+						o.axes.length === 4
+							? 'LR' // for documentation: L+R mode is also identified as Vendor: 057e Product: 200e
+							: o.id.match('Product: 2006')
+							? 'L'
+							: o.id.match('Product: 2007')
+							? 'R'
+							: null
+					joyconInputs.push({ index: o.index, mode, axes: o.axes, buttons: o.buttons.map((i) => i.value) })
 				}
 			}
 		}
-		
+
 		return joyconInputs
 	}
 
 	private getActiveInputsOfJoycons(joycons: JoyconWithData[]): number {
-		
 		let lastSeenSpeed = 0
-		
+
 		for (const joycon of joycons) {
-			
 			// handle buttons at the same time as evaluating stick input
 			this.handleButtons(joycon)
 
@@ -260,34 +255,32 @@ export class JoyConController extends ControllerAbstract {
 	// @todo: should this be throttled??
 	private handleButtons(joycon: JoyconWithData): void {
 		const joyconButtonHistory = this.lastButtonInputs[joycon.index]
-		
+
 		// first time we see this joycon
 		if (!joyconButtonHistory) {
-			this.lastButtonInputs[joycon.index] = {mode: joycon.mode, buttons: joycon.buttons}
+			this.lastButtonInputs[joycon.index] = { mode: joycon.mode, buttons: joycon.buttons }
 			return
 		}
 
 		// the joycon has changed
 		if (joyconButtonHistory.mode !== joycon.mode) {
 			delete this.lastButtonInputs[joycon.index]
-			this.lastButtonInputs[joycon.index] = {mode: joycon.mode, buttons: joycon.buttons}
+			this.lastButtonInputs[joycon.index] = { mode: joycon.mode, buttons: joycon.buttons }
 			return
 		}
-		
+
 		if (joyconButtonHistory?.buttons?.length) {
-			for (const i in joycon.buttons) {
+			joycon.buttons.forEach((o, i) => {
 				const oldBtn = joyconButtonHistory.buttons[i]
 				const newBtn = joycon.buttons[i]
-				if (oldBtn === newBtn) continue
-
 				if (!oldBtn && newBtn) {
 					// press
-					this.onButtonPressed(i, joycon.mode)
+					this.onButtonPressed(i.toString(), joycon.mode)
 				} else if (oldBtn && !newBtn) {
 					// release
-					this.onButtonRelease(i, joycon.mode)
+					this.onButtonRelease(i.toString(), joycon.mode)
 				}
-			}
+			})
 
 			this.lastButtonInputs[joycon.index].buttons = joycon.buttons
 		}
