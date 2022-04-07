@@ -1292,10 +1292,14 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				subsReady: false,
 				usedHotkeys: [
 					// Register additional hotkeys or legend entries
-					...(poisonKey ? [{
-						key: poisonKey,
-						label: t('Cancel currently pressed hotkey'),
-					}] : []),
+					...(poisonKey
+						? [
+								{
+									key: poisonKey,
+									label: t('Cancel currently pressed hotkey'),
+								},
+						  ]
+						: []),
 					{
 						key: 'F11',
 						label: t('Change to fullscreen mode'),
