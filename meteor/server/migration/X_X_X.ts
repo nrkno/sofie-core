@@ -1,6 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { StudioRouteType, Studios } from '../../lib/collections/Studios'
 
 /*

@@ -603,14 +603,14 @@ describe('rundown Timing Calculator', () => {
 			literal<RundownTimingContext>({
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
-				asPlayedPlaylistDuration: 8000,
+				asPlayedPlaylistDuration: 4000, // TODOSYNC, should this be 8000 after segment budget duration re-implementation?
 				currentPartWillAutoNext: false,
 				currentTime: 0,
 				rundownExpectedDurations: {
 					[rundownId1]: 4000,
 				},
 				rundownAsPlayedDurations: {
-					[rundownId1]: 8000,
+					[rundownId1]: 4000, // tv2 org: 8000
 				},
 				partCountdown: {
 					part1: 0,
@@ -654,8 +654,8 @@ describe('rundown Timing Calculator', () => {
 					part3: 2000,
 					part4: 3000,
 				},
-				remainingPlaylistDuration: 8000,
-				totalPlaylistDuration: 8000,
+				remainingPlaylistDuration: 4000, // 8000,
+				totalPlaylistDuration: 4000, // 8000,
 				breakIsLastRundown: undefined,
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
