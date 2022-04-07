@@ -495,8 +495,11 @@ export interface PieceInstanceWithTimings extends PieceInstance {
 	priority: number
 }
 
-function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number | string {
-	return typeof start === 'number' ? start : `#${getPieceControlObjectId(newPiece)}.start`
+/**
+ * Get the `enable: { start: ?? }` for the new piece in terms that can be used as an `end` for another object
+ */
+function getPieceStartTime(newPieceStart: number | 'now', newPiece: PieceInstance): number | string {
+	return typeof newPieceStart === 'number' ? newPieceStart : `#${getPieceControlObjectId(newPiece)}.start`
 }
 
 function isClear(piece?: PieceInstance): boolean {
@@ -593,7 +596,7 @@ function updateWithNewPieces(
 	if (newPiece) {
 		const activePiece = activePieces[key]
 		if (activePiece) {
-			activePiece.resolvedEndCap = offsetFromStart(newPiecesStart, newPiece)
+			activePiece.resolvedEndCap = getPieceStartTime(newPiecesStart, newPiece)
 		}
 		// track the new piece
 		activePieces[key] = newPiece
@@ -618,7 +621,7 @@ function updateWithNewPieces(
 					(newPiecesStart !== 0 || isCandidateBetterToBeContinued(activePieces.other, newPiece))
 				) {
 					// These modes should stop the 'other' when they start if not hidden behind a higher priority onEnd
-					activePieces.other.resolvedEndCap = offsetFromStart(newPiecesStart, newPiece)
+					activePieces.other.resolvedEndCap = getPieceStartTime(newPiecesStart, newPiece)
 					activePieces.other = undefined
 				}
 			}
