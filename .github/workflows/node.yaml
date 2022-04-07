@@ -125,6 +125,10 @@ jobs:
         if: ${{ steps.image-tags.outputs.images }}
         run: |
           yarn build:packages
+      - name: Persist Built Version information
+        if: ${{ steps.image-tags.outputs.images }}
+          cd meteor
+          yarn inject-git-hash
       - name: Meteor Build
         if: ${{ steps.image-tags.outputs.images }}
         run: |
