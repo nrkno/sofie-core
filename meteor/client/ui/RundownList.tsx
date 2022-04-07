@@ -226,21 +226,26 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 					}
 				})
 
-				MeteorCall.systemStatus
-					.getSystemStatus()
-					.then((systemStatus: StatusResponse) => {
-						this.setState({ systemStatus })
-					})
-					.catch(() => {
-						NotificationCenter.push(
-							new Notification(
-								'systemStatus_failed',
-								NoticeLevel.CRITICAL,
-								t('Could not get system status. Please consult system administrator.'),
-								'RundownList'
+				const refreshSystemStatus = () => {
+					MeteorCall.systemStatus
+						.getSystemStatus()
+						.then((systemStatus: StatusResponse) => {
+							this.setState({ systemStatus })
+						})
+						.catch(() => {
+							NotificationCenter.push(
+								new Notification(
+									'systemStatus_failed',
+									NoticeLevel.CRITICAL,
+									t('Could not get system status. Please consult system administrator.'),
+									'RundownList'
+								)
 							)
-						)
-					})
+						})
+				}
+
+				refreshSystemStatus()
+				setInterval(() => refreshSystemStatus, 5000)
 			}
 
 			private handleRundownDrop(rundownId: RundownId) {
