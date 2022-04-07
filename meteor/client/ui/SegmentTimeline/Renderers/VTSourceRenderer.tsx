@@ -401,21 +401,20 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
 
+		const duration = this.renderDuration()
+
 		return !this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 			<span className="segment-timeline__piece__label" ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
 				<span
-					className={ClassNames(
-						'segment-timeline__piece__label',
-						'with-duration', // TODO: This class is being used even though this.renderDuration() may not render a duration
-						`with-duration--${this.getSourceDurationLabelAlignment()}`,
-						{
-							'overflow-label': end !== '',
-						}
-					)}
+					className={ClassNames('segment-timeline__piece__label', {
+						'with-duration': !!duration,
+						[`with-duration--${this.getSourceDurationLabelAlignment()}`]: !!duration,
+						'overflow-label': end !== '',
+					})}
 				>
 					<span>{begin}</span>
-					{this.renderDuration()}
+					{duration}
 				</span>
 				{begin && end === '' && vtContent && vtContent.loop && (
 					<div className="segment-timeline__piece__label label-icon label-loop-icon">

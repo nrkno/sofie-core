@@ -215,6 +215,7 @@ export class CustomLayerItemRenderer<
 				)})`}</span>
 			)
 		}
+		return null
 	}
 
 	render() {
