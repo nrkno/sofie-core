@@ -191,10 +191,10 @@ describe('REST API', () => {
 		testInFiber('lists available endpoints on /api/0', async () => {
 			MeteorMock.mockRunMeteorStartup()
 
-			const resource = `/api/0`
-			const docString = resource
+			const rootResource = `/api/0`
+			const rootDocString = rootResource
 
-			const result = await callRoute(resource, docString, {})
+			const result = await callRoute(rootResource, rootDocString, {})
 			expect(result.statusCode).toBe(200)
 			expect(result.headers).toMatchObject({
 				'content-type': 'application/json',

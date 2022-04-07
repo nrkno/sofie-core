@@ -388,11 +388,11 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 	reattachTimingEventListeners = () => {
 		if (this.props.isLiveSegment) {
-			window.removeEventListener(RundownTiming.Events.timeupdate, this.onTimeupdate)
-			window.addEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
+			window.removeEventListener(RundownTiming.Events.timeupdateLowResolution, this.onTimeupdate)
+			window.addEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 		} else {
-			window.addEventListener(RundownTiming.Events.timeupdate, this.onTimeupdate)
-			window.removeEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
+			window.addEventListener(RundownTiming.Events.timeupdateLowResolution, this.onTimeupdate)
+			window.removeEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 		}
 	}
 
@@ -439,7 +439,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 	componentWillUnmount() {
 		this._resizeObserver.disconnect()
-		window.removeEventListener(RundownTiming.Events.timeupdate, this.onTimeupdate)
-		window.removeEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
+		window.removeEventListener(RundownTiming.Events.timeupdateLowResolution, this.onTimeupdate)
+		window.removeEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 	}
 }

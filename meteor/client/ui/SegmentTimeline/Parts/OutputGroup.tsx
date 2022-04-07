@@ -9,6 +9,7 @@ import { SourceLayer } from './SourceLayer'
 import classNames from 'classnames'
 import { DEBUG_MODE } from '../SegmentTimelineDebugMode'
 import { RundownUtils } from '../../../lib/rundown'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
@@ -42,6 +43,7 @@ interface IOutputGroupProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	indexOffset: number
 	isPreview: boolean
+	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
 
 export function OutputGroup(props: IOutputGroupProps) {
@@ -49,6 +51,10 @@ export function OutputGroup(props: IOutputGroupProps) {
 		props.collapsedOutputs[props.layer._id] !== undefined
 			? props.collapsedOutputs[props.layer._id] === true
 			: props.layer.isDefaultCollapsed
+
+	function shouldShowDuration(sourceLayer: ISourceLayerExtended): boolean {
+		return !!props.showDurationSourceLayers && props.showDurationSourceLayers.has(sourceLayer._id)
+	}
 
 	function renderInside(isOutputGroupCollapsed) {
 		if (props.sourceLayers !== undefined) {
@@ -86,6 +92,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 							onPieceClick={props.onPieceClick}
 							onPieceDoubleClick={props.onPieceDoubleClick}
 							isPreview={props.isPreview}
+							showDuration={shouldShowDuration(sourceLayer)}
 						/>
 					)
 				})
@@ -122,6 +129,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 						onPieceClick={props.onPieceClick}
 						onPieceDoubleClick={props.onPieceDoubleClick}
 						isPreview={props.isPreview}
+						shouldShowDuration={shouldShowDuration}
 					/>
 				)
 			}

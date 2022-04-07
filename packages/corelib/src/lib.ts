@@ -93,7 +93,7 @@ export function getRandomString(numberOfChars?: number): string {
 	return Random.id(numberOfChars)
 }
 
-export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
+export function getRandomId<T extends ProtectedString<any>>(numberOfChars?: number): T {
 	return protectString(getRandomString(numberOfChars))
 }
 

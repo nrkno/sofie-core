@@ -98,6 +98,10 @@ export interface ICoreSystem {
 		casparCGRestart?: {
 			enabled: boolean
 		}
+		storeRundownSnapshots?: {
+			enabled: boolean
+			rundownNames?: string[]
+		}
 	}
 }
 

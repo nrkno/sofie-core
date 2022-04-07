@@ -2,15 +2,15 @@ import { Meteor } from 'meteor/meteor'
 import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
 import { normalizeArrayFunc, unprotectString } from '../lib'
-import { Rundowns, Rundown, DBRundown } from './Rundowns'
 import { Studio, Studios } from './Studios'
-import { Segments, Segment, DBSegment } from './Segments'
-import { Parts, Part, DBPart } from './Parts'
 import {
 	sortPartsInSegments,
 	sortPartsInSortedSegments,
 	sortSegmentsInRundowns,
 } from '@sofie-automation/corelib/dist/playout/playlist'
+import { Rundowns, Rundown, DBRundown } from './Rundowns'
+import { Segments, Segment, DBSegment } from './Segments'
+import { Parts, Part, DBPart } from './Parts'
 import { PartInstance, PartInstances } from './PartInstances'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
@@ -316,12 +316,13 @@ export class RundownPlaylistCollectionUtil {
 			}
 		).fetch()
 	}
+	/** Return a list of PartInstances, omitting the reset ones (ie only the ones that are relevant) */
 	static getActivePartInstances(
 		playlist: Pick<RundownPlaylist, '_id'>,
 		selector?: MongoQuery<PartInstance>,
 		options?: FindOptions<PartInstance>
 	): PartInstance[] {
-		const newSelector = {
+		const newSelector: MongoQuery<PartInstance> = {
 			...selector,
 			reset: { $ne: true },
 		}
@@ -336,7 +337,7 @@ export class RundownPlaylistCollectionUtil {
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
 
-	static _sortSegments<TSegment extends Pick<Segment, '_id' | 'rundownId' | '_rank'>>(
+	static _sortSegments<TSegment extends Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>(
 		segments: Array<TSegment>,
 		rundowns: Array<ReadonlyDeep<DBRundown>>
 	) {

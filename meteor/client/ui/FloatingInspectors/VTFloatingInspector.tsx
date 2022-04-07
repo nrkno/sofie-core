@@ -50,6 +50,10 @@ function renderNotice(noticeLevel: NoticeLevel, noticeMessage: string | null): J
 	)
 }
 
+function shouldShowContent(props: IProps): boolean {
+	return props.status !== PieceStatusCode.SOURCE_NOT_SET && !!props.content?.fileName
+}
+
 export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IProps) => {
 	const { t } = useTranslation()
 	const { timePosition } = props
@@ -105,7 +109,7 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 						) : null}
 					</div>
 				) : null
-			) : (
+			) : shouldShowContent(props) || props.noticeLevel !== null ? (
 				<div
 					className={
 						'segment-timeline__mini-inspector ' +
@@ -120,14 +124,14 @@ export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IPro
 					style={props.floatingInspectorStyle}
 				>
 					{props.noticeLevel !== null ? renderNotice(props.noticeLevel, props.noticeMessage) : null}
-					{props.status !== PieceStatusCode.SOURCE_NOT_SET ? (
+					{shouldShowContent(props) ? (
 						<div className="segment-timeline__mini-inspector__properties">
 							<span className="mini-inspector__label">{t('Clip:')}</span>
 							<span className="mini-inspector__value">{props.content && props.content.fileName}</span>
 						</div>
 					) : null}
 				</div>
-			)}
+			) : null}
 		</FloatingInspector>
 	)
 }

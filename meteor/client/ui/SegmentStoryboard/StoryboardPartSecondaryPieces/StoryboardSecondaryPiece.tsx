@@ -48,6 +48,7 @@ function renderPieceInside(
 		case SourceLayerType.LOCAL:
 		case SourceLayerType.REMOTE:
 		case SourceLayerType.TRANSITION:
+		case SourceLayerType.METADATA:
 		case SourceLayerType.UNKNOWN:
 		case undefined:
 			return DefaultRenderer({ ...props, elementOffset, hovering, typeClass })

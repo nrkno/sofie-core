@@ -29,29 +29,58 @@ import {
 } from './actionFilterChainCompilers'
 import { ClientAPI } from '../client'
 import { RundownId, Rundowns } from '../../collections/Rundowns'
+import { ReactiveVar } from 'meteor/reactive-var'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
 // eslint-disable-next-line @typescript-eslint/ban-types
 type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
 
-export type ActionContext = XOR<
-	{
-		rundownPlaylist: Pick<
-			RundownPlaylist,
-			'_id' | 'name' | 'activationId' | 'nextPartInstanceId' | 'currentPartInstanceId'
-		>
-		currentRundownId: RundownId | null
-		currentSegmentPartIds: PartId[]
-		nextSegmentPartIds: PartId[]
-		currentPartId: PartId | null
-		nextPartId: PartId | null
-	},
-	{
-		studio: Studio
-		showStyleBase: ShowStyleBase
+/**
+ * This just looks like a ReactiveVar, but is not reactive.
+ * It's used to use the same interface/typings, but when code is run on both client and server side.
+ * */
+class DummyReactiveVar<T> implements ReactiveVar<T> {
+	constructor(private value: T) {}
+	public get(): T {
+		return this.value
 	}
->
+	public set(newValue: T): void {
+		this.value = newValue
+	}
+}
+
+export interface ReactivePlaylistActionContext {
+	rundownPlaylistId: ReactiveVar<RundownPlaylistId>
+	rundownPlaylist: ReactiveVar<
+		Pick<RundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInstanceId' | 'currentPartInstanceId'>
+	>
+
+	currentRundownId: ReactiveVar<RundownId | null>
+	currentSegmentPartIds: ReactiveVar<PartId[]>
+	nextSegmentPartIds: ReactiveVar<PartId[]>
+	currentPartInstanceId: ReactiveVar<PartInstanceId | null>
+	currentPartId: ReactiveVar<PartId | null>
+	nextPartId: ReactiveVar<PartId | null>
+}
+
+interface PlainPlaylistContext {
+	rundownPlaylist: RundownPlaylist
+	currentRundownId: RundownId | null
+	currentSegmentPartIds: PartId[]
+	nextSegmentPartIds: PartId[]
+	currentPartId: PartId | null
+	nextPartId: PartId | null
+}
+
+interface PlainStudioContext {
+	studio: Studio
+	showStyleBase: ShowStyleBase
+}
+
+type PlainActionContext = XOR<PlainPlaylistContext, PlainStudioContext>
+
+export type ActionContext = XOR<ReactivePlaylistActionContext, PlainActionContext>
 
 type ActionExecutor = (t: TFunction, e: any, ctx: ActionContext) => void
 
@@ -74,7 +103,7 @@ interface ExecutableAction {
  * @extends {ExecutableAction}
  */
 interface PreviewableAction extends ExecutableAction {
-	preview: (ctx: ActionContext) => IWrappedAdLib[]
+	preview: (ctx: ReactivePlaylistActionContext) => IWrappedAdLib[]
 }
 
 interface ExecutableAdLibAction extends PreviewableAction {
@@ -84,37 +113,23 @@ interface ExecutableAdLibAction extends PreviewableAction {
 export function isPreviewableAction(action: ExecutableAction): action is PreviewableAction {
 	return action.action && typeof action['preview'] === 'function'
 }
-
-interface InternalActionContext {
-	rundownPlaylistId: RundownPlaylistId
-	rundownPlaylist: Pick<
-		RundownPlaylist,
-		'_id' | 'name' | 'activationId' | 'nextPartInstanceId' | 'currentPartInstanceId'
-	>
-	currentRundownId: RundownId | null
-	currentSegmentPartIds: PartId[]
-	nextSegmentPartIds: PartId[]
-	currentPartId: PartId | null
-	nextPartId: PartId | null
-	currentPartInstanceId: PartInstanceId | null
-}
-
 function createRundownPlaylistContext(
 	context: ActionContext,
 	filterChain: IBaseFilterLink[]
-): InternalActionContext | undefined {
-	if (filterChain.length === 0) {
-		return undefined
+): ReactivePlaylistActionContext | undefined {
+	if (filterChain[0].object === 'view' && context.rundownPlaylistId) {
+		return context as ReactivePlaylistActionContext
 	} else if (filterChain[0].object === 'view' && context.rundownPlaylist) {
+		const playlistContext = context as PlainPlaylistContext
 		return {
-			rundownPlaylistId: context.rundownPlaylist._id,
-			rundownPlaylist: context.rundownPlaylist,
-			currentRundownId: context.currentRundownId,
-			currentPartId: context.currentPartId,
-			nextPartId: context.nextPartId,
-			currentSegmentPartIds: context.currentSegmentPartIds,
-			nextSegmentPartIds: context.nextSegmentPartIds,
-			currentPartInstanceId: context.rundownPlaylist.currentPartInstanceId,
+			rundownPlaylistId: new DummyReactiveVar(playlistContext.rundownPlaylist._id),
+			rundownPlaylist: new DummyReactiveVar(playlistContext.rundownPlaylist),
+			currentRundownId: new DummyReactiveVar(playlistContext.currentRundownId),
+			currentPartId: new DummyReactiveVar(playlistContext.currentPartId),
+			nextPartId: new DummyReactiveVar(playlistContext.nextPartId),
+			currentSegmentPartIds: new DummyReactiveVar(playlistContext.currentSegmentPartIds),
+			nextSegmentPartIds: new DummyReactiveVar(playlistContext.nextSegmentPartIds),
+			currentPartInstanceId: new DummyReactiveVar(playlistContext.rundownPlaylist.currentPartInstanceId),
 		}
 	} else if (filterChain[0].object === 'rundownPlaylist' && context.studio && Meteor.isServer) {
 		const playlist = rundownPlaylistFilter(
@@ -150,26 +165,27 @@ function createRundownPlaylistContext(
 			}
 
 			return {
-				rundownPlaylistId: playlist._id,
-				rundownPlaylist: playlist,
-				currentRundownId:
+				rundownPlaylistId: new DummyReactiveVar(playlist?._id),
+				rundownPlaylist: new DummyReactiveVar(playlist),
+				currentRundownId: new DummyReactiveVar(
 					currentPartInstance?.rundownId ??
-					Rundowns.findOne(
-						{
-							playlistId: playlist._id,
-						},
-						{
-							sort: {
-								_rank: 1,
+						Rundowns.findOne(
+							{
+								playlistId: playlist._id,
 							},
-						}
-					)?._id ??
-					null,
-				currentPartId,
-				currentSegmentPartIds,
-				nextPartId,
-				nextSegmentPartIds,
-				currentPartInstanceId: playlist.currentPartInstanceId,
+							{
+								sort: {
+									_rank: 1,
+								},
+							}
+						)?._id ??
+						null
+				),
+				currentPartId: new DummyReactiveVar(currentPartId),
+				currentSegmentPartIds: new DummyReactiveVar(currentSegmentPartIds),
+				nextPartId: new DummyReactiveVar(nextPartId),
+				nextSegmentPartIds: new DummyReactiveVar(nextSegmentPartIds),
+				currentPartInstanceId: new DummyReactiveVar(playlist.currentPartInstanceId),
 			}
 		}
 	} else {
@@ -195,14 +211,7 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 
 			if (innerCtx) {
 				try {
-					return compiledAdLibFilter(
-						innerCtx.rundownPlaylistId,
-						innerCtx.currentRundownId,
-						innerCtx.currentSegmentPartIds || [],
-						innerCtx.nextSegmentPartIds || [],
-						innerCtx.currentPartId || null,
-						innerCtx.nextPartId || null
-					)
+					return compiledAdLibFilter(innerCtx)
 				} catch (e) {
 					logger.error(e)
 					return []
@@ -218,26 +227,17 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 				logger.warn(`Could not create RundownPlaylist context for executable AdLib Action`, filterChain)
 				return
 			}
-			const currentPartInstanceId = innerCtx.rundownPlaylist.currentPartInstanceId
+			const currentPartInstanceId = innerCtx.rundownPlaylist.get().currentPartInstanceId
 
 			const sourceLayerIdsToClear: string[] = []
-			Tracker.nonreactive(() =>
-				compiledAdLibFilter(
-					innerCtx.rundownPlaylistId,
-					innerCtx.currentRundownId,
-					innerCtx.currentSegmentPartIds || [],
-					innerCtx.nextSegmentPartIds || [],
-					innerCtx.currentPartId || null,
-					innerCtx.nextPartId || null
-				)
-			).forEach((wrappedAdLib) => {
+			Tracker.nonreactive(() => compiledAdLibFilter(innerCtx)).forEach((wrappedAdLib) => {
 				switch (wrappedAdLib.type) {
 					case 'adLibPiece':
 						doUserAction(t, e, UserAction.START_ADLIB, async (e) =>
 							currentPartInstanceId
 								? MeteorCall.userAction.segmentAdLibPieceStart(
 										e,
-										innerCtx.rundownPlaylistId,
+										innerCtx.rundownPlaylistId.get(),
 										currentPartInstanceId,
 										wrappedAdLib.item._id,
 										false
@@ -250,7 +250,7 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 							currentPartInstanceId
 								? MeteorCall.userAction.baselineAdLibPieceStart(
 										e,
-										innerCtx.rundownPlaylistId,
+										innerCtx.rundownPlaylistId.get(),
 										currentPartInstanceId,
 										wrappedAdLib.item._id,
 										false
@@ -262,7 +262,7 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 						doUserAction(t, e, UserAction.START_ADLIB, async (e) =>
 							MeteorCall.userAction.executeAction(
 								e,
-								innerCtx.rundownPlaylistId,
+								innerCtx.rundownPlaylistId.get(),
 								wrappedAdLib._id,
 								wrappedAdLib.item.actionId,
 								wrappedAdLib.item.userData,
@@ -274,7 +274,7 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, async (e) =>
 							MeteorCall.userAction.executeAction(
 								e,
-								innerCtx.rundownPlaylistId,
+								innerCtx.rundownPlaylistId.get(),
 								wrappedAdLib._id,
 								wrappedAdLib.item.actionId,
 								wrappedAdLib.item.userData,
@@ -290,7 +290,7 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 						doUserAction(t, e, UserAction.START_STICKY_PIECE, async (e) =>
 							MeteorCall.userAction.sourceLayerStickyPieceStart(
 								e,
-								innerCtx.rundownPlaylistId,
+								innerCtx.rundownPlaylistId.get(),
 								wrappedAdLib.sourceLayerId //
 							)
 						)
@@ -305,7 +305,7 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 				doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, async (e) =>
 					MeteorCall.userAction.sourceLayerOnPartStop(
 						e,
-						innerCtx.rundownPlaylistId,
+						innerCtx.rundownPlaylistId.get(),
 						currentPartInstanceId,
 						sourceLayerIdsToClear
 					)
@@ -321,6 +321,18 @@ function createShelfAction(filterChain: IGUIContextFilterLink[], state: boolean 
 		execute: () => {
 			RundownViewEventBus.emit(RundownViewEvents.SHELF_STATE, {
 				state,
+			})
+		},
+	}
+}
+
+function createMiniShelfQueueAdLibAction(_filterChain: IGUIContextFilterLink[], forward: boolean): ExecutableAction {
+	return {
+		action: ClientActions.miniShelfQueueAdLib,
+		execute: (t, e) => {
+			RundownViewEventBus.emit(RundownViewEvents.MINI_SHELF_QUEUE_ADLIB, {
+				forward,
+				context: e,
 			})
 		},
 	}
@@ -417,7 +429,7 @@ function createRundownPlaylistSoftResetRundownAction(_filterChain: IGUIContextFi
 function createUserActionWithCtx(
 	action: SomeAction,
 	userAction: UserAction,
-	userActionExec: (e: string, ctx: InternalActionContext) => Promise<ClientAPI.ClientResponse<any>>
+	userActionExec: (e: string, ctx: ReactivePlaylistActionContext) => Promise<ClientAPI.ClientResponse<any>>
 ): ExecutableAction {
 	return {
 		action: action.action,
@@ -449,7 +461,11 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 		case PlayoutActions.activateRundownPlaylist:
 			if (action.force) {
 				return createUserActionWithCtx(action, UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST, async (e, ctx) =>
-					MeteorCall.userAction.forceResetAndActivate(e, ctx.rundownPlaylistId, !!action.rehearsal || false)
+					MeteorCall.userAction.forceResetAndActivate(
+						e,
+						ctx.rundownPlaylistId.get(),
+						!!action.rehearsal || false
+					)
 				)
 			} else {
 				if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
@@ -459,37 +475,37 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 					)
 				} else {
 					return createUserActionWithCtx(action, UserAction.ACTIVATE_RUNDOWN_PLAYLIST, async (e, ctx) =>
-						MeteorCall.userAction.activate(e, ctx.rundownPlaylistId, !!action.rehearsal || false)
+						MeteorCall.userAction.activate(e, ctx.rundownPlaylistId.get(), !!action.rehearsal || false)
 					)
 				}
 			}
 		case PlayoutActions.deactivateRundownPlaylist:
 			return createUserActionWithCtx(action, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, async (e, ctx) =>
-				MeteorCall.userAction.deactivate(e, ctx.rundownPlaylistId)
+				MeteorCall.userAction.deactivate(e, ctx.rundownPlaylistId.get())
 			)
 		case PlayoutActions.take:
 			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
 				return createRundownPlaylistSoftTakeAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.TAKE, async (e, ctx) =>
-					MeteorCall.userAction.take(e, ctx.rundownPlaylistId, ctx.currentPartInstanceId)
+					MeteorCall.userAction.take(e, ctx.rundownPlaylistId.get(), ctx.currentPartInstanceId.get())
 				)
 			}
 		case PlayoutActions.hold:
 			return createUserActionWithCtx(action, UserAction.ACTIVATE_HOLD, async (e, ctx) =>
-				MeteorCall.userAction.activateHold(e, ctx.rundownPlaylistId, !!action.undo)
+				MeteorCall.userAction.activateHold(e, ctx.rundownPlaylistId.get(), !!action.undo)
 			)
 		case PlayoutActions.disableNextPiece:
 			return createUserActionWithCtx(action, UserAction.DISABLE_NEXT_PIECE, async (e, ctx) =>
-				MeteorCall.userAction.disableNextPiece(e, ctx.rundownPlaylistId, !!action.undo)
+				MeteorCall.userAction.disableNextPiece(e, ctx.rundownPlaylistId.get(), !!action.undo)
 			)
 		case PlayoutActions.createSnapshotForDebug:
 			return createUserActionWithCtx(action, UserAction.CREATE_SNAPSHOT_FOR_DEBUG, async (e, ctx) =>
-				MeteorCall.userAction.storeRundownSnapshot(e, ctx.rundownPlaylistId, `action`)
+				MeteorCall.userAction.storeRundownSnapshot(e, ctx.rundownPlaylistId.get(), `action`, false)
 			)
 		case PlayoutActions.moveNext:
 			return createUserActionWithCtx(action, UserAction.MOVE_NEXT, async (e, ctx) =>
-				MeteorCall.userAction.moveNext(e, ctx.rundownPlaylistId, action.parts ?? 0, action.segments ?? 0)
+				MeteorCall.userAction.moveNext(e, ctx.rundownPlaylistId.get(), action.parts ?? 0, action.segments ?? 0)
 			)
 		case PlayoutActions.reloadRundownPlaylistData:
 			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
@@ -498,7 +514,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				return createUserActionWithCtx(action, UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA, async (e, ctx) =>
 					// TODO: Needs some handling of the response. Perhaps this should switch to
 					// an event on the RundownViewEventBus, if ran on the client?
-					MeteorCall.userAction.resyncRundownPlaylist(e, ctx.rundownPlaylistId)
+					MeteorCall.userAction.resyncRundownPlaylist(e, ctx.rundownPlaylistId.get())
 				)
 			}
 		case PlayoutActions.resetRundownPlaylist:
@@ -506,15 +522,17 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				return createRundownPlaylistSoftResetRundownAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.RESET_RUNDOWN_PLAYLIST, async (e, ctx) =>
-					MeteorCall.userAction.resetRundownPlaylist(e, ctx.rundownPlaylistId)
+					MeteorCall.userAction.resetRundownPlaylist(e, ctx.rundownPlaylistId.get())
 				)
 			}
 		case PlayoutActions.resyncRundownPlaylist:
 			return createUserActionWithCtx(action, UserAction.RESYNC_RUNDOWN_PLAYLIST, async (e, ctx) =>
-				MeteorCall.userAction.resyncRundownPlaylist(e, ctx.rundownPlaylistId)
+				MeteorCall.userAction.resyncRundownPlaylist(e, ctx.rundownPlaylistId.get())
 			)
 		case ClientActions.showEntireCurrentSegment:
 			return createShowEntireCurrentSegmentAction(action.filterChain, action.on)
+		case ClientActions.miniShelfQueueAdLib:
+			return createMiniShelfQueueAdLibAction(action.filterChain, action.forward)
 		default:
 			assertNever(action)
 			break

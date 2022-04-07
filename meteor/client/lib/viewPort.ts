@@ -6,6 +6,9 @@ import { isProtectedString } from '../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents } from '../ui/RundownView/RundownViewEventBus'
 import { Settings } from '../../lib/Settings'
 
+const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. Could this use a css variable and getComputedStyle(document.documentElement).getPropertyValue('--my-variable-name'); ?
+const FALLBACK_HEADER_HEIGHT = 65
+
 let focusInterval: NodeJS.Timer | undefined
 let _dontClearInterval: boolean = false
 
@@ -84,9 +87,7 @@ export async function scrollToPart(
 	return Promise.reject('Could not find part')
 }
 
-const FALLBACK_HEADER_HEIGHT = 65
 let HEADER_HEIGHT: number | undefined = undefined
-export const HEADER_MARGIN = 24
 
 export function getHeaderHeight(): number {
 	if (HEADER_HEIGHT === undefined) {

@@ -7,7 +7,7 @@ import { GenericDeviceActions } from './genericDevice/actions'
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 /*
-This file contains actions that can be performed on an ingest-device (MOS-device)
+This file contains actions that can be performed on an ingest-device
 */
 export namespace IngestActions {
 	/**
