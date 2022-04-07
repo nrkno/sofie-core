@@ -14,24 +14,24 @@ const apmNamespace = 'http'
 if (!Settings.enableUserAccounts) {
 	// For backwards compatibility:
 
-	PickerGET.route('/health', (params, req: IncomingMessage, res: ServerResponse) => {
+	PickerGET.route('/health', (_params, _req: IncomingMessage, res: ServerResponse) => {
 		const transaction = profiler.startTransaction('health', apmNamespace)
 		const status = getSystemStatus({ userId: null })
 		health(status, res)
 		transaction?.end()
 	})
-	PickerGET.route('/health/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
+	PickerGET.route('/health/:studioId', (params, _req: IncomingMessage, res: ServerResponse) => {
 		const transaction = profiler.startTransaction(`health/${params.studioId}`, apmNamespace)
 		const status = getSystemStatus({ userId: null }, protectString(params.studioId))
 		health(status, res)
 		transaction?.end()
 	})
 }
-PickerGET.route('/health/:token', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerGET.route('/health/:token', (params, _req: IncomingMessage, res: ServerResponse) => {
 	const status = getSystemStatus({ userId: null, token: params.token })
 	health(status, res)
 })
-PickerGET.route('/health/:token/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerGET.route('/health/:token/:studioId', (params, _req: IncomingMessage, res: ServerResponse) => {
 	const status = getSystemStatus({ userId: null, token: params.token }, protectString(params.studioId))
 	health(status, res)
 })

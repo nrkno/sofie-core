@@ -220,12 +220,13 @@ export const ExternalFramePanel = withTranslation()(
 			if (!targetRundown) {
 				throw new Meteor.Error('Target rundown could not be determined!')
 			}
+			const showStyleBaseId = targetRundown.showStyleBaseId
 
 			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e) =>
 				MeteorCall.userAction.bucketAdlibImport(
 					e,
 					targetBucket ? targetBucket._id : protectString(''),
-					targetRundown!.showStyleVariantId,
+					showStyleBaseId,
 					literal<IngestAdlib>({
 						externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
 						name: mosItem.ObjectSlug ? mosItem.ObjectSlug.toString() : '',
@@ -522,6 +523,11 @@ export const ExternalFramePanel = withTranslation()(
 		render() {
 			const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 			const scale = isDashboardLayout ? (this.props.panel as DashboardLayoutExternalFrame).scale || 1 : 1
+			const frameStyle = {
+				transform: `scale(${scale})`,
+				width: `calc(100% / ${scale})`,
+				height: `calc(100% / ${scale})`,
+			}
 			return (
 				<div
 					className={ClassNames(
@@ -542,12 +548,9 @@ export const ExternalFramePanel = withTranslation()(
 						className="external-frame-panel__iframe"
 						src={this.props.panel.url}
 						sandbox="allow-forms allow-popups allow-scripts allow-same-origin"
-						style={{
-							transform: `scale(${scale})`,
-							width: `calc(100% / ${scale})`,
-							height: `calc(100% / ${scale})`,
-						}}
+						style={frameStyle}
 					></iframe>
+					{this.props.panel.disableFocus && <div className="external-frame-panel__overlay" style={frameStyle}></div>}
 				</div>
 			)
 		}

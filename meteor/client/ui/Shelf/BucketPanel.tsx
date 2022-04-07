@@ -17,7 +17,7 @@ import {
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import {
 	IOutputLayer,
 	ISourceLayer,
@@ -36,12 +36,7 @@ import {
 	USER_AGENT_POINTER_PROPERTY,
 } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
-import {
-	IDashboardPanelTrackedProps,
-	getUnfinishedPieceInstancesGrouped,
-	getNextPieceInstancesGrouped,
-	isAdLibOnAir,
-} from './DashboardPanel'
+import { IDashboardPanelTrackedProps } from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
@@ -54,7 +49,6 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { PartInstances, PartInstance, DBPartInstance } from '../../../lib/collections/PartInstances'
-import { AdLibPieceUi } from './AdLibPanel'
 import { BucketAdLibActions, BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
@@ -66,6 +60,13 @@ import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { MongoFieldSpecifierOnes } from '../../../lib/typings/meteor'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
+import {
+	AdLibPieceUi,
+	getNextPieceInstancesGrouped,
+	getUnfinishedPieceInstancesGrouped,
+	isAdLibDisplayedAsOnAir,
+	isAdLibOnAir,
+} from '../../lib/shelf'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -189,9 +190,10 @@ export function actionToAdLibPieceUi(
 		status: PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
-		externalId: unprotectString(action._id),
+		externalId: action.externalId || unprotectString(action._id),
 		rundownId: protectString(''), // value doesn't matter
 		bucketId: action.bucketId,
+		showStyleBaseId: action.showStyleBaseId,
 		showStyleVariantId: action.showStyleVariantId,
 		studioId: action.studioId,
 		sourceLayer: sourceLayers[sourceLayerId],
@@ -206,6 +208,7 @@ export function actionToAdLibPieceUi(
 		nextPieceTags: action.display.nextPieceTags,
 		lifespan: PieceLifespan.WithinPart, // value doesn't matter
 		expectedPackages: action.expectedPackages,
+		uniquenessId: action.uniquenessId,
 	})
 }
 
@@ -229,6 +232,7 @@ export interface IBucketPanelProps {
 export interface IBucketPanelTrackedProps extends IDashboardPanelTrackedProps {
 	adLibPieces: BucketAdLibItem[]
 	studio: Studio
+	showStyleBaseId: ShowStyleBaseId
 	showStyleVariantId: ShowStyleVariantId
 	outputLayers: Record<string, IOutputLayer>
 	sourceLayers: Record<string, ISourceLayer>
@@ -246,7 +250,9 @@ interface BucketTargetCollectedProps {
 
 export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, IState, IBucketPanelTrackedProps>(
 	(props: Translated<IBucketPanelProps>) => {
-		let showStyleVariantId
+		let showStyleBaseId: ShowStyleBaseId | undefined = undefined
+		let showStyleVariantId: ShowStyleVariantId | undefined = undefined
+
 		const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
 		if (selectedPart) {
 			const part = PartInstances.findOne(selectedPart, {
@@ -259,10 +265,12 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			if (part) {
 				const rundown = Rundowns.findOne(part.rundownId, {
 					fields: {
+						showStyleBaseId: 1,
 						showStyleVariantId: 1,
 					},
-				}) as Pick<Rundown, 'showStyleVariantId'> | undefined
+				}) as Pick<Rundown, 'showStyleVariantId' | 'showStyleBaseId'> | undefined
 				if (rundown) {
+					showStyleBaseId = rundown.showStyleBaseId
 					showStyleVariantId = rundown.showStyleVariantId
 				}
 			}
@@ -273,14 +281,20 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				{},
 				{
 					fields: {
+						showStyleBaseId: 1,
 						showStyleVariantId: 1,
 					},
 				}
-			)[0] as Pick<Rundown, 'showStyleVariantId'> | undefined
+			)[0] as Pick<Rundown, 'showStyleVariantId' | 'showStyleBaseId'> | undefined
 			if (rundown) {
+				showStyleBaseId = rundown.showStyleBaseId
 				showStyleVariantId = rundown.showStyleVariantId
 			}
 		}
+		if (!showStyleBaseId) throw new Meteor.Error(500, `No showStyleBaseId found for playlist ${props.playlist._id}`)
+		if (!showStyleVariantId)
+			throw new Meteor.Error(500, `No showStyleVariantId found for playlist ${props.playlist._id}`)
+
 		const tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
@@ -301,7 +315,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			props.playlist,
 			props.showStyleBase
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
 		const bucketAdLibPieces = BucketAdLibs.find({
 			bucketId: props.bucket._id,
 		}).fetch()
@@ -318,6 +332,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
 			unfinishedAdLibIds,
 			unfinishedTags,
+			showStyleBaseId,
 			showStyleVariantId,
 			nextAdLibIds,
 			nextTags,
@@ -325,7 +340,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			sourceLayers: tSLayers,
 		})
 	},
-	(data, props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
+	(_data, props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
 )(
@@ -375,14 +390,14 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							bucketId: this.props.bucket._id,
 							studioId: this.props.playlist.studioId,
 							showStyleVariantId: {
-								$in: showStyleVariants,
+								$in: [null, ...showStyleVariants], // null = valid for all variants
 							},
 						})
 						this.subscribe(PubSub.bucketAdLibActions, {
 							bucketId: this.props.bucket._id,
 							studioId: this.props.playlist.studioId,
 							showStyleVariantId: {
-								$in: showStyleVariants,
+								$in: [null, ...showStyleVariants], // null = valid for all variants
 							},
 						})
 						this.subscribe(PubSub.showStyleBases, {
@@ -439,6 +454,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 				isAdLibOnAir(adLibPiece: AdLibPieceUi) {
 					return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLibPiece)
+				}
+
+				isAdLibDisplayedAsOnAir(adLib: AdLibPieceUi) {
+					return isAdLibDisplayedAsOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 				}
 
 				onDragEnter = () => {
@@ -737,11 +756,47 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						}
 					}
 				}
+				private adLibIsDisabled = (adlib: BucketAdLibItem) => {
+					return (
+						adlib.showStyleBaseId !== this.props.showStyleBaseId ||
+						(!!adlib.showStyleVariantId && adlib.showStyleVariantId !== this.props.showStyleVariantId)
+					)
+				}
 
 				render() {
 					const { connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
 					if (this.props.showStyleBase) {
+						// Hide duplicates;
+						// Step 1: Only the first adLib found with a given externalId will be displayed,
+						// adlibs with the same externalId are considered to be cariants of the same adlibs.
+						const adLibPieceGroupedOnExternalIds = new Map<string, BucketAdLibItem>()
+						for (const adLibPiece of this.state.adLibPieces) {
+							const existingAdlib = adLibPieceGroupedOnExternalIds.get(adLibPiece.externalId)
+							if (
+								!existingAdlib ||
+								// If the existing is disabled and we're not, we should use our one:
+								(this.adLibIsDisabled(existingAdlib) && !this.adLibIsDisabled(adLibPiece))
+							) {
+								adLibPieceGroupedOnExternalIds.set(adLibPiece.externalId, adLibPiece)
+							}
+						}
+
+						// Step 2: only the first adLib found with a given uniquenessId will be displayed:
+						const uniqueAdlibs = new Map<string, BucketAdLibItem>()
+						for (const adLibPiece of adLibPieceGroupedOnExternalIds.values()) {
+							const uniquenessId = adLibPiece.uniquenessId ?? unprotectString(adLibPiece._id)
+							const existingAdlib = uniqueAdlibs.get(uniquenessId)
+							if (
+								!existingAdlib ||
+								// If the existing is disabled and we're not, we should use our one:
+								(this.adLibIsDisabled(existingAdlib) && !this.adLibIsDisabled(adLibPiece))
+							) {
+								uniqueAdlibs.set(uniquenessId, adLibPiece)
+							}
+						}
+						const adLibPieces: BucketAdLibItem[] = Array.from(uniqueAdlibs.values())
+
 						return connectDragPreview(
 							connectDropTarget(
 								<div
@@ -779,7 +834,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								onFilterChange={this.onFilterChange} />
 						} */}
 									<div className="dashboard-panel__panel">
-										{this.state.adLibPieces.map((adlib: BucketAdLibItem) => (
+										{adLibPieces.map((adlib: BucketAdLibItem) => (
 											<ContextMenuTrigger
 												id="shelf-context-menu"
 												collect={() =>
@@ -811,9 +866,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 															? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 															: ''
 													}
-													// Hack: Julian: The adlibs are still executable, so the colour change was reported as a bug https://app.asana.com/0/1200403895331886/1200477738053366.
-													// They should be disabled, but we don't have the structure in place for multiple versions, or even regenerating them when changing variant so this will have to do for now
-													// disabled={adlib.showStyleVariantId !== this.props.showStyleVariantId}
+													disabled={this.adLibIsDisabled(adlib)}
 													findAdLib={this.findAdLib}
 													moveAdLib={this.moveAdLib}
 													editableName={this.props.editedPiece === adlib._id}

@@ -79,7 +79,7 @@ meteorPublish(PubSub.peripheralDevicesAndSubDevices, function (selector0, token)
 			},
 		}
 
-		const cursor = PeripheralDevices.find(
+		return PeripheralDevices.find(
 			{
 				$or: [
 					{
@@ -90,8 +90,6 @@ meteorPublish(PubSub.peripheralDevicesAndSubDevices, function (selector0, token)
 			},
 			modifier
 		)
-
-		return cursor
 	}
 	return null
 })
@@ -374,7 +372,7 @@ meteorCustomPublishArray(
 						packageContainers[containerId] = studioPackageContainer.container
 					}
 
-					const pubData = literal<DBObj[]>([
+					return literal<DBObj[]>([
 						{
 							_id: protectString(`${deviceId}_expectedPackages`),
 							type: 'expected_packages',
@@ -412,7 +410,6 @@ meteorCustomPublishArray(
 							}),
 						},
 					])
-					return pubData
 				},
 				(newData) => {
 					pub.updatedDocs(newData)

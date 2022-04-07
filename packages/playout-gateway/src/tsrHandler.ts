@@ -788,16 +788,22 @@ export class TSRHandler {
 			await device.device.on('updateMediaObject', onUpdateMediaObject)
 			await device.device.on('clearMediaObjects', onClearMediaObjectCollection)
 
-			await device.device.on('info', (e: any, ...args: any[]) => this.logger.info(fixError(e), ...args))
-			await device.device.on('warning', (e: any, ...args: any[]) => this.logger.warn(fixError(e), ...args))
-			await device.device.on('error', (e: any, ...args: any[]) => this.logger.error(fixError(e), ...args))
+			await device.device.on('info', (e: any, ...args: any[]) => {
+				this.logger.info(fixError(e), ...args)
+			})
+			await device.device.on('warning', (e: any, ...args: any[]) => {
+				this.logger.warn(fixError(e), ...args)
+			})
+			await device.device.on('error', (e: any, ...args: any[]) => {
+				this.logger.error(fixError(e), ...args)
+			})
 
 			await device.device.on('debug', (e: any, ...args: any[]) => {
 				// Don't log if the "main" debug flag (_coreHandler.logDebug) is set to avoid duplicates,
 				// because then the tsr is also logging debug messages from the devices.
 
 				if (device.debugLogging && !this._coreHandler.logDebug) {
-					this.logger.info('debug: ' + fixError(e), ...args)
+					this.logger.debug(fixError(e), ...args)
 				}
 			})
 

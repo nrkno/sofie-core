@@ -84,7 +84,7 @@ export enum ClientActions {
 	'goToOnAirLine' = 'goToOnAirLine',
 	'rewindSegments' = 'rewindSegments',
 	'showEntireCurrentSegment' = 'showEntireCurrentSegment',
-	// 'moveAdLibFocus' = 'moveAdLibFocus' // TV2 is working on a feature with "focusable ad libs"
+	'miniShelfQueueAdLib' = 'miniShelfQueueAdLib',
 }
 
 export interface ITriggeredActionBase {
@@ -252,6 +252,12 @@ export interface IShowEntireCurrentSegmentAction extends ITriggeredActionBase {
 	on: boolean
 }
 
+export interface IMiniShelfQueueAdLib extends ITriggeredActionBase {
+	action: ClientActions.miniShelfQueueAdLib
+	filterChain: IGUIContextFilterLink[]
+	forward: boolean
+}
+
 export type SomeAction =
 	| IAdlibPlayoutAction
 	| IRundownPlaylistActivateAction
@@ -268,6 +274,7 @@ export type SomeAction =
 	| IGoToOnAirLineAction
 	| IRewindSegmentsAction
 	| IShowEntireCurrentSegmentAction
+	| IMiniShelfQueueAdLib
 
 export interface IBlueprintTriggeredActions {
 	_id: string

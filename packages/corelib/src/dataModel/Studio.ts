@@ -1,11 +1,13 @@
 import { BlueprintMapping, IBlueprintConfig, PackageContainer, TSR } from '@sofie-automation/blueprints-integration'
-import { ProtectedString, ProtectedStringProperties } from '../protectedString'
-import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId } from './Ids'
+import { ProtectedString } from '../protectedString'
+import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, PeripheralDeviceId } from './Ids'
 
 export interface MappingsExt {
 	[layerName: string]: MappingExt
 }
-export type MappingExt = ProtectedStringProperties<BlueprintMapping, 'deviceId'>
+export interface MappingExt extends Omit<BlueprintMapping, 'deviceId'> {
+	deviceId: PeripheralDeviceId
+}
 
 export interface IStudioSettings {
 	/** The framerate (frames per second) used to convert internal timing information (in milliseconds)
@@ -41,6 +43,9 @@ export interface IStudioSettings {
 	preserveUnsyncedPlayingSegmentContents?: boolean
 	/** Allow resets while a rundown is on-air */
 	allowRundownResetOnAir?: boolean
+
+	/** Preserve unsynced segments psoition in the rundown, relative to the other segments */
+	preserveOrphanedSegmentPositionInRundown?: boolean
 }
 export type MappingsHash = ProtectedString<'MappingsHash'>
 
@@ -115,6 +120,14 @@ export enum StudioRouteBehavior {
 	TOGGLE = 1,
 	ACTIVATE_ONLY = 2,
 }
+
+export enum StudioRouteType {
+	/** Default */
+	REROUTE = 0,
+	/** Replace all properties with a new mapping */
+	REMAP = 1,
+}
+
 export interface RouteMapping extends ResultingMappingRoute {
 	/** Which original layer to route. If false, a "new" layer will be inserted during routing */
 	mappedLayer: string | undefined
@@ -130,5 +143,6 @@ export interface ResultingMappingRoutes {
 export interface ResultingMappingRoute {
 	outputMappedLayer: string
 	deviceType?: TSR.DeviceType
-	remapping?: Partial<MappingExt>
+	remapping?: Partial<BlueprintMapping>
+	routeType: StudioRouteType
 }

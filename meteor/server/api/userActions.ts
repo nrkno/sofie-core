@@ -27,7 +27,6 @@ import { SegmentId } from '../../lib/collections/Segments'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-import { ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { BucketId, Bucket } from '../../lib/collections/Buckets'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
@@ -42,6 +41,7 @@ import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { StudioContentWriteAccess } from '../security/studio'
 import { BucketSecurity } from '../security/buckets'
+import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 
 async function pieceSetInOutPoints(
 	access: VerifiedRundownPlaylistContentAccess,
@@ -440,21 +440,21 @@ class ServerUserActionAPI
 	async bucketAdlibImport(
 		userEvent: string,
 		bucketId: BucketId,
-		showStyleVariantId: ShowStyleVariantId,
+		showStyleBaseId: ShowStyleBaseId,
 		ingestItem: IngestAdlib
 	) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			'bucketAdlibImport',
-			[bucketId, showStyleVariantId, ingestItem],
+			[bucketId, showStyleBaseId, ingestItem],
 			async () => {
 				check(bucketId, String)
-				check(showStyleVariantId, String)
+				check(showStyleBaseId, String)
 				check(ingestItem, Object)
 
 				const access = BucketSecurity.allowWriteAccess(this, bucketId)
-				return BucketsAPI.importAdlibToBucket(access, showStyleVariantId, ingestItem)
+				return BucketsAPI.importAdlibToBucket(access, showStyleBaseId, undefined, ingestItem)
 			}
 		)
 	}
@@ -529,7 +529,7 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async storeRundownSnapshot(userEvent: string, playlistId: RundownPlaylistId, reason: string) {
+	async storeRundownSnapshot(userEvent: string, playlistId: RundownPlaylistId, reason: string, full: boolean) {
 		return ServerClientAPI.runUserActionInLogForPlaylist(
 			this,
 			userEvent,
@@ -539,9 +539,9 @@ class ServerUserActionAPI
 				check(reason, String)
 			},
 			'storeRundownSnapshot',
-			[playlistId, reason],
+			[playlistId, reason, full],
 			async (access) => {
-				return storeRundownPlaylistSnapshot(access, playlistId, reason)
+				return storeRundownPlaylistSnapshot(access, playlistId, reason, full)
 			}
 		)
 	}

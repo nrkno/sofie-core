@@ -14,7 +14,7 @@ import { withTranslation } from 'react-i18next'
 import { PlaylistEndTiming } from '../RundownView/RundownTiming/PlaylistEndTiming'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
-interface IPlaylistStartTimerPanelProps {
+interface IPlaylistEndTimerPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPlaylistEndTimer
@@ -23,7 +23,7 @@ interface IPlaylistStartTimerPanelProps {
 
 interface IState {}
 
-class PlaylistEndTimerPanelInner extends MeteorReactComponent<Translated<IPlaylistStartTimerPanelProps>, IState> {
+export class PlaylistEndTimerPanelInner extends MeteorReactComponent<Translated<IPlaylistEndTimerPanelProps>, IState> {
 	constructor(props) {
 		super(props)
 	}

@@ -1,4 +1,4 @@
-import { BucketAdLibActionId, BucketId, StudioId, ShowStyleVariantId } from './Ids'
+import { BucketAdLibActionId, BucketId, StudioId, ShowStyleVariantId, ShowStyleBaseId } from './Ids'
 import { RundownImportVersions } from './Rundown'
 import { AdLibActionCommon } from './AdlibAction'
 
@@ -13,7 +13,10 @@ export interface BucketAdLibAction extends Omit<AdLibActionCommon, 'rundownId'> 
 	 * the adLib will be shown as disabled
 	 */
 	studioId: StudioId
-	showStyleVariantId: ShowStyleVariantId
+	/** Which ShowStyleBase the adlib action is valid for */
+	showStyleBaseId: ShowStyleBaseId
+	/** if showStyleVariantId is null, the adlibAction can be used with any variant */
+	showStyleVariantId: ShowStyleVariantId | null
 	importVersions: RundownImportVersions // TODO - is this good?
 
 	/** The following extended interface allows assigning namespace information to the actions as they are stored in the
