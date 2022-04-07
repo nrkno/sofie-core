@@ -14,6 +14,8 @@ export interface ISettings {
 	autoRewindLeavingSegment: boolean
 	/** Disable blur border in RundownView */
 	disableBlurBorder: boolean
+	/** Disable blur border in the standalone Shelf */
+	disableBlurBorderInShelf: boolean // TODOSYNC: TV2 check: Is this not used by anyone? to be removed?
 	/** Default time scale zooming for the UI. Default: 1  */
 	defaultTimeScale: number
 	// Allow grabbing the entire timeline
@@ -35,6 +37,9 @@ export interface ISettings {
 		port?: number
 		maxAllowedDiff: number
 	}
+
+	/** The KeyboardPreview is a feature that is not implemented in the main Fork */
+	enableKeyboardPreview: boolean
 }
 
 /**
@@ -44,6 +49,7 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	// frameRate: 25,
 	autoRewindLeavingSegment: true,
 	disableBlurBorder: false,
+	disableBlurBorderInShelf: true,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
 	enableUserAccounts: false,
@@ -54,6 +60,7 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	followOnAirSegmentsHistory: 0,
 	maximumDataAge: 1000 * 60 * 60 * 24 * 100, // 100 days
 	enableNTPTimeChecker: null,
+	enableKeyboardPreview: false,
 })
 
 /**

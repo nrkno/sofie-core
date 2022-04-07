@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IAdLibListItem } from './AdLibListItem'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { AdLibPieceUi, AdLibPanel } from './AdLibPanel'
+import { AdLibPanel } from './AdLibPanel'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
@@ -14,6 +14,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { ShelfTabs } from './Shelf'
 import { useTranslation } from 'react-i18next'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 interface IProps {
 	playlist: RundownPlaylist

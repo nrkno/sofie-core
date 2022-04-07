@@ -83,8 +83,11 @@ const $ = {
 	},
 }
 
+let mockIsClient = false
 export class MeteorMock {
-	static isClient: boolean = false
+	static get isClient(): boolean {
+		return mockIsClient
+	}
 	static get isServer() {
 		return !MeteorMock.isClient
 	}
@@ -94,6 +97,7 @@ export namespace MeteorMock {
 	export const isTest: boolean = true
 
 	export const isCordova: boolean = false
+
 	export const isProduction: boolean = false
 	export const release: string = ''
 
@@ -284,6 +288,12 @@ export namespace MeteorMock {
 	}
 	export function mockSetUsersCollection(usersCollection) {
 		users = usersCollection
+	}
+	export function mockSetClientEnvironment() {
+		mockIsClient = true
+	}
+	export function mockSetServerEnvironment() {
+		mockIsClient = false
 	}
 
 	// locally defined function here, so there are no import to the rest of the code

@@ -25,6 +25,7 @@ export const SegmentTimelineSmallPartFlag = ({
 	liveLineHistorySize,
 	isLastSegment,
 	isLastInSegment,
+	showDurationSourceLayers,
 }: {
 	t: TFunction
 	parts: [PartUi, number][]
@@ -45,6 +46,7 @@ export const SegmentTimelineSmallPartFlag = ({
 	isLastSegment: boolean
 	isLastInSegment: boolean
 	timelineWidth: number
+	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }) => {
 	const flagRef = useRef<HTMLDivElement>(null)
 
@@ -114,6 +116,7 @@ export const SegmentTimelineSmallPartFlag = ({
 				isLastInSegment={isLastInSegment}
 				totalSegmentDuration={partDurations}
 				parentTimeScale={timeScale}
+				showDurationSourceLayers={showDurationSourceLayers}
 			/>
 		</div>
 	)

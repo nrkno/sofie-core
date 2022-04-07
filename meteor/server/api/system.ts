@@ -22,6 +22,7 @@ import { OrganizationContentWriteAccess } from '../security/organization'
 import { ClientAPI } from '../../lib/api/client'
 import { cleanupOldDataInner } from './cleanup'
 import { IndexSpecification } from 'mongodb'
+import { nightlyCronjobInner } from '../cronjobs'
 
 async function setupIndexes(removeOldIndexes: boolean = false): Promise<Array<IndexSpecification>> {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
@@ -99,6 +100,11 @@ export function cleanupOldData(
 	SystemWriteAccess.coreSystem(context)
 
 	return cleanupOldDataInner(actuallyRemoveOldData)
+}
+export function runCronjob(context: MethodContext): void {
+	SystemWriteAccess.coreSystem(context)
+
+	return nightlyCronjobInner()
 }
 
 let mongoTest: TransformedCollection<any, any> | undefined = undefined
@@ -361,6 +367,9 @@ class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	}
 	async cleanupOldData(actuallyRemoveOldData: boolean) {
 		return makePromise(() => cleanupOldData(this, actuallyRemoveOldData))
+	}
+	async runCronjob() {
+		return makePromise(() => runCronjob(this))
 	}
 	async doSystemBenchmark(runCount: number = 1) {
 		return doSystemBenchmark(this, runCount)

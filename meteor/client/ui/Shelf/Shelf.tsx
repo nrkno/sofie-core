@@ -31,6 +31,8 @@ import RundownViewEventBus, {
 } from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import ShelfContextMenu from './ShelfContextMenu'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { MeteorCall } from '../../../lib/api/methods'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 
@@ -61,6 +63,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 		inspector: boolean
 	}
 	bucketDisplayFilter: number[] | undefined
+	showBuckets: boolean
 
 	onChangeExpanded: (value: boolean) => void
 	onChangeBottomMargin?: (newBottomMargin: string) => void
@@ -117,6 +120,15 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			shouldQueue: false,
 			selectedPiece: undefined,
 			localStorageName,
+		}
+	}
+
+	take = (e: any) => {
+		const { t } = this.props
+		if (this.props.studioMode) {
+			doUserAction(t, e, UserAction.TAKE, (e) =>
+				MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+			)
 		}
 	}
 
@@ -379,7 +391,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 				style={fullViewport ? undefined : this.getStyle()}
 				ref={this.setRef}
 			>
-				<ShelfContextMenu />
+				{!this.props.rundownLayout?.disableContextMenu && <ShelfContextMenu />}
 				{!fullViewport && (
 					<div
 						className="rundown-view__shelf__handle dark"

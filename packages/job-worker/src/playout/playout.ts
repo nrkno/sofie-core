@@ -14,6 +14,7 @@ import {
 	SetNextPartProps,
 	StopPiecesOnSourceLayersProps,
 	ExecuteActionProps,
+	ExecuteActionResult,
 	TakeNextPartProps,
 	OnPiecePlaybackStartedProps,
 	OnPiecePlaybackStoppedProps,
@@ -1090,7 +1091,7 @@ function timelineTriggerTimeInner(
 	}
 }
 
-export async function executeAction(context: JobContext, data: ExecuteActionProps): Promise<void> {
+export async function executeAction(context: JobContext, data: ExecuteActionProps): Promise<ExecuteActionResult> {
 	return runJobWithPlayoutCache(
 		context,
 		// 'executeActionInner',
@@ -1143,7 +1144,7 @@ export async function executeActionInner(
 		currentPartInstance: DBPartInstance,
 		blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>
 	) => Promise<void>
-): Promise<void> {
+): Promise<ExecuteActionResult> {
 	const now = getCurrentTime()
 
 	const playlist = cache.Playlist.doc
@@ -1207,6 +1208,11 @@ export async function executeActionInner(
 		) {
 			await updateTimeline(context, cache)
 		}
+	}
+
+	return {
+		queuedPartInstanceId: actionContext.queuedPartInstanceId,
+		taken: actionContext.takeAfterExecute,
 	}
 }
 /**
