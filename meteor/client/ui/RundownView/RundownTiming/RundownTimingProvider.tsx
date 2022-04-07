@@ -36,7 +36,7 @@ interface IRundownTimingProviderProps {
 }
 interface IRundownTimingProviderChildContext {
 	durations: RundownTimingContext
-	lowResDurations: RundownTimingContext
+	syncedDurations: RundownTimingContext
 }
 interface IRundownTimingProviderState {}
 interface IRundownTimingProviderTrackedProps {
@@ -159,13 +159,13 @@ export const RundownTimingProvider = withTracker<
 	{
 		static childContextTypes = {
 			durations: PropTypes.object.isRequired,
-			lowResDurations: PropTypes.object.isRequired,
+			syncedDurations: PropTypes.object.isRequired,
 		}
 
 		durations: RundownTimingContext = {
 			isLowResolution: false,
 		}
-		lowResDurations: RundownTimingContext = {
+		syncedDurations: RundownTimingContext = {
 			isLowResolution: true,
 		}
 		refreshTimer: number
@@ -187,7 +187,7 @@ export const RundownTimingProvider = withTracker<
 		getChildContext(): IRundownTimingProviderChildContext {
 			return {
 				durations: this.durations,
-				lowResDurations: this.lowResDurations,
+				syncedDurations: this.syncedDurations,
 			}
 		}
 
@@ -278,11 +278,11 @@ export const RundownTimingProvider = withTracker<
 			window.dispatchEvent(event)
 		}
 
-		updateDurations(now: number, isLowResolution: boolean) {
+		updateDurations(now: number, isSynced: boolean) {
 			const { playlist, rundowns, currentRundown, parts, partInstancesMap } = this.props
 			const updatedDurations = this.timingCalculator.updateDurations(
 				now,
-				isLowResolution,
+				isSynced,
 				playlist,
 				rundowns,
 				currentRundown,
@@ -292,10 +292,10 @@ export const RundownTimingProvider = withTracker<
 				this.props.defaultDuration
 				// segmentEntryPartInstances // TODOSYNC
 			)
-			if (!isLowResolution) {
+			if (!isSynced) {
 				this.durations = Object.assign(this.durations, updatedDurations)
 			} else {
-				this.lowResDurations = Object.assign(this.lowResDurations, updatedDurations)
+				this.syncedDurations = Object.assign(this.syncedDurations, updatedDurations)
 			}
 		}
 

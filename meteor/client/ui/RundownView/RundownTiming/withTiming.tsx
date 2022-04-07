@@ -60,7 +60,7 @@ export function withTiming<IProps, IState>(
 		return class WithTimingHOCComponent extends React.Component<IProps, IState> {
 			static contextTypes = {
 				durations: PropTypes.object.isRequired,
-				lowResDurations: PropTypes.object.isRequired,
+				syncedDurations: PropTypes.object.isRequired,
 			}
 
 			filterGetter: (o: any) => any
@@ -113,7 +113,7 @@ export function withTiming<IProps, IState>(
 
 			render() {
 				const highResDurations: RundownTimingContext = this.context.durations
-				const lowResDurations: RundownTimingContext = this.context.lowResDurations
+				const syncedDurations: RundownTimingContext = this.context.syncedDurations
 
 				// If the timing HOC is supposed to be low resolution and we are rendering
 				// during a high resolution tick, the WrappedComponent will render using
@@ -132,7 +132,7 @@ export function withTiming<IProps, IState>(
 						timingDurations={rundownTimingDataFromDataResolution(
 							expandedOptions.dataResolution,
 							highResDurations,
-							lowResDurations
+							syncedDurations
 						)}
 					/>
 				)
@@ -169,12 +169,12 @@ function rundownTimingEventFromTickResolution(resolution: TimingTickResolution):
 function rundownTimingDataFromDataResolution(
 	resolution: TimingDataResolution,
 	highResDurations: RundownTimingContext,
-	lowResDurations: RundownTimingContext
+	syncedDurations: RundownTimingContext
 ): RundownTimingContext {
 	switch (resolution) {
 		case TimingDataResolution.High:
 			return highResDurations
 		case TimingDataResolution.Synced:
-			return lowResDurations
+			return syncedDurations
 	}
 }
