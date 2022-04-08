@@ -14605,10 +14605,20 @@ threadedclass@^0.8.0:
     is-running "^2.1.0"
     tslib "^1.13.0"
 
-threadedclass@^1.0.0, threadedclass@^1.0.1:
+threadedclass@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.0.1.tgz#2952274cbb0e675ec118f3ddef6a69e71e24d75d"
   integrity sha512-Lgclu4nKQUgsr70RSAQxsIVNd5PaSIybmPkN94kErqNuVzI+EDhQDAc76YdPIGUOOx/VgJKEFYkzohsWbcvVMA==
+  dependencies:
+    callsites "^3.1.0"
+    eventemitter3 "^4.0.4"
+    is-running "^2.1.0"
+    tslib "^1.13.0"
+
+threadedclass@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.0.2.tgz#c5574cac282198433b9f3685202c5081df23206b"
+  integrity sha512-xkKqzipcLV25TqI3Z3eykpl5TiAGwg+h0DUwvYEh9GXRxvNcKZJIfl2l5/Bn6UxOuHAKXGT/HBN9PWDRf2P34g==
   dependencies:
     callsites "^3.1.0"
     eventemitter3 "^4.0.4"
@@ -14657,10 +14667,17 @@ timeline-state-resolver-types@7.0.0-nightly-release41-20220406-135246-bbeee15e8.
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.0.0-nightly-release41-20220406-135246-bbeee15e8.0:
-  version "7.0.0-nightly-release41-20220406-135246-bbeee15e8.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.0.0-nightly-release41-20220406-135246-bbeee15e8.0.tgz#97981e150d57ffcf58afcbe0a2503c963aa7b530"
-  integrity sha512-jXAOzNCMnSvXPu4I+uTf9PklcRmWLPO5Ql3qD3mwQLk8XwDEPxupW/pn/wgUNIW7OtQOZeBGnRaEsfU+SIXF+Q==
+timeline-state-resolver-types@7.0.0-nightly-release41-20220408-085041-6df36effb.0:
+  version "7.0.0-nightly-release41-20220408-085041-6df36effb.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0-nightly-release41-20220408-085041-6df36effb.0.tgz#5c956db28ba74f66f5e3726b4dfa03e618cca9bc"
+  integrity sha512-2ANGVTnCAawpc8RURzd/M6ZUWkRWOXZ4vWJQ63JiCcHj0bzvZd9P6YuXjVKrHYBJ5x2TuoDq1lEnb2DmJrlPkw==
+  dependencies:
+    tslib "^2.3.1"
+
+timeline-state-resolver@7.0.0-nightly-release41-20220408-085041-6df36effb.0:
+  version "7.0.0-nightly-release41-20220408-085041-6df36effb.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.0.0-nightly-release41-20220408-085041-6df36effb.0.tgz#097a85b5c63832693c32ff800aa99c496793ea3c"
+  integrity sha512-rvUUbJpXECEiYP4I+4ljljyhq3qCKx2BuG1iZNcIWZxkyWVAiaEOF+AqpYMg8WnVNFM3ZXit/DtKgFPVYzQfyA==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
     atem-connection "2.4.0"
@@ -14681,8 +14698,8 @@ timeline-state-resolver@7.0.0-nightly-release41-20220406-135246-bbeee15e8.0:
     request "^2.88.0"
     sprintf-js "^1.1.2"
     superfly-timeline "8.2.1"
-    threadedclass "^1.0.1"
-    timeline-state-resolver-types "7.0.0-nightly-release41-20220406-135246-bbeee15e8.0"
+    threadedclass "^1.0.2"
+    timeline-state-resolver-types "7.0.0-nightly-release41-20220408-085041-6df36effb.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
