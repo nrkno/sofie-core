@@ -1407,19 +1407,21 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					selectedShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForShelf(i))
 				}
 
-				if (!selectedViewLayout) {
-					selectedViewLayout = props.rundownLayouts.find((i) =>
-						RundownLayoutsAPI.isLayoutForRundownView(i)
-					) as RundownViewLayout
-				}
+				// TODOSYNC: This was added by TV2, but this is a backwards-incompatible change
+				//						-- Jan Starzak, 2022/04/08
+				// if (!selectedViewLayout) {
+				// 	selectedViewLayout = props.rundownLayouts.find((i) =>
+				// 		RundownLayoutsAPI.isLayoutForRundownView(i)
+				// 	) as RundownViewLayout
+				// }
 
-				if (!selectedHeaderLayout) {
-					selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownHeader(i))
-				}
+				// if (!selectedHeaderLayout) {
+				// 	selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownHeader(i))
+				// }
 
-				if (!selectedMiniShelfLayout) {
-					selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForMiniShelf(i))
-				}
+				// if (!selectedMiniShelfLayout) {
+				// 	selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForMiniShelf(i))
+				// }
 			}
 
 			let currentRundown: Rundown | undefined = undefined
