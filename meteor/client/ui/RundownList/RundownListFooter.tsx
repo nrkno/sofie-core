@@ -19,8 +19,8 @@ export function RundownListFooter({ systemStatus }: IProps) {
 
 	return (
 		<div className="mtl gutter version-info">
-			<p data-version-extended={versionExtended}>
-				{t('Sofie Automation')} {t('version')}: {version}
+			<p>
+				{t('Sofie Automation')} {t('version')}: <abbr title={versionExtended}>{version}</abbr>
 			</p>
 			<div className="mod">
 				{systemStatus ? (
