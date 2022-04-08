@@ -142,6 +142,7 @@ function getMiniRundownList(
 	const miniRundownSegments: MiniRundownSegment[] = []
 
 	allSegments?.forEach((segment: Segment) => {
+		if (segment.isHidden) return
 		miniRundownSegments.push({
 			identifier: getSegmentIdentifier(segment),
 			segmentName: getSegmentName(segment),
