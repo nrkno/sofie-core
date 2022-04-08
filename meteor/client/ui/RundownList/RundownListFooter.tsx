@@ -20,7 +20,10 @@ export function RundownListFooter({ systemStatus }: IProps) {
 	return (
 		<div className="mtl gutter version-info">
 			<p>
-				{t('Sofie Automation')} {t('version')}: <abbr title={versionExtended}>{version}</abbr>
+				{t('Sofie Automation')} {t('version')}:&nbsp;
+				<Tooltip overlay={versionExtended} placement="top" mouseEnterDelay={1}>
+					<span>{version}</span>
+				</Tooltip>
 			</p>
 			<div className="mod">
 				{systemStatus ? (
