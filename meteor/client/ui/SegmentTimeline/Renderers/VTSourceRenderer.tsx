@@ -413,8 +413,14 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						'overflow-label': end !== '',
 					})}
 				>
-					<span>{begin}</span>
-					{duration}
+					{duration ? (
+						<>
+							<span>{begin}</span>
+							{duration}
+						</>
+					) : (
+						begin
+					)}
 				</span>
 				{begin && end === '' && vtContent && vtContent.loop && (
 					<div className="segment-timeline__piece__label label-icon label-loop-icon">
