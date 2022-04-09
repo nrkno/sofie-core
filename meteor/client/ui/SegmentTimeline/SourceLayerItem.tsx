@@ -362,6 +362,18 @@ export const SourceLayerItem = withTranslation()(
 			return this.convertTimeToPixels(itemDuration)
 		}
 
+		getElementAbsoluteStyleWidth(): string {
+			const renderedInPoint = this.props.piece.renderedInPoint
+			if (renderedInPoint === 0) {
+				const itemPossiblyInfiniteDuration = this.getItemDuration(true)
+				if (!Number.isFinite(itemPossiblyInfiniteDuration)) {
+					return '100%'
+				}
+			}
+			const itemDuration = this.getItemDuration(false)
+			return this.convertTimeToPixels(itemDuration).toString() + 'px'
+		}
+
 		getItemStyle(): { [key: string]: string } {
 			const piece = this.props.piece
 			const innerPiece = piece.instance.piece
@@ -397,7 +409,7 @@ export const SourceLayerItem = withTranslation()(
 				}
 				return {
 					left: this.convertTimeToPixels(piece.renderedInPoint || 0).toString() + 'px',
-					width: this.getElementAbsoluteWidth().toString() + 'px',
+					width: this.getElementAbsoluteStyleWidth(),
 				}
 			}
 		}
