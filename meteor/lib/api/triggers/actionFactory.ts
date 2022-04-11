@@ -326,9 +326,10 @@ function createShelfAction(filterChain: IGUIContextFilterLink[], state: boolean 
 function createMiniShelfQueueAdLibAction(_filterChain: IGUIContextFilterLink[], forward: boolean): ExecutableAction {
 	return {
 		action: ClientActions.miniShelfQueueAdLib,
-		execute: () => {
+		execute: (t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.MINI_SHELF_QUEUE_ADLIB, {
 				forward,
+				context: e,
 			})
 		},
 	}

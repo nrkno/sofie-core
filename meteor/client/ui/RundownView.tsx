@@ -1952,7 +1952,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		eventQueueMiniShelfAdLib = (e: MiniShelfQueueAdLibEvent) => {
-			this.queueMinishelfAdLib(e, e.forward)
+			this.queueMinishelfAdLib(e.context, e.forward)
 		}
 
 		onActivate = () => {
