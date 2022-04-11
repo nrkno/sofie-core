@@ -131,6 +131,10 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		}
 	}
 
+	onTake = (e: IEventContext) => {
+		this.take(e.context)
+	}
+
 	take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
@@ -386,10 +390,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.setState({
 			shouldQueue,
 		})
-	}
-
-	onTake = (e: IEventContext) => {
-		this.take(e.context)
 	}
 
 	render() {
