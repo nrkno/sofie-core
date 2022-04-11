@@ -11,6 +11,7 @@ import { Studio } from '../../../lib/collections/Studios'
 import { PieceId, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { getPreviewUrlForExpectedPackagesAndContentMetaData } from '../../lib/ui/clipPreview'
 import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer'
+import classNames from 'classnames'
 
 interface IProps {
 	status: PieceStatusCode
@@ -50,88 +51,88 @@ function renderNotice(noticeLevel: NoticeLevel, noticeMessage: string | null): J
 	)
 }
 
-function shouldShowContent(props: IProps): boolean {
-	return props.status !== PieceStatusCode.SOURCE_NOT_SET && !!props.content?.fileName
+function shouldShowFloatingInspectorContent(status: PieceStatusCode, content: VTContent | undefined): boolean {
+	return status !== PieceStatusCode.SOURCE_NOT_SET && !!content?.fileName
 }
 
-export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IProps) => {
+export const VTFloatingInspector: React.FC<IProps> = ({
+	timePosition,
+	content,
+	renderedDuration,
+	pieceId,
+	studio,
+	expectedPackages,
+	contentMetaData,
+	hideHoverscrubPreview,
+	noticeLevel,
+	noticeMessage,
+	showMiniInspector,
+	itemElement,
+	displayOn,
+	floatingInspectorStyle,
+	typeClass,
+	status,
+}: IProps) => {
 	const { t } = useTranslation()
-	const { timePosition } = props
 
-	const itemDuration = (props.content ? props.content.sourceDuration : undefined) || props.renderedDuration || 0
-	const seek = props.content?.seek ?? 0
-	const loop = props.content?.loop ?? false
+	const itemDuration = content?.sourceDuration || renderedDuration || 0
+	const seek = content?.seek ?? 0
+	const loop = content?.loop ?? false
 
 	const offsetTimePosition = timePosition + seek
 
 	const previewUrl: string | undefined = getPreviewUrlForExpectedPackagesAndContentMetaData(
-		props.pieceId,
-		props.studio,
-		props.studio?.settings.mediaPreviewsUrl,
-		props.expectedPackages,
-		props.contentMetaData
+		pieceId,
+		studio,
+		studio?.settings.mediaPreviewsUrl,
+		expectedPackages,
+		contentMetaData
 	)
 
+	const showVideoPlayerInspector = !hideHoverscrubPreview && previewUrl
+	const showMiniInspectorClipData = shouldShowFloatingInspectorContent(status, content)
+	const showMiniInspectorNotice = noticeLevel !== null
+	const showMiniInspectorData = showMiniInspectorNotice || showMiniInspectorClipData
+	const showAnyFloatingInspector = showVideoPlayerInspector || showMiniInspectorData
+
+	if (!showAnyFloatingInspector) {
+		return null
+	}
+
 	return (
-		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
-			{previewUrl ? (
-				!props.hideHoverscrubPreview || props.noticeLevel !== null ? (
+		<FloatingInspector shown={showMiniInspector && itemElement !== undefined} displayOn={displayOn}>
+			<div
+				className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
+				style={floatingInspectorStyle}
+			>
+				{showVideoPlayerInspector && (
+					<VideoPreviewPlayer
+						itemDuration={itemDuration}
+						loop={loop}
+						seek={seek}
+						previewUrl={previewUrl}
+						timePosition={offsetTimePosition}
+						studioSettings={studio?.settings}
+					/>
+				)}
+				{showMiniInspectorData && (
 					<div
-						className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
-						style={props.floatingInspectorStyle}
+						className={classNames('segment-timeline__mini-inspector', typeClass, {
+							'segment-timeline__mini-inspector--sub-inspector': showVideoPlayerInspector,
+							'segment-timeline__mini-inspector--notice notice-critical': noticeLevel === NoticeLevel.CRITICAL,
+							'segment-timeline__mini-inspector--notice notice-warning': noticeLevel === NoticeLevel.WARNING,
+						})}
 					>
-						{!props.hideHoverscrubPreview ? (
-							<VideoPreviewPlayer
-								itemDuration={itemDuration}
-								loop={loop}
-								seek={seek}
-								previewUrl={previewUrl}
-								timePosition={offsetTimePosition}
-								studioSettings={props.studio?.settings}
-							/>
-						) : null}
-						{props.noticeLevel !== null ? (
-							<div
-								className={
-									'segment-timeline__mini-inspector ' +
-									(!props.hideHoverscrubPreview ? 'segment-timeline__mini-inspector--sub-inspector ' : '') +
-									props.typeClass +
-									' ' +
-									(props.noticeLevel === NoticeLevel.CRITICAL
-										? 'segment-timeline__mini-inspector--notice notice-critical'
-										: props.noticeLevel === NoticeLevel.WARNING
-										? 'segment-timeline__mini-inspector--notice notice-warning'
-										: '')
-								}
-							>
-								{renderNotice(props.noticeLevel, props.noticeMessage)}
+						{showMiniInspectorNotice && renderNotice(noticeLevel, noticeMessage)}
+						{showMiniInspectorClipData && (
+							<div className="segment-timeline__mini-inspector__properties">
+								<span className="mini-inspector__label">{t('Clip:')}</span>
+								<span className="mini-inspector__value">{content?.fileName}</span>
 							</div>
-						) : null}
+						)}
 					</div>
-				) : null
-			) : shouldShowContent(props) || props.noticeLevel !== null ? (
-				<div
-					className={
-						'segment-timeline__mini-inspector ' +
-						props.typeClass +
-						' ' +
-						(props.noticeLevel === NoticeLevel.CRITICAL
-							? 'segment-timeline__mini-inspector--notice notice-critical'
-							: props.noticeLevel === NoticeLevel.WARNING
-							? 'segment-timeline__mini-inspector--notice notice-warning'
-							: '')
-					}
-					style={props.floatingInspectorStyle}
-				>
-					{props.noticeLevel !== null ? renderNotice(props.noticeLevel, props.noticeMessage) : null}
-					{shouldShowContent(props) ? (
-						<div className="segment-timeline__mini-inspector__properties">
-							<span className="mini-inspector__label">{t('Clip:')}</span>
-							<span className="mini-inspector__value">{props.content && props.content.fileName}</span>
-						</div>
-					) : null}
-				</div>
-			) : null}
+				)}
+			</div>
 		</FloatingInspector>
 	)
 }

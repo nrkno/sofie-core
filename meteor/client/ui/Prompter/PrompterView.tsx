@@ -706,7 +706,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			return this.getScrollAnchor()
 		}
 
-		componentDidUpdate(prevProps, prevState, snapshot: ScrollAnchor) {
+		componentDidUpdate(_prevProps, _prevState, snapshot: ScrollAnchor) {
 			this.restoreScrollAnchor(snapshot)
 		}
 

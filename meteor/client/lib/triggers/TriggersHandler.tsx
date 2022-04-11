@@ -103,7 +103,7 @@ function useSubscriptions(
 }
 
 function createAction(
-	id: TriggeredActionId,
+	_id: TriggeredActionId,
 	actions: SomeAction[],
 	showStyleBase: ShowStyleBase,
 	t: TFunction,
@@ -157,7 +157,7 @@ export interface MountedAdLibTrigger {
 	targetId: AdLibActionId | RundownBaselineAdLibActionId | PieceId | ISourceLayer['_id']
 	/** Keys or combos that have a listener mounted to */
 	keys: string[]
-	/** Final keys in the combos */
+	/** Final keys in the `keys` combos, that can be used for figuring out where on the keyboard this action is mounted */
 	finalKeys: string[]
 	/** A label of the action, if available */
 	name?: string | ITranslatableMessage
@@ -179,7 +179,7 @@ export interface MountedGenericTrigger {
 	triggeredActionId: TriggeredActionId
 	/** Keys or combos that have a listener mounted to */
 	keys: string[]
-	/** Final keys in the combos */
+	/** Final keys in the combos, that can be used for figuring out where on the keyboard this action is mounted */
 	finalKeys: string[]
 	/** A label of the action, if available */
 	name: string | ITranslatableMessage
@@ -474,7 +474,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				const genericTriggerId = protectString(`${pair._id}`)
 				const keys = triggers.map((trigger) => trigger.keys)
 				const finalKeys = keys.map((key) => getFinalKey(key))
-				const adLibOnly = pair.actions.every((action) => action.action === PlayoutActions.adlib)
+				const adLibOnly = pair.actions.every((actionDescriptor) => actionDescriptor.action === PlayoutActions.adlib)
 				MountedGenericTriggers.upsert(genericTriggerId, {
 					$set: {
 						_id: genericTriggerId,
@@ -492,7 +492,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				.filter((trigger) => trigger.type === TriggerType.hotkey)
 				.map((trigger) => trigger.keys)
 
-			const finalKeys = hotkeyTriggers.map((key) => getFinalKey(key))
+			const hotkeyFinalKeys = hotkeyTriggers.map((key) => getFinalKey(key))
 
 			previewAutoruns.push(
 				isolatedAutorunWithCleanup(() => {
@@ -513,7 +513,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 								type: adLib.type,
 								triggeredActionId: pair._id,
 								keys: hotkeyTriggers,
-								finalKeys,
+								finalKeys: hotkeyFinalKeys,
 								name: pair.name,
 								targetName: adLib.label,
 								sourceLayerId: adLib.sourceLayerId,
