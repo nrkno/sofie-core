@@ -1146,7 +1146,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	let currentPartInstance: PartInstance | undefined
 	let nextPartInstance: PartInstance | undefined
 	let currentRundown: Rundown | undefined = undefined
-
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
@@ -2888,6 +2887,27 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									shelfDisplayOptions={this.props.shelfDisplayOptions}
 									bucketDisplayFilter={this.props.bucketDisplayFilter}
 								/>
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<SorensenContext.Consumer>
+									{(sorensen) =>
+										sorensen &&
+										this.props.studio &&
+										this.props.showStyleBase && (
+											<TriggersHandler
+												rundownPlaylistId={this.props.rundownPlaylistId}
+												showStyleBaseId={this.props.showStyleBase._id}
+												currentRundownId={this.props.currentRundown?._id || null}
+												currentPartId={this.props.currentPartInstance?.part._id || null}
+												nextPartId={this.props.nextPartInstance?.part._id || null}
+												currentSegmentPartIds={this.props.currentSegmentPartIds}
+												nextSegmentPartIds={this.props.nextSegmentPartIds}
+												sorensen={sorensen}
+												global={this.isHotkeyAllowed}
+											/>
+										)
+									}
+								</SorensenContext.Consumer>
 							</ErrorBoundary>
 						</RundownTimingProvider>
 					)

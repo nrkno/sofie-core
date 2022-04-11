@@ -24,6 +24,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ShelfInspector } from './Inspector/ShelfInspector'
 import { Studio } from '../../../lib/collections/Studios'
 import RundownViewEventBus, {
+	IEventContext,
 	RundownViewEvents,
 	SelectPieceEvent,
 	ShelfStateEvent,
@@ -143,12 +144,20 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		RundownViewEventBus.on(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.on(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
 		RundownViewEventBus.on(RundownViewEvents.SHELF_STATE, this.onShelfStateChange)
+
+		if (this.props.fullViewport) {
+			RundownViewEventBus.on(RundownViewEvents.TAKE, this.onTake)
+		}
 	}
 
 	componentWillUnmount() {
 		RundownViewEventBus.off(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.off(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
 		RundownViewEventBus.off(RundownViewEvents.SHELF_STATE, this.onShelfStateChange)
+
+		if (this.props.fullViewport) {
+			RundownViewEventBus.off(RundownViewEvents.TAKE, this.onTake)
+		}
 	}
 
 	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
@@ -377,6 +386,10 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.setState({
 			shouldQueue,
 		})
+	}
+
+	onTake = (e: IEventContext) => {
+		this.take(e.context)
 	}
 
 	render() {
