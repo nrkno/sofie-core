@@ -58,8 +58,8 @@ export async function promiseWithTimeout<T>(promiseName: string, promise: Promis
 			() => {
 				reject(`No reply from NRCS on "${promiseName}" message`)
 			},
-			// 2.5s is slightly less than a 3s timeout in the core
-			2500
+			// 10.5s is slightly more than a 10s timeout (which is set for devices used in mos-connection)
+			10500
 		)
 	})
 	return Promise.race([promise, timeoutPromise])
