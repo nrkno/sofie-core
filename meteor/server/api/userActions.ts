@@ -529,7 +529,7 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async storeRundownSnapshot(userEvent: string, playlistId: RundownPlaylistId, reason: string) {
+	async storeRundownSnapshot(userEvent: string, playlistId: RundownPlaylistId, reason: string, full: boolean) {
 		return ServerClientAPI.runUserActionInLogForPlaylist(
 			this,
 			userEvent,
@@ -539,9 +539,9 @@ class ServerUserActionAPI
 				check(reason, String)
 			},
 			'storeRundownSnapshot',
-			[playlistId, reason],
+			[playlistId, reason, full],
 			async (access) => {
-				return storeRundownPlaylistSnapshot(access, playlistId, reason)
+				return storeRundownPlaylistSnapshot(access, playlistId, reason, full)
 			}
 		)
 	}

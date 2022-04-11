@@ -320,9 +320,9 @@ export function setSystemStatus(type: string, status: StatusObject) {
 	}> = []
 	if (status.messages) {
 		_.each(status.messages, (message) => {
-			const m = _.find(systemStatus.messages, (m) => m.message === message)
-			if (m) {
-				messages.push(m)
+			const existingMessage = _.find(systemStatus.messages, (m) => m.message === message)
+			if (existingMessage) {
+				messages.push(existingMessage)
 			} else {
 				messages.push({
 					message: message,

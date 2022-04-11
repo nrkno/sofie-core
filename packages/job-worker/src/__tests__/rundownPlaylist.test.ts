@@ -1,3 +1,4 @@
+import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -49,7 +50,7 @@ describe('Rundown', () => {
 			$set: {
 				playlistId: playlistId0,
 				playlistIdIsSetInSofie: true,
-				expectedStart: 1000,
+				timing: { type: PlaylistTimingType.ForwardTime, expectedStart: 1000 },
 				externalId: `${rundownId00}_ext`,
 			},
 		})
@@ -57,7 +58,7 @@ describe('Rundown', () => {
 			$set: {
 				playlistId: playlistId0,
 				playlistIdIsSetInSofie: true,
-				expectedStart: 2000,
+				timing: { type: PlaylistTimingType.ForwardTime, expectedStart: 2000 },
 				externalId: `${rundownId01}_ext`,
 			},
 		})
@@ -65,7 +66,7 @@ describe('Rundown', () => {
 			$set: {
 				playlistId: playlistId0,
 				playlistIdIsSetInSofie: true,
-				expectedStart: 3000,
+				timing: { type: PlaylistTimingType.ForwardTime, expectedStart: 3000 },
 				externalId: `${rundownId02}_ext`,
 			},
 		})

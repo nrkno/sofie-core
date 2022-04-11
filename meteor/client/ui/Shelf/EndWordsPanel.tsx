@@ -13,10 +13,9 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
-import { getScriptPreview } from '../../lib/ui/scriptPreview'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-
+import { getScriptPreview } from '../../lib/ui/scriptPreview'
 interface IEndsWordsPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase

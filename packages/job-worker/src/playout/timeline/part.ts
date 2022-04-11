@@ -109,7 +109,6 @@ export function createPartGroup(
 		},
 		children: [],
 		isGroup: true,
-		isPartGroup: true,
 		partInstanceId: partInstance._id,
 		metaData: literal<PieceTimelineMetadata>({
 			isPieceTimeline: true,
@@ -144,5 +143,6 @@ export function createPartGroupFirstObject(
 		inGroup: partGroup.id,
 		partInstanceId: partGroup.partInstanceId,
 		classes: (partInstance.part.classes || []).concat(previousPart ? previousPart.part.classesForNext || [] : []),
+		metaData: undefined,
 	})
 }
