@@ -76,6 +76,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the next partInstance */
 	public nextPartState: ActionPartChange = ActionPartChange.NONE
 	public takeAfterExecute: boolean
+	public queuedPartInstanceId: PartInstanceId | undefined = undefined
 
 	constructor(
 		contextInfo: UserContextInfo,
@@ -445,6 +446,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		)
 
 		this.nextPartState = ActionPartChange.SAFE_CHANGE
+		this.queuedPartInstanceId = newPartInstance._id
 
 		return convertPartInstanceToBlueprints(newPartInstance)
 	}
@@ -592,4 +594,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		return unprotectStringArray(stoppedIds)
 	}
+
+	// hackGetMediaObjectDuration(mediaId: string): number | undefined {
+	// 	return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
+	// 		?.mediainfo?.format?.duration
+	// }
 }

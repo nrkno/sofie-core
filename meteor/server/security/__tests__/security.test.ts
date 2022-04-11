@@ -25,7 +25,9 @@ describe('Security', () => {
 			setUserId: (_userId: string) => {
 				// Nothing
 			},
-			unblock: () => {},
+			unblock: () => {
+				// Nothing
+			},
 		}
 	}
 	function getUser(userId: UserId, orgId: OrganizationId): User {

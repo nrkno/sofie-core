@@ -9752,13 +9752,13 @@ strtok3@^6.2.4:
     "@tokenizer/token" "^0.3.0"
     peek-readable "^4.1.0"
 
-superfly-timeline@8.2.1:
-  version "8.2.1"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.1.tgz#07c0dfee351ae0597c9dcf0a33794ff53f90829e"
-  integrity sha512-cwd5mGL/2KP8JSBxdxU1bIG4zB3KtWUB/DwhyxBKtTQksAxgplZmWxSqkrE69LfmEQ/8nYBct2NFZ0fCTZzEnQ==
+superfly-timeline@^8.2.7:
+  version "8.2.7"
+  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.7.tgz#ddd49c64ddecf8464b6dfa98c3f7fbff799f9a44"
+  integrity sha512-CtI7+6hrrURjGlQ7ZQkVv0CtNkFTSM94XAPipiXH49MjMW7eq+C6Q5JsyOyMz2blMTVdU4ZdSy/wUuOqpgm/0g==
   dependencies:
-    tslib "^2.2.0"
-    underscore "^1.13.1"
+    tslib "^2.3.1"
+    underscore "^1.13.2"
 
 supports-color@^2.0.0:
   version "2.0.0"
@@ -9917,10 +9917,10 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.0.0-release41.0:
-  version "7.0.0-release41.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0-release41.0.tgz#913baac12244c92e703a499e4c47c29308720992"
-  integrity sha512-3HwdH2+3Sb0GWQ8aEqXiohBS99eUjdgHmksPS3N8QF7yUy1Da69zRh1CAj/og1IQOfFgWhAn0fLuVxyudEOsBA==
+timeline-state-resolver-types@7.1.0-nightly-release42-20220407-144835-97d05a060.0:
+  version "7.1.0-nightly-release42-20220407-144835-97d05a060.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.1.0-nightly-release42-20220407-144835-97d05a060.0.tgz#c96430ba7abb4ed72ad00cac43b0e4d500e8c9ec"
+  integrity sha512-6EjIhirsx/KlMp6jwhXoiAQOY4rja7N8FMC1+7qBjy0xNMp2k62XosHo90u063a2c7Y4auXKVM8WD6vaNTF2QQ==
   dependencies:
     tslib "^2.3.1"
 

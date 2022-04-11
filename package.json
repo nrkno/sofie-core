@@ -12,6 +12,7 @@
 		"install:packages": "cd packages && yarn install",
 		"start": "yarn install && yarn dev",
 		"dev": "node ./scripts/run.js",
+		"restart:meteor": "node ./scripts/meteor-force-restart.js",
 		"build:packages": "cd packages && yarn build",
 		"test:packages": "cd packages && yarn test",
 		"lint:packages": "cd packages && yarn lint",

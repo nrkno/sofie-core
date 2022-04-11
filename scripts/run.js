@@ -3,7 +3,8 @@ const concurrently = require("concurrently");
 const args = process.argv.slice(2);
 
 const config = {
-	uiOnly: (args.indexOf('--ui-only') >= 0) || false
+	uiOnly: (args.indexOf('--ui-only') >= 0) || false,
+	inspectMeteor: (args.indexOf('--inspect-meteor' >= 0)) || false
 }
 
 function watchPackages() {
@@ -37,7 +38,7 @@ function watchMeteor() {
 			prefixColor: 'blue',
 		},
 		{
-			command: "meteor yarn debug",
+			command: "meteor yarn debug" + (config.inspectMeteor ? ' --inspect' : ''),
 			cwd: "meteor",
 			name: "METEOR",
 			prefixColor: 'cyan',

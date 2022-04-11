@@ -104,6 +104,10 @@ export interface ExecuteActionProps extends RundownPlayoutPropsBase {
 	userData: any
 	triggerMode?: string
 }
+export interface ExecuteActionResult {
+	queuedPartInstanceId?: PartInstanceId
+	taken?: boolean
+}
 export interface TakeNextPartProps extends RundownPlayoutPropsBase {
 	fromPartInstanceId: PartInstanceId | null
 }
@@ -167,7 +171,7 @@ export type StudioJobFunc = {
 	[StudioJobs.DeactivateRundownPlaylist]: (data: DeactivateRundownPlaylistProps) => void
 	[StudioJobs.SetNextPart]: (data: SetNextPartProps) => void
 	[StudioJobs.SetNextSegment]: (data: SetNextSegmentProps) => void
-	[StudioJobs.ExecuteAction]: (data: ExecuteActionProps) => void
+	[StudioJobs.ExecuteAction]: (data: ExecuteActionProps) => ExecuteActionResult
 	[StudioJobs.TakeNextPart]: (data: TakeNextPartProps) => void
 	[StudioJobs.DisableNextPiece]: (data: DisableNextPieceProps) => void
 	[StudioJobs.RemovePlaylist]: (data: RemovePlaylistProps) => void

@@ -265,6 +265,33 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					></EditAttribute>
 				</div>
 			</div>
+			<div className="mod mvs mhs">
+				<label className="field">{t('Display piece duration for source layers')}</label>
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={`showDurationSourceLayers`}
+					obj={item}
+					type="checkbox"
+					collection={RundownLayouts}
+					className="mod mas"
+					mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+					mutateUpdateValue={() => undefined}
+				/>
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={`showDurationSourceLayers`}
+					obj={item}
+					options={showStyleBase.sourceLayers.map((l) => {
+						return { name: l.name, value: l._id }
+					})}
+					type="multiselect"
+					label={t('Disabled')}
+					collection={RundownLayouts}
+					className="input text-input input-l dropdown"
+					mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+				/>
+				<span className="text-s dimmed">{t('Piece on selected source layers will have a duration label shown')}</span>
+			</div>
 		</>
 	)
 }

@@ -32,6 +32,7 @@ export const PlaylistEndTiming = withTranslation()(
 				const { rundownPlaylist, expectedStart, expectedEnd, expectedDuration } = this.props
 
 				const overUnderClock = getPlaylistTimingDiff(rundownPlaylist, this.props.timingDurations) ?? 0
+				const now = this.props.timingDurations.currentTime ?? getCurrentTime()
 
 				return (
 					<React.Fragment>
@@ -65,7 +66,7 @@ export const PlaylistEndTiming = withTranslation()(
 												interval={0}
 												format="HH:mm:ss"
 												date={
-													getCurrentTime() +
+													now +
 													(this.props.timingDurations.partCountdown[
 														Object.keys(this.props.timingDurations.partCountdown)[0]
 													] || 0)
@@ -81,10 +82,7 @@ export const PlaylistEndTiming = withTranslation()(
 										<Moment
 											interval={0}
 											format="HH:mm:ss"
-											date={
-												(expectedStart || getCurrentTime()) +
-												(this.props.timingDurations.remainingPlaylistDuration || 0)
-											}
+											date={(expectedStart || now) + (this.props.timingDurations.remainingPlaylistDuration || 0)}
 										/>
 									</span>
 								)
@@ -94,7 +92,7 @@ export const PlaylistEndTiming = withTranslation()(
 							!this.props.hideCountdown &&
 							(expectedEnd ? (
 								<span className="timing-clock countdown plan-end right" role="timer">
-									{RundownUtils.formatDiffToTimecode(getCurrentTime() - expectedEnd, true, true, true)}
+									{RundownUtils.formatDiffToTimecode(now - expectedEnd, true, true, true)}
 								</span>
 							) : expectedStart && expectedDuration ? (
 								<span className="timing-clock countdown plan-end right" role="timer">

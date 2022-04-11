@@ -22,8 +22,7 @@ export const RundownName = withTranslation()(
 		class RundownName extends React.Component<Translated<WithTiming<IRundownNameProps>>> {
 			render() {
 				const { rundownPlaylist, currentRundown, rundownCount, t } = this.props
-				const playlistStartTime = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
-
+				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 				return (
 					<span
 						className={ClassNames('timing-clock countdown left', {
@@ -37,7 +36,7 @@ export const RundownName = withTranslation()(
 								rundownPlaylist.activationId &&
 								!rundownPlaylist.activationId
 							),
-							heavy: playlistStartTime && getCurrentTime() > playlistStartTime,
+							heavy: expectedStart && getCurrentTime() > expectedStart,
 						})}
 					>
 						{currentRundown && (rundownPlaylist.name !== currentRundown.name || rundownCount > 1) ? (
@@ -77,17 +76,17 @@ export const RundownName = withTranslation()(
 						rundownPlaylist.startedPlayback &&
 						rundownPlaylist.activationId &&
 						!rundownPlaylist.rehearsal
-							? playlistStartTime &&
+							? expectedStart &&
 							  RundownUtils.formatDiffToTimecode(
-									rundownPlaylist.startedPlayback - playlistStartTime,
+									rundownPlaylist.startedPlayback - expectedStart,
 									true,
 									false,
 									true,
 									true,
 									true
 							  )
-							: playlistStartTime &&
-							  RundownUtils.formatDiffToTimecode(getCurrentTime() - playlistStartTime, true, false, true, true, true)}
+							: expectedStart &&
+							  RundownUtils.formatDiffToTimecode(getCurrentTime() - expectedStart, true, false, true, true, true)}
 					</span>
 				)
 			}

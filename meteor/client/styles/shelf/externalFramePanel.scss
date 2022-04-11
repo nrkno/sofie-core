@@ -10,6 +10,15 @@
 		border: none;
 		transform-origin: top left;
 	}
+	.external-frame-panel__overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		border: none;
+		transform-origin: top left;
+	}
 }
 
 .dashboard {

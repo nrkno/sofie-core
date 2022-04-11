@@ -93,4 +93,3 @@ export interface Piece extends RundownPieceGeneric {
 	stoppedPlayback?: number
 	overflows?: boolean
 }
-// export const Timeline: TransformedCollection<TimelineObjGeneric , TimelineObjGeneric> = Timeline120

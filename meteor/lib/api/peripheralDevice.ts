@@ -533,8 +533,6 @@ export namespace PeripheralDeviceAPI {
 			// we've sent the command, let's just wait for the reply
 			const checkReply = () => {
 				const cmd = PeripheralDeviceCommands.findOne(commandId)
-				// if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
-				// logger.debug('checkReply')
 
 				if (cmd) {
 					const cmdId = cmd._id

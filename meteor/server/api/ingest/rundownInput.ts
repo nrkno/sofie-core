@@ -356,3 +356,72 @@ async function listIngestRundowns(peripheralDevice: PeripheralDevice): Promise<s
 
 	return rundowns.map((r) => r.externalId)
 }
+
+// This hack is temporarily disabled for now, we'll either replace it with the packagesInfo data flow, or re-enable it with a few more hacks to go with it
+// hackGetMediaObjectDuration stuff
+// Meteor.startup(() => {
+// 	if (Meteor.isServer) {
+// 		MediaObjects.find({}, { fields: { _id: 1, mediaId: 1, mediainfo: 1 } }).observe({
+// 			added: onMediaObjectChanged,
+// 			changed: onMediaObjectChanged,
+// 		})
+// 	}
+// })
+
+// function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObject) {
+// 	if (
+// 		!oldDocument ||
+// 		(newDocument.mediainfo?.format?.duration &&
+// 			oldDocument.mediainfo?.format?.duration !== newDocument.mediainfo.format.duration)
+// 	) {
+// 		const segmentsToUpdate = new Map<SegmentId, RundownId>()
+// 		const rundownIdsInStudio = Rundowns.find({ studio: newDocument.studioId }, { fields: { _id: 1 } })
+// 			.fetch()
+// 			.map((rundown) => rundown._id)
+// 		Parts.find({
+// 			rundownId: { $in: rundownIdsInStudio },
+// 			'hackListenToMediaObjectUpdates.mediaId': newDocument.mediaId,
+// 		}).forEach((part) => {
+// 			segmentsToUpdate.set(part.segmentId, part.rundownId)
+// 		})
+// 		segmentsToUpdate.forEach((rundownId, segmentId) => {
+// 			lazyIgnore(
+// 				`updateSegmentFromMediaObject_${segmentId}`,
+// 				async () => updateSegmentFromCache(rundownId, segmentId),
+// 				200
+// 			)
+// 		})
+// 	}
+// }
+// async function updateSegmentFromCache(rundownId: RundownId, segmentId: SegmentId) {
+// 	const rundown = Rundowns.findOne({ _id: rundownId })
+// 	if (!rundown) throw new Meteor.Error(`Could not find rundown ${rundownId} in updateSegmentFromCache`)
+
+// 	return runIngestOperationWithCache(
+// 		'updateSegmentFromCache',
+// 		rundown.studioId,
+// 		rundown.externalId,
+// 		(ingestRundown) => {
+// 			if (!ingestRundown) {
+// 				throw new Meteor.Error(
+// 					404,
+// 					`Rundown "${rundown.externalId}" does not have a Segment "${segmentId}" to update`
+// 				)
+// 			}
+// 			return ingestRundown
+// 		},
+// 		async (cache, ingestRundown) => {
+// 			const segment = cache.Segments.findOne({ _id: segmentId })
+// 			if (!segment) {
+// 				throw new Meteor.Error(
+// 					404,
+// 					`Rundown "${rundown.externalId}" does not have a Segment "${segmentId}" to update`
+// 				)
+// 			}
+
+// 			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segment.externalId)
+// 			if (!ingestSegment) throw new Meteor.Error(500, `IngestSegment "${segment.externalId}" is missing!`)
+// 			return updateSegmentFromIngestData(cache, ingestSegment, false)
+// 		}
+// 	)
+// }

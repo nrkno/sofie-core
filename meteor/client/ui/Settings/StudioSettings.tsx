@@ -15,6 +15,7 @@ import {
 	StudioRouteSetExclusivityGroup,
 	getActiveRoutes,
 	StudioPackageContainer,
+	StudioRouteType,
 } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -720,6 +721,7 @@ const StudioRoutings = withTranslation()(
 				mappedLayer: '',
 				outputMappedLayer: '',
 				remapping: {},
+				routeType: StudioRouteType.REROUTE,
 			}
 			const setObject = {}
 			setObject['routeSets.' + routeId + '.routes'] = newRoute
@@ -834,9 +836,12 @@ const StudioRoutings = withTranslation()(
 						const deviceTypeFromMappedLayer: TSR.DeviceType | undefined = route.mappedLayer
 							? this.props.studio.mappings[route.mappedLayer]?.device
 							: undefined
-						const routeDeviceType: TSR.DeviceType | undefined = route.mappedLayer
-							? deviceTypeFromMappedLayer
-							: route.deviceType
+						const routeDeviceType: TSR.DeviceType | undefined =
+							route.routeType === StudioRouteType.REMAP
+								? route.deviceType
+								: route.mappedLayer
+								? deviceTypeFromMappedLayer
+								: route.deviceType
 						return (
 							<div className="route-sets-editor mod pan mas" key={index}>
 								<button
@@ -875,8 +880,27 @@ const StudioRoutings = withTranslation()(
 										</label>
 									</div>
 									<div className="mod mvs mhs">
+										<label className="field">
+											{t('Route Type')}
+											{!route.mappedLayer ? (
+												<span className="mls">REMAP</span>
+											) : (
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`routeSets.${routeSetId}.routes.${index}.routeType`}
+													obj={this.props.studio}
+													type="dropdown"
+													options={StudioRouteType}
+													optionsAreNumbers={true}
+													collection={Studios}
+													className="input text-input input-l"
+												></EditAttribute>
+											)}
+										</label>
+									</div>
+									<div className="mod mvs mhs">
 										{t('Device Type')}
-										{route.mappedLayer ? (
+										{route.routeType === StudioRouteType.REROUTE && route.mappedLayer ? (
 											deviceTypeFromMappedLayer !== undefined ? (
 												<span className="mls">{TSR.DeviceType[deviceTypeFromMappedLayer]}</span>
 											) : (
@@ -895,7 +919,8 @@ const StudioRoutings = withTranslation()(
 											></EditAttribute>
 										)}
 									</div>
-									{routeDeviceType !== undefined && route.remapping !== undefined ? (
+									{route.routeType === StudioRouteType.REMAP ||
+									(routeDeviceType !== undefined && route.remapping !== undefined) ? (
 										<>
 											<div className="mod mvs mhs">
 												<label className="field">
@@ -925,6 +950,7 @@ const StudioRoutings = withTranslation()(
 													{
 														device: routeDeviceType,
 														...route.remapping,
+														deviceId: route.remapping?.deviceId ? protectString(route.remapping.deviceId) : undefined,
 													} as MappingExt
 												}
 												studio={this.props.studio}
@@ -2561,6 +2587,20 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									collection={Studios}
 								></EditAttribute>
 								{t('Allow Rundowns to be reset while on-air')}
+							</label>
+						</div>
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.preserveOrphanedSegmentPositionInRundown"
+									obj={this.props.studio}
+									type="checkbox"
+									collection={Studios}
+								></EditAttribute>
+								{t(
+									'Preserve position of segments when unsynced relative to other segments. Note: this has only been tested for the iNews gateway'
+								)}
 							</label>
 						</div>
 					</div>
