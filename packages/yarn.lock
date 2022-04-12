@@ -14667,17 +14667,17 @@ timeline-state-resolver-types@7.0.0-nightly-release41-20220406-135246-bbeee15e8.
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver-types@7.0.0-nightly-release41-20220408-085041-6df36effb.0:
-  version "7.0.0-nightly-release41-20220408-085041-6df36effb.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0-nightly-release41-20220408-085041-6df36effb.0.tgz#5c956db28ba74f66f5e3726b4dfa03e618cca9bc"
-  integrity sha512-2ANGVTnCAawpc8RURzd/M6ZUWkRWOXZ4vWJQ63JiCcHj0bzvZd9P6YuXjVKrHYBJ5x2TuoDq1lEnb2DmJrlPkw==
+timeline-state-resolver-types@7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0:
+  version "7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0.tgz#5369277071b62a682763ed8b31284a1bb655acfc"
+  integrity sha512-j0noJN7iRwVkCmczhWZHUobNv0IkchDCfvlWzj+xYW7hPvOiB+HnBe/VKTMMlMX/wQcWr0h633G1LBoFn8uyoA==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.0.0-nightly-release41-20220408-085041-6df36effb.0:
-  version "7.0.0-nightly-release41-20220408-085041-6df36effb.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.0.0-nightly-release41-20220408-085041-6df36effb.0.tgz#097a85b5c63832693c32ff800aa99c496793ea3c"
-  integrity sha512-rvUUbJpXECEiYP4I+4ljljyhq3qCKx2BuG1iZNcIWZxkyWVAiaEOF+AqpYMg8WnVNFM3ZXit/DtKgFPVYzQfyA==
+timeline-state-resolver@7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0:
+  version "7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0.tgz#088948ece2eda58b459f6d73ae94a9a5ff588ca2"
+  integrity sha512-R84LSrhm7wadQwwiCIs963FbJQstRrnrYLL5xyqadE6EpcCLzYSXycKn/w5fTLCrXSYL6DssER9QuIOXtGWEQw==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
     atem-connection "2.4.0"
@@ -14699,7 +14699,7 @@ timeline-state-resolver@7.0.0-nightly-release41-20220408-085041-6df36effb.0:
     sprintf-js "^1.1.2"
     superfly-timeline "8.2.1"
     threadedclass "^1.0.2"
-    timeline-state-resolver-types "7.0.0-nightly-release41-20220408-085041-6df36effb.0"
+    timeline-state-resolver-types "7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
