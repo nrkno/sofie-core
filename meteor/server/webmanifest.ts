@@ -176,11 +176,11 @@ function getRundownPlaylistFromExternalId(externalId: string): DBRundownPlaylist
  * supported locale using ?lng=XX URL query parameter. Uses the same localisation files as the Frontend app.
  */
 PickerGET.route('/site.webmanifest', (_, req, res) => {
-	logger.debug(`WebManifest: ${req.connection.remoteAddress} GET "${req.url}"`, {
+	logger.debug(`WebManifest: ${req.socket.remoteAddress} GET "${req.url}"`, {
 		url: req.url,
 		method: 'GET',
-		remoteAddress: req.connection.remoteAddress,
-		remotePort: req.connection.remotePort,
+		remoteAddress: req.socket.remoteAddress,
+		remotePort: req.socket.remotePort,
 		headers: req.headers,
 	})
 
@@ -207,11 +207,11 @@ PickerGET.route('/site.webmanifest', (_, req, res) => {
  * to a Sofie Rundown View of a given Rundown or Rundown Playlist.
  */
 PickerGET.route('/url/nrcs', (_, req, res) => {
-	logger.debug(`NRCS URL: ${req.connection.remoteAddress} GET "${req.url}"`, {
+	logger.debug(`NRCS URL: ${req.socket.remoteAddress} GET "${req.url}"`, {
 		url: req.url,
 		method: 'GET',
-		remoteAddress: req.connection.remoteAddress,
-		remotePort: req.connection.remotePort,
+		remoteAddress: req.socket.remoteAddress,
+		remotePort: req.socket.remotePort,
 		headers: req.headers,
 	})
 
