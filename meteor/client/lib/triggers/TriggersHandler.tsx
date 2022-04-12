@@ -35,10 +35,10 @@ import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBa
 import { PieceId } from '../../../lib/collections/Pieces'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { preventDefault } from '../SorensenContext'
-import { Meteor } from 'meteor/meteor'
 import { getFinalKey } from './codesToKeyLabels'
 import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../../ui/RundownView/RundownViewEventBus'
 import { Tracker } from 'meteor/tracker'
+import { Settings } from '../../../lib/Settings'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -306,7 +306,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		]
 		const systemActionKeys = ['Enter', 'NumpadEnter', 'Tab']
 
-		const poisonKey: string | null = Meteor.settings.poisonKey
+		const poisonKey: string | null = Settings.poisonKey
 
 		if (initialized) {
 			if (poisonKey) {
