@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Rundown, RundownCollectionUtil } from '../../../lib/collections/Rundowns'
 import { getAllowStudio } from '../../lib/localStorage'
-import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
 import { DisplayFormattedTime } from './DisplayFormattedTime'
@@ -34,7 +33,7 @@ interface IRundownListItemViewProps {
 	isOnlyRundownInPlaylist?: boolean
 }
 
-export default function RundownListItemView(props: Translated<IRundownListItemViewProps>) {
+export default function RundownListItemView(props: IRundownListItemViewProps) {
 	const {
 		isActive,
 		connectDragSource,
