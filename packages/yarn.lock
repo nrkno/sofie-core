@@ -3119,7 +3119,7 @@
   version "1.41.0-in-testing.0"
   dependencies:
     moment "2.29.1"
-    timeline-state-resolver-types "7.0.0-nightly-release41-20220406-135246-bbeee15e8.0"
+    timeline-state-resolver-types "7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0"
     tslib "^2.3.1"
     type-fest "^2.11.1"
 
@@ -14659,13 +14659,6 @@ timecode@0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
-
-timeline-state-resolver-types@7.0.0-nightly-release41-20220406-135246-bbeee15e8.0:
-  version "7.0.0-nightly-release41-20220406-135246-bbeee15e8.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0-nightly-release41-20220406-135246-bbeee15e8.0.tgz#cf9b6fd19d799444bc1e534eb741c3f5a4dda365"
-  integrity sha512-HGvbffi/K2NAk+abetbuGdS88Na3Ir+DO3jQGdRO2RdZkrrC2n5vXqnRm8Eo/IA6v8+fOouD4O5FgTcX8zMOlg==
-  dependencies:
-    tslib "^2.3.1"
 
 timeline-state-resolver-types@7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0:
   version "7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0"
