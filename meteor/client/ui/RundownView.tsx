@@ -1281,7 +1281,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				isInspectorShelfExpanded = shelfLayout.openByDefault
 			}
 
-			const poisonKey = Meteor.settings.poisonKey
+			const poisonKey = Settings.poisonKey
 			this.state = {
 				timeScale: MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
 				studioMode: getAllowStudio(),

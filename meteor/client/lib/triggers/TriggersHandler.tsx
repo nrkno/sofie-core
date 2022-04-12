@@ -28,7 +28,7 @@ import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
 import { preventDefault } from '../SorensenContext'
 import { getFinalKey } from './codesToKeyLabels'
 import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../../ui/RundownView/RundownViewEventBus'
-import { Meteor } from 'meteor/meteor'
+import { Settings } from '../../../lib/Settings'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -293,7 +293,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			'Digit0',
 		]
 
-		const poisonKey: string | null = Meteor.settings.poisonKey
+		const poisonKey: string | null = Settings.poisonKey
 
 		if (initialized) {
 			if (poisonKey) {
