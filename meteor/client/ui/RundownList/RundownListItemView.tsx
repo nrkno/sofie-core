@@ -1,6 +1,6 @@
 import Tooltip from 'rc-tooltip'
 import React, { ReactElement } from 'react'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Rundown, RundownCollectionUtil } from '../../../lib/collections/Rundowns'
 import { getAllowStudio } from '../../lib/localStorage'
@@ -14,6 +14,7 @@ import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -33,10 +34,9 @@ interface IRundownListItemViewProps {
 	isOnlyRundownInPlaylist?: boolean
 }
 
-export default withTranslation()(function RundownListItemView(props: Translated<IRundownListItemViewProps>) {
+export default function RundownListItemView(props: Translated<IRundownListItemViewProps>) {
 	const {
 		isActive,
-		t,
 		connectDragSource,
 		connectDropTarget,
 		htmlElementId,
@@ -49,6 +49,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 		confirmDeleteRundownHandler,
 		isOnlyRundownInPlaylist,
 	} = props
+	const { t } = useTranslation()
 
 	const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
 
@@ -80,6 +81,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 								<Tooltip
 									overlay={t('Drag to reorder or move out of playlist')}
 									placement="top"
+									mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
 									overlayStyle={{ display: props.renderTooltips ? undefined : 'none' }}
 								>
 									<button className="rundown-list-item__action">{iconDragHandle()}</button>
@@ -97,7 +99,11 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				) : null}
 
 				{isActive === true ? (
-					<Tooltip overlay={t('This rundown is currently active')} placement="bottom">
+					<Tooltip
+						overlay={t('This rundown is currently active')}
+						mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+						placement="bottom"
+					>
 						<div className="origo-pulse small right mrs">
 							<div className="pulse-marker">
 								<div className="pulse-rays"></div>
@@ -123,7 +129,11 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			<span className="rundown-list-item__text">
 				{expectedDuration ? (
 					isOnlyRundownInPlaylist && playlist.loop ? (
-						<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+						<Tooltip
+							overlay={t('This rundown will loop indefinitely')}
+							mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+							placement="top"
+						>
 							<span>
 								{t('({{timecode}})', {
 									timecode: RundownUtils.formatDiffToTimecode(expectedDuration, false, true, true, false, true),
@@ -136,7 +146,11 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 						RundownUtils.formatDiffToTimecode(expectedDuration, false, true, true, false, true)
 					)
 				) : isOnlyRundownInPlaylist && playlist.loop ? (
-					<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+					<Tooltip
+						overlay={t('This rundown will loop indefinitely')}
+						mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+						placement="top"
+					>
 						<span>
 							<LoopingIcon />
 						</span>
@@ -175,6 +189,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			<span className="rundown-list-item__actions">
 				{confirmReSyncRundownHandler ? (
 					<Tooltip
+						mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
 						overlay={t('Re-sync rundown data with {{nrcsName}}', { nrcsName: rundown.externalNRCSName || 'NRCS' })}
 						placement="top"
 					>
@@ -186,7 +201,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 					<span className="rundown-list-item__action"></span>
 				)}
 				{confirmDeleteRundownHandler ? (
-					<Tooltip overlay={t('Delete')} placement="top">
+					<Tooltip mouseEnterDelay={TOOLTIP_DEFAULT_DELAY} overlay={t('Delete')} placement="top">
 						<button className="rundown-list-item__action" onClick={() => confirmDeleteRundownHandler()}>
 							{iconRemove()}
 						</button>
@@ -195,4 +210,4 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 			</span>
 		</li>
 	)
-})
+}

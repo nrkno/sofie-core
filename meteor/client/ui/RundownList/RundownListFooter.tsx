@@ -4,6 +4,7 @@ import { getHelpMode } from '../../lib/localStorage'
 import { StatusResponse } from '../../../lib/api/systemStatus'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 
 const PackageInfo = require('../../../package.json')
 
@@ -32,6 +33,7 @@ export const RundownListFooter = withTranslation()(
 									{t('System Status')}:&nbsp;
 									<Tooltip
 										overlay={t('System has issues which need to be resolved')}
+										mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
 										visible={systemStatus.status === 'FAIL' && getHelpMode()}
 										placement="top"
 									>
