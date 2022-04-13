@@ -1,3 +1,5 @@
+@import '_colorScheme';
+
 // Root playlist/rundown list, see RundownList.tsx
 .rundown-list {
 	--defaultSpacing: 20px;
@@ -153,7 +155,17 @@
 	}
 
 	&.droptarget {
-		border: 4px dashed green;
+		position: relative;
+		&::after {
+			content: ' ';
+			display: block;
+			position: absolute;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			border: 4px dashed $ui-button-primary--hover;
+		}
 	}
 
 	// the actual playlists and rundowns
@@ -167,7 +179,17 @@
 			width: 100%;
 
 			&.droptarget {
-				border: 1px dashed green;
+				position: relative;
+				&::after {
+					content: ' ';
+					display: block;
+					position: absolute;
+					top: 0;
+					left: 0;
+					bottom: 0;
+					right: 0;
+					border: 4px dashed $ui-button-primary--hover;
+				}
 			}
 
 			.rundown-playlist__header {
@@ -195,7 +217,7 @@
 
 					.rundown-playlist__heading-text {
 						margin-left: 1.5em;
-						color: var(--ui-button-primary);
+						color: $ui-button-primary;
 						font-weight: 700;
 
 						> a > svg.icon {
@@ -204,20 +226,20 @@
 					}
 				}
 
-				.rundown-playlist__sorting-origin-toggle {
-					font-size: 0.875rem;
-					line-height: 1.1875rem;
+				.btn {
+					vertical-align: top;
+					font-size: 0.8em;
 
-					.rundown-playlist__sorting-origin-toggle--label {
-						&.active {
-							font-weight: normal;
-						}
+					&.btn-secondary {
+						font-weight: 400 !important;
+						color: $ui-dark-color !important;
 					}
+				}
 
-					.switch-button {
-						margin: auto 6px;
-						transform: scale(0.8) translateY(-3px);
-					}
+				.rundown-playlist__reset-sort-order {
+					margin-top: 0.3em;
+					background-color: #ececec;
+					border-color: #eaeaea;
 				}
 			}
 
@@ -343,7 +365,7 @@
 	// be dropped to move it to a new playlist. See RundownDropZone.tsx
 	.rundown-dropzone {
 		display: none;
-		border: 4px dashed green;
+		border: 4px dashed $ui-button-primary--hover;
 		height: 61px;
 		margin-top: 8px;
 		align-items: center;

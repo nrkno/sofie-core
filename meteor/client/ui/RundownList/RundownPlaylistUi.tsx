@@ -34,13 +34,14 @@ import {
 } from './DragAndDropTypes'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownUtils } from '../../lib/rundown'
-import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
+import PlaylistRankResetButton from './PlaylistRankResetButton'
 import { DisplayFormattedTime } from './DisplayFormattedTime'
 import { getAllowStudio } from '../../lib/localStorage'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -300,7 +301,11 @@ export const RundownPlaylistUi = DropTarget(
 				const expectedDuration =
 					playlistExpectedDuration !== undefined &&
 					(playlist.loop ? (
-						<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+						<Tooltip
+							overlay={t('This rundown will loop indefinitely')}
+							mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+							placement="top"
+						>
 							<span>
 								{t('({{timecode}})', {
 									timecode: RundownUtils.formatDiffToTimecode(playlistExpectedDuration, false, true, true, false, true),
@@ -329,7 +334,7 @@ export const RundownPlaylistUi = DropTarget(
 									</span>
 								</h2>
 								{getAllowStudio() ? (
-									<PlaylistRankMethodToggle
+									<PlaylistRankResetButton
 										manualSortingActive={playlist.rundownRanksAreSetInSofie === true}
 										nrcsName={(playlist.rundowns[0] && playlist.rundowns[0].externalNRCSName) || 'NRCS'}
 										toggleCallbackHandler={() => {
@@ -351,7 +356,11 @@ export const RundownPlaylistUi = DropTarget(
 								{expectedDuration ? (
 									expectedDuration
 								) : playlist.loop ? (
-									<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+									<Tooltip
+										mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+										overlay={t('This rundown will loop indefinitely')}
+										placement="top"
+									>
 										<LoopingIcon />
 									</Tooltip>
 								) : (

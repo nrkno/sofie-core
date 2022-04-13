@@ -142,3 +142,5 @@ export function isRunningInPWA() {
 	}
 	return true
 }
+
+export const TOOLTIP_DEFAULT_DELAY = 0.5
