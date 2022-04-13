@@ -52,7 +52,7 @@ export function transformPartIntoTimeline(
 			case IBlueprintPieceType.OutTransition:
 				if (outTransition) {
 					pieceEnable = {
-						start: `#${parentGroup.id}.end - ${outTransition.duration}`, // todo - offset preroll
+						start: `#${parentGroup.id}.end - ${outTransition.duration}`,
 					}
 					if (partTimings.fromPartPostroll) {
 						pieceEnable.start += ' - ' + partTimings.fromPartPostroll
