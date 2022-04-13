@@ -127,6 +127,7 @@ jobs:
           yarn build:packages
       - name: Persist Built Version information
         if: ${{ steps.image-tags.outputs.images }}
+        run: |
           cd meteor
           yarn inject-git-hash
       - name: Meteor Build
