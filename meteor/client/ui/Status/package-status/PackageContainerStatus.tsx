@@ -16,9 +16,10 @@ export const PackageContainerStatus: React.FC<IPackageContainerStatusProps> = fu
 	const { t } = useTranslation()
 
 	function restartPackageContainer(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-		doUserAction(t, e, UserAction.PACKAGE_MANAGER_RESTART_PACKAGE_CONTAINER, (e) =>
+		doUserAction(t, e, UserAction.PACKAGE_MANAGER_RESTART_PACKAGE_CONTAINER, (e, ts) =>
 			MeteorCall.userAction.packageManagerRestartPackageContainer(
 				e,
+				ts,
 				packageContainerStatus.deviceId,
 				packageContainerStatus.containerId
 			)

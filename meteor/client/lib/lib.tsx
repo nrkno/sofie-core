@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
+import { getCurrentTime, systemTime, Time } from '../../lib/lib'
 
 export { multilineText, isEventInInputField }
 
@@ -141,4 +142,8 @@ export function isRunningInPWA() {
 		return false
 	}
 	return true
+}
+
+export function getEventTimestamp(e: any): Time {
+	return e.timeStamp ? performance.timeOrigin + e.timeStamp + systemTime.timeOriginDiff : getCurrentTime()
 }

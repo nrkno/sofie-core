@@ -52,6 +52,7 @@ export namespace ServerClientAPI {
 	export async function runUserActionInLogForPlaylistOnWorker<T extends keyof StudioJobFunc>(
 		context: MethodContext,
 		userEvent: string,
+		eventTime: Time,
 		playlistId: RundownPlaylistId,
 		checkArgs: () => void,
 		jobName: T,
@@ -60,6 +61,7 @@ export namespace ServerClientAPI {
 		return runUserActionInLog(
 			context,
 			userEvent,
+			eventTime,
 			`worker.${jobName}`,
 			[jobArguments],
 			async (_credentials, userActionMetadata) => {
@@ -77,6 +79,7 @@ export namespace ServerClientAPI {
 	export async function runUserActionInLogForRundownOnWorker<T extends keyof StudioJobFunc>(
 		context: MethodContext,
 		userEvent: string,
+		eventTime: Time,
 		rundownId: RundownId,
 		checkArgs: () => void,
 		jobName: T,
@@ -85,6 +88,7 @@ export namespace ServerClientAPI {
 		return runUserActionInLog(
 			context,
 			userEvent,
+			eventTime,
 			`worker.${jobName}`,
 			[jobArguments],
 			async (_credentials, userActionMetadata) => {
@@ -102,13 +106,14 @@ export namespace ServerClientAPI {
 	export async function runUserActionInLogForPlaylist<T>(
 		context: MethodContext,
 		userEvent: string,
+		eventTime: Time,
 		playlistId: RundownPlaylistId,
 		checkArgs: () => void,
 		methodName: string,
 		args: any[],
 		fcn: (access: VerifiedRundownPlaylistContentAccess) => Promise<T>
 	): Promise<ClientAPI.ClientResponse<T>> {
-		return runUserActionInLog(context, userEvent, methodName, args, async () => {
+		return runUserActionInLog(context, userEvent, eventTime, methodName, args, async () => {
 			checkArgs()
 
 			return fcn(checkAccessToPlaylist(context, playlistId))
@@ -121,13 +126,14 @@ export namespace ServerClientAPI {
 	export async function runUserActionInLogForRundown<T>(
 		context: MethodContext,
 		userEvent: string,
+		eventTime: Time,
 		rundownId: RundownId,
 		checkArgs: () => void,
 		methodName: string,
 		args: any[],
 		fcn: (access: VerifiedRundownContentAccess) => Promise<T>
 	): Promise<ClientAPI.ClientResponse<T>> {
-		return runUserActionInLog(context, userEvent, methodName, args, async () => {
+		return runUserActionInLog(context, userEvent, eventTime, methodName, args, async () => {
 			checkArgs()
 
 			return fcn(checkAccessToRundown(context, rundownId))
@@ -173,6 +179,7 @@ export namespace ServerClientAPI {
 	export async function runUserActionInLog<TRes>(
 		context: MethodContext,
 		userEvent: string,
+		eventTime: Time,
 		methodName: string,
 		methodArgs: unknown[],
 		fcn: (credentials: BasicAccessContext, userActionMetadata: UserActionMetadata) => Promise<TRes>
@@ -214,6 +221,7 @@ export namespace ServerClientAPI {
 						method: methodName,
 						args: JSON.stringify(methodArgs),
 						timestamp: getCurrentTime(),
+						clientTime: eventTime,
 					})
 				).catch((e) => {
 					// If this fails make sure it is handled

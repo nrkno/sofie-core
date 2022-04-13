@@ -250,8 +250,8 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 
 			private handleRundownDrop(rundownId: RundownId) {
 				const { t } = this.props
-				doUserAction(t, 'drag&drop in dropzone', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
-					MeteorCall.userAction.moveRundown(e, rundownId, null, [rundownId])
+				doUserAction(t, 'drag&drop in dropzone', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
+					MeteorCall.userAction.moveRundown(e, ts, rundownId, null, [rundownId])
 				)
 			}
 

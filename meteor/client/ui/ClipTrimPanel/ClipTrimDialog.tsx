@@ -51,9 +51,10 @@ export const ClipTrimDialog = withTranslation()(
 				this.props.t,
 				e,
 				UserAction.SET_IN_OUT_POINTS,
-				(e) =>
+				(e, ts) =>
 					MeteorCall.userAction.setInOutPoints(
 						e,
+						ts,
 						this.props.playlistId,
 						selectedPiece.startPartId,
 						selectedPiece._id,
