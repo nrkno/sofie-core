@@ -1,0 +1,23 @@
+name: automerge
+
+on:
+  schedule:
+    - cron: '30 0 * * *' # every night
+  workflow_dispatch: # on button click
+
+jobs:
+  merge-staging-to-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set Git config
+        run: |
+          git config --local user.email "${GITHUB_ACTOR}"
+          git config --local user.name "${GITHUB_ACTOR}@users.noreply.github.com"
+      - name: Merge staging to develop
+        run: |
+          git fetch --unshallow
+          git checkout develop
+          git pull
+          git merge --no-ff origin/staging -m "Auto-merge staging to develop"
+          git push

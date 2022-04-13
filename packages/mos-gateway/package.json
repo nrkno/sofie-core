@@ -42,8 +42,7 @@
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
 		"license-validate": "node-license-validator -p -d --allow-licenses MIT 0BSD BSD BSD-2-Clause BSD-3-Clause ISC Apache Apache-2.0 Unlicense WTFPL ",
-		"start": "node dist/index.js",
-		"precommit": "lint-staged"
+		"start": "node dist/index.js"
 	},
 	"engines": {
 		"node": "^14.18 || ^16.14"

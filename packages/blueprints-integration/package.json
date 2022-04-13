@@ -26,8 +26,7 @@
 		"cov-open": "open-cli coverage/lcov-report/index.html",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck",
-		"precommit": "lint-staged"
+		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
 		"node": "^14.18 || ^16.14"
