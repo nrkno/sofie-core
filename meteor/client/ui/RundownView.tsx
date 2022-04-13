@@ -91,7 +91,7 @@ import { MeteorCall } from '../../lib/api/methods'
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { documentTitle } from '../lib/DocumentTitleProvider'
-import { PartInstance } from '../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
@@ -1101,6 +1101,8 @@ interface IState {
 	segmentViewModes: Record<string, SegmentViewMode>
 	/** Minishelf data */
 	keyboardQueuedPiece: AdLibPieceUi | undefined
+	keyboardQueuedPartInstanceId: PartInstanceId | undefined
+	keyboardRequeue: boolean
 	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
 	uiSegments: AdlibSegmentUi[]
 	sourceLayerLookup: SourceLayerLookup
@@ -1197,11 +1199,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundowns,
 		currentRundown,
 		matchedSegments: playlist
-			? RundownPlaylistCollectionUtil.getRundownsAndSegments(playlist, {
-					isHidden: {
-						$ne: true,
-					},
-			  }).map((input, rundownIndex, rundownArray) => ({
+			? RundownPlaylistCollectionUtil.getRundownsAndSegments(playlist, {}).map((input, rundownIndex, rundownArray) => ({
 					...input,
 					segmentIdsBeforeEachSegment: input.segments.map(
 						(segment, segmentIndex, segmentArray) =>
@@ -1321,6 +1319,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					? UIStateStorage.getItemRecord(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
 					: {},
 				keyboardQueuedPiece: undefined,
+				keyboardQueuedPartInstanceId: undefined,
+				keyboardRequeue: false,
 				uiSegmentMap: new Map(),
 				uiSegments: [],
 				sourceLayerLookup: {},
@@ -1798,7 +1798,32 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 			if (this.props.currentPartInstance?.segmentId !== prevProps.currentPartInstance?.segmentId) {
 				this.setState({ keyboardQueuedPiece: undefined })
+			} else if (this.props.playlist && prevProps.playlist && this.state.keyboardQueuedPartInstanceId) {
+				if (
+					(this.isCurrentPartNewPart(prevProps) && !this.isCurrentPartKeyboardQueuedPart()) ||
+					(!this.isCurrentPartNewPart(prevProps) &&
+						this.hasNextPartChanged(prevProps) &&
+						this.isNextPartDifferentFromKeyboardQueuedPart())
+				) {
+					this.setState({ keyboardRequeue: true, keyboardQueuedPartInstanceId: undefined })
+				}
 			}
+		}
+
+		private isCurrentPartNewPart(prevProps: IProps & ITrackedProps) {
+			return prevProps.playlist!.currentPartInstanceId !== this.props.playlist!.currentPartInstanceId
+		}
+
+		private isCurrentPartKeyboardQueuedPart() {
+			return this.props.playlist!.currentPartInstanceId === this.state.keyboardQueuedPartInstanceId
+		}
+
+		private hasNextPartChanged(prevProps: IProps & ITrackedProps) {
+			return prevProps.playlist!.nextPartInstanceId !== this.props.playlist!.nextPartInstanceId
+		}
+
+		private isNextPartDifferentFromKeyboardQueuedPart() {
+			return this.props.playlist!.nextPartInstanceId !== this.state.keyboardQueuedPartInstanceId
 		}
 
 		onSelectPiece = (piece: PieceUi) => {
@@ -2106,6 +2131,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			)
 		}
 
+		onPieceQueued = (err: any, res: { queuedPartInstanceId?: PartInstanceId; taken?: boolean } | undefined) => {
+			if (!err && res) {
+				if (res.taken) {
+					this.setState({ keyboardQueuedPartInstanceId: undefined })
+				} else {
+					this.setState({ keyboardQueuedPartInstanceId: res.queuedPartInstanceId })
+				}
+			}
+		}
+
 		queueAdLibPiece = (adlibPiece: AdLibPieceUi, e: any) => {
 			const { t } = this.props
 
@@ -2152,34 +2187,49 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				if (!(sourceLayer && sourceLayer.isClearable)) {
 					if (adlibPiece.isAction && adlibPiece.adlibAction) {
 						const action = adlibPiece.adlibAction
-						doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-							MeteorCall.userAction.executeAction(
-								e,
-								this.props.playlist!._id,
-								action._id,
-								action.actionId,
-								action.userData
-							)
+						doUserAction(
+							t,
+							e,
+							adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB,
+							(e) =>
+								MeteorCall.userAction.executeAction(
+									e,
+									this.props.playlist!._id,
+									action._id,
+									action.actionId,
+									action.userData
+								),
+							this.onPieceQueued
 						)
 					} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
-						doUserAction(t, e, UserAction.START_ADLIB, (e) =>
-							MeteorCall.userAction.segmentAdLibPieceStart(
-								e,
-								this.props.playlist!._id,
-								currentPartInstanceId,
-								adlibPiece._id,
-								true
-							)
+						doUserAction(
+							t,
+							e,
+							UserAction.START_ADLIB,
+							(e) =>
+								MeteorCall.userAction.segmentAdLibPieceStart(
+									e,
+									this.props.playlist!._id,
+									currentPartInstanceId,
+									adlibPiece._id,
+									true
+								),
+							this.onPieceQueued
 						)
 					} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
-							MeteorCall.userAction.baselineAdLibPieceStart(
-								e,
-								this.props.playlist!._id,
-								currentPartInstanceId,
-								adlibPiece._id,
-								true
-							)
+						doUserAction(
+							t,
+							e,
+							UserAction.START_GLOBAL_ADLIB,
+							(e) =>
+								MeteorCall.userAction.baselineAdLibPieceStart(
+									e,
+									this.props.playlist!._id,
+									currentPartInstanceId,
+									adlibPiece._id,
+									true
+								),
+							this.onPieceQueued
 						)
 					}
 				}
@@ -2208,7 +2258,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			let currentSegmentId: SegmentId | undefined
 			if (keyboardQueuedPiece) {
 				const uiSegment = keyboardQueuedPiece.segmentId ? uiSegmentMap.get(keyboardQueuedPiece.segmentId) : undefined
-				if (uiSegment) {
+				if (this.state.keyboardRequeue) {
+					pieceToQueue = keyboardQueuedPiece
+				} else if (uiSegment) {
 					const pieces = uiSegment.pieces.filter(this.isAdLibQueueable)
 					const nextPieceInd = pieces.findIndex((piece) => piece._id === keyboardQueuedPiece._id) + (forward ? 1 : -1)
 					if (nextPieceInd >= 0 && nextPieceInd < pieces.length) {
@@ -2239,7 +2291,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			if (pieceToQueue) {
 				this.queueAdLibPiece(pieceToQueue, e)
-				this.setState({ keyboardQueuedPiece: pieceToQueue })
+				this.setState({ keyboardQueuedPiece: pieceToQueue, keyboardRequeue: false })
 			}
 		}
 

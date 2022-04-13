@@ -279,7 +279,8 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		updateDurations(now: number, isLowResolution: boolean) {
-			const { playlist, rundowns, currentRundown, parts, partInstancesMap } = this.props
+			const { playlist, rundowns, currentRundown, parts, partInstancesMap, segments, segmentEntryPartInstances } =
+				this.props
 			const updatedDurations = this.timingCalculator.updateDurations(
 				now,
 				isLowResolution,
@@ -288,9 +289,9 @@ export const RundownTimingProvider = withTracker<
 				currentRundown,
 				parts,
 				partInstancesMap,
-				//  segments, // TODOSYNC
-				this.props.defaultDuration
-				// segmentEntryPartInstances // TODOSYNC
+				segments, // TODOSYNC
+				this.props.defaultDuration,
+				segmentEntryPartInstances // TODOSYNC
 			)
 			if (!isLowResolution) {
 				this.durations = Object.assign(this.durations, updatedDurations)

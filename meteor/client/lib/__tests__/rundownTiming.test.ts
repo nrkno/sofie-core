@@ -89,6 +89,7 @@ describe('rundown Timing Calculator', () => {
 		const timing = new RundownTimingCalculator()
 		const playlist: RundownPlaylist = makeMockPlaylist()
 		const parts: Part[] = []
+		const segments: DBSegment[] = []
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
 		const result = timing.updateDurations(
 			0,
@@ -98,6 +99,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			segments,
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -122,6 +124,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -156,7 +159,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
-			// segments, // TODOSYNC: should updateDurations() include the segments?
+			segments,
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -220,7 +223,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				// segmentStartedPlayback: {}, // TODOSYNC: should updateDurations() include the segments?
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -255,7 +258,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
-			// segments, // TODOSYNC: should updateDurations() include the segments
+			segments,
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -319,7 +322,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				// segmentStartedPlayback: {}, // TODOSYNC: should updateDurations() include the segments
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -356,7 +359,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
-			// segments, // TODOSYNC: should updateDurations() include the segments
+			segments,
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -422,7 +425,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				// segmentStartedPlayback: {}, // TODOSYNC: should updateDurations() include the segments
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -481,7 +484,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
-			// segments, // TODOSYNC: should updateDurations() include the segments
+			segments,
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -545,8 +548,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				// segmentBudgetDurations: {}, // TODOSYNC
-				// segmentStartedPlayback: {}, // TODOSYNC
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -596,7 +598,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
-			// segments, // TODOSYNC
+			segments,
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -663,7 +665,7 @@ describe('rundown Timing Calculator', () => {
 					[segmentId1]: 5000,
 					[segmentId2]: 3000,
 				},
-				// segmentStartedPlayback: {}, // TODOSYNC
+				segmentStartedPlayback: {},
 			})
 		)
 	})

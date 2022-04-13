@@ -166,6 +166,7 @@ body.tv2 {
 	  grid-column: segment-group-controls / timeline;
 	  grid-row: header / zoom-area;
 	  align-items: flex-start;
+	  align-self: flex-start;
 	  padding-top: 0.2em;
 	}
 
