@@ -122,6 +122,7 @@ export type IAdLibFilterLink =
 			object: 'adLib'
 			field: 'sourceLayerId' | 'outputLayerId' | 'tag' | 'label'
 			value: string[]
+			/** TODO: Support "NOT" filters */
 	  }
 	| {
 			object: 'adLib'
