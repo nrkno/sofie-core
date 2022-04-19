@@ -89,6 +89,7 @@ import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, {
 	ActivateRundownPlaylistEvent,
+	DeactivateRundownPlaylistEvent,
 	IEventContext,
 	MiniShelfQueueAdLibEvent,
 	RundownViewEvents,
@@ -342,6 +343,7 @@ const RundownHeader = withTranslation()(
 			}
 
 			RundownViewEventBus.on(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
+			RundownViewEventBus.on(RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, this.eventDeactivate)
 			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.on(RundownViewEvents.TAKE, this.eventTake)
 			RundownViewEventBus.on(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, this.eventResetRundownPlaylist)
@@ -351,6 +353,7 @@ const RundownHeader = withTranslation()(
 
 		componentWillUnmount() {
 			RundownViewEventBus.off(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
+			RundownViewEventBus.off(RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, this.eventDeactivate)
 			RundownViewEventBus.off(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.off(RundownViewEvents.TAKE, this.eventTake)
 			RundownViewEventBus.off(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, this.eventResetRundownPlaylist)
@@ -361,6 +364,9 @@ const RundownHeader = withTranslation()(
 			} else {
 				this.activate(e.context)
 			}
+		}
+		eventDeactivate = (e: DeactivateRundownPlaylistEvent) => {
+			this.deactivate(e.context)
 		}
 		eventResync = (e: IEventContext) => {
 			this.reloadRundownPlaylist(e.context)

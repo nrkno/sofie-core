@@ -1,6 +1,6 @@
 {
 	"name": "@tv2media/blueprints-integration",
-	"version": "1.37.1-in-testing.1",
+	"version": "1.37.1",
 	"description": "Library to define the interaction between core and the blueprints.",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",

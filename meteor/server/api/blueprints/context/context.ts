@@ -457,6 +457,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 	private readonly partInstances: ReadonlyDeep<Array<PartInstance>>
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
 	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
+	readonly previousPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
 	private readonly _knownSessions: ABSessionInfoExt[]
 
@@ -485,6 +486,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 
 		this.currentPartInstance = currentPartInstance ? unprotectPartInstance(currentPartInstance) : undefined
 		this.nextPartInstance = nextPartInstance ? unprotectPartInstance(nextPartInstance) : undefined
+		this.previousPartInstance = previousPartInstance ? unprotectPartInstance(previousPartInstance) : undefined
 
 		this.partInstances = _.compact([previousPartInstance, currentPartInstance, nextPartInstance])
 
