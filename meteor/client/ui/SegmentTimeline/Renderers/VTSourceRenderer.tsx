@@ -23,6 +23,7 @@ import { RundownUtils } from '../../../lib/rundown'
 import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
 import StudioContext from '../../RundownView/StudioContext'
 import { Studio } from '../../../../lib/collections/Studios'
+import { Settings } from '../../../../lib/Settings'
 
 interface IProps extends ICustomLayerItemProps {
 	studio: Studio | undefined
@@ -493,8 +494,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		) {
 			let endOfContentAt: number = vtContent.sourceDuration + (vtContent.postrollDuration || 0)
 
-			const TBD_COUNTDOWN_TO_FREEZE = false // TODOSYNC: To be implemented by tv2, a setting that enables this
-			if (TBD_COUNTDOWN_TO_FREEZE) {
+			if (Settings.useCountdownToFreezeFrame) {
 				const lastFreeze = this.state.freezes && this.state.freezes[this.state.freezes.length - 1]
 				const endingFreezeStart =
 					lastFreeze &&

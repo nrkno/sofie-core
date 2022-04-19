@@ -45,6 +45,9 @@ export interface ISettings {
 
 	// Name of the installation. Used to include custom implementations that differ from the main Fork. I.e. custom CSS etc. Leave undefined if no custom implementation is needed
 	installationName?: string
+
+	// If true, countdowns of videos will count down to the last freeze-frame of the video instead of to the end of the video
+	useCountdownToFreezeFrame: boolean
 }
 
 /**
@@ -67,6 +70,7 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	enableKeyboardPreview: true,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 	installationName: 'tv2',
+	useCountdownToFreezeFrame: true,
 })
 
 /**
