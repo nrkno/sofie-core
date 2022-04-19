@@ -124,7 +124,6 @@ function createAction(
 		},
 		listener: (e) => {
 			e.preventDefault()
-			// TODOSYNC: add e.stopPropagation() here?
 
 			const ctx = collectContext()
 			if (ctx) {

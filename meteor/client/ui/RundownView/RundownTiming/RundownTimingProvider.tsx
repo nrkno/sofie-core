@@ -289,9 +289,9 @@ export const RundownTimingProvider = withTracker<
 				currentRundown,
 				parts,
 				partInstancesMap,
-				segments, // TODOSYNC
+				segments,
 				this.props.defaultDuration,
-				segmentEntryPartInstances // TODOSYNC
+				segmentEntryPartInstances
 			)
 			if (!isLowResolution) {
 				this.durations = Object.assign(this.durations, updatedDurations)

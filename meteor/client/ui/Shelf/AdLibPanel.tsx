@@ -652,7 +652,6 @@ export function AdLibPanel({
 			) {
 				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 				return
-				// TODOSYNC: TV2 uses queue = false
 			}
 			if (currentPartInstanceId) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {

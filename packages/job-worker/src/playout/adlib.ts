@@ -318,11 +318,6 @@ export async function innerStartOrQueueAdLibPiece(
 				title: adLibPiece.name,
 				expectedDuration: adLibPiece.expectedDuration,
 				expectedDurationWithPreroll: adLibPiece.expectedDuration, // Filled in later
-				// TODOSYNC: do tv2 use these?
-				// autoNext: adLibPiece.adlibAutoNext,
-				// autoNextOverlap: adLibPiece.adlibAutoNextOverlap,
-				// disableOutTransition: adLibPiece.adlibDisableOutTransition,
-				// transitionKeepaliveDuration: adLibPiece.adlibTransitionKeepAlive,
 			},
 		}
 		const newPieceInstance = convertAdLibToPieceInstance(
