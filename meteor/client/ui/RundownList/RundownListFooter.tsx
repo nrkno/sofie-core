@@ -21,7 +21,7 @@ export function RundownListFooter({ systemStatus }: IProps) {
 		<div className="mtl gutter version-info">
 			<p>
 				{t('Sofie Automation')} {t('version')}:&nbsp;
-				<Tooltip overlay={versionExtended} placement="top" mouseEnterDelay={1}>
+				<Tooltip overlay={versionExtended} placement="top" mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}>
 					<span>{version}</span>
 				</Tooltip>
 			</p>
