@@ -793,7 +793,7 @@ body.tv2 {
   }
 
   .source-missing {
-	&::after {
+	&::before {
 	  background-image: repeating-linear-gradient(
 					  45deg,
 					  transparent,
