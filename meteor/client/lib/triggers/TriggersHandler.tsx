@@ -225,6 +225,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				exclusive: true,
 				ordered: 'modifiersFirst',
 				preventDefaultPartials: false,
+				preventDefaultDown: true,
 				global: props.global ?? false,
 				tag: id,
 			})
