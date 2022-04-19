@@ -148,15 +148,15 @@ export const RundownPlaylistUi = DropTarget(
 
 				if (playlist.rundowns.findIndex((rundown) => rundownId === rundown._id) > -1) {
 					// finalize order from component state
-					doUserAction(t, 'Drag and drop rundown playlist reorder', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
-						MeteorCall.userAction.moveRundown(e, rundownId, playlistId, rundownOrder)
+					doUserAction(t, 'Drag and drop rundown playlist reorder', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
+						MeteorCall.userAction.moveRundown(e, ts, rundownId, playlistId, rundownOrder)
 					)
 				} else {
 					// add rundown to playlist
 					rundownOrder.push(rundownId)
 
-					doUserAction(t, 'Drag and drop add rundown to playlist', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
-						MeteorCall.userAction.moveRundown(e, rundownId, playlistId, rundownOrder)
+					doUserAction(t, 'Drag and drop add rundown to playlist', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
+						MeteorCall.userAction.moveRundown(e, ts, rundownId, playlistId, rundownOrder)
 					)
 				}
 			}
@@ -167,7 +167,7 @@ export const RundownPlaylistUi = DropTarget(
 					t,
 					'User clicked the playlist rundown order toggle to reset',
 					UserAction.RUNDOWN_ORDER_RESET,
-					(e) => MeteorCall.userAction.restoreRundownOrder(e, this.props.playlist._id)
+					(e, ts) => MeteorCall.userAction.restoreRundownOrder(e, ts, this.props.playlist._id)
 				)
 			}
 

@@ -56,8 +56,8 @@ export function confirmDeleteRundown(rundown: Rundown, t: TFunction) {
 		yes: t('Delete'),
 		no: t('Cancel'),
 		onAccept: (e) => {
-			doUserAction(t, e, UserAction.REMOVE_RUNDOWN, async (e) =>
-				MeteorCall.userAction.removeRundown(e, rundown._id)
+			doUserAction(t, e, UserAction.REMOVE_RUNDOWN, async (e, ts) =>
+				MeteorCall.userAction.removeRundown(e, ts, rundown._id)
 			)
 		},
 		message:
@@ -77,7 +77,7 @@ export function confirmReSyncRundown(rundown: Rundown, t: TFunction): void {
 				t,
 				e,
 				UserAction.RESYNC_RUNDOWN,
-				async (e) => MeteorCall.userAction.resyncRundown(e, rundown._id),
+				async (e, ts) => MeteorCall.userAction.resyncRundown(e, ts, rundown._id),
 				(err, res) => {
 					if (!err && res) {
 						return handleRundownReloadResponse(t, rundown._id, res)

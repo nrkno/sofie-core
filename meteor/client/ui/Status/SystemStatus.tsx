@@ -481,7 +481,7 @@ export const CoreItem = reacti18next.withTranslation()(
 													t,
 													e,
 													UserAction.GENERATE_RESTART_TOKEN,
-													(e) => MeteorCall.userAction.generateRestartToken(e),
+													(e, ts) => MeteorCall.userAction.generateRestartToken(e, ts),
 													(err, token) => {
 														if (err || !token) {
 															NotificationCenter.push(
@@ -499,7 +499,7 @@ export const CoreItem = reacti18next.withTranslation()(
 															t,
 															{},
 															UserAction.RESTART_CORE,
-															(e) => MeteorCall.userAction.restartCore(e, restartToken),
+															(e, ts) => MeteorCall.userAction.restartCore(e, ts, restartToken),
 															(err, token) => {
 																if (err || !token) {
 																	NotificationCenter.push(

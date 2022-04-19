@@ -34,6 +34,7 @@ import {
 	contextMenuHoldToDisplayTime,
 	UserAgentPointer,
 	USER_AGENT_POINTER_PROPERTY,
+	getEventTimestamp,
 } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { IDashboardPanelTrackedProps } from './DashboardPanel'
@@ -477,9 +478,13 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					if (this.props.playlist._id && this.props.playlist.currentPartInstanceId) {
 						const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 						doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e) =>
-							MeteorCall.userAction.sourceLayerOnPartStop(e, this.props.playlist._id, currentPartInstanceId, [
-								sourceLayer._id,
-							])
+							MeteorCall.userAction.sourceLayerOnPartStop(
+								e,
+								getEventTimestamp(e),
+								this.props.playlist._id,
+								currentPartInstanceId,
+								[sourceLayer._id]
+							)
 						)
 					}
 				}
@@ -524,6 +529,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
 								MeteorCall.userAction.executeAction(
 									e,
+									getEventTimestamp(e),
 									this.props.playlist._id,
 									bucketAction.adlibAction._id,
 									bucketAction.adlibAction.actionId,
@@ -538,6 +544,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
 									MeteorCall.userAction.bucketAdlibStart(
 										e,
+										getEventTimestamp(e),
 										this.props.playlist._id,
 										currentPartInstanceId,
 										piece._id,
@@ -635,25 +642,35 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				private onAdLibNameChanged = (e: any, piece: BucketAdLibItem, newName: string) => {
 					const { t } = this.props
 					if (isAdLib(piece)) {
-						doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET, (e) =>
-							MeteorCall.userAction.bucketsModifyBucketAdLib(
-								e,
-								piece._id,
-								partial<BucketAdLib>({
-									name: newName,
-								})
-							)
+						doUserAction(
+							t,
+							{ type: 'drop', timeStamp: e?.timeStamp ?? performance.now() },
+							UserAction.MODIFY_BUCKET,
+							(e) =>
+								MeteorCall.userAction.bucketsModifyBucketAdLib(
+									e,
+									getEventTimestamp(e),
+									piece._id,
+									partial<BucketAdLib>({
+										name: newName,
+									})
+								)
 						)
 					} else if (isAdLibAction(piece)) {
-						doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET, (e) =>
-							MeteorCall.userAction.bucketsModifyBucketAdLibAction(
-								e,
-								piece.adlibAction._id,
-								partial<BucketAdLibAction>({
-									//@ts-ignore deep property
-									'display.label': newName,
-								})
-							)
+						doUserAction(
+							t,
+							{ type: 'drop', timeStamp: e?.timeStamp ?? performance.now() },
+							UserAction.MODIFY_BUCKET,
+							(e) =>
+								MeteorCall.userAction.bucketsModifyBucketAdLibAction(
+									e,
+									getEventTimestamp(e),
+									piece.adlibAction._id,
+									partial<BucketAdLibAction>({
+										//@ts-ignore deep property
+										'display.label': newName,
+									})
+								)
 						)
 					}
 
@@ -688,9 +705,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							}
 
 							if (isAdLib(draggedB)) {
-								doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET, (e) =>
+								doUserAction(t, { type: 'drop', timeStamp: performance.now() }, UserAction.MODIFY_BUCKET, (e) =>
 									MeteorCall.userAction.bucketsModifyBucketAdLib(
 										e,
+										getEventTimestamp(e),
 										draggedB._id,
 										partial<BucketAdLib>({
 											_rank: newRank,
@@ -698,9 +716,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									)
 								)
 							} else if (isAdLibAction(draggedB)) {
-								doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET, (e) =>
+								doUserAction(t, { type: 'drop', timeStamp: performance.now() }, UserAction.MODIFY_BUCKET, (e) =>
 									MeteorCall.userAction.bucketsModifyBucketAdLibAction(
 										e,
+										getEventTimestamp(e),
 										draggedB.adlibAction._id,
 										partial<BucketAdLibAction>({
 											//@ts-ignore deep property
@@ -719,9 +738,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						const draggedB = this.props.adLibPieces.find((b) => b._id === draggedId)
 
 						if (draggedB && isAdLib(draggedB)) {
-							doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET_ADLIB, (e) =>
+							doUserAction(t, { type: 'drop', timeStamp: performance.now() }, UserAction.MODIFY_BUCKET_ADLIB, (e) =>
 								MeteorCall.userAction.bucketsModifyBucketAdLib(
 									e,
+									getEventTimestamp(e),
 									draggedB._id,
 									partial<BucketAdLib>({
 										bucketId,
@@ -729,9 +749,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								)
 							)
 						} else if (draggedB && isAdLibAction(draggedB)) {
-							doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET_ADLIB, (e) =>
+							doUserAction(t, { type: 'drop', timeStamp: performance.now() }, UserAction.MODIFY_BUCKET_ADLIB, (e) =>
 								MeteorCall.userAction.bucketsModifyBucketAdLibAction(
 									e,
+									getEventTimestamp(e),
 									draggedB.adlibAction._id,
 									partial<BucketAdLibAction>({
 										bucketId,
