@@ -23,7 +23,7 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 	getSpecialClasses() {
 		const { button } = this.props
 		switch (button.type) {
-			case ActionButtonType.READY_ON_AIR:
+			case ActionButtonType.KLAR_ON_AIR:
 				return {
 					rehearsal: this.props.playlist.rehearsal,
 					active: !!this.props.playlist.activationId,
@@ -36,7 +36,7 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 	isToggled() {
 		const { button } = this.props
 		switch (button.type) {
-			case ActionButtonType.READY_ON_AIR:
+			case ActionButtonType.KLAR_ON_AIR:
 				return !!this.props.playlist.rehearsal || !!this.props.playlist.activationId
 			default:
 				return false

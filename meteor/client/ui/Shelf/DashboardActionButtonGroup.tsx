@@ -60,7 +60,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 			}
 		}
 
-		readyOnAirAction = (e: any) => {
+		klarOnAirAction = (e: any) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
 				if (this.props.playlist.activationId) {
@@ -128,8 +128,8 @@ export const DashboardActionButtonGroup = withTranslation()(
 				case ActionButtonType.HOLD:
 					this.hold(e)
 					break
-				case ActionButtonType.READY_ON_AIR:
-					this.readyOnAirAction(e)
+				case ActionButtonType.KLAR_ON_AIR:
+					this.klarOnAirAction(e)
 					break
 				case ActionButtonType.STORE_SNAPSHOT:
 					this.storeSnapshot(e)
