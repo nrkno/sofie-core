@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { ISourceLayerUi, IOutputLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer'
-import { SourceLayerType, PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
+import { IOutputLayerUi, ISourceLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer'
+import { IBlueprintPieceType, PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
@@ -15,11 +15,11 @@ import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
-import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../RundownView/RundownViewEventBus'
 import { Studio } from '../../../lib/collections/Studios'
 import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
 import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
-import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
+
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 
@@ -568,7 +568,6 @@ export const SourceLayerItem = withTranslation()(
 							{...this.state}
 						/>
 					)
-				case SourceLayerType.GRAPHICS:
 				case SourceLayerType.LOWER_THIRD:
 					return (
 						<L3rdSourceRenderer
@@ -614,10 +613,9 @@ export const SourceLayerItem = withTranslation()(
 					)
 
 				case SourceLayerType.TRANSITION:
-					// TODOSYNC: TV2 uses other renderers, to be discussed.
-
+				case SourceLayerType.GRAPHICS:
 					return (
-						<TransitionSourceRenderer
+						<VTSourceRenderer
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
