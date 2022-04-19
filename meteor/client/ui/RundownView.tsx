@@ -1287,6 +1287,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				isInspectorShelfExpanded = shelfLayout.openByDefault
 			}
 
+			const poisonKey = Settings.poisonKey
 			this.state = {
 				timeScale: MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
 				studioMode: getAllowStudio(),
@@ -1297,10 +1298,14 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				subsReady: false,
 				usedHotkeys: [
 					// Register additional hotkeys or legend entries
-					{
-						key: 'Escape',
-						label: t('Cancel currently pressed hotkey'),
-					},
+					...(poisonKey
+						? [
+								{
+									key: poisonKey,
+									label: t('Cancel currently pressed hotkey'),
+								},
+						  ]
+						: []),
 					{
 						key: 'F11',
 						label: t('Change to fullscreen mode'),

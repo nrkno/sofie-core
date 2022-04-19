@@ -28,6 +28,7 @@ import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
 import { preventDefault } from '../SorensenContext'
 import { getFinalKey } from './codesToKeyLabels'
 import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../../ui/RundownView/RundownViewEventBus'
+import { Settings } from '../../../lib/Settings'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -292,11 +293,15 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			'Digit0',
 		]
 
+		const poisonKey: string | null = Settings.poisonKey
+
 		if (initialized) {
-			localSorensen.bind('Escape', poisonHotkeys, {
-				exclusive: false,
-				global: true,
-			})
+			if (poisonKey) {
+				localSorensen.bind(poisonKey, poisonHotkeys, {
+					exclusive: false,
+					global: true,
+				})
+			}
 
 			// block Control+KeyF only if this is running in a context where other key bindings will be bound
 			if (!props.simulateTriggerBinding) {
@@ -334,7 +339,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		}
 
 		return () => {
-			localSorensen.unbind('Escape', poisonHotkeys)
+			if (poisonKey) {
+				localSorensen.unbind(poisonKey, poisonHotkeys)
+			}
 			localSorensen.unbind('Control+KeyF', preventDefault)
 			localSorensen.unbind('Control+F5', preventDefault)
 			localSorensen.unbind('Enter', preventDefault)
