@@ -97,6 +97,8 @@ import {
 import { PackageInfoDB, PackageInfos } from '../../lib/collections/PackageInfos'
 import { checkStudioExists } from '../../lib/collections/optimizations'
 
+const PackageInfo = require('../../package.json') as Record<string, any>
+
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
 	version: string
@@ -118,6 +120,7 @@ interface DeprecatedRundownSnapshot {
 
 interface RundownPlaylistSnapshot {
 	version: string
+	versionExtended?: string
 	playlistId: RundownPlaylistId
 	snapshot: SnapshotRundownPlaylist
 	playlist: DBRundownPlaylist
@@ -145,6 +148,7 @@ interface RundownPlaylistSnapshot {
 }
 interface SystemSnapshot {
 	version: string
+	versionExtended?: string
 	studioId: StudioId | null
 	snapshot: SnapshotSystem
 	studios: Array<Studio>
@@ -159,6 +163,7 @@ interface SystemSnapshot {
 }
 interface DebugSnapshot {
 	version: string
+	versionExtended?: string
 	studioId?: StudioId
 	snapshot: SnapshotDebug
 	system: SystemSnapshot
@@ -261,6 +266,7 @@ async function createRundownPlaylistSnapshot(
 	logger.info(`Snapshot generation done`)
 	return {
 		version: CURRENT_SYSTEM_VERSION,
+		versionExtended: PackageInfo.versionExtended || PackageInfo.version || 'UNKNOWN',
 		playlistId,
 		snapshot: {
 			_id: snapshotId,
@@ -378,6 +384,7 @@ async function createSystemSnapshot(
 	logger.info(`Snapshot generation done`)
 	return {
 		version: CURRENT_SYSTEM_VERSION,
+		versionExtended: PackageInfo.versionExtended || PackageInfo.version || 'UNKNOWN',
 		studioId: studioId,
 		snapshot: {
 			_id: snapshotId,
@@ -456,6 +463,7 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 	logger.info(`Snapshot generation done`)
 	return {
 		version: CURRENT_SYSTEM_VERSION,
+		versionExtended: PackageInfo.versionExtended || PackageInfo.version || 'UNKNOWN',
 		studioId: studioId,
 		snapshot: {
 			_id: snapshotId,

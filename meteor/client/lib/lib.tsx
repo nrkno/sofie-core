@@ -147,3 +147,5 @@ export function isRunningInPWA() {
 export function getEventTimestamp(e: any): Time {
 	return e.timeStamp ? performance.timeOrigin + e.timeStamp + systemTime.timeOriginDiff : getCurrentTime()
 }
+
+export const TOOLTIP_DEFAULT_DELAY = 0.5
