@@ -12,6 +12,7 @@
 		"libs:syncVersionsAndChangelogs": "cd ../packages && yarn sync-version-and-changelog",
 		"postinstall": "meteor yarn prepareForTest",
 		"prepareForTest": "node ../scripts/fixTestFibers.js",
+		"inject-git-hash": "node ./scripts/generate-version-file.js",
 		"unit": "jest",
 		"unitci": "jest --maxWorkers 2 --coverage",
 		"unitcov": "jest --coverage",
