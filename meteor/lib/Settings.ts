@@ -37,6 +37,9 @@ export interface ISettings {
 		maxAllowedDiff: number
 	}
 
+	/** Enable the use of poison key if present and use the key specified. **/
+	poisonKey: string | null
+
 	/** The KeyboardPreview is a feature that is not implemented in the main Fork */
 	enableKeyboardPreview: boolean
 
@@ -69,6 +72,7 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	enableNTPTimeChecker: null,
 	enableKeyboardPreview: true,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
+	poisonKey: 'Escape',
 	installationName: 'tv2',
 	useCountdownToFreezeFrame: true,
 })

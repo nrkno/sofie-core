@@ -13,6 +13,7 @@ import { TriggeredActionId } from '../../../lib/collections/TriggeredActions'
 
 export enum RundownViewEvents {
 	ACTIVATE_RUNDOWN_PLAYLIST = 'activateRundownPlaylist',
+	DEACTIVATE_RUNDOWN_PLAYLIST = 'deactivateRundownPlaylist',
 	RESYNC_RUNDOWN_PLAYLIST = 'resyncRundownPlaylist',
 	RESET_RUNDOWN_PLAYLIST = 'resetRundownPlaylist',
 	TAKE = 'take',
@@ -49,6 +50,8 @@ type BaseEvent = IEventContext
 export interface ActivateRundownPlaylistEvent extends IEventContext {
 	rehearsal?: boolean
 }
+
+export type DeactivateRundownPlaylistEvent = IEventContext
 
 export interface RevealInShelfEvent extends IEventContext {
 	pieceId: PieceId
@@ -104,6 +107,7 @@ export interface TriggerActionEvent extends IEventContext {
 
 class RundownViewEventBus0 extends EventEmitter {
 	emit(event: RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, e: ActivateRundownPlaylistEvent): boolean
+	emit(event: RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, e: DeactivateRundownPlaylistEvent): boolean
 	emit(event: RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, e: BaseEvent): boolean
 	emit(event: RundownViewEvents.RESET_RUNDOWN_PLAYLIST, e: BaseEvent): boolean
 	emit(event: RundownViewEvents.TAKE, e: BaseEvent): boolean
@@ -132,6 +136,10 @@ class RundownViewEventBus0 extends EventEmitter {
 	}
 
 	on(event: RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, listener: (e: ActivateRundownPlaylistEvent) => void): this
+	on(
+		event: RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST,
+		listener: (e: DeactivateRundownPlaylistEvent) => void
+	): this
 	on(event: RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, listener: (e: BaseEvent) => void): this
 	on(event: RundownViewEvents.RESET_RUNDOWN_PLAYLIST, listener: (e: BaseEvent) => void): this
 	on(event: RundownViewEvents.TAKE, listener: (e: BaseEvent) => void): this
