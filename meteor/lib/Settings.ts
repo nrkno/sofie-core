@@ -42,6 +42,8 @@ export interface ISettings {
 	keyboardMapLayout: KeyboardLayouts.Names
 	/** How many segments of history to show when scrolling back in time (0 = show current segment only) */
 	followOnAirSegmentsHistory: number
+	/** Enable the use of poison key if present and use the key specified. **/
+	poisonKey: string | null
 }
 
 export let Settings: ISettings
@@ -63,6 +65,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	allowMultiplePlaylistsInGUI: false,
 	showKeyboardMap: true,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
+	poisonKey: 'Escape',
 	followOnAirSegmentsHistory: 0,
 }
 
