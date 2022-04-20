@@ -339,7 +339,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			const segment = uiPartSegmentMap.get(action.partId)
 			if (segment) {
 				action.piece.disabled = !segment.isCompatibleShowStyle
-				segment.pieces.push(action.piece)
+				segment.pieces.push({ ...action.piece, segmentId: segment._id })
 			}
 		})
 
