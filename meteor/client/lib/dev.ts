@@ -6,6 +6,7 @@ import * as _ from 'underscore'
 import { MeteorCall } from '../../lib/api/methods'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { TransformedCollection } from '../../lib/typings/meteor'
+import { StudioTimeline } from '../ui/TestTools/Timeline'
 
 // Note: These things are convenience functions to be used during development:
 
@@ -13,6 +14,7 @@ Meteor.startup(() => {
 	Collections.forEach((val, key) => {
 		;(window as any)[key] = val
 	})
+	window['StudioTimeline'] = StudioTimeline
 })
 
 window['Collections'] = Collections

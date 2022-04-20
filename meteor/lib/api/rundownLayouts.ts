@@ -17,6 +17,7 @@ import {
 	CustomizableRegions,
 	RundownLayoutPlaylistStartTimer,
 	RundownLayoutPlaylistEndTimer,
+	RundownLayoutNextBreakTiming,
 	RundownLayoutEndWords,
 	RundownLayoutSegmentTiming,
 	RundownLayoutPartTiming,
@@ -26,17 +27,21 @@ import {
 	RundownLayoutSytemStatus,
 	RundownLayoutShowStyleDisplay,
 	RundownLayoutWithFilters,
+	DashboardLayoutFilter,
+	RundownLayoutKeyboardPreview,
+	RundownLayoutNextInfo,
 	RundownLayoutPresenterView,
 	RundownLayoutStudioName,
 	RundownLayoutSegmentName,
 	RundownLayoutPartName,
 	RundownLayoutColoredBox,
-	RundownLayoutNextInfo,
+	RundownLayoutMiniRundown,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
 import { literal } from '../lib'
 import { TFunction } from 'i18next'
+import { StudioId } from '../collections/Studios'
 
 export interface NewRundownLayoutsAPI {
 	createRundownLayout(
@@ -62,6 +67,7 @@ export interface CustomizableRegionSettingsManifest {
 	_id: string
 	title: string
 	layouts: Array<CustomizableRegionLayout>
+	navigationLink: (studioId: StudioId, layoutId: RundownLayoutId) => string
 }
 
 export interface CustomizableRegionLayout {
@@ -138,26 +144,31 @@ class RundownLayoutsRegistry {
 				_id: CustomizableRegions.RundownView,
 				title: t('Rundown View Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.rundownViewLayouts, t),
+				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?rundownViewLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.Shelf,
 				title: t('Shelf Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.shelfLayouts, t),
+				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}/shelf?layout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.MiniShelf,
 				title: t('Mini Shelf Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.miniShelfLayouts, t),
+				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?miniShelfLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.RundownHeader,
 				title: t('Rundown Header Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.rundownHeaderLayouts, t),
+				navigationLink: (studioId, layoutId) => `/activeRundown/${studioId}?rundownHeaderLayout=${layoutId}`,
 			},
 			{
 				_id: CustomizableRegions.PresenterView,
 				title: t('Presenter View Layouts'),
 				layouts: this.wrapToCustomizableRegionLayout(this.presenterViewLayouts, t),
+				navigationLink: (studioId, layoutId) => `/countdowns/${studioId}/presenter?presenterLayout=${layoutId}`,
 			},
 		]
 	}
@@ -173,6 +184,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.FILTER,
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 			RundownLayoutElementType.NEXT_INFO,
+			// RundownLayoutElementType.KEYBOARD_PREVIEW, // This is used by TV2
 		],
 	})
 	registry.registerShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
@@ -183,13 +195,16 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.FILTER,
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 			RundownLayoutElementType.NEXT_INFO,
+			RundownLayoutElementType.TEXT_LABEL,
+			// RundownLayoutElementType.KEYBOARD_PREVIEW, // This is used by TV2
+			RundownLayoutElementType.MINI_RUNDOWN,
 		],
 	})
 	registry.registerMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
-		supportedFilters: [],
+		supportedFilters: [RundownLayoutElementType.FILTER],
 	})
 	registry.registerMiniShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
-		supportedFilters: [],
+		supportedFilters: [RundownLayoutElementType.FILTER],
 	})
 	registry.registerRundownViewLayout(RundownLayoutType.RUNDOWN_VIEW_LAYOUT, {
 		supportedFilters: [],
@@ -203,6 +218,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.PIECE_COUNTDOWN,
 			RundownLayoutElementType.PLAYLIST_START_TIMER,
 			RundownLayoutElementType.PLAYLIST_END_TIMER,
+			RundownLayoutElementType.NEXT_BREAK_TIMING,
 			RundownLayoutElementType.END_WORDS,
 			RundownLayoutElementType.SEGMENT_TIMING,
 			RundownLayoutElementType.PART_TIMING,
@@ -224,6 +240,7 @@ export namespace RundownLayoutsAPI {
 			RundownLayoutElementType.TEXT_LABEL,
 			RundownLayoutElementType.SEGMENT_TIMING,
 			RundownLayoutElementType.PLAYLIST_END_TIMER,
+			RundownLayoutElementType.NEXT_BREAK_TIMING,
 			RundownLayoutElementType.TIME_OF_DAY,
 			RundownLayoutElementType.PLAYLIST_NAME,
 			RundownLayoutElementType.STUDIO_NAME,
@@ -295,8 +312,20 @@ export namespace RundownLayoutsAPI {
 		return element.type === RundownLayoutElementType.PIECE_COUNTDOWN
 	}
 
+	export function isDashboardLayoutFilter(element: RundownLayoutElementBase): element is DashboardLayoutFilter {
+		return element.type === RundownLayoutElementType.FILTER
+	}
+
+	export function isKeyboardMap(element: RundownLayoutElementBase): element is RundownLayoutKeyboardPreview {
+		return element.type === RundownLayoutElementType.KEYBOARD_PREVIEW
+	}
+
 	export function isNextInfo(element: RundownLayoutElementBase): element is RundownLayoutNextInfo {
 		return element.type === RundownLayoutElementType.NEXT_INFO
+	}
+
+	export function isMiniRundown(element: RundownLayoutElementBase): element is RundownLayoutMiniRundown {
+		return element.type === RundownLayoutElementType.MINI_RUNDOWN
 	}
 
 	export function isPlaylistStartTimer(
@@ -307,6 +336,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isPlaylistEndTimer(element: RundownLayoutElementBase): element is RundownLayoutPlaylistEndTimer {
 		return element.type === RundownLayoutElementType.PLAYLIST_END_TIMER
+	}
+
+	export function isNextBreakTiming(element: RundownLayoutElementBase): element is RundownLayoutNextBreakTiming {
+		return element.type === RundownLayoutElementType.NEXT_BREAK_TIMING
 	}
 
 	export function isEndWords(element: RundownLayoutElementBase): element is RundownLayoutEndWords {

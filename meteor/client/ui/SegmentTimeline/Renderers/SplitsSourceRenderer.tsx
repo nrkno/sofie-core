@@ -80,7 +80,9 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 							RundownUtils.getSourceLayerClassName(item.type),
 							{
 								second: array.length > 1 && index > 0 && item.type === array[index - 1].type,
-							}
+							},
+							{ upper: index >= array.length / 2 },
+							{ lower: index < array.length / 2 }
 						)}
 					></div>
 				)
@@ -99,7 +101,9 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 					<>
 						{!this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 							<span
-								className="segment-timeline__piece__label first-words overflow-label"
+								className={ClassNames('segment-timeline__piece__label first-words', {
+									'overflow-label': end !== '',
+								})}
 								ref={this.setLeftLabelRef}
 								style={this.getItemLabelOffsetLeft()}
 							>

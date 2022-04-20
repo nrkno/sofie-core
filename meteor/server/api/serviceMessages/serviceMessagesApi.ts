@@ -23,9 +23,7 @@ function readAllMessages(): Array<ServiceMessage> {
 	}
 
 	const { serviceMessages } = coreSystem
-	const messages = Object.keys(serviceMessages).map((key) => serviceMessages[key])
-
-	return messages
+	return Object.keys(serviceMessages).map((key) => serviceMessages[key])
 }
 
 /**

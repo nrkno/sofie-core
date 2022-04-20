@@ -19,12 +19,13 @@ export enum SourceLayerType {
 	/** Audio-only sources */
 	AUDIO = 7,
 	// CAMERA_MOVEMENT = 8,
-	// METADATA = 9,
+	// TODOSYNC: What is this intended to be used for? Why isnt UNKNOWN used instead?
+	METADATA = 9,
 	/** Graphical overlays on top of other video */
 	LOWER_THIRD = 10,
 	/** Video-only clips or clips with only environment audio */
 	LIVE_SPEAK = 11,
-	/** Transition effects */
+	/** Transition effects, content object can use VTContent or TransitionContent */
 	TRANSITION = 13,
 	// LIGHTS = 14,
 	/** Uncontrolled local sources, such as PowerPoint presentation inputs, Weather systems, EVS replay machines, etc. */
@@ -40,6 +41,8 @@ export interface BaseContent {
 
 	sourceDuration?: number
 	ignoreMediaObjectStatus?: boolean
+	ignoreBlackFrames?: boolean
+	ignoreFreezeFrame?: boolean
 	ignoreAudioFormat?: boolean
 }
 
@@ -71,13 +74,21 @@ export interface VTContent extends BaseContent {
 	fileName: string
 	path: string
 	loop?: boolean
+	/** Frame that media manager should grab for thumbnail preview */
+	previewFrame?: number
 	mediaFlowIds?: string[]
 	seek?: number
+	/** Duration of extra content past sourceDuration. Not planned to play back but present on the media and playable. */
+	postrollDuration?: number
 	editable?: VTEditableParameters
 }
 
 export interface GraphicsContent extends BaseContent {
 	fileName: string
+	path: string
+	mediaFlowIds?: string[]
+	thumbnail?: string
+	templateData?: Record<string, any>
 }
 
 export interface CameraContent extends BaseContent {
@@ -164,7 +175,7 @@ export interface SplitsContentBoxProperties {
 		}
 	}
 }
-export type SplitsContentBoxContent = VTContent | CameraContent | RemoteContent | NoraContent
+export type SplitsContentBoxContent = VTContent | CameraContent | RemoteContent | NoraContent | GraphicsContent
 export interface SplitsContent extends BaseContent {
 	/** Array of contents, 0 is towards the rear */
 	boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
@@ -183,3 +194,5 @@ export interface TransitionContent extends BaseContent {
 	icon?: string
 	preview?: string
 }
+
+export type SomeTransitionContent = VTContent | TransitionContent

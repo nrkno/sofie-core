@@ -19,7 +19,8 @@
 		"dev:debug": "nodemon --config nodemon.json --inspect-brk src/index.ts",
 		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
-		"lint": "eslint . --ext .ts --ext .js --ignore-pattern dist",
+		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "yarn lint:raw .",
 		"unit": "jest",
 		"test": "yarn lint && yarn unit",
 		"watch": "jest --watch",
@@ -51,7 +52,7 @@
 		"mongodb": "^4.3.1",
 		"p-lazy": "^3.1.0",
 		"read-pkg-up": "^7.0.0",
-		"superfly-timeline": "8.2.1",
+		"superfly-timeline": "^8.2.7",
 		"threadedclass": "^1.0.0",
 		"tslib": "^2.1.0",
 		"type-fest": "^2.11.1",
@@ -69,7 +70,7 @@
 			"prettier --write"
 		],
 		"*.{ts,tsx}": [
-			"yarn lint --fix"
+			"yarn lint:raw"
 		]
 	}
 }

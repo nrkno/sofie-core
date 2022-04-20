@@ -7,7 +7,7 @@ import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { DBSegment, Segment, SegmentId } from '../../../lib/collections/Segments'
 import { DBPart, PartId } from '../../../lib/collections/Parts'
-import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
+import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 
@@ -34,7 +34,6 @@ import {
 import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import {
-	PartInstance,
 	PartInstances,
 	PartInstanceId,
 	findPartInstanceOrWrapToTemporary,
@@ -51,38 +50,14 @@ import {
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
-import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
+import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
 import { getShelfFollowsOnAir, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { sortAdlibs } from '../../../lib/Rundown'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { AdLibListView } from './AdLibListView'
-
-export interface AdLibPieceUi extends Omit<AdLibPiece, 'timelineObjectsString'> {
-	sourceLayer?: ISourceLayer
-	outputLayer?: IOutputLayer
-	isGlobal?: boolean
-	isHidden?: boolean
-	isSticky?: boolean
-	isAction?: boolean
-	isClearSourceLayer?: boolean
-	disabled?: boolean
-	adlibAction?: AdLibAction | RundownBaselineAdLibAction
-	contentMetaData?: any
-	contentPackageInfos?: ScanInfoForPackages
-	message?: string | null
-}
-
-export interface AdlibSegmentUi extends DBSegment {
-	/** Pieces belonging to this part */
-	parts: Array<PartInstance>
-	pieces: Array<AdLibPieceUi>
-	isLive: boolean
-	isNext: boolean
-	isCompatibleShowStyle: boolean
-}
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
@@ -98,7 +73,7 @@ export interface IAdLibPanelProps {
 	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
 }
 
-type SourceLayerLookup = Record<string, ISourceLayer>
+export type SourceLayerLookup = Record<string, ISourceLayer>
 
 type MinimalRundown = Pick<
 	Rundown,
@@ -114,6 +89,7 @@ type MinimalRundown = Pick<
 
 export interface AdLibFetchAndFilterProps {
 	uiSegments: Array<AdlibSegmentUi>
+	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
 	liveSegment: AdlibSegmentUi | undefined
 	sourceLayerLookup: SourceLayerLookup
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
@@ -154,8 +130,8 @@ function actionToAdLibPieceUi(
 		tags: action.display.tags,
 		currentPieceTags: action.display.currentPieceTags,
 		nextPieceTags: action.display.nextPieceTags,
-		lifespan: PieceLifespan.WithinPart, // value doesn't matter
 		uniquenessId: action.display.uniquenessId,
+		lifespan: PieceLifespan.WithinPart, // value doesn't matter
 		expectedPackages: action.expectedPackages,
 	})
 }
@@ -174,6 +150,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 	if (!props.playlist || !props.showStyleBase) {
 		return {
 			uiSegments: [],
+			uiSegmentMap: new Map(),
 			liveSegment: undefined,
 			sourceLayerLookup,
 			rundownBaselineAdLibs: [],
@@ -199,7 +176,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 		props.playlist
 	)
 
-	const { uiSegments, liveSegment, uiPartSegmentMap, uiPartMap } = memoizedIsolatedAutorun(
+	const { uiSegments, liveSegment, uiPartSegmentMap, uiPartMap, uiSegmentMap } = memoizedIsolatedAutorun(
 		(
 			currentPartInstanceId: PartInstanceId | null,
 			nextPartInstanceId: PartInstanceId | null,
@@ -209,7 +186,6 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
 				props.playlist
 			)
-
 			// This is a map of partIds mapped onto segments they are part of
 			const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
 			const uiPartMap = new Map<PartId, DBPart>()
@@ -217,6 +193,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			if (!segments) {
 				return {
 					uiSegments: [],
+					uiSegmentMap: new Map(),
 					liveSegment: undefined,
 					uiPartSegmentMap,
 					uiPartMap,
@@ -282,6 +259,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 
 			return {
 				uiSegments,
+				uiSegmentMap,
 				liveSegment,
 				uiPartSegmentMap,
 				uiPartMap,
@@ -294,7 +272,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 		rundowns
 	)
 
-	uiSegments.forEach((segment) => (segment.pieces.length = 0))
+	uiSegments.forEach((segment) => (segment.pieces = []))
 
 	if (props.filter === undefined || props.filter.rundownBaseline !== 'only') {
 		const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(props.playlist)
@@ -323,6 +301,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 						disabled: !segment.isCompatibleShowStyle,
 						sourceLayer: sourceLayerLookup[piece.sourceLayerId],
 						outputLayer: outputLayerLookup[piece.outputLayerId],
+						segmentId: segment._id,
 					})
 				}
 			})
@@ -530,7 +509,8 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 	}
 
 	return {
-		uiSegments,
+		uiSegments: props.filter && props.filter.rundownBaseline === 'only' ? [] : uiSegments,
+		uiSegmentMap: props.filter && props.filter.rundownBaseline === 'only' ? new Map() : uiSegmentMap,
 		liveSegment,
 		sourceLayerLookup,
 		rundownBaselineAdLibs,
@@ -585,6 +565,7 @@ export function AdLibPanel({
 			rundownBaselineAdLibs: [],
 			sourceLayerLookup: {},
 			uiSegments: [] as AdlibSegmentUi[],
+			uiSegmentMap: new Map(),
 		}
 	)
 
@@ -671,17 +652,27 @@ export function AdLibPanel({
 			) {
 				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 				return
+				// TODOSYNC: TV2 uses queue = false
 			}
 			if (currentPartInstanceId) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
-					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-						MeteorCall.userAction.executeAction(e, playlistId, action._id, action.actionId, action.userData, mode?.data)
+					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e, ts) =>
+						MeteorCall.userAction.executeAction(
+							e,
+							ts,
+							playlistId,
+							action._id,
+							action.actionId,
+							action.userData,
+							mode?.data
+						)
 					)
 				} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
-					doUserAction(t, e, UserAction.START_ADLIB, (e) =>
+					doUserAction(t, e, UserAction.START_ADLIB, (e, ts) =>
 						MeteorCall.userAction.segmentAdLibPieceStart(
 							e,
+							ts,
 							playlistId,
 							currentPartInstanceId,
 							adlibPiece._id,
@@ -689,9 +680,10 @@ export function AdLibPanel({
 						)
 					)
 				} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e, ts) =>
 						MeteorCall.userAction.baselineAdLibPieceStart(
 							e,
+							ts,
 							playlistId,
 							currentPartInstanceId,
 							adlibPiece._id,
@@ -699,8 +691,8 @@ export function AdLibPanel({
 						)
 					)
 				} else if (adlibPiece.isSticky) {
-					doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
-						MeteorCall.userAction.sourceLayerStickyPieceStart(e, playlistId, adlibPiece.sourceLayerId)
+					doUserAction(t, e, UserAction.START_STICKY_PIECE, (e, ts) =>
+						MeteorCall.userAction.sourceLayerStickyPieceStart(e, ts, playlistId, adlibPiece.sourceLayerId)
 					)
 				}
 			}

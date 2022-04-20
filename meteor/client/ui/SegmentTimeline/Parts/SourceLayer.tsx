@@ -44,6 +44,7 @@ export interface ISourceLayerPropsBase {
 }
 interface ISourceLayerProps extends ISourceLayerPropsBase {
 	layer: ISourceLayerUi
+	showDuration?: boolean
 }
 
 export function useMouseContext(props: ISourceLayerPropsBase) {
@@ -137,6 +138,7 @@ export function SourceLayer(props: ISourceLayerProps) {
 									onFollowLiveLine={props.onFollowLiveLine}
 									layerIndex={props.layerIndex}
 									isPreview={props.isPreview}
+									showDuration={props.showDuration}
 								/>
 							)
 						})

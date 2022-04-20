@@ -162,6 +162,8 @@ export interface IBlueprintSegment<TMetadata = unknown> {
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */
 	identifier?: string
 
+	/** Show the minishelf of the segment */
+	showShelf?: boolean
 	/** Segment display mode. Default mode is *SegmentDisplayMode.Timeline* */
 	displayAs?: SegmentDisplayMode
 }
@@ -228,7 +230,16 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */
 	identifier?: string
+
+	/** MediaObjects that when created/updated, should cause the blueprint to be rerun for the Segment of this Part */
+	// hackListenToMediaObjectUpdates?: HackPartMediaObjectSubscription[]
 }
+
+// export interface HackPartMediaObjectSubscription {
+// 	/** The playable reference (CasparCG clip name, quantel GUID, etc) */
+// 	mediaId: string
+// }
+
 /** The Part generated from Blueprint */
 export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatablePart<TMetadata> {
 	/** Id of the part from the gateway if this part does not map directly to an IngestPart. This must be unique for each part */
@@ -523,8 +534,14 @@ export interface IBlueprintAdLibPiece<TMetadata = unknown> extends IBlueprintPie
 	currentPieceTags?: string[]
 	/** Piece tags to use to determine if action is set as next */
 	nextPieceTags?: string[]
-	/** String that can be used to identify adlibs that are equivalent to each other */
+	/**
+	 * String that can be used to identify adlibs that are equivalent to each other,
+	 * if there are multiple Adlibs with the same uniquenessId,
+	 * only one of them should be displayed in the GUI.
+	 */
 	uniquenessId?: string
+	/** When not playing, display in the UI as playing, and vice versa. Useful for Adlibs that toggle something off when taken */
+	invertOnAirState?: boolean
 }
 /** The AdLib piece sent from Core */
 export interface IBlueprintAdLibPieceDB<TMetadata = unknown> extends IBlueprintAdLibPiece<TMetadata> {

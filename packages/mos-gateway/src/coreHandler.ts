@@ -2,7 +2,7 @@ import {
 	CoreConnection,
 	CoreOptions,
 	PeripheralDeviceAPI as P,
-	DDPConnectorOptions
+	DDPConnectorOptions,
 } from '@sofie-automation/server-core-integration'
 import * as Winston from 'winston'
 import { Process } from './process'
@@ -27,7 +27,7 @@ import {
 	IMOSROFullStory,
 	MosDuration,
 	IMOSObjectStatus,
-	IMOSROAck
+	IMOSROAck,
 } from 'mos-connection'
 
 export type DeepPartial<T> = {
@@ -38,7 +38,7 @@ export type DeepPartial<T> = {
 		: DeepPartial<T[P]>
 }
 
-function deepMatch (object: any, attrs: any, deep: boolean): boolean {
+function deepMatch(object: any, attrs: any, deep: boolean): boolean {
 	const keys = Object.keys(attrs)
 	const length = keys.length
 	if (object === null || object === undefined) return !length
@@ -97,7 +97,7 @@ export class CoreMosDeviceHandler {
 	private _pendingStoryItemChanges: Array<IStoryItemChange> = []
 	private _pendingChangeTimeout: number = 60 * 1000
 
-	constructor (parent: CoreHandler, mosDevice: IMOSDevice, mosHandler: MosHandler) {
+	constructor(parent: CoreHandler, mosDevice: IMOSDevice, mosHandler: MosHandler) {
 		this._coreParentHandler = parent
 		this._mosDevice = mosDevice
 		this._mosHandler = mosHandler
@@ -108,7 +108,7 @@ export class CoreMosDeviceHandler {
 			this._coreParentHandler.logger.error('Core Error: ' + (err.message || err.toString() || err))
 		})
 	}
-	init (): Promise<void> {
+	async init(): Promise<void> {
 		return this.core
 			.init(this._coreParentHandler.core)
 			.then(() => {
@@ -118,7 +118,7 @@ export class CoreMosDeviceHandler {
 				return
 			})
 	}
-	setupSubscriptionsAndObservers (): void {
+	setupSubscriptionsAndObservers(): void {
 		// console.log('setupObservers', this.core.deviceId)
 		if (this._observers.length) {
 			this._coreParentHandler.logger.info('CoreMos: Clearing observers..')
@@ -151,9 +151,9 @@ export class CoreMosDeviceHandler {
 		// setup observers
 		this._coreParentHandler.setupObserverForPeripheralDeviceCommands(this)
 	}
-	onMosConnectionChanged (connectionStatus: IMOSConnectionStatus) {
+	onMosConnectionChanged(connectionStatus: IMOSConnectionStatus): void {
 		let statusCode: P.StatusCode
-		let messages: Array<string> = []
+		const messages: Array<string> = []
 
 		if (connectionStatus.PrimaryConnected) {
 			if (connectionStatus.SecondaryConnected || !this._mosDevice.idSecondary) {
@@ -179,12 +179,12 @@ export class CoreMosDeviceHandler {
 		this.core
 			.setStatus({
 				statusCode: statusCode,
-				messages: messages
+				messages: messages,
 			})
 			.catch((e) => this._coreParentHandler.logger.warn('Error when setting status:' + e))
 	}
-	getMachineInfo (): Promise<IMOSListMachInfo> {
-		let info: IMOSListMachInfo = {
+	async getMachineInfo(): Promise<IMOSListMachInfo> {
+		const info: IMOSListMachInfo = {
 			manufacturer: new MosString128('SuperFly.tv'),
 			model: new MosString128('Core'),
 			hwRev: new MosString128('0'),
@@ -196,43 +196,43 @@ export class CoreMosDeviceHandler {
 			mosRev: new MosString128('0'),
 			supportedProfiles: {
 				deviceType: 'MOS', // MOS, NCS
-				profile0: this._mosHandler.mosOptions.self.profiles['0'],
-				profile1: this._mosHandler.mosOptions.self.profiles['1'],
-				profile2: this._mosHandler.mosOptions.self.profiles['2'],
-				profile3: this._mosHandler.mosOptions.self.profiles['3'],
-				profile4: this._mosHandler.mosOptions.self.profiles['4'],
-				profile5: this._mosHandler.mosOptions.self.profiles['5'],
-				profile6: this._mosHandler.mosOptions.self.profiles['6'],
-				profile7: this._mosHandler.mosOptions.self.profiles['7']
-			}
+				profile0: this._mosHandler?.mosOptions?.self.profiles['0'],
+				profile1: this._mosHandler?.mosOptions?.self.profiles['1'],
+				profile2: this._mosHandler?.mosOptions?.self.profiles['2'],
+				profile3: this._mosHandler?.mosOptions?.self.profiles['3'],
+				profile4: this._mosHandler?.mosOptions?.self.profiles['4'],
+				profile5: this._mosHandler?.mosOptions?.self.profiles['5'],
+				profile6: this._mosHandler?.mosOptions?.self.profiles['6'],
+				profile7: this._mosHandler?.mosOptions?.self.profiles['7'],
+			},
 		}
 		return Promise.resolve(info)
 	}
-	mosRoCreate (ro: IMOSRunningOrder): Promise<any> {
+	async mosRoCreate(ro: IMOSRunningOrder): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoCreate, ro)
 	}
-	mosRoReplace (ro: IMOSRunningOrder): Promise<any> {
+	async mosRoReplace(ro: IMOSRunningOrder): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoReplace, ro)
 	}
-	mosRoDelete (runningOrderId: MosString128): Promise<any> {
+	async mosRoDelete(runningOrderId: MosString128): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoDelete, runningOrderId)
 	}
-	mosRoMetadata (metadata: IMOSRunningOrderBase): Promise<any> {
+	async mosRoMetadata(metadata: IMOSRunningOrderBase): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoMetadata, metadata)
 	}
-	mosRoStatus (status: IMOSRunningOrderStatus): Promise<any> {
+	async mosRoStatus(status: IMOSRunningOrderStatus): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoStatus, status)
 	}
-	mosRoStoryStatus (status: IMOSStoryStatus): Promise<any> {
+	async mosRoStoryStatus(status: IMOSStoryStatus): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoStoryStatus, status)
 	}
-	mosRoItemStatus (status: IMOSItemStatus): Promise<any> {
+	async mosRoItemStatus(status: IMOSItemStatus): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoItemStatus, status)
 	}
-	mosRoStoryInsert (Action: IMOSStoryAction, Stories: Array<IMOSROStory>): Promise<any> {
+	async mosRoStoryInsert(Action: IMOSStoryAction, Stories: Array<IMOSROStory>): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoStoryInsert, Action, Stories)
 	}
-	mosRoStoryReplace (Action: IMOSStoryAction, Stories: Array<IMOSROStory>): Promise<any> {
+	async mosRoStoryReplace(Action: IMOSStoryAction, Stories: Array<IMOSROStory>): Promise<any> {
 		const result = this._coreMosManipulate(P.methods.mosRoStoryReplace, Action, Stories)
 
 		if (this._pendingStoryItemChanges.length > 0) {
@@ -250,19 +250,19 @@ export class CoreMosDeviceHandler {
 		}
 		return result
 	}
-	mosRoStoryMove (Action: IMOSStoryAction, Stories: Array<MosString128>): Promise<any> {
+	async mosRoStoryMove(Action: IMOSStoryAction, Stories: Array<MosString128>): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoStoryMove, Action, Stories)
 	}
-	mosRoStoryDelete (Action: IMOSROAction, Stories: Array<MosString128>): Promise<any> {
+	async mosRoStoryDelete(Action: IMOSROAction, Stories: Array<MosString128>): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoStoryDelete, Action, Stories)
 	}
-	mosRoStorySwap (Action: IMOSROAction, StoryID0: MosString128, StoryID1: MosString128): Promise<any> {
+	async mosRoStorySwap(Action: IMOSROAction, StoryID0: MosString128, StoryID1: MosString128): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoStorySwap, Action, StoryID0, StoryID1)
 	}
-	mosRoItemInsert (Action: IMOSItemAction, Items: Array<IMOSItem>): Promise<any> {
+	async mosRoItemInsert(Action: IMOSItemAction, Items: Array<IMOSItem>): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoItemInsert, Action, Items)
 	}
-	mosRoItemReplace (Action: IMOSItemAction, Items: Array<IMOSItem>): Promise<any> {
+	async mosRoItemReplace(Action: IMOSItemAction, Items: Array<IMOSItem>): Promise<any> {
 		const result = this._coreMosManipulate(P.methods.mosRoItemReplace, Action, Items)
 
 		if (this._pendingStoryItemChanges.length > 0) {
@@ -278,19 +278,19 @@ export class CoreMosDeviceHandler {
 
 		return result
 	}
-	mosRoItemMove (Action: IMOSItemAction, Items: Array<MosString128>): Promise<any> {
+	async mosRoItemMove(Action: IMOSItemAction, Items: Array<MosString128>): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoItemMove, Action, Items)
 	}
-	mosRoItemDelete (Action: IMOSStoryAction, Items: Array<MosString128>): Promise<any> {
+	async mosRoItemDelete(Action: IMOSStoryAction, Items: Array<MosString128>): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoItemDelete, Action, Items)
 	}
-	mosRoItemSwap (Action: IMOSStoryAction, ItemID0: MosString128, ItemID1: MosString128): Promise<any> {
+	async mosRoItemSwap(Action: IMOSStoryAction, ItemID0: MosString128, ItemID1: MosString128): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoItemSwap, Action, ItemID0, ItemID1)
 	}
-	mosRoReadyToAir (Action: IMOSROReadyToAir): Promise<any> {
+	async mosRoReadyToAir(Action: IMOSROReadyToAir): Promise<any> {
 		return this._coreMosManipulate(P.methods.mosRoReadyToAir, Action)
 	}
-	mosRoFullStory (story: IMOSROFullStory): Promise<any> {
+	async mosRoFullStory(story: IMOSROFullStory): Promise<any> {
 		const result = this._coreMosManipulate(P.methods.mosRoFullStory, story)
 
 		if (this._pendingStoryItemChanges.length > 0) {
@@ -308,7 +308,7 @@ export class CoreMosDeviceHandler {
 		return result
 	}
 
-	triggerGetAllRunningOrders (): Promise<any> {
+	async triggerGetAllRunningOrders(): Promise<any> {
 		// console.log('triggerGetAllRunningOrders')
 		return this._mosDevice
 			.sendRequestAllRunningOrders()
@@ -321,7 +321,7 @@ export class CoreMosDeviceHandler {
 				throw err
 			})
 	}
-	triggerGetRunningOrder (roId: string): Promise<any> {
+	async triggerGetRunningOrder(roId: string): Promise<any> {
 		// console.log('triggerGetRunningOrder ' + roId)
 		return this._mosDevice
 			.sendRequestRunningOrder(new MosString128(roId))
@@ -334,34 +334,34 @@ export class CoreMosDeviceHandler {
 				throw err
 			})
 	}
-	setROStatus (roId: string, status: IMOSObjectStatus): Promise<any> {
+	async setROStatus(roId: string, status: IMOSObjectStatus): Promise<any> {
 		// console.log('setStoryStatus')
 		return this._mosDevice
 			.sendRunningOrderStatus({
 				ID: new MosString128(roId),
 				Status: status,
-				Time: new MosTime()
+				Time: new MosTime(),
 			})
 			.then((result) => {
 				// console.log('got result', result)
 				return this.fixMosData(result)
 			})
 	}
-	setStoryStatus (roId: string, storyId: string, status: IMOSObjectStatus): Promise<any> {
+	async setStoryStatus(roId: string, storyId: string, status: IMOSObjectStatus): Promise<any> {
 		// console.log('setStoryStatus')
 		return this._mosDevice
 			.sendStoryStatus({
 				RunningOrderId: new MosString128(roId),
 				ID: new MosString128(storyId),
 				Status: status,
-				Time: new MosTime()
+				Time: new MosTime(),
 			})
 			.then((result) => {
 				// console.log('got result', result)
 				return this.fixMosData(result)
 			})
 	}
-	setItemStatus (roId: string, storyId: string, itemId: string, status: IMOSObjectStatus): Promise<any> {
+	async setItemStatus(roId: string, storyId: string, itemId: string, status: IMOSObjectStatus): Promise<any> {
 		// console.log('setStoryStatus')
 		return this._mosDevice
 			.sendItemStatus({
@@ -369,20 +369,25 @@ export class CoreMosDeviceHandler {
 				StoryId: new MosString128(storyId),
 				ID: new MosString128(itemId),
 				Status: status,
-				Time: new MosTime()
+				Time: new MosTime(),
 			})
 			.then((result) => {
 				// console.log('got result', result)
 				return this.fixMosData(result)
 			})
 	}
-	replaceStoryItem (roID: string, storyID: string, item: IMOSItem, itemDiff?: DeepPartial<IMOSItem>): Promise<any> {
+	async replaceStoryItem(
+		roID: string,
+		storyID: string,
+		item: IMOSItem,
+		itemDiff?: DeepPartial<IMOSItem>
+	): Promise<any> {
 		// console.log(roID, storyID, item)
 		return this._mosDevice
 			.sendItemReplace({
 				roID: new MosString128(roID),
 				storyID: new MosString128(storyID),
-				item
+				item,
 			})
 			.then((result) => this.fixMosData(result))
 			.then((result: any) => {
@@ -416,7 +421,7 @@ export class CoreMosDeviceHandler {
 								return
 							},
 
-							itemDiff
+							itemDiff,
 						}
 						this._coreParentHandler.logger.debug(
 							`creating pending change: ${pendingChange.storyID}:${pendingChange.itemID}`
@@ -446,14 +451,14 @@ export class CoreMosDeviceHandler {
 				}
 			})
 	}
-	test (a: string) {
+	async test(a: string): Promise<string> {
 		return new Promise((resolve) => {
 			setTimeout(() => {
 				resolve('test' + a)
 			}, 2000)
 		})
 	}
-	dispose (): Promise<void> {
+	async dispose(): Promise<void> {
 		this._observers.forEach((obs) => {
 			obs.stop()
 		})
@@ -461,20 +466,20 @@ export class CoreMosDeviceHandler {
 		return this.core
 			.setStatus({
 				statusCode: P.StatusCode.BAD,
-				messages: ['Uninitialized']
+				messages: ['Uninitialized'],
 			})
 			.then(() => {
 				return
 			})
 	}
-	killProcess (actually: number) {
+	killProcess(actually: number): true | 0 {
 		return this._coreParentHandler.killProcess(actually)
 	}
 	/**
 	 * Convert mos-objects to look better over the wire
 	 * @param o the object to convert
 	 */
-	private fixMosData (o: any): any {
+	private fixMosData(o: any): any {
 		if (_.isObject(o) && (o instanceof MosTime || o instanceof MosDuration || o instanceof MosString128)) {
 			return o.toString()
 		}
@@ -483,7 +488,7 @@ export class CoreMosDeviceHandler {
 				return this.fixMosData(val)
 			})
 		} else if (_.isObject(o)) {
-			let o2: any = {}
+			const o2: any = {}
 			_.each(o, (val, key) => {
 				o2[key] = this.fixMosData(val)
 			})
@@ -492,12 +497,12 @@ export class CoreMosDeviceHandler {
 			return o
 		}
 	}
-	private _coreMosManipulate (method: string, ...attrs: Array<any>): Promise<any> {
+	private async _coreMosManipulate(method: string, ...attrs: Array<any>): Promise<any> {
 		attrs = _.map(attrs, (attr) => {
 			return this.fixMosData(attr)
 		})
 		// Make the commands be sent sequantially:
-		return this.core.putOnQueue('mos', () => {
+		return this.core.putOnQueue('mos', async () => {
 			// Log info about the sent command:
 			let msg = 'Command: ' + method
 			if (attrs[0] && attrs[0].ID) msg = `${method}: ${attrs[0].ID}`
@@ -517,10 +522,10 @@ export class CoreMosDeviceHandler {
 			})
 		})
 	}
-	private addPendingChange (change: IStoryItemChange) {
+	private addPendingChange(change: IStoryItemChange) {
 		this._pendingStoryItemChanges.push(change)
 	}
-	private removePendingChange (change: IStoryItemChange) {
+	private removePendingChange(change: IStoryItemChange) {
 		const idx = this._pendingStoryItemChanges.indexOf(change)
 		if (idx >= 0) {
 			this._pendingStoryItemChanges.splice(idx, 1)
@@ -536,24 +541,24 @@ export interface CoreConfig {
  * Represents a connection between mos-integration and Core
  */
 export class CoreHandler {
-	core: CoreConnection
+	core: CoreConnection | undefined
 	logger: Winston.Logger
 	public _observers: Array<any> = []
 	private _deviceOptions: DeviceConfig
 	private _coreMosHandlers: Array<CoreMosDeviceHandler> = []
 	private _onConnected?: () => any
 	private _subscriptions: Array<any> = []
-	private _isInitialized: boolean = false
+	private _isInitialized = false
 	private _executedFunctions: { [id: string]: boolean } = {}
 	private _coreConfig?: CoreConfig
 	private _process?: Process
 
-	constructor (logger: Winston.Logger, deviceOptions: DeviceConfig) {
+	constructor(logger: Winston.Logger, deviceOptions: DeviceConfig) {
 		this.logger = logger
 		this._deviceOptions = deviceOptions
 	}
 
-	init (config: CoreConfig, process: Process): Promise<void> {
+	async init(config: CoreConfig, process: Process): Promise<void> {
 		// this.logger.info('========')
 		this._coreConfig = config
 		this._process = process
@@ -570,54 +575,65 @@ export class CoreHandler {
 			this.logger.error('Core Error: ' + (err.message || err.toString() || err))
 		})
 
-		let ddpConfig: DDPConnectorOptions = {
+		const ddpConfig: DDPConnectorOptions = {
 			host: config.host,
-			port: config.port
+			port: config.port,
 		}
 		if (this._process && this._process.certificates.length) {
 			ddpConfig.tlsOpts = {
-				ca: this._process.certificates
+				ca: this._process.certificates,
 			}
 		}
 		return this.core
 			.init(ddpConfig)
 			.then((_id: string) => {
+				if (!this.core) {
+					throw Error('core is undefined!')
+				}
+
 				this.core
 					.setStatus({
-						statusCode: P.StatusCode.GOOD
+						statusCode: P.StatusCode.GOOD,
 						// messages: []
 					})
 					.catch((e) => this.logger.warn('Error when setting status:' + e))
 				// nothing
 			})
-			.then(() => {
+			.then(async () => {
 				return this.setupSubscriptionsAndObservers()
 			})
 			.then(() => {
 				this._isInitialized = true
 			})
 	}
-	dispose (): Promise<void> {
+	async dispose(): Promise<void> {
+		if (!this.core) {
+			throw Error('core is undefined!')
+		}
+
 		return this.core
 			.setStatus({
 				statusCode: P.StatusCode.FATAL,
-				messages: ['Shutting down']
+				messages: ['Shutting down'],
 			})
-			.then(() => {
+			.then(async () => {
 				return Promise.all(
-					this._coreMosHandlers.map((cmh: CoreMosDeviceHandler) => {
+					this._coreMosHandlers.map(async (cmh: CoreMosDeviceHandler) => {
 						return cmh.dispose()
 					})
 				)
 			})
-			.then(() => {
+			.then(async () => {
+				if (!this.core) {
+					throw Error('core is undefined!')
+				}
 				return this.core.destroy()
 			})
 			.then(() => {
 				// nothing
 			})
 	}
-	getCoreConnectionOptions (name: string, subDeviceId: string, parentProcess: boolean): CoreOptions {
+	getCoreConnectionOptions(name: string, subDeviceId: string, parentProcess: boolean): CoreOptions {
 		let credentials: {
 			deviceId: string
 			deviceToken: string
@@ -626,18 +642,18 @@ export class CoreHandler {
 		if (this._deviceOptions.deviceId && this._deviceOptions.deviceToken) {
 			credentials = {
 				deviceId: this._deviceOptions.deviceId + subDeviceId,
-				deviceToken: this._deviceOptions.deviceToken
+				deviceToken: this._deviceOptions.deviceToken,
 			}
 		} else if (this._deviceOptions.deviceId) {
 			this.logger.warn('Token not set, only id! This might be unsecure!')
 			credentials = {
 				deviceId: this._deviceOptions.deviceId + subDeviceId,
-				deviceToken: 'unsecureToken'
+				deviceToken: 'unsecureToken',
 			}
 		} else {
 			credentials = CoreConnection.getCredentials(subDeviceId)
 		}
-		let options: CoreOptions = {
+		const options: CoreOptions = {
 			...credentials,
 
 			deviceCategory: P.DeviceCategory.INGEST,
@@ -647,14 +663,14 @@ export class CoreHandler {
 			deviceName: name,
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
 
-			configManifest: MOS_DEVICE_CONFIG_MANIFEST
+			configManifest: MOS_DEVICE_CONFIG_MANIFEST,
 		}
 		if (parentProcess) options.versions = this._getVersions()
 		return options
 	}
-	registerMosDevice (mosDevice: IMOSDevice, mosHandler: MosHandler): Promise<CoreMosDeviceHandler> {
+	async registerMosDevice(mosDevice: IMOSDevice, mosHandler: MosHandler): Promise<CoreMosDeviceHandler> {
 		this.logger.info('registerMosDevice -------------')
-		let coreMos = new CoreMosDeviceHandler(this, mosDevice, mosHandler)
+		const coreMos = new CoreMosDeviceHandler(this, mosDevice, mosHandler)
 
 		this._coreMosHandlers.push(coreMos)
 		return coreMos.init().then(() => {
@@ -662,16 +678,16 @@ export class CoreHandler {
 			return coreMos
 		})
 	}
-	unRegisterMosDevice (mosDevice: IMOSDevice): Promise<void> {
+	async unRegisterMosDevice(mosDevice: IMOSDevice): Promise<void> {
 		let foundI = -1
 		for (let i = 0; i < this._coreMosHandlers.length; i++) {
-			let cmh = this._coreMosHandlers[i]
+			const cmh = this._coreMosHandlers[i]
 			if (cmh._mosDevice.idPrimary === mosDevice.idSecondary) {
 				foundI = i
 				break
 			}
 		}
-		let coreMosHandler = this._coreMosHandlers[foundI]
+		const coreMosHandler = this._coreMosHandlers[foundI]
 		if (coreMosHandler) {
 			return coreMosHandler.dispose().then(() => {
 				this._coreMosHandlers.splice(foundI, 1)
@@ -680,7 +696,7 @@ export class CoreHandler {
 		}
 		return Promise.resolve()
 	}
-	onConnectionRestored () {
+	onConnectionRestored(): void {
 		this.setupSubscriptionsAndObservers().catch((e) => {
 			this.logger.error(e)
 		})
@@ -689,10 +705,10 @@ export class CoreHandler {
 			cmh.setupSubscriptionsAndObservers()
 		})
 	}
-	onConnected (fcn: () => any) {
+	onConnected(fcn: () => any): void {
 		this._onConnected = fcn
 	}
-	setupSubscriptionsAndObservers (): Promise<void> {
+	async setupSubscriptionsAndObservers(): Promise<void> {
 		// console.log('setupObservers', this.core.deviceId)
 		if (this._observers.length) {
 			this.logger.info('Core: Clearing observers..')
@@ -703,12 +719,16 @@ export class CoreHandler {
 		}
 		this._subscriptions = []
 
+		if (!this.core) {
+			throw Error('core is undefined!')
+		}
+
 		this.logger.info('Core: Setting up subscriptions for ' + this.core.deviceId + '..')
 		return Promise.all([
 			this.core.autoSubscribe('peripheralDevices', {
-				_id: this.core.deviceId
+				_id: this.core.deviceId,
 			}),
-			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId)
+			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
 		])
 			.then((subs) => {
 				this._subscriptions = this._subscriptions.concat(subs)
@@ -719,17 +739,22 @@ export class CoreHandler {
 				return
 			})
 	}
-	executeFunction (cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreMosDeviceHandler) {
+	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreMosDeviceHandler): void {
 		if (cmd) {
 			if (this._executedFunctions[cmd._id]) return // prevent it from running multiple times
 			this.logger.debug(cmd.functionName, cmd.args)
 			this._executedFunctions[cmd._id] = true
 			// console.log('executeFunction', cmd)
-			let cb = (err: any, res?: any) => {
+			const cb = (err: any, res?: any) => {
 				// console.log('cb', err, res)
 				if (err) {
 					this.logger.error('executeFunction error', err, err.stack)
 				}
+
+				if (!fcnObject.core) {
+					throw Error('fcnObject.core is undefined!')
+				}
+
 				fcnObject.core
 					.callMethod(P.methods.functionReply, [cmd._id, err, res])
 					.then(() => {
@@ -739,8 +764,9 @@ export class CoreHandler {
 						this.logger.error(e)
 					})
 			}
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-ignore
-			let fcn: Function = fcnObject[cmd.functionName]
+			const fcn = fcnObject[cmd.functionName]
 			try {
 				if (!fcn) throw Error('Function "' + cmd.functionName + '" not found!')
 
@@ -751,22 +777,30 @@ export class CoreHandler {
 					.catch((e) => {
 						cb(e.toString(), null)
 					})
-			} catch (e) {
+			} catch (e: any) {
 				cb(e.toString(), null)
 			}
 		}
 	}
-	retireExecuteFunction (cmdId: string) {
+	retireExecuteFunction(cmdId: string): void {
 		delete this._executedFunctions[cmdId]
 	}
-	setupObserverForPeripheralDeviceCommands (functionObject: CoreMosDeviceHandler | CoreHandler) {
-		let observer = functionObject.core.observe('peripheralDeviceCommands')
+	setupObserverForPeripheralDeviceCommands(functionObject: CoreMosDeviceHandler | CoreHandler): void {
+		if (!functionObject.core) {
+			throw Error('functionObject.core is undefined!')
+		}
+
+		const observer = functionObject.core.observe('peripheralDeviceCommands')
 		functionObject.killProcess(0) // just make sure it exists
 		functionObject._observers.push(observer)
-		let addedChangedCommand = (id: string) => {
-			let cmds = functionObject.core.getCollection('peripheralDeviceCommands')
+		const addedChangedCommand = (id: string) => {
+			if (!functionObject.core) {
+				throw Error('functionObject.core is undefined!')
+			}
+
+			const cmds = functionObject.core.getCollection('peripheralDeviceCommands')
 			if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
-			let cmd = cmds.findOne(id) as PeripheralDeviceCommand
+			const cmd = cmds.findOne(id) as PeripheralDeviceCommand
 			if (!cmd) throw Error('PeripheralCommand "' + id + '" not found!')
 			// console.log('addedChangedCommand', id)
 			if (cmd.deviceId === functionObject.core.deviceId) {
@@ -784,34 +818,42 @@ export class CoreHandler {
 		observer.removed = (id: string) => {
 			this.retireExecuteFunction(id)
 		}
-		let cmds = functionObject.core.getCollection('peripheralDeviceCommands')
+		const cmds = functionObject.core.getCollection('peripheralDeviceCommands')
 		if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
-		cmds.find({}).forEach((cmd: PeripheralDeviceCommand) => {
+		// any should be PeripheralDeviceCommand
+		cmds.find({}).forEach((cmd: any) => {
+			if (!functionObject.core) {
+				throw Error('functionObject.core is undefined!')
+			}
 			if (cmd.deviceId === functionObject.core.deviceId) {
 				this.executeFunction(cmd, functionObject)
 			}
 		})
 	}
-	killProcess (actually: number) {
+	killProcess(actually: number): true | 0 {
 		if (actually === 1) {
 			this.logger.info('KillProcess command received, shutting down in 1000ms!')
 			setTimeout(() => {
+				// eslint-disable-next-line no-process-exit
 				process.exit(0)
 			}, 1000)
 			return true
 		}
 		return 0
 	}
-	pingResponse (message: string) {
+	pingResponse(message: string): true {
+		if (!this.core) {
+			throw Error('core is undefined!')
+		}
 		this.core.setPingResponse(message)
 		return true
 	}
-	getSnapshot (): any {
+	getSnapshot(): any {
 		this.logger.info('getSnapshot')
 		return {} // TODO: send some snapshot data?
 	}
-	private _getVersions () {
-		let versions: { [packageName: string]: string } = {}
+	private _getVersions() {
+		const versions: { [packageName: string]: string } = {}
 
 		if (process.env.npm_package_version) {
 			versions['_process'] = process.env.npm_package_version

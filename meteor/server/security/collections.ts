@@ -120,7 +120,7 @@ Snapshots.allow({
 	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, _modifier) {
+	update(_userId, doc, fields, _modifier) {
 		return allowOnlyFields(doc, fields, ['comment'])
 	},
 	remove(_userId, _doc) {
@@ -131,7 +131,7 @@ Blueprints.allow({
 	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, _modifier) {
+	update(_userId, doc, fields, _modifier) {
 		return allowOnlyFields(doc, fields, ['name', 'disableVersionChecks'])
 	},
 	remove(_userId, _doc) {
@@ -144,7 +144,6 @@ RundownPlaylists.allow({
 		return false
 	},
 	update(_userId, _doc, _fields, _modifier) {
-		// return true // tmp!
 		return false
 	},
 	remove(_userId, _doc) {
@@ -186,7 +185,6 @@ MediaObjects.allow({
 		return false
 	},
 	update(_userId, _doc, _fields, _modifier) {
-		// return true // tmp!
 		return false
 	},
 	remove(_userId, _doc) {
@@ -282,7 +280,7 @@ PeripheralDevices.allow({
 	insert(_userId, _doc: PeripheralDevice): boolean {
 		return true
 	},
-	update(userId, doc, fields, _modifier) {
+	update(_userId, doc, fields, _modifier) {
 		return rejectFields(doc, fields, [
 			'type',
 			'parentDeviceId',
@@ -305,13 +303,13 @@ PeripheralDevices.allow({
 
 PeripheralDeviceCommands.allow({
 	insert(_userId, _doc: PeripheralDeviceCommand): boolean {
-		return true // TODO
+		return false
 	},
 	update(_userId, _doc, _fields, _modifier) {
 		return false
 	},
 	remove(_userId, _doc) {
-		return true // TODO
+		return false
 	},
 })
 
@@ -345,7 +343,6 @@ Rundowns.allow({
 		return false
 	},
 	update() {
-		// return true // tmp!
 		return false
 	},
 	remove() {

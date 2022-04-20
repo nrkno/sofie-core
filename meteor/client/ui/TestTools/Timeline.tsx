@@ -22,7 +22,7 @@ import { useParams } from 'react-router-dom'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Classnames from 'classnames'
 
-const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
+export const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
 
 interface TimelineViewRouteParams {
 	studioId: string | undefined

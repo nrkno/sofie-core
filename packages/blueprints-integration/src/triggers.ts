@@ -84,7 +84,7 @@ export enum ClientActions {
 	'goToOnAirLine' = 'goToOnAirLine',
 	'rewindSegments' = 'rewindSegments',
 	'showEntireCurrentSegment' = 'showEntireCurrentSegment',
-	// 'moveAdLibFocus' = 'moveAdLibFocus' // TV2 is working on a feature with "focusable ad libs"
+	'miniShelfQueueAdLib' = 'miniShelfQueueAdLib',
 }
 
 export interface ITriggeredActionBase {
@@ -122,6 +122,7 @@ export type IAdLibFilterLink =
 			object: 'adLib'
 			field: 'sourceLayerId' | 'outputLayerId' | 'tag' | 'label'
 			value: string[]
+			/** TODO: Support "NOT" filters */
 	  }
 	| {
 			object: 'adLib'
@@ -252,6 +253,19 @@ export interface IShowEntireCurrentSegmentAction extends ITriggeredActionBase {
 	on: boolean
 }
 
+/**
+ * Note that while the name of this action is "Queue AdLib", and this is a ClientAction, this is a
+ * compound action that will change move the focus in the UI AND trigger the AdLib (with the queue
+ * parameter set to TRUE). It is up to the Blueprint Developer to ensure that this will Queue,
+ * in a production sense, if this is an AdLib Action.
+ */
+export interface IMiniShelfQueueAdLib extends ITriggeredActionBase {
+	action: ClientActions.miniShelfQueueAdLib
+	filterChain: IGUIContextFilterLink[]
+	/** `forward: true` means advance 1, `forward: false` means move to previous */
+	forward: boolean // TODO: Change this to use `delta: number`, as opposed to `forward: boolean`
+}
+
 export type SomeAction =
 	| IAdlibPlayoutAction
 	| IRundownPlaylistActivateAction
@@ -268,6 +282,7 @@ export type SomeAction =
 	| IGoToOnAirLineAction
 	| IRewindSegmentsAction
 	| IShowEntireCurrentSegmentAction
+	| IMiniShelfQueueAdLib
 
 export interface IBlueprintTriggeredActions {
 	_id: string

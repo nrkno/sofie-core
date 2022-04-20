@@ -62,7 +62,7 @@ export const ClockView = withTracker(function (props: IPropsHeader) {
 					<Route path="/countdowns/:studioId/overlay">
 						{this.props.playlist ? (
 							<RundownTimingProvider playlist={this.props.playlist}>
-								<OverlayScreen playlistId={this.props.playlist._id} studioId={this.props.playlist.studioId} />
+								<OverlayScreen playlistId={this.props.playlist._id} studioId={this.props.studioId} />
 							</RundownTimingProvider>
 						) : (
 							<OverlayScreenSaver studioId={this.props.studioId} />

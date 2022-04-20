@@ -2,7 +2,7 @@ import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { RESTART_SALT } from '../../../../lib/api/userActions'
-import { getHash } from '../../../../lib/lib'
+import { getCurrentTime, getHash } from '../../../../lib/lib'
 import { UserActionsLog } from '../../../../lib/collections/UserActionsLog'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { ClientAPI } from '../../../../lib/api/client'
@@ -19,22 +19,25 @@ describe('User Actions - General', () => {
 		jest.useFakeTimers()
 
 		// Generate restart token
-		const res = (await MeteorCall.userAction.generateRestartToken('e')) as ClientAPI.ClientResponseSuccess<string>
+		const res = (await MeteorCall.userAction.generateRestartToken(
+			'e',
+			getCurrentTime()
+		)) as ClientAPI.ClientResponseSuccess<string>
 		expect(res).toMatchObject({ success: 200 })
 		expect(typeof res.result).toBe('string')
 
 		const mockExit = jest.spyOn(process, 'exit').mockImplementation()
 
 		// Use an invalid token to try and restart it
-		await expect(MeteorCall.userAction.restartCore('e', 'invalidToken')).resolves.toMatchUserRawError(
-			/Restart token is invalid/
-		)
+		await expect(
+			MeteorCall.userAction.restartCore('e', getCurrentTime(), 'invalidToken')
+		).resolves.toMatchUserRawError(/Restart token is invalid/)
 
-		await expect(MeteorCall.userAction.restartCore('e', getHash(RESTART_SALT + res.result))).resolves.toMatchObject(
-			{
-				success: 200,
-			}
-		)
+		await expect(
+			MeteorCall.userAction.restartCore('e', getCurrentTime(), getHash(RESTART_SALT + res.result))
+		).resolves.toMatchObject({
+			success: 200,
+		})
 
 		jest.runAllTimers()
 
@@ -43,7 +46,9 @@ describe('User Actions - General', () => {
 	})
 
 	testInFiber('GUI Status', async () => {
-		await expect(MeteorCall.userAction.guiFocused('click')).resolves.toMatchObject({ success: 200 })
+		await expect(MeteorCall.userAction.guiFocused('click', getCurrentTime())).resolves.toMatchObject({
+			success: 200,
+		})
 		const logs0 = UserActionsLog.find({
 			method: 'guiFocused',
 		}).fetch()
@@ -52,7 +57,9 @@ describe('User Actions - General', () => {
 		// 	context: 'mousedown',
 		// 	args: JSON.stringify([ [ 'dummyClientData' ] ])
 		// })
-		await expect(MeteorCall.userAction.guiBlurred('click')).resolves.toMatchObject({ success: 200 })
+		await expect(MeteorCall.userAction.guiBlurred('click', getCurrentTime())).resolves.toMatchObject({
+			success: 200,
+		})
 		const logs1 = UserActionsLog.find({
 			method: 'guiBlurred',
 		}).fetch()

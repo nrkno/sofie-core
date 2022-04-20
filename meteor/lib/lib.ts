@@ -34,6 +34,7 @@ const systemTime = {
 	diff: 0,
 	stdDev: 9999,
 	lastSync: 0,
+	timeOriginDiff: 0,
 }
 /**
  * Returns the current (synced) time.
@@ -41,7 +42,7 @@ const systemTime = {
  * @return {Time}
  */
 export function getCurrentTime(): Time {
-	return Math.floor(Date.now() - systemTime.diff)
+	return Math.floor(Date.now() - (Meteor.isServer ? 0 : systemTime.diff))
 }
 export { systemTime }
 

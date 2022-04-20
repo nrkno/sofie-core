@@ -11,9 +11,11 @@ import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PickerGET, PickerPOST } from '../http'
 import path from 'path'
 
+const BLUEPRINT_ASSET_MAX_AGE = 15 * 24 * 3600 // 15 days, in seconds
+
 PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
-	logger.debug(`/blueprints/restore/:${params?.blueprintId}`)
+	logger.debug(`Blueprint Upload: ${req.socket.remoteAddress} POST "${req.url}"`)
 
 	let content = ''
 	try {
@@ -53,8 +55,9 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 
 	res.end(content)
 })
-PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerPOST.route('/blueprints/restore', (_params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
+	logger.debug(`Blueprint Upload: ${req.socket.remoteAddress} POST "${req.url}"`)
 
 	let content = ''
 	try {
@@ -73,8 +76,8 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 			throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 		}
 
-		const isBlueprintManifestSet = (collection: string | object): collection is BlueprintManifestSet =>
-			typeof collection === 'object' && 'blueprints' in collection
+		const isBlueprintManifestSet = (obj: string | object): obj is BlueprintManifestSet =>
+			typeof obj === 'object' && 'blueprints' in obj
 		if (!isBlueprintManifestSet(collection))
 			throw new Meteor.Error(400, 'Restore Blueprint: Malformed request body')
 
@@ -131,6 +134,7 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 // TODO - should these be based on blueprintId?
 PickerPOST.route('/blueprints/assets', (_params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
+	logger.debug(`Blueprint Asset: ${req.socket.remoteAddress} POST "${req.url}"`)
 
 	let content = ''
 	try {
@@ -181,7 +185,7 @@ PickerPOST.route('/blueprints/assets', (_params, req: IncomingMessage, res: Serv
 	res.end(content)
 })
 PickerGET.route('/blueprints/assets/(.*)', (params, req, res) => {
-	logger.debug(`/blueprints/assets/:${params[0]}`)
+	logger.debug(`Blueprint Asset: ${req.socket.remoteAddress} GET "${req.url}"`)
 	// TODO - some sort of user verification
 	// for now just check it's a png to prevent snapshots being downloaded
 
@@ -196,6 +200,8 @@ PickerGET.route('/blueprints/assets/(.*)', (params, req, res) => {
 			} else if (extension === '.png') {
 				res.setHeader('Content-Type', 'image/png')
 			}
+			// assets are supposed to have a unique ID/file name, if the asset changes, so must the filename
+			res.setHeader('Cache-Control', `public, max-age=${BLUEPRINT_ASSET_MAX_AGE}, immutable`)
 			res.statusCode = 200
 			res.write(data)
 		} catch {

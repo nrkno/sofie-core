@@ -1,10 +1,11 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { withTiming, WithTiming } from './withTiming'
+import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './withTiming'
 
 export const AutoNextStatus = withTiming<{}, {}>({
 	filter: 'currentPartWillAutoNext',
-	isHighResolution: true,
+	dataResolution: TimingDataResolution.High,
+	tickResolution: TimingTickResolution.High,
 })(function AutoNextStatus({ timingDurations }: WithTiming<{}>) {
 	const { t } = useTranslation()
 
