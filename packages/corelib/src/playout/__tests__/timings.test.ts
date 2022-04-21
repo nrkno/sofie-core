@@ -79,6 +79,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 0,
 							fromPartRemaining: 0,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -100,6 +101,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 0,
 							fromPartRemaining: 0,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -121,6 +123,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 0,
 							fromPartRemaining: 231,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -142,6 +145,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 289,
 							fromPartRemaining: 289,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -163,6 +167,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 289,
 							fromPartRemaining: 231 + 289,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -185,6 +190,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 0,
 							fromPartRemaining: 452,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -207,6 +213,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 0,
 							fromPartRemaining: 231 + 452,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -230,6 +237,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 0,
 							fromPartRemaining: 452,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -253,6 +261,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 0,
 							fromPartRemaining: 231 + 452,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -276,6 +285,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 2256 - 452,
 							fromPartRemaining: 2256,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -299,6 +309,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 2256 - 452,
 							fromPartRemaining: 231 + 2256,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -319,6 +330,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 500,
 							fromPartRemaining: 500,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -332,6 +344,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 500,
 							fromPartRemaining: 500,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -351,6 +364,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 500,
 							fromPartRemaining: 231 + 500,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -372,6 +386,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 500,
 							fromPartRemaining: 500,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -393,6 +408,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 500,
 							fromPartRemaining: 231 + 500,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -414,6 +430,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 823,
 							fromPartRemaining: 823,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -435,6 +452,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 823,
 							fromPartRemaining: 231 + 823,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -457,6 +475,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 500,
 							fromPartRemaining: 500 + 452,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -479,6 +498,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 500,
 							fromPartRemaining: 231 + 500 + 452,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -502,6 +522,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 500,
 							fromPartRemaining: 500 + 452,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -525,6 +546,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 500,
 							fromPartRemaining: 231 + 500 + 452,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -548,6 +570,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 2256 - 452,
 							fromPartRemaining: 2256,
 							fromPartPostroll: 0,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -571,6 +594,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 2256 - 452,
 							fromPartRemaining: 231 + 2256,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -599,6 +623,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 500,
 						fromPartRemaining: 500,
 						fromPartPostroll: 0,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -627,6 +652,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 500,
 						fromPartRemaining: 500 + 452,
 						fromPartPostroll: 0,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -655,6 +681,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 500,
 						fromPartRemaining: 231 + 500 + 452,
 						fromPartPostroll: 231,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -682,6 +709,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 500,
 						fromPartRemaining: 500,
 						fromPartPostroll: 0,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -709,6 +737,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 500,
 						fromPartRemaining: 231 + 500,
 						fromPartPostroll: 231,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -734,6 +763,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 500,
 						fromPartRemaining: 500,
 						fromPartPostroll: 0,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -759,6 +789,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 500,
 						fromPartRemaining: 500,
 						fromPartPostroll: 0,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -784,6 +815,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 500,
 						fromPartRemaining: 500,
 						fromPartPostroll: 0,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -810,6 +842,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 500,
 							fromPartRemaining: 231 + 500,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -835,6 +868,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 500,
 							fromPartRemaining: 231 + 500,
 							fromPartPostroll: 231,
+							toPartPostroll: 0,
 						})
 					)
 				})
@@ -860,6 +894,7 @@ describe('Part Playout Timings', () => {
 							toPartDelay: 500,
 							fromPartRemaining: 231 + 500,
 							fromPartPostroll: 231 + 0,
+							toPartPostroll: 0 + 0,
 						})
 					)
 				})
@@ -888,6 +923,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 500,
 						fromPartRemaining: 500 - 345 + 628,
 						fromPartPostroll: 0,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -913,6 +949,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 500,
 						fromPartRemaining: 231 + 500 - 345 + 628,
 						fromPartPostroll: 231,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -938,6 +975,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 987,
 						fromPartRemaining: 628,
 						fromPartPostroll: 0,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -963,6 +1001,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 987,
 						fromPartRemaining: 231 + 628,
 						fromPartPostroll: 231,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -990,6 +1029,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 500,
 						fromPartRemaining: 500 - 345 + 628,
 						fromPartPostroll: 0,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -1017,6 +1057,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 500,
 						fromPartRemaining: 231 + 500 - 345 + 628,
 						fromPartPostroll: 231,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -1044,6 +1085,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 987 - 628 + 345,
 						fromPartRemaining: 987,
 						fromPartPostroll: 0,
+						toPartPostroll: 0,
 					})
 				)
 			})
@@ -1071,6 +1113,7 @@ describe('Part Playout Timings', () => {
 						toPartDelay: 987 - 628 + 345,
 						fromPartRemaining: 231 + 987,
 						fromPartPostroll: 231,
+						toPartPostroll: 0,
 					})
 				)
 			})
