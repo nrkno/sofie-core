@@ -15,6 +15,6 @@ export type IntervalJobHandlers = {
 	[T in keyof IntervalJobFunc]: ExecutableFunction<T>
 }
 
-export const eventJobHandlers: IntervalJobHandlers = {
+export const intervalJobHandlers: IntervalJobHandlers = {
 	// [IntervalJobs.PartInstanceTimings]: handlePartInstanceTimings,
 }

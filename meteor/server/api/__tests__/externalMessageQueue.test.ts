@@ -121,12 +121,6 @@ describe('Test external message queue static methods', () => {
 		)
 	})
 
-	testInFiber('setRunMessageQueue', async () => {
-		await MeteorCall.externalMessages.setRunMessageQueue(false)
-
-		await MeteorCall.externalMessages.setRunMessageQueue(true)
-	})
-
 	testInFiber('remove', async () => {
 		const message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()

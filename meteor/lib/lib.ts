@@ -197,31 +197,6 @@ export function lazyIgnore(name: string, f1: () => void, t: number): void {
 	}, t)
 }
 
-export function escapeHtml(text: string): string {
-	// Escape strings, so they are XML-compatible:
-
-	const map = {
-		'&': '&amp;',
-		'<': '&lt;',
-		'>': '&gt;',
-		'"': '&quot;',
-		"'": '&#039;',
-	}
-	const nbsp = String.fromCharCode(160) // non-breaking space (160)
-	map[nbsp] = ' ' // regular space
-
-	const textLength = text.length
-	let outText = ''
-	for (let i = 0; i < textLength; i++) {
-		const c = text[i]
-		if (map[c]) {
-			outText += map[c]
-		} else {
-			outText += c
-		}
-	}
-	return outText
-}
 const ticCache = {}
 /**
  * Performance debugging. tic() starts a timer, toc() traces the time since tic()

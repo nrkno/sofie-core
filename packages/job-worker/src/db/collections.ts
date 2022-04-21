@@ -94,7 +94,7 @@ export interface IDirectCollections {
 
 export function getMongoCollections(client: MongoClient, dbName: string): Readonly<IDirectCollections> {
 	const database = client.db(dbName)
-	const collections = Object.freeze(
+	return Object.freeze(
 		literal<IDirectCollections>({
 			AdLibActions: wrapMongoCollection(database.collection(CollectionName.AdLibActions)),
 			AdLibPieces: wrapMongoCollection(database.collection(CollectionName.AdLibPieces)),
@@ -131,5 +131,4 @@ export function getMongoCollections(client: MongoClient, dbName: string): Readon
 			ExternalMessageQueue: wrapMongoCollection(database.collection(CollectionName.ExternalMessageQueue)),
 		})
 	)
-	return collections
 }

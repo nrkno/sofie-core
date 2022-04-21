@@ -71,7 +71,7 @@ export async function loadWorkerDataCache(
 export async function invalidateWorkerDataCache(
 	collections: Readonly<IDirectCollections>,
 	cache: WorkerDataCache,
-	data: InvalidateWorkerDataCache
+	data: ReadonlyDeep<InvalidateWorkerDataCache>
 ): Promise<void> {
 	if (data.forceAll) {
 		// Clear everything!

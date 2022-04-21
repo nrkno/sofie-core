@@ -27,14 +27,7 @@ export interface WorkerJob<TRes> {
 	complete: Promise<TRes>
 }
 
-export interface JobContext {
-	readonly directCollections: Readonly<IDirectCollections>
-
-	readonly studioId: StudioId
-	readonly studio: ReadonlyDeep<DBStudio>
-
-	readonly studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
-
+export interface JobContext extends StudioCacheContext {
 	/** Internal: Track a cache, to check it was saved at the end of the job */
 	trackCache(cache: ReadOnlyCacheBase<any>): void
 
@@ -50,6 +43,18 @@ export interface JobContext {
 	queueStudioJob<T extends keyof StudioJobFunc>(name: T, data: Parameters<StudioJobFunc[T]>[0]): Promise<void>
 	queueEventJob<T extends keyof EventsJobFunc>(name: T, data: Parameters<EventsJobFunc[T]>[0]): Promise<void>
 
+	/** Hack: fast-track the timeline out to the playout-gateway. */
+	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void
+}
+
+export interface StudioCacheContext {
+	readonly directCollections: Readonly<IDirectCollections>
+
+	readonly studioId: StudioId
+	readonly studio: ReadonlyDeep<DBStudio>
+
+	readonly studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
+
 	getStudioBlueprintConfig(): ProcessedStudioConfig
 
 	getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBase>>>
@@ -63,7 +68,4 @@ export interface JobContext {
 
 	getShowStyleBlueprint(id: ShowStyleBaseId): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>>
 	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ShowStyleCompound>): ProcessedShowStyleConfig
-
-	/** Hack: fast-track the timeline out to the playout-gateway. */
-	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void
 }
