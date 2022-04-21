@@ -19,6 +19,8 @@ import {
 	ExpectedPlayoutItemContent,
 	SlowSentCommandInfo,
 	SlowFulfilledCommandInfo,
+	DeviceStatus,
+	StatusCode,
 } from 'timeline-state-resolver'
 import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
 import clone = require('fast-clone')
@@ -661,7 +663,7 @@ export class TSRHandler {
 
 			// set the status to uninitialized for now:
 			coreTsrHandler.statusChanged({
-				statusCode: P.StatusCode.BAD,
+				statusCode: StatusCode.BAD,
 				messages: ['Device initialising...'],
 			})
 
@@ -670,17 +672,17 @@ export class TSRHandler {
 			// Set up device status
 			const deviceType = device.deviceType
 
-			const onDeviceStatusChanged = (connectedOrStatus: boolean | P.StatusObject) => {
-				let deviceStatus: P.StatusObject
+			const onDeviceStatusChanged = (connectedOrStatus: Partial<DeviceStatus>) => {
+				let deviceStatus: Partial<P.StatusObject>
 				if (_.isBoolean(connectedOrStatus)) {
 					// for backwards compability, to be removed later
 					if (connectedOrStatus) {
 						deviceStatus = {
-							statusCode: P.StatusCode.GOOD,
+							statusCode: StatusCode.GOOD,
 						}
 					} else {
 						deviceStatus = {
-							statusCode: P.StatusCode.BAD,
+							statusCode: StatusCode.BAD,
 							messages: ['Disconnected'],
 						}
 					}
@@ -695,9 +697,9 @@ export class TSRHandler {
 				})
 				// hack to make sure atem has media after restart
 				if (
-					(deviceStatus.statusCode === P.StatusCode.GOOD ||
-						deviceStatus.statusCode === P.StatusCode.WARNING_MINOR ||
-						deviceStatus.statusCode === P.StatusCode.WARNING_MAJOR) &&
+					(deviceStatus.statusCode === StatusCode.GOOD ||
+						deviceStatus.statusCode === StatusCode.WARNING_MINOR ||
+						deviceStatus.statusCode === StatusCode.WARNING_MAJOR) &&
 					deviceType === DeviceType.ATEM &&
 					!disableAtemUpload
 				) {
@@ -805,7 +807,7 @@ export class TSRHandler {
 				debug(`Trigger update devices because "${deviceId}" process closed`)
 
 				onDeviceStatusChanged({
-					statusCode: P.StatusCode.BAD,
+					statusCode: StatusCode.BAD,
 					messages: ['Child process closed'],
 				})
 
@@ -818,24 +820,28 @@ export class TSRHandler {
 					}
 				)
 			}
-			await device.device.on('connectionChanged', onDeviceStatusChanged)
-			// await device.device.on('slowCommand', onSlowCommand)
-			await device.device.on('slowSentCommand', onSlowSentCommand)
-			await device.device.on('slowFulfilledCommand', onSlowFulfilledCommand)
-			await device.device.on('commandError', onCommandError)
-			await device.device.on('commandReport', onCommandReport)
-			await device.device.on('updateMediaObject', onUpdateMediaObject)
-			await device.device.on('clearMediaObjects', onClearMediaObjectCollection)
+			// Note for the future:
+			// It is important that the callbacks returns void,
+			// otherwise there might be problems with threadedclass!
 
-			await device.device.on('info', (e: any, ...args: any[]) => {
+			await device.device.on('connectionChanged', onDeviceStatusChanged as () => void)
+			// await device.device.on('slowCommand', onSlowCommand)
+			await device.device.on('slowSentCommand', onSlowSentCommand as () => void)
+			await device.device.on('slowFulfilledCommand', onSlowFulfilledCommand as () => void)
+			await device.device.on('commandError', onCommandError as () => void)
+			await device.device.on('commandReport', onCommandReport as () => void)
+			await device.device.on('updateMediaObject', onUpdateMediaObject as () => void)
+			await device.device.on('clearMediaObjects', onClearMediaObjectCollection as () => void)
+
+			await device.device.on('info', ((e: any, ...args: any[]) => {
 				this.logger.info(fixError(e), ...args)
-			})
-			await device.device.on('warning', (e: any, ...args: any[]) => {
+			}) as () => void)
+			await device.device.on('warning', ((e: any, ...args: any[]) => {
 				this.logger.warn(fixError(e), ...args)
-			})
-			await device.device.on('error', (e: any, ...args: any[]) => {
+			}) as () => void)
+			await device.device.on('error', ((e: any, ...args: any[]) => {
 				this.logger.error(fixError(e), ...args)
-			})
+			}) as () => void)
 
 			await device.device.on('debug', (...args: any[]) => {
 				if (device.debugLogging || this._coreHandler.logDebug) {
@@ -859,7 +865,7 @@ export class TSRHandler {
 				}
 			})
 
-			await device.device.on('timeTrace', (trace: FinishedTrace) => sendTrace(trace))
+			await device.device.on('timeTrace', ((trace: FinishedTrace) => sendTrace(trace)) as () => void)
 
 			// now initialize it
 			await this.tsr.initDevice(deviceId, options)
