@@ -54,8 +54,8 @@ export function transformPartIntoTimeline(
 					pieceEnable = {
 						start: `#${parentGroup.id}.end - ${outTransition.duration}`,
 					}
-					if (partTimings.fromPartPostroll) {
-						pieceEnable.start += ' - ' + partTimings.fromPartPostroll
+					if (partTimings.toPartPostroll) {
+						pieceEnable.start += ' - ' + partTimings.toPartPostroll
 					}
 				}
 				break

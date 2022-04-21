@@ -93,16 +93,10 @@ export function getPieceEnableInsidePart(
 		// timed pieces should be offset based on the preroll of the part
 		pieceEnable.start += partTimings.toPartDelay
 	}
-	if (partTimings.fromPartPostroll) {
+	if (partTimings.toPartPostroll) {
 		if (!pieceEnable.duration) {
-			// reference parent id? i.e. #parent.end - partPostRoll + piecePostRoll
-			pieceEnable.duration = `#${partGroupId} - ${partTimings.fromPartPostroll}`
-
-			if (pieceInstance.piece.postrollDuration) {
-				pieceEnable.duration += ' + ' + pieceInstance.piece.postrollDuration
-			}
-		} else if (typeof pieceEnable.duration === 'number' && pieceInstance.piece.postrollDuration) {
-			pieceEnable.duration += pieceInstance.piece.postrollDuration
+			// make sure that the control object is shortened correctly
+			pieceEnable.duration = `#${partGroupId} - ${partTimings.toPartPostroll}`
 		}
 	}
 	return pieceEnable

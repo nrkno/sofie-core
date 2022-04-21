@@ -54,6 +54,7 @@ function calculatePartPostroll(pieces: CalculateTimingsPiece[]): number {
 export interface PartCalculatedTimings {
 	inTransitionStart: number | null // The start time within the toPartGroup of the inTransition
 	toPartDelay: number // How long after the start of toPartGroup should piece time 0 be
+	toPartPostroll: number
 	fromPartRemaining: number // How long after the start of toPartGroup should fromPartGroup continue?
 	fromPartPostroll: number
 }
@@ -82,6 +83,7 @@ export function calculatePartTimings(
 
 	const toPartPreroll = calculatePartPreroll(toPiece)
 	const fromPartPostroll = fromPart && fromPiece ? calculatePartPostroll(fromPiece) : 0
+	const toPartPostroll = calculatePartPostroll(toPiece)
 
 	let inTransition: Omit<IBlueprintPartInTransition, 'blockTakeDuration'> | undefined
 	let allowTransitionPiece: boolean | undefined
@@ -109,6 +111,7 @@ export function calculatePartTimings(
 			inTransitionStart: null, // No transition to use
 			// delay the new part for a bit
 			toPartDelay: takeOffset,
+			toPartPostroll,
 			// The old part needs to continue for a while
 			fromPartRemaining: takeOffset + fromPartPostroll,
 			fromPartPostroll: fromPartPostroll,
@@ -128,6 +131,7 @@ export function calculatePartTimings(
 		return {
 			inTransitionStart: allowTransitionPiece ? takeOffset : null,
 			toPartDelay: takeOffset + inTransition.partContentDelayDuration,
+			toPartPostroll: toPartPostroll,
 			fromPartRemaining: takeOffset + inTransition.previousPartKeepaliveDuration + fromPartPostroll,
 			fromPartPostroll: fromPartPostroll,
 		}
