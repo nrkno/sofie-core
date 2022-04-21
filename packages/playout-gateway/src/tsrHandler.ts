@@ -838,10 +838,7 @@ export class TSRHandler {
 			})
 
 			await device.device.on('debug', (...args: any[]) => {
-				// Don't log if the "main" debug flag (_coreHandler.logDebug) is set to avoid duplicates,
-				// because then the tsr is also logging debug messages from the devices.
-
-				if (device.debugLogging) {
+				if (device.debugLogging || this._coreHandler.logDebug) {
 					const msg: any = {
 						message: `debug: Device "${device.deviceName || deviceId}" (${device.instanceId})`,
 						data: [],

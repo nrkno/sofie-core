@@ -219,6 +219,10 @@ export class CoreHandler {
 			if (logLevel !== this.logger.level) {
 				this.logger.level = logLevel
 
+				for (const transport of this.logger.transports) {
+					transport.level = logLevel
+				}
+
 				this.logger.info('Loglevel: ' + this.logger.level)
 
 				// this.logger.debug('Test debug logging')
