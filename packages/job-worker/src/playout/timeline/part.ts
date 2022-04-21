@@ -54,10 +54,13 @@ export function transformPartIntoTimeline(
 					pieceEnable = {
 						start: `#${parentGroup.id}.end - ${outTransition.duration}`,
 					}
+					if (partTimings.toPartPostroll) {
+						pieceEnable.start += ' - ' + partTimings.toPartPostroll
+					}
 				}
 				break
 			case IBlueprintPieceType.Normal:
-				pieceEnable = getPieceEnableInsidePart(pieceInstance, partTimings)
+				pieceEnable = getPieceEnableInsidePart(pieceInstance, partTimings, parentGroup.id)
 				break
 			default:
 				assertNever(pieceInstance.piece.pieceType)

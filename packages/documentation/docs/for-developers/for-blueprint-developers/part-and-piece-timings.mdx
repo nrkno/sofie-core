@@ -104,6 +104,12 @@ In effect, when `outTransition` is set on a Part, the take out of the Part will 
 
 Try the interactive to see how this affects the Parts.
 
+### Piece postroll
+
+Sometimes rather than extending all the pieces and playing an out transition piece on top we want all pieces to stop except for 1, this has the same goal of 'visual cleanup' as the out transition but works slightly different. The main concept is that an out transition delays the take slightly but with postroll the take executes normally however the pieces with postroll will keep playing for a bit after the take.
+
+When the `postrollDuration` is set on a piece the part group will be extended slightly allowing pieces to play a little longer, however any piece that do not have postroll will end at their regular time.
+
 #### Autonext
 
 Autonext is a way for a Part to be made a fixed length. After playing for its `expectedDuration`, core will automatically perform a take into the next part. This is commonly used for fullscreen videos, to exit back to a camera before the video freezes on the last frame. It is enabled by setting the `autoNext: true` on a Part, and requires `expectedDuration` to be set to a duration higher than `1000`.
