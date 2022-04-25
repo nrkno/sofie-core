@@ -149,6 +149,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		RundownViewEventBus.on(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
 		RundownViewEventBus.on(RundownViewEvents.SHELF_STATE, this.onShelfStateChange)
 
+		// NOTE: When not in shelfOnly mode, the RundownHeader is responsible for listening to the for soft takes.
+		//       This caused shelfOnly mode to not registering takes.
 		if (this.props.fullViewport) {
 			RundownViewEventBus.on(RundownViewEvents.TAKE, this.onTake)
 		}
