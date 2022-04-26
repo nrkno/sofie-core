@@ -2671,9 +2671,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
 										/>
 									</ErrorBoundary>
-									<ErrorBoundary>
-										{ this.renderSorensenContext() }
-									</ErrorBoundary>
+									<ErrorBoundary>{this.renderSorensenContext()}</ErrorBoundary>
 									<ErrorBoundary>
 										<VelocityReact.VelocityTransitionGroup
 											enter={{
@@ -2894,9 +2892,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									bucketDisplayFilter={this.props.bucketDisplayFilter}
 								/>
 							</ErrorBoundary>
-							<ErrorBoundary>
-								{ this.renderSorensenContext() }
-							</ErrorBoundary>
+							<ErrorBoundary>{this.renderSorensenContext()}</ErrorBoundary>
 						</RundownTimingProvider>
 					)
 				} else {
