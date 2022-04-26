@@ -3,8 +3,6 @@ const fs = require('fs')
 const path = require('path')
 const simpleGit = require('simple-git/promise')('..')
 
-const isRelease = !!process.argv.find((a) => a.match(/--release/i))
-
 const pkgPath = path.join(__dirname, '../package.json')
 const pkg = JSON.parse(fs.readFileSync(pkgPath))
 
