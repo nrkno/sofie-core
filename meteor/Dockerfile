@@ -2,8 +2,6 @@
 # BUILD IMAGE
 FROM node:14.18
 RUN curl "https://install.meteor.com/?release=2.5.6" | sh
-# Persist git hash, this is the same as `meteor yarn run inject-git-hash`
-RUN node ./meteor/scripts/generate-version-file.js
 # Temporary change the NODE_ENV env variable, so that all libraries are installed:
 ENV NODE_ENV_TMP $NODE_ENV
 ENV NODE_ENV anythingButProduction
