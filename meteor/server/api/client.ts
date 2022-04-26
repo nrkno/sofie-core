@@ -28,6 +28,7 @@ import {
 	VerifiedRundownPlaylistContentAccess,
 } from './lib'
 import { BasicAccessContext } from '../security/organization'
+import { NoticeLevel } from '../../client/lib/notifications/notifications'
 
 function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
 	let userError: UserError
@@ -380,6 +381,18 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 				this.connection ? this.connection.clientAddress : 'N/A'
 			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}"\n${JSON.stringify(errorObject)}`
 		)
+	}
+	async clientLogNotification(timestamp: Time, severity: NoticeLevel, message: string, source?: any) {
+		check(timestamp, Number)
+		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
+		const address = this.connection ? this.connection.clientAddress : 'N/A'
+		logger.debug(`Notification reported from "${address}": Severity ${severity}: ${message} (${source})`, {
+			time: timestamp,
+			severity,
+			origMessage: message,
+			source,
+			address,
+		})
 	}
 	async callPeripheralDeviceFunction(
 		context: string,

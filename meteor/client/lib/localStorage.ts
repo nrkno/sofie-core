@@ -13,6 +13,7 @@ enum LocalStorageProperty {
 	IGNORE_PIECE_CONTENT_STATUS = 'ignorePieceContentStatus',
 	UI_ZOOM_LEVEL = 'uiZoomLevel',
 	HELP_MODE = 'helpMode',
+	LOG_NOTIFICATIONS = 'logNotifications',
 }
 
 const GUI_FLAGS: {
@@ -127,4 +128,11 @@ export function setShelfFollowsOnAir(followOnAir: boolean) {
 export function getShelfFollowsOnAir(): boolean {
 	// follows on air === true is the default
 	return localStorageGetCachedItem(LocalStorageProperty.SHELF_FOLLOWS_ON_AIR) !== '0'
+}
+
+export function setLogNotifications(logNotifications: boolean) {
+	localStorageSetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS, logNotifications ? '1' : '0')
+}
+export function getLogNotifications(): boolean {
+	return localStorageGetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS) !== '0'
 }

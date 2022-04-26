@@ -2,9 +2,11 @@ import * as _ from 'underscore'
 import { Time } from '../lib'
 import { PeripheralDeviceId } from '../collections/PeripheralDevices'
 import { UserError } from '@sofie-automation/corelib/dist/error'
+import { NoticeLevel } from '../../client/lib/notifications/notifications'
 
 export interface NewClientAPI {
 	clientErrorReport(timestamp: Time, errorObject: any, errorString: string, location: string): Promise<void>
+	clientLogNotification(timestamp: Time, severity: NoticeLevel, message: string, source?: any)
 	callPeripheralDeviceFunction(
 		context: string,
 		deviceId: PeripheralDeviceId,
@@ -16,6 +18,7 @@ export interface NewClientAPI {
 
 export enum ClientAPIMethods {
 	'clientErrorReport' = 'client.clientErrorReport',
+	'clientLogNotification' = 'client.clientLogNotification',
 	'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction',
 }
 
