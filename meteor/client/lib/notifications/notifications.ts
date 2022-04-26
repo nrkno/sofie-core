@@ -154,11 +154,10 @@ class NotificationCenter0 {
 			let oldNotificationIds: string[] = []
 			Tracker.autorun(() => {
 				const newNotifIds = this.getNotificationIDs()
-				console.log(newNotifIds)
-				const x = new Set(oldNotificationIds)
+				const oldNotifIds = new Set(oldNotificationIds)
 
 				newNotifIds
-					.filter((id) => !x.has(id))
+					.filter((id) => !oldNotifIds.has(id))
 					.forEach((id) => {
 						const notification = notifications[id]
 
