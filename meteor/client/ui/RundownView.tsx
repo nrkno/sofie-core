@@ -2742,25 +2742,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
 								/>
 							</ErrorBoundary>
-							<ErrorBoundary>
-								<SorensenContext.Consumer>
-									{(sorensen) =>
-										sorensen && (
-											<TriggersHandler
-												rundownPlaylistId={this.props.rundownPlaylistId}
-												showStyleBaseId={showStyleBase._id}
-												currentRundownId={this.props.currentRundown?._id || null}
-												currentPartId={this.props.currentPartInstance?.part._id || null}
-												nextPartId={this.props.nextPartInstance?.part._id || null}
-												currentSegmentPartIds={this.props.currentSegmentPartIds}
-												nextSegmentPartIds={this.props.nextSegmentPartIds}
-												sorensen={sorensen}
-												global={this.isHotkeyAllowed}
-											/>
-										)
-									}
-								</SorensenContext.Consumer>
-							</ErrorBoundary>
+							<ErrorBoundary>{this.renderSorensenContext()}</ErrorBoundary>
 							<ErrorBoundary>
 								<VelocityReact.VelocityTransitionGroup
 									enter={{
@@ -2951,26 +2933,30 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							bucketDisplayFilter={this.props.bucketDisplayFilter}
 						/>
 					</ErrorBoundary>
-					<ErrorBoundary>
-						<SorensenContext.Consumer>
-							{(sorensen) =>
-								sorensen && (
-									<TriggersHandler
-										rundownPlaylistId={this.props.rundownPlaylistId}
-										showStyleBaseId={this.props.showStyleBase!._id}
-										currentRundownId={this.props.currentRundown?._id || null}
-										currentPartId={this.props.currentPartInstance?.part._id || null}
-										nextPartId={this.props.nextPartInstance?.part._id || null}
-										currentSegmentPartIds={this.props.currentSegmentPartIds}
-										nextSegmentPartIds={this.props.nextSegmentPartIds}
-										sorensen={sorensen}
-										global={this.isHotkeyAllowed}
-									/>
-								)
-							}
-						</SorensenContext.Consumer>
-					</ErrorBoundary>
+					<ErrorBoundary>{this.renderSorensenContext()}</ErrorBoundary>
 				</RundownTimingProvider>
+			)
+		}
+
+		renderSorensenContext() {
+			return (
+				<SorensenContext.Consumer>
+					{(sorensen) =>
+						sorensen && (
+							<TriggersHandler
+								rundownPlaylistId={this.props.rundownPlaylistId}
+								showStyleBaseId={this.props.showStyleBase!._id}
+								currentRundownId={this.props.currentRundown?._id || null}
+								currentPartId={this.props.currentPartInstance?.part._id || null}
+								nextPartId={this.props.nextPartInstance?.part._id || null}
+								currentSegmentPartIds={this.props.currentSegmentPartIds}
+								nextSegmentPartIds={this.props.nextSegmentPartIds}
+								sorensen={sorensen}
+								global={this.isHotkeyAllowed}
+							/>
+						)
+					}
+				</SorensenContext.Consumer>
 			)
 		}
 
