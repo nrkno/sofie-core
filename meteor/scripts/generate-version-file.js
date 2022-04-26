@@ -1,26 +1,30 @@
-const moment = require('moment')
+const cp = require('child_process')
 const fs = require('fs')
 const path = require('path')
-const simpleGit = require('simple-git/promise')('..')
+
+function runGit(argumentList) {
+	const output = cp.execFileSync('git', argumentList)
+	return output.toString().trim()
+}
 
 const pkgPath = path.join(__dirname, '../package.json')
 const pkg = JSON.parse(fs.readFileSync(pkgPath))
 
-;(async () => {
-	const commitTime = await simpleGit.raw(['log', '-1', '--pretty=format:%ct', 'HEAD'])
-	const dateStr = moment(parseInt(commitTime, 10) * 1000).format('YYYYMMDD-HHmm')
-	const commitHash = await simpleGit.revparse(['--short', 'HEAD'])
-	const branch = (await simpleGit.raw(['rev-parse', '--abbrev-ref', 'HEAD'])).trim()
+const commitTime = runGit(['log', '-1', '--pretty=format:%ct', 'HEAD'])
+const dateStr = new Date(parseInt(commitTime, 10) * 1000).toISOString()
+const dateStrShort =
+	dateStr.replace(/[-T:]/gi, '').substring(0, 8) + '-' + dateStr.replace(/[-T:]/gi, '').substring(8, 12)
+const commitHash = runGit(['rev-parse', '--short', 'HEAD'])
+const branch = runGit(['rev-parse', '--abbrev-ref', 'HEAD'])
 
-	const isRelease = branch === 'main' || branch === 'master' // Support "main" for future-compat
+const isRelease = branch === 'main' || branch === 'master' // Support "main" for future-compat
 
-	if (isRelease) {
-		pkg.versionExtended = `${pkg.version}+g${commitHash}-${dateStr}`
-	} else {
-		pkg.versionExtended = `${pkg.version}+${branch.trim()}-g${commitHash}-${dateStr}`
-	}
+if (isRelease) {
+	pkg.versionExtended = `${pkg.version}+G${commitHash}-${dateStrShort}`
+} else {
+	pkg.versionExtended = `${pkg.version}+${branch}-G${commitHash}-${dateStrShort}`
+}
 
-	console.log('Version:', pkg.versionExtended)
+console.log('Version:', pkg.versionExtended)
 
-	fs.writeFileSync(pkgPath, JSON.stringify(pkg, undefined, 2))
-})()
+fs.writeFileSync(pkgPath, JSON.stringify(pkg, undefined, 2))
