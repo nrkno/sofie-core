@@ -40,7 +40,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"moment": "2.29.1",
+		"moment": "2.29.3",
 		"timeline-state-resolver-types": "6.4.0-release39.1",
 		"tslib": "^2.3.1",
 		"underscore": "1.13.1"
