@@ -175,7 +175,7 @@ export function nightlyCronjobInner() {
 		RundownPlaylists.find(filter).forEach((playlist) => {
 			lowPrioFcn(() => {
 				logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
-				ps.push(internalStoreRundownPlaylistSnapshot(null, playlist._id, 'Automatic, taken by cron job'))
+				ps.push(internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job'))
 			})
 		})
 	}

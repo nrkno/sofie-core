@@ -616,6 +616,14 @@ export async function storeRundownPlaylistSnapshot(
 	const s = await createRundownPlaylistSnapshot(access.playlist, full)
 	return storeSnaphot(s, access.organizationId, reason)
 }
+export async function internalStoreRundownPlaylistSnapshot(
+	playlist: RundownPlaylist,
+	reason: string,
+	full?: boolean
+): Promise<SnapshotId> {
+	const s = await createRundownPlaylistSnapshot(playlist, full)
+	return storeSnaphot(s, playlist.organizationId || null, reason)
+}
 export async function storeDebugSnapshot(
 	context: MethodContext,
 	studioId: StudioId,
