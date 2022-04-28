@@ -382,12 +382,13 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}"\n${JSON.stringify(errorObject)}`
 		)
 	}
-	async clientLogNotification(timestamp: Time, severity: NoticeLevel, message: string, source?: any) {
+	async clientLogNotification(timestamp: Time, from: string, severity: NoticeLevel, message: string, source?: any) {
 		check(timestamp, Number)
 		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
 		const address = this.connection ? this.connection.clientAddress : 'N/A'
-		logger.debug(`Notification reported from "${address}": Severity ${severity}: ${message} (${source})`, {
+		logger.debug(`Notification reported from "${from}": Severity ${severity}: ${message} (${source})`, {
 			time: timestamp,
+			from,
 			severity,
 			origMessage: message,
 			source,

@@ -6,7 +6,7 @@ import { NoticeLevel } from '../../client/lib/notifications/notifications'
 
 export interface NewClientAPI {
 	clientErrorReport(timestamp: Time, errorObject: any, errorString: string, location: string): Promise<void>
-	clientLogNotification(timestamp: Time, severity: NoticeLevel, message: string, source?: any)
+	clientLogNotification(timestamp: Time, from: string, severity: NoticeLevel, message: string, source?: any)
 	callPeripheralDeviceFunction(
 		context: string,
 		deviceId: PeripheralDeviceId,

@@ -22,7 +22,7 @@ import { RundownId } from '../../../lib/collections/Rundowns'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { MeteorCall } from '../../../lib/api/methods'
 import { i18nTranslator } from '../../ui/i18n'
-import { getLogNotifications } from '../localStorage'
+import { getReportNotifications } from '../localStorage'
 
 /**
  * Priority level for Notifications.
@@ -150,7 +150,8 @@ class NotificationCenter0 {
 		this.highlightedSource = new ReactiveVar<NotificationsSource>(undefined)
 		this.highlightedLevel = new ReactiveVar<NoticeLevel>(NoticeLevel.TIP)
 
-		if (getLogNotifications()) {
+		const notifLogUserId = getReportNotifications()
+		if (notifLogUserId) {
 			let oldNotificationIds: string[] = []
 			Tracker.autorun(() => {
 				const newNotifIds = this.getNotificationIDs()
@@ -170,6 +171,7 @@ class NotificationCenter0 {
 
 							MeteorCall.client.clientLogNotification(
 								notification.created,
+								notifLogUserId,
 								notification.status,
 								message,
 								notification.source

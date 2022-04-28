@@ -35,6 +35,10 @@ function localStorageSetCachedItem(key: LocalStorageProperty, value: string): vo
 	GUI_FLAGS[key] = value
 	localStorage.setItem(key, value)
 }
+function localStorageUnsetCachedItem(key: LocalStorageProperty): void {
+	GUI_FLAGS[key] = null
+	localStorage.removeItem(key)
+}
 
 export function setAllowStudio(studioMode: boolean) {
 	localStorageSetCachedItem(LocalStorageProperty.STUDIO, studioMode ? '1' : '0')
@@ -130,9 +134,12 @@ export function getShelfFollowsOnAir(): boolean {
 	return localStorageGetCachedItem(LocalStorageProperty.SHELF_FOLLOWS_ON_AIR) !== '0'
 }
 
-export function setLogNotifications(logNotifications: boolean) {
-	localStorageSetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS, logNotifications ? '1' : '0')
+export function setReportNotifications(logNotifications: string) {
+	localStorageSetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS, logNotifications)
 }
-export function getLogNotifications(): boolean {
-	return localStorageGetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS) !== '0'
+export function unsetReportNotifications() {
+	localStorageUnsetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS)
+}
+export function getReportNotifications(): string | null {
+	return localStorageGetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS)
 }

@@ -21,7 +21,8 @@ import {
 	setShowHiddenSourceLayers,
 	setIgnorePieceContentStatus,
 	setShelfFollowsOnAir,
-	setLogNotifications,
+	setReportNotifications,
+	unsetReportNotifications,
 } from '../lib/localStorage'
 import Status from './Status'
 import { Settings as SettingsView } from './Settings'
@@ -113,8 +114,10 @@ export const App = translateWithTracker(() => {
 			if (params['ignore_piece_content_status']) {
 				setIgnorePieceContentStatus(params['ignore_piece_content_status'] === '1')
 			}
-			if (params['log_notifications']) {
-				setLogNotifications(params['log_notifications'] === '1')
+			if (params['reportNotificationsId'] && params['reportNotificationsId'] === '0') {
+				setReportNotifications(params['reportNotificationsId'])
+			} else {
+				unsetReportNotifications()
 			}
 
 			if (!this.props.user) {
