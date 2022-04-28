@@ -220,7 +220,7 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 }
 
 export function getMockCollections(): Readonly<IDirectCollections> {
-	const collections = Object.freeze(
+	return Object.freeze(
 		literal<IDirectCollections>({
 			AdLibActions: new MockMongoCollection<AdLibAction>(CollectionName.AdLibActions),
 			AdLibPieces: new MockMongoCollection<AdLibPiece>(CollectionName.AdLibPieces),
@@ -257,5 +257,4 @@ export function getMockCollections(): Readonly<IDirectCollections> {
 			ExternalMessageQueue: new MockMongoCollection(CollectionName.ExternalMessageQueue),
 		})
 	)
-	return collections
 }
