@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.41.0-in-testing.0",
+	"version": "1.41.0-in-testing.1",
 	"private": true,
 	"engines": {
 		"node": ">=14.18.0"
@@ -72,7 +72,7 @@
 		"indexof": "0.0.1",
 		"lottie-web": "^5.8.1",
 		"meteor-node-stubs": "^1.1.0",
-		"moment": "^2.29.1",
+		"moment": "^2.29.2",
 		"mos-connection": "^1.0.6",
 		"ntp-client": "^0.5.3",
 		"object-path": "^0.11.8",
@@ -184,6 +184,7 @@
 		}
 	},
 	"resolutions": {
-		"url-parse": "^1.5.9"
+		"url-parse": "^1.5.9",
+		"mos-connection/moment": "^2.29.3"
 	}
 }

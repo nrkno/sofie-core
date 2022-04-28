@@ -3118,8 +3118,8 @@
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
   version "1.41.0-in-testing.0"
   dependencies:
-    moment "2.29.1"
-    timeline-state-resolver-types "7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0"
+    moment "2.29.3"
+    timeline-state-resolver-types "7.0.0-release41.2"
     tslib "^2.3.1"
     type-fest "^2.11.1"
 
@@ -10632,10 +10632,10 @@ module-details-from-path@^1.0.3:
   resolved "https://registry.yarnpkg.com/module-details-from-path/-/module-details-from-path-1.0.3.tgz#114c949673e2a8a35e9d35788527aa37b679da2b"
   integrity sha1-EUyUlnPiqKNenTV4hSeqN7Z52is=
 
-moment@2.29.1, moment@^2.29.1:
-  version "2.29.1"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
-  integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
+moment@2.29.3, moment@^2.29.1:
+  version "2.29.3"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.3.tgz#edd47411c322413999f7a5940d526de183c031f3"
+  integrity sha512-c6YRvhEo//6T2Jz/vVtYzqBzwvPT95JBQ+smCytzf7c50oMZRsR/a4w88aD34I+/QVSfnoAnSBFPJHItlOMJVw==
 
 mongodb-connection-string-url@^2.4.1:
   version "2.4.1"
@@ -14660,24 +14660,17 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0:
-  version "7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0-nightly-release41-20220412-074542-0ef2bb8fb.0.tgz#5369277071b62a682763ed8b31284a1bb655acfc"
-  integrity sha512-j0noJN7iRwVkCmczhWZHUobNv0IkchDCfvlWzj+xYW7hPvOiB+HnBe/VKTMMlMX/wQcWr0h633G1LBoFn8uyoA==
+timeline-state-resolver-types@7.0.0-release41.2:
+  version "7.0.0-release41.2"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0-release41.2.tgz#0bdb0e190a17368b7c70d81256fdafa18ac75660"
+  integrity sha512-BThI+tKOTPNlE9zGbfcqFbVKKznJCJTlv6UhKrEcbYJ7lDo/1sWRluWxFdvbdbbD+nlxScL3VwIXP4mD2ocUJA==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver-types@7.0.0-nightly-release41-20220428-114912-78e049791.0:
-  version "7.0.0-nightly-release41-20220428-114912-78e049791.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0-nightly-release41-20220428-114912-78e049791.0.tgz#1ff81c2d463ad65e12093f20a238411fcdaf30d9"
-  integrity sha512-uN4tb3189syPEk4gS9d+dxuqEbBY1S28NaUF3QcY3EFOXvICY+RY7NS37o6d2/PEmIkZtl5IEGx17njotJR5wA==
-  dependencies:
-    tslib "^2.3.1"
-
-timeline-state-resolver@7.0.0-nightly-release41-20220428-114912-78e049791.0:
-  version "7.0.0-nightly-release41-20220428-114912-78e049791.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.0.0-nightly-release41-20220428-114912-78e049791.0.tgz#73ddde2de040cdf94dcd9ffadc0e7de31c84893c"
-  integrity sha512-3mHFQ5l4qne6d6gwL9+kl7Qrd37DlbsXebJZAJpjFRVxYeEU0PxUQn0qaKRihpjqqvfYG+vvzH0lW/sIArUczA==
+timeline-state-resolver@7.0.0-release41.2:
+  version "7.0.0-release41.2"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.0.0-release41.2.tgz#4bbadaa3b2b297726447290139f6222da27de36a"
+  integrity sha512-iq4WTwGt4CTWwh62ApDzQWoLRaFNZuerGei9tfSOqBLEK6S4f55f6410nFfWYNryBXesHBgNWKot9DHOmcfaiQ==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
     atem-connection "2.4.0"
@@ -14699,7 +14692,7 @@ timeline-state-resolver@7.0.0-nightly-release41-20220428-114912-78e049791.0:
     sprintf-js "^1.1.2"
     superfly-timeline "8.2.1"
     threadedclass "^1.0.2"
-    timeline-state-resolver-types "7.0.0-nightly-release41-20220428-114912-78e049791.0"
+    timeline-state-resolver-types "7.0.0-release41.2"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"

@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/corelib",
-	"version": "1.41.0-in-testing.0",
+	"version": "1.41.0-in-testing.1",
 	"private": true,
 	"description": "Internal library for some types shared by core and workers",
 	"main": "dist/index.js",
@@ -66,5 +66,8 @@
 		"*.{ts,tsx}": [
 			"yarn lint:raw"
 		]
+	},
+	"resolutions": {
+		"mos-connection/moment": "^2.29.3"
 	}
 }
