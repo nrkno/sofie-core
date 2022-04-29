@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.39.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.39.0) (2022-04-29)
+
+
+
+# [1.39.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.3...v1.39.0-in-testing.7) (2022-03-30)
+
+
+
+# [1.39.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.4...v1.39.0-in-testing.5) (2022-03-11)
+
+
+
+# [1.39.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-1...v1.39.0-in-testing.4) (2022-03-10)
+
+
+
+# [1.39.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
+
+
+
+# [1.39.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
+
+
+
+# [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
+
+
+### Features
+
+* REST method for disabling subdevice ([#649](https://github.com/nrkno/tv-automation-server-core/issues/649)) ([930e27f](https://github.com/nrkno/tv-automation-server-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
+
+
+
+
+
 # [1.39.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.3...v1.39.0-in-testing.7) (2022-03-30)
 
 
