@@ -30,7 +30,6 @@ jest.mock('meteor/mdg:validated-method', (...args) => require('./validated-metho
 jest.mock('meteor/mongo', (...args) => require('./mongo').setup(args), { virtual: true })
 
 jest.mock('../server/api/integration/slack', (...args) => require('./slack').setup(args), { virtual: true })
-jest.mock('../server/api/integration/soap', (...args) => require('./soap').setup(args), { virtual: true })
 jest.mock('../server/api/integration/rabbitMQ', (...args) => require('./rabbitMQ').setup(args), { virtual: true })
 jest.mock('../server/worker/worker', (...args) => require('./worker').setup(args), { virtual: true })
 

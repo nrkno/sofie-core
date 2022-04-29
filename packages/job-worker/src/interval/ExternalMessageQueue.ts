@@ -1,6 +1,5 @@
 import {
 	ExternalMessageQueueObjRabbitMQ,
-	ExternalMessageQueueObjSOAP,
 	IBlueprintExternalMessageQueueType,
 	Time,
 } from '@sofie-automation/blueprints-integration'
@@ -9,7 +8,6 @@ import { logger } from 'elastic-apm-node'
 import { IDirectCollections } from '../db'
 import { getCurrentTime } from '../lib'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
-import { sendSOAPMessage } from './integration/soap'
 import { stringify } from 'querystring'
 import { clone, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { sendSlackMessageToWebhook } from './integration/slack'
@@ -274,10 +272,7 @@ export class ExternalMessageQueueRunner {
 
 			let result: string | undefined
 			try {
-				if (msg.type === IBlueprintExternalMessageQueueType.SOAP) {
-					await sendSOAPMessage(msg as ExternalMessageQueueObjSOAP & ExternalMessageQueueObj)
-					result = undefined
-				} else if (msg.type === IBlueprintExternalMessageQueueType.SLACK) {
+				if (msg.type === IBlueprintExternalMessageQueueType.SLACK) {
 					// let m = msg as ExternalMessageQueueObjSlack & ExternalMessageQueueObj
 					result = (await sendSlackMessageToWebhook(msg.message, msg.receiver)).text
 				} else if (msg.type === IBlueprintExternalMessageQueueType.RABBIT_MQ) {
