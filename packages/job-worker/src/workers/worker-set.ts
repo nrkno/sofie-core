@@ -131,7 +131,7 @@ export class StudioWorkerSet {
 
 		const database = this.#mongoClient.db(dbName)
 		attachChangesStream<DBStudio>(
-			database.collection(CollectionName.Studios).watch([{ $match: { _id: this.#studioId } }], {
+			database.collection(CollectionName.Studios).watch([{ $match: { [`documentKey._id`]: this.#studioId } }], {
 				batchSize: 1,
 			}),
 			`Studio "${this.#studioId}"`,

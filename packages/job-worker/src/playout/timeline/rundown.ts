@@ -28,11 +28,11 @@ import { SelectedPartInstancesTimelineInfo, SelectedPartInstanceTimelineInfo } f
 import { createPartGroup, createPartGroupFirstObject, transformPartIntoTimeline } from './part'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { literal, normalizeArrayToMapFunc } from '@sofie-automation/corelib/dist/lib'
-import { logger } from 'elastic-apm-node'
 import { getCurrentTime } from '../../lib'
 import _ = require('underscore')
 import { CacheForPlayout } from '../cache'
 import { getPieceEnableInsidePart, transformPieceGroupAndObjects } from './piece'
+import { logger } from '../../logging'
 
 export function buildTimelineObjsForRundown(
 	context: JobContext,

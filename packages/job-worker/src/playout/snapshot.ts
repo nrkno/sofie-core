@@ -17,7 +17,6 @@ import {
 	RestorePlaylistSnapshotProps,
 	RestorePlaylistSnapshotResult,
 } from '@sofie-automation/corelib/dist/worker/studio'
-import { logger } from 'elastic-apm-node'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import _ = require('underscore')
 import { JobContext } from '../jobs'
@@ -27,6 +26,7 @@ import { unprotectString, ProtectedString, protectStringArray } from '@sofie-aut
 import { saveIntoDb } from '../db/changes'
 import { getPartId, getSegmentId } from '../ingest/lib'
 import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
+import { logger } from '../logging'
 
 export async function handleGeneratePlaylistSnapshot(
 	context: JobContext,

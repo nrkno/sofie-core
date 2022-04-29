@@ -4,7 +4,6 @@ import {
 	Time,
 } from '@sofie-automation/blueprints-integration'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
-import { logger } from 'elastic-apm-node'
 import { IDirectCollections } from '../db'
 import { getCurrentTime } from '../lib'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
@@ -25,6 +24,7 @@ import deepmerge = require('deepmerge')
 import { ChangeStream, Db as MongoDb } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import pTimeout = require('p-timeout')
+import { logger } from '../logging'
 
 const TRIGGER_DELAY_DEFAULT = 1000 // TODO: Now that this is in its own thread, does it need a delay?
 const TRIGGER_DELAY_STARTUP = 5000
@@ -107,21 +107,23 @@ export class ExternalMessageQueueRunner {
 			}
 		}
 
-		this.#changesStream = this.#mongoDatabase
+		const stream = (this.#changesStream = this.#mongoDatabase
 			.collection(CollectionName.ExternalMessageQueue)
-			.watch([{ $match: { studioId: this.#dataCache.studio._id } }], {
+			.watch([{ $match: { [`fullDocument.studioId`]: this.#dataCache.studio._id } }], {
 				batchSize: 1,
-			})
+			}))
 
-		this.#changesStream.on('init', () => {
-			// Stream has started, make sure we havent missed anything
-			this.triggerDoMessageQueue()
+		stream.on('error', () => {
+			logger.warn(`Changes stream for ExternalMessageQueue errored`)
+			this.#changesStream = undefined
+
+			this.tryRestartListeningForEvents()
 		})
-		this.#changesStream.on('change', (_change) => {
+		stream.on('change', (_change) => {
 			// we have a change to flag
 			this.triggerDoMessageQueue(5000) // TODO - why this long?
 		})
-		this.#changesStream.on('end', () => {
+		stream.on('end', () => {
 			logger.warn(`Changes stream for ExternalMessageQueue ended`)
 			this.#changesStream = undefined
 
