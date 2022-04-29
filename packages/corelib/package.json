@@ -66,5 +66,8 @@
 		"*.{ts,tsx}": [
 			"yarn lint:raw"
 		]
+	},
+	"resolutions": {
+		"mos-connection/moment": "^2.29.3"
 	}
 }
