@@ -105,7 +105,7 @@ export async function executePeripheralDeviceFunction(
 
 	const watcher = context.directCollections.PeripheralDeviceCommands.rawCollection.watch([
 		{
-			$match: { _id: commandId },
+			$match: { [`documentKey._id`]: commandId },
 		},
 	])
 	watcher.on('change', (_change) => {
