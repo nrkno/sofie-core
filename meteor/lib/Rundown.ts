@@ -1,7 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { Pieces, Piece } from './collections/Pieces'
-import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { DBSegment, Segment, SegmentId } from './collections/Segments'
 import { PartId, DBPart } from './collections/Parts'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
@@ -11,13 +11,18 @@ import {
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 	PieceInstanceWithTimings,
-} from './rundown/infinites'
+} from '@sofie-automation/corelib/dist/playout/infinites'
 import { FindOptions } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
-import { getCurrentTime, protectString, unprotectString } from './lib'
-import { RundownPlaylist, RundownPlaylistActivationId } from './collections/RundownPlaylists'
+import { getCurrentTime, mongoWhereFilter, ProtectedString, protectString, unprotectString } from './lib'
+import {
+	RundownPlaylist,
+	RundownPlaylistActivationId,
+	RundownPlaylistCollectionUtil,
+} from './collections/RundownPlaylists'
 import { Rundown, RundownId } from './collections/Rundowns'
 import { ShowStyleBaseId } from './collections/ShowStyleBases'
+import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -60,7 +65,7 @@ export interface PieceExtended {
 	sourceLayer?: ISourceLayerExtended
 	/** Output layer that this part uses */
 	outputLayer?: IOutputLayerExtended
-	/** Position in timeline, relative to the beginning of the segment */
+	/** Position in timeline, relative to the beginning of the Part */
 	renderedInPoint: number | null
 	/** Duration in timeline */
 	renderedDuration: number | null
@@ -80,9 +85,19 @@ export function fetchPiecesThatMayBeActiveForPart(
 	part: DBPart,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
-	rundownsBeforeThisInPlaylist: RundownId[]
+	rundownsBeforeThisInPlaylist: RundownId[],
+	/** Map of Pieces on Parts, passed through for performance */
+	allPiecesCache?: Map<PartId, Piece[]>
 ): Piece[] {
-	const piecesStartingInPart = Pieces.find(buildPiecesStartingInThisPartQuery(part)).fetch()
+	let piecesStartingInPart: Piece[]
+	const allPieces = allPiecesCache?.get(part._id)
+	const selector = buildPiecesStartingInThisPartQuery(part)
+	if (allPieces) {
+		// Fast-path: if we already have the pieces, we can use them directly:
+		piecesStartingInPart = mongoWhereFilter(allPieces, selector)
+	} else {
+		piecesStartingInPart = Pieces.find(selector).fetch()
+	}
 
 	const partsBeforeThisInSegment = Array.from(partsBeforeThisInSegmentSet.values())
 	const segmentsBeforeThisInRundown = Array.from(segmentsBeforeThisInRundownSet.values())
@@ -93,9 +108,15 @@ export function fetchPiecesThatMayBeActiveForPart(
 		segmentsBeforeThisInRundown,
 		rundownsBeforeThisInPlaylist
 	)
-	const infinitePieces = infinitePieceQuery ? Pieces.find(infinitePieceQuery).fetch() : []
+	let infinitePieces: Piece[]
+	if (allPieces) {
+		// Fast-path: if we already have the pieces, we can use them directly:
+		infinitePieces = infinitePieceQuery ? mongoWhereFilter(allPieces, infinitePieceQuery) : []
+	} else {
+		infinitePieces = infinitePieceQuery ? Pieces.find(infinitePieceQuery).fetch() : []
+	}
 
-	return [...piecesStartingInPart, ...infinitePieces]
+	return piecesStartingInPart.concat(infinitePieces) // replace spread with concat, as 3x is faster (https://stackoverflow.com/questions/48865710/spread-operator-vs-array-concat)
 }
 
 const SIMULATION_INVALIDATION = 3000
@@ -120,7 +141,7 @@ const SIMULATION_INVALIDATION = 3000
  */
 export function getPieceInstancesForPartInstance(
 	playlistActivationId: RundownPlaylistActivationId | undefined,
-	rundown: Rundown,
+	rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>,
 	partInstance: PartInstanceLimited,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
@@ -130,6 +151,8 @@ export function getPieceInstancesForPartInstance(
 	nextPartIsAfterCurrentPart: boolean,
 	currentPartInstance: PartInstance | undefined,
 	currentPartInstancePieceInstances: PieceInstance[] | undefined,
+	/** Map of Pieces on Parts, passed through for performance */
+	allPiecesCache?: Map<PartId, Piece[]>,
 	options?: FindOptions<PieceInstance>,
 	pieceInstanceSimulation?: boolean
 ) {
@@ -148,7 +171,8 @@ export function getPieceInstancesForPartInstance(
 				partInstance.part,
 				partsBeforeThisInSegmentSet,
 				segmentsBeforeThisInRundownSet,
-				rundownsBeforeThisInPlaylist
+				rundownsBeforeThisInPlaylist,
+				allPiecesCache
 			),
 			orderedAllParts,
 			partInstance._id,
@@ -191,7 +215,8 @@ export function getPieceInstancesForPartInstance(
 					partInstance.part,
 					partsBeforeThisInSegmentSet,
 					segmentsBeforeThisInRundownSet,
-					rundownsBeforeThisInPlaylist
+					rundownsBeforeThisInPlaylist,
+					allPiecesCache
 				),
 				orderedAllParts,
 				partInstance._id,
@@ -228,13 +253,18 @@ export function getSegmentsWithPartInstances(
 	partsOptions?: FindOptions<DBPart>,
 	partInstancesOptions?: FindOptions<PartInstance>
 ): Array<{ segment: Segment; partInstances: PartInstance[] }> {
-	const { segments, parts: rawParts } = playlist.getSegmentsAndPartsSync(
+	const { segments, parts: rawParts } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(
+		playlist,
 		segmentsQuery,
 		partsQuery,
 		segmentsOptions,
 		partsOptions
 	)
-	const rawPartInstances = playlist.getActivePartInstances(partInstancesQuery, partInstancesOptions)
+	const rawPartInstances = RundownPlaylistCollectionUtil.getActivePartInstances(
+		playlist,
+		partInstancesQuery,
+		partInstancesOptions
+	)
 	const playlistActivationId = playlist.activationId ?? protectString('')
 
 	const partsBySegment = _.groupBy(rawParts, (p) => p.segmentId)
@@ -298,3 +328,62 @@ updateCalculatedData () {
 	data.segments
 }
 */
+
+function compareLabels(a: string | ITranslatableMessage, b: string | ITranslatableMessage) {
+	const actualA = isTranslatableMessage(a) ? a.key : (a as string)
+	const actualB = isTranslatableMessage(b) ? b.key : (b as string)
+	// can't use .localeCompare, because this needs to be locale-independent and always return
+	// the same sorting order, because that's being relied upon by limit & pick/pickEnd.
+	if (actualA > actualB) return 1
+	if (actualA < actualB) return -1
+	return 0
+}
+
+/** Sort a list of adlibs */
+export function sortAdlibs<T>(
+	adlibs: {
+		adlib: T
+		label: string | ITranslatableMessage
+		adlibRank: number
+		adlibId: ProtectedString<any> | string
+		partRank: number | null
+		segmentRank: number | null
+		rundownRank: number | null
+	}[]
+) {
+	adlibs = adlibs.sort((a, b) => {
+		// Sort by rundown rank, where applicable:
+		a.rundownRank = a.rundownRank ?? Number.POSITIVE_INFINITY
+		b.rundownRank = b.rundownRank ?? Number.POSITIVE_INFINITY
+		if (a.rundownRank > b.rundownRank) return 1
+		if (a.rundownRank < b.rundownRank) return -1
+
+		// Sort by segment rank, where applicable:
+		a.segmentRank = a.segmentRank ?? Number.POSITIVE_INFINITY
+		b.segmentRank = b.segmentRank ?? Number.POSITIVE_INFINITY
+		if (a.segmentRank > b.segmentRank) return 1
+		if (a.segmentRank < b.segmentRank) return -1
+
+		// Sort by part rank, where applicable:
+		a.partRank = a.partRank ?? Number.POSITIVE_INFINITY
+		b.partRank = b.partRank ?? Number.POSITIVE_INFINITY
+		if (a.partRank > b.partRank) return 1
+		if (a.partRank < b.partRank) return -1
+
+		// Sort by adlib rank
+		if (a.adlibRank > b.adlibRank) return 1
+		if (a.adlibRank < b.adlibRank) return -1
+
+		// Sort by labels:
+		const r = compareLabels(a.label, b.label)
+		if (r !== 0) return r
+
+		// As a last resort, sort by ids:
+		if (a.adlibId > b.adlibId) return 1
+		if (a.adlibId < b.adlibId) return -1
+
+		return 0
+	})
+
+	return adlibs.map((a) => a.adlib)
+}

@@ -1,0 +1,165 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Lookahead got some objects 1`] = `
+Array [
+  Object {
+    "content": Object {
+      "id": "obj0",
+    },
+    "disabled": false,
+    "enable": Object {
+      "end": "#piece0obj0.start",
+      "start": 1,
+    },
+    "id": "lookahead_timed0_piece0obj0",
+    "isLookahead": true,
+    "layer": "PRELOAD_lookahead",
+    "lookaheadForLayer": "PRELOAD",
+    "originalId": "obj0",
+    "pieceInstanceId": "piece0",
+    "priority": 0.1,
+  },
+  Object {
+    "content": Object {
+      "id": "obj1",
+    },
+    "disabled": false,
+    "enable": Object {
+      "end": "#piece1obj1.start",
+      "start": "#piece0obj0.start + 0",
+    },
+    "id": "lookahead_timed1_piece1obj1",
+    "isLookahead": true,
+    "layer": "PRELOAD_lookahead",
+    "lookaheadForLayer": "PRELOAD",
+    "originalId": "obj1",
+    "pieceInstanceId": "piece1",
+    "priority": 0.1,
+  },
+  Object {
+    "content": Object {
+      "id": "obj2",
+    },
+    "disabled": false,
+    "enable": Object {
+      "while": "1",
+    },
+    "id": "lookahead_future0_piece0obj2",
+    "isLookahead": true,
+    "layer": "PRELOAD_lookahead",
+    "lookaheadForLayer": "PRELOAD",
+    "originalId": "obj2",
+    "pieceInstanceId": "piece0",
+    "priority": 0.07500000000000001,
+  },
+  Object {
+    "content": Object {
+      "id": "obj3",
+    },
+    "disabled": false,
+    "enable": Object {
+      "while": "1",
+    },
+    "id": "lookahead_future1_piece0obj3",
+    "isLookahead": true,
+    "layer": "PRELOAD_lookahead",
+    "lookaheadForLayer": "PRELOAD",
+    "originalId": "obj3",
+    "pieceInstanceId": "piece0",
+    "priority": 0.05,
+  },
+  Object {
+    "content": Object {
+      "id": "obj4",
+    },
+    "disabled": false,
+    "enable": Object {
+      "while": "1",
+    },
+    "id": "lookahead_future2_piece0obj4",
+    "isLookahead": true,
+    "layer": "PRELOAD_lookahead",
+    "lookaheadForLayer": "PRELOAD",
+    "originalId": "obj4",
+    "pieceInstanceId": "piece0",
+    "priority": 0.025,
+  },
+  Object {
+    "content": Object {
+      "id": "obj5",
+    },
+    "disabled": false,
+    "enable": Object {
+      "end": "#piece1obj5.start",
+      "start": 1,
+    },
+    "id": "lookahead_timed0_piece1obj5",
+    "isLookahead": true,
+    "layer": "WHEN_CLEAR",
+    "originalId": "obj5",
+    "pieceInstanceId": "piece1",
+    "priority": 0.1,
+  },
+  Object {
+    "content": Object {
+      "id": "obj6",
+    },
+    "disabled": false,
+    "enable": Object {
+      "end": "#piece0obj6.start",
+      "start": "#piece1obj5.start + 0",
+    },
+    "id": "lookahead_timed1_piece0obj6",
+    "isLookahead": true,
+    "layer": "WHEN_CLEAR",
+    "originalId": "obj6",
+    "pieceInstanceId": "piece0",
+    "priority": 0.1,
+  },
+  Object {
+    "content": Object {
+      "id": "obj7",
+    },
+    "disabled": false,
+    "enable": Object {
+      "start": "#piece0obj6.start + 0",
+    },
+    "id": "lookahead_future0_piece1obj7",
+    "isLookahead": true,
+    "layer": "WHEN_CLEAR",
+    "originalId": "obj7",
+    "pieceInstanceId": "piece1",
+    "priority": 0.07500000000000001,
+  },
+  Object {
+    "content": Object {
+      "id": "obj8",
+    },
+    "disabled": true,
+    "enable": Object {
+      "while": "1",
+    },
+    "id": "lookahead_future1_piece1obj8",
+    "isLookahead": true,
+    "layer": "WHEN_CLEAR",
+    "originalId": "obj8",
+    "pieceInstanceId": "piece1",
+    "priority": 0.05,
+  },
+  Object {
+    "content": Object {
+      "id": "obj9",
+    },
+    "disabled": true,
+    "enable": Object {
+      "while": "1",
+    },
+    "id": "lookahead_future2_piece0obj9",
+    "isLookahead": true,
+    "layer": "WHEN_CLEAR",
+    "originalId": "obj9",
+    "pieceInstanceId": "piece0",
+    "priority": 0.025,
+  },
+]
+`;

@@ -1,11 +1,11 @@
 @import 'colorScheme';
 @import 'itemTypeColors';
+@import 'utils';
 @import '_variables';
 
 $output-layer-group-line: 1px solid #5c5c5c;
 $output-layer-group-collapse-animation-duration: 0.3s;
 
-$segment-header-height: 2.3em;
 $segment-header-width: 12.5rem;
 $segment-timeline-background-color: #1f1f1f;
 $segment-mini-inspector-background: #474747;
@@ -19,9 +19,6 @@ $segment-title-background-color-live: $general-live-color;
 $segment-title-background-color-remote: $general-live-remote-color;
 $segment-title-background-color-guest: $general-live-guest-color;
 $segment-title-background-color-has-played: #2c2c2c;
-$part-start-color: #a5a5a5;
-$segment-item-disabled-background: #898989;
-$segment-item-disabled-color: #c9c9c9;
 
 $segment-nextline-shade-width: 1.875rem;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
@@ -32,9 +29,6 @@ $rundown-divider-color: #000000;
 $rundown-divider-background-color: #dddddd;
 
 $segment-piece-step-counter: #ffff00;
-
-$liveline-timecode-color: $general-countdown-to-next-color; //$general-live-color;
-$hold-status-color: $liveline-timecode-color;
 
 $previewline-color: rgb(38, 137, 186);
 
@@ -85,12 +79,6 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	border-radius: $segment-border-radius;
 	overflow: hidden;
 
-	animation-duration: 1s;
-	animation-fill-mode: forwards;
-	animation-iteration-count: infinite;
-	// animation-name: placeholder-shimmer;
-	animation-timing-function: linear;
-
 	&::before {
 		content: ' ';
 		display: block;
@@ -99,18 +87,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		width: $segment-header-width;
 		left: 0;
 		bottom: 0;
-		background: darken($segment-title-background-color, 20%);
-		mix-blend-mode: screen;
-	}
-}
-
-@keyframes placeholder-shimmer {
-	0% {
-		background-position: -800px 0;
-	}
-
-	100% {
-		background-position: 100vw 0;
+		background: lighten($segment-title-background-color, 70%);
+		opacity: 0.1;
 	}
 }
 
@@ -142,46 +120,16 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	.rundown-view__part__icon {
 		display: inline-block;
 		margin-left: 0.2em;
-
-		&.rundown-view__part__icon--next {
-			position: relative;
-			width: 0;
-			height: 0;
-			top: -2px;
-			border-width: 5px 0 5px 9px;
-			border-style: solid;
-			border-color: transparent transparent transparent $general-next-color;
-
-			&::after {
-				content: ' ';
-				position: absolute;
-				top: -5px;
-				right: -1px;
-				height: 10px;
-				width: 0;
-				border-left: 2px solid $general-next-color;
-			}
-		}
+		vertical-align: bottom;
+		line-height: 1em;
 
 		&.rundown-view__part__icon--auto-next {
 			position: relative;
-			width: 0;
-			height: 0;
-			top: -2px;
-			left: 4px;
-			border-width: 5px 0 5px 9px;
-			border-style: solid;
-			border-color: transparent transparent transparent $general-next-color;
-
-			&::after {
-				content: ' ';
-				position: absolute;
-				top: -5px;
-				left: -13px;
-				height: 10px;
-				width: 0;
-				border-left: 2px solid $general-next-color;
-			}
+			color: $general-next-color;
+			text-transform: uppercase;
+			font-weight: 800;
+			font-size: 0.5em;
+			top: -0.35em;
 		}
 	}
 
@@ -248,8 +196,8 @@ body.no-overflow {
 	z-index: 10000;
 	pointer-events: none;
 
-	@media screen and (prefer-reduced-motion: reduce) {
-		// if prefer-reduced-motion is set in the browser, the animation will be skipped
+	@media screen and (prefers-reduced-motion: reduce) {
+		// if prefers-reduced-motion is set in the browser, the animation will be skipped
 		animation: none;
 	}
 
@@ -505,7 +453,7 @@ svg.icon {
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
-	grid-template-columns: [segment-name] $segment-header-width [segment-group-controls] 120px [timeline] auto [end]; // 120px [future-timeline-end]
+	grid-template-columns: [segment-name] $segment-header-width [segment-group-controls] $segment-group-controls-width [timeline] auto [end]; // 120px [future-timeline-end]
 	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
 	user-select: none;
@@ -527,6 +475,8 @@ svg.icon {
 	.segment-timeline__output-layers,
 	.segment-timeline__timeline {
 		padding: $segment-timeline-padding;
+		--segment-timeline-padding-top: #{$segment-header-height};
+		--segment-timeline-padding-bottom: 1.5em;
 	}
 
 	.segment-timeline__title {
@@ -617,10 +567,16 @@ svg.icon {
 
 			.segment-timeline__part-identifiers__identifier {
 				margin: 2.5px;
-				padding: 0 10px 0 10px;
+				padding: 0 4px;
 				background-color: $part-identifier;
 				color: $part-identifier-text;
-				border-radius: 10px;
+				border-radius: 0 10px 10px 0;
+				font-size: 0.85rem;
+
+				&:hover {
+					background-color: #8c8c8c;
+					color: #fff;
+				}
 			}
 		}
 	}
@@ -737,11 +693,6 @@ svg.icon {
 		display: none;
 	}
 
-	// the identifier is an installation-specific feature that needs to be supported by the blueprints. It's disabled in the UI by default.
-	.segment-timeline__identifier {
-		display: none;
-	}
-
 	// This is the display in the top-left corner of the segment
 	.segment-timeline__timeUntil,
 	.segment-timeline__duration {
@@ -810,15 +761,17 @@ svg.icon {
 	.segment-timeline__unsynced {
 		text-transform: uppercase;
 	}
+}
+
+.segment-timeline {
 	.segment-timeline__timeline-zoom-buttons {
 		position: relative;
-		display: flex;
-		flex-direction: row;
+		display: grid;
 		grid-column: segment-group-controls / timeline;
 		grid-row: header / end;
-		align-items: flex-end;
-		justify-content: space-between;
-		padding: 0 10px 0.05em 20px;
+		align-self: end;
+		grid-template-columns: 1.3fr 1fr 1fr 1fr;
+		padding: 0 0.3em 0.05em 0.3em;
 
 		> .segment-timeline__timeline-zoom-buttons__button {
 			min-width: 22px;
@@ -841,6 +794,9 @@ svg.icon {
 				.btn-bkg {
 					transition: 0.3s fill;
 				}
+				.btn-icon {
+					transition: 0.3s fill;
+				}
 			}
 
 			&:disabled {
@@ -852,6 +808,10 @@ svg.icon {
 					> svg {
 						.btn-bkg {
 							fill: #8c8c8c;
+							transition: 0s fill;
+						}
+						.btn-icon {
+							fill: #ffffff;
 							transition: 0s fill;
 						}
 					}
@@ -1014,20 +974,6 @@ svg.icon {
 			left: 125px;
 			right: 125px;
 
-			.segment-timeline__zoom-area__controls__left-mask {
-				position: absolute;
-				top: 0;
-				left: 0;
-				bottom: 0;
-			}
-
-			.segment-timeline__zoom-area__controls__right-mask {
-				position: absolute;
-				top: 0;
-				right: 0;
-				bottom: 0;
-			}
-
 			.segment-timeline__zoom-area__controls__selected-area {
 				position: absolute;
 				border: 1px solid #333;
@@ -1116,7 +1062,7 @@ svg.icon {
 				($output-layer-group-collapse-animation-duration * 1/2),
 			$output-layer-group-collapse-animation-duration visibility 0s;
 
-		color: rgb(175, 175, 175);
+		color: #707070;
 
 		font-size: 15px;
 		--timeline-grid-label-top: 18px;
@@ -1164,7 +1110,7 @@ svg.icon {
 			line-height: 1em;
 			white-space: nowrap;
 			word-wrap: none;
-			border-radius: 0.1em 0.5em 0.5em 0em;
+			border-radius: 4px 0.5em 0.5em 0em;
 			padding: 0.1em 0.5em 0em 0.2em;
 		}
 
@@ -1186,6 +1132,10 @@ svg.icon {
 
 			> .overtime {
 				color: $general-late-color;
+			}
+
+			> .rundown-view__part__icon {
+				top: -0.2em;
 			}
 		}
 
@@ -1339,16 +1289,8 @@ svg.icon {
 		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
 			position: relative;
-			z-index: 1;
-			transform-style: preserve-3d;
-
 			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
 			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
-
-			* {
-				backface-visibility: hidden;
-				-webkit-backface-visibility: hidden;
-			}
 
 			&.segment-timeline__part--end-of-segment {
 				background: $segment-background-color;
@@ -1394,23 +1336,24 @@ svg.icon {
 			.segment-timeline__part__nextline {
 				display: block;
 				position: absolute;
-				top: -13px;
+				top: -10px;
 				left: 0;
 				bottom: -1.3em;
 				flex: 0;
 				border-left: 2px solid $part-start-color;
 				box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.7);
-				transform: translate3d(0, 0, 50px);
+				z-index: 20;
 
 				&.segment-timeline__part__nextline--endline {
 					left: auto;
 					right: -1px;
+					z-index: 30;
 				}
 
 				.segment-timeline__part__nextline__label {
 					display: none;
 					position: absolute;
-					top: -2px;
+					top: -3px;
 					left: 2px;
 					text-transform: uppercase;
 					font-weight: bold;
@@ -1419,6 +1362,7 @@ svg.icon {
 					white-space: nowrap;
 					word-wrap: none;
 					color: $part-start-color;
+					font-size: 0.9em;
 
 					&.segment-timeline__part__nextline__label--thin {
 						font-weight: 400;
@@ -1428,8 +1372,8 @@ svg.icon {
 						width: 20px;
 						height: 15px;
 						position: relative;
-						top: 12px;
-						right: 11px;
+						top: 0px;
+						right: -1px;
 						display: inline-block;
 
 						> svg {
@@ -1439,29 +1383,15 @@ svg.icon {
 				}
 
 				&::after {
-					content: ' ';
-					display: block;
-					position: absolute;
-					top: 0px;
-					left: -10px;
-					width: 0;
-					height: 0;
-					border-style: solid;
-					border-width: 5px 0 5px 9px;
-					border-color: transparent transparent transparent $part-start-color;
+					top: -2px;
+					left: -2px;
+					@include take-arrow();
 				}
 
 				&::before {
-					content: ' ';
-					display: block;
-					position: absolute;
-					bottom: 4px;
-					left: -10px;
-					width: 0;
-					height: 0;
-					border-style: solid;
-					border-width: 5px 0 5px 9px;
-					border-color: transparent transparent transparent $part-start-color;
+					bottom: -1px;
+					left: -2px;
+					@include take-arrow();
 				}
 			}
 
@@ -1471,8 +1401,8 @@ svg.icon {
 				left: 1px;
 				bottom: 0;
 				right: 1px;
-				z-index: 1;
-				pointer-events: none;
+				z-index: 10;
+				pointer-events: all;
 				background-image: repeating-linear-gradient(
 						45deg,
 						var(--invalid-reason-color-transparent) 0%,
@@ -1495,7 +1425,7 @@ svg.icon {
 				left: 0;
 				bottom: 0;
 				right: 0;
-				z-index: 1;
+				z-index: 10;
 				pointer-events: none;
 				background-image: repeating-linear-gradient(
 					-45deg,
@@ -1544,15 +1474,18 @@ svg.icon {
 				.segment-timeline__part__nextline.auto-next:not(.segment-timeline__part__nextline--endline),
 				.segment-timeline__part__nextline.invalid:not(.segment-timeline__part__nextline--endline) {
 					border-left-width: 1px;
+					top: -12px;
 
 					&::before,
 					&::after {
-						left: -1px;
+						// left: -1px;
+						display: none;
 					}
 
 					.segment-timeline__part__nextline__label {
 						display: block;
-						left: 10px;
+						top: -1px;
+						// 	left: 10px;
 					}
 				}
 			}
@@ -1568,15 +1501,17 @@ svg.icon {
 
 			.segment-timeline__part__nextline.auto-next.segment-timeline__part__nextline--endline {
 				border-left-width: 1px;
+				top: -12px;
 
 				&::before,
 				&::after {
-					left: -1px;
+					display: none;
 				}
 
 				.segment-timeline__part__nextline__label {
 					display: block;
-					left: 10px;
+					top: -1px;
+					left: 2px;
 				}
 			}
 
@@ -1638,7 +1573,6 @@ svg.icon {
 				bottom: 0;
 				right: 0;
 				background: linear-gradient(to left, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 50%);
-				transform: translate3d(0, 0, 10px);
 			}
 
 			&.next {
@@ -1647,6 +1581,9 @@ svg.icon {
 						> svg {
 							margin-left: 1px;
 							margin-right: 5px;
+							> path {
+								stroke: $general-next-color;
+							}
 						}
 					}
 				}
@@ -1655,19 +1592,61 @@ svg.icon {
 					border-left-color: $general-next-color;
 					color: $general-next-color;
 
-					&::before,
-					&::after {
+					&::before {
 						border-color: transparent transparent transparent $general-next-color;
 					}
 
-					.segment-timeline__part__nextline__label {
-						color: $general-next-color;
-						display: block;
+					&:not(.invalid) {
+						&::after {
+							display: none;
+						}
 
-						.segment-timeline__part__nextline__label__carriage-return {
-							> svg {
-								fill: $general-next-color;
+						.segment-timeline__part__nextline__label {
+							background: $general-next-color;
+							color: #000;
+							display: block;
+							padding: 3px 1px 1px 2px;
+							border-radius: 4px 0 0 0;
+							left: -2px;
+							top: -8px;
+							font-size: 1em;
+
+							&::after {
+								content: ' ';
+								border-color: transparent transparent transparent $general-next-color;
+								display: block;
+								position: absolute;
+								bottom: 0;
+								left: auto;
+								right: -9px;
+								width: 0;
+								height: 0;
+								border-style: solid;
+								border-width: 9px 0 9px 9px;
 							}
+						}
+
+						&.auto-next {
+							.segment-timeline__part__nextline__label {
+								left: -1px;
+								top: -6px;
+								padding-right: 4px;
+								border-radius: 4px 0.5em 0.5em 0;
+
+								&::after {
+									display: none;
+								}
+							}
+						}
+					}
+
+					&.invalid {
+						z-index: 10;
+						.segment-timeline__part__nextline__label {
+							top: 50%;
+							transform: translateY(calc(-50% - 6px));
+							background: none;
+							filter: drop-shadow(2px 2px 0px black) drop-shadow(-2px -2px 0px black) drop-shadow(0 0 5px black);
 						}
 					}
 				}
@@ -1699,13 +1678,18 @@ svg.icon {
 						}
 					}
 				}
+
+				&:not(.auto-next) {
+					.segment-timeline__part__nextline__label {
+						padding: 0 0 0 7px;
+					}
+				}
 			}
 
 			// Group all layers belonging to an output group
 			.segment-timeline__output-group {
 				min-height: $segment-layer-height;
 				border-bottom: 0px solid $segment-layer-separator-color;
-				transform-style: preserve-3d;
 				overflow: hidden;
 
 				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
@@ -1715,7 +1699,6 @@ svg.icon {
 					min-height: $segment-layer-height;
 					line-height: $segment-layer-height;
 					border-bottom: 2px solid $segment-layer-separator-color;
-					transform-style: preserve-3d;
 					overflow: hidden;
 
 					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
@@ -1726,7 +1709,6 @@ svg.icon {
 						transition: box-shadow 0.5s ease-out;
 						box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
 						cursor: default;
-						transform-style: preserve-3d;
 
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
@@ -1807,7 +1789,6 @@ svg.icon {
 								rgba(0, 0, 0, 0.2) 6px
 							);
 							overflow: hidden;
-							// transform: translate3d(0,0,-2px)
 						}
 						.segment-timeline__piece__anomaly-marker::after {
 							content: '';
@@ -1826,7 +1807,6 @@ svg.icon {
 							// );
 							background: yellow;
 							overflow: hidden;
-							// transform: translate3d(0,0,2px)
 						}
 
 						.segment-timeline__piece__anomaly-marker__freezes {
@@ -1849,134 +1829,6 @@ svg.icon {
 							background-repeat: repeat-x;
 							background-size: auto 1em;
 							background-color: rgba(0, 0, 0, 0.6);
-							z-index: 2;
-						}
-
-						.segment-timeline__piece__label {
-							position: relative;
-							z-index: 10;
-							margin: 0 0.3em;
-							text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
-							font-weight: 400;
-							transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity
-								($output-layer-group-collapse-animation-duration * 2/3);
-							pointer-events: none;
-							white-space: nowrap;
-
-							transform: translate3d(0, 0, 1px); // Just to make it render in front
-
-							&:not(.right-side) {
-								overflow: hidden;
-								text-overflow: ellipsis;
-							}
-
-							&.with-overflow {
-								overflow: visible !important;
-							}
-
-							&.secondary {
-								font-weight: 300;
-							}
-
-							&.third {
-								font-weight: 200;
-							}
-
-							&.emphasis {
-								font-weight: 500;
-							}
-
-							&.missing {
-								color: orange;
-							}
-
-							&.first-words {
-								position: absolute;
-								left: 0;
-								font-weight: 300;
-								font-style: italic;
-
-								> * {
-									position: relative;
-								}
-							}
-
-							&.right-side {
-								position: absolute;
-								right: 0;
-								transform: translate3d(0, 0, 15px);
-								text-align: right;
-								margin: 0;
-								padding: 0 0.3em;
-								max-width: calc(100% - 10px);
-								overflow: hidden;
-								text-overflow: clip;
-
-								> * {
-									position: relative;
-								}
-
-								> .segment-timeline__piece__label {
-									margin-right: 0 !important;
-									margin-left: 5px !important;
-									overflow: initial;
-									max-width: none;
-								}
-
-								> .label-icon {
-									margin: 0 -10px 0 0;
-								}
-
-								> .label-icon.label-infinite-icon {
-									margin: 0 0 0 0;
-								}
-							}
-
-							&.last-words {
-								font-weight: 300;
-								font-style: italic;
-
-								display: block;
-							}
-
-							&.file-name {
-								font-weight: 200;
-							}
-
-							&.label-icon {
-								margin: 0;
-							}
-
-							&.label-overflow-time {
-								text-shadow: 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px 1px 1px black,
-									1px 1px 3px black, 1px 1px 8px black, 1px 1px 8px black, 1px 1px 8px black;
-								top: -7px;
-								right: -5px;
-								color: white;
-								font-weight: 600;
-								padding: 0;
-								font-size: 0.8em;
-								margin: 0;
-							}
-
-							> .segment-timeline__piece__label {
-								margin: 0;
-								max-width: none;
-							}
-
-							> .segment-timeline__piece__label + .segment-timeline__piece__label {
-								margin: 0 0.3em;
-							}
-
-							.segment-timeline__piece__label__transition-icon {
-								max-width: 16px;
-								max-height: 1.4em;
-								vertical-align: top;
-								height: 1.4em;
-								object-fit: contain;
-								object-position: center center;
-								margin-left: 0.5em;
-							}
 						}
 
 						&.hide-overflow-labels {
@@ -2127,7 +1979,6 @@ svg.icon {
 
 			.segment-timeline__piece__label {
 				position: relative;
-				z-index: 10;
 				margin: 0 0.3em;
 				text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 				font-weight: 400;
@@ -2137,8 +1988,6 @@ svg.icon {
 				display: inline-block;
 				white-space: nowrap;
 				line-height: 1.5em;
-
-				transform: translate3d(0, 0, 1px); // Just to make it render in front
 
 				&.no-left-margin {
 					margin-left: 0;
@@ -2183,7 +2032,6 @@ svg.icon {
 				&.right-side {
 					position: absolute;
 					right: 0;
-					transform: translate3d(0, 0, 15px);
 					text-align: right;
 					margin: 0;
 					padding: 0 0.3em;
@@ -2302,7 +2150,6 @@ svg.icon {
 			.segment-timeline__piece-appendage {
 				&.script-line {
 					width: 0;
-					transform: translate3d(0, 0, 30px);
 					border-left: 2px dotted $segment-layer-background-mic;
 					margin-left: -2px;
 					box-shadow: 0px 0px 1px 1px rgba(0, 30, 0, 0.18);
@@ -2317,9 +2164,14 @@ svg.icon {
 					left: auto;
 					right: 0;
 					bottom: auto;
+					opacity: 1;
+					visibility: visible;
+					transition: 500ms opacity 250ms, 0s visibility 0s;
 
 					&.hidden {
-						display: none;
+						transition: none;
+						visibility: hidden;
+						opacity: 0;
 					}
 				}
 			}
@@ -2328,11 +2180,12 @@ svg.icon {
 				position: absolute;
 				bottom: 0;
 				z-index: -1;
-				padding: 0 10px 0 10px;
+				padding: 0 4px 0 10px;
 				box-sizing: border-box;
 				background-color: $part-identifier;
-				border-radius: 0 10px 10px 0;
+				border-radius: 0 8px 8px 0;
 				color: $part-identifier-text;
+				font-size: 0.85rem;
 			}
 
 			&.gap {
@@ -3028,6 +2881,20 @@ svg.icon {
 			background: #000;
 		}
 
+		> .segment-timeline__mini-inspector__warnings {
+			display: block;
+			position: absolute;
+			left: 0;
+			bottom: 0;
+			max-width: 100%;
+			font-weight: 400;
+			text-shadow: 0 0 1px rgba(0, 0, 0, 1);
+			font-size: 0.75em;
+			padding: 0.2em 0.3em;
+			background: rgba(0, 0, 0, 0.25);
+			border-top-right-radius: 3px;
+		}
+
 		> .segment-timeline__mini-inspector__timecode {
 			display: block;
 			position: absolute;
@@ -3143,6 +3010,11 @@ svg.icon {
 		&.text-broken {
 			display: block;
 		}
+	}
+	.mini-inspector__full-text + .mini-inspector__full-text:not(.text-broken),
+	.mini-inspector__system + .mini-inspector__full-text:not(.text-broken) {
+		margin-top: 1em;
+		display: block;
 	}
 	.mini-inspector__in-point {
 		margin-right: 1em;

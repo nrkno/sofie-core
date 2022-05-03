@@ -1,22 +1,14 @@
-import { registerCollection, ProtectedString } from '../lib'
-import { TimelineObjGeneric } from './Timeline'
 import { createMongoCollection } from './lib'
-import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
+import { RundownBaselineObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { RundownBaselineObjId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-/** A string, identifying a RundownBaselineObj */
-export type RundownBaselineObjId = ProtectedString<'RundownBaselineObjId'>
+import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
+export * from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 
-export interface RundownBaselineObj {
-	_id: RundownBaselineObjId
-	/** The rundown this timeline-object belongs to */
-	rundownId: RundownId
+export const RundownBaselineObjs = createMongoCollection<RundownBaselineObj>(CollectionName.RundownBaselineObjects)
 
-	objects: TimelineObjGeneric[]
-}
-
-export const RundownBaselineObjs = createMongoCollection<RundownBaselineObj, RundownBaselineObj>('rundownBaselineObjs')
-registerCollection('RundownBaselineObjs', RundownBaselineObjs)
 registerIndex(RundownBaselineObjs, {
 	rundownId: 1,
 })

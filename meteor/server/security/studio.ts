@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { allowAccessToStudio } from './lib/security'
-import { StudioId, Studios, Studio } from '../../lib/collections/Studios'
+import { StudioId } from '../../lib/collections/Studios'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
 import { logNotAllowed } from './lib/lib'
 import {
@@ -15,6 +15,7 @@ import { Settings } from '../../lib/Settings'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
+import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
 
 type StudioContent = { studioId: StudioId }
 export namespace StudioReadAccess {
@@ -44,8 +45,8 @@ export namespace StudioReadAccess {
 export interface StudioContentAccess {
 	userId: UserId | null
 	organizationId: OrganizationId | null
-	studioId: StudioId | null
-	studio: Studio | null
+	studioId: StudioId
+	studio: StudioLight
 	cred: ResolvedCredentials | Credentials
 }
 
@@ -98,11 +99,14 @@ export namespace StudioContentWriteAccess {
 	export function anyContent(cred0: Credentials, studioId: StudioId): StudioContentAccess {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) {
+			const studio = fetchStudioLight(studioId)
+			if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
+
 			return {
 				userId: null,
 				organizationId: null,
 				studioId: studioId,
-				studio: Studios.findOne(studioId) || null,
+				studio: studio,
 				cred: cred0,
 			}
 		}
@@ -111,6 +115,7 @@ export namespace StudioContentWriteAccess {
 		if (!cred.organization) throw new Meteor.Error(500, `User has no organization`)
 		const access = allowAccessToStudio(cred, studioId)
 		if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
+		if (!access.document) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
 
 		return {
 			userId: cred.user._id,

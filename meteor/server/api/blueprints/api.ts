@@ -1,6 +1,7 @@
 import * as _ from 'underscore'
 import path from 'path'
-import { getCurrentTime, protectString, unprotectString, getRandomId } from '../../../lib/lib'
+import { promises as fsp } from 'fs'
+import { getCurrentTime, protectString, unprotectString, getRandomId, waitForPromise } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -11,7 +12,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
-import { registerClassToMeteorMethods } from '../../methods'
+import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../../methods'
 import { parseVersion, CoreSystem, SYSTEM_ID, getCoreSystem } from '../../../lib/collections/CoreSystem'
 import { evalBlueprint } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
@@ -22,7 +23,7 @@ import { OrganizationId } from '../../../lib/collections/Organization'
 import { Credentials, isResolvedCredentials } from '../../security/lib/credentials'
 import { Settings } from '../../../lib/Settings'
 import { upsertBundles } from '../translationsBundles'
-import { fsMakeDir, fsReadFile, fsWriteFile } from '../../lib'
+import { BlueprintLight, fetchBlueprintLight } from '../../../lib/collections/optimizations'
 
 export async function insertBlueprint(
 	methodContext: MethodContext,
@@ -39,6 +40,7 @@ export async function insertBlueprint(
 		_id: getRandomId(),
 		organizationId: organizationId,
 		name: name || 'New Blueprint',
+		hasCode: false,
 		code: '',
 		modified: getCurrentTime(),
 		created: getCurrentTime(),
@@ -85,7 +87,7 @@ export async function uploadBlueprint(
 	if (!Meteor.isTest) logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	if (!blueprintId) throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)
-	const blueprint = await Blueprints.findOneAsync(blueprintId)
+	const blueprint = await fetchBlueprintLight(blueprintId)
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
@@ -105,8 +107,9 @@ export function uploadBlueprintAsset(_context: Credentials, fileId: string, body
 			system.storePath
 		}, fileId: ${fileId})`
 	)
-	fsMakeDir(path.join(system.storePath, parsedPath.dir), { recursive: true })
-	fsWriteFile(path.join(system.storePath, fileId), data)
+
+	waitForPromise(fsp.mkdir(path.join(system.storePath, parsedPath.dir), { recursive: true }))
+	waitForPromise(fsp.writeFile(path.join(system.storePath, fileId), data))
 }
 export function retrieveBlueprintAsset(_context: Credentials, fileId: string) {
 	check(fileId, String)
@@ -116,7 +119,7 @@ export function retrieveBlueprintAsset(_context: Credentials, fileId: string) {
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
 	// TODO: add access control here
-	return fsReadFile(path.join(system.storePath, fileId))
+	return waitForPromise(fsp.readFile(path.join(system.storePath, fileId)))
 }
 /** Only to be called from internal functions */
 export async function internalUploadBlueprint(
@@ -127,13 +130,13 @@ export async function internalUploadBlueprint(
 	organizationId?: OrganizationId | null
 ): Promise<Blueprint> {
 	organizationId = organizationId || null
-	const blueprint = await Blueprints.findOneAsync(blueprintId)
+	const blueprint = await fetchBlueprintLight(blueprintId)
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
 export async function innerUploadBlueprint(
 	organizationId: OrganizationId | null,
-	blueprint: Blueprint | undefined,
+	blueprint: BlueprintLight | undefined,
 	blueprintId: BlueprintId,
 	body: string,
 	blueprintName?: string,
@@ -145,6 +148,7 @@ export async function innerUploadBlueprint(
 		name: blueprint ? blueprint.name : blueprintName || unprotectString(blueprintId),
 		created: blueprint ? blueprint.created : getCurrentTime(),
 		code: body,
+		hasCode: !!body,
 		modified: getCurrentTime(),
 		studioConfigManifest: [],
 		showStyleConfigManifest: [],
@@ -244,13 +248,13 @@ export async function innerUploadBlueprint(
 	return newBlueprint
 }
 
-async function assignSystemBlueprint(methodContext: MethodContext, blueprintId?: BlueprintId): Promise<void> {
+async function assignSystemBlueprint(methodContext: MethodContext, blueprintId: BlueprintId | null): Promise<void> {
 	SystemWriteAccess.coreSystem(methodContext)
 
 	if (blueprintId !== undefined && blueprintId !== null) {
 		check(blueprintId, String)
 
-		const blueprint = await Blueprints.findOneAsync(blueprintId)
+		const blueprint = await fetchBlueprintLight(blueprintId)
 		if (!blueprint) throw new Meteor.Error(404, 'Blueprint not found')
 
 		if (blueprint.organizationId)
@@ -276,14 +280,14 @@ async function assignSystemBlueprint(methodContext: MethodContext, blueprintId?:
 	}
 }
 
-class ServerBlueprintAPI extends MethodContextAPI implements NewBlueprintAPI {
+class ServerBlueprintAPI extends MethodContextAPI implements ReplaceOptionalWithNullInMethodArguments<NewBlueprintAPI> {
 	async insertBlueprint() {
 		return insertBlueprint(this)
 	}
 	async removeBlueprint(blueprintId: BlueprintId) {
 		return removeBlueprint(this, blueprintId)
 	}
-	async assignSystemBlueprint(blueprintId?: BlueprintId) {
+	async assignSystemBlueprint(blueprintId: BlueprintId | null) {
 		return assignSystemBlueprint(this, blueprintId)
 	}
 }

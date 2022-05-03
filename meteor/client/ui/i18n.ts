@@ -14,7 +14,7 @@ import {
 import { I18NextData } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../lib/api/methods'
 import { ClientAPI } from '../../lib/api/client'
-import { interpollateTranslation } from '../../lib/api/TranslatableMessage'
+import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 const i18nOptions = {
 	fallbackLng: {
@@ -87,6 +87,12 @@ class I18nContainer extends WithManagedTracker {
 				this.i18nTranslator = t
 				moment.locale(i18n.language)
 				document.documentElement.lang = i18n.language
+
+				const webManifestLink = document.head.querySelector('link[rel="manifest"]')
+				if (webManifestLink) {
+					const sourceHref = webManifestLink.getAttribute('data-href')
+					webManifestLink.setAttribute('href', sourceHref + `?lng=${i18n.language}`)
+				}
 			})
 			.catch((err: Error) => {
 				console.error('Error initializing i18Next:', err)

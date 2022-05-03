@@ -1,6 +1,6 @@
 # Sofie: The Modern TV News Studio Automation System (Server Core Integration)
-[![CircleCI](https://circleci.com/gh/nrkno/tv-automation-server-core-integration.svg?style=svg)](https://circleci.com/gh/nrkno/tv-automation-server-core-integration)
-[![codecov](https://codecov.io/gh/nrkno/tv-automation-server-core-integration/branch/master/graph/badge.svg)](https://codecov.io/gh/nrkno/tv-automation-server-core-integration)
+
+[![npm](https://img.shields.io/npm/v/@sofie-automation/server-core-integration)](https://www.npmjs.com/package/@sofie-automation/server-core-integration)
 
 This library is used to connect to the [**Sofie Server Core**](https://github.com/nrkno/tv-automation-server-core) from other Node processes.
 
@@ -11,44 +11,46 @@ Note: This library does not follow semver. It is recommended to add it in your p
 # Getting started
 
 ## Typescript
+
 ```typescript
 import { CoreConnection, PeripheralDeviceAPI } from '@sofie-automation/server-core-integration'
 
 // Set up our basic credentials:
 let core = new CoreConnection({
-	deviceId: 'device01', 			// Unique id
-	deviceToken: 'mySecretToken',	// secret token, used to authenticate this device
+	deviceId: 'device01', // Unique id
+	deviceToken: 'mySecretToken', // secret token, used to authenticate this device
 	deviceType: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-	deviceName: 'My peripheral device'
+	deviceName: 'My peripheral device',
 })
 core.on('error', console.log)
 // Initiate connection to Core:
-core.init({
-	host: '127.0.0.1',
-	port: 3000
-}).then(() => {
-	// Connection has been established
-	console.log('Connected!')
-	// Set device status:
-	return core.setStatus({
-		statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
-		messages: ['Everything is awesome!']
+core
+	.init({
+		host: '127.0.0.1',
+		port: 3000,
 	})
-})
-.catch((err) => {
-	console.log(err)
-})
+	.then(() => {
+		// Connection has been established
+		console.log('Connected!')
+		// Set device status:
+		return core.setStatus({
+			statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+			messages: ['Everything is awesome!'],
+		})
+	})
+	.catch((err) => {
+		console.log(err)
+	})
 ```
 
 ## Development
-* Installation
-  * Install Yarn from https://yarnpkg.com
-  * Install Jest, `yarn global add jest`
-  * Install npm dependencies, `yarn`
-* Build
-  * Build, `yarn build`
-  * Run tests, `yarn test`
-  * Run tests & watch, `yarn watch`
+
+This library is developed as part of [Sofie Server Core](https://github.com/nrkno/tv-automation-server-core). See there for more instructions
+
+- Build
+  - Build, `yarn build`
+  - Run tests, `yarn test`
+  - Run tests & watch, `yarn watch`
 
 ## DDP Client
 
@@ -68,10 +70,10 @@ ddp.connect((err: any) => {
 	if (err) {
 		/* ... handle error ... */
 		return
-	} 
+	}
 	let subId = ddp.subscribe('expectedMediaItems')
 	ddp.observe('expectedMediaItems', /* added cb */, /* changed cb */, /* removed cb */)
-	
+
 	/* ... then later ... */
 	ddp.unsub(subId)
 	ddp.close()

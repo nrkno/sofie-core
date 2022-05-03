@@ -1,14 +1,16 @@
-import { UserId } from '../typings/meteor'
-import { Time, registerCollection, ProtectedString } from '../lib'
+import { Time } from '../lib'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
-import { RundownPlaylistId } from './RundownPlaylists'
-import { SnapshotId } from './Snapshots'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
-
-/** A string, identifying a Evaluation */
-export type EvaluationId = ProtectedString<'EvaluationId'>
+import {
+	EvaluationId,
+	StudioId,
+	RundownPlaylistId,
+	SnapshotId,
+	OrganizationId,
+	UserId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+export { EvaluationId }
 
 export interface Evaluation extends EvaluationBase {
 	_id: EvaluationId
@@ -25,8 +27,7 @@ export interface EvaluationBase {
 	snapshots?: Array<SnapshotId>
 }
 
-export const Evaluations = createMongoCollection<Evaluation, Evaluation>('evaluations')
-registerCollection('Evaluations', Evaluations)
+export const Evaluations = createMongoCollection<Evaluation>(CollectionName.Evaluations)
 
 registerIndex(Evaluations, {
 	organizationId: 1,

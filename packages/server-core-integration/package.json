@@ -1,6 +1,6 @@
 {
 	"name": "@tv2media/server-core-integration",
-	"version": "1.37.1-in-testing.1",
+	"version": "1.41.0",
 	"description": "Library for connecting to Core",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -42,13 +42,12 @@
 		"copytypes": "copyfiles -u 1 src/types/* dist",
 		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"send-coverage": "codecov -p ../..",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
 		"license-validate": "node-license-validator -p -d --allow-licenses MIT BSD BSD-2-Clause BSD-3-Clause 0BSD ISC Apache Apache-2.0 Unlicense"
 	},
 	"engines": {
-		"node": ">=12.20"
+		"node": "^14.18 || ^16.14"
 	},
 	"files": [
 		"/dist",
@@ -71,7 +70,7 @@
 	],
 	"dependencies": {
 		"data-store": "^4.0.3",
-		"ejson": "^2.2.0",
+		"ejson": "^2.2.2",
 		"faye-websocket": "^0.11.4",
 		"got": "^11.8.2",
 		"tslib": "^2.3.1",
@@ -79,10 +78,10 @@
 	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
-			"prettier --write"
+			"prettier"
 		],
 		"*.{ts,tsx}": [
-			"yarn lint --fix"
+			"yarn lint"
 		]
 	}
 }

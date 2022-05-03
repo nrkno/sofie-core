@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import ClassNames from 'classnames'
 import {
 	DashboardLayoutNextBreakTiming,
@@ -7,7 +6,7 @@ import {
 	RundownLayoutNextBreakTiming,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -39,14 +38,7 @@ export class NextBreakTimingPanelInner extends MeteorReactComponent<Translated<I
 					'playlist-end-time-panel timing',
 					isDashboardLayout ? (panel as DashboardLayoutNextBreakTiming).customClasses : undefined
 				)}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(panel as DashboardLayoutNextBreakTiming) }),
-								fontSize: ((panel as DashboardLayoutNextBreakTiming).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle({ ...(panel as DashboardLayoutNextBreakTiming) }) : {}}
 			>
 				<NextBreakTiming loop={playlist.loop} breakText={panel.name} />
 			</div>

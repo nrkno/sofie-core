@@ -7,15 +7,15 @@ import {
 	RundownLayoutPartName,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { dashboardElementPosition } from './DashboardPanel'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { findPieceInstanceToShowFromInstances, IFoundPieceInstance } from '../PieceIcons/utils'
 import { pieceIconSupportedLayers } from '../PieceIcons/PieceIcon'
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { RundownUtils } from '../../lib/rundown'
 
 interface IPartNamePanelProps {
 	visible?: boolean
@@ -42,10 +42,10 @@ class PartNamePanelInner extends MeteorReactComponent<
 
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		const { t, panel } = this.props
+		const { t } = this.props
 
 		const sourceLayerType = this.props.instanceToShow?.sourceLayer?.type
-		let backgroundSourceLayer = sourceLayerType ? sourceLayerTypeToString(sourceLayerType) : undefined
+		let backgroundSourceLayer = sourceLayerType ? RundownUtils.getSourceLayerClassName(sourceLayerType) : undefined
 
 		if (!backgroundSourceLayer) {
 			backgroundSourceLayer = ''
@@ -56,14 +56,7 @@ class PartNamePanelInner extends MeteorReactComponent<
 				className={ClassNames('part-name-panel', {
 					[backgroundSourceLayer || 'unknown']: true,
 				})}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPartName) }),
-								fontSize: ((panel as DashboardLayoutPartName).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutPartName) : {}}
 			>
 				<div className="wrapper">
 					<span className="part-name-title">
@@ -76,25 +69,6 @@ class PartNamePanelInner extends MeteorReactComponent<
 	}
 }
 
-function sourceLayerTypeToString(sourceLayerType: SourceLayerType) {
-	if (!sourceLayerType) return
-
-	switch (sourceLayerType) {
-		case SourceLayerType.GRAPHICS:
-			return 'graphics'
-		case SourceLayerType.LIVE_SPEAK:
-			return 'live-speak'
-		case SourceLayerType.REMOTE:
-			return 'remote'
-		case SourceLayerType.SPLITS:
-			return 'splits'
-		case SourceLayerType.VT:
-			return 'vt'
-		case SourceLayerType.CAMERA:
-			return 'camera'
-	}
-}
-
 export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, IPartNamePanelTrackedProps>(
 	(props) => {
 		const selectedPartInstanceId =
@@ -103,7 +77,9 @@ export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, I
 		let instanceToShow: IFoundPieceInstance | undefined
 
 		if (selectedPartInstanceId) {
-			const selectedPartInstance = props.playlist.getActivePartInstances({ _id: selectedPartInstanceId })[0]
+			const selectedPartInstance = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
+				_id: selectedPartInstanceId,
+			})[0]
 			if (selectedPartInstance && props.panel.showPieceIconColor) {
 				name = selectedPartInstance.part?.title
 				const pieceInstances = PieceInstances.find({ partInstanceId: selectedPartInstance._id }).fetch()

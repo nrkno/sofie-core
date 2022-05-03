@@ -1,12 +1,14 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContent } from 'timeline-state-resolver-types'
-import { Time } from './common'
-import { ExpectedPackage } from './package'
-import { SomeTimelineContent } from './content'
-import { ITranslatableMessage } from './translations'
-import { PartEndState } from './api'
 import { ActionUserData } from './action'
+import { PartEndState } from './api'
+import { Time } from './common'
+import { SomeContent, WithTimeline } from './content'
+import { NoteSeverity } from './lib'
+import { ExpectedPackage } from './package'
+import { ITranslatableMessage } from './translations'
 
-export interface IBlueprintRundownPlaylistInfo {
+/** Playlist, as generated from Blueprints */
+export interface IBlueprintResultRundownPlaylist {
 	/** Rundown playlist slug - user-presentable name */
 	name: string
 
@@ -18,6 +20,26 @@ export interface IBlueprintRundownPlaylistInfo {
 	loop?: boolean
 	/** Should time-of-day clocks be used instead of countdowns by default */
 	timeOfDayCountdowns?: boolean
+
+	/** Arbitraty data used by rundowns */
+	metaData?: unknown
+}
+/** Playlist, when reported from Core  */
+export interface IBlueprintRundownPlaylist extends IBlueprintResultRundownPlaylist {
+	_id: string
+	/** External ID (source) of the playlist */
+	externalId: string
+	created: Time
+	modified: Time
+	/** If the playlist is active or not */
+	isActive: boolean
+	/** Is the playlist in rehearsal mode (can be used, when active: true) */
+	rehearsal: boolean
+	/** Actual time of playback starting */
+	startedPlayback?: Time
+
+	/** The number of rundowns in the playlist */
+	rundownCount: number
 }
 
 export enum PlaylistTimingType {
@@ -32,6 +54,10 @@ export interface PlaylistTimingBase {
 
 export interface PlaylistTimingNone {
 	type: PlaylistTimingType.None
+	/** Expected duration of the rundown playlist
+	 *  If set, the over/under diff will be calculated based on this value. Otherwise it will be planned content duration - played out duration.
+	 */
+	expectedDuration?: number
 }
 
 export interface PlaylistTimingForwardTime extends PlaylistTimingBase {
@@ -120,6 +146,11 @@ export interface IBlueprintSegmentRundown<TMetadata = unknown> {
 	metaData?: TMetadata
 }
 
+export enum SegmentDisplayMode {
+	Timeline = 'timeline',
+	Storyboard = 'storyboard',
+}
+
 /** The Segment generated from Blueprint */
 export interface IBlueprintSegment<TMetadata = unknown> {
 	/** User-presentable name (Slug) for the Title */
@@ -130,12 +161,31 @@ export interface IBlueprintSegment<TMetadata = unknown> {
 	isHidden?: boolean
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */
 	identifier?: string
+
 	/** Show the minishelf of the segment */
 	showShelf?: boolean
+	/** Segment display mode. Default mode is *SegmentDisplayMode.Timeline* */
+	displayAs?: SegmentDisplayMode
 }
 /** The Segment sent from Core */
 export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegment<TMetadata> {
 	_id: string
+}
+
+/** Timings for the inTransition, when supported and allowed */
+export interface IBlueprintPartInTransition {
+	/** Duration this transition block a take for. After this time, another take is allowed which may cut this transition off early */
+	blockTakeDuration: number
+	/** Duration the previous part be kept playing once the transition is started. Typically the duration of it remaining in-vision */
+	previousPartKeepaliveDuration: number
+	/** Duration the pieces of the part should be delayed for once the transition starts. Typically the duration until the new part is in-vision */
+	partContentDelayDuration: number
+}
+
+/** Timings for the outTransition, when supported and allowed */
+export interface IBlueprintPartOutTransition {
+	/** How long to keep this part alive after taken out  */
+	duration: number
 }
 
 export interface IBlueprintMutatablePart<TMetadata = unknown> {
@@ -148,16 +198,15 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	autoNext?: boolean
 	/** How much to overlap on when doing autonext */
 	autoNextOverlap?: number
-	/** How long until this part is ready to take over from the previous */
-	prerollDuration?: number
-	/** How long until this part is ready to take over from the previous (during transition) */
-	transitionPrerollDuration?: number | null
-	/** How long to keep the old part alive during the transition */
-	transitionKeepaliveDuration?: number | null
-	/** How long the transition is active for (used to block another take from happening) */
-	transitionDuration?: number | null
-	/** Should we block a transition at the out of this Part */
-	disableOutTransition?: boolean
+
+	/** Timings for the inTransition, when supported and allowed */
+	inTransition?: IBlueprintPartInTransition
+
+	/** Should we block the inTransition when starting the next Part */
+	disableNextInTransition?: boolean
+
+	/** Timings for the outTransition, when supported and allowed */
+	outTransition?: IBlueprintPartOutTransition
 
 	/** Expected duration of the line, in milliseconds */
 	expectedDuration?: number
@@ -223,12 +272,15 @@ export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatable
 	 *
 	 * @type {{
 	 * 		message: ITranslatableMessage,
+	 *      severity?: NoteSeverity
 	 * 		color?: string
 	 * 	}}
 	 * @memberof IBlueprintPart
 	 */
 	invalidReason?: {
 		message: ITranslatableMessage
+		/** Set the severity of the displayed invalid part note */
+		severity?: NoteSeverity
 		color?: string
 	}
 
@@ -273,6 +325,9 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 
 	/** Whether the PartInstance is an orphan (the Part referenced does not exist). Indicates the reason it is orphaned */
 	orphaned?: 'adlib-part' | 'deleted'
+
+	/** If taking out of the current part is blocked, this is the time it is blocked until */
+	blockTakeUntil?: number
 }
 
 export interface IBlueprintPartInstanceTimings {
@@ -325,7 +380,10 @@ export interface IBlueprintDirectPlayAdLibAction extends IBlueprintDirectPlayBas
 export type IBlueprintDirectPlay = IBlueprintDirectPlayAdLibPiece | IBlueprintDirectPlayAdLibAction
 
 export interface IBlueprintPieceGeneric<TMetadata = unknown> {
-	/** ID of the source object in the gateway */
+	/**
+	 * An identifier for this Piece
+	 * It should be unique within the part it belongs to, and consistent across ingest updates
+	 */
 	externalId: string
 	/** User-presentable name for the timeline item */
 	name: string
@@ -340,9 +398,10 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** Layer output this piece belongs to */
 	outputLayerId: string
 	/** The object describing the item in detail */
-	content: SomeTimelineContent
+	content: WithTimeline<SomeContent>
 
 	/** The transition used by this piece to transition to and from the piece */
+	/** @deprecated */
 	transitions?: {
 		/** In transition for the piece */
 		inTransition?: PieceTransition
@@ -350,22 +409,18 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 		outTransition?: PieceTransition
 	}
 
-	/** Duration to preroll/overlap when running this adlib */
-	adlibPreroll?: number
+	/**
+	 * How long this piece needs to prepare its content before it will have an effect on the output.
+	 * This allows for flows such as starting a clip playing, then cutting to it after some ms once the player is outputting frames.
+	 */
+	prerollDuration?: number
+
 	/** Whether the adlib should always be inserted queued */
 	toBeQueued?: boolean
 	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
 	 * @deprecated replaced by .expectedPackages
 	 */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
-	/** When queued, should the adlib autonext */
-	adlibAutoNext?: boolean
-	/** When queued, how much overlap with the next part */
-	adlibAutoNextOverlap?: number
-	/** When queued, block transition at the end of the part */
-	adlibDisableOutTransition?: boolean
-	/** When queued, how long to keep the old part alive */
-	adlibTransitionKeepAlive?: number
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
 
@@ -393,6 +448,13 @@ export interface ExpectedPlayoutItemGeneric {
 }
 export { ExpectedPlayoutItemContent }
 
+/** Special types of pieces. Some are not always used in all circumstances */
+export enum IBlueprintPieceType {
+	Normal = 'normal',
+	InTransition = 'in-transition',
+	OutTransition = 'out-transition',
+}
+
 /** A Single item in a "line": script, VT, cameras. Generated by Blueprint */
 export interface IBlueprintPiece<TMetadata = unknown> extends IBlueprintPieceGeneric<TMetadata> {
 	/** Timeline enabler. When the piece should be active on the timeline. */
@@ -405,7 +467,11 @@ export interface IBlueprintPiece<TMetadata = unknown> extends IBlueprintPieceGen
 	virtual?: boolean
 	/** The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0 */
 	continuesRefId?: string // TODO - is this useful to define from the blueprints?
-	isTransition?: boolean
+
+	/** Whether this piece is a special piece */
+	pieceType?: IBlueprintPieceType
+
+	/** Whether this piece should be extended into the next part when HOLD is used */
 	extendOnHold?: boolean
 
 	/** Whether the piece affects the output of the Studio or is describing an invisible state within the Studio */
@@ -462,12 +528,14 @@ export interface IBlueprintAdLibPiece<TMetadata = unknown> extends IBlueprintPie
 	currentPieceTags?: string[]
 	/** Piece tags to use to determine if action is set as next */
 	nextPieceTags?: string[]
-	/** String that can be used to identify adlibs that are equivalent to each other */
+	/**
+	 * String that can be used to identify adlibs that are equivalent to each other,
+	 * if there are multiple Adlibs with the same uniquenessId,
+	 * only one of them should be displayed in the GUI.
+	 */
 	uniquenessId?: string
 	/** When not playing, display in the UI as playing, and vice versa. Useful for Adlibs that toggle something off when taken */
 	invertOnAirState?: boolean
-	/** Do not assign a hotkey to this adlib */
-	noHotKey?: boolean
 }
 /** The AdLib piece sent from Core */
 export interface IBlueprintAdLibPieceDB<TMetadata = unknown> extends IBlueprintAdLibPiece<TMetadata> {

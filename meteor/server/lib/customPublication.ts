@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { PubSub } from '../../lib/api/pubsub'
-import { DBObj, unprotectString } from '../../lib/lib'
+import { ProtectedString, unprotectString } from '../../lib/lib'
 import _ from 'underscore'
 
 class CustomPublish {
@@ -50,13 +50,18 @@ export function meteorCustomPublish(
 	genericMeteorCustomPublish(publicationName, customCollectionName, cb)
 }
 
-class CustomPublishArray {
+export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 	private _docs: { [id: string]: DBObj } = {}
 	private _firstRun: boolean = true
 	constructor(private _publication: CustomPublish) {}
 	onStop(callback: () => void) {
 		this._publication.onStop(callback)
 	}
+
+	public get isFirstRun(): boolean {
+		return this._firstRun
+	}
+
 	updatedDocs(newDocs: DBObj[]) {
 		const newIds: { [id: string]: true } = {}
 		// figure out which documents have changed
@@ -74,7 +79,10 @@ class CustomPublishArray {
 				this._docs[id] = _.clone(newDoc)
 
 				this._publication.added(id, newDoc)
-			} else if (!_.isEqual(this._docs[id], newDoc)) {
+			} else if (
+				this._docs[id]['mappingsHash'] !== newDoc['mappingsHash'] || // Fast-track for the timeline publications
+				!_.isEqual(this._docs[id], newDoc)
+			) {
 				// changed
 
 				this._publication.changed(id, newDoc)
@@ -98,10 +106,10 @@ class CustomPublishArray {
 }
 
 /** Convenience function for making custom publications of array-data */
-export function meteorCustomPublishArray(
+export function meteorCustomPublishArray<DBObj extends { _id: ProtectedString<any> }>(
 	publicationName: PubSub,
 	customCollectionName: string,
-	cb: (publication: CustomPublishArray, ...args: any[]) => void
+	cb: (publication: CustomPublishArray<DBObj>, ...args: any[]) => void
 ): void {
 	genericMeteorCustomPublish(publicationName, customCollectionName, (pub, ...args) => {
 		cb(new CustomPublishArray(pub), ...args)

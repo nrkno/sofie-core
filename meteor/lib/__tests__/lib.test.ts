@@ -3,34 +3,20 @@ import { Mongo } from 'meteor/mongo'
 import { afterEachInFiber, testInFiber } from '../../__mocks__/helpers/jest'
 import { setLogLevel } from '../../server/logging'
 import {
-	getHash,
 	MeteorPromiseCall,
 	waitForPromise,
 	getCurrentTime,
 	systemTime,
-	literal,
-	applyClassToDocument,
-	formatDateAsTimecode,
-	formatDurationAsTimecode,
 	formatDateTime,
-	removeNullyProperties,
-	objectPathGet,
-	objectPathSet,
 	stringifyObjects,
-	// getRank,
 	partial,
 	partialExceptId,
 	escapeHtml,
 	protectString,
-	mongoFindOptions,
-	ProtectedString,
 	equalSets,
 	equivalentArrays,
 	LogLevel,
 } from '../lib'
-import { TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
-import { TSR } from '@sofie-automation/blueprints-integration'
-import { FindOptions } from '../typings/meteor'
 import { MeteorMock } from '../../__mocks__/meteor'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
@@ -39,14 +25,7 @@ describe('lib/lib', () => {
 	afterEachInFiber(() => {
 		MeteorMock.mockSetServerEnvironment()
 	})
-	testInFiber('getHash', () => {
-		const h0 = getHash('abc')
-		const h1 = getHash('abcd')
-		const h2 = getHash('abc')
 
-		expect(h0).toEqual(h2)
-		expect(h0).not.toEqual(h1)
-	})
 	testInFiber('MeteorPromiseCall', () => {
 		// set up method:
 		Meteor.methods({
@@ -76,115 +55,9 @@ describe('lib/lib', () => {
 		MeteorMock.mockSetServerEnvironment()
 		expect(getCurrentTime() / 1000).toBeCloseTo(Date.now() / 1000, 1)
 	})
-	testInFiber('literal', () => {
-		const obj = literal<TimelineObjGeneric>({
-			id: 'abc',
-			enable: {
-				start: 0,
-			},
-			layer: 'L1',
-			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.RUNDOWN,
-		})
-		expect(obj).toEqual({
-			id: 'abc',
-			enable: {
-				start: 0,
-			},
-			layer: 'L1',
-			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.RUNDOWN,
-		})
-		const layer: string | number = obj.layer // just to check typings
-		expect(layer).toBeTruthy()
-	})
-	testInFiber('applyClassToDocument', () => {
-		class MyClass {
-			public publ: string
-			private priv: string
-			constructor(from) {
-				Object.keys(from).forEach((key) => {
-					this[key] = from[key]
-				})
-			}
-			getPriv() {
-				return this.priv
-			}
-			getPubl() {
-				return this.publ
-			}
-		}
-		const doc = applyClassToDocument(MyClass, {
-			priv: 'aaa',
-			publ: 'bbb',
-		})
-		expect(doc.getPriv()).toEqual('aaa')
-		expect(doc.getPubl()).toEqual('bbb')
-	})
-	testInFiber('formatDateAsTimecode', () => {
-		const d = new Date('2019-01-01 13:04:15.145')
-		expect(d.getMilliseconds()).toEqual(145)
-		expect(formatDateAsTimecode(d)).toEqual('13:04:15:03')
-	})
-	testInFiber('formatDurationAsTimecode', () => {
-		expect(formatDurationAsTimecode((2 * 3600 + 5 * 60 + 7) * 1000 + 500)).toEqual('02:05:07:12')
-	})
+
 	testInFiber('formatDateTime', () => {
 		expect(formatDateTime(1556194064374)).toMatch(/2019-04-\d{2} \d{2}:\d{2}:\d{2}/)
-	})
-	testInFiber('removeNullyProperties', () => {
-		expect(
-			removeNullyProperties({
-				a: 1,
-				b: 2,
-				c: null,
-				e: undefined,
-				f: {
-					a: 1,
-					b: 2,
-					c: null,
-					e: undefined,
-				},
-			})
-		).toEqual({
-			a: 1,
-			b: 2,
-			e: undefined,
-			f: {
-				a: 1,
-				b: 2,
-				e: undefined,
-			},
-		})
-	})
-	testInFiber('objectPathGet', () => {
-		expect(
-			objectPathGet(
-				{
-					a: 1,
-					b: {
-						c: 1,
-						d: {
-							e: 2,
-						},
-					},
-				},
-				'b.d.e'
-			)
-		).toEqual(2)
-	})
-	testInFiber('objectPathSet', () => {
-		const o: any = {
-			a: 1,
-			b: {
-				c: 1,
-				d: {
-					e: 2,
-				},
-			},
-		}
-		objectPathSet(o, 'b.d.f', 42)
-		expect(o.b.d.f).toEqual(42)
 	})
 	testInFiber('stringifyObjects', () => {
 		const o: any = {
@@ -335,179 +208,6 @@ describe('lib/lib', () => {
 		)
 	})
 
-	describe('mongoFindOptions', () => {
-		const rawDocs = ['1', '2', '3', '4', '5', '6', '7'].map((s) => ({ _id: protectString(s) }))
-
-		test('nothing', () => {
-			expect(mongoFindOptions(rawDocs)).toEqual(rawDocs)
-			expect(mongoFindOptions(rawDocs, {})).toEqual(rawDocs)
-		})
-		test('range', () => {
-			expect(mongoFindOptions(rawDocs, { limit: 4 }).map((s) => s._id)).toEqual(['1', '2', '3', '4'])
-			expect(mongoFindOptions(rawDocs, { skip: 4 }).map((s) => s._id)).toEqual(['5', '6', '7'])
-			expect(mongoFindOptions(rawDocs, { skip: 2, limit: 3 }).map((s) => s._id)).toEqual(['3', '4', '5'])
-		})
-		test('transform', () => {
-			expect(() => mongoFindOptions(rawDocs, { transform: () => ({ _id: '1' }) })).toThrowError(
-				'options.transform not implemented'
-			)
-		})
-
-		interface SomeDoc {
-			_id: ProtectedString<any>
-			val: string
-			val2: string
-		}
-
-		const rawDocs2: SomeDoc[] = [
-			{
-				_id: protectString('1'),
-				val: 'a',
-				val2: 'c',
-			},
-			{
-				_id: protectString('2'),
-				val: 'x',
-				val2: 'c',
-			},
-			{
-				_id: protectString('3'),
-				val: 'n',
-				val2: 'b',
-			},
-		]
-
-		test('fields', () => {
-			// those are covered by MongoFieldSpecifier type:
-			// expect(() => mongoFindOptions(rawDocs, { fields: { val: 0, val2: 1 } })).toThrowError('options.fields cannot contain both include and exclude rules')
-			// expect(() => mongoFindOptions(rawDocs, { fields: { _id: 0, val2: 1 } })).not.toThrowError()
-			// expect(() => mongoFindOptions(rawDocs, { fields: { _id: '1', val: 0 } })).not.toThrowError()
-
-			expect(mongoFindOptions(rawDocs2, { fields: { val: 0 } } as FindOptions<SomeDoc>)).toEqual([
-				{
-					_id: '1',
-					val2: 'c',
-				},
-				{
-					_id: '2',
-					val2: 'c',
-				},
-				{
-					_id: '3',
-					val2: 'b',
-				},
-			])
-			expect(mongoFindOptions(rawDocs2, { fields: { val: 0, _id: 0 } } as FindOptions<SomeDoc>)).toEqual([
-				{
-					val2: 'c',
-				},
-				{
-					val2: 'c',
-				},
-				{
-					val2: 'b',
-				},
-			])
-			expect(mongoFindOptions(rawDocs2, { fields: { val: 1 } } as FindOptions<SomeDoc>)).toEqual([
-				{
-					_id: '1',
-					val: 'a',
-				},
-				{
-					_id: '2',
-					val: 'x',
-				},
-				{
-					_id: '3',
-					val: 'n',
-				},
-			])
-			// those are covered by MongoFieldSpecifier type:
-			// expect(mongoFindOptions(rawDocs2, { fields: { val: 1, _id: 0 } })).toEqual([
-			// 	{
-			// 		val: 'a',
-			// 	},
-			// 	{
-			// 		val: 'x',
-			// 	},
-			// 	{
-			// 		val: 'n',
-			// 	},
-			// ])
-		})
-
-		test('fields2', () => {
-			expect(mongoFindOptions(rawDocs2, { sort: { val: 1 } } as FindOptions<SomeDoc>)).toEqual([
-				{
-					_id: '1',
-					val: 'a',
-					val2: 'c',
-				},
-				{
-					_id: '3',
-					val: 'n',
-					val2: 'b',
-				},
-				{
-					_id: '2',
-					val: 'x',
-					val2: 'c',
-				},
-			])
-			expect(mongoFindOptions(rawDocs2, { sort: { val: -1 } } as FindOptions<SomeDoc>)).toEqual([
-				{
-					_id: '2',
-					val: 'x',
-					val2: 'c',
-				},
-				{
-					_id: '3',
-					val: 'n',
-					val2: 'b',
-				},
-				{
-					_id: '1',
-					val: 'a',
-					val2: 'c',
-				},
-			])
-
-			expect(mongoFindOptions(rawDocs2, { sort: { val2: 1, val: 1 } } as FindOptions<SomeDoc>)).toEqual([
-				{
-					_id: '3',
-					val: 'n',
-					val2: 'b',
-				},
-				{
-					_id: '1',
-					val: 'a',
-					val2: 'c',
-				},
-				{
-					_id: '2',
-					val: 'x',
-					val2: 'c',
-				},
-			])
-			expect(mongoFindOptions(rawDocs2, { sort: { val2: 1, val: -1 } } as FindOptions<SomeDoc>)).toEqual([
-				{
-					_id: '3',
-					val: 'n',
-					val2: 'b',
-				},
-				{
-					_id: '2',
-					val: 'x',
-					val2: 'c',
-				},
-				{
-					_id: '1',
-					val: 'a',
-					val2: 'c',
-				},
-			])
-		})
-	})
 	testInFiber('equalSets', () => {
 		expect(equalSets(new Set(['a', 'b', 'c']), new Set(['c', 'b', 'a']))).toBe(true)
 		expect(equalSets(new Set(['a', 'b', 'c']), new Set(['d', 'b', 'a']))).toBe(false)

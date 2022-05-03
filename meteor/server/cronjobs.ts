@@ -1,8 +1,8 @@
 import { Rundowns } from '../lib/collections/Rundowns'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
-import { PeripheralDevices } from '../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
-import { getCurrentTime } from '../lib/lib'
+import { getCurrentTime, stringifyError, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
@@ -11,6 +11,9 @@ import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
 import { CASPARCG_RESTART_TIME } from '../lib/constants'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
+import { QueueStudioJob } from './worker/worker'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { fetchStudioIds } from '../lib/collections/optimizations'
 import { RundownPlaylists } from '../lib/collections/RundownPlaylists'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { Parts } from '../lib/collections/Parts'
@@ -22,6 +25,13 @@ const lowPrioFcn = (fcn: () => any) => {
 	Meteor.setTimeout(() => {
 		fcn()
 	}, Math.random() * 10 * 1000)
+}
+/** Returns true if it is "low-season" (like during the night) when it is suitable to run cronjobs */
+function isLowSeason() {
+	const d = new Date(getCurrentTime())
+	return (
+		d.getHours() >= 4 && d.getHours() < 5 // It is nighttime
+	)
 }
 
 let lastNightlyCronjob = 0
@@ -109,51 +119,54 @@ export function nightlyCronjobInner() {
 	}
 
 	const ps: Array<Promise<any>> = []
-	// restart casparcg
+	// Restart casparcg
 	if (system?.cron?.casparCGRestart?.enabled) {
 		PeripheralDevices.find({
-			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			type: PeripheralDeviceType.PLAYOUT,
 		}).forEach((device) => {
 			PeripheralDevices.find({
 				parentDeviceId: device._id,
 			}).forEach((subDevice) => {
-				if (
-					subDevice.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
-					subDevice.subType === TSR.DeviceType.CASPARCG
-				) {
+				if (subDevice.type === PeripheralDeviceType.PLAYOUT && subDevice.subType === TSR.DeviceType.CASPARCG) {
 					logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 
 					ps.push(
-						new Promise<void>((resolve, reject) => {
-							PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-								subDevice._id,
-								(err) => {
-									if (err) {
-										logger.error('Cronjob: "' + subDevice._id + '": CasparCG restart error', err)
-										if ((err + '').match(/timeout/i)) {
-											// If it was a timeout, maybe we could try again later?
-											if (failedRetries < 5) {
-												failedRetries++
-												lastNightlyCronjob = previousLastNightlyCronjob // try again later
-											}
-											resolve()
-										} else {
-											reject(err)
-										}
-									} else {
-										logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
-										resolve()
+						PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+							subDevice._id,
+							CASPARCG_RESTART_TIME,
+							'restartCasparCG'
+						)
+							.then(() => {
+								logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
+							})
+							.catch((err) => {
+								logger.error(
+									`Cronjob: "${subDevice._id}": CasparCG restart error: ${stringifyError(err)}`
+								)
+
+								if ((err + '').match(/timeout/i)) {
+									// If it was a timeout, maybe we could try again later?
+									if (failedRetries < 5) {
+										failedRetries++
+										lastNightlyCronjob = previousLastNightlyCronjob // try again later
 									}
-								},
-								CASPARCG_RESTART_TIME,
-								'restartCasparCG'
-							)
-						})
+								} else {
+									// Propogate the error
+									throw err
+								}
+							})
 					)
 				}
 			})
 		})
 	}
+	try {
+		waitForPromiseAll(ps)
+		failedRetries = 0
+	} catch (err) {
+		logger.error(err)
+	}
+
 	if (system?.cron?.storeRundownSnapshots?.enabled) {
 		const filter = system.cron.storeRundownSnapshots.rundownNames?.length
 			? { name: { $in: system.cron.storeRundownSnapshots.rundownNames } }
@@ -180,11 +193,9 @@ export function nightlyCronjobInner() {
 
 Meteor.startup(() => {
 	function nightlyCronjob() {
-		const d = new Date(getCurrentTime())
 		const timeSinceLast = getCurrentTime() - lastNightlyCronjob
 		if (
-			d.getHours() >= 4 &&
-			d.getHours() < 5 && // It is nighttime
+			isLowSeason() &&
 			timeSinceLast > 20 * 3600 * 1000 // was last run yesterday
 		) {
 			nightlyCronjobInner()
@@ -193,4 +204,21 @@ Meteor.startup(() => {
 
 	Meteor.setInterval(nightlyCronjob, 5 * 60 * 1000) // check every 5 minutes
 	nightlyCronjob()
+
+	function cleanupPlaylists(force?: boolean) {
+		if (isLowSeason() || force) {
+			// Ensure there are no empty playlists on an interval
+			const studioIds = fetchStudioIds({})
+			Promise.all(
+				studioIds.map(async (studioId) => {
+					const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
+					await job.complete
+				})
+			).catch((e) => {
+				logger.error(`Cron: CleanupPlaylists error: ${e}`)
+			})
+		}
+	}
+	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
+	cleanupPlaylists(true)
 })

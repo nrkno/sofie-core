@@ -1,9 +1,9 @@
-import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { registerIndex } from '../database'
-
-export type BucketId = ProtectedString<'BucketId'>
+import { BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+export { BucketId }
 
 /**
  * A Bucket is an container for AdLib pieces that do not come from a MOS gateway and are
@@ -18,8 +18,8 @@ export interface Bucket {
 
 	/** The studio this bucket belongs to, */
 	studioId: StudioId
-	/** Only the owner can delete a bucket from the RundownView UI. Anyone who can see the bucket can add and remove stuff from it. */
-	userId: string | null
+	// /** Only the owner can delete a bucket from the RundownView UI. Anyone who can see the bucket can add and remove stuff from it. */
+	// userId: string | null
 
 	/** The default width of the bucket. Can possibly be runtime-modified by the user (stored in localStorage?) */
 	width?: number
@@ -28,8 +28,7 @@ export interface Bucket {
 	buttonWidthScale: number
 	buttonHeightScale: number
 }
-export const Buckets = createMongoCollection<Bucket, Bucket>('buckets')
-registerCollection('Buckets', Buckets)
+export const Buckets = createMongoCollection<Bucket>(CollectionName.Buckets)
 
 registerIndex(Buckets, {
 	studioId: 1,

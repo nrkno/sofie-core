@@ -43,7 +43,7 @@ describe('Util', () => {
 					},
 					attr1: 'hello',
 				},
-				(val) => {
+				async (val) => {
 					return new Promise((resolve) => {
 						const f = () => {
 							if (typeof val === 'object') {

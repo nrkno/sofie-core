@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { PubSub } from '../../../../../lib/api/pubsub'
@@ -275,15 +275,18 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 
 	const { t } = useTranslation()
 
-	function onEditEntry(triggeredActionId: TriggeredActionId) {
-		if (selectedTriggeredActionId === triggeredActionId) {
-			setSelectedTriggeredActionId(null)
-		} else {
-			setSelectedTriggeredActionId(triggeredActionId)
-		}
-	}
+	const onEditEntry = useCallback(
+		(triggeredActionId: TriggeredActionId) => {
+			if (selectedTriggeredActionId === triggeredActionId) {
+				setSelectedTriggeredActionId(null)
+			} else {
+				setSelectedTriggeredActionId(triggeredActionId)
+			}
+		},
+		[selectedTriggeredActionId]
+	)
 
-	function onNewTriggeredAction() {
+	const onNewTriggeredAction = useCallback(() => {
 		MeteorCall.triggeredActions
 			.createTriggeredActions(props.showStyleBaseId ?? null, {
 				_rank:
@@ -299,50 +302,53 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 					)?._rank ?? 0) + 1000,
 			})
 			.catch(console.error)
-	}
+	}, [props.showStyleBaseId])
 
-	function onRemoveTriggeredAction(triggeredActionsId: TriggeredActionId) {
-		MeteorCall.triggeredActions.removeTriggeredActions(triggeredActionsId).catch(console.error)
-	}
+	const onRemoveTriggeredAction = useCallback((triggeredActionId: TriggeredActionId) => {
+		MeteorCall.triggeredActions.removeTriggeredActions(triggeredActionId).catch(console.error)
+	}, [])
 
-	function onDuplicateEntry(triggeredActionId: TriggeredActionId) {
-		const triggeredAction = TriggeredActions.findOne(triggeredActionId)
-		if (triggeredAction) {
-			const nextTriggeredActionRank =
-				TriggeredActions.find(
-					{
-						showStyleBaseId: triggeredAction.showStyleBaseId,
-						_rank: {
-							$gt: triggeredAction._rank,
+	const onDuplicateEntry = useCallback(
+		(triggeredActionId: TriggeredActionId) => {
+			const triggeredAction = TriggeredActions.findOne(triggeredActionId)
+			if (triggeredAction) {
+				const nextTriggeredActionRank =
+					TriggeredActions.find(
+						{
+							showStyleBaseId: triggeredAction.showStyleBaseId,
+							_rank: {
+								$gt: triggeredAction._rank,
+							},
 						},
-					},
-					{
-						sort: {
-							_rank: 1,
-						},
-						limit: 1,
-					}
-				).fetch()[0]?._rank ?? triggeredAction._rank + 1000
-			MeteorCall.triggeredActions
-				.createTriggeredActions(
-					triggeredAction.showStyleBaseId,
-					omit(
-						{ ...triggeredAction, triggers: [], _rank: (triggeredAction._rank + nextTriggeredActionRank) / 2 },
-						'_id',
-						'_rundownVersionHash',
-						'showStyleBaseId'
+						{
+							sort: {
+								_rank: 1,
+							},
+							limit: 1,
+						}
+					).fetch()[0]?._rank ?? triggeredAction._rank + 1000
+				MeteorCall.triggeredActions
+					.createTriggeredActions(
+						triggeredAction.showStyleBaseId,
+						omit(
+							{ ...triggeredAction, triggers: [], _rank: (triggeredAction._rank + nextTriggeredActionRank) / 2 },
+							'_id',
+							'_rundownVersionHash',
+							'showStyleBaseId'
+						)
 					)
-				)
-				.then((duplicateTriggeredActionId) => setSelectedTriggeredActionId(duplicateTriggeredActionId))
-				.catch(console.error)
-		}
-	}
+					.then((duplicateTriggeredActionId) => setSelectedTriggeredActionId(duplicateTriggeredActionId))
+					.catch(console.error)
+			}
+		},
+		[setSelectedTriggeredActionId]
+	)
 
-	function onDownloadActions() {
+	const onDownloadActions = useCallback(() => {
 		window.location.replace(`/actionTriggers/download/${showStyleBaseId ?? ''}`)
-	}
+	}, [showStyleBaseId])
 
-	function onUploadActions(e: React.ChangeEvent<HTMLInputElement>) {
+	const onUploadActions = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files && e.target.files[0]
 		if (!file) {
 			return
@@ -404,7 +410,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			}
 		}
 		reader.readAsText(file)
-	}
+	}, [])
 
 	return (
 		<div>
@@ -446,12 +452,12 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 						triggeredActionId={triggeredActionId}
 						selected={selectedTriggeredActionId === triggeredActionId}
 						locked={!!parsedTriggerFilter}
-						onEdit={() => onEditEntry(triggeredActionId)}
-						onRemove={() => onRemoveTriggeredAction(triggeredActionId)}
-						onDuplicate={() => onDuplicateEntry(triggeredActionId)}
+						onEdit={onEditEntry}
+						onRemove={onRemoveTriggeredAction}
+						onDuplicate={onDuplicateEntry}
 						showStyleBase={showStyleBase}
-						previewContext={rundownPlaylist ? previewContext : null}
-						onFocus={() => setSelectedTriggeredActionId(triggeredActionId)}
+						previewContext={rundownPlaylist && selectedTriggeredActionId === triggeredActionId ? previewContext : null}
+						onFocus={setSelectedTriggeredActionId}
 					/>
 				))}
 			</div>
@@ -479,12 +485,14 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 										triggeredActionId={triggeredActionId}
 										selected={selectedTriggeredActionId === triggeredActionId}
 										locked={!!parsedTriggerFilter}
-										onEdit={() => onEditEntry(triggeredActionId)}
-										onRemove={() => onRemoveTriggeredAction(triggeredActionId)}
-										onDuplicate={() => onDuplicateEntry(triggeredActionId)}
+										onEdit={onEditEntry}
+										onRemove={onRemoveTriggeredAction}
+										onDuplicate={onDuplicateEntry}
 										showStyleBase={showStyleBase}
-										previewContext={rundownPlaylist ? previewContext : null}
-										onFocus={() => setSelectedTriggeredActionId(triggeredActionId)}
+										previewContext={
+											rundownPlaylist && selectedTriggeredActionId === triggeredActionId ? previewContext : null
+										}
+										onFocus={setSelectedTriggeredActionId}
 									/>
 							  ))
 							: null}

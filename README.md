@@ -1,10 +1,10 @@
-# Sofie: The Modern TV News Studio Automation System (tv-automation-server-core)
+# Sofie: The Modern TV News Studio Automation System (Sofie Core)
 
 This is the "Core" application of the [**Sofie** TV News Studio Automation System](https://github.com/nrkno/Sofie-TV-automation/).
 
-The Core is a Meteor/Node.JS-based web server that serves the web-GUI:s as well as handling the business logic for the Sofie TV Automation system.
+The Core is a Meteor/Node.JS-based web server that serves the web-GUIs as well as handling the business logic for the Sofie TV Automation system.
 
-System documentation can be found here: [Sofie system documentation](https://sofie.gitbook.io/sofie-tv-automation/documentation).
+System documentation can be found here: [Sofie system documentation](https://nrkno.github.io/sofie-core/).
 
 # For developers
 
@@ -14,56 +14,58 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 
 ### Prerequisites
 
-- Install [Meteor](https://www.meteor.com/install)
-- Install [Node.js](https://nodejs.org) 12
-- Install [Yarn](https://yarnpkg.com)
-- If on windows `npm install --global windows-build-tools`
+- Install [Node.js](https://nodejs.org) 16 (14 will also work) (using [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) is the recommended way to install Node.js)
+- If on Windows: `npm install --global windows-build-tools`
+- Install [Meteor](https://www.meteor.com/install) (`npm install --global meteor`)
+- Install [Yarn](https://yarnpkg.com) (`npm install --global corepack && corepack enable`)
 
 ### Quick-start:
 
-```
-git clone -b master https://github.com/nrkno/tv-automation-server-core.git
-cd tv-automation-server-core
+```bash
+git clone -b master https://github.com/nrkno/sofie-core.git
+cd sofie-core
 yarn start
 ```
+
+> 💡 First startup may take a while, especially on Windows. To speed things up, consider adding `%LOCALAPPDATA%\.meteor` and the directory where you cloned `server-core` to your Windows Defender virus protection exclusions.
 
 ### Slightly more detailed start:
 
 1. Clone the repository (for development, it is recommended to base your work on the latest unstable release branch)
 
-   `git clone -b releaseXYZ https://github.com/nrkno/tv-automation-server-core.git`
+   ```bash
+   git clone -b releaseXYZ https://github.com/nrkno/sofie-core.git
+   ```
 
 2. Go into the cloned directory
 
-   `cd tv-automation-server-core`
+   ```bash
+   cd sofie-core
+   ```
 
 3. Setup meteor and dependencies. (Before this, make sure your NODE_ENV environment variable is NOT set to "production"!)
 
-   `yarn install`
+   ```bash
+   yarn install
+   ```
 
 4. Start development mode
 
-   `yarn dev`
+   ```bash
+   yarn dev
+   ```
 
 5. In another window, start the playout-gateway. You will need to manually restart this upon making changes
 
-   `cd tv-automation-server-core/packages/playout-gateway`
-   `yarn buildstart`
+   ```bash
+   cd sofie-core/packages/playout-gateway
+   yarn buildstart
+   ```
 
-If you make any changes to the libraries inside packages, you will need to run the typescript compiler in another terminal.
- `cd tv-automation-server-core/packages`
- `yarn watch` # or yarn build to build just once
+### When using the Visual Studio Code IDE
 
-If you run into any issues while installing the dependencies, clone any offending packages from Git and link them using `npm link`. For example, for `tv-automation-mos-connection` library:
-
-```
-git clone -b master https://github.com/nrkno/tv-automation-mos-connection.git
-cd tv-automation-mos-connection
-npm run build
-npm link
-cd ../tv-automation-server-core/meteor
-npm link mos-connection
-```
+We provide a `settings.json.default` file in `.vscode` that you should consider using with your IDE. Also consider installing suggested
+extensions, which should help you create PRs consistent with project's code standards.
 
 ### Dealing with strange errors
 
@@ -78,9 +80,9 @@ yarn start # Set up, install and run in dev mode
 
 For support of various languages in the GUI, Sofie uses the i18next framework. It uses JSON-based translation files to store UI strings. In order to build a new translation file, first extract a PO template file from Sofie UI source code:
 
-```
+```bash
 cd meteor
-npm run i18n-extract-pot
+yarn i18n-extract-pot
 ```
 
 Find the created `template.pot` file in `meteor/i18n` folder. Create a new PO file based on that template using a PO editor of your choice. Save it in the `meteor/i18n` folder using your [ISO 639-1 language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of choice as the filename.
@@ -88,14 +90,14 @@ Find the created `template.pot` file in `meteor/i18n` folder. Create a new PO fi
 Next, modify the `package.json` scripts and create a new language compilations script:
 
 ```
-"i18n-compile-json": "npm run i18n-compile-json-nb & npm run i18n-compile-json-sv & npm run i18n-compile-json-xx",
+"i18n-compile-json": "yarn i18n-compile-json-nb & yarn i18n-compile-json-sv & yarn i18n-compile-json-xx",
 "i18n-compile-json-xx": "i18next-conv -l nb -s i18n/xx.po -t public/locales/xx/translations.json",
 ```
 
 Then, run the compilation script:
 
-```
-npm run i18n-compile-json
+```bash
+yarn i18n-compile-json
 ```
 
 The resulting JSON file will be placed in `meteor/public/locales/xx`, where it will be available to the Sofie UI for use and auto-detection.

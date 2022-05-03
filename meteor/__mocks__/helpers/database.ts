@@ -1,5 +1,11 @@
 import * as _ from 'underscore'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevices,
+	PeripheralDevice,
+	PeripheralDeviceType,
+	PeripheralDeviceCategory,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
 import {
@@ -24,6 +30,9 @@ import {
 	IBlueprintPiece,
 	TriggerType,
 	PlayoutActions,
+	StatusCode,
+	IBlueprintPieceType,
+	IBlueprintActionManifest,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -35,12 +44,11 @@ import {
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
-import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
+import { literal, getCurrentTime, protectString, unprotectString, getRandomId, getRandomString } from '../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
-import { Piece, Pieces } from '../../lib/collections/Pieces'
-import { RundownAPI } from '../../lib/api/rundown'
+import { EmptyPieceTimelineObjectsBlob, Piece, Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
@@ -56,13 +64,17 @@ import {
 	defaultStudio,
 } from '../defaultCollectionObjects'
 import { OrganizationId } from '../../lib/collections/Organization'
-import { StatusCode } from '../../lib/api/systemStatus'
 import { PackageInfo } from '../../server/coreSystem'
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
+import { Workers, WorkerStatus } from '../../lib/collections/Workers'
+import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
+import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
 	SOURCE_VT0 = 'vt0',
+	SOURCE_TRANSITION0 = 'transition0',
+	SOURCE_GRAPHICS0 = 'graphics0',
 	OUTPUT_PGM = 'pgm',
 }
 
@@ -87,10 +99,10 @@ function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VE
 
 let dbI: number = 0
 export function setupMockPeripheralDevice(
-	category: PeripheralDeviceAPI.DeviceCategory,
-	type: PeripheralDeviceAPI.DeviceType,
+	category: PeripheralDeviceCategory,
+	type: PeripheralDeviceType,
 	subType: PeripheralDeviceAPI.DeviceSubType,
-	studio?: Studio,
+	studio?: Pick<Studio, '_id'>,
 	doc?: Partial<PeripheralDevice>
 ) {
 	doc = doc || {}
@@ -121,7 +133,7 @@ export function setupMockPeripheralDevice(
 			'@sofie-automation/server-core-integration': stripVersion(PackageInfo.version),
 		},
 	}
-	const device = _.extend(defaultDevice, doc) as PeripheralDevice
+	const device: PeripheralDevice = _.extend(defaultDevice, doc)
 	PeripheralDevices.insert(device)
 	return device
 }
@@ -231,6 +243,18 @@ export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<S
 				name: 'VT',
 				type: SourceLayerType.VT,
 				exclusiveGroup: 'main',
+			}),
+			literal<ISourceLayer>({
+				_id: LAYER_IDS.SOURCE_TRANSITION0,
+				_rank: 2,
+				name: 'Transition',
+				type: SourceLayerType.TRANSITION,
+			}),
+			literal<ISourceLayer>({
+				_id: LAYER_IDS.SOURCE_GRAPHICS0,
+				_rank: 3,
+				name: 'Graphic',
+				type: SourceLayerType.GRAPHICS,
 			}),
 		],
 		blueprintConfig: {},
@@ -369,6 +393,7 @@ export async function setupMockShowStyleBlueprint(
 					return {
 						rundown,
 						globalAdLibPieces: [],
+						globalActions: [],
 						baseline: { timelineObjects: [] },
 					}
 				},
@@ -403,10 +428,12 @@ export async function setupMockShowStyleBlueprint(
 						}
 						const pieces: IBlueprintPiece[] = ingestPart.payload?.pieces ?? []
 						const adLibPieces: IBlueprintAdLibPiece[] = []
+						const actions: IBlueprintActionManifest[] = []
 						parts.push({
 							part,
 							pieces,
 							adLibPieces,
+							actions,
 						})
 					})
 					return {
@@ -442,6 +469,9 @@ export interface DefaultEnvironment {
 	core: ICoreSystem
 	systemTriggeredActions: DBTriggeredActions[]
 
+	workers: WorkerStatus[]
+	workerThreadStatuses: WorkerThreadStatus[]
+
 	ingestDevice: PeripheralDevice
 }
 export async function setupDefaultStudioEnvironment(
@@ -469,12 +499,13 @@ export async function setupDefaultStudioEnvironment(
 		organizationId: organizationId,
 	})
 	const ingestDevice = setupMockPeripheralDevice(
-		PeripheralDeviceAPI.DeviceCategory.INGEST,
-		PeripheralDeviceAPI.DeviceType.MOS,
-		PeripheralDeviceAPI.SUBTYPE_PROCESS,
+		PeripheralDeviceCategory.INGEST,
+		PeripheralDeviceType.MOS,
+		PERIPHERAL_SUBTYPE_PROCESS,
 		studio,
 		{ organizationId: organizationId }
 	)
+	const { worker, workerThreadStatuses } = setupMockWorker()
 
 	return {
 		showStyleBaseId,
@@ -488,6 +519,8 @@ export async function setupDefaultStudioEnvironment(
 		core,
 		systemTriggeredActions: systemTriggeredActions,
 		ingestDevice,
+		workers: [worker],
+		workerThreadStatuses,
 	}
 }
 export function setupDefaultRundownPlaylist(
@@ -567,6 +600,7 @@ export function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part00)
 
@@ -577,17 +611,17 @@ export function setupDefaultRundown(
 		startSegmentId: part00.segmentId,
 		startPartId: part00._id,
 		name: 'Piece 000',
-		status: RundownAPI.PieceStatusCode.OK,
+		status: PieceStatusCode.OK,
 		enable: {
 			start: 0,
 		},
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
+		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	Pieces.insert(piece000)
 
@@ -598,17 +632,17 @@ export function setupDefaultRundown(
 		startSegmentId: part00.segmentId,
 		startPartId: part00._id,
 		name: 'Piece 001',
-		status: RundownAPI.PieceStatusCode.OK,
+		status: PieceStatusCode.OK,
 		enable: {
 			start: 0,
 		},
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
+		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	Pieces.insert(piece001)
 
@@ -620,13 +654,12 @@ export function setupDefaultRundown(
 		externalId: 'MOCK_ADLIB_000',
 		partId: part00._id,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	AdLibPieces.insert(adLibPiece000)
@@ -638,6 +671,7 @@ export function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part01)
 
@@ -648,17 +682,17 @@ export function setupDefaultRundown(
 		startSegmentId: part01.segmentId,
 		startPartId: part01._id,
 		name: 'Piece 010',
-		status: RundownAPI.PieceStatusCode.OK,
+		status: PieceStatusCode.OK,
 		enable: {
 			start: 0,
 		},
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
 		lifespan: PieceLifespan.WithinPart,
+		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 	Pieces.insert(piece010)
 
@@ -679,6 +713,7 @@ export function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_1_0',
 		title: 'Part 1 0',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part10)
 
@@ -689,6 +724,7 @@ export function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_1_1',
 		title: 'Part 1 1',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part11)
 
@@ -699,6 +735,7 @@ export function setupDefaultRundown(
 		_rank: 2,
 		externalId: 'MOCK_PART_1_2',
 		title: 'Part 1 2',
+		expectedDurationWithPreroll: undefined,
 	}
 	Parts.insert(part12)
 
@@ -718,13 +755,12 @@ export function setupDefaultRundown(
 		externalId: 'MOCK_GLOBAL_ADLIB_0',
 		lifespan: PieceLifespan.OutOnRundownEnd,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
@@ -733,13 +769,12 @@ export function setupDefaultRundown(
 		externalId: 'MOCK_GLOBAL_ADLIB_1',
 		lifespan: PieceLifespan.OutOnRundownEnd,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	RundownBaselineAdLibPieces.insert(globalAdLib0)
@@ -778,6 +813,7 @@ export function setupRundownWithAutoplayPart0(
 		title: 'Part 0 0',
 
 		expectedDuration: 20,
+		expectedDurationWithPreroll: 20,
 		autoNext: true,
 	}
 	Parts.insert(part00)
@@ -804,7 +840,7 @@ export function setupRundownWithAutoplayPart0(
 		...defaultAdLibPiece(protectString(rundownId + '_adLib000'), segment0.rundownId, part00._id),
 		expectedDuration: 1000,
 		externalId: 'MOCK_ADLIB_000',
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
@@ -875,13 +911,12 @@ export function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_GLOBAL_ADLIB_0',
 		lifespan: PieceLifespan.OutOnRundownChange,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	const globalAdLib1: RundownBaselineAdLibItem = {
@@ -890,19 +925,60 @@ export function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_GLOBAL_ADLIB_1',
 		lifespan: PieceLifespan.OutOnRundownChange,
 		rundownId: segment0.rundownId,
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		content: {
-			timelineObjects: [],
-		},
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
 	RundownBaselineAdLibPieces.insert(globalAdLib0)
 	RundownBaselineAdLibPieces.insert(globalAdLib1)
 
 	return rundownId
+}
+
+export function setupMockWorker(doc?: Partial<WorkerStatus>): {
+	worker: WorkerStatus
+	workerThreadStatuses: WorkerThreadStatus[]
+} {
+	doc = doc || {}
+
+	const worker: WorkerStatus = {
+		_id: getRandomId(),
+		name: 'Mock Worker',
+		instanceId: getRandomString(),
+		createdTime: Date.now(),
+		startTime: Date.now(),
+		lastUpdatedTime: Date.now(),
+		connected: true,
+		status: 'OK',
+
+		...doc,
+	}
+	Workers.insert(worker)
+
+	const workerThreadStatus0: WorkerThreadStatus = {
+		_id: getRandomId(),
+		workerId: worker._id,
+		instanceId: getRandomString(),
+		name: 'thread 0',
+		statusCode: StatusCode.GOOD,
+		reason: 'OK',
+	}
+	WorkerThreadStatuses.insert(workerThreadStatus0)
+	const workerThreadStatus1: WorkerThreadStatus = {
+		_id: getRandomId(),
+		workerId: worker._id,
+		instanceId: getRandomString(),
+		name: 'thread 1',
+		statusCode: StatusCode.GOOD,
+		reason: 'OK',
+	}
+	WorkerThreadStatuses.insert(workerThreadStatus1)
+
+	return { worker, workerThreadStatuses: [workerThreadStatus0, workerThreadStatus1] }
 }
 
 // const studioBlueprint

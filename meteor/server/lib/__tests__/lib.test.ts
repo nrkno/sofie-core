@@ -1,5 +1,12 @@
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { TimelineObjGeneric, TimelineObjType, TimelineComplete, Timeline } from '../../../lib/collections/Timeline'
+import {
+	TimelineObjGeneric,
+	TimelineObjType,
+	TimelineComplete,
+	Timeline,
+	deserializeTimelineBlob,
+	serializeTimelineBlob,
+} from '../../../lib/collections/Timeline'
 import { protectString } from '../../../lib/lib'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { SaveIntoDbHooks, saveIntoDb, sumChanges, anythingChanged } from '../database'
@@ -31,7 +38,8 @@ describe('server/lib', () => {
 			_id: protectString('myStudio'),
 			timelineHash: protectString('abc'),
 			generated: 1234,
-			timeline: mystudioObjs,
+			timelineBlob: serializeTimelineBlob(mystudioObjs),
+			generationVersions: {} as any,
 		})
 
 		const mystudio2Objs: Array<TimelineObjGeneric> = [
@@ -49,10 +57,11 @@ describe('server/lib', () => {
 			_id: protectString('myStudio2'),
 			timelineHash: protectString('abc'),
 			generated: 1234,
-			timeline: mystudio2Objs,
+			timelineBlob: serializeTimelineBlob(mystudio2Objs),
+			generationVersions: {} as any,
 		})
 
-		const options: SaveIntoDbHooks<any, any> = {
+		const options: SaveIntoDbHooks<any> = {
 			beforeInsert: jest.fn((o) => o),
 			beforeUpdate: jest.fn((o) => o),
 			beforeRemove: jest.fn((o) => o),
@@ -79,7 +88,7 @@ describe('server/lib', () => {
 			[
 				{
 					_id: protectString('myStudio'),
-					timeline: [
+					timelineBlob: JSON.stringify([
 						{
 							id: 'abc',
 							enable: {
@@ -99,7 +108,7 @@ describe('server/lib', () => {
 							content: { deviceType: TSR.DeviceType.ABSTRACT },
 							objectType: TimelineObjType.RUNDOWN,
 						}, // remove abc2
-					],
+					]),
 				},
 			],
 			options
@@ -112,9 +121,10 @@ describe('server/lib', () => {
 		).toEqual(1)
 		const abc = Timeline.findOne(protectString('myStudio')) as TimelineComplete
 		expect(abc).toBeTruthy()
-		expect(abc.timeline).toHaveLength(2)
-		expect(abc.timeline[0].classes).toEqual(undefined)
-		expect(abc.timeline[0].layer).toEqual('L2')
+		const timeline = deserializeTimelineBlob(abc.timelineBlob)
+		expect(timeline).toHaveLength(2)
+		expect(timeline[0].classes).toEqual(undefined)
+		expect(timeline[0].layer).toEqual('L2')
 
 		expect(
 			Timeline.find({

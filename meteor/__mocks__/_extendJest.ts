@@ -1,5 +1,9 @@
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { Meteor } from 'meteor/meteor'
+import { clone, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import '../server/api/logger'
+import _ from 'underscore'
+import { ClientAPI } from '../lib/api/client'
 
 // Include this file in to get access to the extended functions
 
@@ -33,6 +37,50 @@ expect.extend({
 			pass: pass,
 		}
 	},
+	toMatchUserError(received, msg, args) {
+		if (ClientAPI.isClientResponseError(received)) {
+			received = received.error
+		}
+
+		if (UserError.isUserError(received)) {
+			const expected = UserError.create(msg, args)
+			const received2 = clone(received)
+
+			// @ts-expect-error delee for test pretty printing
+			delete received2.rawError
+			// @ts-expect-error delee for test pretty printing
+			delete expected.rawError
+
+			const pass = _.isEqual(received2, expected)
+			return {
+				message: () => `expected ${UserError.toJSON(received2)} to match ${UserError.toJSON(expected)}`,
+				pass: pass,
+			}
+		} else {
+			return {
+				message: () => `expected ${stringifyError(received)} to be a UserError`,
+				pass: false,
+			}
+		}
+	},
+	toMatchUserRawError(received, regexp) {
+		if (ClientAPI.isClientResponseError(received)) {
+			received = received.error
+		}
+
+		if (UserError.isUserError(received)) {
+			const pass = !!received.rawError.toString().match(regexp)
+			return {
+				message: () => `expected ${received} to match ${regexp}`,
+				pass: pass,
+			}
+		} else {
+			return {
+				message: () => `expected ${stringifyError(received)} to be a UserError`,
+				pass: false,
+			}
+		}
+	},
 })
 declare global {
 	namespace jest {
@@ -42,6 +90,8 @@ declare global {
 
 			toThrowMeteor(...args: ConstructorParameters<typeof Meteor.Error>): R
 			toMatchToString(reg: RegExp): R
+			toMatchUserError(msg: UserErrorMessage, args?: { [key: string]: any }): R
+			toMatchUserRawError(reg: RegExp): R
 		}
 	}
 }

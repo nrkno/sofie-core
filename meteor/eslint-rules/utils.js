@@ -11,15 +11,16 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 exports.__esModule = true;
-exports.scopeHasLocalReference = exports.isDescribeCall = exports.isTestCaseCall = exports.getTestCallExpressionsFromDeclaredVariables = exports.isHook = exports.isFunction = exports.getNodeName = exports.TestCaseProperty = exports.DescribeProperty = exports.HookName = exports.TestCaseName = exports.DescribeAlias = exports.parseExpectCall = exports.isParsedEqualityMatcherCall = exports.EqualityMatcher = exports.ModifierName = exports.isExpectMember = exports.isExpectCall = exports.getAccessorValue = exports.isSupportedAccessor = exports.hasOnlyOneArgument = exports.getStringValue = exports.isStringNode = exports.followTypeAssertionChain = exports.createRule = void 0;
-/** https://github.com/jest-community/eslint-plugin-jest/blob/96031ecaab22a6550be0c9fc62fe96eec6bb0fff/src/rules/utils.ts */
-var path_1 = require("path");
-var experimental_utils_1 = require("@typescript-eslint/experimental-utils");
-var package_json_1 = require("../../package.json");
-var REPO_URL = 'https://github.com/jest-community/eslint-plugin-jest';
+exports.scopeHasLocalReference = exports.isDescribeCall = exports.isTestCaseCall = exports.getTestCallExpressionsFromDeclaredVariables = exports.isHook = exports.isFunction = exports.getNodeName = exports.TestCaseProperty = exports.DescribeProperty = exports.HookName = exports.TestCaseName = exports.DescribeAlias = exports.parseExpectCall = exports.isParsedEqualityMatcherCall = exports.EqualityMatcher = exports.ModifierName = exports.isExpectMember = exports.isExpectCall = exports.getAccessorValue = exports.isSupportedAccessor = exports.isIdentifier = exports.hasOnlyOneArgument = exports.getStringValue = exports.isStringNode = exports.followTypeAssertionChain = exports.createRule = void 0;
+/** https://github.com/jest-community/eslint-plugin-jest/blob/540326879df242daa3d96f43903178e36ba6b546/src/rules/utils.ts */
+// import { parse as parsePath } from 'path';
+var experimental_utils_1 = require("@typescript-eslint/utils");
+// import { version } from '../../package.json';
+// const REPO_URL = 'https://github.com/jest-community/eslint-plugin-jest';
 exports.createRule = experimental_utils_1.ESLintUtils.RuleCreator(function (name) {
-    var ruleName = path_1.parse(name).name;
-    return REPO_URL + "/blob/v" + package_json_1.version + "/docs/rules/" + ruleName + ".md";
+    return "local:" + name;
+    // const ruleName = parsePath(name).name;
+    // return `${REPO_URL}/blob/v${version}/docs/rules/${ruleName}.md`;
 });
 var isTypeCastExpression = function (node) {
     return node.type === experimental_utils_1.AST_NODE_TYPES.TSAsExpression ||
@@ -125,6 +126,7 @@ var isIdentifier = function (node, name) {
     return node.type === experimental_utils_1.AST_NODE_TYPES.Identifier &&
         (name === undefined || node.name === name);
 };
+exports.isIdentifier = isIdentifier;
 /**
  * Checks if the given `node` is a "supported accessor".
  *
@@ -148,7 +150,7 @@ var isIdentifier = function (node, name) {
  * @template V
  */
 var isSupportedAccessor = function (node, value) {
-    return isIdentifier(node, value) || exports.isStringNode(node, value);
+    return exports.isIdentifier(node, value) || exports.isStringNode(node, value);
 };
 exports.isSupportedAccessor = isSupportedAccessor;
 /**
@@ -220,8 +222,7 @@ var reparseAsMatcher = function (parsedMember) { return (__assign(__assign({}, p
      *
      * If this matcher isn't called, this will be `null`.
      */
-    arguments: parsedMember.node.parent &&
-        parsedMember.node.parent.type === experimental_utils_1.AST_NODE_TYPES.CallExpression
+    arguments: parsedMember.node.parent.type === experimental_utils_1.AST_NODE_TYPES.CallExpression
         ? parsedMember.node.parent.arguments
         : null })); };
 /**
@@ -245,8 +246,7 @@ var reparseMemberAsModifier = function (parsedMember) {
         // todo: impossible at runtime, but can't be typed w/o negation support
         throw new Error("modifier name must be either \"" + ModifierName.resolves + "\" or \"" + ModifierName.rejects + "\" (got \"" + parsedMember.name + "\")");
     }
-    var negation = parsedMember.node.parent &&
-        exports.isExpectMember(parsedMember.node.parent, ModifierName.not)
+    var negation = exports.isExpectMember(parsedMember.node.parent, ModifierName.not)
         ? parsedMember.node.parent
         : undefined;
     return __assign(__assign({}, parsedMember), { negation: negation });
@@ -277,7 +277,7 @@ var parseExpectCall = function (expect) {
     var modifier = (expectation.modifier =
         reparseMemberAsModifier(parsedMember));
     var memberNode = modifier.negation || modifier.node;
-    if (!memberNode.parent || !exports.isExpectMember(memberNode.parent)) {
+    if (!exports.isExpectMember(memberNode.parent)) {
         return expectation;
     }
     expectation.matcher = reparseAsMatcher(parseExpectMember(memberNode.parent));

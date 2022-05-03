@@ -5,6 +5,7 @@ import {
 	PeripheralDevices,
 	PeripheralDeviceId,
 	getExpectedLatency,
+	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -175,7 +176,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 									messages={device.status?.messages}
 								/>
 							</div>
-							{device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER ? (
+							{device.type === PeripheralDeviceType.PACKAGE_MANAGER ? (
 								<div className="mbs">
 									<button
 										className="btn btn-secondary btn-tight"
@@ -219,7 +220,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 					{this.renderSpecifics()}
 
 					{this.props.device &&
-					this.props.device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER &&
+					this.props.device.type === PeripheralDeviceType.PACKAGE_MANAGER &&
 					this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
 						? this.renderPackageManagerSpecial()
 						: null}

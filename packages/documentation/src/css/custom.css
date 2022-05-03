@@ -1,0 +1,73 @@
+/* stylelint-disable docusaurus/copyright-header */
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,400;0,700;1,100;1,400;1,700&display=swap');
+
+/* You can override the default Infima variables here. */
+:root {
+	--ifm-color-primary: #1769ff;
+	--ifm-color-primary-dark: #0049d0;
+	--ifm-color-primary-darker: #00318b;
+	--ifm-color-primary-darkest: #001845;
+	--ifm-color-primary-light: #518efe;
+	--ifm-color-primary-lighter: #689dfe;
+	--ifm-color-primary-lightest: #8ab4ff;
+	--ifm-code-font-size: 95%;
+
+	--ifm-font-family-base: Roboto, Arial, sans-serif;
+
+	--ifm-hero-background-color: #1769ff;
+	--ifm-hero-text-color: #fff;
+}
+
+.footer--dark {
+	--ifm-footer-background-color: #252627;
+}
+
+.footer__copyright {
+	font-size: 0.8em;
+	font-weight: 200;
+}
+
+.docusaurus-highlight-code-line {
+	background-color: rgba(0, 0, 0, 0.1);
+	display: block;
+	margin: 0 calc(-1 * var(--ifm-pre-padding));
+	padding: 0 var(--ifm-pre-padding);
+}
+
+html[data-theme='dark'] .docusaurus-highlight-code-line {
+	background-color: rgba(0, 0, 0, 0.3);
+}
+
+h1 {
+	margin-block-end: 1px;
+}
+
+h2 {
+	margin-block-end: 1px;
+}
+
+h3 {
+	margin-block-end: 1px;
+}
+
+h4 {
+	margin-block-end: 1px;
+}
+
+h5 {
+	margin-block-end: 1px;
+}
+
+h6 {
+	margin-block-end: 1px;
+}
+
+.navbar__search {
+	margin-left: 1em;
+}

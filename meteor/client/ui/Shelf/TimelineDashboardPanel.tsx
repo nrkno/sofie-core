@@ -5,23 +5,20 @@ import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
 import { DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
-import {
-	IAdLibPanelProps,
-	AdLibFetchAndFilterProps,
-	fetchAndFilter,
-	matchFilter,
-	AdLibPanelToolbar,
-} from './AdLibPanel'
+import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './AdLibPanel'
+import { AdLibPanelToolbar } from './AdLibPanelToolbar'
+import { matchFilter } from './AdLibListView'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import {
 	DashboardPanelInner,
-	dashboardElementPosition,
+	dashboardElementStyle,
 	IDashboardPanelTrackedProps,
 	IDashboardPanelProps,
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { AdLibPieceUi, getNextPieceInstancesGrouped, getUnfinishedPieceInstancesGrouped } from '../../lib/shelf'
 
 export const TimelineDashboardPanel = translateWithTracker<
@@ -37,7 +34,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
 		return {
 			...fetchAndFilter(props),
-			studio: props.playlist.getStudio(),
+			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,
@@ -111,7 +108,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 					)
 
 					return (
-						<div className="dashboard-panel dashboard-panel--timeline-style" style={dashboardElementPosition(filter)}>
+						<div className="dashboard-panel dashboard-panel--timeline-style" style={dashboardElementStyle(filter)}>
 							<h4 className="dashboard-panel__header">{this.props.filter.name}</h4>
 							{filter.enableSearch && (
 								<AdLibPanelToolbar onFilterChange={this.onFilterChange} searchFilter={this.state.searchFilter} />

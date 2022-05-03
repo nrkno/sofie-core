@@ -217,7 +217,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 						style={this.getElStyle()}
 					>
 						<div className="preview">
-							<img width="100%" src="../images/previewBG.png" alt="" />
+							<img width="100%" src="/images/previewBG.png" alt="" />
 							<iframe
 								sandbox="allow-scripts allow-same-origin"
 								src={this.state.noraContent?.previewRenderer}

@@ -1,40 +1,17 @@
 import { Meteor } from 'meteor/meteor'
-import { registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { IBlueprintShowStyleBase, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
-import { BlueprintId } from './Blueprints'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
+import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { ShowStyleBaseId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-export interface HotkeyDefinition {
-	_id: string
-	key: string
-	label: string
-	platformKey?: string
-	sourceLayerType?: SourceLayerType
-	buttonColor?: string
-}
-/** A string, identifying a ShowStyleBase */
-export type ShowStyleBaseId = ProtectedString<'ShowStyleBaseId'>
-export interface DBShowStyleBase extends ProtectedStringProperties<IBlueprintShowStyleBase, '_id' | 'blueprintId'> {
-	_id: ShowStyleBaseId
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+export * from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
-	/** Name of this show style */
-	name: string
-	/** Id of the blueprint used by this show-style */
-	blueprintId: BlueprintId
-	/** If set, the Organization that owns this ShowStyleBase */
-	organizationId: OrganizationId | null
-
-	hotkeyLegend?: Array<HotkeyDefinition>
-
-	_rundownVersionHash: string
-}
-
+/** Note: Use ShowStyleBase instead */
 export type ShowStyleBase = DBShowStyleBase
 
-export const ShowStyleBases = createMongoCollection<ShowStyleBase, DBShowStyleBase>('showStyleBases')
-registerCollection('ShowStyleBases', ShowStyleBases)
+export const ShowStyleBases = createMongoCollection<ShowStyleBase>(CollectionName.ShowStyleBases)
 
 registerIndex(ShowStyleBases, {
 	organizationId: 1,

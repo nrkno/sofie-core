@@ -13,7 +13,11 @@ import { PubSub } from '../../lib/api/pubsub'
 import { StatusResponse } from '../../lib/api/systemStatus'
 import { GENESIS_SYSTEM_VERSION, getCoreSystem, ICoreSystem } from '../../lib/collections/CoreSystem'
 import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
-import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+	RundownPlaylists,
+} from '../../lib/collections/RundownPlaylists'
 import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
@@ -33,7 +37,7 @@ import RundownPlaylistDragLayer from './RundownList/RundownPlaylistDragLayer'
 import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
 import { doUserAction, UserAction } from '../lib/userAction'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
-import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -106,7 +110,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 		rundownPlaylists: RundownPlaylists.find({}, { sort: { created: -1 } })
 			.fetch()
 			.map((playlist: RundownPlaylist) => {
-				const rundowns = playlist.getRundowns()
+				const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 
 				const airStatuses: string[] = []
 				const statuses: string[] = []

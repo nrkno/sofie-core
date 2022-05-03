@@ -10,11 +10,11 @@ import {
 	MountedGenericTrigger,
 	MountedGenericTriggers,
 } from '../../lib/triggers/TriggersHandler'
-import { translateMessage } from '../../../lib/api/TranslatableMessage'
 import { SorensenContext } from '../../lib/SorensenContext'
 import { codesToKeyLabels } from '../../lib/triggers/codesToKeyLabels'
 import { Mongo } from 'meteor/mongo'
 import { TFunction } from 'i18next'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 interface IProps {
 	visible?: boolean

@@ -62,11 +62,11 @@ export function eventContextForLog(e: any): string {
 
 function keyboardEventToShortcut(e: KeyboardEvent): string {
 	const combo = _.compact([
-		e.ctrlKey ? 'ctrl' : undefined,
-		e.shiftKey ? 'shift' : undefined,
-		e.altKey ? 'alt' : undefined,
-		e.metaKey ? 'meta' : undefined,
-		e.key,
+		e.ctrlKey ? 'Control' : undefined,
+		e.shiftKey ? 'Shift' : undefined,
+		e.altKey ? 'Alt' : undefined,
+		e.metaKey ? 'Meta' : undefined,
+		e.code,
 	])
 	return combo.join('+')
 }

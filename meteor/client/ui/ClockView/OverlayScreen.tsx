@@ -81,6 +81,7 @@ export const OverlayScreen = withTranslation()(
 												partInstanceId={nextPart.instance._id}
 												showStyleBaseId={nextShowStyleBaseId}
 												rundownIds={this.props.rundownIds}
+												playlistActivationId={playlist?.activationId}
 											/>
 										) : null}
 									</div>
@@ -91,6 +92,7 @@ export const OverlayScreen = withTranslation()(
 												partInstanceId={nextPart.instance._id}
 												showStyleBaseId={nextShowStyleBaseId}
 												rundownIds={this.props.rundownIds}
+												playlistActivationId={playlist?.activationId}
 											/>
 										) : (
 											'_'

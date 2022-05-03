@@ -24,13 +24,18 @@ import {
 	PackageContainerOnPackage,
 	AccessorOnPackage,
 } from '@sofie-automation/blueprints-integration'
-import { DBRundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import {
+	DBRundownPlaylist,
+	RundownPlaylistCollectionUtil,
+	RundownPlaylists,
+} from '../../lib/collections/RundownPlaylists'
 import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
 import { clone, DBObj, literal, omit, protectString, unprotectObject, unprotectString } from '../../lib/lib'
 import deepExtend from 'deep-extend'
 import { logger } from '../logging'
 import { generateExpectedPackagesForPartInstance } from '../api/ingest/expectedPackages'
 import { PartInstance } from '../../lib/collections/PartInstances'
+import { StudioLight } from '../../lib/collections/optimizations'
 /*
  * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager
  */
@@ -284,7 +289,8 @@ meteorCustomPublishArray(
 							  }).fetch()
 							: []
 
-						const selectPartInstances = activePlaylist?.getSelectedPartInstances()
+						const selectPartInstances =
+							activePlaylist && RundownPlaylistCollectionUtil.getSelectedPartInstances(activePlaylist)
 						context.nextPartInstance = selectPartInstances?.nextPartInstance
 						context.currentPartInstance = selectPartInstances?.currentPartInstance
 
@@ -442,7 +448,7 @@ enum Priorities {
 }
 
 function generateExpectedPackages(
-	studio: Studio,
+	studio: StudioLight,
 	filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 	routedMappingsWithPackages: MappingsExtWithPackage,
 	priority: Priorities
@@ -544,7 +550,9 @@ function generateExpectedPackages(
 				}
 
 				if (!combinedSources.length) {
-					logger.warn(`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`)
+					if (expectedPackage.sources.length !== 0) {
+						logger.warn(`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`)
+					}
 				}
 				if (!combinedTargets.length) {
 					logger.warn(`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`)

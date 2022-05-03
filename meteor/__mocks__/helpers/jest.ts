@@ -1,5 +1,5 @@
 /* eslint-disable jest/no-export, jest/valid-title, jest/expect-expect, jest/no-focused-tests */
-import { runInFiber } from '../Fibers'
+import { runInFiber } from '../meteor'
 
 export function beforeAllInFiber(fcn: () => void | Promise<void>, timeout?: number) {
 	beforeAll(async () => {

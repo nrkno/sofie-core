@@ -9,7 +9,6 @@ import { VideoEditMonitor } from './VideoEditMonitor'
 import { MediaObjects, MediaObject } from '../../../lib/collections/MediaObjects'
 import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import { TimecodeEncoder } from './TimecodeEncoder'
-import { Settings } from '../../../lib/Settings'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartId } from '../../../lib/collections/Parts'
 import { RundownId } from '../../../lib/collections/Rundowns'
@@ -39,6 +38,7 @@ interface ITrackedProps {
 	mediaObject: MediaObject | undefined
 	studio: Studio | undefined
 	maxDuration: number
+	frameRate: number
 }
 
 interface IState {
@@ -64,29 +64,29 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 			: undefined,
 		studio: studio,
 		maxDuration: content?.sourceDuration || 0,
+		frameRate: studio?.settings?.frameRate ?? 25,
 	}
 })(
 	class ClipTrimPanel extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
-		private fps = Settings.frameRate
-
 		constructor(props: Translated<IProps> & ITrackedProps) {
 			super(props)
 
 			this.state = {
-				inPoint: (this.props.inPoint * this.fps) / 1000,
-				duration: (this.props.duration * this.fps) / 1000,
-				outPoint: ((this.props.inPoint + this.props.duration) * this.fps) / 1000,
-				maxDuration: (this.props.maxDuration * this.fps) / 1000,
-				minDuration: ((this.props.minDuration === undefined ? 1000 : this.props.minDuration) * this.fps) / 1000,
+				inPoint: (this.props.inPoint * this.props.frameRate) / 1000,
+				duration: (this.props.duration * this.props.frameRate) / 1000,
+				outPoint: ((this.props.inPoint + this.props.duration) * this.props.frameRate) / 1000,
+				maxDuration: (this.props.maxDuration * this.props.frameRate) / 1000,
+				minDuration:
+					((this.props.minDuration === undefined ? 1000 : this.props.minDuration) * this.props.frameRate) / 1000,
 			}
 		}
 
 		static getDerivedStateFromProps(props: Translated<IProps> & ITrackedProps, _prevState: IState) {
 			return {
-				inPoint: (props.inPoint * Settings.frameRate) / 1000,
-				duration: (props.duration * Settings.frameRate) / 1000,
-				outPoint: ((props.inPoint + props.duration) * Settings.frameRate) / 1000,
-				maxDuration: (props.maxDuration * Settings.frameRate) / 1000,
+				inPoint: (props.inPoint * props.frameRate) / 1000,
+				duration: (props.duration * props.frameRate) / 1000,
+				outPoint: ((props.inPoint + props.duration) * props.frameRate) / 1000,
+				maxDuration: (props.maxDuration * props.frameRate) / 1000,
 			}
 		}
 
@@ -147,7 +147,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 					duration: Math.min(this.state.maxDuration - val, Math.max(0, this.state.outPoint - val)),
 				})
 				this.setState(ns)
-				this.props.onChange((ns.inPoint / this.fps) * 1000, (ns.duration / this.fps) * 1000)
+				this.props.onChange((ns.inPoint / this.props.frameRate) * 1000, (ns.duration / this.props.frameRate) * 1000)
 			} else {
 				const inp = Math.max(0, this.state.outPoint - 1)
 				const ns = {
@@ -155,7 +155,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 					duration: Math.min(this.state.maxDuration - inp, this.state.outPoint - inp),
 				}
 				this.setState(ns)
-				this.props.onChange((ns.inPoint / this.fps) * 1000, (ns.duration / this.fps) * 1000)
+				this.props.onChange((ns.inPoint / this.props.frameRate) * 1000, (ns.duration / this.props.frameRate) * 1000)
 			}
 		}
 
@@ -166,7 +166,10 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 				outPoint: Math.min(this.state.inPoint + val, this.state.maxDuration),
 			})
 			this.setState(ns)
-			this.props.onChange(((ns.outPoint - ns.duration) / this.fps) * 1000, (ns.duration / this.fps) * 1000)
+			this.props.onChange(
+				((ns.outPoint - ns.duration) / this.props.frameRate) * 1000,
+				(ns.duration / this.props.frameRate) * 1000
+			)
 		}
 
 		onOutChange = (val: number) => {
@@ -176,7 +179,10 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 					duration: Math.min(this.state.maxDuration - this.state.inPoint, Math.max(0, val - this.state.inPoint)),
 				})
 				this.setState(ns)
-				this.props.onChange(((ns.outPoint - ns.duration) / this.fps) * 1000, (ns.duration / this.fps) * 1000)
+				this.props.onChange(
+					((ns.outPoint - ns.duration) / this.props.frameRate) * 1000,
+					(ns.duration / this.props.frameRate) * 1000
+				)
 			} else {
 				const out = this.state.inPoint + 1
 				const ns = this.checkInOutPoints({
@@ -184,7 +190,10 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 					duration: Math.min(this.state.maxDuration - this.state.inPoint, out - this.state.inPoint),
 				})
 				this.setState(ns)
-				this.props.onChange(((ns.outPoint - ns.duration) / this.fps) * 1000, (ns.duration / this.fps) * 1000)
+				this.props.onChange(
+					((ns.outPoint - ns.duration) / this.props.frameRate) * 1000,
+					(ns.duration / this.props.frameRate) * 1000
+				)
 			}
 		}
 
@@ -194,7 +203,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 				duration: this.state.duration + this.state.inPoint,
 			})
 			this.setState(ns)
-			this.props.onChange((ns.inPoint / this.fps) * 1000, (ns.duration / this.fps) * 1000)
+			this.props.onChange((ns.inPoint / this.props.frameRate) * 1000, (ns.duration / this.props.frameRate) * 1000)
 		}
 
 		onResetOut = () => {
@@ -203,7 +212,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 				duration: this.state.maxDuration - this.state.inPoint,
 			})
 			this.setState(ns)
-			this.props.onChange((ns.inPoint / this.fps) * 1000, (ns.duration / this.fps) * 1000)
+			this.props.onChange((ns.inPoint / this.props.frameRate) * 1000, (ns.duration / this.props.frameRate) * 1000)
 		}
 
 		onResetAll = () => {
@@ -212,7 +221,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 				duration: this.state.maxDuration,
 			})
 			this.setState(ns)
-			this.props.onChange((ns.inPoint / this.fps) * 1000, (ns.duration / this.fps) * 1000)
+			this.props.onChange((ns.inPoint / this.props.frameRate) * 1000, (ns.duration / this.props.frameRate) * 1000)
 		}
 
 		render() {
@@ -229,19 +238,19 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 						<div className="clip-trim-panel__monitors__monitor">
 							<VideoEditMonitor
 								src={previewUrl}
-								fps={this.fps}
-								currentTime={this.state.inPoint / this.fps}
+								fps={this.props.frameRate}
+								currentTime={this.state.inPoint / this.props.frameRate}
 								duration={this.props.maxDuration / 1000}
-								onCurrentTimeChange={(time) => this.onInChange(time * this.fps)}
+								onCurrentTimeChange={(time) => this.onInChange(time * this.props.frameRate)}
 							/>
 						</div>
 						<div className="clip-trim-panel__monitors__monitor">
 							<VideoEditMonitor
 								src={previewUrl}
-								fps={this.fps}
-								currentTime={this.state.outPoint / this.fps}
+								fps={this.props.frameRate}
+								currentTime={this.state.outPoint / this.props.frameRate}
 								duration={this.props.maxDuration / 1000}
-								onCurrentTimeChange={(time) => this.onOutChange(time * this.fps)}
+								onCurrentTimeChange={(time) => this.onOutChange(time * this.props.frameRate)}
 							/>
 						</div>
 					</div>
@@ -256,7 +265,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 								</button>
 							</Tooltip>
 							<label>{t('In')}</label>
-							<TimecodeEncoder fps={this.fps} value={this.state.inPoint} onChange={this.onInChange} />
+							<TimecodeEncoder fps={this.props.frameRate} value={this.state.inPoint} onChange={this.onInChange} />
 						</div>
 						<div className="clip-trim-panel__timecode-encoders__input">
 							<Tooltip overlay={t('Remove all trimming')} placement="top">
@@ -269,7 +278,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 							</Tooltip>
 							<label>{t('Duration')}</label>
 							<TimecodeEncoder
-								fps={this.fps}
+								fps={this.props.frameRate}
 								value={this.state.duration}
 								invalid={this.props.invalidDuration}
 								onChange={this.onDurationChange}
@@ -285,7 +294,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 								</button>
 							</Tooltip>
 							<label>{t('Out')}</label>
-							<TimecodeEncoder fps={this.fps} value={this.state.outPoint} onChange={this.onOutChange} />
+							<TimecodeEncoder fps={this.props.frameRate} value={this.state.outPoint} onChange={this.onOutChange} />
 						</div>
 					</div>
 				</div>

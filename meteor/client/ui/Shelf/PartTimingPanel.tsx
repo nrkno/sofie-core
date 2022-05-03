@@ -7,22 +7,22 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { getAllowSpeaking } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { CurrentPartElapsed } from '../RundownView/RundownTiming/CurrentPartElapsed'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
-import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 interface IPartTimingPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPartTiming
 	playlist: RundownPlaylist
-	showStyleBase: DBShowStyleBase
+	showStyleBase: ShowStyleBase
 }
 
 interface IPartTimingPanelTrackedProps {
@@ -47,14 +47,7 @@ class PartTimingPanelInner extends MeteorReactComponent<
 		return (
 			<div
 				className="part-timing-panel timing"
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPartCountDown) }),
-								fontSize: ((panel as DashboardLayoutPartCountDown).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutPartCountDown) : {}}
 			>
 				<span className="timing-clock left">
 					{!panel.hideLabel && (
@@ -82,7 +75,9 @@ class PartTimingPanelInner extends MeteorReactComponent<
 export const PartTimingPanel = translateWithTracker<IPartTimingPanelProps, IState, IPartTimingPanelTrackedProps>(
 	(props: IPartTimingPanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
-			const livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
+			const livePart = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
+				_id: props.playlist.currentPartInstanceId,
+			})[0]
 			const { active } = getIsFilterActive(props.playlist, props.showStyleBase, props.panel)
 
 			return { active, livePart }

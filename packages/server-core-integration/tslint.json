@@ -13,6 +13,7 @@
         "SwitchCase": 1
       }
     ],
-    "trailing-comma": false
+    "trailing-comma": false,
+    "space-before-function-paren": false
   }
 }

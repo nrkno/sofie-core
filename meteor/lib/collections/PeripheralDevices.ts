@@ -1,74 +1,13 @@
-import { PeripheralDeviceAPI } from '../api/peripheralDevice'
-import { Time, registerCollection, ProtectedString, assertNever } from '../lib'
-
-import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
-import { IngestDeviceSettings, IngestDeviceSecretSettings } from './PeripheralDeviceSettings/ingestDevice'
 import { createMongoCollection } from './lib'
-import { DeviceConfigManifest } from '../api/deviceConfig'
-import { StudioId } from './Studios'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
+import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { PeripheralDeviceId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-/** A string, identifying a PeripheralDevice */
-export type PeripheralDeviceId = ProtectedString<'PeripheralDeviceId'>
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+export * from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
-export interface PeripheralDevice {
-	_id: PeripheralDeviceId
-
-	/** If set, this device is owned by that organization */
-	organizationId: OrganizationId | null
-
-	/** Name of the device (set by the device, modifiable by user) */
-	name: string
-
-	/** Name of the device (set by the device) */
-	deviceName?: string
-
-	category: PeripheralDeviceAPI.DeviceCategory
-	type: PeripheralDeviceAPI.DeviceType
-	subType: PeripheralDeviceAPI.DeviceSubType
-
-	/** The studio this device is assigned to. Will be undefined for sub-devices */
-	studioId?: StudioId
-	parentDeviceId?: PeripheralDeviceId
-	/** Versions reported from the device */
-	versions?: {
-		[libraryName: string]: string
-	}
-	/** Whether version checks should be disabled for this version */
-	disableVersionChecks?: boolean
-
-	created: Time
-	status: PeripheralDeviceAPI.StatusObject
-	lastSeen: Time // Updated continously while connected
-	lastConnected: Time // Updated upon connection, not continously
-
-	/** A list of last reported latencies */
-	latencies?: number[]
-
-	connected: boolean
-	connectionId: string | null // Id of the current ddp-Connection
-
-	token: string
-
-	settings?: PlayoutDeviceSettings | IngestDeviceSettings | { [key: string]: any }
-
-	secretSettings?: IngestDeviceSecretSettings | { [key: string]: any }
-
-	/** Ignore this device when computing status in the GUI (other status reports are unaffected) */
-	ignore?: boolean
-
-	configManifest: DeviceConfigManifest
-
-	/** If this is an ingest gateway, the last tiem data was received */
-	lastDataReceived?: Time
-
-	/** If an ingest device performing an oauth flow */
-	accessTokenUrl?: string
-}
-
-export const PeripheralDevices = createMongoCollection<PeripheralDevice, PeripheralDevice>('peripheralDevices')
-registerCollection('PeripheralDevices', PeripheralDevices)
+export const PeripheralDevices = createMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices)
 
 registerIndex(PeripheralDevices, {
 	organizationId: 1,
@@ -129,32 +68,5 @@ export function getExpectedLatency(peripheralDevice: PeripheralDevice): {
 		average: 0,
 		safe: 0,
 		fastest: 0,
-	}
-}
-export function getExternalNRCSName(device: PeripheralDevice | undefined): string {
-	if (device) {
-		if (device.category === PeripheralDeviceAPI.DeviceCategory.INGEST) {
-			if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
-				// This is a hack, to be replaced with something better later:
-				return 'ENPS'
-			} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
-				return 'iNews'
-			} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
-				return 'Google Sheet'
-			} else if (
-				device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT ||
-				device.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER ||
-				device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER
-			) {
-				// These aren't ingest gateways
-			} else {
-				assertNever(device.type)
-			}
-		}
-		// The device type is unknown to us:
-		return `Unknown NRCS: "${device.type}"`
-	} else {
-		// undefined NRCS:
-		return 'NRCS'
 	}
 }

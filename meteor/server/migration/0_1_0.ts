@@ -3,9 +3,9 @@ import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import { ensureCollectionProperty, ensureCollectionPropertyManual } from './lib'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDevices, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { protectString } from '../../lib/lib'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 /**
  * This file contains system specific migration steps.
@@ -30,6 +30,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				organizationId: null,
 				supportedShowStyleBase: [],
 				settings: {
+					frameRate: 25,
 					mediaPreviewsUrl: '',
 					sofieUrl: '',
 				},
@@ -45,20 +46,25 @@ export const addSteps = addMigrationSteps('0.1.0', [
 		},
 	},
 	ensureCollectionPropertyManual(
-		'Studios',
+		CollectionName.Studios,
 		{},
 		'name',
 		'text',
 		'Studio $id: Name',
 		'Enter the Name of the Studio "$id"'
 	),
-	ensureCollectionProperty('Studios', {}, 'mappings', {}),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'mappings', {}),
 
 	{
 		id: 'Assign devices to studio',
 		canBeRunAutomatically: true,
 		dependOnResultFrom: 'studio exists',
 		validate: () => {
+			const studios = Studios.find().fetch()
+			if (studios.length > 1) {
+				return false
+			}
+
 			let missing: string | boolean = false
 			PeripheralDevices.find({
 				parentDeviceId: { $exists: false },
@@ -93,7 +99,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 			let missing: string | boolean = false
 			_.each(studios, (studio: Studio) => {
 				const dev = PeripheralDevices.findOne({
-					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+					type: PeripheralDeviceType.PLAYOUT,
 					studioId: studio._id,
 				})
 				if (!dev) {

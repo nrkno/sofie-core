@@ -1,43 +1,15 @@
-import { registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { RundownId } from './Rundowns'
-import { IBlueprintSegmentDB } from '@sofie-automation/blueprints-integration'
-import { SegmentNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { MongoFieldSpecifier } from '../typings/meteor'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { SegmentId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-/** A string, identifying a Segment */
-export type SegmentId = ProtectedString<'SegmentId'>
-/** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+export * from '@sofie-automation/corelib/dist/dataModel/Segment'
 
-export enum SegmentOrphanedReason {
-	DELETED = 'deleted',
-	HIDDEN = 'hidden',
-}
-
-export const orphanedHiddenSegmentPropertiesToPreserve: MongoFieldSpecifier<DBSegment> = { showShelf: 1 }
-
-export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB, '_id'> {
-	_id: SegmentId
-	/** Position inside rundown */
-	_rank: number
-	/** ID of the source object in the gateway */
-	externalId: string
-	/** Timestamp when the externalData was last modified */
-	externalModified: number
-	/** The rundown this segment belongs to */
-	rundownId: RundownId
-
-	/** Is the segment in an unsynced state? */
-	orphaned?: SegmentOrphanedReason
-
-	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
-	notes?: Array<SegmentNote>
-}
 export type Segment = DBSegment
 
-export const Segments = createMongoCollection<Segment, DBSegment>('segments')
-registerCollection('Segments', Segments)
+export const Segments = createMongoCollection<Segment>(CollectionName.Segments)
 
 registerIndex(Segments, {
 	rundownId: 1,

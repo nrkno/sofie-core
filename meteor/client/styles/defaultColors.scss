@@ -26,10 +26,9 @@
 
 	--general-clock: #49c0fb;
 
+	--part-identifier: #363636;
+	--part-identifier-text: #eee;
 	--general-timecode-color: #ffff00;
-
-	--part-identifier: #7400d5;
-	--part-identifier-text: #ffffff;
 
 	--ui-button-primary: #1769ff;
 	--ui-button-primary--hover: #0050e3;
@@ -40,23 +39,4 @@
 	--ui-dark-color-brighter: #5f6164;
 
 	--segment-timeline-background-color: #{$segment-timeline-background-color};
-
-	--segment-layer-background-unknown: #{$segment-layer-background-unknown};
-	--segment-layer-background-unknown--second: #{$segment-layer-background-unknown};
-	--segment-layer-background-camera: #{$segment-layer-background-camera};
-	--segment-layer-background-camera--second: #{$segment-layer-background-camera--second};
-	--segment-layer-background-lower-third: #{$segment-layer-background-lower-third};
-	--segment-layer-background-lower-third--second: #{$segment-layer-background-lower-third--second};
-	--segment-layer-background-graphics: #{$segment-layer-background-graphics};
-	--segment-layer-background-graphics--second: #{$segment-layer-background-graphics--second};
-	--segment-layer-background-live-speak: #{$segment-layer-background-live-speak};
-	--segment-layer-background-remote: #{$segment-layer-background-remote};
-	--segment-layer-background-remote--second: #{$segment-layer-background-remote--second};
-	--segment-layer-background-local: #{$segment-layer-background-local};
-	--segment-layer-background-local--second: #{$segment-layer-background-local--second};
-	--segment-layer-background-vt: #{$segment-layer-background-vt};
-	--segment-layer-background-vt--second: #{$segment-layer-background-vt--second};
-	--segment-layer-background-script: #{$segment-layer-background-script};
-	--segment-layer-background-mic: #{$segment-layer-background-mic};
-	--segment-layer-background-guest: #{$segment-layer-background-guest};
 }

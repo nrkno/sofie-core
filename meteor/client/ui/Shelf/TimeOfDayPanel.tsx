@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import {
 	DashboardLayoutTimeOfDay,
 	RundownLayoutBase,
@@ -8,7 +7,7 @@ import {
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTranslation } from 'react-i18next'
 import { TimeOfDay } from '../RundownView/RundownTiming/TimeOfDay'
@@ -34,14 +33,7 @@ class TimeOfDayPanelInner extends MeteorReactComponent<Translated<ITimeOfDayPane
 		return (
 			<div
 				className="time-of-day-panel timing"
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutTimeOfDay) }),
-								fontSize: ((panel as DashboardLayoutTimeOfDay).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutTimeOfDay) : {}}
 			>
 				<span className="timing-clock left">
 					{!panel.hideLabel && <span className="timing-clock-label">{t('Local Time')}</span>}

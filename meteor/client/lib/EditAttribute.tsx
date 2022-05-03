@@ -9,8 +9,7 @@ import { TransformedCollection } from '../../lib/typings/meteor'
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
-import { Random } from 'meteor/random'
-import { assertNever } from '../../lib/lib'
+import { assertNever, getRandomString } from '../../lib/lib'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -93,7 +92,6 @@ interface IEditAttributeBaseState {
 	value: any
 	valueError: boolean
 	editing: boolean
-	updating: boolean
 }
 export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, IEditAttributeBaseState> {
 	constructor(props) {
@@ -103,7 +101,6 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 			value: this.getAttribute(),
 			valueError: false,
 			editing: false,
-			updating: false,
 		}
 
 		this.handleEdit = this.handleEdit.bind(this)
@@ -174,7 +171,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		return this.getAttribute() + ''
 	}
 	getEditAttribute() {
-		return this.state.editing || this.state.updating ? this.state.value : this.getAttribute()
+		return this.state.editing ? this.state.value : this.getAttribute()
 	}
 	updateValue(newValue) {
 		if (this.props.mutateUpdateValue) {
@@ -194,27 +191,19 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 
 		if (this.props.updateFunction && typeof this.props.updateFunction === 'function') {
 			this.props.updateFunction(this, newValue)
-			this.updated()
 		} else {
 			if (this.props.collection && this.props.attribute) {
 				if (newValue === undefined) {
 					const m = {}
 					m[this.props.attribute] = 1
-					this.props.collection.update(this.props.obj._id, { $unset: m }, undefined)
-					this.updated()
+					this.props.collection.update(this.props.obj._id, { $unset: m })
 				} else {
 					const m = {}
 					m[this.props.attribute] = newValue
-					this.props.collection.update(this.props.obj._id, { $set: m }, undefined)
-					this.updated()
+					this.props.collection.update(this.props.obj._id, { $set: m })
 				}
 			}
 		}
-	}
-	updated() {
-		this.setState({
-			updating: false,
-		})
 	}
 }
 function wrapEditAttribute(newClass) {
@@ -563,8 +552,7 @@ const EditAttributeDropdown = wrapEditAttribute(
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
-				for (const key in this.props.options) {
-					const val = this.props.options[key]
+				for (const val of this.props.options) {
 					if (typeof val === 'object') {
 						options.push({
 							name: val.name,
@@ -681,7 +669,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 			this.handleBlurText = this.handleBlurText.bind(this)
 			this.handleEscape = this.handleEscape.bind(this)
 
-			this._id = Random.id()
+			this._id = getRandomString()
 		}
 		handleChangeDropdown(event) {
 			// because event.target.value is always a string, use the original value instead
@@ -710,8 +698,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
-				for (const key in this.props.options) {
-					const val = this.props.options[key]
+				for (const val of this.props.options) {
 					if (typeof val === 'object') {
 						options.push({
 							name: val.name,
@@ -840,8 +827,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
-				for (const key in this.props.options) {
-					const val = this.props.options[key]
+				for (const val of this.props.options) {
 					if (typeof val === 'object') {
 						options[val.value] = val.name
 					} else {

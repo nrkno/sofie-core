@@ -204,6 +204,13 @@
 	.user-action-log__userId {
 		min-width: 5em;
 	}
+	.user-action-log__executionTime {
+		min-width: 5em;
+
+		td {
+			white-space: nowrap;
+		}
+	}
 	.user-action-log__clientAddress {
 		min-width: 7em;
 	}
@@ -220,14 +227,14 @@
 		position: relative;
 		font-family: 'Consolas', 'Courier New', Courier, monospace;
 		color: #555;
-		white-space: nowrap;
+		white-space: pre;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		font-size: 0.8em;
 		line-height: 1.7em;
 
 		&:hover {
-			white-space: normal;
+			// white-space: normal;
 			overflow: visible;
 			text-overflow: unset;
 			word-break: break-all;

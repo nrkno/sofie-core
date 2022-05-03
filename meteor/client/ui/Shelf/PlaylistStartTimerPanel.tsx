@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import ClassNames from 'classnames'
 import {
 	DashboardLayoutPlaylistStartTimer,
@@ -7,7 +6,7 @@ import {
 	RundownLayoutPlaylistStartTimer,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -22,10 +21,7 @@ interface IPlaylistStartTimerPanelProps {
 
 interface IState {}
 
-export class PlaylistStartTimerPanelInner extends MeteorReactComponent<
-	Translated<IPlaylistStartTimerPanelProps>,
-	IState
-> {
+class PlaylistStartTimerPanelInner extends MeteorReactComponent<Translated<IPlaylistStartTimerPanelProps>, IState> {
 	constructor(props) {
 		super(props)
 	}
@@ -39,14 +35,7 @@ export class PlaylistStartTimerPanelInner extends MeteorReactComponent<
 					'playlist-start-time-panel timing',
 					isDashboardLayout ? (this.props.panel as DashboardLayoutPlaylistStartTimer).customClasses : undefined
 				)}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPlaylistStartTimer) }),
-								fontSize: ((this.props.panel as DashboardLayoutPlaylistStartTimer).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutPlaylistStartTimer) : {}}
 			>
 				<PlaylistStartTiming
 					rundownPlaylist={this.props.playlist}

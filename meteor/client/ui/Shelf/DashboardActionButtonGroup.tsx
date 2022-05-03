@@ -24,7 +24,9 @@ export const DashboardActionButtonGroup = withTranslation()(
 		private take = (e: any) => {
 			if (this.props.studioMode) {
 				const { t } = this.props
-				doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+				doUserAction(t, e, UserAction.TAKE, (e) =>
+					MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+				)
 			}
 		}
 
@@ -58,7 +60,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 			}
 		}
 
-		klarOnAir = (e: any) => {
+		klarOnAirAction = (e: any) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
 				if (this.props.playlist.activationId) {
@@ -76,7 +78,9 @@ export const DashboardActionButtonGroup = withTranslation()(
 					doUserAction(t, e, UserAction.RESET_AND_ACTIVATE_RUNDOWN_PLAYLIST, (e) =>
 						MeteorCall.userAction.resetAndActivate(e, this.props.playlist._id)
 					)
-					doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+					doUserAction(t, e, UserAction.TAKE, (e) =>
+						MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+					)
 				}
 			}
 		}
@@ -89,7 +93,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 				t,
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-				(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, reason),
+				(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, reason, false),
 				(err, snapshotId) => {
 					if (!err && snapshotId) {
 						const noticeLevel: NoticeLevel = NoticeLevel.NOTIFICATION
@@ -125,7 +129,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 					this.hold(e)
 					break
 				case ActionButtonType.KLAR_ON_AIR:
-					this.klarOnAir(e)
+					this.klarOnAirAction(e)
 					break
 				case ActionButtonType.STORE_SNAPSHOT:
 					this.storeSnapshot(e)

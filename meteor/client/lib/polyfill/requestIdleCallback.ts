@@ -3,12 +3,7 @@
  */
 
 if (typeof window.requestIdleCallback !== 'function') {
-	window.requestIdleCallback = (
-		clb: Function,
-		_options?: {
-			timeout: number
-		}
-	) => {
+	window.requestIdleCallback = (clb: Function) => {
 		return window.requestAnimationFrame(clb as any)
 	}
 

@@ -47,7 +47,7 @@ import {
 } from '../../lib/collections/CoreSystem'
 import { SnapshotId } from '../../lib/collections/Snapshots'
 import { Studios } from '../../lib/collections/Studios'
-import { getHash, protectString, unprotectString, waitForPromise } from '../../lib/lib'
+import { getHash, protectString, stringifyError, unprotectString, waitForPromise } from '../../lib/lib'
 import { evalBlueprint } from '../api/blueprints/cache'
 import {
 	MigrationContextShowStyle,
@@ -397,7 +397,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 					step._validateResult = validate(getMigrationShowStyleContext(step.chunk), false)
 				} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
 			} catch (error) {
-				throw new Meteor.Error(500, `Error in migration step "${step.id}": ${error.reason || error.toString()}`)
+				throw new Meteor.Error(500, `Error in migration step "${step.id}": ${stringifyError(error)}`)
 			}
 
 			if (step._validateResult) {
@@ -576,7 +576,7 @@ export function runMigration(
 					internalStoreSystemSnapshot(null, null, `Automatic, taken before migration`)
 				)
 			} catch (e) {
-				warningMessages.push(`Error when taking snapshot:${e.toString()}`)
+				warningMessages.push(`Error when taking snapshot:${stringifyError(e)}`)
 				logger.error(e)
 			}
 		}
@@ -648,8 +648,7 @@ export function runMigration(
 				warningMessages.push(msg)
 			}
 		} catch (e) {
-			logger.error(`Error in Migration step ${step.id}: ${e}`)
-			logger.error(e.stack ? e.stack : e.toString())
+			logger.error(`Error in Migration step ${step.id}: ${stringifyError(e)}`)
 			warningMessages.push(`Internal server error in step ${step.id}`)
 		}
 	})

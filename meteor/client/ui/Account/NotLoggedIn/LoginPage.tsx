@@ -8,6 +8,7 @@ import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { StatusResponse } from '../../../../lib/api/systemStatus'
 import { getUser, User } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
 interface ILoginProps extends RouteComponentProps<{ token: string }> {
 	requestedRoute: string
@@ -56,7 +57,7 @@ export const LoginPage = translateWithTracker((_props: ILoginProps) => {
 				if (!this.state.email.length) throw new Error('Please enter an email address')
 				if (!this.state.password.length) throw new Error('Please enter an password')
 			} catch (error) {
-				this.HandleError(error.message)
+				this.HandleError(stringifyError(error))
 				return
 			}
 			Meteor.loginWithPassword(this.state.email, this.state.password, this.handleLoginAttempt)

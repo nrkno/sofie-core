@@ -1,13 +1,14 @@
-import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
-import { PeripheralDeviceId } from './PeripheralDevices'
-import { StudioId } from './Studios'
-import { MediaWorkFlowId } from './MediaWorkFlows'
 import { MediaManagerAPI } from '../api/mediaManager'
 import { registerIndex } from '../database'
-
-/** A string, identifying a MediaWorkFlowStep */
-export type MediaWorkFlowStepId = ProtectedString<'MediaWorkFlowStepId'>
+import {
+	MediaWorkFlowStepId,
+	StudioId,
+	PeripheralDeviceId,
+	MediaWorkFlowId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+export { MediaWorkFlowStepId }
 
 export abstract class MediaWorkFlowStep {
 	_id: MediaWorkFlowStepId
@@ -30,8 +31,7 @@ export abstract class MediaWorkFlowStep {
 	expectedLeft?: number
 }
 
-export const MediaWorkFlowSteps = createMongoCollection<MediaWorkFlowStep, MediaWorkFlowStep>('mediaWorkFlowSteps')
-registerCollection('MediaWorkFlowSteps', MediaWorkFlowSteps)
+export const MediaWorkFlowSteps = createMongoCollection<MediaWorkFlowStep>(CollectionName.MediaWorkFlowSteps)
 
 registerIndex(MediaWorkFlowSteps, {
 	deviceId: 1,
