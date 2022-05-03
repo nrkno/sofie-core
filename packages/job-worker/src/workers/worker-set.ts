@@ -15,7 +15,6 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { InvalidateWorkerDataCache } from './caches'
-import { IntervalWorkerParent } from './interval/parent'
 
 export class StudioWorkerSet {
 	readonly #threads: WorkerParentBase[]
@@ -86,8 +85,6 @@ export class StudioWorkerSet {
 		tryAddThread(EventsWorkerParent.start(baseOptions, mongoUri, logLine, fastTrackTimeline))
 
 		tryAddThread(IngestWorkerParent.start(baseOptions, mongoUri, logLine, fastTrackTimeline))
-
-		tryAddThread(IntervalWorkerParent.start(baseOptions, mongoUri, logLine, fastTrackTimeline))
 
 		logger.info(`Starting threads for ${studioId}`)
 		await Promise.allSettled(ps)

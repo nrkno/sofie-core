@@ -12,6 +12,7 @@ import { interceptLogging, logger } from '../../logging'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { setupInfluxDb } from '../../influx'
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
+import { ExternalMessageQueueRunner } from '../../events/ExternalMessageQueue'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -29,6 +30,8 @@ export class EventsWorkerChild {
 	readonly #locks: LocksManager
 	readonly #queueJob: QueueJobFunc
 	readonly #fastTrackTimeline: FastTrackTimelineFunc | null
+
+	#externalMessageQueue: ExternalMessageQueueRunner | undefined
 
 	constructor(
 		studioId: StudioId,
@@ -65,6 +68,9 @@ export class EventsWorkerChild {
 			dataCache,
 		}
 
+		const database = mongoClient.db(dbName)
+		this.#externalMessageQueue = await ExternalMessageQueueRunner.create(database, collections, this.#studioId)
+
 		logger.info(`Events thread for ${this.#studioId} initialised`)
 	}
 	async lockChange(lockId: string, locked: boolean): Promise<void> {
@@ -81,6 +87,8 @@ export class EventsWorkerChild {
 		}
 
 		try {
+			if (this.#externalMessageQueue) this.#externalMessageQueue.invalidateCaches(data)
+
 			await invalidateWorkerDataCache(this.#staticData.collections, this.#staticData.dataCache, data)
 		} finally {
 			transaction?.end()
