@@ -4,7 +4,8 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula')
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
 	title: 'Sofie TV Automation Documentation',
-	tagline: 'Sofie is a web-based, open\xa0source TV\xa0automation system for studios and live shows, used in daily live\xa0TV\xa0news productions by the Norwegian public\xa0service broadcaster NRK since September\xa02018.',
+	tagline:
+		'Sofie is a web-based, open\xa0source TV\xa0automation system for studios and live shows, used in daily live\xa0TV\xa0news productions by the Norwegian public\xa0service broadcaster NRK since September\xa02018.',
 	url: 'https://nrkno.github.io',
 	baseUrl: '/sofie-core/',
 	onBrokenLinks: 'warn',
@@ -25,7 +26,7 @@ module.exports = {
 			items: [
 				{ to: '/docs/user-guide/intro', label: 'User Guide', position: 'left' },
 				{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
-				{ to: '/docs/releases', label: 'Releases', position: 'left' },
+				{ to: '/releases', label: 'Releases', position: 'left' },
 
 				{
 					type: 'docsVersionDropdown',
@@ -53,7 +54,7 @@ module.exports = {
 					items: [
 						{ to: '/docs/user-guide/intro', label: 'User Guide', position: 'left' },
 						{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
-						{ to: '/docs/releases', label: 'Releases', position: 'left' },
+						{ to: '/releases', label: 'Releases', position: 'left' },
 					],
 				},
 				{
@@ -121,10 +122,23 @@ module.exports = {
 		],
 	],
 	plugins: [
-		[require.resolve('docusaurus-lunr-search'), {
-			excludeRoutes: [
-				'docs/[0-9].*.[0-9]/**/*', // exclude changelogs from indexing
-			]
-		}],
+		[
+			'@docusaurus/plugin-content-docs',
+			{
+				id: 'releases',
+				path: 'releases',
+				routeBasePath: 'releases',
+				sidebarPath: false,
+				// ... other options
+			},
+		],
+		[
+			require.resolve('docusaurus-lunr-search'),
+			{
+				excludeRoutes: [
+					'docs/[0-9].*.[0-9]/**/*', // exclude changelogs from indexing
+				],
+			},
+		],
 	],
 }
