@@ -105,7 +105,7 @@ if (logToFile || logPath !== '') {
 		}
 	}
 	const transportConsole = new Winston.transports.Console({
-		level: 'verbose',
+		level: process.env.LOG_LEVEL || 'verbose',
 		handleExceptions: true,
 		handleRejections: true,
 	})
@@ -127,7 +127,7 @@ if (logToFile || logPath !== '') {
 	console.log('Logging to ' + logPath)
 } else {
 	const transportConsole = new Winston.transports.Console({
-		level: 'silly',
+		level: process.env.LOG_LEVEL || 'silly',
 		handleExceptions: true,
 		handleRejections: true,
 	})
