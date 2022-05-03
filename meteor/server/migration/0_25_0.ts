@@ -29,7 +29,7 @@ import { Parts } from '../../lib/collections/Parts'
 import { Studios } from '../../lib/collections/Studios'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { TimelineObjGeneric as TimelineObjGeneric_1_11_0 } from './deprecatedDataTypes/1_12_0'
-import { TransformedCollection } from '../../lib/typings/meteor'
+import { AsyncMongoCollection } from '../../lib/collections/lib'
 
 // 0.25.0 (Release 10) // This is a big refactoring, with a LOT of renamings
 export const addSteps = addMigrationSteps('0.25.0', [
@@ -63,22 +63,22 @@ export const addSteps = addMigrationSteps('0.25.0', [
 			if (dbs) {
 				const ps: Promise<unknown>[] = []
 
-				dbs.SegmentLines.find().forEach((doc) => {
+				dbs.SegmentLines.find({}).forEach((doc) => {
 					ps.push(Parts.insertIgnoreAsync(doc))
 				})
 				dbs.SegmentLines.remove({})
 
-				dbs.SegmentLineItems.find().forEach((doc) => {
+				dbs.SegmentLineItems.find({}).forEach((doc) => {
 					ps.push(Pieces.insertIgnoreAsync(doc))
 				})
 				dbs.SegmentLineItems.remove({})
 
-				dbs.SegmentLineAdLibItems.find().forEach((doc) => {
+				dbs.SegmentLineAdLibItems.find({}).forEach((doc) => {
 					ps.push(AdLibPieces.insertIgnoreAsync(doc))
 				})
 				dbs.SegmentLineAdLibItems.remove({})
 
-				dbs.RunningOrderBaselineItems.find().forEach((doc) => {
+				dbs.RunningOrderBaselineItems.find({}).forEach((doc) => {
 					ps.push(RundownBaselineObjs.insertIgnoreAsync(doc))
 				})
 				dbs.RunningOrderBaselineItems.remove({})
@@ -86,7 +86,7 @@ export const addSteps = addMigrationSteps('0.25.0', [
 				// dbs.RunningOrderBaselineAdLibItems.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(RundownBaselineAdLibPieces, doc)) })
 				// dbs.RunningOrderBaselineAdLibItems.remove({})
 
-				dbs.StudioInstallations.find().forEach((doc) => {
+				dbs.StudioInstallations.find({}).forEach((doc) => {
 					ps.push(Studios.insertIgnoreAsync(doc))
 				})
 				dbs.StudioInstallations.remove({})
@@ -212,7 +212,7 @@ export const addSteps = addMigrationSteps('0.25.0', [
 	),
 	renamePropertiesInCollection(
 		'Timeline',
-		Timeline120 as unknown as TransformedCollection<TimelineObjGeneric_1_11_0, TimelineObjGeneric_1_11_0>,
+		Timeline120 as unknown as AsyncMongoCollection<TimelineObjGeneric_1_11_0>,
 		'Timeline',
 		{
 			studioId: 'siId',

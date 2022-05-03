@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { IndexSpecifier, makePromise, waitTime } from '../../lib/lib'
+import { makePromise, waitTime } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -11,11 +11,10 @@ import {
 } from '../../lib/api/system'
 import { getTargetRegisteredIndexes } from '../../lib/database'
 import { Meteor } from 'meteor/meteor'
-import { TransformedCollection } from '../../lib/typings/meteor'
 import { logger } from '../logging'
 import { SystemWriteAccess } from '../security/system'
 import { check } from '../../lib/check'
-import { createMongoCollection } from '../../lib/collections/lib'
+import { AsyncMongoCollection, createMongoCollection, IndexSpecifier } from '../../lib/collections/lib'
 import { getBundle as getTranslationBundleInner } from './translationsBundles'
 import { TranslationsBundle, TranslationsBundleId } from '../../lib/collections/TranslationsBundles'
 import { OrganizationContentWriteAccess } from '../security/organization'
@@ -107,7 +106,7 @@ export function runCronjob(context: MethodContext): void {
 	return nightlyCronjobInner()
 }
 
-let mongoTest: TransformedCollection<any, any> | undefined = undefined
+let mongoTest: AsyncMongoCollection<any> | undefined = undefined
 /** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
 async function doSystemBenchmarkInner() {
 	if (!mongoTest) {

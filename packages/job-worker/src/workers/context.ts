@@ -282,7 +282,7 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 		if (span) span.setLabel('playlistId', unprotectString(playlistId))
 
 		const lockId = getRandomString()
-		logger.info(`PlaylistLock: Locking "${playlistId}"`)
+		logger.silly(`PlaylistLock: Locking "${playlistId}"`)
 
 		const resourceId = `playlist:${playlistId}`
 		await this.locksManager.aquire(lockId, resourceId)
@@ -298,7 +298,7 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 		const lock = new PlaylistLockImpl(playlistId, doRelease)
 		this.locks.push(lock)
 
-		logger.info(`PlaylistLock: Locked "${playlistId}"`)
+		logger.silly(`PlaylistLock: Locked "${playlistId}"`)
 
 		if (span) span.end()
 
@@ -310,7 +310,7 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 		if (span) span.setLabel('rundownId', unprotectString(rundownId))
 
 		const lockId = getRandomString()
-		logger.info(`RundownLock: Locking "${rundownId}"`)
+		logger.silly(`RundownLock: Locking "${rundownId}"`)
 
 		const resourceId = `rundown:${rundownId}`
 		await this.locksManager.aquire(lockId, resourceId)
@@ -326,7 +326,7 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 		const lock = new RundownLockImpl(rundownId, doRelease)
 		this.locks.push(lock)
 
-		logger.info(`RundownLock: Locked "${rundownId}"`)
+		logger.silly(`RundownLock: Locked "${rundownId}"`)
 
 		if (span) span.end()
 
@@ -421,13 +421,13 @@ class PlaylistLockImpl extends PlaylistLock {
 		if (!this.#isLocked) {
 			logger.warn(`PlaylistLock: Already released "${this.playlistId}"`)
 		} else {
-			logger.info(`PlaylistLock: Releasing "${this.playlistId}"`)
+			logger.silly(`PlaylistLock: Releasing "${this.playlistId}"`)
 
 			this.#isLocked = false
 
 			await this.doRelease()
 
-			logger.info(`PlaylistLock: Released "${this.playlistId}"`)
+			logger.silly(`PlaylistLock: Released "${this.playlistId}"`)
 
 			if (this.deferedFunctions.length > 0) {
 				for (const fcn of this.deferedFunctions) {
@@ -453,13 +453,13 @@ class RundownLockImpl extends RundownLock {
 		if (!this.#isLocked) {
 			logger.warn(`RundownLock: Already released "${this.rundownId}"`)
 		} else {
-			logger.info(`RundownLock: Releasing "${this.rundownId}"`)
+			logger.silly(`RundownLock: Releasing "${this.rundownId}"`)
 
 			this.#isLocked = false
 
 			await this.doRelease()
 
-			logger.info(`RundownLock: Released "${this.rundownId}"`)
+			logger.silly(`RundownLock: Released "${this.rundownId}"`)
 
 			if (this.deferedFunctions.length > 0) {
 				for (const fcn of this.deferedFunctions) {

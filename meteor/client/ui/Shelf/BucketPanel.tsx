@@ -28,7 +28,7 @@ import {
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
+import { literal, unprotectString, partial, protectString, MongoFieldSpecifierOnes } from '../../../lib/lib'
 import {
 	ensureHasTrailingSlash,
 	contextMenuHoldToDisplayTime,
@@ -58,7 +58,6 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
-import { MongoFieldSpecifierOnes } from '../../../lib/typings/meteor'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import {

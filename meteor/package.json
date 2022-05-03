@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.42.0-in-development",
+	"version": "1.43.0-in-development",
 	"private": true,
 	"engines": {
 		"node": ">=14.18.0"
@@ -71,8 +71,8 @@
 		"immutability-helper": "^3.1.1",
 		"indexof": "0.0.1",
 		"lottie-web": "^5.8.1",
-		"meteor-node-stubs": "^1.1.0",
-		"moment": "^2.29.1",
+		"meteor-node-stubs": "^1.2.1",
+		"moment": "^2.29.2",
 		"mos-connection": "^1.0.6",
 		"ntp-client": "^0.5.3",
 		"object-path": "^0.11.8",
@@ -119,8 +119,7 @@
 		"@types/deep-extend": "^0.4.32",
 		"@types/fibers": "^3.1.1",
 		"@types/jest": "^26.0.24",
-		"@types/meteor": "1.4.47",
-		"@types/mongodb": "^3.6.20",
+		"@types/meteor": "^2.6.1",
 		"@types/node": "^14",
 		"@types/prop-types": "^15.7.4",
 		"@types/react": "^16.14.23",
@@ -181,6 +180,7 @@
 		}
 	},
 	"resolutions": {
-		"url-parse": "^1.5.9"
+		"url-parse": "^1.5.9",
+		"mos-connection/moment": "^2.29.3"
 	}
 }

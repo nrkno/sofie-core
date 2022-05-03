@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/job-worker",
-	"version": "1.42.0-in-development",
+	"version": "1.43.0-in-development",
 	"description": "Worker for things",
 	"main": "dist/index.js",
 	"license": "MIT",
@@ -51,7 +51,7 @@
 		"deepmerge": "^4.2.2",
 		"elastic-apm-node": "^3.26.0",
 		"eventemitter3": "^4.0.7",
-		"mongodb": "^4.3.1",
+		"mongodb": "^4.4.1",
 		"p-lazy": "^3.1.0",
 		"p-timeout": "^4.1.0",
 		"read-pkg-up": "^7.0.0",
