@@ -5,6 +5,8 @@ import { ITranslatableMessage } from '@sofie-automation/corelib/dist/Translatabl
 import { Meteor } from 'meteor/meteor'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from './logging'
+import { MongoQuery } from './typings/meteor'
+import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
@@ -487,4 +489,15 @@ export enum LogLevel {
 	WARN = 'warn',
 	ERROR = 'error',
 	NONE = 'crit',
+}
+
+/**
+ * Convert a MongoQuery from @sofie-automation/corelib typings to Meteor typings.
+ * They aren't compatible yet because Meteor is using some 'loose' custom typings, rather than corelib which uses the strong typings given by the mongodb library
+ * Note: This assumes the queries are compatible. Due to how meteor uses the query they should be, but this has not been verified
+ * @param query MongoQuery as written in @sofie-automation/corelib syntax
+ * @returns MongoQuery as written in Meteor syntax
+ */
+export function convertCorelibToMeteorMongoQuery<T>(query: CoreLibMongoQuery<T>): MongoQuery<T> {
+	return query as any
 }

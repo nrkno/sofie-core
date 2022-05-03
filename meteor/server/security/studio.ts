@@ -23,8 +23,8 @@ export namespace StudioReadAccess {
 		return studioContent({ studioId: selector._id }, cred)
 	}
 	/** Handles read access for all studioId content */
-	export function studioContent(
-		selector: MongoQuery<StudioContent>,
+	export function studioContent<T extends StudioContent>(
+		selector: MongoQuery<T>,
 		cred: Credentials | ResolvedCredentials
 	): boolean {
 		check(selector, Object)

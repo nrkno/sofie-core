@@ -35,7 +35,7 @@ import {
 } from '../../lib/api/migration'
 import { logger } from '../../lib/logging'
 import { internalStoreSystemSnapshot } from '../api/snapshot'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import {
 	CoreSystem,
@@ -46,7 +46,7 @@ import {
 	Version,
 } from '../../lib/collections/CoreSystem'
 import { SnapshotId } from '../../lib/collections/Snapshots'
-import { Studios } from '../../lib/collections/Studios'
+import { StudioId, Studios } from '../../lib/collections/Studios'
 import { getHash, protectString, stringifyError, unprotectString, waitForPromise } from '../../lib/lib'
 import { evalBlueprint } from '../api/blueprints/cache'
 import {
@@ -805,7 +805,7 @@ function getMigrationStudioContext(chunk: MigrationChunk): IMigrationContextStud
 	if (chunk.sourceId === 'system')
 		throw new Meteor.Error(500, `cunk.sourceId invalid in this context: ${chunk.sourceId}`)
 
-	const studio = Studios.findOne(chunk.sourceId)
+	const studio = Studios.findOne(chunk.sourceId as StudioId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${chunk.sourceId}" not found`)
 
 	return new MigrationContextStudio(studio)
@@ -817,7 +817,7 @@ function getMigrationShowStyleContext(chunk: MigrationChunk): IMigrationContextS
 	if (chunk.sourceId === 'system')
 		throw new Meteor.Error(500, `cunk.sourceId invalid in this context: ${chunk.sourceId}`)
 
-	const showStyleBase = ShowStyleBases.findOne(chunk.sourceId)
+	const showStyleBase = ShowStyleBases.findOne(chunk.sourceId as ShowStyleBaseId)
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${chunk.sourceId}" not found`)
 
 	return new MigrationContextShowStyle(showStyleBase)

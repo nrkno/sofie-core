@@ -2,12 +2,13 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { PubSub } from '../../lib/api/pubsub'
 import { extractFunctionSignature } from '../lib'
-import { Mongocursor, UserId } from '../../lib/typings/meteor'
+import { UserId } from '../../lib/typings/meteor'
 import { ProtectedString } from '../../lib/lib'
 import { Credentials, ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
 import { Settings } from '../../lib/Settings'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { fetchShowStyleBasesLight } from '../../lib/collections/optimizations'
+import { MongoCursor } from '../../lib/collections/lib'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
 export const MeteorPublications: { [key: string]: Function } = {}
@@ -19,7 +20,7 @@ export const MeteorPublications: { [key: string]: Function } = {}
  */
 export function meteorPublish<T extends { _id: ProtectedString<any> }>(
 	name: PubSub,
-	callback: (...args: any[]) => Mongocursor<T> | Mongocursor<T>[] | null
+	callback: (...args: any[]) => MongoCursor<T> | MongoCursor<T>[] | null
 ) {
 	const signature = extractFunctionSignature(callback)
 	if (signature) MeteorPublicationSignatures[name] = signature
