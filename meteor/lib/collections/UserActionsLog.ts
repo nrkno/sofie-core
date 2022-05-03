@@ -22,12 +22,17 @@ export interface UserActionsLogItem {
 	/** undefined=in progress, true=finished successfully, false=finished with error */
 	success?: boolean
 	errorMessage?: string
+
+	/** Timestamp for when the action result was sent to the Client */
 	doneTime?: Time
 
 	/** The timelineHash that resulted from the userAction. Used to set .gatewayDuration. */
 	timelineHash?: TimelineHash
-	/** Timestamp of when the timeline was generated, used to calculate .gatewayDuration. */
+	/** Timestamp for when the timeline was generated, used to calculate .gatewayDuration. */
 	timelineGenerated?: number
+
+	/** Timestamp (as calculated by the GUI) for when the user initiated the execution of the action */
+	clientTime?: Time
 
 	/** The time it took (within core & worker) to execute the action */
 	executionTime?: TimeDuration

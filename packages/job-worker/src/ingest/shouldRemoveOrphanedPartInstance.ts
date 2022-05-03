@@ -6,7 +6,6 @@ import { PartNote, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { logger } from 'elastic-apm-node'
 import { JobContext } from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import { clone } from 'underscore'
@@ -14,6 +13,7 @@ import { RundownUserContext } from '../blueprints/context'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
 import { isTooCloseToAutonext } from '../playout/lib'
 import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints } from '../blueprints/context/lib'
+import { logger } from '../logging'
 
 export async function shouldRemoveOrphanedPartInstance(
 	context: JobContext,

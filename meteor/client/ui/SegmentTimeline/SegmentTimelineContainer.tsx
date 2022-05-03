@@ -83,7 +83,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 	class SegmentTimelineContainer extends MeteorReactComponent<IProps & ITrackedProps, IState> {
 		static contextTypes = {
 			durations: PropTypes.object.isRequired,
-			lowResDurations: PropTypes.object.isRequired,
+			syncedDurations: PropTypes.object.isRequired,
 		}
 
 		isVisible: boolean

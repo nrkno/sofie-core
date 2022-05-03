@@ -1300,10 +1300,12 @@ const HotkeyLegendSettings = withTranslation()(
 						<button className="btn btn-primary" onClick={this.onAddHotkeyLegend}>
 							<FontAwesomeIcon icon={faPlus} />
 						</button>
-						<button className="btn mls btn-secondary" onClick={this.onDownloadAHKScript}>
-							<FontAwesomeIcon icon={faDownload} />
-							&nbsp;{t('AHK')}
-						</button>
+						{Settings.enableKeyboardPreview && (
+							<button className="btn mls btn-secondary" onClick={this.onDownloadAHKScript}>
+								<FontAwesomeIcon icon={faDownload} />
+								&nbsp;{t('AHK')}
+							</button>
+						)}
 						<button className="btn mls btn-secondary" onClick={() => this.exportHotkeyJSON()}>
 							<FontAwesomeIcon icon={faDownload} />
 							&nbsp;{t('Export')}

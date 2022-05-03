@@ -818,8 +818,8 @@ const StudioRoutings = withTranslation()(
 		}
 		updateRouteSetActive = (routeSetId: string, value: boolean) => {
 			const { t } = this.props
-			doUserAction(t, 'StudioSettings', UserAction.SWITCH_ROUTE_SET, (e) =>
-				MeteorCall.userAction.switchRouteSet(e, this.props.studio._id, routeSetId, value)
+			doUserAction(t, 'StudioSettings', UserAction.SWITCH_ROUTE_SET, (e, ts) =>
+				MeteorCall.userAction.switchRouteSet(e, ts, this.props.studio._id, routeSetId, value)
 			)
 		}
 

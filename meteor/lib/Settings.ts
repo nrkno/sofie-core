@@ -38,7 +38,7 @@ export interface ISettings {
 		maxAllowedDiff: number
 	}
 
-	/** The KeyboardPreview is a feature that is not implemented in the main Fork */
+	/** The KeyboardPreview is a feature that is not implemented in the main Fork, and is kept here for compatibility */
 	enableKeyboardPreview: boolean
 }
 

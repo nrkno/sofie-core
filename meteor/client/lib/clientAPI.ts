@@ -2,6 +2,8 @@ import * as _ from 'underscore'
 import { logger } from '../../lib/logging'
 import { PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MeteorCall } from '../../lib/api/methods'
+import { Time } from '../../lib/lib'
+import { getEventTimestamp } from './lib'
 
 export async function callPeripheralDeviceFunction(
 	e: any,
@@ -10,8 +12,9 @@ export async function callPeripheralDeviceFunction(
 	functionName: string,
 	...params: any[]
 ): Promise<any> {
+	const eventContext = eventContextForLog(e)
 	return MeteorCall.client.callPeripheralDeviceFunction(
-		eventContextForLog(e),
+		eventContext[0],
 		deviceId,
 		timeoutTime,
 		functionName,
@@ -34,11 +37,12 @@ export namespace PeripheralDevicesAPI {
 	}
 }
 
-export function eventContextForLog(e: any): string {
-	if (!e) return ''
+export function eventContextForLog(e: any): [string, Time] {
+	const timeStamp = getEventTimestamp(e)
+	if (!e) return ['', timeStamp]
 	let str: string = ''
 	if (_.isString(e)) {
-		return e
+		return [e, timeStamp]
 	} else if (e.currentTarget && e.currentTarget.localName && !e.key && !e.code) {
 		let contents = ''
 		if (e.currentTarget.localName !== 'body' && e.currentTarget.innerText) {
@@ -57,7 +61,7 @@ export function eventContextForLog(e: any): string {
 		str = 'N/A'
 	}
 
-	return str
+	return [str, timeStamp]
 }
 
 function keyboardEventToShortcut(e: KeyboardEvent): string {

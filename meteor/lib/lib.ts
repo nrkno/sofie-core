@@ -36,6 +36,7 @@ const systemTime = {
 	diff: 0,
 	stdDev: 9999,
 	lastSync: 0,
+	timeOriginDiff: 0,
 }
 /**
  * Returns the current (synced) time.

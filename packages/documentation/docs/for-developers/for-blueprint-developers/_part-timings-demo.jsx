@@ -19,6 +19,8 @@ const viewPortStyle = {
 }
 
 export function PartTimingsDemo() {
+	const [postrollA1, setPostrollA1] = useState(0)
+	const [postrollA2, setPostrollA2] = useState(0)
 	const [prerollB1, setPrerollB1] = useState(0)
 	const [prerollB2, setPrerollB2] = useState(0)
 	const [outTransitionDuration, setOutTransitionDuration] = useState(0)
@@ -40,12 +42,13 @@ export function PartTimingsDemo() {
 	const takeDelayed = takeTime + takeOffset
 
 	// Calculate the part A objects
-	const pieceA = { time: 0, duration: takeDelayed + inTransitionKeepaliveDuration }
-	const partA = pieceA // part stretches to contain the piece
+	const pieceA1 = { time: 0, duration: takeDelayed + inTransitionKeepaliveDuration + postrollA1 }
+	const pieceA2 = { time: 0, duration: takeDelayed + inTransitionKeepaliveDuration + postrollA2 }
+	const partA = { time: 0, duration: Math.max(pieceA1.duration, pieceA2.duration) } // part stretches to contain the piece
 
 	// Calculate the transition objects
 	const pieceOutTransition = {
-		time: partA.time + partA.duration - outTransitionDuration,
+		time: partA.time + partA.duration - outTransitionDuration - Math.max(postrollA1, postrollA2),
 		duration: outTransitionDuration,
 	}
 	const pieceInTransition = { time: takeDelayed, duration: inTransitionBlockDuration }
@@ -64,7 +67,8 @@ export function PartTimingsDemo() {
 				<TimelineGroup {...pieceOutTransition} name="Out Transition" color="lightblue" />
 
 				<TimelineGroup {...partA} name="PartGroup A" color="green" />
-				<TimelineGroup {...pieceA} name="Piece A" color="orange" />
+				<TimelineGroup {...pieceA1} name="Piece A1" color="orange" />
+				<TimelineGroup {...pieceA2} name="Piece A2" color="orange" />
 
 				<TimelineGroup {...partB} name="PartGroup B" color="green" />
 				<TimelineGroup {...pieceB1} name="Piece B1" color="orange" />
@@ -80,6 +84,8 @@ export function PartTimingsDemo() {
 			<table className="margin-top--md">
 				<InputRow label="Piece B1 Preroll Duration" max={1000} value={prerollB1} setValue={setPrerollB1} />
 				<InputRow label="Piece B2 Preroll Duration" max={1000} value={prerollB2} setValue={setPrerollB2} />
+				<InputRow label="Piece A1 Postroll Duration" max={1000} value={postrollA1} setValue={setPostrollA1} />
+				<InputRow label="Piece A2 Postroll Duration" max={1000} value={postrollA2} setValue={setPostrollA2} />
 				<InputRow
 					label="Part A Out Transition Duration"
 					max={1000}

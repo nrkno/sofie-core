@@ -9,6 +9,8 @@ pipeline {
       parallel {
         stage('Build core') {
           steps {
+            /* Persist git hash, this is the same as `meteor yarn run inject-git-hash` */
+            sh "node ./meteor/scripts/generate-version-file.js"
             sofieSlackSendBuildStarted('core')
             dockerBuild('sofie/tv-automation-server-core', '.', './meteor/Dockerfile')
           }

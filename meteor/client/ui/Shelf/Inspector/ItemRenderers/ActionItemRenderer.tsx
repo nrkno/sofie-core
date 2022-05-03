@@ -196,9 +196,10 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			const { t, targetAction } = this.props
 
 			if (targetAction) {
-				doUserAction(t, e, UserAction.START_ADLIB, (e) =>
+				doUserAction(t, e, UserAction.START_ADLIB, (e, ts) =>
 					MeteorCall.userAction.executeAction(
 						e,
+						ts,
 						this.props.rundownPlaylist._id,
 						targetAction._id,
 						targetAction.actionId,
@@ -218,9 +219,10 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 					t,
 					e,
 					UserAction.SAVE_TO_BUCKET,
-					(e) =>
+					(e, ts) =>
 						MeteorCall.userAction.bucketsSaveActionIntoBucket(
 							e,
+							ts,
 							this.props.studio._id,
 							this.props.bucketIds[0],
 							transformedAdLibActionToAction(targetAction)

@@ -63,6 +63,7 @@ export function buildTimelineObjsForRundown(
 				!activePlaylist.nextPartInstanceId ? TimelineObjClassesCore.NoNextPart : undefined,
 			].filter((v): v is TimelineObjClassesCore => v !== undefined),
 			partInstanceId: null,
+			metaData: undefined,
 		})
 	)
 
@@ -277,6 +278,12 @@ function generateCurrentInfinitePieceObjects(
 			)
 			if (!nextItem) {
 				infiniteGroup.enable.end = `#${currentPartGroup.id}.end`
+				if (currentPartInstanceTimings.fromPartPostroll) {
+					infiniteGroup.enable.end += ' - ' + currentPartInstanceTimings.fromPartPostroll
+				}
+				if (pieceInstance.piece.postrollDuration) {
+					infiniteGroup.enable.end += ' + ' + pieceInstance.piece.postrollDuration
+				}
 			}
 		}
 	}
@@ -295,7 +302,7 @@ function generateCurrentInfinitePieceObjects(
 
 		pieceEnable = { start: 0 }
 	} else {
-		pieceEnable = getPieceEnableInsidePart(pieceInstance, currentPartInstanceTimings)
+		pieceEnable = getPieceEnableInsidePart(pieceInstance, currentPartInstanceTimings, currentPartGroup.id)
 	}
 
 	if (pieceInstance.userDuration) {
@@ -378,6 +385,7 @@ function generateNextPartInstanceObjects(
 	const currentToNextTimings = calculatePartTimings(
 		activePlaylist.holdState,
 		currentPartInfo.partInstance.part,
+		currentPartInfo.pieceInstances.map((p) => p.piece),
 		nextPartInfo.partInstance.part,
 		nextPartInfo.pieceInstances.map((p) => p.piece)
 	)
