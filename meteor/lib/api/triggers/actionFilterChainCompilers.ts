@@ -533,13 +533,14 @@ export function compileAdLibFilter(
 				}
 			}
 
+			const currentRundownId = context.currentRundownId.get()
 			if (!skip && currentRundownId) {
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === true)
 					rundownBaselineAdLibItems = RundownBaselineAdLibPieces.find(
 						{
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
-							rundownId: context.currentRundownId.get(),
+							rundownId: currentRundownId,
 						} as MongoSelector<RundownBaselineAdLibItem>,
 						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, 'rundownBaselineAdLibItem'))
@@ -548,7 +549,7 @@ export function compileAdLibFilter(
 						{
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
-							rundownId: context.currentRundownId.get(),
+							rundownId: currentRundownId,
 						} as MongoSelector<AdLibPiece>,
 						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, 'adLibPiece'))
@@ -569,13 +570,14 @@ export function compileAdLibFilter(
 				}
 			}
 
+			const currentRundownId = context.currentRundownId.get()
 			if (!skip && currentRundownId) {
 				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === true)
 					rundownBaselineAdLibActions = RundownBaselineAdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
-							rundownId: context.currentRundownId.get(),
+							rundownId: currentRundownId,
 						} as MongoSelector<RundownBaselineAdLibAction>,
 						adLibActionTypeFilter.options
 					).map((item) => wrapRundownBaselineAdLibAction(item, 'rundownBaselineAdLibAction'))
@@ -584,7 +586,7 @@ export function compileAdLibFilter(
 						{
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
-							rundownId: context.currentRundownId.get(),
+							rundownId: currentRundownId,
 						} as MongoSelector<AdLibAction>,
 						adLibActionTypeFilter.options
 					).map((item) => wrapAdLibAction(item, 'adLibAction'))

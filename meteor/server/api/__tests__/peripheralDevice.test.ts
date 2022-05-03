@@ -464,7 +464,7 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 
 		await expect(
-			MeteorCall.peripheralDevice.requestUserAuthToken(device._id, device.token, 'http://auth.url/')
+			MeteorCall.peripheralDevice.requestUserAuthToken(device._id, device.token, 'https://auth.url/')
 		).rejects.toThrowMeteor(400, 'can only request user auth token for peripheral device of spreadsheet type')
 
 		PeripheralDevices.update(device._id, {
@@ -472,10 +472,10 @@ describe('test peripheralDevice general API methods', () => {
 				type: PeripheralDeviceType.SPREADSHEET,
 			},
 		})
-		await MeteorCall.peripheralDevice.requestUserAuthToken(device._id, device.token, 'http://auth.url/')
+		await MeteorCall.peripheralDevice.requestUserAuthToken(device._id, device.token, 'https://auth.url/')
 		const deviceWithAccessToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
 		expect(deviceWithAccessToken).toBeTruthy()
-		expect(deviceWithAccessToken.accessTokenUrl).toBe('http://auth.url/')
+		expect(deviceWithAccessToken.accessTokenUrl).toBe('https://auth.url/')
 
 		PeripheralDevices.update(device._id, {
 			$set: {
@@ -488,7 +488,7 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('storeAccessToken', async () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		await expect(
-			MeteorCall.peripheralDevice.storeAccessToken(device._id, device.token, 'http://auth.url/')
+			MeteorCall.peripheralDevice.storeAccessToken(device._id, device.token, 'https://auth.url/')
 		).rejects.toThrowMeteor(400, 'can only store access token for peripheral device of spreadsheet type')
 
 		PeripheralDevices.update(device._id, {
