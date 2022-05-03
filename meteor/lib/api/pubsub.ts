@@ -91,6 +91,7 @@ export enum PubSub {
 	studios = 'studios',
 	studioOfDevice = 'studioOfDevice',
 	timeline = 'timeline',
+	timelineDatastore = 'timelineDatastore',
 	userActionsLog = 'userActionsLog',
 	/** @deprecated */
 	mediaWorkFlows = 'mediaWorkFlows',
@@ -116,6 +117,7 @@ export enum PubSub {
 	// custom publications:
 	mappingsForDevice = 'mappingsForDevice',
 	timelineForDevice = 'timelineForDevice',
+	timelineDatastoreForDevice = 'timelineDatastoreForDevice',
 	mappingsForStudio = 'mappingsForStudio',
 	timelineForStudio = 'timelineForStudio',
 	expectedPackagesForDevice = 'expectedPackagesForDevice',
