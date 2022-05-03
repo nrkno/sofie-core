@@ -179,24 +179,27 @@ export class StudioBaselineContext extends StudioContext implements IStudioBasel
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
 
-	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
+	hackGetMediaObjectDuration(mediaId: string): number | undefined {
 		return getMediaObjectDuration(this.jobContext, mediaId, this.studioId)
 	}
 }
 
-export async function getMediaObjectDuration(
-	context: JobContext,
-	mediaId: string,
-	studioId: string
-): Promise<number | undefined> {
-	return context.directCollections.MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId }).then(
-		(result) => {
-			if (result === undefined) {
-				return undefined
-			}
-			return result.mediainfo?.format?.duration
+export function getMediaObjectDuration(context: JobContext, mediaId: string, studioId: string): number | undefined {
+	const span = context.startSpan('context.getMediaObjectDuration')
+	const selector = { _id: { mediaId: mediaId.toUpperCase(), studioId } }
+	const cursor = context.directCollections.MediaObjects.rawCollection.find(selector)
+
+	const durations: Array<number | undefined> = []
+	void cursor.forEach((doc) => {
+		if (doc === undefined) {
+			return
 		}
-	)
+		durations.push(doc.mediainfo?.format?.duration as number)
+	})
+
+	if (span) span.end()
+
+	return durations.length > 0 ? durations[0] : undefined
 }
 
 export class StudioUserContext extends StudioContext implements IStudioUserContext {
@@ -325,7 +328,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
 
-	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
+	hackGetMediaObjectDuration(mediaId: string): number | undefined {
 		return getMediaObjectDuration(this.jobContext, mediaId, this.studioId)
 	}
 }
@@ -535,7 +538,7 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
 
-	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
+	hackGetMediaObjectDuration(mediaId: string): number | undefined {
 		return getMediaObjectDuration(this.jobContext, mediaId, this.studioId)
 	}
 }

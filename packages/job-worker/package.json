@@ -43,7 +43,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "npm:@tv2media/blueprints-integration@1.41.3",
+		"@sofie-automation/blueprints-integration": "npm:@tv2media/blueprints-integration@1.42.5",
 		"@sofie-automation/corelib": "link:../corelib",
 		"debounce-fn": "^4.0.0",
 		"deepmerge": "^4.2.2",
