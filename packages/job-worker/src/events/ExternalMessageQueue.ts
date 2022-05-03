@@ -4,25 +4,15 @@ import {
 	Time,
 } from '@sofie-automation/blueprints-integration'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
-import { IDirectCollections } from '../db'
+import { IChangeStream, IDirectCollections } from '../db'
 import { getCurrentTime } from '../lib'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { stringify } from 'querystring'
-import { clone, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { StudioCacheContext } from '../jobs'
-import {
-	InvalidateWorkerDataCache,
-	invalidateWorkerDataCache,
-	loadWorkerDataCache,
-	WorkerDataCache,
-} from '../workers/caches'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { StudioCacheContextImpl } from '../workers/context'
+import { InvalidateWorkerDataCache, WorkerDataCacheWrapper } from '../workers/caches'
 import { ReadonlyDeep } from 'type-fest'
-import deepmerge = require('deepmerge')
-import { ChangeStream, Db as MongoDb } from 'mongodb'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import pTimeout = require('p-timeout')
 import { logger } from '../logging'
 
@@ -36,13 +26,11 @@ interface TimeoutWithTime {
 }
 
 export class ExternalMessageQueueRunner {
-	readonly #mongoDatabase: MongoDb
 	readonly #collections: IDirectCollections
-	#changesStream: ChangeStream<any> | undefined
+	#changesStream: IChangeStream<ExternalMessageQueueObj> | undefined
 
 	// Maintain our own dataCache, as we run on our own timer and need to control when to clear it
-	readonly #dataCache: WorkerDataCache
-	#pendingCacheInvalidations: InvalidateWorkerDataCache | undefined
+	readonly #dataCache: WorkerDataCacheWrapper
 
 	#triggerTimeout: TimeoutWithTime | null = null
 	#lastRunHadError = false
@@ -50,8 +38,7 @@ export class ExternalMessageQueueRunner {
 	#destroyed = false
 	#running = false
 
-	private constructor(mongoDatabase: MongoDb, collections: IDirectCollections, dataCache: WorkerDataCache) {
-		this.#mongoDatabase = mongoDatabase
+	private constructor(collections: IDirectCollections, dataCache: WorkerDataCacheWrapper) {
 		this.#collections = collections
 		this.#dataCache = dataCache
 
@@ -59,13 +46,10 @@ export class ExternalMessageQueueRunner {
 	}
 
 	static async create(
-		mongoDatabase: MongoDb,
 		collections: IDirectCollections,
-		studioId: StudioId
+		dataCache: WorkerDataCacheWrapper
 	): Promise<ExternalMessageQueueRunner> {
-		const dataCache = await loadWorkerDataCache(collections, studioId)
-
-		const runner = new ExternalMessageQueueRunner(mongoDatabase, collections, dataCache)
+		const runner = new ExternalMessageQueueRunner(collections, dataCache)
 
 		await runner.startListeningForEvents()
 
@@ -73,15 +57,7 @@ export class ExternalMessageQueueRunner {
 	}
 
 	invalidateCaches(data: ReadonlyDeep<InvalidateWorkerDataCache>): void {
-		// Store the invalidation for later
-		if (!this.#pendingCacheInvalidations) {
-			this.#pendingCacheInvalidations = clone<InvalidateWorkerDataCache>(data)
-		} else {
-			this.#pendingCacheInvalidations = deepmerge<InvalidateWorkerDataCache>(
-				this.#pendingCacheInvalidations,
-				data as InvalidateWorkerDataCache
-			)
-		}
+		this.#dataCache.invalidateCaches(data)
 	}
 
 	private tryRestartListeningForEvents(): void {
@@ -107,11 +83,9 @@ export class ExternalMessageQueueRunner {
 			}
 		}
 
-		const stream = (this.#changesStream = this.#mongoDatabase
-			.collection(CollectionName.ExternalMessageQueue)
-			.watch([{ $match: { [`fullDocument.studioId`]: this.#dataCache.studio._id } }], {
-				batchSize: 1,
-			}))
+		const stream = (this.#changesStream = this.#collections.ExternalMessageQueue.watch([
+			{ $match: { [`fullDocument.studioId`]: this.#dataCache.studioId } },
+		]))
 
 		stream.on('error', () => {
 			logger.warn(`Changes stream for ExternalMessageQueue errored`)
@@ -121,7 +95,7 @@ export class ExternalMessageQueueRunner {
 		})
 		stream.on('change', (_change) => {
 			// we have a change to flag
-			this.triggerDoMessageQueue(5000) // TODO - why this long?
+			this.triggerDoMessageQueue()
 		})
 		stream.on('end', () => {
 			logger.warn(`Changes stream for ExternalMessageQueue ended`)
@@ -190,11 +164,7 @@ export class ExternalMessageQueueRunner {
 
 		try {
 			// handle any cache invalidations
-			if (this.#pendingCacheInvalidations) {
-				const invalidations = this.#pendingCacheInvalidations
-				this.#pendingCacheInvalidations = undefined
-				await invalidateWorkerDataCache(this.#collections, this.#dataCache, invalidations)
-			}
+			await this.#dataCache.processInvalidations()
 
 			try {
 				const tryInterval = 1 * 60 * 1000 // 1 minute
@@ -203,7 +173,7 @@ export class ExternalMessageQueueRunner {
 				const now = getCurrentTime()
 				const messagesToSend = await this.#collections.ExternalMessageQueue.findFetch(
 					{
-						studioId: this.#dataCache.studio._id,
+						studioId: this.#dataCache.studioId,
 						sent: { $not: { $gt: 0 } },
 						lastTry: { $not: { $gt: now - tryInterval } },
 						expires: { $gt: now },
@@ -221,7 +191,7 @@ export class ExternalMessageQueueRunner {
 
 				const probablyHasMoreToSend = messagesToSend.length === limit
 
-				const context: StudioCacheContext = new StudioCacheContextImpl(this.#collections, this.#dataCache)
+				const context = this.#dataCache.createStudioCacheContext()
 
 				const ps = messagesToSend.map(async (msg): Promise<SendResult> => {
 					// TODO - what happens if we get too many of these messages queued up? that could block things?

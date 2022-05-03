@@ -53,6 +53,7 @@ import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timel
 export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext {
 	const collections = getMockCollections()
 
+	// We don't bother 'saving' this to the db, as usually nothing will load it
 	const studio: DBStudio = {
 		...defaultStudio(studioId ?? protectString('mockStudio0')),
 		name: 'mockStudio',

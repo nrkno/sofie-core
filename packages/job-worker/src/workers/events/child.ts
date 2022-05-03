@@ -4,7 +4,13 @@ import { MongoClient } from 'mongodb'
 import { createMongoConnection, getMongoCollections, IDirectCollections } from '../../db'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { setupApmAgent, startTransaction } from '../../profiler'
-import { InvalidateWorkerDataCache, invalidateWorkerDataCache, loadWorkerDataCache, WorkerDataCache } from '../caches'
+import {
+	InvalidateWorkerDataCache,
+	invalidateWorkerDataCache,
+	loadWorkerDataCache,
+	WorkerDataCache,
+	WorkerDataCacheWrapperImpl,
+} from '../caches'
 import { JobContextImpl, QueueJobFunc } from '../context'
 import { AnyLockEvent, LocksManager } from '../locks'
 import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
@@ -56,7 +62,7 @@ export class EventsWorkerChild {
 		if (this.#staticData) throw new Error('Worker already initialised')
 
 		const mongoClient = await createMongoConnection(mongoUri)
-		const collections = getMongoCollections(mongoClient, dbName)
+		const collections = getMongoCollections(mongoClient, dbName, false)
 
 		// Load some 'static' data from the db
 		const dataCache = await loadWorkerDataCache(collections, this.#studioId)
@@ -68,8 +74,11 @@ export class EventsWorkerChild {
 			dataCache,
 		}
 
-		const database = mongoClient.db(dbName)
-		this.#externalMessageQueue = await ExternalMessageQueueRunner.create(database, collections, this.#studioId)
+		{
+			const watcherCollections = getMongoCollections(mongoClient, dbName, true)
+			const dataCache = await WorkerDataCacheWrapperImpl.create(watcherCollections, this.#studioId)
+			this.#externalMessageQueue = await ExternalMessageQueueRunner.create(watcherCollections, dataCache)
+		}
 
 		logger.info(`Events thread for ${this.#studioId} initialised`)
 	}
