@@ -9,8 +9,9 @@ import { WatchDog } from './watchDog'
 import { Queue } from './queue'
 import { DeviceConfigManifest } from './configManifest'
 import { Random } from './random'
-import DataStore = require('data-store')
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const DataStore = require('data-store')
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const PkgInfo = require('../../package.json')
 
@@ -92,7 +93,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 			this._watchDog.startWatching()
 		}
 	}
-	static getStore(name: string): DataStore {
+	static getStore(name: string): any {
 		return new DataStore(name)
 	}
 	static getCredentials(name: string): CoreCredentials {
