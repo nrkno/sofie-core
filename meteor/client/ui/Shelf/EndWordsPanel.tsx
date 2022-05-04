@@ -11,11 +11,11 @@ import { dashboardElementPosition } from './DashboardPanel'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import {PieceInstance, PieceInstances} from '../../../lib/collections/PieceInstances'
+import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
 import { ScriptContent, Time } from '@sofie-automation/blueprints-integration'
 import { GetScriptPreview } from '../scriptPreview'
 import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import {getUnfinishedPieceInstancesReactive} from '../../lib/rundownLayouts';
+import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
 
 interface IEndsWordsPanelProps {
 	visible?: boolean
@@ -83,21 +83,26 @@ export const EndWordsPanel = translateWithTracker<IEndsWordsPanelProps, IState, 
 function getPieceWithManus(props: IEndsWordsPanelProps): PieceInstance | undefined {
 	const currentPartInstanceId: any = props.playlist.currentPartInstanceId
 
-	const unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet = getUnfinishedPieceInstancesReactive(props.playlist, props.showStyleBase)
+	const unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet = getUnfinishedPieceInstancesReactive(
+		props.playlist,
+		props.showStyleBase
+	)
 	let highestStartedPlayback: Time = 0
-	let startedPiecesCount: number = 0
+	const startedPiecesCount: number = 0
 	unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.forEach((pieceInstance: PieceInstance) => {
 		if (pieceInstance.startedPlayback && pieceInstance.startedPlayback > highestStartedPlayback) {
 			highestStartedPlayback = pieceInstance.startedPlayback
 		}
 	})
 
-	const unfinishedPieces = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.filter((pieceInstance: PieceInstance) => {
-		if (startedPiecesCount > 1 && pieceInstance.startedPlayback != highestStartedPlayback) {
-			return false
+	const unfinishedPieces = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.filter(
+		(pieceInstance: PieceInstance) => {
+			if (startedPiecesCount > 1 && pieceInstance.startedPlayback != highestStartedPlayback) {
+				return false
+			}
+			return !pieceInstance.startedPlayback || pieceInstance.startedPlayback == highestStartedPlayback
 		}
-		return !pieceInstance.startedPlayback || pieceInstance.startedPlayback == highestStartedPlayback;
-	})
+	)
 
 	const activeLayers = unfinishedPieces.map((p) => p.piece.sourceLayerId)
 	const hasAdditionalLayer: boolean = props.panel.additionalLayers?.some((s) => activeLayers.includes(s)) || false
@@ -114,10 +119,10 @@ function getPieceWithManus(props: IEndsWordsPanelProps): PieceInstance | undefin
 
 	return props.panel.requiredLayerIds && props.panel.requiredLayerIds.length
 		? _.flatten(Object.values(piecesInPart)).find((piece: PieceInstance) => {
-			return (
-				(props.panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
-				piece.partInstanceId === props.playlist.currentPartInstanceId
-			)
-		})
+				return (
+					(props.panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
+					piece.partInstanceId === props.playlist.currentPartInstanceId
+				)
+		  })
 		: undefined
 }
