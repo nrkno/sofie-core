@@ -34,7 +34,8 @@
 	"scripts": {
 		"build": "rimraf dist && yarn build:main && yarn copytypes",
 		"build:main": "tsc -p tsconfig.build.json",
-		"lint": "tslint --project tsconfig.json --config tslint.json",
+		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "yarn lint:raw .",
 		"unit": "jest",
 		"test": "yarn lint && yarn unit",
 		"test:integration": "yarn lint && jest --config=jest-integration.config.js",
@@ -82,7 +83,7 @@
 			"prettier"
 		],
 		"*.{ts,tsx}": [
-			"yarn lint"
+			"yarn lint:raw"
 		]
 	}
 }
