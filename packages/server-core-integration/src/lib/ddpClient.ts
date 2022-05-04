@@ -10,7 +10,7 @@
 
 import * as WebSocket from 'faye-websocket'
 import * as EJSON from 'ejson'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import got from 'got'
 
 export interface TLSOpts {
@@ -297,10 +297,18 @@ export type AnyMessage =
 	Updated |
 	ErrorMessage
 
+export type DDPClientEvents = {
+	failed: [error: Error]
+	'socket-error': [error: Error]
+	'socket-close': [code: number, reason: string]
+	message: [data: any]
+	connected: []
+}
+
 /**
  * Class reprsenting a DDP client and its connection.
  */
-export class DDPClient extends EventEmitter {
+export class DDPClient extends EventEmitter<DDPClientEvents> {
 
 	public collections: {
 		[collectionName: string]: {
@@ -399,7 +407,7 @@ export class DDPClient extends EventEmitter {
 		this.socket.on('error', (error: Error) => {
 			// error received before connection was established
 			if (this.isConnecting) {
-				this.emit('failed', error.message)
+				this.emit('failed', error)
 			}
 
 			this.emit('socket-error', error)
@@ -455,7 +463,7 @@ export class DDPClient extends EventEmitter {
 			this.connect()
 		} else {
 			this.autoReconnectInt = false
-			this.emit('failed', 'Cannot negotiate DDP version')
+			this.emit('failed', new Error('Cannot negotiate DDP version'))
 		}
 	}
 

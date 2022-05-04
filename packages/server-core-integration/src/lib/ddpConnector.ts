@@ -1,7 +1,18 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import { DDPClient, DDPConnectorOptions } from './ddpClient'
 
-export class DDPConnector extends EventEmitter {
+
+export type DDPConnectorEvents = {
+	error: [e: any]
+	failed: [error: Error]
+	message: [message: any]
+
+	connectionChanged: [connected: boolean]
+	connected: []
+	disconnected: []
+}
+
+export class DDPConnector extends EventEmitter<DDPConnectorEvents> {
 	public ddpClient: DDPClient | undefined
 
 	private _options: DDPConnectorOptions
@@ -43,7 +54,6 @@ export class DDPConnector extends EventEmitter {
 			})
 			this.ddpClient.on('message', (message: any) => this._onClientMessage(message))
 			this.ddpClient.on('socket-error', (error: any) => this._onClientError(error))
-			this.ddpClient.on('info', (message: any) => this._onClientInfo(message))
 		} else {
 
 			if (this.ddpClient.socket) {
@@ -176,8 +186,5 @@ export class DDPConnector extends EventEmitter {
 	private _onClientError (error: Error) {
 		this.emit('error', error)
 		this._monitorDDPConnection()
-	}
-	private _onClientInfo (message: any) {
-		this.emit('info', message)
 	}
 }

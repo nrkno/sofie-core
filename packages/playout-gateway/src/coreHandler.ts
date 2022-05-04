@@ -569,13 +569,6 @@ export class CoreTSRDeviceHandler {
 		this._devicePr = device
 		this._deviceId = deviceId
 		this._tsrHandler = tsrHandler
-
-		// this._coreParentHandler.logger.info('new CoreTSRDeviceHandler ' + device.deviceName)
-
-		// this.core = new CoreConnection(parent.getCoreConnectionOptions('MOS: ' + device.idPrimary, device.idPrimary, false))
-		// this.core.onError((err) => {
-		// 	this._coreParentHandler.logger.error('Core Error: ' + (err.message || err.toString() || err))
-		// })
 	}
 	async init(): Promise<void> {
 		this._device = await this._devicePr
@@ -592,11 +585,6 @@ export class CoreTSRDeviceHandler {
 		this.core.onError((err) => {
 			this._coreParentHandler.logger.error(
 				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err)
-			)
-		})
-		this.core.onInfo((message) => {
-			this._coreParentHandler.logger.info(
-				'Core Info: ' + ((_.isObject(message) && message.message) || message.toString() || message)
 			)
 		})
 		await this.core.init(this._coreParentHandler.core)

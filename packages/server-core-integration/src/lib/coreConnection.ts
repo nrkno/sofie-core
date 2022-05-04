@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import * as _ from 'underscore'
 
 import { DDPConnector } from './ddpConnector'
@@ -48,7 +48,15 @@ interface QueuedMethodCall {
 	resolve: (r: any) => void
 	reject: (e: Error) => void
 }
-export class CoreConnection extends EventEmitter {
+
+export type CoreConnectionEvents = {
+	connected: []
+	connectionChanged: [connected: boolean]
+	disconnected: []
+	failed: [err: Error]
+	error: [err: Error|string]
+}
+export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	private _ddp: DDPConnector
 	private _parent: CoreConnection | null = null
 	private _children: Array<CoreConnection> = []
@@ -70,7 +78,7 @@ export class CoreConnection extends EventEmitter {
 	private _timeLastMethodCall: number = 0
 	private _timeLastMethodReply: number = 0
 	private _destroyed: boolean = false
-	_queues: { [queueName: string]: Queue } = {}
+	private _queues: { [queueName: string]: Queue } = {}
 
 	constructor(coreOptions: CoreOptions) {
 		super()
@@ -105,7 +113,7 @@ export class CoreConnection extends EventEmitter {
 	static generateCredentials(): CoreCredentials {
 		return {
 			deviceId: Random.id(),
-			deviceToken: Random.id()
+			deviceToken: Random.id(),
 		}
 	}
 	async init(ddpOptionsORParent?: DDPConnectorOptions | CoreConnection): Promise<string> {
@@ -118,7 +126,7 @@ export class CoreConnection extends EventEmitter {
 		} else {
 			let ddpOptions = ddpOptionsORParent || {
 				host: '127.0.0.1',
-				port: 3000
+				port: 3000,
 			}
 			// TODO: The following line is ignored - autoReconnect ends up as false - which is what the tests want. Why?
 			if (!_.has(ddpOptions, 'autoReconnect')) ddpOptions.autoReconnect = true
@@ -130,9 +138,6 @@ export class CoreConnection extends EventEmitter {
 			})
 			this._ddp.on('failed', (err) => {
 				this.emit('failed', err)
-			})
-			this._ddp.on('info', (message: any) => {
-				this.emit('info', message)
 			})
 			this._ddp.on('connected', () => {
 				// this.emit('connected')
@@ -161,7 +166,7 @@ export class CoreConnection extends EventEmitter {
 			let deviceId = await this._sendInit()
 			this._timeSync = new TimeSync(
 				{
-					serverDelayTime: 0
+					serverDelayTime: 0,
 				},
 				async () => {
 					let stat = await this.callMethod(PeripheralDeviceAPI.methods.getTimeDiff)
@@ -184,12 +189,7 @@ export class CoreConnection extends EventEmitter {
 				this._ddp.close()
 			}
 		}
-		this.removeAllListeners('error')
-		this.removeAllListeners('connectionChanged')
-		this.removeAllListeners('connected')
-		this.removeAllListeners('disconnected')
-		this.removeAllListeners('failed')
-		this.removeAllListeners('info')
+		this.removeAllListeners()
 
 		if (this._watchDog) this._watchDog.stopWatching()
 
@@ -212,8 +212,6 @@ export class CoreConnection extends EventEmitter {
 	}
 	addChild(child: CoreConnection) {
 		this._children.push(child)
-
-		this._updateMaxListeners()
 	}
 	removeChild(childToRemove: CoreConnection) {
 		let removeIndex = -1
@@ -238,9 +236,6 @@ export class CoreConnection extends EventEmitter {
 	}
 	onFailed(cb: (err: Error) => void) {
 		this.on('failed', cb)
-	}
-	onInfo(cb: (message: any) => void) {
-		this.on('info', cb)
 	}
 	get ddp(): DDPConnector {
 		if (this._parent) return this._parent.ddp
@@ -301,7 +296,7 @@ export class CoreConnection extends EventEmitter {
 					return this.callMethod(methodName, attrs)
 				},
 				resolve: resolve,
-				reject: reject
+				reject: reject,
 			})
 			this._triggerDoQueue()
 		})
@@ -336,7 +331,7 @@ export class CoreConnection extends EventEmitter {
 			},
 			findOne(selector: any): CollectionObj {
 				return c.find(selector)[0]
-			}
+			},
 		}
 		return c
 	}
@@ -367,7 +362,7 @@ export class CoreConnection extends EventEmitter {
 		const subscriptionId = await this.subscribe(publicationName, ...params)
 		this._autoSubscriptions[subscriptionId] = {
 			publicationName: publicationName,
-			params: params
+			params: params,
 		}
 		return subscriptionId
 	}
@@ -437,7 +432,7 @@ export class CoreConnection extends EventEmitter {
 			parentDeviceId: this._parent?.deviceId || undefined,
 			versions: this._coreOptions.versions,
 
-			configManifest: this._coreOptions.configManifest
+			configManifest: this._coreOptions.configManifest,
 		}
 
 		if (options.subType === P.SUBTYPE_PROCESS) {
@@ -565,10 +560,5 @@ export class CoreConnection extends EventEmitter {
 					})
 			}
 		}
-	}
-	private _updateMaxListeners() {
-		this.setMaxListeners(
-			10 + this._children.length * 10 // allow 10 listeners per child
-		)
 	}
 }
