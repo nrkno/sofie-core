@@ -88,10 +88,12 @@ function getPieceWithManus(props: IEndsWordsPanelProps): PieceInstance | undefin
 		props.showStyleBase
 	)
 
-	const startedPlaybackTimes = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.map((pieceInstance: PieceInstance) => {
-		return pieceInstance.startedPlayback || 0
-	})
-	let highestStartedPlayback: Time = Math.max(...startedPlaybackTimes)
+	const startedPlaybackTimes = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.map(
+		(pieceInstance: PieceInstance) => {
+			return pieceInstance.startedPlayback || 0
+		}
+	)
+	const highestStartedPlayback: Time = Math.max(...startedPlaybackTimes)
 
 	const unfinishedPieces = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.filter(
 		(pieceInstance: PieceInstance) => {
