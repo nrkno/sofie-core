@@ -11,11 +11,11 @@ import { dashboardElementPosition } from './DashboardPanel'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { ScriptContent } from '@sofie-automation/blueprints-integration'
+import {PieceInstance, PieceInstances} from '../../../lib/collections/PieceInstances'
+import { ScriptContent, Time } from '@sofie-automation/blueprints-integration'
 import { GetScriptPreview } from '../scriptPreview'
-import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import {getUnfinishedPieceInstancesReactive} from '../../lib/rundownLayouts';
 
 interface IEndsWordsPanelProps {
 	visible?: boolean
@@ -73,10 +73,51 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 
 export const EndWordsPanel = translateWithTracker<IEndsWordsPanelProps, IState, IEndsWordsPanelTrackedProps>(
 	(props: IEndsWordsPanelProps) => {
-		const { activePieceInstance } = getIsFilterActive(props.playlist, props.showStyleBase, props.panel)
-		return { livePieceInstance: activePieceInstance }
+		return { livePieceInstance: getPieceWithManus(props) }
 	},
 	(_data, props: IEndsWordsPanelProps, nextProps: IEndsWordsPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
 )(EndWordsPanelInner)
+
+function getPieceWithManus(props: IEndsWordsPanelProps): PieceInstance | undefined {
+	const currentPartInstanceId: any = props.playlist.currentPartInstanceId
+
+	const unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet = getUnfinishedPieceInstancesReactive(props.playlist, props.showStyleBase)
+	let highestStartedPlayback: Time = 0
+	let startedPiecesCount: number = 0
+	unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.forEach((pieceInstance: PieceInstance) => {
+		if (pieceInstance.startedPlayback && pieceInstance.startedPlayback > highestStartedPlayback) {
+			highestStartedPlayback = pieceInstance.startedPlayback
+		}
+	})
+
+	const unfinishedPieces = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.filter((pieceInstance: PieceInstance) => {
+		if (startedPiecesCount > 1 && pieceInstance.startedPlayback != highestStartedPlayback) {
+			return false
+		}
+		return !pieceInstance.startedPlayback || pieceInstance.startedPlayback == highestStartedPlayback;
+	})
+
+	const activeLayers = unfinishedPieces.map((p) => p.piece.sourceLayerId)
+	const hasAdditionalLayer: boolean = props.panel.additionalLayers?.some((s) => activeLayers.includes(s)) || false
+
+	if (!hasAdditionalLayer) {
+		return undefined
+	}
+
+	// we have to call this because getUnfinishedPieceInstancesReactive does not return script/manus pieces
+	const piecesInPart: PieceInstance[] = PieceInstances.find({
+		partInstanceId: currentPartInstanceId,
+		playlistActivationId: props.playlist.activationId,
+	}).fetch()
+
+	return props.panel.requiredLayerIds && props.panel.requiredLayerIds.length
+		? _.flatten(Object.values(piecesInPart)).find((piece: PieceInstance) => {
+			return (
+				(props.panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
+				piece.partInstanceId === props.playlist.currentPartInstanceId
+			)
+		})
+		: undefined
+}
