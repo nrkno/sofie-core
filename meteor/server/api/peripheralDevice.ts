@@ -35,10 +35,10 @@ import { MOS } from '@sofie-automation/corelib'
 import { determineDiffTime } from './systemTime/systemTime'
 import { getTimeDiff } from './systemTime/api'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { MethodContextAPI, MethodContext, MeteorCall } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
-import { PickerPOST } from './http'
+import { PickerGET, PickerPOST } from './http'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
@@ -47,6 +47,7 @@ import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { ConfigManifestEntryType, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
+import { Studios } from '../../lib/collections/Studios'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -604,6 +605,95 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 		res.statusCode = 500
 		content = e + ''
 		logger.error('Upload credentials failed: ' + e)
+	}
+
+	res.end(content)
+})
+
+PickerGET.route('/devices/:deviceId/oauthResponse', (params, req: IncomingMessage, res: ServerResponse) => {
+	res.setHeader('Content-Type', 'text/plain')
+
+	let content = ''
+	try {
+		const deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+		check(deviceId, String)
+
+		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
+
+		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
+
+		if (!peripheralDevice.studioId)
+			throw new Meteor.Error(400, `Peripheral device "${deviceId}" is not attached to a studio`)
+
+		const studio = Studios.findOne(peripheralDevice.studioId)
+		if (!studio) throw new Meteor.Error(404, `Studio "${studio}" not found`)
+
+		const url = new URL(req.url || '', 'http://localhost')
+
+		let accessToken = url.searchParams.get('code') || undefined
+		const scopes = url.searchParams.get('scope') || undefined
+
+		check(accessToken, String)
+		check(scopes, String)
+
+		accessToken = (accessToken + '').trim()
+		if (accessToken && accessToken.length > 5) {
+			PeripheralDeviceAPI.executeFunction(deviceId, 'receiveAuthToken', accessToken)
+				.then(() => {
+					logger.info(`Sent auth token to device "${deviceId}"`)
+				})
+				.catch(logger.error)
+		}
+
+		const coreUrl = new URL(
+			`/settings/peripheralDevice/${deviceId}`,
+			studio.settings.sofieUrl ?? 'http://localhost:3000'
+		)
+
+		res.statusCode = 302
+		res.writeHead(302, {
+			Location: coreUrl.toString(),
+		})
+	} catch (e) {
+		res.statusCode = 500
+		content = e + ''
+		logger.error('Upload credentials failed: ' + e)
+	}
+
+	res.end(content)
+})
+
+PickerGET.route('/devices/:deviceId/resetAuth', (params, req: IncomingMessage, res: ServerResponse) => {
+	res.setHeader('Content-Type', 'text/plain')
+
+	let content = ''
+	try {
+		const deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+		check(deviceId, String)
+
+		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
+
+		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
+
+		PeripheralDevices.update(peripheralDevice._id, {
+			$unset: {
+				'secretSettings.credentials': true,
+				'secretSettings.accessToken': true,
+				'settings.secretCredentials': true,
+				'settings.secretAccessToken': true,
+				accessTokenUrl: true,
+			},
+		})
+
+		PeripheralDeviceAPI.executeFunction(deviceId, 'killProcess', 1).catch(logger.error)
+
+		res.statusCode = 200
+	} catch (e) {
+		res.statusCode = 500
+		content = e + ''
+		logger.error('Reset credentials failed: ' + e)
 	}
 
 	res.end(content)
