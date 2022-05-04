@@ -318,7 +318,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					ordered: false,
 					preventDefaultPartials: false,
 				})
-				localSorensen.bind(['Enter', 'NumpadEnter'], preventDefault, {
+				localSorensen.bind('AnyEnter', preventDefault, {
 					global: false,
 					exclusive: true,
 				})
@@ -345,8 +345,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			}
 			localSorensen.unbind('Control+KeyF', preventDefault)
 			localSorensen.unbind('Control+F5', preventDefault)
-			localSorensen.unbind('Enter', preventDefault)
-			localSorensen.unbind('NumpadEnter', preventDefault)
+			localSorensen.unbind('AnyEnter', preventDefault)
 			fKeys.forEach((key) => localSorensen.unbind(key, preventDefault))
 			ctrlDigitKeys.forEach((key) => localSorensen.unbind(`Control+${key}`, preventDefault))
 		}
