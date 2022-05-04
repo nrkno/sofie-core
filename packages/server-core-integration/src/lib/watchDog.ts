@@ -17,7 +17,7 @@ export class WatchDog extends EventEmitter<WatchDogEvents> {
 	public timeout: number
 	private _checkTimeout: NodeJS.Timer | null = null
 	private _dieTimeout: NodeJS.Timer | null = null
-	private _watching: boolean = false
+	private _watching = false
 	private _checkFunctions: WatchDogCheckFunction[] = []
 	private _runningChecks = false
 
@@ -42,7 +42,7 @@ export class WatchDog extends EventEmitter<WatchDogEvents> {
 		this._checkFunctions.push(fcn)
 	}
 	public removeCheck(fcn: () => Promise<any>) {
-		let i = this._checkFunctions.indexOf(fcn)
+		const i = this._checkFunctions.indexOf(fcn)
 		if (i !== -1) this._checkFunctions.splice(i, 1)
 	}
 	public receivedData() {
@@ -63,7 +63,7 @@ export class WatchDog extends EventEmitter<WatchDogEvents> {
 		this._checkTimeout = setTimeout(() => {
 			this._runningChecks = true
 
-			Promise.all(this._checkFunctions.map((fcn) => fcn()))
+			Promise.all(this._checkFunctions.map(async (fcn) => fcn()))
 				.then(() => {
 					// console.log('all promises have resolved')
 					// all promises have resolved
