@@ -55,7 +55,7 @@ import {
 	setupRundownBase,
 } from './helpers/rundowns'
 import { defaultRundownPlaylist } from '../../__mocks__/defaultCollectionObjects'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { ReadonlyDeep } from 'type-fest'
 import { innerStartOrQueueAdLibPiece } from '../adlib'
 import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'

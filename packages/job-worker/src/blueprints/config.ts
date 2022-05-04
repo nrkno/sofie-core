@@ -1,5 +1,5 @@
 import { ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	BasicConfigItemValue,
