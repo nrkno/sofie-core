@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 declare module 'data-store' {
 	interface Options {
 		/* Milliseconds to delay writing the JSON file to the file system. This can make the store more performant by preventing multiple subsequent writes after calling .set or setting/getting store.data, but comes with the potential side effect that the config file will be outdated during the timeout. To get around this, use data-store's API to (re-)load the file instead of directly reading the file (using fs.readFile for example). */

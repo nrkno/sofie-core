@@ -104,7 +104,7 @@ export class CoreHandler {
 			this.logger.warn('Core Disconnected!')
 		})
 		this.core.onError((err) => {
-			this.logger.error('Core Error: ' + (err.message || err.toString() || err))
+			this.logger.error('Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString() || err))
 		})
 
 		const ddpConfig: DDPConnectorOptions = {

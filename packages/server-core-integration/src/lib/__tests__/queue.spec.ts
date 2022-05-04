@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-conditional-expect */
 import { Queue } from '../queue'
 
 test('queue', async () => {
@@ -7,9 +8,7 @@ test('queue', async () => {
 
 	const q = new Queue()
 
-	const ps: Promise<any>[] = []
-
-	ps.push(
+	const ps = [
 		q
 			.putOnQueue(async () => {
 				return new Promise((resolve) => {
@@ -21,9 +20,7 @@ test('queue', async () => {
 			.then(() => {
 				expect(resolveCount).toEqual(0)
 				resolveCount++
-			})
-	)
-	ps.push(
+			}),
 		q
 			.putOnQueue(async () => {
 				return new Promise((resolve) => {
@@ -35,9 +32,7 @@ test('queue', async () => {
 			.then(() => {
 				expect(resolveCount).toEqual(1)
 				resolveCount++
-			})
-	)
-	ps.push(
+			}),
 		q
 			.putOnQueue(async () => {
 				return new Promise((_resolve, reject) => {
@@ -49,9 +44,7 @@ test('queue', async () => {
 			.catch(() => {
 				expect(rejectCount).toEqual(0)
 				rejectCount++
-			})
-	)
-	ps.push(
+			}),
 		q
 			.putOnQueue(() => {
 				throw new Error('myError')
@@ -59,9 +52,7 @@ test('queue', async () => {
 			.catch(() => {
 				expect(rejectCount).toEqual(1)
 				rejectCount++
-			})
-	)
-	ps.push(
+			}),
 		q
 			.putOnQueue(async () => {
 				return new Promise((resolve) => {
@@ -73,8 +64,8 @@ test('queue', async () => {
 			.then(() => {
 				expect(resolveCount).toEqual(2)
 				resolveCount++
-			})
-	)
+			}),
+	]
 
 	expect(runCount).toEqual(0)
 	expect(resolveCount).toEqual(0)

@@ -4,14 +4,10 @@ import { PeripheralDeviceAPI as P } from '../src/lib/corePeripherals'
 const core = new CoreConnection({
 	deviceId: 'ExampleDevice',
 	deviceToken: 'abcd',
+	deviceCategory: P.DeviceCategory.PLAYOUT,
 	deviceType: P.DeviceType.PLAYOUT,
 	deviceName: 'Jest test framework',
 })
-
-// let consolelog = console.log
-// console.log = (...args) => {
-// 	consolelog(new Date().getTime() / 1000, ...args)
-// }
 
 core.onConnectionChanged((connected) => {
 	console.log('onConnectionChanged', connected)
@@ -19,13 +15,15 @@ core.onConnectionChanged((connected) => {
 core.onConnected(() => {
 	console.log('onConnected!')
 
-	setupSubscription()
+	setupSubscription().catch((e) => {
+		console.error(`Failed to setup sub`, e)
+	})
 })
 core.onDisconnected(() => {
 	console.log('onDisconnected!')
 })
 core.onError((err) => {
-	console.log('onError: ' + (err.message || err.toString() || err), err)
+	console.log('onError: ' + (typeof err === 'string' ? err : err.message || err.toString() || err))
 })
 core.onFailed((err) => {
 	console.log('onFailed: ' + (err.message || err.toString() || err))
@@ -79,12 +77,14 @@ const setup = async () => {
 			core.setStatus({
 				statusCode: P.StatusCode.GOOD,
 				messages: ['a'],
+			}).catch((e) => {
+				console.error(`Failed to set status`, e)
 			})
 		}, 500)
 
 		setTimeout(() => {
 			console.log('closing socket')
-			core.ddp.ddpClient['socket'].close()
+			core.ddp.ddpClient?.socket?.close()
 		}, 1500)
 
 		setTimeout(() => {
@@ -92,15 +92,19 @@ const setup = async () => {
 			core.setStatus({
 				statusCode: P.StatusCode.GOOD,
 				messages: ['b'],
+			}).catch((e) => {
+				console.error(`Failed to set status`, e)
 			})
 		}, 3500)
 	} catch (e) {
 		console.log('ERROR ===========')
-		console.log(e, e.stack)
+		console.log(e)
 	}
 }
 
-setup()
+setup().catch((e) => {
+	console.error(`Failed to setup`, e)
+})
 // .then(() => {
 // 	core.setStatus({
 // 		statusCode: P.StatusCode.GOOD,

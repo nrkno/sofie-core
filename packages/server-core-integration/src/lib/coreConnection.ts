@@ -2,16 +2,17 @@ import { EventEmitter } from 'eventemitter3'
 import * as _ from 'underscore'
 
 import { DDPConnector } from './ddpConnector'
-import { DDPConnectorOptions, Observer } from './ddpClient'
+import { DDPConnectorOptions, DDPError, Observer } from './ddpClient'
 import { PeripheralDeviceAPI as P, PeripheralDeviceAPI } from './corePeripherals'
 import { TimeSync } from './timeSync'
 import { WatchDog } from './watchDog'
 import { Queue } from './queue'
 import { DeviceConfigManifest } from './configManifest'
 import { Random } from './random'
+import DataStore = require('data-store')
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const PkgInfo = require('../../package.json')
-const DataStore = require('data-store')
 
 // low-prio calls:
 const TIMEOUTCALL = 200 // ms, time to wait after a call
@@ -57,7 +58,7 @@ export type CoreConnectionEvents = {
 	error: [err: Error | string]
 }
 export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
-	private _ddp: DDPConnector
+	private _ddp: DDPConnector | undefined
 	private _parent: CoreConnection | null = null
 	private _children: Array<CoreConnection> = []
 	private _coreOptions: CoreOptions
@@ -91,7 +92,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 			this._watchDog.startWatching()
 		}
 	}
-	static getStore(name: string) {
+	static getStore(name: string): DataStore {
 		return new DataStore(name)
 	}
 	static getCredentials(name: string): CoreCredentials {
@@ -105,7 +106,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 
 		return credentials
 	}
-	static deleteCredentials(name: string) {
+	static deleteCredentials(name: string): void {
 		const store = CoreConnection.getStore(name)
 
 		store.set('CoreCredentials', null)
@@ -210,10 +211,10 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 		)
 		this._children = []
 	}
-	addChild(child: CoreConnection) {
+	addChild(child: CoreConnection): void {
 		this._children.push(child)
 	}
-	removeChild(childToRemove: CoreConnection) {
+	removeChild(childToRemove: CoreConnection): void {
 		let removeIndex = -1
 		this._children.forEach((c, i) => {
 			if (c === childToRemove) removeIndex = i
@@ -222,30 +223,35 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 			this._children.splice(removeIndex, 1)
 		}
 	}
-	onConnectionChanged(cb: (connected: boolean) => void) {
+	onConnectionChanged(cb: (connected: boolean) => void): void {
 		this.on('connectionChanged', cb)
 	}
-	onConnected(cb: () => void) {
+	onConnected(cb: () => void): void {
 		this.on('connected', cb)
 	}
-	onDisconnected(cb: () => void) {
+	onDisconnected(cb: () => void): void {
 		this.on('disconnected', cb)
 	}
-	onError(cb: (err: Error) => void) {
+	onError(cb: (err: Error | string) => void): void {
 		this.on('error', cb)
 	}
-	onFailed(cb: (err: Error) => void) {
+	onFailed(cb: (err: Error) => void): void {
 		this.on('failed', cb)
 	}
 	get ddp(): DDPConnector {
-		if (this._parent) return this._parent.ddp
-		else return this._ddp
+		if (this._parent) {
+			return this._parent.ddp
+		} else if (!this._ddp) {
+			throw new Error('Not connected to Core')
+		} else {
+			return this._ddp
+		}
 	}
-	get connected() {
+	get connected(): boolean {
 		return this._connected
 		// return (this.ddp ? this.ddp.connected : false)
 	}
-	get deviceId() {
+	get deviceId(): string {
 		return this._coreOptions.deviceId
 	}
 	async setStatus(status: P.StatusObject): Promise<P.StatusObject> {
@@ -269,14 +275,14 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 				reject('callMehod: DDP client has not been initialized')
 				return
 			}
-			this.ddp.ddpClient.call(methodName, fullAttrs, (err: Error | string, id: string) => {
+			this.ddp.ddpClient.call(methodName, fullAttrs, (err: DDPError | undefined, result: any) => {
 				this._timeLastMethodReply = Date.now()
 				if (err) {
 					if (typeof err === 'object') {
 						// Add a custom toString() method, because the default object will just print "[object Object]"
 						err.toString = () => {
 							if (err.message) {
-								return err.message + (err.stack ? '\n' + err.stack : '')
+								return err.message // + (err.stack ? '\n' + err.stack : '')
 							} else {
 								return JSON.stringify(err)
 							}
@@ -284,7 +290,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 					}
 					reject(err)
 				} else {
-					resolve(id)
+					resolve(result)
 				}
 			})
 		})
@@ -304,7 +310,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	async unInitialize(): Promise<string> {
 		return this.callMethod(P.methods.unInitialize)
 	}
-	async mosManipulate(method: string, ...attrs: Array<any>) {
+	async mosManipulate(method: string, ...attrs: Array<any>): Promise<any> {
 		return this.callMethod(method, attrs)
 	}
 	async getPeripheralDevice(): Promise<any> {
@@ -385,7 +391,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	syncTimeQuality(): number | null {
 		return this._timeSync?.quality || null
 	}
-	setPingResponse(message: string) {
+	setPingResponse(message: string): void {
 		this._watchDogPingResponse = message
 	}
 	async putOnQueue<T>(queueName: string, fcn: () => Promise<T>): Promise<T> {

@@ -209,7 +209,7 @@ test('Integration: Connection recover from close', async () => {
 	expect(core.connected).toEqual(true)
 
 	// Force-close the socket:
-	core.ddp.ddpClient!.socket.close()
+	core.ddp.ddpClient?.socket?.close()
 
 	await wait(10)
 	expect(core.connected).toEqual(false)
@@ -272,7 +272,7 @@ test('Integration: autoSubscription', async () => {
 	expect(observerChanged).toHaveBeenCalledTimes(1)
 
 	// Force-close the socket:
-	core.ddp.ddpClient!.socket.close()
+	core.ddp.ddpClient?.socket?.close()
 
 	await wait(10)
 	expect(core.connected).toEqual(false)
@@ -327,7 +327,7 @@ test('Integration: Connection recover from a close that lasts some time', async 
 	// temporary scramble the ddp host:
 	;(core.ddp.ddpClient as any).host = '127.0.0.9'
 	// Force-close the socket:
-	core.ddp.ddpClient!.socket.close()
+	core.ddp.ddpClient?.socket?.close()
 
 	await wait(10)
 	expect(core.connected).toEqual(false)

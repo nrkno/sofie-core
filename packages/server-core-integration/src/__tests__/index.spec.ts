@@ -1,6 +1,5 @@
 import { CoreConnection } from '../index'
 import { PeripheralDeviceAPI as P, PeripheralDeviceAPI } from '../lib/corePeripherals'
-import * as _ from 'underscore'
 import { DDPConnectorOptions } from '../lib/ddpClient'
 jest.mock('faye-websocket')
 jest.mock('got')
@@ -188,16 +187,14 @@ describe('coreConnection', () => {
 		expect(core.connected).toEqual(false)
 		// Initiate connection to Core:
 
-		let err = null
-		try {
-			await core.init({
+		await expect(
+			core.init({
 				host: '127.0.0.999',
 				port: corePort,
 			})
-		} catch (e) {
-			err = e
-		}
-		expect(err.message).toMatch(/Network error/)
+		).rejects.toMatchObject({
+			message: 'Network error',
+		})
 
 		expect(core.connected).toEqual(false)
 
@@ -235,7 +232,7 @@ describe('coreConnection', () => {
 		expect(core.connected).toEqual(true)
 
 		// Force-close the socket:
-		core.ddp.ddpClient && core.ddp.ddpClient.socket.close()
+		core.ddp.ddpClient?.socket?.close()
 
 		await wait(10)
 		expect(core.connected).toEqual(false)
@@ -298,7 +295,7 @@ describe('coreConnection', () => {
 		expect(observerChanged).toHaveBeenCalledTimes(1)
 
 		// Force-close the socket:
-		core.ddp.ddpClient && core.ddp.ddpClient.socket.close()
+		core.ddp.ddpClient?.socket?.close()
 
 		await wait(10)
 		expect(core.connected).toEqual(false)
@@ -355,7 +352,7 @@ describe('coreConnection', () => {
 		options.host = '127.0.0.9'
 		core.ddp.ddpClient && core.ddp.ddpClient.resetOptions(options)
 		// Force-close the socket:
-		core.ddp.ddpClient && core.ddp.ddpClient.socket.close()
+		core.ddp.ddpClient?.socket?.close()
 
 		await wait(10)
 		expect(core.connected).toEqual(false)
@@ -619,30 +616,22 @@ describe('coreConnection', () => {
 		// Call a low-prio method
 		await expect(core.callMethodLowPrio('peripheralDevice.testMethod', ['low123'])).resolves.toEqual('low123')
 
-		const ps: Promise<any>[] = []
-
 		// method should be called before low-prio:
 		let i = 0
-		ps.push(
+		const r = await Promise.all([
 			core.callMethodLowPrio('peripheralDevice.testMethod', ['low1']).then((res) => {
 				expect(res).toEqual('low1')
 				return i++
-			})
-		)
-		ps.push(
+			}),
 			core.callMethodLowPrio('peripheralDevice.testMethod', ['low2']).then((res) => {
 				expect(res).toEqual('low2')
 				return i++
-			})
-		)
-		ps.push(
+			}),
 			core.callMethod('peripheralDevice.testMethod', ['normal1']).then((res) => {
 				expect(res).toEqual('normal1')
 				return i++
-			})
-		)
-
-		const r = await Promise.all(ps)
+			}),
+		])
 
 		expect(r[0]).toBeGreaterThan(r[2]) // because callMethod should have run before callMethodLowPrio
 		expect(r[1]).toBeGreaterThan(r[2]) // because callMethod should have run before callMethodLowPrio

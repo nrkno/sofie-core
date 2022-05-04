@@ -100,7 +100,7 @@ export class DDPConnector extends EventEmitter<DDPConnectorEvents> {
 				return
 			})
 	}
-	public close() {
+	public close(): void {
 		this.ddpIsOpen = false
 		if (this.ddpClient) {
 			this.ddpClient.close()
@@ -114,7 +114,7 @@ export class DDPConnector extends EventEmitter<DDPConnectorEvents> {
 	public async forceReconnect(): Promise<void> {
 		return this.createClient()
 	}
-	public get connectionId() {
+	public get connectionId(): string | undefined {
 		return this._connectionId
 	}
 	private _setupDDPEvents() {

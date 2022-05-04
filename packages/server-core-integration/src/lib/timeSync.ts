@@ -60,10 +60,10 @@ export class TimeSync {
 	public currentTime(): number {
 		return this.localTime() + this._syncDiff
 	}
-	get quality() {
+	get quality(): number | null {
 		return this._syncQuality
 	}
-	get diff() {
+	get diff(): number {
 		return this._syncDiff
 	}
 	public isGood(): boolean {
@@ -81,7 +81,7 @@ export class TimeSync {
 			clearInterval(this._timeInterval)
 		}
 	}
-	public maybeTriggerSync() {
+	public maybeTriggerSync(): void {
 		if (this.localTime() - this._lastSyncTime > this._options.syncPeriod) {
 			// It's time to do a sync
 			// log.verbose('triggerSync ' + (this.localTime() - this._lastSyncTime))
