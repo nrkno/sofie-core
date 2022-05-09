@@ -88,12 +88,9 @@ function getPieceWithManus(props: IEndsWordsPanelProps): PieceInstance | undefin
 		props.showStyleBase
 	)
 
-	const startedPlaybackTimes = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.map(
-		(pieceInstance: PieceInstance) => {
-			return pieceInstance.startedPlayback || 0
-		}
+	const highestStartedPlayback = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.reduce(
+		(hsp, piece: PieceInstance) => Math.max(hsp, piece.startedPlayback ?? 0), 0
 	)
-	const highestStartedPlayback: Time = Math.max(...startedPlaybackTimes)
 
 	const unfinishedPieces = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.filter(
 		(pieceInstance: PieceInstance) => {
@@ -102,7 +99,7 @@ function getPieceWithManus(props: IEndsWordsPanelProps): PieceInstance | undefin
 	)
 
 	const activeLayers = unfinishedPieces.map((p) => p.piece.sourceLayerId)
-	const hasAdditionalLayer: boolean = props.panel.additionalLayers?.some((s) => activeLayers.includes(s)) || false
+	const hasAdditionalLayer: boolean = props.panel.additionalLayers?.some((s) => activeLayers.includes(s)) ?? false
 
 	if (!hasAdditionalLayer) {
 		return undefined
