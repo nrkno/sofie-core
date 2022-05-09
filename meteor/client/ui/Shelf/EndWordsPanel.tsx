@@ -12,7 +12,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/Reac
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
-import { ScriptContent, Time } from '@sofie-automation/blueprints-integration'
+import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { GetScriptPreview } from '../scriptPreview'
 import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
@@ -89,7 +89,8 @@ function getPieceWithManus(props: IEndsWordsPanelProps): PieceInstance | undefin
 	)
 
 	const highestStartedPlayback = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.reduce(
-		(hsp, piece: PieceInstance) => Math.max(hsp, piece.startedPlayback ?? 0), 0
+		(hsp, piece: PieceInstance) => Math.max(hsp, piece.startedPlayback ?? 0),
+		0
 	)
 
 	const unfinishedPieces = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.filter(
