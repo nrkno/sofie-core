@@ -2,7 +2,8 @@ import { ControllerAbstract } from './lib'
 import { PrompterConfigMode, PrompterViewInner } from '../PrompterView'
 import Spline from 'cubic-spline'
 
-type JoyconMode = 'L' | 'R' | 'LR'
+type JoyconWithData = { index: number; mode: JoyconMode; axes: readonly number[]; buttons: number[] }
+type JoyconMode = 'L' | 'R' | 'LR' | null
 
 /**
  * This class handles control of the prompter using
@@ -12,22 +13,20 @@ export class JoyConController extends ControllerAbstract {
 
 	private invertJoystick = false // change scrolling direction for joystick
 	private rangeRevMin = -1 // pedal "all back" position, the max-reverse-position
-	private rangeNeutralMin = -0.25 // pedal "back" position where reverse-range transistions to the neutral range
+	private rangeNeutralMin = -0.25 // pedal "back" position where reverse-range transistions to the neutral x
 	private rangeNeutralMax = 0.25 // pedal "front" position where scrolling starts, the 0 speed origin
 	private rangeFwdMax = 1 // pedal "all front" position where scrolling is maxed out
 	private speedMap = [1, 2, 3, 4, 5, 8, 12, 30]
 	private reverseSpeedMap = [1, 2, 3, 4, 5, 8, 12, 30]
+	private deadBand = 0.25
+
 	private speedSpline: Spline
 	private reverseSpeedSpline: Spline
 
 	private updateSpeedHandle: number | null = null
-	private deadBand = 0.25
 	private currentPosition = 0
 	private lastInputValue = ''
-	private lastUsedJoyconIndex: number = -1
-	private lastUsedJoyconId: string | null = null
-	private lastUsedJoyconMode: JoyconMode | null
-	private lastButtonArray: number[] = []
+	private lastButtonInputs: { [index: number]: { mode: JoyconMode; buttons: number[] } } = {}
 
 	constructor(view: PrompterViewInner) {
 		super(view)
@@ -35,12 +34,12 @@ export class JoyConController extends ControllerAbstract {
 
 		// assigns params from URL or falls back to the default
 		this.invertJoystick = view.configOptions.joycon_invertJoystick || this.invertJoystick
-		this.speedMap = view.configOptions.joycon_speedMap || this.speedMap
-		this.reverseSpeedMap = view.configOptions.joycon_reverseSpeedMap || this.reverseSpeedMap
 		this.rangeRevMin = view.configOptions.joycon_rangeRevMin || this.rangeRevMin
 		this.rangeNeutralMin = view.configOptions.joycon_rangeNeutralMin || this.rangeNeutralMin
 		this.rangeNeutralMax = view.configOptions.joycon_rangeNeutralMax || this.rangeNeutralMax
 		this.rangeFwdMax = view.configOptions.joycon_rangeFwdMax || this.rangeFwdMax
+		this.speedMap = view.configOptions.joycon_speedMap || this.speedMap
+		this.reverseSpeedMap = view.configOptions.joycon_reverseSpeedMap || this.reverseSpeedMap
 		this.deadBand = Math.min(Math.abs(this.rangeNeutralMin), Math.abs(this.rangeNeutralMax))
 
 		// validate range settings, they need to be in sequence, or the logic will break
@@ -188,18 +187,12 @@ export class JoyConController extends ControllerAbstract {
 		}
 	}
 
-	private getDataFromJoycons() {
+	private getJoycons() {
+		const joyconInputs: JoyconWithData[] = []
 		if (navigator.getGamepads) {
 			const gamepads = navigator.getGamepads()
 			if (!(gamepads && typeof gamepads === 'object' && gamepads.length)) return
 
-			// try to re-use old index, if the id mathces
-			const lastpad = gamepads[this.lastUsedJoyconIndex]
-			if (lastpad && lastpad.connected && lastpad.id == this.lastUsedJoyconId) {
-				return { axes: lastpad.axes, buttons: lastpad.buttons }
-			}
-
-			// falls back to searching for compatible gamepad
 			for (const o of gamepads) {
 				if (
 					o &&
@@ -208,75 +201,93 @@ export class JoyConController extends ControllerAbstract {
 					typeof o.id === 'string' &&
 					o.id.match('STANDARD GAMEPAD Vendor: 057e')
 				) {
-					this.lastUsedJoyconIndex = o.index
-					this.lastUsedJoyconId = o.id
-					this.lastUsedJoyconMode =
+					const mode =
 						o.axes.length === 4
-							? 'LR'
+							? 'LR' // for documentation: L+R mode is also identified as Vendor: 057e Product: 200e
 							: o.id.match('Product: 2006')
 							? 'L'
 							: o.id.match('Product: 2007')
 							? 'R'
-							: null // we are setting lastUsedJoyconId as a member as opposed to returning it functional-style, to avoid doing this calculation pr. tick
-					// for documentation: L+R mode is also identified as Vendor: 057e Product: 200e
-					return { axes: o.axes, buttons: o.buttons }
+							: null
+					joyconInputs.push({ index: o.index, mode, axes: o.axes, buttons: o.buttons.map((i) => i.value) })
 				}
 			}
 		}
-		return false
+
+		return joyconInputs
 	}
 
-	private getActiveInputsOfJoycons(input) {
-		// handle buttons
-		// @todo: should this be throttled??
-		const newButtons = input.buttons.map((i) => i.value)
+	private getActiveInputsOfJoycons(joycons: JoyconWithData[]): number {
+		let lastSeenSpeed = 0
 
-		if (this.lastButtonArray.length) {
-			for (const i in newButtons) {
-				const oldBtn = this.lastButtonArray[i]
-				const newBtn = newButtons[i]
-				if (oldBtn === newBtn) continue
+		for (const joycon of joycons) {
+			// handle buttons at the same time as evaluating stick input
+			this.handleButtons(joycon)
 
-				if (!oldBtn && newBtn) {
-					// press
-					this.onButtonPressed(i, this.lastUsedJoyconMode)
-				} else if (oldBtn && !newBtn) {
-					// release
-					this.onButtonRelease(i, this.lastUsedJoyconMode)
+			// hadle speed input
+			if (joycon.mode === 'L' || joycon.mode === 'R') {
+				// L or R mode
+				if (Math.abs(joycon.axes[0]) > this.deadBand) {
+					if (joycon.mode === 'L') {
+						lastSeenSpeed = joycon.axes[0] * -1 // in this mode, L is "negative"
+					} else if (joycon.mode === 'R') {
+						lastSeenSpeed = joycon.axes[0] * 1.4 // in this mode, R is "positive"
+						// factor increased by 1.4 to account for the R joystick being less sensitive than L
+					}
 				}
-			}
-		}
-		this.lastButtonArray = newButtons
-
-		// hadle speed input
-		if (this.lastUsedJoyconMode === 'L' || this.lastUsedJoyconMode === 'R') {
-			// L or R mode
-			if (Math.abs(input.axes[0]) > this.deadBand) {
-				if (this.lastUsedJoyconMode === 'L') {
-					return input.axes[0] * -1 // in this mode, L is "negative"
-				} else if (this.lastUsedJoyconMode === 'R') {
-					return input.axes[0] * 1.4 // in this mode, R is "positive"
+			} else if (joycon.mode === 'LR') {
+				// L + R mode
+				// get the first one that is moving outside of the deadband, prioritizing the L controller
+				if (Math.abs(joycon.axes[1]) > this.deadBand) {
+					lastSeenSpeed = joycon.axes[1] * -1 // in this mode, we are "negative" on both sticks....
+				} else if (Math.abs(joycon.axes[3]) > this.deadBand) {
+					lastSeenSpeed = joycon.axes[3] * -1.4 // in this mode, we are "negative" on both sticks....
 					// factor increased by 1.4 to account for the R joystick being less sensitive than L
 				}
 			}
-		} else if (this.lastUsedJoyconMode === 'LR') {
-			// L + R mode
-			// get the first one that is moving outside of the deadband, priorotizing the L controller
-			if (Math.abs(input.axes[1]) > this.deadBand) {
-				return input.axes[1] * -1 // in this mode, we are "negative" on both sticks....
-			}
-			if (Math.abs(input.axes[3]) > this.deadBand) {
-				return input.axes[3] * -1.4 // in this mode, we are "negative" on both sticks....
-				// factor increased by 1.4 to account for the R joystick being less sensitive than L
-			}
 		}
 
-		return 0
+		// it is random which controller is evaluated last and ultimately takes control
+		return lastSeenSpeed
 	}
 
-	private calculateSpeed(input) {
+	// @todo: should this be throttled??
+	private handleButtons(joycon: JoyconWithData): void {
+		const joyconButtonHistory = this.lastButtonInputs[joycon.index]
+
+		// first time we see this joycon
+		if (!joyconButtonHistory) {
+			this.lastButtonInputs[joycon.index] = { mode: joycon.mode, buttons: joycon.buttons }
+			return
+		}
+
+		// the joycon has changed
+		if (joyconButtonHistory.mode !== joycon.mode) {
+			delete this.lastButtonInputs[joycon.index]
+			this.lastButtonInputs[joycon.index] = { mode: joycon.mode, buttons: joycon.buttons }
+			return
+		}
+
+		if (joyconButtonHistory?.buttons?.length) {
+			joycon.buttons.forEach((o, i) => {
+				const oldBtn = joyconButtonHistory.buttons[i]
+				const newBtn = joycon.buttons[i]
+				if (!oldBtn && newBtn) {
+					// press
+					this.onButtonPressed(i.toString(), joycon.mode)
+				} else if (oldBtn && !newBtn) {
+					// release
+					this.onButtonRelease(i.toString(), joycon.mode)
+				}
+			})
+
+			this.lastButtonInputs[joycon.index].buttons = joycon.buttons
+		}
+	}
+
+	private calculateSpeed(inputs: JoyconWithData[]) {
 		const { rangeRevMin, rangeNeutralMin, rangeNeutralMax, rangeFwdMax } = this
-		let inputValue = this.getActiveInputsOfJoycons(input)
+		let inputValue = this.getActiveInputsOfJoycons(inputs)
 
 		// start by clamping value to the leagal range
 		inputValue = Math.min(Math.max(inputValue, rangeRevMin), rangeFwdMax) // clamps in between rangeRevMin and rangeFwdMax
@@ -310,10 +321,10 @@ export class JoyConController extends ControllerAbstract {
 
 	private updateScrollPosition() {
 		if (this.updateSpeedHandle !== null) return
-		const input = this.getDataFromJoycons()
-		if (!input) return
+		const joycons = this.getJoycons()
+		if (!joycons?.length) return
 
-		const speed = this.calculateSpeed(input)
+		const speed = this.calculateSpeed(joycons)
 
 		// update scroll position
 		window.scrollBy(0, speed)
