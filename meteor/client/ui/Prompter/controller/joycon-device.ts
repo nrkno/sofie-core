@@ -237,11 +237,10 @@ export class JoyConController extends ControllerAbstract {
 				}
 			} else if (joycon.mode === 'LR') {
 				// L + R mode
-				// get the first one that is moving outside of the deadband, priorotizing the L controller
+				// get the first one that is moving outside of the deadband, prioritizing the L controller
 				if (Math.abs(joycon.axes[1]) > this.deadBand) {
 					lastSeenSpeed = joycon.axes[1] * -1 // in this mode, we are "negative" on both sticks....
-				}
-				if (Math.abs(joycon.axes[3]) > this.deadBand) {
+				} else if (Math.abs(joycon.axes[3]) > this.deadBand) {
 					lastSeenSpeed = joycon.axes[3] * -1.4 // in this mode, we are "negative" on both sticks....
 					// factor increased by 1.4 to account for the R joystick being less sensitive than L
 				}
@@ -315,7 +314,6 @@ export class JoyConController extends ControllerAbstract {
 			}
 		} else {
 			// 4) we should never be able to hit this due to validation above
-			console.log(inputValue)
 			console.error(`Illegal input value ${inputValue}`)
 			return 0
 		}
