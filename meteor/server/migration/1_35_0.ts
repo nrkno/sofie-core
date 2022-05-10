@@ -4,7 +4,7 @@ import * as semver from 'semver'
 import { PackageContainerPackageStatuses } from '../../lib/collections/PackageContainerPackageStatus'
 import { dropDeprecatedDatabase, getDeprecatedDatabase } from './deprecatedDatabases/1_35_0'
 
-// Release 35
+// Release 35 (2021-07-13)
 export const addSteps = addMigrationSteps('1.35.0', [
 	{
 		id: 'Fix badly named collection PackageContainerStatuses',

@@ -6,7 +6,7 @@ import semver from 'semver'
 import * as _ from 'underscore'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-// Release 32
+// Release 32 (2021-05-05)
 export const addSteps = addMigrationSteps('1.32.0', [
 	ensureCollectionProperty(CollectionName.Studios, {}, 'packageContainers', {}),
 	ensureCollectionProperty(CollectionName.Studios, {}, 'previewContainerIds', {}),

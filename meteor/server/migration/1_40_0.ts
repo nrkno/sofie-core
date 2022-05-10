@@ -2,6 +2,8 @@ import { addMigrationSteps } from './databaseMigration'
 import { Studios } from '../../lib/collections/Studios'
 import { Settings } from '../../lib/Settings'
 
+// Release 40 (Skipped)
+
 interface ISettingsOld {
 	/** The framerate (frames per second) used to convert internal timing information (in milliseconds)
 	 * into timecodes and timecode-like strings and interpret timecode user input
@@ -41,7 +43,6 @@ interface ISettingsOld {
 const OldSettings = Settings as Partial<ISettingsOld>
 const oldFrameRate = OldSettings.frameRate ?? 25
 
-// Release 40
 export const addSteps = addMigrationSteps('1.40.0', [
 	// Add some migrations!
 
