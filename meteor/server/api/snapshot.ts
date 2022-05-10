@@ -28,7 +28,6 @@ import {
 	fixValidPath,
 	protectString,
 	getRandomId,
-	unprotectString,
 	ProtectedString,
 	protectStringArray,
 	assertNever,
@@ -66,7 +65,6 @@ import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/Trig
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { PartInstances, PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
-import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/1_0_1'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
@@ -76,14 +74,12 @@ import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
 import { getPartId, getSegmentId } from './ingest/lib'
-import { Piece as Piece_1_11_0 } from '../migration/deprecatedDataTypes/1_11_0'
 import { AdLibActions, AdLibAction, AdLibActionId } from '../../lib/collections/AdLibActions'
 import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 	RundownBaselineAdLibActionId,
 } from '../../lib/collections/RundownBaselineAdLibActions'
-import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
 import { saveIntoDb, sumChanges } from '../lib/database'
 import * as fs from 'fs'
 import {
@@ -596,15 +592,7 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 
 	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot (${_.keys(snapshot)})`)
 
-	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) {
-		// A snapshot of a rundown (to be deprecated)
-		if ((snapshot as RundownPlaylistSnapshot).playlistId) {
-			// temporary check, from snapshots where the type was rundown, but it actually was a rundownPlaylist
-			return restoreFromRundownPlaylistSnapshot(snapshot as RundownPlaylistSnapshot)
-		} else {
-			return restoreFromDeprecatedRundownSnapshot(snapshot as DeprecatedRundownSnapshot)
-		}
-	} else if (snapshot.snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
+	if (snapshot.snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
 		// A snapshot of a rundownPlaylist
 		return restoreFromRundownPlaylistSnapshot(snapshot as RundownPlaylistSnapshot)
 	} else if (snapshot.snapshot.type === SnapshotType.SYSTEM) {
@@ -613,24 +601,6 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 	} else {
 		throw new Meteor.Error(402, `Unknown snapshot type "${snapshot.snapshot.type}"`)
 	}
-}
-
-async function restoreFromDeprecatedRundownSnapshot(snapshot0: DeprecatedRundownSnapshot) {
-	// Convert the Rundown snaphost into a rundown playlist
-	// This is somewhat of a hack, it's just to be able to import older snapshots into the system
-
-	const snapshot = _.clone(snapshot0) as any as RundownPlaylistSnapshot
-
-	// Make up a rundownPlaylist:
-	snapshot.playlist = makePlaylistFromRundown_1_0_0(snapshot0.rundown)
-	snapshot.playlistId = snapshot.playlist._id
-
-	delete snapshot['rundown']
-	snapshot.rundowns = [snapshot0.rundown]
-	snapshot.rundowns[0]._rank = 0
-	snapshot.rundowns[0].playlistId = snapshot.playlist._id
-
-	return restoreFromRundownPlaylistSnapshot(snapshot)
 }
 export async function restoreFromRundownPlaylistSnapshot(
 	snapshot: RundownPlaylistSnapshot,
@@ -694,25 +664,6 @@ export async function restoreFromRundownPlaylistSnapshot(
 			}
 		} else {
 			rd.showStyleBaseId = showStyleId
-		}
-	}
-
-	// Migrate old data:
-	// 1.12.0 Release 24:
-	const partSegmentIds: { [partId: string]: SegmentId } = {}
-	for (const part of snapshot.parts) {
-		partSegmentIds[unprotectString(part._id)] = part.segmentId
-	}
-	for (const piece of snapshot.pieces) {
-		const pieceOld = piece as any as Partial<Piece_1_11_0>
-		if (pieceOld.rundownId) {
-			piece.startRundownId = pieceOld.rundownId
-			delete pieceOld.rundownId
-		}
-		if (pieceOld.partId) {
-			piece.startPartId = pieceOld.partId
-			delete pieceOld.partId
-			piece.startSegmentId = partSegmentIds[unprotectString(piece.startPartId)]
 		}
 	}
 
@@ -937,18 +888,6 @@ async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
-	// Migrate data changes:
-	snapshot.studios = _.map(snapshot.studios, (studio) => {
-		if (!studio.routeSets) studio.routeSets = {}
-		return migrateConfigToBlueprintConfigOnObject(studio)
-	})
-	snapshot.showStyleBases = _.map(snapshot.showStyleBases, (showStyleBase) => {
-		// delete showStyleBase.runtimeArguments // todo: add this?
-		return migrateConfigToBlueprintConfigOnObject(showStyleBase)
-	})
-	snapshot.showStyleVariants = _.map(snapshot.showStyleVariants, (showStyleVariant) => {
-		return migrateConfigToBlueprintConfigOnObject(showStyleVariant)
-	})
 	if (snapshot.blueprints) {
 		snapshot.blueprints = _.map(snapshot.blueprints, (bp) => {
 			bp.hasCode = !!bp.code
