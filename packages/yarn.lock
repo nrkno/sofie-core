@@ -3116,7 +3116,7 @@
     webpack-sources "^1.4.3"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.41.0-in-testing.0"
+  version "1.41.0-in-testing.1"
   dependencies:
     moment "2.29.3"
     timeline-state-resolver-types "7.0.0-release41.2"
@@ -3144,7 +3144,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.41.0-in-testing.0"
+  version "1.41.0-in-testing.1"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     fast-clone "^1.5.13"
@@ -12805,7 +12805,7 @@ read-pkg-up@^3.0.0:
     find-up "^2.0.0"
     read-pkg "^3.0.0"
 
-read-pkg-up@^7.0.0, read-pkg-up@^7.0.1:
+read-pkg-up@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/read-pkg-up/-/read-pkg-up-7.0.1.tgz#f3a6135758459733ae2b95638056e1854e7ef507"
   integrity sha512-zK0TB7Xd6JpCLmlLmufqykGE+/TlOePD6qKClNW7hHDKFh/J7/7gCWGR7joEQEW1bKq3a3yUZSObOoWLFQ4ohg==
