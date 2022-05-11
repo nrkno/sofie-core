@@ -8,6 +8,11 @@ import { IChangeStream, ICollection, MongoModifier, MongoQuery } from './collect
 /** Wrap some APM and better error small query modifications around a Mongo.Collection */
 class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements ICollection<TDoc> {
 	readonly #collection: MongoCollection<TDoc>
+
+	/**
+	 * We don't always want to allow using collection watchers, because of their lifetime and potential for blocking up workqueues.
+	 * But we do want them (and the wrapped api) in cases where we are spawning background tasks that run by themselves.
+	 */
 	readonly #allowWatchers
 
 	constructor(collection: MongoCollection<TDoc>, allowWatchers: boolean) {
