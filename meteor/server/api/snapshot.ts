@@ -23,10 +23,10 @@ import {
 	fixValidPath,
 	protectString,
 	getRandomId,
-	unprotectString,
 	stringifyError,
 	omit,
 	unprotectStringArray,
+	unprotectString,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -55,7 +55,6 @@ import { OrganizationContentWriteAccess } from '../security/organization'
 import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
-import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
 import { saveIntoDb, sumChanges } from '../lib/database'
 import * as fs from 'fs'
 import {
@@ -511,7 +510,8 @@ async function restoreFromSnapshot(snapshot: AnySnapshot): Promise<void> {
 		const studioId = snapshotStudioExists ? playlistSnapshot.playlist.studioId : studios[0]?._id
 		if (!studioId) throw new Meteor.Error(500, `No Studio found`)
 
-		return restoreFromRundownPlaylistSnapshot(playlistSnapshot, studioId)
+		// A snapshot of a rundownPlaylist
+		return restoreFromRundownPlaylistSnapshot(snapshot as RundownPlaylistSnapshot, studioId)
 	} else if (snapshot.snapshot.type === SnapshotType.SYSTEM) {
 		// A snapshot of a system
 		return restoreFromSystemSnapshot(snapshot as SystemSnapshot)
@@ -524,6 +524,10 @@ async function restoreFromRundownPlaylistSnapshot(
 	snapshot: RundownPlaylistSnapshot,
 	studioId: StudioId
 ): Promise<void> {
+	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
+		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
+	}
+
 	const queuedJob = await QueueStudioJob(StudioJobs.RestorePlaylistSnapshot, studioId, {
 		snapshotJson: JSON.stringify(omit(snapshot, 'mediaObjects', 'userActions')),
 	})
@@ -547,18 +551,6 @@ async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
-	// Migrate data changes:
-	snapshot.studios = _.map(snapshot.studios, (studio) => {
-		if (!studio.routeSets) studio.routeSets = {}
-		return migrateConfigToBlueprintConfigOnObject(studio)
-	})
-	snapshot.showStyleBases = _.map(snapshot.showStyleBases, (showStyleBase) => {
-		// delete showStyleBase.runtimeArguments // todo: add this?
-		return migrateConfigToBlueprintConfigOnObject(showStyleBase)
-	})
-	snapshot.showStyleVariants = _.map(snapshot.showStyleVariants, (showStyleVariant) => {
-		return migrateConfigToBlueprintConfigOnObject(showStyleVariant)
-	})
 	if (snapshot.blueprints) {
 		snapshot.blueprints = _.map(snapshot.blueprints, (bp) => {
 			bp.hasCode = !!bp.code

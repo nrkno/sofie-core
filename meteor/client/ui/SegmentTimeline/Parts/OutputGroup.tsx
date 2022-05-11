@@ -76,7 +76,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 							timeScale={props.timeScale}
 							autoNextPart={props.autoNextPart}
 							liveLinePadding={props.liveLinePadding}
-							layerIndex={props.indexOffset + (isCollapsed ? 0 : index)}
+							layerIndex={props.indexOffset + (isOutputGroupCollapsed ? 0 : index)}
 							mediaPreviewUrl={props.mediaPreviewUrl}
 							followLiveLine={props.followLiveLine}
 							isLiveLine={props.isLiveLine}

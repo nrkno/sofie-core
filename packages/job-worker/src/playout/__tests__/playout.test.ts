@@ -54,7 +54,7 @@ import {
 	defaultAdLibPiece,
 } from '../../__mocks__/defaultCollectionObjects'
 import { PieceLifespan } from '../../../../blueprints-integration/dist'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
 import { adjustFakeTime, getCurrentTime, useFakeCurrentTime } from '../../__mocks__/time'

@@ -20,7 +20,8 @@ import {
 	StatusCode,
 } from '@sofie-automation/blueprints-integration'
 import { JobContext } from '../jobs'
-import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
