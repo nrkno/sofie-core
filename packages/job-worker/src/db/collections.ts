@@ -63,7 +63,8 @@ export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 
 	/**
 	 * Watch the collection for changes
-	 * Note: Not available in all workers/situations
+	 * This will throw when done in the context of a workqueue job
+	 * Note: This is an artificial limitation that could be changed with some thought on how to make sure it doesnt block for too long or leak
 	 */
 	watch(pipeline: any[]): IChangeStream<TDoc>
 }
@@ -113,6 +114,12 @@ export interface IDirectCollections {
 	ExternalMessageQueue: ICollection<ExternalMessageQueueObj>
 }
 
+/**
+ * Get the wrapped mongo db collections
+ * @param client MongoClient handle
+ * @param dbName Name of the mongodb database
+ * @param allowWatchers Whether watch operations are supported. See ICollection.watch for more information
+ */
 export function getMongoCollections(
 	client: MongoClient,
 	dbName: string,

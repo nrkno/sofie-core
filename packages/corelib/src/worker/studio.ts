@@ -160,14 +160,14 @@ export interface GeneratePlaylistSnapshotProps extends RundownPlayoutPropsBase {
 export interface GeneratePlaylistSnapshotResult {
 	/**
 	 * Stringified JSON of the snapshot
-	 * Note: it is kept as a string to avoid needing to parse it the very large blob unnecesarily
+	 * Note: it is kept as a string to avoid needing to parse the very large blob unnecesarily
 	 */
 	snapshotJson: string
 }
 export interface RestorePlaylistSnapshotProps {
 	/**
 	 * Stringified JSON of the snapshot
-	 * Note: it is kept as a string to avoid needing to parse it the very large blob unnecesarily
+	 * Note: it is kept as a string to avoid needing to parse the very large blob unnecesarily
 	 */
 	snapshotJson: string
 }

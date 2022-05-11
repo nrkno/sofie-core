@@ -96,7 +96,7 @@ export class EventsWorkerChild {
 		}
 
 		try {
-			if (this.#externalMessageQueue) this.#externalMessageQueue.invalidateCaches(data)
+			this.#externalMessageQueue?.invalidateCaches(data)
 
 			await invalidateWorkerDataCache(this.#staticData.collections, this.#staticData.dataCache, data)
 		} finally {
