@@ -71,7 +71,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 			const { t } = this.props
 
 			fetchFrom(`/devices/${this.props.device._id}/resetAuth`, {
-				method: 'GET',
+				method: 'POST',
 			})
 				.then(() => {
 					NotificationCenter.push(

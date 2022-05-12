@@ -639,6 +639,8 @@ PickerGET.route('/devices/:deviceId/oauthResponse', (params, req: IncomingMessag
 
 		accessToken = (accessToken + '').trim()
 		if (accessToken && accessToken.length > 5) {
+			// If this fails, there's not much we can do except kick the user back to the
+			//  device config screen to try again.
 			PeripheralDeviceAPI.executeFunction(deviceId, 'receiveAuthToken', accessToken)
 				.then(() => {
 					logger.info(`Sent auth token to device "${deviceId}"`)
@@ -646,14 +648,9 @@ PickerGET.route('/devices/:deviceId/oauthResponse', (params, req: IncomingMessag
 				.catch(logger.error)
 		}
 
-		const coreUrl = new URL(
-			`/settings/peripheralDevice/${deviceId}`,
-			studio.settings.sofieUrl ?? 'http://localhost:3000'
-		)
-
 		res.statusCode = 302
 		res.writeHead(302, {
-			Location: coreUrl.toString(),
+			Location: `/settings/peripheralDevice/${deviceId}`,
 		})
 	} catch (e) {
 		res.statusCode = 500
@@ -664,7 +661,7 @@ PickerGET.route('/devices/:deviceId/oauthResponse', (params, req: IncomingMessag
 	res.end(content)
 })
 
-PickerGET.route('/devices/:deviceId/resetAuth', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerPOST.route('/devices/:deviceId/resetAuth', (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
