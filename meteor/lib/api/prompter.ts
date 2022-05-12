@@ -3,7 +3,7 @@ import { check } from '../../lib/check'
 import * as _ from 'underscore'
 import { ISourceLayer, ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylists, RundownPlaylistId, RundownPlaylistCollectionUtil } from '../collections/RundownPlaylists'
-import { getRandomId, normalizeArray, normalizeArrayToMap } from '../lib'
+import { normalizeArray, normalizeArrayToMap, protectString } from '../lib'
 import { SegmentId } from '../collections/Segments'
 import { Piece, PieceId, Pieces } from '../collections/Pieces'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../Rundown'
@@ -231,7 +231,7 @@ export namespace PrompterAPI {
 				if (partData.pieces.length === 0) {
 					// insert an empty line
 					partData.pieces.push({
-						id: getRandomId(),
+						id: protectString(`part_${partData.id}_empty`),
 						text: '',
 					})
 				}
