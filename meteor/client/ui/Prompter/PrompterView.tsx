@@ -721,8 +721,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				) ?? []
 			) as PieceId[]
 
-			// Flag for marking that a Piece is going missing during the update (was present in prompterData)
-			// no longer present in nextPrompterData
+			// Flag for marking that a Piece is going missing during the update (was present in prompterData
+			// no longer present in nextPrompterData)
 			let missingPiece = false
 			for (const pieceId of currentPrompterPieces) {
 				if (!nextPrompterPieces.includes(pieceId)) {
@@ -733,7 +733,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 			// Default delay for updating the prompter (for providing stability/batching the updates)
 			let delay = DEFAULT_UPDATE_THROTTLE
-			// If a Piece has gone missing, delay the update by up to 3 seconds, so that it has a chance to stream in.
+			// If a Piece has gone missing, delay the update by up to 2 seconds, so that it has a chance to stream in.
 			// When the Piece streams in, shouldComponentUpdate will run again, and then, if the piece is available
 			// we will use the shorter value and update sooner
 			if (missingPiece) delay = PIECE_MISSING_UPDATE_THROTTLE
