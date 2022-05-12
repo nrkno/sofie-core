@@ -87,8 +87,7 @@ export namespace ClientRundownAPI {
 		const errors = rundowns.map((rundown) => {
 			if (!rundown.importVersions) return 'unknown'
 
-			if (rundown.importVersions.core !== (PackageInfo.versionExtended || PackageInfo.version))
-				return 'coreVersion'
+			if (rundown.importVersions.core !== PackageInfo.version) return 'coreVersion'
 
 			const showStyleVariant = ShowStyleVariants.findOne(rundown.showStyleVariantId)
 			if (!showStyleVariant) return 'missing showStyleVariant'
