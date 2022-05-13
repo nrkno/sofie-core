@@ -40,7 +40,7 @@ function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError 
 		userError = UserError.from(err, UserErrorMessage.InternalError)
 	}
 
-	logger.error(`UserAction "${methodName}" failed: ${stringifyError(userError.rawError)}`)
+	logger.info(`UserAction "${methodName}" failed: ${stringifyError(userError)}`)
 
 	// Forward the error to the caller
 	return ClientAPI.responseError(userError)
@@ -238,8 +238,6 @@ export namespace ServerClientAPI {
 					return ClientAPI.responseSuccess(result)
 				} catch (e) {
 					const errorTime = Date.now()
-
-					logger.error(`Error in ${methodName}: ${stringifyError(e)}`)
 
 					const wrappedError = rewrapError(methodName, e)
 					const wrappedErrorStr = `ClientResponseError: ${translateMessage(
