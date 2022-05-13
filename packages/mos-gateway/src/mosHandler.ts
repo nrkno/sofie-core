@@ -24,7 +24,10 @@ import {
 import * as Winston from 'winston'
 import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
 import { CollectionObj } from '@sofie-automation/server-core-integration'
-import { DEFAULT_MOS_TIMEOUT_TIME } from '@sofie-automation/corelib/dist/constants'
+
+// Note: This is a constant that should come from Core:
+/** After this time, MOS-messages are considered to have timed out */
+export const DEFAULT_MOS_TIMEOUT_TIME = 10 * 1000
 
 export interface MosConfig {
 	self: IConnectionConfig
