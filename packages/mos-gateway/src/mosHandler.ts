@@ -24,6 +24,7 @@ import {
 import * as Winston from 'winston'
 import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
 import { CollectionObj } from '@sofie-automation/server-core-integration'
+import { DEFAULT_MOS_TIMEOUT_TIME } from '@sofie-automation/corelib/dist/constants'
 
 export interface MosConfig {
 	self: IConnectionConfig
@@ -395,7 +396,7 @@ export class MosHandler {
 		if (peripheralDevice) {
 			const settings: MosDeviceSettings = peripheralDevice.settings || {}
 
-			const devices = settings.devices
+			const devices = settings.devices || {}
 
 			const devicesToAdd: { [id: string]: MosDeviceSettingsDevice } = {}
 			const devicesToRemove: { [id: string]: true } = {}
@@ -456,6 +457,10 @@ export class MosHandler {
 		if (!this.mos) {
 			throw Error('mos is undefined, call _initMosConnection first!')
 		}
+
+		deviceOptions = JSON.parse(JSON.stringify(deviceOptions)) // deep clone
+
+		deviceOptions.primary.timeout = deviceOptions.primary.timeout || DEFAULT_MOS_TIMEOUT_TIME
 
 		const mosDevice: MosDevice = await this.mos.connect(deviceOptions)
 		this._ownMosDevices[deviceId] = mosDevice
