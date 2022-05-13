@@ -46,7 +46,7 @@
 		"fast-clone": "^1.5.13",
 		"i18next": "^19.9.2",
 		"influx": "^5.9.2",
-		"mos-connection": "^1.0.6",
+		"mos-connection": "^1.0.7",
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",
 		"tslib": "^2.1.0",

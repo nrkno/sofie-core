@@ -25,6 +25,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { MOS } from '@sofie-automation/corelib'
 import { executePeripheralDeviceFunction } from '../peripheralDevice'
+import { DEFAULT_MOS_TIMEOUT_TIME } from '@sofie-automation/corelib/dist/constants'
 
 async function getBlueprintAndDependencies(context: JobContext, rundown: ReadonlyDeep<DBRundown>) {
 	const pShowStyle = context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
@@ -351,7 +352,7 @@ async function setStoryStatusMOS(
 	return executePeripheralDeviceFunction(
 		context,
 		deviceId,
-		null,
+		DEFAULT_MOS_TIMEOUT_TIME + 1000,
 		'setStoryStatus',
 		rundownExternalId,
 		storyId,
