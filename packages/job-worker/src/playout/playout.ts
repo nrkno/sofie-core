@@ -925,17 +925,21 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
  * Triggered from Playout-gateway when a Part has stopped playing
  */
 export async function onPartPlaybackStopped(context: JobContext, data: OnPartPlaybackStoppedProps): Promise<void> {
-	return runJobWithPlaylistLock(
+	return runJobWithPlayoutCache(
 		context,
-		// 'onPartPlaybackStopped',
 		data,
-		async (playlist) => {
+		(cache) => {
+			const playlist = cache.Playlist.doc
+			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
+		},
+		(cache) => {
+			const playlist = cache.Playlist.doc
 			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
 
 			// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
-			const rundowns = await context.directCollections.Rundowns.findFetch({ playlistId: playlist._id })
+			const rundowns = cache.Rundowns.findFetch({ playlistId: playlist._id })
 
-			const partInstance = await context.directCollections.PartInstances.findOne({
+			const partInstance = cache.PartInstances.findOne({
 				_id: data.partInstanceId,
 				rundownId: { $in: rundowns.map((r) => r._id) },
 			})
@@ -951,7 +955,7 @@ export async function onPartPlaybackStopped(context: JobContext, data: OnPartPla
 						}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
 					)
 
-					await reportPartInstanceHasStopped(context, playlist._id, partInstance, data.stoppedPlayback)
+					reportPartInstanceHasStopped(context, cache, partInstance, data.stoppedPlayback)
 				}
 			} else if (!playlist.activationId) {
 				logger.warn(`onPartPlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
