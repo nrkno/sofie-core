@@ -6,6 +6,7 @@ import {
 	FindOptions,
 	UpdateFilter,
 	Collection as MongoCollection,
+	ChangeStreamDocument,
 } from 'mongodb'
 import { wrapMongoCollection } from './collection'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
@@ -38,6 +39,7 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
+import EventEmitter = require('eventemitter3')
 
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
@@ -58,6 +60,26 @@ export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	replace(doc: TDoc | ReadonlyDeep<TDoc>): Promise<boolean>
 
 	bulkWrite(ops: Array<AnyBulkWriteOperation<TDoc>>): Promise<unknown>
+
+	/**
+	 * Watch the collection for changes
+	 * This will throw when done in the context of a workqueue job
+	 * Note: This is an artificial limitation that could be changed with some thought on how to make sure it doesnt block for too long or leak
+	 */
+	watch(pipeline: any[]): IChangeStream<TDoc>
+}
+
+export type IChangeStreamEvents<TDoc> = {
+	error: [e: Error]
+	end: []
+	change: [doc: ChangeStreamDocument<TDoc>]
+}
+
+export interface IChangeStream<TDoc extends { _id: ProtectedString<any> }>
+	extends EventEmitter<IChangeStreamEvents<TDoc>> {
+	readonly closed: boolean
+
+	close(): Promise<void>
 }
 
 export interface IDirectCollections {
@@ -92,44 +114,82 @@ export interface IDirectCollections {
 	ExternalMessageQueue: ICollection<ExternalMessageQueueObj>
 }
 
-export function getMongoCollections(client: MongoClient, dbName: string): Readonly<IDirectCollections> {
+/**
+ * Get the wrapped mongo db collections
+ * @param client MongoClient handle
+ * @param dbName Name of the mongodb database
+ * @param allowWatchers Whether watch operations are supported. See ICollection.watch for more information
+ */
+export function getMongoCollections(
+	client: MongoClient,
+	dbName: string,
+	allowWatchers: boolean
+): Readonly<IDirectCollections> {
 	const database = client.db(dbName)
-	const collections = Object.freeze(
+	return Object.freeze(
 		literal<IDirectCollections>({
-			AdLibActions: wrapMongoCollection(database.collection(CollectionName.AdLibActions)),
-			AdLibPieces: wrapMongoCollection(database.collection(CollectionName.AdLibPieces)),
-			Blueprints: wrapMongoCollection(database.collection(CollectionName.Blueprints)),
-			BucketAdLibActions: wrapMongoCollection(database.collection(CollectionName.BucketAdLibActions)),
-			BucketAdLibPieces: wrapMongoCollection(database.collection(CollectionName.BucketAdLibPieces)),
-			ExpectedMediaItems: wrapMongoCollection(database.collection(CollectionName.ExpectedMediaItems)),
-			ExpectedPlayoutItems: wrapMongoCollection(database.collection(CollectionName.ExpectedPlayoutItems)),
-			IngestDataCache: wrapMongoCollection(database.collection(CollectionName.IngestDataCache)),
-			Parts: wrapMongoCollection(database.collection(CollectionName.Parts)),
-			PartInstances: wrapMongoCollection(database.collection(CollectionName.PartInstances)),
-			PeripheralDevices: wrapMongoCollection(database.collection(CollectionName.PeripheralDevices)),
-			PeripheralDeviceCommands: wrapMongoCollection(database.collection(CollectionName.PeripheralDeviceCommands)),
-			Pieces: wrapMongoCollection(database.collection(CollectionName.Pieces)),
-			PieceInstances: wrapMongoCollection(database.collection(CollectionName.PieceInstances)),
-			Rundowns: wrapMongoCollection(database.collection(CollectionName.Rundowns)),
+			AdLibActions: wrapMongoCollection(database.collection(CollectionName.AdLibActions), allowWatchers),
+			AdLibPieces: wrapMongoCollection(database.collection(CollectionName.AdLibPieces), allowWatchers),
+			Blueprints: wrapMongoCollection(database.collection(CollectionName.Blueprints), allowWatchers),
+			BucketAdLibActions: wrapMongoCollection(
+				database.collection(CollectionName.BucketAdLibActions),
+				allowWatchers
+			),
+			BucketAdLibPieces: wrapMongoCollection(
+				database.collection(CollectionName.BucketAdLibPieces),
+				allowWatchers
+			),
+			ExpectedMediaItems: wrapMongoCollection(
+				database.collection(CollectionName.ExpectedMediaItems),
+				allowWatchers
+			),
+			ExpectedPlayoutItems: wrapMongoCollection(
+				database.collection(CollectionName.ExpectedPlayoutItems),
+				allowWatchers
+			),
+			IngestDataCache: wrapMongoCollection(database.collection(CollectionName.IngestDataCache), allowWatchers),
+			Parts: wrapMongoCollection(database.collection(CollectionName.Parts), allowWatchers),
+			PartInstances: wrapMongoCollection(database.collection(CollectionName.PartInstances), allowWatchers),
+			PeripheralDevices: wrapMongoCollection(
+				database.collection(CollectionName.PeripheralDevices),
+				allowWatchers
+			),
+			PeripheralDeviceCommands: wrapMongoCollection(
+				database.collection(CollectionName.PeripheralDeviceCommands),
+				allowWatchers
+			),
+			Pieces: wrapMongoCollection(database.collection(CollectionName.Pieces), allowWatchers),
+			PieceInstances: wrapMongoCollection(database.collection(CollectionName.PieceInstances), allowWatchers),
+			Rundowns: wrapMongoCollection(database.collection(CollectionName.Rundowns), allowWatchers),
 			RundownBaselineAdLibActions: wrapMongoCollection(
-				database.collection(CollectionName.RundownBaselineAdLibActions)
+				database.collection(CollectionName.RundownBaselineAdLibActions),
+				allowWatchers
 			),
 			RundownBaselineAdLibPieces: wrapMongoCollection(
-				database.collection(CollectionName.RundownBaselineAdLibPieces)
+				database.collection(CollectionName.RundownBaselineAdLibPieces),
+				allowWatchers
 			),
-			RundownBaselineObjects: wrapMongoCollection(database.collection(CollectionName.RundownBaselineObjects)),
-			RundownPlaylists: wrapMongoCollection(database.collection(CollectionName.RundownPlaylists)),
-			Segments: wrapMongoCollection(database.collection(CollectionName.Segments)),
-			ShowStyleBases: wrapMongoCollection(database.collection(CollectionName.ShowStyleBases)),
-			ShowStyleVariants: wrapMongoCollection(database.collection(CollectionName.ShowStyleVariants)),
-			Studios: wrapMongoCollection(database.collection(CollectionName.Studios)),
-			Timelines: wrapMongoCollection(database.collection(CollectionName.Timelines)),
+			RundownBaselineObjects: wrapMongoCollection(
+				database.collection(CollectionName.RundownBaselineObjects),
+				allowWatchers
+			),
+			RundownPlaylists: wrapMongoCollection(database.collection(CollectionName.RundownPlaylists), allowWatchers),
+			Segments: wrapMongoCollection(database.collection(CollectionName.Segments), allowWatchers),
+			ShowStyleBases: wrapMongoCollection(database.collection(CollectionName.ShowStyleBases), allowWatchers),
+			ShowStyleVariants: wrapMongoCollection(
+				database.collection(CollectionName.ShowStyleVariants),
+				allowWatchers
+			),
+			Studios: wrapMongoCollection(database.collection(CollectionName.Studios), allowWatchers),
+			Timelines: wrapMongoCollection(database.collection(CollectionName.Timelines), allowWatchers),
 
-			ExpectedPackages: wrapMongoCollection(database.collection(CollectionName.ExpectedPackages)),
-			PackageInfos: wrapMongoCollection(database.collection(CollectionName.PackageInfos)),
+			ExpectedPackages: wrapMongoCollection(database.collection(CollectionName.ExpectedPackages), allowWatchers),
+			PackageInfos: wrapMongoCollection(database.collection(CollectionName.PackageInfos), allowWatchers),
 
-			ExternalMessageQueue: wrapMongoCollection(database.collection(CollectionName.ExternalMessageQueue)),
+			ExternalMessageQueue: wrapMongoCollection(
+				database.collection(CollectionName.ExternalMessageQueue),
+				allowWatchers
+			),
 		})
 	)
-	return collections
 }

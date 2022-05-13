@@ -11,3 +11,6 @@ jest.mock('../../../corelib/dist/random', (...args) => require('./random').setup
 jest.mock('../lib/time', (...args) => require('./time').setup(args), {
 	virtual: true,
 })
+
+jest.mock('../events/integration/rabbitMQ', (...args) => require('./rabbitMQ').setup(args), { virtual: true })
+jest.mock('../events/integration/slack', (...args) => require('./slack').setup(args), { virtual: true })

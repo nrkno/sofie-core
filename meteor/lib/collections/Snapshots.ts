@@ -12,7 +12,6 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 export { SnapshotId }
 
 export enum SnapshotType {
-	RUNDOWN = 'rundown', // to be deprecated?
 	RUNDOWNPLAYLIST = 'rundownplaylist',
 	SYSTEM = 'system',
 	DEBUG = 'debug',
@@ -40,12 +39,6 @@ export interface SnapshotItem extends SnapshotBase {
 	playlistId?: RundownPlaylistId
 }
 
-export interface DeprecatedSnapshotRundown extends SnapshotBase {
-	// From the times before rundownPlaylists
-	type: SnapshotType.RUNDOWN
-	studioId: StudioId
-	rundownId: RundownId
-}
 export interface SnapshotRundownPlaylist extends SnapshotBase {
 	type: SnapshotType.RUNDOWNPLAYLIST
 	studioId: StudioId

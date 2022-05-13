@@ -3,6 +3,10 @@ import * as _ from 'underscore'
 import * as VelocityReact from 'velocity-react'
 
 export function makeTableOfObject(o: any) {
+	if (typeof o === 'string') {
+		return o
+	}
+
 	return (
 		<table>
 			<tbody>
