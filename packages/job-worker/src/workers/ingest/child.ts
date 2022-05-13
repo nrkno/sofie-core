@@ -113,7 +113,7 @@ export class IngestWorkerChild {
 				throw new Error(`Unknown job name: "${jobName}"`)
 			}
 		} catch (e) {
-			logger.error(`Ingest job errored: ${stringifyError(e)}`)
+			logger.error(`Ingest job "${jobName}" errored: ${stringifyError(e)}`)
 			throw e
 		} finally {
 			await context.cleanupResources()

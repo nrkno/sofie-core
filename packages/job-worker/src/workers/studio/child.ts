@@ -112,7 +112,7 @@ export class StudioWorkerChild {
 				throw new Error(`Unknown job name: "${jobName}"`)
 			}
 		} catch (e) {
-			logger.error(`Studio job errored: ${stringifyError(e)}`)
+			logger.error(`Studio job "${jobName}" errored: ${stringifyError(e)}`)
 			throw e
 		} finally {
 			await context.cleanupResources()
