@@ -30,7 +30,8 @@ export interface ISettings {
 	followOnAirSegmentsHistory: number
 	/** Clean up stuff that are older than this [ms] */
 	maximumDataAge: number
-
+	/** Enable the use of poison key if present and use the key specified. **/
+	poisonKey: string | null
 	/** If set, enables a check to ensure that the system time doesn't differ too much from the speficied NTP server time. */
 	enableNTPTimeChecker: null | {
 		host: string
@@ -57,6 +58,7 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	// allowRundownResetOnAir: false,
 	defaultDisplayDuration: 3000,
 	allowMultiplePlaylistsInGUI: false,
+	poisonKey: 'Escape',
 	followOnAirSegmentsHistory: 0,
 	maximumDataAge: 1000 * 60 * 60 * 24 * 100, // 100 days
 	enableNTPTimeChecker: null,
