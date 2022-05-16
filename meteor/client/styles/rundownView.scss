@@ -461,15 +461,16 @@ svg.icon {
 	-webkit-user-select: none;
 
 	width: auto;
-	margin: 1em 1.5em;
+	margin: 0.8em 0.75em;
 	// padding: 0 0 0.15em 0.15em;
 
 	background: $segment-background-color;
-	box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.7);
+	box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.3);
 
 	--segment-layer-height: #{$segment-layer-height};
 	--infinite-piece-background-line-height: #{$segment-layer-height / 8};
 	border-radius: $segment-border-radius;
+	border-bottom: 1px solid black;
 
 	// padding has to be the same on both of these elements so that the layers and their controls line up
 	.segment-timeline__output-layers,
