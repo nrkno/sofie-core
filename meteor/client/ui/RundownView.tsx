@@ -402,7 +402,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.DISABLE_NEXT_PIECE,
-					(e) => MeteorCall.userAction.disableNextPiece(e, this.props.playlist._id, false),
+					(e, ts) => MeteorCall.userAction.disableNextPiece(e, ts, this.props.playlist._id, false),
 					this.handleDisableNextPiece
 				)
 			}
@@ -416,7 +416,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.DISABLE_NEXT_PIECE,
-					(e) => MeteorCall.userAction.disableNextPiece(e, this.props.playlist._id, true),
+					(e, ts) => MeteorCall.userAction.disableNextPiece(e, ts, this.props.playlist._id, true),
 					this.handleDisableNextPiece
 				)
 			}
@@ -457,7 +457,7 @@ const RundownHeader = withTranslation()(
 										t,
 										e,
 										UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST,
-										(e) => MeteorCall.userAction.forceResetAndActivate(e, this.props.playlist._id, false),
+										(e, ts) => MeteorCall.userAction.forceResetAndActivate(e, ts, this.props.playlist._id, false),
 										handleResult
 									)
 								},
@@ -469,14 +469,14 @@ const RundownHeader = withTranslation()(
 								t,
 								e,
 								UserAction.ACTIVATE_RUNDOWN_PLAYLIST,
-								(e) => MeteorCall.userAction.activate(e, this.props.playlist._id, true),
+								(e, ts) => MeteorCall.userAction.activate(e, ts, this.props.playlist._id, true),
 								handleResult
 							)
 						},
 					})
 				} else {
-					doUserAction(t, e, UserAction.TAKE, (e) =>
-						MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+					doUserAction(t, e, UserAction.TAKE, (e, ts) =>
+						MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
 					)
 				}
 			}
@@ -491,8 +491,8 @@ const RundownHeader = withTranslation()(
 		hold = (e: any) => {
 			const { t } = this.props
 			if (this.props.studioMode && this.props.playlist.activationId) {
-				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
-					MeteorCall.userAction.activateHold(e, this.props.playlist._id, false)
+				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e, ts) =>
+					MeteorCall.userAction.activateHold(e, ts, this.props.playlist._id, false)
 				)
 			}
 		}
@@ -504,8 +504,8 @@ const RundownHeader = withTranslation()(
 				this.props.playlist.activationId &&
 				this.props.playlist.holdState === RundownHoldState.PENDING
 			) {
-				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
-					MeteorCall.userAction.activateHold(e, this.props.playlist._id, true)
+				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e, ts) =>
+					MeteorCall.userAction.activateHold(e, ts, this.props.playlist._id, true)
 				)
 			}
 		}
@@ -573,7 +573,7 @@ const RundownHeader = withTranslation()(
 								t,
 								e,
 								UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST,
-								(e) => MeteorCall.userAction.forceResetAndActivate(e, playlistId, false),
+								(e, ts) => MeteorCall.userAction.forceResetAndActivate(e, ts, playlistId, false),
 								handleResult
 							)
 						},
@@ -585,7 +585,7 @@ const RundownHeader = withTranslation()(
 						t,
 						e,
 						UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST,
-						(e) => MeteorCall.userAction.forceResetAndActivate(e, playlistId, rehersal),
+						(e, ts) => MeteorCall.userAction.forceResetAndActivate(e, ts, playlistId, rehersal),
 						handleResult
 					)
 				},
@@ -609,7 +609,7 @@ const RundownHeader = withTranslation()(
 						t,
 						e,
 						UserAction.ACTIVATE_RUNDOWN_PLAYLIST,
-						(e) => MeteorCall.userAction.activate(e, this.props.playlist._id, false),
+						(e, ts) => MeteorCall.userAction.activate(e, ts, this.props.playlist._id, false),
 						(err) => {
 							if (!err) {
 								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
@@ -636,7 +636,7 @@ const RundownHeader = withTranslation()(
 								t,
 								e,
 								UserAction.RESET_AND_ACTIVATE_RUNDOWN_PLAYLIST,
-								(e) => MeteorCall.userAction.resetAndActivate(e, this.props.playlist._id),
+								(e, ts) => MeteorCall.userAction.resetAndActivate(e, ts, this.props.playlist._id),
 								(err) => {
 									if (!err) {
 										onSuccess()
@@ -682,7 +682,7 @@ const RundownHeader = withTranslation()(
 						t,
 						e,
 						UserAction.ACTIVATE_RUNDOWN_PLAYLIST,
-						(e) => MeteorCall.userAction.activate(e, this.props.playlist._id, true),
+						(e, ts) => MeteorCall.userAction.activate(e, ts, this.props.playlist._id, true),
 						(err) => {
 							if (!err) {
 								onSuccess()
@@ -703,7 +703,7 @@ const RundownHeader = withTranslation()(
 							t,
 							e,
 							UserAction.PREPARE_FOR_BROADCAST,
-							(e) => MeteorCall.userAction.prepareForBroadcast(e, this.props.playlist._id),
+							(e, ts) => MeteorCall.userAction.prepareForBroadcast(e, ts, this.props.playlist._id),
 							(err) => {
 								if (!err) {
 									onSuccess()
@@ -755,8 +755,8 @@ const RundownHeader = withTranslation()(
 				if (this.rundownShouldHaveStarted()) {
 					if (this.props.playlist.rehearsal) {
 						// We're in rehearsal mode
-						doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-							MeteorCall.userAction.deactivate(e, this.props.playlist._id)
+						doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e, ts) =>
+							MeteorCall.userAction.deactivate(e, ts, this.props.playlist._id)
 						)
 					} else {
 						doModalDialog({
@@ -764,16 +764,16 @@ const RundownHeader = withTranslation()(
 							message: t('Are you sure you want to deactivate this Rundown?\n(This will clear the outputs)'),
 							warning: true,
 							onAccept: () => {
-								doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-									MeteorCall.userAction.deactivate(e, this.props.playlist._id)
+								doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e, ts) =>
+									MeteorCall.userAction.deactivate(e, ts, this.props.playlist._id)
 								)
 							},
 						})
 					}
 				} else {
 					// Do it right away
-					doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-						MeteorCall.userAction.deactivate(e, this.props.playlist._id)
+					doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e, ts) =>
+						MeteorCall.userAction.deactivate(e, ts, this.props.playlist._id)
 					)
 				}
 			}
@@ -789,7 +789,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.RESET_RUNDOWN_PLAYLIST,
-					(e) => MeteorCall.userAction.resetRundownPlaylist(e, this.props.playlist._id),
+					(e, ts) => MeteorCall.userAction.resetRundownPlaylist(e, ts, this.props.playlist._id),
 					() => {
 						this.deferFlushAndRewindSegments()
 					}
@@ -822,7 +822,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA,
-					(e) => MeteorCall.userAction.resyncRundownPlaylist(e, this.props.playlist._id),
+					(e, ts) => MeteorCall.userAction.resyncRundownPlaylist(e, ts, this.props.playlist._id),
 					(err, reloadResponse) => {
 						if (!err && reloadResponse) {
 							if (!handleRundownPlaylistReloadResponse(t, reloadResponse)) {
@@ -846,7 +846,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-					(e) => MeteorCall.userAction.storeRundownSnapshot(e, this.props.playlist._id, 'Taken by user', false),
+					(e, ts) => MeteorCall.userAction.storeRundownSnapshot(e, ts, this.props.playlist._id, 'Taken by user', false),
 					() => {
 						NotificationCenter.push(
 							new Notification(
@@ -878,7 +878,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.RESET_AND_ACTIVATE_RUNDOWN_PLAYLIST,
-					(e) => MeteorCall.userAction.resetAndActivate(e, this.props.playlist._id),
+					(e, ts) => MeteorCall.userAction.resetAndActivate(e, ts, this.props.playlist._id),
 					(err) => {
 						if (!err) {
 							this.deferFlushAndRewindSegments()
@@ -1156,7 +1156,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	let currentPartInstance: PartInstance | undefined
 	let nextPartInstance: PartInstance | undefined
 	let currentRundown: Rundown | undefined = undefined
-
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun(
@@ -1975,7 +1974,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					t,
 					e,
 					UserAction.SET_NEXT,
-					(e) => MeteorCall.userAction.setNext(e, playlistId, part._id, offset),
+					(e, ts) => MeteorCall.userAction.setNext(e, ts, playlistId, part._id, offset),
 					(err) => {
 						this.setState({
 							manualSetAsNext: true,
@@ -1983,8 +1982,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						if (!err && take && this.props.playlist) {
 							const playlistId = this.props.playlist._id
 							const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-							doUserAction(t, e, UserAction.TAKE, (e) =>
-								MeteorCall.userAction.take(e, playlistId, currentPartInstanceId)
+							doUserAction(t, e, UserAction.TAKE, (e, ts) =>
+								MeteorCall.userAction.take(e, ts, playlistId, currentPartInstanceId)
 							)
 						}
 					}
@@ -1999,7 +1998,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					t,
 					e,
 					UserAction.SET_NEXT,
-					(e) => MeteorCall.userAction.setNextSegment(e, playlistId, segmentId),
+					(e, ts) => MeteorCall.userAction.setNextSegment(e, ts, playlistId, segmentId),
 					(err) => {
 						if (err) console.error(err)
 						this.setState({
@@ -2022,8 +2021,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				const idToCopy = item.instance.isTemporary ? item.instance.piece._id : item.instance._id
 				const playlistId = this.props.playlist._id
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-				doUserAction(t, e, UserAction.TAKE_PIECE, (e) =>
-					MeteorCall.userAction.pieceTakeNow(e, playlistId, currentPartInstanceId, idToCopy)
+				doUserAction(t, e, UserAction.TAKE_PIECE, (e, ts) =>
+					MeteorCall.userAction.pieceTakeNow(e, ts, playlistId, currentPartInstanceId, idToCopy)
 				)
 			}
 		}
@@ -2082,8 +2081,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		) => {
 			const { t } = this.props
 			if (this.props.studio) {
-				doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
-					MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
+				doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e, ts) =>
+					MeteorCall.userAction.switchRouteSet(e, ts, this.props.studio!._id, routeSetId, state)
 				)
 			}
 		}
@@ -2155,9 +2154,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				if (!(sourceLayer && sourceLayer.isClearable)) {
 					if (adlibPiece.isAction && adlibPiece.adlibAction) {
 						const action = adlibPiece.adlibAction
-						doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
+						doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e, ts) =>
 							MeteorCall.userAction.executeAction(
 								e,
+								ts,
 								this.props.playlist!._id,
 								action._id,
 								action.actionId,
@@ -2165,9 +2165,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							)
 						)
 					} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
-						doUserAction(t, e, UserAction.START_ADLIB, (e) =>
+						doUserAction(t, e, UserAction.START_ADLIB, (e, ts) =>
 							MeteorCall.userAction.segmentAdLibPieceStart(
 								e,
+								ts,
 								this.props.playlist!._id,
 								currentPartInstanceId,
 								adlibPiece._id,
@@ -2175,9 +2176,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							)
 						)
 					} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e, ts) =>
 							MeteorCall.userAction.baselineAdLibPieceStart(
 								e,
+								ts,
 								this.props.playlist!._id,
 								currentPartInstanceId,
 								adlibPiece._id,
@@ -2602,8 +2604,14 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				t,
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-				(e) =>
-					MeteorCall.userAction.storeRundownSnapshot(e, playlistId, 'User requested log at' + getCurrentTime(), false),
+				(e, ts) =>
+					MeteorCall.userAction.storeRundownSnapshot(
+						e,
+						ts,
+						playlistId,
+						'User requested log at' + getCurrentTime(),
+						false
+					),
 				() => {
 					NotificationCenter.push(
 						new Notification(
@@ -2743,25 +2751,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
 								/>
 							</ErrorBoundary>
-							<ErrorBoundary>
-								<SorensenContext.Consumer>
-									{(sorensen) =>
-										sorensen && (
-											<TriggersHandler
-												rundownPlaylistId={this.props.rundownPlaylistId}
-												showStyleBaseId={showStyleBase._id}
-												currentRundownId={this.props.currentRundown?._id || null}
-												currentPartId={this.props.currentPartInstance?.part._id || null}
-												nextPartId={this.props.nextPartInstance?.part._id || null}
-												currentSegmentPartIds={this.props.currentSegmentPartIds}
-												nextSegmentPartIds={this.props.nextSegmentPartIds}
-												sorensen={sorensen}
-												global={this.isHotkeyAllowed}
-											/>
-										)
-									}
-								</SorensenContext.Consumer>
-							</ErrorBoundary>
+							<ErrorBoundary>{this.renderSorensenContext()}</ErrorBoundary>
 							<ErrorBoundary>
 								<VelocityReact.VelocityTransitionGroup
 									enter={{
@@ -2952,7 +2942,30 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							bucketDisplayFilter={this.props.bucketDisplayFilter}
 						/>
 					</ErrorBoundary>
+					<ErrorBoundary>{this.renderSorensenContext()}</ErrorBoundary>
 				</RundownTimingProvider>
+			)
+		}
+
+		renderSorensenContext() {
+			return (
+				<SorensenContext.Consumer>
+					{(sorensen) =>
+						sorensen && (
+							<TriggersHandler
+								rundownPlaylistId={this.props.rundownPlaylistId}
+								showStyleBaseId={this.props.showStyleBase!._id}
+								currentRundownId={this.props.currentRundown?._id || null}
+								currentPartId={this.props.currentPartInstance?.part._id || null}
+								nextPartId={this.props.nextPartInstance?.part._id || null}
+								currentSegmentPartIds={this.props.currentSegmentPartIds}
+								nextSegmentPartIds={this.props.nextSegmentPartIds}
+								sorensen={sorensen}
+								global={this.isHotkeyAllowed}
+							/>
+						)
+					}
+				</SorensenContext.Consumer>
 			)
 		}
 
@@ -3110,7 +3123,7 @@ export function handleRundownReloadResponse(
 							t,
 							'Missing rundown action',
 							UserAction.UNSYNC_RUNDOWN,
-							(e) => MeteorCall.userAction.unsyncRundown(e, rundownId),
+							(e, ts) => MeteorCall.userAction.unsyncRundown(e, ts, rundownId),
 							(err) => {
 								if (!err) {
 									notificationHandle.stop()
@@ -3141,7 +3154,7 @@ export function handleRundownReloadResponse(
 									t,
 									'Missing rundown action',
 									UserAction.REMOVE_RUNDOWN,
-									(e) => MeteorCall.userAction.removeRundown(e, rundownId),
+									(e, ts) => MeteorCall.userAction.removeRundown(e, ts, rundownId),
 									(err) => {
 										if (!err) {
 											notificationHandle.stop()

@@ -101,7 +101,7 @@ export function createPieceGroupAndCap(
 		objectType: TimelineObjType.RUNDOWN,
 		enable: {
 			start: `#${controlObj.id}.start - ${piecePreroll}`,
-			end: `#${controlObj.id}.end + ${/*pieceInstance.piece.postrollDuration??*/ 0}`,
+			end: `#${controlObj.id}.end + ${pieceInstance.piece.postrollDuration ?? 0}`,
 		},
 		layer: '',
 		metaData: {

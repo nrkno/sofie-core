@@ -1,7 +1,7 @@
 import { WatchDog } from '../watchDog'
 
-let setTimeoutOrg = setTimeout
-let delay = (time: any) => {
+const setTimeoutOrg = setTimeout
+const delay = async (time: any) => {
 	return new Promise((resolve) => {
 		setTimeoutOrg(resolve, time)
 	})
@@ -11,7 +11,7 @@ describe('watchDog', () => {
 	let coreIsHappy: any
 	let coreReplies: any
 	let watchDog: WatchDog
-	let checkFcn = jest.fn(() => {
+	const checkFcn = jest.fn(async () => {
 		// mock that we're sending the message to Core
 		// console.log('checkFcn')
 		// Core replies with message
@@ -22,10 +22,10 @@ describe('watchDog', () => {
 			else if (coreReplies) reject()
 		})
 	})
-	let exitFcn = jest.fn(() => {
+	const exitFcn = jest.fn(() => {
 		// console.log('exit')
 	})
-	let timeout = 10000
+	const timeout = 10000
 
 	beforeEach(() => {
 		jest.useFakeTimers()
@@ -37,9 +37,10 @@ describe('watchDog', () => {
 
 		watchDog = new WatchDog(timeout)
 		watchDog.on('exit', exitFcn)
-		watchDog.on('message', () => { return })
+		watchDog.on('message', () => {
+			return
+		})
 		watchDog.addCheck(checkFcn)
-
 	})
 	afterEach(() => {
 		watchDog.removeCheck(checkFcn)
@@ -65,7 +66,6 @@ describe('watchDog', () => {
 		await delay(1) // allow for promises to be resolved
 		expect(checkFcn).toHaveBeenCalledTimes(2)
 		expect(exitFcn).toHaveBeenCalledTimes(0)
-
 	})
 	test('bad reply', async () => {
 		coreIsHappy = false
@@ -81,7 +81,6 @@ describe('watchDog', () => {
 		await delay(1) // allow for promises to be resolved
 
 		expect(exitFcn).toHaveBeenCalledTimes(1)
-
 	})
 	test('no reply', async () => {
 		coreIsHappy = false
@@ -98,6 +97,5 @@ describe('watchDog', () => {
 		await delay(1) // allow for promises to be resolved
 
 		expect(exitFcn).toHaveBeenCalledTimes(1)
-
 	})
 })

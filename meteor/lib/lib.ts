@@ -5,6 +5,8 @@ import { ITranslatableMessage } from '@sofie-automation/corelib/dist/Translatabl
 import { Meteor } from 'meteor/meteor'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from './logging'
+import { MongoQuery } from './typings/meteor'
+import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
@@ -34,6 +36,7 @@ const systemTime = {
 	diff: 0,
 	stdDev: 9999,
 	lastSync: 0,
+	timeOriginDiff: 0,
 }
 /**
  * Returns the current (synced) time.
@@ -196,31 +199,6 @@ export function lazyIgnore(name: string, f1: () => void, t: number): void {
 	}, t)
 }
 
-export function escapeHtml(text: string): string {
-	// Escape strings, so they are XML-compatible:
-
-	const map = {
-		'&': '&amp;',
-		'<': '&lt;',
-		'>': '&gt;',
-		'"': '&quot;',
-		"'": '&#039;',
-	}
-	const nbsp = String.fromCharCode(160) // non-breaking space (160)
-	map[nbsp] = ' ' // regular space
-
-	const textLength = text.length
-	let outText = ''
-	for (let i = 0; i < textLength; i++) {
-		const c = text[i]
-		if (map[c]) {
-			outText += map[c]
-		} else {
-			outText += c
-		}
-	}
-	return outText
-}
 const ticCache = {}
 /**
  * Performance debugging. tic() starts a timer, toc() traces the time since tic()
@@ -486,4 +464,15 @@ export enum LogLevel {
 	WARN = 'warn',
 	ERROR = 'error',
 	NONE = 'crit',
+}
+
+/**
+ * Convert a MongoQuery from @sofie-automation/corelib typings to Meteor typings.
+ * They aren't compatible yet because Meteor is using some 'loose' custom typings, rather than corelib which uses the strong typings given by the mongodb library
+ * Note: This assumes the queries are compatible. Due to how meteor uses the query they should be, but this has not been verified
+ * @param query MongoQuery as written in @sofie-automation/corelib syntax
+ * @returns MongoQuery as written in Meteor syntax
+ */
+export function convertCorelibToMeteorMongoQuery<T>(query: CoreLibMongoQuery<T>): MongoQuery<T> {
+	return query as any
 }

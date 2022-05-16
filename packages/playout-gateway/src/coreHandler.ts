@@ -104,7 +104,7 @@ export class CoreHandler {
 			this.logger.warn('Core Disconnected!')
 		})
 		this.core.onError((err) => {
-			this.logger.error('Core Error: ' + (err.message || err.toString() || err))
+			this.logger.error('Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString() || err))
 		})
 
 		const ddpConfig: DDPConnectorOptions = {
@@ -218,6 +218,10 @@ export class CoreHandler {
 			const logLevel = this.deviceSettings['debugLogging'] ? 'debug' : 'info'
 			if (logLevel !== this.logger.level) {
 				this.logger.level = logLevel
+
+				for (const transport of this.logger.transports) {
+					transport.level = logLevel
+				}
 
 				this.logger.info('Loglevel: ' + this.logger.level)
 
@@ -565,13 +569,6 @@ export class CoreTSRDeviceHandler {
 		this._devicePr = device
 		this._deviceId = deviceId
 		this._tsrHandler = tsrHandler
-
-		// this._coreParentHandler.logger.info('new CoreTSRDeviceHandler ' + device.deviceName)
-
-		// this.core = new CoreConnection(parent.getCoreConnectionOptions('MOS: ' + device.idPrimary, device.idPrimary, false))
-		// this.core.onError((err) => {
-		// 	this._coreParentHandler.logger.error('Core Error: ' + (err.message || err.toString() || err))
-		// })
 	}
 	async init(): Promise<void> {
 		this._device = await this._devicePr
@@ -588,11 +585,6 @@ export class CoreTSRDeviceHandler {
 		this.core.onError((err) => {
 			this._coreParentHandler.logger.error(
 				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err)
-			)
-		})
-		this.core.onInfo((message) => {
-			this._coreParentHandler.logger.info(
-				'Core Info: ' + ((_.isObject(message) && message.message) || message.toString() || message)
 			)
 		})
 		await this.core.init(this._coreParentHandler.core)
@@ -637,10 +629,13 @@ export class CoreTSRDeviceHandler {
 		// setup observers
 		this._coreParentHandler.setupObserverForPeripheralDeviceCommands(this)
 	}
-	statusChanged(deviceStatus: P.StatusObject): void {
+	statusChanged(deviceStatus: Partial<P.StatusObject>): void {
 		this._hasGottenStatusChange = true
 
-		this._deviceStatus = deviceStatus
+		this._deviceStatus = {
+			...this._deviceStatus,
+			...deviceStatus,
+		}
 		this.sendStatus()
 	}
 	/** Send the device status to Core */

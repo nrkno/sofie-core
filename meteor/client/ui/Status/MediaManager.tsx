@@ -386,28 +386,28 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 			})
 		}
 		actionRestart = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-			doUserAction(this.props.t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e) =>
-				MeteorCall.userAction.mediaRestartWorkflow(e, workflow._id)
+			doUserAction(this.props.t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e, ts) =>
+				MeteorCall.userAction.mediaRestartWorkflow(e, ts, workflow._id)
 			)
 		}
 		actionAbort = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-			doUserAction(this.props.t, event, UserAction.ABORT_MEDIA_WORKFLOW, (e) =>
-				MeteorCall.userAction.mediaAbortWorkflow(e, workflow._id)
+			doUserAction(this.props.t, event, UserAction.ABORT_MEDIA_WORKFLOW, (e, ts) =>
+				MeteorCall.userAction.mediaAbortWorkflow(e, ts, workflow._id)
 			)
 		}
 		actionPrioritize = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-			doUserAction(this.props.t, event, UserAction.PRIORITIZE_MEDIA_WORKFLOW, (e) =>
-				MeteorCall.userAction.mediaPrioritizeWorkflow(e, workflow._id)
+			doUserAction(this.props.t, event, UserAction.PRIORITIZE_MEDIA_WORKFLOW, (e, ts) =>
+				MeteorCall.userAction.mediaPrioritizeWorkflow(e, ts, workflow._id)
 			)
 		}
 		actionRestartAll = (event: React.MouseEvent<HTMLElement>) => {
-			doUserAction(this.props.t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e) =>
-				MeteorCall.userAction.mediaRestartAllWorkflows(e)
+			doUserAction(this.props.t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e, ts) =>
+				MeteorCall.userAction.mediaRestartAllWorkflows(e, ts)
 			)
 		}
 		actionAbortAll = (event: React.MouseEvent<HTMLElement>) => {
-			doUserAction(this.props.t, event, UserAction.ABORT_ALL_MEDIA_WORKFLOWS, (e) =>
-				MeteorCall.userAction.mediaAbortAllWorkflows(e)
+			doUserAction(this.props.t, event, UserAction.ABORT_ALL_MEDIA_WORKFLOWS, (e, ts) =>
+				MeteorCall.userAction.mediaAbortAllWorkflows(e, ts)
 			)
 		}
 

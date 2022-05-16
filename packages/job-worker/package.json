@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/job-worker",
-	"version": "1.42.0-in-development",
+	"version": "1.43.0-in-development",
 	"description": "Worker for things",
 	"main": "dist/index.js",
 	"license": "MIT",
@@ -43,15 +43,17 @@
 		"/LICENSE"
 	],
 	"dependencies": {
+		"@slack/webhook": "^6.1.0",
 		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
 		"@sofie-automation/corelib": "link:../corelib",
+		"amqplib": "^0.8.0",
 		"debounce-fn": "^4.0.0",
 		"deepmerge": "^4.2.2",
 		"elastic-apm-node": "^3.26.0",
 		"eventemitter3": "^4.0.7",
-		"mongodb": "^4.3.1",
+		"mongodb": "^4.4.1",
 		"p-lazy": "^3.1.0",
-		"read-pkg-up": "^7.0.0",
+		"p-timeout": "^4.1.0",
 		"superfly-timeline": "^8.2.7",
 		"threadedclass": "^1.0.0",
 		"tslib": "^2.1.0",

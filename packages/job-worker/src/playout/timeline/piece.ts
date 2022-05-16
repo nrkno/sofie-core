@@ -1,9 +1,4 @@
-import {
-	TSR,
-	IBlueprintPiece,
-	TimelineObjectCoreExt,
-	TimelineObjHoldMode,
-} from '@sofie-automation/blueprints-integration'
+import { TSR, TimelineObjectCoreExt, TimelineObjHoldMode } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
@@ -90,12 +85,19 @@ export function transformPieceGroupAndObjects(
 
 export function getPieceEnableInsidePart(
 	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
-	partTimings: PartCalculatedTimings
-): IBlueprintPiece['enable'] {
-	const pieceEnable = { ...pieceInstance.piece.enable }
+	partTimings: PartCalculatedTimings,
+	partGroupId: string
+): TSR.Timeline.TimelineEnable {
+	const pieceEnable: TSR.Timeline.TimelineEnable = { ...pieceInstance.piece.enable }
 	if (typeof pieceEnable.start === 'number' && !pieceInstance.dynamicallyInserted) {
 		// timed pieces should be offset based on the preroll of the part
 		pieceEnable.start += partTimings.toPartDelay
+	}
+	if (partTimings.toPartPostroll) {
+		if (!pieceEnable.duration) {
+			// make sure that the control object is shortened correctly
+			pieceEnable.duration = `#${partGroupId} - ${partTimings.toPartPostroll}`
+		}
 	}
 	return pieceEnable
 }

@@ -39,7 +39,10 @@ import { getHash, literal, omit } from '@sofie-automation/corelib/dist/lib'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
-import { processAdLibActionITranslatableMessages } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import {
+	interpollateTranslation,
+	processAdLibActionITranslatableMessages,
+} from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
 import { logger } from '../logging'
 
@@ -238,7 +241,9 @@ export function postProcessGlobalAdLibActions(
 	return adlibActions.map((action) => {
 		if (!action.externalId)
 			throw new Error(
-				`Error in blueprint "${blueprintId}" externalId not set for baseline adlib action! ("${action.display.label}")`
+				`Error in blueprint "${blueprintId}" externalId not set for baseline adlib action! ("${
+					action.actionId
+				}": "${interpollateTranslation(action.display.label.key, action.display.label.args)}")`
 			)
 
 		const docId = getIdHash(

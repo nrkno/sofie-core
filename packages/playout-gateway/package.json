@@ -1,6 +1,6 @@
 {
 	"name": "playout-gateway",
-	"version": "1.42.0-in-development",
+	"version": "1.43.0-in-development",
 	"private": true,
 	"description": "Connect to Core, play stuff",
 	"license": "MIT",
@@ -36,8 +36,7 @@
 		"start": "node dist/index.js",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck",
-		"precommit": "lint-staged"
+		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
 		"node": "^14.18 || ^16.14"
@@ -56,12 +55,12 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "1.42.0-in-development",
-		"@sofie-automation/server-core-integration": "1.42.0-in-development",
+		"@sofie-automation/blueprints-integration": "1.43.0-in-development",
+		"@sofie-automation/server-core-integration": "1.43.0-in-development",
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.2",
-		"timeline-state-resolver": "7.1.0-nightly-release42-20220407-144835-97d05a060.0",
+		"timeline-state-resolver": "7.1.0-release42.1",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
 		"winston": "^3.5.1"

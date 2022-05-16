@@ -222,9 +222,10 @@ export const ExternalFramePanel = withTranslation()(
 			}
 			const showStyleBaseId = targetRundown.showStyleBaseId
 
-			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e) =>
+			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e, ts) =>
 				MeteorCall.userAction.bucketAdlibImport(
 					e,
+					ts,
 					targetBucket ? targetBucket._id : protectString(''),
 					showStyleBaseId,
 					literal<IngestAdlib>({

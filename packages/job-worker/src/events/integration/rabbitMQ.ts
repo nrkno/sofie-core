@@ -1,11 +1,14 @@
-import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import * as AMQP from 'amqplib'
 import { logger } from '../../logging'
 import { ExternalMessageQueueObjRabbitMQ } from '@sofie-automation/blueprints-integration'
-import { ExternalMessageQueueObj, ExternalMessageQueueObjId } from '../../../lib/collections/ExternalMessageQueue'
-import { ConfigRef } from '../blueprints/config'
-import { stringifyError, unprotectString } from '../../../lib/lib'
+import { ExternalMessageQueueObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { createManualPromise, ManualPromise, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { FatalExternalMessageError } from '../ExternalMessageQueue'
+import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
+import { retrieveBlueprintConfigRefs } from '../../blueprints/config'
+import { StudioCacheContext } from '../../jobs'
 
 interface Message {
 	_id: ExternalMessageQueueObjId
@@ -13,18 +16,17 @@ interface Message {
 	routingKey: string
 	headers: { [header: string]: string } | undefined
 	message: string
-	resolve: Function
-	reject: Function
+	promise: ManualPromise<void>
 }
 class Manager<T extends AMQP.Connection | AMQP.ConfirmChannel> {
 	public initializing?: Promise<T>
-	open: boolean = false
+	open = false
 	/** https://www.rabbitmq.com/connection-blocked.html */
-	blocked: boolean = false
+	blocked = false
 	/** How many errors the connection has emitted */
-	errorCount: number = 0
+	errorCount = 0
 	/* If true, the connection needs to be restarted */
-	fatalError: boolean = false
+	fatalError = false
 
 	async init() {
 		this.open = false
@@ -42,12 +44,13 @@ class Manager<T extends AMQP.Connection | AMQP.ConfirmChannel> {
 	}
 }
 class ConnectionManager extends Manager<AMQP.Connection> {
-	connection: AMQP.Connection
-	channelManager: ChannelManager
+	// TODO: Refactor to avoid this
+	connection!: AMQP.Connection
+	channelManager!: ChannelManager
 
 	private hostURL: string
 
-	constructor(hostURL) {
+	constructor(hostURL: string) {
 		super()
 		// nothing
 		this.hostURL = hostURL
@@ -119,7 +122,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 	outgoingQueue: Array<Message> = []
 
 	connection: AMQP.Connection
-	channel: AMQP.ConfirmChannel
+	channel!: AMQP.ConfirmChannel
 
 	handleOutgoingQueueTimeout: NodeJS.Timer | null = null
 
@@ -184,28 +187,31 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		}
 	}
 
-	sendMessage(
+	async sendMessage(
 		exchangeTopic: string,
 		routingKey: string,
 		messageId: ExternalMessageQueueObjId,
 		message: string,
 		headers: { [headers: string]: string } | undefined
-	) {
-		return this.channel.assertExchange(exchangeTopic, 'topic', { durable: true }).then(
-			async () =>
-				new Promise((resolve, reject) => {
-					this.outgoingQueue.push({
-						_id: messageId,
-						exchangeTopic,
-						routingKey,
-						headers,
-						message,
-						resolve,
-						reject,
-					})
-					this.triggerHandleOutgoingQueue()
-				})
-		)
+	): Promise<void> {
+		await this.channel.assertExchange(exchangeTopic, 'topic', { durable: true })
+
+		const promise = createManualPromise<void>()
+
+		this.outgoingQueue.push({
+			_id: messageId,
+			exchangeTopic,
+			routingKey,
+			headers,
+			message,
+			promise,
+		})
+
+		setImmediate(() => {
+			this.triggerHandleOutgoingQueue()
+		})
+
+		return promise
 	}
 
 	triggerHandleOutgoingQueue() {
@@ -234,9 +240,9 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 				},
 				(err, _ok) => {
 					if (err) {
-						messageToSend.reject(err)
+						messageToSend.promise.manualReject(err)
 					} else {
-						messageToSend.resolve()
+						messageToSend.promise.manualResolve()
 					}
 					// Trigger handling the next message
 					this.triggerHandleOutgoingQueue()
@@ -275,7 +281,10 @@ async function getChannelManager(hostURL: string) {
 
 	return connectionManager.channelManager
 }
-export async function sendRabbitMQMessage(msg0: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {
+export async function sendRabbitMQMessage(
+	context: StudioCacheContext,
+	msg0: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj
+): Promise<void> {
 	const msg: ExternalMessageQueueObjRabbitMQ = msg0 // for typings
 
 	let hostURL: string = msg.receiver.host
@@ -284,12 +293,13 @@ export async function sendRabbitMQMessage(msg0: ExternalMessageQueueObjRabbitMQ 
 	let message: any = msg.message.message
 	const headers: { [header: string]: string } = msg.message.headers
 
-	if (!hostURL) throw new Meteor.Error(400, `RabbitMQ: Message host not set`)
-	if (!exchangeTopic) throw new Meteor.Error(400, `RabbitMQ: Message topic not set`)
-	if (!routingKey) throw new Meteor.Error(400, `RabbitMQ: Message routing key not set`)
-	if (!message) throw new Meteor.Error(400, `RabbitMQ: Message message not set`)
+	if (!hostURL) throw new FatalExternalMessageError(`RabbitMQ: Message host not set`)
+	if (!exchangeTopic) throw new FatalExternalMessageError(`RabbitMQ: Message topic not set`)
+	if (!routingKey) throw new FatalExternalMessageError(`RabbitMQ: Message routing key not set`)
+	if (!message) throw new FatalExternalMessageError(`RabbitMQ: Message message not set`)
 
-	hostURL = await ConfigRef.retrieveRefs(
+	hostURL = await retrieveBlueprintConfigRefs(
+		context,
 		hostURL,
 		(str) => {
 			return encodeURIComponent(str)

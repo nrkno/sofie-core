@@ -1,19 +1,20 @@
 import { DDPClient, DDPConnectorOptions } from '../../index'
 jest.mock('faye-websocket')
 
-let wait = async (t: number): Promise<void> => new Promise((resolve) => {
-	setTimeout(resolve, t)
-})
+const wait = async (t: number): Promise<void> =>
+	new Promise((resolve) => {
+		setTimeout(resolve, t)
+	})
 
 it('Creates a DDP client without options', () => {
-	let ddp = new DDPClient()
+	const ddp = new DDPClient()
 	expect(ddp).toBeTruthy()
 })
 
 it('Creates a DDP Client with options', () => {
-	let ddp = new DDPClient({
+	const ddp = new DDPClient({
 		host: '127.0.0.99',
-		port: 3210
+		port: 3210,
 	} as DDPConnectorOptions)
 	expect(ddp).toBeTruthy()
 	expect(ddp.port).toBe(3210)
@@ -21,8 +22,8 @@ it('Creates a DDP Client with options', () => {
 })
 
 it('Connects to mock server', async () => {
-	let connected = jest.fn()
-	let ddp = new DDPClient()
+	const connected = jest.fn()
+	const ddp = new DDPClient()
 	ddp.on('connected', connected)
 	ddp.connect()
 

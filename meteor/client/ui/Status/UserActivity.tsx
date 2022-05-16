@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { parse as queryStringParse } from 'query-string'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import classNames from 'classnames'
+import Tooltip from 'rc-tooltip'
 
 const PARAM_DATE_FORMAT = 'YYYY-MM-DD'
 const PARAM_NAME_FROM_DATE = 'fromDate'
@@ -77,9 +78,27 @@ export function UserActionsList(props: IUserActionsListProps) {
 							<td className="user-action-log__executionTime">
 								<table>
 									<tbody>
+										{msg.clientTime ? (
+											<tr>
+												<td>
+													<Tooltip
+														overlay={t('Time from platform user event to Action received by Core')}
+														placement="top"
+														align="left"
+													>
+														<span>{t('GUI')}:</span>
+													</Tooltip>
+												</td>
+												<td>{Math.round((msg.timestamp - msg.clientTime) * 100) / 100} ms</td>
+											</tr>
+										) : null}
 										{msg.executionTime ? (
 											<tr>
-												<td>{t('Core')}:</td>
+												<td>
+													<Tooltip overlay={t('Core + Worker processing time')} placement="top" align="left">
+														<span>{t('Core')}:</span>
+													</Tooltip>
+												</td>
 												<td>{msg.executionTime} ms</td>
 											</tr>
 										) : null}
