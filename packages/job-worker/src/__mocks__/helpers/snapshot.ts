@@ -62,6 +62,7 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean): Data 
 		} else if (isPlaylist(o)) {
 			o['created'] = 0
 			o['modified'] = 0
+			if (o['resetTime']) o['resetTime'] = 0
 		} else if (isRundown(o)) {
 			o['created'] = 0
 			o['modified'] = 0

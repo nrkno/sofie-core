@@ -76,7 +76,7 @@ Object {
   "organizationId": null,
   "previousPartInstanceId": null,
   "rehearsal": false,
-  "resetTime": 1652874458637,
+  "resetTime": 0,
   "studioId": "mockStudio0",
   "timing": Object {
     "type": "none",
