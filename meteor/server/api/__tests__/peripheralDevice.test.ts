@@ -362,6 +362,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		const piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
 			rundownPlaylistId: rundownPlaylistID,
+			partInstanceId: getRandomId(),
 			pieceInstanceId: getRandomId(),
 			time: getCurrentTime(),
 		}
@@ -388,6 +389,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		const piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
 			rundownPlaylistId: rundownPlaylistID,
+			partInstanceId: getRandomId(),
 			pieceInstanceId: getRandomId(),
 			time: getCurrentTime(),
 		}
@@ -401,6 +403,7 @@ describe('test peripheralDevice general API methods', () => {
 			device.studioId,
 			literal<OnPiecePlaybackStoppedProps>({
 				playlistId: piecePlaybackStoppedResult.rundownPlaylistId,
+				partInstanceId: piecePlaybackStoppedResult.partInstanceId,
 				pieceInstanceId: piecePlaybackStoppedResult.pieceInstanceId,
 				stoppedPlayback: piecePlaybackStoppedResult.time,
 			})

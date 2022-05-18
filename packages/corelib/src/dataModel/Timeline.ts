@@ -60,6 +60,17 @@ export type TimelineObjGroupRundown = TimelineObjGroup & Omit<TimelineObjRundown
 
 export type TimelineObjGroupPart = TimelineObjGroupRundown
 
+export interface PartPlaybackCallbackData {
+	rundownPlaylistId: RundownPlaylistId
+	partInstanceId: PartInstanceId
+}
+export interface PiecePlaybackCallbackData {
+	rundownPlaylistId: RundownPlaylistId
+	partInstanceId: PartInstanceId
+	pieceInstanceId: PieceInstanceId
+	dynamicallyInserted?: boolean
+}
+
 export interface TimelineObjPartAbstract extends TimelineObjRundown {
 	// used for sending callbacks
 	content: {
@@ -67,10 +78,7 @@ export interface TimelineObjPartAbstract extends TimelineObjRundown {
 		type: 'callback'
 		callBack: 'partPlaybackStarted'
 		callBackStopped: 'partPlaybackStopped'
-		callBackData: {
-			rundownPlaylistId: RundownPlaylistId
-			partInstanceId: PartInstanceId
-		}
+		callBackData: PartPlaybackCallbackData
 	}
 }
 export interface TimelineObjPieceAbstract extends Omit<TimelineObjRundown, 'enable'> {
@@ -82,11 +90,7 @@ export interface TimelineObjPieceAbstract extends Omit<TimelineObjRundown, 'enab
 		type: 'callback'
 		callBack: 'piecePlaybackStarted'
 		callBackStopped: 'piecePlaybackStopped'
-		callBackData: {
-			rundownPlaylistId: RundownPlaylistId
-			pieceInstanceId: PieceInstanceId
-			dynamicallyInserted?: boolean
-		}
+		callBackData: PiecePlaybackCallbackData
 	}
 }
 
