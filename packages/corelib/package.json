@@ -25,7 +25,6 @@
 		"watch": "jest --watch",
 		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"changelog": "standard-version",
 		"release": "yarn reset && yarn test && yarn changelog",
 		"reset": "git clean -dfx && git reset --hard && yarn",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
@@ -45,13 +44,13 @@
 		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
 		"fast-clone": "^1.5.13",
 		"i18next": "^19.9.2",
-		"influx": "^5.9.2",
+		"influx": "^5.9.3",
 		"mos-connection": "^1.0.7",
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",
-		"tslib": "^2.1.0",
-		"type-fest": "^2.11.1",
-		"underscore": "^1.13.2"
+		"tslib": "^2.4.0",
+		"type-fest": "^2.12.2",
+		"underscore": "^1.13.3"
 	},
 	"peerDependencies": {
 		"mongodb": "^4.4.1"

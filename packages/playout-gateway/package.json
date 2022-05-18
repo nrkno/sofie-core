@@ -59,11 +59,11 @@
 		"@sofie-automation/server-core-integration": "1.44.0-in-development",
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
-		"influx": "^5.9.2",
+		"influx": "^5.9.3",
 		"timeline-state-resolver": "7.1.0-release42.1",
-		"tslib": "^2.3.1",
-		"underscore": "^1.12.1",
-		"winston": "^3.5.1"
+		"tslib": "^2.4.0",
+		"underscore": "^1.13.3",
+		"winston": "^3.7.2"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [
