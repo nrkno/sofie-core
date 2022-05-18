@@ -16,7 +16,6 @@ import { logger } from '../logging'
 import { LocksManager } from '../locks'
 import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
 import { JobManager, JobStream } from '../manager'
-import { UserError } from '@sofie-automation/corelib/dist/error'
 import { Promisify, ThreadedClassManager } from 'threadedclass'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
@@ -48,6 +47,14 @@ export interface WorkerParentBaseOptions extends WorkerParentOptions {
 	queueName: string
 	/** User-facing label */
 	prettyName: string
+}
+
+/**
+ * Wrap up the result of a job to an object. This allows us to use special types in the error, as anything thrown can get mangled by threadedClass or other wrappings
+ */
+export interface WorkerJobResult {
+	error: any
+	result: any
 }
 
 export abstract class WorkerParentBase {
@@ -119,7 +126,7 @@ export abstract class WorkerParentBase {
 	/** Invalidate caches in the worker thread */
 	protected abstract invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void>
 	/** Run a job in the worker thread */
-	protected abstract runJobInWorker(name: string, data: unknown): Promise<any>
+	protected abstract runJobInWorker(name: string, data: unknown): Promise<WorkerJobResult>
 	/** Terminate the worker thread */
 	protected abstract terminateWorkerThread(): Promise<void>
 	/** Restart the worker thread */
@@ -213,7 +220,7 @@ export abstract class WorkerParentBase {
 								logger.verbose(`Payload ${job.id}: ${JSON.stringify(job.data)}`)
 
 								// Future - extend the job lock on an interval
-								let result: any
+								let result: WorkerJobResult
 								if (job.name === FORCE_CLEAR_CACHES_JOB) {
 									const invalidations =
 										this.#pendingInvalidations ?? createInvalidateWorkerDataCache()
@@ -222,18 +229,26 @@ export abstract class WorkerParentBase {
 									invalidations.forceAll = true
 									await this.invalidateWorkerCaches(invalidations)
 
-									result = undefined
+									result = { result: undefined, error: null }
 								} else {
 									result = await this.runJobInWorker(job.name, job.data)
 								}
 
 								const endTime = Date.now()
 								this.#watchdogJobStarted = undefined
-								await this.#jobManager.jobFinished(job.id, startTime, endTime, null, result)
+
+								await this.#jobManager.jobFinished(
+									job.id,
+									startTime,
+									endTime,
+									result.error,
+									result.result
+								)
+
 								logger.debug(`Completed work ${job.id} in ${endTime - startTime}ms`)
 							} catch (e: unknown) {
-								let error: Error | UserError
-								if (e instanceof Error || UserError.isUserError(e)) {
+								let error: Error
+								if (e instanceof Error) {
 									error = e
 								} else {
 									error = new Error(typeof e === 'string' ? e : `${e}`)

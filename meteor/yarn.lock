@@ -7252,10 +7252,10 @@ monitor-event-loop-delay@^1.0.0:
   resolved "https://registry.yarnpkg.com/monitor-event-loop-delay/-/monitor-event-loop-delay-1.0.0.tgz#b5ab78165a3bb93f2b275c50d01430c7f155d1f7"
   integrity sha512-YRIr1exCIfBDLZle8WHOfSo7Xg3M+phcZfq9Fx1L6Abo+atGp7cge5pM7PjyBn4s1oZI/BRD4EMrzQBbPpVb5Q==
 
-mos-connection@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.6.tgz#bae6918e9554fb83ed3d30a5f065116ba85f66ed"
-  integrity sha512-Ia/BvwQD+jBwBKPf0dV9Jr4R5Ufx2W/CuzL5OqbPeEutbbNDR0qVBnJxixk7d9ZoggVshnUk+fvuCp/MXu9dgA==
+mos-connection@^1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.7.tgz#7370eadf7da89ad9af57b9402d09a67973b56259"
+  integrity sha512-LuKzryGQwF8eEp9VOPpke5Bq+3GNL2fTLbVy+UUBGZIXWeTGlDxzxPMrrr2HLrWftEje9SdB8hu7tWX2h/5M7w==
   dependencies:
     iconv-lite "^0.6.2"
     moment "^2.29.1"
@@ -9763,10 +9763,10 @@ text-table@^0.2.0:
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=
 
-threadedclass@^1.0.0, threadedclass@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.0.1.tgz#2952274cbb0e675ec118f3ddef6a69e71e24d75d"
-  integrity sha512-Lgclu4nKQUgsr70RSAQxsIVNd5PaSIybmPkN94kErqNuVzI+EDhQDAc76YdPIGUOOx/VgJKEFYkzohsWbcvVMA==
+threadedclass@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.0.2.tgz#c5574cac282198433b9f3685202c5081df23206b"
+  integrity sha512-xkKqzipcLV25TqI3Z3eykpl5TiAGwg+h0DUwvYEh9GXRxvNcKZJIfl2l5/Bn6UxOuHAKXGT/HBN9PWDRf2P34g==
   dependencies:
     callsites "^3.1.0"
     eventemitter3 "^4.0.4"
