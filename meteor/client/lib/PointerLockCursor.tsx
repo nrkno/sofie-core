@@ -16,6 +16,7 @@ export class PointerLockCursor extends React.Component<{}, IState> {
 	constructor(props) {
 		super(props)
 
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		PointerLockCursorSingleton = this
 
 		this.state = {
