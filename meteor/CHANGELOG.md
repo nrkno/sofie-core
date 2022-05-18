@@ -2,6 +2,54 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.43.0-in-testing.0) (2022-05-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* clean up deprecated Databases and DataTypes (#713)
+
+### Features
+
+* clean up deprecated Databases and DataTypes ([#713](https://github.com/nrkno/tv-automation-server-core/issues/713)) ([c6eb7fa](https://github.com/nrkno/tv-automation-server-core/commit/c6eb7fa98003bae79b4b9311c135e33638a017fc))
+* **docs:** add Ctrl+K hotkey for jumping to search text box ([1d16c1e](https://github.com/nrkno/tv-automation-server-core/commit/1d16c1e3d57a0cebfd10c962b3816ba558bb9976))
+* meteor 2.7. reenable meteor apm ([e989244](https://github.com/nrkno/tv-automation-server-core/commit/e98924407a3f0b791f48b852b9ef09902a90280d))
+* move more logic into workers ([#718](https://github.com/nrkno/tv-automation-server-core/issues/718)) ([3376826](https://github.com/nrkno/tv-automation-server-core/commit/3376826e4029985e3975d6d5a85f9ab1f06a9dd4))
+* **Prompter:** Suppoert for multiple Joycon controller for prompter ([f915320](https://github.com/nrkno/tv-automation-server-core/commit/f915320d1c7f78dd4692140dbcf46fb5a289d16b))
+* use Sorensen prevent default down option and configurable poison key ([1311e3e](https://github.com/nrkno/tv-automation-server-core/commit/1311e3e4a15c955293123da758492d594960e159))
+
+
+### Bug Fixes
+
+* avoid logging errors from onPartStoppedPlayback or onPieceStoppedPlayback when a rundown is reset ([b54c44b](https://github.com/nrkno/tv-automation-server-core/commit/b54c44b52ac9350cae920a9e92a3f91adaf4e10f))
+* avoid logging errors from onPartStoppedPlayback or onPieceStoppedPlayback when a rundown is reset ([ac21a3b](https://github.com/nrkno/tv-automation-server-core/commit/ac21a3befb5cda2964cc824c2cbdd0bb8bcf65c9))
+* BTS countdonw position can be misaligned if it's on a layer in a group that is preceeded by another group that is default-collapsed but have not been manipulated by the user ([4dc470b](https://github.com/nrkno/tv-automation-server-core/commit/4dc470bc0953faabf9b567f303995f8b73cad29b))
+* change reportPartInstanceHasStopped to use the cache instead of accessing collections directly ([85f94c6](https://github.com/nrkno/tv-automation-server-core/commit/85f94c60ddb37352cc05101de28d0775c08f219b))
+* Cherry-picked configurable poisonkey. ([ec60933](https://github.com/nrkno/tv-automation-server-core/commit/ec60933c91ecd0ae23fc27331c990423dc6c65d1))
+* Cherry-picked Sorensen preventDefaultDown option. ([b90f1b3](https://github.com/nrkno/tv-automation-server-core/commit/b90f1b3fa168b6d9ee72eac4a947fa5dc79fbbf3))
+* cleans up PR after review ([bdbc105](https://github.com/nrkno/tv-automation-server-core/commit/bdbc105ae32d15a61d93120b0de384c36143cd44))
+* dashboard panel scale affecting position ([c339929](https://github.com/nrkno/tv-automation-server-core/commit/c339929b6f02d5b25e3597b92b1fa8360d01d190))
+* dont use versionExtended when checking db docs against current version ([1839d8b](https://github.com/nrkno/tv-automation-server-core/commit/1839d8b11dfafab550f8fecb28e6b2c211f737ea))
+* force target to be es2019 for corelib, because it is used client-side and Chrome (v71) in CasparCG2.1 does not support any newer targets. ([39d11ba](https://github.com/nrkno/tv-automation-server-core/commit/39d11ba1337e471dd95d776d6bd3a4a8cd938e1a))
+* job-worker got empty string when searching for version number ([562083d](https://github.com/nrkno/tv-automation-server-core/commit/562083dba9259d72704eff21230cb4cdf7a9ce6c))
+* job-worker returning UserError got lost, causing 'Internal error' to be reported to the user. Reduce amount of logging from failed UserActions ([fd32c45](https://github.com/nrkno/tv-automation-server-core/commit/fd32c45e2f01c9482a5e19aecdc5ed41ccd6627c))
+* mongo changestream watching broken. some logging not being routed correctly ([2e4b4e3](https://github.com/nrkno/tv-automation-server-core/commit/2e4b4e377eb7356dfcb21bdbe5f96182d8293192))
+* mongo queries with an undefined selector were returning nothing ([a5cc184](https://github.com/nrkno/tv-automation-server-core/commit/a5cc1847f1b3de5a1fa0a88619cbec32ddb88704))
+* mongodb shouldnt convert undefined properties to null ([ed96de5](https://github.com/nrkno/tv-automation-server-core/commit/ed96de585a6e8155b513318c9882a58fa405dd81))
+* move TransformedCollection into MongoCollection with other collection types ([343a7b2](https://github.com/nrkno/tv-automation-server-core/commit/343a7b2ffabc99ba95c016933f132efd083976ac))
+* OAuth code returned via redirect_uri ([#719](https://github.com/nrkno/tv-automation-server-core/issues/719)) ([9789585](https://github.com/nrkno/tv-automation-server-core/commit/9789585d2ae552ec555191cd1fbf76e7880cae2b))
+* **Prompter:** If collection changes are slow, Prompter may receive incomplete updates, and render some Script missing ([#720](https://github.com/nrkno/tv-automation-server-core/issues/720)) ([e9465eb](https://github.com/nrkno/tv-automation-server-core/commit/e9465eb0bbbc99fea5cc883d121e53b49c6517cc))
+* RundownView now use TriggersHandler with shelfOnly. ([f963b2f](https://github.com/nrkno/tv-automation-server-core/commit/f963b2f1ae230070402524c152c524ad0c074c5c))
+* **RundownView:** use TriggersHandler with detached Shelfs ([5e330e4](https://github.com/nrkno/tv-automation-server-core/commit/5e330e4773392bb936736a7831a39c391eccf102)), closes [#714](https://github.com/nrkno/tv-automation-server-core/issues/714)
+* set timeout times explicitly for MOS commands ([1cf5a4e](https://github.com/nrkno/tv-automation-server-core/commit/1cf5a4ed3e6e2786c9ad83df303b992e35c86a51))
+* **sonar:** install dependencies before sonar scan ([a004c36](https://github.com/nrkno/tv-automation-server-core/commit/a004c36e3564de8930202bb8e9ae116f3e9cd45d))
+* **sonar:** install dependencies before sonar scan ([33c7274](https://github.com/nrkno/tv-automation-server-core/commit/33c72748d9a38802c43324dedbefce5ee83e0890))
+* **Storyboard:** Piece status icon is misaligned ([be2edae](https://github.com/nrkno/tv-automation-server-core/commit/be2edae3de6db8f839185b9a98cf85844f182167))
+* tidy up some meteor mongo typings ([6af703b](https://github.com/nrkno/tv-automation-server-core/commit/6af703bb7406d686a7f76db754c104e58d6a2e06))
+* type errors ([bbc0945](https://github.com/nrkno/tv-automation-server-core/commit/bbc0945de4d24d21ef657c8631545d11873ada3d))
+* update some overridden mongo typings ([f7fa755](https://github.com/nrkno/tv-automation-server-core/commit/f7fa75572a91bffc4f89d211877e7afbc4ffe26e))
+* Using Settings with defaults included for poisonKey. ([c7fbffd](https://github.com/nrkno/tv-automation-server-core/commit/c7fbffde903622c1cd6b73c1815de422060114b1))
+
 ## [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.42.0-in-testing.0) (2022-04-29)
 
 

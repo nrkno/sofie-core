@@ -72,8 +72,5 @@
 		"*.{ts,tsx,js,jsx}": [
 			"yarn lint:raw"
 		]
-	},
-	"devDependencies": {
-		"@types/debug": "^4.1.7"
 	}
 }
