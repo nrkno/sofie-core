@@ -24,7 +24,7 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { PartEventContext, RundownContext } from '../blueprints/context'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { innerStopPieces } from './adlib'
-import { reportPartInstanceHasStarted } from '../blueprints/events'
+import { reportPartInstanceHasStarted, reportPartInstanceHasStopped } from '../blueprints/events'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { calculatePartTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'
@@ -231,7 +231,7 @@ async function afterTakeUpdateTimingsAndEvents(
 	isFirstTake: boolean,
 	takeDoneTime: number
 ): Promise<void> {
-	const { currentPartInstance: takePartInstance } = getSelectedPartInstancesFromCache(cache)
+	const { currentPartInstance: takePartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 	const takeRundown = takePartInstance ? cache.Rundowns.findOne(takePartInstance.rundownId) : undefined
 
 	// todo: should this be changed back to Meteor.defer, at least for the blueprint stuff?
@@ -251,6 +251,15 @@ async function afterTakeUpdateTimingsAndEvents(
 				}" to have started playback on timestamp ${new Date(takeDoneTime).toISOString()}`
 			)
 			reportPartInstanceHasStarted(context, cache, takePartInstance, takeDoneTime)
+
+			if (previousPartInstance) {
+				logger.info(
+					`Also reporting PartInstance "${
+						previousPartInstance._id
+					}" to have stopped playback on timestamp ${new Date(takeDoneTime).toISOString()}`
+				)
+				reportPartInstanceHasStopped(context, cache, previousPartInstance, takeDoneTime)
+			}
 		}
 
 		// let bp = getBlueprintOfRundown(rundown)

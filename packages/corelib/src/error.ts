@@ -101,6 +101,10 @@ export class UserError {
 		public readonly message: ITranslatableMessage
 	) {}
 
+	public toString(): string {
+		return UserError.toJSON(this)
+	}
+
 	/** Create a UserError with a custom error for the log */
 	static from(err: Error, key: UserErrorMessage, args?: { [k: string]: any }): UserError {
 		return new UserError(err, key, { key: UserErrorMessagesTranslations[key], args })
@@ -116,12 +120,16 @@ export class UserError {
 		return UserError.from(new Error(UserErrorMessagesTranslations[key]), key, args)
 	}
 
-	static tryFromJSON(str: string): UserError {
-		const p = JSON.parse(str)
-		if (UserError.isUserError(p)) {
-			return new UserError(new Error(p.rawError.toString()), p.key, p.message)
-		} else {
-			throw new Error('Not a UserError')
+	static tryFromJSON(str: string): UserError | undefined {
+		try {
+			const p = JSON.parse(str)
+			if (UserError.isUserError(p)) {
+				return new UserError(new Error(p.rawError.toString()), p.key, p.message)
+			} else {
+				return undefined
+			}
+		} catch (e: any) {
+			return undefined
 		}
 	}
 
@@ -129,6 +137,7 @@ export class UserError {
 		return JSON.stringify({
 			rawError: stringifyError(e.rawError),
 			message: e.message,
+			key: e.key,
 		})
 	}
 

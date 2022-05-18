@@ -1,6 +1,6 @@
 import { EventsWorkerChild } from './child'
 import { InvalidateWorkerDataCache } from '../caches'
-import { WorkerParentBase, WorkerParentBaseOptions, WorkerParentOptions } from '../parent-base'
+import { WorkerJobResult, WorkerParentBase, WorkerParentBaseOptions, WorkerParentOptions } from '../parent-base'
 import { AnyLockEvent } from '../locks'
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
@@ -49,7 +49,7 @@ export class EventsWorkerParent extends WorkerParentBase {
 	protected async invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void> {
 		return this.#thread.invalidateCaches(invalidations)
 	}
-	protected async runJobInWorker(name: string, data: unknown): Promise<any> {
+	protected async runJobInWorker(name: string, data: unknown): Promise<WorkerJobResult> {
 		return this.#thread.runJob(name, data)
 	}
 	protected async terminateWorkerThread(): Promise<void> {

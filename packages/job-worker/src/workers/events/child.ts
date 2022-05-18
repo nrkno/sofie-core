@@ -12,6 +12,7 @@ import { interceptLogging, logger } from '../../logging'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { setupInfluxDb } from '../../influx'
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
+import { WorkerJobResult } from '../parent-base'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -86,7 +87,7 @@ export class EventsWorkerChild {
 			transaction?.end()
 		}
 	}
-	async runJob(jobName: string, data: unknown): Promise<unknown> {
+	async runJob(jobName: string, data: unknown): Promise<WorkerJobResult> {
 		if (!this.#staticData) throw new Error('Worker not initialised')
 
 		const transaction = startTransaction(jobName, 'worker-studio')
@@ -107,15 +108,23 @@ export class EventsWorkerChild {
 			// Execute function, or fail if no handler
 			const handler = (eventJobHandlers as any)[jobName]
 			if (handler) {
-				const res = await handler(context, data)
-				// explicitly await, to force the promise to resolve before the apm transaction is terminated
-				return res
+				try {
+					const res = await handler(context, data)
+					// explicitly await, to force the promise to resolve before the apm transaction is terminated
+					return {
+						result: res,
+						error: null,
+					}
+				} catch (e) {
+					logger.error(`Events job "${jobName}" errored: ${stringifyError(e)}`)
+					return {
+						result: null,
+						error: e,
+					}
+				}
 			} else {
 				throw new Error(`Unknown job name: "${jobName}"`)
 			}
-		} catch (e) {
-			logger.error(`Events job errored: ${stringifyError(e)}`)
-			throw e
 		} finally {
 			await context.cleanupResources()
 
