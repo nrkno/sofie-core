@@ -47,7 +47,7 @@
 		"start": "node dist/index.js"
 	},
 	"engines": {
-		"node": "^14.18 || ^16.14"
+		"node": "^14.19 || ^16.14"
 	},
 	"keywords": [
 		"mos",
