@@ -56,6 +56,8 @@ export interface DBRundownPlaylist {
 	holdState?: RundownHoldState
 	/** Truthy when the playlist is currently active in the studio. This is regenerated upon each activation/reset. */
 	activationId?: RundownPlaylistActivationId
+	/** Timestamp when the playlist was last reset. Used to silence a few errors upon reset.*/
+	resetTime?: Time
 	/** Should the playlist loop at the end */
 	loop?: boolean
 	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */

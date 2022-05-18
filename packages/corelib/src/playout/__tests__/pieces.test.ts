@@ -67,6 +67,7 @@ describe('Pieces', () => {
 				callBack: 'piecePlaybackStarted',
 				callBackData: {
 					rundownPlaylistId: playlistId,
+					partInstanceId: protectString('randomId9002'),
 					pieceInstanceId: protectString('randomId9000'),
 					dynamicallyInserted: false,
 				},

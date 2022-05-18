@@ -133,7 +133,7 @@ export function reportPartInstanceHasStopped(
 export async function reportPieceHasStarted(
 	context: JobContext,
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
-	pieceInstance: PieceInstance,
+	pieceInstance: Pick<PieceInstance, '_id' | 'partInstanceId' | 'infinite'>,
 	timestamp: Time
 ): Promise<void> {
 	await Promise.all([
@@ -166,7 +166,7 @@ export async function reportPieceHasStarted(
 export async function reportPieceHasStopped(
 	context: JobContext,
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
-	pieceInstance: PieceInstance,
+	pieceInstance: Pick<PieceInstance, '_id' | 'partInstanceId'>,
 	timestamp: Time
 ): Promise<void> {
 	await context.directCollections.PieceInstances.update(pieceInstance._id, {

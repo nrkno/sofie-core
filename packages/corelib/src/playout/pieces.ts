@@ -73,6 +73,7 @@ export function createPieceGroupAndCap(
 			callBack: 'piecePlaybackStarted',
 			callBackData: {
 				rundownPlaylistId: playlistId,
+				partInstanceId: pieceInstance.partInstanceId,
 				pieceInstanceId: pieceInstance._id,
 				dynamicallyInserted: pieceInstance.dynamicallyInserted !== undefined,
 			},

@@ -342,6 +342,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		const job = await QueueStudioJob(StudioJobs.OnPiecePlaybackStopped, peripheralDevice.studioId, {
 			playlistId: r.rundownPlaylistId,
+			partInstanceId: r.partInstanceId,
 			pieceInstanceId: r.pieceInstanceId,
 			stoppedPlayback: r.time,
 		})
