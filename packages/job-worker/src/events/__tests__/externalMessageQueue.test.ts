@@ -250,6 +250,10 @@ describe('Test sending messages to mocked endpoints', () => {
 					db: 'sofie',
 					coll: CollectionName.ExternalMessageQueue,
 				},
+				documentKey: {
+					_id: msg._id,
+				},
+				fullDocument: msg,
 			})
 
 			// Run the queue
