@@ -149,6 +149,7 @@ export interface IBlueprintSegmentRundown<TMetadata = unknown> {
 export enum SegmentDisplayMode {
 	Timeline = 'timeline',
 	Storyboard = 'storyboard',
+	OnePartPerLine = 'onePartPerLine',
 }
 
 /** The Segment generated from Blueprint */
