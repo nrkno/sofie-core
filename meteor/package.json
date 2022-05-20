@@ -54,7 +54,7 @@
 		"@sofie-automation/blueprints-integration": "link:../packages/blueprints-integration",
 		"@sofie-automation/corelib": "link:../packages/corelib",
 		"@sofie-automation/job-worker": "link:../packages/job-worker",
-		"@sofie-automation/sorensen": "^1.4.0",
+		"@sofie-automation/sorensen": "^1.4.2",
 		"amqplib": "^0.8.0",
 		"app-root-path": "^3.0.0",
 		"bcrypt": "^5.0.1",
