@@ -1,8 +1,11 @@
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
-import React, { useEffect, useState } from 'react'
+import React, { useMemo } from 'react'
 import { PartExtended, PieceExtended } from '../../../lib/Rundown'
 import { findPieceExtendedToShowFromOrderedResolvedInstances } from '../PieceIcons/utils'
 import { LinePartMainPiece } from './LinePartMainPiece/LinePartMainPiece'
+import { OnAirLine } from './OnAirLine'
+import { TakeLine } from './TakeLine'
+import { LinePartTransitionPiece } from './LinePartTransitionPiece/LinePartTransitionPiece'
 
 const TIMELINE_DEFAULT_BASE = 30 * 1000
 
@@ -11,6 +14,7 @@ interface IProps {
 	isLive: boolean
 	isNext: boolean
 	isFinished: boolean
+	currentPartWillAutonext: boolean
 }
 
 const supportedSourceLayerTypes = new Set(
@@ -27,14 +31,28 @@ function findMainPiece(pieces: PieceExtended[]) {
 	)
 }
 
-export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({ part }) {
-	const [mainPiece, setMainPiece] = useState<PieceExtended | undefined>(findMainPiece(part.pieces))
+function findTransitionPiece(pieces: PieceExtended[]) {
+	return pieces
+		.slice()
+		.reverse()
+		.find((piece) => {
+			console.log(piece)
+			if (piece.sourceLayer?.type === SourceLayerType.TRANSITION) {
+				return true
+			}
+		})
+}
+
+export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
+	part,
+	isLive,
+	isNext,
+	currentPartWillAutonext,
+}) {
 	// const [highlight] = useState(false)
 
-	useEffect(() => {
-		const newMainPiece = findMainPiece(part.pieces)
-		setMainPiece(newMainPiece)
-	}, [part.pieces])
+	const mainPiece = useMemo(() => findMainPiece(part.pieces), [part.pieces])
+	const transitionPiece = useMemo(() => findTransitionPiece(part.pieces), [part.pieces])
 
 	const timelineBase = Math.max(
 		TIMELINE_DEFAULT_BASE,
@@ -42,11 +60,16 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({ pa
 		part.renderedDuration
 	)
 
+	const autoNext = isNext ? currentPartWillAutonext : part.willProbablyAutoNext
+
 	return (
-		<div className="segment-opl__part-timeline" data-base={timelineBase / 1000}>
+		<div className="segment-opl__part-timeline " data-base={timelineBase / 1000}>
+			{transitionPiece && <LinePartTransitionPiece piece={transitionPiece} />}
 			{mainPiece && (
 				<LinePartMainPiece piece={mainPiece} timelineBase={timelineBase} partDuration={part.renderedDuration} />
 			)}
+			{!isLive && <TakeLine isNext={isNext} autoNext={autoNext} />}
+			{isLive && <OnAirLine partInstance={part.instance} timelineBase={timelineBase} />}
 		</div>
 	)
 }

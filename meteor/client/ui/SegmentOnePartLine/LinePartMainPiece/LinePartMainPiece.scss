@@ -1,7 +1,7 @@
 @import '../../../styles/itemTypeColors';
 
 .segment-opl__main-piece {
-	overflow: hidden;
+	overflow: visible;
 
 	@include piece-colors();
 	@include missing-overlay();
@@ -10,5 +10,6 @@
 		font-weight: 400;
 		font-size: 1em;
 		white-space: nowrap;
+		margin-left: 0.85em;
 	}
 }

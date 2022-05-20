@@ -30,7 +30,14 @@ interface IProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 }
 
-export const LinePart: React.FC<IProps> = function LinePart({ part, segment, isNextPart, isLivePart, onContextMenu }) {
+export const LinePart: React.FC<IProps> = function LinePart({
+	part,
+	segment,
+	isNextPart,
+	isLivePart,
+	currentPartWillAutonext,
+	onContextMenu,
+}) {
 	const isFinished = (part.instance.timings?.stoppedPlayback ?? part.instance.timings?.takeOut) !== undefined
 	const [highlight] = useState(false)
 
@@ -82,9 +89,13 @@ export const LinePart: React.FC<IProps> = function LinePart({ part, segment, isN
 				</div>
 				<h3 className="segment-opl__part-title">{part.instance.part.title}</h3>
 			</div>
-			<div className="segment-opl__part-timeline">
-				<LinePartTimeline part={part} isLive={isLivePart} isNext={isNextPart} isFinished={isFinished} />
-			</div>
+			<LinePartTimeline
+				part={part}
+				isLive={isLivePart}
+				isNext={isNextPart}
+				isFinished={isFinished}
+				currentPartWillAutonext={currentPartWillAutonext}
+			/>
 			<div className="segment-opl__piece-icons">
 				<LinePartPieceIcons />
 			</div>

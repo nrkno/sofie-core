@@ -119,6 +119,109 @@ $duration-area-margin: 0.6em;
 				position: relative;
 				margin-top: 0.6em;
 				margin-left: 0.3em;
+
+				> .segment-opl__timeline-flag {
+					position: absolute;
+					top: -0.4em;
+					left: 0;
+					bottom: 0.3em;
+					width: 2px;
+
+					> .segment-opl__timeline-flag__label {
+						position: absolute;
+						display: block;
+						top: -0.2em;
+						text-transform: uppercase;
+						font-weight: bold;
+						line-height: 1em;
+						white-space: nowrap;
+						word-wrap: none;
+						padding: 0.1em 0.3em 0.1em 0.2em;
+						border-radius: 4px 0.5em 0.5em 0em;
+						box-shadow: 0 0 4px 0 #000000ff;
+						z-index: 2;
+					}
+				}
+
+				> .segment-opl__take-line {
+					background: $part-start-color;
+
+					&:not(.next).auto {
+						width: 1px;
+					}
+
+					&:not(.auto) {
+						top: -0.2em;
+						height: 1.6em;
+
+						&::after {
+							top: -2px;
+							left: 0px;
+							@include take-arrow();
+							z-index: 1;
+						}
+
+						&::before {
+							bottom: -2px;
+							left: 0px;
+							@include take-arrow();
+							z-index: 1;
+						}
+					}
+
+					&.next {
+						top: -0.2em;
+						background: $general-next-color;
+
+						> .segment-opl__timeline-flag__label {
+							top: -0.35em;
+							color: #000000;
+							background: $general-next-color;
+						}
+
+						&::after {
+							display: none;
+						}
+
+						&::before {
+							border-left-color: $general-next-color;
+						}
+					}
+				}
+
+				> .segment-opl__on-air-line {
+					background: $general-live-color;
+
+					> .segment-opl__timeline-flag__label {
+						background-color: $general-live-color;
+						color: #fff;
+					}
+
+					> .segment-opl__on-air-line__countdown {
+						position: absolute;
+						white-space: nowrap;
+						word-wrap: none;
+						top: auto;
+						bottom: -0.2em;
+						padding-right: 0.1em;
+						transform: translate(-100%, 0);
+
+						font-size: 1.2em;
+						font-weight: 500;
+						color: $liveline-timecode-color;
+						letter-spacing: 0.5px;
+						text-shadow: -1px -1px 1px #000000ff, 1px 1px 1px #000000ff, 0 0 4px #000000ff;
+
+						> .overtime {
+							color: $general-late-color;
+						}
+
+						> .rundown-view__part__icon {
+							top: -0.2em;
+							margin-right: 0.3em;
+						}
+					}
+				}
 			}
 
 			&:not(:last-child)::after {
