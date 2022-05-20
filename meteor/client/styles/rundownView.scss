@@ -567,6 +567,8 @@ svg.icon {
 			grid-row: title-identifiers / end;
 
 			.segment-timeline__part-identifiers__identifier {
+				font-weight: 300;
+				text-shadow: none;
 				margin: 2.5px;
 				padding: 0 4px;
 				background-color: $part-identifier;
@@ -1154,8 +1156,7 @@ svg.icon {
 			&.segment-timeline__liveline__appendage--piece-countdown {
 				color: $liveline-timecode-color;
 				font-weight: 400;
-				text-shadow: -1px -1px 1px #000, 1px -1px 1px #000, -1px 1px 1px #000, 1px 1px 1px #000, 2px 2px 5px #000;
-
+				text-shadow: -1px -1px 4px #000, 1px -1px 4px #000, -1px 1px 4px #000, 1px 1px 4px #000, 2px 2px 5px #000;
 				white-space: nowrap;
 
 				> .segment-timeline__liveline__appendage--piece-countdown__content {
