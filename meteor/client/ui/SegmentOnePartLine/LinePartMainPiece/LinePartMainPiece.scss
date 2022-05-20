@@ -1,0 +1,14 @@
+@import '../../../styles/itemTypeColors';
+
+.segment-opl__main-piece {
+	overflow: hidden;
+
+	@include piece-colors();
+	@include missing-overlay();
+
+	.segment-opl__main-piece__label {
+		font-weight: 400;
+		font-size: 1em;
+		white-space: nowrap;
+	}
+}

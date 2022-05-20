@@ -6,6 +6,7 @@ import { PartExtended } from '../../../lib/Rundown'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
+import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
 import { IOutputLayerUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
 import { LinePartPieceIcons } from './LinePartPieceIcons'
@@ -76,7 +77,9 @@ export const LinePart: React.FC<IProps> = function LinePart({ part, segment, isN
 			<div className="segment-opl__part-header">
 				{isLivePart && <div className="segment-opl__part-marker segment-opl__part-marker--live"></div>}
 				{isNextPart && <div className="segment-opl__part-marker segment-opl__part-marker--next"></div>}
-				<div className="segment-opl__part-duration"></div>
+				<div className="segment-opl__part-duration">
+					<PartDisplayDuration part={part} />
+				</div>
 				<h3 className="segment-opl__part-title">{part.instance.part.title}</h3>
 			</div>
 			<div className="segment-opl__part-timeline">

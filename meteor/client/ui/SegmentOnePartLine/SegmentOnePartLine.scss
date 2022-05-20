@@ -3,24 +3,60 @@
 @import '../../styles/variables';
 @import '../../styles/itemTypeColors';
 
+/** Loans from rundownView.scss, to be refactored to a shared variable file */
 $segment-title-background-color: #4b4b4b;
 
-$part-height: 3em;
+$part-height: 2.5em;
+
+$part-border-margin: 1.5em;
+$part-border-color: #6a6a6a;
+
+$duration-area-width: 4em;
+$duration-area-margin: 0.6em;
 
 .segment-timeline.segment-opl {
 	display: block;
 
 	> .segment-opl__title {
-		display: grid;
-		grid-template-rows: 2.3em;
-		grid-template-columns: [duration] 5em [onAirIn] 7em [title] auto [end];
+		display: flex;
+
+		> .segment-opl__duration,
+		> .segment-opl__timeUntil {
+			box-sizing: border-box;
+			text-align: left;
+			min-width: $duration-area-width;
+			width: fit-content;
+			flex: none;
+			padding: 0.45em $duration-area-margin 0 $duration-area-margin;
+			line-height: 1em;
+
+			> .segment-timeline__duration__label,
+			> .segment-timeline__timeUntil__label {
+				display: block;
+				font-size: 0.5em;
+				text-transform: uppercase;
+				line-height: 1em;
+				color: #a1a1a1;
+				font-weight: 400;
+			}
+		}
+
+		> .segment-opl__duration {
+		}
+
+		> .segment-opl__timeUntil {
+			padding-left: 0;
+		}
 
 		> h2.segment-opl__title__label {
+			flex: 1 1;
 			grid-row: 1;
 			grid-column: title / end;
 			margin: 0;
 			padding: 0;
 			line-height: 1.5em;
+			font-weight: 400;
+			font-size: 1.5em;
 		}
 	}
 
@@ -28,35 +64,73 @@ $part-height: 3em;
 		display: block;
 
 		> .segment-opl__part {
+			position: relative;
 			display: grid;
 			height: $part-height;
 			grid-template-rows: $part-height;
 			grid-template-columns: [header] 15em [timeline] auto [piece-icons] 200px [end];
+
+			@include invalid-overlay();
+			@include floated-overlay();
 
 			> .segment-opl__part-header {
 				display: grid;
 				position: relative;
 				background-color: $segment-title-background-color;
 				grid-column: header / timeline;
-				grid-template-columns: [countdown] 5em [title] auto [end];
+				grid-template-columns: [countdown] $duration-area-width [title] auto [end];
 
 				> .segment-opl__part-marker {
 					position: absolute;
 					height: $part-height;
-					width: 4em;
+					width: $duration-area-width;
 					background: #ff00ff;
+					z-index: 0;
 				}
 
 				> .segment-opl__part-duration {
 					grid-column: countdown / title;
+
+					margin-top: 0.8em;
+
+					font-weight: 400;
+					font-size: 0.9em;
+
+					text-align: center;
+					z-index: 1;
 				}
 
 				> h3.segment-opl__part-title {
-					margin: 0;
+					margin: 0.2em 2em 0.2em 0;
 					padding: 0;
 					line-height: 1em;
 					grid-column: title / end;
+
+					font-weight: 400;
+					font-size: 1em;
+
+					display: flex;
+					align-items: center;
+					z-index: 1;
 				}
+			}
+
+			> .segment-opl__part-timeline {
+				position: relative;
+				margin-top: 0.6em;
+				margin-left: 0.3em;
+			}
+
+			&:not(:last-child)::after {
+				content: ' ';
+				position: absolute;
+				display: block;
+				top: auto;
+				bottom: 0;
+				left: $part-border-margin;
+				right: $part-border-margin;
+				height: 0;
+				border-bottom: 1px dashed $part-border-color;
 			}
 		}
 	}
