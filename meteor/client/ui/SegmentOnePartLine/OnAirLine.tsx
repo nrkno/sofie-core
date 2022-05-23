@@ -14,14 +14,23 @@ import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
 
 interface IProps {
 	partInstance: PartInstanceLimited
+	maxDuration: number
 	timelineBase: number
 }
 
-function timeToPosition(time: number, timelineBase: number): React.CSSProperties {
-	const position = Math.min(1, time / timelineBase)
+function timeToPosition(time: number, timelineBase: number, maxDuration: number): React.CSSProperties {
+	const position = Math.min(1, Math.min(time, maxDuration) / timelineBase)
 
 	return {
 		left: `${position * 100}%`,
+	}
+}
+
+function timeToSize(time: number, timelineBase: number, maxDuration: number): React.CSSProperties {
+	const position = Math.min(1, Math.min(time, maxDuration) / timelineBase)
+
+	return {
+		width: `${position * 100}%`,
 	}
 }
 
@@ -29,7 +38,7 @@ export const OnAirLine = withTiming<IProps, {}>({
 	filter: 'currentTime',
 	dataResolution: TimingDataResolution.High,
 	tickResolution: TimingTickResolution.High,
-})(function OnAirLine({ partInstance, timingDurations, timelineBase }: WithTiming<IProps>) {
+})(function OnAirLine({ partInstance, timingDurations, timelineBase, maxDuration }: WithTiming<IProps>) {
 	const [livePosition, setLivePosition] = useState(0)
 	const { t } = useTranslation()
 
@@ -59,19 +68,30 @@ export const OnAirLine = withTiming<IProps, {}>({
 		setLivePosition(newLivePosition)
 	}, [timingDurations.currentTime])
 
-	const style = useMemo(() => timeToPosition(livePosition, timelineBase), [livePosition, timelineBase])
+	const style = useMemo(
+		() => timeToPosition(livePosition, timelineBase, maxDuration),
+		[livePosition, timelineBase, maxDuration]
+	)
+
+	const shadowStyle = useMemo(
+		() => timeToSize(livePosition, timelineBase, maxDuration),
+		[livePosition, timelineBase, maxDuration]
+	)
 
 	return (
-		<div className="segment-opl__timeline-flag segment-opl__on-air-line" style={style}>
-			<div className="segment-opl__timeline-flag__label">{t('On Air')}</div>
-			<div className="segment-opl__on-air-line__countdown">
-				<AutoNextStatus />
-				<CurrentPartRemaining
-					currentPartInstanceId={partInstance._id}
-					speaking={getAllowSpeaking()}
-					heavyClassName="overtime"
-				/>
+		<>
+			<div className="segment-opl__timeline-shadow" style={shadowStyle}></div>
+			<div className="segment-opl__timeline-flag segment-opl__on-air-line" style={style}>
+				<div className="segment-opl__timeline-flag__label">{t('On Air')}</div>
+				<div className="segment-opl__on-air-line__countdown">
+					<AutoNextStatus />
+					<CurrentPartRemaining
+						currentPartInstanceId={partInstance._id}
+						speaking={getAllowSpeaking()}
+						heavyClassName="overtime"
+					/>
+				</div>
 			</div>
-		</div>
+		</>
 	)
 })

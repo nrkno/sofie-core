@@ -86,6 +86,14 @@ $duration-area-margin: 0.6em;
 					width: $duration-area-width;
 					background: #ff00ff;
 					z-index: 0;
+
+					&--next {
+						background: $general-next-color;
+					}
+
+					&--live {
+						background: $general-live-color;
+					}
 				}
 
 				> .segment-opl__part-duration {
@@ -115,6 +123,12 @@ $duration-area-margin: 0.6em;
 				}
 			}
 
+			&--next {
+				> .segment-opl__part-header > .segment-opl__part-duration {
+					color: #000000;
+				}
+			}
+
 			> .segment-opl__part-timeline {
 				position: relative;
 				margin-top: 0.6em;
@@ -126,6 +140,7 @@ $duration-area-margin: 0.6em;
 					left: 0;
 					bottom: 0.3em;
 					width: 2px;
+					pointer-events: none;
 
 					> .segment-opl__timeline-flag__label {
 						position: absolute;
@@ -221,6 +236,16 @@ $duration-area-margin: 0.6em;
 							margin-right: 0.3em;
 						}
 					}
+				}
+
+				> .segment-opl__timeline-shadow {
+					display: block;
+					position: absolute;
+					top: -4px;
+					left: 0;
+					bottom: 0;
+					background: rgba(0, 0, 0, 0.7);
+					pointer-events: none;
 				}
 			}
 

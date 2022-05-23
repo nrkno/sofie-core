@@ -7,28 +7,43 @@ interface IProps {
 	piece: PieceExtended
 	timelineBase: number
 	partDuration: number
+	capToPartDuration: boolean
 }
 
-function widthInBase(piece: PieceExtended, partDuration: number, timelineBase: number): string {
-	const pieceMaxDuration = Math.max(
-		piece.renderedDuration ?? partDuration,
-		piece.instance.piece.content.sourceDuration ?? 0
-	)
+function widthInBase(
+	piece: PieceExtended,
+	partDuration: number,
+	timelineBase: number,
+	capToPartDuration: boolean
+): string {
+	const pieceMaxDuration = capToPartDuration
+		? Math.min(piece.renderedDuration ?? partDuration, partDuration)
+		: Math.max(piece.renderedDuration ?? partDuration, piece.instance.piece.content.sourceDuration ?? 0)
 	const size = Math.min(1, pieceMaxDuration / timelineBase)
 	return `${size * 100}%`
 }
 
-export const LinePartMainPiece: React.FC<IProps> = function LinePartMainPiece({ piece, partDuration, timelineBase }) {
+export const LinePartMainPiece: React.FC<IProps> = function LinePartMainPiece({
+	piece,
+	partDuration,
+	timelineBase,
+	capToPartDuration,
+}) {
 	const typeClass = piece?.sourceLayer?.type ? RundownUtils.getSourceLayerClassName(piece?.sourceLayer?.type) : ''
 
 	const pieceStyle = useMemo<CSSProperties>(() => {
 		return {
-			width: widthInBase(piece, partDuration, timelineBase),
+			// TODO: handle piece.enable.start
+			width: widthInBase(piece, partDuration, timelineBase, capToPartDuration),
 		}
-	}, [piece, partDuration, timelineBase])
+	}, [piece, partDuration, timelineBase, capToPartDuration])
 
 	return (
-		<div className={classNames('segment-opl__main-piece', typeClass)} style={pieceStyle}>
+		<div
+			className={classNames('segment-opl__main-piece', typeClass)}
+			style={pieceStyle}
+			data-obj-id={piece.instance._id}
+		>
 			<div className="segment-opl__main-piece__label">{piece.instance.piece.name}</div>
 		</div>
 	)

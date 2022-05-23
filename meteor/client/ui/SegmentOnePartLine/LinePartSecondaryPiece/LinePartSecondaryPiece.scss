@@ -1,0 +1,12 @@
+@import '../../../styles/itemTypeColors';
+
+.segment-opl__secondary-piece {
+	position: absolute;
+	overflow: hidden;
+
+	height: 2px;
+	top: -3px;
+
+	@include piece-colors();
+	@include missing-overlay();
+}

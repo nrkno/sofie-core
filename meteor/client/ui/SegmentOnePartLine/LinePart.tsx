@@ -72,7 +72,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 					'segment-opl__part--invalid': part.instance.part.invalid,
 				}),
 				//@ts-ignore A Data attribue is perfectly fine
-				'data-layer-id': part.instance._id,
+				'data-part-instance-id': part.instance._id,
 				id: SegmentTimelinePartElementId + part.instance._id,
 				role: 'region',
 				'aria-roledescription': 'part',
@@ -85,7 +85,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				{isLivePart && <div className="segment-opl__part-marker segment-opl__part-marker--live"></div>}
 				{isNextPart && <div className="segment-opl__part-marker segment-opl__part-marker--next"></div>}
 				<div className="segment-opl__part-duration">
-					<PartDisplayDuration part={part} />
+					<PartDisplayDuration part={part} fixed={true} />
 				</div>
 				<h3 className="segment-opl__part-title">{part.instance.part.title}</h3>
 			</div>

@@ -135,6 +135,7 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 
 				'time-of-day-countdowns': useTimeOfDayCountdowns,
 			})}
+			data-segment-id={props.segment._id}
 			ref={combinedRef}
 		>
 			<StudioContext.Provider value={props.studio}>

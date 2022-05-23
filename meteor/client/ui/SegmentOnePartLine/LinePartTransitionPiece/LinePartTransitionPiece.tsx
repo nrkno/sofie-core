@@ -6,5 +6,9 @@ interface IProps {
 }
 
 export const LinePartTransitionPiece: React.FC<IProps> = function LinePartTransitionPiece({ piece }) {
-	return <div className="segment-opl__transition-piece">{piece.instance.piece.name}</div>
+	return (
+		<div className="segment-opl__transition-piece" data-obj-id={piece.instance._id}>
+			{piece.instance.piece.name}
+		</div>
+	)
 }
