@@ -9,7 +9,7 @@ $segment-title-background-color: #4b4b4b;
 $part-height: 2.5em;
 
 $part-border-margin: 1.5em;
-$part-border-color: #6a6a6a;
+$part-border-color: #a7a7a760;
 
 $duration-area-width: 4em;
 $duration-area-margin: 0.6em;
@@ -247,6 +247,10 @@ $duration-area-margin: 0.6em;
 					background: rgba(0, 0, 0, 0.7);
 					pointer-events: none;
 				}
+			}
+
+			> .segment-opl__piece-indicators {
+				background: #141414;
 			}
 
 			&:not(:last-child)::after {

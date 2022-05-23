@@ -2,25 +2,25 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import classNames from 'classnames'
 import React, { useCallback, useState } from 'react'
-import { PartExtended } from '../../../lib/Rundown'
+import { ISourceLayerExtended, PartExtended } from '../../../lib/Rundown'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
 import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
-import { IOutputLayerUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
+import { SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
-import { LinePartPieceIcons } from './LinePartPieceIcons'
+import { LinePartPieceIndicators } from './LinePartPieceIndicators'
 import { LinePartTimeline } from './LinePartTimeline'
 
 interface IProps {
 	segment: SegmentUi
 	part: PartExtended
-	outputLayers: Record<string, IOutputLayerUi>
 	isLivePart: boolean
 	isNextPart: boolean
 	// isLastSegment?: boolean
 	// isLastPartInSegment?: boolean
 	// isPlaylistLooping?: boolean
+	indicatorColumns: Record<string, ISourceLayerExtended[]>
 	doesPlaylistHaveNextPart?: boolean
 	inHold: boolean
 	currentPartWillAutonext: boolean
@@ -36,6 +36,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 	isNextPart,
 	isLivePart,
 	currentPartWillAutonext,
+	indicatorColumns,
 	onContextMenu,
 }) {
 	const isFinished = (part.instance.timings?.stoppedPlayback ?? part.instance.timings?.takeOut) !== undefined
@@ -96,9 +97,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				isFinished={isFinished}
 				currentPartWillAutonext={currentPartWillAutonext}
 			/>
-			<div className="segment-opl__piece-icons">
-				<LinePartPieceIcons />
-			</div>
+			<LinePartPieceIndicators pieces={part.pieces} indicatorColumns={indicatorColumns} />
 		</ContextMenuTrigger>
 	)
 }

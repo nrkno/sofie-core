@@ -1,4 +1,4 @@
-import React, { ReactNode, useRef, useState } from 'react'
+import React, { ReactNode, useMemo, useRef, useState } from 'react'
 import classNames from 'classnames'
 import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { RundownHoldState, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -16,6 +16,8 @@ import { useTranslation } from 'react-i18next'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { LinePart } from './LinePart'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ISourceLayerExtended } from '../../../lib/Rundown'
+import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -39,6 +41,17 @@ interface IProps {
 	showCountdownToSegment: boolean
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 }
+
+// TODO: This is a horribly wonky hack for the prototype
+const BANNED_COLUMN_NAMES = new Set(['Super'])
+
+const COLUMN_SUPPORTED_LAYER_TYPES: Set<SourceLayerType> = new Set([
+	SourceLayerType.AUDIO,
+	SourceLayerType.LOWER_THIRD,
+	// SourceLayerType.METADATA,
+	SourceLayerType.SCRIPT,
+	// SourceLayerType.UNKNOWN,
+])
 
 const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(function SegmentOnePartLine(props, ref) {
 	const innerRef = useRef<HTMLDivElement>(null)
@@ -75,6 +88,23 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 			newUseTimeOfDayCountdowns
 		)
 	}
+
+	const indicatorColumns = useMemo(() => {
+		const sourceColumns: Record<string, ISourceLayerExtended[]> = {}
+		Object.values(props.segment.sourceLayers).forEach((sourceLayer) => {
+			if (sourceLayer.isHidden) return
+			// TODO: this is kind-of wonky, the selector on what goes into the columns should be better
+			if (!COLUMN_SUPPORTED_LAYER_TYPES.has(sourceLayer.type)) return
+			if (BANNED_COLUMN_NAMES.has(sourceLayer.name)) return
+			let thisSourceColumn = sourceColumns[sourceLayer.name]
+			if (!thisSourceColumn) {
+				sourceColumns[sourceLayer.name] = []
+				thisSourceColumn = sourceColumns[sourceLayer.name]
+			}
+			thisSourceColumn.push(sourceLayer)
+		})
+		return sourceColumns
+	}, [props.segment.sourceLayers])
 
 	let countdownToPartId: PartId | undefined = undefined
 	if (!props.isLiveSegment) {
@@ -113,7 +143,7 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 				displayLiveLineCounter={false}
 				inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
 				currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}
-				outputLayers={props.segment.outputLayers}
+				indicatorColumns={indicatorColumns}
 				doesPlaylistHaveNextPart={playlistHasNextPart}
 			/>
 		)
