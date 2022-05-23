@@ -25,6 +25,7 @@ export const LinePartSecondaryPiece: React.FC<IProps> = function LinePartSeconda
 	const pieceStyle = useMemo<CSSProperties>(() => {
 		return {
 			width: widthInBase(piece, partDuration, timelineBase),
+			left: widthInBase(piece, partDuration, timelineBase),
 		}
 	}, [piece, partDuration, timelineBase])
 

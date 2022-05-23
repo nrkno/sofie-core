@@ -17,8 +17,14 @@ function widthInBase(
 	capToPartDuration: boolean
 ): string {
 	const pieceMaxDuration = capToPartDuration
-		? Math.min(piece.renderedDuration ?? partDuration, partDuration)
-		: Math.max(piece.renderedDuration ?? partDuration, piece.instance.piece.content.sourceDuration ?? 0)
+		? // capToPartDuration is something that can be used when the part is Auto and there is no chance of the Piece
+		  // being extended
+		  Math.min(piece.renderedDuration ?? partDuration, partDuration)
+		: Math.max(
+				// renderedDuration can be null. If there is a sourceDuration, use that, if not, use timelineBase
+				piece.renderedDuration ?? (piece.instance.piece.content.sourceDuration ? 0 : timelineBase),
+				piece.instance.piece.content.sourceDuration ?? 0
+		  )
 	const size = Math.min(1, pieceMaxDuration / timelineBase)
 	return `${size * 100}%`
 }
