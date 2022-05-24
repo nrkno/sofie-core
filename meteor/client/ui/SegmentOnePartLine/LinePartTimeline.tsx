@@ -35,30 +35,24 @@ function findMainPiece(pieces: PieceExtended[]) {
 }
 
 function findTransitionPiece(pieces: PieceExtended[]) {
-	return pieces
-		.slice()
-		.reverse()
-		.find((piece) => {
-			if (piece.sourceLayer?.type === SourceLayerType.TRANSITION) {
-				return true
-			}
-		})
+	return pieces.slice().find((piece) => {
+		if (piece.sourceLayer?.type === SourceLayerType.TRANSITION) {
+			return true
+		}
+	})
 }
 
 function findTimedGraphics(pieces: PieceExtended[]) {
-	return pieces
-		.slice()
-		.reverse()
-		.filter((piece) => {
-			if (
-				piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD &&
-				!piece.sourceLayer?.isHidden &&
-				piece.instance.piece.lifespan === PieceLifespan.WithinPart &&
-				piece.instance.piece.enable.duration
-			) {
-				return true
-			}
-		})
+	return pieces.slice().filter((piece) => {
+		if (
+			piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD &&
+			!piece.sourceLayer?.isHidden &&
+			piece.instance.piece.lifespan === PieceLifespan.WithinPart &&
+			piece.instance.piece.enable.duration
+		) {
+			return true
+		}
+	})
 }
 
 export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({

@@ -9,8 +9,8 @@ interface IProps {
 	partDuration: number
 }
 
-function widthInBase(piece: PieceExtended, partDuration: number, timelineBase: number): string {
-	const pieceMaxDuration = Math.min(piece.renderedDuration ?? partDuration, partDuration)
+function timeInBase(time: number, partDuration: number, timelineBase: number): string {
+	const pieceMaxDuration = Math.min(time, partDuration)
 	const size = Math.min(1, pieceMaxDuration / timelineBase)
 	return `${size * 100}%`
 }
@@ -24,8 +24,8 @@ export const LinePartSecondaryPiece: React.FC<IProps> = function LinePartSeconda
 
 	const pieceStyle = useMemo<CSSProperties>(() => {
 		return {
-			width: widthInBase(piece, partDuration, timelineBase),
-			left: widthInBase(piece, partDuration, timelineBase),
+			width: timeInBase(piece.renderedDuration ?? partDuration, partDuration, timelineBase),
+			left: timeInBase(piece.renderedInPoint ?? 0, partDuration, timelineBase),
 		}
 	}, [piece, partDuration, timelineBase])
 
@@ -35,6 +35,7 @@ export const LinePartSecondaryPiece: React.FC<IProps> = function LinePartSeconda
 			style={pieceStyle}
 			data-duraton={piece.renderedDuration}
 			data-obj-id={piece.instance._id}
+			data-label={piece.instance.piece.name}
 		></div>
 	)
 }
