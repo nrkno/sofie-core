@@ -309,21 +309,9 @@ async function notifyCurrentPlayingPartMOS(
 	newPlayingPartExternalId: string | null
 ): Promise<void> {
 	if (oldPlayingPartExternalId !== newPlayingPartExternalId) {
-		// Note: We send the PLAY first, since that seems to give us _slightly_ better responsiveness in ENPS.
-
-		if (newPlayingPartExternalId) {
-			try {
-				await setStoryStatusMOS(
-					context,
-					peripheralDevice._id,
-					rundownExternalId,
-					newPlayingPartExternalId,
-					MOS.IMOSObjectStatus.PLAY
-				)
-			} catch (error) {
-				logger.error(`Error in setStoryStatus PLAY: ${stringifyError(error)}`)
-			}
-		}
+		// Note: In an older version of sofie, we sent the STOP command before sending the PLAY command,
+		// since tests showed slightly better performance when doing so.
+		// However, this is not compatible with ENPS anymore, so we now send the PLAY command first.
 
 		if (oldPlayingPartExternalId) {
 			try {
@@ -336,6 +324,20 @@ async function notifyCurrentPlayingPartMOS(
 				)
 			} catch (error) {
 				logger.error(`Error in setStoryStatus STOP: ${stringifyError(error)}`)
+			}
+		}
+
+		if (newPlayingPartExternalId) {
+			try {
+				await setStoryStatusMOS(
+					context,
+					peripheralDevice._id,
+					rundownExternalId,
+					newPlayingPartExternalId,
+					MOS.IMOSObjectStatus.PLAY
+				)
+			} catch (error) {
+				logger.error(`Error in setStoryStatus PLAY: ${stringifyError(error)}`)
 			}
 		}
 	}
