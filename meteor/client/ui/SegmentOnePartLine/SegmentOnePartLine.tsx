@@ -43,7 +43,7 @@ interface IProps {
 }
 
 // TODO: This is a horribly wonky hack for the prototype
-const BANNED_COLUMN_NAMES = new Set(['Super'])
+const BANNED_COLUMN_NAMES = new Set()
 
 const COLUMN_SUPPORTED_LAYER_TYPES: Set<SourceLayerType> = new Set([
 	SourceLayerType.AUDIO,
