@@ -98,7 +98,7 @@ const JSONStringifyCircular = () => {
 	return stringifyFixer
 }
 // Setup logging --------------------------------------
-const { splat, combine, printf } = Winston.format
+const { printf } = Winston.format
 const myLogFormat = printf((obj) => {
 	return JSON.stringify(obj, JSONStringifyCircular())
 })
@@ -115,7 +115,7 @@ if (logPath) {
 		handleExceptions: true,
 		handleRejections: true,
 		filename: logPath,
-		format: combine(splat(), myLogFormat),
+		format: myLogFormat,
 	})
 
 	logger = Winston.createLogger({
@@ -149,7 +149,7 @@ if (logPath) {
 		level: 'debug',
 		handleExceptions: true,
 		handleRejections: true,
-		format: combine(splat(), myLogFormat),
+		format: myLogFormat,
 	})
 
 	logger = Winston.createLogger({
