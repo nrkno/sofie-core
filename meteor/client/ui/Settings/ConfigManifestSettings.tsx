@@ -106,7 +106,6 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 					}
 				/>
 			)
-		case ConfigManifestEntryType.NUMBER:
 		case ConfigManifestEntryType.INT:
 			return (
 				<EditAttribute
@@ -412,7 +411,6 @@ export class ConfigManifestTable<
 						} else {
 							return (a as string).localeCompare(b as string)
 						}
-					case ConfigManifestEntryType.NUMBER:
 					case ConfigManifestEntryType.INT:
 					case ConfigManifestEntryType.FLOAT:
 						return (a as number) - (b as number)
@@ -438,7 +436,6 @@ export class ConfigManifestTable<
 										<th key={col.id}>
 											<span title={col.description}>{col.name} </span>
 											{(col.type === ConfigManifestEntryType.STRING ||
-												col.type === ConfigManifestEntryType.NUMBER ||
 												col.type === ConfigManifestEntryType.INT ||
 												col.type === ConfigManifestEntryType.FLOAT) && (
 												<button
@@ -682,7 +679,6 @@ export class ConfigManifestSettings<
 				) : (
 					value.toString()
 				)
-			case ConfigManifestEntryType.NUMBER:
 			case ConfigManifestEntryType.INT:
 				return _.isNumber(value) && item.zeroBased ? (value + 1).toString() : value.toString()
 			default:

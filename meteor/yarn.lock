@@ -1147,13 +1147,13 @@
   version "0.0.0"
   uid ""
 
-"@sofie-automation/code-standard-preset@~2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@sofie-automation/code-standard-preset/-/code-standard-preset-2.0.1.tgz#0b0a4e05fb24ddd44303505cf184876ae7e941be"
-  integrity sha512-VasJgINuSyJ5nGl+P2FxNDpZalW17urgdFprWlag2Xxl9KDR9RrkHe53xeiCE2+ZClSBNSeMCg1xtsFUkYA9gg==
+"@sofie-automation/code-standard-preset@~2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@sofie-automation/code-standard-preset/-/code-standard-preset-2.0.2.tgz#e2bff6e75bd7cd8638fc624a40aea087fddb3a7b"
+  integrity sha512-ksQ8feMBxDVjZACMQhP5Irebjwde6OaS9mAASicS2MNs9VEaltl4sgwlbYIL5jkxISrdzvLiYk2PtdWm4rJHew==
   dependencies:
-    "@typescript-eslint/eslint-plugin" "^5.12.0"
-    "@typescript-eslint/parser" "^5.12.0"
+    "@typescript-eslint/eslint-plugin" "^5.24.0"
+    "@typescript-eslint/parser" "^5.24.0"
     eslint "^8.9.0"
     eslint-config-prettier "^8.3.0"
     eslint-plugin-jest "^26.1.1"
@@ -1517,7 +1517,7 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@typescript-eslint/eslint-plugin@^5.12.0":
+"@typescript-eslint/eslint-plugin@^5.24.0":
   version "5.25.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-5.25.0.tgz#e8ce050990e4d36cc200f2de71ca0d3eb5e77a31"
   integrity sha512-icYrFnUzvm+LhW0QeJNKkezBu6tJs9p/53dpPLFH8zoM9w1tfaKzVurkPotEpAqQ8Vf8uaFyL5jHd0Vs6Z0ZQg==
@@ -1532,7 +1532,7 @@
     semver "^7.3.7"
     tsutils "^3.21.0"
 
-"@typescript-eslint/parser@^5.12.0":
+"@typescript-eslint/parser@^5.24.0":
   version "5.25.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/parser/-/parser-5.25.0.tgz#fb533487147b4b9efd999a4d2da0b6c263b64f7f"
   integrity sha512-r3hwrOWYbNKP1nTcIw/aZoH+8bBnh/Lh1iDHoFpyG4DnCpvEdctrSl6LOo19fZbzypjQMHdajolxs6VpYoChgA==

@@ -113,7 +113,7 @@
 	"devDependencies": {
 		"@babel/core": "^7.17.12",
 		"@babel/plugin-transform-modules-commonjs": "^7.17.12",
-		"@sofie-automation/code-standard-preset": "~2.0.1",
+		"@sofie-automation/code-standard-preset": "~2.0.2",
 		"@types/app-root-path": "^1.2.4",
 		"@types/body-parser": "^1.19.2",
 		"@types/classnames": "^2.3.1",

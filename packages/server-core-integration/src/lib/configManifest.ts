@@ -45,8 +45,6 @@ export enum ConfigManifestEntryType {
 	STRING = 'string',
 	MULTILINE_STRING = 'multiline_string',
 	BOOLEAN = 'boolean',
-	/** @deprecated use INT/FLOAT instead */
-	NUMBER = 'float',
 	FLOAT = 'float',
 	INT = 'int',
 	TABLE = 'table',

@@ -156,7 +156,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.faderThreshold',
 			name: 'Fader cutoff value',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 			placeholder: '-60',
 		},
 	],
@@ -202,7 +202,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 					{
 						id: 'temporalPriority',
 						name: 'Temporal Priority',
-						type: ConfigManifestEntryType.NUMBER,
+						type: ConfigManifestEntryType.INT,
 					},
 					{
 						id: 'queueId',
@@ -242,7 +242,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 					{
 						id: 'temporalPriority',
 						name: 'Temporal Priority',
-						type: ConfigManifestEntryType.NUMBER,
+						type: ConfigManifestEntryType.INT,
 					},
 					{
 						id: 'queueId',
@@ -259,7 +259,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.minRecordingTime',
 			name: 'Minimum recording time',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 	],
 	[TSRDeviceType.PHAROS]: [
@@ -297,7 +297,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.expectedHttpResponse',
 			name: 'Expected HTTP Response',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 		{
 			id: 'options.keyword',
@@ -307,7 +307,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.interval',
 			name: 'Interval',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 	],
 	[TSRDeviceType.SISYFOS]: [...PLAYOUT_SUBDEVICE_COMMON, ...PLAYOUT_SUBDEVICE_HOST_PORT],
@@ -336,7 +336,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.serverId',
 			name: 'Quantel Server ID',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 		{
 			id: 'options.allowCloneClips',
@@ -350,12 +350,12 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.restPort',
 			name: '(Optional) REST port',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 		{
 			id: 'options.wsPort',
 			name: '(Optional) Websocket port',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 		{
 			id: 'options.engineRestPort',
@@ -505,7 +505,7 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 		{
 			id: 'options.retryInterval',
 			name: 'Media retry interval (ms), -1 disables, 0 default',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 	],
 	[TSRDeviceType.HYPERDECK]: [
@@ -537,7 +537,7 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 		},
 		{
 			id: 'priority',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 			name: 'Priority',
 		},
 	],
