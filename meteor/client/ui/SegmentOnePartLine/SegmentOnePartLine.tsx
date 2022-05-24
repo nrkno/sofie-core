@@ -140,6 +140,7 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 				segment={props.segment}
 				isLivePart={isLivePart}
 				isNextPart={isNextPart}
+				hasAlreadyPlayed={!!part.instance.timings?.stoppedPlayback || !!part.instance.timings?.takeOut}
 				displayLiveLineCounter={false}
 				inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
 				currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}

@@ -17,6 +17,7 @@ interface IProps {
 	part: PartExtended
 	isLivePart: boolean
 	isNextPart: boolean
+	hasAlreadyPlayed: boolean
 	// isLastSegment?: boolean
 	// isLastPartInSegment?: boolean
 	// isPlaylistLooping?: boolean
@@ -35,6 +36,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 	segment,
 	isNextPart,
 	isLivePart,
+	hasAlreadyPlayed,
 	currentPartWillAutonext,
 	indicatorColumns,
 	onContextMenu,
@@ -70,6 +72,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 					'invert-flash': highlight,
 					'segment-opl__part--next': isNextPart,
 					'segment-opl__part--live': isLivePart,
+					'segment-opl__part--has-played': hasAlreadyPlayed,
 					'segment-opl__part--invalid': part.instance.part.invalid,
 				}),
 				//@ts-ignore A Data attribue is perfectly fine

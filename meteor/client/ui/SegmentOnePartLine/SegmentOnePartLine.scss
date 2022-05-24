@@ -130,6 +130,21 @@ $duration-area-margin: 0.6em;
 				}
 			}
 
+			&--has-played {
+				&::before {
+					content: ' ';
+					display: block;
+					position: absolute;
+					top: 0;
+					left: 0;
+					bottom: 0;
+					right: 0;
+					background: rgba(0, 0, 0, 0.7);
+					z-index: 2;
+					pointer-events: none;
+				}
+			}
+
 			> .segment-opl__part-timeline {
 				position: relative;
 				margin-top: 0.6em;
