@@ -463,6 +463,12 @@ export class MosHandler {
 
 		deviceOptions = JSON.parse(JSON.stringify(deviceOptions)) // deep clone
 
+		// Note: This is useful to do when debugging locally, and running a mos-server on localhost:
+		// deviceOptions.primary.ports = {
+		// 	lower: 11540,
+		// 	upper: 11541,
+		// 	query: 11542,
+		// }
 		deviceOptions.primary.timeout = deviceOptions.primary.timeout || DEFAULT_MOS_TIMEOUT_TIME
 
 		const mosDevice: MosDevice = await this.mos.connect(deviceOptions)
