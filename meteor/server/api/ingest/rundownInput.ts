@@ -12,7 +12,6 @@ import { MethodContext } from '../../../lib/api/methods'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
 import { Parts } from '../../../lib/collections/Parts'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace RundownInput {
@@ -364,7 +363,7 @@ async function listIngestRundowns(peripheralDevice: PeripheralDevice): Promise<s
 // hackGetMediaObjectDuration stuff
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		MediaObjects.find({}, { fields: { _id: 1, mediaId: 1, mediainfo: 1 } }).observe({
+		MediaObjects.find({}, { fields: { _id: 1, mediaId: 1, mediainfo: 1, studioId: 1 } }).observe({
 			added: onMediaObjectChanged,
 			changed: onMediaObjectChanged,
 		})
@@ -378,7 +377,7 @@ function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObjec
 			oldDocument.mediainfo?.format?.duration !== newDocument.mediainfo.format.duration)
 	) {
 		const segmentsToUpdate = new Map<SegmentId, RundownId>()
-		const rundownIdsInStudio = Rundowns.find({ studio: newDocument.studioId }, { fields: { _id: 1 } })
+		const rundownIdsInStudio = Rundowns.find({ studioId: newDocument.studioId }, { fields: { _id: 1 } })
 			.fetch()
 			.map((rundown) => rundown._id)
 		Parts.find({
@@ -397,11 +396,13 @@ function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObjec
 	}
 }
 async function updateSegmentFromCache(studioId: StudioId, rundownId: RundownId, segmentId: SegmentId) {
-	const rundown = Rundowns.findOne({ _id: rundownId })
+	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(`Could not find rundown ${rundownId} in updateSegmentFromCache`)
+	const segment = Segments.findOne(segmentId)
+	if (!segment) throw new Meteor.Error(`Could not find segment ${segmentId} in updateSegmentFromCache`)
 
-	await runIngestOperation(studioId, IngestJobs.ReloadSegment, {
-		segmentExternalId: unprotectString(segmentId),
+	await runIngestOperation(studioId, IngestJobs.RegenerateSegment, {
+		segmentExternalId: segment.externalId,
 		rundownExternalId: rundown.externalId,
 		peripheralDeviceId: null,
 	})

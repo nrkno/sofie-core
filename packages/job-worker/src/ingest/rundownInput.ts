@@ -28,7 +28,6 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import {
 	IngestRegenerateRundownProps,
 	IngestRegenerateSegmentProps,
-	IngestReloadSegmentProps,
 	IngestRemovePartProps,
 	IngestRemoveRundownProps,
 	IngestRemoveSegmentProps,
@@ -380,24 +379,6 @@ export async function handleUpdatedSegment(context: JobContext, data: IngestUpda
 			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === segmentExternalId)
 			if (!ingestSegment) throw new Error(`IngestSegment "${segmentExternalId}" is missing!`)
 			return updateSegmentFromIngestData(context, cache, ingestSegment, data.isCreateAction)
-		}
-	)
-}
-
-export async function handleReloadSegment(context: JobContext, data: IngestReloadSegmentProps): Promise<void> {
-	return runIngestJob(
-		context,
-		data,
-		(rundown) => {
-			if (!rundown) {
-				throw new Error(`Rundown "${data.rundownExternalId}" not found`)
-			}
-			return rundown
-		},
-		async (context, cache, ingestRundown) => {
-			const ingestSegment = ingestRundown?.segments?.find((s) => s.externalId === data.segmentExternalId)
-			if (!ingestSegment) throw new Error(`IngestSegment "${data.segmentExternalId}" is missing!`)
-			return updateSegmentFromIngestData(context, cache, ingestSegment, false)
 		}
 	)
 }
