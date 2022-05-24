@@ -62,30 +62,6 @@ export function VTThumbnailRenderer({
 				studio={studio}
 				hideHoverscrubPreview={true}
 			/>
-			<div className="segment-storyboard__thumbnail__image-container">
-				{thumbnailUrl ? (
-					hovering && previewUrl ? (
-						<VideoPreviewPlayer
-							itemDuration={vtContent?.sourceDuration || 0}
-							loop={vtContent?.loop || false}
-							previewUrl={previewUrl}
-							seek={vtContent?.seek || 0}
-							timePosition={hoverScrubTimePosition}
-							studioSettings={studio.settings}
-						/>
-					) : (
-						<img src={thumbnailUrl} />
-					)
-				) : (
-					<div className="segment-storyboard__thumbnail__icon">
-						<span className="fa-layers fa-fw">
-							<FontAwesomeIcon icon={faFilm} />
-							<FontAwesomeIcon icon={faSlash} />
-						</span>
-					</div>
-				)}
-			</div>
-
 			<RundownTimingConsumer
 				filter={(timingContext) => ({
 					partPlayed: timingContext.partPlayed && timingContext.partPlayed[unprotectString(partId)],
