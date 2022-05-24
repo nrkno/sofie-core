@@ -68,7 +68,7 @@ $duration-area-margin: 0.6em;
 			display: grid;
 			height: $part-height;
 			grid-template-rows: $part-height;
-			grid-template-columns: [header] 15em [timeline] auto [piece-icons] 200px [end];
+			grid-template-columns: [header] 15em [timeline] auto [piece-icons] 300px [end];
 
 			@include invalid-overlay();
 			@include floated-overlay();
@@ -78,6 +78,7 @@ $duration-area-margin: 0.6em;
 				position: relative;
 				background-color: $segment-title-background-color;
 				grid-column: header / timeline;
+				grid-row: 1;
 				grid-template-columns: [countdown] $duration-area-width [title] auto [end];
 
 				> .segment-opl__part-marker {
@@ -133,6 +134,8 @@ $duration-area-margin: 0.6em;
 				position: relative;
 				margin-top: 0.6em;
 				margin-left: 0.3em;
+				grid-column: timeline / piece-icons;
+				grid-row: 1;
 
 				> .segment-opl__timeline-flag {
 					position: absolute;
@@ -247,10 +250,47 @@ $duration-area-margin: 0.6em;
 					background: rgba(0, 0, 0, 0.7);
 					pointer-events: none;
 				}
+
+				> .segment-opl__overtime-shadow {
+					display: block;
+					position: absolute;
+					top: -4px;
+					left: 0;
+					right: 0;
+					bottom: 0.7em;
+					background: rgba(0, 0, 0, 0.7);
+					pointer-events: none;
+					border-left: 2px solid $part-start-color;
+
+					> .segment-opl__overtime-timer {
+						display: block;
+						margin-top: 0.2em;
+						font-weight: 500;
+						font-size: 0.8em;
+						margin-top: 0.7em;
+						margin-left: 0.3em;
+						color: #ffffff;
+						text-shadow: -1px -1px 1px #000, 1px -1px 1px #000, -1px 1px 1px #000, 1px 1px 1px #000, 2px 2px 3px #000;
+					}
+				}
+
+				> .segment-opl__freeze-marker {
+					position: absolute;
+					top: 0.1em;
+					margin-left: 0.3em;
+				}
 			}
 
 			> .segment-opl__piece-indicators {
 				background: #141414;
+				display: flex;
+				padding-top: 0.6em;
+				padding-left: 4em;
+				padding-right: 0.5em;
+				justify-content: flex-end;
+
+				grid-column: piece-icons / end;
+				grid-row: 1;
 			}
 
 			&:not(:last-child)::after {

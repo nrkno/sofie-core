@@ -1,7 +1,10 @@
+import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
 import React, { CSSProperties, useMemo } from 'react'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { RundownUtils } from '../../../lib/rundown'
+// TODO: Move to a shared lib file
+import { getSplitItems } from '../../SegmentStoryboard/utils/getSplitItems'
 
 interface IProps {
 	piece: PieceExtended
@@ -35,7 +38,7 @@ export const LinePartMainPiece: React.FC<IProps> = function LinePartMainPiece({
 	timelineBase,
 	capToPartDuration,
 }) {
-	const typeClass = piece?.sourceLayer?.type ? RundownUtils.getSourceLayerClassName(piece?.sourceLayer?.type) : ''
+	const typeClass = piece.sourceLayer?.type ? RundownUtils.getSourceLayerClassName(piece?.sourceLayer?.type) : ''
 
 	const pieceStyle = useMemo<CSSProperties>(() => {
 		return {
@@ -50,6 +53,9 @@ export const LinePartMainPiece: React.FC<IProps> = function LinePartMainPiece({
 			style={pieceStyle}
 			data-obj-id={piece.instance._id}
 		>
+			{piece.sourceLayer?.type === SourceLayerType.SPLITS && (
+				<div className="segment-opl__main-piece__bkg">{getSplitItems(piece, 'segment-opl__main-piece__item')}</div>
+			)}
 			<div className="segment-opl__main-piece__label">{piece.instance.piece.name}</div>
 		</div>
 	)

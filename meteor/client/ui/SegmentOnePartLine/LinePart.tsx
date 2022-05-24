@@ -90,6 +90,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				</div>
 				<h3 className="segment-opl__part-title">{part.instance.part.title}</h3>
 			</div>
+			<LinePartPieceIndicators pieces={part.pieces} indicatorColumns={indicatorColumns} />
 			<LinePartTimeline
 				part={part}
 				isLive={isLivePart}
@@ -97,7 +98,6 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				isFinished={isFinished}
 				currentPartWillAutonext={currentPartWillAutonext}
 			/>
-			<LinePartPieceIndicators pieces={part.pieces} indicatorColumns={indicatorColumns} />
 		</ContextMenuTrigger>
 	)
 }

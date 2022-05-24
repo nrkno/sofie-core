@@ -1,0 +1,22 @@
+@import '../../../styles/itemTypeColors';
+
+.segment-opl__piece-indicator {
+	flex: 0 1 1.3em;
+	width: 1.3em;
+	height: 1.3em;
+	line-height: 1.3em;
+	font-size: 1em;
+	text-align: center;
+	overflow: hidden;
+	border-radius: 3px;
+	margin-left: 0.2em;
+	box-sizing: border-box;
+	font-style: italic;
+	font-weight: 400;
+	text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
+
+	background: #33333333;
+
+	@include piece-colors();
+	@include missing-overlay();
+}

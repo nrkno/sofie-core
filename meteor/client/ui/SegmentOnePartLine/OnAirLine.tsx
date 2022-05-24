@@ -18,20 +18,10 @@ interface IProps {
 	timelineBase: number
 }
 
-function timeToPosition(time: number, timelineBase: number, maxDuration: number): React.CSSProperties {
+function timeToPosition(time: number, timelineBase: number, maxDuration: number): string {
 	const position = Math.min(1, Math.min(time, maxDuration) / timelineBase)
 
-	return {
-		left: `${position * 100}%`,
-	}
-}
-
-function timeToSize(time: number, timelineBase: number, maxDuration: number): React.CSSProperties {
-	const position = Math.min(1, Math.min(time, maxDuration) / timelineBase)
-
-	return {
-		width: `${position * 100}%`,
-	}
+	return `${position * 100}%`
 }
 
 export const OnAirLine = withTiming<IProps, {}>({
@@ -68,13 +58,17 @@ export const OnAirLine = withTiming<IProps, {}>({
 		setLivePosition(newLivePosition)
 	}, [timingDurations.currentTime])
 
-	const style = useMemo(
-		() => timeToPosition(livePosition, timelineBase, maxDuration),
+	const style = useMemo<React.CSSProperties>(
+		() => ({
+			left: timeToPosition(livePosition, timelineBase, maxDuration),
+		}),
 		[livePosition, timelineBase, maxDuration]
 	)
 
-	const shadowStyle = useMemo(
-		() => timeToSize(livePosition, timelineBase, maxDuration),
+	const shadowStyle = useMemo<React.CSSProperties>(
+		() => ({
+			width: timeToPosition(livePosition, timelineBase, maxDuration),
+		}),
 		[livePosition, timelineBase, maxDuration]
 	)
 

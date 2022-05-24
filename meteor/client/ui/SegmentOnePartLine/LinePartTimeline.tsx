@@ -8,6 +8,7 @@ import { TakeLine } from './TakeLine'
 import { LinePartTransitionPiece } from './LinePartTransitionPiece/LinePartTransitionPiece'
 import { LinePartSecondaryPiece } from './LinePartSecondaryPiece/LinePartSecondaryPiece'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { OvertimeShadow } from './OvertimeShadow'
 
 const TIMELINE_DEFAULT_BASE = 30 * 1000
 
@@ -80,6 +81,11 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 
 	const autoNext = isNext ? currentPartWillAutonext : part.willProbablyAutoNext
 
+	const endsInFreeze = !part.instance.part.autoNext && mainPiece?.instance.piece.content.sourceDuration !== undefined
+	const mainSourceEnd = mainPiece?.instance.piece.content.sourceDuration
+		? (mainPieceInPoint ?? 0) + mainPiece?.instance.piece.content.sourceDuration
+		: null
+
 	return (
 		<div className="segment-opl__part-timeline" data-base={timelineBase / 1000}>
 			{timedGraphics.map((piece) => (
@@ -100,7 +106,23 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 			)}
 			{!isLive && <TakeLine isNext={isNext} autoNext={autoNext} />}
 			{transitionPiece && <LinePartTransitionPiece piece={transitionPiece} />}
-			{isLive && <OnAirLine partInstance={part.instance} timelineBase={timelineBase} maxDuration={maxDuration} />}
+			{mainSourceEnd && endsInFreeze && (
+				<OvertimeShadow
+					partId={part.instance.part._id}
+					timelineBase={timelineBase}
+					maxDuration={maxDuration}
+					mainSourceEnd={mainSourceEnd}
+					endsInFreeze={endsInFreeze}
+					partRenderedDuration={partDuration}
+				/>
+			)}
+			{isLive && (
+				<OnAirLine
+					partInstance={part.instance}
+					timelineBase={timelineBase}
+					maxDuration={endsInFreeze ? maxDuration : timelineBase}
+				/>
+			)}
 		</div>
 	)
 }
