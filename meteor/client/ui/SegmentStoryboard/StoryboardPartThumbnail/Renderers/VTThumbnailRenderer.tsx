@@ -5,10 +5,7 @@ import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspe
 import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 import { RundownUtils } from '../../../../lib/rundown'
 import { IProps } from './ThumbnailRendererFactory'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFilm, faSlash } from '@fortawesome/free-solid-svg-icons'
 import { getPreviewUrlForPieceUi, getThumbnailUrlForPieceUi } from '../../../../lib/ui/clipPreview'
-import { VideoPreviewPlayer } from '../../../../lib/VideoPreviewPlayer'
 import { RundownTimingConsumer } from '../../../RundownView/RundownTiming/RundownTimingConsumer'
 import { unprotectString } from '../../../../../lib/lib'
 import { FreezeFrameIcon } from '../../../../lib/ui/icons/freezeFrame'
@@ -60,7 +57,6 @@ export function VTThumbnailRenderer({
 				pieceId={pieceInstance.instance.piece._id}
 				expectedPackages={pieceInstance.instance.piece.expectedPackages}
 				studio={studio}
-				hideHoverscrubPreview={true}
 			/>
 			<RundownTimingConsumer
 				filter={(timingContext) => ({
