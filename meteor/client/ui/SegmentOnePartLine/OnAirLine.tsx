@@ -24,6 +24,7 @@ function timeToPosition(time: number, timelineBase: number, maxDuration: number)
 	return `${position * 100}%`
 }
 
+// TODO: This should use RundownTimingConsumer
 export const OnAirLine = withTiming<IProps, {}>({
 	filter: 'currentTime',
 	dataResolution: TimingDataResolution.High,

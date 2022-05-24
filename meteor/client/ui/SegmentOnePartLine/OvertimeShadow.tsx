@@ -25,6 +25,7 @@ function timeToPosition(time: number, timelineBase: number, maxDuration: number)
 	return `${position * 100}%`
 }
 
+// TODO: This should use RundownTimingConsumer
 export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 	filter: (data) => data.partPlayed?.[unprotectString(props.partId)],
 	dataResolution: TimingDataResolution.High,
