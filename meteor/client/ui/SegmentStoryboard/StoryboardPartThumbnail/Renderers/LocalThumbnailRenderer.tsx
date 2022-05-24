@@ -11,9 +11,6 @@ export function LocalThumbnailRenderer({ pieceInstance }: IProps) {
 
 	return (
 		<>
-			<div className="segment-storyboard__thumbnail__icon">
-				<FontAwesomeIcon icon={faPhotoVideo} />
-			</div>
 			<div className="segment-storyboard__thumbnail__label segment-storyboard__thumbnail__label--lg">
 				{color && (
 					<span
