@@ -45,6 +45,10 @@ interface IProps {
 // TODO: This is a horribly wonky hack for the prototype
 const BANNED_COLUMN_NAMES = new Set()
 
+// TODO: This is not great. Ideally, we would be able to figure out which SourceLayers are to be shown as columns
+// based on if they are used in the PGM or not. However, we don't have that information. We can figure out if
+// a given PIECE is going to be used on PGM, but SourceLayers can be shared across Outputs, so that's complicated
+// on this level.
 const COLUMN_SUPPORTED_LAYER_TYPES: Set<SourceLayerType> = new Set([
 	SourceLayerType.AUDIO,
 	SourceLayerType.LOWER_THIRD,
