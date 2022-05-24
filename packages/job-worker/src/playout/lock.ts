@@ -14,8 +14,8 @@ import { CacheForPlayoutPreInit, CacheForPlayout } from './cache'
 export async function runJobWithPlayoutCache<TRes>(
 	context: JobContext,
 	data: RundownPlayoutPropsBase,
-	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void>),
-	fcn: (cache: CacheForPlayout) => Promise<TRes>
+	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
+	fcn: (cache: CacheForPlayout) => Promise<TRes> | TRes
 ): Promise<TRes> {
 	if (!data.playlistId) {
 		throw new Error(`Job is missing playlistId`)
@@ -78,8 +78,8 @@ export async function runWithPlaylistCache<TRes>(
 	context: JobContext,
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	lock: PlaylistLock,
-	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void>),
-	fcn: (cache: CacheForPlayout) => Promise<TRes>
+	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
+	fcn: (cache: CacheForPlayout) => Promise<TRes> | TRes
 ): Promise<TRes> {
 	const initCache = await CacheForPlayoutPreInit.createPreInit(context, lock, playlist, false)
 

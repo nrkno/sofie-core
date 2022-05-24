@@ -125,6 +125,7 @@ export interface OnPiecePlaybackStartedProps extends RundownPlayoutPropsBase {
 	startedPlayback: Time
 }
 export interface OnPiecePlaybackStoppedProps extends RundownPlayoutPropsBase {
+	partInstanceId: PartInstanceId
 	pieceInstanceId: PieceInstanceId
 	stoppedPlayback: Time
 }

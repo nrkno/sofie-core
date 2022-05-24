@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-12-17T08:27:08.153Z\n"
-"PO-Revision-Date: 2021-12-17T08:27:08.153Z\n"
+"POT-Creation-Date: 2022-05-19T11:28:47.600Z\n"
+"PO-Revision-Date: 2022-05-19T11:28:47.600Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -530,13 +530,10 @@ msgstr ""
 msgid "Add ?studio=1 to the URL to enter studio mode"
 msgstr ""
 
+msgid "Exit"
+msgstr ""
+
 msgid "Error"
-msgstr ""
-
-msgid "Cancel currently pressed hotkey"
-msgstr ""
-
-msgid "Change to fullscreen mode"
 msgstr ""
 
 msgid "This rundown is now active. Are you sure you want to exit this screen?"
@@ -553,6 +550,12 @@ msgstr ""
 msgid "Could not restart Playout Gateway \"{{playoutDeviceName}}\"."
 msgstr ""
 
+msgid "Restart Playout"
+msgstr ""
+
+msgid "Do you want to restart the Playout Gateway?"
+msgstr ""
+
 msgid "Restart CasparCG Server"
 msgstr ""
 
@@ -565,13 +568,16 @@ msgstr ""
 msgid "Failed to restart CasparCG on device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
+msgid "Cancel currently pressed hotkey"
+msgstr ""
+
+msgid "Change to fullscreen mode"
+msgstr ""
+
 msgid "Show Hotkeys"
 msgstr ""
 
 msgid "Take a Snapshot"
-msgstr ""
-
-msgid "Restart Playout"
 msgstr ""
 
 msgid "Restart {{device}}"
@@ -714,6 +720,27 @@ msgstr ""
 msgid "Device {{deviceName}} is disconnected"
 msgstr ""
 
+msgid "Critical Problems"
+msgstr ""
+
+msgid "Warnings"
+msgstr ""
+
+msgid "Notifications"
+msgstr ""
+
+msgid "Rewind all Segments"
+msgstr ""
+
+msgid "Go to On Air Segment"
+msgstr ""
+
+msgid "Toggle Switchboard Panel"
+msgstr ""
+
+msgid "Toggle Support Panel"
+msgstr ""
+
 msgid "Just now"
 msgstr ""
 
@@ -762,6 +789,9 @@ msgstr ""
 msgid "All devices working correctly"
 msgstr ""
 
+msgid "Auto"
+msgstr ""
+
 msgid "Diff"
 msgstr ""
 
@@ -795,19 +825,43 @@ msgstr ""
 msgid "Off"
 msgstr ""
 
-msgid "BREAK"
+msgid "segment"
 msgstr ""
 
-msgid "Break In"
+msgid "Critical problems"
 msgstr ""
 
-msgid "Auto"
+msgid "On Air At"
+msgstr ""
+
+msgid "On Air In"
+msgstr ""
+
+msgid "Unsynced"
+msgstr ""
+
+msgid "Sources"
+msgstr ""
+
+msgid "Switch to Timeline mode"
+msgstr ""
+
+msgid "On Air"
 msgstr ""
 
 msgid "Loops to top"
 msgstr ""
 
 msgid "Show End"
+msgstr ""
+
+msgid "BREAK"
+msgstr ""
+
+msgid "Break In"
+msgstr ""
+
+msgid "part"
 msgstr ""
 
 msgid "Set segment as <strong>Next</strong>"
@@ -828,16 +882,16 @@ msgstr ""
 msgid "Play from Here"
 msgstr ""
 
-msgid "On Air"
+msgid "Switch to Storyboard mode"
 msgstr ""
 
-msgid "On Air At"
+msgid "Zoom Out"
 msgstr ""
 
-msgid "On Air In"
+msgid "Show All"
 msgstr ""
 
-msgid "Unsynced"
+msgid "Zoom In"
 msgstr ""
 
 msgid "Parts Duration"
@@ -2382,6 +2436,9 @@ msgstr ""
 msgid "Click to show available Show Styles"
 msgstr ""
 
+msgid "Frame Rate"
+msgstr ""
+
 msgid "Enable \"Play from Anywhere\""
 msgstr ""
 
@@ -2404,6 +2461,12 @@ msgid "Force the Multi-gateway-mode"
 msgstr ""
 
 msgid "Multi-gateway-mode delay time"
+msgstr ""
+
+msgid "Preserve contents of playing segment when unsynced"
+msgstr ""
+
+msgid "Allow Rundowns to be reset while on-air"
 msgstr ""
 
 msgid "Remove indexes"
@@ -2506,9 +2569,6 @@ msgstr ""
 msgid "The old data was removed."
 msgstr ""
 
-msgid "Search..."
-msgstr ""
-
 msgid "Last {{layerName}}"
 msgstr ""
 
@@ -2527,13 +2587,13 @@ msgstr ""
 msgid "Cannot play this AdLib because it is marked as Floated"
 msgstr ""
 
+msgid "Search..."
+msgstr ""
+
 msgid "End Words"
 msgstr ""
 
-msgid "Cannot play this AdLib becasue it is marked as Invalid"
-msgstr ""
-
-msgid "Cannot play this AdLib becasue it is marked as Floated"
+msgid "Global AdLib"
 msgstr ""
 
 msgid "AdLib does not provide any options"
@@ -2615,9 +2675,6 @@ msgid "Create new Bucket"
 msgstr ""
 
 msgid "AdLib"
-msgstr ""
-
-msgid "Global AdLib"
 msgstr ""
 
 msgid "Shortcuts"
@@ -2855,7 +2912,7 @@ msgstr ""
 msgid "Sofie Automation Server Core will restart in {{time}}s..."
 msgstr ""
 
-msgid "Execution time*"
+msgid "Execution times"
 msgstr ""
 
 msgid "User ID"
@@ -2868,6 +2925,18 @@ msgid "Method"
 msgstr ""
 
 msgid "Parameters"
+msgstr ""
+
+msgid "Core"
+msgstr ""
+
+msgid "Worker"
+msgstr ""
+
+msgid "Gateway"
+msgstr ""
+
+msgid "TSR"
 msgstr ""
 
 msgid "User Activity Log"
@@ -2940,7 +3009,7 @@ msgid "Stop"
 msgstr ""
 
 msgid ""
-"Clip \"{{fileName}}\" can't be played because it isn't present on the "
+"Clip \"{{fileName}}\" can't be played because it doesn't exist on the "
 "playout system"
 msgstr ""
 
@@ -2964,16 +3033,16 @@ msgstr ""
 msgid "{{sourceLayer}} has {{audioStreams}} audio streams"
 msgstr ""
 
-msgid "Clip starts with {{frames}} {{type}} frame"
+msgid "Clip starts with {{frames}} {{type}} frames"
 msgstr ""
 
-msgid "This clip ends with {{type}} frames after {{count}} second"
+msgid "This clip ends with {{type}} frames after {{count}} seconds"
 msgstr ""
 
-msgid "{{frames}} {{type}} frame detected within the clip"
+msgid "{{frames}} {{type}} frames detected within the clip"
 msgstr ""
 
-msgid "{{frames}} {{type}} frame detected in clip"
+msgid "{{frames}} {{type}} frames detected in the clip"
 msgstr ""
 
 msgid "black"
@@ -2988,6 +3057,18 @@ msgstr ""
 msgid "Clip doesn't have audio & video"
 msgstr ""
 
+msgid "Clip starts with {{frames}} {{type}} frame"
+msgstr ""
+
+msgid "This clip ends with {{type}} frames after {{count}} second"
+msgstr ""
+
+msgid "{{frames}} {{type}} frame detected within the clip"
+msgstr ""
+
+msgid "{{frames}} {{type}} frame detected in clip"
+msgstr ""
+
 msgid "{{sourceLayer}} is being ingested"
 msgstr ""
 
@@ -2997,12 +3078,10 @@ msgstr ""
 msgid "Segment no longer exists in {{nrcs}}"
 msgstr ""
 
-msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
+msgid "Segment was hidden in {{nrcs}}"
 msgstr ""
 
-msgid ""
-"The Rundown was attempted to be moved out of the Playlist when it was on "
-"Air. Move it back and try again later."
+msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
 msgstr ""
 
 msgid "Toggle Shelf"
@@ -3044,6 +3123,22 @@ msgctxt "°°°°°°plural"
 msgid ""
 "There are {{count}} documents that can be removed, do you want to "
 "continue?°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "Clip starts with {{frames}} {{type}} frames°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "This clip ends with {{type}} frames after {{count}} seconds°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "{{frames}} {{type}} frames detected within the clip°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "{{frames}} {{type}} frames detected in the clip°°°°°°"
 msgstr ""
 
 msgctxt "°°°°°°plural"

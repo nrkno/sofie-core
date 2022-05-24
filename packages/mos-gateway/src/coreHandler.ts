@@ -106,7 +106,7 @@ export class CoreMosDeviceHandler {
 		this.core = new CoreConnection(parent.getCoreConnectionOptions(mosDevice.idPrimary, mosDevice.idPrimary, false))
 		this.core.onError((err) => {
 			this._coreParentHandler.logger.error(
-				'Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString() || err)
+				'Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString())
 			)
 		})
 	}
@@ -574,7 +574,7 @@ export class CoreHandler {
 			this.logger.info('Core Disconnected!')
 		})
 		this.core.onError((err) => {
-			this.logger.error('Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString() || err))
+			this.logger.error('Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString()))
 		})
 
 		const ddpConfig: DDPConnectorOptions = {

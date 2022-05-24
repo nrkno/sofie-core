@@ -48,6 +48,7 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 			previousPartInstanceId: null,
 			currentPartInstanceId: null,
 			holdState: RundownHoldState.NONE,
+			resetTime: getCurrentTime(),
 		},
 		$unset: {
 			startedPlayback: 1,
