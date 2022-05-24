@@ -284,7 +284,7 @@ export function convertRundownToBlueprints(rundown: ReadonlyDeep<DBRundown>): IB
 		_id: unprotectString(rundown._id),
 		showStyleVariantId: unprotectString(rundown.showStyleVariantId),
 		playlistId: unprotectString(rundown.playlistId),
-		_rank: rundown._rank,
+		// _rank: rundown._rank,
 		airStatus: rundown.airStatus,
 	}
 
