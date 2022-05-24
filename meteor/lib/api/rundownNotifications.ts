@@ -3,6 +3,7 @@ import { PartNote, SegmentNote, RundownNote } from '@sofie-automation/corelib/di
 import { PieceId, PieceStatusCode } from '../collections/Pieces'
 import { PartId } from '../collections/Parts'
 import { SegmentId } from '../collections/Segments'
+import { RundownPlaylistId } from '../collections/RundownPlaylists'
 
 export interface IMediaObjectIssue {
 	segmentRank: number
@@ -29,6 +30,6 @@ export type RankedNote = (PartNote | SegmentNote | RundownNote) & {
 export const MEDIASTATUS_POLL_INTERVAL = 10 * 1000
 
 export interface RundownNotificationsAPI {
-	getSegmentPartNotes(rundownIds: RundownId[]): Promise<RankedNote[]>
+	getSegmentPartNotes(playlistId: RundownPlaylistId, rundownIds: RundownId[]): Promise<RankedNote[]>
 	getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]>
 }

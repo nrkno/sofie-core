@@ -14,7 +14,7 @@ import { Tracker } from 'meteor/tracker'
 import { MeteorCall } from '../methods'
 import { PartInstance, PartInstanceId, PartInstances } from '../../collections/PartInstances'
 import { PartId, Parts } from '../../collections/Parts'
-import { RundownPlaylist, RundownPlaylistId } from '../../collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil, RundownPlaylistId } from '../../collections/RundownPlaylists'
 import { ShowStyleBase } from '../../collections/ShowStyleBases'
 import { Studio } from '../../collections/Studios'
 import { assertNever } from '../../lib'
@@ -29,7 +29,7 @@ import {
 	IWrappedAdLib,
 } from './actionFilterChainCompilers'
 import { ClientAPI } from '../client'
-import { RundownId, Rundowns } from '../../collections/Rundowns'
+import { RundownId } from '../../collections/Rundowns'
 import { ReactiveVar } from 'meteor/reactive-var'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
@@ -170,16 +170,7 @@ function createRundownPlaylistContext(
 				rundownPlaylist: new DummyReactiveVar(playlist),
 				currentRundownId: new DummyReactiveVar(
 					currentPartInstance?.rundownId ??
-						Rundowns.findOne(
-							{
-								playlistId: playlist._id,
-							},
-							{
-								sort: {
-									_rank: 1,
-								},
-							}
-						)?._id ??
+						RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)[0]?._id ??
 						null
 				),
 				currentPartId: new DummyReactiveVar(currentPartId),

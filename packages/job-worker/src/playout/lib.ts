@@ -9,7 +9,6 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstanceId, RundownId, SegmentId, SegmentPlayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DbCacheReadCollection } from '../cache/CacheCollection'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
 import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
 import {
@@ -787,7 +786,7 @@ export function isTooCloseToAutonext(
 export function getRundownsSegmentsAndPartsFromCache(
 	partsCache: DbCacheReadCollection<DBPart>,
 	segmentsCache: DbCacheReadCollection<DBSegment>,
-	rundowns: Array<ReadonlyDeep<DBRundown>>
+	playlist: Pick<ReadonlyDeep<DBRundownPlaylist>, 'rundownIdsInOrder'>
 ): { segments: DBSegment[]; parts: DBPart[] } {
 	const segments = sortSegmentsInRundowns(
 		segmentsCache.findFetch(
@@ -799,7 +798,7 @@ export function getRundownsSegmentsAndPartsFromCache(
 				},
 			}
 		),
-		rundowns
+		playlist
 	)
 
 	const parts = sortPartsInSortedSegments(

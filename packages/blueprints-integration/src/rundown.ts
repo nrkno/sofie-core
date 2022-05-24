@@ -133,9 +133,6 @@ export interface IBlueprintRundownDBData {
 	/** RundownPlaylist this rundown is member of */
 	playlistId?: string
 
-	// /** Rundown's place in the RundownPlaylist */
-	// _rank?: number
-
 	/** Air-status, comes from NCS, examples: "READY" | "NOT READY" */
 	airStatus?: string
 }

@@ -82,6 +82,7 @@ describe('test peripheralDevice general API methods', () => {
 			timing: {
 				type: PlaylistTimingType.None,
 			},
+			rundownIdsInOrder: [rundownID],
 		})
 		Rundowns.insert({
 			_id: rundownID,
@@ -92,7 +93,6 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'test rundown',
 			created: 1000,
 			playlistId: rundownPlaylistID,
-			_rank: 0,
 			peripheralDeviceId: env.ingestDevice._id,
 			modified: getCurrentTime(),
 			importVersions: {
