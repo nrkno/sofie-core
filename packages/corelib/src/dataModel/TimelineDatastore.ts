@@ -8,6 +8,7 @@ export interface DBTimelineDatastoreEntry {
 	value: any
 
 	modified: number
+	mode: 'temporary' | 'infinite'
 
 	/** Todo: some sort of history for the UI? */
 }

@@ -1100,8 +1100,8 @@ export class TSRHandler {
 			studioId: peripheralDevice.studioId,
 		})
 		const datastore: Record<string, any> = {}
-		for (const obj of datastoreObjs) {
-			datastore[obj.key] = obj.value
+		for (const { key, value, modified } of datastoreObjs) {
+			datastore[key] = { value, modified }
 		}
 
 		this.logger.debug(datastore)

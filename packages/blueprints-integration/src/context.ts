@@ -209,6 +209,9 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 	/** Inform core that a take out of the current partinstance should be blocked until the specified time */
 	blockTakeUntil(time: Time | null): Promise<void>
 
+	setTimelineDatastoreValue(key: string, value: any, mode: 'temporary' | 'infinite'): Promise<void>
+	removeTimelineDatastoreValue(key: string): Promise<void>
+
 	/** Misc actions */
 	// updateAction(newManifest: Pick<IBlueprintAdLibActionManifest, 'description' | 'payload'>): void // only updates itself. to allow for the next one to do something different
 	// executePeripheralDeviceAction(deviceId: string, functionName: string, args: any[]): Promise<any>

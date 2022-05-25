@@ -560,6 +560,37 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		})
 	}
 
+	async setTimelineDatastoreValue(key: string, value: unknown, mode: 'temporary' | 'infinite'): Promise<void> {
+		const collection = this._context.directCollections.TimelineDatastores
+		const entry = await collection.findOne({ studioId: this._context.studioId, key })
+
+		if (!entry) {
+			await collection.insertOne({
+				_id: getRandomId(),
+				studioId: this._context.studioId,
+
+				key,
+				value,
+
+				modified: Date.now(),
+				mode,
+			})
+		} else {
+			await collection.update(entry._id, {
+				$set: {
+					value,
+					mode,
+					modified: Date.now(),
+				},
+			})
+		}
+	}
+
+	async removeTimelineDatastoreValue(key: string): Promise<void> {
+		const collection = this._context.directCollections.TimelineDatastores
+		await collection.remove({ studioId: this._context.studioId, key })
+	}
+
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {
 		if (!this._cache.Playlist.doc.currentPartInstanceId) {
 			return []
