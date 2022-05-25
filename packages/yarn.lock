@@ -3115,6 +3115,10 @@
     url "^0.11.0"
     webpack-sources "^1.4.3"
 
+"@sofie-automation/blueprints-integration@link:blueprints-integration":
+  version "0.0.0"
+  uid ""
+
 "@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.41.2":
   version "1.41.2"
   resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.41.2.tgz#7c9552b59653180eb1bcbac784e8d3c7bbbaf46b"
@@ -3132,16 +3136,6 @@
   dependencies:
     moment "2.29.1"
     timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@1.0.0-release37"
-    tslib "^2.3.1"
-    type-fest "^2.11.1"
-
-"@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.42.5":
-  version "1.42.5"
-  resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.42.5.tgz#872e603d8107bab34dd26af4187d82b39ed74b98"
-  integrity sha512-8vIbTTHosvdex4Fqb3Eay7STss4fSvv3JuWLYe28dczzpwcLTyAwuNgElpwBrfaoRFkpLGIvO8hvAae/Uh7I5A==
-  dependencies:
-    moment "2.29.1"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.0.0"
     tslib "^2.3.1"
     type-fest "^2.11.1"
 

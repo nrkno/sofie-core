@@ -10037,10 +10037,10 @@ timecode@0.0.4:
   dependencies:
     tslib "^2.1.0"
 
-"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@1.41.1":
-  version "1.41.1"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-1.41.1.tgz#29b8df926fcda0d2124151e0605df6c246f590e7"
-  integrity sha512-cEVIFsaHhjQJV6Y2Y8TERlyhhYOfKg5WvSq9ab+zYkE5G+kufqJfzIqCibBEvzrl0RedNq1Cp720voOMoy7FQQ==
+"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-2.0.0.tgz#0af6ed0c1d69bd6c27b77c175f4fedf204ef8505"
+  integrity sha512-hfNrbMp9fPV5ItBM1MqDNLOxlzRJGEMb2HyY9Blr1+5ql7ap+eeb8XkH2asIJAljIyHjJ1MwKjjqLgfEYY6h0w==
   dependencies:
     tslib "^2.3.1"
 

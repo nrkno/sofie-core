@@ -588,7 +588,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		return unprotectStringArray(stoppedIds)
 	}
 
-	hackGetMediaObjectDuration(mediaId: string): number | undefined {
+	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
 		return getMediaObjectDuration(this._context, mediaId, this.studioId)
 	}
 }
