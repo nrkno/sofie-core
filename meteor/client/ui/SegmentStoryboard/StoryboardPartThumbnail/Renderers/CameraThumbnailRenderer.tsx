@@ -1,7 +1,5 @@
 import React from 'react'
 import { IProps } from './ThumbnailRendererFactory'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faVideo } from '@fortawesome/free-solid-svg-icons'
 
 export function CameraThumbnailRenderer({ pieceInstance }: IProps) {
 	return (

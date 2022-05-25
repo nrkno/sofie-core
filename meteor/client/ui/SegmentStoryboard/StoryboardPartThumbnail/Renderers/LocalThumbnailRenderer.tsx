@@ -1,8 +1,6 @@
 import React from 'react'
 import { EvsContent } from '@sofie-automation/blueprints-integration'
 import { IProps } from './ThumbnailRendererFactory'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPhotoVideo } from '@fortawesome/free-solid-svg-icons'
 
 export function LocalThumbnailRenderer({ pieceInstance }: IProps) {
 	const localContent = pieceInstance.instance.piece.content as EvsContent
