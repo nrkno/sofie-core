@@ -70,7 +70,14 @@
 		&.segment-storyboard__thumbnail__label--sm {
 			font-size: 0.85em;
 			letter-spacing: normal;
-			margin-top: 0.2em;
+			margin-top: 0.4em;
+
+			width: 100%;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+			text-overflow: ellipsis;
 		}
 
 		> .segment-storyboard__thumbnail__label__colored-mark {
