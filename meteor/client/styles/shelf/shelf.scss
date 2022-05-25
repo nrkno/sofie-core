@@ -134,10 +134,15 @@
 			text-overflow: ellipsis;
 			white-space: nowrap;
 			text-align: center;
-			color: #4f4f4f;
+			color: #8f8f8f;
 			line-height: $inspector-shelf-tabs-height;
 			cursor: pointer;
 			user-select: none;
+
+			&:hover {
+				color: #fff;
+				transition: 0.3s;
+			}
 
 			&.selected {
 				color: #fff;
@@ -148,8 +153,8 @@
 					content: ' ';
 					display: block;
 					position: absolute;
-					width: 50px;
-					height: 8px;
+					width: 20px;
+					height: 9px;
 					left: 50%;
 					bottom: 0;
 					transform: translate(-50%, 1px);
