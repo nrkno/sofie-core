@@ -39,15 +39,18 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 
 	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-	// const partInstance = nextPartInstance || currentPartInstance
-	const partInstance = nextPartInstance // todo: we should always take the next, so it's this one, right?
-	if (!partInstance) throw new Error(`No partInstance could be found!`)
-	const currentRundown = partInstance ? cache.Rundowns.findOne(partInstance.rundownId) : undefined
+	const currentOrNextPartInstance = nextPartInstance || currentPartInstance
+	if (!currentOrNextPartInstance) throw new Error(`No partInstance could be found!`)
+	const currentRundown = currentOrNextPartInstance
+		? cache.Rundowns.findOne(currentOrNextPartInstance.rundownId)
+		: undefined
 	if (!currentRundown)
-		throw new Error(`Rundown "${(partInstance && partInstance.rundownId) || ''}" could not be found!`)
+		throw new Error(
+			`Rundown "${(currentOrNextPartInstance && currentOrNextPartInstance.rundownId) || ''}" could not be found!`
+		)
 
 	// it is only a first take if the Playlist has no startedPlayback and the taken PartInstance is not untimed
-	const isFirstTake = !cache.Playlist.doc.startedPlayback && !partInstance.part.untimed
+	const isFirstTake = !cache.Playlist.doc.startedPlayback && !nextPartInstance.part.untimed
 
 	const pShowStyle = context.getShowStyleCompound(currentRundown.showStyleVariantId, currentRundown.showStyleBaseId)
 
