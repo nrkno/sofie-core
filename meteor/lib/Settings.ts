@@ -36,6 +36,8 @@ export interface ISettings {
 		port?: number
 		maxAllowedDiff: number
 	}
+	/** Default value used to toggle Shelf options when the 'display' URL argument is not provided. */
+	defaultShelfDisplayOptions: string
 
 	/** Enable the use of poison key if present and use the key specified. **/
 	poisonKey: string | null
@@ -70,6 +72,7 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	followOnAirSegmentsHistory: 0,
 	maximumDataAge: 1000 * 60 * 60 * 24 * 100, // 100 days
 	enableNTPTimeChecker: null,
+	defaultShelfDisplayOptions: 'buckets,layout,shelfLayout,inspector',
 	enableKeyboardPreview: true,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 	poisonKey: 'Escape',
