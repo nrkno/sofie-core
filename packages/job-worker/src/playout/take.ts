@@ -49,9 +49,6 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 			`Rundown "${(currentOrNextPartInstance && currentOrNextPartInstance.rundownId) || ''}" could not be found!`
 		)
 
-	// it is only a first take if the Playlist has no startedPlayback and the taken PartInstance is not untimed
-	const isFirstTake = !cache.Playlist.doc.startedPlayback && !nextPartInstance.part.untimed
-
 	const pShowStyle = context.getShowStyleCompound(currentRundown.showStyleVariantId, currentRundown.showStyleBaseId)
 
 	if (currentPartInstance) {
@@ -100,6 +97,9 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	if (!takePartInstance) throw new Error('takePart not found!')
 	const takeRundown: DBRundown | undefined = cache.Rundowns.findOne(takePartInstance.rundownId)
 	if (!takeRundown) throw new Error(`takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
+
+	// it is only a first take if the Playlist has no startedPlayback and the taken PartInstance is not untimed
+	const isFirstTake = !cache.Playlist.doc.startedPlayback && !takePartInstance.part.untimed
 
 	clearNextSegmentId(cache, takePartInstance)
 
