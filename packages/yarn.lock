@@ -10662,6 +10662,17 @@ monitor-event-loop-delay@^1.0.0:
   resolved "https://registry.yarnpkg.com/monitor-event-loop-delay/-/monitor-event-loop-delay-1.0.0.tgz#b5ab78165a3bb93f2b275c50d01430c7f155d1f7"
   integrity sha512-YRIr1exCIfBDLZle8WHOfSo7Xg3M+phcZfq9Fx1L6Abo+atGp7cge5pM7PjyBn4s1oZI/BRD4EMrzQBbPpVb5Q==
 
+mos-connection@2.0.0-0:
+  version "2.0.0-0"
+  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-2.0.0-0.tgz#2d6ccd2d47d70cb3d533a5ec0d0bcc78935d7980"
+  integrity sha512-gME0UzX2A46UHjs+C8OQetId5Z+Ma+614Afejhla/ndOxglQRcpJhc5OgPsTo3es/UPZnfHWmEWVri/cpa6t8g==
+  dependencies:
+    iconv-lite "^0.6.2"
+    moment "^2.29.1"
+    tslib "^2.2.0"
+    xml-js "^1.6.11"
+    xmlbuilder "^15.1.1"
+
 mos-connection@^1.0.6:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.6.tgz#bae6918e9554fb83ed3d30a5f065116ba85f66ed"
