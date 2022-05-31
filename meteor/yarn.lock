@@ -1258,6 +1258,16 @@
     tslib "^2.3.1"
     type-fest "^2.11.1"
 
+"@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.42.5":
+  version "1.42.5"
+  resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.42.5.tgz#872e603d8107bab34dd26af4187d82b39ed74b98"
+  integrity sha512-8vIbTTHosvdex4Fqb3Eay7STss4fSvv3JuWLYe28dczzpwcLTyAwuNgElpwBrfaoRFkpLGIvO8hvAae/Uh7I5A==
+  dependencies:
+    moment "2.29.1"
+    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.0.0"
+    tslib "^2.3.1"
+    type-fest "^2.11.1"
+
 "@sofie-automation/code-standard-preset@~2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@sofie-automation/code-standard-preset/-/code-standard-preset-2.0.0.tgz#9d68017b9849c658b2be0a0f46f46f1ee1caaa97"
@@ -10037,10 +10047,10 @@ timecode@0.0.4:
   dependencies:
     tslib "^2.1.0"
 
-"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@1.41.1":
-  version "1.41.1"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-1.41.1.tgz#29b8df926fcda0d2124151e0605df6c246f590e7"
-  integrity sha512-cEVIFsaHhjQJV6Y2Y8TERlyhhYOfKg5WvSq9ab+zYkE5G+kufqJfzIqCibBEvzrl0RedNq1Cp720voOMoy7FQQ==
+"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-2.0.0.tgz#0af6ed0c1d69bd6c27b77c175f4fedf204ef8505"
+  integrity sha512-hfNrbMp9fPV5ItBM1MqDNLOxlzRJGEMb2HyY9Blr1+5ql7ap+eeb8XkH2asIJAljIyHjJ1MwKjjqLgfEYY6h0w==
   dependencies:
     tslib "^2.3.1"
 
