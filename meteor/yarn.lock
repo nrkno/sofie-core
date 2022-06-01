@@ -7269,10 +7269,10 @@ monitor-event-loop-delay@^1.0.0:
   resolved "https://registry.yarnpkg.com/monitor-event-loop-delay/-/monitor-event-loop-delay-1.0.0.tgz#b5ab78165a3bb93f2b275c50d01430c7f155d1f7"
   integrity sha512-YRIr1exCIfBDLZle8WHOfSo7Xg3M+phcZfq9Fx1L6Abo+atGp7cge5pM7PjyBn4s1oZI/BRD4EMrzQBbPpVb5Q==
 
-mos-connection@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.7.tgz#7370eadf7da89ad9af57b9402d09a67973b56259"
-  integrity sha512-LuKzryGQwF8eEp9VOPpke5Bq+3GNL2fTLbVy+UUBGZIXWeTGlDxzxPMrrr2HLrWftEje9SdB8hu7tWX2h/5M7w==
+mos-connection@^2.0.0-1:
+  version "2.0.0-1"
+  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-2.0.0-1.tgz#39e89b8dd8655d560fcd531bdba193692f2ddbfb"
+  integrity sha512-clYdYxJK4PsKSgs+572CyaPjgzB+PpwofMxe3bAy6SmDDIv6kXcx3CfsBVlhFIuRbepOGkfAYQWxBYr3AKBf/g==
   dependencies:
     iconv-lite "^0.6.2"
     moment "^2.29.1"
