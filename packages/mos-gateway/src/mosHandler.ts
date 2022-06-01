@@ -28,6 +28,8 @@ import { CollectionObj } from '@sofie-automation/server-core-integration'
 // Note: This is a constant that should come from Core:
 /** After this time, MOS-messages are considered to have timed out */
 export const DEFAULT_MOS_TIMEOUT_TIME = 10 * 1000
+/** How often to ping NRCS (to determine connection status) */
+export const DEFAULT_MOS_HEARTBEAT_INTERVAL = 30 * 1000
 
 export interface MosConfig {
 	self: IConnectionConfig
@@ -470,6 +472,9 @@ export class MosHandler {
 		// 	query: 11542,
 		// }
 		deviceOptions.primary.timeout = deviceOptions.primary.timeout || DEFAULT_MOS_TIMEOUT_TIME
+
+		deviceOptions.primary.heartbeatInterval =
+			deviceOptions.primary.heartbeatInterval || DEFAULT_MOS_HEARTBEAT_INTERVAL
 
 		const mosDevice: MosDevice = await this.mos.connect(deviceOptions)
 		this._ownMosDevices[deviceId] = mosDevice
