@@ -60,11 +60,16 @@ export type ConfigManifestEntry =
 	| ConfigManifestFloatEntry
 	| SubDeviceConfigManifestEntry
 export interface ConfigManifestEntryBase {
+	/** Unique id / Attribute to edit */
 	id: string
+	/** Short description */
 	name: string
 	type: ConfigManifestEntryType
-	values?: any // for enum
+	/** Used in enums */
+	values?: any
+	/** Short label to display when value is undefined (default value) */
 	placeholder?: string
+	/** Longer description */
 	hint?: string
 }
 export interface ConfigManifestEntryDefault extends ConfigManifestEntryBase {
