@@ -24,6 +24,10 @@ export function setLogLevel(level: LogLevel, startup = false) {
 	}
 }
 
+export function getEnvLogLevel(): LogLevel | undefined {
+	return Object.values(LogLevel).find((level) => level === process.env.LOG_LEVEL)
+}
+
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
 // because there's an error in the typings logging.debug() takes any, not only string
 interface LoggerInstanceFixed extends Winston.Logger {
@@ -105,12 +109,12 @@ if (logToFile || logPath !== '') {
 		}
 	}
 	const transportConsole = new Winston.transports.Console({
-		level: 'verbose',
+		level: getEnvLogLevel() ?? 'verbose',
 		handleExceptions: true,
 		handleRejections: true,
 	})
 	const transportFile = new Winston.transports.File({
-		level: 'silly',
+		level: getEnvLogLevel() ?? 'silly',
 		handleExceptions: true,
 		handleRejections: true,
 		filename: logPath,
@@ -127,7 +131,7 @@ if (logToFile || logPath !== '') {
 	console.log('Logging to ' + logPath)
 } else {
 	const transportConsole = new Winston.transports.Console({
-		level: 'silly',
+		level: getEnvLogLevel() ?? 'silly',
 		handleExceptions: true,
 		handleRejections: true,
 	})
