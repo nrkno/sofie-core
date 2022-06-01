@@ -64,6 +64,7 @@ export class Connector {
 					this.tsrHandler.destroy().catch(this._logger.error)
 				}
 			} catch (e) {
+				// Handle the edge case where destroy() throws synchronously:
 				this._logger.error(e)
 			}
 

@@ -135,12 +135,8 @@ const StudioDevices = withTranslation()(
 			})
 		}
 
-		isPlayoutConnected() {
-			let connected = false
-			this.props.studioDevices.map((device) => {
-				if (device.type === PeripheralDeviceType.PLAYOUT) connected = true
-			})
-			return connected
+		isPlayoutConnected(): boolean {
+			return !!this.props.studioDevices.find((device) => device.type === PeripheralDeviceType.PLAYOUT)
 		}
 
 		render() {
@@ -2344,7 +2340,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		renderShowStyleEditButtons() {
 			const buttons: JSX.Element[] = []
 			if (this.props.studio) {
-				this.props.studio.supportedShowStyleBase.map((showStyleBaseId) => {
+				for (const showStyleBaseId of this.props.studio.supportedShowStyleBase) {
 					const showStyleBase = this.props.availableShowStyleBases.find(
 						(base) => base.showStyleBase._id === showStyleBaseId
 					)
@@ -2358,7 +2354,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							></SettingsNavigation>
 						)
 					}
-				})
+				}
 			}
 			return buttons
 		}
