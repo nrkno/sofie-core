@@ -303,7 +303,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			'Digit9',
 			'Digit0',
 		]
-		const systemActionKeys = ['Enter', 'NumpadEnter', 'Tab']
+		const systemActionKeys = ['AnyEnter', 'NumpadEnter', 'Tab']
 
 		const poisonKey: string | null = Settings.poisonKey
 
