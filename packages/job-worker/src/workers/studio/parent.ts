@@ -1,7 +1,7 @@
 import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
 import type { StudioWorkerChild } from './child'
 import { InvalidateWorkerDataCache } from '../caches'
-import { WorkerParentBase, WorkerParentOptions, WorkerParentBaseOptions } from '../parent-base'
+import { WorkerParentBase, WorkerParentOptions, WorkerParentBaseOptions, WorkerJobResult } from '../parent-base'
 import { AnyLockEvent } from '../locks'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
@@ -49,7 +49,7 @@ export class StudioWorkerParent extends WorkerParentBase {
 	protected async invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void> {
 		return this.#thread.invalidateCaches(invalidations)
 	}
-	protected async runJobInWorker(name: string, data: unknown): Promise<any> {
+	protected async runJobInWorker(name: string, data: unknown): Promise<WorkerJobResult> {
 		return this.#thread.runJob(name, data)
 	}
 	protected async terminateWorkerThread(): Promise<void> {

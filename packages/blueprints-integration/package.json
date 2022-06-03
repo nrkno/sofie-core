@@ -38,7 +38,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"moment": "2.29.1",
+		"moment": "2.29.3",
 		"timeline-state-resolver-types": "npm:@tv2media/timeline-state-resolver-types@2.0.0",
 		"tslib": "^2.3.1",
 		"type-fest": "^2.11.1"

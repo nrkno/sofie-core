@@ -32,7 +32,7 @@ export class LocksManager {
 	}
 
 	private lockNextWorker(resource: LockResource): void {
-		logger.info(
+		logger.silly(
 			`Resource: ${resource.id} has holder "${resource.holder?.[0]}" and ${resource.waitingWorkers.length} waiting`
 		)
 		if (resource.holder === null) {
@@ -41,7 +41,7 @@ export class LocksManager {
 				// Assume it will be locked
 				resource.holder = nextWorker
 
-				logger.info(
+				logger.silly(
 					`Resource: ${resource.id} giving to "${nextWorker[0]}". ${resource.waitingWorkers.length} waiting`
 				)
 
@@ -91,8 +91,8 @@ export class LocksManager {
 						if (resource.holder && resource.holder[0] === threadId && resource.holder[1] === e.lockId) {
 							resource.holder = null
 
-							logger.info(
-								`Resource: ${resource.id} releaseing from "${threadId}". ${resource.waitingWorkers.length} waiting`
+							logger.silly(
+								`Resource: ${resource.id} releasing from "${threadId}". ${resource.waitingWorkers.length} waiting`
 							)
 
 							this.#lockChanged(threadId, e.lockId, false).catch((e) => {

@@ -56,7 +56,7 @@ export async function runIngestOperation<T extends keyof IngestJobFunc>(
 
 		return res
 	} catch (e) {
-		logger.error(`Ingest operation "${name}" failed: ${stringifyError(e)}`)
+		logger.warn(`Ingest operation "${name}" failed: ${stringifyError(e)}`)
 
 		throw e
 	}

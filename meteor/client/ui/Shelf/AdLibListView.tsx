@@ -97,7 +97,13 @@ export function matchFilter(
 			filter.tags !== undefined &&
 			filter.tags.length &&
 			filter.tags.reduce((p, v) => {
-				return p && item.tags !== undefined && item.tags.indexOf(v) >= 0
+				if (v.startsWith('!')) {
+					// this is a "not" tag filter - i.e. this tag must not be present
+					v = v.substring(1)
+					return p && (item.tags === undefined || item.tags.indexOf(v) === -1)
+				} else {
+					return p && item.tags !== undefined && item.tags.indexOf(v) >= 0
+				}
 			}, true) === false
 		) {
 			return false
