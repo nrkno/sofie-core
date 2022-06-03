@@ -66,14 +66,14 @@ class EndWordsPanelInner extends MeteorReactComponent<
 
 export const EndWordsPanel = translateWithTracker<IEndsWordsPanelProps, IState, IEndsWordsPanelTrackedProps>(
 	(props: IEndsWordsPanelProps) => {
-		return { livePieceInstance: getPieceWithManus(props) }
+		return { livePieceInstance: getPieceWithScript(props) }
 	},
 	(_data, props: IEndsWordsPanelProps, nextProps: IEndsWordsPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
 )(EndWordsPanelInner)
 
-function getPieceWithManus(props: IEndsWordsPanelProps): PieceInstance | undefined {
+function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefined {
 	const currentPartInstanceId: any = props.playlist.currentPartInstanceId
 
 	const unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet = getUnfinishedPieceInstancesReactive(
