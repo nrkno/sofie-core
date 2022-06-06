@@ -280,6 +280,7 @@ export type DashboardLayoutFilter = DashboardPanel<
 		displayTakeButtons?: boolean
 		queueAllAdlibs?: boolean
 		toggleOnSingleClick?: boolean
+		disableHoverInspector?: boolean
 	}
 >
 
