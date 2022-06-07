@@ -72,11 +72,6 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 	return (
 		//mainSourceEnd && (originalDiff < 0 || diff > 0) ?
 		<>
-			{endsInFreeze && (
-				<div className="segment-opl__freeze-marker" style={freezeFrameIconStyle}>
-					<FreezeFrameIcon />
-				</div>
-			)}
 			<div
 				className={classNames('segment-opl__overtime-shadow', {
 					'segment-opl__overtime-shadow--no-end': isPartZeroBudget && !endsInFreeze,
@@ -89,6 +84,11 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 					</span>
 				)}
 			</div>
+			{endsInFreeze && (
+				<div className="segment-opl__freeze-marker" style={freezeFrameIconStyle}>
+					<FreezeFrameIcon />
+				</div>
+			)}
 		</>
 	)
 })
