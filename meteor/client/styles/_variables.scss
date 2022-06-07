@@ -21,6 +21,8 @@ $hold-status-color: $liveline-timecode-color;
 $segment-storyboard-part-width: 166px;
 $segment-storyboard-thumbnail-height: 7rem;
 
+$portrait-mode-breakpoint: 35em;
+
 @function rem($pixels, $context: $browser-context) {
 	@return #{$pixels/$context}rem;
 }

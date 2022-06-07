@@ -66,20 +66,30 @@ $duration-area-margin: 0.6em;
 		> .segment-opl__part {
 			position: relative;
 			display: grid;
-			height: $part-height;
-			grid-template-rows: $part-height;
-			grid-template-columns: [header] 15em [timeline] auto [piece-icons] 300px [end];
+			min-height: $part-height;
+			grid-template-rows: minmax($part-height, auto);
+			grid-template-columns: [header] minmax(11em, 15em) [timeline] minmax(10em, 1fr) [piece-icons] 300px [end];
+			grid-template-areas: 'header timeline piece-icons';
 
 			@include invalid-overlay();
 			@include floated-overlay();
+
+			@media screen and (max-width: $portrait-mode-breakpoint) {
+				grid-template-rows: minmax($part-height, auto) minmax($part-height, auto) minmax($part-height, auto);
+				grid-template-columns: 1fr;
+				grid-template-areas:
+					'header'
+					'timeline'
+					'piece-icons';
+			}
 
 			> .segment-opl__part-header {
 				display: grid;
 				position: relative;
 				background-color: $segment-title-background-color;
-				grid-column: header / timeline;
-				grid-row: 1;
+				grid-area: header;
 				grid-template-columns: [countdown] $duration-area-width [title] auto [end];
+				grid-template-areas: 'countdown title';
 
 				> .segment-opl__part-marker {
 					position: absolute;
@@ -98,7 +108,7 @@ $duration-area-margin: 0.6em;
 				}
 
 				> .segment-opl__part-duration {
-					grid-column: countdown / title;
+					grid-area: countdown;
 
 					margin-top: 0.8em;
 
@@ -113,7 +123,7 @@ $duration-area-margin: 0.6em;
 					margin: 0.2em 2em 0.2em 0;
 					padding: 0;
 					line-height: 1em;
-					grid-column: title / end;
+					grid-area: title;
 
 					font-weight: 400;
 					font-size: 1em;
@@ -149,8 +159,12 @@ $duration-area-margin: 0.6em;
 				position: relative;
 				margin-top: 0.6em;
 				margin-left: 0.3em;
-				grid-column: timeline / piece-icons;
-				grid-row: 1;
+				grid-area: timeline;
+
+				@media screen and (max-width: $portrait-mode-breakpoint) {
+					margin-left: 2.5em;
+					margin-right: 4em;
+				}
 
 				> .segment-opl__timeline-flag {
 					position: absolute;
@@ -304,8 +318,12 @@ $duration-area-margin: 0.6em;
 				padding-right: 0.5em;
 				justify-content: flex-end;
 
-				grid-column: piece-icons / end;
-				grid-row: 1;
+				grid-area: piece-icons;
+
+				@media screen and (max-width: $portrait-mode-breakpoint) {
+					padding-left: 2.5em;
+					justify-content: flex-start;
+				}
 			}
 
 			&:not(:last-child)::after {

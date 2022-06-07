@@ -26,6 +26,8 @@
 		font-weight: 400;
 		font-size: 1em;
 		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 		margin-left: 0.85em;
 		text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 		z-index: 0;
