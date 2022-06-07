@@ -220,12 +220,3 @@ const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingCompo
 		}
 	}
 )
-function testWithTimingComponent() {
-	const a = new WithTimingComponent(
-		{
-			myProp0: '',
-			// asdf: 123, // invalid argument
-		},
-		{}
-	)
-}

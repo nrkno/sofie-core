@@ -136,7 +136,7 @@ export const RundownViewBuckets = withTranslation()(
 			}
 		}
 
-		static getDerivedStateFromProps(props: IBucketsProps, state: IState) {
+		static getDerivedStateFromProps(props: Readonly<IBucketsProps>, state: IState) {
 			return {
 				panelWidths: props.buckets
 					? props.buckets.map((bucket, index) =>
