@@ -3129,16 +3129,6 @@
     tslib "^2.3.1"
     type-fest "^2.11.1"
 
-"@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.41.3":
-  version "1.41.3"
-  resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.41.3.tgz#1b32955d230b1c5e89f27b587f83e39352c8b47b"
-  integrity sha512-T1vS2TG6IXqJK7myJ3wRp1KJfc67XnRO59bXwfG1tn/zxBlY8nmard+vTbAV/gnHgf00eJYC+QUOGoPl6y9aKQ==
-  dependencies:
-    moment "2.29.1"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@1.0.0-release37"
-    tslib "^2.3.1"
-    type-fest "^2.11.1"
-
 "@sofie-automation/code-standard-preset@~2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@sofie-automation/code-standard-preset/-/code-standard-preset-2.0.0.tgz#9d68017b9849c658b2be0a0f46f46f1ee1caaa97"
@@ -3162,7 +3152,7 @@
 "@sofie-automation/corelib@link:corelib":
   version "1.42.0-in-development"
   dependencies:
-    "@sofie-automation/blueprints-integration" "npm:@tv2media/blueprints-integration@1.41.3"
+    "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     fast-clone "^1.5.13"
     i18next "^19.9.2"
     influx "^5.9.2"
