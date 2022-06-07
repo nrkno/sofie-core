@@ -249,9 +249,8 @@ $duration-area-margin: 0.6em;
 						white-space: nowrap;
 						word-wrap: none;
 						top: auto;
-						bottom: -0.2em;
-						padding-right: 0.1em;
-						transform: translate(-100%, 0);
+						bottom: -6px;
+						padding-left: 0.2em;
 
 						font-size: 1.2em;
 						font-weight: 500;
@@ -300,6 +299,11 @@ $duration-area-margin: 0.6em;
 						margin-left: 0.3em;
 						color: #ffffff;
 						text-shadow: -1px -1px 1px #000, 1px -1px 1px #000, -1px 1px 1px #000, 1px 1px 1px #000, 2px 2px 3px #000;
+					}
+
+					&--no-end {
+						border-left: none;
+						background: linear-gradient(to right, transparent 0, rgba(0, 0, 0, 0.7) 60px);
 					}
 				}
 

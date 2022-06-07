@@ -3,6 +3,7 @@
 .segment-opl__main-piece {
 	position: relative;
 	overflow: visible;
+	min-height: 1.2em;
 
 	@include piece-colors();
 	@include missing-overlay();

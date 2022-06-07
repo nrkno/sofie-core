@@ -9,6 +9,7 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { RundownUtils } from '../../lib/rundown'
 import { FreezeFrameIcon } from '../../lib/ui/icons/freezeFrame'
+import classNames from 'classnames'
 
 interface IProps {
 	partId: PartId
@@ -17,6 +18,7 @@ interface IProps {
 	mainSourceEnd: number
 	endsInFreeze: boolean
 	partRenderedDuration: number
+	isPartZeroBudget: boolean
 }
 
 function timeToPosition(time: number, timelineBase: number, maxDuration: number): string {
@@ -37,6 +39,7 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 	mainSourceEnd,
 	endsInFreeze,
 	partRenderedDuration,
+	isPartZeroBudget,
 }: WithTiming<IProps>) {
 	const livePosition = timingDurations.partPlayed?.[unprotectString(partId)] ?? 0
 
@@ -50,11 +53,11 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 					? timeToPosition(
 							diff >= 0
 								? Math.min(mainSourceEnd, Math.max(livePosition, partRenderedDuration))
-								: Math.max(mainSourceEnd, Math.max(livePosition, partRenderedDuration)),
+								: Math.min(livePosition, Math.max(mainSourceEnd, partRenderedDuration)),
 							timelineBase,
 							timelineBase
 					  )
-					: undefined,
+					: timeToPosition(Math.max(livePosition, partRenderedDuration), timelineBase, timelineBase),
 		}),
 		[livePosition, timelineBase, mainSourceEnd, partRenderedDuration, diff]
 	)
@@ -66,16 +69,26 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 		[mainSourceEnd, timelineBase]
 	)
 
-	return endsInFreeze && mainSourceEnd && (originalDiff < 0 || diff > 0) ? (
+	return (
+		//mainSourceEnd && (originalDiff < 0 || diff > 0) ?
 		<>
-			<div className="segment-opl__freeze-marker" style={freezeFrameIconStyle}>
-				<FreezeFrameIcon />
-			</div>
-			<div className="segment-opl__overtime-shadow" style={overtimeStyle}>
-				<span className="segment-opl__overtime-timer" role="timer">
-					{RundownUtils.formatDiffToTimecode(diff, true, false, true, false, true, undefined, false, true)}
-				</span>
+			{endsInFreeze && (
+				<div className="segment-opl__freeze-marker" style={freezeFrameIconStyle}>
+					<FreezeFrameIcon />
+				</div>
+			)}
+			<div
+				className={classNames('segment-opl__overtime-shadow', {
+					'segment-opl__overtime-shadow--no-end': isPartZeroBudget && !endsInFreeze,
+				})}
+				style={overtimeStyle}
+			>
+				{mainSourceEnd && (originalDiff < 0 || diff > 0) && (
+					<span className="segment-opl__overtime-timer" role="timer">
+						{RundownUtils.formatDiffToTimecode(diff, true, false, true, false, true, undefined, false, true)}
+					</span>
+				)}
 			</div>
 		</>
-	) : null
+	)
 })

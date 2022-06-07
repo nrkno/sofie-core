@@ -11,6 +11,7 @@ interface IProps {
 	timelineBase: number
 	partDuration: number
 	capToPartDuration: boolean
+	isLive: boolean
 }
 
 function widthInBase(
@@ -37,6 +38,7 @@ export const LinePartMainPiece: React.FC<IProps> = function LinePartMainPiece({
 	partDuration,
 	timelineBase,
 	capToPartDuration,
+	isLive,
 }) {
 	const typeClass = piece.sourceLayer?.type ? RundownUtils.getSourceLayerClassName(piece?.sourceLayer?.type) : ''
 
@@ -56,7 +58,7 @@ export const LinePartMainPiece: React.FC<IProps> = function LinePartMainPiece({
 			{piece.sourceLayer?.type === SourceLayerType.SPLITS && (
 				<div className="segment-opl__main-piece__bkg">{getSplitItems(piece, 'segment-opl__main-piece__item')}</div>
 			)}
-			<div className="segment-opl__main-piece__label">{piece.instance.piece.name}</div>
+			{!isLive && <div className="segment-opl__main-piece__label">{piece.instance.piece.name}</div>}
 		</div>
 	)
 }

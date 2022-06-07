@@ -73,12 +73,17 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 	const maxDuration = Math.max((mainPieceInPoint ?? 0) + (mainPieceSourceDuration ?? 0), partDuration)
 	const timelineBase = Math.max(TIMELINE_DEFAULT_BASE, maxDuration)
 
-	const autoNext = isNext ? currentPartWillAutonext : part.willProbablyAutoNext
+	const willAutoNextIntoThisPart = isNext ? currentPartWillAutonext : part.willProbablyAutoNext
+	const willAutoNextOut = !!part.instance.part.autoNext
+
+	const isInvalid = !!part.instance.part.invalid
 
 	const endsInFreeze = !part.instance.part.autoNext && mainPiece?.instance.piece.content.sourceDuration !== undefined
 	const mainSourceEnd = mainPiece?.instance.piece.content.sourceDuration
 		? (mainPieceInPoint ?? 0) + mainPiece?.instance.piece.content.sourceDuration
 		: null
+
+	const isPartZeroBudget = part.instance.part.expectedDuration === 0
 
 	return (
 		<div className="segment-opl__part-timeline" data-base={timelineBase / 1000}>
@@ -96,17 +101,19 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 					timelineBase={timelineBase}
 					partDuration={partDuration}
 					capToPartDuration={part.instance.part.autoNext ?? false}
+					isLive={isLive}
 				/>
 			)}
-			{!isLive && <TakeLine isNext={isNext} autoNext={autoNext} />}
+			{!isLive && !isInvalid && <TakeLine isNext={isNext} autoNext={willAutoNextIntoThisPart} />}
 			{transitionPiece && <LinePartTransitionPiece piece={transitionPiece} />}
-			{mainSourceEnd && endsInFreeze && (
+			{!willAutoNextOut && !isInvalid && (
 				<OvertimeShadow
 					partId={part.instance.part._id}
 					timelineBase={timelineBase}
 					maxDuration={maxDuration}
-					mainSourceEnd={mainSourceEnd}
+					mainSourceEnd={mainSourceEnd ?? partDuration}
 					endsInFreeze={endsInFreeze}
+					isPartZeroBudget={isPartZeroBudget}
 					partRenderedDuration={partDuration}
 				/>
 			)}

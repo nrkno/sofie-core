@@ -4,9 +4,9 @@ import classNames from 'classnames'
 import React, { useCallback, useState } from 'react'
 import { ISourceLayerExtended, PartExtended } from '../../../lib/Rundown'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { RundownUtils } from '../../lib/rundown'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
-import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
 import { SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
 import { LinePartPieceIndicators } from './LinePartPieceIndicators'
@@ -89,7 +89,21 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				{isLivePart && <div className="segment-opl__part-marker segment-opl__part-marker--live"></div>}
 				{isNextPart && <div className="segment-opl__part-marker segment-opl__part-marker--next"></div>}
 				<div className="segment-opl__part-duration">
-					<PartDisplayDuration part={part} fixed={true} />
+					{/* <PartDisplayDuration part={part} fixed={true} /> */}
+					{part.instance.part.expectedDuration !== undefined && part.instance.part.expectedDuration > 0 && (
+						<span role="timer">
+							{RundownUtils.formatDiffToTimecode(
+								part.instance.part.expectedDuration,
+								false,
+								false,
+								true,
+								false,
+								true,
+								'+'
+							)}
+						</span>
+					)}
+					{part.instance.part.expectedDuration === 0 && <span>…</span>}
 				</div>
 				<h3 className="segment-opl__part-title">{part.instance.part.title}</h3>
 			</div>
