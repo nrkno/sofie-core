@@ -514,7 +514,7 @@ export class TSRHandler {
 		}
 	}
 	private async _updateDevices(): Promise<void> {
-		this.logger.info('updateDevices start')
+		this.logger.debug('updateDevices start')
 
 		const peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
 		const peripheralDevice = peripheralDevices.findOne(this._coreHandler.core.deviceId)
@@ -629,7 +629,7 @@ export class TSRHandler {
 		await Promise.all(ps)
 
 		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
-		this.logger.info('updateDevices end')
+		this.logger.debug('updateDevices end')
 	}
 	private getDeviceDebug(deviceOptions: DeviceOptionsAny): boolean {
 		return deviceOptions.debug || this._coreHandler.logDebug || false
