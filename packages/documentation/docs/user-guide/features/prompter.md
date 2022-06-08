@@ -21,7 +21,7 @@ The prompter UI can be configured using query parameters:
 | Query parameter | Type   | Description                                                                                                                                                         | Default |
 | :-------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------ |
 | `mirror`        | 0 / 1  | Mirror the display horizontally                                                                                                                                     | `0`     |
-| `vmirror`       | 0 / 1  | Mirror the display vertically                                                                                                                                       | `0`     |
+| `mirrorv`       | 0 / 1  | Mirror the display vertically                                                                                                                                       | `0`     |
 | `fontsize`      | number | Set a custom font size of the text. 20 will fit in 5 lines of text, 14 will fit 7 lines etc..                                                                       | `14`    |
 | `marker`        | string | Set position of the read-marker. Possible values: "center", "top", "bottom", "hide"                                                                                 | `hide`  |
 | `margin`        | number | Set margin of screen \(used on monitors with overscan\), in %.                                                                                                      | `0`     |
