@@ -3150,7 +3150,7 @@
     fast-clone "^1.5.13"
     i18next "^19.9.2"
     influx "^5.9.2"
-    mos-connection "^1.0.7"
+    mos-connection "^2.0.0"
     object-path "^0.11.8"
     timecode "0.0.4"
     tslib "^2.1.0"
@@ -10662,10 +10662,10 @@ monitor-event-loop-delay@^1.0.0:
   resolved "https://registry.yarnpkg.com/monitor-event-loop-delay/-/monitor-event-loop-delay-1.0.0.tgz#b5ab78165a3bb93f2b275c50d01430c7f155d1f7"
   integrity sha512-YRIr1exCIfBDLZle8WHOfSo7Xg3M+phcZfq9Fx1L6Abo+atGp7cge5pM7PjyBn4s1oZI/BRD4EMrzQBbPpVb5Q==
 
-mos-connection@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.7.tgz#7370eadf7da89ad9af57b9402d09a67973b56259"
-  integrity sha512-LuKzryGQwF8eEp9VOPpke5Bq+3GNL2fTLbVy+UUBGZIXWeTGlDxzxPMrrr2HLrWftEje9SdB8hu7tWX2h/5M7w==
+mos-connection@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-2.0.0.tgz#bf6958e8cb1648357ed939c345498a2e0b843973"
+  integrity sha512-WsL63EuJFWI1PbG5Ul+I1W8LA3GoyKCY8igbJSlHbecUz+BGQe+decUfoiXdBkPfIdW/wrJN/yBMyxtNbi5sQA==
   dependencies:
     iconv-lite "^0.6.2"
     moment "^2.29.1"
