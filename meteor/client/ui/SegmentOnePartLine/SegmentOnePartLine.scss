@@ -13,7 +13,7 @@ $part-border-margin: 1.5em;
 $part-border-color: #a7a7a760;
 
 $duration-area-width: 3.4em;
-$duration-area-margin: 0.6em;
+$duration-area-margin: 0.5em;
 
 .segment-timeline.segment-opl {
 	display: block;
@@ -31,10 +31,11 @@ $duration-area-margin: 0.6em;
 		.segment-opl__timeUntil {
 			box-sizing: border-box;
 			text-align: left;
-			padding: 0.4em $duration-area-margin 0 $duration-area-margin;
+			padding: 0.45em $duration-area-margin 0 $duration-area-margin;
 			line-height: 1em;
 			font-weight: 400;
 			transition: 0.3s color;
+			letter-spacing: 0;
 
 			> .segment-timeline__duration__label,
 			> .segment-timeline__timeUntil__label {
@@ -56,7 +57,7 @@ $duration-area-margin: 0.6em;
 		}
 
 		> h2.segment-opl__title__label {
-			margin: 0.2em 1em 0 0;
+			margin: 0.15em 1em 0.09em 0;
 			padding: 0;
 			line-height: 1.3em;
 			font-weight: 400;
