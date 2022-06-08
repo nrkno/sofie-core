@@ -600,7 +600,7 @@ export class CoreTSRDeviceHandler {
 			this.sendStatus()
 		}
 		await this.setupSubscriptionsAndObservers()
-		console.log('setupSubscriptionsAndObservers done')
+		this._coreParentHandler.logger.debug('setupSubscriptionsAndObservers done')
 	}
 	async setupSubscriptionsAndObservers(): Promise<void> {
 		// console.log('setupObservers', this.core.deviceId)

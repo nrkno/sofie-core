@@ -201,11 +201,15 @@ export class TSRHandler {
 					data: [],
 				}
 				if (args.length) {
-					for (const arg of args) {
-						if (typeof arg === 'object') {
-							msg.data.push(JSON.stringify(arg))
-						} else {
-							msg.data.push(arg)
+					if (typeof args === 'string') {
+						msg.data.push(args)
+					} else {
+						for (const arg of args) {
+							if (typeof arg === 'object') {
+								msg.data.push(JSON.stringify(arg))
+							} else {
+								msg.data.push(arg)
+							}
 						}
 					}
 				} else {
@@ -811,11 +815,15 @@ export class TSRHandler {
 						data: [],
 					}
 					if (args.length) {
-						for (const arg of args) {
-							if (typeof arg === 'object') {
-								msg.data.push(JSON.stringify(arg))
-							} else {
-								msg.data.push(arg)
+						if (typeof args === 'string') {
+							msg.data.push(args)
+						} else {
+							for (const arg of args) {
+								if (typeof arg === 'object') {
+									msg.data.push(JSON.stringify(arg))
+								} else {
+									msg.data.push(arg)
+								}
 							}
 						}
 					} else {
