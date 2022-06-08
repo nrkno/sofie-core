@@ -1276,10 +1276,10 @@
   version "0.0.0"
   uid ""
 
-"@sofie-automation/sorensen@^1.4.0":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@sofie-automation/sorensen/-/sorensen-1.4.1.tgz#2810ed6162756f5ec8023618f608c22ef08a21a9"
-  integrity sha512-jFZs3tjTB6V6OKKS4a354xgjB3LsOqeYhuEllWtXoVg9WVQWKizH3sr2D9c1QYpayNii9/mYar8RUjZuXhDc/A==
+"@sofie-automation/sorensen@^1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@sofie-automation/sorensen/-/sorensen-1.4.2.tgz#ca5e962374fc4af790f4b7238f8faabcb4cacb13"
+  integrity sha512-YT/2ng11jRYALdrfVkMSAt2HTXe13Vl3KUEdrIXXxZg89eoAz7/UlIaYxWlEdeEWR0vuobu2Gfrj4BpPsaZ+PQ==
 
 "@tokenizer/token@^0.3.0":
   version "0.3.0"
