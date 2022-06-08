@@ -1248,16 +1248,6 @@
   version "0.0.0"
   uid ""
 
-"@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.41.3":
-  version "1.41.3"
-  resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.41.3.tgz#1b32955d230b1c5e89f27b587f83e39352c8b47b"
-  integrity sha512-T1vS2TG6IXqJK7myJ3wRp1KJfc67XnRO59bXwfG1tn/zxBlY8nmard+vTbAV/gnHgf00eJYC+QUOGoPl6y9aKQ==
-  dependencies:
-    moment "2.29.1"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@1.0.0-release37"
-    tslib "^2.3.1"
-    type-fest "^2.11.1"
-
 "@sofie-automation/code-standard-preset@~2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@sofie-automation/code-standard-preset/-/code-standard-preset-2.0.0.tgz#9d68017b9849c658b2be0a0f46f46f1ee1caaa97"
@@ -10029,13 +10019,6 @@ timecode@0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
-
-"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@1.0.0-release37":
-  version "1.0.0-release37"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-1.0.0-release37.tgz#3271b202cd0c4e03ae418c76019276238eede7db"
-  integrity sha512-HdCWUQ0EJ7LwlaH9eRtURwzXknIvo3U8kInzus9Vx0M0HoUixYgfV5Z80w/PVSYdUk0L95kW2oLZB4ECB1M7Pg==
-  dependencies:
-    tslib "^2.1.0"
 
 "timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@2.0.0":
   version "2.0.0"
