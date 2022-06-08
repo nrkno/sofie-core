@@ -18,6 +18,7 @@ import { LinePart } from './LinePart'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ISourceLayerExtended } from '../../../lib/Rundown'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -40,6 +41,7 @@ interface IProps {
 	fixedSegmentDuration: boolean
 	showCountdownToSegment: boolean
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
+	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
 }
 
 // TODO: This is a horribly wonky hack for the prototype
@@ -128,6 +130,7 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 	const playlistHasNextPart = !!props.playlist.nextPartInstanceId
 
 	const renderedParts = props.parts.filter((part) => !(part.instance.part.invalid && part.instance.part.gap))
+	const isSinglePartInSegment = renderedParts.length === 1
 	renderedParts.forEach((part) => {
 		const isLivePart = part.instance._id === props.playlist.currentPartInstanceId
 		const isNextPart = part.instance._id === props.playlist.nextPartInstanceId
@@ -144,6 +147,7 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 				segment={props.segment}
 				isLivePart={isLivePart}
 				isNextPart={isNextPart}
+				isSinglePartInSegment={isSinglePartInSegment}
 				hasAlreadyPlayed={!!part.instance.timings?.stoppedPlayback || !!part.instance.timings?.takeOut}
 				displayLiveLineCounter={false}
 				inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
@@ -183,46 +187,56 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 					holdToDisplay={contextMenuHoldToDisplayTime()}
 					renderTag="div"
 				>
-					<div className="segment-opl__duration" tabIndex={0}>
-						{props.playlist &&
-							props.parts &&
-							props.parts.length > 0 &&
-							(!props.hasAlreadyPlayed || props.isNextSegment || props.isLiveSegment) && (
-								<SegmentDuration
-									segmentId={props.segment._id}
-									parts={props.parts}
-									label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
-									fixed={props.fixedSegmentDuration}
-								/>
-							)}
-					</div>
-					<div className="segment-opl__timeUntil" onClick={onTimeUntilClick}>
-						{props.playlist && props.parts && props.parts.length > 0 && props.showCountdownToSegment && (
-							<PartCountdown
-								partId={countdownToPartId}
-								hideOnZero={!useTimeOfDayCountdowns}
-								useWallClock={useTimeOfDayCountdowns}
-								playlist={props.playlist}
-								label={
-									useTimeOfDayCountdowns ? (
-										<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
-									) : (
-										<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
-									)
-								}
-							/>
-						)}
-						{props.studio.settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
-							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
-						)}
+					<div className="segment-opl__counters">
+						<div className="segment-opl__duration" tabIndex={0}>
+							{props.playlist &&
+								props.parts &&
+								props.parts.length > 0 &&
+								(!props.hasAlreadyPlayed || props.isNextSegment || props.isLiveSegment) && (
+									<SegmentDuration
+										segmentId={props.segment._id}
+										parts={props.parts}
+										label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
+										fixed={props.fixedSegmentDuration}
+									/>
+								)}
+						</div>
 					</div>
 					<h2
 						id={`segment-name-${props.segment._id}`}
 						className={'segment-opl__title__label' + (props.segment.identifier ? ' identifier' : '')}
 						data-identifier={props.segment.identifier}
+						onClick={() => props.onSwitchViewMode(SegmentViewMode.Timeline)}
 					>
 						{props.segment.name}
 					</h2>
+					<div className="segment-opl__counters">
+						<div
+							className={classNames('segment-opl__timeUntil', {
+								'segment-opl__timeUntil--time-of-day': useTimeOfDayCountdowns,
+							})}
+							onClick={onTimeUntilClick}
+						>
+							{props.playlist && props.parts && props.parts.length > 0 && props.showCountdownToSegment && (
+								<PartCountdown
+									partId={countdownToPartId}
+									hideOnZero={!useTimeOfDayCountdowns}
+									useWallClock={useTimeOfDayCountdowns}
+									playlist={props.playlist}
+									label={
+										useTimeOfDayCountdowns ? (
+											<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+										) : (
+											<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+										)
+									}
+								/>
+							)}
+							{props.studio.settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
+								<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
+							)}
+						</div>
+					</div>
 				</ContextMenuTrigger>
 			</StudioContext.Provider>
 			<div className="segment-opl__part-list">{parts}</div>

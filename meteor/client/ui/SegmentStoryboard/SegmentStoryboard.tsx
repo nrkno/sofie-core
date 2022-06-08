@@ -34,6 +34,8 @@ import { OptionalVelocityComponent } from '../../lib/utilComponents'
 import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
+// TODO: Remove feature-flag and integrate with regular SegmentViewMode switch button
+import { getUseOnePartPerLine } from '../../lib/localStorage'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -162,7 +164,7 @@ export const SegmentStoryboard = React.memo(
 		}
 
 		const onSwitchViewMode = () => {
-			props.onSwitchViewMode(SegmentViewMode.Timeline)
+			props.onSwitchViewMode(getUseOnePartPerLine() ? SegmentViewMode.OnePartPerLine : SegmentViewMode.Timeline)
 		}
 
 		const onClickPartIdent = (partId: PartId) => {

@@ -17,6 +17,7 @@ interface IProps {
 	part: PartExtended
 	isLivePart: boolean
 	isNextPart: boolean
+	isSinglePartInSegment: boolean
 	hasAlreadyPlayed: boolean
 	// isLastSegment?: boolean
 	// isLastPartInSegment?: boolean
@@ -36,6 +37,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 	segment,
 	isNextPart,
 	isLivePart,
+	isSinglePartInSegment,
 	hasAlreadyPlayed,
 	currentPartWillAutonext,
 	indicatorColumns,
@@ -90,20 +92,22 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				{isNextPart && <div className="segment-opl__part-marker segment-opl__part-marker--next"></div>}
 				<div className="segment-opl__part-duration">
 					{/* <PartDisplayDuration part={part} fixed={true} /> */}
-					{part.instance.part.expectedDuration !== undefined && part.instance.part.expectedDuration > 0 && (
-						<span role="timer">
-							{RundownUtils.formatDiffToTimecode(
-								part.instance.part.expectedDuration,
-								false,
-								false,
-								true,
-								false,
-								true,
-								'+'
-							)}
-						</span>
-					)}
-					{part.instance.part.expectedDuration === 0 && <span>…</span>}
+					{part.instance.part.expectedDuration !== undefined &&
+						part.instance.part.expectedDuration > 0 &&
+						!isSinglePartInSegment && (
+							<span role="timer">
+								{RundownUtils.formatDiffToTimecode(
+									part.instance.part.expectedDuration,
+									false,
+									false,
+									true,
+									false,
+									true,
+									'+'
+								)}
+							</span>
+						)}
+					{part.instance.part.expectedDuration === 0 && <span>⋯</span>}
 				</div>
 				<h3 className="segment-opl__part-title">{part.instance.part.title}</h3>
 			</div>

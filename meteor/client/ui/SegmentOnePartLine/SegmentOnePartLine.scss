@@ -5,30 +5,36 @@
 
 /** Loans from rundownView.scss, to be refactored to a shared variable file */
 $segment-title-background-color: #4b4b4b;
+$segment-header-width: 12.5rem;
 
 $part-height: 2.5em;
 
 $part-border-margin: 1.5em;
 $part-border-color: #a7a7a760;
 
-$duration-area-width: 4em;
+$duration-area-width: 3.4em;
 $duration-area-margin: 0.6em;
 
 .segment-timeline.segment-opl {
 	display: block;
 
 	> .segment-opl__title {
-		display: flex;
+		display: grid;
+		grid-template-rows: auto;
+		grid-template-columns: max-content max-content auto;
 
-		> .segment-opl__duration,
-		> .segment-opl__timeUntil {
+		> .segment-opl__counters {
+			display: flex;
+		}
+
+		.segment-opl__duration,
+		.segment-opl__timeUntil {
 			box-sizing: border-box;
 			text-align: left;
-			min-width: $duration-area-width;
-			width: fit-content;
-			flex: none;
-			padding: 0.45em $duration-area-margin 0 $duration-area-margin;
+			padding: 0.4em $duration-area-margin 0 $duration-area-margin;
 			line-height: 1em;
+			font-weight: 400;
+			transition: 0.3s color;
 
 			> .segment-timeline__duration__label,
 			> .segment-timeline__timeUntil__label {
@@ -36,25 +42,23 @@ $duration-area-margin: 0.6em;
 				font-size: 0.5em;
 				text-transform: uppercase;
 				line-height: 1em;
-				color: #a1a1a1;
-				font-weight: 400;
+				color: #888;
 			}
 		}
 
-		> .segment-opl__duration {
-		}
+		.segment-opl__timeUntil {
+			color: #888;
 
-		> .segment-opl__timeUntil {
-			padding-left: 0;
+			&--time-of-day {
+				color: #fff;
+				font-weight: 500;
+			}
 		}
 
 		> h2.segment-opl__title__label {
-			flex: 1 1;
-			grid-row: 1;
-			grid-column: title / end;
-			margin: 0;
+			margin: 0.2em 1em 0 0;
 			padding: 0;
-			line-height: 1.5em;
+			line-height: 1.3em;
 			font-weight: 400;
 			font-size: 1.5em;
 		}
@@ -68,7 +72,7 @@ $duration-area-margin: 0.6em;
 			display: grid;
 			min-height: $part-height;
 			grid-template-rows: minmax($part-height, auto);
-			grid-template-columns: [header] minmax(11em, 15em) [timeline] minmax(10em, 1fr) [piece-icons] 300px [end];
+			grid-template-columns: [header] $segment-header-width [timeline] minmax(10em, 1fr) [piece-icons] 300px [end];
 			grid-template-areas: 'header timeline piece-icons';
 
 			@include invalid-overlay();
@@ -110,10 +114,10 @@ $duration-area-margin: 0.6em;
 				> .segment-opl__part-duration {
 					grid-area: countdown;
 
-					margin-top: 0.8em;
+					margin-top: 1em;
 
-					font-weight: 400;
-					font-size: 0.9em;
+					font-weight: 300;
+					font-size: 0.8em;
 
 					text-align: center;
 					z-index: 1;
@@ -202,14 +206,14 @@ $duration-area-margin: 0.6em;
 						height: 1.6em;
 
 						&::after {
-							top: -2px;
+							top: -3px;
 							left: 0px;
 							@include take-arrow();
 							z-index: 1;
 						}
 
 						&::before {
-							bottom: -2px;
+							bottom: -3px;
 							left: 0px;
 							@include take-arrow();
 							z-index: 1;
@@ -303,7 +307,7 @@ $duration-area-margin: 0.6em;
 
 					&--no-end {
 						border-left: none;
-						background: linear-gradient(to right, transparent 0, rgba(0, 0, 0, 0.7) 60px);
+						background: linear-gradient(to right, transparent 0, rgba(0, 0, 0, 0.7) 120px);
 					}
 				}
 

@@ -281,6 +281,7 @@ export const SegmentOnePartLineContainer = withResolvedSegment<IProps>(function 
 			fixedSegmentDuration={props.fixedSegmentDuration ?? false}
 			hasAlreadyPlayed={props.hasAlreadyPlayed}
 			onContextMenu={props.onContextMenu}
+			onSwitchViewMode={props.onSwitchViewMode}
 		/>
 	)
 })

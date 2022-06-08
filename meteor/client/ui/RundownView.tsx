@@ -42,7 +42,7 @@ import { RundownUtils } from '../lib/rundown'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { getAllowStudio, getAllowDeveloper, getHelpMode, getUseOnePartPerLine } from '../lib/localStorage'
+import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
 import {
 	scrollToPosition,
@@ -2312,6 +2312,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										>
 											{this.renderSegmentComponent(
 												segment,
+												segmentIndex,
 												rundownAndSegments,
 												this.props.playlist,
 												this.props.studio,
@@ -2339,6 +2340,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		renderSegmentComponent(
 			segment: DBSegment,
+			index: number,
 			rundownAndSegments: MatchedSegment,
 			rundownPlaylist: RundownPlaylist,
 			studio: DBStudio,
@@ -2353,11 +2355,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const userSegmentDisplaymode = this.state.segmentViewModes[unprotectString(segment._id)] as
 				| SegmentViewMode
 				| undefined
-			let displayMode = userSegmentDisplaymode ?? segment.displayAs ?? DEFAULT_SEGMENT_VIEW_MODE
-
-			if (getUseOnePartPerLine()) {
-				displayMode = SegmentViewMode.OnePartPerLine
-			}
+			const displayMode = userSegmentDisplaymode ?? segment.displayAs ?? DEFAULT_SEGMENT_VIEW_MODE
 
 			const showDurationSourceLayers = this.state.rundownViewLayout?.showDurationSourceLayers
 				? new Set<ISourceLayer['_id']>(this.state.rundownViewLayout?.showDurationSourceLayers)
