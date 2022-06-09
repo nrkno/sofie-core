@@ -9,6 +9,7 @@ import { LinePartTransitionPiece } from './LinePartTransitionPiece/LinePartTrans
 import { LinePartSecondaryPiece } from './LinePartSecondaryPiece/LinePartSecondaryPiece'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { OvertimeShadow } from './OvertimeShadow'
+import { StudioContext } from './SegmentOnePartLine'
 
 const TIMELINE_DEFAULT_BASE = 30 * 1000
 
@@ -93,16 +94,25 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 					piece={piece}
 					timelineBase={timelineBase}
 					partDuration={partDuration}
+					partId={part.partId}
+					partInstanceId={part.instance._id}
 				/>
 			))}
 			{mainPiece && (
-				<LinePartMainPiece
-					piece={mainPiece}
-					timelineBase={timelineBase}
-					partDuration={partDuration}
-					capToPartDuration={part.instance.part.autoNext ?? false}
-					isLive={isLive}
-				/>
+				<StudioContext.Consumer>
+					{(studio) => (
+						<LinePartMainPiece
+							piece={mainPiece}
+							partId={part.partId}
+							partInstanceId={part.instance._id}
+							studio={studio}
+							timelineBase={timelineBase}
+							partDuration={partDuration}
+							capToPartDuration={part.instance.part.autoNext ?? false}
+							isLive={isLive}
+						/>
+					)}
+				</StudioContext.Consumer>
 			)}
 			{!isLive && !isInvalid && <TakeLine isNext={isNext} autoNext={willAutoNextIntoThisPart} />}
 			{transitionPiece && <LinePartTransitionPiece piece={transitionPiece} />}

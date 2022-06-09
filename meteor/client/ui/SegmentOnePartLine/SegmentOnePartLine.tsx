@@ -161,23 +161,23 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 	})
 
 	return (
-		<div
-			id={props.id}
-			className={classNames('segment-timeline', 'segment-opl', {
-				live: props.isLiveSegment,
-				next: !props.isLiveSegment && props.isNextSegment,
-				queued: props.isQueuedSegment,
+		<StudioContext.Provider value={props.studio}>
+			<div
+				id={props.id}
+				className={classNames('segment-timeline', 'segment-opl', {
+					live: props.isLiveSegment,
+					next: !props.isLiveSegment && props.isNextSegment,
+					queued: props.isQueuedSegment,
 
-				'has-played': props.hasAlreadyPlayed && !props.isLiveSegment && !props.isNextSegment,
+					'has-played': props.hasAlreadyPlayed && !props.isLiveSegment && !props.isNextSegment,
 
-				'invert-flash': highlight,
+					'invert-flash': highlight,
 
-				'time-of-day-countdowns': useTimeOfDayCountdowns,
-			})}
-			data-segment-id={props.segment._id}
-			ref={combinedRef}
-		>
-			<StudioContext.Provider value={props.studio}>
+					'time-of-day-countdowns': useTimeOfDayCountdowns,
+				})}
+				data-segment-id={props.segment._id}
+				ref={combinedRef}
+			>
 				<ContextMenuTrigger
 					id="segment-timeline-context-menu"
 					collect={getSegmentContext}
@@ -238,9 +238,9 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 						</div>
 					</div>
 				</ContextMenuTrigger>
-			</StudioContext.Provider>
-			<div className="segment-opl__part-list">{parts}</div>
-		</div>
+				<div className="segment-opl__part-list">{parts}</div>
+			</div>
+		</StudioContext.Provider>
 	)
 })
 
