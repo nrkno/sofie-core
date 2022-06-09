@@ -9,7 +9,7 @@ import * as _ from 'underscore'
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
 import { runIngestOperation } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
-import { DEFAULT_NRCS_TIMEOUT_TIME } from '@sofie-automation/corelib/dist/constants'
+import { DEFAULT_NRCS_TIMEOUT_TIME } from '@sofie-automation/shared-lib'
 
 export namespace GenericDeviceActions {
 	export async function reloadRundown(

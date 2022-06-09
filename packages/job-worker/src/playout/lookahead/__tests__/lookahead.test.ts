@@ -1,4 +1,4 @@
-import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/corelib/dist/constants'
+import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib'
 import { RundownPlaylistId, PartId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBStudio, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'

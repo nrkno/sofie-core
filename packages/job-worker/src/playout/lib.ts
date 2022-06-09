@@ -24,7 +24,7 @@ import {
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS } from '@sofie-automation/corelib/dist/constants'
+import { PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS } from '@sofie-automation/shared-lib'
 import { logger } from '../logging'
 import { getCurrentTime } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'

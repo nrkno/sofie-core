@@ -45,6 +45,7 @@
 		"@slack/webhook": "^6.1.0",
 		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
 		"@sofie-automation/corelib": "link:../corelib",
+		"@sofie-automation/shared-lib": "link:../shared-lib",
 		"amqplib": "^0.8.0",
 		"debounce-fn": "^4.0.0",
 		"deepmerge": "^4.2.2",

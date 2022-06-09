@@ -261,6 +261,7 @@ jobs:
             playout-gateway,
             mos-gateway,
             corelib,
+            shared-lib,
             job-worker,
           ]
 
@@ -298,6 +299,9 @@ jobs:
           # include additional configs, to run certain packages in a single version of node
           - node-version: 14.x
             package-name: corelib
+            send-coverage: true
+          - node-version: 14.x
+            package-name: shared-lib
             send-coverage: true
           - node-version: 14.x
             package-name: job-worker
@@ -348,7 +352,7 @@ jobs:
           node-version-file: ".node-version"
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn build
         env:

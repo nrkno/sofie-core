@@ -1,20 +1,20 @@
 {
-	"name": "@sofie-automation/corelib",
+	"name": "@sofie-automation/shared-lib",
 	"version": "1.44.0-in-development",
 	"private": true,
-	"description": "Internal library for some types shared by core and workers",
+	"description": "Library for types & values shared by core, workers and gateways",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
-		"directory": "packages/corelib"
+		"directory": "packages/sharelib"
 	},
 	"bugs": {
 		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/corelib#readme",
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/sharelib#readme",
 	"scripts": {
 		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
@@ -41,20 +41,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
-		"@sofie-automation/shared-lib": "link:../shared-lib",
-		"fast-clone": "^1.5.13",
-		"i18next": "^19.9.2",
-		"influx": "^5.9.3",
-		"mos-connection": "^2.0.0",
-		"object-path": "^0.11.8",
-		"timecode": "0.0.4",
-		"tslib": "^2.4.0",
-		"type-fest": "^2.12.2",
-		"underscore": "^1.13.3"
-	},
-	"peerDependencies": {
-		"mongodb": "^4.4.1"
+		"tslib": "^2.4.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"husky": {
