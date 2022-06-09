@@ -9,6 +9,8 @@ export function setupApmAgent(): void {
 
 	const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST, APM_ENABLE } = process.env
 
+	// TODO: There's something broken with APM since R43 where Core starts spinning if the JobWorkers have APM enabled
+	// so APM_ENABLE is supposed to prevent that, until we figure out what's wrong with APM now
 	if (APM_ENABLE && APM_HOST && APM_SECRET) {
 		logger.info(`APM agent starting up`)
 		Agent.start({
