@@ -30,7 +30,7 @@ The prompter UI can be configured using query parameters:
 | `followtake`    | 0 / 1  | Whether the prompter should automatically scroll to current segment when the operator TAKE:s it                                                                     | `1`     |
 | `debug`         | 0 / 1  | Whether to display a debug box showing controller input values and the calculated speed the prompter is currently scrolling at. Used to tweak speedMaps and ranges. | `0`     |
 
-Example: [http://127.0.0.1/prompter/studio0/?mode=mouse&followTake=0&fontsize=20](http://127.0.0.1/prompter/studio0/?mode=mouse&followTake=0&fontsize=20)
+Example: [http://127.0.0.1/prompter/studio0/?mode=mouse&followtake=0&fontsize=20](http://127.0.0.1/prompter/studio0/?mode=mouse&followtake=0&fontsize=20)
 
 ## Controlling the prompter
 
