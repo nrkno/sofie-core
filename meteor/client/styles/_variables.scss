@@ -19,7 +19,7 @@ $liveline-timecode-color: $general-countdown-to-next-color; //$general-live-colo
 $hold-status-color: $liveline-timecode-color;
 
 $segment-storyboard-part-width: 166px;
-$segment-storyboard-thumbnail-height: 7rem;
+$segment-storyboard-thumbnail-height: 2.9rem;
 
 @function rem($pixels, $context: $browser-context) {
 	@return #{$pixels/$context}rem;
