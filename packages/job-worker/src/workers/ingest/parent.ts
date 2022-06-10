@@ -1,6 +1,6 @@
 import { IngestWorkerChild } from './child'
 import { InvalidateWorkerDataCache } from '../caches'
-import { WorkerParentBase, WorkerParentBaseOptions } from '../parent-base'
+import { WorkerJobResult, WorkerParentBase, WorkerParentBaseOptions } from '../parent-base'
 import { AnyLockEvent } from '../locks'
 import { getIngestQueueName } from '@sofie-automation/corelib/dist/worker/ingest'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
@@ -50,7 +50,7 @@ export class IngestWorkerParent extends WorkerParentBase {
 	protected async invalidateWorkerCaches(invalidations: InvalidateWorkerDataCache): Promise<void> {
 		return this.#thread.invalidateCaches(invalidations)
 	}
-	protected async runJobInWorker(name: string, data: unknown): Promise<any> {
+	protected async runJobInWorker(name: string, data: unknown): Promise<WorkerJobResult> {
 		return this.#thread.runJob(name, data)
 	}
 	protected async terminateWorkerThread(): Promise<void> {

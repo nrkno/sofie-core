@@ -13,9 +13,16 @@ import {
 	getRandomString,
 } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import {
+	isTranslatableMessage,
+	ITranslatableMessage,
+	translateMessage,
+} from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { MeteorCall } from '../../../lib/api/methods'
+import { i18nTranslator } from '../../ui/i18n'
+import { getReportNotifications } from '../localStorage'
 
 /**
  * Priority level for Notifications.
@@ -142,6 +149,39 @@ class NotificationCenter0 {
 	constructor() {
 		this.highlightedSource = new ReactiveVar<NotificationsSource>(undefined)
 		this.highlightedLevel = new ReactiveVar<NoticeLevel>(NoticeLevel.TIP)
+
+		const notifLogUserId = getReportNotifications()
+		if (notifLogUserId) {
+			let oldNotificationIds: string[] = []
+			Tracker.autorun(() => {
+				const newNotifIds = this.getNotificationIDs()
+				const oldNotifIds = new Set(oldNotificationIds)
+
+				newNotifIds
+					.filter((id) => !oldNotifIds.has(id))
+					.forEach((id) => {
+						const notification = notifications[id]
+
+						if (notification && !notification.snoozed) {
+							const message = isTranslatableMessage(notification.message)
+								? translateMessage(notification.message, i18nTranslator)
+								: typeof notification.message === 'string'
+								? notification.message
+								: '[React Element]'
+
+							MeteorCall.client.clientLogNotification(
+								notification.created,
+								notifLogUserId,
+								notification.status,
+								message,
+								notification.source
+							)
+						}
+					})
+
+				oldNotificationIds = newNotifIds
+			})
+		}
 	}
 
 	get isConcentrationMode(): boolean {
@@ -268,6 +308,18 @@ class NotificationCenter0 {
 				})
 				.concat(Object.values(notifications))
 		)
+	}
+
+	/**
+	 * Get a reactive array of notificaiton id's in the Notification Center
+	 *
+	 * @returns {Array<string>}
+	 * @memberof NotificationCenter0
+	 */
+	getNotificationIDs(): Array<string> {
+		notificationsDep.depend()
+
+		return Object.keys(notifications)
 	}
 
 	/**
