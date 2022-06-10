@@ -3115,30 +3115,8 @@
     url "^0.11.0"
     webpack-sources "^1.4.3"
 
-"@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.41.2":
-  version "1.41.2"
-  resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.41.2.tgz#7c9552b59653180eb1bcbac784e8d3c7bbbaf46b"
-  integrity sha512-lZseNPtrKDKuAboQyEL5qypU3RkfdCTHPdXSQKQz53+8fcc/59AJPAwQWETnJbpuJ2wfOzBTDBFsMmVYady2cA==
-  dependencies:
-    moment "2.29.1"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@1.0.0-release37"
-    tslib "^2.3.1"
-    type-fest "^2.11.1"
-
-"@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.41.3":
-  version "1.41.3"
-  resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.41.3.tgz#1b32955d230b1c5e89f27b587f83e39352c8b47b"
-  integrity sha512-T1vS2TG6IXqJK7myJ3wRp1KJfc67XnRO59bXwfG1tn/zxBlY8nmard+vTbAV/gnHgf00eJYC+QUOGoPl6y9aKQ==
-  dependencies:
-    moment "2.29.1"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@1.0.0-release37"
-    tslib "^2.3.1"
-    type-fest "^2.11.1"
-
-"@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.42.5":
+"@sofie-automation/blueprints-integration@link:blueprints-integration":
   version "1.42.5"
-  resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.42.5.tgz#872e603d8107bab34dd26af4187d82b39ed74b98"
-  integrity sha512-8vIbTTHosvdex4Fqb3Eay7STss4fSvv3JuWLYe28dczzpwcLTyAwuNgElpwBrfaoRFkpLGIvO8hvAae/Uh7I5A==
   dependencies:
     moment "2.29.1"
     timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.0.0"
@@ -3168,7 +3146,7 @@
 "@sofie-automation/corelib@link:corelib":
   version "1.42.0-in-development"
   dependencies:
-    "@sofie-automation/blueprints-integration" "npm:@tv2media/blueprints-integration@1.41.3"
+    "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     fast-clone "^1.5.13"
     i18next "^19.9.2"
     influx "^5.9.2"
@@ -3178,6 +3156,16 @@
     tslib "^2.1.0"
     type-fest "^2.11.1"
     underscore "^1.13.2"
+
+"@sofie-automation/server-core-integration@link:server-core-integration":
+  version "1.41.0"
+  dependencies:
+    data-store "^4.0.3"
+    ejson "^2.2.2"
+    faye-websocket "^0.11.4"
+    got "^11.8.2"
+    tslib "^2.3.1"
+    underscore "^1.12.1"
 
 "@sofie-automation/server-core-integration@npm:@tv2media/server-core-integration@1.41.0":
   version "1.41.0"
@@ -3427,10 +3415,10 @@
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
   integrity sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==
 
-"@tv2media/v-connection@^5.1.1":
-  version "5.1.2"
-  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-5.1.2.tgz#fb6b839fd129e496af4fa968857b632a883b91d3"
-  integrity sha512-auKVbVSksxv9SVa2T4a7/bQXzvayhNQOYqcD7L+Pa2aO0LYDGwsyy/NzR7rBKnASnG+bqAjbokFRar4awoNMJA==
+"@tv2media/v-connection@^6.0.0":
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-6.0.1.tgz#f7becb7334b38d17e6a0e82f7605b69c6fd61c5d"
+  integrity sha512-MXvzEVMUY9EBT5vN32gjA/kjG0WX2kIfCEDGkoBp8gTi9kHSva6fnUrjgNnLgUifERZHJ3EN18hTjaa5GYHshA==
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -14387,13 +14375,13 @@ stylehacks@^5.0.3:
     browserslist "^4.16.6"
     postcss-selector-parser "^6.0.4"
 
-superfly-timeline@8.2.1:
-  version "8.2.1"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.1.tgz#07c0dfee351ae0597c9dcf0a33794ff53f90829e"
-  integrity sha512-cwd5mGL/2KP8JSBxdxU1bIG4zB3KtWUB/DwhyxBKtTQksAxgplZmWxSqkrE69LfmEQ/8nYBct2NFZ0fCTZzEnQ==
+superfly-timeline@8.2.7, superfly-timeline@^8.2.1:
+  version "8.2.7"
+  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.7.tgz#ddd49c64ddecf8464b6dfa98c3f7fbff799f9a44"
+  integrity sha512-CtI7+6hrrURjGlQ7ZQkVv0CtNkFTSM94XAPipiXH49MjMW7eq+C6Q5JsyOyMz2blMTVdU4ZdSy/wUuOqpgm/0g==
   dependencies:
-    tslib "^2.2.0"
-    underscore "^1.13.1"
+    tslib "^2.3.1"
+    underscore "^1.13.2"
 
 supports-color@^5.3.0, supports-color@^5.5.0:
   version "5.5.0"
@@ -14678,20 +14666,6 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@1.0.0-release37":
-  version "1.0.0-release37"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-1.0.0-release37.tgz#3271b202cd0c4e03ae418c76019276238eede7db"
-  integrity sha512-HdCWUQ0EJ7LwlaH9eRtURwzXknIvo3U8kInzus9Vx0M0HoUixYgfV5Z80w/PVSYdUk0L95kW2oLZB4ECB1M7Pg==
-  dependencies:
-    tslib "^2.1.0"
-
-"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@1.41.1":
-  version "1.41.1"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-1.41.1.tgz#29b8df926fcda0d2124151e0605df6c246f590e7"
-  integrity sha512-cEVIFsaHhjQJV6Y2Y8TERlyhhYOfKg5WvSq9ab+zYkE5G+kufqJfzIqCibBEvzrl0RedNq1Cp720voOMoy7FQQ==
-  dependencies:
-    tslib "^2.3.1"
-
 "timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-2.0.0.tgz#0af6ed0c1d69bd6c27b77c175f4fedf204ef8505"
@@ -14699,12 +14673,12 @@ timecode@0.0.4:
   dependencies:
     tslib "^2.3.1"
 
-"timeline-state-resolver@npm:@tv2media/timeline-state-resolver@1.41.1":
-  version "1.41.1"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver/-/timeline-state-resolver-1.41.1.tgz#eb8e4698ac6f4a46734874781957facda42ec5dc"
-  integrity sha512-q1r29erA5+72TZ/jXNmzkPoB52VkfyAUiUxpE+PxwhNN0gx083wvPlItA6i9RMiTqFpuDJVo9gSg0l1D5HGWUA==
+"timeline-state-resolver@npm:@tv2media/timeline-state-resolver@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver/-/timeline-state-resolver-2.0.0.tgz#975c5edc67c70a8bc25d8b598ec9ce5e5767da6e"
+  integrity sha512-hw8Dd3IlnSU7fpSE3DJwVpLTT37CsjMJCtYaL/2frb6F6iUkOjr/WlUhzNE7+ks+7HYbygaCjGhK9jlNRVvLLA==
   dependencies:
-    "@tv2media/v-connection" "^5.1.1"
+    "@tv2media/v-connection" "^6.0.0"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^5.1.0"
@@ -14722,9 +14696,9 @@ timecode@0.0.4:
     p-timeout "^3.2.0"
     request "^2.88.0"
     sprintf-js "^1.1.2"
-    superfly-timeline "8.2.1"
+    superfly-timeline "^8.2.1"
     threadedclass "^1.0.1"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@1.41.1"
+    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.0.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
@@ -15156,7 +15130,7 @@ underscore-deep-extend@^1.1.5:
   resolved "https://registry.yarnpkg.com/underscore-deep-extend/-/underscore-deep-extend-1.1.5.tgz#962ba1f8b3bb2e2afd182ed86f2e5275543c52bd"
   integrity sha1-liuh+LO7Lir9GC7Yby5SdVQ8Ur0=
 
-underscore@^1.12.0, underscore@^1.12.1, underscore@^1.13.1, underscore@^1.13.2, underscore@^1.9.1:
+underscore@^1.12.0, underscore@^1.12.1, underscore@^1.13.2, underscore@^1.9.1:
   version "1.13.2"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.13.2.tgz#276cea1e8b9722a8dbed0100a407dda572125881"
   integrity sha512-ekY1NhRzq0B08g4bGuX4wd2jZx5GnKz6mKSqFL4nqBlfyMGiG10gDFhDTMEfYmDL6Jy0FUIZp7wiRB+0BP7J2g==

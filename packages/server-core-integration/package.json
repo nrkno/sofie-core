@@ -1,5 +1,5 @@
 {
-	"name": "@tv2media/server-core-integration",
+	"name": "@sofie-automation/server-core-integration",
 	"version": "1.41.0",
 	"description": "Library for connecting to Core",
 	"main": "dist/index.js",

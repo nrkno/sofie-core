@@ -135,7 +135,7 @@ export async function calculateSegmentsFromIngestData(
 			)
 			let blueprintSegment0: BlueprintResultSegment | null = null
 			try {
-				blueprintSegment0 = blueprint.blueprint.getSegment(context2, ingestSegment)
+				blueprintSegment0 = await blueprint.blueprint.getSegment(context2, ingestSegment)
 			} catch (err) {
 				logger.error(`Error in showStyleBlueprint.getSegment: ${stringifyError(err)}`)
 				blueprintSegment0 = null
