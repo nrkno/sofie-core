@@ -77,4 +77,6 @@
 	.segment-timeline__piece__anomaly-marker__freezes {
 		background: repeating-linear-gradient(0deg, black, black 3px, rgba(0, 0, 0, 0.2) 3px, rgba(0, 0, 0, 0.2) 6px);
 	}
+
+	@include invalid-overlay();
 }
