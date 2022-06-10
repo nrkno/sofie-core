@@ -258,6 +258,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 			onPointerEnter={onPointerEnter}
 			onPointerLeave={onPointerLeave}
 			onPointerMove={onPointerMove}
+			HACK_disableSourceStatus={true}
 		>
 			{piece.sourceLayer?.type === SourceLayerType.SPLITS && (
 				<div className="segment-opl__main-piece__bkg">{getSplitItems(piece, 'segment-opl__main-piece__item')}</div>
