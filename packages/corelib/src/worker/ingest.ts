@@ -22,7 +22,6 @@ export enum IngestJobs {
 	RemoveSegment = 'removeSegment',
 	UpdateSegment = 'updateSegment',
 	UpdateSegmentRanks = 'updateSegmentRanks',
-	ReloadSegment = 'reloadSegment',
 	RemovePart = 'removePart',
 	UpdatePart = 'updatePart',
 	RegenerateRundown = 'regenerateRundown',
@@ -80,9 +79,6 @@ export interface IngestUpdateSegmentProps extends IngestPropsBase {
 }
 export interface IngestUpdateSegmentRanksProps extends IngestPropsBase {
 	newRanks: { [segmentExternalId: string]: number }
-}
-export interface IngestReloadSegmentProps extends IngestPropsBase {
-	segmentExternalId: string
 }
 export interface IngestRemovePartProps extends IngestPropsBase {
 	segmentExternalId: string
@@ -193,7 +189,6 @@ export type IngestJobFunc = {
 	[IngestJobs.RemoveSegment]: (data: IngestRemoveSegmentProps) => void
 	[IngestJobs.UpdateSegment]: (data: IngestUpdateSegmentProps) => void
 	[IngestJobs.UpdateSegmentRanks]: (data: IngestUpdateSegmentRanksProps) => void
-	[IngestJobs.ReloadSegment]: (data: IngestReloadSegmentProps) => void
 	[IngestJobs.RemovePart]: (data: IngestRemovePartProps) => void
 	[IngestJobs.UpdatePart]: (data: IngestUpdatePartProps) => void
 	[IngestJobs.RegenerateRundown]: (data: IngestRegenerateRundownProps) => void

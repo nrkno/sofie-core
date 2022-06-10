@@ -1255,26 +1255,6 @@
   version "0.0.0"
   uid ""
 
-"@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.41.3":
-  version "1.41.3"
-  resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.41.3.tgz#1b32955d230b1c5e89f27b587f83e39352c8b47b"
-  integrity sha512-T1vS2TG6IXqJK7myJ3wRp1KJfc67XnRO59bXwfG1tn/zxBlY8nmard+vTbAV/gnHgf00eJYC+QUOGoPl6y9aKQ==
-  dependencies:
-    moment "2.29.1"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@1.0.0-release37"
-    tslib "^2.3.1"
-    type-fest "^2.11.1"
-
-"@sofie-automation/blueprints-integration@npm:@tv2media/blueprints-integration@1.42.5":
-  version "1.42.5"
-  resolved "https://registry.yarnpkg.com/@tv2media/blueprints-integration/-/blueprints-integration-1.42.5.tgz#872e603d8107bab34dd26af4187d82b39ed74b98"
-  integrity sha512-8vIbTTHosvdex4Fqb3Eay7STss4fSvv3JuWLYe28dczzpwcLTyAwuNgElpwBrfaoRFkpLGIvO8hvAae/Uh7I5A==
-  dependencies:
-    moment "2.29.1"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.0.0"
-    tslib "^2.3.1"
-    type-fest "^2.11.1"
-
 "@sofie-automation/code-standard-preset@~2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@sofie-automation/code-standard-preset/-/code-standard-preset-2.0.0.tgz#9d68017b9849c658b2be0a0f46f46f1ee1caaa97"
@@ -7430,11 +7410,6 @@ module-details-from-path@^1.0.3:
   resolved "https://registry.yarnpkg.com/module-details-from-path/-/module-details-from-path-1.0.3.tgz#114c949673e2a8a35e9d35788527aa37b679da2b"
   integrity sha1-EUyUlnPiqKNenTV4hSeqN7Z52is=
 
-moment@2.29.1:
-  version "2.29.1"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
-  integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
-
 moment@2.29.3, moment@^2.29.1, moment@^2.29.2, moment@^2.29.3:
   version "2.29.3"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.3.tgz#edd47411c322413999f7a5940d526de183c031f3"
@@ -8723,7 +8698,7 @@ read-pkg-up@^3.0.0:
     find-up "^2.0.0"
     read-pkg "^3.0.0"
 
-read-pkg-up@^7.0.1:
+read-pkg-up@^7.0.0, read-pkg-up@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/read-pkg-up/-/read-pkg-up-7.0.1.tgz#f3a6135758459733ae2b95638056e1854e7ef507"
   integrity sha512-zK0TB7Xd6JpCLmlLmufqykGE+/TlOePD6qKClNW7hHDKFh/J7/7gCWGR7joEQEW1bKq3a3yUZSObOoWLFQ4ohg==
@@ -9893,13 +9868,13 @@ strtok3@^6.2.4:
     "@tokenizer/token" "^0.3.0"
     peek-readable "^4.1.0"
 
-superfly-timeline@8.2.1:
-  version "8.2.1"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.1.tgz#07c0dfee351ae0597c9dcf0a33794ff53f90829e"
-  integrity sha512-cwd5mGL/2KP8JSBxdxU1bIG4zB3KtWUB/DwhyxBKtTQksAxgplZmWxSqkrE69LfmEQ/8nYBct2NFZ0fCTZzEnQ==
+superfly-timeline@8.2.7:
+  version "8.2.7"
+  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.7.tgz#ddd49c64ddecf8464b6dfa98c3f7fbff799f9a44"
+  integrity sha512-CtI7+6hrrURjGlQ7ZQkVv0CtNkFTSM94XAPipiXH49MjMW7eq+C6Q5JsyOyMz2blMTVdU4ZdSy/wUuOqpgm/0g==
   dependencies:
-    tslib "^2.2.0"
-    underscore "^1.13.1"
+    tslib "^2.3.1"
+    underscore "^1.13.2"
 
 supports-color@^2.0.0:
   version "2.0.0"
@@ -10057,13 +10032,6 @@ timecode@0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
-
-"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@1.0.0-release37":
-  version "1.0.0-release37"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-1.0.0-release37.tgz#3271b202cd0c4e03ae418c76019276238eede7db"
-  integrity sha512-HdCWUQ0EJ7LwlaH9eRtURwzXknIvo3U8kInzus9Vx0M0HoUixYgfV5Z80w/PVSYdUk0L95kW2oLZB4ECB1M7Pg==
-  dependencies:
-    tslib "^2.1.0"
 
 "timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@2.0.0":
   version "2.0.0"

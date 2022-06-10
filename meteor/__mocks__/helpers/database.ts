@@ -84,11 +84,9 @@ function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VE
 
 	let TSR_VERSION = ''
 	try {
-		// eslint-disable-next-line node/no-missing-require
 		TSR_VERSION = require('../../node_modules/timeline-state-resolver-types/package.json').version
 	} catch (e) {
-		TSR_VERSION =
-			require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json').version
+		TSR_VERSION = require('../../../packages/node_modules/timeline-state-resolver-types/package.json').version
 	}
 
 	return {
