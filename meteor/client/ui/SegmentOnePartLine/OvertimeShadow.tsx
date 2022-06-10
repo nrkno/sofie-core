@@ -58,6 +58,7 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 							timelineBase
 					  )
 					: timeToPosition(Math.max(livePosition, partRenderedDuration), timelineBase, timelineBase),
+			display: endsInFreeze && livePosition > mainSourceEnd ? 'none' : undefined,
 		}),
 		[livePosition, timelineBase, mainSourceEnd, partRenderedDuration, diff]
 	)
