@@ -17,7 +17,7 @@ interface IProps {
 	onPointerMove?: React.PointerEventHandler<HTMLDivElement> | undefined
 
 	// TODO: Remove this hack
-	HACK_disableSourceStatus: boolean
+	HACK_disableSourceStatus?: boolean
 }
 
 export const PieceElement = React.forwardRef<HTMLDivElement, React.PropsWithChildren<IProps>>(function PieceElement(
