@@ -3,7 +3,7 @@
  * UI.
  */
 import { DeviceConfigManifest, ConfigManifestEntryType } from '@sofie-automation/server-core-integration'
-import { DEFAULT_MOS_HEARTBEAT_INTERVAL, DEFAULT_MOS_TIMEOUT_TIME } from './mosHandler'
+import { DEFAULT_MOS_TIMEOUT_TIME, DEFAULT_MOS_HEARTBEAT_INTERVAL } from '@sofie-automation/shared-lib'
 
 export const MOS_DEVICE_CONFIG_MANIFEST: DeviceConfigManifest = {
 	deviceConfig: [

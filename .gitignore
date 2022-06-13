@@ -6,3 +6,4 @@ node_modules
 
 # Exclude JetBrains IDE specific files
 .idea
+**/yarn-error.log

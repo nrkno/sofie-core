@@ -1,22 +1,21 @@
 {
-	"name": "@sofie-automation/job-worker",
+	"name": "@sofie-automation/shared-lib",
 	"version": "1.44.0-in-development",
-	"description": "Worker for things",
+	"private": false,
+	"description": "Library for types & values shared by core, workers and gateways",
 	"main": "dist/index.js",
+	"typings": "dist/index.d.ts",
 	"license": "MIT",
-	"private": true,
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
-		"directory": "packages/job-worker"
+		"directory": "packages/sharelib"
 	},
 	"bugs": {
 		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/job-worker#readme",
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/sharelib#readme",
 	"scripts": {
-		"dev": "nodemon --config nodemon.json src/index.ts",
-		"dev:debug": "nodemon --config nodemon.json --inspect-brk src/index.ts",
 		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
 		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
@@ -40,24 +39,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@slack/webhook": "^6.1.0",
-		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
-		"@sofie-automation/corelib": "link:../corelib",
-		"@sofie-automation/shared-lib": "link:../shared-lib",
-		"amqplib": "^0.8.0",
-		"debounce-fn": "^4.0.0",
-		"deepmerge": "^4.2.2",
-		"elastic-apm-node": "^3.33.0",
-		"eventemitter3": "^4.0.7",
-		"mongodb": "^4.6.0",
-		"p-lazy": "^3.1.0",
-		"p-timeout": "^4.1.0",
-		"superfly-timeline": "^8.2.7",
-		"threadedclass": "^1.0.2",
-		"tslib": "^2.4.0",
-		"type-fest": "^2.12.2",
-		"underscore": "^1.13.3",
-		"vm2": "^3.9.9"
+		"tslib": "^2.4.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

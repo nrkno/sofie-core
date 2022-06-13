@@ -2962,13 +2962,17 @@
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     fast-clone "^1.5.13"
     i18next "^19.9.2"
-    influx "^5.9.2"
+    influx "^5.9.3"
     mos-connection "^2.0.0"
     object-path "^0.11.8"
     timecode "0.0.4"
     tslib "^2.4.0"
     type-fest "^2.12.2"
     underscore "^1.13.3"
+
+"@sofie-automation/shared-lib@link:shared-lib":
+  version "0.0.0"
+  uid ""
 
 "@svgr/babel-plugin-add-jsx-attribute@^5.4.0":
   version "5.4.0"
