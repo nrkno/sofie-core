@@ -32,6 +32,7 @@ export class IngestWorkerParent extends WorkerParentBase {
 			[baseOptions.studioId, emitLockEvent, baseOptions.jobManager.queueJob, logLine, fastTrackTimeline],
 			{
 				instanceName: `Ingest: ${baseOptions.studioId}`,
+				autoRestart: true,
 			}
 		)
 
