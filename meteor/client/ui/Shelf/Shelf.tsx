@@ -65,6 +65,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	}
 	bucketDisplayFilter: number[] | undefined
 	showBuckets: boolean
+	showInspector: boolean
 
 	onChangeExpanded: (value: boolean) => void
 	onChangeBottomMargin?: (newBottomMargin: string) => void
@@ -489,7 +490,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							/>
 						</ErrorBoundary>
 					) : null}
-					{shelfDisplayOptions.inspector ? (
+					{shelfDisplayOptions.inspector && this.props.rundownLayout?.showInspector ? (
 						<ErrorBoundary>
 							<ShelfInspector
 								selected={this.state.selectedPiece}

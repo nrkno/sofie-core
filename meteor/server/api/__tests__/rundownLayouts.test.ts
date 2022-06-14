@@ -62,6 +62,7 @@ describe('Rundown Layouts', () => {
 				icon: '',
 				iconColor: '',
 				showBuckets: true,
+				showInspector: true,
 				openByDefault: false,
 				disableContextMenu: true,
 				regionId: CustomizableRegions.Shelf,
