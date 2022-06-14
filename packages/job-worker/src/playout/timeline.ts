@@ -731,15 +731,11 @@ function generateCurrentInfinitePieceObjects(
 		pieceInstance.infinite && pieceInstance.piece.startPartId !== currentPartInfo.partInstance.part._id
 
 	let pieceEnable: TSR.Timeline.TimelineEnable
-	let resolvedEndCap = pieceInstance.resolvedEndCap
+	let pieceStartOffset = 0
 	if (isAbsoluteInfinitePartGroup || isInfiniteContinuation) {
-		if (typeof resolvedEndCap === 'number') {
-			// If we have a real end cap, then offset the end to compensate for the forced 0 start
-			resolvedEndCap -=
-				pieceInstance.piece.enable.start === 'now' ? nowInParent : pieceInstance.piece.enable.start
-		}
-
 		pieceEnable = { start: 0 }
+
+		if (pieceInstance.piece.enable.start !== 'now') pieceStartOffset = pieceInstance.piece.enable.start
 	} else {
 		pieceEnable = getPieceEnableInsidePart(pieceInstance, currentPartInstanceTimings)
 	}
@@ -761,6 +757,7 @@ function generateCurrentInfinitePieceObjects(
 			nowInParent,
 			pieceInstance,
 			pieceEnable,
+			pieceStartOffset,
 			groupClasses,
 			isInHold,
 			isOriginOfInfinite
@@ -1048,6 +1045,7 @@ function transformPartIntoTimeline(
 				nowInParentGroup,
 				pieceInstance,
 				pieceEnable,
+				0,
 				pieceGroupFirstObjClasses,
 				isInHold,
 				false
@@ -1064,6 +1062,7 @@ function transformPieceGroupAndObjects(
 	nowInPart: number,
 	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	pieceEnable: TSR.Timeline.TimelineEnable,
+	pieceStartOffset: number, // If the start of the piece has been offset inside the partgroup
 	firstObjClasses: string[],
 	isInHold: boolean,
 	includeHoldExceptObjects: boolean
@@ -1073,7 +1072,7 @@ function transformPieceGroupAndObjects(
 		typeof partGroup.enable.start === 'number' && hasPieceInstanceDefinitelyEnded(pieceInstance, nowInPart)
 
 	// create a piece group for the pieces and then place all of them there
-	const { pieceGroup, capObjs } = createPieceGroupAndCap(pieceInstance, partGroup, pieceEnable)
+	const { pieceGroup, capObjs } = createPieceGroupAndCap(pieceInstance, partGroup, pieceEnable, pieceStartOffset)
 	const timelineObjs = [pieceGroup, ...capObjs]
 
 	if (!pieceInstance.piece.virtual && !hasDefinitelyEnded) {

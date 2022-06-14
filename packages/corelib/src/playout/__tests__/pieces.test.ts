@@ -359,5 +359,38 @@ describe('Pieces', () => {
 				},
 			})
 		})
+
+		test('resolvedEndCap with piece start offset', () => {
+			const enable: TimelineEnable = { start: 0 }
+
+			const pieceInstance: PieceInstanceParam = {
+				...simplePieceInstance,
+				resolvedEndCap: 500,
+			}
+
+			// No offset
+			const res = createPieceGroupAndCap(pieceInstance, partGroup, enable)
+			expect(res.capObjs).toHaveLength(0)
+			expect(res.pieceGroup).toStrictEqual({
+				...simplePieceGroup,
+				inGroup: partGroup.id,
+				enable: {
+					...enable,
+					end: 500,
+				},
+			})
+
+			// Factor in offset
+			const res2 = createPieceGroupAndCap(pieceInstance, partGroup, enable, 100)
+			expect(res2.capObjs).toHaveLength(0)
+			expect(res2.pieceGroup).toStrictEqual({
+				...simplePieceGroup,
+				inGroup: partGroup.id,
+				enable: {
+					...enable,
+					end: 400,
+				},
+			})
+		})
 	})
 })
