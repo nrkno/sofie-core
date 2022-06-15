@@ -69,7 +69,7 @@ export async function handleRegenerateRundownPlaylist(
 
 		const rundowns: Array<Pick<DBRundown, '_id' | 'externalId'>> =
 			await context.directCollections.Rundowns.findFetch(
-				{ playlistId: playlist },
+				{ playlistId: playlist._id },
 				{ projection: { _id: 1, externalId: 1 } }
 			)
 		if (rundowns.length === 0) return []
