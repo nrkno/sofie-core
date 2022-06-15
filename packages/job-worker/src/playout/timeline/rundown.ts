@@ -292,15 +292,11 @@ function generateCurrentInfinitePieceObjects(
 		pieceInstance.infinite && pieceInstance.piece.startPartId !== currentPartInfo.partInstance.part._id
 
 	let pieceEnable: TSR.Timeline.TimelineEnable
-	let resolvedEndCap = pieceInstance.resolvedEndCap
+	let pieceStartOffset = 0
 	if (isAbsoluteInfinitePartGroup || isInfiniteContinuation) {
-		if (typeof resolvedEndCap === 'number') {
-			// If we have a real end cap, then offset the end to compensate for the forced 0 start
-			resolvedEndCap -=
-				pieceInstance.piece.enable.start === 'now' ? nowInParent : pieceInstance.piece.enable.start
-		}
-
 		pieceEnable = { start: 0 }
+
+		if (pieceInstance.piece.enable.start !== 'now') pieceStartOffset = pieceInstance.piece.enable.start
 	} else {
 		pieceEnable = getPieceEnableInsidePart(pieceInstance, currentPartInstanceTimings, currentPartGroup.id)
 	}
@@ -322,6 +318,7 @@ function generateCurrentInfinitePieceObjects(
 			nowInParent,
 			pieceInstance,
 			pieceEnable,
+			pieceStartOffset,
 			groupClasses,
 			isInHold,
 			isOriginOfInfinite

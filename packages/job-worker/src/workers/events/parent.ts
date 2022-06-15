@@ -31,6 +31,7 @@ export class EventsWorkerParent extends WorkerParentBase {
 			[baseOptions.studioId, emitLockEvent, baseOptions.jobManager.queueJob, logLine, fastTrackTimeline],
 			{
 				instanceName: `Events: ${baseOptions.studioId}`,
+				autoRestart: true,
 			}
 		)
 

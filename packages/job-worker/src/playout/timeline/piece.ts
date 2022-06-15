@@ -22,6 +22,7 @@ export function transformPieceGroupAndObjects(
 	nowInPart: number,
 	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	pieceEnable: TSR.Timeline.TimelineEnable,
+	pieceStartOffset: number, // If the start of the piece has been offset inside the partgroup
 	controlObjClasses: string[],
 	isInHold: boolean,
 	includeHoldExceptObjects: boolean
@@ -36,7 +37,8 @@ export function transformPieceGroupAndObjects(
 		pieceInstance,
 		controlObjClasses,
 		partGroup,
-		pieceEnable
+		pieceEnable,
+		pieceStartOffset
 	)
 	// We need all these objects so that we can resolve all the piece timings in this timeline
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = [controlObj, childGroup, ...capObjs]

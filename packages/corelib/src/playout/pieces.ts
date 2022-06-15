@@ -39,7 +39,8 @@ export function createPieceGroupAndCap(
 	>,
 	controlObjClasses?: string[],
 	partGroup?: TimelineObjRundown,
-	pieceEnable?: TSR.Timeline.TimelineEnable
+	pieceEnable?: TSR.Timeline.TimelineEnable,
+	pieceStartOffset?: number
 ): {
 	controlObj: TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceTimelineMetadata>
 	childGroup: TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>
@@ -113,7 +114,6 @@ export function createPieceGroupAndCap(
 
 	const capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>> = []
 
-	let nowObj: (TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>) | undefined
 	if (controlObj.enable.start === 'now' && piecePreroll > 0) {
 		// Use a dedicated now object, as we need to delay the start of the control object to allow the piece_group to preroll
 		const startNowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
@@ -141,10 +141,11 @@ export function createPieceGroupAndCap(
 		controlObj.metaData.triggerPieceInstanceId = pieceInstance._id
 	}
 
-	if (pieceInstance.resolvedEndCap === 'now') {
+	let resolvedEndCap = pieceInstance.resolvedEndCap
+	if (resolvedEndCap === 'now') {
 		// TODO - there could already be a piece with a cap of 'now' that we could use as our end time
 		// As the cap is for 'now', rather than try to get tsr to understand `end: 'now'`, we can create a 'now' object to tranlate it
-		nowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
+		const nowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
 			objectType: TimelineObjType.RUNDOWN,
 			id: `${controlObj.id}_cap_now`,
 			enable: {
@@ -160,26 +161,31 @@ export function createPieceGroupAndCap(
 			}),
 		})
 		capObjs.push(nowObj)
+		resolvedEndCap = `#${nowObj.id}.start`
+	} else if (pieceStartOffset && resolvedEndCap !== undefined) {
+		// If the start has been adjusted, the end needs to be updated to compensate
+		if (typeof resolvedEndCap === 'number') {
+			resolvedEndCap -= pieceStartOffset
+		} else {
+			resolvedEndCap = `${resolvedEndCap} - ${pieceStartOffset}`
+		}
 	}
 
 	if (controlObj.enable.duration !== undefined || controlObj.enable.end !== undefined) {
 		let updatedControlObj = false
-		if (typeof pieceInstance.resolvedEndCap === 'number') {
+		if (typeof resolvedEndCap === 'number') {
 			// If everything is numeric, we can keep it simple and flatten it out here
 			if (typeof controlObj.enable.end === 'number') {
 				updatedControlObj = true
-				controlObj.enable.end = Math.min(controlObj.enable.end, pieceInstance.resolvedEndCap)
+				controlObj.enable.end = Math.min(controlObj.enable.end, resolvedEndCap)
 			} else if (typeof controlObj.enable.start === 'number' && typeof controlObj.enable.duration === 'number') {
 				updatedControlObj = true
-				controlObj.enable.end = Math.min(
-					controlObj.enable.start + controlObj.enable.duration,
-					pieceInstance.resolvedEndCap
-				)
+				controlObj.enable.end = Math.min(controlObj.enable.start + controlObj.enable.duration, resolvedEndCap)
 				delete controlObj.enable.duration
 			}
 		}
 
-		if (!updatedControlObj && pieceInstance.resolvedEndCap !== undefined) {
+		if (!updatedControlObj && resolvedEndCap !== undefined) {
 			// Create a wrapper group to apply the end cap
 			const pieceEndCapGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>(
 				{
@@ -187,7 +193,7 @@ export function createPieceGroupAndCap(
 					id: `${controlObj.id}_cap`,
 					enable: {
 						start: 0,
-						end: nowObj ? `#${nowObj.id}.start` : pieceInstance.resolvedEndCap,
+						end: resolvedEndCap,
 					},
 					layer: '',
 					children: [],
@@ -207,7 +213,7 @@ export function createPieceGroupAndCap(
 			controlObj.inGroup = pieceEndCapGroup.id
 		}
 	} else {
-		controlObj.enable.end = nowObj ? `#${nowObj.id}.start` : pieceInstance.resolvedEndCap
+		controlObj.enable.end = resolvedEndCap
 	}
 
 	return { controlObj, childGroup, capObjs }
