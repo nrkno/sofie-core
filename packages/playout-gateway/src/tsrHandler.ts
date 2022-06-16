@@ -152,7 +152,7 @@ export class TSRHandler {
 			proActiveResolve: true,
 		}
 		this.tsr = new Conductor(c)
-		this._triggerupdateTimelineAndMappings()
+		this._triggerupdateTimelineAndMappings('TSRHandler.init()')
 
 		coreHandler.onConnected(() => {
 			this.setupObservers()
@@ -263,7 +263,7 @@ export class TSRHandler {
 		await this.tsr.init()
 
 		this._initialized = true
-		this._triggerupdateTimelineAndMappings()
+		this._triggerupdateTimelineAndMappings('TSRHandler.init(), later')
 		this.onSettingsChanged()
 		this._triggerUpdateDevices()
 		this.logger.debug('tsr init done')
@@ -280,25 +280,25 @@ export class TSRHandler {
 
 		const timelineObserver = this._coreHandler.core.observe('studioTimeline')
 		timelineObserver.added = () => {
-			this._triggerupdateTimelineAndMappings(true)
+			this._triggerupdateTimelineAndMappings('studioTimeline.added', true)
 		}
 		timelineObserver.changed = () => {
-			this._triggerupdateTimelineAndMappings(true)
+			this._triggerupdateTimelineAndMappings('studioTimeline.changed', true)
 		}
 		timelineObserver.removed = () => {
-			this._triggerupdateTimelineAndMappings(true)
+			this._triggerupdateTimelineAndMappings('studioTimeline.removed', true)
 		}
 		this._observers.push(timelineObserver)
 
 		const mappingsObserver = this._coreHandler.core.observe('studioMappings')
 		mappingsObserver.added = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings('studioMappings.added')
 		}
 		mappingsObserver.changed = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings('studioMappings.changed')
 		}
 		mappingsObserver.removed = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings('studioMappings.removed')
 		}
 		this._observers.push(mappingsObserver)
 
@@ -416,12 +416,12 @@ export class TSRHandler {
 			this._triggerUpdateDevices()
 		}
 	}
-	private _triggerupdateTimelineAndMappings(fromTlChange?: boolean) {
+	private _triggerupdateTimelineAndMappings(context: string, fromTlChange?: boolean) {
 		if (!this._initialized) return
 
-		this._updateTimelineAndMappings(fromTlChange)
+		this._updateTimelineAndMappings(context, fromTlChange)
 	}
-	private _updateTimelineAndMappings(fromTlChange?: boolean) {
+	private _updateTimelineAndMappings(context: string, fromTlChange?: boolean) {
 		const timeline = this.getTimeline()
 		const mappingsObject = this.getMappings()
 
@@ -441,7 +441,7 @@ export class TSRHandler {
 			return
 		}
 
-		this.logger.debug(`Trigger new resolving`)
+		this.logger.debug(`Trigger new resolving (${context})`)
 		if (fromTlChange) {
 			const trace = {
 				measurement: 'playout-gateway:timelineReceived',
