@@ -57,7 +57,8 @@ export function calculatePartTimings(
 	// toPartPreroll: number
 ): PartCalculatedTimings {
 	// If in a hold, we cant do the transition
-	const isInHold = holdState !== RundownHoldState.NONE && holdState !== undefined
+	const isInHold =
+		holdState !== RundownHoldState.NONE && holdState !== RundownHoldState.COMPLETE && holdState !== undefined
 
 	const toPartPreroll = calculatePartPreroll(toPiece)
 
