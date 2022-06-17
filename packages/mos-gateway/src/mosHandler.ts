@@ -24,7 +24,10 @@ import {
 import * as Winston from 'winston'
 import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
 import { CollectionObj } from '@sofie-automation/server-core-integration'
-import { DEFAULT_MOS_TIMEOUT_TIME, DEFAULT_MOS_HEARTBEAT_INTERVAL } from '@sofie-automation/shared-lib'
+import {
+	DEFAULT_MOS_TIMEOUT_TIME,
+	DEFAULT_MOS_HEARTBEAT_INTERVAL,
+} from '@sofie-automation/shared-lib/dist/core/constants'
 
 export interface MosConfig {
 	self: IConnectionConfig

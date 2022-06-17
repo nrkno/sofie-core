@@ -1,21 +1,20 @@
 import { TSR, OnGenerateTimelineObj, TimelineObjectCoreExt, Time } from '@sofie-automation/blueprints-integration'
 import { SetRequired } from 'type-fest'
 import { ProtectedString, protectString, unprotectString } from '../protectedString'
-import {
-	PartInstanceId,
-	PieceInstanceInfiniteId,
-	BlueprintId,
-	RundownPlaylistId,
-	PieceInstanceId,
-	StudioId,
-} from './Ids'
+import { PartInstanceId, PieceInstanceInfiniteId, BlueprintId, StudioId } from './Ids'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
 	GROUP = 'group',
 }
 
-export type TimelineHash = ProtectedString<'TimelineHash'>
+import { TimelineHash } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+export { TimelineHash }
+import {
+	PartPlaybackCallbackData,
+	PiecePlaybackCallbackData,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+export { PartPlaybackCallbackData, PiecePlaybackCallbackData }
 
 export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
 
@@ -59,17 +58,6 @@ export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
 export type TimelineObjGroupRundown = TimelineObjGroup & Omit<TimelineObjRundown, 'enable'>
 
 export type TimelineObjGroupPart = TimelineObjGroupRundown
-
-export interface PartPlaybackCallbackData {
-	rundownPlaylistId: RundownPlaylistId
-	partInstanceId: PartInstanceId
-}
-export interface PiecePlaybackCallbackData {
-	rundownPlaylistId: RundownPlaylistId
-	partInstanceId: PartInstanceId
-	pieceInstanceId: PieceInstanceId
-	dynamicallyInserted?: boolean
-}
 
 export interface TimelineObjPartAbstract extends TimelineObjRundown {
 	// used for sending callbacks

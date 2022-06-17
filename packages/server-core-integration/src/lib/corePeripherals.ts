@@ -1,25 +1,16 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { DeviceConfigManifest } from './configManifest'
 
+import { StatusCode as OrgStatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
+
 /**
  * Note: This file contains a copy of the typings from meteor/lib/api/peripheralDevice.ts in Core
  */
 
 export namespace PeripheralDeviceAPI {
-	export enum StatusCode {
-		/** Unknown status, could be due to parent device connected etc.. */
-		UNKNOWN = 0,
-		/** All good and green */
-		GOOD = 1,
-		/** Everything is not OK, but normal operation should not be affected. An optional/backup service might be offline, etc. */
-		WARNING_MINOR = 2,
-		/** Everything is not OK, operation might be affected. Like when having switched to a backup, or have taken action to fix an error. Sofie will show a restart device button for this and all higher severity warnings. */
-		WARNING_MAJOR = 3,
-		/** Not good. Operation is affected. Will be able to recover on it's own when the situation changes. */
-		BAD = 4,
-		/** Not good. Operation is affected. Will NOT be able to to recover from this, manual intervention will be required. */
-		FATAL = 5,
-	}
+	// Export enum:
+	export type StatusCode = OrgStatusCode
+	export const StatusCode = OrgStatusCode
 
 	export interface StatusObject {
 		statusCode: StatusCode
