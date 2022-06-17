@@ -102,10 +102,11 @@ function createObserverForTimelinePublication(
 			// Initial data fetch
 			return {
 				studioId: studioId,
-				incomingTimeline: Timeline.findOne({
-					_id: studioId,
-				}),
-				timeline: undefined,
+				incomingTimeline:
+					Timeline.findOne({
+						_id: studioId,
+					}) ?? null,
+				timeline: null,
 				timelineHash: undefined,
 				timelineGenerated: 0,
 
@@ -173,7 +174,7 @@ function createObserverForTimelinePublication(
 					logger.warn('Incoming timeline is older than the last sent timeline, rejecting the update')
 				}
 
-				context.incomingTimeline = undefined
+				context.incomingTimeline = null
 			}
 
 			if (context.timelineHash !== context.timeline.timelineHash) {
