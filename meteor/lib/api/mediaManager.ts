@@ -5,4 +5,4 @@ export namespace MediaManagerAPI {
 
 	export type WorkStepAction = Shared.WorkStepAction
 	export const WorkStepAction = Shared.WorkStepAction
-
+}
