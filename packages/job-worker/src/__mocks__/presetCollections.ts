@@ -410,6 +410,7 @@ export async function setupMockPeripheralDevice(
 		name: 'mockDevice',
 		organizationId: null,
 		studioId: context.studioId,
+		settings: {},
 
 		category: category,
 		type: type,
