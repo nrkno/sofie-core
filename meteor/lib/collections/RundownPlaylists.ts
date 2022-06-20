@@ -35,23 +35,13 @@ export type RundownPlaylist = DBRundownPlaylist
  * These used to reside on the Rundown class
  */
 export class RundownPlaylistCollectionUtil {
+	/** Returns an array of all Rundowns in the RundownPlaylist, sorted in playout order */
 	static getRundownsOrdered(
 		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,
 		selector?: MongoQuery<Rundown>,
 		options?: FindOptions<Rundown>
 	): Rundown[] {
-		const allRundowns = Rundowns.find(
-			{
-				playlistId: playlist._id,
-				...selector,
-			},
-			{
-				sort: {
-					_id: 1,
-				},
-				...options,
-			}
-		).fetch()
+		const allRundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, selector, options)
 
 		const rundownsMap = normalizeArrayToMap(allRundowns, '_id')
 
@@ -59,7 +49,7 @@ export class RundownPlaylistCollectionUtil {
 
 		return _.compact(sortedIds.map((id) => rundownsMap.get(id)))
 	}
-
+	/** Returns an array of all Rundowns in the RundownPlaylist, in no predictable order */
 	static getRundownsUnordered(
 		playlist: Pick<RundownPlaylist, '_id'>,
 		selector?: MongoQuery<Rundown>,
@@ -78,12 +68,13 @@ export class RundownPlaylistCollectionUtil {
 			}
 		).fetch()
 	}
-	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist */
+	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist, sorted in playout order */
 	static getRundownOrderedIDs(playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>): RundownId[] {
 		const allIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 
 		return sortRundownIDsInPlaylist(playlist.rundownIdsInOrder, allIds)
 	}
+	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist, in no predictable order */
 	static getRundownUnorderedIDs(playlist: Pick<RundownPlaylist, '_id'>): RundownId[] {
 		const rundowns = Rundowns.find(
 			{
