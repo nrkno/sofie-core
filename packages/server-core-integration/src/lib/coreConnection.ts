@@ -274,7 +274,16 @@ export class CoreConnection extends EventEmitter {
 				reject('callMehod: DDP client has not been initialized')
 				return
 			}
+			const timeout = setTimeout(() => {
+				// Timeout
+				console.error(`Timeout "${methodName}"`)
+				console.error(JSON.stringify(fullAttrs))
+				reject(
+					`Timeout when calling method "${methodName}", arguments: ${JSON.stringify(fullAttrs).slice(0, 200)}`
+				)
+			}, 10 * 1000) // 10 seconds
 			this.ddp.ddpClient.call(methodName, fullAttrs, (err: Error | string, id: string) => {
+				clearTimeout(timeout)
 				this._timeLastMethodReply = Date.now()
 				if (err) {
 					if (typeof err === 'object') {
