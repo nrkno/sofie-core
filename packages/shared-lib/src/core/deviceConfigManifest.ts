@@ -30,7 +30,7 @@ export interface DeviceConfigManifest {
 export interface SubDeviceConfigManifest {
 	defaultType: string
 	config: {
-		[type: string]: SubDeviceConfigManifestEntry[] | ConfigManifestEntry[]
+		[type: string]: ConfigManifestEntry[] // | SubDeviceConfigManifestEntry[]
 	}
 }
 
@@ -53,13 +53,17 @@ export enum ConfigManifestEntryType {
 }
 
 export type ConfigManifestEntry =
-	| ConfigManifestEntryBase
+	// | ConfigManifestEntryBase
 	| ConfigManifestEnumEntry
 	| TableConfigManifestEntry
 	| ConfigManifestEnumEntry
 	| ConfigManifestIntEntry
 	| ConfigManifestFloatEntry
-	| SubDeviceConfigManifestEntry
+	| ConfigManifestBooleanEntry
+	| ConfigManifestStringEntry
+	| ConfigManifestObjectEntry
+	| ConfigManifestMultilineStringEntry
+// | SubDeviceConfigManifestEntry
 
 export interface ConfigManifestEntryBase {
 	/** Unique id / Attribute to edit */
@@ -73,22 +77,32 @@ export interface ConfigManifestEntryBase {
 	placeholder?: string
 	/** Longer description */
 	hint?: string
+	defaultVal?: any
 }
 export interface ConfigManifestEnumEntry extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.ENUM
 	values: any // for enum
+	defaultVal?: any
 }
-export interface ConfigManifestEntryDefault extends ConfigManifestEntryBase {
-	type: Exclude<
-		ConfigManifestEntryType,
-		| ConfigManifestEntryType.ENUM
-		| ConfigManifestEntryType.INT
-		| ConfigManifestEntryType.FLOAT
-		| ConfigManifestEntryType.TABLE
-	>
+
+export interface ConfigManifestBooleanEntry extends ConfigManifestEntryBase {
+	type: ConfigManifestEntryType.BOOLEAN
+	defaultVal?: boolean
+}
+export interface ConfigManifestStringEntry extends ConfigManifestEntryBase {
+	type: ConfigManifestEntryType.STRING
+	defaultVal?: string
+}
+export interface ConfigManifestObjectEntry extends ConfigManifestEntryBase {
+	type: ConfigManifestEntryType.OBJECT
+}
+export interface ConfigManifestMultilineStringEntry extends ConfigManifestEntryBase {
+	type: ConfigManifestEntryType.MULTILINE_STRING
+	defaultVal?: string
 }
 export interface ConfigManifestIntEntry extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.INT
+	defaultVal?: number
 	/** Zero-based values will be stored in the database (and reported to blueprints) as values starting from 0, however,
 	 * 	when rendered in settings pages they will appear as value + 1
 	 */
@@ -96,27 +110,21 @@ export interface ConfigManifestIntEntry extends ConfigManifestEntryBase {
 }
 export interface ConfigManifestFloatEntry extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.FLOAT
+	defaultVal?: number
 }
 export interface ConfigManifestEnumEntry extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.ENUM
 	values: any // for enum
 }
-export type SubDeviceConfigManifestEntry = TableEntryBaseConfigManifestEntry
-export interface TableEntryBaseConfigManifestEntry extends ConfigManifestEntryBase {
-	columnName?: string
-	columnEditable?: boolean // TODO - not yet implemented.
-	defaultVal?: any
-}
-export type TableEntryConfigManifestEntry = TableEntryBaseConfigManifestEntry & ConfigManifestEntry
 
 export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
+	type: ConfigManifestEntryType.TABLE
 	/** Whether this follows the deviceId logic for updating */
 	isSubDevices?: boolean
 	/** The default name/id for any new devices */
 	subDeviceDefaultName?: string
 	/** The type any new entry gets by default */
 	defaultType: string
-	type: ConfigManifestEntryType.TABLE
 	/** Used when the .config indexes are different from the type enum */
 	deviceTypesMapping?: any
 	/** The name of the the property used to decide the type of the entry */
@@ -126,6 +134,13 @@ export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
 	 */
 	config: { [type: string]: TableEntryConfigManifestEntry[] }
 }
+export interface TableEntryBaseConfigManifestEntry {
+	columnName?: string
+	columnEditable?: boolean // TODO - not yet implemented.
+}
+export type SubDeviceConfigManifestEntry = ConfigManifestEntry
+// export type TableEntryConfigManifestEntry = ConfigManifestEntry // TableEntryBaseConfigManifestEntry & ConfigManifestEntry
+export type TableEntryConfigManifestEntry = TableEntryBaseConfigManifestEntry & ConfigManifestEntry // TableEntryBaseConfigManifestEntry & ConfigManifestEntry
 
 export type MappingsManifest = Record<string | number, MappingManifestEntry[]>
 
@@ -134,5 +149,14 @@ export interface MappingManifestEntryProps {
 	includeInSummary?: boolean
 }
 
+export interface ConfigManifestEntryDefault extends ConfigManifestEntryBase {
+	type: Exclude<
+		ConfigManifestEntryType,
+		| ConfigManifestEntryType.ENUM
+		| ConfigManifestEntryType.INT
+		| ConfigManifestEntryType.FLOAT
+		| ConfigManifestEntryType.TABLE
+	>
+}
 export type MappingManifestEntry = MappingManifestEntryProps &
 	(ConfigManifestEntryDefault | ConfigManifestEnumEntry | ConfigManifestIntEntry | ConfigManifestFloatEntry)

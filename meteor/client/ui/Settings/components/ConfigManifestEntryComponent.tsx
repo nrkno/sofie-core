@@ -25,6 +25,7 @@ export const renderEditAttribute = (
 	if (configField.type === ConfigManifestEntryType.FLOAT) {
 		return <EditAttribute {...opts} type="float" className="input text-input input-l"></EditAttribute>
 	} else if (configField.type === ConfigManifestEntryType.INT) {
+		configField
 		return (
 			<EditAttribute
 				{...opts}

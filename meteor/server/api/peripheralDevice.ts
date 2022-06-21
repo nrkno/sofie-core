@@ -118,6 +118,7 @@ export namespace ServerPeripheralDeviceAPI {
 					statusCode: StatusCode.UNKNOWN,
 				},
 				studioId: protectString(''),
+				settings: {},
 				connected: true,
 				connectionId: options.connectionId,
 				lastSeen: getCurrentTime(),
@@ -326,7 +327,7 @@ export namespace ServerPeripheralDeviceAPI {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
-		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
+		r: PeripheralDeviceAPI.PiecePlaybackStoppedResult
 	): Promise<void> {
 		const transaction = profiler.startTransaction('piecePlaybackStopped', apmNamespace)
 
@@ -355,7 +356,7 @@ export namespace ServerPeripheralDeviceAPI {
 		deviceId: PeripheralDeviceId,
 		token: string,
 		message: string,
-		cb?: Function
+		cb?: (err: any | null, msg: any) => void
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
@@ -789,7 +790,12 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	async getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
 		return makePromise(() => ServerPeripheralDeviceAPI.getPeripheralDevice(this, deviceId, deviceToken))
 	}
-	async pingWithCommand(deviceId: PeripheralDeviceId, deviceToken: string, message: string, cb?: Function) {
+	async pingWithCommand(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		message: string,
+		cb?: (err: any | null, msg: any) => void
+	) {
 		return makePromise(() => ServerPeripheralDeviceAPI.pingWithCommand(this, deviceId, deviceToken, message, cb))
 	}
 	async killProcess(deviceId: PeripheralDeviceId, deviceToken: string, really: boolean) {

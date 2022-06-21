@@ -62,7 +62,8 @@ export enum PeripheralDeviceType {
 	// Package_manager devices:
 	PACKAGE_MANAGER = 'package_manager',
 }
-export type PeripheralDeviceSubType = string
+// TODO: PeripheralDeviceSubType should be removed altogether at some point..
+export type PeripheralDeviceSubType = any
 // | PERIPHERAL_SUBTYPE_PROCESS
 // | TSR.DeviceType
 // | MOS_DeviceType

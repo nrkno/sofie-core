@@ -2,21 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import { getCurrentTime, getRandomId } from '../lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
-import { DeviceConfigManifest } from './deviceConfig'
-import { ExpectedPackageStatusAPI, IngestPlaylist, TSR } from '@sofie-automation/blueprints-integration'
-import {
-	PeripheralDeviceId,
-	PeripheralDevice,
-	PeripheralDeviceStatusObject,
-	PeripheralDeviceCategory,
-	PeripheralDeviceType,
-} from '../collections/PeripheralDevices'
-import { MediaWorkFlowId, MediaWorkFlow } from '../collections/MediaWorkFlows'
-import { MediaObject } from '../collections/MediaObjects'
-import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'
-import { PartPlaybackCallbackData, PiecePlaybackCallbackData, TimelineHash } from '../collections/Timeline'
-import { ExpectedPackageId } from '../collections/ExpectedPackages'
-import { ExpectedPackageWorkStatusId } from '../collections/ExpectedPackageWorkStatuses'
+import OrgApi from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceApi'
+import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 
@@ -24,9 +11,22 @@ import { ExpectedPackageWorkStatusId } from '../collections/ExpectedPackageWorkS
 
 export { TimeDiff, DiffTimeResult } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceApi'
 export * from '@sofie-automation/shared-lib/dist/peripheralDevice/mediaManager'
-export { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
+export {
+	PeripheralDeviceAPIMethods,
+	NewPeripheralDeviceAPI,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 
 export namespace PeripheralDeviceAPI {
+	export type DeviceSubType = OrgApi.PeripheralDeviceSubType
+	export type InitOptions = OrgApi.InitOptions
+	export type StatusObject = OrgApi.StatusObject
+	export type TimelineTriggerTimeResult = OrgApi.TimelineTriggerTimeResult
+	export type PartPlaybackStartedResult = OrgApi.PartPlaybackStartedResult
+	export type PartPlaybackStoppedResult = OrgApi.PartPlaybackStoppedResult
+	export type PiecePlaybackStartedResult = OrgApi.PiecePlaybackStartedResult
+	export type PiecePlaybackStoppedResult = OrgApi.PiecePlaybackStoppedResult
+	export const SUBTYPE_PROCESS = OrgApi.PERIPHERAL_SUBTYPE_PROCESS
+
 	export async function executeFunctionWithCustomTimeout(
 		deviceId: PeripheralDeviceId,
 		timeoutTime0: number | undefined,

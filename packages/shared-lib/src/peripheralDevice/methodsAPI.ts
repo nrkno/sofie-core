@@ -58,7 +58,12 @@ export interface NewPeripheralDeviceAPI {
 		deviceToken: string,
 		r: PiecePlaybackStartedResult
 	): Promise<void>
-	pingWithCommand(deviceId: PeripheralDeviceId, deviceToken: string, message: string, cb?: () => void): Promise<void>
+	pingWithCommand(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		message: string,
+		cb?: (err: any | null, msg: any) => void
+	): Promise<void>
 	killProcess(deviceId: PeripheralDeviceId, deviceToken: string, really: boolean): Promise<boolean>
 	testMethod(
 		deviceId: PeripheralDeviceId,
