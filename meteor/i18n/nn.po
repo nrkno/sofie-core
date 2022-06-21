@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2021-12-17T08:27:08.153Z\n"
-"PO-Revision-Date: 2021-12-17 10:02+0100\n"
+"POT-Creation-Date: 2022-05-19T11:28:47.600Z\n"
+"PO-Revision-Date: 2022-05-19 13:34+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -555,14 +555,11 @@ msgstr "Ingen køyreplanval tilgjengelege i påsynmodus"
 msgid "Add ?studio=1 to the URL to enter studio mode"
 msgstr "Leggje til ?admin=1 på slutten av nettadressa for å starte studiomodus"
 
+msgid "Exit"
+msgstr "Lukk"
+
 msgid "Error"
 msgstr "Feil"
-
-msgid "Cancel currently pressed hotkey"
-msgstr "Avbryt den trykte tasten"
-
-msgid "Change to fullscreen mode"
-msgstr "Fullskjermmodus"
 
 msgid "This rundown is now active. Are you sure you want to exit this screen?"
 msgstr "Denne køyreplanen er aktiv. Er du sikker på at du vil avslutte?"
@@ -580,6 +577,14 @@ msgstr "Playout-gateway \"{{playoutDeviceName}}\" startar om att."
 msgid "Could not restart Playout Gateway \"{{playoutDeviceName}}\"."
 msgstr "Playout-gateway \"{{playoutDeviceName}}\" kunne ikkje startas om att."
 
+msgid "Restart Playout"
+msgstr "Start Playout-gateway på ny"
+
+#, fuzzy
+#| msgid "Do you want to restart Quantel Gateway?"
+msgid "Do you want to restart the Playout Gateway?"
+msgstr "Er du sikker på at du vil starte Quantel-gateway om att?"
+
 msgid "Restart CasparCG Server"
 msgstr "Start CasparCG på nytt"
 
@@ -594,14 +599,17 @@ msgid ""
 "Failed to restart CasparCG on device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr "Omstart av CasparCG på \"{{deviceName}}\" feila: {{errorMessage}}"
 
+msgid "Cancel currently pressed hotkey"
+msgstr "Avbryt den trykte tasten"
+
+msgid "Change to fullscreen mode"
+msgstr "Fullskjermmodus"
+
 msgid "Show Hotkeys"
 msgstr "Vis hurtigtastar"
 
 msgid "Take a Snapshot"
 msgstr "Lagre eit snapshot"
-
-msgid "Restart Playout"
-msgstr "Start Playout-gateway på ny"
 
 msgid "Restart {{device}}"
 msgstr "Start {{device}} på ny"
@@ -759,6 +767,39 @@ msgstr "Systemoppsettet kunne ikkje validerast"
 msgid "Device {{deviceName}} is disconnected"
 msgstr "{{deviceName}} er fråkopla"
 
+#, fuzzy
+#| msgid "Critical Errors"
+msgid "Critical Problems"
+msgstr "Kritiske feil"
+
+msgid "Warnings"
+msgstr "Åtvaringar"
+
+#, fuzzy
+#| msgid "Migrations"
+msgid "Notifications"
+msgstr "Migrering"
+
+#, fuzzy
+#| msgid "Rewind Segments to start"
+msgid "Rewind all Segments"
+msgstr "Sett alle segment attende til start"
+
+#, fuzzy
+#| msgid "Show entire On Air Segment"
+msgid "Go to On Air Segment"
+msgstr "Vis heile tittelen som er OnAir"
+
+#, fuzzy
+#| msgid "Switchboard"
+msgid "Toggle Switchboard Panel"
+msgstr "Omkoplingssentral"
+
+#, fuzzy
+#| msgid "Edit Support Panel"
+msgid "Toggle Support Panel"
+msgstr "Rediger supportpanel"
+
 msgid "Just now"
 msgstr "No"
 
@@ -807,6 +848,9 @@ msgstr "Avspelning"
 msgid "All devices working correctly"
 msgstr "Alle eininger fungerer som dei skal"
 
+msgid "Auto"
+msgstr "Auto"
+
 msgid "Diff"
 msgstr "Skilnad"
 
@@ -840,20 +884,48 @@ msgstr "Denne innstillinga er vorte endra frå standardverdien"
 msgid "Off"
 msgstr "Av"
 
-msgid "BREAK"
-msgstr "PAUSE"
+#, fuzzy
+#| msgid "Segment"
+msgid "segment"
+msgstr "Tittel"
 
-msgid "Break In"
-msgstr "Pause om"
+#, fuzzy
+#| msgid "Critical Errors"
+msgid "Critical problems"
+msgstr "Kritiske feil"
 
-msgid "Auto"
-msgstr "Auto"
+msgid "On Air At"
+msgstr "On Air klokka"
+
+msgid "On Air In"
+msgstr "On Air om"
+
+msgid "Unsynced"
+msgstr "Ikkje synkronisert med MOS"
+
+msgid "Sources"
+msgstr "Kjelder"
+
+msgid "Switch to Timeline mode"
+msgstr ""
+
+msgid "On Air"
+msgstr "On Air"
 
 msgid "Loops to top"
 msgstr "Looper til toppen"
 
 msgid "Show End"
 msgstr "Sendeslutt"
+
+msgid "BREAK"
+msgstr "PAUSE"
+
+msgid "Break In"
+msgstr "Pause om"
+
+msgid "part"
+msgstr "punkt"
 
 msgid "Set segment as <strong>Next</strong>"
 msgstr "Set tittel som <strong>neste</strong>: Startar på neste Take"
@@ -873,17 +945,19 @@ msgstr "Sett <strong>Neste</strong> her"
 msgid "Play from Here"
 msgstr "Spel av frå her"
 
-msgid "On Air"
-msgstr "On Air"
+#, fuzzy
+#| msgid "Switchboard"
+msgid "Switch to Storyboard mode"
+msgstr "Byt til Storyboard-visning"
 
-msgid "On Air At"
-msgstr "On Air klokka"
+msgid "Zoom Out"
+msgstr "Zoom ut"
 
-msgid "On Air In"
-msgstr "On Air om"
+msgid "Show All"
+msgstr "Vis Alle"
 
-msgid "Unsynced"
-msgstr "Ikkje synkronisert med MOS"
+msgid "Zoom In"
+msgstr "Zoom In"
 
 msgid "Parts Duration"
 msgstr "Varigheit for del"
@@ -2502,6 +2576,9 @@ msgstr "Showstyle ikkje satt"
 msgid "Click to show available Show Styles"
 msgstr "Klikk for å vise tilgjengelege showstyles"
 
+msgid "Frame Rate"
+msgstr "Framerate"
+
 msgid "Enable \"Play from Anywhere\""
 msgstr "Slå på \"Play from Anywhere\""
 
@@ -2525,6 +2602,14 @@ msgstr "Tving multigateway-modus"
 
 msgid "Multi-gateway-mode delay time"
 msgstr "Delaytid for multigateway-modus"
+
+msgid "Preserve contents of playing segment when unsynced"
+msgstr ""
+
+#, fuzzy
+#| msgid "The rundown can not be reset while it is active"
+msgid "Allow Rundowns to be reset while on-air"
+msgstr "Ein aktivert køyreplan kan ikkje tilbakestillast"
 
 msgid "Remove indexes"
 msgstr "Fjern indexer"
@@ -2630,9 +2715,6 @@ msgstr "Fjern gamle data"
 msgid "The old data was removed."
 msgstr "Gamle data vart fjerna."
 
-msgid "Search..."
-msgstr "Søk..."
-
 msgid "Last {{layerName}}"
 msgstr "Siste {{layerName}}"
 
@@ -2651,14 +2733,14 @@ msgstr "Adlib satt på vent"
 msgid "Cannot play this AdLib because it is marked as Floated"
 msgstr "Kan ikkje spele av adlib fordi den er markert som på vent (float)"
 
+msgid "Search..."
+msgstr "Søk..."
+
 msgid "End Words"
 msgstr "Stikkord"
 
-msgid "Cannot play this AdLib becasue it is marked as Invalid"
-msgstr "Kan ikkje spele av adlib fordi den er markert som ugyldig"
-
-msgid "Cannot play this AdLib becasue it is marked as Floated"
-msgstr "Kan ikkje spele av adlib fordi det er markert som på vent (float)"
+msgid "Global AdLib"
+msgstr "Globale adliber"
 
 msgid "AdLib does not provide any options"
 msgstr "Adlib har ingen val"
@@ -2740,9 +2822,6 @@ msgstr "Opprett ny bøtte"
 
 msgid "AdLib"
 msgstr "Adlib"
-
-msgid "Global AdLib"
-msgstr "Globale adliber"
 
 msgid "Shortcuts"
 msgstr "Hurtigtastar"
@@ -2981,8 +3060,8 @@ msgstr "Kunne ikkje generere Restart Core: {{err}}"
 msgid "Sofie Automation Server Core will restart in {{time}}s..."
 msgstr "Sofie Core starter om att om {{time}}s..."
 
-msgid "Execution time*"
-msgstr "Utføringsvarigheit*"
+msgid "Execution times"
+msgstr "Køyretider"
 
 msgid "User ID"
 msgstr "Brukar-id"
@@ -2995,6 +3074,18 @@ msgstr "Metode"
 
 msgid "Parameters"
 msgstr "Parametrar"
+
+msgid "Core"
+msgstr ""
+
+msgid "Worker"
+msgstr ""
+
+msgid "Gateway"
+msgstr ""
+
+msgid "TSR"
+msgstr ""
 
 msgid "User Activity Log"
 msgstr "Aktivitetslogg"
@@ -3041,8 +3132,6 @@ msgstr "Meir dokumentasjon er tilgjengeleg på:"
 msgid "Timeline"
 msgstr "Tidslinje"
 
-#, fuzzy
-#| msgid "Layer Mappings"
 msgid "Mappings"
 msgstr "Lagmapping"
 
@@ -3068,7 +3157,7 @@ msgid "Stop"
 msgstr "Stopp"
 
 msgid ""
-"Clip \"{{fileName}}\" can't be played because it isn't present on the "
+"Clip \"{{fileName}}\" can't be played because it doesn't exist on the "
 "playout system"
 msgstr ""
 "Klippet \"{{fileName}}\" kan ikkje spelast av fordi det ikkje finnast på "
@@ -3096,17 +3185,17 @@ msgstr "{{sourceLayer}}-formatet er ikkje støtta: {{format}}"
 msgid "{{sourceLayer}} has {{audioStreams}} audio streams"
 msgstr "{{sourceLayer}} har {{audioStreams}} lydstraumar"
 
-msgid "Clip starts with {{frames}} {{type}} frame"
-msgstr "Klippet startar med {{frames}} {{type}} frame"
+msgid "Clip starts with {{frames}} {{type}} frames"
+msgstr "Klippet startar med {{frames}} {{type}} ruter"
 
-msgid "This clip ends with {{type}} frames after {{count}} second"
-msgstr "Klippet sluttar med {{frames}} {{type}} frame"
+msgid "This clip ends with {{type}} frames after {{count}} seconds"
+msgstr "Klippet sluttar med {{type}} ruter etter {{count}} sekund"
 
-msgid "{{frames}} {{type}} frame detected within the clip"
-msgstr "{{frames}} {{type}} frame oppdaga inne i klippet"
+msgid "{{frames}} {{type}} frames detected within the clip"
+msgstr "{{frames}} {{type}} rute oppdaga inne i klippet"
 
-msgid "{{frames}} {{type}} frame detected in clip"
-msgstr "{{frames}} {{type}} frame oppdaga i klippet"
+msgid "{{frames}} {{type}} frames detected in the clip"
+msgstr "{{frames}} {{type}} rute oppdaga inne i klippet"
 
 msgid "black"
 msgstr "svart(e)"
@@ -3120,6 +3209,18 @@ msgstr "{{sourceLayer}} kan ikkje spelast av fordi filnamnet manglar"
 msgid "Clip doesn't have audio & video"
 msgstr "Klippet har ikkje lyd og/eller bilete"
 
+msgid "Clip starts with {{frames}} {{type}} frame"
+msgstr "Klippet startar med {{frames}} {{type}} frame"
+
+msgid "This clip ends with {{type}} frames after {{count}} second"
+msgstr "Klippet sluttar med {{frames}} {{type}} frame"
+
+msgid "{{frames}} {{type}} frame detected within the clip"
+msgstr "{{frames}} {{type}} frame oppdaga inne i klippet"
+
+msgid "{{frames}} {{type}} frame detected in clip"
+msgstr "{{frames}} {{type}} frame oppdaga i klippet"
+
 msgid "{{sourceLayer}} is being ingested"
 msgstr "{{sourceLayer}} vert prosessert"
 
@@ -3129,15 +3230,11 @@ msgstr "Kjelde manglar"
 msgid "Segment no longer exists in {{nrcs}}"
 msgstr "Segmentet eksisterer ikkje lenger i {{nrcs}}"
 
+msgid "Segment was hidden in {{nrcs}}"
+msgstr "Tittelen eksisterer ikkje lenger i {{nrcs}}"
+
 msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
 msgstr "Dei følgande delane eksisterer ikkje lenger i {{nrcs}}: {{partNames}}"
-
-msgid ""
-"The Rundown was attempted to be moved out of the Playlist when it was on "
-"Air. Move it back and try again later."
-msgstr ""
-"Køyreplanen vart forsøkt flytta ut av spillelista mens den var OnAir. Flytt "
-"den attende og prøv igjen seinare."
 
 msgid "Toggle Shelf"
 msgstr "Skuff"
@@ -3184,6 +3281,34 @@ msgstr ""
 "Det er {{count}} dokument i {{collections}} som kan fjernast. Vil du "
 "fortsette?°°°°°°"
 
+#, fuzzy
+#| msgctxt "°°°°°°plural"
+#| msgid "Clip starts with {{frames}} {{type}} frame°°°°°°"
+msgctxt "°°°°°°plural"
+msgid "Clip starts with {{frames}} {{type}} frames°°°°°°"
+msgstr "Klipp startar med {{frames}} {{type}} frame°°°°°°"
+
+#, fuzzy
+#| msgctxt "°°°°°°plural"
+#| msgid "This clip ends with {{type}} frames after {{count}} second°°°°°°"
+msgctxt "°°°°°°plural"
+msgid "This clip ends with {{type}} frames after {{count}} seconds°°°°°°"
+msgstr "Klipp sluttar {{frames}} {{type}} frame°°°°°°"
+
+#, fuzzy
+#| msgctxt "°°°°°°plural"
+#| msgid "{{frames}} {{type}} frame detected within the clip°°°°°°"
+msgctxt "°°°°°°plural"
+msgid "{{frames}} {{type}} frames detected within the clip°°°°°°"
+msgstr "{{frames}} {{type}} rute oppdaga inne i klippet°°°°°°"
+
+#, fuzzy
+#| msgctxt "°°°°°°plural"
+#| msgid "{{frames}} {{type}} frame detected within the clip°°°°°°"
+msgctxt "°°°°°°plural"
+msgid "{{frames}} {{type}} frames detected in the clip°°°°°°"
+msgstr "{{frames}} {{type}} rute oppdaga inne i klippet°°°°°°"
+
 msgctxt "°°°°°°plural"
 msgid "Clip starts with {{frames}} {{type}} frame°°°°°°"
 msgstr "Klipp startar med {{frames}} {{type}} frame°°°°°°"
@@ -3199,6 +3324,19 @@ msgstr "{{frames}} {{type}} frame oppdaga inne i klippet°°°°°°"
 msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
+
+#~ msgid "Cannot play this AdLib becasue it is marked as Invalid"
+#~ msgstr "Kan ikkje spele av adlib fordi den er markert som ugyldig"
+
+#~ msgid "Cannot play this AdLib becasue it is marked as Floated"
+#~ msgstr "Kan ikkje spele av adlib fordi det er markert som på vent (float)"
+
+#~ msgid ""
+#~ "The Rundown was attempted to be moved out of the Playlist when it was on "
+#~ "Air. Move it back and try again later."
+#~ msgstr ""
+#~ "Køyreplanen vart forsøkt flytta ut av spillelista mens den var OnAir. "
+#~ "Flytt den attende og prøv igjen seinare."
 
 #~ msgid "Next Break"
 #~ msgstr "Neste pause"
@@ -3332,9 +3470,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
 #~ msgid "Preset Transition Speed"
 #~ msgstr "Preset transition-hastigheit"
-
-#~ msgid "Zoom"
-#~ msgstr "Zoom"
 
 #~ msgid "Zoom Speed"
 #~ msgstr "Zoom-hastigheit"
@@ -3480,12 +3615,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
 #~ msgid "File Name"
 #~ msgstr "Filnamn"
-
-#~ msgid "Critical Errors"
-#~ msgstr "Kritiske feil"
-
-#~ msgid "Warnings"
-#~ msgstr "Åtvaringar"
 
 #~ msgid "System Messages"
 #~ msgstr "Systemmeldingar"
@@ -3670,9 +3799,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
 #~ msgid "CasparCG Launcher Port"
 #~ msgstr "Port for CasparCG Launcher"
-
-#~ msgid "Sources Path"
-#~ msgstr "Kjeldesti"
 
 #~ msgid "Minimum recording time"
 #~ msgstr "Minimum lengde for opptak"

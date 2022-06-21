@@ -234,6 +234,12 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	sourceLayerTypes: SourceLayerType[] | undefined
 	outputLayerIds: string[] | undefined
 	label: string[] | undefined
+	/**
+	 * If a tag filter is starting with a "!" char, it will turn into a NOT filter, i.e., the tag must
+	 * not be present, for the item to match the filter
+	 *
+	 * TODO: This should be made more explicit in the datastructure somehow.
+	 */
 	tags: string[] | undefined
 	displayStyle: PieceDisplayStyle
 	showThumbnailsInList: boolean

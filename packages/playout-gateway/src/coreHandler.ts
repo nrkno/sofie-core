@@ -219,6 +219,10 @@ export class CoreHandler {
 			if (logLevel !== this.logger.level) {
 				this.logger.level = logLevel
 
+				for (const transport of this.logger.transports) {
+					transport.level = logLevel
+				}
+
 				this.logger.info('Loglevel: ' + this.logger.level)
 
 				// this.logger.debug('Test debug logging')
@@ -637,10 +641,13 @@ export class CoreTSRDeviceHandler {
 		// setup observers
 		this._coreParentHandler.setupObserverForPeripheralDeviceCommands(this)
 	}
-	statusChanged(deviceStatus: P.StatusObject): void {
+	statusChanged(deviceStatus: Partial<P.StatusObject>): void {
 		this._hasGottenStatusChange = true
 
-		this._deviceStatus = deviceStatus
+		this._deviceStatus = {
+			...this._deviceStatus,
+			...deviceStatus,
+		}
 		this.sendStatus()
 	}
 	/** Send the device status to Core */

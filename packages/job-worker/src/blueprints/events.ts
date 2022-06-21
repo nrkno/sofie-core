@@ -106,19 +106,28 @@ export function reportPartInstanceHasStarted(
 		}
 	}
 }
-export async function reportPartInstanceHasStopped(
+export function reportPartInstanceHasStopped(
 	context: JobContext,
-	playlistId: RundownPlaylistId,
+	cache: CacheForPlayout,
 	partInstance: DBPartInstance,
 	timestamp: Time
-): Promise<void> {
-	await context.directCollections.PartInstances.update(partInstance._id, {
-		$set: {
-			'timings.stoppedPlayback': timestamp,
-		},
-	})
+): void {
+	let timestampUpdated = false
+	if (!partInstance.timings?.stoppedPlayback) {
+		cache.PartInstances.update(partInstance._id, {
+			$set: {
+				'timings.stoppedPlayback': timestamp,
+			},
+		})
+		timestampUpdated = true
+	}
 
-	handlePartInstanceTimingEvent(context, playlistId, partInstance._id)
+	if (timestampUpdated) {
+		cache.deferAfterSave(() => {
+			// Run in the background, we don't want to hold onto the lock to do this
+			handlePartInstanceTimingEvent(context, cache.PlaylistId, partInstance._id)
+		})
+	}
 }
 
 export async function reportPieceHasStarted(

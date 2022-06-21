@@ -28,6 +28,7 @@ import {
 	VerifiedRundownPlaylistContentAccess,
 } from './lib'
 import { BasicAccessContext } from '../security/organization'
+import { NoticeLevel } from '../../client/lib/notifications/notifications'
 
 function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
 	let userError: UserError
@@ -39,7 +40,7 @@ function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError 
 		userError = UserError.from(err, UserErrorMessage.InternalError)
 	}
 
-	logger.error(`UserAction "${methodName}" failed: ${stringifyError(userError.rawError)}`)
+	logger.info(`UserAction "${methodName}" failed: ${stringifyError(userError)}`)
 
 	// Forward the error to the caller
 	return ClientAPI.responseError(userError)
@@ -238,8 +239,6 @@ export namespace ServerClientAPI {
 				} catch (e) {
 					const errorTime = Date.now()
 
-					logger.error(`Error in ${methodName}: ${stringifyError(e)}`)
-
 					const wrappedError = rewrapError(methodName, e)
 					const wrappedErrorStr = `ClientResponseError: ${translateMessage(
 						wrappedError.error.message,
@@ -380,6 +379,19 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 				this.connection ? this.connection.clientAddress : 'N/A'
 			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}"\n${JSON.stringify(errorObject)}`
 		)
+	}
+	async clientLogNotification(timestamp: Time, from: string, severity: NoticeLevel, message: string, source?: any) {
+		check(timestamp, Number)
+		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
+		const address = this.connection ? this.connection.clientAddress : 'N/A'
+		logger.debug(`Notification reported from "${from}": Severity ${severity}: ${message} (${source})`, {
+			time: timestamp,
+			from,
+			severity,
+			origMessage: message,
+			source,
+			address,
+		})
 	}
 	async callPeripheralDeviceFunction(
 		context: string,

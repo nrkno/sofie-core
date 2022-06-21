@@ -9,12 +9,12 @@ console.log('process started') // This is a message all Sofie processes log upon
 let logger: Winston.Logger
 if (logPath) {
 	const transportConsole = new Winston.transports.Console({
-		level: logLevel || 'verbose',
+		level: logLevel || 'silly',
 		handleExceptions: true,
 		handleRejections: true,
 	})
 	const transportFile = new Winston.transports.File({
-		level: logLevel || 'debug',
+		level: logLevel || 'silly',
 		handleExceptions: true,
 		handleRejections: true,
 		filename: logPath,
@@ -47,7 +47,7 @@ if (logPath) {
 
 	// Log json to console
 	const transportConsole = new Winston.transports.Console({
-		level: logLevel || 'verbose',
+		level: logLevel || 'silly',
 		handleExceptions: true,
 		handleRejections: true,
 		format: combine(splat(), myFormat),
