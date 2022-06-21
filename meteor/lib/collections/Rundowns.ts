@@ -63,7 +63,7 @@ export interface DBRundown
 	startedPlayback?: Time
 
 	/** Is the rundown in an unsynced (has been unpublished from ENPS) state? */
-	orphaned?: 'deleted' | 'from-snapshot'
+	orphaned?: 'deleted' | 'from-snapshot' | 'manual'
 
 	/** Last sent storyStatus to ingestDevice (MOS) */
 	notifiedCurrentPlayingPartExternalId?: string

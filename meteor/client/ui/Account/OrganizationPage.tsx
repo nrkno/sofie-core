@@ -94,7 +94,6 @@ export const OrganizationPage = translateWithTracker((_props: RouteComponentProp
 		render() {
 			const { t } = this.props
 			const org = this.props.organization
-			// const { user, roles } = this.getUserAndRoles()
 			if (!getUserRoles().admin) {
 				return 'Not Allowed'
 			}

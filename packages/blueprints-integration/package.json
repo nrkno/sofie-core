@@ -1,6 +1,6 @@
 {
 	"name": "@tv2media/blueprints-integration",
-	"version": "1.37.0-rc19",
+	"version": "1.37.1",
 	"description": "Library to define the interaction between core and the blueprints.",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -41,7 +41,7 @@
 	"dependencies": {
 		"moment": "2.29.1",
 		"timeline-state-resolver-types": "npm:@tv2media/timeline-state-resolver-types@1.0.0-release37",
-		"tslib": "^2.1.0",
+		"tslib": "^2.3.1",
 		"underscore": "1.13.1"
 	},
 	"lint-staged": {

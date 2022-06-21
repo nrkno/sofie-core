@@ -72,6 +72,12 @@ export interface BlueprintManifestBase {
 
 export interface SystemBlueprintManifest extends BlueprintManifestBase {
 	blueprintType: BlueprintManifestType.SYSTEM
+
+	/** A list of Migration steps related to the Core system */
+	coreMigrations: MigrationStep[]
+
+	/** Translations connected to the studio (as stringified JSON) */
+	translations?: string
 }
 
 export interface StudioBlueprintManifest extends BlueprintManifestBase {

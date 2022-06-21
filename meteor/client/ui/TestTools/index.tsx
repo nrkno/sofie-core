@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Route, Switch, NavLink } from 'react-router-dom'
+import { Route, Switch, NavLink, Redirect } from 'react-router-dom'
 
 import { TimelineView, TimelineStudioSelect } from './Timeline'
 import { UserLogPlayerPage, UserLogRundownSelect } from './UserLogPlayer'
@@ -72,6 +72,7 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 								<Route path="/testTools/timeline" component={TimelineStudioSelect} />
 								<Route path="/testTools/userlogplayer/:rundownPlaylistId" component={UserLogPlayerPage} />
 								<Route path="/testTools/userlogplayer" component={UserLogRundownSelect} />
+								<Redirect to="/testTools/timeline" />
 							</Switch>
 						</div>
 					</div>

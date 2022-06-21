@@ -56,7 +56,7 @@ export async function pushWorkToQueue<T>(
 		// Remove self from pending list
 		queueInfo?.pendingJobNames?.shift()
 
-		logger.debug(`syncFunction "${jobContext}"("${queueName}") begun execution - ${jobId}`)
+		logger.verbose(`syncFunction "${jobContext}"("${queueName}") begun execution - ${jobId}`)
 
 		// Check if we have been waiting a long time
 		const waitTime = getCurrentTime() - queueTime
@@ -77,7 +77,7 @@ export async function pushWorkToQueue<T>(
 			Meteor.defer(() => reject(e))
 		}
 
-		logger.debug(`syncFunction "${jobContext}"("${queueName}") done - ${jobId}`)
+		logger.verbose(`syncFunction "${jobContext}"("${queueName}") done - ${jobId}`)
 		if (timedOut) {
 			const endTime = getCurrentTime()
 			logger.error(

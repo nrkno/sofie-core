@@ -1,5 +1,5 @@
 import { FindOptions } from '../typings/meteor'
-import { registerCollection, ProtectedString, protectString } from '../lib'
+import { registerCollection, ProtectedString, protectString, LogLevel } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import * as semver from 'semver'
@@ -71,6 +71,9 @@ export interface ICoreSystem {
 
 	/** A user-defined name for the installation */
 	name?: string
+
+	/** What log-level to set. Defaults to SILLY */
+	logLevel?: LogLevel
 
 	/** Service messages currently valid for this instance */
 	serviceMessages: {
@@ -210,6 +213,16 @@ export function parseVersion(v: string | Version | undefined): Version {
 	return valid
 }
 
+export function isPrerelease(v: string): boolean {
+	if (isReferenceOrUndefined(v)) {
+		return true
+	} else {
+		const valid = semver.parse(v)
+		if (!valid) throw new Meteor.Error(500, `Invalid version: "${v}"`)
+
+		return valid.prerelease.length > 0
+	}
+}
 export function parseCoreIntegrationCompatabilityRange(v: string): string {
 	if (isReferenceOrUndefined(v)) {
 		return '0.0'
@@ -231,6 +244,7 @@ export function parseCoreIntegrationCompatabilityRange(v: string): string {
 export function compareSemverVersions(
 	currentVersion: Version | null,
 	targetRange: VersionRange,
+	allowPrerelease: boolean,
 	fixMessage: string,
 	meName: string,
 	theyName: string
@@ -238,7 +252,11 @@ export function compareSemverVersions(
 	if (currentVersion) currentVersion = semver.clean(currentVersion)
 
 	if (currentVersion) {
-		if (semver.satisfies(currentVersion, targetRange)) {
+		if (
+			semver.satisfies(currentVersion, targetRange, {
+				includePrerelease: allowPrerelease,
+			})
+		) {
 			return {
 				statusCode: StatusCode.GOOD,
 				messages: [`${meName} version: ${currentVersion}`],

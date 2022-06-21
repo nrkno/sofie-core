@@ -143,24 +143,30 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		return (
 			<React.Fragment>
 				<div className="segment-timeline__piece__preview">{this.renderSubItems()}</div>
-				<span
-					className={ClassNames('segment-timeline__piece__label first-words', {
-						'overflow-label': end !== '',
-					})}
-					ref={this.setLeftLabelRef}
-					style={this.getItemLabelOffsetLeft()}
-				>
-					{begin}
-				</span>
-				<span
-					className="segment-timeline__piece__label right-side"
-					ref={this.setRightLabelRef}
-					style={this.getItemLabelOffsetRight()}
-				>
-					<span className="segment-timeline__piece__label last-words">{end}</span>
-					{this.renderInfiniteIcon()}
-					{this.renderOverflowTimeLabel()}
-				</span>
+				{!this.props.isTooSmallForText && (
+					<>
+						{!this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
+							<span
+								className={ClassNames('segment-timeline__piece__label first-words', {
+									'overflow-label': end !== '',
+								})}
+								ref={this.setLeftLabelRef}
+								style={this.getItemLabelOffsetLeft()}
+							>
+								{begin}
+							</span>
+						) : null}
+						<span
+							className="segment-timeline__piece__label right-side"
+							ref={this.setRightLabelRef}
+							style={this.getItemLabelOffsetRight()}
+						>
+							{end && <span className="segment-timeline__piece__label last-words">{end}</span>}
+							{this.renderInfiniteIcon()}
+							{this.renderOverflowTimeLabel()}
+						</span>
+					</>
+				)}
 				{this.props.piece.instance.piece.content ? (
 					<SplitsFloatingInspector
 						floatingInspectorStyle={this.getFloatingInspectorStyle()}

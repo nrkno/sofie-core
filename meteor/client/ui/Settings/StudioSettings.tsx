@@ -1953,6 +1953,36 @@ const StudioPackageManagerSettings = withTranslation()(
 														<span className="text-s dimmed">{t('URL to the Quantel HTTP transformer')}</span>
 													</label>
 												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Quantel FileFlow URL')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.fileflowURL`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">{t('URL to the Quantel FileFlow Manager')}</span>
+													</label>
+												</div>
+												<div className="mod mvs mhs">
+													<label className="field">
+														{t('Quantel FileFlow Profile name')}
+														<EditAttribute
+															modifiedClassName="bghl"
+															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.fileflowProfile`}
+															obj={this.props.studio}
+															type="text"
+															collection={Studios}
+															className="input text-input input-l"
+														></EditAttribute>
+														<span className="text-s dimmed">
+															{t('Profile name to be used by FileFlow when exporting the clips')}
+														</span>
+													</label>
+												</div>
 											</>
 										) : null}
 
@@ -2310,14 +2340,16 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		renderShowStyleEditButtons() {
 			const buttons: JSX.Element[] = []
 			if (this.props.studio) {
-				this.props.studio.supportedShowStyleBase.map((style) => {
-					const base = this.props.availableShowStyleBases.find((base) => base.showStyleBase._id === style)
-					if (base) {
+				this.props.studio.supportedShowStyleBase.map((showStyleBaseId) => {
+					const showStyleBase = this.props.availableShowStyleBases.find(
+						(base) => base.showStyleBase._id === showStyleBaseId
+					)
+					if (showStyleBase) {
 						buttons.push(
 							<SettingsNavigation
-								key={'settings-nevigation-' + base.showStyleBase.name}
+								key={'settings-nevigation-' + showStyleBase.showStyleBase.name}
 								attribute="name"
-								obj={base.showStyleBase}
+								obj={showStyleBase.showStyleBase}
 								type="showstyle"
 							></SettingsNavigation>
 						)

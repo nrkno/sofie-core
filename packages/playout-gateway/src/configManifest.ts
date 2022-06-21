@@ -23,6 +23,11 @@ import {
 
 const PLAYOUT_SUBDEVICE_COMMON: SubDeviceConfigManifestEntry[] = [
 	{
+		id: 'debug',
+		name: 'Activate debug logging for device',
+		type: ConfigManifestEntryType.BOOLEAN,
+	},
+	{
 		id: 'disable',
 		name: 'Disable',
 		type: ConfigManifestEntryType.BOOLEAN,
@@ -372,6 +377,11 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 			type: ConfigManifestEntryType.BOOLEAN,
 		},
 		{
+			id: 'options.purgeUnknownElements',
+			name: 'Purge unknown/unused element from Viz Rundown upon activate',
+			type: ConfigManifestEntryType.BOOLEAN,
+		},
+		{
 			id: 'options.autoLoadInternalElements',
 			name: 'Automatically load internal elements when added',
 			type: ConfigManifestEntryType.BOOLEAN,
@@ -575,6 +585,14 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 			optional: true,
 			includeInSummary: true,
 			zeroBased: true,
+		},
+		{
+			id: 'label',
+			type: ConfigManifestEntryType.STRING,
+			name: 'Label',
+			optional: true,
+			includeInSummary: true,
+			hint: 'Identify the channel by label (does not set the label in Sisyfos)',
 		},
 		{
 			id: 'setLabelToLayerName',

@@ -22,7 +22,6 @@ export interface IAdLibListItem extends AdLibPieceUi {
 	contentPackageInfos?: ScanInfoForPackages
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
-	hotkey?: string
 	isHidden?: boolean
 	invalid?: boolean
 	floated?: boolean

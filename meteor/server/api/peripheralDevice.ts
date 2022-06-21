@@ -46,6 +46,7 @@ import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { CacheForStudio } from './studio/cache'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { profiler } from './profiler'
+import { PartInstanceId } from '../../lib/collections/PartInstances'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 
@@ -253,13 +254,21 @@ export namespace ServerPeripheralDeviceAPI {
 							activePlaylist,
 							PlayoutLockFunctionPriority.CALLBACK_PLAYOUT,
 							async () => {
-								const rundownIDs = Rundowns.find({ playlistId }).map((r) => r._id)
+								const rundownIDs = Rundowns.find({ playlistId }, { fields: { _id: 1 } }).map(
+									(r) => r._id
+								)
+								const partInstanceIDs = [activePlaylist.currentPartInstanceId].filter(
+									(id): id is PartInstanceId => id !== null
+								)
 
 								// We only need the PieceInstances, so load just them
 								const pieceInstanceCache = await DbCacheWriteCollection.createFromDatabase(
 									PieceInstances,
 									{
 										rundownId: { $in: rundownIDs },
+										partInstanceId: {
+											$in: partInstanceIDs,
+										},
 									}
 								)
 
@@ -1177,6 +1186,30 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	): Promise<void> {
 		await PackageManagerIntegration.updatePackageContainerPackageStatuses(this, deviceId, deviceToken, changes)
 	}
+	async removeAllPackageContainerPackageStatusesOfDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
+		await PackageManagerIntegration.removeAllPackageContainerPackageStatusesOfDevice(this, deviceId, deviceToken)
+	}
+	async updatePackageContainerStatuses(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		changes: (
+			| {
+					containerId: string
+					type: 'delete'
+			  }
+			| {
+					containerId: string
+					type: 'update'
+					status: ExpectedPackageStatusAPI.PackageContainerStatus
+			  }
+		)[]
+	): Promise<void> {
+		await PackageManagerIntegration.updatePackageContainerStatuses(this, deviceId, deviceToken, changes)
+	}
+	async removeAllPackageContainerStatusesOfDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
+		await PackageManagerIntegration.removeAllPackageContainerStatusesOfDevice(this, deviceId, deviceToken)
+	}
+
 	async fetchPackageInfoMetadata(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,

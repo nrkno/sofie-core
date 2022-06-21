@@ -8,6 +8,7 @@ import {
 	GENESIS_SYSTEM_VERSION,
 	parseCoreIntegrationCompatabilityRange,
 	compareSemverVersions,
+	isPrerelease,
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime, unprotectString, waitForPromise, waitForPromiseAll } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
@@ -18,7 +19,7 @@ import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
 import { Studios, StudioId } from '../lib/collections/Studios'
-import { logger } from './logging'
+import { logger, LogLevel, setLogLevel } from './logging'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
 import { pushWorkToQueue } from './codeControl'
@@ -67,9 +68,9 @@ function initializeCoreSystem() {
 	// Monitor database changes:
 	const systemCursor = getCoreSystemCursor()
 	systemCursor.observeChanges({
-		added: checkDatabaseVersions,
-		changed: checkDatabaseVersions,
-		removed: checkDatabaseVersions,
+		added: onCoreSystemChanged,
+		changed: onCoreSystemChanged,
+		removed: onCoreSystemChanged,
 	})
 
 	const observeBlueprintChanges = () => {
@@ -121,7 +122,7 @@ function checkDatabaseVersions() {
 
 		setSystemStatus(
 			'databaseVersion',
-			compareSemverVersions(currentVersion, dbVersion, 'to fix, run migration', 'core', 'system database')
+			compareSemverVersions(currentVersion, dbVersion, false, 'to fix, run migration', 'core', 'system database')
 		)
 
 		// Blueprints:
@@ -151,6 +152,7 @@ function checkDatabaseVersions() {
 						o = compareSemverVersions(
 							parseVersion(blueprint.blueprintVersion),
 							parseRange(blueprint.databaseVersion.showStyle[unprotectString(showStyleBase._id)]),
+							false,
 							'to fix, run migration',
 							'blueprint version',
 							`showStyle "${showStyleBase._id}" migrations`
@@ -169,6 +171,7 @@ function checkDatabaseVersions() {
 								o = compareSemverVersions(
 									parseVersion(blueprint.blueprintVersion),
 									parseRange(blueprint.databaseVersion.studio[unprotectString(studio._id)]),
+									false,
 									'to fix, run migration',
 									'blueprint version',
 									`studio "${studio._id}]" migrations`
@@ -189,8 +192,13 @@ function checkDatabaseVersions() {
 		lastDatabaseVersionBlueprintIds = blueprintIds
 	}
 }
+function onCoreSystemChanged() {
+	checkDatabaseVersions()
+	updateLoggerLevel()
+}
 
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
+const integrationVersionAllowPrerelease = isPrerelease(PackageInfo.version)
 
 function checkBlueprintCompability(blueprint: Blueprint) {
 	const systemStatusId = 'blueprintCompability_' + blueprint._id
@@ -204,6 +212,7 @@ function checkBlueprintCompability(blueprint: Blueprint) {
 		const integrationStatus = compareSemverVersions(
 			parseVersion(blueprint.integrationVersion),
 			parseRange(integrationVersionRange),
+			integrationVersionAllowPrerelease,
 			'Blueprint has to be updated',
 			'blueprint.integrationVersion',
 			'@sofie-automation/blueprints-integration'
@@ -391,11 +400,19 @@ function startInstrumenting() {
 		})
 	}
 }
+function updateLoggerLevel() {
+	const coreSystem = getCoreSystem()
+
+	if (coreSystem) {
+		setLogLevel(coreSystem.logLevel || LogLevel.SILLY)
+	}
+}
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		startupMessage()
 		initializeCoreSystem()
 		startInstrumenting()
+		updateLoggerLevel()
 	}
 })

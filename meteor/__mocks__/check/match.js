@@ -536,7 +536,7 @@ var _jsKeywords = [
 // Assumes the base of path is already escaped properly
 // returns key + base
 function _prependPath(key, base) {
-	if (typeof key === 'number' || key.match(/^[0-9]+$/)) {
+	if (typeof key === 'number' || key.match(/^\d+$/)) {
 		key = '[' + key + ']'
 	} else if (!key.match(/^[a-z_$][0-9a-z_$]*$/i) || _jsKeywords.indexOf(key) >= 0) {
 		key = JSON.stringify([key])

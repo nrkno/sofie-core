@@ -346,11 +346,11 @@ msgstr "Migrering"
 msgid "Documentation is available at"
 msgstr "Dokumentasjon er tilgjengelig på"
 
-msgid "Use ENPS order"
-msgstr "Bruk rekkefølge fra ENPS"
+msgid "Use {{nrcsName}} order"
+msgstr "Bruk rekkefølge fra {{nrcsName}}"
 
-msgid "Using ENPS order"
-msgstr "Rekkefølge fra ENPS"
+msgid "Using {{nrcsName}} order"
+msgstr "Rekkefølge fra {{nrcsName}}"
 
 msgid "Using local Sofie order"
 msgstr "Rekkefølge satt i Sofie"
@@ -2707,6 +2707,11 @@ msgstr "{{frames}} {{type}} frames oppdaget inne i klippet°°°°°°"
 msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr "{{frames}} {{type}} frames oppdaget i klippet°°°°°°"
+
+msgid ""
+"Be aware that while filling out the form keyboard and streamdeck commands "
+"will not be executed!"
+msgstr "OBS! Du kan ikke utføre Sofie-kommandoer mens du skriver evaluering!"
 
 #~ msgid "File name"
 #~ msgstr "Filnavn"

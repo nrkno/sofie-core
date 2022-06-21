@@ -126,6 +126,7 @@ describe('Test blueprint cache', () => {
 				blueprintVersion: '0.0.0',
 				integrationVersion: '0.0.0',
 				TSRVersion: '0.0.0',
+				coreMigrations: [],
 			})
 
 			Blueprints.remove(protectString('fake_id'))
@@ -200,6 +201,8 @@ describe('Test blueprint cache', () => {
 				blueprintVersion: '0.0.0',
 				integrationVersion: '0.0.0',
 				TSRVersion: '0.0.0',
+
+				coreMigrations: [],
 			})
 
 			Blueprints.remove(protectString('fake_id'))
@@ -307,6 +310,8 @@ describe('Test blueprint cache', () => {
 				blueprintVersion: '0.0.0',
 				integrationVersion: '0.0.0',
 				TSRVersion: '0.0.0',
+
+				coreMigrations: [],
 			})
 
 			Blueprints.remove(protectString('fake_id'))

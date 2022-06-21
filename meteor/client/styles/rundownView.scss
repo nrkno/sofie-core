@@ -520,6 +520,7 @@ svg.icon {
 	box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.7);
 
 	--segment-layer-height: #{$segment-layer-height};
+	--infinite-piece-background-line-height: #{$segment-layer-height / 8};
 	border-radius: $segment-border-radius;
 
 	// padding has to be the same on both of these elements so that the layers and their controls line up
@@ -644,6 +645,7 @@ svg.icon {
 			.segment-timeline__title {
 				> h2 {
 					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+					margin-bottom: -1px;
 				}
 			}
 		}
@@ -664,6 +666,7 @@ svg.icon {
 			.segment-timeline__title {
 				> h2 {
 					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+					margin-bottom: -1px;
 				}
 			}
 		}
@@ -1703,6 +1706,7 @@ svg.icon {
 				min-height: $segment-layer-height;
 				border-bottom: 0px solid $segment-layer-separator-color;
 				transform-style: preserve-3d;
+				overflow: hidden;
 
 				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
 
@@ -1712,6 +1716,7 @@ svg.icon {
 					line-height: $segment-layer-height;
 					border-bottom: 2px solid $segment-layer-separator-color;
 					transform-style: preserve-3d;
+					overflow: hidden;
 
 					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
 						$output-layer-group-collapse-animation-duration border ease-in-out;
@@ -1722,7 +1727,6 @@ svg.icon {
 						box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
 						cursor: default;
 						transform-style: preserve-3d;
-						overflow: hidden;
 
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
@@ -1731,14 +1735,14 @@ svg.icon {
 							transform: translate3d(0, 0, 10px);
 						}
 
-						@include item-type-colors();
+						@include piece-colors();
 
-						&.disabled {
-							background: $segment-item-disabled-background;
-							color: $segment-item-disabled-color;
-						}
 						&.next-is-touching {
 							border-right: 1px solid $segment-timeline-background-color;
+							overflow: hidden;
+						}
+						&.super-infinite {
+							overflow: hidden;
 						}
 
 						&.next-is-touching:hover {
@@ -2185,7 +2189,6 @@ svg.icon {
 					padding: 0 0.3em;
 					overflow: hidden;
 					text-overflow: clip;
-					background: inherit;
 
 					> * {
 						position: relative;
@@ -2267,7 +2270,7 @@ svg.icon {
 				}
 
 				&.with-duration {
-					display: inline-flex;					
+					display: inline-flex;
 					flex-direction: row;
 
 					.segment-timeline__piece__label__duration {
@@ -2277,14 +2280,22 @@ svg.icon {
 					}
 
 					&.with-duration--left {
-						.segment-timeline__piece__label__duration
-						{
-						   order: -1;
-						   margin-left: 0;
-						   margin-right: 0.2em;
+						.segment-timeline__piece__label__duration {
+							order: -1;
+							margin-left: 0;
+							margin-right: 0.2em;
 						}
 					}
 				}
+				.segment-timeline__piece__label__colored-mark {
+					font-size: 600%;
+					line-height: 23px;
+					width: 25px;
+				}
+			}
+
+			.segment-timeline__piece:not(.infinite) .segment-timeline__piece__label.right-side {
+				background: inherit;
 			}
 
 			// Layer-item appendages are parts of a layer item going beyond the layer (usually, across the entire timeline)
@@ -3087,7 +3098,6 @@ svg.icon {
 		margin-bottom: 6px;
 
 		> .mini-inspector__sub-header {
-			margin-left: 0.5em;
 			font-weight: 300;
 		}
 	}

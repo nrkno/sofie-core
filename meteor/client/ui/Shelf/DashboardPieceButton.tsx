@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Meteor } from 'meteor/meteor'
 import ClassNames from 'classnames'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -51,6 +52,7 @@ export interface IDashboardButtonProps {
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
+export const HOVER_TIMEOUT = 5000
 
 interface IState {
 	label: string
@@ -73,6 +75,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	} | null = null
 	private _labelEl: HTMLTextAreaElement
 	private pointerId: number | null = null
+	private hoverTimeout: number | null = null
 
 	constructor(props: IDashboardButtonProps) {
 		super(props)
@@ -90,6 +93,14 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			this.setState({
 				label: this.props.piece.name,
 			})
+		}
+	}
+
+	componentWillUnmount() {
+		super.componentWillUnmount()
+		if (this.hoverTimeout) {
+			clearTimeout(this.hoverTimeout)
+			this.hoverTimeout = null
 		}
 	}
 
@@ -120,13 +131,15 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							(accessor.type === Accessor.AccessType.HTTP || accessor.type === Accessor.AccessType.HTTP_PROXY) &&
 							accessor.baseUrl
 						) {
-							// TODO: add fiter for accessor.networkId ?
-							return [
-								accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
-								encodeURIComponent(
-									packageThumbnailPath.replace(/^\//, '') // trim leading slash
-								),
-							].join('/')
+							// Currently we only support public accessors (ie has no networkId set)
+							if (!accessor.networkId) {
+								return [
+									accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
+									encodeURIComponent(
+										packageThumbnailPath.replace(/^\//, '') // trim leading slash
+									),
+								].join('/')
+							}
 						}
 					}
 				}
@@ -196,6 +209,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					}
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
+					pieceId={this.props.piece._id}
 					expectedPackages={this.props.piece.expectedPackages}
 					studio={this.props.studio}
 					displayOn="viewport"
@@ -250,6 +264,52 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		this.positionAndSize = null
 	}
 
+	private handleOnPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
+		if (this.element) {
+			const { top, left, width, height } = this.element.getBoundingClientRect()
+			this.positionAndSize = {
+				top,
+				left,
+				width,
+				height,
+			}
+		}
+		if (e.pointerType === 'mouse') {
+			this.setState({ isHovered: true })
+			this.startHoverTimeout()
+		}
+	}
+
+	private handleOnTouchStart = (_e: React.TouchEvent<HTMLDivElement>) => {
+		if (this.element) {
+			const { top, left, width, height } = this.element.getBoundingClientRect()
+			this.positionAndSize = {
+				top,
+				left,
+				width,
+				height,
+			}
+		}
+	}
+
+	private handleOnPointerLeave = (_e: React.PointerEvent<HTMLDivElement>) => {
+		this.setState({ isHovered: false })
+		if (this.hoverTimeout) {
+			Meteor.clearTimeout(this.hoverTimeout)
+			this.hoverTimeout = null
+		}
+		this.positionAndSize = null
+	}
+
+	private handleOnTouchEnd = (_e: React.TouchEvent<HTMLDivElement>) => {
+		this.setState({ isHovered: false })
+		if (this.hoverTimeout) {
+			Meteor.clearTimeout(this.hoverTimeout)
+			this.hoverTimeout = null
+		}
+		this.positionAndSize = null
+	}
+
 	private handleOnMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
 		this.handleMove(e.clientX)
 	}
@@ -269,6 +329,17 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		this.setState({
 			timePosition: timePercentage * sourceDuration,
 		})
+		if (this.hoverTimeout) {
+			Meteor.clearTimeout(this.hoverTimeout)
+			this.startHoverTimeout()
+		}
+	}
+
+	private startHoverTimeout = () => {
+		this.hoverTimeout = Meteor.setTimeout(() => {
+			this.hoverTimeout = null
+			this.setState({ isHovered: false })
+		}, HOVER_TIMEOUT)
 	}
 
 	private onNameChanged = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -329,14 +400,27 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		const { toggleOnSingleClick } = this.props
-		if (toggleOnSingleClick) {
-			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
-		} else {
+		// if pointerId is not set, it means we are dealing with a mouse and not an emulated mouse event
+		if (this.pointerId === null && e.button === 0) {
+			// this is a main-button-click
+			if (toggleOnSingleClick) {
+				this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+			} else {
+				this.props.onSelectAdLib(this.props.piece, e)
+			}
+		}
+	}
+
+	private handleOnMouseDown = (e: React.PointerEvent<HTMLDivElement>) => {
+		// if mouseDown event is fired, that means that pointerDown did not fire, which means we are dealing with a mouse
+		this.pointerId = null
+		if (e.button) {
+			// this is some other button, main button is 0
 			this.props.onSelectAdLib(this.props.piece, e)
 		}
 		if (isTouchDevice()) {
 			// hide the hoverscrub
-			this.handleOnMouseLeave(e)
+			this.handleOnPointerLeave(e)
 		}
 	}
 
@@ -353,6 +437,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		if (e.pointerType !== 'mouse') {
 			const pointerCopy = e.pointerId
 			this.pointerId = pointerCopy
+		} else {
+			this.pointerId = null
 		}
 	}
 
@@ -416,8 +502,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onClick={this.handleClick}
 				onDoubleClick={this.handleDoubleClick}
 				ref={this.setRef}
-				onMouseEnter={this.handleOnMouseEnter}
-				onMouseLeave={this.handleOnMouseLeave}
+				onMouseDown={this.handleOnMouseDown}
+				onPointerEnter={this.handleOnPointerEnter}
+				onPointerLeave={this.handleOnPointerLeave}
 				onMouseMove={this.handleOnMouseMove}
 				onPointerDown={this.handleOnPointerDown}
 				onPointerOut={this.handleOnPointerOut}

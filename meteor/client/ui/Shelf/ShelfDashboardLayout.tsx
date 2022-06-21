@@ -31,6 +31,7 @@ import { SegmentNamePanel } from './SegmentNamePanel'
 import { PartNamePanel } from './PartNamePanel'
 import { ColoredBoxPanel } from './ColoredBoxPanel'
 import { AdLibPieceUi } from '../../lib/shelf'
+import { MiniRundownPanel } from './MiniRundownPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -120,6 +121,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								panel={panel}
 								layout={rundownLayout}
 								playlist={props.playlist}
+								showStyleBase={props.showStyleBase}
 								visible={true}
 							/>
 						) : RundownLayoutsAPI.isPlaylistStartTimer(panel) ? (
@@ -127,7 +129,13 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 						) : RundownLayoutsAPI.isPlaylistEndTimer(panel) ? (
 							<PlaylistEndTimerPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 						) : RundownLayoutsAPI.isEndWords(panel) ? (
-							<EndWordsPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+							<EndWordsPanel
+								key={panel._id}
+								playlist={props.playlist}
+								showStyleBase={props.showStyleBase}
+								layout={rundownLayout}
+								panel={panel}
+							/>
 						) : RundownLayoutsAPI.isSegmentTiming(panel) ? (
 							<SegmentTimingPanel
 								key={panel._id}
@@ -137,7 +145,13 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								showStyleBase={props.showStyleBase}
 							/>
 						) : RundownLayoutsAPI.isPartTiming(panel) ? (
-							<PartTimingPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
+							<PartTimingPanel
+								key={panel._id}
+								playlist={props.playlist}
+								showStyleBase={props.showStyleBase}
+								layout={rundownLayout}
+								panel={panel}
+							/>
 						) : RundownLayoutsAPI.isTextLabel(panel) ? (
 							<TextLabelPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
 						) : RundownLayoutsAPI.isPlaylistName(panel) ? (
@@ -183,16 +197,16 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								layout={rundownLayout}
 								panel={panel}
 							/>
-						) : RundownLayoutsAPI.isPieceCountdown(panel) ? (
-							<PieceCountdownPanel
+						) : RundownLayoutsAPI.isNextInfo(panel) ? (
+							<NextInfoPanel
 								key={panel._id}
 								panel={panel}
 								layout={rundownLayout}
 								playlist={props.playlist}
 								visible={true}
 							/>
-						) : RundownLayoutsAPI.isNextInfo(panel) ? (
-							<NextInfoPanel
+						) : RundownLayoutsAPI.isMiniRundown(panel) ? (
+							<MiniRundownPanel
 								key={panel._id}
 								panel={panel}
 								layout={rundownLayout}

@@ -209,7 +209,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 				},
 				'infinite.fromPreviousPart': false,
 				'piece.lifespan': {
-					$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange],
+					$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange, PieceLifespan.OutOnShowStyleEnd],
 				},
 				reset: {
 					$ne: true,
@@ -373,11 +373,18 @@ export class PresenterScreenBase extends MeteorReactComponent<
 							| undefined
 						if (playlistR) {
 							const { nextPartInstance, currentPartInstance } = playlistR.getSelectedPartInstances()
-							this.subscribe(PubSub.pieceInstances, {
-								partInstanceId: {
-									$in: [currentPartInstance?._id, nextPartInstance?._id],
-								},
-							})
+							if (currentPartInstance) {
+								this.subscribe(PubSub.pieceInstances, {
+									rundownId: currentPartInstance.rundownId,
+									partInstanceId: currentPartInstance._id,
+								})
+							}
+							if (nextPartInstance) {
+								this.subscribe(PubSub.pieceInstances, {
+									rundownId: nextPartInstance.rundownId,
+									partInstanceId: nextPartInstance._id,
+								})
+							}
 						}
 					})
 				})

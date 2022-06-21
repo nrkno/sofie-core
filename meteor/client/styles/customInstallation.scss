@@ -1,5 +1,5 @@
 :root {
-	// Set to force single-click to toggle adlibs	
+	// Set to force single-click to toggle adlibs
 	--pointer: 'no-pointer';
 }
 
@@ -14,8 +14,8 @@ body.tv2 {
 
 	--segment-layer-background-camera: #005919;
 	--segment-layer-background-camera--second: lighten(#005919, 20%);
-	--segment-layer-background-lower-third: #af4900;
-	--segment-layer-background-lower-third--second: darken(#af4900, 20%);
+	--segment-layer-background-lower-third: #ca9d00;
+	--segment-layer-background-lower-third--second: darken(#ca9d00, 20%);
 	--segment-layer-background-graphics: #ca9d00;
 	--segment-layer-background-graphics--second: darken(#ca9d00, 20%);
 	--segment-layer-background-live-speak: #370020;
@@ -302,8 +302,10 @@ body.tv2 {
 
 			&.live-speak {
 				background: linear-gradient(
-					180deg
-					,var(--segment-layer-background-vt) 50%,var(--segment-layer-background-camera) 50.0001%) !important;
+					180deg,
+					var(--segment-layer-background-vt) 50%,
+					var(--segment-layer-background-camera) 50.0001%
+				) !important;
 			}
 		}
 
@@ -312,7 +314,6 @@ body.tv2 {
 				color: unset;
 			}
 		}
-	
 	}
 	.segment-timeline.next,
 	.segment-timeline.live {
@@ -472,8 +473,10 @@ body.tv2 {
 
 		&.live-speak {
 			background: linear-gradient(
-				180deg
-				,var(--segment-layer-background-vt) 50%,var(--segment-layer-background-camera) 50.0001%) !important;
+				180deg,
+				var(--segment-layer-background-vt) 50%,
+				var(--segment-layer-background-camera) 50.0001%
+			) !important;
 		}
 
 		&.piece-tag--no_next_highlight.selected {
@@ -522,7 +525,8 @@ body.tv2 {
 						color: var(--text-label-color);
 					}
 
-					> .part-remaining, > .part-elapsed {
+					> .part-remaining,
+					> .part-elapsed {
 						display: block;
 						width: 100%;
 						text-align: center;
@@ -626,7 +630,9 @@ body.tv2 {
 					}
 				}
 
-				&.playlist_name, &.expected_end, &.local_time {
+				&.playlist_name,
+				&.expected_end,
+				&.local_time {
 					.wrapper {
 						.text {
 							color: var(--text-label-color);
@@ -778,4 +784,18 @@ body.tv2 {
 		line-height: 2rem;
 		margin: 0.33rem;
 	}
+
+	.source-missing {
+	  &::after {
+		background-image: repeating-linear-gradient(
+						45deg,
+						transparent,
+						transparent 10px,
+						red 11px,
+						red 15px,
+						transparent 16px
+		) !important;
+	  }
+	}
+
 }

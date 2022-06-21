@@ -52,6 +52,7 @@ export async function insertBlueprint(
 		databaseVersion: {
 			studio: {},
 			showStyle: {},
+			system: undefined,
 		},
 
 		blueprintVersion: '',
@@ -152,6 +153,7 @@ export async function innerUploadBlueprint(
 			: {
 					studio: {},
 					showStyle: {},
+					system: undefined,
 			  },
 		blueprintId: protectString(''),
 		blueprintVersion: '',
@@ -200,6 +202,7 @@ export async function innerUploadBlueprint(
 			newBlueprint.databaseVersion = {
 				showStyle: {},
 				studio: {},
+				system: undefined,
 			}
 		} else {
 			throw new Meteor.Error(
@@ -220,7 +223,8 @@ export async function innerUploadBlueprint(
 	if (
 		'translations' in blueprintManifest &&
 		(blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE ||
-			blueprintManifest.blueprintType === BlueprintManifestType.STUDIO)
+			blueprintManifest.blueprintType === BlueprintManifestType.STUDIO ||
+			blueprintManifest.blueprintType === BlueprintManifestType.SYSTEM)
 	) {
 		// Because the translations is bundled as stringified JSON and that string has already been
 		// converted back to object form together with the rest of the manifest at this point
