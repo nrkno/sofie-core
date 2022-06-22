@@ -363,11 +363,13 @@ describe('Infinites', () => {
 					fromPreviousPart: true,
 					fromPreviousPlayhead: true,
 					infiniteInstanceId: protectString('one_a'),
+					infiniteInstanceIndex: 0,
 					infinitePieceId: protectString('one_b'),
 				}),
 				createPieceInstance('two', { start: 0 }, 'one', PieceLifespan.OutOnSegmentEnd, false, {
 					fromPreviousPart: true,
 					infiniteInstanceId: protectString('two_a'),
+					infiniteInstanceIndex: 0,
 					infinitePieceId: protectString('two_b'),
 				}),
 			]
@@ -394,11 +396,13 @@ describe('Infinites', () => {
 					fromPreviousPart: true,
 					fromPreviousPlayhead: true,
 					infiniteInstanceId: protectString('one_a'),
+					infiniteInstanceIndex: 0,
 					infinitePieceId: protectString('one_b'),
 				}),
 				createPieceInstance('two', { start: 0 }, 'one', PieceLifespan.OutOnSegmentEnd, false, {
 					fromPreviousPart: false,
 					infiniteInstanceId: protectString('two_a'),
+					infiniteInstanceIndex: 0,
 					infinitePieceId: protectString('two_b'),
 				}),
 			]
@@ -418,11 +422,13 @@ describe('Infinites', () => {
 				createPieceInstance('one', { start: 0 }, 'one', PieceLifespan.OutOnRundownEnd, false, {
 					fromPreviousPart: true,
 					infiniteInstanceId: protectString('one_a'),
+					infiniteInstanceIndex: 0,
 					infinitePieceId: protectString('one_b'),
 				}),
 				createPieceInstance('two', { start: 0 }, 'one', PieceLifespan.OutOnSegmentEnd, false, {
 					fromPreviousPart: false,
 					infiniteInstanceId: protectString('two_a'),
+					infiniteInstanceIndex: 0,
 					infinitePieceId: protectString('two_b'),
 				}),
 			]
@@ -496,6 +502,7 @@ describe('Infinites', () => {
 				dynamicallyInserted: clear ? Date.now() : undefined,
 				infinite: {
 					infiniteInstanceId: protectString(`${id}_inf`),
+					infiniteInstanceIndex: 0,
 					infinitePieceId: protectString(`${id}_p`),
 					fromPreviousPart: false,
 				},

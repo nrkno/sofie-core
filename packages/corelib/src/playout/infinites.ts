@@ -237,6 +237,7 @@ export function getPlayheadTrackingInfinitesForPart(
 				}
 				instance.infinite = {
 					...p.infinite,
+					infiniteInstanceIndex: p.infinite.infiniteInstanceIndex + 1,
 					fromPreviousPart: true,
 					fromPreviousPlayhead: true,
 				}
@@ -439,6 +440,7 @@ export function getPieceInstancesForPart(
 				: undefined
 			instance.infinite = {
 				infiniteInstanceId: existingPiece?.infinite?.infiniteInstanceId ?? getRandomId(),
+				infiniteInstanceIndex: (existingPiece?.infinite?.infiniteInstanceIndex ?? -1) + 1,
 				infinitePieceId: instance.piece._id,
 				fromPreviousPart: false, // Set below
 			}

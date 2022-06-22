@@ -399,6 +399,7 @@ export function setupPieceInstanceInfiniteProperties(pieceInstance: PieceInstanc
 		// Set it up as an infinite
 		pieceInstance.infinite = {
 			infiniteInstanceId: getRandomId(),
+			infiniteInstanceIndex: 0,
 			infinitePieceId: pieceInstance.piece._id,
 			fromPreviousPart: false,
 		}

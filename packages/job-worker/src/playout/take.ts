@@ -368,7 +368,7 @@ export function updatePartInstanceOnTake(
 		cache.Playlist.doc.holdState,
 		currentPartInstance?.part,
 		takePartInstance.part,
-		tmpPieces.map((p) => p.piece)
+		tmpPieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
 	)
 
 	const partInstanceM: any = {
@@ -445,6 +445,7 @@ function startHold(
 				$set: {
 					infinite: {
 						infiniteInstanceId: infiniteInstanceId,
+						infiniteInstanceIndex: 0,
 						infinitePieceId: instance.piece._id,
 						fromPreviousPart: false,
 					},
@@ -465,6 +466,7 @@ function startHold(
 				},
 				infinite: {
 					infiniteInstanceId: infiniteInstanceId,
+					infiniteInstanceIndex: 1,
 					infinitePieceId: instance.piece._id,
 					fromPreviousPart: true,
 					fromHold: true,

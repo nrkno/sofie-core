@@ -644,8 +644,7 @@ function buildTimelineObjsForRundown(
 					activePlaylist,
 					partInstancesInfo.current,
 					partInstancesInfo.next,
-					currentPartGroup,
-					currentInfinitePieceIds
+					currentPartGroup
 				)
 			)
 		}
@@ -815,14 +814,15 @@ function generateNextPartInstanceObjects(
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	currentPartInfo: SelectedPartInstanceTimelineInfo,
 	nextPartInfo: SelectedPartInstanceTimelineInfo,
-	currentPartGroup: TimelineObjGroupPart,
-	currentInfinitePieceIds: Set<PieceInstanceInfinite['infinitePieceId']>
+	currentPartGroup: TimelineObjGroupPart
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const currentToNextTimings = calculatePartTimings(
 		activePlaylist.holdState,
 		currentPartInfo.partInstance.part,
 		nextPartInfo.partInstance.part,
-		nextPartInfo.pieceInstances.map((p) => p.piece)
+		nextPartInfo.pieceInstances
+			.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0)
+			.map((p) => p.piece)
 	)
 
 	const nextPartGroup = createPartGroup(nextPartInfo.partInstance, {})
@@ -833,7 +833,7 @@ function generateNextPartInstanceObjects(
 	}
 
 	const nextPieceInstances = nextPartInfo?.pieceInstances.filter(
-		(i) => !i.infinite || !currentInfinitePieceIds.has(i.infinite.infiniteInstanceId)
+		(i) => !i.infinite || i.infinite.infiniteInstanceIndex === 0
 	)
 
 	const groupClasses: string[] = ['next_part']
