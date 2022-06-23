@@ -60,7 +60,7 @@
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.2",
-		"timeline-state-resolver": "npm:@tv2media/timeline-state-resolver@2.1.1",
+		"timeline-state-resolver": "npm:@tv2media/timeline-state-resolver@2.1.2",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
 		"winston": "^3.5.1"
