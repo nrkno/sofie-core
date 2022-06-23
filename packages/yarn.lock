@@ -3116,8 +3116,12 @@
     webpack-sources "^1.4.3"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "0.0.0"
-  uid ""
+  version "1.42.5"
+  dependencies:
+    moment "2.29.3"
+    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.1.1"
+    tslib "^2.3.1"
+    type-fest "^2.11.1"
 
 "@sofie-automation/code-standard-preset@~2.0.0":
   version "2.0.0"
@@ -3411,10 +3415,10 @@
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
   integrity sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==
 
-"@tv2media/v-connection@^6.0.0":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-6.0.1.tgz#f7becb7334b38d17e6a0e82f7605b69c6fd61c5d"
-  integrity sha512-MXvzEVMUY9EBT5vN32gjA/kjG0WX2kIfCEDGkoBp8gTi9kHSva6fnUrjgNnLgUifERZHJ3EN18hTjaa5GYHshA==
+"@tv2media/v-connection@^6.0.2":
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-6.0.2.tgz#319eb7e31e4f9d8b80e4ecd21068dda33c720640"
+  integrity sha512-1bbI2xz943i4k5dyMFs0miMR/Xr4xm5Ua2bPeoKuScrWokLmIbtmQGazIf7JQLxa010hGZTF7J8uUIe0f4JoYg==
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -14675,12 +14679,12 @@ timecode@0.0.4:
   dependencies:
     tslib "^2.3.1"
 
-"timeline-state-resolver@npm:@tv2media/timeline-state-resolver@2.1.1":
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver/-/timeline-state-resolver-2.1.1.tgz#e8270f3fe89392645803f86e5715b964cc994e55"
-  integrity sha512-ojfzIXQ6bRme9GH1P3UwRvxyOMQyAZGJxyxSj2B4HlGzVrge2ighgPbGutShtPv8pem8N0yfRCTVqgEsevJIJQ==
+"timeline-state-resolver@npm:@tv2media/timeline-state-resolver@2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver/-/timeline-state-resolver-2.1.2.tgz#3236953cc191619e860866abec57bd2209287336"
+  integrity sha512-D2o/UEaRTqaNVQZhCcZ9JpcS9Qmt4QG1mPIS0obQmq9Gh+/KXjRlg0kE5CEhm4jnUzKnaMRjkZjSS8BuCPcyAw==
   dependencies:
-    "@tv2media/v-connection" "^6.0.0"
+    "@tv2media/v-connection" "^6.0.2"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^5.1.0"
