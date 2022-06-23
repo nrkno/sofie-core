@@ -1291,8 +1291,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		/** MiniShelf data */
 		private keyboardQueuedPiece: AdLibPieceUi | undefined = undefined
 		private keyboardQueuedPartInstanceId: PartInstanceId | undefined = undefined
-		private keyboardRequeue: boolean = false
-		private keyboardQueuePending: boolean = false
+		private shouldKeyboardRequeue: boolean = false
+		private isKeyboardQueuePending: boolean = false
 
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
@@ -1812,12 +1812,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				if (this.hasCurrentPartChanged(prevProps) && this.isCurrentPartKeyboardQueuedPart()) {
 					this.keyboardQueuedPartInstanceId = undefined
 				} else if (
-					!this.keyboardQueuePending &&
+					!this.isKeyboardQueuePending &&
 					!this.hasCurrentPartChanged(prevProps) &&
 					this.hasNextPartChanged(prevProps) &&
 					this.isNextPartDifferentFromKeyboardQueuedPart()
 				) {
-					this.keyboardRequeue = true
+					this.shouldKeyboardRequeue = true
 					this.keyboardQueuedPartInstanceId = undefined
 				}
 			}
@@ -2152,7 +2152,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.keyboardQueuedPartInstanceId = res.queuedPartInstanceId
 				}
 			}
-			this.keyboardQueuePending = false
+			this.isKeyboardQueuePending = false
 		}
 
 		queueAdLibPiece = (adlibPiece: AdLibPieceUi, e: any) => {
@@ -2248,7 +2248,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					} else {
 						return
 					}
-					this.keyboardQueuePending = true
+					this.isKeyboardQueuePending = true
 				}
 			}
 		}
@@ -2285,7 +2285,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			if (pieceToQueue) {
 				this.queueAdLibPiece(pieceToQueue, e)
 				this.keyboardQueuedPiece = pieceToQueue
-				this.keyboardRequeue = false
+				this.shouldKeyboardRequeue = false
 			}
 		}
 
@@ -2299,7 +2299,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				: undefined
 			if (uiSegment) {
 				const pieces = uiSegment.pieces.filter(this.isAdLibQueueable)
-				if (this.keyboardRequeue) {
+				if (this.shouldKeyboardRequeue) {
 					pieceToQueue = pieces.find((piece) => piece._id === this.keyboardQueuedPiece!._id)
 				} else {
 					const nextPieceInd =
