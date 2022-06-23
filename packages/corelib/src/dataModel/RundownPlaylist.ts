@@ -92,9 +92,7 @@ export interface DBRundownPlaylist {
 	/** If the order of rundowns in this playlist has ben set manually by a user in Sofie */
 	rundownRanksAreSetInSofie?: boolean
 	/** If the order of rundowns in this playlist has ben set manually by a user/blueprints in Sofie */
-	rundownIdsInOrder: RundownId[] // TODO - migration to populate
-	// /** The order of the rundowns in this playlist */
-	// rundownRanks: Record<string, number> // TODO - migration to populate
+	rundownIdsInOrder: RundownId[]
 
 	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState

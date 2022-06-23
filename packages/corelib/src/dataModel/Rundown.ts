@@ -1,4 +1,5 @@
-import { RundownPlaylistTiming, Time } from '@sofie-automation/blueprints-integration'
+import { IBlueprintRundownDB, Time } from '@sofie-automation/blueprints-integration'
+import { ProtectedStringProperties } from '../protectedString'
 import {
 	RundownId,
 	OrganizationId,
@@ -20,19 +21,13 @@ export interface RundownImportVersions {
 }
 
 /** This is a very uncomplete mock-up of the Rundown object */
-export interface Rundown {
+export interface Rundown
+	extends ProtectedStringProperties<IBlueprintRundownDB, '_id' | 'playlistId' | 'showStyleVariantId'> {
 	_id: RundownId
 	/** ID of the organization that owns the rundown */
 	organizationId: OrganizationId | null
 	/** The id of the Studio this rundown is in */
 	studioId: StudioId
-
-	externalId: string
-	/** Rundown slug - user-presentable name */
-	name: string
-
-	/** Rundown description: Longer user-presentable description of the rundown */
-	description?: string
 
 	/** The ShowStyleBase this Rundown uses (its the parent of the showStyleVariant) */
 	showStyleBaseId: ShowStyleBaseId
@@ -70,15 +65,6 @@ export interface Rundown {
 	playlistIdIsSetInSofie?: boolean
 	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
 	baselineModifyHash?: string
-
-	/** Rundown timing information */
-	timing: RundownPlaylistTiming
-
-	/** Arbitrary data storage for plugins */
-	metaData?: unknown
-
-	/** Air-status, comes from NCS, examples: "READY" | "NOT READY" */
-	airStatus?: string
 }
 
 /** Note: Use Rundown instead */
