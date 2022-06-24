@@ -7,13 +7,13 @@ import { Credentials, ResolvedCredentials } from './lib/credentials'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToRundown } from './lib/security'
 import { RundownId } from '../../lib/collections/Rundowns'
-import { protectString } from '../../lib/lib'
 import { Segments, DBSegment } from '../../lib/collections/Segments'
 import { ExpectedMediaItem } from '../../lib/collections/ExpectedMediaItems'
 import { PeripheralDevices, getStudioIdFromDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { ExpectedPlayoutItem } from '../../lib/collections/ExpectedPlayoutItems'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
+import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 type RundownContent = { rundownId: RundownId }
 export namespace RundownReadAccess {
@@ -112,15 +112,15 @@ export namespace RundownReadAccess {
 		}
 	}
 }
-export function rundownContentAllowWrite(userId, doc: RundownContent): boolean {
+export function rundownContentAllowWrite(userId: UserId, doc: RundownContent): boolean {
 	triggerWriteAccess()
-	const access = allowAccessToRundown({ userId: protectString(userId) }, doc.rundownId)
+	const access = allowAccessToRundown({ userId: userId }, doc.rundownId)
 	if (!access.update) return logNotAllowed('Rundown content', access.reason)
 	return true
 }
-export function pieceContentAllowWrite(userId, doc: { startRundownId: RundownId }): boolean {
+export function pieceContentAllowWrite(userId: UserId, doc: { startRundownId: RundownId }): boolean {
 	triggerWriteAccess()
-	const access = allowAccessToRundown({ userId: protectString(userId) }, doc.startRundownId)
+	const access = allowAccessToRundown({ userId: userId }, doc.startRundownId)
 	if (!access.update) return logNotAllowed('Rundown content', access.reason)
 	return true
 }

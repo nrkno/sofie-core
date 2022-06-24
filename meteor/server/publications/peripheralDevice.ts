@@ -9,7 +9,7 @@ import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
 import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
 import { OrganizationReadAccess } from '../security/organization'
 import { StudioReadAccess } from '../security/studio'
-import { FindOptions } from '../../lib/typings/meteor'
+import { FindOptions, MongoQuery } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { meteorCustomPublishArray } from '../lib/customPublication'
@@ -40,17 +40,17 @@ import { StudioLight } from '../../lib/collections/optimizations'
  * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager
  */
 
-function checkAccess(cred: Credentials | ResolvedCredentials, selector) {
+function checkAccess(cred: Credentials | ResolvedCredentials, selector: MongoQuery<PeripheralDevice>) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	return (
 		NoSecurityReadAccess.any() ||
 		(selector._id && PeripheralDeviceReadAccess.peripheralDevice(selector, cred)) ||
-		(selector.organizationId && OrganizationReadAccess.organizationContent(selector, cred)) ||
-		(selector.studioId && StudioReadAccess.studioContent(selector, cred))
+		(selector.organizationId && OrganizationReadAccess.organizationContent<PeripheralDevice>(selector, cred)) ||
+		(selector.studioId && StudioReadAccess.studioContent<PeripheralDevice>(selector, cred))
 	)
 }
 meteorPublish(PubSub.peripheralDevices, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
+	const { cred, selector } = AutoFillSelector.organizationId<PeripheralDevice>(this.userId, selector0, token)
 	if (checkAccess(cred, selector)) {
 		const modifier: FindOptions<PeripheralDevice> = {
 			fields: {
@@ -68,7 +68,7 @@ meteorPublish(PubSub.peripheralDevices, function (selector0, token) {
 })
 
 meteorPublish(PubSub.peripheralDevicesAndSubDevices, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
+	const { cred, selector } = AutoFillSelector.organizationId<PeripheralDevice>(this.userId, selector0, token)
 	if (checkAccess(cred, selector)) {
 		const parents = PeripheralDevices.find(selector).fetch()
 
