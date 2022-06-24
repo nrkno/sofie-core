@@ -49,9 +49,10 @@ export const TimelineDashboardPanel = translateWithTracker<
 	class TimelineDashboardPanel extends DashboardPanelInner {
 		liveLine: HTMLDivElement
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
-		setRef = (el: HTMLDivElement) => {
+		setTimelineRef = (el: HTMLDivElement) => {
 			this.liveLine = el
-			super.setRef(el)
+
+			this.setRef(el)
 			this.ensureLiveLineVisible()
 		}
 		componentDidUpdate(prevProps, prevState) {
@@ -162,7 +163,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 											})}
 										>
 											{(seg.isLive || (seg.isNext && !this.props.playlist.currentPartInstanceId)) && (
-												<div className="dashboard-panel__panel__group__liveline" ref={this.setRef}></div>
+												<div className="dashboard-panel__panel__group__liveline" ref={this.setTimelineRef}></div>
 											)}
 											{filteredPieces.map((adLibListItem: AdLibPieceUi) => {
 												return (
