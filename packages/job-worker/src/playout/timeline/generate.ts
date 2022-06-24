@@ -45,6 +45,8 @@ import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/context/lib'
 import { buildTimelineObjsForRundown } from './rundown'
+import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -162,18 +164,18 @@ function processAndSaveTimelineObjects(
 		theNowTime = forceNowToTime
 	} else {
 		// HACK: TODO
-		// const playoutDevices = cache.PeripheralDevices.findFetch(
-		// 	(device) => device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
-		// )
-		// if (
-		// 	playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
-		// 	studio.settings.forceSettingNowTime
-		// ) {
-		// 	const worstLatency = Math.max(0, ...playoutDevices.map((device) => getExpectedLatency(device).safe))
-		// 	/** Add a little more latency, to account for network latency variability */
-		// 	const ADD_SAFE_LATENCY = studio.settings.nowSafeLatency || 30
-		// 	theNowTime = getCurrentTime() + worstLatency + ADD_SAFE_LATENCY
-		// }
+		const playoutDevices = cache.PeripheralDevices.findFetch(
+			(device) => device.type === PeripheralDeviceType.PLAYOUT
+		)
+		if (
+			playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
+			context.studio.settings.forceSettingNowTime
+		) {
+			const worstLatency = Math.max(0, ...playoutDevices.map((device) => getExpectedLatency(device).safe))
+			/** Add a little more latency, to account for network latency variability */
+			const ADD_SAFE_LATENCY = context.studio.settings.nowSafeLatency || 30
+			theNowTime = getCurrentTime() + worstLatency + ADD_SAFE_LATENCY
+		}
 	}
 	if (theNowTime) {
 		setNowToTimeInObjects(timelineObjs, theNowTime)

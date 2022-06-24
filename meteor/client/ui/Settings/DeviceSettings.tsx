@@ -4,7 +4,6 @@ import {
 	PeripheralDevice,
 	PeripheralDevices,
 	PeripheralDeviceId,
-	getExpectedLatency,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../lib/EditAttribute'
@@ -20,6 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettingsComponent'
 import { DevicePackageManagerSettings } from './DevicePackageManagerSettings'
+import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
 
 interface IDeviceSettingsProps {
 	match: {
