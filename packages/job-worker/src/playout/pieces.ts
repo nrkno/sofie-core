@@ -245,14 +245,26 @@ export function getResolvedPiecesFromFullTimeline(
 	}
 }
 
+export interface DeNowifyResult {
+	partInstances: Record<PartInstanceId, number>
+	piecenstances: Record<PartInstanceId, number>
+}
 /**
  * Replace any start:'now' in the timeline with concrete times.
  * This assumes that the structure is of a typical timeline, with 'now' being present at the root level, and one level deep.
  * If the parent group of a 'now' is not using a numeric start value, it will not be fixed
  */
-export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: number): void {
+export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: number): DeNowifyResult {
+	const result: DeNowifyResult = {
+		partInstances: {},
+		piecenstances: {},
+	}
+
 	for (const obj of transformedObjs) {
 		let groupAbsoluteStart: number | null = null
+
+		const obj2 = obj as TimelineContentObject & { partInstanceId?: PartInstanceId }
+		const partInstanceId = 'partInstanceId' in obj2 ? obj2.partInstanceId : undefined
 
 		// Anything at this level can use nowTime directly
 		let count = 0
@@ -272,12 +284,7 @@ export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTi
 
 		// We know the time of the parent, or there are too many enable times for it
 		if (groupAbsoluteStart !== null || count !== 1) {
-			if (
-				'partInstanceId' in (obj as TimelineContentObject & { partInstanceId?: PartInstanceId }) &&
-				obj.isGroup &&
-				obj.children &&
-				obj.children.length
-			) {
+			if (partInstanceId && obj.isGroup && obj.children && obj.children.length) {
 				// This should be piece groups, which are allowed to use 'now'
 				for (const childObj of obj.children) {
 					applyToArray(childObj.enable, (enable: TimelineEnable) => {
@@ -292,6 +299,8 @@ export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTi
 			}
 		}
 	}
+
+	return result
 }
 
 export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstancePiece): AdLibPiece {

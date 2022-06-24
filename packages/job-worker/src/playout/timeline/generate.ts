@@ -8,6 +8,7 @@ import {
 	serializeTimelineBlob,
 	TimelineComplete,
 	TimelineCompleteGenerationVersions,
+	TimelineEnableExt,
 	TimelineObjGeneric,
 	TimelineObjRundown,
 	TimelineObjType,
@@ -47,6 +48,8 @@ import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/conte
 import { buildTimelineObjsForRundown } from './rundown'
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
+import { getPartGroupId } from '@sofie-automation/corelib/dist/playout/ids'
+import { getSelectedPartInstances } from '../__tests__/lib'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -118,7 +121,22 @@ export async function updateStudioTimeline(
 		studio.blueprintId,
 		studioBlueprint?.blueprint?.blueprintVersion ?? '-'
 	)
-	processAndSaveTimelineObjects(context, cache, baselineObjects, versions, undefined)
+
+	flattenAndProcessTimelineObjects(context, baselineObjects)
+
+	const nowOffsetLatency = calculateNowOffsetTimeline(context, cache, undefined)
+	const newNowTime = typeof nowOffsetLatency === 'number' ? getCurrentTime() + nowOffsetLatency : undefined
+	preserveOrReplaceNowTimesInObjects(cache, baselineObjects, (obj) => {
+		if (!obj.inGroup) {
+			// Any root level objects can be de-nowified
+			return newNowTime
+		}
+		return undefined
+	})
+
+	logAnyRemainingNowTimes(context, cache, baselineObjects)
+
+	saveTimeline(context, cache, baselineObjects, versions)
 
 	if (studioBaseline) {
 		updateBaselineExpectedPackagesOnStudio(context, cache, studioBaseline)
@@ -140,22 +158,52 @@ export async function updateTimeline(
 		throw new Error(`RundownPlaylist ("${cache.Playlist.doc._id}") is not active")`)
 	}
 
-	const timeline = await getTimelineRundown(context, cache)
+	const { versions, objs: timelineObjs } = await getTimelineRundown(context, cache)
 
-	processAndSaveTimelineObjects(context, cache, timeline.objs, timeline.versions, timeOffsetIntoPart)
+	flattenAndProcessTimelineObjects(context, timelineObjs)
+
+	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+	const currentPartGroupId = currentPartInstance ? getPartGroupId(currentPartInstance) : undefined
+
+	/** The timestamp that "now" was set to */
+	const nowOffsetLatency = calculateNowOffsetTimeline(context, cache, timeOffsetIntoPart)
+	if (typeof nowOffsetLatency === 'number') {
+		const nowTime = getCurrentTime() + nowOffsetLatency
+
+		// We need to de-nowify the timeline, and use concrete times instead
+		for (const obj of timelineObjs) {
+			if (obj.id === currentPartGroupId) {
+				// The current part group is allowed to be 'now'
+				setNowForObjToValue(obj, nowTime)
+			} else if (currentPartGroupId && obj.inGroup === currentPartGroupId) {
+				// TODO - offset to compensate for group
+				// Perhaps we don't need this if we replace all NOW times to be using a single root level now object?
+				// Whatever pieceinstance stuff we do in timelineTriggerTime will need to be done elsewhere
+				// setNowForObjToValue(obj, nowTime)
+			} else if (!obj.inGroup) {
+				// Objects at the root level can freely use now
+				setNowForObjToValue(obj, nowTime)
+			}
+		}
+	} else {
+		// Preserve any de-nowified numbers
+		preserveOrReplaceNowTimesInObjects(cache, timelineObjs)
+	}
+
+	logAnyRemainingNowTimes(context, cache, timelineObjs)
+
+	saveTimeline(context, cache, timelineObjs, versions)
+
+	logger.debug('updateTimeline done!')
 
 	if (span) span.end()
 }
 
-function processAndSaveTimelineObjects(
+function calculateNowOffsetTimeline(
 	context: JobContext,
 	cache: CacheForStudioBase,
-	timelineObjs: Array<TimelineObjGeneric>,
-	versions: TimelineCompleteGenerationVersions,
 	timeOffsetIntoPart: Time | undefined
-): void {
-	processTimelineObjects(context, timelineObjs)
-
+): Time | undefined {
 	/** The timestamp that "now" was set to */
 	let nowOffsetLatency: Time | undefined
 
@@ -175,11 +223,14 @@ function processAndSaveTimelineObjects(
 		nowOffsetLatency = (nowOffsetLatency ?? 0) - timeOffsetIntoPart
 	}
 
-	if (typeof nowOffsetLatency === 'number') {
-		// We need to de-nowify the timeline, and use concrete times instead
-		setNowToTimeInObjects(timelineObjs, getCurrentTime() + nowOffsetLatency)
-	}
+	return nowOffsetLatency
+}
 
+function preserveOrReplaceNowTimesInObjects(
+	cache: CacheForStudioBase,
+	timelineObjs: Array<TimelineObjGeneric>,
+	getNewNowTime?: (obj: TimelineObjGeneric) => Time | undefined
+) {
 	const timeline = cache.Timeline.doc
 	const oldTimelineObjsMap = normalizeArray(
 		(timeline?.timelineBlob !== undefined && deserializeTimelineBlob(timeline.timelineBlob)) || [],
@@ -198,19 +249,59 @@ function processAndSaveTimelineObjects(
 			})
 		}
 
-		if (oldNow !== undefined && tlo) {
-			applyToArray(tlo.enable, (enable) => {
-				if (enable.start === 'now') {
-					enable.start = oldNow
-					enable.setFromNow = true
-				}
-			})
+		if (oldNow === undefined && getNewNowTime) oldNow = getNewNowTime(tlo)
+
+		if (oldNow !== undefined) {
+			setNowForObjToValue(tlo, oldNow)
 		}
 	})
+}
 
-	saveTimeline(context, cache, timelineObjs, versions)
+function setNowForObjToValue(tlo: TimelineObjGeneric, oldNow: TSR.Timeline.TimelineEnable['start']): void {
+	applyToArray(tlo.enable, (enable) => {
+		if (enable.start === 'now') {
+			enable.start = oldNow
+			enable.setFromNow = true
+		}
+	})
+}
 
-	logger.debug('updateTimeline done!')
+function logAnyRemainingNowTimes(
+	context: JobContext,
+	cache: CacheForStudioBase,
+	timelineObjs: Array<TimelineObjGeneric>
+): void {
+	const playoutDevices = cache.PeripheralDevices.findFetch((device) => device.type === PeripheralDeviceType.PLAYOUT)
+	if (
+		playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
+		context.studio.settings.forceSettingNowTime
+	) {
+		const ids: string[] = []
+
+		const hasNow = (obj: TimelineEnableExt | TimelineEnableExt[]) => {
+			let res = false
+			applyToArray(obj, (enable) => {
+				if (enable.start === 'now') res = true
+			})
+			return res
+		}
+
+		for (const obj of timelineObjs) {
+			if (hasNow(obj.enable)) {
+				ids.push(obj.id)
+			}
+
+			for (const kf of obj.keyframes || []) {
+				if (hasNow(kf.enable)) {
+					ids.push(kf.id)
+				}
+			}
+		}
+
+		if (ids.length) {
+			logger.error(`Some timeline objects have unexpected now times!: ${JSON.stringify(ids)}`)
+		}
+	}
 }
 
 /** Store the timelineobjects into the cache, and perform any post-save actions */
@@ -401,7 +492,7 @@ async function getTimelineRundown(
  * @param context
  * @param timelineObjs Array of timeline objects
  */
-function processTimelineObjects(context: JobContext, timelineObjs: Array<TimelineObjGeneric>): void {
+function flattenAndProcessTimelineObjects(context: JobContext, timelineObjs: Array<TimelineObjGeneric>): void {
 	const span = context.startSpan('processTimelineObjects')
 
 	// first, split out any grouped objects, to make the timeline shallow:
@@ -435,23 +526,6 @@ function processTimelineObjects(context: JobContext, timelineObjs: Array<Timelin
 	}
 
 	if (span) span.end()
-}
-
-/**
- * goes through timelineObjs and forces the "now"-values to the absolute time specified
- * @param timelineObjs Array of (flat) timeline objects
- * @param now The time to set the "now":s to
- */
-function setNowToTimeInObjects(timelineObjs: Array<TimelineObjGeneric>, now: Time): void {
-	// TODO - this should use deNowifyTimeline from pieces.ts instead. This implementation is flawed in that pieceGroups using 'now' will end up being offset about 30 years into the future
-	_.each(timelineObjs, (o) => {
-		applyToArray(o.enable, (enable) => {
-			if (enable.start === 'now') {
-				enable.start = now
-				enable.setFromNow = true
-			}
-		})
-	})
 }
 
 /**
