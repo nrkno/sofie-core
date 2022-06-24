@@ -84,6 +84,7 @@ import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pi
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { INCORRECT_PLAYING_PART_DEBOUNCE, RESET_IGNORE_ERRORS } from './constants'
+import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number): void {
@@ -1024,6 +1025,17 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 	if (data.results.length > 0) {
 		await runJobWithStudioCache(context, async (studioCache) => {
 			const activePlaylists = studioCache.getActiveRundownPlaylists()
+
+			const playoutDevices = studioCache.PeripheralDevices.findFetch(
+				(device) => device.type === PeripheralDeviceType.PLAYOUT
+			)
+			if (
+				playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
+				context.studio.settings.forceSettingNowTime
+			) {
+				logger.warn(`Ignoring timelineTriggerTime call for studio not using now times`)
+				return
+			}
 
 			if (activePlaylists.length === 1) {
 				const activePlaylist = activePlaylists[0]

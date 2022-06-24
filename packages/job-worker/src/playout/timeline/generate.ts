@@ -131,7 +131,7 @@ export async function updateStudioTimeline(
 export async function updateTimeline(
 	context: JobContext,
 	cache: CacheForPlayout,
-	forceNowToTime?: Time
+	timeOffsetIntoPart?: Time
 ): Promise<void> {
 	const span = context.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
@@ -142,7 +142,7 @@ export async function updateTimeline(
 
 	const timeline = await getTimelineRundown(context, cache)
 
-	processAndSaveTimelineObjects(context, cache, timeline.objs, timeline.versions, forceNowToTime)
+	processAndSaveTimelineObjects(context, cache, timeline.objs, timeline.versions, timeOffsetIntoPart)
 
 	if (span) span.end()
 }
@@ -152,33 +152,32 @@ function processAndSaveTimelineObjects(
 	cache: CacheForStudioBase,
 	timelineObjs: Array<TimelineObjGeneric>,
 	versions: TimelineCompleteGenerationVersions,
-	forceNowToTime: Time | undefined
+	timeOffsetIntoPart: Time | undefined
 ): void {
 	processTimelineObjects(context, timelineObjs)
 
 	/** The timestamp that "now" was set to */
-	let theNowTime = 0
+	let nowOffsetLatency: Time | undefined
 
-	if (forceNowToTime) {
-		// used when autoNexting
-		theNowTime = forceNowToTime
-	} else {
-		// HACK: TODO
-		const playoutDevices = cache.PeripheralDevices.findFetch(
-			(device) => device.type === PeripheralDeviceType.PLAYOUT
-		)
-		if (
-			playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
-			context.studio.settings.forceSettingNowTime
-		) {
-			const worstLatency = Math.max(0, ...playoutDevices.map((device) => getExpectedLatency(device).safe))
-			/** Add a little more latency, to account for network latency variability */
-			const ADD_SAFE_LATENCY = context.studio.settings.nowSafeLatency || 30
-			theNowTime = getCurrentTime() + worstLatency + ADD_SAFE_LATENCY
-		}
+	const playoutDevices = cache.PeripheralDevices.findFetch((device) => device.type === PeripheralDeviceType.PLAYOUT)
+	if (
+		playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
+		context.studio.settings.forceSettingNowTime
+	) {
+		const worstLatency = Math.max(0, ...playoutDevices.map((device) => getExpectedLatency(device).safe))
+		/** Add a little more latency, to account for network latency variability */
+		const ADD_SAFE_LATENCY = context.studio.settings.nowSafeLatency || 30
+		nowOffsetLatency = worstLatency + ADD_SAFE_LATENCY
 	}
-	if (theNowTime) {
-		setNowToTimeInObjects(timelineObjs, theNowTime)
+
+	if (timeOffsetIntoPart) {
+		// Include the requested offset
+		nowOffsetLatency = (nowOffsetLatency ?? 0) - timeOffsetIntoPart
+	}
+
+	if (typeof nowOffsetLatency === 'number') {
+		// We need to de-nowify the timeline, and use concrete times instead
+		setNowToTimeInObjects(timelineObjs, getCurrentTime() + nowOffsetLatency)
 	}
 
 	const timeline = cache.Timeline.doc

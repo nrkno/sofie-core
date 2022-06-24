@@ -390,17 +390,13 @@ export async function afterTake(
 	context: JobContext,
 	cache: CacheForPlayout,
 	takePartInstance: DBPartInstance,
-	timeOffset: number | null = null
+	timeOffsetIntoPart: number | null = null
 ): Promise<void> {
 	const span = context.startSpan('afterTake')
 	// This function should be called at the end of a "take" event (when the Parts have been updated)
-
-	let forceNowTime: number | undefined = undefined
-	if (timeOffset) {
-		forceNowTime = getCurrentTime() - timeOffset
-	}
 	// or after a new part has started playing
-	await updateTimeline(context, cache, forceNowTime)
+
+	await updateTimeline(context, cache, timeOffsetIntoPart || undefined)
 
 	cache.deferAfterSave(async () => {
 		// This is low-prio, defer so that it's executed well after publications has been updated,
