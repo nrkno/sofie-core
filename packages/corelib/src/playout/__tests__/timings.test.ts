@@ -759,9 +759,9 @@ describe('Part Playout Timings', () => {
 
 				expect(timings).toEqual(
 					literal<PartCalculatedTimings>({
-						inTransitionStart: null,
-						toPartDelay: 500,
-						fromPartRemaining: 500,
+						inTransitionStart: 0,
+						toPartDelay: 1000,
+						fromPartRemaining: 5000,
 						fromPartPostroll: 0,
 						toPartPostroll: 0,
 					})
@@ -838,9 +838,9 @@ describe('Part Playout Timings', () => {
 
 					expect(timings).toEqual(
 						literal<PartCalculatedTimings>({
-							inTransitionStart: null,
-							toPartDelay: 500,
-							fromPartRemaining: 231 + 500,
+							inTransitionStart: 0,
+							toPartDelay: 1000,
+							fromPartRemaining: 231 + 5000,
 							fromPartPostroll: 231,
 							toPartPostroll: 0,
 						})

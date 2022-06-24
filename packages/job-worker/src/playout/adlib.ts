@@ -694,6 +694,7 @@ export function innerStopPieces(
 						dynamicallyInserted: getCurrentTime(),
 						infinite: {
 							infiniteInstanceId: getRandomId(),
+							infiniteInstanceIndex: 0,
 							infinitePieceId: pieceId,
 							fromPreviousPart: false,
 						},
