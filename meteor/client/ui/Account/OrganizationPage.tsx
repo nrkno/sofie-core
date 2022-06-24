@@ -40,21 +40,6 @@ export const OrganizationPage = translateWithTracker((_props: RouteComponentProp
 			editUser: '',
 		}
 
-		private getUserAndRoles(): { user: User | null; roles: UserRoles | null } {
-			const user = this.props.usersInOrg.find((user) => user.profile.name === this.state.editUser)
-			if (!user) return { user: null, roles: null }
-			const roles = this.props.organization?.userRoles[unprotectString(user._id)] || null
-			return { user, roles }
-		}
-
-		private toggleAccess(updatedRoles: UserRoles) {
-			const { user, roles } = this.getUserAndRoles()
-			const organization = this.props.organization
-			if (!user || !roles || !organization) return
-			const userRoles = { ...roles, ...updatedRoles }
-			Organizations.update({ _id: organization._id }, { $set: { [`userRoles.${user._id}`]: userRoles } })
-		}
-
 		private async createAndEnrollUser() {
 			if (!this.state.newUserEmail || !this.state.newUserName) {
 				return

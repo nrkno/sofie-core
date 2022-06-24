@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { makePromise, waitTime } from '../../lib/lib'
+import { makePromise, sleep } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -132,7 +132,7 @@ async function doSystemBenchmarkInner() {
 	}
 	// Note: The tests "sizes" / iterations are chosen so that they should run somewhere around 100ms
 	try {
-		waitTime(10)
+		await sleep(10)
 		{
 			// MongoDB test: Do a number of small writes:
 			const startTime = Date.now()
@@ -157,7 +157,7 @@ async function doSystemBenchmarkInner() {
 			}
 			result.mongoWriteSmall = Date.now() - startTime
 		}
-		waitTime(10)
+		await sleep(10)
 		{
 			// MongoDB test: Do a number of large writes:
 			const startTime = Date.now()
@@ -216,7 +216,7 @@ async function doSystemBenchmarkInner() {
 					},
 				})
 			}
-			waitTime(10)
+			await sleep(10)
 
 			// Reads with no help from index:
 			let startTime = Date.now()
@@ -237,7 +237,7 @@ async function doSystemBenchmarkInner() {
 			// cleanup:
 			mongoTest.remove({})
 		}
-		waitTime(10)
+		await sleep(10)
 		// CPU test: arithmetic calculations:
 		{
 			const startTime = Date.now()
@@ -255,7 +255,7 @@ async function doSystemBenchmarkInner() {
 			})
 			result.cpuCalculations = Date.now() - startTime
 		}
-		waitTime(10)
+		await sleep(10)
 		// CPU test: JSON stringifying:
 		{
 			const objectsToStringify = _.range(0, 40e3).map((i) => {
@@ -269,12 +269,13 @@ async function doSystemBenchmarkInner() {
 			})
 			const startTime = Date.now()
 
-			const strings: string[] = objectsToStringify.map((o) => JSON.stringify(o))
-			const _newObjects = strings.map((str) => JSON.parse(str))
+			for (const o of objectsToStringify) {
+				JSON.parse(JSON.stringify(o))
+			}
 
 			result.cpuStringifying = Date.now() - startTime
 		}
-		waitTime(10)
+		await sleep(10)
 
 		cleanup()
 	} catch (error) {
@@ -292,7 +293,7 @@ async function doSystemBenchmark(context: MethodContext, runCount: number = 1): 
 	const results: BenchmarkResult[] = []
 	for (const _i of _.range(0, runCount)) {
 		results.push(await doSystemBenchmarkInner())
-		waitTime(50)
+		await sleep(50)
 	}
 
 	const keys: (keyof BenchmarkResult)[] = [

@@ -120,7 +120,6 @@ export const RundownViewBuckets = withTranslation()(
 			x: 0,
 			y: 0,
 		}
-		private _mouseDown: number
 		private _targetBucket: Bucket | undefined
 
 		constructor(props: Translated<IBucketsProps>) {
@@ -247,8 +246,6 @@ export const RundownViewBuckets = withTranslation()(
 			}
 
 			document.body.style.cursor = 'ew-resize'
-
-			this._mouseDown = Date.now()
 
 			this._targetBucket = targetBucket
 		}

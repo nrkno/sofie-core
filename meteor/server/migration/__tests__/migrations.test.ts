@@ -9,7 +9,6 @@ import { literal, protectString } from '../../../lib/lib'
 import {
 	MigrationStepInputResult,
 	BlueprintManifestType,
-	MigrationStep,
 	MigrationContextStudio,
 	MigrationContextShowStyle,
 	PlaylistTimingType,
@@ -409,7 +408,7 @@ describe('Migrations', () => {
 
 		expect(migration.migrationNeeded).toEqual(true)
 
-		const _steps = migration.steps as MigrationStep[]
+		// const _steps = migration.steps as MigrationStep[]
 
 		// Note: This test is temporarily disabled, pending discussion regarding migrations
 		// /@nytamin 2020-08-27

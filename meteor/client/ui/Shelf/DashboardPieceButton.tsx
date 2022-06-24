@@ -69,7 +69,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	Translated<IDashboardButtonProps> & T,
 	IState
 > {
-	private objId: string
 	private element: HTMLDivElement | null = null
 	private positionAndSize: {
 		top: number
