@@ -56,7 +56,6 @@ export type ConfigManifestEntry =
 	// | ConfigManifestEntryBase
 	| ConfigManifestEnumEntry
 	| TableConfigManifestEntry
-	| ConfigManifestEnumEntry
 	| ConfigManifestIntEntry
 	| ConfigManifestFloatEntry
 	| ConfigManifestBooleanEntry
