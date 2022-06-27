@@ -1,8 +1,7 @@
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { PackageInfo } from '@sofie-automation/blueprints-integration'
 
-import { MediaObjId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MediaObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 export { MediaObjId }
 

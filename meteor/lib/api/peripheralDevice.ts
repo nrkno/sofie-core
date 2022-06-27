@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { getCurrentTime, getRandomId } from '../lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
-import OrgApi from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import * as OrgApi from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
