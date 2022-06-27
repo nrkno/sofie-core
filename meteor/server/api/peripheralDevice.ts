@@ -48,6 +48,7 @@ import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { ConfigManifestEntryType, DeviceConfigManifest, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
 import { Studios } from '../../lib/collections/Studios'
+import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -352,6 +353,43 @@ export namespace ServerPeripheralDeviceAPI {
 			stoppedPlayback: r.time,
 		})
 		await job.complete
+
+		transaction?.end()
+	}
+	export async function playoutPlaybackChanged(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		token: string,
+		changedResults: PlayoutChangedResults
+	): Promise<void> {
+		const transaction = profiler.startTransaction('playoutPlaybackChanged', apmNamespace)
+
+		// This is called from the playout-gateway when a part starts playing.
+		// Note that this function can / might be called several times from playout-gateway for the same part
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
+		if (!peripheralDevice.studioId)
+			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
+
+		// check(r.time, Number)
+		// check(r.rundownPlaylistId, String)
+		// check(r.partInstanceId, String)
+		if (changedResults.changes.length) {
+			check(changedResults.rundownPlaylistId, String)
+
+			// await ServerPlayoutAPI.onPlayoutPlaybackChanged(
+			// 	context,
+			// 	peripheralDevice,
+			// 	rundownPlaylistId,
+			// 	changedResults
+			// )
+
+			const job = await QueueStudioJob(StudioJobs.OnPlayoutPlaybackChanged, peripheralDevice.studioId, {
+				playlistId: changedResults.rundownPlaylistId,
+				changes: changedResults.changes,
+			})
+			await job.complete
+		}
 
 		transaction?.end()
 	}
@@ -849,6 +887,13 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
 	) {
 		return ServerPeripheralDeviceAPI.piecePlaybackStarted(this, deviceId, deviceToken, r)
+	}
+	async playoutPlaybackChanged(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		changedResults: PlayoutChangedResults
+	) {
+		return ServerPeripheralDeviceAPI.playoutPlaybackChanged(this, deviceId, deviceToken, changedResults)
 	}
 	async reportResolveDone(
 		deviceId: PeripheralDeviceId,

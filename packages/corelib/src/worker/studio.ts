@@ -1,4 +1,5 @@
 import { Time } from '@sofie-automation/blueprints-integration'
+import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import {
 	AdLibActionId,
 	PartId,
@@ -40,6 +41,7 @@ export enum StudioJobs {
 	OnPiecePlaybackStopped = 'onPiecePlaybackStopped',
 	OnPartPlaybackStarted = 'onPartPlaybackStarted',
 	OnPartPlaybackStopped = 'onPartPlaybackStopped',
+	OnPlayoutPlaybackChanged = 'onPlayoutPlaybackChanged',
 	OnTimelineTriggerTime = 'onTimelineTriggerTime',
 
 	UpdateStudioBaseline = 'updateStudioBaseline',
@@ -137,6 +139,9 @@ export interface OnPartPlaybackStoppedProps extends RundownPlayoutPropsBase {
 	partInstanceId: PartInstanceId
 	stoppedPlayback: Time
 }
+export interface OnPlayoutPlaybackChangedProps extends RundownPlayoutPropsBase {
+	changes: PlayoutChangedResults['changes']
+}
 export interface OnTimelineTriggerTimeProps {
 	results: Array<{ id: string; time: number }>
 }
@@ -207,6 +212,7 @@ export type StudioJobFunc = {
 	[StudioJobs.OnPiecePlaybackStopped]: (data: OnPiecePlaybackStoppedProps) => void
 	[StudioJobs.OnPartPlaybackStarted]: (data: OnPartPlaybackStartedProps) => void
 	[StudioJobs.OnPartPlaybackStopped]: (data: OnPartPlaybackStoppedProps) => void
+	[StudioJobs.OnPlayoutPlaybackChanged]: (data: OnPlayoutPlaybackChangedProps) => void
 	[StudioJobs.OnTimelineTriggerTime]: (data: OnTimelineTriggerTimeProps) => void
 
 	[StudioJobs.UpdateStudioBaseline]: () => string | false

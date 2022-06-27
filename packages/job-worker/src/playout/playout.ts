@@ -24,6 +24,7 @@ import {
 	SetNextSegmentProps,
 	OnTimelineTriggerTimeProps,
 	UpdateTimelineAfterIngestProps,
+	OnPlayoutPlaybackChangedProps,
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { logger } from '../logging'
 import _ = require('underscore')
@@ -58,7 +59,13 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { ExpectedPackageDBBase, ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { applyToArray, getRandomId, normalizeArrayToMap, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import {
+	applyToArray,
+	assertNever,
+	getRandomId,
+	normalizeArrayToMap,
+	stringifyError,
+} from '@sofie-automation/corelib/dist/lib'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import {
 	afterTake,
@@ -84,6 +91,7 @@ import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pi
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { INCORRECT_PLAYING_PART_DEBOUNCE, RESET_IGNORE_ERRORS } from './constants'
+import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number): void {
@@ -695,46 +703,22 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
  * Triggered from Playout-gateway when a Piece has started playing
  */
 export async function onPiecePlaybackStarted(context: JobContext, data: OnPiecePlaybackStartedProps): Promise<void> {
-	return runJobWithPlaylistLock(
+	return runJobWithPlayoutCache(
 		context,
-		// 'onPiecePlaybackStarted',
 		data,
-		async (playlist) => {
-			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
-			await _onPiecePlaybackStarted(context, playlist, data)
+		async (_cache) => {
+			// const playlist = cache.Playlist.doc
+			// if (!playlist.activationId) throw new Error(`Rundown Playlist "${data.playlistId}" is not active!`)
+		},
+		async (cache) => {
+			_onPiecePlaybackStarted(context, cache, data)
 		}
 	)
 }
 
-async function _onPiecePlaybackStarted(
-	context: JobContext,
-	playlist: DBRundownPlaylist,
-	data: OnPiecePlaybackStartedProps
-) {
-	const rundowns = (await context.directCollections.Rundowns.findFetch(
-		{ playlistId: playlist._id },
-		{
-			projection: {
-				_id: 1,
-			},
-		}
-	)) as Array<Pick<DBRundown, '_id'>>
-
-	const pieceInstance = (await context.directCollections.PieceInstances.findOne(
-		{
-			_id: data.pieceInstanceId,
-			rundownId: { $in: rundowns.map((r) => r._id) },
-		},
-		{
-			projection: {
-				_id: 1,
-				startedPlayback: 1,
-				stoppedPlayback: 1,
-				partInstanceId: 1,
-				infinite: 1,
-			},
-		}
-	)) as Pick<PieceInstance, '_id' | 'startedPlayback' | 'stoppedPlayback' | 'partInstanceId' | 'infinite'> | undefined
+function _onPiecePlaybackStarted(context: JobContext, cache: CacheForPlayout, data: OnPiecePlaybackStartedProps) {
+	const playlist = cache.Playlist.doc
+	const pieceInstance = cache.PieceInstances.findOne(data.pieceInstanceId)
 
 	if (pieceInstance) {
 		const isPlaying = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
@@ -744,7 +728,7 @@ async function _onPiecePlaybackStarted(
 					data.pieceInstanceId
 				}" has started playback on timestamp ${new Date(data.startedPlayback).toISOString()}`
 			)
-			await reportPieceHasStarted(context, playlist, pieceInstance, data.startedPlayback)
+			reportPieceHasStarted(context, cache, pieceInstance, data.startedPlayback)
 
 			// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
 		}
@@ -758,46 +742,21 @@ async function _onPiecePlaybackStarted(
  * Triggered from Playout-gateway when a Piece has stopped playing
  */
 export async function onPiecePlaybackStopped(context: JobContext, data: OnPiecePlaybackStoppedProps): Promise<void> {
-	return runJobWithPlaylistLock(
+	return runJobWithPlayoutCache(
 		context,
-		// 'onPiecePlaybackStopped',
 		data,
-		async (playlist) => {
-			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
-
-			await _onPiecePlaybackStopped(context, playlist, data)
+		async (_cache) => {
+			// const playlist = cache.Playlist.doc
+			// if (!playlist.activationId) throw new Error(`Rundown Playlist "${data.playlistId}" is not active!`)
+		},
+		async (cache) => {
+			_onPiecePlaybackStopped(context, cache, data)
 		}
 	)
 }
-async function _onPiecePlaybackStopped(
-	context: JobContext,
-	playlist: DBRundownPlaylist,
-	data: OnPiecePlaybackStoppedProps
-) {
-	const rundowns = (await context.directCollections.Rundowns.findFetch(
-		{ playlistId: playlist._id },
-		{
-			projection: {
-				_id: 1,
-			},
-		}
-	)) as Array<Pick<DBRundown, '_id'>>
-
-	const pieceInstance = (await context.directCollections.PieceInstances.findOne(
-		{
-			rundownId: { $in: rundowns.map((r) => r._id) },
-			partInstanceId: data.partInstanceId,
-			_id: data.pieceInstanceId,
-		},
-		{
-			projection: {
-				_id: 1,
-				startedPlayback: 1,
-				stoppedPlayback: 1,
-				partInstanceId: 1,
-			},
-		}
-	)) as Pick<PieceInstance, '_id' | 'startedPlayback' | 'stoppedPlayback' | 'partInstanceId'> | undefined
+function _onPiecePlaybackStopped(context: JobContext, cache: CacheForPlayout, data: OnPiecePlaybackStoppedProps) {
+	const playlist = cache.Playlist.doc
+	const pieceInstance = cache.PieceInstances.findOne(data.pieceInstanceId)
 
 	if (pieceInstance) {
 		const isPlaying = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
@@ -808,24 +767,14 @@ async function _onPiecePlaybackStopped(
 				}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
 			)
 
-			await reportPieceHasStopped(context, playlist, pieceInstance, data.stoppedPlayback)
+			reportPieceHasStopped(context, cache, pieceInstance, data.stoppedPlayback)
 		}
 	} else if (!playlist.activationId) {
 		logger.warn(`onPiecePlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
 	} else {
-		const partInstance = (await context.directCollections.PartInstances.findOne(
-			{
-				_id: data.partInstanceId,
-				rundownId: { $in: rundowns.map((r) => r._id) },
-			},
-			{
-				projection: {
-					_id: 1,
-				},
-			}
-		)) as Pick<DBPartInstance, '_id'> | undefined
+		const partInstance = cache.PartInstances.findOne(data.partInstanceId)
 		if (!partInstance) {
-			// PartInstance was deleted, so we can rely on the onPartPlaybackStopped callback erroring
+			// PartInstance not found, so we can rely on the onPartPlaybackStopped callback erroring
 		} else {
 			throw new Error(`PieceInstance "${data.pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
 		}
@@ -1025,6 +974,59 @@ function _onPartPlaybackStopped(context: JobContext, cache: CacheForPlayout, dat
 	} else {
 		throw new Error(`PartInstance "${data.partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
 	}
+}
+
+export async function onPlayoutPlaybackChanged(
+	context: JobContext,
+	data: OnPlayoutPlaybackChangedProps
+): Promise<void> {
+	return runJobWithPlayoutCache(
+		context,
+		data,
+		(cache) => {
+			const playlist = cache.Playlist.doc
+			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
+		},
+		async (cache) => {
+			const playlist = cache.Playlist.doc
+			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
+
+			for (const change of data.changes) {
+				try {
+					if (change.type === PlayoutChangedType.partPlaybackStarted) {
+						await _onPartPlaybackStarted(context, cache, {
+							playlistId: playlist._id,
+							partInstanceId: change.data.partInstanceId,
+							startedPlayback: change.data.time,
+						})
+					} else if (change.type === PlayoutChangedType.partPlaybackStopped) {
+						_onPartPlaybackStopped(context, cache, {
+							playlistId: playlist._id,
+							partInstanceId: change.data.partInstanceId,
+							stoppedPlayback: change.data.time,
+						})
+					} else if (change.type === PlayoutChangedType.piecePlaybackStarted) {
+						_onPiecePlaybackStarted(context, cache, {
+							playlistId: playlist._id,
+							pieceInstanceId: change.data.pieceInstanceId,
+							startedPlayback: change.data.time,
+						})
+					} else if (change.type === PlayoutChangedType.piecePlaybackStopped) {
+						_onPiecePlaybackStopped(context, cache, {
+							playlistId: playlist._id,
+							partInstanceId: change.data.partInstanceId,
+							pieceInstanceId: change.data.pieceInstanceId,
+							stoppedPlayback: change.data.time,
+						})
+					} else {
+						assertNever(change)
+					}
+				} catch (err) {
+					logger.error(stringifyError(err))
+				}
+			}
+		}
+	)
 }
 
 /**

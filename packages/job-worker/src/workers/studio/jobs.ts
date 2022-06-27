@@ -17,6 +17,7 @@ import {
 	onPartPlaybackStopped,
 	onPiecePlaybackStarted,
 	onPiecePlaybackStopped,
+	onPlayoutPlaybackChanged,
 	prepareRundownPlaylistForBroadcast,
 	resetRundownPlaylist,
 	setNextPart,
@@ -75,6 +76,7 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.OnPiecePlaybackStopped]: onPiecePlaybackStopped,
 	[StudioJobs.OnPartPlaybackStarted]: onPartPlaybackStarted,
 	[StudioJobs.OnPartPlaybackStopped]: onPartPlaybackStopped,
+	[StudioJobs.OnPlayoutPlaybackChanged]: onPlayoutPlaybackChanged,
 	[StudioJobs.OnTimelineTriggerTime]: handleTimelineTriggerTime,
 
 	[StudioJobs.UpdateStudioBaseline]: updateStudioBaseline,

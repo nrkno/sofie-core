@@ -35,6 +35,7 @@ import {
 	TimelineTriggerTimeResult,
 	DiffTimeResult,
 	TimeDiff,
+	PlayoutChangedResults,
 } from './peripheralDeviceAPI'
 import { MediaObject } from '../core/model/MediaObjects'
 import { MediaWorkFlow } from '../core/model/MediaWorkFlows'
@@ -58,6 +59,7 @@ export interface NewPeripheralDeviceAPI {
 		deviceToken: string,
 		r: PiecePlaybackStartedResult
 	): Promise<void>
+	playoutPlaybackChanged(deviceId: PeripheralDeviceId, deviceToken: string, r: PlayoutChangedResults): Promise<void>
 	pingWithCommand(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
@@ -344,6 +346,9 @@ export enum PeripheralDeviceAPIMethods {
 	'partPlaybackStopped' = 'peripheralDevice.rundown.partPlaybackStopped',
 	'piecePlaybackStarted' = 'peripheralDevice.rundown.piecePlaybackStarted',
 	'piecePlaybackStopped' = 'peripheralDevice.rundown.piecePlaybackStopped',
+
+	'playoutPlaybackChanged' = 'peripheralDevice.playout.playbackChanged',
+
 	'reportCommandError' = 'peripheralDevice.playout.reportCommandError',
 
 	'mosRoCreate' = 'peripheralDevice.mos.roCreate',

@@ -35,7 +35,14 @@ import { disableAtemUpload } from './config'
 import Debug from 'debug'
 import { FinishedTrace, sendTrace } from './influxdb'
 import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import { StatusObject } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import {
+	PartPlaybackCallbackData,
+	PiecePlaybackCallbackData,
+	PlayoutChangedResults,
+	PlayoutChangedType,
+	StatusObject,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 const debug = Debug('playout-gateway')
 
@@ -227,24 +234,97 @@ export class TSRHandler {
 				this.logger.error('Error in setTimelineTriggerTime', e)
 			})
 		})
-		this.tsr.on('timelineCallback', (time, objId, callbackName, data) => {
-			// @ts-expect-error Untyped bunch of methods
-			const method = PeripheralDeviceAPIMethods[callbackName]
-			if (method) {
-				this._coreHandler.core
-					.callMethod(method, [
-						Object.assign({}, data, {
-							objId: objId,
-							time: time,
-						}),
-					])
-					.catch((e) => {
-						this.logger.error('Error in timelineCallback', e)
-					})
-			} else {
-				this.logger.error(`Unknown callback method "${callbackName}"`)
+
+		let changedResults: PlayoutChangedResults | undefined = undefined
+		let sendCallbacksTimeout: NodeJS.Timer | undefined = undefined
+
+		this.tsr.on(
+			'timelineCallback',
+			(time, objId, callbackName0, data: PartPlaybackCallbackData | PiecePlaybackCallbackData) => {
+				if (
+					[
+						PlayoutChangedType.partPlaybackStarted,
+						PlayoutChangedType.partPlaybackStopped,
+						PlayoutChangedType.piecePlaybackStarted,
+						PlayoutChangedType.piecePlaybackStopped,
+					].includes(callbackName0 as PlayoutChangedType)
+				) {
+					const callbackName = callbackName0 as PlayoutChangedType
+					// debounce
+					if (changedResults && changedResults.rundownPlaylistId !== data.rundownPlaylistId) {
+						// The playlistId changed. Send what we have right away and reset:
+						this._coreHandler.core
+							.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [changedResults])
+							.catch((e) => {
+								this.logger.error('Error in timelineCallback', e)
+							})
+						changedResults = undefined
+					}
+					if (!changedResults) {
+						changedResults = {
+							rundownPlaylistId: data.rundownPlaylistId,
+							changes: [],
+						}
+					}
+
+					if (
+						callbackName === PlayoutChangedType.partPlaybackStarted ||
+						callbackName === PlayoutChangedType.partPlaybackStopped
+					) {
+						changedResults.changes.push({
+							type: callbackName,
+							objId,
+							data: {
+								time,
+								partInstanceId: (data as PartPlaybackCallbackData).partInstanceId,
+							},
+						})
+					} else if (
+						callbackName === PlayoutChangedType.piecePlaybackStarted ||
+						callbackName === PlayoutChangedType.piecePlaybackStopped
+					) {
+						changedResults.changes.push({
+							type: callbackName,
+							objId,
+							data: {
+								time,
+								partInstanceId: (data as PiecePlaybackCallbackData).partInstanceId,
+								pieceInstanceId: (data as PiecePlaybackCallbackData).pieceInstanceId,
+							},
+						})
+					} else {
+						assertNever(callbackName)
+					}
+
+					if (sendCallbacksTimeout) clearTimeout(sendCallbacksTimeout)
+					sendCallbacksTimeout = setTimeout(() => {
+						this._coreHandler.core
+							.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [changedResults])
+							.catch((e) => {
+								this.logger.error('Error in timelineCallback', e)
+							})
+						changedResults = undefined
+					}, 100)
+				} else {
+					// @ts-expect-error Untyped bunch of methods
+					const method = PeripheralDeviceAPIMethods[callbackName]
+					if (method) {
+						this._coreHandler.core
+							.callMethod(method, [
+								Object.assign({}, data, {
+									objId: objId,
+									time: time,
+								}),
+							])
+							.catch((e) => {
+								this.logger.error('Error in timelineCallback', e)
+							})
+					} else {
+						this.logger.error(`Unknown callback method "${callbackName0}"`)
+					}
+				}
 			}
-		})
+		)
 		this.tsr.on('resolveDone', (timelineHash: string, resolveDuration: number) => {
 			// Make sure we only report back once, per update timeline
 			if (this._lastReportedObjHashes.includes(timelineHash)) return

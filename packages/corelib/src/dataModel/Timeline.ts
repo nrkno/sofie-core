@@ -13,6 +13,7 @@ export { TimelineHash }
 import {
 	PartPlaybackCallbackData,
 	PiecePlaybackCallbackData,
+	PlayoutChangedType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 export { PartPlaybackCallbackData, PiecePlaybackCallbackData }
 
@@ -64,8 +65,8 @@ export interface TimelineObjPartAbstract extends TimelineObjRundown {
 	content: {
 		deviceType: TSR.DeviceType.ABSTRACT
 		type: 'callback'
-		callBack: 'partPlaybackStarted'
-		callBackStopped: 'partPlaybackStopped'
+		callBack: PlayoutChangedType.partPlaybackStarted
+		callBackStopped: PlayoutChangedType.partPlaybackStopped
 		callBackData: PartPlaybackCallbackData
 	}
 }
@@ -76,8 +77,8 @@ export interface TimelineObjPieceAbstract extends Omit<TimelineObjRundown, 'enab
 	content: {
 		deviceType: TSR.DeviceType.ABSTRACT
 		type: 'callback'
-		callBack: 'piecePlaybackStarted'
-		callBackStopped: 'piecePlaybackStopped'
+		callBack: PlayoutChangedType.piecePlaybackStarted
+		callBackStopped: PlayoutChangedType.piecePlaybackStopped
 		callBackData: PiecePlaybackCallbackData
 	}
 }
