@@ -701,55 +701,58 @@ export async function onPiecePlaybackStarted(context: JobContext, data: OnPieceP
 		data,
 		async (playlist) => {
 			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
-
-			const rundowns = (await context.directCollections.Rundowns.findFetch(
-				{ playlistId: playlist._id },
-				{
-					projection: {
-						_id: 1,
-					},
-				}
-			)) as Array<Pick<DBRundown, '_id'>>
-
-			const pieceInstance = (await context.directCollections.PieceInstances.findOne(
-				{
-					_id: data.pieceInstanceId,
-					rundownId: { $in: rundowns.map((r) => r._id) },
-				},
-				{
-					projection: {
-						_id: 1,
-						startedPlayback: 1,
-						stoppedPlayback: 1,
-						partInstanceId: 1,
-						infinite: 1,
-					},
-				}
-			)) as
-				| Pick<PieceInstance, '_id' | 'startedPlayback' | 'stoppedPlayback' | 'partInstanceId' | 'infinite'>
-				| undefined
-
-			if (pieceInstance) {
-				const isPlaying = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
-				if (!isPlaying) {
-					logger.debug(
-						`onPiecePlaybackStarted: Playout reports pieceInstance "${
-							data.pieceInstanceId
-						}" has started playback on timestamp ${new Date(data.startedPlayback).toISOString()}`
-					)
-					await reportPieceHasStarted(context, playlist, pieceInstance, data.startedPlayback)
-
-					// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
-				}
-			} else if (!playlist.activationId) {
-				logger.warn(`onPiecePlaybackStarted: Received for inactive RundownPlaylist "${playlist._id}"`)
-			} else {
-				throw new Error(
-					`PieceInstance "${data.pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
-				)
-			}
+			await _onPiecePlaybackStarted(context, playlist, data)
 		}
 	)
+}
+
+async function _onPiecePlaybackStarted(
+	context: JobContext,
+	playlist: DBRundownPlaylist,
+	data: OnPiecePlaybackStartedProps
+) {
+	const rundowns = (await context.directCollections.Rundowns.findFetch(
+		{ playlistId: playlist._id },
+		{
+			projection: {
+				_id: 1,
+			},
+		}
+	)) as Array<Pick<DBRundown, '_id'>>
+
+	const pieceInstance = (await context.directCollections.PieceInstances.findOne(
+		{
+			_id: data.pieceInstanceId,
+			rundownId: { $in: rundowns.map((r) => r._id) },
+		},
+		{
+			projection: {
+				_id: 1,
+				startedPlayback: 1,
+				stoppedPlayback: 1,
+				partInstanceId: 1,
+				infinite: 1,
+			},
+		}
+	)) as Pick<PieceInstance, '_id' | 'startedPlayback' | 'stoppedPlayback' | 'partInstanceId' | 'infinite'> | undefined
+
+	if (pieceInstance) {
+		const isPlaying = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
+		if (!isPlaying) {
+			logger.debug(
+				`onPiecePlaybackStarted: Playout reports pieceInstance "${
+					data.pieceInstanceId
+				}" has started playback on timestamp ${new Date(data.startedPlayback).toISOString()}`
+			)
+			await reportPieceHasStarted(context, playlist, pieceInstance, data.startedPlayback)
+
+			// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
+		}
+	} else if (!playlist.activationId) {
+		logger.warn(`onPiecePlaybackStarted: Received for inactive RundownPlaylist "${playlist._id}"`)
+	} else {
+		throw new Error(`PieceInstance "${data.pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
+	}
 }
 /**
  * Triggered from Playout-gateway when a Piece has stopped playing
@@ -762,66 +765,71 @@ export async function onPiecePlaybackStopped(context: JobContext, data: OnPieceP
 		async (playlist) => {
 			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
 
-			const rundowns = (await context.directCollections.Rundowns.findFetch(
-				{ playlistId: playlist._id },
-				{
-					projection: {
-						_id: 1,
-					},
-				}
-			)) as Array<Pick<DBRundown, '_id'>>
-
-			const pieceInstance = (await context.directCollections.PieceInstances.findOne(
-				{
-					rundownId: { $in: rundowns.map((r) => r._id) },
-					partInstanceId: data.partInstanceId,
-					_id: data.pieceInstanceId,
-				},
-				{
-					projection: {
-						_id: 1,
-						startedPlayback: 1,
-						stoppedPlayback: 1,
-						partInstanceId: 1,
-					},
-				}
-			)) as Pick<PieceInstance, '_id' | 'startedPlayback' | 'stoppedPlayback' | 'partInstanceId'> | undefined
-
-			if (pieceInstance) {
-				const isPlaying = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
-				if (isPlaying) {
-					logger.debug(
-						`onPiecePlaybackStopped: Playout reports pieceInstance "${
-							data.pieceInstanceId
-						}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
-					)
-
-					await reportPieceHasStopped(context, playlist, pieceInstance, data.stoppedPlayback)
-				}
-			} else if (!playlist.activationId) {
-				logger.warn(`onPiecePlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
-			} else {
-				const partInstance = (await context.directCollections.PartInstances.findOne(
-					{
-						_id: data.partInstanceId,
-						rundownId: { $in: rundowns.map((r) => r._id) },
-					},
-					{
-						projection: {
-							_id: 1,
-						},
-					}
-				)) as Pick<DBPartInstance, '_id'> | undefined
-				if (!partInstance) {
-					// PartInstance was deleted, so we can rely on the onPartPlaybackStopped callback erroring
-				} else {
-					throw new Error(
-						`PieceInstance "${data.pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`
-					)
-				}
-			}
+			await _onPiecePlaybackStopped(context, playlist, data)
 		}
 	)
+}
+async function _onPiecePlaybackStopped(
+	context: JobContext,
+	playlist: DBRundownPlaylist,
+	data: OnPiecePlaybackStoppedProps
+) {
+	const rundowns = (await context.directCollections.Rundowns.findFetch(
+		{ playlistId: playlist._id },
+		{
+			projection: {
+				_id: 1,
+			},
+		}
+	)) as Array<Pick<DBRundown, '_id'>>
+
+	const pieceInstance = (await context.directCollections.PieceInstances.findOne(
+		{
+			rundownId: { $in: rundowns.map((r) => r._id) },
+			partInstanceId: data.partInstanceId,
+			_id: data.pieceInstanceId,
+		},
+		{
+			projection: {
+				_id: 1,
+				startedPlayback: 1,
+				stoppedPlayback: 1,
+				partInstanceId: 1,
+			},
+		}
+	)) as Pick<PieceInstance, '_id' | 'startedPlayback' | 'stoppedPlayback' | 'partInstanceId'> | undefined
+
+	if (pieceInstance) {
+		const isPlaying = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
+		if (isPlaying) {
+			logger.debug(
+				`onPiecePlaybackStopped: Playout reports pieceInstance "${
+					data.pieceInstanceId
+				}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
+			)
+
+			await reportPieceHasStopped(context, playlist, pieceInstance, data.stoppedPlayback)
+		}
+	} else if (!playlist.activationId) {
+		logger.warn(`onPiecePlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
+	} else {
+		const partInstance = (await context.directCollections.PartInstances.findOne(
+			{
+				_id: data.partInstanceId,
+				rundownId: { $in: rundowns.map((r) => r._id) },
+			},
+			{
+				projection: {
+					_id: 1,
+				},
+			}
+		)) as Pick<DBPartInstance, '_id'> | undefined
+		if (!partInstance) {
+			// PartInstance was deleted, so we can rely on the onPartPlaybackStopped callback erroring
+		} else {
+			throw new Error(`PieceInstance "${data.pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
+		}
+	}
 }
 
 /**
@@ -837,137 +845,137 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 			if (!playlist.activationId) throw new Error(`Rundown Playlist "${data.playlistId}" is not active!`)
 		},
 		async (cache) => {
-			const playingPartInstance = cache.PartInstances.findOne(data.partInstanceId)
-			if (!playingPartInstance)
-				throw new Error(
-					`PartInstance "${data.partInstanceId}" in RundownPlayst "${data.playlistId}" not found!`
-				)
-
-			// make sure we don't run multiple times, even if TSR calls us multiple times
-			const isPlaying =
-				playingPartInstance.timings?.startedPlayback && !playingPartInstance.timings?.stoppedPlayback
-			if (!isPlaying) {
-				logger.debug(
-					`Playout reports PartInstance "${data.partInstanceId}" has started playback on timestamp ${new Date(
-						data.startedPlayback
-					).toISOString()}`
-				)
-
-				const playlist = cache.Playlist.doc
-
-				const rundown = cache.Rundowns.findOne(playingPartInstance.rundownId)
-				if (!rundown) throw new Error(`Rundown "${playingPartInstance.rundownId}" not found!`)
-
-				const { currentPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
-
-				if (playlist.currentPartInstanceId === data.partInstanceId) {
-					// this is the current part, it has just started playback
-					if (playlist.previousPartInstanceId) {
-						if (!previousPartInstance) {
-							// We couldn't find the previous part: this is not a critical issue, but is clearly is a symptom of a larger issue
-							logger.error(
-								`Previous PartInstance "${playlist.previousPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
-							)
-						} else if (!previousPartInstance.timings?.duration) {
-							onPartHasStoppedPlaying(cache, previousPartInstance, data.startedPlayback)
-						}
-					}
-
-					reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
-				} else if (playlist.nextPartInstanceId === data.partInstanceId) {
-					// this is the next part, clearly an autoNext has taken place
-					if (playlist.currentPartInstanceId) {
-						if (!currentPartInstance) {
-							// We couldn't find the previous part: this is not a critical issue, but is clearly is a symptom of a larger issue
-							logger.error(
-								`Previous PartInstance "${playlist.currentPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
-							)
-						} else if (!currentPartInstance.timings?.duration) {
-							onPartHasStoppedPlaying(cache, currentPartInstance, data.startedPlayback)
-						}
-					}
-
-					cache.Playlist.update({
-						$set: {
-							previousPartInstanceId: playlist.currentPartInstanceId,
-							currentPartInstanceId: playingPartInstance._id,
-							holdState: RundownHoldState.NONE,
-						},
-					})
-
-					reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
-
-					// Update generated properties on the newly playing partInstance
-					const currentRundown = currentPartInstance
-						? cache.Rundowns.findOne(currentPartInstance.rundownId)
-						: undefined
-					const showStyleRundown = currentRundown ?? rundown
-					const showStyle = await context.getShowStyleCompound(
-						showStyleRundown.showStyleVariantId,
-						showStyleRundown.showStyleBaseId
-					)
-					const blueprint = await context.getShowStyleBlueprint(showStyle._id)
-					updatePartInstanceOnTake(
-						context,
-						cache,
-						showStyle,
-						blueprint,
-						rundown,
-						playingPartInstance,
-						currentPartInstance
-					)
-
-					clearNextSegmentId(cache, currentPartInstance)
-					resetPreviousSegment(cache)
-
-					// Update the next partinstance
-					const nextPart = selectNextPart(
-						context,
-						playlist,
-						playingPartInstance,
-						null,
-						getOrderedSegmentsAndPartsFromPlayoutCache(cache)
-					)
-					await libSetNextPart(context, cache, nextPart)
-				} else {
-					// a part is being played that has not been selected for playback by Core
-					// show must go on, so find next part and update the Rundown, but log an error
-					const previousReported = playlist.lastIncorrectPartPlaybackReported
-
-					if (previousReported && Date.now() - previousReported > INCORRECT_PLAYING_PART_DEBOUNCE) {
-						// first time this has happened for a while, let's try to progress the show:
-
-						cache.Playlist.update({
-							$set: {
-								previousPartInstanceId: null,
-								currentPartInstanceId: playingPartInstance._id,
-								lastIncorrectPartPlaybackReported: Date.now(), // save the time to prevent the system to go in a loop
-							},
-						})
-
-						reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
-
-						const nextPart = selectNextPart(
-							context,
-							playlist,
-							playingPartInstance,
-							null,
-							getOrderedSegmentsAndPartsFromPlayoutCache(cache)
-						)
-						await libSetNextPart(context, cache, nextPart)
-					}
-
-					// TODO - should this even change the next?
-					logger.error(
-						`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`
-					)
-				}
-
-				// complete the take
-				await afterTake(context, cache, playingPartInstance)
-			}
+			await _onPartPlaybackStarted(context, cache, data)
 		}
 	)
+}
+async function _onPartPlaybackStarted(context: JobContext, cache: CacheForPlayout, data: OnPartPlaybackStartedProps) {
+	const playingPartInstance = cache.PartInstances.findOne(data.partInstanceId)
+	if (!playingPartInstance)
+		throw new Error(`PartInstance "${data.partInstanceId}" in RundownPlayst "${data.playlistId}" not found!`)
+
+	// make sure we don't run multiple times, even if TSR calls us multiple times
+	const isPlaying = playingPartInstance.timings?.startedPlayback && !playingPartInstance.timings?.stoppedPlayback
+	if (!isPlaying) {
+		logger.debug(
+			`Playout reports PartInstance "${data.partInstanceId}" has started playback on timestamp ${new Date(
+				data.startedPlayback
+			).toISOString()}`
+		)
+
+		const playlist = cache.Playlist.doc
+
+		const rundown = cache.Rundowns.findOne(playingPartInstance.rundownId)
+		if (!rundown) throw new Error(`Rundown "${playingPartInstance.rundownId}" not found!`)
+
+		const { currentPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
+
+		if (playlist.currentPartInstanceId === data.partInstanceId) {
+			// this is the current part, it has just started playback
+			if (playlist.previousPartInstanceId) {
+				if (!previousPartInstance) {
+					// We couldn't find the previous part: this is not a critical issue, but is clearly is a symptom of a larger issue
+					logger.error(
+						`Previous PartInstance "${playlist.previousPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
+					)
+				} else if (!previousPartInstance.timings?.duration) {
+					onPartHasStoppedPlaying(cache, previousPartInstance, data.startedPlayback)
+				}
+			}
+
+			reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
+		} else if (playlist.nextPartInstanceId === data.partInstanceId) {
+			// this is the next part, clearly an autoNext has taken place
+			if (playlist.currentPartInstanceId) {
+				if (!currentPartInstance) {
+					// We couldn't find the previous part: this is not a critical issue, but is clearly is a symptom of a larger issue
+					logger.error(
+						`Previous PartInstance "${playlist.currentPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
+					)
+				} else if (!currentPartInstance.timings?.duration) {
+					onPartHasStoppedPlaying(cache, currentPartInstance, data.startedPlayback)
+				}
+			}
+
+			cache.Playlist.update({
+				$set: {
+					previousPartInstanceId: playlist.currentPartInstanceId,
+					currentPartInstanceId: playingPartInstance._id,
+					holdState: RundownHoldState.NONE,
+				},
+			})
+
+			reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
+
+			// Update generated properties on the newly playing partInstance
+			const currentRundown = currentPartInstance
+				? cache.Rundowns.findOne(currentPartInstance.rundownId)
+				: undefined
+			const showStyleRundown = currentRundown ?? rundown
+			const showStyle = await context.getShowStyleCompound(
+				showStyleRundown.showStyleVariantId,
+				showStyleRundown.showStyleBaseId
+			)
+			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+			updatePartInstanceOnTake(
+				context,
+				cache,
+				showStyle,
+				blueprint,
+				rundown,
+				playingPartInstance,
+				currentPartInstance
+			)
+
+			clearNextSegmentId(cache, currentPartInstance)
+			resetPreviousSegment(cache)
+
+			// Update the next partinstance
+			const nextPart = selectNextPart(
+				context,
+				playlist,
+				playingPartInstance,
+				null,
+				getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+			)
+			await libSetNextPart(context, cache, nextPart)
+		} else {
+			// a part is being played that has not been selected for playback by Core
+			// show must go on, so find next part and update the Rundown, but log an error
+			const previousReported = playlist.lastIncorrectPartPlaybackReported
+
+			if (previousReported && Date.now() - previousReported > INCORRECT_PLAYING_PART_DEBOUNCE) {
+				// first time this has happened for a while, let's try to progress the show:
+
+				cache.Playlist.update({
+					$set: {
+						previousPartInstanceId: null,
+						currentPartInstanceId: playingPartInstance._id,
+						lastIncorrectPartPlaybackReported: Date.now(), // save the time to prevent the system to go in a loop
+					},
+				})
+
+				reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
+
+				const nextPart = selectNextPart(
+					context,
+					playlist,
+					playingPartInstance,
+					null,
+					getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+				)
+				await libSetNextPart(context, cache, nextPart)
+			}
+
+			// TODO - should this even change the next?
+			logger.error(
+				`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`
+			)
+		}
+
+		// complete the take
+		await afterTake(context, cache, playingPartInstance)
+	}
 }
 /**
  * Triggered from Playout-gateway when a Part has stopped playing
@@ -981,39 +989,42 @@ export async function onPartPlaybackStopped(context: JobContext, data: OnPartPla
 			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
 		},
 		(cache) => {
-			const playlist = cache.Playlist.doc
-			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
-
-			// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
-			const rundowns = cache.Rundowns.findFetch({ playlistId: playlist._id })
-
-			const partInstance = cache.PartInstances.findOne({
-				_id: data.partInstanceId,
-				rundownId: { $in: rundowns.map((r) => r._id) },
-			})
-
-			if (partInstance) {
-				// make sure we don't run multiple times, even if TSR calls us multiple times
-
-				const isPlaying = partInstance.timings?.startedPlayback && !partInstance.timings?.stoppedPlayback
-				if (isPlaying) {
-					logger.debug(
-						`onPartPlaybackStopped: Playout reports PartInstance "${
-							data.partInstanceId
-						}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
-					)
-
-					reportPartInstanceHasStopped(context, cache, partInstance, data.stoppedPlayback)
-				}
-			} else if (!playlist.activationId) {
-				logger.warn(`onPartPlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
-			} else if (getCurrentTime() - (playlist.resetTime ?? 0) > RESET_IGNORE_ERRORS) {
-				// Ignore errors that happen just after a reset, so do nothing here.
-			} else {
-				throw new Error(`PartInstance "${data.partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
-			}
+			_onPartPlaybackStopped(context, cache, data)
 		}
 	)
+}
+function _onPartPlaybackStopped(context: JobContext, cache: CacheForPlayout, data: OnPartPlaybackStoppedProps) {
+	const playlist = cache.Playlist.doc
+	if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
+
+	// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
+	const rundowns = cache.Rundowns.findFetch({ playlistId: playlist._id })
+
+	const partInstance = cache.PartInstances.findOne({
+		_id: data.partInstanceId,
+		rundownId: { $in: rundowns.map((r) => r._id) },
+	})
+
+	if (partInstance) {
+		// make sure we don't run multiple times, even if TSR calls us multiple times
+
+		const isPlaying = partInstance.timings?.startedPlayback && !partInstance.timings?.stoppedPlayback
+		if (isPlaying) {
+			logger.debug(
+				`onPartPlaybackStopped: Playout reports PartInstance "${
+					data.partInstanceId
+				}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
+			)
+
+			reportPartInstanceHasStopped(context, cache, partInstance, data.stoppedPlayback)
+		}
+	} else if (!playlist.activationId) {
+		logger.warn(`onPartPlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
+	} else if (getCurrentTime() - (playlist.resetTime ?? 0) > RESET_IGNORE_ERRORS) {
+		// Ignore errors that happen just after a reset, so do nothing here.
+	} else {
+		throw new Error(`PartInstance "${data.partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
+	}
 }
 
 /**
