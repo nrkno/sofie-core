@@ -133,7 +133,7 @@ function createObserverForTimelinePublication(
 		}) => {
 			// Prepare data for publication:
 
-			if (!context.studioId || !context.timeline) {
+			if (!context.studioId) {
 				return []
 			}
 
@@ -150,6 +150,7 @@ function createObserverForTimelinePublication(
 			if (!context.studio) return []
 			if (!context.routes) return []
 
+			// Process the incoming timeline and assign it to context.timeline, if pertinent
 			if (context.incomingTimeline) {
 				if (context.timelineGenerated > Date.now() + 10000) {
 					// Take height for something going really really wrong with the generated time,
@@ -176,6 +177,8 @@ function createObserverForTimelinePublication(
 
 				context.incomingTimeline = null
 			}
+
+			if (!context.timeline) return []
 
 			if (context.timelineHash !== context.timeline.timelineHash) {
 				invalidateTimeline = true
