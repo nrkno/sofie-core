@@ -47,7 +47,8 @@ export namespace MongoMock {
 	export class Collection<T extends CollectionObject> implements MongoCollection {
 		public _name: string
 		private _options: any = {}
-		private _isMock: true = true // used in test to check that it's a mock
+		// @ts-ignore used in test to check that it's a mock
+		private _isMock: true = true
 		private observers: ObserverEntry<T>[] = []
 
 		public asyncBulkWriteDelay = 100

@@ -111,6 +111,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 	configOptions: PrompterConfig
 
+	// @ts-expect-error The manager inspects this instance
 	private _controller: PrompterControlManager
 
 	private checkWindowScroll: number | null = null

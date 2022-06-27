@@ -73,17 +73,18 @@ export type CalculateTimingsToPart = Pick<DBPart, 'inTransition'>
 export function calculatePartTimings(
 	holdState: RundownHoldState | undefined,
 	fromPart: CalculateTimingsFromPart | undefined,
-	fromPiece: CalculateTimingsPiece[] | undefined,
+	fromPieces: CalculateTimingsPiece[] | undefined,
 	toPart: CalculateTimingsToPart,
-	toPiece: CalculateTimingsPiece[]
+	toPieces: CalculateTimingsPiece[]
 	// toPartPreroll: number
 ): PartCalculatedTimings {
 	// If in a hold, we cant do the transition
-	const isInHold = holdState !== RundownHoldState.NONE && holdState !== undefined
+	const isInHold =
+		holdState !== RundownHoldState.NONE && holdState !== RundownHoldState.COMPLETE && holdState !== undefined
 
-	const toPartPreroll = calculatePartPreroll(toPiece)
-	const fromPartPostroll = fromPart && fromPiece ? calculatePartPostroll(fromPiece) : 0
-	const toPartPostroll = calculatePartPostroll(toPiece)
+	const toPartPreroll = calculatePartPreroll(toPieces)
+	const fromPartPostroll = fromPart && fromPieces ? calculatePartPostroll(fromPieces) : 0
+	const toPartPostroll = calculatePartPostroll(toPieces)
 
 	let inTransition: Omit<IBlueprintPartInTransition, 'blockTakeDuration'> | undefined
 	let allowTransitionPiece: boolean | undefined

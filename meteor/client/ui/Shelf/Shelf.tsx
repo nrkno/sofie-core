@@ -86,7 +86,6 @@ const MAX_HEIGHT = 95
 export const DEFAULT_TAB = ShelfTabs.ADLIB
 
 export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> {
-	private element: HTMLDivElement | null = null
 	private _mouseStart: {
 		x: number
 		y: number
@@ -377,10 +376,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.selectPiece(e.piece)
 	}
 
-	private setRef = (element: HTMLDivElement | null) => {
-		this.element = element
-	}
-
 	selectPiece = (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => {
 		this.setState({
 			selectedPiece: piece,
@@ -403,7 +398,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					moving: this.state.moving,
 				})}
 				style={fullViewport ? undefined : this.getStyle()}
-				ref={this.setRef}
 			>
 				{!this.props.rundownLayout?.disableContextMenu && <ShelfContextMenu />}
 				{!fullViewport && (
