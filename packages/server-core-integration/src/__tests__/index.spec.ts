@@ -1,5 +1,11 @@
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { CoreConnection } from '../index'
-import { PeripheralDeviceAPI as P, PeripheralDeviceAPI } from '../lib/corePeripherals'
 import { DDPConnectorOptions } from '../lib/ddpClient'
 jest.mock('faye-websocket')
 jest.mock('got')
@@ -9,6 +15,8 @@ process.on('unhandledRejection', (reason) => {
 })
 
 const orgSetTimeout = setTimeout
+
+const defaultDeviceId = protectString('JestTest')
 
 describe('coreConnection', () => {
 	const coreHost = '127.0.0.1'
@@ -24,11 +32,11 @@ describe('coreConnection', () => {
 
 	test('Just setup CoreConnection', async () => {
 		const core = new CoreConnection({
-			deviceId: 'JestTest',
+			deviceId: defaultDeviceId,
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
+			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
 		})
 
@@ -44,11 +52,11 @@ describe('coreConnection', () => {
 
 	test('connection and basic Core functionality', async () => {
 		const core = new CoreConnection({
-			deviceId: 'JestTest',
+			deviceId: defaultDeviceId,
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
+			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
 		})
 
@@ -81,20 +89,20 @@ describe('coreConnection', () => {
 		// Set some statuses:
 
 		let statusResponse = await core.setStatus({
-			statusCode: P.StatusCode.WARNING_MAJOR,
+			statusCode: StatusCode.WARNING_MAJOR,
 			messages: ['testing testing'],
 		})
 
 		expect(statusResponse).toMatchObject({
-			statusCode: P.StatusCode.WARNING_MAJOR,
+			statusCode: StatusCode.WARNING_MAJOR,
 		})
 
 		statusResponse = await core.setStatus({
-			statusCode: P.StatusCode.GOOD,
+			statusCode: StatusCode.GOOD,
 		})
 
 		expect(statusResponse).toMatchObject({
-			statusCode: P.StatusCode.GOOD,
+			statusCode: StatusCode.GOOD,
 		})
 
 		// Observe data:
@@ -144,7 +152,7 @@ describe('coreConnection', () => {
 		// Set the status now (should cause an error)
 		await expect(
 			core.setStatus({
-				statusCode: P.StatusCode.GOOD,
+				statusCode: StatusCode.GOOD,
 			})
 		).rejects.toMatchObject({
 			error: 404,
@@ -165,11 +173,11 @@ describe('coreConnection', () => {
 
 	test('Connection timeout', async () => {
 		const core = new CoreConnection({
-			deviceId: 'JestTest',
+			deviceId: defaultDeviceId,
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
+			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
 		})
 
@@ -203,11 +211,11 @@ describe('coreConnection', () => {
 
 	test('Connection recover from close', async () => {
 		const core = new CoreConnection({
-			deviceId: 'JestTest',
+			deviceId: defaultDeviceId,
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
+			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
 		})
 
@@ -247,11 +255,11 @@ describe('coreConnection', () => {
 
 	test('autoSubscription', async () => {
 		const core = new CoreConnection({
-			deviceId: 'JestTest',
+			deviceId: defaultDeviceId,
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
+			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
 		})
 
@@ -283,12 +291,12 @@ describe('coreConnection', () => {
 		observer.changed = observerChanged
 		observer.removed = observerRemoved
 
-		await core.autoSubscribe('peripheralDevices', { _id: 'JestTest' })
+		await core.autoSubscribe('peripheralDevices', { _id: defaultDeviceId })
 
 		expect(observerAdded).toHaveBeenCalledTimes(1)
 
 		await core.setStatus({
-			statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+			statusCode: StatusCode.GOOD,
 			messages: ['Jest A ' + Date.now()],
 		})
 		await wait(300)
@@ -306,7 +314,7 @@ describe('coreConnection', () => {
 
 		observerChanged.mockClear()
 		await core.setStatus({
-			statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+			statusCode: StatusCode.GOOD,
 			messages: ['Jest B' + Date.now()],
 		})
 		await wait(300)
@@ -317,11 +325,11 @@ describe('coreConnection', () => {
 
 	test('Connection recover from a close that lasts some time', async () => {
 		const core = new CoreConnection({
-			deviceId: 'JestTest',
+			deviceId: defaultDeviceId,
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
+			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
 		})
 
@@ -372,11 +380,11 @@ describe('coreConnection', () => {
 
 	test('Parent connections', async () => {
 		const coreParent = new CoreConnection({
-			deviceId: 'JestTest',
+			deviceId: defaultDeviceId,
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
+			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
 		})
 		const onError = jest.fn()
@@ -393,11 +401,11 @@ describe('coreConnection', () => {
 
 		// Set child connection:
 		const coreChild = new CoreConnection({
-			deviceId: 'JestTestChild',
+			deviceId: protectString('JestTestChild'),
 			deviceToken: 'abcd2',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
+			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework child',
 		})
 
@@ -422,20 +430,20 @@ describe('coreConnection', () => {
 
 		// Set some statuses:
 		let statusResponse = await coreChild.setStatus({
-			statusCode: P.StatusCode.WARNING_MAJOR,
+			statusCode: StatusCode.WARNING_MAJOR,
 			messages: ['testing testing'],
 		})
 
 		expect(statusResponse).toMatchObject({
-			statusCode: P.StatusCode.WARNING_MAJOR,
+			statusCode: StatusCode.WARNING_MAJOR,
 		})
 
 		statusResponse = await coreChild.setStatus({
-			statusCode: P.StatusCode.GOOD,
+			statusCode: StatusCode.GOOD,
 		})
 
 		expect(statusResponse).toMatchObject({
-			statusCode: P.StatusCode.GOOD,
+			statusCode: StatusCode.GOOD,
 		})
 
 		// Uninitialize:
@@ -447,7 +455,7 @@ describe('coreConnection', () => {
 		// Set the status now (should cause an error)
 		await expect(
 			coreChild.setStatus({
-				statusCode: P.StatusCode.GOOD,
+				statusCode: StatusCode.GOOD,
 			})
 		).rejects.toMatchObject({
 			error: 404,
@@ -462,11 +470,11 @@ describe('coreConnection', () => {
 
 	test('Parent destroy', async () => {
 		const coreParent = new CoreConnection({
-			deviceId: 'JestTest',
+			deviceId: defaultDeviceId,
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
+			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
 		})
 		const onParentError = jest.fn()
@@ -478,10 +486,10 @@ describe('coreConnection', () => {
 		})
 		// Set child connection:
 		const coreChild = new CoreConnection({
-			deviceId: 'JestTestChild',
+			deviceId: protectString('JestTestChild'),
 			deviceToken: 'abcd2',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: 'mos_connection',
 			deviceName: 'Jest test framework child',
 		})
@@ -540,11 +548,11 @@ describe('coreConnection', () => {
 
 	test('Child destroy', async () => {
 		const coreParent = new CoreConnection({
-			deviceId: 'JestTest',
+			deviceId: defaultDeviceId,
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
+			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
 		})
 		const onParentError = jest.fn()
@@ -555,10 +563,10 @@ describe('coreConnection', () => {
 		})
 		// Set child connection:
 		const coreChild = new CoreConnection({
-			deviceId: 'JestTestChild',
+			deviceId: protectString('JestTestChild'),
 			deviceToken: 'abcd2',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: 'mos_connection',
 			deviceName: 'Jest test framework child',
 		})
@@ -593,11 +601,11 @@ describe('coreConnection', () => {
 
 	test('callMethodLowPrio', async () => {
 		const core = new CoreConnection({
-			deviceId: 'JestTest',
+			deviceId: defaultDeviceId,
 			deviceToken: 'abcd',
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
-			deviceSubType: P.SUBTYPE_PROCESS,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
+			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
 		})
 

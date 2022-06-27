@@ -38,7 +38,7 @@ export interface CoreCredentials {
 export interface CoreOptions extends CoreCredentials {
 	deviceCategory: PeripheralDeviceCategory
 	deviceType: PeripheralDeviceType //  deprecated
-	deviceSubType: PeripheralDeviceSubType // deprecated
+	deviceSubType?: PeripheralDeviceSubType // deprecated
 
 	deviceName: string
 	versions?: {
@@ -46,7 +46,7 @@ export interface CoreOptions extends CoreCredentials {
 	}
 	watchDog?: boolean
 
-	configManifest: DeviceConfigManifest
+	configManifest?: DeviceConfigManifest
 }
 export interface CollectionObj {
 	_id: string
