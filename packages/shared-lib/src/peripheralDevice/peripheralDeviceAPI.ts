@@ -86,7 +86,7 @@ export interface InitOptions {
 	versions?: {
 		[libraryName: string]: string
 	}
-	configManifest: DeviceConfigManifest
+	configManifest?: DeviceConfigManifest
 }
 
 export interface TimeDiff {
