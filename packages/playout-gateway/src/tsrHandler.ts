@@ -28,12 +28,14 @@ import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
 import * as _ from 'underscore'
-import { CoreConnection, PeripheralDeviceAPI as P } from '@sofie-automation/server-core-integration'
+import { CoreConnection } from '@sofie-automation/server-core-integration'
 import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
 import { FinishedTrace, sendTrace } from './influxdb'
+import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
+import { StatusObject } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 const debug = Debug('playout-gateway')
 
@@ -221,13 +223,13 @@ export class TSRHandler {
 		})
 
 		this.tsr.on('setTimelineTriggerTime', (r: TimelineTriggerTimeResult) => {
-			this._coreHandler.core.callMethod(P.methods.timelineTriggerTime, [r]).catch((e) => {
+			this._coreHandler.core.callMethod(PeripheralDeviceAPIMethods.timelineTriggerTime, [r]).catch((e) => {
 				this.logger.error('Error in setTimelineTriggerTime', e)
 			})
 		})
 		this.tsr.on('timelineCallback', (time, objId, callbackName, data) => {
 			// @ts-expect-error Untyped bunch of methods
-			const method = P.methods[callbackName]
+			const method = PeripheralDeviceAPIMethods[callbackName]
 			if (method) {
 				this._coreHandler.core
 					.callMethod(method, [
@@ -666,7 +668,7 @@ export class TSRHandler {
 			const deviceType = device.deviceType
 
 			const onDeviceStatusChanged = (connectedOrStatus: Partial<DeviceStatus>) => {
-				let deviceStatus: Partial<P.StatusObject>
+				let deviceStatus: Partial<StatusObject>
 				if (_.isBoolean(connectedOrStatus)) {
 					// for backwards compability, to be removed later
 					if (connectedOrStatus) {
