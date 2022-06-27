@@ -132,7 +132,6 @@ describe('cronjobs', () => {
 			// Mock Rundown 0
 			Rundowns.insert({
 				_id: rundown0Id,
-				_rank: 0,
 				created: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
 				organizationId: null,
 				externalId: '',

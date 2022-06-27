@@ -32,6 +32,8 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 		timing: {
 			type: 'none' as any,
 		},
+
+		rundownIdsInOrder: [rundownId],
 	})
 
 	await context.directCollections.Rundowns.insertOne({
@@ -46,7 +48,6 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 		modified: 0,
 		importVersions: {} as any,
 		playlistId: rundownPlaylistId,
-		_rank: 0,
 		externalNRCSName: 'mockNRCS',
 		organizationId: protectString(''),
 		timing: {

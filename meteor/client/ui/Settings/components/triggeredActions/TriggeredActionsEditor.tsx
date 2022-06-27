@@ -9,7 +9,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
 import { literal, omit, unprotectString } from '../../../../../lib/lib'
 import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
-import { RundownPlaylist, RundownPlaylists } from '../../../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+	RundownPlaylists,
+} from '../../../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownId, Rundowns } from '../../../../../lib/collections/Rundowns'
 import { PartInstances } from '../../../../../lib/collections/PartInstances'
 import { Part, PartId, Parts } from '../../../../../lib/collections/Parts'
@@ -245,19 +249,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 				currentRundownId:
 					thisCurrentPart?.rundownId ??
 					thisNextPart?.rundownId ??
-					Rundowns.findOne(
-						{
-							playlistId: rundownPlaylist?._id,
-						},
-						{
-							fields: {
-								_id: 1,
-							},
-							sort: {
-								_rank: 1,
-							},
-						}
-					)?._id ??
+					(rundownPlaylist ? RundownPlaylistCollectionUtil.getRundownOrderedIDs(rundownPlaylist)[0] : null) ??
 					null,
 				rundownPlaylist: rundownPlaylist,
 			})

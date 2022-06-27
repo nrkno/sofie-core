@@ -63,8 +63,6 @@ export interface Rundown
 	playlistId: RundownPlaylistId
 	/** If the playlistId has ben set manually by a user in Sofie */
 	playlistIdIsSetInSofie?: boolean
-	/** Rank of the Rundown inside of its Rundown Playlist */
-	_rank: number
 	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
 	baselineModifyHash?: string
 }

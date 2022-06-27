@@ -170,7 +170,10 @@ function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {
 	const rundown = cache.Rundown.doc
 	if (!rundown) return new Map()
 
-	const segmentsAndParts = getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, [rundown])
+	const segmentsAndParts = getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, {
+		// Feed fake data because we only care about the single rundown
+		rundownIdsInOrder: [cache.RundownId],
+	})
 	const existingRundownParts = _.groupBy(segmentsAndParts.parts, (part) => unprotectString(part.segmentId))
 
 	const res = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()

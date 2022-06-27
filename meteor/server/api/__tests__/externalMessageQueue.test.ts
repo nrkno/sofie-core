@@ -29,13 +29,13 @@ describe('Test external message queue static methods', () => {
 			timing: {
 				type: PlaylistTimingType.None,
 			},
+			rundownIdsInOrder: [protectString('rundown_1')],
 		})
 		Rundowns.insert({
 			_id: protectString('rundown_1'),
 			name: 'Mockito 1',
 			externalId: 'mockito',
 			playlistId: protectString('playlist_1'),
-			_rank: 0,
 
 			studioId: studioEnv.studio._id,
 			showStyleVariantId: studioEnv.showStyleVariant._id,

@@ -110,7 +110,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 		rundownPlaylists: RundownPlaylists.find({}, { sort: { created: -1 } })
 			.fetch()
 			.map((playlist: RundownPlaylist) => {
-				const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
+				const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 
 				const airStatuses: string[] = []
 				const statuses: string[] = []

@@ -73,7 +73,7 @@ describe('Playout API', () => {
 	async function getAllRundownData(rundown: DBRundown) {
 		const segments = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
 		const parts = await context.directCollections.Parts.findFetch({ rundownId: rundown._id })
-		const sortedSegments = sortSegmentsInRundowns(segments, [rundown])
+		const sortedSegments = sortSegmentsInRundowns(segments, { rundownIdsInOrder: [rundown._id] })
 		return {
 			parts: sortPartsInSortedSegments(parts, sortedSegments),
 			segments: sortedSegments,

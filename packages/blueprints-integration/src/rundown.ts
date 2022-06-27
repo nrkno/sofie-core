@@ -122,6 +122,7 @@ export interface IBlueprintRundown<TMetadata = unknown> {
 export interface IBlueprintRundownDB<TMetadata = unknown>
 	extends IBlueprintRundown<TMetadata>,
 		IBlueprintRundownDBData {}
+
 /** Properties added to a rundown in Core */
 export interface IBlueprintRundownDBData {
 	_id: string
@@ -131,9 +132,6 @@ export interface IBlueprintRundownDBData {
 
 	/** RundownPlaylist this rundown is member of */
 	playlistId?: string
-
-	/** Rundown's place in the RundownPlaylist */
-	_rank?: number
 
 	/** Air-status, comes from NCS, examples: "READY" | "NOT READY" */
 	airStatus?: string
