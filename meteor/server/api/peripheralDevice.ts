@@ -9,7 +9,7 @@ import {
 	PeripheralDevice,
 } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, stringifyObjects } from '../../lib/lib'
+import { getCurrentTime, protectString, makePromise, stringifyObjects, literal } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
@@ -46,7 +46,7 @@ import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPacka
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { ConfigManifestEntryType, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
+import { ConfigManifestEntryType, DeviceConfigManifest, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
 import { Studios } from '../../lib/collections/Studios'
 
 const apmNamespace = 'peripheralDevice'
@@ -135,7 +135,11 @@ export namespace ServerPeripheralDeviceAPI {
 				versions: options.versions,
 				// settings: {},
 
-				configManifest: options.configManifest,
+				configManifest:
+					options.configManifest ??
+					literal<DeviceConfigManifest>({
+						deviceConfig: [],
+					}),
 			})
 		}
 		return deviceId
