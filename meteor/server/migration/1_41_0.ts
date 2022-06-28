@@ -21,34 +21,6 @@ import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Tim
 // Release 41
 export const addSteps = addMigrationSteps('1.41.0', [
 	{
-		id: `RundownBaselineObj.timelineObjectsString`,
-		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = RundownBaselineObjs.find({
-				timelineObjects: { $exists: true },
-			}).count()
-			if (objects > 0) {
-				return `timelineObjects needs to be converted`
-			}
-			return false
-		},
-		migrate: () => {
-			const objects = RundownBaselineObjs.find({
-				timelineObjects: { $exists: true },
-			}).fetch()
-			for (const obj of objects) {
-				RundownBaselineObjs.update(obj._id, {
-					$set: {
-						timelineObjectsString: serializePieceTimelineObjectsBlob((obj as any).timelineObjects),
-					},
-					$unset: {
-						timelineObjects: 1,
-					},
-				})
-			}
-		},
-	},
-	{
 		id: `RundownBaselineObj.timelineObjectsString from objects`,
 		canBeRunAutomatically: true,
 		validate: () => {
