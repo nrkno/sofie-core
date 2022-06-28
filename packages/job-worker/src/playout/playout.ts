@@ -875,6 +875,9 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 					}
 
 					reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
+
+					// complete the take
+					await afterTake(context, cache, playingPartInstance)
 				} else if (playlist.nextPartInstanceId === data.partInstanceId) {
 					// this is the next part, clearly an autoNext has taken place
 					if (playlist.currentPartInstanceId) {
@@ -930,42 +933,30 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 						getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 					)
 					await libSetNextPart(context, cache, nextPart)
+
+					// complete the take
+					await afterTake(context, cache, playingPartInstance)
 				} else {
 					// a part is being played that has not been selected for playback by Core
-					// show must go on, so find next part and update the Rundown, but log an error
+					// I am pretty sure this is path is dead, I dont see how we could ever get here (in a way that we can recover from)
+					// If it is confirmed to be used, then perhaps we can do something better than this,
+					// but I dont think we can until we know what we are trying to solve
+
+					// 1) We could hit this if we remove the auto-nexted part and playout-gateway gets the new timeline too late.
+					//    We can't magically fix that, as the instance will no longer exist
+					// 2) Maybe some other edge cases around deleting partInstances (perhaps when doing a reset?).
+					//    Not much we can do about this though
+
 					const previousReported = playlist.lastIncorrectPartPlaybackReported
-
 					if (previousReported && Date.now() - previousReported > INCORRECT_PLAYING_PART_DEBOUNCE) {
-						// first time this has happened for a while, let's try to progress the show:
-
-						cache.Playlist.update({
-							$set: {
-								previousPartInstanceId: null,
-								currentPartInstanceId: playingPartInstance._id,
-								lastIncorrectPartPlaybackReported: Date.now(), // save the time to prevent the system to go in a loop
-							},
-						})
-
-						reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
-
-						const nextPart = selectNextPart(
-							context,
-							playlist,
-							playingPartInstance,
-							null,
-							getOrderedSegmentsAndPartsFromPlayoutCache(cache)
-						)
-						await libSetNextPart(context, cache, nextPart)
+						// first time this has happened for a while, let's make sure it has the correct timeline
+						await updateTimeline(context, cache)
 					}
 
-					// TODO - should this even change the next?
 					logger.error(
 						`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`
 					)
 				}
-
-				// complete the take
-				await afterTake(context, cache, playingPartInstance)
 			}
 		}
 	)
