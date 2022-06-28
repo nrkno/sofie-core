@@ -262,29 +262,27 @@ export async function takeNextPart(context: JobContext, data: TakeNextPartProps)
 		async (cache) => {
 			const playlist = cache.Playlist.doc
 
+			let lastTakeTime = playlist.lastTakeTime ?? 0
+
 			if (playlist.currentPartInstanceId) {
 				const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
-				if (currentPartInstance && currentPartInstance.timings) {
-					const lastStartedPlayback = currentPartInstance.timings.startedPlayback || 0
-					const lastTake = currentPartInstance.timings.take || 0
-					const lastChange = Math.max(lastTake, lastStartedPlayback)
-					if (now - lastChange < MINIMUM_TAKE_SPAN) {
-						logger.debug(
-							`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${
-								currentPartInstance._id
-							}: ${getCurrentTime() - lastStartedPlayback}`
-						)
-						logger.debug(
-							`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`
-						)
-						throw UserError.create(UserErrorMessage.TakeRateLimit, { duration: MINIMUM_TAKE_SPAN })
-					}
+				if (currentPartInstance && currentPartInstance.timings?.startedPlayback) {
+					lastTakeTime = Math.max(lastTakeTime, currentPartInstance.timings.startedPlayback || 0)
 				} else {
 					// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
 					logger.error(
 						`PartInstance "${playlist.currentPartInstanceId}", set as currentPart in "${playlist._id}", not found!`
 					)
 				}
+			}
+
+			if (lastTakeTime && now - lastTakeTime < MINIMUM_TAKE_SPAN) {
+				logger.debug(
+					`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${playlist.currentPartInstanceId}: ${
+						now - lastTakeTime
+					}`
+				)
+				throw UserError.create(UserErrorMessage.TakeRateLimit, { duration: MINIMUM_TAKE_SPAN })
 			}
 
 			return takeNextPartInnerSync(context, cache, now)

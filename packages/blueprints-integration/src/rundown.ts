@@ -331,18 +331,10 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 }
 
 export interface IBlueprintPartInstanceTimings {
-	/** Point in time the Part was taken, (ie the time of the user action) */
-	take?: Time
-	/** Point in time the "take" action has finished executing */
-	takeDone?: Time
 	/** Point in time the Part started playing (ie the time of the playout) */
 	startedPlayback?: Time
-	/** Point in time the Part stopped playing (ie the time of the user action) */
-	takeOut?: Time
 	/** Point in time the Part stopped playing (ie the time of the playout) */
 	stoppedPlayback?: Time
-	/** Point in time the Part was set as Next (ie the time of the user action) */
-	next?: Time
 }
 
 export enum PartHoldMode {
