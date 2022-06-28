@@ -26,7 +26,6 @@ import {
 } from '@sofie-automation/corelib/dist/lib'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../cache'
 import { logger } from '../../logging'
-import _ = require('underscore')
 import { getCurrentTime, getSystemVersion } from '../../lib'
 import { getResolvedPiecesFromFullTimeline } from '../pieces'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -49,7 +48,6 @@ import { buildTimelineObjsForRundown } from './rundown'
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
 import { getPartGroupId } from '@sofie-automation/corelib/dist/playout/ids'
-import { getSelectedPartInstances } from '../__tests__/lib'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio

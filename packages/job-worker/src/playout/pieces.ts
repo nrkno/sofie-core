@@ -246,8 +246,9 @@ export function getResolvedPiecesFromFullTimeline(
 }
 
 export interface DeNowifyResult {
-	partInstances: Record<PartInstanceId, number>
-	piecenstances: Record<PartInstanceId, number>
+	aaa: true
+	// partInstances: Record<PartInstanceId, number>
+	// piecenstances: Record<PartInstanceId, number>
 }
 /**
  * Replace any start:'now' in the timeline with concrete times.
@@ -256,8 +257,9 @@ export interface DeNowifyResult {
  */
 export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: number): DeNowifyResult {
 	const result: DeNowifyResult = {
-		partInstances: {},
-		piecenstances: {},
+		// partInstances: {},
+		// piecenstances: {},
+		aaa: true,
 	}
 
 	for (const obj of transformedObjs) {
