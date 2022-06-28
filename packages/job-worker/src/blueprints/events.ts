@@ -62,21 +62,25 @@ export function reportPartInstanceHasStarted(
 ): void {
 	if (partInstance) {
 		let timestampUpdated = false
-		// If timings.startedPlayback has already been set, we shouldn't set it to another value:
-		if (!partInstance.timings?.startedPlayback) {
-			cache.PartInstances.update(partInstance._id, {
-				$set: {
-					isTaken: true,
-					'timings.startedPlayback': timestamp,
-				},
-			})
-			timestampUpdated = true
+		cache.PartInstances.update(partInstance._id, (instance) => {
+			if (!instance.timings) instance.timings = {}
+
+			// If timings.startedPlayback has already been set, we shouldn't set it to another value:
+			if (!instance.timings.startedPlayback) {
+				timestampUpdated = true
+				instance.timings.startedPlayback = timestamp
+			}
 
 			// Unset stoppedPlayback if it is set:
-			if (partInstance.timings?.stoppedPlayback) {
-				cache.PartInstances.update(partInstance._id, { $unset: { 'timings.stoppedPlayback': 1 } })
+			if (instance.timings.stoppedPlayback) {
+				timestampUpdated = true
+				delete instance.timings.stoppedPlayback
 			}
-		}
+
+			// Save/discard change
+			return timestampUpdated ? instance : false
+		})
+
 		// Update the playlist:
 		cache.Playlist.update((playlist) => {
 			if (!playlist.rundownsStartedPlayback) {
@@ -114,10 +118,11 @@ export function reportPartInstanceHasStopped(
 ): void {
 	let timestampUpdated = false
 	if (!partInstance.timings?.stoppedPlayback) {
-		cache.PartInstances.update(partInstance._id, {
-			$set: {
-				'timings.stoppedPlayback': timestamp,
-			},
+		cache.PartInstances.update(partInstance._id, (instance) => {
+			if (!instance.timings) instance.timings = {}
+			instance.timings.stoppedPlayback = timestamp
+
+			return instance
 		})
 		timestampUpdated = true
 	}
@@ -140,7 +145,9 @@ export async function reportPieceHasStarted(
 		context.directCollections.PieceInstances.update(pieceInstance._id, {
 			$set: {
 				startedPlayback: timestamp,
-				stoppedPlayback: 0,
+			},
+			$unset: {
+				stoppedPlayback: 1,
 			},
 		}),
 
@@ -154,7 +161,9 @@ export async function reportPieceHasStarted(
 					{
 						$set: {
 							startedPlayback: timestamp,
-							stoppedPlayback: 0,
+						},
+						$unset: {
+							stoppedPlayback: 1,
 						},
 					}
 			  )

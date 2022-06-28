@@ -2,7 +2,7 @@ import {
 	BlueprintRemoveOrphanedPartInstance,
 	ShowStyleBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { PartNote, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
@@ -61,12 +61,8 @@ export async function shouldRemoveOrphanedPartInstance(
 	}
 
 	// Save notes:
-	if (!orphanedPartInstance.part.notes) orphanedPartInstance.part.notes = []
-	const notes: PartNote[] = orphanedPartInstance.part.notes
-	let changed = false
-	for (const note of orphanedPartInstanceContext.notes) {
-		changed = true
-		notes.push(
+	if (orphanedPartInstanceContext.notes.length > 0) {
+		const newNotes = orphanedPartInstanceContext.notes.map((note) =>
 			literal<SegmentNote>({
 				type: note.type,
 				message: note.message,
@@ -75,21 +71,21 @@ export async function shouldRemoveOrphanedPartInstance(
 				},
 			})
 		)
-	}
-	if (changed) {
-		cache.PartInstances.update(orphanedPartInstance._id, {
-			$set: {
-				'part.notes': notes,
-			},
+
+		cache.PartInstances.update(orphanedPartInstance._id, (instance) => {
+			instance.part.notes = [...(instance.part.notes || []), ...newNotes]
+			return instance
 		})
 	}
 
 	if (shouldRemoveInstance && !isTooCloseToAutonext(playlistPartInstances.currentPartInstance)) {
-		cache.PartInstances.update(orphanedPartInstance._id, {
-			$set: {
-				reset: true,
-			},
+		cache.PartInstances.update(orphanedPartInstance._id, (instance) => {
+			instance.reset = true
+			return instance
 		})
-		cache.Playlist.update({ $unset: { nextPartInstanceId: 1 } })
+		cache.Playlist.update((playlist) => {
+			playlist.nextPartInstanceId = null
+			return playlist
+		})
 	}
 }

@@ -556,7 +556,10 @@ export async function activateHold(context: JobContext, data: ActivateHoldProps)
 			)
 			if (hasDynamicallyInserted) throw UserError.create(UserErrorMessage.HoldAfterAdlib)
 
-			cache.Playlist.update({ $set: { holdState: RundownHoldState.PENDING } })
+			cache.Playlist.update((playlist) => {
+				playlist.holdState = RundownHoldState.PENDING
+				return playlist
+			})
 
 			await updateTimeline(context, cache)
 		}
@@ -576,7 +579,10 @@ export async function deactivateHold(context: JobContext, data: DeactivateHoldPr
 				throw UserError.create(UserErrorMessage.HoldNotCancelable)
 		},
 		async (cache) => {
-			cache.Playlist.update({ $set: { holdState: RundownHoldState.NONE } })
+			cache.Playlist.update((playlist) => {
+				playlist.holdState = RundownHoldState.NONE
+				return playlist
+			})
 
 			await updateTimeline(context, cache)
 		}
@@ -889,12 +895,11 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 						}
 					}
 
-					cache.Playlist.update({
-						$set: {
-							previousPartInstanceId: playlist.currentPartInstanceId,
-							currentPartInstanceId: playingPartInstance._id,
-							holdState: RundownHoldState.NONE,
-						},
+					cache.Playlist.update((playlist) => {
+						playlist.previousPartInstanceId = playlist.currentPartInstanceId
+						playlist.currentPartInstanceId = playingPartInstance._id
+						playlist.holdState = RundownHoldState.NONE
+						return playlist
 					})
 
 					reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)

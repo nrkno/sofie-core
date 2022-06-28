@@ -260,7 +260,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 */
 	update(
 		selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>,
-		modifier: ((doc: TDoc) => TDoc) | MongoModifier<TDoc> = {},
+		modifier: ((doc: TDoc) => TDoc | false) | MongoModifier<TDoc> = {},
 		forceUpdate?: boolean
 	): Array<TDoc['_id']> {
 		this.assertNotToBeRemoved('update')
@@ -277,9 +277,14 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		_.each(this.findFetch(selector), (doc) => {
 			const _id = doc._id
 
-			const newDoc: TDoc = _.isFunction(modifier)
+			const newDoc: TDoc | false = _.isFunction(modifier)
 				? modifier(clone(doc))
 				: mongoModify(selectorInModify as any, clone(doc), modifier as any)
+			if (newDoc === false) {
+				// Function reports no change
+				return
+			}
+
 			if (newDoc._id !== _id) {
 				throw new Error(
 					`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`
