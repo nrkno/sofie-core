@@ -1353,9 +1353,6 @@ describe('Test blueprint api context', () => {
 						stoppedPlayback: undefined,
 						playOffset: 0,
 						take: undefined,
-						takeDone: undefined,
-						takeOut: undefined,
-						next: undefined,
 					}
 					cache.PartInstances.replace(partInstance)
 

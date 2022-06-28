@@ -332,9 +332,9 @@ export interface IBlueprintPartInstance<TMetadata = unknown> {
 
 export interface IBlueprintPartInstanceTimings {
 	/** Point in time the Part started playing (ie the time of the playout) */
-	startedPlayback?: Time
+	reportedStartedPlayback?: Time
 	/** Point in time the Part stopped playing (ie the time of the playout) */
-	stoppedPlayback?: Time
+	reportedStoppedPlayback?: Time
 }
 
 export enum PartHoldMode {
@@ -491,11 +491,11 @@ export interface IBlueprintPieceInstance<TMetadata = unknown> {
 	piece: IBlueprintPieceDB<TMetadata>
 
 	/** The time the system started playback of this part, undefined if not yet played back (milliseconds since epoch) */
-	startedPlayback?: Time
+	reportedStartedPlayback?: Time
 	/** Whether the piece has stopped playback (the most recent time it was played), undefined if not yet played back or is currently playing.
 	 * This is set from a callback from the playout gateway (milliseconds since epoch)
 	 */
-	stoppedPlayback?: Time
+	reportedStoppedPlayback?: Time
 
 	infinite?: {
 		infinitePieceId: string

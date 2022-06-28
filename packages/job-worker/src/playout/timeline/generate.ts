@@ -156,6 +156,62 @@ export async function updateTimeline(
 		throw new Error(`RundownPlaylist ("${cache.Playlist.doc._id}") is not active")`)
 	}
 
+	const nowOffsetLatency = calculateNowOffsetTimeline(context, cache, timeOffsetIntoPart)
+	if (cache.isMultiGatewayMode) {
+		// TODO - can we do this later, after all db calls to minimise the risk of async drift?
+		// if (!currentPartInstance?.timings?.plannedStartedPlayback) {
+		// }
+
+		const targetNowTime = getCurrentTime() + (nowOffsetLatency ?? 0)
+
+		const { currentPartInstance, previousPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+		if (currentPartInstance) {
+			// const willAutoNext = !!(
+			// 	nextPartInstance &&
+			// 	currentPartInstance.part.autoNext &&
+			// 	currentPartInstance.part.expectedDuration
+			// )
+
+			if (!currentPartInstance.timings?.plannedStartedPlayback) {
+				// Looks like the part is just being taken
+				cache.PartInstances.update(currentPartInstance._id, (instance) => {
+					if (!instance.timings) instance.timings = {}
+					instance.timings.plannedStartedPlayback = targetNowTime
+					return instance
+				})
+			}
+
+			// if (willAutoNext) {
+			// TODO - should timings be set for autonext?
+			// 	// TODO - we need to know how long the current part will be active for.. doing that here feels like its way too early
+			// 	// We should be auto-nexting, so set the appropriate numbers
+			// 	cache.PartInstances.update(nextPartInstance._id, (instance) => {
+			// 		if (!instance.timings) instance.timings = {}
+			// 		instance.timings.plannedStoppedPlayback = partStopTime
+			// 		return instance
+			// 	})
+			// }
+		}
+
+		if (previousPartInstance) {
+			if (!previousPartInstance.timings?.plannedStartedPlayback) {
+				// We don't have a time for the previous part
+				cache.Playlist.update((playlist) => {
+					playlist.previousPartInstanceId = null
+					return playlist
+				})
+			} else if (!previousPartInstance.timings.plannedStoppedPlayback) {
+				// Make sure the stop of the previous part is set
+				const partStopTime = currentPartInstance?.timings?.plannedStartedPlayback ?? targetNowTime
+				cache.PartInstances.update(previousPartInstance._id, (instance) => {
+					if (!instance.timings) instance.timings = {}
+					instance.timings.plannedStoppedPlayback = partStopTime
+					return instance
+				})
+			}
+		}
+	}
+
 	const { versions, objs: timelineObjs } = await getTimelineRundown(context, cache)
 
 	flattenAndProcessTimelineObjects(context, timelineObjs)
@@ -164,7 +220,7 @@ export async function updateTimeline(
 	const currentPartGroupId = currentPartInstance ? getPartGroupId(currentPartInstance) : undefined
 
 	/** The timestamp that "now" was set to */
-	const nowOffsetLatency = calculateNowOffsetTimeline(context, cache, timeOffsetIntoPart)
+	// const nowOffsetLatency = calculateNowOffsetTimeline(context, cache, timeOffsetIntoPart)
 	if (typeof nowOffsetLatency === 'number') {
 		const nowTime = getCurrentTime() + nowOffsetLatency
 
@@ -205,11 +261,10 @@ function calculateNowOffsetTimeline(
 	/** The timestamp that "now" was set to */
 	let nowOffsetLatency: Time | undefined
 
-	const playoutDevices = cache.PeripheralDevices.findFetch((device) => device.type === PeripheralDeviceType.PLAYOUT)
-	if (
-		playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
-		context.studio.settings.forceSettingNowTime
-	) {
+	if (cache.isMultiGatewayMode) {
+		const playoutDevices = cache.PeripheralDevices.findFetch(
+			(device) => device.type === PeripheralDeviceType.PLAYOUT
+		)
 		const worstLatency = Math.max(0, ...playoutDevices.map((device) => getExpectedLatency(device).safe))
 		/** Add a little more latency, to account for network latency variability */
 		const ADD_SAFE_LATENCY = context.studio.settings.nowSafeLatency || 30
@@ -265,15 +320,11 @@ function setNowForObjToValue(tlo: TimelineObjGeneric, oldNow: TSR.Timeline.Timel
 }
 
 function logAnyRemainingNowTimes(
-	context: JobContext,
+	_context: JobContext,
 	cache: CacheForStudioBase,
 	timelineObjs: Array<TimelineObjGeneric>
 ): void {
-	const playoutDevices = cache.PeripheralDevices.findFetch((device) => device.type === PeripheralDeviceType.PLAYOUT)
-	if (
-		playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
-		context.studio.settings.forceSettingNowTime
-	) {
+	if (cache.isMultiGatewayMode) {
 		const ids: string[] = []
 
 		const hasNow = (obj: TimelineEnableExt | TimelineEnableExt[]) => {
@@ -341,8 +392,8 @@ function getPartInstanceTimelineInfo(
 	partInstance: DBPartInstance | undefined
 ): SelectedPartInstanceTimelineInfo | undefined {
 	if (partInstance) {
-		const partLastStarted = partInstance.timings?.startedPlayback
-		const nowInPart = partLastStarted === undefined ? 0 : currentTime - partLastStarted
+		const partStarted = partInstance.timings?.plannedStartedPlayback
+		const nowInPart = partStarted === undefined ? 0 : currentTime - partStarted
 		const currentPieces = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
 		const pieceInstances = processAndPrunePieceInstanceTimings(showStyle, currentPieces, nowInPart)
 

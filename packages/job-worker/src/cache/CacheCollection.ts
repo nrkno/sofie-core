@@ -260,7 +260,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 */
 	update(
 		selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>,
-		modifier: ((doc: TDoc) => TDoc | false) | MongoModifier<TDoc> = {},
+		modifier: ((doc: TDoc) => TDoc | false) | MongoModifier<TDoc>,
 		forceUpdate?: boolean
 	): Array<TDoc['_id']> {
 		this.assertNotToBeRemoved('update')

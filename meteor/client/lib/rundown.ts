@@ -426,8 +426,8 @@ export namespace RundownUtils {
 
 				const pieceInstanceFieldOptions: FindOptions<PieceInstance> = {
 					fields: {
-						startedPlayback: 0,
-						stoppedPlayback: 0,
+						reportedStartedPlayback: 0,
+						reportedStoppedPlayback: 0,
 					},
 				}
 

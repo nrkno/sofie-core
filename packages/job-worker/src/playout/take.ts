@@ -54,9 +54,6 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	const pShowStyle = context.getShowStyleCompound(currentRundown.showStyleVariantId, currentRundown.showStyleBaseId)
 
 	if (currentPartInstance) {
-		const allowTransition = previousPartInstance && !previousPartInstance.part.disableNextInTransition
-		const start = currentPartInstance.timings?.startedPlayback
-
 		const now = getCurrentTime()
 		if (currentPartInstance.blockTakeUntil && currentPartInstance.blockTakeUntil > now) {
 			const remainingTime = currentPartInstance.blockTakeUntil - now
@@ -66,6 +63,8 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 		}
 
 		// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
+		const allowTransition = previousPartInstance && !previousPartInstance.part.disableNextInTransition
+		const start = currentPartInstance.timings?.plannedStartedPlayback
 		if (
 			allowTransition &&
 			currentPartInstance.part.inTransition &&
@@ -245,17 +244,8 @@ async function afterTakeUpdateTimingsAndEvents(
 	takeDoneTime: number
 ): Promise<void> {
 	const { currentPartInstance: takePartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
-	const takeRundown = takePartInstance ? cache.Rundowns.findOne(takePartInstance.rundownId) : undefined
 
-	// todo: should this be changed back to Meteor.defer, at least for the blueprint stuff?
 	if (takePartInstance) {
-		cache.PartInstances.update(takePartInstance._id, (instance) => {
-			if (!instance.timings) instance.timings = {}
-			instance.timings.takeDone = takeDoneTime
-
-			return instance
-		})
-
 		// Simulate playout, if no gateway
 		const playoutDevices = cache.PeripheralDevices.findFetch((d) => d.type === PeripheralDeviceType.PLAYOUT)
 		if (playoutDevices.length === 0) {
@@ -274,9 +264,12 @@ async function afterTakeUpdateTimingsAndEvents(
 				)
 				reportPartInstanceHasStopped(context, cache, previousPartInstance, takeDoneTime)
 			}
+
+			// TODO is there anything we can do for simulating autoNext?
 		}
 
-		// let bp = getBlueprintOfRundown(rundown)
+		const takeRundown = takePartInstance ? cache.Rundowns.findOne(takePartInstance.rundownId) : undefined
+
 		if (isFirstTake && takeRundown) {
 			if (blueprint.blueprint.onRundownFirstTake) {
 				const span = context.startSpan('blueprint.onRundownFirstTake')
@@ -478,8 +471,8 @@ function startHold(
 					fromHold: true,
 				},
 				// Preserve the timings from the playing instance
-				startedPlayback: instance.startedPlayback,
-				stoppedPlayback: instance.stoppedPlayback,
+				reportedStartedPlayback: instance.reportedStartedPlayback,
+				reportedStoppedPlayback: instance.reportedStoppedPlayback,
 			})
 			const content = newInstance.piece.content as VTContent | undefined
 			if (content && content.fileName && content.sourceDuration && instance.startedPlayback) {

@@ -394,6 +394,21 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			return super.saveAllToDatabase()
 		}
 	}
+
+	#isMultiGatewayMode: boolean | undefined = undefined
+	public get isMultiGatewayMode(): boolean {
+		if (this.#isMultiGatewayMode === undefined) {
+			if (this.context.studio.settings.forceSettingNowTime) {
+				this.#isMultiGatewayMode = true
+			} else {
+				const playoutDevices = this.PeripheralDevices.findFetch(
+					(device) => device.type === PeripheralDeviceType.PLAYOUT
+				)
+				this.#isMultiGatewayMode = playoutDevices.length > 1
+			}
+		}
+		return this.#isMultiGatewayMode
+	}
 }
 
 export function getOrderedSegmentsAndPartsFromPlayoutCache(cache: CacheForPlayout): {

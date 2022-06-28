@@ -182,8 +182,6 @@ export async function deactivateRundownPlaylistInner(
 		rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
 	}
 
-	if (currentPartInstance) onPartHasStoppedPlaying(cache, currentPartInstance, getCurrentTime())
-
 	cache.Playlist.update((playlist) => {
 		playlist.previousPartInstanceId = null
 		playlist.currentPartInstanceId = null
@@ -197,9 +195,11 @@ export async function deactivateRundownPlaylistInner(
 	await setNextPart(context, cache, null)
 
 	if (currentPartInstance) {
+		onPartHasStoppedPlaying(cache, currentPartInstance, getCurrentTime())
+
 		cache.PartInstances.update(currentPartInstance._id, (instance) => {
 			if (!instance.timings) instance.timings = {}
-			instance.timings.takeOut = getCurrentTime()
+			instance.timings.plannedStoppedPlayback = getCurrentTime()
 
 			return instance
 		})

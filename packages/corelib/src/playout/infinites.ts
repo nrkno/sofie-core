@@ -259,7 +259,7 @@ function markPieceInstanceAsContinuation(previousInstance: PieceInstance, instan
 	instance._id = protectString(`${instance._id}_continue`)
 	instance.dynamicallyInserted = previousInstance.dynamicallyInserted
 	instance.adLibSourceId = previousInstance.adLibSourceId
-	instance.startedPlayback = previousInstance.startedPlayback
+	instance.reportedStartedPlayback = previousInstance.reportedStartedPlayback
 }
 
 export function isPiecePotentiallyActiveInPart(

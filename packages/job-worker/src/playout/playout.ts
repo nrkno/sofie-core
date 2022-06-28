@@ -785,15 +785,17 @@ export async function onPiecePlaybackStopped(context: JobContext, data: OnPieceP
 				{
 					projection: {
 						_id: 1,
-						startedPlayback: 1,
-						stoppedPlayback: 1,
+						reportedStartedPlayback: 1,
+						reportedStoppedPlayback: 1,
 						partInstanceId: 1,
 					},
 				}
-			)) as Pick<PieceInstance, '_id' | 'startedPlayback' | 'stoppedPlayback' | 'partInstanceId'> | undefined
+			)) as
+				| Pick<PieceInstance, '_id' | 'reportedStartedPlayback' | 'reportedStoppedPlayback' | 'partInstanceId'>
+				| undefined
 
 			if (pieceInstance) {
-				const isPlaying = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
+				const isPlaying = !!(pieceInstance.reportedStartedPlayback && !pieceInstance.reportedStoppedPlayback)
 				if (isPlaying) {
 					logger.debug(
 						`onPiecePlaybackStopped: Playout reports pieceInstance "${
@@ -850,7 +852,8 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 
 			// make sure we don't run multiple times, even if TSR calls us multiple times
 			const isPlaying =
-				playingPartInstance.timings?.startedPlayback && !playingPartInstance.timings?.stoppedPlayback
+				playingPartInstance.timings?.reportedStartedPlayback &&
+				!playingPartInstance.timings?.reportedStoppedPlayback
 			if (!isPlaying) {
 				logger.debug(
 					`Playout reports PartInstance "${data.partInstanceId}" has started playback on timestamp ${new Date(
@@ -1020,13 +1023,7 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 		await runJobWithStudioCache(context, async (studioCache) => {
 			const activePlaylists = studioCache.getActiveRundownPlaylists()
 
-			const playoutDevices = studioCache.PeripheralDevices.findFetch(
-				(device) => device.type === PeripheralDeviceType.PLAYOUT
-			)
-			if (
-				playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
-				context.studio.settings.forceSettingNowTime
-			) {
+			if (!studioCache.isMultiGatewayMode) {
 				logger.warn(`Ignoring timelineTriggerTime call for studio not using now times`)
 				return
 			}

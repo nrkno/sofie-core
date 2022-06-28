@@ -225,7 +225,7 @@ describe('cronjobs', () => {
 				part: part0,
 				reset: true,
 				timings: {
-					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
+					plannedStoppedPlayback: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
 				},
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
@@ -251,7 +251,7 @@ describe('cronjobs', () => {
 				part: part1,
 				reset: true,
 				timings: {
-					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
+					plannedStoppedPlayback: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
 				},
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),

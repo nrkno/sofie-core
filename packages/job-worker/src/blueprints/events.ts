@@ -66,15 +66,15 @@ export function reportPartInstanceHasStarted(
 			if (!instance.timings) instance.timings = {}
 
 			// If timings.startedPlayback has already been set, we shouldn't set it to another value:
-			if (!instance.timings.startedPlayback) {
+			if (!instance.timings.reportedStartedPlayback) {
 				timestampUpdated = true
-				instance.timings.startedPlayback = timestamp
+				instance.timings.reportedStartedPlayback = timestamp
 			}
 
 			// Unset stoppedPlayback if it is set:
-			if (instance.timings.stoppedPlayback) {
+			if (instance.timings.reportedStoppedPlayback) {
 				timestampUpdated = true
-				delete instance.timings.stoppedPlayback
+				delete instance.timings.reportedStoppedPlayback
 			}
 
 			// Save/discard change
@@ -117,10 +117,10 @@ export function reportPartInstanceHasStopped(
 	timestamp: Time
 ): void {
 	let timestampUpdated = false
-	if (!partInstance.timings?.stoppedPlayback) {
+	if (!partInstance.timings?.reportedStoppedPlayback) {
 		cache.PartInstances.update(partInstance._id, (instance) => {
 			if (!instance.timings) instance.timings = {}
-			instance.timings.stoppedPlayback = timestamp
+			instance.timings.reportedStoppedPlayback = timestamp
 
 			return instance
 		})
@@ -144,10 +144,10 @@ export async function reportPieceHasStarted(
 	await Promise.all([
 		context.directCollections.PieceInstances.update(pieceInstance._id, {
 			$set: {
-				startedPlayback: timestamp,
+				reportedStartedPlayback: timestamp,
 			},
 			$unset: {
-				stoppedPlayback: 1,
+				reportedStoppedPlayback: 1,
 			},
 		}),
 
@@ -160,10 +160,10 @@ export async function reportPieceHasStarted(
 					},
 					{
 						$set: {
-							startedPlayback: timestamp,
+							reportedStartedPlayback: timestamp,
 						},
 						$unset: {
-							stoppedPlayback: 1,
+							reportedStoppedPlayback: 1,
 						},
 					}
 			  )
@@ -180,7 +180,7 @@ export async function reportPieceHasStopped(
 ): Promise<void> {
 	await context.directCollections.PieceInstances.update(pieceInstance._id, {
 		$set: {
-			stoppedPlayback: timestamp,
+			reportedStoppedPlayback: timestamp,
 		},
 	})
 
