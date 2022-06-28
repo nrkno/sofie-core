@@ -84,7 +84,6 @@ import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pi
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { INCORRECT_PLAYING_PART_DEBOUNCE, RESET_IGNORE_ERRORS } from './constants'
-import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number): void {
@@ -266,8 +265,8 @@ export async function takeNextPart(context: JobContext, data: TakeNextPartProps)
 
 			if (playlist.currentPartInstanceId) {
 				const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
-				if (currentPartInstance && currentPartInstance.timings?.startedPlayback) {
-					lastTakeTime = Math.max(lastTakeTime, currentPartInstance.timings.startedPlayback || 0)
+				if (currentPartInstance && currentPartInstance.timings?.plannedStartedPlayback) {
+					lastTakeTime = Math.max(lastTakeTime, currentPartInstance.timings.plannedStartedPlayback)
 				} else {
 					// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
 					logger.error(
@@ -724,18 +723,21 @@ export async function onPiecePlaybackStarted(context: JobContext, data: OnPieceP
 				{
 					projection: {
 						_id: 1,
-						startedPlayback: 1,
-						stoppedPlayback: 1,
+						reportedStartedPlayback: 1,
+						reportedStoppedPlayback: 1,
 						partInstanceId: 1,
 						infinite: 1,
 					},
 				}
 			)) as
-				| Pick<PieceInstance, '_id' | 'startedPlayback' | 'stoppedPlayback' | 'partInstanceId' | 'infinite'>
+				| Pick<
+						PieceInstance,
+						'_id' | 'reportedStartedPlayback' | 'reportedStoppedPlayback' | 'partInstanceId' | 'infinite'
+				  >
 				| undefined
 
 			if (pieceInstance) {
-				const isPlaying = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
+				const isPlaying = !!(pieceInstance.reportedStartedPlayback && !pieceInstance.reportedStoppedPlayback)
 				if (!isPlaying) {
 					logger.debug(
 						`onPiecePlaybackStarted: Playout reports pieceInstance "${
@@ -993,7 +995,8 @@ export async function onPartPlaybackStopped(context: JobContext, data: OnPartPla
 			if (partInstance) {
 				// make sure we don't run multiple times, even if TSR calls us multiple times
 
-				const isPlaying = partInstance.timings?.startedPlayback && !partInstance.timings?.stoppedPlayback
+				const isPlaying =
+					partInstance.timings?.reportedStartedPlayback && !partInstance.timings?.reportedStoppedPlayback
 				if (isPlaying) {
 					logger.debug(
 						`onPartPlaybackStopped: Playout reports PartInstance "${
@@ -1298,7 +1301,7 @@ export async function stopPiecesOnSourceLayers(
 		async (cache) => {
 			const partInstance = cache.PartInstances.findOne(data.partInstanceId)
 			if (!partInstance) throw new Error(`PartInstance "${data.partInstanceId}" not found!`)
-			const lastStartedPlayback = partInstance.timings?.startedPlayback
+			const lastStartedPlayback = partInstance.timings?.plannedStartedPlayback
 			if (!lastStartedPlayback) throw new Error(`Part "${data.partInstanceId}" has yet to start playback!`)
 
 			const rundown = cache.Rundowns.findOne(partInstance.rundownId)
@@ -1356,7 +1359,11 @@ export async function handleUpdateTimelineAfterIngest(
 			// TODO - r37 added a retry mechanic to this. should that be kept?
 			await runWithPlaylistCache(context, playlist, lock, null, async (cache) => {
 				const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-				if (currentPartInstance && !currentPartInstance.timings?.startedPlayback) {
+				if (
+					!cache.isMultiGatewayMode &&
+					currentPartInstance &&
+					!currentPartInstance.timings?.reportedStartedPlayback
+				) {
 					// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted
 					// We mustn't run before that does, or we will get the timings in playout-gateway confused.
 				} else {

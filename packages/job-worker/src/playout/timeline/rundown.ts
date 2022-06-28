@@ -33,10 +33,11 @@ import _ = require('underscore')
 import { CacheForPlayout } from '../cache'
 import { getPieceEnableInsidePart, transformPieceGroupAndObjects } from './piece'
 import { logger } from '../../logging'
+import { ReadOnlyCache } from '../../cache/CacheBase'
 
 export function buildTimelineObjsForRundown(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: ReadOnlyCache<CacheForPlayout>,
 	_activeRundown: DBRundown,
 	partInstancesInfo: SelectedPartInstancesTimelineInfo
 ): (TimelineObjRundown & OnGenerateTimelineObjExt)[] {
@@ -122,9 +123,9 @@ export function buildTimelineObjsForRundown(
 
 		// The startTime of this start is used as the reference point for the calculated timings, so we can use 'now' and everything will lie after this point
 		const currentPartEnable: TSR.Timeline.TimelineEnable = { start: 'now' }
-		if (partInstancesInfo.current.partInstance.timings?.startedPlayback) {
+		if (partInstancesInfo.current.partInstance.timings?.plannedStartedPlayback) {
 			// If we are recalculating the currentPart, then ensure it doesnt think it is starting now
-			currentPartEnable.start = partInstancesInfo.current.partInstance.timings.startedPlayback
+			currentPartEnable.start = partInstancesInfo.current.partInstance.timings.plannedStartedPlayback
 		}
 
 		if (
@@ -333,7 +334,7 @@ function generatePreviousPartInstanceObjects(
 	currentPartGroupId: string,
 	currentPartInstanceTimings: PartCalculatedTimings
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
-	const partStartedPlayback = previousPartInfo.partInstance.timings?.startedPlayback
+	const partStartedPlayback = previousPartInfo.partInstance.timings?.plannedStartedPlayback
 	if (partStartedPlayback) {
 		// The previous part should continue for a while into the following part
 		const prevPartOverlapDuration = currentPartInstanceTimings.fromPartRemaining

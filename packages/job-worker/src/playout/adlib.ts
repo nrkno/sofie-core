@@ -494,7 +494,7 @@ export async function innerFindLastScriptedPieceOnLayer(
 		return
 	}
 
-	const partStarted = currentPartInstance.timings?.startedPlayback
+	const partStarted = currentPartInstance.timings?.plannedStartedPlayback
 	const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
 	const piecesSortedAsc = pieces

@@ -69,12 +69,20 @@ export function reportPartInstanceHasStarted(
 			if (!instance.timings.reportedStartedPlayback) {
 				timestampUpdated = true
 				instance.timings.reportedStartedPlayback = timestamp
+
+				if (cache.isMultiGatewayMode) {
+					instance.timings.plannedStartedPlayback = timestamp
+				}
 			}
 
 			// Unset stoppedPlayback if it is set:
 			if (instance.timings.reportedStoppedPlayback) {
 				timestampUpdated = true
 				delete instance.timings.reportedStoppedPlayback
+
+				if (cache.isMultiGatewayMode) {
+					delete instance.timings.plannedStoppedPlayback
+				}
 			}
 
 			// Save/discard change
@@ -121,6 +129,10 @@ export function reportPartInstanceHasStopped(
 		cache.PartInstances.update(partInstance._id, (instance) => {
 			if (!instance.timings) instance.timings = {}
 			instance.timings.reportedStoppedPlayback = timestamp
+
+			if (cache.isMultiGatewayMode) {
+				instance.timings.plannedStoppedPlayback = timestamp
+			}
 
 			return instance
 		})
