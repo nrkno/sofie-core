@@ -22,7 +22,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
-import { SegmentNote } from '../../../lib/api/notes'
+import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
@@ -34,10 +34,11 @@ import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
-import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
+
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
+import { RundownTimingContext } from '../../lib/rundownTiming'
 import { IOutputLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
@@ -394,7 +395,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> & any) => {
+	onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
 		const scrollAmount = e.movementX * -1 || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
 		this.props.onScroll(Math.max(0, this.props.scrollLeft + scrollAmount / this.props.timeScale), e)
 		if (e.movementX === 0) {
@@ -408,7 +409,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineMouseUp = (e: React.MouseEvent<HTMLDivElement> & any) => {
+	onTimelineMouseUp = (e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
 		document.removeEventListener('mousemove', this.onTimelineMouseMove)
 		document.removeEventListener('mouseup', this.onTimelineMouseUp)
 		this._mouseAttached = false
@@ -469,7 +470,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	// doubleclick is simulated by onTimelineMouseUp, because we use pointer lock and that prevents dblclick events
-	onTimelineDoubleClick = (_e: React.MouseEvent<HTMLDivElement>) => {
+	onTimelineDoubleClick = (_e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
 		if (SegmentTimelineClass._zoomOutLatch === undefined || SegmentTimelineClass._zoomOutLatchId !== this.props.id) {
 			this.onTimelineZoomOn()
 		} else {
@@ -659,10 +660,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							/>
 						)}
 						{this.props.autoNextPart ? (
-							<div className="rundown-view__part__icon rundown-view__part__icon--auto-next"></div>
-						) : (
-							<div className="rundown-view__part__icon rundown-view__part__icon--next"></div>
-						)}
+							<div className="rundown-view__part__icon rundown-view__part__icon--auto-next">{t('Auto')}</div>
+						) : null}
 						{this.props.playlist.holdState && this.props.playlist.holdState !== RundownHoldState.COMPLETE ? (
 							<div className="segment-timeline__liveline__status segment-timeline__liveline__status--hold">
 								{t('Hold')}
@@ -837,14 +836,18 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						collapsable: isCollapsable,
 						collapsed: this.isOutputGroupCollapsed(outputLayer),
 					})}
+					role="group"
+					aria-labelledby={`segment-outputs-${this.props.segment._id}-${outputLayer._id}`}
 				>
 					<div
+						id={`segment-outputs-${this.props.segment._id}-${outputLayer._id}`}
 						className="segment-timeline__output-layer-control__label"
 						data-output-id={outputLayer._id}
 						tabIndex={0}
 						onClick={(e) =>
 							isCollapsable && this.props.onCollapseOutputToggle && this.props.onCollapseOutputToggle(outputLayer, e)
 						}
+						role="presentation"
 					>
 						{outputLayer.name}
 					</div>
@@ -859,6 +862,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 											key={sourceLayer._id}
 											className="segment-timeline__output-layer-control__layer"
 											data-source-id={sourceLayer._id}
+											role="treeitem"
 										>
 											{array.length === 1 || sourceLayer.name === outputLayer.name ? '\xa0' : sourceLayer.name}
 										</div>
@@ -953,6 +957,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				})}
 				data-obj-id={this.props.segment._id}
 				ref={this.setSegmentRef}
+				role="region"
+				aria-roledescription={t('segment')}
+				aria-labelledby={`segment-name-${this.props.segment._id}`}
 			>
 				<ContextMenuTrigger
 					id="segment-timeline-context-menu"
@@ -964,6 +971,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					renderTag="div"
 				>
 					<h2
+						id={`segment-name-${this.props.segment._id}`}
 						className={'segment-timeline__title__label' + (this.props.segment.identifier ? ' identifier' : '')}
 						data-identifier={this.props.segment.identifier}
 					>
@@ -978,6 +986,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 										this.props.onHeaderNoteClick &&
 										this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.ERROR)
 									}
+									aria-label={t('Critical problems')}
 								>
 									<CriticalIconSmall />
 									<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
@@ -990,6 +999,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 										this.props.onHeaderNoteClick &&
 										this.props.onHeaderNoteClick(this.props.segment._id, NoteSeverity.WARNING)
 									}
+									aria-label={t('Warnings')}
 								>
 									<WarningIconSmall />
 									<div className="segment-timeline__title__notes__count">{warningNotes}</div>
@@ -1043,17 +1053,20 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 								}
 							/>
 						)}
-					{Settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
+					{this.props.studio.settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
 						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 					)}
 				</div>
 				<div className="segment-timeline__mos-id">{this.props.segment.externalId}</div>
-				<div className="segment-timeline__output-layers">{this.renderOutputLayerControls(activeOutputGroups)}</div>
+				<div className="segment-timeline__output-layers" role="tree" aria-label={t('Sources')}>
+					{this.renderOutputLayerControls(activeOutputGroups)}
+				</div>
 				<div className="segment-timeline__timeline-background" />
 				<TimelineGrid
 					onResize={this.onTimelineResize}
 					scrollLeft={this.props.scrollLeft}
 					timeScale={this.props.timeScale}
+					frameRate={this.props.studio.settings.frameRate}
 					isLiveSegment={this.props.isLiveSegment}
 					partInstances={this.props.parts}
 					currentPartInstanceId={this.props.isLiveSegment ? this.props.playlist.currentPartInstanceId : null}

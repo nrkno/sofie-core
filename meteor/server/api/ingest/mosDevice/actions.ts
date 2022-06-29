@@ -1,21 +1,22 @@
-import * as MOS from 'mos-connection'
+import { MOS } from '@sofie-automation/corelib'
 import { logger } from '../../../logging'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { handleMosRundownData } from './ingest'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { parseMosString } from './lib'
-import { stringifyError, waitForPromise } from '../../../../lib/lib'
+import { stringifyError } from '../../../../lib/lib'
 import * as _ from 'underscore'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
+import { runIngestOperation } from '../lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 export namespace MOSDeviceActions {
 	export async function reloadRundown(
 		peripheralDevice: PeripheralDevice,
-		rundown: Rundown
+		rundown: Pick<Rundown, '_id' | 'studioId' | 'externalId'>
 	): Promise<TriggerReloadDataResponse> {
 		logger.info('reloadRundown ' + rundown._id)
 
@@ -39,7 +40,12 @@ export namespace MOSDeviceActions {
 				)
 			}
 
-			await handleMosRundownData(peripheralDevice, mosRunningOrder, false)
+			await runIngestOperation(rundown.studioId, IngestJobs.MosRundown, {
+				rundownExternalId: rundown.externalId,
+				peripheralDeviceId: peripheralDevice._id,
+				mosRunningOrder: mosRunningOrder,
+				isCreateAction: false,
+			})
 
 			// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
 			return TriggerReloadDataResponse.WORKING
@@ -52,54 +58,6 @@ export namespace MOSDeviceActions {
 				throw err
 			}
 		}
-	}
-	export function notifyCurrentPlayingPart(
-		peripheralDevice: PeripheralDevice,
-		rundown: Rundown,
-		oldPlayingPartExternalId: string | null,
-		newPlayingPartExternalId: string | null
-	) {
-		if (oldPlayingPartExternalId !== newPlayingPartExternalId) {
-			// Note: We send the PLAY first, since that seems to give us _slightly_ better responsiveness in ENPS.
-
-			if (newPlayingPartExternalId) {
-				try {
-					waitForPromise(
-						setStoryStatus(
-							peripheralDevice._id,
-							rundown,
-							newPlayingPartExternalId,
-							MOS.IMOSObjectStatus.PLAY
-						)
-					)
-				} catch (error) {
-					logger.error(`Error in setStoryStatus PLAY: ${stringifyError(error)}`)
-				}
-			}
-			if (oldPlayingPartExternalId) {
-				try {
-					waitForPromise(
-						setStoryStatus(
-							peripheralDevice._id,
-							rundown,
-							oldPlayingPartExternalId,
-							MOS.IMOSObjectStatus.STOP
-						)
-					)
-				} catch (error) {
-					logger.error(`Error in setStoryStatus STOP: ${stringifyError(error)}`)
-				}
-			}
-		}
-	}
-	async function setStoryStatus(
-		deviceId: PeripheralDeviceId,
-		rundown: Rundown,
-		storyId: string,
-		status: MOS.IMOSObjectStatus
-	): Promise<any> {
-		logger.debug('setStoryStatus', { deviceId, externalId: rundown.externalId, storyId, status })
-		return PeripheralDeviceAPI.executeFunction(deviceId, 'setStoryStatus', rundown.externalId, storyId, status)
 	}
 
 	export async function setPieceInOutPoint(

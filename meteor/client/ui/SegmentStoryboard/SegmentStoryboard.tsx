@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { SegmentNote } from '../../../lib/api/notes'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
@@ -13,7 +12,6 @@ import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
 import { isPartPlayable, PartId } from '../../../lib/collections/Parts'
-import { Settings } from '../../../lib/Settings'
 import { useTranslation } from 'react-i18next'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { literal, unprotectString } from '../../../lib/lib'
@@ -35,6 +33,7 @@ import { SegmentScrollbar } from './SegmentScrollbar'
 import { OptionalVelocityComponent } from '../../lib/utilComponents'
 import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
+import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -206,6 +205,9 @@ export const SegmentStoryboard = React.memo(
 		const squishedPartCardStride =
 			squishedPartsNum > 1 ? Math.max(4, (spaceLeft - PART_WIDTH) / (squishedPartsNum - 1)) : null
 
+		const playlistHasNextPart = !!props.playlist.nextPartInstanceId
+		const playlistIsLooping = props.playlist.loop
+
 		renderedParts.forEach((part, index) => {
 			const isLivePart = part.instance._id === props.playlist.currentPartInstanceId
 			const isNextPart = part.instance._id === props.playlist.nextPartInstanceId
@@ -224,6 +226,9 @@ export const SegmentStoryboard = React.memo(
 					isLivePart={isLivePart}
 					isNextPart={isNextPart}
 					isLastPartInSegment={part.instance._id === lastValidPartId}
+					isLastSegment={props.isLastSegment}
+					isPlaylistLooping={playlistIsLooping}
+					doesPlaylistHaveNextPart={playlistHasNextPart}
 					displayLiveLineCounter={props.displayLiveLineCounter}
 					inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
 					currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}
@@ -472,29 +477,32 @@ export const SegmentStoryboard = React.memo(
 
 			const startingScrollLeft = scrollLeft
 
-			const onListPointerRelease = () => {
+			const onListTouchRelease = () => {
 				setTouched(null)
 				setAnimateScrollLeft(true)
 			}
-			const onPointerMove = (e: PointerEvent) => {
+			const onTouchMove = (e: TouchEvent) => {
 				e.preventDefault()
 				setScrollLeft(() => {
-					const newScrollLeft = Math.max(0, Math.min(startingScrollLeft + (touched.clientX - e.clientX), maxScrollLeft))
+					const newScrollLeft = Math.max(
+						0,
+						Math.min(startingScrollLeft + (touched.clientX - e.touches[0].clientX), maxScrollLeft)
+					)
 					props.onScroll(newScrollLeft, e)
 					return newScrollLeft
 				})
 			}
 
-			document.addEventListener('pointerup', onListPointerRelease)
-			document.addEventListener('pointercancel', onListPointerRelease)
-			document.addEventListener('pointermove', onPointerMove, {
+			document.addEventListener('touchend', onListTouchRelease)
+			document.addEventListener('touchcancel', onListTouchRelease)
+			document.addEventListener('touchmove', onTouchMove, {
 				passive: false,
 			})
 
 			return () => {
-				document.removeEventListener('pointerup', onListPointerRelease)
-				document.removeEventListener('pointercancel', onListPointerRelease)
-				document.removeEventListener('pointermove', onPointerMove)
+				document.removeEventListener('touchend', onListTouchRelease)
+				document.removeEventListener('touchcancel', onListTouchRelease)
+				document.removeEventListener('touchmove', onTouchMove)
 			}
 		}, [touched, renderedParts.length, props.onScroll])
 
@@ -547,6 +555,9 @@ export const SegmentStoryboard = React.memo(
 				})}
 				data-obj-id={props.segment._id}
 				ref={combinedRef}
+				role="region"
+				aria-labelledby={`segment-name-${props.segment._id}`}
+				aria-roledescription={t('segment')}
 			>
 				<StudioContext.Provider value={props.studio}>
 					<ContextMenuTrigger
@@ -559,6 +570,7 @@ export const SegmentStoryboard = React.memo(
 						renderTag="div"
 					>
 						<h2
+							id={`segment-name-${props.segment._id}`}
 							className={'segment-timeline__title__label' + (props.segment.identifier ? ' identifier' : '')}
 							data-identifier={props.segment.identifier}
 						>
@@ -572,6 +584,7 @@ export const SegmentStoryboard = React.memo(
 										onClick={() =>
 											props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.ERROR)
 										}
+										aria-label={t('Critical problems')}
 									>
 										<CriticalIconSmall />
 										<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
@@ -583,6 +596,7 @@ export const SegmentStoryboard = React.memo(
 										onClick={() =>
 											props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.WARNING)
 										}
+										aria-label={t('Warnings')}
 									>
 										<WarningIconSmall />
 										<div className="segment-timeline__title__notes__count">{warningNotes}</div>
@@ -633,19 +647,19 @@ export const SegmentStoryboard = React.memo(
 								}
 							/>
 						)}
-						{Settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
+						{props.studio.settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
 							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 						)}
 					</div>
 					<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
-					<div className="segment-timeline__source-layers">
+					<div className="segment-timeline__source-layers" role="tree" aria-label={t('Sources')}>
 						{Object.values(props.segment.outputLayers)
 							.filter((outputGroup) => outputGroup.used)
 							.map((outputGroup) => (
 								<div className="segment-timeline__output-group" key={outputGroup._id}>
 									{filterSecondarySourceLayers(outputGroup.sourceLayers).map((sourceLayer) =>
 										sourceLayer.pieces.length > 0 ? (
-											<div className="segment-timeline__source-layer" key={sourceLayer._id}>
+											<div className="segment-timeline__source-layer" key={sourceLayer._id} role="treeitem">
 												{sourceLayer.name}
 											</div>
 										) : null
@@ -657,6 +671,7 @@ export const SegmentStoryboard = React.memo(
 						<button
 							className="segment-storyboard__storyboard-view-controls__button segment-storyboard__storyboard-view-controls__button--switch-mode segment-storyboard__storyboard-view-controls--switch-mode--timeline"
 							onClick={onSwitchViewMode}
+							title={t('Switch to Timeline mode')}
 						>
 							<Timeline />
 						</button>

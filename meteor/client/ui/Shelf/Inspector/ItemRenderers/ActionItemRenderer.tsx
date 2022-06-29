@@ -29,7 +29,7 @@ import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists
 import { actionToAdLibPieceUi } from '../../BucketPanel'
 import RundownViewEventBus, { RundownViewEvents } from '../../../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from '../../AdLibListItem'
-import { translateMessage } from '../../../../../lib/api/TranslatableMessage'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export { isActionItem }
 
@@ -224,8 +224,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 						MeteorCall.userAction.bucketsSaveActionIntoBucket(
 							e,
 							this.props.studio._id,
-							transformedAdLibActionToAction(targetAction),
-							this.props.bucketIds[0]
+							this.props.bucketIds[0],
+							transformedAdLibActionToAction(targetAction)
 						),
 					(err, res) => {
 						if (err) return

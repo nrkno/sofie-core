@@ -4,15 +4,14 @@ import PropTypes from 'prop-types'
 
 import { RundownUtils } from '../../lib/rundown'
 
-import { Settings } from '../../../lib/Settings'
 import { getElementWidth, getElementHeight } from '../../utils/dimensions'
 import { onElementResize } from '../../lib/resizeObserver'
-import { RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { PartUi } from './SegmentTimelineContainer'
 import { getCurrentTime } from '../../../lib/lib'
 import { RundownTiming } from '../RundownView/RundownTiming/RundownTiming'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
+import { RundownTimingContext } from '../../lib/rundownTiming'
 
 // We're cheating a little: Fontface
 declare class FontFace {
@@ -36,6 +35,7 @@ const SHORT_LINE_TOP = 30
 const SHORT_LINE_HEIGHT = 6
 
 interface ITimelineGridProps {
+	frameRate: number
 	timeScale: number
 	scrollLeft: number
 	isLiveSegment: boolean
@@ -171,7 +171,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		this.ctx.font = (this.fontSize * this.pixelRatio).toString() + 'px GridTimecodeFont, Roboto, Arial, sans-serif'
 		this.ctx.fillStyle = this.labelColor
 
-		const fps = Settings.frameRate
+		const fps = this.props.frameRate
 
 		const secondTimeScale = this.props.timeScale * 1000
 
@@ -334,7 +334,11 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	render() {
 		return (
 			<div className="segment-timeline__timeline-grid" ref={this.setParentRef}>
-				<canvas className="segment-timeline__timeline-grid__canvas" ref={this.setCanvasRef}></canvas>
+				<canvas
+					className="segment-timeline__timeline-grid__canvas"
+					ref={this.setCanvasRef}
+					role="presentation"
+				></canvas>
 			</div>
 		)
 	}

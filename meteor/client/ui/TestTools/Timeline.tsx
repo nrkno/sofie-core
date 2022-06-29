@@ -6,13 +6,13 @@ import { deserializeTimelineBlob, RoutedTimeline } from '../../../lib/collection
 import { Time, applyToArray, clone } from '../../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import { TimelineState, Resolver, ResolvedStates } from 'superfly-timeline'
-import { transformTimeline } from '../../../lib/timeline'
+import { transformTimeline } from '@sofie-automation/corelib/dist/playout/timeline'
 import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
 import { Mongo } from 'meteor/mongo'
 
-const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
+export const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
 
 interface ITimelineViewProps {
 	match?: {

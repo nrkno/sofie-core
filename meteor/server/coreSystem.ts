@@ -10,7 +10,7 @@ import {
 	compareSemverVersions,
 	isPrerelease,
 } from '../lib/collections/CoreSystem'
-import { getCurrentTime, unprotectString, waitForPromise, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, unprotectString, waitForPromiseAll } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from './migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './migration/currentSystemVersion'
@@ -22,13 +22,11 @@ import { Studios, StudioId } from '../lib/collections/Studios'
 import { logger, LogLevel, setLogLevel } from './logging'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
-import { pushWorkToQueue } from './codeControl'
 const PackageInfo = require('../package.json')
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
-import { profiler } from './api/profiler'
-import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
+// import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+// import { profiler } from './api/profiler'
+import { TMP_TSR_VERSION, StatusCode } from '@sofie-automation/blueprints-integration'
 import { createShowStyleCompound } from './api/showStyles'
-import { StatusCode } from '../lib/api/systemStatus'
 import { fetchShowStyleBasesLight, fetchStudiosLight } from '../lib/collections/optimizations'
 
 export { PackageInfo }
@@ -241,6 +239,7 @@ function checkBlueprintCompability(blueprint: Blueprint) {
 }
 
 let checkBlueprintsConfigTimeout: number | undefined
+let checkBlueprintsConfigRunning = false
 function queueCheckBlueprintsConfig() {
 	const RATE_LIMIT = 10000
 
@@ -256,57 +255,66 @@ function queueCheckBlueprintsConfig() {
 
 let lastBlueprintConfigIds: { [id: string]: true } = {}
 function checkBlueprintsConfig() {
+	if (checkBlueprintsConfigRunning) {
+		// already running, queue for later
+		queueCheckBlueprintsConfig()
+		return
+	}
+	checkBlueprintsConfigRunning = true
+
 	logger.debug('checkBlueprintsConfig start')
-	waitForPromise(
-		pushWorkToQueue('checkBlueprintsConfig', 'checkBlueprintsConfig', async () => {
-			const blueprintIds: { [id: string]: true } = {}
 
-			// Studios
-			_.each(Studios.find({}).fetch(), (studio) => {
-				const blueprint = Blueprints.findOne(studio.blueprintId)
-				if (!blueprint) return
+	try {
+		const blueprintIds: { [id: string]: true } = {}
 
-				const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.blueprintConfig)
-				const systemStatusId = `blueprintConfig_${blueprint._id}_studio_${studio._id}`
-				setBlueprintConfigStatus(systemStatusId, diff, studio._id)
-				blueprintIds[systemStatusId] = true
-			})
+		// Studios
+		_.each(Studios.find({}).fetch(), (studio) => {
+			const blueprint = Blueprints.findOne(studio.blueprintId)
+			if (!blueprint) return
 
-			// ShowStyles
-			_.each(ShowStyleBases.find({}).fetch(), (showBase) => {
-				const blueprint = Blueprints.findOne(showBase.blueprintId)
-				if (!blueprint || !blueprint.showStyleConfigManifest) return
+			const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.blueprintConfig)
+			const systemStatusId = `blueprintConfig_${blueprint._id}_studio_${studio._id}`
+			setBlueprintConfigStatus(systemStatusId, diff, studio._id)
+			blueprintIds[systemStatusId] = true
+		})
 
-				const variants = ShowStyleVariants.find({
-					showStyleBaseId: showBase._id,
-				}).fetch()
+		// ShowStyles
+		_.each(ShowStyleBases.find({}).fetch(), (showBase) => {
+			const blueprint = Blueprints.findOne(showBase.blueprintId)
+			if (!blueprint || !blueprint.showStyleConfigManifest) return
 
-				const allDiffs: string[] = []
+			const variants = ShowStyleVariants.find({
+				showStyleBaseId: showBase._id,
+			}).fetch()
 
-				_.each(variants, (variant) => {
-					const compound = createShowStyleCompound(showBase, variant)
-					if (!compound) return
+			const allDiffs: string[] = []
 
-					const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
-					if (diff && diff.length) {
-						allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
-					}
-				})
-				const systemStatusId = `blueprintConfig_${blueprint._id}_showStyle_${showBase._id}`
-				setBlueprintConfigStatus(systemStatusId, allDiffs)
-				blueprintIds[systemStatusId] = true
-			})
+			_.each(variants, (variant) => {
+				const compound = createShowStyleCompound(showBase, variant)
+				if (!compound) return
 
-			// Check for removed
-			_.each(lastBlueprintConfigIds, (_val, id: string) => {
-				if (!blueprintIds[id]) {
-					removeSystemStatus(id)
+				const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
+				if (diff && diff.length) {
+					allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
 				}
 			})
-			lastBlueprintConfigIds = blueprintIds
+			const systemStatusId = `blueprintConfig_${blueprint._id}_showStyle_${showBase._id}`
+			setBlueprintConfigStatus(systemStatusId, allDiffs)
+			blueprintIds[systemStatusId] = true
 		})
-	)
-	logger.debug('checkBlueprintsConfig done!')
+
+		// Check for removed
+		_.each(lastBlueprintConfigIds, (_val, id: string) => {
+			if (!blueprintIds[id]) {
+				removeSystemStatus(id)
+			}
+		})
+		lastBlueprintConfigIds = blueprintIds
+	} finally {
+		checkBlueprintsConfigRunning = false
+
+		logger.debug('checkBlueprintsConfig done!')
+	}
 }
 function setBlueprintConfigStatus(systemStatusId: string, diff: string[], studioId?: StudioId) {
 	if (diff && diff.length > 0) {
@@ -388,29 +396,33 @@ function startInstrumenting() {
 	}
 
 	// attempt init elastic APM
-	const system = getCoreSystem()
-	const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
 
-	if (APM_HOST && system && system.apm) {
-		logger.info(`APM agent starting up`)
-		Agent.start({
-			serviceName: KIBANA_INDEX || 'tv-automation-server-core',
-			hostname: APP_HOST,
-			serverUrl: APM_HOST,
-			secretToken: APM_SECRET,
-			active: system.apm.enabled,
-			transactionSampleRate: system.apm.transactionSampleRate,
-			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
-		})
-		profiler.setActive(system.apm.enabled || false)
-	} else {
-		logger.info(`APM agent inactive`)
-		Agent.start({
-			serviceName: 'tv-automation-server-core',
-			active: false,
-			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
-		})
-	}
+	// Note: meteor-elastic-apm has been temporarily disabled due to being incompatible Meteor 2.3
+	// See https://github.com/Meteor-Community-Packages/meteor-elastic-apm/pull/61
+	//
+	// const system = getCoreSystem()
+	// const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
+
+	// if (APM_HOST && system && system.apm) {
+	// 	logger.info(`APM agent starting up`)
+	// 	Agent.start({
+	// 		serviceName: KIBANA_INDEX || 'tv-automation-server-core',
+	// 		hostname: APP_HOST,
+	// 		serverUrl: APM_HOST,
+	// 		secretToken: APM_SECRET,
+	// 		active: system.apm.enabled,
+	// 		transactionSampleRate: system.apm.transactionSampleRate,
+	// 		disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+	// 	})
+	// 	profiler.setActive(system.apm.enabled || false)
+	// } else {
+	// 	logger.info(`APM agent inactive`)
+	// 	Agent.start({
+	// 		serviceName: 'tv-automation-server-core',
+	// 		active: false,
+	// 		disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+	// 	})
+	// }
 }
 function updateLoggerLevel(startup: boolean) {
 	const coreSystem = getCoreSystem()

@@ -63,12 +63,6 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	bucketDisplayFilter: number[] | undefined
 
 	onChangeExpanded: (value: boolean) => void
-	onRegisterHotkeys: (
-		hotkeys: Array<{
-			key: string
-			label: string
-		}>
-	) => void
 	onChangeBottomMargin?: (newBottomMargin: string) => void
 }
 
@@ -160,6 +154,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			if (defaultTab) {
 				this.setState({
 					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${defaultTab._id}`,
+				})
+			} else if (this.props.rundownLayout.filters.length >= 0) {
+				// there is no AdLib dab so some default needs to be selected
+				this.setState({
+					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${this.props.rundownLayout.filters[0]._id}`,
 				})
 			}
 		}

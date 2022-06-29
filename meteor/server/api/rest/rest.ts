@@ -27,13 +27,12 @@ const index = {
 function typeConvertUrlParameters(args: any[]) {
 	const convertedArgs: any[] = []
 
-	for (const i in args) {
-		let val = args[i]
+	args.forEach((val, i) => {
 		if (val === 'null') val = null
 		else if (val === 'true') val = true
 		else if (val === 'false') val = false
 		else {
-			val = unescape(val)
+			val = decodeURIComponent(val)
 
 			if (!_.isNaN(Number(val))) {
 				val = Number(val)
@@ -49,7 +48,7 @@ function typeConvertUrlParameters(args: any[]) {
 		}
 
 		convertedArgs[i] = val
-	}
+	})
 
 	return convertedArgs
 }

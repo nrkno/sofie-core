@@ -18,7 +18,7 @@ import {
 	PackageContainerPackageId,
 } from '../../../lib/collections/PackageContainerPackageStatus'
 import { getPackageInfoId, PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
-import { BulkWriteOperation } from 'mongodb'
+import type { AnyBulkWriteOperation } from 'mongodb'
 import { onUpdatedPackageInfo } from '../ingest/packageInfo'
 import {
 	getPackageContainerId,
@@ -55,7 +55,7 @@ export namespace PackageManagerIntegration {
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 
-		const bulkChanges: BulkWriteOperation<ExpectedPackageWorkStatus>[] = []
+		const bulkChanges: AnyBulkWriteOperation<ExpectedPackageWorkStatus>[] = []
 		const removedIds: ExpectedPackageWorkStatusId[] = []
 
 		const ps: Promise<void>[] = []
@@ -344,7 +344,7 @@ export namespace PackageManagerIntegration {
 		Array<{ packageId: ExpectedPackageId; expectedContentVersionHash: string; actualContentVersionHash: string }>
 	> {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		check(packageIds, Array)
+		check(packageIds, [String])
 		check(type, String)
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')

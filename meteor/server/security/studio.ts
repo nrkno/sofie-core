@@ -45,8 +45,8 @@ export namespace StudioReadAccess {
 export interface StudioContentAccess {
 	userId: UserId | null
 	organizationId: OrganizationId | null
-	studioId: StudioId | null
-	studio: StudioLight | null
+	studioId: StudioId
+	studio: StudioLight
 	cred: ResolvedCredentials | Credentials
 }
 
@@ -99,11 +99,14 @@ export namespace StudioContentWriteAccess {
 	export function anyContent(cred0: Credentials, studioId: StudioId): StudioContentAccess {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) {
+			const studio = fetchStudioLight(studioId)
+			if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
+
 			return {
 				userId: null,
 				organizationId: null,
 				studioId: studioId,
-				studio: fetchStudioLight(studioId) || null,
+				studio: studio,
 				cred: cred0,
 			}
 		}
@@ -112,6 +115,7 @@ export namespace StudioContentWriteAccess {
 		if (!cred.organization) throw new Meteor.Error(500, `User has no organization`)
 		const access = allowAccessToStudio(cred, studioId)
 		if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
+		if (!access.document) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
 
 		return {
 			userId: cred.user._id,

@@ -3,7 +3,7 @@ import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownUtils } from '../../lib/rundown'
 import ClassNames from 'classnames'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
+import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 
 interface IProps {
 	rundownPlaylist: RundownPlaylist
@@ -18,7 +18,7 @@ export const OverUnderTimer = withTiming<IProps, {}>()(function OverUnderTimer({
 	style,
 	timingDurations,
 }: WithTiming<IProps>) {
-	const overUnderClock = PlaylistTiming.getDiff(rundownPlaylist, timingDurations) ?? 0
+	const overUnderClock = getPlaylistTimingDiff(rundownPlaylist, timingDurations) ?? 0
 
 	return (
 		<span

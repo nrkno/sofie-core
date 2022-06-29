@@ -29,21 +29,10 @@ export default function Home() {
   const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
-      title={siteConfig.title}
+      title={siteConfig.themeConfig.navbar.title}
       description="Sofie is a web-based, open source TV automation system for studios and live shows, used in daily live TV news productions by the Norwegian public&nbsp;service broadcaster NRK since September 2018.">
       <HomepageHeader />
       <main>
-        {/* <section className="margin-vert--xl">
-          <div className="container">
-            <div className="row">
-              <p>
-                <em><strong>Sofie</strong></em> is a web-based, open source TV automation system for studios and
-                live shows, used in daily live TV news productions by the Norwegian
-                public&nbsp;service broadcaster <Link to="docs/about-sofie">NRK</Link> since September&nbsp;2018.
-              </p>
-            </div>
-          </div>
-        </section> */}
         <HomepageFeatures />
       </main>
     </Layout>

@@ -4,8 +4,10 @@
         "packages/blueprints-integration",
         "packages/mos-gateway",
         "packages/playout-gateway",
-        "packages/server-core-integration"
+        "packages/server-core-integration",
+        "packages/corelib",
+        "packages/job-worker"
     ],
     "prettier.enable": true,
-    "sonarlint.connectedMode.project": { "projectKey": "nrkno_tv-automation-server-core" },
+    "sonarlint.connectedMode.project": { "projectKey": "nrkno_sofie-core" },
 }

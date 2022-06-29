@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import * as reacti18next from 'react-i18next'
 import * as i18next from 'i18next'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -38,17 +38,17 @@ interface IDeviceItemState {}
 
 export function statusCodeToString(t: i18next.TFunction, statusCode: StatusCode) {
 	switch (statusCode) {
-		case PeripheralDeviceAPI.StatusCode.UNKNOWN:
+		case StatusCode.UNKNOWN:
 			return t('Unknown')
-		case PeripheralDeviceAPI.StatusCode.GOOD:
+		case StatusCode.GOOD:
 			return t('Good')
-		case PeripheralDeviceAPI.StatusCode.WARNING_MINOR:
+		case StatusCode.WARNING_MINOR:
 			return t('Minor Warning')
-		case PeripheralDeviceAPI.StatusCode.WARNING_MAJOR:
+		case StatusCode.WARNING_MAJOR:
 			return t('Warning')
-		case PeripheralDeviceAPI.StatusCode.BAD:
+		case StatusCode.BAD:
 			return t('Bad')
-		case PeripheralDeviceAPI.StatusCode.FATAL:
+		case StatusCode.FATAL:
 			return t('Fatal')
 		default:
 			assertNever(statusCode)
@@ -69,11 +69,11 @@ export const DeviceItem = reacti18next.withTranslation()(
 			const t = this.props.t
 
 			switch (this.props.device.type) {
-				case PeripheralDeviceAPI.DeviceType.MOS:
+				case PeripheralDeviceType.MOS:
 					return t('MOS Gateway')
-				case PeripheralDeviceAPI.DeviceType.PLAYOUT:
+				case PeripheralDeviceType.PLAYOUT:
 					return t('Play-out Gateway')
-				case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
+				case PeripheralDeviceType.MEDIA_MANAGER:
 					return t('Media Manager')
 				default:
 					return t('Unknown Device')
@@ -220,7 +220,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 							overlay={t('Connect some devices to the playout gateway')}
 							visible={
 								getHelpMode() &&
-								this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+								this.props.device.type === PeripheralDeviceType.PLAYOUT &&
 								this.props.toplevel === true &&
 								!this.props.hasChildren &&
 								this.props.hasChildren !== undefined
@@ -250,7 +250,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 					<div className="actions-container">
 						<div className="device-item__actions">
 							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
 							this.props.device.subType === TSR.DeviceType.CASPARCG ? (
 								<React.Fragment>
 									<button
@@ -267,7 +267,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 								</React.Fragment>
 							) : null}
 							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
 							this.props.device.subType === TSR.DeviceType.HYPERDECK ? (
 								<React.Fragment>
 									<button
@@ -283,7 +283,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 								</React.Fragment>
 							) : null}
 							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
 							this.props.device.subType === TSR.DeviceType.QUANTEL ? (
 								<React.Fragment>
 									<button

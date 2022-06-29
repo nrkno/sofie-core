@@ -4,10 +4,11 @@ import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mo
 import { literal, unprotectString } from '../../../lib/lib'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
-import { StatusCode, StatusResponse } from '../../../lib/api/systemStatus'
+import { StatusResponse } from '../../../lib/api/systemStatus'
 
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 
 require('../api')
@@ -17,7 +18,7 @@ describe('systemStatus API', () => {
 	let env: DefaultEnvironment
 
 	describe('General health endpoint', () => {
-		function callRoute(): MockResponseDataString {
+		async function callRoute(): Promise<MockResponseDataString> {
 			const routeName = '/health'
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()
@@ -28,7 +29,7 @@ describe('systemStatus API', () => {
 				url: `/health`,
 			})
 
-			route.handler({}, req, res, jest.fn())
+			await route.handler({}, req, res, jest.fn())
 
 			const resStr = parseResponseBuffer(res)
 			expect(resStr).toMatchObject(
@@ -58,7 +59,7 @@ describe('systemStatus API', () => {
 
 			let systemHealth
 			try {
-				const response = callRoute()
+				const response = await callRoute()
 				expect(response.statusCode).toBe(500)
 				systemHealth = JSON.parse(response.bufferStr)
 			} catch (e) {
@@ -72,7 +73,7 @@ describe('systemStatus API', () => {
 	})
 
 	describe('Specific studio health endpoint', () => {
-		function callRoute(studioId?: string): MockResponseDataString {
+		async function callRoute(studioId?: string): Promise<MockResponseDataString> {
 			const routeName = '/health/:studioId'
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()
@@ -83,7 +84,7 @@ describe('systemStatus API', () => {
 				url: `/health/${studioId}`,
 			})
 
-			route.handler({ studioId: studioId || '' }, req, res, jest.fn())
+			await route.handler({ studioId: studioId || '' }, req, res, jest.fn())
 
 			const resStr = parseResponseBuffer(res)
 			expect(resStr).toMatchObject(
@@ -123,7 +124,7 @@ describe('systemStatus API', () => {
 
 			let systemHealth
 			try {
-				const response = callRoute(unprotectString(env.studio._id))
+				const response = await callRoute(unprotectString(env.studio._id))
 				expect(response.statusCode).toBe(200)
 				systemHealth = JSON.parse(response.bufferStr)
 			} catch (e) {

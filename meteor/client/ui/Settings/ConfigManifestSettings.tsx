@@ -20,11 +20,10 @@ import {
 	ConfigManifestEntryLayerMappings,
 	SourceLayerType,
 } from '@sofie-automation/blueprints-integration'
-import { DBObj, ProtectedString, objectPathGet } from '../../../lib/lib'
+import { DBObj, ProtectedString, objectPathGet, getRandomString } from '../../../lib/lib'
 import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { getHelpMode } from '../../lib/localStorage'
-import { Random } from 'meteor/random'
 import {
 	faDownload,
 	faTrash,
@@ -286,7 +285,7 @@ export class ConfigManifestTable<
 
 	addRow(configEntry: ConfigManifestEntryTable, baseAttribute: string) {
 		const rowDefault: any = {
-			_id: Random.id(),
+			_id: getRandomString(),
 		}
 		_.each(configEntry.columns, (col) => (rowDefault[col.id] = col.defaultVal))
 
@@ -348,7 +347,7 @@ export class ConfigManifestTable<
 			const conformedConfig: TableConfigItemValue = []
 			_.forEach(newConfig, (entry) => {
 				const newEntry: TableConfigItemValue[0] = {
-					_id: entry._id || Random.id(),
+					_id: entry._id || getRandomString(),
 				}
 
 				// Ensure all fields are defined

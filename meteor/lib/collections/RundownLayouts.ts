@@ -1,10 +1,9 @@
-import { registerCollection, ProtectedString } from '../lib'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { BlueprintId } from './Blueprints'
-import { ShowStyleBaseId } from './ShowStyleBases'
-import { UserId } from './Users'
 import { registerIndex } from '../database'
+import { RundownLayoutId, UserId, ShowStyleBaseId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+export { RundownLayoutId }
 import { DashboardPanel } from '../../client/ui/Shelf/DashboardPanel'
 
 /**
@@ -212,6 +211,12 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	sourceLayerTypes: SourceLayerType[] | undefined
 	outputLayerIds: string[] | undefined
 	label: string[] | undefined
+	/**
+	 * If a tag filter is starting with a "!" char, it will turn into a NOT filter, i.e., the tag must
+	 * not be present, for the item to match the filter
+	 *
+	 * TODO: This should be made more explicit in the datastructure somehow.
+	 */
 	tags: string[] | undefined
 	displayStyle: PieceDisplayStyle
 	showThumbnailsInList: boolean
@@ -277,9 +282,6 @@ export type DashboardLayoutFilter = DashboardPanel<
 		toggleOnSingleClick?: boolean
 	}
 >
-
-/** A string, identifying a RundownLayout */
-export type RundownLayoutId = ProtectedString<'RundownLayoutId'>
 
 export interface RundownLayoutBase {
 	_id: RundownLayoutId
@@ -372,8 +374,7 @@ export interface DashboardLayout extends RundownLayoutShelfBase {
 	actionButtons?: DashboardLayoutActionButton[]
 }
 
-export const RundownLayouts = createMongoCollection<RundownLayoutBase>('rundownLayouts')
-registerCollection('RundownLayouts', RundownLayouts)
+export const RundownLayouts = createMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts)
 
 // addIndex(RundownLayouts, {
 // 	studioId: 1,

@@ -60,8 +60,9 @@ export const AccountPage = translateWithTracker(() => {
 					this.setState({ edit: false })
 				})
 			} catch (error) {
+				const error2 = error as any
 				console.log(error)
-				this.handleNotif(error.message, error.lvl)
+				this.handleNotif(error2.message, error2.lvl)
 			}
 		}
 

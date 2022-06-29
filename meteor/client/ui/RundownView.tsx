@@ -66,8 +66,7 @@ import { NotificationCenterPanel } from '../lib/notifications/NotificationCenter
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
 import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { doUserAction, UserAction } from '../lib/userAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
@@ -105,8 +104,8 @@ import RundownViewEventBus, {
 import StudioContext from './RundownView/StudioContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'
-import { PlaylistTiming } from '../../lib/rundown/rundownTiming'
 import { SorensenContext } from '../lib/SorensenContext'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { BreakSegment } from './SegmentTimeline/BreakSegment'
 import { PlaylistStartTiming } from './RundownView/RundownTiming/PlaylistStartTiming'
 import { RundownName } from './RundownView/RundownTiming/RundownName'
@@ -117,6 +116,7 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowS
 import { BucketAdLibItem } from './Shelf/RundownViewBuckets'
 import { IAdLibListItem } from './Shelf/AdLibListItem'
 import { ShelfDashboardLayout } from './Shelf/ShelfDashboardLayout'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { SegmentStoryboardContainer } from './SegmentStoryboard/SegmentStoryboardContainer'
 import { SegmentViewMode } from './SegmentContainer/SegmentViewModes'
 import { UIStateStorage } from '../lib/UIStateStorage'
@@ -300,11 +300,6 @@ const TimingDisplay = withTranslation()(
 	)
 )
 
-interface HotkeyDefinition {
-	key: string
-	label: string
-}
-
 interface IRundownHeaderProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
@@ -314,7 +309,6 @@ interface IRundownHeaderProps {
 	rundownIds: RundownId[]
 	firstRundown: Rundown | undefined
 	onActivate?: (isRehearsal: boolean) => void
-	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
 	inActiveRundownView?: boolean
 	layout: RundownLayoutRundownHeader | undefined
@@ -347,10 +341,6 @@ const RundownHeader = withTranslation()(
 			}
 		}
 		componentDidMount() {
-			if (typeof this.props.onRegisterHotkeys === 'function') {
-				this.props.onRegisterHotkeys(this.bindKeys)
-			}
-
 			RundownViewEventBus.on(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.on(RundownViewEvents.TAKE, this.eventTake)
@@ -386,7 +376,7 @@ const RundownHeader = withTranslation()(
 			if (ClientAPI.isClientResponseError(err)) {
 				const { t } = this.props
 
-				if (err.error === 404) {
+				if (err.error.key === UserErrorMessage.DisableNoPieceFound) {
 					NotificationCenter.push(
 						new Notification(
 							undefined,
@@ -439,8 +429,8 @@ const RundownHeader = withTranslation()(
 						if (!err) {
 							onSuccess()
 						} else if (ClientAPI.isClientResponseError(err)) {
-							if (err.error === 409) {
-								this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
+							if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+								this.handleAnotherPlaylistActive(this.props.playlist._id, true, err.error, onSuccess)
 								return false
 							}
 						}
@@ -536,7 +526,7 @@ const RundownHeader = withTranslation()(
 		handleAnotherPlaylistActive = (
 			playlistId: RundownPlaylistId,
 			rehersal: boolean,
-			err: ClientAPI.ClientResponseError,
+			err: UserError,
 			clb?: Function
 		) => {
 			const { t } = this.props
@@ -559,13 +549,13 @@ const RundownHeader = withTranslation()(
 				}
 			}
 
-			const otherRundowns = err.details as Rundown[]
 			doModalDialog({
 				title: t('Another Rundown is Already Active!'),
 				message: t(
 					'The rundown "{{rundownName}}" will need to be deactivated in order to activate this one.\n\nAre you sure you want to activate this one anyway?',
 					{
-						rundownName: otherRundowns.map((i) => i.name).join(', '),
+						// TODO: this is a bit of a hack, could a better string sent from the server instead?
+						rundownName: err.message.args?.names ?? '',
 					}
 				),
 				yes: t('Activate Anyway (Rehearsal)'),
@@ -620,8 +610,8 @@ const RundownHeader = withTranslation()(
 							if (!err) {
 								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 							} else if (ClientAPI.isClientResponseError(err)) {
-								if (err.error === 409) {
-									this.handleAnotherPlaylistActive(this.props.playlist._id, false, err, () => {
+								if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+									this.handleAnotherPlaylistActive(this.props.playlist._id, false, err.error, () => {
 										if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 									})
 									return false
@@ -647,8 +637,8 @@ const RundownHeader = withTranslation()(
 									if (!err) {
 										onSuccess()
 									} else if (ClientAPI.isClientResponseError(err)) {
-										if (err.error === 409) {
-											this.handleAnotherPlaylistActive(this.props.playlist._id, false, err, onSuccess)
+										if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+											this.handleAnotherPlaylistActive(this.props.playlist._id, false, err.error, onSuccess)
 											return false
 										}
 									}
@@ -693,8 +683,8 @@ const RundownHeader = withTranslation()(
 							if (!err) {
 								onSuccess()
 							} else if (ClientAPI.isClientResponseError(err)) {
-								if (err.error === 409) {
-									this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
+								if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+									this.handleAnotherPlaylistActive(this.props.playlist._id, true, err.error, onSuccess)
 									return false
 								}
 							}
@@ -714,8 +704,8 @@ const RundownHeader = withTranslation()(
 								if (!err) {
 									onSuccess()
 								} else if (ClientAPI.isClientResponseError(err)) {
-									if (err.error === 409) {
-										this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
+									if (err.error.key === UserErrorMessage.RundownAlreadyActiveNames) {
+										this.handleAnotherPlaylistActive(this.props.playlist._id, true, err.error, onSuccess)
 										return false
 									}
 								}
@@ -801,7 +791,11 @@ const RundownHeader = withTranslation()(
 					}
 				)
 			}
-			if (this.props.playlist.activationId && !this.props.playlist.rehearsal && !Settings.allowRundownResetOnAir) {
+			if (
+				this.props.playlist.activationId &&
+				!this.props.playlist.rehearsal &&
+				!this.props.studio.settings.allowRundownResetOnAir
+			) {
 				// The rundown is active and not in rehersal
 				doModalDialog({
 					title: this.props.playlist.name,
@@ -952,7 +946,7 @@ const RundownHeader = withTranslation()(
 									{!(
 										this.props.playlist.activationId &&
 										!this.props.playlist.rehearsal &&
-										!Settings.allowRundownResetOnAir
+										!this.props.studio.settings.allowRundownResetOnAir
 									) ? (
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}
@@ -1036,7 +1030,7 @@ const RundownHeader = withTranslation()(
 								)}
 								<div className="flex-col right horizontal-align-right">
 									<div className="links mod close">
-										<NavLink to="/rundowns">
+										<NavLink to="/rundowns" title={t('Exit')}>
 											<CoreIcon.NrkClose />
 										</NavLink>
 									</div>
@@ -1088,7 +1082,6 @@ interface IState {
 	followLiveSegments: boolean
 	manualSetAsNext: boolean
 	subsReady: boolean
-	usedHotkeys: Array<HotkeyDefinition>
 	isNotificationsCenterOpen: NoticeLevel | undefined
 	isSupportPanelOpen: boolean
 	isInspectorShelfExpanded: boolean
@@ -1236,7 +1229,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							.fetch()
 							.map((i) => i._id),
 					},
-					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+					type: PeripheralDeviceType.PLAYOUT,
 					subType: TSR.DeviceType.CASPARCG,
 				}).fetch()) ||
 			undefined,
@@ -1284,8 +1277,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 
-			const { t } = this.props
-
 			const shelfLayout = this.props.rundownLayouts?.find((layout) => layout._id === this.props.shelfLayoutId)
 			let isInspectorShelfExpanded = false
 
@@ -1301,17 +1292,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				followLiveSegments: true,
 				manualSetAsNext: false,
 				subsReady: false,
-				usedHotkeys: [
-					// Register additional hotkeys or legend entries
-					{
-						key: 'Escape',
-						label: t('Cancel currently pressed hotkey'),
-					},
-					{
-						key: 'F11',
-						label: t('Change to fullscreen mode'),
-					},
-				],
 				isNotificationsCenterOpen: undefined,
 				isSupportPanelOpen: false,
 				isInspectorShelfExpanded,
@@ -2190,7 +2170,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					{this.props.playlist?.loop && (
 						<PlaylistLoopingHeader position="start" multiRundown={this.props.matchedSegments.length > 1} />
 					)}
-					<div className="segment-timeline-container">{this.renderSegments()}</div>
+					<div className="segment-timeline-container" role="main" aria-labelledby="rundown-playlist-name">
+						{this.renderSegments()}
+					</div>
 					{this.props.playlist?.loop && (
 						<PlaylistLoopingHeader
 							position="end"
@@ -2205,14 +2187,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		onChangeBottomMargin = (newBottomMargin: string) => {
 			this.setState({
 				bottomMargin: newBottomMargin,
-			})
-		}
-
-		onRegisterHotkeys = (hotkeys: Array<HotkeyDefinition>) => {
-			// @ts-ignore
-			this.state.usedHotkeys = this.state.usedHotkeys.concat(hotkeys) // we concat directly to the state object member, because we need to
-			this.setState({
-				usedHotkeys: this.state.usedHotkeys,
 			})
 		}
 
@@ -2256,16 +2230,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onRestartPlayout = (e: React.MouseEvent<HTMLButtonElement>) => {
-			const { t } = this.props
+			const { t, studio } = this.props
 
-			if (!this.props.studio) {
+			if (!studio) {
 				return
 			}
 
 			const attachedPlayoutGateways = PeripheralDevices.find({
-				studioId: this.props.studio._id,
+				studioId: studio._id,
 				connected: true,
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
 			}).fetch()
 			if (attachedPlayoutGateways.length === 0) {
 				NotificationCenter.push(
@@ -2280,39 +2254,52 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				)
 				return
 			}
-			attachedPlayoutGateways.forEach((item) => {
-				PeripheralDevicesAPI.restartDevice(item, e)
-					.then(() => {
-						NotificationCenter.push(
-							new Notification(
-								undefined,
-								NoticeLevel.NOTIFICATION,
-								t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', { playoutDeviceName: item.name }),
-								'RundownView'
+
+			e.persist()
+
+			const restartPlayoutGateway = () => {
+				attachedPlayoutGateways.forEach((item) => {
+					PeripheralDevicesAPI.restartDevice(item, e)
+						.then(() => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.NOTIFICATION,
+									t('Playout\xa0Gateway "{{playoutDeviceName}}" is now restarting.', { playoutDeviceName: item.name }),
+									'RundownView'
+								)
 							)
-						)
-					})
-					.catch(() => {
-						NotificationCenter.push(
-							new Notification(
-								undefined,
-								NoticeLevel.CRITICAL,
-								t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', { playoutDeviceName: item.name }),
-								'RundownView'
+						})
+						.catch(() => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.CRITICAL,
+									t('Could not restart Playout\xa0Gateway "{{playoutDeviceName}}".', { playoutDeviceName: item.name }),
+									'RundownView'
+								)
 							)
-						)
-					})
+						})
+				})
+			}
+
+			doModalDialog({
+				title: t('Restart Playout'),
+				message: t('Do you want to restart the Playout\xa0Gateway?'),
+				onAccept: restartPlayoutGateway,
 			})
 		}
 
-		onRestartCasparCG = (device: PeripheralDevice) => {
+		onRestartCasparCG = (e: React.MouseEvent<HTMLButtonElement>, device: PeripheralDevice) => {
 			const { t } = this.props
+
+			e.persist()
 
 			doModalDialog({
 				title: t('Restart CasparCG Server'),
 				message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
-				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, CASPARCG_RESTART_TIME, 'restartCasparCG')
+				onAccept: () => {
+					callPeripheralDeviceFunction(e, device._id, CASPARCG_RESTART_TIME, 'restartCasparCG')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(
@@ -2399,6 +2386,20 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			return true
 		}
 
+		defaultHotkeys(t: i18next.TFunction) {
+			return [
+				// Register additional hotkeys or legend entries
+				{
+					key: 'Escape',
+					label: t('Cancel currently pressed hotkey'),
+				},
+				{
+					key: 'F11',
+					label: t('Change to fullscreen mode'),
+				},
+			]
+		}
+
 		renderRundownView(
 			studio: DBStudio,
 			playlist: RundownPlaylist,
@@ -2440,7 +2441,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									firstRundown={this.props.rundowns[0]}
 									onActivate={this.onActivate}
 									studioMode={this.state.studioMode}
-									onRegisterHotkeys={this.onRegisterHotkeys}
 									inActiveRundownView={this.props.inActiveRundownView}
 									currentRundown={this.state.currentRundown || this.props.rundowns[0]}
 									layout={this.state.rundownHeaderLayout}
@@ -2554,7 +2554,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												this.props.casparCGPlayoutDevices &&
 												this.props.casparCGPlayoutDevices.map((i) => (
 													<React.Fragment key={unprotectString(i._id)}>
-														<button className="btn btn-secondary" onClick={() => this.onRestartCasparCG(i)}>
+														<button className="btn btn-secondary" onClick={(e) => this.onRestartCasparCG(e, i)}>
 															{t('Restart {{device}}', { device: i.name })}
 														</button>
 														<hr />
@@ -2620,13 +2620,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										(!this.state.wasShelfResizedByUser && this.state.shelfLayout?.openByDefault)
 									}
 									onChangeExpanded={this.onShelfChangeExpanded}
-									hotkeys={this.state.usedHotkeys}
+									hotkeys={this.defaultHotkeys(t)}
 									playlist={this.props.playlist}
 									showStyleBase={this.props.showStyleBase}
 									showStyleVariant={this.props.showStyleVariant}
 									studioMode={this.state.studioMode}
 									onChangeBottomMargin={this.onChangeBottomMargin}
-									onRegisterHotkeys={this.onRegisterHotkeys}
 									rundownLayout={this.state.shelfLayout}
 									shelfDisplayOptions={this.props.shelfDisplayOptions}
 									bucketDisplayFilter={this.props.bucketDisplayFilter}
@@ -2672,13 +2671,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							buckets={this.props.buckets}
 							isExpanded={this.state.isInspectorShelfExpanded}
 							onChangeExpanded={this.onShelfChangeExpanded}
-							hotkeys={this.state.usedHotkeys}
+							hotkeys={this.defaultHotkeys(this.props.t)}
 							playlist={this.props.playlist}
 							showStyleBase={this.props.showStyleBase}
 							showStyleVariant={this.props.showStyleVariant}
 							studioMode={this.state.studioMode}
 							onChangeBottomMargin={this.onChangeBottomMargin}
-							onRegisterHotkeys={this.onRegisterHotkeys}
 							rundownLayout={this.state.shelfLayout}
 							studio={this.props.studio}
 							fullViewport={true}

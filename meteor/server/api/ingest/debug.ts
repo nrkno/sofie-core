@@ -1,28 +1,34 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
-import { IngestActions } from './actions'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Settings } from '../../../lib/Settings'
 import { SegmentId, Segments } from '../../../lib/collections/Segments'
-import { RundownIngestDataCache } from './ingestCache'
 import { Rundowns } from '../../../lib/collections/Rundowns'
-import { handleUpdatedSegment } from './rundownInput'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { logger } from '../../logging'
 import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
-import { updateExpectedMediaItemsOnRundown } from './expectedMediaItems'
-import { runIngestOperationFromRundown } from './lockFunction'
-import { updateExpectedPackagesOnRundown } from './expectedPackages'
+import { runIngestOperation } from './lib'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { QueueStudioJob } from '../../worker/worker'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
 		/**
 		 * Simulate a 'Reload from NRCS' for the specified playlist
 		 */
-		debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) => {
+		debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId) => {
 			try {
 				check(rundownPlaylistId, String)
-				IngestActions.regenerateRundownPlaylist(null, rundownPlaylistId, purgeExisting)
+
+				const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+				if (!playlist) throw new Error('Playlist not found')
+
+				const job = waitForPromise(
+					QueueStudioJob(StudioJobs.RegeneratePlaylist, playlist.studioId, {
+						playlistId: playlist._id,
+					})
+				)
+				waitForPromise(job.complete)
 			} catch (e) {
 				logger.error(e)
 				throw e
@@ -40,44 +46,29 @@ if (!Settings.enableUserAccounts) {
 			const rundown = Rundowns.findOne(segment.rundownId)
 			if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
-			const ingestCache = waitForPromise(RundownIngestDataCache.create(rundown._id))
-			const ingestSegment = ingestCache.fetchSegment(segment._id)
-			if (!ingestSegment) throw new Meteor.Error(404, 'Segment ingest data not found')
-
 			waitForPromise(
-				handleUpdatedSegment(
-					{ studioId: rundown.studioId } as PeripheralDevice,
-					rundown.externalId,
-					ingestSegment,
-					true
-				)
+				runIngestOperation(rundown.studioId, IngestJobs.RegenerateSegment, {
+					rundownExternalId: rundown.externalId,
+					peripheralDeviceId: null,
+					segmentExternalId: segment.externalId,
+				})
 			)
 		},
 		/**
-		 * Regenerate all the expected media items for all rundowns in the system
-		 * This shouldn't be necessary as ingest will do this for each rundown as part of its workflow
-		 */
-		debug_recreateExpectedMediaItems() {
-			const rundowns = Rundowns.find().fetch()
-
-			waitForPromiseAll(
-				rundowns.map(async (rundown) =>
-					runIngestOperationFromRundown('', rundown, async (cache) =>
-						updateExpectedMediaItemsOnRundown(cache)
-					)
-				)
-			)
-		},
-		/**
-		 * Regenerate all the expected packages for all rundowns in the system
+		 * Regenerate all the expected packages for all rundowns in the system.
+		 * Additionally it will recreate any expectedMediaItems and expectedPlayoutItems.
 		 * This shouldn't be necessary as ingest will do this for each rundown as part of its workflow
 		 */
 		debug_recreateExpectedPackages() {
-			const rundowns = Rundowns.find().fetch()
+			const rundowns = Rundowns.find({
+				restoredFromSnapshotId: { $exists: false },
+			}).fetch()
 
 			waitForPromiseAll(
 				rundowns.map(async (rundown) =>
-					runIngestOperationFromRundown('', rundown, async (cache) => updateExpectedPackagesOnRundown(cache))
+					runIngestOperation(rundown.studioId, IngestJobs.ExpectedPackagesRegenerate, {
+						rundownId: rundown._id,
+					})
 				)
 			)
 		},

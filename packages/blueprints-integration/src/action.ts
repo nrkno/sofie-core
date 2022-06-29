@@ -63,6 +63,12 @@ export interface IBlueprintActionTriggerMode {
 }
 
 export interface IBlueprintActionManifest {
+	/**
+	 * An identifier for this Action
+	 * It should be unique within the part it belongs to, and consistent across ingest updates
+	 */
+	externalId: string
+
 	/** Id of the action */
 	actionId: string
 	/** Properties defining the action behaviour */
@@ -81,13 +87,6 @@ export interface IBlueprintActionManifest {
 	 * Note: Only valid for items returned from getAdlibItem
 	 */
 	allVariants?: boolean
-
-	/**
-	 * String that can be used to identify adlibs that are equivalent to each other,
-	 * if there are multiple Adlibs with the same uniquenessId,
-	 * only one of them should be displayed in the GUI.
-	 */
-	uniquenessId?: string
 
 	userDataManifest: {
 		/** List of editable fields in userData, to allow for customising */

@@ -1,8 +1,6 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RundownAPI } from '../../../lib/api/rundown'
-
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer, IOutputLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
@@ -15,9 +13,10 @@ import { Studio } from '../../../lib/collections/Studios'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export interface IAdLibListItem extends AdLibPieceUi {
-	status: RundownAPI.PieceStatusCode
+	status: PieceStatusCode
 	contentMetaData?: any
 	contentPackageInfos?: ScanInfoForPackages
 	sourceLayer?: ISourceLayer
@@ -32,8 +31,9 @@ interface IListViewItemProps {
 	studio: Studio
 	layer: ISourceLayer | undefined
 	selected: boolean
-	onSelectAdLib: (aSLine: IAdLibListItem) => void
-	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
+	disabled?: boolean
+	onSelectAdLib?: (aSLine: IAdLibListItem) => void
+	onToggleAdLib?: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
 	playlist: RundownPlaylist
 }
 
@@ -54,19 +54,24 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 							selected: this.props.selected,
 							invalid: this.props.piece.invalid,
 							floated: this.props.piece.floated,
+							disabled: this.props.disabled,
 						}),
 						//@ts-ignore React.HTMLAttributes does not list data attributes, but that's fine
 						'data-obj-id': this.props.piece._id,
-						onClick: () => this.props.onSelectAdLib(this.props.piece),
-						onContextMenu: () => this.props.onSelectAdLib(this.props.piece),
-						onDoubleClick: (e) => this.props.onToggleAdLib(this.props.piece, e.shiftKey, e),
+						onClick: () => this.props.onSelectAdLib && this.props.onSelectAdLib(this.props.piece),
+						onContextMenu: () => this.props.onSelectAdLib && this.props.onSelectAdLib(this.props.piece),
+						onDoubleClick: (e) =>
+							!this.props.disabled &&
+							this.props.onToggleAdLib &&
+							this.props.onToggleAdLib(this.props.piece, e.shiftKey, e),
 					}}
 					collect={() =>
 						setShelfContextMenuContext({
 							type: MenuContextType.ADLIB,
 							details: {
 								adLib: this.props.piece,
-								onToggle: this.props.onToggleAdLib,
+								onToggle: !this.props.disabled ? this.props.onToggleAdLib : undefined,
+								disabled: this.props.disabled,
 							},
 						})
 					}

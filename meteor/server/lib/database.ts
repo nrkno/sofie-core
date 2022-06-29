@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { BulkWriteOperation } from 'mongodb'
+import type { AnyBulkWriteOperation } from 'mongodb'
 import _ from 'underscore'
 import { AsyncMongoCollection } from '../../lib/collections/lib'
 import { DBObj, normalizeArrayToMap, ProtectedString, deleteAllUndefinedProperties } from '../../lib/lib'
@@ -111,7 +111,7 @@ async function savePreparedChanges<DBInterface extends DBObj>(
 		newObjIds[id] = true
 	}
 
-	const updates: BulkWriteOperation<DBInterface>[] = []
+	const updates: AnyBulkWriteOperation<DBInterface>[] = []
 	const removedDocs: DBInterface['_id'][] = []
 
 	_.each(preparedChanges.changed || [], (oUpdate) => {
@@ -189,7 +189,7 @@ interface SaveIntoDbHandlers<DBInterface> {
 	remove: (o: DBInterface) => void
 	unchanged?: (o: DBInterface) => void
 }
-export function saveIntoBase<DBInterface extends DBObj>(
+function saveIntoBase<DBInterface extends DBObj>(
 	collectionName: string,
 	oldDocs: DBInterface[],
 	newData: Array<DBInterface>,

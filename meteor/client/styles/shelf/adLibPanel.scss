@@ -354,6 +354,20 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 						}
 					}
 
+					&.disabled {
+						// opacity: 0.5;
+
+						.adlib-panel__list-view__list__table__cell--icon {
+							background: $ui-dark-color;
+						}
+					}
+
+					&.disabled.selected {
+						&::after {
+							border: 1px solid $ui-dark-color-brighter;
+						}
+					}
+
 					@include invalid-overlay();
 					@include floated-overlay();
 				}

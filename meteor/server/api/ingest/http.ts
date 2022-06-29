@@ -1,14 +1,15 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { logger } from '../../../lib/logging'
 import { Meteor } from 'meteor/meteor'
-import { handleUpdatedRundown } from './rundownInput'
 import { StudioId } from '../../../lib/collections/Studios'
 import { check } from '../../../lib/check'
 import { Rundowns } from '../../../lib/collections/Rundowns'
-import { getRundownId } from './lib'
-import { protectString, waitForPromise } from '../../../lib/lib'
+import { getRundownId, runIngestOperation } from './lib'
+import { protectString, stringifyError, waitForPromise } from '../../../lib/lib'
 import { PickerPOST } from '../http'
-import { getExternalNRCSName } from '../../../lib/collections/PeripheralDevices'
+import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { IngestRundown } from '@sofie-automation/blueprints-integration'
+import { getExternalNRCSName } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { fetchStudioLight } from '../../../lib/collections/optimizations'
 
 PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
@@ -17,7 +18,7 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 
 	const content = ''
 	try {
-		let ingestRundown = req.body
+		let ingestRundown: any = req.body
 		if (!ingestRundown) throw new Meteor.Error(400, 'Upload rundown: Missing request body')
 		if (typeof ingestRundown !== 'object') {
 			// sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
@@ -30,15 +31,15 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 		response.end(content)
 	} catch (e) {
 		response.setHeader('Content-Type', 'text/plain')
-		response.statusCode = e.errorCode || 500
-		response.end('Error: ' + e.toString())
+		response.statusCode = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
+		response.end('Error: ' + stringifyError(e))
 
-		if (e.errorCode !== 404) {
-			logger.error(e)
+		if (response.statusCode !== 404) {
+			logger.error(stringifyError(e))
 		}
 	}
 })
-export function importIngestRundown(studioId: StudioId, ingestRundown: any) {
+export function importIngestRundown(studioId: StudioId, ingestRundown: IngestRundown) {
 	const studio = fetchStudioLight(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} does not exist`)
 
@@ -52,5 +53,12 @@ export function importIngestRundown(studioId: StudioId, ingestRundown: any) {
 			`Cannot replace existing rundown from '${existingDbRundown.externalNRCSName}' with http data`
 		)
 
-	waitForPromise(handleUpdatedRundown(studio, undefined, ingestRundown, true))
+	waitForPromise(
+		runIngestOperation(studio._id, IngestJobs.UpdateRundown, {
+			rundownExternalId: ingestRundown.externalId,
+			peripheralDeviceId: null,
+			ingestRundown: ingestRundown,
+			isCreateAction: true,
+		})
+	)
 }

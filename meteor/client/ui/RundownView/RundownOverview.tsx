@@ -17,8 +17,8 @@ import {
 	RundownPlaylistCollectionUtil,
 } from '../../../lib/collections/RundownPlaylists'
 import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '../../../lib/rundown/timings'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>

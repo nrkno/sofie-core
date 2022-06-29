@@ -14,7 +14,7 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 
 ### Prerequisites
 
-- Install [Node.js](https://nodejs.org) 12 or 14 (using [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) is the recommended way to install Node.js)
+- Install [Node.js](https://nodejs.org) 16 (14 will also work) (using [nvm](https://github.com/nvm-sh/nvm) or [nvm-windows](https://github.com/coreybutler/nvm-windows) is the recommended way to install Node.js)
 - If on Windows: `npm install --global windows-build-tools`
 - Install [Meteor](https://www.meteor.com/install) (`npm install --global meteor`)
 - Install [Yarn](https://yarnpkg.com) (`npm install --global corepack && corepack enable`)
@@ -62,24 +62,6 @@ yarn start
    yarn buildstart
    ```
 
-If you make any changes to the libraries inside packages, you will need to run the typescript compiler in another terminal.
-
-```bash
-cd sofie-core/packages
-yarn watch # or yarn build to build just once
-```
-
-If you run into any issues while installing the dependencies, clone any offending packages from Git and link them using `npm link`. For example, for `tv-automation-mos-connection` library:
-
-```bash
-git clone -b master https://github.com/nrkno/tv-automation-mos-connection.git
-cd tv-automation-mos-connection
-npm run build
-npm link
-cd ../sofie-core/meteor
-npm link mos-connection
-```
-
 ### When using the Visual Studio Code IDE
 
 We provide a `settings.json.default` file in `.vscode` that you should consider using with your IDE. Also consider installing suggested
@@ -100,7 +82,7 @@ For support of various languages in the GUI, Sofie uses the i18next framework. I
 
 ```bash
 cd meteor
-npm run i18n-extract-pot
+yarn i18n-extract-pot
 ```
 
 Find the created `template.pot` file in `meteor/i18n` folder. Create a new PO file based on that template using a PO editor of your choice. Save it in the `meteor/i18n` folder using your [ISO 639-1 language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of choice as the filename.
@@ -108,14 +90,14 @@ Find the created `template.pot` file in `meteor/i18n` folder. Create a new PO fi
 Next, modify the `package.json` scripts and create a new language compilations script:
 
 ```
-"i18n-compile-json": "npm run i18n-compile-json-nb & npm run i18n-compile-json-sv & npm run i18n-compile-json-xx",
+"i18n-compile-json": "yarn i18n-compile-json-nb & yarn i18n-compile-json-sv & yarn i18n-compile-json-xx",
 "i18n-compile-json-xx": "i18next-conv -l nb -s i18n/xx.po -t public/locales/xx/translations.json",
 ```
 
 Then, run the compilation script:
 
 ```bash
-npm run i18n-compile-json
+yarn i18n-compile-json
 ```
 
 The resulting JSON file will be placed in `meteor/public/locales/xx`, where it will be available to the Sofie UI for use and auto-detection.

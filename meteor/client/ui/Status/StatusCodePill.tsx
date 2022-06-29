@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { assertNever } from '../../../lib/lib'
 import ClassNames from 'classnames'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
@@ -24,17 +23,17 @@ export const StatusCodePill: React.FC<{
 		if (!props.connected) return 'device-status--unknown'
 
 		switch (props.statusCode) {
-			case PeripheralDeviceAPI.StatusCode.UNKNOWN:
+			case StatusCode.UNKNOWN:
 				return 'device-status--unknown'
-			case PeripheralDeviceAPI.StatusCode.GOOD:
+			case StatusCode.GOOD:
 				return 'device-status--good'
-			case PeripheralDeviceAPI.StatusCode.WARNING_MINOR:
+			case StatusCode.WARNING_MINOR:
 				return 'device-status--minor-warning'
-			case PeripheralDeviceAPI.StatusCode.WARNING_MAJOR:
+			case StatusCode.WARNING_MAJOR:
 				return 'device-status--warning'
-			case PeripheralDeviceAPI.StatusCode.BAD:
+			case StatusCode.BAD:
 				return 'device-status--bad'
-			case PeripheralDeviceAPI.StatusCode.FATAL:
+			case StatusCode.FATAL:
 				return 'device-status--fatal'
 			default:
 				assertNever(props.statusCode)

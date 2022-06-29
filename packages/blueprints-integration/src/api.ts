@@ -16,6 +16,7 @@ import {
 	IRundownTimingEventContext,
 	IStudioBaselineContext,
 	IRundownUserContext,
+	IGetRundownContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -26,7 +27,7 @@ import {
 	IBlueprintPiece,
 	IBlueprintResolvedPieceInstance,
 	IBlueprintRundown,
-	IBlueprintRundownPlaylistInfo,
+	IBlueprintResultRundownPlaylist,
 	IBlueprintSegment,
 	IBlueprintRundownDB,
 	IBlueprintPieceInstance,
@@ -39,6 +40,7 @@ import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant } from './showStyle
 import { OnGenerateTimelineObj } from './timeline'
 import { IBlueprintConfig } from './common'
 import { ExpectedPackage } from './package'
+import { ReadonlyDeep } from 'type-fest'
 
 export enum BlueprintManifestType {
 	SYSTEM = 'system',
@@ -97,7 +99,7 @@ export interface StudioBlueprintManifest extends BlueprintManifestBase {
 	/** Returns the id of the show style to use for a rundown, return null to ignore that rundown */
 	getShowStyleId: (
 		context: IStudioUserContext,
-		showStyles: IBlueprintShowStyleBase[],
+		showStyles: ReadonlyDeep<Array<IBlueprintShowStyleBase>>,
 		ingestRundown: ExtendedIngestRundown
 	) => string | null
 
@@ -129,12 +131,15 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	/** Returns the id of the show style variant to use for a rundown, return null to ignore that rundown */
 	getShowStyleVariantId: (
 		context: IStudioUserContext,
-		showStyleVariants: IBlueprintShowStyleVariant[],
+		showStyleVariants: ReadonlyDeep<Array<IBlueprintShowStyleVariant>>,
 		ingestRundown: ExtendedIngestRundown
 	) => string | null
 
 	/** Generate rundown from ingest data. return null to ignore that rundown */
-	getRundown: (context: IShowStyleUserContext, ingestRundown: ExtendedIngestRundown) => BlueprintResultRundown
+	getRundown: (
+		context: IGetRundownContext,
+		ingestRundown: ExtendedIngestRundown
+	) => BlueprintResultRundown | null | Promise<BlueprintResultRundown | null>
 
 	/** Generate segment from ingest data */
 	getSegment: (context: ISegmentUserContext, ingestSegment: IngestSegment) => BlueprintResultSegment
@@ -169,7 +174,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
-	) => void // Promise<void> | void
+	) => Promise<void>
 
 	/** Generate adlib piece from ingest data */
 	getAdlibItem?: (
@@ -237,7 +242,7 @@ export type BlueprintResultStudioBaseline = BlueprintResultBaseline
 export interface BlueprintResultRundown {
 	rundown: IBlueprintRundown
 	globalAdLibPieces: IBlueprintAdLibPiece[]
-	globalActions?: IBlueprintActionManifest[]
+	globalActions: IBlueprintActionManifest[]
 	baseline: BlueprintResultBaseline
 }
 export interface BlueprintResultSegment {
@@ -249,7 +254,7 @@ export interface BlueprintResultPart {
 	part: IBlueprintPart
 	pieces: IBlueprintPiece[]
 	adLibPieces: IBlueprintAdLibPiece[]
-	actions?: IBlueprintActionManifest[]
+	actions: IBlueprintActionManifest[]
 }
 
 export interface BlueprintSyncIngestNewData {
@@ -295,7 +300,7 @@ export interface BlueprintResultOrderedRundowns {
 }
 
 export interface BlueprintResultRundownPlaylist {
-	playlist: IBlueprintRundownPlaylistInfo
+	playlist: IBlueprintResultRundownPlaylist
 	/** Returns information about the order of rundowns in a playlist, null will use natural sorting on rundown name */
 	order: BlueprintResultOrderedRundowns | null
 }

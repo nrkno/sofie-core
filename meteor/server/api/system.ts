@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { makePromise, waitTime, waitForPromise } from '../../lib/lib'
+import { IndexSpecifier, makePromise, waitTime } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -9,9 +9,8 @@ import {
 	BenchmarkResult,
 	SystemBenchmarkResults,
 } from '../../lib/api/system'
-import { getAllIndexes } from '../../lib/database'
+import { getTargetRegisteredIndexes } from '../../lib/database'
 import { Meteor } from 'meteor/meteor'
-import { IndexSpecification } from 'mongodb'
 import { TransformedCollection } from '../../lib/typings/meteor'
 import { logger } from '../logging'
 import { SystemWriteAccess } from '../security/system'
@@ -22,51 +21,52 @@ import { TranslationsBundle, TranslationsBundleId } from '../../lib/collections/
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ClientAPI } from '../../lib/api/client'
 import { cleanupOldDataInner } from './cleanup'
+import { IndexSpecification } from 'mongodb'
 
-function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
+async function setupIndexes(removeOldIndexes: boolean = false): Promise<Array<IndexSpecification>> {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
-	const indexes = getAllIndexes()
+	const registeredIndexes = getTargetRegisteredIndexes()
 	if (!Meteor.isServer) throw new Meteor.Error(500, `setupIndexes() can only be run server-side`)
 
 	const removeIndexes: IndexSpecification[] = []
-	_.each(indexes, (i, collectionName) => {
-		const existingIndexes = waitForPromise(getCollectionIndexes(i.collection))
+	await Promise.all(
+		Object.entries(registeredIndexes).map(async ([collectionName, targetInfo]) => {
+			const rawCollection = targetInfo.collection.rawCollection()
+			const existingIndexes = (await rawCollection.indexes()) as any[]
 
-		// Check if there are old indexes in the database that should be removed:
-		_.each(existingIndexes, (existingIndex) => {
+			const targetIndexes: IndexSpecifier<any>[] = [...targetInfo.indexes, { _id: 1 }]
+
 			// don't touch the users collection, as Metoer adds a few indexes of it's own
-			if (collectionName === 'users') return
-			if (!existingIndex.name) return // ?
+			if (collectionName !== 'users') {
+				// Check if there are old indexes in the database that should be removed:
+				for (const existingIndex of existingIndexes) {
+					if (!existingIndex.name) continue // ?
 
-			// Check if the existing index should be kept:
-			const found = _.find([...i.indexes, { _id: 1 }], (newIndex) => {
-				return _.isEqual(newIndex, existingIndex.key)
-			})
-
-			if (!found) {
-				removeIndexes.push(existingIndex)
-				// The existing index does not exist in our specified list of indexes, and should be removed.
-				if (removeOldIndexes) {
-					logger.info(`Removing index: ${JSON.stringify(existingIndex.key)}`)
-					i.collection
-						.rawCollection()
-						.dropIndex(existingIndex.name)
-						.catch((e) => {
-							logger.warn(`Failed to drop index: ${JSON.stringify(existingIndex.key)}: ${e}`)
-						})
+					// Check if the existing index should be kept:
+					const found = targetIndexes.find((newIndex) => _.isEqual(newIndex, existingIndex.key))
+					if (!found) {
+						removeIndexes.push(existingIndex)
+						// The existing index does not exist in our specified list of indexes, and should be removed.
+						if (removeOldIndexes) {
+							logger.info(`Removing index: ${JSON.stringify(existingIndex.key)}`)
+							rawCollection.dropIndex(existingIndex.name).catch((e) => {
+								logger.warn(`Failed to drop index: ${JSON.stringify(existingIndex.key)}: ${e}`)
+							})
+						}
+					}
 				}
 			}
-		})
 
-		// Ensure new indexes (add if not existing):
-		_.each(i.indexes, (index) => {
-			i.collection._ensureIndex(index)
+			// Ensure new indexes (add if not existing):
+			for (const index of targetInfo.indexes) {
+				targetInfo.collection._ensureIndex(index)
+			}
 		})
-	})
+	)
 	return removeIndexes
 }
 function ensureIndexes(): void {
-	const indexes = getAllIndexes()
+	const indexes = getTargetRegisteredIndexes()
 	if (!Meteor.isServer) throw new Meteor.Error(500, `setupIndexes() can only be run server-side`)
 
 	// Ensure new indexes:
@@ -77,25 +77,15 @@ function ensureIndexes(): void {
 	})
 }
 
-async function getCollectionIndexes(collection: TransformedCollection<any, any>): Promise<IndexSpecification[]> {
-	return new Promise((resolve, reject) => {
-		try {
-			collection.rawCollection().indexes((err, res) => {
-				if (err) reject(err)
-				else resolve(res)
-			})
-		} catch (e) {
-			reject(e)
-		}
-	})
-}
-
 Meteor.startup(() => {
 	// Ensure indexes are created on startup:
 	ensureIndexes()
 })
 
-export function cleanupIndexes(context: MethodContext, actuallyRemoveOldIndexes: boolean): IndexSpecification[] {
+export async function cleanupIndexes(
+	context: MethodContext,
+	actuallyRemoveOldIndexes: boolean
+): Promise<Array<IndexSpecification>> {
 	check(actuallyRemoveOldIndexes, Boolean)
 	SystemWriteAccess.coreSystem(context)
 
@@ -115,7 +105,7 @@ let mongoTest: TransformedCollection<any, any> | undefined = undefined
 /** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
 async function doSystemBenchmarkInner() {
 	if (!mongoTest) {
-		mongoTest = createMongoCollection<any>('benchmark-test')
+		mongoTest = createMongoCollection<any>('benchmark-test' as any)
 		mongoTest._ensureIndex({
 			indexedProp: 1,
 		})
@@ -367,7 +357,7 @@ function getTranslationBundle(context: MethodContext, bundleId: TranslationsBund
 
 class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	async cleanupIndexes(actuallyRemoveOldIndexes: boolean) {
-		return makePromise(() => cleanupIndexes(this, actuallyRemoveOldIndexes))
+		return cleanupIndexes(this, actuallyRemoveOldIndexes)
 	}
 	async cleanupOldData(actuallyRemoveOldData: boolean) {
 		return makePromise(() => cleanupOldData(this, actuallyRemoveOldData))

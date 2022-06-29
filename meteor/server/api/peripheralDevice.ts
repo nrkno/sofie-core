@@ -2,13 +2,17 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevices,
+	PeripheralDeviceId,
+	PeripheralDeviceType,
+	PeripheralDevice,
+} from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, makePromise, stringifyObjects } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
-import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
 import { URL } from 'url'
@@ -19,6 +23,7 @@ import {
 	IngestPart,
 	ExpectedPackageStatusAPI,
 	PackageInfo,
+	StatusCode,
 } from '@sofie-automation/blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
@@ -26,7 +31,7 @@ import { MediaObject } from '../../lib/collections/MediaObjects'
 import { MediaManagerIntegration } from './integration/mediaWorkFlows'
 import { MediaWorkFlowId, MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
-import * as MOS from 'mos-connection'
+import { MOS } from '@sofie-automation/corelib'
 import { determineDiffTime } from './systemTime/systemTime'
 import { getTimeDiff } from './systemTime/api'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
@@ -34,12 +39,13 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
-import { getValidActivationCache } from '../cache/ActivationCache'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import { profiler } from './profiler'
+import { QueueStudioJob } from '../worker/worker'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { ConfigManifestEntryType, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
 
 const apmNamespace = 'peripheralDevice'
@@ -108,7 +114,7 @@ export namespace ServerPeripheralDeviceAPI {
 				organizationId: null,
 				created: getCurrentTime(),
 				status: {
-					statusCode: PeripheralDeviceAPI.StatusCode.UNKNOWN,
+					statusCode: StatusCode.UNKNOWN,
 				},
 				studioId: protectString(''),
 				connected: true,
@@ -156,10 +162,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(token, String)
 		check(status, Object)
 		check(status.statusCode, Number)
-		if (
-			status.statusCode < PeripheralDeviceAPI.StatusCode.UNKNOWN ||
-			status.statusCode > PeripheralDeviceAPI.StatusCode.FATAL
-		) {
+		if (status.statusCode < StatusCode.UNKNOWN || status.statusCode > StatusCode.FATAL) {
 			throw new Meteor.Error(400, 'device status code is not known')
 		}
 
@@ -220,8 +223,6 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(401, `peripheralDevice "${deviceId}" not attached to a studio`)
 
-		const studioId = peripheralDevice.studioId
-
 		// check(r.time, Number)
 		check(results, Array)
 		_.each(results, (o) => {
@@ -230,7 +231,10 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 
 		if (results.length > 0) {
-			await ServerPlayoutAPI.timelineTriggerTimeForStudioId(studioId, results)
+			const job = await QueueStudioJob(StudioJobs.OnTimelineTriggerTime, peripheralDevice.studioId, {
+				results,
+			})
+			await job.complete
 		}
 
 		transaction?.end()
@@ -252,13 +256,15 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		await ServerPlayoutAPI.onPartPlaybackStarted(
-			context,
-			peripheralDevice,
-			r.rundownPlaylistId,
-			r.partInstanceId,
-			r.time
-		)
+		if (!peripheralDevice.studioId)
+			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
+
+		const job = await QueueStudioJob(StudioJobs.OnPartPlaybackStarted, peripheralDevice.studioId, {
+			playlistId: r.rundownPlaylistId,
+			partInstanceId: r.partInstanceId,
+			startedPlayback: r.time,
+		})
+		await job.complete
 
 		transaction?.end()
 	}
@@ -270,14 +276,21 @@ export namespace ServerPeripheralDeviceAPI {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('partPlaybackStopped', apmNamespace)
 
-		// This is called from the playout-gateway when an
-		checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		await ServerPlayoutAPI.onPartPlaybackStopped(context, r.rundownPlaylistId, r.partInstanceId, r.time)
+		if (!peripheralDevice.studioId)
+			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
+
+		const job = await QueueStudioJob(StudioJobs.OnPartPlaybackStopped, peripheralDevice.studioId, {
+			playlistId: r.rundownPlaylistId,
+			partInstanceId: r.partInstanceId,
+			stoppedPlayback: r.time,
+		})
+		await job.complete
 
 		transaction?.end()
 	}
@@ -289,21 +302,22 @@ export namespace ServerPeripheralDeviceAPI {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('piecePlaybackStarted', apmNamespace)
 
-		// This is called from the playout-gateway when an auto-next event occurs
-		checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownPlaylistId, String)
 		check(r.pieceInstanceId, String)
 		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
-		await ServerPlayoutAPI.onPiecePlaybackStarted(
-			context,
-			r.rundownPlaylistId,
-			r.pieceInstanceId,
-			!!r.dynamicallyInserted,
-			r.time
-		)
+		if (!peripheralDevice.studioId)
+			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
+
+		const job = await QueueStudioJob(StudioJobs.OnPiecePlaybackStarted, peripheralDevice.studioId, {
+			playlistId: r.rundownPlaylistId,
+			pieceInstanceId: r.pieceInstanceId,
+			startedPlayback: r.time,
+		})
+		await job.complete
 
 		transaction?.end()
 	}
@@ -315,21 +329,22 @@ export namespace ServerPeripheralDeviceAPI {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('piecePlaybackStopped', apmNamespace)
 
-		// This is called from the playout-gateway when an auto-next event occurs
-		checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownPlaylistId, String)
 		check(r.pieceInstanceId, String)
 		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
-		await ServerPlayoutAPI.onPiecePlaybackStopped(
-			context,
-			r.rundownPlaylistId,
-			r.pieceInstanceId,
-			!!r.dynamicallyInserted,
-			r.time
-		)
+		if (!peripheralDevice.studioId)
+			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
+
+		const job = await QueueStudioJob(StudioJobs.OnPiecePlaybackStopped, peripheralDevice.studioId, {
+			playlistId: r.rundownPlaylistId,
+			pieceInstanceId: r.pieceInstanceId,
+			stoppedPlayback: r.time,
+		})
+		await job.complete
 
 		transaction?.end()
 	}
@@ -372,13 +387,12 @@ export namespace ServerPeripheralDeviceAPI {
 		return false
 	}
 	export function disableSubDevice(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
-		token: string | undefined,
+		access: PeripheralDeviceContentWriteAccess.ContentAccess,
 		subDeviceId: string,
 		disable: boolean
 	) {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		const peripheralDevice = access.device
+		const deviceId = access.deviceId
 
 		// check that the peripheralDevice has subDevices
 		if (!peripheralDevice.settings)
@@ -453,7 +467,7 @@ export namespace ServerPeripheralDeviceAPI {
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+		if (peripheralDevice.type !== PeripheralDeviceType.SPREADSHEET) {
 			throw new Meteor.Error(400, 'can only request user auth token for peripheral device of spreadsheet type')
 		}
 		check(authUrl, String)
@@ -472,7 +486,7 @@ export namespace ServerPeripheralDeviceAPI {
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+		if (peripheralDevice.type !== PeripheralDeviceType.SPREADSHEET) {
 			throw new Meteor.Error(400, 'can only store access token for peripheral device of spreadsheet type')
 		}
 
@@ -615,19 +629,6 @@ async function updatePeripheralDeviceLatency(totalLatency: number, peripheralDev
 				latencies: peripheralDevice.latencies,
 			},
 		})
-
-		if (peripheralDevice.studioId) {
-			// Because the ActivationCache is used during playout, we need to update that as well:
-			const activationCache = getValidActivationCache(peripheralDevice.studioId)
-			if (activationCache) {
-				const device = (await activationCache.getPeripheralDevices()).find(
-					(device) => device._id === peripheralDevice._id
-				)
-				if (device) {
-					device.latencies = peripheralDevice.latencies
-				}
-			}
-		}
 	}
 }
 

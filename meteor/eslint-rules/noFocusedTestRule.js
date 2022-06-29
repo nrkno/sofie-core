@@ -1,7 +1,7 @@
 "use strict";
 exports.__esModule = true;
-/** Based on https://github.com/jest-community/eslint-plugin-jest/blob/96031ecaab22a6550be0c9fc62fe96eec6bb0fff/src/rules/no-focused-tests.ts */
-var experimental_utils_1 = require("@typescript-eslint/experimental-utils");
+/** Based on https://github.com/jest-community/eslint-plugin-jest/blob/7cba106d0ade884a231b61098fa0bf33af2a1ad7/src/rules/no-focused-tests.ts */
+var experimental_utils_1 = require("@typescript-eslint/utils");
 var utils_1 = require("./utils");
 var findOnlyNode = function (node) {
     var callee = node.callee.type === experimental_utils_1.AST_NODE_TYPES.TaggedTemplateExpression

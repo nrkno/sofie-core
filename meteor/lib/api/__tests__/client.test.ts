@@ -1,5 +1,6 @@
 import { ClientAPI } from '../client'
 import { Meteor } from 'meteor/meteor'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 describe('ClientAPI', () => {
 	it('Creates a responseSuccess object', () => {
@@ -13,26 +14,36 @@ describe('ClientAPI', () => {
 		})
 	})
 	it('Creates a responseError object', () => {
-		const mockErrorDetail = {
-			someData: 'someValue',
-		}
 		const mockErrorMessage = 'Some error'
 
+		const mockArgs = { a: 'test' }
+
 		{
-			const error = ClientAPI.responseError(420, mockErrorMessage, mockErrorDetail)
+			const error = ClientAPI.responseError(UserError.create(UserErrorMessage.InactiveRundown, mockArgs))
 			expect(error).toMatchObject({
-				error: 420,
-				message: mockErrorMessage,
-				details: mockErrorDetail,
+				error: {
+					key: UserErrorMessage.InactiveRundown,
+					message: {
+						args: mockArgs,
+						key: 'Rundown must be active!',
+					},
+					rawError: expect.anything(),
+				},
 			})
 		}
 
 		{
-			const error = ClientAPI.responseError(mockErrorMessage)
+			const rawErr = new Error(mockErrorMessage)
+			const error = ClientAPI.responseError(UserError.from(rawErr, UserErrorMessage.InternalError, mockArgs))
 			expect(error).toMatchObject({
-				error: 500,
-				message: mockErrorMessage,
-				details: undefined,
+				error: {
+					key: UserErrorMessage.InternalError,
+					message: {
+						args: mockArgs,
+						key: 'An internal error occured!',
+					},
+					rawError: rawErr,
+				},
 			})
 		}
 	})
@@ -42,7 +53,7 @@ describe('ClientAPI', () => {
 			expect(ClientAPI.isClientResponseSuccess(response)).toBe(true)
 		})
 		it('Correctly recognizes a not-success object', () => {
-			const response = ClientAPI.responseError('Some error')
+			const response = ClientAPI.responseError(UserError.create(UserErrorMessage.InactiveRundown))
 			expect(ClientAPI.isClientResponseSuccess(response)).toBe(false)
 		})
 		it('Correctly recognizes that a Meteor.Error is not a success object', () => {
@@ -51,7 +62,7 @@ describe('ClientAPI', () => {
 	})
 	describe('isClientResponseError', () => {
 		it('Correctly recognizes a responseError object', () => {
-			const response = ClientAPI.responseError('Some error')
+			const response = ClientAPI.responseError(UserError.create(UserErrorMessage.InactiveRundown))
 			expect(ClientAPI.isClientResponseError(response)).toBe(true)
 		})
 		it('Correctly regognizes a not-error object', () => {

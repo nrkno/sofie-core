@@ -48,9 +48,9 @@ describe('User Actions - Media Manager', () => {
 		const { workFlowId } = setupMockWorkFlow(env)
 
 		// should fail if the workflow doesn't exist
-		await expect(MeteorCall.userAction.mediaRestartWorkflow('', protectString('FAKE_ID'))).rejects.toMatchToString(
-			/not found/gi
-		)
+		await expect(
+			MeteorCall.userAction.mediaRestartWorkflow('', protectString('FAKE_ID'))
+		).resolves.toMatchUserRawError(/not found/gi)
 
 		{
 			// should execute function on the target device
@@ -82,9 +82,9 @@ describe('User Actions - Media Manager', () => {
 		const { workFlowId } = setupMockWorkFlow(env)
 
 		// should fail if the workflow doesn't exist
-		await expect(MeteorCall.userAction.mediaAbortWorkflow('', protectString('FAKE_ID'))).rejects.toMatchToString(
-			/not found/gi
-		)
+		await expect(
+			MeteorCall.userAction.mediaAbortWorkflow('', protectString('FAKE_ID'))
+		).resolves.toMatchUserRawError(/not found/gi)
 
 		{
 			// should execute function on the target device
@@ -118,7 +118,7 @@ describe('User Actions - Media Manager', () => {
 		// should fail if the workflow doesn't exist
 		await expect(
 			MeteorCall.userAction.mediaPrioritizeWorkflow('', protectString('FAKE_ID'))
-		).rejects.toMatchToString(/not found/gi)
+		).resolves.toMatchUserRawError(/not found/gi)
 
 		{
 			// should execute function on the target device

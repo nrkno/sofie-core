@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { logger } from './logging'
 import { extractFunctionSignature } from './lib'
 import { MethodContext, MethodContextAPI } from '../lib/api/methods'
-import { isPromise } from '../lib/lib'
+import { isPromise, stringifyError } from '../lib/lib'
 
 type MeteorMethod = (this: MethodContext, ...args: any[]) => any
 
@@ -34,6 +34,21 @@ function getAllClassMethods(myClass: any): string[] {
 	return classProps
 		.filter((name) => objectProtProps.indexOf(name) < 0)
 		.filter((name) => typeof myClass.prototype[name] === 'function')
+}
+
+/** This expects an array of values (likely the output of Parameters<T>), and makes anything optional be nullable instead */
+export type ReplaceOptionalWithNullInArray<T extends any[]> = {
+	[K in keyof T]: undefined extends T[K] ? NonNullable<T[K]> | null : T[K]
+}
+
+/**
+ * This expects an interface of functions, and makes any optional parameters to the functions be nullable instead
+ * Using this is necessary for any methods exposed to DDP, as undefined values there are encoded as null
+ */
+export type ReplaceOptionalWithNullInMethodArguments<T> = {
+	[K in keyof T]: T[K] extends (...args: infer P) => infer R
+		? (...args: ReplaceOptionalWithNullInArray<P>) => R
+		: T[K]
 }
 
 export function registerClassToMeteorMethods(
@@ -107,7 +122,7 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 					}
 				} catch (err) {
 					if (!_suppressExtraErrorLogging) {
-						logger.error(err.message || err.reason || (err.toString ? err.toString() : null) || err)
+						logger.error(stringifyError(err))
 					}
 					delete runningMethods[methodId]
 					throw err

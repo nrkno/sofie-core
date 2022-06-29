@@ -9,7 +9,7 @@ import { ContextMenuTrigger, ContextMenu, MenuItem } from '@jstarpl/react-contex
 import * as _ from 'underscore'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { translateMessage, isTranslatableMessage } from '../../../lib/api/TranslatableMessage'
+import { translateMessage, isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { CriticalIcon, WarningIcon, CollapseChevrons, InformationIcon } from '../ui/icons/notifications'
 import update from 'immutability-helper'
 import { i18nTranslator } from '../../ui/i18n'
@@ -68,6 +68,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 					this.props.className
 				)}
 				style={this.props.style}
+				role={item.status === NoticeLevel.CRITICAL ? 'alert' : 'status'}
 			>
 				<div className="notification-pop-up__header">
 					{item.status === NoticeLevel.CRITICAL ? (
@@ -131,6 +132,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 								e.stopPropagation()
 								if (typeof this.props.onDismiss === 'function') this.props.onDismiss(e)
 							}}
+							aria-label={i18nTranslator('Dismiss')}
 						>
 							{this.props.item.persistent ? <CollapseChevrons /> : <CoreIcon.NrkClose id="nrk-close" />}
 						</button>
@@ -485,6 +487,7 @@ interface IToggleProps {
 	isOpen?: boolean
 	filter?: NoticeLevel
 	className?: string
+	title?: string
 }
 
 interface ITrackedCountProps {
@@ -520,6 +523,7 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 					role="button"
 					onClick={this.props.onClick}
 					tabIndex={0}
+					aria-label={this.props.title}
 				>
 					<VelocityReact.VelocityTransitionGroup
 						enter={{

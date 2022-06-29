@@ -1,12 +1,10 @@
-import { Time, registerCollection, ProtectedString, TimeDuration } from '../lib'
+import { Time, TimeDuration } from '../lib'
 import { createMongoCollection } from './lib'
-import { UserId } from './Users'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
+import { UserActionsLogItemId, OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { TimelineHash } from './Timeline'
-
-/** A string, identifying a UserActionsLogItem */
-export type UserActionsLogItemId = ProtectedString<'UserActionsLogItemId'>
+export { UserActionsLogItemId }
 
 export interface UserActionsLogItem {
 	_id: UserActionsLogItemId
@@ -31,16 +29,17 @@ export interface UserActionsLogItem {
 	/** Timestamp of when the timeline was generated, used to calculate .gatewayDuration. */
 	timelineGenerated?: number
 
-	/** The time it took (within Core) to execute the action */
+	/** The time it took (within core & worker) to execute the action */
 	executionTime?: TimeDuration
+	/** The time it took within the worker to execute */
+	workerTime?: TimeDuration
 	/** The total time it took for playout-gateway(s) to receive and execute the timeline. */
 	gatewayDuration?: TimeDuration[]
 	/** The time playout-gateway(s) reported it took to resolve the timeline. */
 	timelineResolveDuration?: TimeDuration[]
 }
 
-export const UserActionsLog = createMongoCollection<UserActionsLogItem>('userActionsLog')
-registerCollection('UserActionsLog', UserActionsLog)
+export const UserActionsLog = createMongoCollection<UserActionsLogItem>(CollectionName.UserActionsLog)
 
 registerIndex(UserActionsLog, {
 	organizationId: 1,

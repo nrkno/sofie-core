@@ -11,14 +11,9 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { unprotectString } from '../../../lib/lib'
-import {
-	IAdLibPanelProps,
-	AdLibFetchAndFilterProps,
-	fetchAndFilter,
-	AdLibPieceUi,
-	matchFilter,
-	AdLibPanelToolbar,
-} from './AdLibPanel'
+import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, AdLibPieceUi } from './AdLibPanel'
+import { AdLibPanelToolbar } from './AdLibPanelToolbar'
+import { matchFilter } from './AdLibListView'
 import { DashboardPieceButton } from './DashboardPieceButton'
 import {
 	ensureHasTrailingSlash,
@@ -30,7 +25,6 @@ import { Studio } from '../../../lib/collections/Studios'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
@@ -52,7 +46,6 @@ interface IState {
 
 export interface IDashboardPanelProps {
 	shouldQueue: boolean
-	hotkeyGroup: string
 }
 
 export interface IDashboardPanelTrackedProps {
@@ -395,7 +388,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
 			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
-			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+			if (this.props.playlist && currentPartInstanceId) {
 				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.isClearable)) {
 					if (piece.isAction && piece.adlibAction) {
 						const action = piece.adlibAction
@@ -413,7 +407,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							MeteorCall.userAction.segmentAdLibPieceStart(
 								e,
 								this.props.playlist._id,
-								this.props.playlist.currentPartInstanceId as PartInstanceId,
+								currentPartInstanceId,
 								piece._id,
 								false
 							)
@@ -423,7 +417,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							MeteorCall.userAction.baselineAdLibPieceStart(
 								e,
 								this.props.playlist._id,
-								this.props.playlist.currentPartInstanceId as PartInstanceId,
+								currentPartInstanceId,
 								piece._id,
 								false
 							)
@@ -503,7 +497,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 												type: ContextType.ADLIB,
 												details: {
 													adLib: adLibPiece,
-													onToggle: this.onToggleAdLib,
+													onToggle: !adLibPiece.disabled ? this.onToggleAdLib : undefined,
+													disabled: adLibPiece.disabled,
 												},
 											})
 										}
@@ -532,6 +527,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											showThumbnailsInList={filter.showThumbnailsInList}
 											toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
 											isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}
+											disabled={adLibPiece.disabled}
 										>
 											{adLibPiece.name}
 										</DashboardPieceButton>

@@ -36,7 +36,7 @@ export const SwitchboardPopUp = withTranslation()(
 			}
 
 			return (
-				<div className="switchboard-pop-up-panel">
+				<div className="switchboard-pop-up-panel" role="dialog">
 					<div className="switchboard-pop-up-panel__inside">
 						<h2 className="mhn mvn">{t('Switchboard')}</h2>
 						{Object.entries(exclusivityGroups).map(([key, routeSets]) => (

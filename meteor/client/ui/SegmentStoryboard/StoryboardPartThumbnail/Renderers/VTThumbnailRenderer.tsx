@@ -1,7 +1,6 @@
 import React from 'react'
 import classNames from 'classnames'
 import { VTContent } from '@sofie-automation/blueprints-integration'
-import { RundownAPI } from '../../../../../lib/api/rundown'
 import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspector'
 import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 import { RundownUtils } from '../../../../lib/rundown'
@@ -14,6 +13,7 @@ import { RundownTimingConsumer } from '../../../RundownView/RundownTiming/Rundow
 import { unprotectString } from '../../../../../lib/lib'
 import { FreezeFrameIcon } from '../../../../lib/ui/icons/freezeFrame'
 import { PieceStatusIcon } from '../../../../lib/ui/PieceStatusIcon'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export function VTThumbnailRenderer({
 	partId,
@@ -41,7 +41,7 @@ export function VTThumbnailRenderer({
 	return (
 		<>
 			<VTFloatingInspector
-				status={status || RundownAPI.PieceStatusCode.UNKNOWN}
+				status={status || PieceStatusCode.UNKNOWN}
 				showMiniInspector={hovering}
 				timePosition={hoverScrubTimePosition}
 				content={vtContent}
@@ -71,6 +71,7 @@ export function VTThumbnailRenderer({
 							previewUrl={previewUrl}
 							seek={vtContent?.seek || 0}
 							timePosition={hoverScrubTimePosition}
+							studioSettings={studio.settings}
 						/>
 					) : (
 						<img src={thumbnailUrl} />

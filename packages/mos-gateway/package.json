@@ -1,6 +1,6 @@
 {
 	"name": "mos-gateway",
-	"version": "1.39.0",
+	"version": "1.41.0",
 	"private": true,
 	"description": "MOS-Gateway for the Sofie project",
 	"license": "MIT",
@@ -37,17 +37,16 @@
 		"watch": "jest --watch",
 		"cov": "jest; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"send-coverage": "codecov -p ../..",
 		"inspect": "node --inspect dist/index.js",
 		"ci": "yarn test",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "node-license-validator -p -d --allow-licenses MIT 0BSD BSD BSD-2-Clause BSD-3-Clause ISC Apache Apache-2.0 Unlicense WTFPL --allow-packages cycle",
+		"license-validate": "node-license-validator -p -d --allow-licenses MIT 0BSD BSD BSD-2-Clause BSD-3-Clause ISC Apache Apache-2.0 Unlicense WTFPL ",
 		"start": "node dist/index.js",
 		"precommit": "lint-staged"
 	},
 	"engines": {
-		"node": ">=12.20"
+		"node": "^14.18 || ^16.14"
 	},
 	"keywords": [
 		"mos",
@@ -64,11 +63,11 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/server-core-integration": "^1.39.0",
-		"mos-connection": "^1.0.5",
+		"@sofie-automation/server-core-integration": "^1.41.0",
+		"mos-connection": "^2.0.0",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
-		"winston": "^2.4.2"
+		"winston": "^3.5.1"
 	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [

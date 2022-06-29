@@ -3,7 +3,7 @@
  */
 
 if (typeof navigator.vibrate !== 'function') {
-	navigator.vibrate = (_pattern: number | number[]): boolean => {
+	navigator.vibrate = (): boolean => {
 		return false
 	}
 }

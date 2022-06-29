@@ -7,7 +7,7 @@ import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../../lib/rundown'
 import { WithTiming, withTiming } from './withTiming'
 import ClassNames from 'classnames'
-import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface INextBreakTimingProps {
 	loop?: boolean
@@ -47,7 +47,10 @@ export const NextBreakTiming = withTranslation()(
 
 				return (
 					<React.Fragment>
-						<span className={ClassNames('timing-clock plan-end right', { 'visual-last-child': this.props.lastChild })}>
+						<span
+							className={ClassNames('timing-clock plan-end right', { 'visual-last-child': this.props.lastChild })}
+							role="timer"
+						>
 							<span className="timing-clock-label right">{t(this.props.breakText || 'Next Break')}</span>
 							<Moment interval={0} format="HH:mm:ss" date={expectedEnd} />
 						</span>

@@ -47,15 +47,15 @@ export const PartDisplayDuration = withTiming<IPartDurationProps, {}>((props) =>
 			<>
 				{props.label}
 				{props.fixed ? (
-					<span className={ClassNames(props.className)}>
+					<span className={ClassNames(props.className)} role="timer">
 						{RundownUtils.formatDiffToTimecode(budget, false, false, true, false, true, '+')}
 					</span>
 				) : props.countUp ? (
-					<span className={ClassNames(props.className)}>
+					<span className={ClassNames(props.className)} role="timer">
 						{RundownUtils.formatDiffToTimecode(playedOut, false, false, true, false, true, '+')}
 					</span>
 				) : (
-					<span className={ClassNames(props.className, duration < 0 ? 'negative' : undefined)}>
+					<span className={ClassNames(props.className, duration < 0 ? 'negative' : undefined)} role="timer">
 						{RundownUtils.formatDiffToTimecode(duration, false, false, true, false, true, '+')}
 					</span>
 				)}

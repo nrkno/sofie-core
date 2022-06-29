@@ -23,7 +23,7 @@ import {
 	ISourceLayer,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
-	SomeTimelineContent,
+	SomeContent,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -48,7 +48,7 @@ import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { DragDropItemTypes } from '../DragDropItemTypes'
-import { PieceId } from '../../../lib/collections/Pieces'
+import { PieceId, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { BucketPieceButton } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
@@ -58,14 +58,13 @@ import { AdLibPieceUi } from './AdLibPanel'
 import { BucketAdLibActions, BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
-import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLibItem, BucketAdLibActionUi, isAdLibAction, isAdLib, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { MongoFieldSpecifierOnes } from '../../../lib/typings/meteor'
-import { translateMessage } from '../../../lib/api/TranslatableMessage'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 
 const bucketSource = {
@@ -172,12 +171,11 @@ export function actionToAdLibPieceUi(
 ): BucketAdLibActionUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
-	let content: SomeTimelineContent = { timelineObjects: [] }
+	let content: SomeContent = {}
 	if (RundownUtils.isAdlibActionContent(action.display)) {
 		sourceLayerId = action.display.sourceLayerId
 		outputLayerId = action.display.outputLayerId
 		content = {
-			timelineObjects: [],
 			...action.display.content,
 		}
 	}
@@ -188,7 +186,7 @@ export function actionToAdLibPieceUi(
 			typeof action.display.label === 'string'
 				? action.display.label
 				: translateMessage(action.display.label, i18nTranslator),
-		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		status: PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
 		externalId: action.externalId || unprotectString(action._id),
@@ -218,7 +216,6 @@ export interface IBucketPanelProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	shouldQueue: boolean
-	hotkeyGroup: string
 	editableName?: boolean
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 	editedPiece: PieceId | undefined
@@ -254,6 +251,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 	(props: Translated<IBucketPanelProps>) => {
 		let showStyleBaseId: ShowStyleBaseId | undefined = undefined
 		let showStyleVariantId: ShowStyleVariantId | undefined = undefined
+
 		const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
 		if (selectedPart) {
 			const part = PartInstances.findOne(selectedPart, {
@@ -328,7 +326,6 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		const allBucketItems = (bucketAdLibPieces as BucketAdLibItem[])
 			.concat(bucketActions)
 			.sort((a, b) => a._rank - b._rank || a.name.localeCompare(b.name))
-
 		return literal<IBucketPanelTrackedProps>({
 			adLibPieces: allBucketItems,
 			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),

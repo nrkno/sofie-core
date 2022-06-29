@@ -24,7 +24,6 @@ import RundownViewEventBus, {
 	GoToPartEvent,
 	GoToPartInstanceEvent,
 } from '../RundownView/RundownViewEventBus'
-import { computeSegmentDuration, RundownTimingContext } from '../../../lib/rundown/rundownTiming'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import {
 	PartUi,
@@ -33,6 +32,7 @@ import {
 	ITrackedProps as ITrackedResolvedSegmentProps,
 	IOutputLayerUi,
 } from '../SegmentContainer/withResolvedSegment'
+import { computeSegmentDuration, RundownTimingContext } from '../../lib/rundownTiming'
 
 // Kept for backwards compatibility
 export { SegmentUi, PartUi, PieceUi, ISourceLayerUi, IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'
@@ -294,7 +294,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 				currentNextPart &&
 				(nextPartIdOrOffsetHasChanged || isBecomingNextSegment)
 			) {
-				const timelineWidth = getElementWidth(this.timelineDiv)
+				const timelineWidth = this.timelineDiv instanceof HTMLElement ? getElementWidth(this.timelineDiv) : 0 // unsure if this is a good default/substitute
 				// If part is not within viewport scroll to its start
 				if (
 					this.state.scrollLeft > partOffset ||
@@ -488,7 +488,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 				let scrollLeft = state.scrollLeft
 
 				if (zoomInToFit) {
-					const timelineWidth = getElementWidth(this.timelineDiv)
+					const timelineWidth = this.timelineDiv instanceof HTMLElement ? getElementWidth(this.timelineDiv) : 0 // unsure if this is good default/substitute
 					newScale =
 						(Math.max(0, timelineWidth - TIMELINE_RIGHT_PADDING * 2) / 3 || 1) /
 						(SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
@@ -608,8 +608,13 @@ export const SegmentTimelineContainer = withResolvedSegment(
 		}
 
 		getShowAllTimeScale = () => {
+			let calculatedTimelineDivWidth = 1
+			if (this.timelineDiv instanceof HTMLElement) {
+				calculatedTimelineDivWidth = getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1
+			}
+
 			let newScale =
-				(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
+				calculatedTimelineDivWidth /
 				((computeSegmentDisplayDuration(this.context.durations, this.props.parts) || 1) -
 					(this.state.isLiveSegment ? this.state.livePosition : 0))
 			newScale = Math.min(MINIMUM_ZOOM_FACTOR, newScale)

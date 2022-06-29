@@ -19,6 +19,8 @@ import {
 	ExpectedPlayoutItemContent,
 	SlowSentCommandInfo,
 	SlowFulfilledCommandInfo,
+	DeviceStatus,
+	StatusCode,
 } from 'timeline-state-resolver'
 import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
 import clone = require('fast-clone')
@@ -28,7 +30,7 @@ import * as cp from 'child_process'
 import * as _ from 'underscore'
 import { CoreConnection, PeripheralDeviceAPI as P } from '@sofie-automation/server-core-integration'
 import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
-import { LoggerInstance } from './index'
+import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
 import { FinishedTrace, sendTrace } from './influxdb'
@@ -42,7 +44,6 @@ export interface TSRSettings {
 	devices: {
 		[deviceId: string]: DeviceOptionsAny
 	}
-	initializeAsClear: boolean
 	mappings: Mappings
 	errorReporting?: boolean
 	multiThreading?: boolean
@@ -107,7 +108,7 @@ const INIT_TIMEOUT = 10000
  * Represents a connection between Gateway and TSR
  */
 export class TSRHandler {
-	logger: LoggerInstance
+	logger: Logger
 	tsr!: Conductor
 	// private _config: TSRConfig
 	private _coreHandler!: CoreHandler
@@ -126,7 +127,7 @@ export class TSRHandler {
 	private _triggerUpdateDevicesCheckAgain = false
 	private _triggerUpdateDevicesTimeout: NodeJS.Timeout | undefined
 
-	constructor(logger: LoggerInstance) {
+	constructor(logger: Logger) {
 		this.logger = logger
 	}
 
@@ -146,13 +147,12 @@ export class TSRHandler {
 			getCurrentTime: (): number => {
 				return this._coreHandler.core.getCurrentTime()
 			},
-			initializeAsClear: settings.initializeAsClear !== false,
 			multiThreadedResolver: settings.multiThreadedResolver === true,
 			useCacheWhenResolving: settings.useCacheWhenResolving === true,
 			proActiveResolve: true,
 		}
 		this.tsr = new Conductor(c)
-		this._triggerupdateTimelineAndMappings()
+		this._triggerupdateTimelineAndMappings('TSRHandler.init()')
 
 		coreHandler.onConnected(() => {
 			this.setupObservers()
@@ -174,16 +174,16 @@ export class TSRHandler {
 				cmdReply.response &&
 				cmdReply.response.code === 404
 			) {
-				this.logger.warn('TSR', e, ...args)
+				this.logger.warn(`TSR: ${e.toString()}`, args)
 			} else {
-				this.logger.error('TSR', e, ...args)
+				this.logger.error(`TSR: ${e.toString()}`, args)
 			}
 		})
 		this.tsr.on('info', (msg, ...args) => {
-			this.logger.info('TSR', msg, ...args)
+			this.logger.info(`TSR: ${msg + ''}`, args)
 		})
 		this.tsr.on('warning', (msg, ...args) => {
-			this.logger.warn('TSR', msg, ...args)
+			this.logger.warn(`TSR: ${msg + ''}`, args)
 		})
 		this.tsr.on('debug', (...args: any[]) => {
 			if (this._coreHandler.logDebug) {
@@ -192,13 +192,17 @@ export class TSRHandler {
 					data: [],
 				}
 				if (args.length) {
-					_.each(args, (arg) => {
-						if (_.isObject(arg)) {
-							msg.data.push(JSON.stringify(arg))
-						} else {
-							msg.data.push(arg)
+					if (typeof args === 'string') {
+						msg.data.push(args)
+					} else {
+						for (const arg of args) {
+							if (typeof arg === 'object') {
+								msg.data.push(JSON.stringify(arg))
+							} else {
+								msg.data.push(arg)
+							}
 						}
-					})
+					}
 				} else {
 					msg.data.push('>empty message<')
 				}
@@ -259,7 +263,7 @@ export class TSRHandler {
 		await this.tsr.init()
 
 		this._initialized = true
-		this._triggerupdateTimelineAndMappings()
+		this._triggerupdateTimelineAndMappings('TSRHandler.init(), later')
 		this.onSettingsChanged()
 		this._triggerUpdateDevices()
 		this.logger.debug('tsr init done')
@@ -276,25 +280,25 @@ export class TSRHandler {
 
 		const timelineObserver = this._coreHandler.core.observe('studioTimeline')
 		timelineObserver.added = () => {
-			this._triggerupdateTimelineAndMappings(true)
+			this._triggerupdateTimelineAndMappings('studioTimeline.added', true)
 		}
 		timelineObserver.changed = () => {
-			this._triggerupdateTimelineAndMappings(true)
+			this._triggerupdateTimelineAndMappings('studioTimeline.changed', true)
 		}
 		timelineObserver.removed = () => {
-			this._triggerupdateTimelineAndMappings(true)
+			this._triggerupdateTimelineAndMappings('studioTimeline.removed', true)
 		}
 		this._observers.push(timelineObserver)
 
 		const mappingsObserver = this._coreHandler.core.observe('studioMappings')
 		mappingsObserver.added = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings('studioMappings.added')
 		}
 		mappingsObserver.changed = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings('studioMappings.changed')
 		}
 		mappingsObserver.removed = () => {
-			this._triggerupdateTimelineAndMappings()
+			this._triggerupdateTimelineAndMappings('studioMappings.removed')
 		}
 		this._observers.push(mappingsObserver)
 
@@ -333,7 +337,7 @@ export class TSRHandler {
 			tsrHandler.sendStatus()
 		})
 	}
-	destroy(): Promise<void> {
+	async destroy(): Promise<void> {
 		return this.tsr.destroy()
 	}
 	getTimeline():
@@ -412,12 +416,12 @@ export class TSRHandler {
 			this._triggerUpdateDevices()
 		}
 	}
-	private _triggerupdateTimelineAndMappings(fromTlChange?: boolean) {
+	private _triggerupdateTimelineAndMappings(context: string, fromTlChange?: boolean) {
 		if (!this._initialized) return
 
-		this._updateTimelineAndMappings(fromTlChange)
+		this._updateTimelineAndMappings(context, fromTlChange)
 	}
-	private _updateTimelineAndMappings(fromTlChange?: boolean) {
+	private _updateTimelineAndMappings(context: string, fromTlChange?: boolean) {
 		const timeline = this.getTimeline()
 		const mappingsObject = this.getMappings()
 
@@ -437,7 +441,11 @@ export class TSRHandler {
 			return
 		}
 
-		this.logger.debug(`Trigger new resolving`)
+		this.logger.debug(
+			`Trigger new resolving (${context}, hash: ${timeline.timelineHash}, gen: ${new Date(
+				timeline.generated
+			).toISOString()}, pub: ${new Date(timeline.published).toISOString()})`
+		)
 		if (fromTlChange) {
 			const trace = {
 				measurement: 'playout-gateway:timelineReceived',
@@ -534,7 +542,7 @@ export class TSRHandler {
 
 		let ps: Promise<any>[] = []
 		const promiseOperations: { [id: string]: true } = {}
-		const keepTrack = <T>(p: Promise<T>, name: string) => {
+		const keepTrack = async <T>(p: Promise<T>, name: string) => {
 			promiseOperations[name] = true
 			return p.then((result) => {
 				delete promiseOperations[name]
@@ -596,7 +604,7 @@ export class TSRHandler {
 							this.logger.info('old', oldDevice.deviceOptions)
 							this.logger.info('new', deviceOptions)
 							ps.push(
-								keepTrack(this._removeDevice(deviceId), 'remove_' + deviceId).then(() => {
+								keepTrack(this._removeDevice(deviceId), 'remove_' + deviceId).then(async () => {
 									return keepTrack(this._addDevice(deviceId, deviceOptions), 're-add_' + deviceId)
 								})
 							)
@@ -663,7 +671,7 @@ export class TSRHandler {
 
 			// set the status to uninitialized for now:
 			coreTsrHandler.statusChanged({
-				statusCode: P.StatusCode.BAD,
+				statusCode: StatusCode.BAD,
 				messages: ['Device initialising...'],
 			})
 
@@ -672,17 +680,17 @@ export class TSRHandler {
 			// Set up device status
 			const deviceType = device.deviceType
 
-			const onDeviceStatusChanged = (connectedOrStatus: boolean | P.StatusObject) => {
-				let deviceStatus: P.StatusObject
+			const onDeviceStatusChanged = (connectedOrStatus: Partial<DeviceStatus>) => {
+				let deviceStatus: Partial<P.StatusObject>
 				if (_.isBoolean(connectedOrStatus)) {
 					// for backwards compability, to be removed later
 					if (connectedOrStatus) {
 						deviceStatus = {
-							statusCode: P.StatusCode.GOOD,
+							statusCode: StatusCode.GOOD,
 						}
 					} else {
 						deviceStatus = {
-							statusCode: P.StatusCode.BAD,
+							statusCode: StatusCode.BAD,
 							messages: ['Disconnected'],
 						}
 					}
@@ -697,9 +705,9 @@ export class TSRHandler {
 				})
 				// hack to make sure atem has media after restart
 				if (
-					(deviceStatus.statusCode === P.StatusCode.GOOD ||
-						deviceStatus.statusCode === P.StatusCode.WARNING_MINOR ||
-						deviceStatus.statusCode === P.StatusCode.WARNING_MAJOR) &&
+					(deviceStatus.statusCode === StatusCode.GOOD ||
+						deviceStatus.statusCode === StatusCode.WARNING_MINOR ||
+						deviceStatus.statusCode === StatusCode.WARNING_MAJOR) &&
 					deviceType === DeviceType.ATEM &&
 					!disableAtemUpload
 				) {
@@ -807,7 +815,7 @@ export class TSRHandler {
 				debug(`Trigger update devices because "${deviceId}" process closed`)
 
 				onDeviceStatusChanged({
-					statusCode: P.StatusCode.BAD,
+					statusCode: StatusCode.BAD,
 					messages: ['Child process closed'],
 				})
 
@@ -820,29 +828,56 @@ export class TSRHandler {
 					}
 				)
 			}
-			await device.device.on('connectionChanged', onDeviceStatusChanged)
+			// Note for the future:
+			// It is important that the callbacks returns void,
+			// otherwise there might be problems with threadedclass!
+
+			await device.device.on('connectionChanged', onDeviceStatusChanged as () => void)
 			// await device.device.on('slowCommand', onSlowCommand)
-			await device.device.on('slowSentCommand', onSlowSentCommand)
-			await device.device.on('slowFulfilledCommand', onSlowFulfilledCommand)
-			await device.device.on('commandError', onCommandError)
-			await device.device.on('commandReport', onCommandReport)
-			await device.device.on('updateMediaObject', onUpdateMediaObject)
-			await device.device.on('clearMediaObjects', onClearMediaObjectCollection)
+			await device.device.on('slowSentCommand', onSlowSentCommand as () => void)
+			await device.device.on('slowFulfilledCommand', onSlowFulfilledCommand as () => void)
+			await device.device.on('commandError', onCommandError as () => void)
+			await device.device.on('commandReport', onCommandReport as () => void)
+			await device.device.on('updateMediaObject', onUpdateMediaObject as () => void)
+			await device.device.on('clearMediaObjects', onClearMediaObjectCollection as () => void)
 
-			await device.device.on('info', (e: any, ...args: any[]) => this.logger.info(fixError(e), ...args))
-			await device.device.on('warning', (e: any, ...args: any[]) => this.logger.warn(fixError(e), ...args))
-			await device.device.on('error', (e: any, ...args: any[]) => this.logger.error(fixError(e), ...args))
+			await device.device.on('info', ((e: any, ...args: any[]) => {
+				this.logger.info(fixError(e), ...args)
+			}) as () => void)
+			await device.device.on('warning', ((e: any, ...args: any[]) => {
+				this.logger.warn(fixError(e), ...args)
+			}) as () => void)
+			await device.device.on('error', ((e: any, ...args: any[]) => {
+				this.logger.error(fixError(e), ...args)
+			}) as () => void)
 
-			await device.device.on('debug', (e: any, ...args: any[]) => {
-				// Don't log if the "main" debug flag (_coreHandler.logDebug) is set to avoid duplicates,
-				// because then the tsr is also logging debug messages from the devices.
+			await device.device.on('debug', (...args: any[]) => {
+				if (device.debugLogging || this._coreHandler.logDebug) {
+					const msg: any = {
+						message: `debug: Device "${device.deviceName || deviceId}" (${device.instanceId})`,
+						data: [],
+					}
+					if (args.length) {
+						if (typeof args === 'string') {
+							msg.data.push(args)
+						} else {
+							for (const arg of args) {
+								if (typeof arg === 'object') {
+									msg.data.push(JSON.stringify(arg))
+								} else {
+									msg.data.push(arg)
+								}
+							}
+						}
+					} else {
+						msg.data.push('>empty message<')
+					}
 
-				if (device.debugLogging && !this._coreHandler.logDebug) {
-					this.logger.debug(fixError(e), ...args)
+					this.logger.debug(msg)
 				}
 			})
 
-			await device.device.on('timeTrace', (trace: FinishedTrace) => sendTrace(trace))
+			await device.device.on('timeTrace', ((trace: FinishedTrace) => sendTrace(trace)) as () => void)
 
 			// now initialize it
 			await this.tsr.initDevice(deviceId, options)

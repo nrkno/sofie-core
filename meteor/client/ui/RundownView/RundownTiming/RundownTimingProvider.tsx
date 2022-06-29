@@ -8,8 +8,8 @@ import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
-import { RundownTimingCalculator, RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
 import { Rundown } from '../../../../lib/collections/Rundowns'
+import { RundownTimingCalculator, RundownTimingContext } from '../../../lib/rundownTiming'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every
@@ -64,7 +64,7 @@ export const RundownTimingProvider = withTracker<
 		parts = incomingParts
 		const partInstances = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist)
 
-		const currentPartInstance = partInstances.find((p) => p._id === props.playlist!.currentPartInstanceId)
+		const currentPartInstance = partInstances.find((p) => p._id === props.playlist?.currentPartInstanceId)
 		currentRundown = currentPartInstance ? rundowns.find((r) => r._id === currentPartInstance.rundownId) : rundowns[0]
 
 		partInstances.forEach((partInstance) => {

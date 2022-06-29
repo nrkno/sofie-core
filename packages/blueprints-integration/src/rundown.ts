@@ -1,13 +1,14 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContent } from 'timeline-state-resolver-types'
 import { Time } from './common'
 import { ExpectedPackage } from './package'
-import { SomeTimelineContent } from './content'
+import { SomeContent, WithTimeline } from './content'
 import { ITranslatableMessage } from './translations'
 import { PartEndState } from './api'
 import { ActionUserData } from './action'
 import { NoteSeverity } from './lib'
 
-export interface IBlueprintRundownPlaylistInfo {
+/** Playlist, as generated from Blueprints */
+export interface IBlueprintResultRundownPlaylist {
 	/** Rundown playlist slug - user-presentable name */
 	name: string
 
@@ -19,6 +20,26 @@ export interface IBlueprintRundownPlaylistInfo {
 	loop?: boolean
 	/** Should time-of-day clocks be used instead of countdowns by default */
 	timeOfDayCountdowns?: boolean
+
+	/** Arbitraty data used by rundowns */
+	metaData?: unknown
+}
+/** Playlist, when reported from Core  */
+export interface IBlueprintRundownPlaylist extends IBlueprintResultRundownPlaylist {
+	_id: string
+	/** External ID (source) of the playlist */
+	externalId: string
+	created: Time
+	modified: Time
+	/** If the playlist is active or not */
+	isActive: boolean
+	/** Is the playlist in rehearsal mode (can be used, when active: true) */
+	rehearsal: boolean
+	/** Actual time of playback starting */
+	startedPlayback?: Time
+
+	/** The number of rundowns in the playlist */
+	rundownCount: number
 }
 
 export enum PlaylistTimingType {
@@ -348,7 +369,10 @@ export interface IBlueprintDirectPlayAdLibAction extends IBlueprintDirectPlayBas
 export type IBlueprintDirectPlay = IBlueprintDirectPlayAdLibPiece | IBlueprintDirectPlayAdLibAction
 
 export interface IBlueprintPieceGeneric<TMetadata = unknown> {
-	/** ID of the source object in the gateway */
+	/**
+	 * An identifier for this Piece
+	 * It should be unique within the part it belongs to, and consistent across ingest updates
+	 */
 	externalId: string
 	/** User-presentable name for the timeline item */
 	name: string
@@ -363,7 +387,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** Layer output this piece belongs to */
 	outputLayerId: string
 	/** The object describing the item in detail */
-	content: SomeTimelineContent
+	content: WithTimeline<SomeContent>
 
 	/** The transition used by this piece to transition to and from the piece */
 	/** @deprecated */

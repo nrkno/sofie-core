@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { DDP } from 'meteor/ddp'
-import { Random } from 'meteor/random'
 import * as React from 'react'
 import * as _ from 'underscore'
 
@@ -20,6 +19,7 @@ import { NotificationCenterPopUps } from './notifications/NotificationCenterPane
 import { PubSub } from '../../lib/api/pubsub'
 import { CoreSystem, ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
 import * as i18next from 'i18next'
+import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
@@ -142,7 +142,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		const { status, reason, retryTime, connected } = meteorStatus
 		const t = this._translator
 		const notification = new Notification(
-			Random.id(),
+			getRandomId(),
 			this.getNoticeLevel(status),
 			this.getStatusText(status, reason, retryTime),
 			this._translator('Sofie Automation Server'),
@@ -218,7 +218,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 function createSystemNotification(cs: ICoreSystem | undefined): Notification | undefined {
 	if (cs && cs.systemInfo && cs.systemInfo.enabled) {
 		return new Notification(
-			Random.id(),
+			getRandomId(),
 			NoticeLevel.CRITICAL,
 			cs.systemInfo.message,
 			'SystemMessage',

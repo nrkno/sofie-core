@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Settings } from '../../../lib/Settings'
-import { StatusCode } from '../../../lib/api/systemStatus'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { setSystemStatus } from '../../systemStatus/systemStatus'
 import { logger } from '../../logging'
 import { determineDiffTime } from './systemTime'

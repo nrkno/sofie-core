@@ -11,7 +11,7 @@ import { IAdLibListItem } from './AdLibListItem'
 import { isActionItem } from './Inspector/ItemRenderers/ActionItemRenderer'
 import { AdLibPieceUi } from './AdLibPanel'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
-import { translateMessage } from '../../../lib/api/TranslatableMessage'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export enum ContextType {
 	BUCKET = 'bucket',
@@ -37,7 +37,8 @@ export interface ShelfContextMenuContextBucketAdLib extends ShelfContextMenuCont
 		bucket: Bucket
 		adLib: BucketAdLibItem
 		canQueue?: boolean
-		onToggle: (aSLine: BucketAdLibItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
+		disabled?: boolean
+		onToggle?: (aSLine: BucketAdLibItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
 	}
 }
 
@@ -46,7 +47,8 @@ export interface ShelfContextMenuContextAdLib extends ShelfContextMenuContextBas
 	details: {
 		adLib: IAdLibListItem
 		canQueue?: boolean
-		onToggle: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
+		disabled?: boolean
+		onToggle?: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
 	}
 }
 
@@ -78,7 +80,8 @@ export default function ShelfContextMenu() {
 
 	const renderStartExecuteAdLib = function renderStartExecuteAdLib<T extends IAdLibListItem | BucketAdLibItem>(item: {
 		adLib: T
-		onToggle: (adLib: T, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => void
+		onToggle?: (adLib: T, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => void
+		disabled?: boolean
 	}) {
 		if (isActionItem(item.adLib)) {
 			const adLibAction = getActionItem(item.adLib)
@@ -93,8 +96,9 @@ export default function ShelfContextMenu() {
 						key={mode.data}
 						onClick={(e) => {
 							e.persist()
-							item.onToggle(item.adLib, false, e, mode)
+							item.onToggle && item.onToggle(item.adLib, false, e, mode)
 						}}
+						disabled={item.disabled}
 					>
 						{translateMessage(mode.display.label, t)}
 					</MenuItem>
@@ -104,8 +108,9 @@ export default function ShelfContextMenu() {
 					<MenuItem
 						onClick={(e) => {
 							e.persist()
-							item.onToggle(item.adLib, false, e)
+							item.onToggle && item.onToggle(item.adLib, false, e)
 						}}
+						disabled={item.disabled}
 					>
 						{(adLibAction?.display.triggerLabel && translateMessage(adLibAction?.display.triggerLabel, t)) ??
 							t('Execute')}
@@ -118,8 +123,9 @@ export default function ShelfContextMenu() {
 					<MenuItem
 						onClick={(e) => {
 							e.persist()
-							item.onToggle(item.adLib, false, e)
+							item.onToggle && item.onToggle(item.adLib, false, e)
 						}}
+						disabled={item.disabled}
 					>
 						{t('Start this AdLib')}
 					</MenuItem>
@@ -127,8 +133,9 @@ export default function ShelfContextMenu() {
 						<MenuItem
 							onClick={(e) => {
 								e.persist()
-								item.onToggle(item.adLib, true, e)
+								item.onToggle && item.onToggle(item.adLib, true, e)
 							}}
+							disabled={item.disabled}
 						>
 							{t('Queue this AdLib')}
 						</MenuItem>

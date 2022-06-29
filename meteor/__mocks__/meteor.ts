@@ -1,5 +1,6 @@
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import * as _ from 'underscore'
-import { Fiber, runInFiber } from './Fibers'
+import { Fiber } from './Fibers'
 
 let controllableDefer: boolean = false
 
@@ -344,3 +345,27 @@ export const waitForPromise: <T>(p: Promise<T>) => T = MeteorMock.wrapAsync(func
 			cb(e)
 		})
 })
+
+export async function runInFiber<T>(fcn: () => T | Promise<T>): Promise<T> {
+	return new Promise((resolve, reject) => {
+		Fiber(() => {
+			try {
+				// Run the function
+				const out = fcn()
+				if (out instanceof Promise) {
+					out.then(resolve).catch((e) => {
+						console.log('Error: ' + e)
+						reject(e)
+					})
+				} else {
+					// the function has finished
+					resolve(out)
+				}
+			} catch (e: any) {
+				// Note: we cannot use
+				console.log('Error: ' + stringifyError(e))
+				reject(e)
+			}
+		}).run()
+	})
+}

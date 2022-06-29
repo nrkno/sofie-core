@@ -2,6 +2,7 @@
 description: >-
   The Sofie team happily encourage contributions to the Sofie project, and
   kindly ask you to observe these guidelines when doing so.
+sidebar_position: 2
 ---
 
 # Contribution Guidelines

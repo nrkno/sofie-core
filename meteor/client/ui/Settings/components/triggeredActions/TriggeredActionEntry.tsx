@@ -17,11 +17,11 @@ import { PreviewContext } from './TriggeredActionsEditor'
 import { IWrappedAdLib } from '../../../../../lib/api/triggers/actionFilterChainCompilers'
 import { RundownUtils } from '../../../../lib/rundown'
 import { useTranslation } from 'react-i18next'
-import { translateMessage } from '../../../../../lib/api/TranslatableMessage'
 import { TriggerEditor } from './triggerEditors/TriggerEditor'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { iconDragHandle } from '../../../RundownList/icons'
 import { useDrag, useDrop } from 'react-dnd'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 interface IProps {
 	showStyleBase: ShowStyleBase | undefined

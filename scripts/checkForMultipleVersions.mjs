@@ -13,23 +13,13 @@ const libsToConsider = [
 const allDepVersions = new Map();
 
 async function addDepsForRoot(root, subdir) {
-	let tree;
-	try {
-		tree = await buildDepTreeFromFiles(
+	const tree = await buildDepTreeFromFiles(
 			root,
 			subdir ? `${subdir}/package.json` : "package.json",
 			"yarn.lock",
 			true,
 			false
 		);
-	} catch (e) {
-		tree = await buildDepTreeFromFiles(
-			root,
-			"package.json",
-			"package-lock.json",
-			true
-		);
-	}
 
 	function flattenAndAddDeps(node) {
 		let entry = allDepVersions.get(node.name);
@@ -59,6 +49,8 @@ await addDepsForRoot("./packages");
 await addDepsForRoot("./packages", "blueprints-integration");
 await addDepsForRoot("./packages", "server-core-integration");
 await addDepsForRoot("./packages", "mos-gateway");
+await addDepsForRoot("./packages", "corelib");
+await addDepsForRoot("./packages", "job-worker");
 await addDepsForRoot("./packages", "playout-gateway");
 
 let hasFailure = false;

@@ -1,27 +1,66 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, getCurrentTime, protectString, unprotectObject, clone } from '../../../lib/lib'
+import { getHash, getCurrentTime, protectString, stringifyError } from '../../../lib/lib'
 import { StudioId } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
 	PeripheralDevices,
 	getStudioIdFromDevice,
 	PeripheralDeviceId,
+	PeripheralDeviceCategory,
 } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { SegmentId, Segment, SegmentOrphanedReason } from '../../../lib/collections/Segments'
+import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
 import { Credentials } from '../../security/lib/credentials'
-import { IngestRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
-import { ReadonlyDeep } from 'type-fest'
-import { ReadOnlyCache } from '../../cache/CacheBase'
-import { CacheForIngest } from './cache'
+import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
+import { QueueIngestJob } from '../../worker/worker'
 import { checkStudioExists } from '../../../lib/collections/optimizations'
+
+/**
+ * Run an ingest operation via the worker.
+ * @param studioId Id of the studio
+ * @param name The name/id of the operation
+ * @param data Data for the operation
+ * @returns Wrapped 'client safe' response. Includes translatable friendly error messages
+ */
+export async function runIngestOperation<T extends keyof IngestJobFunc>(
+	studioId: StudioId,
+	name: T,
+	data: Parameters<IngestJobFunc[T]>[0]
+): Promise<ReturnType<IngestJobFunc[T]>> {
+	try {
+		const job = await QueueIngestJob(name, studioId, data)
+
+		const span = profiler.startSpan('queued-job')
+		const res = await job.complete
+
+		if (span) {
+			// These timings may want tracking better, for when APM is not enabled
+			try {
+				const timings = await job.getTimings
+				span.addLabels({
+					startedTime: timings.startedTime ? timings.startedTime - timings.queueTime : '-',
+					finishedTime: timings.finishedTime ? timings.finishedTime - timings.queueTime : '-',
+					completedTime: timings.completedTime - timings.queueTime,
+				})
+			} catch (_e) {
+				// Not worth handling
+			}
+
+			span.end()
+		}
+
+		return res
+	} catch (e) {
+		logger.warn(`Ingest operation "${name}" failed: ${stringifyError(e)}`)
+
+		throw e
+	}
+}
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -73,14 +112,6 @@ export function fetchStudioIdFromDevice(peripheralDevice: PeripheralDevice): Stu
 	span?.end()
 	return studioId
 }
-export function getRundown(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ReadonlyDeep<Rundown> {
-	const rundown = cache.Rundown.doc
-	if (!rundown) {
-		const rundownId = getRundownId(cache.Studio.doc._id, cache.RundownExternalId)
-		throw new Meteor.Error(404, `Rundown "${rundownId}" ("${cache.RundownExternalId}") not found`)
-	}
-	return rundown
-}
 export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevice {
 	if (!rundown.peripheralDeviceId)
 		throw new Meteor.Error(500, `Rundown "${rundown._id}" does not have a peripheralDeviceId`)
@@ -91,7 +122,7 @@ export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevi
 			404,
 			`PeripheralDevice "${rundown.peripheralDeviceId}" of rundown "${rundown._id}" not found`
 		)
-	if (device.category !== PeripheralDeviceAPI.DeviceCategory.INGEST)
+	if (device.category !== PeripheralDeviceCategory.INGEST)
 		throw new Meteor.Error(
 			404,
 			`PeripheralDevice "${rundown.peripheralDeviceId}" of rundown "${rundown._id}" is not an INGEST device!`
@@ -107,45 +138,4 @@ function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
 	}).catch((err) => {
 		logger.error(`Error in updateDeviceLastDataReceived "${deviceId}": ${err}`)
 	})
-}
-
-export function canRundownBeUpdated(rundown: ReadonlyDeep<Rundown> | undefined, isCreateAction: boolean): boolean {
-	if (!rundown) return true
-	if (rundown.orphaned && !isCreateAction) {
-		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
-		return false
-	}
-	return true
-}
-export function canSegmentBeUpdated(
-	rundown: ReadonlyDeep<Rundown> | undefined,
-	segment: ReadonlyDeep<Segment> | undefined,
-	isCreateAction: boolean
-): boolean {
-	if (!canRundownBeUpdated(rundown, false)) {
-		return false
-	}
-
-	if (!segment) return true
-	if (segment.orphaned === SegmentOrphanedReason.DELETED && !isCreateAction) {
-		logger.info(`Segment "${segment._id}" has been unsynced and needs to be synced before it can be updated.`)
-		return false
-	}
-
-	return true
-}
-
-export function extendIngestRundownCore(
-	ingestRundown: IngestRundown,
-	existingDbRundown: ReadonlyDeep<Rundown> | undefined
-): ExtendedIngestRundown {
-	const extendedIngestRundown: ExtendedIngestRundown = {
-		...ingestRundown,
-		coreData: unprotectObject(clone(existingDbRundown)),
-	}
-	return extendedIngestRundown
-}
-export function modifyPlaylistExternalId(playlistExternalId: string | undefined, showStyleBase: ShowStyleBase) {
-	if (playlistExternalId) return `${showStyleBase._id}_${playlistExternalId}`
-	else return undefined
 }

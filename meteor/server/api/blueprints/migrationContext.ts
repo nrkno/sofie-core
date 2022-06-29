@@ -39,12 +39,12 @@ import {
 	ShowStyleVariantId,
 	DBShowStyleVariant,
 } from '../../../lib/collections/ShowStyleVariants'
-import { check, Match } from '../../../lib/check'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
+import { check } from '../../../lib/check'
+import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 import { Mongo } from 'meteor/mongo'
 import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+import { Match } from 'meteor/check'
 
 class AbstractMigrationContextWithTriggeredActions {
 	protected showStyleBaseId: ShowStyleBaseId | null = null
@@ -242,7 +242,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		check(deviceId, String)
 
 		const selector: Mongo.Selector<PeripheralDevice> = {
-			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			type: PeripheralDeviceType.PLAYOUT,
 			studioId: this.studio._id,
 		}
 		selector[`settings.devices.${deviceId}`] = { $exists: 1 }
@@ -265,7 +265,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		const parentDevice = PeripheralDevices.findOne(
 			{
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
 				studioId: this.studio._id,
 			},
 			{
@@ -300,7 +300,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		}
 
 		const selector: Mongo.Selector<PeripheralDevice> = {
-			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			type: PeripheralDeviceType.PLAYOUT,
 			studioId: this.studio._id,
 		}
 		selector[`settings.devices.${deviceId}`] = { $exists: 1 }
@@ -334,7 +334,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		m[`settings.devices.${deviceId}`] = 1
 		PeripheralDevices.update(
 			{
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
 				studioId: this.studio._id,
 			},
 			{

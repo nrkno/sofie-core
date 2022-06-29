@@ -2,7 +2,15 @@ import * as React from 'react'
 
 export function SwitchboardIcon(props: React.SVGProps<SVGSVGElement>) {
 	return (
-		<svg width="35" height="25" viewBox="0 0 35 25" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+		<svg
+			width="35"
+			height="25"
+			viewBox="0 0 35 25"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+			role="presentation"
+			{...props}
+		>
 			<path
 				d="M2 22C2 22.5523 2.44772 23 3 23C3.55228 23 4 22.5523 4 22H2ZM17 3.79167C17 3.23938 16.5523 2.79167 16 2.79167C15.4477 2.79167 15 3.23938 15 3.79167H17ZM4 3C4 2.44772 3.55228 2 3 2C2.44772 2 2 2.44772 2 3H4ZM4 22V18.1042H2V22H4ZM9 13.1042H10V11.1042H9V13.1042ZM17 6.10417V3.79167H15V6.10417H17ZM2 3V12.5H4V3H2ZM2 12.5V18.1042H4V12.5H2ZM10 13.1042C13.866 13.1042 17 9.97016 17 6.10417H15C15 8.86559 12.7614 11.1042 10 11.1042V13.1042ZM4 18.1042C4 15.3427 6.23858 13.1042 9 13.1042V11.1042C5.13401 11.1042 2 14.2382 2 18.1042H4Z"
 				fill="#8B8B8B"
@@ -33,6 +41,7 @@ export function RouteSetOverrideIcon(props: React.SVGProps<SVGSVGElement>) {
 			style={{
 				filter: 'drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5))',
 			}}
+			role="presentation"
 		>
 			<g clipPath="url(#clip0)">
 				<path

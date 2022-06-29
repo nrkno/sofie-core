@@ -4,16 +4,20 @@
 		"packages": [
 			"*-integration",
 			"*-gateway",
+			"corelib",
+			"job-worker",
 			"documentation"
 		],
 		"nohoist": [
-			"**/timeline-state-resolver-types"
+			"**/timeline-state-resolver-types",
+			"**/timecode"
 		]
 	},
 	"scripts": {
 		"prepare": "cd .. && husky install",
 		"postinstall": "yarn lerna bootstrap",
 		"build": "yarn lerna run build",
+		"build:try": "yarn lerna run --no-bail build",
 		"watch": "lerna run --parallel build:main -- --watch --preserveWatchOutput",
 		"sync-version-and-changelog": "lerna version --conventional-commits --no-git-tag-version --no-push --yes $(node -p \"require('../meteor/package.json').version\")",
 		"postsync-version-and-changelog": "yarn stage-versions",
@@ -22,40 +26,46 @@
 		"set-version": "lerna version --exact --no-changelog --no-git-tag-version --no-push --yes",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck --allowPackages \"cycle@1.0.3;caniuse-lite@1.0.30001287;mos-gateway@$(node -p \"require('mos-gateway/package.json').version\");playout-gateway@$(node -p \"require('playout-gateway/package.json').version\");sofie-documentation@$(node -p \"require('sofie-documentation/package.json').version\")\"",
+		"license-validate": "yarn sofie-licensecheck --allowPackages \"caniuse-lite@1.0.30001309;mos-gateway@$(node -p \"require('mos-gateway/package.json').version\");playout-gateway@$(node -p \"require('playout-gateway/package.json').version\");sofie-documentation@$(node -p \"require('sofie-documentation/package.json').version\");@sofie-automation/corelib@$(node -p \"require('@sofie-automation/corelib/package.json').version\");@sofie-automation/job-worker@$(node -p \"require('@sofie-automation/job-worker/package.json').version\")\"",
 		"lint": "lerna run --concurrency 4 --stream lint",
-		"unit": "lerna run --concurrency 2 --stream unit",
+		"unit": "lerna run --concurrency 2 --stream unit -- --coverage=false",
 		"test": "lerna run --concurrency 2 --stream test",
 		"docs:typedoc": "yarn typedoc .",
-		"docs:serve": "lerna run --scope sofie-documentation --stream start"
+		"docs:serve": "lerna run --scope sofie-documentation --stream start",
+		"watch-for-worker-changes": "nodemon --delay 2.5 --watch job-worker/dist --watch corelib/dist --watch blueprints-integration/dist --watch server-core-integration/dist ../scripts/meteor-force-restart.js"
 	},
 	"devDependencies": {
-		"@sofie-automation/code-standard-preset": "0.5.1",
+		"@babel/core": "^7.17.0",
+		"@babel/plugin-transform-modules-commonjs": "^7.16.8",
+		"@sofie-automation/code-standard-preset": "~2.0.0",
 		"@types/ejson": "^2.1.3",
 		"@types/got": "^9.6.12",
-		"@types/jest": "^26.0.24",
-		"@types/node": "^12.20.24",
-		"@types/underscore": "^1.11.3",
-		"codecov": "^3.8.3",
+		"@types/jest": "^27.4.0",
+		"@types/node": "^14.18.12",
+		"@types/object-path": "^0.11.1",
+		"@types/underscore": "^1.11.4",
+		"babel-jest": "^27.5.1",
 		"copyfiles": "^2.4.1",
-		"jest": "^26.6.3",
-		"jest-haste-map": "^26.6.2",
-		"jest-resolve": "^26.6.2",
+		"jest": "^27.5.1",
 		"lerna": "^4.0.0",
 		"node-license-validator": "^1.3.2",
-		"open-cli": "^6.0.1",
+		"nodemon": "^2.0.15",
+		"open-cli": "^7.0.1",
 		"rimraf": "^3.0.2",
 		"semver": "^7.3.5",
-		"ts-jest": "^26.5.6",
+		"ts-jest": "^27.1.3",
+		"ts-node": "^9.1.1",
 		"tslint": "^6.1.3",
 		"tslint-config-standard": "^9.0.0",
 		"typedoc": "^0.22.5",
-		"typescript": "~4.2"
+		"typescript": "~4.5"
 	},
 	"name": "packages",
 	"resolutions": {
-		"node-license-validator/**/minimist": "^1.2.3",
+		"node-license-validator/**/minimist": "^1.2.6",
+		"**/prebuild-install/minimist": "^1.2.6",
 		"lerna/**/trim-newlines": "^4.0.1",
-		"**/data-store/set-value": "^4.1.0"
+		"**/data-store/set-value": "^4.1.0",
+		"**/tv-automation-quantel-gateway-client/got": "^11.8.5"
 	}
 }

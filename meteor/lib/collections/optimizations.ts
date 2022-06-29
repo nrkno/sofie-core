@@ -1,7 +1,9 @@
 import { MongoSelector } from '../typings/meteor'
 import { BlueprintId, Blueprints, Blueprint } from './Blueprints'
 import { DBShowStyleBase, ShowStyleBaseId, ShowStyleBases } from './ShowStyleBases'
-import { DBStudio, StudioId, Studios } from './Studios'
+import { DBStudio, StudioId, Studios, StudioLight } from './Studios'
+
+export { StudioLight } from './Studios' // TODO: Legacy
 
 /*
 	This file contains various short-hand functions intended to be used for "light" fetches from collections.
@@ -48,7 +50,6 @@ export function fetchStudiosLight(selector: MongoSelector<DBStudio>): StudioLigh
 		},
 	}).fetch()
 }
-export type StudioLight = Omit<DBStudio, 'mappings' | 'blueprintConfig'>
 
 export function fetchStudioIds(selector: MongoSelector<DBStudio>): StudioId[] {
 	return Studios.find(selector, {

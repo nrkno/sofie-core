@@ -24,8 +24,9 @@ import { LoopingIcon } from '../../../lib/ui/icons/looping'
 import { SegmentEnd } from '../../../lib/ui/icons/segment'
 import { getShowHiddenSourceLayers } from '../../../lib/localStorage'
 import { Part } from '../../../../lib/collections/Parts'
-import { RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
+import { RundownTimingContext } from '../../../lib/rundownTiming'
 import { OutputGroup } from './OutputGroup'
+import { InvalidPartCover } from './InvalidPartCover'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -492,8 +493,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								'segment-timeline__part__nextline__label--thin': innerPart.autoNext && !this.state.isLive,
 							})}
 						>
-							{innerPart.autoNext && t('Auto') + ' '}
-							{this.state.isLive && t('Next')}
+							{innerPart.autoNext ? t('Auto') : this.state.isLive ? t('Next') : null}
 							{isEndOfLoopingShow && <LoopingIcon />}
 						</div>
 					</div>
@@ -583,6 +583,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 					data-obj-id={this.props.part.instance._id}
 					id={SegmentTimelinePartElementId + this.props.part.instance._id}
 					style={{ ...this.getPartStyle(), ...invalidReasonColorVars }}
+					role="region"
+					aria-roledescription={t('part')}
+					aria-label={this.props.part.instance.part.title}
 				>
 					{DEBUG_MODE && (
 						<div className="segment-timeline__debug-info">
@@ -595,7 +598,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						</div>
 					)}
 					{this.renderTimelineOutputGroups(this.props.part)}
-					{innerPart.invalid ? <div className="segment-timeline__part__invalid-cover"></div> : null}
+					{innerPart.invalid ? (
+						<InvalidPartCover className="segment-timeline__part__invalid-cover" part={innerPart} />
+					) : null}
 					{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
 					{this.props.playlist.nextTimeOffset &&
 						this.state.isNext && ( // This is the off-set line

@@ -17,6 +17,9 @@ import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../Rundo
 import { Meteor } from 'meteor/meteor'
 import { StoryboardPartTransitions } from './StoryboardPartTransitions'
 import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
+import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
+import { SegmentEnd } from '../../lib/ui/icons/segment'
+import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
 
 interface IProps {
 	className?: string
@@ -25,7 +28,10 @@ interface IProps {
 	outputLayers: Record<string, IOutputLayerUi>
 	isLivePart: boolean
 	isNextPart: boolean
+	isLastSegment?: boolean
 	isLastPartInSegment?: boolean
+	isPlaylistLooping?: boolean
+	doesPlaylistHaveNextPart?: boolean
 	inHold: boolean
 	currentPartWillAutonext: boolean
 	subscriptionsReady: boolean
@@ -43,6 +49,9 @@ export function StoryboardPart({
 	isLivePart,
 	isNextPart,
 	isLastPartInSegment,
+	isLastSegment,
+	isPlaylistLooping,
+	doesPlaylistHaveNextPart,
 	currentPartWillAutonext,
 	outputLayers,
 	subscriptionsReady,
@@ -126,6 +135,9 @@ export function StoryboardPart({
 				style: style,
 				onMouseEnter: onHoverOver,
 				onMouseLeave: onHoverOut,
+				role: 'region',
+				'aria-roledescription': 'part',
+				'aria-label': part.instance.part.title,
 			}}
 			holdToDisplay={contextMenuHoldToDisplayTime()}
 			collect={getPartContext}
@@ -147,7 +159,9 @@ export function StoryboardPart({
 					</div>
 				</>
 			)}
-			{isInvalid ? <div className="segment-storyboard__part__invalid-cover"></div> : null}
+			{isInvalid ? (
+				<InvalidPartCover className="segment-storyboard__part__invalid-cover" part={part.instance.part} />
+			) : null}
 			{isFloated ? <div className="segment-storyboard__part__floated-cover"></div> : null}
 			<div className="segment-storyboard__part__title">{part.instance.part.title}</div>
 			<div
@@ -168,18 +182,65 @@ export function StoryboardPart({
 				{isLivePart ? t('On Air') : willBeAutoNextedInto ? t('Auto') : isNextPart ? t('Next') : null}
 			</div>
 			{isLastPartInSegment && (
+				<>
+					<div
+						className={classNames(
+							'segment-storyboard__part__next-line',
+							'segment-storyboard__part__next-line--opposite',
+							{
+								'segment-storyboard__part__next-line--autonext': part.instance.part.autoNext,
+								'segment-storyboard__part__next-line--next': isLivePart && (!isLastSegment || doesPlaylistHaveNextPart),
+								'segment-storyboard__part__next-line--end-of-show':
+									isLastSegment && (!isLivePart || !doesPlaylistHaveNextPart),
+							}
+						)}
+					></div>
+					<div
+						className={classNames(
+							'segment-storyboard__part__next-line-label',
+							'segment-storyboard__part__next-line-label--opposite',
+							{
+								'segment-storyboard__part__next-line-label--autonext': part.instance.part.autoNext,
+								'segment-storyboard__part__next-line-label--next':
+									isLivePart && (!isLastSegment || doesPlaylistHaveNextPart),
+							}
+						)}
+					>
+						{part.instance.part.autoNext
+							? t('Auto')
+							: isLivePart && (!isLastSegment || doesPlaylistHaveNextPart)
+							? t('Next')
+							: null}
+					</div>
+				</>
+			)}
+			{!isLastSegment && isLastPartInSegment && !part.instance.part.invalid && (
 				<div
-					className={classNames(
-						'segment-storyboard__part__next-line',
-						'segment-storyboard__part__next-line--opposite',
-						{
-							'segment-storyboard__part__next-line--autonext': part.instance.part.autoNext,
-						}
+					className={classNames('segment-storyboard__part__segment-end', {
+						'segment-storyboard__part__segment-end--next': isLivePart && (!isLastSegment || doesPlaylistHaveNextPart),
+					})}
+				>
+					<div className="segment-storyboard__part__segment-end__label">
+						<SegmentEnd />
+					</div>
+				</div>
+			)}
+			{isLastSegment && (
+				<div
+					className={classNames('segment-storyboard__part__show-end', {
+						'segment-storyboard__part__show-end--loop': isPlaylistLooping,
+					})}
+				>
+					{(!isLivePart || !doesPlaylistHaveNextPart || isPlaylistLooping) && (
+						<div className="segment-storyboard__part__show-end__label">
+							{isPlaylistLooping ? t('Loops to top') : t('Show End')}
+						</div>
 					)}
-				></div>
+				</div>
 			)}
 			{isLivePart && displayLiveLineCounter ? (
 				<div className="segment-storyboard__part-timer segment-storyboard__part-timer--live">
+					<AutoNextStatus />
 					<CurrentPartRemaining
 						currentPartInstanceId={part.instance._id}
 						speaking={getAllowSpeaking()}

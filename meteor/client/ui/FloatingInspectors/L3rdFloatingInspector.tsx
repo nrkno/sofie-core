@@ -8,7 +8,7 @@ import { FloatingInspector } from '../FloatingInspector'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 
 interface IProps {
-	piece: PieceInstancePiece
+	piece: Omit<PieceInstancePiece, 'timelineObjectsString'>
 	pieceRenderedDuration: number | null
 	pieceRenderedIn: number | null
 	showMiniInspector: boolean

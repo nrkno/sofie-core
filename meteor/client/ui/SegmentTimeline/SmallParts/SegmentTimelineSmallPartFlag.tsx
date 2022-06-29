@@ -80,7 +80,7 @@ export const SegmentTimelineSmallPartFlag = ({
 				isLive={playlist.currentPartInstanceId === part.instance._id}
 				onClick={onClickFlagIcon}
 				data={{
-					'data-part-instance-id': part.instance._id, // this needs to match with onFlagClick handler
+					'data-part-instance-id': unprotectString(part.instance._id), // this needs to match with onFlagClick handler
 				}}
 			/>
 		)

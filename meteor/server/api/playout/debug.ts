@@ -3,24 +3,14 @@ import { logger } from '../../logging'
 import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Settings } from '../../../lib/Settings'
-import { setNextPart } from './lib'
-import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
-import { forceClearAllActivationCaches } from '../../cache/ActivationCache'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { updateStudioOrPlaylistTimeline, updateTimeline } from './timeline'
-import { forceClearAllBlueprintConfigCaches } from '../blueprints/config'
-import {
-	PlayoutLockFunctionPriority,
-	runPlayoutOperationWithCache,
-	runPlayoutOperationWithCacheFromStudioOperation,
-} from './lockFunction'
-import { getSelectedPartInstancesFromCache } from './cache'
-import { removeRundownPlaylistFromDb } from '../rundownPlaylist'
 import { check } from 'meteor/check'
 import { StudioId } from '../../../lib/collections/Studios'
-import { ensureNextPartIsValid } from '../ingest/updateNext'
-import { runStudioOperationWithCache, StudioLockFunctionPriority } from '../studio/lockFunction'
+import { profiler } from '../profiler'
+import { QueueForceClearAllCaches, QueueStudioJob } from '../../worker/worker'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { fetchStudioIds } from '../../../lib/collections/optimizations'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -36,7 +26,13 @@ if (!Settings.enableUserAccounts) {
 
 			const playlist = RundownPlaylists.findOne(id)
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${id}" not found`)
-			waitForPromise(removeRundownPlaylistFromDb(playlist))
+
+			const job = waitForPromise(
+				QueueStudioJob(StudioJobs.RemovePlaylist, playlist.studioId, {
+					playlistId: playlist._id,
+				})
+			)
+			waitForPromise(job.complete)
 		},
 
 		/**
@@ -46,7 +42,14 @@ if (!Settings.enableUserAccounts) {
 		debug_removeAllPlaylists() {
 			logger.debug('Remove all rundowns')
 
-			waitForPromiseAll(RundownPlaylists.find({}).map(async (playlist) => removeRundownPlaylistFromDb(playlist)))
+			waitForPromiseAll(
+				RundownPlaylists.find({}).map(async (playlist) => {
+					const job = await QueueStudioJob(StudioJobs.RemovePlaylist, playlist.studioId, {
+						playlistId: playlist._id,
+					})
+					await job.complete
+				})
+			)
 		},
 
 		/**
@@ -58,55 +61,19 @@ if (!Settings.enableUserAccounts) {
 				check(studioId, String)
 				logger.info(`debug_updateTimeline: "${studioId}"`)
 
-				waitForPromise(
-					runStudioOperationWithCache(
-						'debug_updateTimeline',
-						studioId,
-						StudioLockFunctionPriority.USER_PLAYOUT,
-						async (cache) => {
-							await updateStudioOrPlaylistTimeline(cache)
-						}
-					)
-				)
-			} catch (e) {
-				logger.error(e)
-				throw e
-			}
-		},
-		/**
-		 * For the active rundown in the studio, ensure that the nexted-part is correct
-		 * This was added while debugging issues with the nexted-part not updating after an ingest operation
-		 * Likely not very useful
-		 */
-		debug_updateNext: (studioId: StudioId) => {
-			try {
-				check(studioId, String)
-				logger.info(`debug_updateNext: "${studioId}"`)
+				const transaction = profiler.startTransaction('updateTimeline', 'meteor-debug')
 
-				waitForPromise(
-					runStudioOperationWithCache(
-						'debug_updateNext',
-						studioId,
-						StudioLockFunctionPriority.USER_PLAYOUT,
-						async (cache) => {
-							const playlists = cache.getActiveRundownPlaylists()
-							if (playlists.length === 1) {
-								await runPlayoutOperationWithCacheFromStudioOperation(
-									'updateStudioOrPlaylistTimeline',
-									cache,
-									playlists[0],
-									PlayoutLockFunctionPriority.USER_PLAYOUT,
-									null,
-									async (playlistCache) => {
-										await ensureNextPartIsValid(playlistCache)
-									}
-								)
-							} else {
-								throw new Error('No playlist active')
-							}
-						}
-					)
-				)
+				const job = waitForPromise(QueueStudioJob(StudioJobs.UpdateTimeline, studioId, undefined))
+
+				const span = transaction?.startSpan('queued-job')
+				waitForPromise(job.complete)
+				span?.end()
+
+				console.log(waitForPromise(job.getTimings))
+
+				if (transaction) transaction.end()
+
+				logger.info(`debug_updateTimeline: "${studioId}" - done`)
 			} catch (e) {
 				logger.error(e)
 				throw e
@@ -120,18 +87,16 @@ if (!Settings.enableUserAccounts) {
 		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
 			logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
 
-			waitForPromise(
-				runPlayoutOperationWithCache(
-					null,
-					'debug_syncPlayheadInfinitesForNextPartInstance',
-					id,
-					PlayoutLockFunctionPriority.MISC,
-					null,
-					async (cache) => {
-						await syncPlayheadInfinitesForNextPartInstance(cache)
-					}
-				)
+			const playlist = RundownPlaylists.findOne(id)
+			if (!playlist) throw new Error(`RundownPlaylist "${id}" not found`)
+
+			const job = waitForPromise(
+				QueueStudioJob(StudioJobs.DebugSyncInfinitesForNextPartInstance, playlist.studioId, {
+					playlistId: id,
+				})
 			)
+
+			waitForPromise(job.complete)
 		},
 
 		/**
@@ -141,8 +106,8 @@ if (!Settings.enableUserAccounts) {
 		debug_forceClearAllCaches() {
 			logger.info('forceClearAllCaches')
 
-			forceClearAllActivationCaches()
-			forceClearAllBlueprintConfigCaches()
+			const studioIds = fetchStudioIds({})
+			waitForPromise(QueueForceClearAllCaches(studioIds))
 		},
 
 		/**
@@ -163,28 +128,16 @@ if (!Settings.enableUserAccounts) {
 		debug_regenerateNextPartInstance(id: RundownPlaylistId) {
 			logger.info('regenerateNextPartInstance')
 
-			waitForPromise(
-				runPlayoutOperationWithCache(
-					null,
-					'debug_regenerateNextPartInstance',
-					id,
-					PlayoutLockFunctionPriority.MISC,
-					null,
-					async (cache) => {
-						const playlist = cache.Playlist.doc
-						if (playlist.nextPartInstanceId && playlist.activationId) {
-							const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-							const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
-							if (part) {
-								await setNextPart(cache, null)
-								await setNextPart(cache, { part: part })
+			const playlist = RundownPlaylists.findOne(id)
+			if (!playlist) throw new Error(`RundownPlaylist "${id}" not found`)
 
-								await updateTimeline(cache)
-							}
-						}
-					}
-				)
+			const job = waitForPromise(
+				QueueStudioJob(StudioJobs.DebugRegenerateNextPartInstance, playlist.studioId, {
+					playlistId: id,
+				})
 			)
+
+			waitForPromise(job.complete)
 		},
 	})
 }

@@ -17,6 +17,11 @@ module.exports = {
 		image: 'img/pilot_fredag-05.jpg',
 		hideableSidebar: true,
 		autoCollapseSidebarCategories: true,
+		colorMode: {
+			defaultMode: 'light',
+			disableSwitch: false,
+			respectPrefersColorScheme: true,
+		},
 		navbar: {
 			title: 'Sofie TV Automation',
 			logo: {
