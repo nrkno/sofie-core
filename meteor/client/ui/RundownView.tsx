@@ -1109,6 +1109,7 @@ interface IState {
 	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
 	uiSegments: AdlibSegmentUi[]
 	sourceLayerLookup: SourceLayerLookup
+	miniShelfFilter: RundownLayoutFilterBase | undefined
 }
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
@@ -1329,6 +1330,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				uiSegmentMap: new Map(),
 				uiSegments: [],
 				sourceLayerLookup: {},
+				miniShelfFilter: undefined,
 			}
 		}
 
@@ -1438,21 +1440,22 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const filteredUiSegmentMap: Map<SegmentId, AdlibSegmentUi> = new Map()
 			const filteredUiSegments: AdlibSegmentUi[] = []
 			let resultSourceLayerLookup: SourceLayerLookup = {}
+			let miniShelfFilter: RundownLayoutFilterBase | undefined
 			if (props.playlist && props.showStyleBase && props.studio) {
-				let filter =
+				const possibleMiniShelfFilter =
 					selectedMiniShelfLayout && RundownLayoutsAPI.isLayoutForMiniShelf(selectedMiniShelfLayout)
 						? selectedMiniShelfLayout.filters[0]
 						: undefined // Only allow 1 filter for now
 
 				// Check type of filter
-				if (filter && !RundownLayoutsAPI.isFilter(filter)) {
-					filter = undefined
+				if (possibleMiniShelfFilter && RundownLayoutsAPI.isFilter(possibleMiniShelfFilter)) {
+					miniShelfFilter = possibleMiniShelfFilter
 				}
 				const { uiSegmentMap, uiSegments, sourceLayerLookup } = fetchAndFilter({
 					playlist: props.playlist,
 					showStyleBase: props.showStyleBase,
 					includeGlobalAdLibs: false,
-					filter,
+					filter: miniShelfFilter,
 				})
 				resultSourceLayerLookup = sourceLayerLookup
 				const liveSegment = uiSegments.find((i) => i.isLive === true)
@@ -1464,11 +1467,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							piece,
 							props.showStyleBase!,
 							liveSegment,
-							filter
+							miniShelfFilter
 								? {
-										...(filter as RundownLayoutFilterBase),
+										...(miniShelfFilter as RundownLayoutFilterBase),
 										currentSegment:
-											!(segment.isHidden && segment.showShelf) && (filter as RundownLayoutFilterBase).currentSegment,
+											!(segment.isHidden && segment.showShelf) &&
+											(miniShelfFilter as RundownLayoutFilterBase).currentSegment,
 								  }
 								: undefined,
 							undefined,
@@ -1506,6 +1510,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				uiSegmentMap: filteredUiSegmentMap,
 				uiSegments: filteredUiSegments,
 				sourceLayerLookup: resultSourceLayerLookup,
+				miniShelfFilter,
 			}
 		}
 
@@ -2468,6 +2473,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					ownCurrentPartInstance={ownCurrentPartInstance}
 					ownNextPartInstance={ownNextPartInstance}
 					isFollowingOnAirSegment={isFollowingOnAirSegment}
+					miniShelfFilter={this.state.miniShelfFilter}
 					countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
 					fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
 					studioMode={this.state.studioMode}
@@ -2500,6 +2506,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
 					fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
 					adLibSegmentUi={this.state.uiSegmentMap.get(segment._id)}
+					miniShelfFilter={this.state.miniShelfFilter}
 					studioMode={this.state.studioMode}
 					showDurationSourceLayers={showDurationSourceLayers}
 				/>

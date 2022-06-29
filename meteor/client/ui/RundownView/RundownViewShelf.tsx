@@ -10,7 +10,11 @@ import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
 import { IBlueprintActionTriggerMode, IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
 import { ensureHasTrailingSlash, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
-import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import {
+	DashboardLayoutFilter,
+	PieceDisplayStyle,
+	RundownLayoutFilterBase,
+} from '../../../lib/collections/RundownLayouts'
 import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
@@ -34,6 +38,7 @@ interface IRundownViewShelfProps {
 	adLibSegmentUi: AdlibSegmentUi
 	hotkeyGroup: string
 	studioMode: boolean
+	miniShelfFilter: RundownLayoutFilterBase | undefined
 }
 
 interface IRundownViewShelfTrackedProps {
@@ -224,7 +229,10 @@ class RundownViewShelfInner extends MeteorReactComponent<
 								displayStyle={PieceDisplayStyle.BUTTONS}
 								widthScale={3.27} // @todo: css
 								isSelected={false}
-								toggleOnSingleClick={this.state.singleClickMode}
+								toggleOnSingleClick={
+									(this.props.miniShelfFilter as DashboardLayoutFilter)?.toggleOnSingleClick ||
+									this.state.singleClickMode
+								}
 							>
 								{adLibPiece.name}
 							</DashboardPieceButton>

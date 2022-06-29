@@ -417,8 +417,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	private handleOnPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+		const { toggleOnSingleClick } = this.props
 		if (e.pointerId === this.pointerId) {
-			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+			if (!toggleOnSingleClick) {
+				this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+			}
 			e.preventDefault()
 		}
 	}

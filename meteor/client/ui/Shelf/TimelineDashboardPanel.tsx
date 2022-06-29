@@ -147,7 +147,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 													heightScale={filter.buttonHeightScale}
 													displayStyle={PieceDisplayStyle.BUTTONS}
 													showThumbnailsInList={filter.showThumbnailsInList}
-													toggleOnSingleClick={this.state.singleClickMode}
+													toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
 												>
 													{adLibListItem.name}
 												</DashboardPieceButton>
@@ -210,7 +210,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 														showThumbnailsInList={filter.showThumbnailsInList}
 														canOverflowHorizontally={filter.overflowHorizontally}
 														displayStyle={filter.displayStyle}
-														toggleOnSingleClick={this.state.singleClickMode}
+														toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
 													>
 														{adLibListItem.name}
 													</DashboardPieceButton>
