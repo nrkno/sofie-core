@@ -45,6 +45,7 @@
 		"i18next": "^19.9.2",
 		"influx": "^5.9.3",
 		"mos-connection": "^2.0.0",
+		"nanoid": "^3.3.4",
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",
 		"tslib": "^2.4.0",
