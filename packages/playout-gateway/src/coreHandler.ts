@@ -2,7 +2,7 @@ import {
 	CoreConnection,
 	CoreOptions,
 	DDPConnectorOptions,
-	CoreCredentials,
+	CollectionObj,
 } from '@sofie-automation/server-core-integration'
 
 import {
@@ -14,7 +14,6 @@ import {
 	MediaObject,
 	DeviceOptionsAny,
 } from 'timeline-state-resolver'
-import { CollectionObj } from '@sofie-automation/server-core-integration'
 
 import * as _ from 'underscore'
 import { DeviceConfig } from './connector'
@@ -175,24 +174,14 @@ export class CoreHandler {
 		subDeviceId: string,
 		subDeviceType: DeviceType | PERIPHERAL_SUBTYPE_PROCESS
 	): CoreOptions {
-		let credentials: CoreCredentials
-
-		if (this._deviceOptions.deviceId && this._deviceOptions.deviceToken) {
-			credentials = {
-				deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
-				deviceToken: this._deviceOptions.deviceToken,
-			}
-		} else if (this._deviceOptions.deviceId) {
-			this.logger.warn('Token not set, only id! This might be unsecure!')
-			credentials = {
-				deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
-				deviceToken: 'unsecureToken',
-			}
-		} else {
-			credentials = CoreConnection.getCredentials(subDeviceId)
+		if (!this._deviceOptions.deviceId) {
+			// this.logger.warn('DeviceId not set, using a temporary random id!')
+			throw new Error('DeviceId is not set!')
 		}
+
 		const options: CoreOptions = {
-			...credentials,
+			deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
+			deviceToken: this._deviceOptions.deviceToken,
 
 			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 			deviceType: PeripheralDeviceType.PLAYOUT,
@@ -203,6 +192,12 @@ export class CoreHandler {
 
 			configManifest: PLAYOUT_DEVICE_CONFIG,
 		}
+
+		if (!options.deviceToken) {
+			this.logger.warn('Token not set, only id! This might be unsecure!')
+			options.deviceToken = 'unsecureToken'
+		}
+
 		if (subDeviceType === PERIPHERAL_SUBTYPE_PROCESS) options.versions = this._getVersions()
 		return options
 	}

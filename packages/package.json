@@ -62,7 +62,6 @@
 	},
 	"name": "packages",
 	"resolutions": {
-		"lerna/**/trim-newlines": "^4.0.1",
-		"**/data-store/set-value": "^4.1.0"
+		"lerna/**/trim-newlines": "^4.0.1"
 	}
 }
