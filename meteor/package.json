@@ -105,7 +105,7 @@
 		"underscore": "^1.13.1",
 		"velocity-animate": "^1.5.2",
 		"velocity-react": "^1.4.3",
-		"vm2": "^3.9.5",
+		"vm2": "^3.9.9",
 		"webmidi": "^2.5.3",
 		"winston": "^3.5.1",
 		"xmlbuilder": "^15.1.1"

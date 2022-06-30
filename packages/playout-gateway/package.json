@@ -57,7 +57,7 @@
 	"dependencies": {
 		"@sofie-automation/blueprints-integration": "1.43.0-in-testing.0",
 		"@sofie-automation/server-core-integration": "1.43.0-in-testing.0",
-		"debug": "^4.3.2",
+		"debug": "^4.3.3",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.2",
 		"timeline-state-resolver": "7.1.0-release42.2",
