@@ -45,13 +45,13 @@ describe('Test external message queue static methods', () => {
 			timing: {
 				type: PlaylistTimingType.None,
 			},
+			rundownIdsInOrder: [protectString('rundown_1')],
 		})
 		await context.directCollections.Rundowns.insertOne({
 			_id: protectString('rundown_1'),
 			name: 'Mockito 1',
 			externalId: 'mockito',
 			playlistId: protectString('playlist_1'),
-			_rank: 0,
 
 			studioId: context.studio._id,
 			showStyleVariantId: showStyle.showStyleVariantId,
@@ -152,13 +152,13 @@ describe('Test sending messages to mocked endpoints', () => {
 			timing: {
 				type: PlaylistTimingType.None,
 			},
+			rundownIdsInOrder: [protectString('rundown_1')],
 		})
 		const rundownId = await context.directCollections.Rundowns.insertOne({
 			_id: protectString('rundown_1'),
 			name: 'Mockito 1',
 			externalId: 'mockito',
 			playlistId: protectString('playlist_1'),
-			_rank: 0,
 
 			studioId: context.studio._id,
 			showStyleVariantId: showStyle.showStyleVariantId,

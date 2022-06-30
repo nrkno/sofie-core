@@ -1,11 +1,12 @@
 import { Meteor } from 'meteor/meteor'
 import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
-import { normalizeArrayFunc, unprotectString } from '../lib'
+import { normalizeArrayFunc, normalizeArrayToMap, unprotectString } from '../lib'
 import { Studio, Studios } from './Studios'
 import {
 	sortPartsInSegments,
 	sortPartsInSortedSegments,
+	sortRundownIDsInPlaylist,
 	sortSegmentsInRundowns,
 } from '@sofie-automation/corelib/dist/playout/playlist'
 import { Rundowns, Rundown, DBRundown } from './Rundowns'
@@ -14,7 +15,6 @@ import { Parts, Part, DBPart } from './Parts'
 import { PartInstance, PartInstances } from './PartInstances'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { ReadonlyDeep } from 'type-fest'
 import {
 	RundownPlaylistId,
 	ActiveInstanceId,
@@ -35,8 +35,22 @@ export type RundownPlaylist = DBRundownPlaylist
  * These used to reside on the Rundown class
  */
 export class RundownPlaylistCollectionUtil {
-	/** Returns all Rundowns in the RundownPlaylist */
-	static getRundowns(
+	/** Returns an array of all Rundowns in the RundownPlaylist, sorted in playout order */
+	static getRundownsOrdered(
+		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,
+		selector?: MongoQuery<Rundown>,
+		options?: FindOptions<Rundown>
+	): Rundown[] {
+		const allRundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, selector, options)
+
+		const rundownsMap = normalizeArrayToMap(allRundowns, '_id')
+
+		const sortedIds = sortRundownIDsInPlaylist(playlist.rundownIdsInOrder, Array.from(rundownsMap.keys()))
+
+		return _.compact(sortedIds.map((id) => rundownsMap.get(id)))
+	}
+	/** Returns an array of all Rundowns in the RundownPlaylist, in no predictable order */
+	static getRundownsUnordered(
 		playlist: Pick<RundownPlaylist, '_id'>,
 		selector?: MongoQuery<Rundown>,
 		options?: FindOptions<Rundown>
@@ -48,38 +62,34 @@ export class RundownPlaylistCollectionUtil {
 			},
 			{
 				sort: {
-					_rank: 1,
 					_id: 1,
 				},
 				...options,
 			}
 		).fetch()
 	}
-	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist */
-	static getRundownIDs(
-		playlist: Pick<RundownPlaylist, '_id'>,
-		selector?: MongoQuery<Rundown>,
-		options?: FindOptions<Rundown>
-	): RundownId[] {
-		return RundownPlaylistCollectionUtil.getRundowns(playlist, selector, {
-			sort: {
-				_rank: 1,
-				_id: 1,
-			},
-			fields: {
-				_rank: 1,
-				_id: 1,
-			},
-			...options,
-		}).map((i) => i._id)
+	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist, sorted in playout order */
+	static getRundownOrderedIDs(playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>): RundownId[] {
+		const allIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
+
+		return sortRundownIDsInPlaylist(playlist.rundownIdsInOrder, allIds)
 	}
-	static getRundownUnorderedIDs(playlist: Pick<RundownPlaylist, '_id'>, selector?: MongoQuery<Rundown>): RundownId[] {
-		return RundownPlaylistCollectionUtil.getRundowns(playlist, selector, {
-			fields: {
-				_id: 1,
+	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist, in no predictable order */
+	static getRundownUnorderedIDs(playlist: Pick<RundownPlaylist, '_id'>): RundownId[] {
+		const rundowns = Rundowns.find(
+			{
+				playlistId: playlist._id,
 			},
-		}).map((i) => i._id)
+			{
+				fields: {
+					_id: 1,
+				},
+			}
+		).fetch() as Array<Pick<DBRundown, '_id'>>
+
+		return rundowns.map((i) => i._id)
 	}
+
 	/** Return the studio for this RundownPlaylist */
 	static getStudio(playlist: Pick<RundownPlaylist, '_id' | 'studioId'>): Studio {
 		if (!playlist.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
@@ -90,7 +100,7 @@ export class RundownPlaylistCollectionUtil {
 	}
 	/** Returns all segments joined with their rundowns in their correct oreder for this RundownPlaylist */
 	static getRundownsAndSegments(
-		playlist: Pick<RundownPlaylist, '_id'>,
+		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,
 		selector?: MongoQuery<Segment>,
 		options?: FindOptions<Segment>
 	): Array<{
@@ -98,7 +108,6 @@ export class RundownPlaylistCollectionUtil {
 			Rundown,
 			| '_id'
 			| 'name'
-			| '_rank'
 			| 'playlistId'
 			| 'timing'
 			| 'showStyleBaseId'
@@ -107,10 +116,9 @@ export class RundownPlaylistCollectionUtil {
 		>
 		segments: Segment[]
 	}> {
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
+		const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist, undefined, {
 			fields: {
 				name: 1,
-				_rank: 1,
 				playlistId: 1,
 				timing: 1,
 				showStyleBaseId: 1,
@@ -137,20 +145,15 @@ export class RundownPlaylistCollectionUtil {
 	}
 	/** Returns all segments in their correct order for this RundownPlaylist */
 	static getSegments(
-		playlist: Pick<RundownPlaylist, '_id'>,
+		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,
 		selector?: MongoQuery<Segment>,
 		options?: FindOptions<Segment>
 	): Segment[] {
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
-			fields: {
-				_rank: 1,
-				playlistId: 1,
-			},
-		})
+		const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 		const segments = Segments.find(
 			{
 				rundownId: {
-					$in: rundowns.map((i) => i._id),
+					$in: rundownIds,
 				},
 				...selector,
 			},
@@ -162,25 +165,19 @@ export class RundownPlaylistCollectionUtil {
 				...options,
 			}
 		).fetch()
-		return RundownPlaylistCollectionUtil._sortSegments(segments, rundowns)
+		return RundownPlaylistCollectionUtil._sortSegments(segments, playlist)
 	}
 	static getUnorderedParts(
 		playlist: Pick<RundownPlaylist, '_id'>,
 		selector?: MongoQuery<Part>,
 		options?: FindOptions<Part>
 	): Part[] {
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
-			fields: {
-				_id: 1,
-				_rank: 1,
-				name: 1,
-			},
-		})
+		const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 		const parts = Parts.find(
 			{
 				...selector,
 				rundownId: {
-					$in: rundowns.map((i) => i._id),
+					$in: rundownIds,
 				},
 			},
 			{
@@ -195,22 +192,17 @@ export class RundownPlaylistCollectionUtil {
 	}
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
 	static getSegmentsAndPartsSync(
-		playlist: Pick<RundownPlaylist, '_id'>,
+		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,
 		segmentsQuery?: MongoQuery<Segment>,
 		partsQuery?: MongoQuery<DBPart>,
-		segmentsOptions?: FindOptions<DBSegment>,
-		partsOptions?: FindOptions<DBPart>
+		segmentsOptions?: Omit<FindOptions<DBSegment>, 'projection'>, // We are mangling fields, so block projection
+		partsOptions?: Omit<FindOptions<DBPart>, 'projection'> // We are mangling fields, so block projection
 	): { segments: Segment[]; parts: Part[] } {
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
-			fields: {
-				_rank: 1,
-				playlistId: 1,
-			},
-		})
+		const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 		const segments = Segments.find(
 			{
 				rundownId: {
-					$in: rundowns.map((i) => i._id),
+					$in: rundownIds,
 				},
 				...segmentsQuery,
 			},
@@ -235,7 +227,7 @@ export class RundownPlaylistCollectionUtil {
 		const parts = Parts.find(
 			{
 				rundownId: {
-					$in: rundowns.map((i) => i._id),
+					$in: rundownIds,
 				},
 				...partsQuery,
 			},
@@ -259,7 +251,7 @@ export class RundownPlaylistCollectionUtil {
 			}
 		).fetch()
 
-		const sortedSegments = RundownPlaylistCollectionUtil._sortSegments(segments, rundowns)
+		const sortedSegments = RundownPlaylistCollectionUtil._sortSegments(segments, playlist)
 		return {
 			segments: sortedSegments,
 			parts: RundownPlaylistCollectionUtil._sortPartsInner(parts, sortedSegments),
@@ -272,9 +264,9 @@ export class RundownPlaylistCollectionUtil {
 		>,
 		rundownIds0?: RundownId[]
 	) {
-		let rundownIds = rundownIds0
-		if (!rundownIds) {
-			rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(playlist)
+		let unorderedRundownIds = rundownIds0
+		if (!unorderedRundownIds) {
+			unorderedRundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 		}
 
 		const ids = _.compact([
@@ -285,7 +277,7 @@ export class RundownPlaylistCollectionUtil {
 		const instances =
 			ids.length > 0
 				? PartInstances.find({
-						rundownId: { $in: rundownIds },
+						rundownId: { $in: unorderedRundownIds },
 						_id: { $in: ids },
 						reset: { $ne: true },
 				  }).fetch()
@@ -303,11 +295,11 @@ export class RundownPlaylistCollectionUtil {
 		selector?: MongoQuery<PartInstance>,
 		options?: FindOptions<PartInstance>
 	) {
-		const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(playlist)
+		const unorderedRundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 
 		return PartInstances.find(
 			{
-				rundownId: { $in: rundownIds },
+				rundownId: { $in: unorderedRundownIds },
 				...selector,
 			},
 			{
@@ -339,9 +331,9 @@ export class RundownPlaylistCollectionUtil {
 
 	static _sortSegments<TSegment extends Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>(
 		segments: Array<TSegment>,
-		rundowns: Array<ReadonlyDeep<DBRundown>>
+		playlist: Pick<DBRundownPlaylist, 'rundownIdsInOrder'>
 	) {
-		return sortSegmentsInRundowns(segments, rundowns)
+		return sortSegmentsInRundowns(segments, playlist)
 	}
 	static _matchSegmentsAndRundowns<T extends DBRundown, E extends DBSegment>(segments: E[], rundowns: T[]) {
 		const rundownsMap = new Map<
@@ -364,12 +356,15 @@ export class RundownPlaylistCollectionUtil {
 	}
 	static _sortParts(
 		parts: Part[],
-		rundowns: DBRundown[],
+		playlist: Pick<DBRundownPlaylist, 'rundownIdsInOrder'>,
 		segments: Array<Pick<Segment, '_id' | 'rundownId' | '_rank'>>
 	) {
-		return sortPartsInSegments(parts, rundowns, segments)
+		return sortPartsInSegments(parts, playlist, segments)
 	}
-	static _sortPartsInner<P extends DBPart>(parts: P[], sortedSegments: Array<Pick<Segment, '_id'>>): P[] {
+	static _sortPartsInner<P extends Pick<DBPart, '_id' | 'segmentId' | '_rank'>>(
+		parts: P[],
+		sortedSegments: Array<Pick<Segment, '_id'>>
+	): P[] {
 		return sortPartsInSortedSegments(parts, sortedSegments)
 	}
 }

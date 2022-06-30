@@ -1159,7 +1159,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun(
-			(_playlistId) => RundownPlaylistCollectionUtil.getRundowns(playlist),
+			(_playlistId) => RundownPlaylistCollectionUtil.getRundownsOrdered(playlist),
 			'playlist.getRundowns',
 			playlistId
 		)
@@ -1541,7 +1541,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
 				if (!playlist) return
 
-				const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
+				const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
 					fields: {
 						_id: 1,
 						showStyleBaseId: 1,

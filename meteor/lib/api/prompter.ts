@@ -53,7 +53,7 @@ export namespace PrompterAPI {
 		if (!playlist) {
 			return null
 		}
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
+		const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 		const rundownIdsToShowStyleBaseIds: Map<RundownId, ShowStyleBaseId> = new Map()
 		const rundownIdsToShowStyleBase: Map<RundownId, [ShowStyleBase, Record<string, ISourceLayer>] | undefined> =
 			new Map()

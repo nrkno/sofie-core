@@ -29,6 +29,7 @@ import { reportPartInstanceHasStarted, reportPartInstanceHasStopped } from '../b
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { calculatePartTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'
+import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 
 export async function takeNextPartInnerSync(context: JobContext, cache: CacheForPlayout, now: number): Promise<void> {
 	const span = context.startSpan('takeNextPartInner')
@@ -358,19 +359,24 @@ export function updatePartInstanceOnTake(
 		}
 	}
 
+	// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
+	const tmpTakePieces = processAndPrunePieceInstanceTimings(
+		showStyle,
+		cache.PieceInstances.findFetch((p) => p.partInstanceId === takePartInstance._id),
+		0
+	)
+	const partPlayoutTimings = calculatePartTimings(
+		cache.Playlist.doc.holdState,
+		currentPartInstance?.part,
+		cache.PieceInstances.findFetch((p) => p.partInstanceId === currentPartInstance?._id).map((p) => p.piece),
+		takePartInstance.part,
+		tmpTakePieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
+	)
+
 	const partInstanceM: any = {
 		$set: literal<Partial<DBPartInstance>>({
 			isTaken: true,
-			// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
-			partPlayoutTimings: calculatePartTimings(
-				cache.Playlist.doc.holdState,
-				currentPartInstance?.part,
-				cache.PieceInstances.findFetch((p) => p.partInstanceId === currentPartInstance?._id).map(
-					(p) => p.piece
-				),
-				takePartInstance.part,
-				cache.PieceInstances.findFetch((p) => p.partInstanceId === takePartInstance._id).map((p) => p.piece)
-			),
+			partPlayoutTimings: partPlayoutTimings,
 		}),
 	}
 	if (previousPartEndState) {
@@ -441,6 +447,7 @@ function startHold(
 				$set: {
 					infinite: {
 						infiniteInstanceId: infiniteInstanceId,
+						infiniteInstanceIndex: 0,
 						infinitePieceId: instance.piece._id,
 						fromPreviousPart: false,
 					},
@@ -461,6 +468,7 @@ function startHold(
 				},
 				infinite: {
 					infiniteInstanceId: infiniteInstanceId,
+					infiniteInstanceIndex: 1,
 					infinitePieceId: instance.piece._id,
 					fromPreviousPart: true,
 					fromHold: true,

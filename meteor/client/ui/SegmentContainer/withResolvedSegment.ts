@@ -199,7 +199,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 					: Math.random() * 2000 + 500
 			)
 
-			const rundownOrder = RundownPlaylistCollectionUtil.getRundownIDs(props.playlist)
+			const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)
 			const rundownIndex = rundownOrder.indexOf(segment.rundownId)
 
 			const o = RundownUtils.getResolvedSegment(

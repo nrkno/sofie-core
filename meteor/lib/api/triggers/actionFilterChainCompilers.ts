@@ -602,23 +602,32 @@ export function compileAdLibFilter(
 				// because _.isEqual (used in memoizedIsolatedAutorun) doesn't work with Maps..
 
 				const rundownPlaylistId = context.rundownPlaylistId.get()
-				const rundownRanks = memoizedIsolatedAutorun(
-					() =>
-						Rundowns.find(
+				const rundownRanks = memoizedIsolatedAutorun(() => {
+					const playlist = RundownPlaylists.findOne(rundownPlaylistId, {
+						projection: {
+							rundownIdsInOrder: 1,
+						},
+					}) as Pick<DBRundownPlaylist, 'rundownIdsInOrder'> | undefined
+
+					if (playlist?.rundownIdsInOrder) {
+						return playlist.rundownIdsInOrder
+					} else {
+						const rundowns = Rundowns.find(
 							{
 								playlistId: rundownPlaylistId,
 							},
 							{
 								fields: {
 									_id: 1,
-									_rank: 1,
 								},
 							}
-						).fetch() as Pick<DBRundown, '_id' | '_rank'>[],
-					`rundownsRanksForPlaylist_${rundownPlaylistId}`
-				)
-				rundownRanks.forEach((rundown) => {
-					rundownRankMap.set(rundown._id, rundown._rank)
+						).fetch() as Pick<DBRundown, '_id'>[]
+
+						return rundowns.map((r) => r._id)
+					}
+				}, `rundownsRanksForPlaylist_${rundownPlaylistId}`)
+				rundownRanks.forEach((id, index) => {
+					rundownRankMap.set(id, index)
 				})
 
 				const segmentRanks = memoizedIsolatedAutorun(

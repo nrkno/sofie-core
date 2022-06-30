@@ -10,7 +10,7 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 
 meteorPublish(PubSub.showStyleBases, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
+	const { cred, selector } = AutoFillSelector.organizationId<ShowStyleBase>(this.userId, selector0, token)
 	const modifier: FindOptions<ShowStyleBase> = {
 		fields: {},
 	}

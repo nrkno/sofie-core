@@ -64,7 +64,7 @@ export function allowAccessToSystemStatus(cred0: Credentials | ResolvedCredentia
 
 export function allowAccessToOrganization(
 	cred0: Credentials | ResolvedCredentials,
-	organizationId: MongoQueryKey<OrganizationId | null>
+	organizationId: OrganizationId | null
 ): Access<DBOrganization | null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!organizationId) return noAccess('organizationId not set')
@@ -124,7 +124,7 @@ export function allowAccessToShowStyleVariant(
 }
 export function allowAccessToStudio(
 	cred0: Credentials | ResolvedCredentials,
-	studioId: MongoQueryKey<StudioId>
+	studioId: StudioId
 ): Access<StudioLight | null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!studioId) return noAccess('studioId not set')
