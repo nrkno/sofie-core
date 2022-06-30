@@ -174,7 +174,7 @@ export class RundownTimingCalculator {
 				// expected is just a sum of expectedDurations
 				totalRundownDuration += calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0
 
-				const lastStartedPlayback = partInstance.timings?.startedPlayback
+				const lastStartedPlayback = partInstance.timings?.plannedStartedPlayback
 				const playOffset = partInstance.timings?.playOffset || 0
 
 				let partDuration = 0
@@ -375,7 +375,8 @@ export class RundownTimingCalculator {
 						// Finally, if both of those are undefined, we use "now", since what has happened
 						// is that user has taken out this part, but we're still waiting for timing and "now"
 						// is the best approximation of the take time we have.
-						this.lastTakeAt = partInstance.timings?.takeOut || partInstance.timings?.stoppedPlayback || now
+						this.lastTakeAt =
+							partInstance.timings?.takeOut || partInstance.timings?.plannedStoppedPlayback || now
 						this.previousPartInstanceId = playlist.previousPartInstanceId
 					}
 					// a simulated display duration, created using the "lastTakeAt" value

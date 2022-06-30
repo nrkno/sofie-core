@@ -174,7 +174,10 @@ async function pieceTakeNowAsAdlib(
 	// Disable the original piece if from the same Part
 	if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
 		// Ensure the piece being copied isnt currently live
-		if (pieceInstanceToCopy.startedPlayback && pieceInstanceToCopy.startedPlayback <= getCurrentTime()) {
+		if (
+			pieceInstanceToCopy.plannedStartedPlayback &&
+			pieceInstanceToCopy.plannedStartedPlayback <= getCurrentTime()
+		) {
 			const resolvedPieces = getResolvedPieces(context, cache, showStyleBase, partInstance)
 			const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
 
@@ -615,7 +618,7 @@ export function innerStopPieces(
 	const span = context.startSpan('innerStopPieces')
 	const stoppedInstances: PieceInstanceId[] = []
 
-	const lastStartedPlayback = currentPartInstance.timings?.startedPlayback
+	const lastStartedPlayback = currentPartInstance.timings?.plannedStartedPlayback
 	if (lastStartedPlayback === undefined) {
 		throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
 	}
@@ -633,7 +636,7 @@ export function innerStopPieces(
 			filter(pieceInstance) &&
 			pieceInstance.resolvedStart !== undefined &&
 			pieceInstance.resolvedStart <= relativeStopAt &&
-			!pieceInstance.stoppedPlayback
+			!pieceInstance.plannedStoppedPlayback
 		) {
 			switch (pieceInstance.piece.lifespan) {
 				case PieceLifespan.WithinPart:

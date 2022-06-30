@@ -58,6 +58,9 @@ export interface PieceInstance
 	userDuration?: {
 		end: number
 	}
+
+	plannedStartedPlayback?: number
+	plannedStoppedPlayback?: number // TODO - is this necessary as well as userDuration?
 }
 
 export interface ResolvedPieceInstance

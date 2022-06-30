@@ -244,10 +244,10 @@ function generateCurrentInfinitePieceObjects(
 
 	let nowInParent = currentPartInfo.nowInPart
 	let isAbsoluteInfinitePartGroup = false
-	if (pieceInstance.startedPlayback) {
+	if (pieceInstance.plannedStartedPlayback) {
 		// Make the start time stick
-		infiniteGroup.enable = { start: pieceInstance.startedPlayback }
-		nowInParent = currentTime - pieceInstance.startedPlayback
+		infiniteGroup.enable = { start: pieceInstance.plannedStartedPlayback }
+		nowInParent = currentTime - pieceInstance.plannedStartedPlayback
 		isAbsoluteInfinitePartGroup = true
 
 		// If an absolute time has been set by a hotkey, then update the duration to be correct

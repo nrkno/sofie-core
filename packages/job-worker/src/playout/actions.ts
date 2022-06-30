@@ -194,16 +194,8 @@ export async function deactivateRundownPlaylistInner(
 	})
 	await setNextPart(context, cache, null)
 
-	if (currentPartInstance) {
-		onPartHasStoppedPlaying(cache, currentPartInstance, getCurrentTime())
+	if (currentPartInstance) onPartHasStoppedPlaying(cache, currentPartInstance._id, getCurrentTime())
 
-		cache.PartInstances.update(currentPartInstance._id, (instance) => {
-			if (!instance.timings) instance.timings = {}
-			instance.timings.plannedStoppedPlayback = getCurrentTime()
-
-			return instance
-		})
-	}
 	if (span) span.end()
 	return rundown
 }

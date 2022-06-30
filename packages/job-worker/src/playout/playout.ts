@@ -619,8 +619,8 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 				// Find next piece to disable
 
 				let nowInPart = 0
-				if (!ignoreStartedPlayback && partInstance.timings?.startedPlayback) {
-					nowInPart = getCurrentTime() - partInstance.timings?.startedPlayback
+				if (!ignoreStartedPlayback && partInstance.timings?.plannedStartedPlayback) {
+					nowInPart = getCurrentTime() - partInstance.timings?.plannedStartedPlayback
 				}
 
 				const pieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === partInstance._id)
@@ -655,11 +655,6 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 						((!data.undo && !piece.disabled) || (data.undo && piece.disabled))
 					)
 				})
-			}
-
-			if (nextPartInstance?.timings) {
-				// pretend that the next part never has played (even if it has)
-				delete nextPartInstance.timings.startedPlayback
 			}
 
 			const partInstances: Array<[DBPartInstance | undefined, boolean]> = [
@@ -878,8 +873,8 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 							logger.error(
 								`Previous PartInstance "${playlist.previousPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
 							)
-						} else if (!previousPartInstance.timings?.duration) {
-							onPartHasStoppedPlaying(cache, previousPartInstance, data.startedPlayback)
+						} else {
+							onPartHasStoppedPlaying(cache, previousPartInstance._id, data.startedPlayback)
 						}
 					}
 
@@ -895,8 +890,8 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 							logger.error(
 								`Previous PartInstance "${playlist.currentPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
 							)
-						} else if (!currentPartInstance.timings?.duration) {
-							onPartHasStoppedPlaying(cache, currentPartInstance, data.startedPlayback)
+						} else {
+							onPartHasStoppedPlaying(cache, currentPartInstance._id, data.startedPlayback)
 						}
 					}
 
@@ -1078,6 +1073,11 @@ function timelineTriggerTimeInner(
 	// ------------------------------
 	const timeline = cache.Timeline.doc
 	if (timeline) {
+		if (timeline.nowTime) {
+			logger.warn(`Ignoring timelineTriggerTime as nowTime is already set`)
+			return
+		}
+
 		const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
 		let tlChanged = false
 
@@ -1146,7 +1146,7 @@ function timelineTriggerTimeInner(
 			}
 		}
 		if (tlChanged) {
-			saveTimeline(context, cache, timelineObjs, timeline.generationVersions)
+			saveTimeline(context, cache, timelineObjs, timeline.generationVersions, null)
 		}
 	}
 }

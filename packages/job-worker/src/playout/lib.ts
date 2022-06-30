@@ -678,18 +678,17 @@ function resetPartInstancesWithPieceInstances(
 
 export function onPartHasStoppedPlaying(
 	cache: CacheForPlayout,
-	partInstance: DBPartInstance,
+	partInstanceId: PartInstanceId,
 	stoppedPlayingTime: Time
 ): void {
-	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
-		cache.PartInstances.update(partInstance._id, {
-			$set: {
-				'timings.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
-			},
-		})
-	} else {
-		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)
-	}
+	cache.PartInstances.update(partInstanceId, (instance) => {
+		if (instance.timings && instance.timings.plannedStartedPlayback && !instance.timings.plannedStoppedPlayback) {
+			instance.timings.plannedStoppedPlayback = stoppedPlayingTime
+			instance.timings.duration = stoppedPlayingTime - instance.timings.plannedStartedPlayback
+			return instance
+		}
+		return false
+	})
 }
 
 export function substituteObjectIds(

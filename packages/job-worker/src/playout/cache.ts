@@ -2,7 +2,7 @@ import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation
 import { DbCacheWriteObject, DbCacheWriteOptionalObject } from '../cache/CacheObject'
 import { CacheBase, ReadOnlyCache } from '../cache/CacheBase'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
-import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
