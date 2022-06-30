@@ -415,16 +415,7 @@ export function getOrderedSegmentsAndPartsFromPlayoutCache(cache: CacheForPlayou
 	segments: DBSegment[]
 	parts: DBPart[]
 } {
-	const rundowns = cache.Rundowns.findFetch(
-		{},
-		{
-			sort: {
-				_rank: 1,
-				_id: 1,
-			},
-		}
-	)
-	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, rundowns)
+	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, cache.Playlist.doc)
 }
 export function getRundownIDsFromCache(cache: CacheForPlayout): RundownId[] {
 	return cache.Rundowns.findFetch({}).map((r) => r._id)

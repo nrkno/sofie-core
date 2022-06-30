@@ -2,8 +2,8 @@ import {
 	DeviceConfigManifest,
 	ConfigManifestEntryType,
 	SubDeviceConfigManifest,
-	SubDeviceConfigManifestEntry,
 	MappingsManifest,
+	ConfigManifestEntry,
 } from '@sofie-automation/server-core-integration'
 import {
 	DeviceType as TSRDeviceType,
@@ -21,7 +21,7 @@ import {
 	MappingOBSType,
 } from 'timeline-state-resolver'
 
-const PLAYOUT_SUBDEVICE_COMMON: SubDeviceConfigManifestEntry[] = [
+const PLAYOUT_SUBDEVICE_COMMON: ConfigManifestEntry[] = [
 	{
 		id: 'debug',
 		name: 'Activate debug logging for device',
@@ -38,14 +38,14 @@ const PLAYOUT_SUBDEVICE_COMMON: SubDeviceConfigManifestEntry[] = [
 		type: ConfigManifestEntryType.FLOAT,
 	},
 ]
-const PLAYOUT_SUBDEVICE_HOST = [
+const PLAYOUT_SUBDEVICE_HOST: ConfigManifestEntry[] = [
 	{
 		id: 'options.host',
 		name: 'Host',
 		type: ConfigManifestEntryType.STRING,
 	},
 ]
-const PLAYOUT_SUBDEVICE_HOST_PORT = [
+const PLAYOUT_SUBDEVICE_HOST_PORT: ConfigManifestEntry[] = [
 	...PLAYOUT_SUBDEVICE_HOST,
 	{
 		id: 'options.port',

@@ -9,7 +9,7 @@ import {
 	PeripheralDevice,
 } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, stringifyObjects } from '../../lib/lib'
+import { getCurrentTime, protectString, makePromise, stringifyObjects, literal } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
@@ -46,7 +46,7 @@ import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPacka
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { ConfigManifestEntryType, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
+import { ConfigManifestEntryType, DeviceConfigManifest, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
 import { Studios } from '../../lib/collections/Studios'
 
 const apmNamespace = 'peripheralDevice'
@@ -118,6 +118,7 @@ export namespace ServerPeripheralDeviceAPI {
 					statusCode: StatusCode.UNKNOWN,
 				},
 				studioId: protectString(''),
+				settings: {},
 				connected: true,
 				connectionId: options.connectionId,
 				lastSeen: getCurrentTime(),
@@ -134,7 +135,11 @@ export namespace ServerPeripheralDeviceAPI {
 				versions: options.versions,
 				// settings: {},
 
-				configManifest: options.configManifest,
+				configManifest:
+					options.configManifest ??
+					literal<DeviceConfigManifest>({
+						deviceConfig: [],
+					}),
 			})
 		}
 		return deviceId
@@ -326,7 +331,7 @@ export namespace ServerPeripheralDeviceAPI {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
-		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
+		r: PeripheralDeviceAPI.PiecePlaybackStoppedResult
 	): Promise<void> {
 		const transaction = profiler.startTransaction('piecePlaybackStopped', apmNamespace)
 
@@ -355,7 +360,7 @@ export namespace ServerPeripheralDeviceAPI {
 		deviceId: PeripheralDeviceId,
 		token: string,
 		message: string,
-		cb?: Function
+		cb?: (err: any | null, msg: any) => void
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
@@ -789,7 +794,12 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	async getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
 		return makePromise(() => ServerPeripheralDeviceAPI.getPeripheralDevice(this, deviceId, deviceToken))
 	}
-	async pingWithCommand(deviceId: PeripheralDeviceId, deviceToken: string, message: string, cb?: Function) {
+	async pingWithCommand(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		message: string,
+		cb?: (err: any | null, msg: any) => void
+	) {
 		return makePromise(() => ServerPeripheralDeviceAPI.pingWithCommand(this, deviceId, deviceToken, message, cb))
 	}
 	async killProcess(deviceId: PeripheralDeviceId, deviceToken: string, really: boolean) {

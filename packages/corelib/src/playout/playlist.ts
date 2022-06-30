@@ -1,33 +1,34 @@
-import { DBRundown } from '../dataModel/Rundown'
+import { DBRundownPlaylist } from '../dataModel/RundownPlaylist'
 import { DBSegment } from '../dataModel/Segment'
 import { DBPart } from '../dataModel/Part'
-import { SegmentId } from '../dataModel/Ids'
+import { RundownId, SegmentId } from '../dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
-import { normalizeArrayToMap } from '../lib'
 
 export function sortSegmentsInRundowns<TSegment extends Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>(
 	segments: TSegment[],
-	rundowns: Array<ReadonlyDeep<DBRundown>>
+	playlist: Pick<ReadonlyDeep<DBRundownPlaylist>, 'rundownIdsInOrder'>
 ): TSegment[] {
-	const rundownsMap = normalizeArrayToMap(rundowns, '_id')
+	const rundownRankLookup = new Map<RundownId, number>()
+	playlist.rundownIdsInOrder?.forEach((id, index) => rundownRankLookup.set(id, index))
+
 	return segments.sort((a, b) => {
 		if (a.rundownId === b.rundownId) {
 			return a._rank - b._rank
 		} else {
-			const rdA = rundownsMap.get(a.rundownId)?._rank ?? Number.POSITIVE_INFINITY
-			const rdB = rundownsMap.get(b.rundownId)?._rank ?? Number.POSITIVE_INFINITY
+			const rdA = rundownRankLookup.get(a.rundownId) ?? Number.POSITIVE_INFINITY
+			const rdB = rundownRankLookup.get(b.rundownId) ?? Number.POSITIVE_INFINITY
 			return rdA - rdB
 		}
 	})
 }
 export function sortPartsInSegments(
 	parts: DBPart[],
-	rundowns: DBRundown[],
+	playlist: Pick<DBRundownPlaylist, 'rundownIdsInOrder'>,
 	segments: Array<Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>
 ): DBPart[] {
-	return sortPartsInSortedSegments(parts, sortSegmentsInRundowns(segments, rundowns))
+	return sortPartsInSortedSegments(parts, sortSegmentsInRundowns(segments, playlist))
 }
-export function sortPartsInSortedSegments<P extends DBPart>(
+export function sortPartsInSortedSegments<P extends Pick<DBPart, '_id' | 'segmentId' | '_rank'>>(
 	parts: P[],
 	sortedSegments: Array<Pick<DBSegment, '_id'>>
 ): P[] {
@@ -45,4 +46,21 @@ export function sortPartsInSortedSegments<P extends DBPart>(
 			return segA - segB
 		}
 	})
+}
+
+/**
+ * Sort an array of RundownIds based on a reference list
+ * @param sortedPossibleIds The already sorted ids. This may be missing some of the unsorted ones
+ * @param unsortedRundownIds The ids to sort
+ */
+export function sortRundownIDsInPlaylist(
+	sortedPossibleIds: ReadonlyDeep<RundownId[]>,
+	unsortedRundownIds: RundownId[]
+): RundownId[] {
+	const sortedVerifiedExisting = sortedPossibleIds.filter((id) => unsortedRundownIds.includes(id))
+
+	// Find the ids which are missing from the playlist (just in case)
+	const missingIds = unsortedRundownIds.filter((id) => !sortedVerifiedExisting.includes(id)).sort()
+
+	return [...sortedVerifiedExisting, ...missingIds]
 }

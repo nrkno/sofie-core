@@ -53,6 +53,7 @@ import {
 	StudioJobs,
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { MeteorCall } from '../../../lib/api/methods'
+import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 
 const DEBUG = false
 
@@ -81,6 +82,7 @@ describe('test peripheralDevice general API methods', () => {
 			timing: {
 				type: PlaylistTimingType.None,
 			},
+			rundownIdsInOrder: [rundownID],
 		})
 		Rundowns.insert({
 			_id: rundownID,
@@ -91,7 +93,6 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'test rundown',
 			created: 1000,
 			playlistId: rundownPlaylistID,
-			_rank: 0,
 			peripheralDeviceId: env.ingestDevice._id,
 			modified: getCurrentTime(),
 			importVersions: {
@@ -215,7 +216,7 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('getPeripheralDevice', async () => {
-		const gotDevice: PeripheralDevice = await MeteorCall.peripheralDevice.getPeripheralDevice(
+		const gotDevice: PeripheralDevicePublic = await MeteorCall.peripheralDevice.getPeripheralDevice(
 			device._id,
 			device.token
 		)
@@ -592,6 +593,7 @@ describe('test peripheralDevice general API methods', () => {
 				organizationId: null,
 				name: 'Mock Media Manager',
 				studioId: env.studio._id,
+				settings: {},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
 					deviceConfig: [],
@@ -745,6 +747,7 @@ describe('test peripheralDevice general API methods', () => {
 				organizationId: null,
 				name: 'Mock Media Manager',
 				studioId: env.studio._id,
+				settings: {},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
 					deviceConfig: [],

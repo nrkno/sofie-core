@@ -11,6 +11,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -21,7 +24,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoCreate 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -322,6 +324,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -332,7 +337,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -624,6 +628,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -634,7 +641,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
@@ -951,6 +957,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -961,7 +970,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
@@ -1265,6 +1273,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -1275,7 +1286,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "externalNRCSName": "ENPS",
@@ -1577,6 +1587,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -1587,7 +1600,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
@@ -1856,6 +1868,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -1866,7 +1881,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
@@ -2182,6 +2196,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -2192,7 +2209,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
@@ -2517,6 +2533,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -2527,7 +2546,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to end 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
@@ -2834,6 +2852,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -2844,7 +2865,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
@@ -3151,6 +3171,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -3161,7 +3184,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
@@ -3459,7 +3481,6 @@ exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 5`] =
 exports[`Test recieved mos ingest payloads mosRoStoryStatus: Update part 1`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
@@ -3766,6 +3787,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -3776,7 +3800,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
@@ -4074,6 +4097,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -4084,7 +4110,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
@@ -4418,6 +4443,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -4428,7 +4456,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same segment 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
@@ -4735,6 +4762,9 @@ Object {
   "nextPartInstanceId": null,
   "organizationId": null,
   "previousPartInstanceId": null,
+  "rundownIdsInOrder": Array [
+    "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
+  ],
   "studioId": "mockStudio4",
   "timing": Object {
     "type": "none",
@@ -4745,7 +4775,6 @@ Object {
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Within same segment 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "_rank": 1,
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",

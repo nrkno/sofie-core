@@ -1,7 +1,7 @@
 import {
 	CoreConnection,
+	CoreCredentials,
 	CoreOptions,
-	PeripheralDeviceAPI as P,
 	DDPConnectorOptions,
 } from '@sofie-automation/server-core-integration'
 import * as Winston from 'winston'
@@ -56,11 +56,20 @@ import * as _ from 'underscore'
 import { MosHandler } from './mosHandler'
 import { DeviceConfig } from './connector'
 import { MOS_DEVICE_CONFIG_MANIFEST } from './configManifest'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
+import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 // import { STATUS_CODES } from 'http'
 export interface PeripheralDeviceCommand {
 	_id: string
 
-	deviceId: string
+	deviceId: PeripheralDeviceId
 	functionName: string
 	args: Array<any>
 
@@ -154,20 +163,20 @@ export class CoreMosDeviceHandler {
 		this._coreParentHandler.setupObserverForPeripheralDeviceCommands(this)
 	}
 	onMosConnectionChanged(connectionStatus: IMOSConnectionStatus): void {
-		let statusCode: P.StatusCode
+		let statusCode: StatusCode
 		const messages: Array<string> = []
 
 		if (connectionStatus.PrimaryConnected) {
 			if (connectionStatus.SecondaryConnected || !this._mosDevice.idSecondary) {
-				statusCode = P.StatusCode.GOOD
+				statusCode = StatusCode.GOOD
 			} else {
-				statusCode = P.StatusCode.WARNING_MINOR
+				statusCode = StatusCode.WARNING_MINOR
 			}
 		} else {
 			if (connectionStatus.SecondaryConnected) {
-				statusCode = P.StatusCode.WARNING_MAJOR
+				statusCode = StatusCode.WARNING_MAJOR
 			} else {
-				statusCode = P.StatusCode.BAD
+				statusCode = StatusCode.BAD
 			}
 		}
 
@@ -211,31 +220,31 @@ export class CoreMosDeviceHandler {
 		return Promise.resolve(info)
 	}
 	async mosRoCreate(ro: IMOSRunningOrder): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoCreate, ro)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoCreate, ro)
 	}
 	async mosRoReplace(ro: IMOSRunningOrder): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoReplace, ro)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoReplace, ro)
 	}
 	async mosRoDelete(runningOrderId: MosString128): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoDelete, runningOrderId)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoDelete, runningOrderId)
 	}
 	async mosRoMetadata(metadata: IMOSRunningOrderBase): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoMetadata, metadata)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoMetadata, metadata)
 	}
 	async mosRoStatus(status: IMOSRunningOrderStatus): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoStatus, status)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStatus, status)
 	}
 	async mosRoStoryStatus(status: IMOSStoryStatus): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoStoryStatus, status)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStoryStatus, status)
 	}
 	async mosRoItemStatus(status: IMOSItemStatus): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoItemStatus, status)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoItemStatus, status)
 	}
 	async mosRoStoryInsert(Action: IMOSStoryAction, Stories: Array<IMOSROStory>): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoStoryInsert, Action, Stories)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStoryInsert, Action, Stories)
 	}
 	async mosRoStoryReplace(Action: IMOSStoryAction, Stories: Array<IMOSROStory>): Promise<any> {
-		const result = this._coreMosManipulate(P.methods.mosRoStoryReplace, Action, Stories)
+		const result = this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStoryReplace, Action, Stories)
 
 		if (this._pendingStoryItemChanges.length > 0) {
 			Stories.forEach((story) => {
@@ -253,19 +262,19 @@ export class CoreMosDeviceHandler {
 		return result
 	}
 	async mosRoStoryMove(Action: IMOSStoryAction, Stories: Array<MosString128>): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoStoryMove, Action, Stories)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStoryMove, Action, Stories)
 	}
 	async mosRoStoryDelete(Action: IMOSROAction, Stories: Array<MosString128>): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoStoryDelete, Action, Stories)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStoryDelete, Action, Stories)
 	}
 	async mosRoStorySwap(Action: IMOSROAction, StoryID0: MosString128, StoryID1: MosString128): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoStorySwap, Action, StoryID0, StoryID1)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStorySwap, Action, StoryID0, StoryID1)
 	}
 	async mosRoItemInsert(Action: IMOSItemAction, Items: Array<IMOSItem>): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoItemInsert, Action, Items)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoItemInsert, Action, Items)
 	}
 	async mosRoItemReplace(Action: IMOSItemAction, Items: Array<IMOSItem>): Promise<any> {
-		const result = this._coreMosManipulate(P.methods.mosRoItemReplace, Action, Items)
+		const result = this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoItemReplace, Action, Items)
 
 		if (this._pendingStoryItemChanges.length > 0) {
 			Items.forEach((item) => {
@@ -281,19 +290,19 @@ export class CoreMosDeviceHandler {
 		return result
 	}
 	async mosRoItemMove(Action: IMOSItemAction, Items: Array<MosString128>): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoItemMove, Action, Items)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoItemMove, Action, Items)
 	}
 	async mosRoItemDelete(Action: IMOSStoryAction, Items: Array<MosString128>): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoItemDelete, Action, Items)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoItemDelete, Action, Items)
 	}
 	async mosRoItemSwap(Action: IMOSStoryAction, ItemID0: MosString128, ItemID1: MosString128): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoItemSwap, Action, ItemID0, ItemID1)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoItemSwap, Action, ItemID0, ItemID1)
 	}
 	async mosRoReadyToAir(Action: IMOSROReadyToAir): Promise<any> {
-		return this._coreMosManipulate(P.methods.mosRoReadyToAir, Action)
+		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoReadyToAir, Action)
 	}
 	async mosRoFullStory(story: IMOSROFullStory): Promise<any> {
-		const result = this._coreMosManipulate(P.methods.mosRoFullStory, story)
+		const result = this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoFullStory, story)
 
 		if (this._pendingStoryItemChanges.length > 0) {
 			const pendingChange = this._pendingStoryItemChanges.find((change) => change.storyID === story.ID.toString())
@@ -467,7 +476,7 @@ export class CoreMosDeviceHandler {
 
 		return this.core
 			.setStatus({
-				statusCode: P.StatusCode.BAD,
+				statusCode: StatusCode.BAD,
 				messages: ['Uninitialized'],
 			})
 			.then(() => {
@@ -595,7 +604,7 @@ export class CoreHandler {
 
 				this.core
 					.setStatus({
-						statusCode: P.StatusCode.GOOD,
+						statusCode: StatusCode.GOOD,
 						// messages: []
 					})
 					.catch((e) => this.logger.warn('Error when setting status:' + e))
@@ -615,7 +624,7 @@ export class CoreHandler {
 
 		return this.core
 			.setStatus({
-				statusCode: P.StatusCode.FATAL,
+				statusCode: StatusCode.FATAL,
 				messages: ['Shutting down'],
 			})
 			.then(async () => {
@@ -636,20 +645,17 @@ export class CoreHandler {
 			})
 	}
 	getCoreConnectionOptions(name: string, subDeviceId: string, parentProcess: boolean): CoreOptions {
-		let credentials: {
-			deviceId: string
-			deviceToken: string
-		}
+		let credentials: CoreCredentials
 
 		if (this._deviceOptions.deviceId && this._deviceOptions.deviceToken) {
 			credentials = {
-				deviceId: this._deviceOptions.deviceId + subDeviceId,
+				deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
 				deviceToken: this._deviceOptions.deviceToken,
 			}
 		} else if (this._deviceOptions.deviceId) {
 			this.logger.warn('Token not set, only id! This might be unsecure!')
 			credentials = {
-				deviceId: this._deviceOptions.deviceId + subDeviceId,
+				deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
 				deviceToken: 'unsecureToken',
 			}
 		} else {
@@ -658,9 +664,9 @@ export class CoreHandler {
 		const options: CoreOptions = {
 			...credentials,
 
-			deviceCategory: P.DeviceCategory.INGEST,
-			deviceType: P.DeviceType.MOS, // @todo: should not have this...
-			deviceSubType: parentProcess ? P.SUBTYPE_PROCESS : 'mos_connection',
+			deviceCategory: PeripheralDeviceCategory.INGEST,
+			deviceType: PeripheralDeviceType.MOS, // @todo: should not have this...
+			deviceSubType: parentProcess ? PERIPHERAL_SUBTYPE_PROCESS : 'mos_connection',
 
 			deviceName: name,
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
@@ -758,7 +764,7 @@ export class CoreHandler {
 				}
 
 				fcnObject.core
-					.callMethod(P.methods.functionReply, [cmd._id, err, res])
+					.callMethod(PeripheralDeviceAPIMethods.functionReply, [cmd._id, err, res])
 					.then(() => {
 						// console.log('cb done')
 					})

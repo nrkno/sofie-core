@@ -20,6 +20,8 @@ import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studios } from '../../lib/collections/Studios'
 import { checkPieceContentStatus } from '../../lib/mediaObjects'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
 
 async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 	const rundowns = await Rundowns.findFetchAsync({
@@ -100,14 +102,20 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 }
 
 class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownNotificationsAPI {
-	async getSegmentPartNotes(rundownIds: RundownId[]): Promise<(PartNote & { rank: number })[]> {
+	async getSegmentPartNotes(
+		playlistId: RundownPlaylistId,
+		rundownIds: RundownId[]
+	): Promise<(PartNote & { rank: number })[]> {
 		triggerWriteAccessBecauseNoCheckNecessary()
+		if (!RundownPlaylistReadAccess.rundownPlaylistContent({ _id: playlistId }, this))
+			throw new Meteor.Error(401, 'Invalid access creditials for Segment Parts Notes')
+
 		rundownIds.forEach((rundownId) => {
 			if (!RundownReadAccess.rundownContent({ rundownId }, this)) {
 				throw new Meteor.Error(401, 'Invalid access creditials for Segment Parts Notes')
 			}
 		})
-		return makePromise(() => getSegmentPartNotes.apply(this, [rundownIds]))
+		return makePromise(() => getSegmentPartNotes.apply(this, [playlistId, rundownIds]))
 	}
 	async getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 		triggerWriteAccessBecauseNoCheckNecessary()

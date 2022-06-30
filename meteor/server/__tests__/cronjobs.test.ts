@@ -132,7 +132,6 @@ describe('cronjobs', () => {
 			// Mock Rundown 0
 			Rundowns.insert({
 				_id: rundown0Id,
-				_rank: 0,
 				created: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
 				organizationId: null,
 				externalId: '',
@@ -401,6 +400,7 @@ describe('cronjobs', () => {
 				},
 				subType: TSR.DeviceType.ABSTRACT,
 				token: '',
+				settings: {},
 			})
 			const mockCasparCg = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
@@ -423,6 +423,7 @@ describe('cronjobs', () => {
 					statusCode: StatusCode.GOOD,
 				},
 				token: '',
+				settings: {},
 			})
 			const mockATEM = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
@@ -445,6 +446,7 @@ describe('cronjobs', () => {
 					statusCode: StatusCode.GOOD,
 				},
 				token: '',
+				settings: {},
 			})
 			;(logger.info as jest.Mock).mockClear()
 			// set time to 2020/07/{date} 04:05 Local Time, should be more than 24 hours after 2020/07/19 00:00 UTC
@@ -498,6 +500,7 @@ describe('cronjobs', () => {
 				},
 				subType: TSR.DeviceType.ABSTRACT,
 				token: '',
+				settings: {},
 			})
 			const mockCasparCg = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
@@ -520,6 +523,7 @@ describe('cronjobs', () => {
 					statusCode: StatusCode.GOOD,
 				},
 				token: '',
+				settings: {},
 			})
 			const mockATEM = protectString<PeripheralDeviceId>(getRandomString())
 			PeripheralDevices.insert({
@@ -542,6 +546,7 @@ describe('cronjobs', () => {
 					statusCode: StatusCode.GOOD,
 				},
 				token: '',
+				settings: {},
 			})
 			CoreSystem.update(
 				{},

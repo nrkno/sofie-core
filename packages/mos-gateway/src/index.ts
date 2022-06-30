@@ -1,6 +1,7 @@
 import { Connector, Config } from './connector'
 import * as Winston from 'winston'
 import _ = require('underscore')
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -198,7 +199,7 @@ const config: Config = {
 		certificates: _.compact(certs),
 	},
 	device: {
-		deviceId: deviceId,
+		deviceId: protectString(deviceId),
 		deviceToken: deviceToken,
 	},
 	core: {

@@ -98,7 +98,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const rawSegments = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
 		const rawParts = await context.directCollections.Parts.findFetch({ rundownId: rundown._id })
 
-		const segments = sortSegmentsInRundowns(rawSegments, [rundown])
+		const segments = sortSegmentsInRundowns(rawSegments, { rundownIdsInOrder: [rundown._id] })
 		const parts = sortPartsInSortedSegments(rawParts, segments)
 
 		return {

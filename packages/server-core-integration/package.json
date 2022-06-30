@@ -70,11 +70,12 @@
 		"production"
 	],
 	"dependencies": {
+		"@sofie-automation/shared-lib": "1.44.0-in-development",
 		"data-store": "^4.0.3",
 		"ejson": "^2.2.2",
 		"eventemitter3": "^4.0.7",
 		"faye-websocket": "^0.11.4",
-		"got": "^11.8.2",
+		"got": "^11.8.5",
 		"tslib": "^2.4.0",
 		"underscore": "^1.13.3"
 	},

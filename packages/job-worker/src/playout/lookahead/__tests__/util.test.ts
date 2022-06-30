@@ -54,7 +54,6 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			showStyleVariantId: protectString('showStyleVariante0'),
 
 			playlistId: playlistId,
-			_rank: 0,
 
 			_id: rundownId,
 			externalId: 'MOCK_RUNDOWN',

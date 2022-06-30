@@ -39,7 +39,8 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"tslib": "^2.4.0"
+		"tslib": "^2.4.0",
+		"type-fest": "^2.12.2"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

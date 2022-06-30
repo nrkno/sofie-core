@@ -1,14 +1,2 @@
-import { TSR } from '@sofie-automation/blueprints-integration'
-
-/**
- * The basic PlayoutDevice settings structure.
- * Note: playout-gateway will likely have more than this here, but this is that core needs to know about
- */
-export interface PlayoutDeviceSettings {
-	devices: {
-		[deviceId: string]: TSR.DeviceOptionsAny
-	}
-	locations: {
-		[deviceId: string]: any // todo
-	}
-}
+export * from '@sofie-automation/shared-lib/dist/peripheralDevice/ingest'
+export { PlayoutDeviceSettings } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'

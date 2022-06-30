@@ -2932,6 +2932,7 @@
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
   version "1.44.0-in-development"
   dependencies:
+    "@sofie-automation/shared-lib" "link:shared-lib"
     timeline-state-resolver-types "7.1.0-release42.1"
     tslib "^2.4.0"
     type-fest "^2.12.2"
@@ -2960,6 +2961,7 @@
   version "1.44.0-in-development"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
+    "@sofie-automation/shared-lib" "link:shared-lib"
     fast-clone "^1.5.13"
     i18next "^19.9.2"
     influx "^5.9.3"
@@ -2971,8 +2973,10 @@
     underscore "^1.13.3"
 
 "@sofie-automation/shared-lib@link:shared-lib":
-  version "0.0.0"
-  uid ""
+  version "1.44.0-in-development"
+  dependencies:
+    tslib "^2.4.0"
+    type-fest "^2.12.2"
 
 "@svgr/babel-plugin-add-jsx-attribute@^5.4.0":
   version "5.4.0"
@@ -7531,10 +7535,10 @@ globby@^12.0.2:
     merge2 "^1.4.1"
     slash "^4.0.0"
 
-got@^11.8.2:
-  version "11.8.3"
-  resolved "https://registry.yarnpkg.com/got/-/got-11.8.3.tgz#f496c8fdda5d729a90b4905d2b07dbd148170770"
-  integrity sha512-7gtQ5KiPh1RtGS9/Jbv1ofDpBFuq42gyfEib+ejaRBJuj/3tQFeR5+gw57e4ipaU8c/rCjvX6fkQz2lyDlGAOg==
+got@^11.8.2, got@^11.8.5:
+  version "11.8.5"
+  resolved "https://registry.yarnpkg.com/got/-/got-11.8.5.tgz#ce77d045136de56e8f024bebb82ea349bc730046"
+  integrity sha512-o0Je4NvQObAuZPHLFoRSkdG2lTgtcynqymzg2Vupdx6PorhaT5MCbIyXG6d4D94kk8ZG57QeosgdiqfJWhEhlQ==
   dependencies:
     "@sindresorhus/is" "^4.0.0"
     "@szmarczak/http-timer" "^4.0.5"

@@ -1,11 +1,16 @@
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { CoreConnection } from '../src/index'
-import { PeripheralDeviceAPI as P } from '../src/lib/corePeripherals'
 
 const core = new CoreConnection({
-	deviceId: 'ExampleDevice',
+	deviceId: protectString('ExampleDevice'),
 	deviceToken: 'abcd',
-	deviceCategory: P.DeviceCategory.PLAYOUT,
-	deviceType: P.DeviceType.PLAYOUT,
+	deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+	deviceType: PeripheralDeviceType.PLAYOUT,
 	deviceName: 'Jest test framework',
 })
 
@@ -64,7 +69,7 @@ const setup = async () => {
 		console.log('init!')
 
 		await core.setStatus({
-			statusCode: P.StatusCode.GOOD,
+			statusCode: StatusCode.GOOD,
 			messages: [''],
 		})
 
@@ -75,7 +80,7 @@ const setup = async () => {
 		setTimeout(() => {
 			console.log('updating status')
 			core.setStatus({
-				statusCode: P.StatusCode.GOOD,
+				statusCode: StatusCode.GOOD,
 				messages: ['a'],
 			}).catch((e) => {
 				console.error(`Failed to set status`, e)
@@ -90,7 +95,7 @@ const setup = async () => {
 		setTimeout(() => {
 			console.log('updating status')
 			core.setStatus({
-				statusCode: P.StatusCode.GOOD,
+				statusCode: StatusCode.GOOD,
 				messages: ['b'],
 			}).catch((e) => {
 				console.error(`Failed to set status`, e)
