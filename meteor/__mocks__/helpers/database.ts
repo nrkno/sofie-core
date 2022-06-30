@@ -112,6 +112,7 @@ export function setupMockPeripheralDevice(
 		name: 'mockDevice',
 		organizationId: null,
 		studioId: studio ? studio._id : undefined,
+		settings: {},
 
 		category: category,
 		type: type,

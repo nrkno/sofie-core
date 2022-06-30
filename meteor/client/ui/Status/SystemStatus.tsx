@@ -24,7 +24,7 @@ import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RESTART_SALT } from '../../../lib/api/userActions'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib'
+import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { StatusCodePill } from './StatusCodePill'
 
 interface IDeviceItemProps {

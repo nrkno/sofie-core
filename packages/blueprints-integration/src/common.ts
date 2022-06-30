@@ -1,4 +1,4 @@
-export type Time = number
+export { Time } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 export interface IBlueprintConfig {
 	[key: string]: ConfigItemValue

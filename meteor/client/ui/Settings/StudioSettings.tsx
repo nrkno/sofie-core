@@ -52,7 +52,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { ConfigManifestEntryType, MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
 import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
-import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib'
+import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 import { MongoCollection } from '../../../lib/collections/lib'
 

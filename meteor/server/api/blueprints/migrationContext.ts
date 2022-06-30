@@ -254,7 +254,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		})
 
 		if (!parentDevice || !parentDevice.settings) return undefined
-		return (parentDevice.settings as PlayoutDeviceSettings).devices[deviceId]
+		return (parentDevice.settings as PlayoutDeviceSettings).devices[deviceId] as TSR.DeviceOptionsAny
 	}
 	insertDevice(deviceId: string, device: TSR.DeviceOptionsAny): string {
 		check(deviceId, String)
