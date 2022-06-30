@@ -36,7 +36,7 @@ meteorPublish(PubSub.timeline, function (selector, token) {
 	return null
 })
 
-meteorCustomPublishArray<RoutedTimeline>(
+meteorCustomPublishArray(
 	PubSub.timelineForDevice,
 	'studioTimeline',
 	async function (pub, deviceId: PeripheralDeviceId, token) {
@@ -55,15 +55,11 @@ meteorCustomPublishArray<RoutedTimeline>(
 	}
 )
 
-meteorCustomPublishArray<RoutedTimeline>(
-	PubSub.timelineForStudio,
-	'studioTimeline',
-	async function (pub, studioId: StudioId, token) {
-		if (StudioReadAccess.studio({ _id: studioId }, { userId: this.userId, token })) {
-			await createObserverForTimelinePublication(pub, PubSub.timelineForStudio, studioId)
-		}
+meteorCustomPublishArray(PubSub.timelineForStudio, 'studioTimeline', async function (pub, studioId: StudioId, token) {
+	if (StudioReadAccess.studio({ _id: studioId }, { userId: this.userId, token })) {
+		await createObserverForTimelinePublication(pub, PubSub.timelineForStudio, studioId)
 	}
-)
+})
 
 interface RoutedTimelineArgs {
 	readonly studioId: StudioId

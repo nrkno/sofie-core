@@ -1,8 +1,7 @@
 import { Meteor } from 'meteor/meteor'
-import { PubSub } from '../../lib/api/pubsub'
+import { PubSubTypes } from '../../lib/api/pubsub'
 import { extractFunctionSignature } from '../lib'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
-import { ProtectedString } from '../../lib/lib'
 import { Credentials, ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
 import { Settings } from '../../lib/Settings'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
@@ -18,9 +17,11 @@ export const MeteorPublications: { [key: string]: Function } = {}
  * @param name
  * @param callback
  */
-export function meteorPublish<T extends { _id: ProtectedString<any> }>(
-	name: PubSub,
-	callback: (...args: any[]) => MongoCursor<T> | MongoCursor<T>[] | null
+export function meteorPublish<K extends keyof PubSubTypes>(
+	name: K,
+	callback: (
+		...args: Parameters<PubSubTypes[K]>
+	) => MongoCursor<ReturnType<PubSubTypes[K]>> | MongoCursor<ReturnType<PubSubTypes[K]>>[] | null
 ) {
 	const signature = extractFunctionSignature(callback)
 	if (signature) MeteorPublicationSignatures[name] = signature
@@ -28,16 +29,16 @@ export function meteorPublish<T extends { _id: ProtectedString<any> }>(
 	MeteorPublications[name] = callback
 
 	Meteor.publish(name, function (...args: any[]) {
-		return callback.apply(this, args) || []
+		return callback.apply(this, args as any) || []
 	})
 }
 
 export namespace AutoFillSelector {
 	/** Autofill an empty selector {} with organizationId of the current user */
-	export function organizationId<T extends { organizationId: OrganizationId | null | undefined }>(
+	export function organizationId<T extends { organizationId?: OrganizationId | null | undefined }>(
 		userId: UserId,
 		selector: MongoQuery<T>,
-		token: string
+		token: string | undefined
 	) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
@@ -53,7 +54,7 @@ export namespace AutoFillSelector {
 	export function deviceId<T extends { deviceId: PeripheralDeviceId }>(
 		userId: UserId,
 		selector: MongoQuery<T>,
-		token: string
+		token: string | undefined
 	) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 
@@ -75,10 +76,10 @@ export namespace AutoFillSelector {
 		return { cred, selector }
 	}
 	/** Autofill an empty selector {} with showStyleBaseId of the current user's showStyleBases */
-	export function showStyleBaseId<T extends { showStyleBaseId: ShowStyleBaseId }>(
+	export function showStyleBaseId<T extends { showStyleBaseId?: ShowStyleBaseId | null }>(
 		userId: UserId,
 		selector: MongoQuery<T>,
-		token: string
+		token: string | undefined
 	) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 

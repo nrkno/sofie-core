@@ -15,7 +15,6 @@ import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../
 import { SystemWriteAccess } from './system'
 import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../../lib/collections/optimizations'
 
-type ShowStyleContent = { showStyleBaseId: ShowStyleBaseId }
 export namespace ShowStyleReadAccess {
 	export function showStyleBase(
 		selector: MongoQuery<{ _id: ShowStyleBaseId }>,
@@ -24,13 +23,14 @@ export namespace ShowStyleReadAccess {
 		return showStyleBaseContent({ showStyleBaseId: selector._id }, cred)
 	}
 	/** Handles read access for all studioId content */
-	export function showStyleBaseContent(
-		selector: MongoQuery<ShowStyleContent>,
+	export function showStyleBaseContent<T extends { showStyleBaseId: ShowStyleBaseId | null }>(
+		selector: MongoQuery<T>,
 		cred: Credentials | ResolvedCredentials
 	): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
-		if (!selector.showStyleBaseId) throw new Meteor.Error(400, 'selector must contain showStyleBaseId')
+		if (!selector.showStyleBaseId || !isProtectedString(selector.showStyleBaseId))
+			throw new Meteor.Error(400, 'selector must contain showStyleBaseId')
 
 		const access = allowAccessToShowStyleBase(cred, selector.showStyleBaseId)
 		if (!access.read) return logNotAllowed('ShowStyleBase content', access.reason)
