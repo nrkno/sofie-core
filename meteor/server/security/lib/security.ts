@@ -23,11 +23,20 @@ import {
 export const LIMIT_CACHE_TIME = 1000 * 60 * 15 // 15 minutes
 
 // TODO: add caching
-export function allowAccessToAnything(): Access<null> {
+
+/**
+ * Grant access to everything if security is disabled
+ * @returns Access granting access to everything
+ */
+export function allowAccessToAnythingWhenSecurityDisabled(): Access<null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	else return noAccess('Security is enabled')
 }
 
+/**
+ * Check if access is allowed to the coreSystem collection
+ * @param cred0 Credentials to check
+ */
 export function allowAccessToCoreSystem(cred0: Credentials | ResolvedCredentials): Access<null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 
@@ -39,6 +48,11 @@ export function allowAccessToCoreSystem(cred0: Credentials | ResolvedCredentials
 		remove: false, // only allowed through methods
 	}
 }
+
+/**
+ * Check if access is allowed to a User, and that user is the current User
+ * @param cred0 Credentials to check
+ */
 export function allowAccessToCurrentUser(cred0: Credentials | ResolvedCredentials, userId: UserId): Access<null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!userId) return noAccess('userId missing')
@@ -51,6 +65,11 @@ export function allowAccessToCurrentUser(cred0: Credentials | ResolvedCredential
 		remove: false, // only allowed through methods
 	}
 }
+
+/**
+ * Check if access is allowed to the systemStatus collection
+ * @param cred0 Credentials to check
+ */
 export function allowAccessToSystemStatus(cred0: Credentials | ResolvedCredentials): Access<null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 
@@ -218,6 +237,10 @@ export function allowAccessToPeripheralDeviceContent(
 }
 
 namespace AccessRules {
+	/**
+	 * Check if access is allowed to the coreSystem collection
+	 * @param cred0 Credentials to check
+	 */
 	export function accessCoreSystem(cred: ResolvedCredentials): Access<null> {
 		if (cred.user && cred.user.superAdmin) {
 			return allAccess(null)
@@ -228,19 +251,26 @@ namespace AccessRules {
 			}
 		}
 	}
-	export function accessCurrentUser(cred0: Credentials | ResolvedCredentials, _userId: UserId): Access<null> {
-		let userId2: UserId | undefined = undefined
+
+	/**
+	 * Check the allowed access to a user (and verify that user is the current user)
+	 * @param cred0 Credentials to check
+	 * @param userId User to check access to
+	 */
+	export function accessCurrentUser(cred0: Credentials | ResolvedCredentials, userId: UserId): Access<null> {
+		let credUserId: UserId | undefined = undefined
 		if (isResolvedCredentials(cred0) && cred0.user) {
-			userId2 = cred0.user._id
+			credUserId = cred0.user._id
 		} else if (!isResolvedCredentials(cred0) && cred0.userId) {
-			userId2 = cred0.userId
+			credUserId = cred0.userId
 		} else {
 			const cred = resolveCredentials(cred0)
 			if (!cred.user) return noAccess('User in cred not found')
-			userId2 = cred.user._id
+			credUserId = cred.user._id
 		}
-		if (userId2) {
-			if (userId2 === userId2) {
+
+		if (credUserId) {
+			if (credUserId === userId) {
 				// TODO: user role access
 				return allAccess(null)
 			} else return noAccess('Not accessing current user')

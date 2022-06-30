@@ -12,6 +12,7 @@ import {
 	protectString,
 	MongoFieldSpecifier,
 	SortSpecifier,
+	waitForPromise,
 } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
@@ -151,12 +152,12 @@ class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
 	allow(args: Parameters<MongoCollection<DBInterface>['allow']>[0]): boolean {
 		const { insert: origInsert, update: origUpdate, remove: origRemove } = args
 		const options: Parameters<Mongo.Collection<DBInterface>['allow']>[0] = {
-			insert: origInsert ? (userId, doc) => origInsert(protectString(userId), doc) : undefined,
+			insert: origInsert ? (userId, doc) => waitForPromise(origInsert(protectString(userId), doc)) : undefined,
 			update: origUpdate
 				? (userId, doc, fieldNames, modifier) =>
-						origUpdate(protectString(userId), doc, fieldNames as any, modifier)
+						waitForPromise(origUpdate(protectString(userId), doc, fieldNames as any, modifier))
 				: undefined,
-			remove: origRemove ? (userId, doc) => origRemove(protectString(userId), doc) : undefined,
+			remove: origRemove ? (userId, doc) => waitForPromise(origRemove(protectString(userId), doc)) : undefined,
 			fetch: args.fetch,
 		}
 		return this.#collection.allow(options)
@@ -164,12 +165,12 @@ class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
 	deny(args: Parameters<MongoCollection<DBInterface>['deny']>[0]): boolean {
 		const { insert: origInsert, update: origUpdate, remove: origRemove } = args
 		const options: Parameters<Mongo.Collection<DBInterface>['deny']>[0] = {
-			insert: origInsert ? (userId, doc) => origInsert(protectString(userId), doc) : undefined,
+			insert: origInsert ? (userId, doc) => waitForPromise(origInsert(protectString(userId), doc)) : undefined,
 			update: origUpdate
 				? (userId, doc, fieldNames, modifier) =>
-						origUpdate(protectString(userId), doc, fieldNames as any, modifier)
+						waitForPromise(origUpdate(protectString(userId), doc, fieldNames as any, modifier))
 				: undefined,
-			remove: origRemove ? (userId, doc) => origRemove(protectString(userId), doc) : undefined,
+			remove: origRemove ? (userId, doc) => waitForPromise(origRemove(protectString(userId), doc)) : undefined,
 			fetch: args.fetch,
 		}
 		return this.#collection.deny(options)
@@ -561,14 +562,14 @@ export interface MongoCollection<DBInterface extends { _id: ProtectedString<any>
 	 * Allow users to write directly to this collection from client code, subject to limitations you define.
 	 */
 	allow(options: {
-		insert?: (userId: UserId, doc: DBInterface) => boolean
+		insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
 		update?: (
 			userId: UserId,
 			doc: DBInterface,
 			fieldNames: FieldNames<DBInterface>,
 			modifier: MongoModifier<DBInterface>
-		) => boolean
-		remove?: (userId: UserId, doc: DBInterface) => boolean
+		) => Promise<boolean> | boolean
+		remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
 		fetch?: string[]
 		// transform?: Function
 	}): boolean
@@ -577,14 +578,14 @@ export interface MongoCollection<DBInterface extends { _id: ProtectedString<any>
 	 * Override allow rules.
 	 */
 	deny(options: {
-		insert?: (userId: UserId, doc: DBInterface) => boolean
+		insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
 		update?: (
 			userId: UserId,
 			doc: DBInterface,
 			fieldNames: FieldNames<DBInterface>,
 			modifier: MongoModifier<DBInterface>
-		) => boolean
-		remove?: (userId: UserId, doc: DBInterface) => boolean
+		) => Promise<boolean> | boolean
+		remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
 		fetch?: string[]
 		// transform?: Function
 	}): boolean

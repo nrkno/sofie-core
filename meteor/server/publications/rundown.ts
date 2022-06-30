@@ -54,7 +54,7 @@ meteorPublish(PubSub.rundownsForDevice, function (deviceId, token) {
 	return null
 })
 
-meteorPublish(PubSub.rundowns, function (playlistIds, showStyleBaseIds, token) {
+meteorPublish(PubSub.rundowns, async function (playlistIds, showStyleBaseIds, token) {
 	check(playlistIds, Match.Maybe(Array))
 	check(showStyleBaseIds, Match.Maybe(Array))
 
@@ -65,7 +65,7 @@ meteorPublish(PubSub.rundowns, function (playlistIds, showStyleBaseIds, token) {
 	if (playlistIds && playlistIds.length === 0) return null
 	if (showStyleBaseIds && showStyleBaseIds.length === 0) return null
 
-	const { cred, selector } = AutoFillSelector.organizationId<DBRundown>(this.userId, {}, token)
+	const { cred, selector } = await AutoFillSelector.organizationId<DBRundown>(this.userId, {}, token)
 
 	// Add the requested filter
 	if (playlistIds) selector.playlistId = { $in: playlistIds }
@@ -87,7 +87,7 @@ meteorPublish(PubSub.rundowns, function (playlistIds, showStyleBaseIds, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.segments, function (selector, token) {
+meteorPublish(PubSub.segments, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBSegment> = {
 		fields: {
@@ -104,7 +104,7 @@ meteorPublish(PubSub.segments, function (selector, token) {
 	return null
 })
 
-meteorPublish(PubSub.parts, function (rundownIds, token) {
+meteorPublish(PubSub.parts, async function (rundownIds, token) {
 	check(rundownIds, Array)
 
 	if (rundownIds.length === 0) return null
@@ -128,7 +128,7 @@ meteorPublish(PubSub.parts, function (rundownIds, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.partInstances, function (rundownIds, playlistActivationId, token?: string) {
+meteorPublish(PubSub.partInstances, async function (rundownIds, playlistActivationId, token?: string) {
 	check(rundownIds, Array)
 	check(playlistActivationId, Match.Maybe(String))
 
@@ -152,7 +152,7 @@ meteorPublish(PubSub.partInstances, function (rundownIds, playlistActivationId, 
 	}
 	return null
 })
-meteorPublish(PubSub.partInstancesSimple, function (selector, token) {
+meteorPublish(PubSub.partInstancesSimple, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBPartInstance> = {
 		fields: {
@@ -171,7 +171,7 @@ meteorPublish(PubSub.partInstancesSimple, function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.partInstancesForSegmentPlayout, function (selector, token) {
+meteorPublish(PubSub.partInstancesForSegmentPlayout, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBPartInstance> = {
 		fields: {
@@ -190,7 +190,7 @@ meteorPublish(PubSub.partInstancesForSegmentPlayout, function (selector, token) 
 	return null
 })
 
-meteorPublish(PubSub.pieces, function (selector: MongoQuery<Piece>, token?: string) {
+meteorPublish(PubSub.pieces, async function (selector: MongoQuery<Piece>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<Piece> = {
 		fields: {
@@ -205,7 +205,7 @@ meteorPublish(PubSub.pieces, function (selector: MongoQuery<Piece>, token?: stri
 	return null
 })
 
-meteorPublish(PubSub.adLibPieces, function (selector, token) {
+meteorPublish(PubSub.adLibPieces, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<AdLibPiece> = {
 		fields: {
@@ -219,7 +219,7 @@ meteorPublish(PubSub.adLibPieces, function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.pieceInstances, function (selector, token) {
+meteorPublish(PubSub.pieceInstances, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<PieceInstance> = {
 		fields: {
@@ -239,7 +239,7 @@ meteorPublish(PubSub.pieceInstances, function (selector, token) {
 	return null
 })
 
-meteorPublish(PubSub.pieceInstancesSimple, function (selector, token) {
+meteorPublish(PubSub.pieceInstancesSimple, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<PieceInstance> = {
 		fields: {
@@ -262,7 +262,7 @@ meteorPublish(PubSub.pieceInstancesSimple, function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.expectedMediaItems, function (selector, token) {
+meteorPublish(PubSub.expectedMediaItems, async function (selector, token) {
 	const allowed = RundownReadAccess.expectedMediaItems(selector, { userId: this.userId, token })
 	if (!allowed) {
 		return null
@@ -277,7 +277,7 @@ meteorPublish(PubSub.expectedMediaItems, function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.expectedPlayoutItems, function (selector, token) {
+meteorPublish(PubSub.expectedPlayoutItems, async function (selector, token) {
 	const allowed = RundownReadAccess.expectedPlayoutItems(selector, { userId: this.userId, token })
 	if (!allowed) {
 		return null
@@ -293,7 +293,7 @@ meteorPublish(PubSub.expectedPlayoutItems, function (selector, token) {
 	return null
 })
 // Note: this publication is for dev purposes only:
-meteorPublish(PubSub.ingestDataCache, function (selector, token) {
+meteorPublish(PubSub.ingestDataCache, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<IngestDataCacheObj> = {
 		fields: {},
@@ -305,7 +305,7 @@ meteorPublish(PubSub.ingestDataCache, function (selector, token) {
 })
 meteorPublish(
 	PubSub.rundownBaselineAdLibPieces,
-	function (selector: MongoQuery<RundownBaselineAdLibItem>, token?: string) {
+	async function (selector: MongoQuery<RundownBaselineAdLibItem>, token?: string) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<RundownBaselineAdLibItem> = {
 			fields: {
@@ -319,7 +319,7 @@ meteorPublish(
 		return null
 	}
 )
-meteorPublish(PubSub.adLibActions, function (selector, token) {
+meteorPublish(PubSub.adLibActions, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<AdLibAction> = {
 		fields: {},
@@ -329,7 +329,7 @@ meteorPublish(PubSub.adLibActions, function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.rundownBaselineAdLibActions, function (selector, token) {
+meteorPublish(PubSub.rundownBaselineAdLibActions, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<RundownBaselineAdLibAction> = {
 		fields: {},

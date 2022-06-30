@@ -14,11 +14,11 @@ import { StudioId } from '../../lib/collections/Studios'
 
 type RundownPlaylistContent = { playlistId: RundownPlaylistId }
 export namespace RundownPlaylistReadAccess {
-	export function rundownPlaylist(
-		selector: MongoQuery<{ _id: RundownPlaylistId }>,
+	export async function rundownPlaylist(
+		id: RundownPlaylistId,
 		cred: Credentials | ResolvedCredentials
-	): boolean {
-		return rundownPlaylistContent({ playlistId: selector._id }, cred)
+	): Promise<boolean> {
+		return rundownPlaylistContent({ playlistId: id }, cred)
 	}
 	/** Handles read access for all rundown content (segments, parts, pieces etc..) */
 	export function rundownPlaylistContent(

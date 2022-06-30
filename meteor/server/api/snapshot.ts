@@ -774,7 +774,7 @@ class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
 	}
 	async storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
 		check(playlistId, String)
-		const access = checkAccessToPlaylist(this, playlistId)
+		const access = await checkAccessToPlaylist(this, playlistId)
 		return storeRundownPlaylistSnapshot(access, reason)
 	}
 	async storeDebugSnapshot(studioId: StudioId, reason: string) {

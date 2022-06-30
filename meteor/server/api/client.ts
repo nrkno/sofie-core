@@ -68,7 +68,7 @@ export namespace ServerClientAPI {
 			async (_credentials, userActionMetadata) => {
 				checkArgs()
 
-				const access = checkAccessToPlaylist(context, playlistId)
+				const access = await checkAccessToPlaylist(context, playlistId)
 				return runStudioJob(access.playlist.studioId, jobName, jobArguments, userActionMetadata)
 			}
 		)
@@ -95,7 +95,7 @@ export namespace ServerClientAPI {
 			async (_credentials, userActionMetadata) => {
 				checkArgs()
 
-				const access = checkAccessToRundown(context, rundownId)
+				const access = await checkAccessToRundown(context, rundownId)
 				return runStudioJob(access.rundown.studioId, jobName, jobArguments, userActionMetadata)
 			}
 		)
@@ -117,7 +117,8 @@ export namespace ServerClientAPI {
 		return runUserActionInLog(context, userEvent, eventTime, methodName, args, async () => {
 			checkArgs()
 
-			return fcn(checkAccessToPlaylist(context, playlistId))
+			const access = await checkAccessToPlaylist(context, playlistId)
+			return fcn(access)
 		})
 	}
 
@@ -137,7 +138,8 @@ export namespace ServerClientAPI {
 		return runUserActionInLog(context, userEvent, eventTime, methodName, args, async () => {
 			checkArgs()
 
-			return fcn(checkAccessToRundown(context, rundownId))
+			const access = await checkAccessToRundown(context, rundownId)
+			return fcn(access)
 		})
 	}
 

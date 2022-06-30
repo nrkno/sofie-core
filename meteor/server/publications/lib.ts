@@ -8,6 +8,7 @@ import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { fetchShowStyleBasesLight } from '../../lib/collections/optimizations'
 import { MongoCursor } from '../../lib/collections/lib'
 import { OrganizationId, PeripheralDeviceId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { waitForPromise } from '../../lib/lib'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
 export const MeteorPublications: { [key: string]: Function } = {}
@@ -19,9 +20,7 @@ export const MeteorPublications: { [key: string]: Function } = {}
  */
 export function meteorPublish<K extends keyof PubSubTypes>(
 	name: K,
-	callback: (
-		...args: Parameters<PubSubTypes[K]>
-	) => MongoCursor<ReturnType<PubSubTypes[K]>> | MongoCursor<ReturnType<PubSubTypes[K]>>[] | null
+	callback: (...args: Parameters<PubSubTypes[K]>) => Promise<MongoCursor<ReturnType<PubSubTypes[K]>> | null>
 ) {
 	const signature = extractFunctionSignature(callback)
 	if (signature) MeteorPublicationSignatures[name] = signature
@@ -29,33 +28,39 @@ export function meteorPublish<K extends keyof PubSubTypes>(
 	MeteorPublications[name] = callback
 
 	Meteor.publish(name, function (...args: any[]) {
-		return callback.apply(this, args as any) || []
+		return waitForPromise(callback.apply(this, args as any) || [])
 	})
 }
 
 export namespace AutoFillSelector {
 	/** Autofill an empty selector {} with organizationId of the current user */
-	export function organizationId<T extends { organizationId?: OrganizationId | null | undefined }>(
+	export async function organizationId<T extends { organizationId?: OrganizationId | null | undefined }>(
 		userId: UserId,
 		selector: MongoQuery<T>,
 		token: string | undefined
-	) {
+	): Promise<{
+		cred: Credentials | ResolvedCredentials
+		selector: MongoQuery<T>
+	}> {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
 		if (Settings.enableUserAccounts) {
 			if (!selector.organizationId) {
 				cred = resolveCredentials(cred)
-				if (cred.organization) selector = { organizationId: cred.organization._id } as any
+				if (cred.organization) selector.organizationId = cred.organization._id as any
 			}
 		}
 		return { cred, selector }
 	}
 	/** Autofill an empty selector {} with deviceId of the current user's peripheralDevices */
-	export function deviceId<T extends { deviceId: PeripheralDeviceId }>(
+	export async function deviceId<T extends { deviceId: PeripheralDeviceId }>(
 		userId: UserId,
 		selector: MongoQuery<T>,
 		token: string | undefined
-	) {
+	): Promise<{
+		cred: Credentials | ResolvedCredentials
+		selector: MongoQuery<T>
+	}> {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 
 		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
@@ -67,20 +72,21 @@ export namespace AutoFillSelector {
 						organizationId: cred.organization._id,
 					}).fetch()
 
-					selector = {
-						deviceId: { $in: devices.map((d) => d._id) },
-					} as any
+					selector.deviceId = { $in: devices.map((d) => d._id) } as any
 				}
 			}
 		}
 		return { cred, selector }
 	}
 	/** Autofill an empty selector {} with showStyleBaseId of the current user's showStyleBases */
-	export function showStyleBaseId<T extends { showStyleBaseId?: ShowStyleBaseId | null }>(
+	export async function showStyleBaseId<T extends { showStyleBaseId?: ShowStyleBaseId | null }>(
 		userId: UserId,
 		selector: MongoQuery<T>,
 		token: string | undefined
-	) {
+	): Promise<{
+		cred: Credentials | ResolvedCredentials
+		selector: MongoQuery<T>
+	}> {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 
 		let cred: Credentials | ResolvedCredentials = { userId: userId, token }

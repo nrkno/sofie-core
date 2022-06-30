@@ -35,8 +35,8 @@ import { PackageContainerStatuses } from '../../lib/collections/PackageContainer
 import { literal } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
 
-meteorPublish(PubSub.studios, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)
+meteorPublish(PubSub.studios, async function (selector0, token) {
+	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)
 	const modifier: FindOptions<DBStudio> = {
 		fields: {},
 	}
@@ -49,7 +49,7 @@ meteorPublish(PubSub.studios, function (selector0, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.studioOfDevice, function (deviceId: PeripheralDeviceId, token) {
+meteorPublish(PubSub.studioOfDevice, async function (deviceId: PeripheralDeviceId, token) {
 	if (PeripheralDeviceReadAccess.peripheralDevice({ _id: deviceId }, { userId: this.userId, token })) {
 		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
@@ -67,7 +67,7 @@ meteorPublish(PubSub.studioOfDevice, function (deviceId: PeripheralDeviceId, tok
 	return null
 })
 
-meteorPublish(PubSub.externalMessageQueue, function (selector, token) {
+meteorPublish(PubSub.externalMessageQueue, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<ExternalMessageQueueObj> = {
 		fields: {},
@@ -78,7 +78,7 @@ meteorPublish(PubSub.externalMessageQueue, function (selector, token) {
 	return null
 })
 
-meteorPublish(PubSub.mediaObjects, function (studioId, selector, token) {
+meteorPublish(PubSub.mediaObjects, async function (studioId, selector, token) {
 	if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
 	selector = selector || {}
 	check(studioId, String)
@@ -92,7 +92,7 @@ meteorPublish(PubSub.mediaObjects, function (studioId, selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.expectedPackages, function (selector, token) {
+meteorPublish(PubSub.expectedPackages, async function (selector, token) {
 	// Note: This differs from the expected packages sent to the Package Manager, instead @see PubSub.expectedPackagesForDevice
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<ExpectedPackageDBBase> = {
@@ -103,7 +103,7 @@ meteorPublish(PubSub.expectedPackages, function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.expectedPackageWorkStatuses, function (selector, token) {
+meteorPublish(PubSub.expectedPackageWorkStatuses, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<ExpectedPackageWorkStatus> = {
 		fields: {},
@@ -113,7 +113,7 @@ meteorPublish(PubSub.expectedPackageWorkStatuses, function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.packageContainerStatuses, function (selector, token) {
+meteorPublish(PubSub.packageContainerStatuses, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<ExpectedPackageWorkStatus> = {
 		fields: {},
@@ -123,7 +123,7 @@ meteorPublish(PubSub.packageContainerStatuses, function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.packageInfos, function (selector, token) {
+meteorPublish(PubSub.packageInfos, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<ExpectedPackageWorkStatus> = {
 		fields: {},
@@ -135,7 +135,7 @@ meteorPublish(PubSub.packageInfos, function (selector, token) {
 })
 meteorPublish(
 	PubSub.packageContainerPackageStatuses,
-	function (studioId: StudioId, containerId?: string | null, packageId?: ExpectedPackageId | null) {
+	async function (studioId: StudioId, containerId?: string | null, packageId?: ExpectedPackageId | null) {
 		if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
 
 		check(studioId, String)
