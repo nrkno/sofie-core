@@ -14,7 +14,7 @@ import { Credentials, ResolvedCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { MappingsExtWithPackage, routeExpectedPackages, Studio, StudioId, Studios } from '../../lib/collections/Studios'
-import { setUpOptimizedObserver } from '../lib/optimizedObserver'
+import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
 import { ExpectedPackageDB, ExpectedPackages, getSideEffect } from '../../lib/collections/ExpectedPackages'
 import _ from 'underscore'
 import {
@@ -36,6 +36,7 @@ import { logger } from '../logging'
 import { generateExpectedPackagesForPartInstance } from '../api/ingest/expectedPackages'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { StudioLight } from '../../lib/collections/optimizations'
+import { ReadonlyDeep } from 'type-fest'
 /*
  * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager
  */
@@ -118,10 +119,279 @@ meteorPublish(PubSub.mediaWorkFlowSteps, function (selector0, token) {
 	return null
 })
 
+interface ExpectedPackagesPublicationArgs {
+	readonly studioId: StudioId
+	readonly deviceId: PeripheralDeviceId
+	readonly filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined
+}
+
+interface ExpectedPackagesPublicationUpdateProps {
+	invalidateStudio?: boolean
+	invalidatePeripheralDevices?: boolean
+	invalidateExpectedPackages?: boolean
+	invalidateRundownPlaylist?: boolean
+}
+
+interface ExpectedPackagesPublicationContext {
+	studio: Studio | undefined
+	expectedPackages: ExpectedPackageDB[]
+	routedExpectedPackages: ResultingExpectedPackage[]
+	/** ExpectedPackages relevant for playout */
+	routedPlayoutExpectedPackages: ResultingExpectedPackage[]
+	activePlaylist: DBRundownPlaylist | undefined
+	activeRundowns: DBRundown[]
+	currentPartInstance: PartInstance | undefined
+	nextPartInstance: PartInstance | undefined
+}
+
+async function setupExpectedPackagesPublicationObservers(
+	args: ReadonlyDeep<ExpectedPackagesPublicationArgs>,
+	triggerUpdate: TriggerUpdate<ExpectedPackagesPublicationUpdateProps>
+): Promise<Meteor.LiveQueryHandle[]> {
+	// Set up observers:
+	return [
+		Studios.find(args.studioId, {
+			fields: {
+				mappingsHash: 1, // is changed when routes are changed
+				packageContainers: 1,
+			},
+		}).observe({
+			added: () => triggerUpdate({ invalidateStudio: true }),
+			changed: () => triggerUpdate({ invalidateStudio: true }),
+			removed: () => triggerUpdate({ invalidateStudio: true }),
+		}),
+		PeripheralDevices.find(
+			{ studioId: args.studioId },
+			{
+				fields: {
+					// Only monitor settings
+					settings: 1,
+				},
+			}
+		).observe({
+			added: () => triggerUpdate({ invalidatePeripheralDevices: true }),
+			changed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
+			removed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
+		}),
+		ExpectedPackages.find({
+			studioId: args.studioId,
+		}).observe({
+			added: () => triggerUpdate({ invalidateExpectedPackages: true }),
+			changed: () => triggerUpdate({ invalidateExpectedPackages: true }),
+			removed: () => triggerUpdate({ invalidateExpectedPackages: true }),
+		}),
+		RundownPlaylists.find(
+			{
+				studioId: args.studioId,
+			},
+			{
+				fields: {
+					// It should be enough to watch these fields for changes
+					_id: 1,
+					activationId: 1,
+					rehearsal: 1,
+					currentPartInstanceId: 1, // So that it invalidates when the current changes
+					nextPartInstanceId: 1, // So that it invalidates when the next changes
+				},
+			}
+		).observe({
+			added: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+			changed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+			removed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+		}),
+	]
+}
+
+async function manipulateExpectedPackagesPublicationData(
+	args: ReadonlyDeep<ExpectedPackagesPublicationArgs>,
+	context: Partial<ExpectedPackagesPublicationContext>,
+	updateProps: ExpectedPackagesPublicationUpdateProps | undefined
+): Promise<DBObj[] | false> {
+	// Prepare data for publication:
+
+	if (!updateProps) {
+		// Invalidate everything on first run
+		updateProps = {
+			invalidateExpectedPackages: true,
+			invalidatePeripheralDevices: true,
+			invalidateRundownPlaylist: true,
+			invalidateStudio: true,
+		}
+	}
+
+	let invalidateRoutedExpectedPackages = false
+	let invalidateRoutedPlayoutExpectedPackages = false
+
+	if (updateProps.invalidateStudio) {
+		invalidateRoutedExpectedPackages = true
+		invalidateRoutedPlayoutExpectedPackages = true
+
+		context.studio = await Studios.findOneAsync(args.studioId)
+		if (!context.studio) {
+			logger.warn(`Pub.expectedPackagesForDevice: studio "${args.studioId}" not found!`)
+		}
+	}
+	// if (!context.studio) {
+	// 	return []
+	// }
+
+	if (updateProps.invalidatePeripheralDevices) {
+		invalidateRoutedExpectedPackages = true
+		invalidateRoutedPlayoutExpectedPackages = true
+	}
+	if (updateProps.invalidateExpectedPackages || !context.expectedPackages) {
+		invalidateRoutedExpectedPackages = true
+		invalidateRoutedPlayoutExpectedPackages = true
+
+		context.expectedPackages = await ExpectedPackages.findFetchAsync({
+			studioId: args.studioId,
+		})
+		if (!context.expectedPackages.length) {
+			logger.info(`Pub.expectedPackagesForDevice: no ExpectedPackages for studio "${args.studioId}" found`)
+		}
+	}
+	if (updateProps.invalidateRundownPlaylist) {
+		const activePlaylist = await RundownPlaylists.findOneAsync({
+			studioId: args.studioId,
+			activationId: { $exists: true },
+		})
+		context.activePlaylist = activePlaylist
+		delete context.activeRundowns
+
+		const selectPartInstances =
+			activePlaylist && RundownPlaylistCollectionUtil.getSelectedPartInstances(activePlaylist)
+		context.nextPartInstance = selectPartInstances?.nextPartInstance
+		context.currentPartInstance = selectPartInstances?.currentPartInstance
+
+		invalidateRoutedPlayoutExpectedPackages = true
+	}
+
+	if (!context.activeRundowns) {
+		context.activeRundowns = context.activePlaylist
+			? await Rundowns.findFetchAsync({
+					playlistId: context.activePlaylist._id,
+			  })
+			: []
+	}
+
+	if (!context.studio) {
+		return []
+	}
+	const studio: Studio = context.studio
+
+	if (invalidateRoutedExpectedPackages) {
+		// Map the expectedPackages onto their specified layer:
+		const routedMappingsWithPackages = routeExpectedPackages(studio, context.expectedPackages)
+
+		if (context.expectedPackages.length && !Object.keys(routedMappingsWithPackages).length) {
+			logger.info(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
+		}
+
+		context.routedExpectedPackages = generateExpectedPackages(
+			context.studio,
+			args.filterPlayoutDeviceIds,
+			routedMappingsWithPackages,
+			Priorities.OTHER // low priority
+		)
+	}
+	if (invalidateRoutedPlayoutExpectedPackages) {
+		// Use the expectedPackages of the Current and Next Parts:
+		const playoutNextExpectedPackages: ExpectedPackageDB[] = context.nextPartInstance
+			? await generateExpectedPackagesForPartInstance(
+					args.studioId,
+					context.nextPartInstance.rundownId,
+					context.nextPartInstance
+			  )
+			: []
+
+		const playoutCurrentExpectedPackages: ExpectedPackageDB[] = context.currentPartInstance
+			? await generateExpectedPackagesForPartInstance(
+					args.studioId,
+					context.currentPartInstance.rundownId,
+					context.currentPartInstance
+			  )
+			: []
+
+		// Map the expectedPackages onto their specified layer:
+		const currentRoutedMappingsWithPackages = routeExpectedPackages(studio, playoutCurrentExpectedPackages)
+		const nextRoutedMappingsWithPackages = routeExpectedPackages(studio, playoutNextExpectedPackages)
+
+		if (
+			context.currentPartInstance &&
+			!Object.keys(currentRoutedMappingsWithPackages).length &&
+			!Object.keys(nextRoutedMappingsWithPackages).length
+		) {
+			logger.debug(
+				`Pub.expectedPackagesForDevice: Both currentRoutedMappingsWithPackages and nextRoutedMappingsWithPackages are empty`
+			)
+		}
+
+		// Filter, keep only the routed mappings for this device:
+		context.routedPlayoutExpectedPackages = [
+			...generateExpectedPackages(
+				context.studio,
+				args.filterPlayoutDeviceIds,
+				currentRoutedMappingsWithPackages,
+				Priorities.PLAYOUT_CURRENT
+			),
+			...generateExpectedPackages(
+				context.studio,
+				args.filterPlayoutDeviceIds,
+				nextRoutedMappingsWithPackages,
+				Priorities.PLAYOUT_NEXT
+			),
+		]
+	}
+
+	const packageContainers: { [containerId: string]: PackageContainer } = {}
+	for (const [containerId, studioPackageContainer] of Object.entries(studio.packageContainers)) {
+		packageContainers[containerId] = studioPackageContainer.container
+	}
+
+	return literal<DBObj[]>([
+		{
+			_id: protectString(`${args.deviceId}_expectedPackages`),
+			type: 'expected_packages',
+			studioId: args.studioId,
+			expectedPackages: context.routedExpectedPackages,
+		},
+		{
+			_id: protectString(`${args.deviceId}_playoutExpectedPackages`),
+			type: 'expected_packages',
+			studioId: args.studioId,
+			expectedPackages: context.routedPlayoutExpectedPackages,
+		},
+		{
+			_id: protectString(`${args.deviceId}_packageContainers`),
+			type: 'package_containers',
+			studioId: args.studioId,
+			packageContainers: packageContainers,
+		},
+		{
+			_id: protectString(`${args.deviceId}_rundownPlaylist`),
+			type: 'active_playlist',
+			studioId: args.studioId,
+			activeplaylist: context.activePlaylist
+				? {
+						_id: context.activePlaylist._id,
+						active: !!context.activePlaylist.activationId,
+						rehearsal: context.activePlaylist.rehearsal,
+				  }
+				: undefined,
+			activeRundowns: context.activeRundowns.map((rundown) => {
+				return {
+					_id: rundown._id,
+					_rank: rundown._rank,
+				}
+			}),
+		},
+	])
+}
+
 meteorCustomPublishArray(
 	PubSub.expectedPackagesForDevice,
 	'deviceExpectedPackages',
-	function (
+	async function (
 		pub,
 		deviceId: PeripheralDeviceId,
 		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
@@ -140,281 +410,19 @@ meteorCustomPublishArray(
 				return this.ready()
 			}
 
-			const observer = setUpOptimizedObserver(
-				`pub_${PubSub.expectedPackagesForDevice}_${studioId}`,
-				(triggerUpdate) => {
-					// Set up observers:
-					return [
-						Studios.find(studioId, {
-							fields: {
-								mappingsHash: 1, // is changed when routes are changed
-								packageContainers: 1,
-							},
-						}).observe({
-							added: () => triggerUpdate({ studioId: studioId, invalidateStudio: true }),
-							changed: () => triggerUpdate({ studioId: studioId, invalidateStudio: true }),
-							removed: () => triggerUpdate({ studioId: null, invalidateStudio: true }),
-						}),
-						PeripheralDevices.find(
-							{ studioId: studioId },
-							{
-								fields: {
-									// Only monitor settings
-									settings: 1,
-								},
-							}
-						).observe({
-							added: () => triggerUpdate({ invalidatePeripheralDevices: true }),
-							changed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
-							removed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
-						}),
-						ExpectedPackages.find({
-							studioId: studioId,
-						}).observe({
-							added: () => triggerUpdate({ invalidateExpectedPackages: true }),
-							changed: () => triggerUpdate({ invalidateExpectedPackages: true }),
-							removed: () => triggerUpdate({ invalidateExpectedPackages: true }),
-						}),
-						RundownPlaylists.find(
-							{
-								studioId: studioId,
-							},
-							{
-								fields: {
-									// It should be enough to watch these fields for changes
-									_id: 1,
-									activationId: 1,
-									rehearsal: 1,
-									currentPartInstanceId: 1, // So that it invalidates when the current changes
-									nextPartInstanceId: 1, // So that it invalidates when the next changes
-								},
-							}
-						).observe({
-							added: () => triggerUpdate({ invalidateRundownPlaylist: true }),
-							changed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
-							removed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
-						}),
-					]
-				},
-				() => {
-					// Initialize data
-					return {
-						studioId: studioId,
-						deviceId: deviceId,
-
-						// All invalidate flags should be true, so that they run on first run:
-						invalidateStudio: true,
-						invalidatePeripheralDevices: true,
-						invalidateExpectedPackages: true,
-						invalidateRundownPlaylist: true,
-
-						studio: undefined,
-						expectedPackages: [],
-						routedExpectedPackages: [],
-						routedPlayoutExpectedPackages: [],
-						activePlaylist: undefined,
-						activeRundowns: [],
-						currentPartInstance: undefined,
-						nextPartInstance: undefined,
-					}
-				},
-				(context: {
-					// Input data:
-					studioId: StudioId | undefined
-					deviceId: PeripheralDeviceId
-
-					// Data invalidation flags:
-					invalidateStudio: boolean
-					invalidatePeripheralDevices: boolean
-					invalidateExpectedPackages: boolean
-					invalidateRundownPlaylist: boolean
-
-					// cache:
-					studio: Studio | undefined
-					expectedPackages: ExpectedPackageDB[]
-					routedExpectedPackages: ResultingExpectedPackage[]
-					/** ExpectedPackages relevant for playout */
-					routedPlayoutExpectedPackages: ResultingExpectedPackage[]
-					activePlaylist: DBRundownPlaylist | undefined
-					activeRundowns: DBRundown[]
-					currentPartInstance: PartInstance | undefined
-					nextPartInstance: PartInstance | undefined
-				}) => {
-					// Prepare data for publication:
-
-					let invalidateRoutedExpectedPackages = false
-					let invalidateRoutedPlayoutExpectedPackages = false
-
-					if (context.invalidateStudio) {
-						context.invalidateStudio = false
-						invalidateRoutedExpectedPackages = true
-						context.studio = Studios.findOne(context.studioId)
-						if (!context.studio) {
-							logger.warn(`Pub.expectedPackagesForDevice: studio "${context.studioId}" not found!`)
-						}
-					}
-					if (!context.studio) {
-						return []
-					}
-
-					if (context.invalidatePeripheralDevices) {
-						context.invalidatePeripheralDevices = false
-						invalidateRoutedExpectedPackages = true
-						invalidateRoutedPlayoutExpectedPackages = true
-					}
-					if (context.invalidateExpectedPackages) {
-						context.invalidateExpectedPackages = false
-						invalidateRoutedExpectedPackages = true
-						invalidateRoutedPlayoutExpectedPackages = true
-
-						context.expectedPackages = ExpectedPackages.find({
-							studioId: studioId,
-						}).fetch()
-						if (!context.expectedPackages.length) {
-							logger.info(
-								`Pub.expectedPackagesForDevice: no ExpectedPackages for studio "${context.studioId}" found`
-							)
-						}
-					}
-					if (context.invalidateRundownPlaylist) {
-						context.invalidateRundownPlaylist = false
-						const activePlaylist = RundownPlaylists.findOne({
-							studioId: studioId,
-							activationId: { $exists: true },
-						})
-						context.activePlaylist = activePlaylist
-						context.activeRundowns = context.activePlaylist
-							? Rundowns.find({
-									playlistId: context.activePlaylist._id,
-							  }).fetch()
-							: []
-
-						const selectPartInstances =
-							activePlaylist && RundownPlaylistCollectionUtil.getSelectedPartInstances(activePlaylist)
-						context.nextPartInstance = selectPartInstances?.nextPartInstance
-						context.currentPartInstance = selectPartInstances?.currentPartInstance
-
-						invalidateRoutedPlayoutExpectedPackages = true
-					}
-
-					const studio: Studio = context.studio
-
-					if (invalidateRoutedExpectedPackages) {
-						// Map the expectedPackages onto their specified layer:
-						const routedMappingsWithPackages = routeExpectedPackages(studio, context.expectedPackages)
-
-						if (context.expectedPackages.length && !Object.keys(routedMappingsWithPackages).length) {
-							logger.info(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
-						}
-
-						context.routedExpectedPackages = generateExpectedPackages(
-							context.studio,
-							filterPlayoutDeviceIds,
-							routedMappingsWithPackages,
-							Priorities.OTHER // low priority
-						)
-					}
-					if (invalidateRoutedPlayoutExpectedPackages) {
-						// Use the expectedPackages of the Current and Next Parts:
-						const playoutNextExpectedPackages: ExpectedPackageDB[] = context.nextPartInstance
-							? generateExpectedPackagesForPartInstance(
-									context.studio,
-									context.nextPartInstance.rundownId,
-									context.nextPartInstance
-							  )
-							: []
-
-						const playoutCurrentExpectedPackages: ExpectedPackageDB[] = context.currentPartInstance
-							? generateExpectedPackagesForPartInstance(
-									context.studio,
-									context.currentPartInstance.rundownId,
-									context.currentPartInstance
-							  )
-							: []
-
-						// Map the expectedPackages onto their specified layer:
-						const currentRoutedMappingsWithPackages = routeExpectedPackages(
-							studio,
-							playoutCurrentExpectedPackages
-						)
-						const nextRoutedMappingsWithPackages = routeExpectedPackages(
-							studio,
-							playoutNextExpectedPackages
-						)
-
-						if (
-							context.currentPartInstance &&
-							!Object.keys(currentRoutedMappingsWithPackages).length &&
-							!Object.keys(nextRoutedMappingsWithPackages).length
-						) {
-							logger.debug(
-								`Pub.expectedPackagesForDevice: Both currentRoutedMappingsWithPackages and nextRoutedMappingsWithPackages are empty`
-							)
-						}
-
-						// Filter, keep only the routed mappings for this device:
-						context.routedPlayoutExpectedPackages = [
-							...generateExpectedPackages(
-								context.studio,
-								filterPlayoutDeviceIds,
-								currentRoutedMappingsWithPackages,
-								Priorities.PLAYOUT_CURRENT
-							),
-							...generateExpectedPackages(
-								context.studio,
-								filterPlayoutDeviceIds,
-								nextRoutedMappingsWithPackages,
-								Priorities.PLAYOUT_NEXT
-							),
-						]
-					}
-
-					const packageContainers: { [containerId: string]: PackageContainer } = {}
-					for (const [containerId, studioPackageContainer] of Object.entries(studio.packageContainers)) {
-						packageContainers[containerId] = studioPackageContainer.container
-					}
-
-					const pubData = literal<DBObj[]>([
-						{
-							_id: protectString(`${deviceId}_expectedPackages`),
-							type: 'expected_packages',
-							studioId: studioId,
-							expectedPackages: context.routedExpectedPackages,
-						},
-						{
-							_id: protectString(`${deviceId}_playoutExpectedPackages`),
-							type: 'expected_packages',
-							studioId: studioId,
-							expectedPackages: context.routedPlayoutExpectedPackages,
-						},
-						{
-							_id: protectString(`${deviceId}_packageContainers`),
-							type: 'package_containers',
-							studioId: studioId,
-							packageContainers: packageContainers,
-						},
-						{
-							_id: protectString(`${deviceId}_rundownPlaylist`),
-							type: 'active_playlist',
-							studioId: studioId,
-							activeplaylist: context.activePlaylist
-								? {
-										_id: context.activePlaylist._id,
-										active: !!context.activePlaylist.activationId,
-										rehearsal: context.activePlaylist.rehearsal,
-								  }
-								: undefined,
-							activeRundowns: context.activeRundowns.map((rundown) => {
-								return {
-									_id: rundown._id,
-									_rank: rundown._rank,
-								}
-							}),
-						},
-					])
-					return pubData
-				},
-				(newData) => {
+			const observer = await setUpOptimizedObserver<
+				DBObj,
+				ExpectedPackagesPublicationArgs,
+				ExpectedPackagesPublicationContext,
+				ExpectedPackagesPublicationUpdateProps
+			>(
+				`pub_${PubSub.expectedPackagesForDevice}_${studioId}_${deviceId}_${JSON.stringify(
+					(filterPlayoutDeviceIds || []).sort()
+				)}`,
+				{ studioId, deviceId, filterPlayoutDeviceIds },
+				setupExpectedPackagesPublicationObservers,
+				manipulateExpectedPackagesPublicationData,
+				(_args, newData) => {
 					pub.updatedDocs(newData)
 				},
 				500 // ms, wait this time before sending an update
@@ -449,7 +457,7 @@ enum Priorities {
 
 function generateExpectedPackages(
 	studio: StudioLight,
-	filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
+	filterPlayoutDeviceIds: ReadonlyDeep<PeripheralDeviceId[] | undefined>,
 	routedMappingsWithPackages: MappingsExtWithPackage,
 	priority: Priorities
 ) {

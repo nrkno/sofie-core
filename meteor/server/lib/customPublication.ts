@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { PubSub } from '../../lib/api/pubsub'
-import { ProtectedString, unprotectString } from '../../lib/lib'
+import { ProtectedString, unprotectString, waitForPromise } from '../../lib/lib'
 import _ from 'underscore'
 
 class CustomPublish {
@@ -109,9 +109,9 @@ export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 export function meteorCustomPublishArray<DBObj extends { _id: ProtectedString<any> }>(
 	publicationName: PubSub,
 	customCollectionName: string,
-	cb: (publication: CustomPublishArray<DBObj>, ...args: any[]) => void
+	cb: (publication: CustomPublishArray<DBObj>, ...args: any[]) => Promise<void> | void
 ): void {
 	genericMeteorCustomPublish(publicationName, customCollectionName, (pub, ...args) => {
-		cb(new CustomPublishArray(pub), ...args)
+		waitForPromise(cb(new CustomPublishArray(pub), ...args))
 	})
 }

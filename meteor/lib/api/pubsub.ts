@@ -57,6 +57,7 @@ export enum PubSub {
 	mappingsForStudio = 'mappingsForStudio',
 	timelineForStudio = 'timelineForStudio',
 	expectedPackagesForDevice = 'expectedPackagesForDevice',
+	rundownPlaylistNeedsResync = 'rundownPlaylistNeedsResync',
 }
 
 export function meteorSubscribe(name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {
