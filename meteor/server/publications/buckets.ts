@@ -9,7 +9,7 @@ import { BucketAdLibActions, BucketAdLibAction } from '../../lib/collections/Buc
 import { StudioReadAccess } from '../security/studio'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 
-meteorPublish(PubSub.buckets, function (selector, _token) {
+meteorPublish(PubSub.buckets, async function (selector, _token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<Bucket> = {
 		fields: {},
@@ -23,7 +23,7 @@ meteorPublish(PubSub.buckets, function (selector, _token) {
 	return null
 })
 
-meteorPublish(PubSub.bucketAdLibPieces, function (selector, _token) {
+meteorPublish(PubSub.bucketAdLibPieces, async function (selector, _token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<BucketAdLib> = {
 		fields: {},
@@ -34,7 +34,7 @@ meteorPublish(PubSub.bucketAdLibPieces, function (selector, _token) {
 	return null
 })
 
-meteorPublish(PubSub.bucketAdLibActions, function (selector, _token) {
+meteorPublish(PubSub.bucketAdLibActions, async function (selector, _token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<BucketAdLibAction> = {
 		fields: {},

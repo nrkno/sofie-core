@@ -209,7 +209,7 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	}
 	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
 		check(playlistId, String)
-		const access = checkAccessToPlaylist(this, playlistId)
+		const access = await checkAccessToPlaylist(this, playlistId)
 
 		return ServerRundownAPI.resyncRundownPlaylist(access)
 	}
@@ -220,15 +220,15 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		return ClientRundownAPI.rundownPlaylistValidateBlueprintConfig(this, playlistId)
 	}
 	async removeRundown(rundownId: RundownId) {
-		const access = checkAccessToRundown(this, rundownId)
+		const access = await checkAccessToRundown(this, rundownId)
 		return ServerRundownAPI.removeRundown(access)
 	}
 	async resyncRundown(rundownId: RundownId) {
-		const access = checkAccessToRundown(this, rundownId)
+		const access = await checkAccessToRundown(this, rundownId)
 		return ServerRundownAPI.innerResyncRundown(access.rundown)
 	}
 	async unsyncRundown(rundownId: RundownId) {
-		const access = checkAccessToRundown(this, rundownId)
+		const access = await checkAccessToRundown(this, rundownId)
 		return ServerRundownAPI.unsyncRundown(access)
 	}
 	async moveRundown(

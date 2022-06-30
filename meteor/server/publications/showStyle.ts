@@ -9,8 +9,8 @@ import { FindOptions } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 
-meteorPublish(PubSub.showStyleBases, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId<ShowStyleBase>(this.userId, selector0, token)
+meteorPublish(PubSub.showStyleBases, async function (selector0, token) {
+	const { cred, selector } = await AutoFillSelector.organizationId<ShowStyleBase>(this.userId, selector0, token)
 	const modifier: FindOptions<ShowStyleBase> = {
 		fields: {},
 	}
@@ -23,8 +23,8 @@ meteorPublish(PubSub.showStyleBases, function (selector0, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.showStyleVariants, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
+meteorPublish(PubSub.showStyleVariants, async function (selector0, token) {
+	const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 	const modifier: FindOptions<ShowStyleVariant> = {
 		fields: {},
 	}
@@ -38,8 +38,8 @@ meteorPublish(PubSub.showStyleVariants, function (selector0, token) {
 	return null
 })
 
-meteorPublish(PubSub.rundownLayouts, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
+meteorPublish(PubSub.rundownLayouts, async function (selector0, token) {
+	const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 	const modifier: FindOptions<RundownLayoutBase> = {
 		fields: {},
 	}
@@ -49,8 +49,8 @@ meteorPublish(PubSub.rundownLayouts, function (selector0, token) {
 	return null
 })
 
-meteorPublish(PubSub.triggeredActions, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
+meteorPublish(PubSub.triggeredActions, async function (selector0, token) {
+	const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 	const modifier: FindOptions<RundownLayoutBase> = {
 		fields: {},
 	}

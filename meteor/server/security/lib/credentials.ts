@@ -80,6 +80,6 @@ function credCacheName(cred: Credentials) {
 	return `resolveCredentials_${cred.userId}_${cred.token}`
 }
 export function isResolvedCredentials(cred: Credentials | ResolvedCredentials): cred is ResolvedCredentials {
-	const c: any = cred
+	const c = cred as ResolvedCredentials
 	return !!(c.user || c.organization || c.device)
 }

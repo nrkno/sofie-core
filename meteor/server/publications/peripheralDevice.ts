@@ -26,8 +26,8 @@ function checkAccess(cred: Credentials | ResolvedCredentials, selector: MongoQue
 		(selector.studioId && StudioReadAccess.studioContent<PeripheralDevice>(selector, cred))
 	)
 }
-meteorPublish(PubSub.peripheralDevices, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId<PeripheralDevice>(this.userId, selector0, token)
+meteorPublish(PubSub.peripheralDevices, async function (selector0, token) {
+	const { cred, selector } = await AutoFillSelector.organizationId<PeripheralDevice>(this.userId, selector0, token)
 	if (checkAccess(cred, selector)) {
 		const modifier: FindOptions<PeripheralDevice> = {
 			fields: {
@@ -44,8 +44,8 @@ meteorPublish(PubSub.peripheralDevices, function (selector0, token) {
 	return null
 })
 
-meteorPublish(PubSub.peripheralDevicesAndSubDevices, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId<PeripheralDevice>(this.userId, selector0, token)
+meteorPublish(PubSub.peripheralDevicesAndSubDevices, async function (selector0, token) {
+	const { cred, selector } = await AutoFillSelector.organizationId<PeripheralDevice>(this.userId, selector0, token)
 	if (checkAccess(cred, selector)) {
 		const parents = PeripheralDevices.find(selector).fetch()
 
@@ -70,7 +70,7 @@ meteorPublish(PubSub.peripheralDevicesAndSubDevices, function (selector0, token)
 	}
 	return null
 })
-meteorPublish(PubSub.peripheralDeviceCommands, function (deviceId: PeripheralDeviceId, token) {
+meteorPublish(PubSub.peripheralDeviceCommands, async function (deviceId: PeripheralDeviceId, token) {
 	if (!deviceId) throw new Meteor.Error(400, 'deviceId argument missing')
 	check(deviceId, String)
 	if (PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })) {
@@ -78,15 +78,15 @@ meteorPublish(PubSub.peripheralDeviceCommands, function (deviceId: PeripheralDev
 	}
 	return null
 })
-meteorPublish(PubSub.mediaWorkFlows, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.deviceId(this.userId, selector0, token)
+meteorPublish(PubSub.mediaWorkFlows, async function (selector0, token) {
+	const { cred, selector } = await AutoFillSelector.deviceId(this.userId, selector0, token)
 	if (PeripheralDeviceReadAccess.peripheralDeviceContent(selector, cred)) {
 		return MediaWorkFlows.find(selector)
 	}
 	return null
 })
-meteorPublish(PubSub.mediaWorkFlowSteps, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.deviceId(this.userId, selector0, token)
+meteorPublish(PubSub.mediaWorkFlowSteps, async function (selector0, token) {
+	const { cred, selector } = await AutoFillSelector.deviceId(this.userId, selector0, token)
 	if (PeripheralDeviceReadAccess.peripheralDeviceContent(selector, cred)) {
 		return MediaWorkFlowSteps.find(selector)
 	}
