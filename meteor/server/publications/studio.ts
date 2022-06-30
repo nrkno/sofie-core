@@ -158,7 +158,7 @@ meteorPublish(
 	}
 )
 
-meteorCustomPublishArray<RoutedMappings>(
+meteorCustomPublishArray(
 	PubSub.mappingsForDevice,
 	'studioMappings',
 	async function (pub, deviceId: PeripheralDeviceId, token) {
@@ -177,15 +177,11 @@ meteorCustomPublishArray<RoutedMappings>(
 	}
 )
 
-meteorCustomPublishArray<RoutedMappings>(
-	PubSub.mappingsForStudio,
-	'studioMappings',
-	async function (pub, studioId: StudioId, token) {
-		if (StudioReadAccess.studio({ _id: studioId }, { userId: this.userId, token })) {
-			await createObserverForMappingsPublication(pub, PubSub.mappingsForStudio, studioId)
-		}
+meteorCustomPublishArray(PubSub.mappingsForStudio, 'studioMappings', async function (pub, studioId: StudioId, token) {
+	if (StudioReadAccess.studio({ _id: studioId }, { userId: this.userId, token })) {
+		await createObserverForMappingsPublication(pub, PubSub.mappingsForStudio, studioId)
 	}
-)
+})
 
 interface RoutedMappingsArgs {
 	readonly studioId: StudioId

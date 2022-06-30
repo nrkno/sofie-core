@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { PubSub } from '../../lib/api/pubsub'
+import { PubSub, PubSubTypes } from '../../lib/api/pubsub'
 import { ProtectedString, unprotectString, waitForPromise } from '../../lib/lib'
 import _ from 'underscore'
 
@@ -31,13 +31,13 @@ class CustomPublish {
 	}
 }
 
-function genericMeteorCustomPublish(
-	publicationName: string,
+function genericMeteorCustomPublish<K extends keyof PubSubTypes>(
+	publicationName: K,
 	customCollectionName: string,
-	cb: (publication: CustomPublish, ...args: any[]) => void
+	cb: (publication: CustomPublish, ...args: Parameters<PubSubTypes[K]>) => void
 ) {
 	Meteor.publish(publicationName, function (...args: any[]) {
-		cb(new CustomPublish(this, customCollectionName), ...args)
+		cb(new CustomPublish(this, customCollectionName), ...(args as any))
 	})
 }
 
@@ -106,10 +106,13 @@ export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 }
 
 /** Convenience function for making custom publications of array-data */
-export function meteorCustomPublishArray<DBObj extends { _id: ProtectedString<any> }>(
-	publicationName: PubSub,
+export function meteorCustomPublishArray<K extends keyof PubSubTypes>(
+	publicationName: K,
 	customCollectionName: string,
-	cb: (publication: CustomPublishArray<DBObj>, ...args: any[]) => Promise<void> | void
+	cb: (
+		publication: CustomPublishArray<ReturnType<PubSubTypes[K]>>,
+		...args: Parameters<PubSubTypes[K]>
+	) => Promise<void>
 ): void {
 	genericMeteorCustomPublish(publicationName, customCollectionName, (pub, ...args) => {
 		waitForPromise(cb(new CustomPublishArray(pub), ...args))

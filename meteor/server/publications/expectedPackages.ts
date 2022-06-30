@@ -301,7 +301,7 @@ meteorCustomPublishArray(
 		pub,
 		deviceId: PeripheralDeviceId,
 		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
-		token: string
+		token: string | undefined
 	) {
 		if (
 			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })

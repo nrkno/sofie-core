@@ -11,8 +11,8 @@ import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { PartInstances, DBPartInstance } from '../../lib/collections/PartInstances'
-import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
+import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { NoSecurityReadAccess } from '../security/noSecurity'
@@ -24,7 +24,7 @@ import {
 	RundownBaselineAdLibActions,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 
-meteorPublish(PubSub.rundowns, function (selector0, token: string) {
+meteorPublish(PubSub.rundowns, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId<DBRundown>(this.userId, selector0, token)
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBRundown> = {
@@ -42,7 +42,7 @@ meteorPublish(PubSub.rundowns, function (selector0, token: string) {
 	}
 	return null
 })
-meteorPublish(PubSub.segments, function (selector: MongoQuery<DBSegment>, token?: string) {
+meteorPublish(PubSub.segments, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBSegment> = {
 		fields: {
@@ -59,7 +59,7 @@ meteorPublish(PubSub.segments, function (selector: MongoQuery<DBSegment>, token?
 	return null
 })
 
-meteorPublish(PubSub.parts, function (selector: MongoQuery<DBPart>, token?: string) {
+meteorPublish(PubSub.parts, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBPart> = {
 		fields: {
@@ -91,7 +91,7 @@ meteorPublish(PubSub.partInstances, function (selector: MongoQuery<DBPartInstanc
 	}
 	return null
 })
-meteorPublish(PubSub.partInstancesSimple, function (selector: MongoQuery<DBPartInstance>, token?: string) {
+meteorPublish(PubSub.partInstancesSimple, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBPartInstance> = {
 		fields: {
@@ -110,7 +110,7 @@ meteorPublish(PubSub.partInstancesSimple, function (selector: MongoQuery<DBPartI
 	}
 	return null
 })
-meteorPublish(PubSub.partInstancesForSegmentPlayout, function (selector: MongoQuery<DBPartInstance>, token?: string) {
+meteorPublish(PubSub.partInstancesForSegmentPlayout, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBPartInstance> = {
 		fields: {
@@ -144,7 +144,7 @@ meteorPublish(PubSub.pieces, function (selector: MongoQuery<Piece>, token?: stri
 	return null
 })
 
-meteorPublish(PubSub.adLibPieces, function (selector: MongoQuery<AdLibPiece>, token?: string) {
+meteorPublish(PubSub.adLibPieces, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<AdLibPiece> = {
 		fields: {
@@ -158,7 +158,7 @@ meteorPublish(PubSub.adLibPieces, function (selector: MongoQuery<AdLibPiece>, to
 	}
 	return null
 })
-meteorPublish(PubSub.pieceInstances, function (selector: MongoQuery<PieceInstance>, token?: string) {
+meteorPublish(PubSub.pieceInstances, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<PieceInstance> = {
 		fields: {
@@ -178,7 +178,7 @@ meteorPublish(PubSub.pieceInstances, function (selector: MongoQuery<PieceInstanc
 	return null
 })
 
-meteorPublish(PubSub.pieceInstancesSimple, function (selector: MongoQuery<PieceInstance>, token?: string) {
+meteorPublish(PubSub.pieceInstancesSimple, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<PieceInstance> = {
 		fields: {
@@ -201,7 +201,7 @@ meteorPublish(PubSub.pieceInstancesSimple, function (selector: MongoQuery<PieceI
 	}
 	return null
 })
-meteorPublish(PubSub.expectedMediaItems, function (selector: MongoQuery<ExpectedMediaItem>, token?: string) {
+meteorPublish(PubSub.expectedMediaItems, function (selector, token) {
 	const allowed = RundownReadAccess.expectedMediaItems(selector, { userId: this.userId, token })
 	if (!allowed) {
 		return null
@@ -216,7 +216,7 @@ meteorPublish(PubSub.expectedMediaItems, function (selector: MongoQuery<Expected
 	}
 	return null
 })
-meteorPublish(PubSub.expectedPlayoutItems, function (selector: MongoQuery<ExpectedPlayoutItem>, token?: string) {
+meteorPublish(PubSub.expectedPlayoutItems, function (selector, token) {
 	const allowed = RundownReadAccess.expectedPlayoutItems(selector, { userId: this.userId, token })
 	if (!allowed) {
 		return null
@@ -232,7 +232,7 @@ meteorPublish(PubSub.expectedPlayoutItems, function (selector: MongoQuery<Expect
 	return null
 })
 // Note: this publication is for dev purposes only:
-meteorPublish(PubSub.ingestDataCache, function (selector: MongoQuery<IngestDataCacheObj>, token?: string) {
+meteorPublish(PubSub.ingestDataCache, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<IngestDataCacheObj> = {
 		fields: {},
