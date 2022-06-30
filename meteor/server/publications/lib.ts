@@ -2,7 +2,7 @@ import { Meteor, Subscription } from 'meteor/meteor'
 import { PubSubTypes } from '../../lib/api/pubsub'
 import { extractFunctionSignature } from '../lib'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
-import { Credentials, ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
+import { ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
 import { Settings } from '../../lib/Settings'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { MongoCursor } from '../../lib/collections/lib'
@@ -51,14 +51,15 @@ export namespace AutoFillSelector {
 		selector: MongoQuery<T>,
 		token: string | undefined
 	): Promise<{
-		cred: Credentials | ResolvedCredentials
+		cred: ResolvedCredentials | null
 		selector: MongoQuery<T>
 	}> {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
+
+		let cred: ResolvedCredentials | null = null
 		if (Settings.enableUserAccounts) {
 			if (!selector.organizationId) {
-				cred = await resolveCredentials(cred)
+				cred = await resolveCredentials({ userId: userId, token })
 				if (cred.organizationId) selector.organizationId = cred.organizationId as any
 				// TODO - should this block all access if cred.organizationId is not set
 			}
@@ -71,15 +72,15 @@ export namespace AutoFillSelector {
 		selector: MongoQuery<T>,
 		token: string | undefined
 	): Promise<{
-		cred: Credentials | ResolvedCredentials
+		cred: ResolvedCredentials | null
 		selector: MongoQuery<T>
 	}> {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 
-		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
+		let cred: ResolvedCredentials | null = null
 		if (Settings.enableUserAccounts) {
 			if (!selector.deviceId) {
-				cred = await resolveCredentials(cred)
+				cred = await resolveCredentials({ userId: userId, token })
 				if (cred.organizationId) {
 					const devices = (await PeripheralDevices.findFetchAsync(
 						{
@@ -101,12 +102,12 @@ export namespace AutoFillSelector {
 		selector: MongoQuery<T>,
 		token: string | undefined
 	): Promise<{
-		cred: Credentials | ResolvedCredentials
+		cred: ResolvedCredentials | null
 		selector: MongoQuery<T>
 	}> {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 
-		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
+		let cred: ResolvedCredentials | null = null
 		if (Settings.enableUserAccounts) {
 			if (!selector.showStyleBaseId) {
 				cred = await resolveCredentials({ userId: userId, token })
@@ -118,9 +119,7 @@ export namespace AutoFillSelector {
 						{ projection: { _id: 1 } }
 					)) as Array<Pick<DBShowStyleBase, '_id'>>
 
-					selector = {
-						showStyleBaseId: { $in: showStyleBases.map((d) => d._id) },
-					} as any
+					selector.showStyleBaseId = { $in: showStyleBases.map((d) => d._id) } as any
 				}
 				// TODO - should this block all access if cred.organizationId is not set
 			}

@@ -41,6 +41,7 @@ meteorPublish(PubSub.studios, async function (selector0, token) {
 		fields: {},
 	}
 	if (
+		!cred ||
 		NoSecurityReadAccess.any() ||
 		(selector._id && (await StudioReadAccess.studio(selector._id, cred))) ||
 		(selector.organizationId && (await OrganizationReadAccess.organizationContent(selector.organizationId, cred)))

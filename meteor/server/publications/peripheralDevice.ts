@@ -17,9 +17,10 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
  * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager
  */
 
-async function checkAccess(cred: Credentials | ResolvedCredentials, selector: MongoQuery<PeripheralDevice>) {
+async function checkAccess(cred: Credentials | ResolvedCredentials | null, selector: MongoQuery<PeripheralDevice>) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	return (
+		!cred ||
 		NoSecurityReadAccess.any() ||
 		(selector._id && (await PeripheralDeviceReadAccess.peripheralDevice(selector._id, cred))) ||
 		(selector.organizationId &&
@@ -81,14 +82,14 @@ meteorPublish(PubSub.peripheralDeviceCommands, async function (deviceId: Periphe
 })
 meteorPublish(PubSub.mediaWorkFlows, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.deviceId(this.userId, selector0, token)
-	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred)) {
+	if (!cred || (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred))) {
 		return MediaWorkFlows.find(selector)
 	}
 	return null
 })
 meteorPublish(PubSub.mediaWorkFlowSteps, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.deviceId(this.userId, selector0, token)
-	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred)) {
+	if (!cred || (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred))) {
 		return MediaWorkFlowSteps.find(selector)
 	}
 	return null
