@@ -13,6 +13,7 @@ meteorPublish(PubSub.rundownPlaylists, async function (selector0, token) {
 		fields: {},
 	}
 	if (
+		!cred ||
 		NoSecurityReadAccess.any() ||
 		(selector.organizationId &&
 			(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||

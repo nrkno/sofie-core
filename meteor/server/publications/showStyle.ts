@@ -15,6 +15,7 @@ meteorPublish(PubSub.showStyleBases, async function (selector0, token) {
 		fields: {},
 	}
 	if (
+		!cred ||
 		NoSecurityReadAccess.any() ||
 		(selector.organizationId &&
 			(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
@@ -26,10 +27,12 @@ meteorPublish(PubSub.showStyleBases, async function (selector0, token) {
 })
 meteorPublish(PubSub.showStyleVariants, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
+
 	const modifier: FindOptions<ShowStyleVariant> = {
 		fields: {},
 	}
 	if (
+		!cred ||
 		NoSecurityReadAccess.any() ||
 		(selector.showStyleBaseId && (await ShowStyleReadAccess.showStyleBaseContent(selector, cred))) ||
 		(selector._id && (await ShowStyleReadAccess.showStyleVariant(selector._id, cred)))
@@ -41,10 +44,11 @@ meteorPublish(PubSub.showStyleVariants, async function (selector0, token) {
 
 meteorPublish(PubSub.rundownLayouts, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
+
 	const modifier: FindOptions<RundownLayoutBase> = {
 		fields: {},
 	}
-	if (await ShowStyleReadAccess.showStyleBaseContent(selector, cred)) {
+	if (!cred || (await ShowStyleReadAccess.showStyleBaseContent(selector, cred))) {
 		return RundownLayouts.find(selector, modifier)
 	}
 	return null
@@ -52,10 +56,13 @@ meteorPublish(PubSub.rundownLayouts, async function (selector0, token) {
 
 meteorPublish(PubSub.triggeredActions, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
+
 	const modifier: FindOptions<RundownLayoutBase> = {
 		fields: {},
 	}
+
 	if (
+		!cred ||
 		NoSecurityReadAccess.any() ||
 		(selector.showStyleBaseId && (await ShowStyleReadAccess.showStyleBaseContent(selector, cred)))
 	) {

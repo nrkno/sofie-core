@@ -78,6 +78,7 @@ meteorPublish(PubSub.rundowns, async function (playlistIds, showStyleBaseIds, to
 	}
 
 	if (
+		!cred ||
 		NoSecurityReadAccess.any() ||
 		(selector.organizationId &&
 			(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||

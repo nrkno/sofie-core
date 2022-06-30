@@ -151,7 +151,7 @@ const cacheResultCache: {
 	}
 } = {}
 /** Cache the result of function for a limited time */
-export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1000) {
+export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1000): T {
 	if (Math.random() < 0.01) {
 		Meteor.setTimeout(cleanOldCacheResult, 10000)
 	}
