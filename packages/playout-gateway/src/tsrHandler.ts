@@ -432,7 +432,11 @@ export class TSRHandler {
 			return
 		}
 
-		this.logger.debug(`Trigger new resolving (${context})`)
+		this.logger.debug(
+			`Trigger new resolving (${context}, hash: ${timeline.timelineHash}, gen: ${new Date(
+				timeline.generated
+			).toISOString()}, pub: ${new Date(timeline.published).toISOString()})`
+		)
 		if (fromTlChange) {
 			const trace = {
 				measurement: 'playout-gateway:timelineReceived',

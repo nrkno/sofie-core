@@ -29,7 +29,7 @@ module.exports = {
 			items: [
 				{ to: '/docs/user-guide/intro', label: 'User Guide', position: 'left' },
 				{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
-				{ to: '/docs/releases', label: 'Releases', position: 'left' },
+				{ to: '/releases', label: 'Releases', position: 'left' },
 
 				{
 					type: 'docsVersionDropdown',
@@ -57,7 +57,7 @@ module.exports = {
 					items: [
 						{ to: '/docs/user-guide/intro', label: 'User Guide', position: 'left' },
 						{ to: '/docs/for-developers/intro', label: 'For Developers', position: 'left' },
-						{ to: '/docs/releases', label: 'Releases', position: 'left' },
+						{ to: '/releases', label: 'Releases', position: 'left' },
 					],
 				},
 				{
@@ -131,6 +131,16 @@ module.exports = {
 		],
 	],
 	plugins: [
+		[
+			'@docusaurus/plugin-content-docs',
+			{
+				id: 'releases',
+				path: 'releases',
+				routeBasePath: 'releases',
+				sidebarPath: false,
+				// ... other options
+			},
+		],
 		[
 			require.resolve('docusaurus-lunr-search'),
 			{
