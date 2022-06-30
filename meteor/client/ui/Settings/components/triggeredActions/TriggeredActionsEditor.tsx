@@ -3,11 +3,15 @@ import { useTranslation } from 'react-i18next'
 import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { PubSub } from '../../../../../lib/api/pubsub'
 import { ShowStyleBaseId, ShowStyleBases } from '../../../../../lib/collections/ShowStyleBases'
-import { TriggeredActionId, TriggeredActions } from '../../../../../lib/collections/TriggeredActions'
+import {
+	TriggeredActionId,
+	TriggeredActions,
+	TriggeredActionsObj,
+} from '../../../../../lib/collections/TriggeredActions'
 import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
-import { literal, omit, unprotectString } from '../../../../../lib/lib'
+import { literal, omit, protectString, unprotectString } from '../../../../../lib/lib'
 import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
 import {
 	RundownPlaylist,
@@ -30,6 +34,8 @@ import { fetchFrom } from '../../../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'
 import { Meteor } from 'meteor/meteor'
 import { doModalDialog } from '../../../../lib/ModalDialog'
+import { MongoQuery } from '../../../../../lib/typings/meteor'
+import _ from 'underscore'
 
 export interface PreviewContext {
 	rundownPlaylist: RundownPlaylist | null
@@ -77,8 +83,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	)
 
 	const { showStyleBaseId } = props
-	const showStyleBaseSelector = {
-		$or: [
+	const showStyleBaseSelector: MongoQuery<TriggeredActionsObj> = {
+		$or: _.compact([
 			{
 				showStyleBaseId: null,
 			},
@@ -87,12 +93,12 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 						showStyleBaseId: showStyleBaseId,
 				  }
 				: undefined,
-		].filter(Boolean),
+		]),
 	}
 
 	useSubscription(PubSub.triggeredActions, showStyleBaseSelector)
 	useSubscription(PubSub.rundowns, {
-		showStyleBaseId,
+		showStyleBaseId: showStyleBaseId ?? protectString('Ignore All'),
 	})
 
 	useEffect(() => {
@@ -208,11 +214,11 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	)
 
 	useSubscription(PubSub.partInstances, {
-		rundownId: rundown?._id ?? false,
+		rundownId: rundown?._id ?? protectString('Ignore All'),
 		playlistActivationId: rundownPlaylist?.activationId,
 	})
 	useSubscription(PubSub.parts, {
-		rundownId: rundown?._id ?? false,
+		rundownId: rundown?._id ?? protectString('Ignore All'),
 	})
 
 	const previewContext = useTracker(
