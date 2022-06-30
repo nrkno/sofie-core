@@ -104,101 +104,67 @@ export enum PubSub {
 }
 
 export interface PubSubTypes {
-	[PubSub.blueprints]: (selector: MongoQuery<Blueprint>, token: string | undefined) => Blueprint
-	[PubSub.coreSystem]: (token: string | undefined) => ICoreSystem
-	[PubSub.evaluations]: (selector: MongoQuery<Evaluation>, token: string | undefined) => Evaluation
-	[PubSub.expectedPlayoutItems]: (
-		selector: MongoQuery<ExpectedPlayoutItem>,
-		token: string | undefined
-	) => ExpectedPlayoutItem
-	[PubSub.expectedMediaItems]: (
-		selector: MongoQuery<ExpectedMediaItem>,
-		token: string | undefined
-	) => ExpectedMediaItem
+	[PubSub.blueprints]: (selector: MongoQuery<Blueprint>, token?: string) => Blueprint
+	[PubSub.coreSystem]: (token?: string) => ICoreSystem
+	[PubSub.evaluations]: (selector: MongoQuery<Evaluation>, token?: string) => Evaluation
+	[PubSub.expectedPlayoutItems]: (selector: MongoQuery<ExpectedPlayoutItem>, token?: string) => ExpectedPlayoutItem
+	[PubSub.expectedMediaItems]: (selector: MongoQuery<ExpectedMediaItem>, token?: string) => ExpectedMediaItem
 	[PubSub.externalMessageQueue]: (
 		selector: MongoQuery<ExternalMessageQueueObj>,
-		token: string | undefined
+		token?: string
 	) => ExternalMessageQueueObj
-	[PubSub.mediaObjects]: (
-		studioId: StudioId,
-		selector: MongoQuery<MediaObject>,
-		token: string | undefined
-	) => MediaObject
-	[PubSub.peripheralDeviceCommands]: (
-		deviceId: PeripheralDeviceId,
-		token: string | undefined
-	) => PeripheralDeviceCommand
-	[PubSub.peripheralDevices]: (selector: MongoQuery<PeripheralDevice>, token: string | undefined) => PeripheralDevice
+	[PubSub.mediaObjects]: (studioId: StudioId, selector: MongoQuery<MediaObject>, token?: string) => MediaObject
+	[PubSub.peripheralDeviceCommands]: (deviceId: PeripheralDeviceId, token?: string) => PeripheralDeviceCommand
+	[PubSub.peripheralDevices]: (selector: MongoQuery<PeripheralDevice>, token?: string) => PeripheralDevice
 	[PubSub.peripheralDevicesAndSubDevices]: (
 		selector: MongoQuery<PeripheralDevice>,
-		token: string | undefined
+		token?: string
 	) => PeripheralDevice
 	[PubSub.rundownBaselineAdLibPieces]: (
 		selector: MongoQuery<RundownBaselineAdLibItem>,
-		token: string | undefined
+		token?: string
 	) => RundownBaselineAdLibItem
 	[PubSub.rundownBaselineAdLibActions]: (
 		selector: MongoQuery<RundownBaselineAdLibAction>,
-		token: string | undefined
+		token?: string
 	) => RundownBaselineAdLibAction
-	[PubSub.ingestDataCache]: (
-		selector: MongoQuery<IngestDataCacheObj>,
-		token: string | undefined
-	) => IngestDataCacheObj
-	[PubSub.rundownPlaylists]: (selector: MongoQuery<DBRundownPlaylist>, token: string | undefined) => DBRundownPlaylist
-	[PubSub.rundowns]: (selector: MongoQuery<DBRundown>, token: string | undefined) => DBRundown
-	[PubSub.adLibActions]: (selector: MongoQuery<AdLibAction>, token: string | undefined) => AdLibAction
-	[PubSub.adLibPieces]: (selector: MongoQuery<AdLibPiece>, token: string | undefined) => AdLibPiece
-	[PubSub.pieces]: (selector: MongoQuery<Piece>, token: string | undefined) => Piece
-	[PubSub.pieceInstances]: (selector: MongoQuery<PieceInstance>, token: string | undefined) => PieceInstance
-	[PubSub.pieceInstancesSimple]: (selector: MongoQuery<PieceInstance>, token: string | undefined) => PieceInstance
-	[PubSub.parts]: (selector: MongoQuery<DBPart>, token: string | undefined) => DBPart
-	[PubSub.partInstances]: (selector: MongoQuery<PartInstance>, token: string | undefined) => PartInstance
-	[PubSub.partInstancesSimple]: (selector: MongoQuery<PartInstance>, token: string | undefined) => PartInstance
-	[PubSub.partInstancesForSegmentPlayout]: (
-		selector: MongoQuery<PartInstance>,
-		token: string | undefined
-	) => PartInstance
-	[PubSub.segments]: (selector: MongoQuery<DBSegment>, token: string | undefined) => DBSegment
-	[PubSub.showStyleBases]: (selector: MongoQuery<DBShowStyleBase>, token: string | undefined) => DBShowStyleBase
-	[PubSub.showStyleVariants]: (
-		selector: MongoQuery<DBShowStyleVariant>,
-		token: string | undefined
-	) => DBShowStyleVariant
-	[PubSub.triggeredActions]: (
-		selector: MongoQuery<DBTriggeredActions>,
-		token: string | undefined
-	) => DBTriggeredActions
-	[PubSub.snapshots]: (selector: MongoQuery<SnapshotItem>, token: string | undefined) => SnapshotItem
-	[PubSub.studios]: (selector: MongoQuery<DBStudio>, token: string | undefined) => DBStudio
-	[PubSub.studioOfDevice]: (deviceId: PeripheralDeviceId, token: string | undefined) => DBStudio
-	[PubSub.timeline]: (selector: MongoQuery<TimelineComplete>, token: string | undefined) => TimelineComplete
-	[PubSub.userActionsLog]: (selector: MongoQuery<UserActionsLogItem>, token: string | undefined) => UserActionsLogItem
+	[PubSub.ingestDataCache]: (selector: MongoQuery<IngestDataCacheObj>, token?: string) => IngestDataCacheObj
+	[PubSub.rundownPlaylists]: (selector: MongoQuery<DBRundownPlaylist>, token?: string) => DBRundownPlaylist
+	[PubSub.rundowns]: (selector: MongoQuery<DBRundown>, token?: string) => DBRundown
+	[PubSub.adLibActions]: (selector: MongoQuery<AdLibAction>, token?: string) => AdLibAction
+	[PubSub.adLibPieces]: (selector: MongoQuery<AdLibPiece>, token?: string) => AdLibPiece
+	[PubSub.pieces]: (selector: MongoQuery<Piece>, token?: string) => Piece
+	[PubSub.pieceInstances]: (selector: MongoQuery<PieceInstance>, token?: string) => PieceInstance
+	[PubSub.pieceInstancesSimple]: (selector: MongoQuery<PieceInstance>, token?: string) => PieceInstance
+	[PubSub.parts]: (selector: MongoQuery<DBPart>, token?: string) => DBPart
+	[PubSub.partInstances]: (selector: MongoQuery<PartInstance>, token?: string) => PartInstance
+	[PubSub.partInstancesSimple]: (selector: MongoQuery<PartInstance>, token?: string) => PartInstance
+	[PubSub.partInstancesForSegmentPlayout]: (selector: MongoQuery<PartInstance>, token?: string) => PartInstance
+	[PubSub.segments]: (selector: MongoQuery<DBSegment>, token?: string) => DBSegment
+	[PubSub.showStyleBases]: (selector: MongoQuery<DBShowStyleBase>, token?: string) => DBShowStyleBase
+	[PubSub.showStyleVariants]: (selector: MongoQuery<DBShowStyleVariant>, token?: string) => DBShowStyleVariant
+	[PubSub.triggeredActions]: (selector: MongoQuery<DBTriggeredActions>, token?: string) => DBTriggeredActions
+	[PubSub.snapshots]: (selector: MongoQuery<SnapshotItem>, token?: string) => SnapshotItem
+	[PubSub.studios]: (selector: MongoQuery<DBStudio>, token?: string) => DBStudio
+	[PubSub.studioOfDevice]: (deviceId: PeripheralDeviceId, token?: string) => DBStudio
+	[PubSub.timeline]: (selector: MongoQuery<TimelineComplete>, token?: string) => TimelineComplete
+	[PubSub.userActionsLog]: (selector: MongoQuery<UserActionsLogItem>, token?: string) => UserActionsLogItem
 	/** @deprecated */
-	[PubSub.mediaWorkFlows]: (selector: MongoQuery<MediaWorkFlow>, token: string | undefined) => MediaWorkFlow
+	[PubSub.mediaWorkFlows]: (selector: MongoQuery<MediaWorkFlow>, token?: string) => MediaWorkFlow
 	/** @deprecated */
-	[PubSub.mediaWorkFlowSteps]: (
-		selector: MongoQuery<MediaWorkFlowStep>,
-		token: string | undefined
-	) => MediaWorkFlowStep
-	[PubSub.rundownLayouts]: (selector: MongoQuery<RundownLayoutBase>, token: string | undefined) => RundownLayoutBase
-	[PubSub.loggedInUser]: (token: string | undefined) => DBUser
-	[PubSub.usersInOrganization]: (selector: MongoQuery<DBUser>, token: string | undefined) => DBUser
-	[PubSub.organization]: (selector: MongoQuery<DBOrganization>, token: string | undefined) => DBOrganization
-	[PubSub.buckets]: (selector: MongoQuery<Bucket>, token: string | undefined) => Bucket
-	[PubSub.bucketAdLibPieces]: (selector: MongoQuery<BucketAdLib>, token: string | undefined) => BucketAdLib
-	[PubSub.bucketAdLibActions]: (
-		selector: MongoQuery<BucketAdLibAction>,
-		token: string | undefined
-	) => BucketAdLibAction
-	[PubSub.translationsBundles]: (
-		selector: MongoQuery<TranslationsBundle>,
-		token: string | undefined
-	) => TranslationsBundle
-	[PubSub.expectedPackages]: (selector: MongoQuery<ExpectedPackageDB>, token: string | undefined) => ExpectedPackageDB
+	[PubSub.mediaWorkFlowSteps]: (selector: MongoQuery<MediaWorkFlowStep>, token?: string) => MediaWorkFlowStep
+	[PubSub.rundownLayouts]: (selector: MongoQuery<RundownLayoutBase>, token?: string) => RundownLayoutBase
+	[PubSub.loggedInUser]: (token?: string) => DBUser
+	[PubSub.usersInOrganization]: (selector: MongoQuery<DBUser>, token?: string) => DBUser
+	[PubSub.organization]: (selector: MongoQuery<DBOrganization>, token?: string) => DBOrganization
+	[PubSub.buckets]: (selector: MongoQuery<Bucket>, token?: string) => Bucket
+	[PubSub.bucketAdLibPieces]: (selector: MongoQuery<BucketAdLib>, token?: string) => BucketAdLib
+	[PubSub.bucketAdLibActions]: (selector: MongoQuery<BucketAdLibAction>, token?: string) => BucketAdLibAction
+	[PubSub.translationsBundles]: (selector: MongoQuery<TranslationsBundle>, token?: string) => TranslationsBundle
+	[PubSub.expectedPackages]: (selector: MongoQuery<ExpectedPackageDB>, token?: string) => ExpectedPackageDB
 	[PubSub.expectedPackageWorkStatuses]: (
 		selector: MongoQuery<ExpectedPackageWorkStatus>,
-		token: string | undefined
+		token?: string
 	) => ExpectedPackageWorkStatus
 	[PubSub.packageContainerPackageStatuses]: (
 		studioId: StudioId,
@@ -207,23 +173,26 @@ export interface PubSubTypes {
 	) => PackageContainerPackageStatusDB
 	[PubSub.packageContainerStatuses]: (
 		selector: MongoQuery<PackageContainerStatusDB>,
-		token: string | undefined
+		token?: string
 	) => PackageContainerStatusDB
-	[PubSub.packageInfos]: (selector: MongoQuery<PackageInfoDB>, token: string | undefined) => PackageInfoDB
+	[PubSub.packageInfos]: (selector: MongoQuery<PackageInfoDB>, token?: string) => PackageInfoDB
 
 	// custom publications:
-	[PubSub.mappingsForDevice]: (deviceId: PeripheralDeviceId, token: string | undefined) => RoutedMappings
-	[PubSub.timelineForDevice]: (deviceId: PeripheralDeviceId, token: string | undefined) => RoutedTimeline
-	[PubSub.mappingsForStudio]: (studioId: StudioId, token: string | undefined) => RoutedMappings
-	[PubSub.timelineForStudio]: (studioId: StudioId, token: string | undefined) => RoutedTimeline
+	[PubSub.mappingsForDevice]: (deviceId: PeripheralDeviceId, token?: string) => RoutedMappings
+	[PubSub.timelineForDevice]: (deviceId: PeripheralDeviceId, token?: string) => RoutedTimeline
+	[PubSub.mappingsForStudio]: (studioId: StudioId, token?: string) => RoutedMappings
+	[PubSub.timelineForStudio]: (studioId: StudioId, token?: string) => RoutedTimeline
 	[PubSub.expectedPackagesForDevice]: (
 		deviceId: PeripheralDeviceId,
 		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
-		token: string | undefined
+		token?: string
 	) => DBObj
 }
 
-export function meteorSubscribe(name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {
+export function meteorSubscribe<K extends keyof PubSubTypes>(
+	name: K,
+	...args: Parameters<PubSubTypes[K]>
+): Meteor.SubscriptionHandle {
 	if (Meteor.isClient) {
 		return Meteor.subscribe(name, ...args)
 	} else throw new Meteor.Error(500, 'meteorSubscribe is only available client-side')

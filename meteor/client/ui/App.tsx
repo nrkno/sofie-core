@@ -218,7 +218,7 @@ export const App = translateWithTracker(() => {
 
 		componentDidMount() {
 			// Global subscription of the currently logged in user:
-			this.subscribe(PubSub.loggedInUser, {})
+			this.subscribe(PubSub.loggedInUser)
 			this.autorun(() => {
 				const user = getUser()
 				if (user?.organizationId) {

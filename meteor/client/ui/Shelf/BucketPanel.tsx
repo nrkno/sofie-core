@@ -380,9 +380,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						_id: this.props.playlist.studioId,
 					})
 					this.autorun(() => {
-						const showStyles = RundownPlaylistCollectionUtil.getRundownsUnordered(this.props.playlist).map(
-							(rundown) => [rundown.showStyleBaseId, rundown.showStyleVariantId]
-						)
+						const showStyles: Array<[ShowStyleBaseId, ShowStyleVariantId]> =
+							RundownPlaylistCollectionUtil.getRundownsUnordered(this.props.playlist).map((rundown) => [
+								rundown.showStyleBaseId,
+								rundown.showStyleVariantId,
+							])
 						const showStyleBases = showStyles.map((showStyle) => showStyle[0])
 						const showStyleVariants = showStyles.map((showStyle) => showStyle[1])
 						this.subscribe(PubSub.bucketAdLibPieces, {
