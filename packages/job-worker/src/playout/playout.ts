@@ -707,8 +707,7 @@ export async function onPiecePlaybackStarted(context: JobContext, data: OnPieceP
 		context,
 		data,
 		async (_cache) => {
-			// const playlist = cache.Playlist.doc
-			// if (!playlist.activationId) throw new Error(`Rundown Playlist "${data.playlistId}" is not active!`)
+			// Nothing here
 		},
 		async (cache) => {
 			_onPiecePlaybackStarted(context, cache, data)
@@ -746,8 +745,7 @@ export async function onPiecePlaybackStopped(context: JobContext, data: OnPieceP
 		context,
 		data,
 		async (_cache) => {
-			// const playlist = cache.Playlist.doc
-			// if (!playlist.activationId) throw new Error(`Rundown Playlist "${data.playlistId}" is not active!`)
+			// Nothing here
 		},
 		async (cache) => {
 			_onPiecePlaybackStopped(context, cache, data)
@@ -916,7 +914,6 @@ async function _onPartPlaybackStarted(context: JobContext, cache: CacheForPlayou
 				await libSetNextPart(context, cache, nextPart)
 			}
 
-			// TODO - should this even change the next?
 			logger.error(
 				`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`
 			)

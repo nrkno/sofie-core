@@ -37,10 +37,15 @@ export enum StudioJobs {
 	RemovePlaylist = 'removePlaylist',
 	RegeneratePlaylist = 'regeneratePlaylist',
 
+	/** @deprecated use OnPlayoutPlaybackChanged instead */
 	OnPiecePlaybackStarted = 'onPiecePlaybackStarted',
+	/** @deprecated use OnPlayoutPlaybackChanged instead */
 	OnPiecePlaybackStopped = 'onPiecePlaybackStopped',
+	/** @deprecated use OnPlayoutPlaybackChanged instead */
 	OnPartPlaybackStarted = 'onPartPlaybackStarted',
+	/** @deprecated use OnPlayoutPlaybackChanged instead */
 	OnPartPlaybackStopped = 'onPartPlaybackStopped',
+
 	OnPlayoutPlaybackChanged = 'onPlayoutPlaybackChanged',
 	OnTimelineTriggerTime = 'onTimelineTriggerTime',
 

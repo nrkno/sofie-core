@@ -371,18 +371,8 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice.studioId)
 			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
 
-		// check(r.time, Number)
-		// check(r.rundownPlaylistId, String)
-		// check(r.partInstanceId, String)
 		if (changedResults.changes.length) {
 			check(changedResults.rundownPlaylistId, String)
-
-			// await ServerPlayoutAPI.onPlayoutPlaybackChanged(
-			// 	context,
-			// 	peripheralDevice,
-			// 	rundownPlaylistId,
-			// 	changedResults
-			// )
 
 			const job = await QueueStudioJob(StudioJobs.OnPlayoutPlaybackChanged, peripheralDevice.studioId, {
 				playlistId: changedResults.rundownPlaylistId,
