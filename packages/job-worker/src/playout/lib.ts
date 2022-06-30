@@ -311,6 +311,9 @@ export async function setNextPart(
 				part: nextPart,
 				rehearsal: !!cache.Playlist.doc.rehearsal,
 				consumesNextSegmentId: nextPartInfo.consumesNextSegmentId,
+				timings: {
+					setAsNext: getCurrentTime(),
+				},
 			})
 
 			const rundown = cache.Rundowns.findOne(nextPart.rundownId)

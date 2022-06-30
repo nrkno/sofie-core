@@ -204,7 +204,7 @@ export function getPieceInstancesForPartInstance(
 			pieceInstanceSimulation &&
 			results.length === 0 &&
 			(!partInstance.timings ||
-				(partInstance.timings.next || 0) > now - SIMULATION_INVALIDATION ||
+				(partInstance.timings.setAsNext || 0) > now - SIMULATION_INVALIDATION ||
 				(partInstance.timings.take || 0) > now - SIMULATION_INVALIDATION)
 		) {
 			// make sure to invalidate the current computation after SIMULATION_INVALIDATION has passed
