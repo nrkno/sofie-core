@@ -158,15 +158,6 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 		return instance
 	})
 
-	if (cache.Playlist.doc.previousPartInstanceId) {
-		cache.PartInstances.update(cache.Playlist.doc.previousPartInstanceId, (instance) => {
-			if (!instance.timings) instance.timings = {}
-			instance.timings.takeOut = now
-
-			return instance
-		})
-	}
-
 	resetPreviousSegment(cache)
 
 	// Once everything is synced, we can choose the next part

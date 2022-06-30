@@ -225,12 +225,12 @@ export class RundownTimingCalculator {
 
 				// This is where we actually calculate all the various variants of duration of a part
 				if (lastStartedPlayback && !partInstance.timings?.duration) {
-					// if duration isn't available, check if `takeOut` has already been set and use the difference
-					// between startedPlayback and takeOut as a temporary duration
+					// if duration isn't available, check if `plannedStoppedPlayback` has already been set and use the difference
+					// between startedPlayback and plannedStoppedPlayback as the duration
 					const duration =
 						partInstance.timings?.duration ||
-						(partInstance.timings?.takeOut
-							? lastStartedPlayback - partInstance.timings?.takeOut
+						(partInstance.timings?.plannedStoppedPlayback
+							? lastStartedPlayback - partInstance.timings?.plannedStoppedPlayback
 							: undefined)
 					currentRemaining = Math.max(
 						0,
@@ -359,7 +359,7 @@ export class RundownTimingCalculator {
 					!partInstance.part.floated &&
 					!partInstance.part.invalid &&
 					!partIsUntimed &&
-					(partInstance.timings?.duration || partInstance.timings?.takeOut || partCounts)
+					(partInstance.timings?.duration || partInstance.timings?.plannedStoppedPlayback || partCounts)
 				) {
 					this.displayDurationGroups[partInstance.part.displayDurationGroup] =
 						this.displayDurationGroups[partInstance.part.displayDurationGroup] - partDisplayDuration
@@ -370,13 +370,12 @@ export class RundownTimingCalculator {
 					if (this.previousPartInstanceId !== playlist.previousPartInstanceId) {
 						// it is possible that this.previousPartInstanceId !== playlist.previousPartInstanceId, because
 						// this is in fact the first iteration. If that's the case, it's more than likely that the
-						// previous part has already good "lastTake" information that we can use, either in "takeOut",
-						// if the part was taken out manually, or stoppedPlayback, if there was no User Action.
-						// Finally, if both of those are undefined, we use "now", since what has happened
+						// previous part has already good "lastTake" information that we can use, in plannedStoppedPlayback,
+						// if there was no User Action.
+						// Finally, if this is undefined, we use "now", since what has happened
 						// is that user has taken out this part, but we're still waiting for timing and "now"
 						// is the best approximation of the take time we have.
-						this.lastTakeAt =
-							partInstance.timings?.takeOut || partInstance.timings?.plannedStoppedPlayback || now
+						this.lastTakeAt = partInstance.timings?.plannedStoppedPlayback || now
 						this.previousPartInstanceId = playlist.previousPartInstanceId
 					}
 					// a simulated display duration, created using the "lastTakeAt" value
@@ -485,7 +484,7 @@ export class RundownTimingCalculator {
 			const currentLivePart = parts[currentAIndex]
 			const currentLivePartInstance = findPartInstanceInMapOrWrapToTemporary(partInstancesMap, currentLivePart)
 
-			const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
+			const lastStartedPlayback = currentLivePartInstance.timings?.plannedStartedPlayback
 
 			let onAirPartDuration =
 				currentLivePartInstance.timings?.duration ||

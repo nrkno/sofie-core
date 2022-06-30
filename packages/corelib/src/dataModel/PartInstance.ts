@@ -52,9 +52,6 @@ export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
 	/** Point in time the Part was taken, (ie the time of the user action) */
 	take?: Time
 
-	/** Point in time the Part stopped playing (ie the time of the user action) */
-	takeOut?: Time
-
 	/**
 	 * Point in time where the Part is planned to start playing.
 	 * This gets set when the part is taken
