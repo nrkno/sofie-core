@@ -559,9 +559,9 @@ export const SegmentTimelineContainer = withResolvedSegment(
 						(this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0]?.instance.part._id)] ||
 							0)
 
-					let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
+					let isExpectedToPlay = !!currentLivePartInstance.timings?.plannedStartedPlayback
 					const lastTake = currentLivePartInstance.timings?.take
-					const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
+					const lastStartedPlayback = currentLivePartInstance.timings?.plannedStartedPlayback
 					const lastTakeOffset = currentLivePartInstance.timings?.playOffset || 0
 					const virtualStartedPlayback =
 						(lastTake || 0) > (lastStartedPlayback || -1)

@@ -480,7 +480,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 										rundownIds={this.props.rundownIds}
 										partAutoNext={currentPart.instance.part.autoNext || false}
 										partExpectedDuration={calculatePartInstanceExpectedDurationWithPreroll(currentPart.instance)}
-										partStartedPlayback={currentPart.instance.timings?.startedPlayback}
+										partStartedPlayback={currentPart.instance.timings?.plannedStartedPlayback}
 										playlistActivationId={this.props.playlist?.activationId}
 									/>
 								</div>

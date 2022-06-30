@@ -100,7 +100,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 		const isLive = this.props.playlist.currentPartInstanceId === partInstance._id
 		const isNext = this.props.playlist.nextPartInstanceId === partInstance._id
-		const startedPlayback = partInstance.timings?.startedPlayback
+		const startedPlayback = partInstance.timings?.plannedStartedPlayback
 
 		this.state = {
 			isLive,
@@ -139,7 +139,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 		const nextPartInner = nextProps.part.instance.part
 
-		const startedPlayback = nextProps.part.instance.timings?.startedPlayback
+		const startedPlayback = nextProps.part.instance.timings?.plannedStartedPlayback
 
 		const isDurationSettling =
 			!!nextProps.playlist.activationId &&
@@ -224,11 +224,11 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	static getCurrentLiveLinePosition(part: Readonly<PartUi>, currentTime: number): number {
-		if (part.instance.timings?.startedPlayback) {
+		if (part.instance.timings?.plannedStartedPlayback) {
 			if (part.instance.timings?.duration) {
 				return part.instance.timings.duration
 			} else {
-				return currentTime - part.instance.timings.startedPlayback
+				return currentTime - part.instance.timings.plannedStartedPlayback
 			}
 		} else {
 			return 0

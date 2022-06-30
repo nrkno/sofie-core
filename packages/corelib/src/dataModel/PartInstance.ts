@@ -60,7 +60,7 @@ export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
 	plannedStartedPlayback?: Time
 	/**
 	 * Point in time whre the Part is planned to stop playing
-	 * This gets set when the next part is taken?????
+	 * This gets set when the plannedStartedPlayback of the following part is set
 	 */
 	plannedStoppedPlayback?: Time
 }

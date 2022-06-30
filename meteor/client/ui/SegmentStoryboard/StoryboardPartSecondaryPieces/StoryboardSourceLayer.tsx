@@ -125,8 +125,8 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 	)
 
 	const playedOutState = usePlayedOutPieceState(
-		part?.instance.timings?.startedPlayback,
-		part?.instance.timings?.stoppedPlayback,
+		part?.instance.timings?.plannedStartedPlayback,
+		part?.instance.timings?.plannedStoppedPlayback,
 		piecesOnLayer
 	)
 

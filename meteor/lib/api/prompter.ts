@@ -139,8 +139,10 @@ export namespace PrompterAPI {
 
 		const pieceInstanceFieldOptions: FindOptions<PieceInstance> = {
 			fields: {
-				startedPlayback: 0,
-				stoppedPlayback: 0,
+				plannedStartedPlayback: 0,
+				plannedStoppedPlayback: 0,
+				reportedStartedPlayback: 0,
+				reportedStoppedPlayback: 0,
 				userDuration: 0,
 			},
 		}

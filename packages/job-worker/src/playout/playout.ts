@@ -33,7 +33,6 @@ import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelecte
 import { runJobWithPlayoutCache, runJobWithPlaylistLock, runWithPlaylistCache } from './lock'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import {
-	onPartHasStoppedPlaying,
 	resetRundownPlaylist as libResetRundownPlaylist,
 	selectNextPart,
 	setNextPart as libSetNextPart,
@@ -863,37 +862,16 @@ export async function onPartPlaybackStarted(context: JobContext, data: OnPartPla
 				const rundown = cache.Rundowns.findOne(playingPartInstance.rundownId)
 				if (!rundown) throw new Error(`Rundown "${playingPartInstance.rundownId}" not found!`)
 
-				const { currentPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
+				const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 				if (playlist.currentPartInstanceId === data.partInstanceId) {
 					// this is the current part, it has just started playback
-					if (playlist.previousPartInstanceId) {
-						if (!previousPartInstance) {
-							// We couldn't find the previous part: this is not a critical issue, but is clearly is a symptom of a larger issue
-							logger.error(
-								`Previous PartInstance "${playlist.previousPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
-							)
-						} else {
-							onPartHasStoppedPlaying(cache, previousPartInstance._id, data.startedPlayback)
-						}
-					}
-
 					reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
 
 					// complete the take
 					await afterTake(context, cache, playingPartInstance)
 				} else if (playlist.nextPartInstanceId === data.partInstanceId) {
 					// this is the next part, clearly an autoNext has taken place
-					if (playlist.currentPartInstanceId) {
-						if (!currentPartInstance) {
-							// We couldn't find the previous part: this is not a critical issue, but is clearly is a symptom of a larger issue
-							logger.error(
-								`Previous PartInstance "${playlist.currentPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
-							)
-						} else {
-							onPartHasStoppedPlaying(cache, currentPartInstance._id, data.startedPlayback)
-						}
-					}
 
 					cache.Playlist.update((playlist) => {
 						playlist.previousPartInstanceId = playlist.currentPartInstanceId

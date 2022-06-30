@@ -420,7 +420,7 @@ export namespace RundownUtils {
 					currentLivePart.instance.part.autoNext &&
 					currentLivePart.instance.part.expectedDuration
 				)
-				if (partE.instance.timings?.startedPlayback !== undefined) {
+				if (partE.instance.timings?.plannedStartedPlayback !== undefined) {
 					hasAlreadyPlayed = true
 				}
 
@@ -455,7 +455,7 @@ export namespace RundownUtils {
 					pieceInstanceSimulation
 				)
 
-				const partStarted = partE.instance.timings?.startedPlayback
+				const partStarted = partE.instance.timings?.plannedStartedPlayback
 				const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
 				const preprocessedPieces = processAndPrunePieceInstanceTimings(
@@ -636,8 +636,8 @@ export namespace RundownUtils {
 				const userDurationNumber =
 					item.instance.userDuration &&
 					typeof item.instance.userDuration.end === 'number' &&
-					item.instance.startedPlayback
-						? item.instance.userDuration.end - item.instance.startedPlayback
+					item.instance.plannedStartedPlayback
+						? item.instance.userDuration.end - item.instance.plannedStartedPlayback
 						: 0
 				return userDurationNumber || item.renderedDuration || expectedDurationNumber
 			}

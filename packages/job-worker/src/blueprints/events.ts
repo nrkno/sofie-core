@@ -70,7 +70,7 @@ export function reportPartInstanceHasStarted(
 				timestampUpdated = true
 				instance.timings.reportedStartedPlayback = timestamp
 
-				if (cache.isMultiGatewayMode) {
+				if (!cache.isMultiGatewayMode) {
 					instance.timings.plannedStartedPlayback = timestamp
 				}
 			}
@@ -80,7 +80,7 @@ export function reportPartInstanceHasStarted(
 				timestampUpdated = true
 				delete instance.timings.reportedStoppedPlayback
 
-				if (cache.isMultiGatewayMode) {
+				if (!cache.isMultiGatewayMode) {
 					delete instance.timings.plannedStoppedPlayback
 				}
 			}
@@ -88,6 +88,18 @@ export function reportPartInstanceHasStarted(
 			// Save/discard change
 			return timestampUpdated ? instance : false
 		})
+
+		if (timestampUpdated && !cache.isMultiGatewayMode && cache.Playlist.doc.previousPartInstanceId) {
+			// Ensure the plannedStoppedPlayback is set for the previous partinstance too
+			cache.PartInstances.update(cache.Playlist.doc.previousPartInstanceId, (instance) => {
+				if (instance.timings && !instance.timings.plannedStoppedPlayback) {
+					instance.timings.plannedStoppedPlayback = timestamp
+					return instance
+				}
+
+				return false
+			})
+		}
 
 		// Update the playlist:
 		cache.Playlist.update((playlist) => {
@@ -130,7 +142,7 @@ export function reportPartInstanceHasStopped(
 			if (!instance.timings) instance.timings = {}
 			instance.timings.reportedStoppedPlayback = timestamp
 
-			if (cache.isMultiGatewayMode) {
+			if (!cache.isMultiGatewayMode) {
 				instance.timings.plannedStoppedPlayback = timestamp
 			}
 
