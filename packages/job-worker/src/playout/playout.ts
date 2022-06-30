@@ -701,6 +701,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 
 /**
  * Triggered from Playout-gateway when a Piece has started playing
+ * @deprecated use onPlayoutPlaybackChanged instead
  */
 export async function onPiecePlaybackStarted(context: JobContext, data: OnPiecePlaybackStartedProps): Promise<void> {
 	return runJobWithPlayoutCache(
@@ -739,6 +740,7 @@ function _onPiecePlaybackStarted(context: JobContext, cache: CacheForPlayout, da
 }
 /**
  * Triggered from Playout-gateway when a Piece has stopped playing
+ * @deprecated use onPlayoutPlaybackChanged instead
  */
 export async function onPiecePlaybackStopped(context: JobContext, data: OnPiecePlaybackStoppedProps): Promise<void> {
 	return runJobWithPlayoutCache(
@@ -781,6 +783,7 @@ function _onPiecePlaybackStopped(context: JobContext, cache: CacheForPlayout, da
 
 /**
  * Triggered from Playout-gateway when a Part has started playing
+ * @deprecated use onPlayoutPlaybackChanged instead
  */
 export async function onPartPlaybackStarted(context: JobContext, data: OnPartPlaybackStartedProps): Promise<void> {
 	return runJobWithPlayoutCache(
@@ -925,6 +928,7 @@ async function _onPartPlaybackStarted(context: JobContext, cache: CacheForPlayou
 }
 /**
  * Triggered from Playout-gateway when a Part has stopped playing
+ * @deprecated use onPlayoutPlaybackChanged instead
  */
 export async function onPartPlaybackStopped(context: JobContext, data: OnPartPlaybackStoppedProps): Promise<void> {
 	return runJobWithPlayoutCache(
