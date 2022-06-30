@@ -115,6 +115,24 @@ export interface TimelineContentObjectTmp extends TSRTimelineObjBase {
 }
 /** Max time for initializing devices */
 const INIT_TIMEOUT = 10000
+
+type DeviceActionResult = {
+	success: boolean
+	deviceId: string
+	action: 'add' | 'remove'
+}
+
+type UpdateDeviceOperationsResult =
+	| {
+			success: true
+			result: DeviceActionResult[]
+	  }
+	| {
+			success: false
+			reason: 'timeout'
+			details: string[]
+	  }
+
 /**
  * Represents a connection between Gateway and TSR
  */
@@ -531,7 +549,7 @@ export class TSRHandler {
 		const peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
 		const peripheralDevice = peripheralDevices.findOne(this._coreHandler.core.deviceId)
 
-		let ps: Promise<any>[] = []
+		const ps: Promise<DeviceActionResult>[] = []
 		const promiseOperations: { [id: string]: true } = {}
 		const keepTrack = async <T>(p: Promise<T>, name: string) => {
 			promiseOperations[name] = true
@@ -613,32 +631,46 @@ export class TSRHandler {
 			}
 		}
 
-		await Promise.race([
-			Promise.all(ps),
-			new Promise<void>((resolve) =>
+		const resultsOrTimeout = await Promise.race([
+			Promise.all(ps).then(
+				(result) =>
+					({
+						success: true,
+						result,
+					} as UpdateDeviceOperationsResult)
+			),
+			new Promise<UpdateDeviceOperationsResult>((resolve) =>
 				setTimeout(() => {
 					const keys = _.keys(promiseOperations)
 					if (keys.length) {
 						this.logger.warn(`Timeout in _updateDevices: ${keys.join(',')}`)
 					}
-					resolve()
+					resolve({
+						success: false,
+						reason: 'timeout',
+						details: keys,
+					} as UpdateDeviceOperationsResult)
 				}, INIT_TIMEOUT)
 			), // Timeout if not all are resolved within INIT_TIMEOUT
 		])
-		ps = []
 
-		// Set logDebug on the devices:
-		for (const device of this.tsr.getDevices()) {
-			const deviceOptions = devices.get(device.deviceId)
-			if (deviceOptions) {
-				const debug: boolean = this.getDeviceDebug(deviceOptions)
-				if (device.debugLogging !== debug) {
-					this.logger.info(`Setting logDebug of device ${device.deviceId} to ${debug}`)
-					ps.push(device.setDebugLogging(debug))
+		await this._reportResult(resultsOrTimeout)
+
+		{
+			const ps: Promise<any>[] = []
+			// Set logDebug on the devices:
+			for (const device of this.tsr.getDevices()) {
+				const deviceOptions = devices.get(device.deviceId)
+				if (deviceOptions) {
+					const debug: boolean = this.getDeviceDebug(deviceOptions)
+					if (device.debugLogging !== debug) {
+						this.logger.info(`Setting logDebug of device ${device.deviceId} to ${debug}`)
+						ps.push(device.setDebugLogging(debug))
+					}
 				}
 			}
+			await Promise.all(ps)
 		}
-		await Promise.all(ps)
 
 		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
 		this.logger.info('updateDevices end')
@@ -646,7 +678,57 @@ export class TSRHandler {
 	private getDeviceDebug(deviceOptions: DeviceOptionsAny): boolean {
 		return deviceOptions.debug || this._coreHandler.logDebug || false
 	}
-	private async _addDevice(deviceId: string, options: DeviceOptionsAny): Promise<any> {
+	private async _reportResult(resultsOrTimeout: UpdateDeviceOperationsResult): Promise<void> {
+		if (!resultsOrTimeout.success) {
+			if (resultsOrTimeout.reason === 'timeout') {
+				await this._coreHandler.core.setStatus({
+					statusCode: StatusCode.FATAL,
+					messages: [
+						`Time-out during device update. Timed-out on devices: ${decorateIds(
+							resultsOrTimeout.details
+						).join(', ')}`,
+					],
+				})
+			} else {
+				await this._coreHandler.core.setStatus({
+					statusCode: StatusCode.BAD,
+					messages: [`Unknown error during device update: ${resultsOrTimeout.reason}`],
+				})
+			}
+
+			return
+		}
+
+		const failures = resultsOrTimeout.result.filter((result) => !result.success)
+		const addFailureDeviceIds = failures
+			.filter((failure) => failure.action === 'add')
+			.map((failure) => failure.deviceId)
+		const removeFailureDeviceIds = failures
+			.filter((failure) => failure.action === 'remove')
+			.map((failure) => failure.deviceId)
+
+		if (failures.length === 0) {
+			await this._coreHandler.core.setStatus({
+				statusCode: StatusCode.GOOD,
+				messages: [],
+			})
+			return
+		}
+		await this._coreHandler.core.setStatus({
+			statusCode: StatusCode.BAD,
+			messages: [
+				addFailureDeviceIds.length > 0
+					? `Unable to initialize devices, check configuration: ${decorateIds(addFailureDeviceIds).join(
+							', '
+					  )}`
+					: null,
+				removeFailureDeviceIds.length > 0
+					? `Failed to remove devices: ${decorateIds(removeFailureDeviceIds).join(', ')}`
+					: null,
+			].filter(Boolean) as string[],
+		})
+	}
+	private async _addDevice(deviceId: string, options: DeviceOptionsAny): Promise<DeviceActionResult> {
 		this.logger.debug('Adding device ' + deviceId)
 
 		try {
@@ -847,6 +929,11 @@ export class TSRHandler {
 
 			// also ask for the status now, and update:
 			onDeviceStatusChanged(await device.device.getStatus())
+			return {
+				action: 'add',
+				deviceId,
+				success: true,
+			}
 		} catch (e) {
 			// Initialization failed, clean up any artifacts and see if we can try again later:
 			this.logger.error(`Error when adding device "${deviceId}"`, e)
@@ -863,6 +950,12 @@ export class TSRHandler {
 					// try again later:
 					this._triggerUpdateDevices()
 				}, 10 * 1000)
+			}
+
+			return {
+				action: 'add',
+				deviceId,
+				success: false,
 			}
 		}
 	}
@@ -890,16 +983,24 @@ export class TSRHandler {
 			}
 		}
 	}
-	private async _removeDevice(deviceId: string): Promise<any> {
+	private async _removeDevice(deviceId: string): Promise<DeviceActionResult> {
+		let success = false
 		if (this._coreTsrHandlers[deviceId]) {
 			try {
 				await this._coreTsrHandlers[deviceId].dispose()
 				this.logger.debug('Disposed device ' + deviceId)
+				success = true
 			} catch (e) {
 				this.logger.error(`Error when removing device "${deviceId}"`, e)
 			}
 		}
 		delete this._coreTsrHandlers[deviceId]
+
+		return {
+			deviceId,
+			action: 'remove',
+			success,
+		}
 	}
 	private _triggerupdateExpectedPlayoutItems() {
 		if (!this._initialized) return
@@ -1010,4 +1111,8 @@ export class TSRHandler {
 export function getHash(str: string): string {
 	const hash = crypto.createHash('sha1')
 	return hash.update(str).digest('base64').replace(/[+/=]/g, '_') // remove +/= from strings, because they cause troubles
+}
+
+export function decorateIds(ids: string[]): string[] {
+	return ids.map((id) => `"${id}"`)
 }
