@@ -1250,9 +1250,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownHeaderLayoutId: protectString((params['rundownHeaderLayout'] as string) || ''),
 		miniShelfLayoutId: protectString((params['miniShelfLayout'] as string) || ''),
 		shelfDisplayOptions: {
-			buckets: displayOptions.includes('buckets'),
-			layout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
-			inspector: displayOptions.includes('inspector'),
+			enableBuckets: displayOptions.includes('buckets'),
+			enableLayout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
+			enableInspector: displayOptions.includes('inspector'),
 		},
 		bucketDisplayFilter,
 		currentPartInstance,

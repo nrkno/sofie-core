@@ -416,7 +416,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					</div>
 				)}
 				<div className="rundown-view__shelf__contents">
-					{shelfDisplayOptions.layout ? (
+					{shelfDisplayOptions.enableLayout ? (
 						<ContextMenuTrigger
 							id="shelf-context-menu"
 							attributes={{
@@ -470,7 +470,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							</ErrorBoundary>
 						</ContextMenuTrigger>
 					) : null}
-					{shelfDisplayOptions.buckets ? (
+					{shelfDisplayOptions.enableBuckets ? (
 						<ErrorBoundary>
 							<RundownViewBuckets
 								buckets={this.props.buckets}
@@ -479,9 +479,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 								showStyleBase={this.props.showStyleBase}
 								fullViewport={
 									!!this.props.fullViewport &&
-									this.props.shelfDisplayOptions.buckets === true &&
-									this.props.shelfDisplayOptions.inspector === false &&
-									this.props.shelfDisplayOptions.layout === false
+									this.props.shelfDisplayOptions.enableBuckets === true &&
+									this.props.shelfDisplayOptions.enableInspector === false &&
+									this.props.shelfDisplayOptions.enableLayout === false
 								}
 								displayBuckets={this.props.bucketDisplayFilter}
 								selectedPiece={this.state.selectedPiece}
@@ -489,7 +489,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							/>
 						</ErrorBoundary>
 					) : null}
-					{shelfDisplayOptions.inspector ? (
+					{shelfDisplayOptions.enableInspector ? (
 						<ErrorBoundary>
 							<ShelfInspector
 								selected={this.state.selectedPiece}

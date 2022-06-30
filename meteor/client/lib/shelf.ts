@@ -14,9 +14,9 @@ import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/d
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
 
 export interface ShelfDisplayOptions {
-	buckets: boolean
-	layout: boolean
-	inspector: boolean
+	enableBuckets: boolean
+	enableLayout: boolean
+	enableInspector: boolean
 }
 
 export interface AdLibPieceUi extends Omit<AdLibPiece, 'timelineObjectsString'> {

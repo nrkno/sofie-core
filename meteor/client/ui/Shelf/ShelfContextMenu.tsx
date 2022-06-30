@@ -164,7 +164,7 @@ export default function ShelfContextMenu(props: ShelfContextMenuProps) {
 							? renderStartExecuteAdLib(context.details)
 							: null}
 						<hr />
-						{props.shelfDisplayOptions.inspector && (
+						{props.shelfDisplayOptions.enableInspector && (
 							<MenuItem
 								onClick={(e) => {
 									e.persist()
@@ -246,7 +246,7 @@ export default function ShelfContextMenu(props: ShelfContextMenuProps) {
 						<hr />
 					</>
 				)}
-				{props.shelfDisplayOptions.buckets && (
+				{props.shelfDisplayOptions.enableBuckets && (
 					<MenuItem
 						onClick={(e) => {
 							e.persist()
