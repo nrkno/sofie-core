@@ -455,7 +455,7 @@ async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Pro
 				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but has no organizationId`)
 			OrganizationContentWriteAccess.dataFromSnapshot(cred0, snapshot.organizationId)
 		} else {
-			SystemWriteAccess.coreSystem(cred0)
+			await SystemWriteAccess.coreSystem(cred0)
 		}
 	}
 

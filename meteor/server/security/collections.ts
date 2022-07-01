@@ -40,6 +40,7 @@ import { SystemWriteAccess } from './system'
 import { Buckets } from '../../lib/collections/Buckets'
 import { studioContentAllowWrite } from './studio'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
+import { resolveCredentials } from './lib/credentials'
 
 // Set up direct collection write access
 
@@ -49,7 +50,8 @@ CoreSystem.allow({
 		return false
 	},
 	update(userId, doc, fields, _modifier) {
-		const access = allowAccessToCoreSystem({ userId: userId })
+		const cred = resolveCredentials({ userId: userId })
+		const access = allowAccessToCoreSystem(cred)
 		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
 		return allowOnlyFields(doc, fields, ['support', 'systemInfo', 'name', 'logLevel', 'apm', 'cron'])
 	},
@@ -260,12 +262,14 @@ TriggeredActions.allow({
 		return false
 	},
 	update(userId, doc, fields) {
+		const cred = resolveCredentials({ userId: userId })
+
 		if (doc.showStyleBaseId) {
-			const access = allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
+			const access = allowAccessToShowStyleBase(cred, doc.showStyleBaseId)
 			if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 			return rejectFields(doc, fields, ['_id'])
 		} else {
-			const access = allowAccessToCoreSystem({ userId: userId })
+			const access = allowAccessToCoreSystem(cred)
 			if (!access.update) return logNotAllowed('CoreSystem', access.reason)
 			return rejectFields(doc, fields, ['_id'])
 		}

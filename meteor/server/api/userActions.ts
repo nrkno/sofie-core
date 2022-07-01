@@ -865,7 +865,8 @@ class ServerUserActionAPI
 	}
 	async generateRestartToken(userEvent: string, eventTime: Time) {
 		return ServerClientAPI.runUserActionInLog(this, userEvent, eventTime, 'generateRestartToken', [], async () => {
-			SystemWriteAccess.system(this)
+			await SystemWriteAccess.systemActions(this)
+
 			restartToken = getHash('restart_' + getCurrentTime())
 			return restartToken
 		})
@@ -880,7 +881,7 @@ class ServerUserActionAPI
 			async () => {
 				check(hashedRestartToken, String)
 
-				SystemWriteAccess.system(this)
+				await SystemWriteAccess.systemActions(this)
 
 				if (hashedRestartToken !== getHash(RESTART_SALT + restartToken)) {
 					throw new Meteor.Error(401, `Restart token is invalid`)
