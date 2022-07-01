@@ -3,10 +3,6 @@ import { ReadonlyDeep } from 'type-fest'
 import { clone, createManualPromise, lazyIgnore } from '../../lib/lib'
 import { logger } from '../logging'
 
-// type PartialOrNull<T> = {
-// 	[P in keyof T]?: T[P] | null
-// }
-
 export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProps: Partial<UpdateProps>) => void
 
 /**
@@ -15,7 +11,6 @@ export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProp
  *
  * @param identifier identifier, shared between the listeners that use the same observer.
  * @param setupObservers Set up the observers. This is run just 1 times for N listeners, on initialization.
- * @param initializeContext Initialize the Context which is sent into manipulateData. This is run N times for N listeners, on initialization.
  * @param manipulateData Manipulate the data. This is run 1 times for N listeners, per data update. (and on initialization). Return false if nothing has changed
  * @param receiveData Receive the manipulated data. This is run N times for N listeners, per data update (and on initialization).
  * @param lazynessDuration (Optional) How long to wait after a change before issueing an update. Default to 3 ms
@@ -49,11 +44,11 @@ export async function setUpOptimizedObserver<
 	if (existingObserver) {
 		// There is an existing preparedObserver
 
-		// TODO - block behind an in progress update
+		// Mark the received as new
+		existingObserver.newDataReceivers.push(receiveData)
 
-		existingObserver.dataReceivers.push(receiveData)
-
-		receiveData(existingObserver.args, existingObserver.lastData, [])
+		// Force an update to ensure the new receiver gets data soon
+		existingObserver.triggerUpdate({})
 	} else {
 		let updateIsRunning = true
 
@@ -130,7 +125,7 @@ export async function setUpOptimizedObserver<
 						if (hasPendingUpdate) {
 							// There is another pending update, make sure it gets executed asap
 							setImmediate(() => {
-								triggerUpdate({} as any)
+								triggerUpdate({})
 							})
 						}
 					}
@@ -166,9 +161,9 @@ export async function setUpOptimizedObserver<
 			updateIsRunning = false
 
 			if (hasPendingUpdate) {
+				// An update is pending, let it be executed once the final observer is stored
 				setImmediate(() => {
-					// An update is pending, let is be executed once the final observer is stored
-					triggerUpdate({} as any)
+					triggerUpdate({})
 				})
 			}
 
