@@ -14,11 +14,7 @@ export interface ResolvedCredentials {
 	organization?: DBOrganization
 	device?: PeripheralDevice
 }
-export interface ResolvedCredentialsWithUserAndOrganization {
-	user: User
-	organization: DBOrganization
-	device?: PeripheralDevice
-}
+
 export function resolveCredentials(cred: Credentials | ResolvedCredentials): ResolvedCredentials {
 	const span = profiler.startSpan('security.lib.credentials')
 

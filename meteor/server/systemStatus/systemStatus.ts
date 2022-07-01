@@ -24,7 +24,7 @@ import { Settings } from '../../lib/Settings'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
-import { SystemWriteAccess } from '../security/system'
+import { SystemReadAccess } from '../security/system'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { Workers } from '../../lib/collections/Workers'
 import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
@@ -179,7 +179,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 export function getSystemStatus(cred0: Credentials, studioId?: StudioId): StatusResponse {
 	const checks: Array<CheckObj> = []
 
-	SystemWriteAccess.systemStatusRead(cred0)
+	SystemReadAccess.systemStatus(cred0)
 
 	// Check systemStatuses:
 	_.each(systemStatuses, (status: StatusObjectInternal, key: string) => {

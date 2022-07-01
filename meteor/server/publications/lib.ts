@@ -1,4 +1,4 @@
-import { Meteor } from 'meteor/meteor'
+import { Meteor, Subscription } from 'meteor/meteor'
 import { PubSubTypes } from '../../lib/api/pubsub'
 import { extractFunctionSignature } from '../lib'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
@@ -8,10 +8,19 @@ import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { fetchShowStyleBasesLight } from '../../lib/collections/optimizations'
 import { MongoCursor } from '../../lib/collections/lib'
 import { OrganizationId, PeripheralDeviceId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { waitForPromise } from '../../lib/lib'
+import { protectStringObject, waitForPromise } from '../../lib/lib'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
 export const MeteorPublications: { [key: string]: Function } = {}
+
+export interface SubscriptionContext extends Omit<Subscription, 'userId'> {
+	/**
+	 * The id of the logged-in user, or `null` if no user is logged in.
+	 * This is constant. However, if the logged-in user changes, the publish function
+	 * is rerun with the new value, assuming it didn’t throw an error at the previous run.
+	 */
+	userId: UserId | null
+}
 
 /**
  * Wrapper around Meteor.publish with stricter typings
@@ -20,7 +29,10 @@ export const MeteorPublications: { [key: string]: Function } = {}
  */
 export function meteorPublish<K extends keyof PubSubTypes>(
 	name: K,
-	callback: (...args: Parameters<PubSubTypes[K]>) => Promise<MongoCursor<ReturnType<PubSubTypes[K]>> | null>
+	callback: (
+		this: SubscriptionContext,
+		...args: Parameters<PubSubTypes[K]>
+	) => Promise<MongoCursor<ReturnType<PubSubTypes[K]>> | null>
 ) {
 	const signature = extractFunctionSignature(callback)
 	if (signature) MeteorPublicationSignatures[name] = signature
@@ -28,14 +40,14 @@ export function meteorPublish<K extends keyof PubSubTypes>(
 	MeteorPublications[name] = callback
 
 	Meteor.publish(name, function (...args: any[]) {
-		return waitForPromise(callback.apply(this, args as any) || [])
+		return waitForPromise(callback.apply(protectStringObject<Subscription, 'userId'>(this), args as any) || [])
 	})
 }
 
 export namespace AutoFillSelector {
 	/** Autofill an empty selector {} with organizationId of the current user */
 	export async function organizationId<T extends { organizationId?: OrganizationId | null | undefined }>(
-		userId: UserId,
+		userId: UserId | null,
 		selector: MongoQuery<T>,
 		token: string | undefined
 	): Promise<{
@@ -54,7 +66,7 @@ export namespace AutoFillSelector {
 	}
 	/** Autofill an empty selector {} with deviceId of the current user's peripheralDevices */
 	export async function deviceId<T extends { deviceId: PeripheralDeviceId }>(
-		userId: UserId,
+		userId: UserId | null,
 		selector: MongoQuery<T>,
 		token: string | undefined
 	): Promise<{
@@ -80,7 +92,7 @@ export namespace AutoFillSelector {
 	}
 	/** Autofill an empty selector {} with showStyleBaseId of the current user's showStyleBases */
 	export async function showStyleBaseId<T extends { showStyleBaseId?: ShowStyleBaseId | null }>(
-		userId: UserId,
+		userId: UserId | null,
 		selector: MongoQuery<T>,
 		token: string | undefined
 	): Promise<{

@@ -5,7 +5,7 @@ import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
-import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { UserId } from '../../lib/typings/meteor'
 import { OrganizationId } from '../../lib/collections/Organization'
@@ -410,24 +410,7 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		functionName: string,
 		...args: any[]
 	) {
-		const methodContext: MethodContext = this // eslint-disable-line @typescript-eslint/no-this-alias
-		if (!Settings.enableUserAccounts) {
-			// Note: This is a temporary hack to keep backwards compatibility.
-			// in the case of not enableUserAccounts, a token is needed, but not provided when called from client
-			const device = PeripheralDevices.findOne(deviceId)
-			if (device) {
-				// @ts-ignore hack
-				methodContext.token = device.token
-			}
-		}
-		return ServerClientAPI.callPeripheralDeviceFunction(
-			methodContext,
-			context,
-			deviceId,
-			timeoutTime,
-			functionName,
-			...args
-		)
+		return ServerClientAPI.callPeripheralDeviceFunction(this, context, deviceId, timeoutTime, functionName, ...args)
 	}
 }
 registerClassToMeteorMethods(ClientAPIMethods, ServerClientAPIClass, false)

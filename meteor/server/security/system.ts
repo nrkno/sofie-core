@@ -20,6 +20,14 @@ export namespace SystemReadAccess {
 
 		return true
 	}
+	export function systemStatus(cred0: Credentials) {
+		// For reading only
+		triggerWriteAccess()
+		const access = allowAccessToSystemStatus(cred0)
+		if (!access.read) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
+
+		return true
+	}
 }
 export namespace SystemWriteAccess {
 	// These functions throws if access is not allowed.
@@ -47,13 +55,5 @@ export namespace SystemWriteAccess {
 	}
 	export function system(cred0: Credentials) {
 		return coreSystem(cred0)
-	}
-	export function systemStatusRead(cred0: Credentials) {
-		// For reading only
-		triggerWriteAccess()
-		const access = allowAccessToSystemStatus(cred0)
-		if (!access.read) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
-
-		return true
 	}
 }
