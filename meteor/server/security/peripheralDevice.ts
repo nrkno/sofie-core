@@ -11,6 +11,7 @@ import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { profiler } from '../api/profiler'
+import { StudioContentWriteAccess } from './studio'
 
 type PeripheralDeviceContent = { deviceId: PeripheralDeviceId }
 export namespace PeripheralDeviceReadAccess {
@@ -27,7 +28,8 @@ export namespace PeripheralDeviceReadAccess {
 	): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
-		if (!selector.deviceId) throw new Meteor.Error(400, 'selector must contain deviceId')
+		if (!selector.deviceId || !isProtectedString(selector.deviceId))
+			throw new Meteor.Error(400, 'selector must contain deviceId')
 
 		const access = allowAccessToPeripheralDevice(cred, selector.deviceId)
 		if (!access.read) return logNotAllowed('PeripheralDevice content', access.reason)
@@ -50,10 +52,24 @@ export namespace PeripheralDeviceContentWriteAccess {
 
 	// These functions throws if access is not allowed.
 
+	/**
+	 * Check if a user is allowed to execute a PeripheralDevice function in a Studio
+	 */
 	export function executeFunction(cred0: Credentials, deviceId: PeripheralDeviceId) {
-		backwardsCompatibilityfix(cred0, deviceId)
-		return anyContent(cred0, deviceId)
+		const device = PeripheralDevices.findOne(deviceId)
+		if (!device || !device.studioId) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
+
+		const access = StudioContentWriteAccess.executeFunction(cred0, device.studioId)
+
+		const access2 = allowAccessToPeripheralDeviceContent(access.cred, device)
+		if (!access2.playout) throw new Meteor.Error(403, `Not allowed: ${access2.reason}`)
+
+		return {
+			...access,
+			device,
+		}
 	}
+
 	export function peripheralDevice(cred0: Credentials, deviceId: PeripheralDeviceId) {
 		backwardsCompatibilityfix(cred0, deviceId)
 		return anyContent(cred0, deviceId)
@@ -104,7 +120,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 				throw new Meteor.Error(401, `Not allowed access to peripheralDevice`)
 			}
 			const cred = resolveCredentials(cred0)
-			const access = allowAccessToPeripheralDeviceContent(cred, parentDevice._id)
+			const access = allowAccessToPeripheralDeviceContent(cred, parentDevice)
 			if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
 			if (!access.document) throw new Meteor.Error(500, `Internal error: access.document not set`)
 

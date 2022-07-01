@@ -207,9 +207,15 @@ export function allowAccessToRundownContent(
 }
 export function allowAccessToPeripheralDevice(
 	cred0: Credentials | ResolvedCredentials,
-	deviceId: MongoQueryKey<PeripheralDeviceId>
+	deviceId: PeripheralDeviceId
 ): Access<PeripheralDevice | null> {
-	const access = allowAccessToPeripheralDeviceContent(cred0, deviceId)
+	if (!deviceId) return noAccess('deviceId missing')
+	if (!isProtectedString(deviceId)) return noAccess('deviceId is not a string')
+
+	const device = PeripheralDevices.findOne(deviceId)
+	if (!device) return noAccess('Device not found')
+
+	const access = allowAccessToPeripheralDeviceContent(cred0, device)
 	return {
 		...access,
 		insert: false, // only allowed through methods
@@ -219,16 +225,11 @@ export function allowAccessToPeripheralDevice(
 
 export function allowAccessToPeripheralDeviceContent(
 	cred0: Credentials | ResolvedCredentials,
-	deviceId: MongoQueryKey<PeripheralDeviceId>
+	device: PeripheralDevice
 ): Access<PeripheralDevice | null> {
 	const span = profiler.startSpan('security.lib.security.allowAccessToPeripheralDeviceContent')
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
-	if (!deviceId) return noAccess('deviceId missing')
-	if (!isProtectedString(deviceId)) return noAccess('deviceId is not a string')
 	const cred = resolveCredentials(cred0)
-
-	const device = PeripheralDevices.findOne(deviceId)
-	if (!device) return noAccess('Device not found')
 
 	const access = AccessRules.accessPeripheralDevice(device, cred)
 

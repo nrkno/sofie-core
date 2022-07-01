@@ -83,6 +83,9 @@ export namespace StudioContentWriteAccess {
 	export function bucket(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
+	export function executeFunction(cred0: Credentials, studioId: StudioId) {
+		return anyContent(cred0, studioId)
+	}
 	export async function externalMessage(
 		cred0: Credentials,
 		existingMessage: ExternalMessageQueueObj | ExternalMessageQueueObjId
