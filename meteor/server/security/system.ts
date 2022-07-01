@@ -38,7 +38,7 @@ export namespace SystemWriteAccess {
 
 		const cred = resolveCredentials(cred0)
 		if (!cred.user) throw new Meteor.Error(403, `Not logged in`)
-		if (!cred.organization) throw new Meteor.Error(500, `User has no organization`)
+		if (!cred.organizationId) throw new Meteor.Error(500, `User has no organization`)
 		const access = allowAccessToCoreSystem(cred)
 		if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
 

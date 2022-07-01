@@ -283,8 +283,8 @@ namespace AccessRules {
 		return allAccess(null)
 	}
 	// export function accessUser (cred: ResolvedCredentials, user: User): Access<User> {
-	// 	if (!cred.organization) return noAccess('No organization in credentials')
-	// 	if (user.organizationId === cred.organization._id) {
+	// 	if (!cred.organizationId) return noAccess('No organization in credentials')
+	// 	if (user.organizationId === cred.organizationId) {
 	// 		// TODO: user role access
 	// 		return allAccess()
 	// 	} else return noAccess('User is not in the same organization as requested user')
@@ -293,8 +293,8 @@ namespace AccessRules {
 		organization: DBOrganization,
 		cred: ResolvedCredentials
 	): Access<DBOrganization> {
-		if (!cred.organization) return noAccess('No organization in credentials')
-		if (organization._id === cred.organization._id) {
+		if (!cred.organizationId) return noAccess('No organization in credentials')
+		if (organization._id === cred.organizationId) {
 			// TODO: user role access
 			return allAccess(organization)
 		} else return noAccess(`User is not in the organization "${organization._id}"`)
@@ -304,16 +304,16 @@ namespace AccessRules {
 		cred: ResolvedCredentials
 	): Access<ShowStyleBaseLight> {
 		if (!showStyleBase.organizationId) return noAccess('ShowStyleBase has no organization')
-		if (!cred.organization) return noAccess('No organization in credentials')
-		if (showStyleBase.organizationId === cred.organization._id) {
+		if (!cred.organizationId) return noAccess('No organization in credentials')
+		if (showStyleBase.organizationId === cred.organizationId) {
 			// TODO: user role access
 			return allAccess(showStyleBase)
 		} else return noAccess(`User is not in the same organization as the showStyleBase "${showStyleBase._id}"`)
 	}
 	export function accessStudio(studio: StudioLight, cred: ResolvedCredentials): Access<StudioLight> {
 		if (!studio.organizationId) return noAccess('Studio has no organization')
-		if (!cred.organization) return noAccess('No organization in credentials')
-		if (studio.organizationId === cred.organization._id) {
+		if (!cred.organizationId) return noAccess('No organization in credentials')
+		if (studio.organizationId === cred.organizationId) {
 			// TODO: user role access
 			return allAccess(studio)
 		} else return noAccess(`User is not in the same organization as the studio ${studio._id}`)
@@ -335,9 +335,9 @@ namespace AccessRules {
 		device: PeripheralDevice,
 		cred: ResolvedCredentials
 	): Access<PeripheralDevice> {
-		if (!cred.organization) return noAccess('No organization in credentials')
+		if (!cred.organizationId) return noAccess('No organization in credentials')
 		if (!device.organizationId) return noAccess('Device has no organizationId')
-		if (device.organizationId === cred.organization._id) {
+		if (device.organizationId === cred.organizationId) {
 			return allAccess(device)
 		} else return noAccess(`Device "${device._id}" is not in the same organization as user`)
 	}

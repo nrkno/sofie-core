@@ -122,13 +122,13 @@ export namespace OrganizationContentWriteAccess {
 		}
 		const cred = resolveCredentials(cred0)
 		if (!cred.user) throw new Meteor.Error(403, `Not logged in`)
-		if (!cred.organization) throw new Meteor.Error(500, `User has no organization`)
-		const access = allowAccessToOrganization(cred, existingObj ? existingObj.organizationId : cred.organization._id)
+		if (!cred.organizationId) throw new Meteor.Error(500, `User has no organization`)
+		const access = allowAccessToOrganization(cred, existingObj ? existingObj.organizationId : cred.organizationId)
 		if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
 
 		return {
 			userId: cred.user._id,
-			organizationId: cred.organization._id,
+			organizationId: cred.organizationId,
 			cred: cred,
 		}
 	}

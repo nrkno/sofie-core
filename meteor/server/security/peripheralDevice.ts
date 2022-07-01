@@ -127,7 +127,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 			span?.end()
 			return {
 				userId: cred.user ? cred.user._id : null,
-				organizationId: cred.organization ? cred.organization._id : null,
+				organizationId: cred.organizationId,
 				deviceId: deviceId,
 				device: device,
 				cred: cred,

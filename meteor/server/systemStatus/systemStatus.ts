@@ -269,11 +269,11 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 			// Check status for the user's studios:
 
 			const cred = resolveCredentials(cred0)
-			if (!cred.organization) throw new Meteor.Error(500, 'user has no organization')
-			if (!OrganizationReadAccess.organizationContent({ organizationId: cred.organization._id }, cred)) {
+			if (!cred.organizationId) throw new Meteor.Error(500, 'user has no organization')
+			if (!OrganizationReadAccess.organizationContent({ organizationId: cred.organizationId }, cred)) {
 				throw new Meteor.Error(403, `Not allowed`)
 			}
-			devices = PeripheralDevices.find({ organizationId: cred.organization._id }).fetch()
+			devices = PeripheralDevices.find({ organizationId: cred.organizationId }).fetch()
 		} else {
 			// Check status for all studios:
 

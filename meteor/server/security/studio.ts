@@ -116,14 +116,14 @@ export namespace StudioContentWriteAccess {
 		}
 		const cred = resolveCredentials(cred0)
 		if (!cred.user) throw new Meteor.Error(403, `Not logged in`)
-		if (!cred.organization) throw new Meteor.Error(500, `User has no organization`)
+		if (!cred.organizationId) throw new Meteor.Error(500, `User has no organization`)
 		const access = allowAccessToStudio(cred, studioId)
 		if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
 		if (!access.document) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
 
 		return {
 			userId: cred.user._id,
-			organizationId: cred.organization._id,
+			organizationId: cred.organizationId,
 			studioId: studioId,
 			studio: access.document,
 			cred: cred,

@@ -4,11 +4,11 @@ import { extractFunctionSignature } from '../lib'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
 import { Settings } from '../../lib/Settings'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { fetchShowStyleBasesLight } from '../../lib/collections/optimizations'
+import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { MongoCursor } from '../../lib/collections/lib'
 import { OrganizationId, PeripheralDeviceId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectStringObject, waitForPromise } from '../../lib/lib'
+import { DBShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
 export const MeteorPublications: { [key: string]: Function } = {}
@@ -59,7 +59,8 @@ export namespace AutoFillSelector {
 		if (Settings.enableUserAccounts) {
 			if (!selector.organizationId) {
 				cred = resolveCredentials(cred)
-				if (cred.organization) selector.organizationId = cred.organization._id as any
+				if (cred.organizationId) selector.organizationId = cred.organizationId as any
+				// TODO - should this block all access if cred.organizationId is not set
 			}
 		}
 		return { cred, selector }
@@ -79,13 +80,17 @@ export namespace AutoFillSelector {
 		if (Settings.enableUserAccounts) {
 			if (!selector.deviceId) {
 				cred = resolveCredentials(cred)
-				if (cred.organization) {
-					const devices = PeripheralDevices.find({
-						organizationId: cred.organization._id,
-					}).fetch()
+				if (cred.organizationId) {
+					const devices = (await PeripheralDevices.findFetchAsync(
+						{
+							organizationId: cred.organizationId,
+						},
+						{ projection: { _id: 1 } }
+					)) as Array<Pick<PeripheralDevice, '_id'>>
 
 					selector.deviceId = { $in: devices.map((d) => d._id) } as any
 				}
+				// TODO - should this block all access if cred.organizationId is not set
 			}
 		}
 		return { cred, selector }
@@ -104,16 +109,20 @@ export namespace AutoFillSelector {
 		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
 		if (Settings.enableUserAccounts) {
 			if (!selector.showStyleBaseId) {
-				cred = resolveCredentials(cred)
-				if (cred.organization) {
-					const showStyleBases = fetchShowStyleBasesLight({
-						organizationId: cred.organization._id,
-					})
+				cred = resolveCredentials({ userId: userId, token })
+				if (cred.organizationId) {
+					const showStyleBases = (await ShowStyleBases.findFetchAsync(
+						{
+							organizationId: cred.organizationId,
+						},
+						{ projection: { _id: 1 } }
+					)) as Array<Pick<DBShowStyleBase, '_id'>>
 
 					selector = {
 						showStyleBaseId: { $in: showStyleBases.map((d) => d._id) },
 					} as any
 				}
+				// TODO - should this block all access if cred.organizationId is not set
 			}
 		}
 		return { cred, selector }
