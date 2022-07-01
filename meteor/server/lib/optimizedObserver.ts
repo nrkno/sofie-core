@@ -97,11 +97,12 @@ export async function setUpOptimizedObserver<
 								o.lastData = result
 							}
 							if (o.newDataReceivers.length) {
+								const newDataReceivers = o.newDataReceivers
 								// Move to 'active' receivers
-								o.dataReceivers.push(...o.newDataReceivers)
-								o.newDataReceivers.splice(0, o.newDataReceivers.length)
+								o.dataReceivers.push(...newDataReceivers)
+								o.newDataReceivers = []
 								// send initial data
-								for (const dataReceiver of o.newDataReceivers) {
+								for (const dataReceiver of newDataReceivers) {
 									dataReceiver(o.args, o.lastData, [])
 								}
 							}
