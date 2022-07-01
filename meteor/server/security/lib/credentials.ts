@@ -23,11 +23,61 @@ export type ResolvedUser = Pick<User, '_id' | 'organizationId' | 'superAdmin'>
 export type ResolvedPeripheralDevice = Pick<PeripheralDevice, '_id' | 'organizationId' | 'token'>
 
 export interface ResolvedCredentials {
-	user?: ResolvedUser
 	organizationId: OrganizationId | null
+	user?: ResolvedUser
 	device?: ResolvedPeripheralDevice
 }
+export interface ResolvedUserCredentials {
+	organizationId: OrganizationId
+	user: ResolvedUser
+}
+export interface ResolvedPeripheralDeviceCredentials {
+	organizationId: OrganizationId
+	device: ResolvedPeripheralDevice
+}
 
+/**
+ * Resolve the provided credentials, and retrieve the PeripheralDevice and Organization for the provided credentials.
+ * @returns null if the PeripheralDevice was not found
+ */
+export async function resolveAuthenticatedPeripheralDevice(
+	cred: Credentials
+): Promise<ResolvedPeripheralDeviceCredentials | null> {
+	const resolved = resolveCredentials({ userId: null, token: cred.token })
+
+	if (resolved.device && resolved.organizationId) {
+		return {
+			organizationId: resolved.organizationId,
+			device: resolved.device,
+		}
+	} else {
+		return null
+	}
+}
+
+/**
+ * Resolve the provided credentials, and retrieve the User and Organization for the provided credentials.
+ * Note: this requies that the UserId came from a trusted source,it must not be from user input
+ * @returns null if the user was not found
+ */
+export async function resolveAuthenticatedUser(cred: Credentials): Promise<ResolvedUserCredentials | null> {
+	const resolved = resolveCredentials({ userId: cred.userId })
+
+	if (resolved.user && resolved.organizationId) {
+		return {
+			organizationId: resolved.organizationId,
+			user: resolved.user,
+		}
+	} else {
+		return null
+	}
+}
+
+/**
+ * Resolve the provided credentials/identifier, and fetch the authenticating document from the database.
+ * Note: this requires that the provided UserId comes from an up-to-date location in meteor, it must not be from user input
+ * @returns The resolved object. If the identifiers were invalid then this object will have no properties
+ */
 export function resolveCredentials(cred: Credentials | ResolvedCredentials): ResolvedCredentials {
 	const span = profiler.startSpan('security.lib.credentials')
 

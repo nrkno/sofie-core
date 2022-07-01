@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
-import { literal, getRandomId, protectString, makePromise, unprotectString } from '../../lib/lib'
+import { literal, getRandomId, protectString, makePromise, unprotectString, waitForPromise } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
 import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
@@ -146,7 +146,7 @@ function apiCreateTriggeredActions(
 	check(base, Match.Maybe(Object))
 
 	if (!showStyleBaseId) {
-		const access = SystemWriteAccess.coreSystem(context)
+		const access = waitForPromise(SystemWriteAccess.coreSystem(context))
 		if (!access) throw new Meteor.Error(403, `Core System settings not writable`)
 	} else {
 		const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)

@@ -10,7 +10,7 @@ import { allowAccessToShowStyleBase, allowAccessToShowStyleVariant } from './lib
 import { OrganizationId } from '../../lib/collections/Organization'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { Settings } from '../../lib/Settings'
-import { isProtectedString } from '../../lib/lib'
+import { isProtectedString, waitForPromise } from '../../lib/lib'
 import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { SystemWriteAccess } from './system'
 import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../../lib/collections/optimizations'
@@ -91,7 +91,7 @@ export namespace ShowStyleContentWriteAccess {
 				triggeredActions: existingTriggeredAction,
 			}
 		} else {
-			return SystemWriteAccess.coreSystem(cred0)
+			return waitForPromise(SystemWriteAccess.coreSystem(cred0))
 		}
 	}
 	/** Return credentials if writing is allowed, throw otherwise */

@@ -37,16 +37,10 @@ export function allowAccessToAnythingWhenSecurityDisabled(): Access<null> {
  * Check if access is allowed to the coreSystem collection
  * @param cred0 Credentials to check
  */
-export function allowAccessToCoreSystem(cred0: Credentials | ResolvedCredentials): Access<null> {
+export function allowAccessToCoreSystem(cred: ResolvedCredentials): Access<null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 
-	const cred = resolveCredentials(cred0)
-
-	return {
-		...AccessRules.accessCoreSystem(cred),
-		insert: false, // only allowed through methods
-		remove: false, // only allowed through methods
-	}
+	return AccessRules.accessCoreSystem(cred)
 }
 
 /**
@@ -244,7 +238,11 @@ namespace AccessRules {
 	 */
 	export function accessCoreSystem(cred: ResolvedCredentials): Access<null> {
 		if (cred.user && cred.user.superAdmin) {
-			return allAccess(null)
+			return {
+				...allAccess(null),
+				insert: false, // only allowed through methods
+				remove: false, // only allowed through methods
+			}
 		} else {
 			return {
 				...noAccess('User is not superAdmin'),
