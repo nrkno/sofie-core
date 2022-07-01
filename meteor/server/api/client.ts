@@ -374,7 +374,7 @@ export namespace ServerClientAPI {
 		if (Settings.enableUserAccounts) {
 			const cred = resolveCredentials({ userId: methodContext.userId })
 			if (cred.user) userId = cred.user._id
-			if (cred.organization) organizationId = cred.organization._id
+			organizationId = cred.organizationId
 		}
 		return { userId, organizationId }
 	}

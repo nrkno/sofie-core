@@ -1,5 +1,5 @@
-import { UserId, User, Users, DBUser } from '../../../lib/collections/Users'
-import { DBOrganization, Organizations } from '../../../lib/collections/Organization'
+import { UserId, User, Users } from '../../../lib/collections/Users'
+import { OrganizationId, Organizations } from '../../../lib/collections/Organization'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { cacheResult, isProtectedString, clearCacheResult } from '../../../lib/lib'
 import { LIMIT_CACHE_TIME } from './security'
@@ -9,10 +9,23 @@ export interface Credentials {
 	userId: UserId | null
 	token?: string
 }
+
+/**
+ * A minimal set of properties about the user.
+ * We keep it small so that we don't cache too much in memory or have to invalidate the credentials when something insignificant changes
+ */
+export type ResolvedUser = Pick<User, '_id' | 'organizationId' | 'superAdmin'>
+
+/**
+ * A minimal set of properties about the OeripheralDevice.
+ * We keep it small so that we don't cache too much in memory or have to invalidate the credentials when something insignificant changes
+ */
+export type ResolvedPeripheralDevice = Pick<PeripheralDevice, '_id' | 'organizationId' | 'token'>
+
 export interface ResolvedCredentials {
-	user?: User
-	organization?: DBOrganization
-	device?: PeripheralDevice
+	user?: ResolvedUser
+	organizationId: OrganizationId | null
+	device?: ResolvedPeripheralDevice
 }
 
 export function resolveCredentials(cred: Credentials | ResolvedCredentials): ResolvedCredentials {
@@ -26,22 +39,44 @@ export function resolveCredentials(cred: Credentials | ResolvedCredentials): Res
 	const resolved = cacheResult(
 		credCacheName(cred),
 		() => {
-			const resolved: ResolvedCredentials = {}
+			const resolved: ResolvedCredentials = {
+				organizationId: null,
+			}
 
 			if (cred.token && typeof cred.token !== 'string') cred.token = undefined
 			if (cred.userId && !isProtectedString(cred.userId)) cred.userId = null
 
-			let user: DBUser | undefined = undefined
 			// Lookup user, using userId:
 			if (cred.userId && isProtectedString(cred.userId)) {
-				user = Users.findOne(cred.userId)
-				if (user) resolved.user = user
+				const user = Users.findOne(cred.userId, {
+					fields: {
+						_id: 1,
+						organizationId: 1,
+						superAdmin: 1,
+					},
+				}) as ResolvedUser
+				if (user) {
+					resolved.user = user
+					resolved.organizationId = user.organizationId
+				}
 			}
 			// Lookup device, using token
 			if (cred.token) {
-				const device = PeripheralDevices.findOne({ token: cred.token })
+				// TODO - token is not enforced to be unique and can be defined by a connecting gateway.
+				// This is rather flawed in the current model..
+				const device = PeripheralDevices.findOne(
+					{ token: cred.token },
+					{
+						fields: {
+							_id: 1,
+							organizationId: 1,
+							token: 1,
+						},
+					}
+				) as ResolvedPeripheralDevice
 				if (device) {
 					resolved.device = device
+					resolved.organizationId = device.organizationId
 				}
 			}
 
@@ -52,11 +87,11 @@ export function resolveCredentials(cred: Credentials | ResolvedCredentials): Res
 			// 	if (user) resolved.user = user
 			// }
 
-			// Lookup organization, using user
-			if (resolved.user && resolved.user.organizationId) {
-				const org = Organizations.findOne(resolved.user.organizationId)
-				if (org) {
-					resolved.organization = org
+			// Make sure the organizationId is valid
+			if (resolved.organizationId) {
+				const orgCount = Organizations.find(resolved.organizationId).count()
+				if (orgCount === 0) {
+					resolved.organizationId = null
 				}
 			}
 
@@ -77,5 +112,5 @@ function credCacheName(cred: Credentials) {
 }
 export function isResolvedCredentials(cred: Credentials | ResolvedCredentials): cred is ResolvedCredentials {
 	const c = cred as ResolvedCredentials
-	return !!(c.user || c.organization || c.device)
+	return !!(c.user || c.organizationId || c.device)
 }
