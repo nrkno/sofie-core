@@ -1,5 +1,6 @@
 import {
 	ClientActions,
+	IAdlibPlayoutActionArguments,
 	IBaseFilterLink,
 	IGUIContextFilterLink,
 	IRundownPlaylistFilterLink,
@@ -193,7 +194,11 @@ function createRundownPlaylistContext(
  * @param {ShowStyleBase} showStyleBase
  * @return {*}  {ExecutableAdLibAction}
  */
-function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: ShowStyleBase): ExecutableAdLibAction {
+function createAdLibAction(
+	filterChain: AdLibFilterChainLink[],
+	showStyleBase: ShowStyleBase,
+	actionArguments: IAdlibPlayoutActionArguments | undefined
+): ExecutableAdLibAction {
 	const compiledAdLibFilter = compileAdLibFilter(filterChain, showStyleBase)
 
 	return {
@@ -261,7 +266,7 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 								wrappedAdLib._id,
 								wrappedAdLib.item.actionId,
 								wrappedAdLib.item.userData,
-								undefined
+								(actionArguments && actionArguments.triggerMode) || undefined
 							)
 						)
 						break
@@ -274,7 +279,7 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 								wrappedAdLib._id,
 								wrappedAdLib.item.actionId,
 								wrappedAdLib.item.userData,
-								undefined
+								(actionArguments && actionArguments.triggerMode) || undefined
 							)
 						)
 						break
@@ -455,7 +460,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 		case ClientActions.rewindSegments:
 			return createRewindSegmentsAction(action.filterChain)
 		case PlayoutActions.adlib:
-			return createAdLibAction(action.filterChain, showStyleBase)
+			return createAdLibAction(action.filterChain, showStyleBase, action.arguments || undefined)
 		case PlayoutActions.activateRundownPlaylist:
 			if (action.force) {
 				return createUserActionWithCtx(
