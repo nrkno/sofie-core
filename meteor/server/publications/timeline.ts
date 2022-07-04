@@ -20,6 +20,7 @@ import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
 import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
 import { FastTrackObservers, setupFastTrackObserver } from './fastTrack'
+import { logger } from '../logging'
 
 meteorPublish(PubSub.timeline, function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -86,13 +87,13 @@ function createObserverForTimelinePublication(
 				Timeline.find({
 					_id: studioId,
 				}).observe({
-					added: (timeline) => triggerUpdate({ timeline: timeline }),
-					changed: (timeline) => triggerUpdate({ timeline: timeline }),
-					removed: () => triggerUpdate({ timeline: null }),
+					added: (timeline) => triggerUpdate({ incomingTimeline: timeline }),
+					changed: (timeline) => triggerUpdate({ incomingTimeline: timeline }),
+					removed: () => triggerUpdate({ timeline: null, incomingTimeline: null }),
 				}),
 				setupFastTrackObserver(FastTrackObservers.TIMELINE, [studioId], (timeline: TimelineComplete) => {
 					triggerUpdate({
-						timeline: timeline,
+						incomingTimeline: timeline,
 					})
 				}),
 			]
@@ -101,21 +102,25 @@ function createObserverForTimelinePublication(
 			// Initial data fetch
 			return {
 				studioId: studioId,
-				timeline: Timeline.findOne({
-					_id: studioId,
-				}),
+				incomingTimeline:
+					Timeline.findOne({
+						_id: studioId,
+					}) ?? null,
+				timeline: null,
+				timelineHash: undefined,
+				timelineGenerated: 0,
 
 				invalidateStudio: true,
 				studio: undefined,
 				routes: undefined,
 
-				timelineHash: undefined,
 				routedTimeline: [],
 			}
 		},
 		(context: {
 			studioId: StudioId | undefined
-			timeline: TimelineComplete | undefined
+			incomingTimeline: TimelineComplete | null
+			timeline: TimelineComplete | null
 
 			invalidateStudio: boolean
 			studio: StudioLight | undefined
@@ -123,11 +128,12 @@ function createObserverForTimelinePublication(
 
 			// re-calc of timeline using timelineHash:
 			timelineHash: TimelineHash | undefined
+			timelineGenerated: number
 			routedTimeline: TimelineObjGeneric[]
 		}) => {
 			// Prepare data for publication:
 
-			if (!context.studioId || !context.timeline) {
+			if (!context.studioId) {
 				return []
 			}
 
@@ -144,12 +150,43 @@ function createObserverForTimelinePublication(
 			if (!context.studio) return []
 			if (!context.routes) return []
 
+			// Process the incoming timeline and assign it to context.timeline, if pertinent
+			if (context.incomingTimeline) {
+				if (context.timelineGenerated > Date.now() + 10000) {
+					// Take height for something going really really wrong with the generated time,
+					// like if a NTP-sync sets it to 50 years into the future or something...
+					logger.warn(
+						`Existing timeline is from the future, resetting time: ${new Date(
+							context.timelineGenerated
+						).toISOString()}`
+					)
+					context.timelineGenerated = 0
+				}
+
+				if (
+					!context.timeline ||
+					!context.timelineGenerated ||
+					context.timelineGenerated <= context.incomingTimeline.generated
+				) {
+					context.timeline = context.incomingTimeline
+				} else {
+					// Hm, the generated is actually older than what we've already sent
+					// Ignore the incoming timline
+					logger.warn('Incoming timeline is older than the last sent timeline, rejecting the update')
+				}
+
+				context.incomingTimeline = null
+			}
+
+			if (!context.timeline) return []
+
 			if (context.timelineHash !== context.timeline.timelineHash) {
 				invalidateTimeline = true
 			}
 
 			if (invalidateTimeline) {
 				context.timelineHash = context.timeline.timelineHash
+				context.timelineGenerated = context.timeline.generated
 				const timeline = deserializeTimelineBlob(context.timeline.timelineBlob)
 				context.routedTimeline = getRoutedTimeline(timeline, context.routes)
 				changedData = true

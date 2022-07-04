@@ -17,6 +17,7 @@ import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/ti
 import { JobContext } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import { getPieceEnableInsidePart, transformPieceGroupAndObjects } from './piece'
+import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 export function transformPartIntoTimeline(
 	context: JobContext,
@@ -82,6 +83,7 @@ export function transformPartIntoTimeline(
 				nowInParentGroup,
 				pieceInstance,
 				pieceEnable,
+				0,
 				pieceGroupFirstObjClasses,
 				isInHold,
 				false
@@ -136,12 +138,12 @@ export function createPartGroupFirstObject(
 			deviceType: TSR.DeviceType.ABSTRACT,
 			type: 'callback',
 			// Will cause the playout-gateway to run a callback, when the object starts playing:
-			callBack: 'partPlaybackStarted',
+			callBack: PlayoutChangedType.PART_PLAYBACK_STARTED,
 			callBackData: {
 				rundownPlaylistId: playlistId,
 				partInstanceId: partInstance._id,
 			},
-			callBackStopped: 'partPlaybackStopped', // Will cause a callback to be called, when the object stops playing:
+			callBackStopped: PlayoutChangedType.PART_PLAYBACK_STOPPED, // Will cause a callback to be called, when the object stops playing:
 		},
 		inGroup: partGroup.id,
 		partInstanceId: partGroup.partInstanceId,

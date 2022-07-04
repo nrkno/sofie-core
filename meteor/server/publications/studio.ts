@@ -35,14 +35,14 @@ import { PackageContainerStatuses } from '../../lib/collections/PackageContainer
 import { literal } from '../../lib/lib'
 
 meteorPublish(PubSub.studios, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
+	const { cred, selector } = AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)
 	const modifier: FindOptions<DBStudio> = {
 		fields: {},
 	}
 	if (
 		NoSecurityReadAccess.any() ||
 		(selector._id && StudioReadAccess.studio(selector, cred)) ||
-		(selector.organizationId && OrganizationReadAccess.organizationContent(selector, cred))
+		(selector.organizationId && OrganizationReadAccess.organizationContent<DBStudio>(selector, cred))
 	) {
 		return Studios.find(selector, modifier)
 	}

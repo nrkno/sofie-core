@@ -14,8 +14,6 @@ export interface IDashboardButtonProps {
 }
 
 export class DashboardActionButton extends React.Component<IDashboardButtonProps> {
-	private objId: string
-
 	constructor(props: IDashboardButtonProps) {
 		super(props)
 	}

@@ -12,6 +12,7 @@ import {
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { protectString } from '../../protectedString'
 import { RundownPlaylistId } from '../../dataModel/Ids'
+import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 type PieceInstanceParam = Parameters<typeof createPieceGroupAndCap>[1]
 
@@ -64,14 +65,14 @@ describe('Pieces', () => {
 			content: {
 				deviceType: 0,
 				type: 'callback',
-				callBack: 'piecePlaybackStarted',
+				callBack: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
 				callBackData: {
 					rundownPlaylistId: playlistId,
 					partInstanceId: protectString('randomId9002'),
 					pieceInstanceId: protectString('randomId9000'),
 					dynamicallyInserted: false,
 				},
-				callBackStopped: 'piecePlaybackStopped',
+				callBackStopped: PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
 			},
 			enable: {
 				end: undefined,
@@ -457,6 +458,49 @@ describe('Pieces', () => {
 				enable: {
 					...enable,
 					end: 'aaa + 99',
+				},
+			})
+		})
+
+		test('resolvedEndCap with piece start offset', () => {
+			const enable: TimelineEnable = { start: 0 }
+
+			const pieceInstance: PieceInstanceParam = {
+				...simplePieceInstance,
+				resolvedEndCap: 500,
+			}
+
+			// No offset
+			const res = createPieceGroupAndCap(playlistId, pieceInstance, [], partGroup, enable)
+			expect(res.capObjs).toHaveLength(0)
+			expect(res.childGroup).toStrictEqual({
+				...simplePieceGroup,
+				inGroup: partGroup.id,
+			})
+			expect(res.controlObj).toStrictEqual({
+				...simplePieceControl,
+				inGroup: partGroup.id,
+				classes: [],
+				enable: {
+					...enable,
+					end: 500,
+				},
+			})
+
+			// Factor in offset
+			const res2 = createPieceGroupAndCap(playlistId, pieceInstance, [], partGroup, enable, 100)
+			expect(res2.capObjs).toHaveLength(0)
+			expect(res2.childGroup).toStrictEqual({
+				...simplePieceGroup,
+				inGroup: partGroup.id,
+			})
+			expect(res2.controlObj).toStrictEqual({
+				...simplePieceControl,
+				inGroup: partGroup.id,
+				classes: [],
+				enable: {
+					...enable,
+					end: 400,
 				},
 			})
 		})

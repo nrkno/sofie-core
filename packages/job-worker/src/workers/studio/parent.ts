@@ -31,6 +31,7 @@ export class StudioWorkerParent extends WorkerParentBase {
 			[baseOptions.studioId, emitLockEvent, baseOptions.jobManager.queueJob, logLine, fastTrackTimeline],
 			{
 				instanceName: `Studio: ${baseOptions.studioId}`,
+				autoRestart: true,
 			}
 		)
 

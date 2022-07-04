@@ -65,6 +65,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	}
 	bucketDisplayFilter: number[] | undefined
 	showBuckets: boolean
+	showInspector: boolean
 
 	onChangeExpanded: (value: boolean) => void
 	onChangeBottomMargin?: (newBottomMargin: string) => void
@@ -85,7 +86,6 @@ const MAX_HEIGHT = 95
 export const DEFAULT_TAB = ShelfTabs.ADLIB
 
 export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> {
-	private element: HTMLDivElement | null = null
 	private _mouseStart: {
 		x: number
 		y: number
@@ -180,8 +180,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 				this.setState({
 					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${defaultTab._id}`,
 				})
-			} else if (this.props.rundownLayout.filters.length >= 0) {
-				// there is no AdLib dab so some default needs to be selected
+			} else if (this.props.rundownLayout.filters.length > 0) {
+				// there is no AdLib tab so some default needs to be selected
 				this.setState({
 					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${this.props.rundownLayout.filters[0]._id}`,
 				})
@@ -376,10 +376,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.selectPiece(e.piece)
 	}
 
-	private setRef = (element: HTMLDivElement | null) => {
-		this.element = element
-	}
-
 	selectPiece = (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => {
 		this.setState({
 			selectedPiece: piece,
@@ -402,7 +398,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					moving: this.state.moving,
 				})}
 				style={fullViewport ? undefined : this.getStyle()}
-				ref={this.setRef}
 			>
 				{!this.props.rundownLayout?.disableContextMenu && <ShelfContextMenu />}
 				{!fullViewport && (
@@ -489,7 +484,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							/>
 						</ErrorBoundary>
 					) : null}
-					{shelfDisplayOptions.inspector ? (
+					{shelfDisplayOptions.inspector && this.props.rundownLayout?.showInspector ? (
 						<ErrorBoundary>
 							<ShelfInspector
 								selected={this.state.selectedPiece}

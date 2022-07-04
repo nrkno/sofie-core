@@ -418,7 +418,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				if (allNotesPollLock) return
 				allNotesPollLock = true
 				MeteorCall.rundownNotifications
-					.getSegmentPartNotes(rundownIds)
+					.getSegmentPartNotes(playlistId, rundownIds)
 					.then((result) => {
 						fullNotes.set(result)
 						allNotesPollLock = false
@@ -429,7 +429,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 		this.autorun(() => {
 			const rundownIds = rRundowns.get().map((r) => r._id)
-			localNotes.set(getSegmentPartNotes(rundownIds))
+			localNotes.set(getSegmentPartNotes(playlistId, rundownIds))
 		})
 
 		this.autorun(() => {
@@ -713,7 +713,9 @@ class RundownViewNotifier extends WithManagedTracker {
 				let newNotification: Notification | undefined = undefined
 				if (versionMismatch && versionMismatch.length) {
 					const playlist = RundownPlaylists.findOne(playlistId)
-					const firstRundown = playlist ? _.first(RundownPlaylistCollectionUtil.getRundowns(playlist)) : undefined
+					const firstRundown = playlist
+						? _.first(RundownPlaylistCollectionUtil.getRundownsOrdered(playlist))
+						: undefined
 
 					newNotification = new Notification(
 						'rundown_importVersions',

@@ -25,7 +25,7 @@ import {
 } from '../../lib/collections/RundownBaselineAdLibActions'
 
 meteorPublish(PubSub.rundowns, function (selector0, token: string) {
-	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
+	const { cred, selector } = AutoFillSelector.organizationId<DBRundown>(this.userId, selector0, token)
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBRundown> = {
 		fields: {

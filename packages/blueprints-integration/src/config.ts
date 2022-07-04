@@ -5,8 +5,6 @@ import { SourceLayerType } from './content'
 export enum ConfigManifestEntryType {
 	STRING = 'string',
 	MULTILINE_STRING = 'multiline_string',
-	/** @deprecated use INT/FLOAT instead */
-	NUMBER = 'number',
 	INT = 'int',
 	FLOAT = 'float',
 	BOOLEAN = 'boolean',
@@ -21,7 +19,6 @@ export enum ConfigManifestEntryType {
 export type BasicConfigManifestEntry =
 	| ConfigManifestEntryString
 	| ConfigManifestEntryMultilineString
-	| ConfigManifestEntryNumber
 	| ConfigManifestEntryInt
 	| ConfigManifestEntryFloat
 	| ConfigManifestEntryBoolean
@@ -54,15 +51,6 @@ export interface ConfigManifestEntryString extends ConfigManifestEntryBase {
 export interface ConfigManifestEntryMultilineString extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.MULTILINE_STRING
 	defaultVal: string[]
-}
-/** @deprecated use INT/FLOAT instead */
-export interface ConfigManifestEntryNumber extends ConfigManifestEntryBase {
-	type: ConfigManifestEntryType.NUMBER
-	defaultVal: number
-	/** Zero-based values will be stored in the database (and reported to blueprints) as values starting from 0, however,
-	 * 	when rendered in settings pages they will appear as value + 1
-	 */
-	zeroBased?: boolean
 }
 export interface ConfigManifestEntryInt extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.INT

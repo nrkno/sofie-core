@@ -11,7 +11,7 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '../dataModel/Ids'
-import * as MOS from 'mos-connection'
+import type * as MOS from 'mos-connection'
 import { IngestAdlib, IngestPart, IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibAction } from '../dataModel/BucketAdLibAction'
 

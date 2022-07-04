@@ -156,9 +156,14 @@ export type IAdLibFilterLink =
 			value: 'adLib' | 'adLibAction' | 'clear' | 'sticky'
 	  }
 
+export interface IAdlibPlayoutActionArguments {
+	triggerMode: string
+}
+
 export interface IAdlibPlayoutAction extends ITriggeredActionBase {
 	action: PlayoutActions.adlib
 	filterChain: (IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink)[]
+	arguments?: IAdlibPlayoutActionArguments | null
 }
 
 export interface IRundownPlaylistActivateAction extends ITriggeredActionBase {

@@ -119,7 +119,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 		}
 	}
 }
-function backwardsCompatibilityfix(cred0, deviceId) {
+function backwardsCompatibilityfix(cred0: Credentials, deviceId: PeripheralDeviceId) {
 	if (!Settings.enableUserAccounts) {
 		// Note: This is a temporary hack to keep backwards compatibility:
 		const device = PeripheralDevices.findOne(deviceId)

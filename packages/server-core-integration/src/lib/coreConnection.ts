@@ -1,14 +1,25 @@
 import { EventEmitter } from 'eventemitter3'
 import * as _ from 'underscore'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+	PeripheralDeviceSubType,
+	PERIPHERAL_SUBTYPE_PROCESS,
+	StatusObject,
+	InitOptions,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 
 import { DDPConnector } from './ddpConnector'
 import { DDPConnectorOptions, DDPError, Observer } from './ddpClient'
-import { PeripheralDeviceAPI as P, PeripheralDeviceAPI } from './corePeripherals'
+
 import { TimeSync } from './timeSync'
 import { WatchDog } from './watchDog'
 import { Queue } from './queue'
 import { DeviceConfigManifest } from './configManifest'
 import { Random } from './random'
+import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const DataStore = require('data-store')
@@ -20,14 +31,14 @@ const TIMEOUTCALL = 200 // ms, time to wait after a call
 const TIMEOUTREPLY = 50 // ms, time to wait after a reply
 
 export interface CoreCredentials {
-	deviceId: string
+	deviceId: PeripheralDeviceId
 	deviceToken: string
 }
 
 export interface CoreOptions extends CoreCredentials {
-	deviceCategory: P.DeviceCategory
-	deviceType?: P.DeviceType | string //  deprecated
-	deviceSubType?: P.DeviceSubType // deprecated
+	deviceCategory: PeripheralDeviceCategory
+	deviceType: PeripheralDeviceType //  deprecated
+	deviceSubType?: PeripheralDeviceSubType // deprecated
 
 	deviceName: string
 	versions?: {
@@ -114,7 +125,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	}
 	static generateCredentials(): CoreCredentials {
 		return {
-			deviceId: Random.id(),
+			deviceId: protectString(Random.id()),
 			deviceToken: Random.id(),
 		}
 	}
@@ -171,7 +182,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 					serverDelayTime: 0,
 				},
 				async () => {
-					const stat = await this.callMethod(PeripheralDeviceAPI.methods.getTimeDiff)
+					const stat = await this.callMethod(PeripheralDeviceAPIMethods.getTimeDiff)
 					return stat.currentTime
 				}
 			)
@@ -252,13 +263,13 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 		return this._connected
 		// return (this.ddp ? this.ddp.connected : false)
 	}
-	get deviceId(): string {
+	get deviceId(): PeripheralDeviceId {
 		return this._coreOptions.deviceId
 	}
-	async setStatus(status: P.StatusObject): Promise<P.StatusObject> {
-		return this.callMethod(P.methods.setStatus, [status])
+	async setStatus(status: StatusObject): Promise<StatusObject> {
+		return this.callMethod(PeripheralDeviceAPIMethods.setStatus, [status])
 	}
-	async callMethod(methodName: PeripheralDeviceAPI.methods | string, attrs?: Array<any>): Promise<any> {
+	async callMethod(methodName: PeripheralDeviceAPIMethods | string, attrs?: Array<any>): Promise<any> {
 		return new Promise((resolve, reject) => {
 			if (this._destroyed) {
 				reject('callMethod: CoreConnection has been destroyed')
@@ -276,7 +287,16 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 				reject('callMehod: DDP client has not been initialized')
 				return
 			}
+			const timeout = setTimeout(() => {
+				// Timeout
+				console.error(`Timeout "${methodName}"`)
+				console.error(JSON.stringify(fullAttrs))
+				reject(
+					`Timeout when calling method "${methodName}", arguments: ${JSON.stringify(fullAttrs).slice(0, 200)}`
+				)
+			}, 10 * 1000) // 10 seconds
 			this.ddp.ddpClient.call(methodName, fullAttrs, (err: DDPError | undefined, result: any) => {
+				clearTimeout(timeout)
 				this._timeLastMethodReply = Date.now()
 				if (err) {
 					if (typeof err === 'object') {
@@ -296,7 +316,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 			})
 		})
 	}
-	async callMethodLowPrio(methodName: PeripheralDeviceAPI.methods | string, attrs?: Array<any>): Promise<any> {
+	async callMethodLowPrio(methodName: PeripheralDeviceAPIMethods | string, attrs?: Array<any>): Promise<any> {
 		return new Promise((resolve, reject) => {
 			this.queuedMethodCalls.push({
 				f: async () => {
@@ -309,13 +329,13 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 		})
 	}
 	async unInitialize(): Promise<string> {
-		return this.callMethod(P.methods.unInitialize)
+		return this.callMethod(PeripheralDeviceAPIMethods.unInitialize)
 	}
 	async mosManipulate(method: string, ...attrs: Array<any>): Promise<any> {
 		return this.callMethod(method, attrs)
 	}
 	async getPeripheralDevice(): Promise<any> {
-		return this.callMethod(P.methods.getPeripheralDevice)
+		return this.callMethod(PeripheralDeviceAPIMethods.getPeripheralDevice)
 	}
 	getCollection(collectionName: string): Collection {
 		if (!this.ddp.ddpClient) {
@@ -429,7 +449,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	private async _sendInit(): Promise<string> {
 		if (!this.ddp || !this.ddp.connectionId) throw Error('Not connected to Core')
 
-		const options: P.InitOptions = {
+		const options: InitOptions = {
 			category: this._coreOptions.deviceCategory,
 			type: this._coreOptions.deviceType,
 			subType: this._coreOptions.deviceSubType,
@@ -442,13 +462,13 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 			configManifest: this._coreOptions.configManifest,
 		}
 
-		if (options.subType === P.SUBTYPE_PROCESS) {
+		if (options.subType === PERIPHERAL_SUBTYPE_PROCESS) {
 			if (!options.versions) options.versions = {}
 			options.versions['@sofie-automation/server-core-integration'] = PkgInfo.version
 		}
 
 		this._sentConnectionId = options.connectionId
-		return this.callMethod(P.methods.initialize, [options])
+		return this.callMethod(PeripheralDeviceAPIMethods.initialize, [options])
 	}
 	private _removeParent() {
 		if (this._parent) this._parent.removeChild(this)
@@ -470,7 +490,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 			Core should then reply with triggering executeFunction with the "pingResponse" method.
 		*/
 		const message = 'watchdogPing_' + Math.round(Math.random() * 100000)
-		this.callMethod(PeripheralDeviceAPI.methods.pingWithCommand, [message]).catch((e) =>
+		this.callMethod(PeripheralDeviceAPIMethods.pingWithCommand, [message]).catch((e) =>
 			this._emitError('watchdogPing' + e)
 		)
 
@@ -522,7 +542,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	private _ping() {
 		try {
 			if (this.connected) {
-				this.callMethod(PeripheralDeviceAPI.methods.ping).catch((e) => this._emitError('_ping' + e))
+				this.callMethod(PeripheralDeviceAPIMethods.ping).catch((e) => this._emitError('_ping' + e))
 			}
 		} catch (e) {
 			this._emitError('_ping2 ' + e)

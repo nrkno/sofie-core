@@ -176,7 +176,6 @@ export async function setupDefaultRundown(
 		showStyleVariantId: showStyleCompound.showStyleVariantId,
 
 		playlistId: playlistId,
-		_rank: 0,
 
 		_id: rundownId,
 		externalId: 'MOCK_RUNDOWN',
@@ -410,6 +409,7 @@ export async function setupMockPeripheralDevice(
 		name: 'mockDevice',
 		organizationId: null,
 		studioId: context.studioId,
+		settings: {},
 
 		category: category,
 		type: type,

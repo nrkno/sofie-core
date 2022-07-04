@@ -74,8 +74,9 @@ async function retrieveBlueprintConfigRef(
 			if (showStyleCompound) {
 				const showStyleConfig = context.getShowStyleBlueprintConfig(showStyleCompound)
 				return objectPathGet(showStyleConfig, configId)
-			} else if (bailOnError)
+			} else if (bailOnError) {
 				throw new Error(`Ref "${reference}": Showstyle variant "${showStyleVariantId}" not found`)
+			}
 		}
 	}
 	return undefined

@@ -107,11 +107,15 @@ export abstract class WorkerParentBase {
 
 	protected registerStatusEvents(workerThread: Promisify<any>): void {
 		ThreadedClassManager.onEvent(workerThread, 'restarted', () => {
+			logger.info(`Worker ${this.#prettyName} restarted`)
 			this.#threadStatus = ThreadStatus.PendingInit
 			this.#threadInstanceId = getRandomString()
+			this.#jobStream.interrupt()
 		})
 		ThreadedClassManager.onEvent(workerThread, 'thread_closed', () => {
+			logger.info(`Worker ${this.#prettyName} closed`)
 			this.#threadStatus = ThreadStatus.Closed
+			this.#jobStream.interrupt()
 		})
 	}
 
@@ -171,99 +175,107 @@ export abstract class WorkerParentBase {
 
 					// Run until told to terminate
 					while (!this.#terminate) {
-						switch (this.#threadStatus) {
-							case ThreadStatus.Closed:
-								// Wait for the thread
-								await sleep(100)
-								// Check again
-								continue
-							case ThreadStatus.PendingInit:
-								logger.debug(`Re-initialising worker thread: "${this.#queueName}"`)
-								// Reinit the worker
-								await this.initWorker(mongoUri, this.#mongoDbName)
-								this.#threadStatus = ThreadStatus.Ready
+						try {
+							switch (this.#threadStatus) {
+								case ThreadStatus.Closed:
+									// Wait for the thread
+									await sleep(100)
+									// Check again
+									continue
+								case ThreadStatus.PendingInit:
+									logger.debug(`Re-initialising worker thread: "${this.#queueName}"`)
+									// Reinit the worker
+									await this.initWorker(mongoUri, this.#mongoDbName)
 
-								break
-							case ThreadStatus.Ready:
-								// Thread is happy to accept a job
-								break
-							default:
-								assertNever(this.#threadStatus)
-						}
+									logger.info(`Worker ${this.#prettyName} ready`)
+									this.#threadStatus = ThreadStatus.Ready
 
-						const job = await this.#jobStream.next() // Note: this blocks
-
-						// Handle any invalidations
-						if (this.#pendingInvalidations) {
-							logger.debug(`Invalidating worker caches: ${JSON.stringify(this.#pendingInvalidations)}`)
-							const invalidations = this.#pendingInvalidations
-							this.#pendingInvalidations = null
-
-							await this.invalidateWorkerCaches(invalidations)
-						}
-
-						// we may not get a job even when blocking, so try again
-						if (job) {
-							// Ensure the lock is still good
-							// await job.extendLock(this.#workerId, 10000) // Future - ensure the job is locked for enough to process
-
-							const transaction = startTransaction(job.name, 'worker-parent')
-							if (transaction) {
-								transaction.setLabel('studioId', unprotectString(this.#studioId))
+									break
+								case ThreadStatus.Ready:
+									// Thread is happy to accept a job
+									break
+								default:
+									assertNever(this.#threadStatus)
 							}
 
-							const startTime = Date.now()
-							this.#watchdogJobStarted = startTime
+							const job = await this.#jobStream.next() // Note: this blocks
 
-							try {
-								logger.debug(`Starting work ${job.id}: "${job.name}"`)
-								logger.verbose(`Payload ${job.id}: ${JSON.stringify(job.data)}`)
-
-								// Future - extend the job lock on an interval
-								let result: WorkerJobResult
-								if (job.name === FORCE_CLEAR_CACHES_JOB) {
-									const invalidations =
-										this.#pendingInvalidations ?? createInvalidateWorkerDataCache()
-									this.#pendingInvalidations = null
-
-									invalidations.forceAll = true
-									await this.invalidateWorkerCaches(invalidations)
-
-									result = { result: undefined, error: null }
-								} else {
-									result = await this.runJobInWorker(job.name, job.data)
-								}
-
-								const endTime = Date.now()
-								this.#watchdogJobStarted = undefined
-
-								await this.#jobManager.jobFinished(
-									job.id,
-									startTime,
-									endTime,
-									result.error,
-									result.result
+							// Handle any invalidations
+							if (this.#pendingInvalidations) {
+								logger.debug(
+									`Invalidating worker caches: ${JSON.stringify(this.#pendingInvalidations)}`
 								)
+								const invalidations = this.#pendingInvalidations
+								this.#pendingInvalidations = null
 
-								logger.debug(`Completed work ${job.id} in ${endTime - startTime}ms`)
-							} catch (e: unknown) {
-								let error: Error
-								if (e instanceof Error) {
-									error = e
-								} else {
-									error = new Error(typeof e === 'string' ? e : `${e}`)
-								}
-
-								logger.error(`Job errored ${job.id} "${job.name}": ${stringifyError(e)}`)
-
-								this.#watchdogJobStarted = undefined
-								await this.#jobManager.jobFinished(job.id, startTime, Date.now(), error, null)
+								await this.invalidateWorkerCaches(invalidations)
 							}
 
-							// Ensure all locks have been freed after the job
-							await this.#locksManager.releaseAllForThread(this.#queueName)
+							// we may not get a job even when blocking, so try again
+							if (job) {
+								// Ensure the lock is still good
+								// await job.extendLock(this.#workerId, 10000) // Future - ensure the job is locked for enough to process
 
-							transaction?.end()
+								const transaction = startTransaction(job.name, 'worker-parent')
+								if (transaction) {
+									transaction.setLabel('studioId', unprotectString(this.#studioId))
+								}
+
+								const startTime = Date.now()
+								this.#watchdogJobStarted = startTime
+
+								try {
+									logger.debug(`Starting work ${job.id}: "${job.name}"`)
+									logger.verbose(`Payload ${job.id}: ${JSON.stringify(job.data)}`)
+
+									// Future - extend the job lock on an interval
+									let result: WorkerJobResult
+									if (job.name === FORCE_CLEAR_CACHES_JOB) {
+										const invalidations =
+											this.#pendingInvalidations ?? createInvalidateWorkerDataCache()
+										this.#pendingInvalidations = null
+
+										invalidations.forceAll = true
+										await this.invalidateWorkerCaches(invalidations)
+
+										result = { result: undefined, error: null }
+									} else {
+										result = await this.runJobInWorker(job.name, job.data)
+									}
+
+									const endTime = Date.now()
+									this.#watchdogJobStarted = undefined
+
+									await this.#jobManager.jobFinished(
+										job.id,
+										startTime,
+										endTime,
+										result.error,
+										result.result
+									)
+
+									logger.debug(`Completed work ${job.id} in ${endTime - startTime}ms`)
+								} catch (e: unknown) {
+									let error: Error
+									if (e instanceof Error) {
+										error = e
+									} else {
+										error = new Error(typeof e === 'string' ? e : `${e}`)
+									}
+
+									logger.error(`Job errored ${job.id} "${job.name}": ${stringifyError(e)}`)
+
+									this.#watchdogJobStarted = undefined
+									await this.#jobManager.jobFinished(job.id, startTime, Date.now(), error, null)
+								}
+
+								// Ensure all locks have been freed after the job
+								await this.#locksManager.releaseAllForThread(this.#queueName)
+
+								transaction?.end()
+							}
+						} catch (e) {
+							logger.error(`Uncaught error in worker loop for ${this.#prettyName}: ${e}`)
 						}
 					}
 

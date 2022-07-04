@@ -13,7 +13,6 @@ import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { IconName } from '@fortawesome/fontawesome-svg-core'
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { getRundownPlaylistLink } from './util'
@@ -207,26 +206,6 @@ export const RundownPlaylistUi = DropTarget(
 				if (this.rundownsHaveChanged(prevProps)) {
 					this.resetLocalRundownOrder()
 				}
-			}
-
-			private saveViewChoice(key: string) {
-				UIStateStorage.setItem(`rundownList.${this.props.playlist.studioId}`, 'defaultView', key)
-			}
-
-			private renderViewLinkItem(layout: RundownLayoutBase, link: string, key: string) {
-				return (
-					<Link to={link} onClick={() => this.saveViewChoice(key)} key={key}>
-						<div className="action-btn expco-item">
-							<div
-								className={ClassNames('action-btn layout-icon', { small: !layout.icon })}
-								style={{ color: layout.iconColor || 'transparent' }}
-							>
-								<FontAwesomeIcon icon={(layout.icon as IconName) || 'circle'} />
-							</div>
-							<span className="expco-text">{layout.name}</span>
-						</div>
-					</Link>
-				)
 			}
 
 			private swapRundownOrder(a: RundownId, b: RundownId): void {

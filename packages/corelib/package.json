@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/corelib",
-	"version": "1.43.0-in-testing.0",
+	"version": "1.44.0-in-development",
 	"private": true,
 	"description": "Internal library for some types shared by core and workers",
 	"main": "dist/index.js",
@@ -25,15 +25,12 @@
 		"watch": "jest --watch",
 		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"changelog": "standard-version",
-		"release": "yarn reset && yarn test && yarn changelog",
-		"reset": "git clean -dfx && git reset --hard && yarn",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
 		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.18 || ^16.14"
+		"node": "^14.19 || ^16.14"
 	},
 	"files": [
 		"/dist",
@@ -43,25 +40,21 @@
 	],
 	"dependencies": {
 		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
+		"@sofie-automation/shared-lib": "link:../shared-lib",
 		"fast-clone": "^1.5.13",
 		"i18next": "^19.9.2",
-		"influx": "^5.9.2",
-		"mos-connection": "^1.0.7",
+		"influx": "^5.9.3",
+		"mos-connection": "^2.0.0",
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",
-		"tslib": "^2.1.0",
-		"type-fest": "^2.11.1",
-		"underscore": "^1.13.2"
+		"tslib": "^2.4.0",
+		"type-fest": "^2.12.2",
+		"underscore": "^1.13.3"
 	},
 	"peerDependencies": {
 		"mongodb": "^4.4.1"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged"
-		}
-	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
 			"prettier --write"

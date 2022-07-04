@@ -27,7 +27,6 @@ import { getCurrentTime } from '../../lib'
 import {
 	protectString,
 	protectStringArray,
-	UnprotectedStringProperties,
 	unprotectString,
 	unprotectStringArray,
 } from '@sofie-automation/corelib/dist/protectedString'
@@ -248,9 +247,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 	}
 
-	async getPartForPreviousPiece(
-		piece: UnprotectedStringProperties<Pick<Piece, '_id'>>
-	): Promise<IBlueprintPart | undefined> {
+	async getPartForPreviousPiece(piece: Partial<Pick<IBlueprintPieceDB, '_id'>>): Promise<IBlueprintPart | undefined> {
 		if (!piece?._id) {
 			throw new Error('Cannot find Part from invalid Piece')
 		}

@@ -52,7 +52,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { ConfigManifestEntryType, MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
 import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
-import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/corelib/dist/constants'
+import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 import { MongoCollection } from '../../../lib/collections/lib'
 
@@ -135,12 +135,8 @@ const StudioDevices = withTranslation()(
 			})
 		}
 
-		isPlayoutConnected() {
-			let connected = false
-			this.props.studioDevices.map((device) => {
-				if (device.type === PeripheralDeviceType.PLAYOUT) connected = true
-			})
-			return connected
+		isPlayoutConnected(): boolean {
+			return !!this.props.studioDevices.find((device) => device.type === PeripheralDeviceType.PLAYOUT)
 		}
 
 		render() {
@@ -2344,7 +2340,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		renderShowStyleEditButtons() {
 			const buttons: JSX.Element[] = []
 			if (this.props.studio) {
-				this.props.studio.supportedShowStyleBase.map((showStyleBaseId) => {
+				for (const showStyleBaseId of this.props.studio.supportedShowStyleBase) {
 					const showStyleBase = this.props.availableShowStyleBases.find(
 						(base) => base.showStyleBase._id === showStyleBaseId
 					)
@@ -2358,7 +2354,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							></SettingsNavigation>
 						)
 					}
-				})
+				}
 			}
 			return buttons
 		}

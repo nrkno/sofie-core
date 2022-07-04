@@ -22,7 +22,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { Filter as FilterQuery } from 'mongodb'
 import _ = require('underscore')
-import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/corelib/dist/constants'
+import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
 import { prefixSingleObjectId } from '../lib'
 import { LookaheadTimelineObject } from './findObjects'
 import { hasPieceInstanceDefinitelyEnded } from '../timeline/lib'

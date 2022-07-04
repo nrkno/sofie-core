@@ -106,7 +106,7 @@ import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'
 import { SorensenContext } from '../lib/SorensenContext'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/corelib/dist/constants'
+import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { BreakSegment } from './SegmentTimeline/BreakSegment'
 import { PlaylistStartTiming } from './RundownView/RundownTiming/PlaylistStartTiming'
 import { RundownName } from './RundownView/RundownTiming/RundownName'
@@ -1160,7 +1160,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun(
-			(_playlistId) => RundownPlaylistCollectionUtil.getRundowns(playlist),
+			(_playlistId) => RundownPlaylistCollectionUtil.getRundownsOrdered(playlist),
 			'playlist.getRundowns',
 			playlistId
 		)
@@ -1542,7 +1542,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
 				if (!playlist) return
 
-				const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
+				const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
 					fields: {
 						_id: 1,
 						showStyleBaseId: 1,

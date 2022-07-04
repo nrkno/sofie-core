@@ -8,6 +8,9 @@ import { logger } from './logging'
 import { MongoQuery } from './typings/meteor'
 import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
+import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
+export { Time, TimeDuration }
+
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
 export * from '@sofie-automation/corelib/dist/lib'
@@ -26,9 +29,6 @@ export async function MeteorPromiseCall(callName: string, ...args: any[]): Promi
 		})
 	})
 }
-
-export type Time = number
-export type TimeDuration = number
 
 // The diff is currently only used client-side
 const systemTime = {
