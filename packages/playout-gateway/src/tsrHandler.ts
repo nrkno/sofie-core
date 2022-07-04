@@ -997,6 +997,7 @@ export class TSRHandler {
 
 	private changedResults: PlayoutChangedResults | undefined = undefined
 	private sendCallbacksTimeout: NodeJS.Timer | undefined = undefined
+	private sendCallbacksDebounceCount = 0
 	private handleTSRTimelineCallback(
 		time: number,
 		objId: string,
@@ -1058,15 +1059,26 @@ export class TSRHandler {
 				assertNever(callbackName)
 			}
 
-			if (this.sendCallbacksTimeout) clearTimeout(this.sendCallbacksTimeout)
-			this.sendCallbacksTimeout = setTimeout(() => {
-				this._coreHandler.core
-					.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
-					.catch((e) => {
-						this.logger.error('Error in timelineCallback', e)
-					})
-				this.changedResults = undefined
-			}, 100)
+			if (this.sendCallbacksTimeout) {
+				// Max limit for debouncing:
+				if (this.sendCallbacksDebounceCount < 10) {
+					this.sendCallbacksDebounceCount++
+					clearTimeout(this.sendCallbacksTimeout)
+					this.sendCallbacksTimeout = undefined
+				}
+			}
+			if (!this.sendCallbacksTimeout) {
+				this.sendCallbacksTimeout = setTimeout(() => {
+					this.sendCallbacksDebounceCount = 0
+					this.sendCallbacksTimeout = undefined
+					this._coreHandler.core
+						.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
+						.catch((e) => {
+							this.logger.error('Error in timelineCallback', e)
+						})
+					this.changedResults = undefined
+				}, 100)
+			}
 		} else {
 			// @ts-expect-error Untyped bunch of methods
 			const method = PeripheralDeviceAPIMethods[callbackName]
