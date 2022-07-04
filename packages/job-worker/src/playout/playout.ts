@@ -1,4 +1,9 @@
-import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	PartId,
+	PartInstanceId,
+	PieceInstanceId,
+	RundownPlaylistId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
@@ -16,10 +21,6 @@ import {
 	ExecuteActionProps,
 	ExecuteActionResult,
 	TakeNextPartProps,
-	OnPiecePlaybackStartedProps,
-	OnPiecePlaybackStoppedProps,
-	OnPartPlaybackStoppedProps,
-	OnPartPlaybackStartedProps,
 	DisableNextPieceProps,
 	SetNextSegmentProps,
 	OnTimelineTriggerTimeProps,
@@ -43,7 +44,7 @@ import {
 } from './lib'
 import { saveTimeline, updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
-import { IBlueprintPieceType, PartHoldMode } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PartHoldMode, Time } from '@sofie-automation/blueprints-integration'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
 import {
 	activateRundownPlaylist as libActivateRundownPlaylist,
@@ -699,24 +700,15 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 	)
 }
 
-/**
- * Triggered from Playout-gateway when a Piece has started playing
- * @deprecated use onPlayoutPlaybackChanged instead
- */
-export async function onPiecePlaybackStarted(context: JobContext, data: OnPiecePlaybackStartedProps): Promise<void> {
-	return runJobWithPlayoutCache(
-		context,
-		data,
-		async (_cache) => {
-			// Nothing here
-		},
-		async (cache) => {
-			_onPiecePlaybackStarted(context, cache, data)
-		}
-	)
-}
-
-function _onPiecePlaybackStarted(context: JobContext, cache: CacheForPlayout, data: OnPiecePlaybackStartedProps) {
+function _onPiecePlaybackStarted(
+	context: JobContext,
+	cache: CacheForPlayout,
+	data: {
+		playlistId: RundownPlaylistId
+		pieceInstanceId: PieceInstanceId
+		startedPlayback: Time
+	}
+) {
 	const playlist = cache.Playlist.doc
 	const pieceInstance = cache.PieceInstances.findOne(data.pieceInstanceId)
 
@@ -738,23 +730,17 @@ function _onPiecePlaybackStarted(context: JobContext, cache: CacheForPlayout, da
 		throw new Error(`PieceInstance "${data.pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
 	}
 }
-/**
- * Triggered from Playout-gateway when a Piece has stopped playing
- * @deprecated use onPlayoutPlaybackChanged instead
- */
-export async function onPiecePlaybackStopped(context: JobContext, data: OnPiecePlaybackStoppedProps): Promise<void> {
-	return runJobWithPlayoutCache(
-		context,
-		data,
-		async (_cache) => {
-			// Nothing here
-		},
-		async (cache) => {
-			_onPiecePlaybackStopped(context, cache, data)
-		}
-	)
-}
-function _onPiecePlaybackStopped(context: JobContext, cache: CacheForPlayout, data: OnPiecePlaybackStoppedProps) {
+
+function _onPiecePlaybackStopped(
+	context: JobContext,
+	cache: CacheForPlayout,
+	data: {
+		playlistId: RundownPlaylistId
+		partInstanceId: PartInstanceId
+		pieceInstanceId: PieceInstanceId
+		stoppedPlayback: Time
+	}
+) {
 	const playlist = cache.Playlist.doc
 	const pieceInstance = cache.PieceInstances.findOne(data.pieceInstanceId)
 
@@ -781,25 +767,15 @@ function _onPiecePlaybackStopped(context: JobContext, cache: CacheForPlayout, da
 	}
 }
 
-/**
- * Triggered from Playout-gateway when a Part has started playing
- * @deprecated use onPlayoutPlaybackChanged instead
- */
-export async function onPartPlaybackStarted(context: JobContext, data: OnPartPlaybackStartedProps): Promise<void> {
-	return runJobWithPlayoutCache(
-		context,
-		// 'onPartPlaybackStarted',
-		data,
-		async (cache) => {
-			const playlist = cache.Playlist.doc
-			if (!playlist.activationId) throw new Error(`Rundown Playlist "${data.playlistId}" is not active!`)
-		},
-		async (cache) => {
-			await _onPartPlaybackStarted(context, cache, data)
-		}
-	)
-}
-async function _onPartPlaybackStarted(context: JobContext, cache: CacheForPlayout, data: OnPartPlaybackStartedProps) {
+async function _onPartPlaybackStarted(
+	context: JobContext,
+	cache: CacheForPlayout,
+	data: {
+		playlistId: RundownPlaylistId
+		partInstanceId: PartInstanceId
+		startedPlayback: Time
+	}
+) {
 	const playingPartInstance = cache.PartInstances.findOne(data.partInstanceId)
 	if (!playingPartInstance)
 		throw new Error(`PartInstance "${data.partInstanceId}" in RundownPlayst "${data.playlistId}" not found!`)
@@ -926,24 +902,16 @@ async function _onPartPlaybackStarted(context: JobContext, cache: CacheForPlayou
 		await afterTake(context, cache, playingPartInstance)
 	}
 }
-/**
- * Triggered from Playout-gateway when a Part has stopped playing
- * @deprecated use onPlayoutPlaybackChanged instead
- */
-export async function onPartPlaybackStopped(context: JobContext, data: OnPartPlaybackStoppedProps): Promise<void> {
-	return runJobWithPlayoutCache(
-		context,
-		data,
-		(cache) => {
-			const playlist = cache.Playlist.doc
-			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
-		},
-		(cache) => {
-			_onPartPlaybackStopped(context, cache, data)
-		}
-	)
-}
-function _onPartPlaybackStopped(context: JobContext, cache: CacheForPlayout, data: OnPartPlaybackStoppedProps) {
+
+function _onPartPlaybackStopped(
+	context: JobContext,
+	cache: CacheForPlayout,
+	data: {
+		playlistId: RundownPlaylistId
+		partInstanceId: PartInstanceId
+		stoppedPlayback: Time
+	}
+) {
 	const playlist = cache.Playlist.doc
 	if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
 

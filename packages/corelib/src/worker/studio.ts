@@ -1,4 +1,3 @@
-import { Time } from '@sofie-automation/blueprints-integration'
 import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import {
 	AdLibActionId,
@@ -36,15 +35,6 @@ export enum StudioJobs {
 	DisableNextPiece = 'disableNextPiece',
 	RemovePlaylist = 'removePlaylist',
 	RegeneratePlaylist = 'regeneratePlaylist',
-
-	/** @deprecated use OnPlayoutPlaybackChanged instead */
-	OnPiecePlaybackStarted = 'onPiecePlaybackStarted',
-	/** @deprecated use OnPlayoutPlaybackChanged instead */
-	OnPiecePlaybackStopped = 'onPiecePlaybackStopped',
-	/** @deprecated use OnPlayoutPlaybackChanged instead */
-	OnPartPlaybackStarted = 'onPartPlaybackStarted',
-	/** @deprecated use OnPlayoutPlaybackChanged instead */
-	OnPartPlaybackStopped = 'onPartPlaybackStopped',
 
 	OnPlayoutPlaybackChanged = 'onPlayoutPlaybackChanged',
 	OnTimelineTriggerTime = 'onTimelineTriggerTime',
@@ -127,23 +117,6 @@ export interface DisableNextPieceProps extends RundownPlayoutPropsBase {
 export type RemovePlaylistProps = RundownPlayoutPropsBase
 export type RegeneratePlaylistProps = RundownPlayoutPropsBase
 
-export interface OnPiecePlaybackStartedProps extends RundownPlayoutPropsBase {
-	pieceInstanceId: PieceInstanceId
-	startedPlayback: Time
-}
-export interface OnPiecePlaybackStoppedProps extends RundownPlayoutPropsBase {
-	partInstanceId: PartInstanceId
-	pieceInstanceId: PieceInstanceId
-	stoppedPlayback: Time
-}
-export interface OnPartPlaybackStartedProps extends RundownPlayoutPropsBase {
-	partInstanceId: PartInstanceId
-	startedPlayback: Time
-}
-export interface OnPartPlaybackStoppedProps extends RundownPlayoutPropsBase {
-	partInstanceId: PartInstanceId
-	stoppedPlayback: Time
-}
 export interface OnPlayoutPlaybackChangedProps extends RundownPlayoutPropsBase {
 	changes: PlayoutChangedResults['changes']
 }
@@ -213,10 +186,6 @@ export type StudioJobFunc = {
 	[StudioJobs.RemovePlaylist]: (data: RemovePlaylistProps) => void
 	[StudioJobs.RegeneratePlaylist]: (data: RegeneratePlaylistProps) => void
 
-	[StudioJobs.OnPiecePlaybackStarted]: (data: OnPiecePlaybackStartedProps) => void
-	[StudioJobs.OnPiecePlaybackStopped]: (data: OnPiecePlaybackStoppedProps) => void
-	[StudioJobs.OnPartPlaybackStarted]: (data: OnPartPlaybackStartedProps) => void
-	[StudioJobs.OnPartPlaybackStopped]: (data: OnPartPlaybackStoppedProps) => void
 	[StudioJobs.OnPlayoutPlaybackChanged]: (data: OnPlayoutPlaybackChangedProps) => void
 	[StudioJobs.OnTimelineTriggerTime]: (data: OnTimelineTriggerTimeProps) => void
 

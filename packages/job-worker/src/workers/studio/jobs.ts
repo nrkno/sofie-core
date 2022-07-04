@@ -13,10 +13,6 @@ import {
 	handleTimelineTriggerTime,
 	handleUpdateTimelineAfterIngest,
 	moveNextPart,
-	onPartPlaybackStarted,
-	onPartPlaybackStopped,
-	onPiecePlaybackStarted,
-	onPiecePlaybackStopped,
 	onPlayoutPlaybackChanged,
 	prepareRundownPlaylistForBroadcast,
 	resetRundownPlaylist,
@@ -72,10 +68,6 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.RemovePlaylist]: handleRemoveRundownPlaylist,
 	[StudioJobs.RegeneratePlaylist]: handleRegenerateRundownPlaylist,
 
-	[StudioJobs.OnPiecePlaybackStarted]: onPiecePlaybackStarted,
-	[StudioJobs.OnPiecePlaybackStopped]: onPiecePlaybackStopped,
-	[StudioJobs.OnPartPlaybackStarted]: onPartPlaybackStarted,
-	[StudioJobs.OnPartPlaybackStopped]: onPartPlaybackStopped,
 	[StudioJobs.OnPlayoutPlaybackChanged]: onPlayoutPlaybackChanged,
 	[StudioJobs.OnTimelineTriggerTime]: handleTimelineTriggerTime,
 
