@@ -221,7 +221,9 @@ export async function activateRundownPlaylist(context: JobContext, data: Activat
 			await checkNoOtherPlaylistsActive(context, playlist)
 		},
 		async (cache) => {
-			await prepareStudioForBroadcast(context, cache, true)
+			// This will be false if already activated (like when going from rehearsal to broadcast)
+			const okToDestroyStuff = !cache.Playlist.doc.activationId
+			await prepareStudioForBroadcast(context, cache, okToDestroyStuff)
 
 			await libActivateRundownPlaylist(context, cache, data.rehearsal)
 		}
