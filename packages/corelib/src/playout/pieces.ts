@@ -13,6 +13,7 @@ import { clone, literal } from '../lib'
 import { getPieceControlObjectId, getPieceGroupId } from './ids'
 import { unprotectString } from '../protectedString'
 import { PieceInstanceWithTimings } from './infinites'
+import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 export interface PieceTimelineMetadata {
 	/** Indicate that this is a PieceTimeline object */
@@ -71,14 +72,14 @@ export function createPieceGroupAndCap(
 		content: {
 			deviceType: TSR.DeviceType.ABSTRACT,
 			type: 'callback',
-			callBack: 'piecePlaybackStarted',
+			callBack: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
 			callBackData: {
 				rundownPlaylistId: playlistId,
 				partInstanceId: pieceInstance.partInstanceId,
 				pieceInstanceId: pieceInstance._id,
 				dynamicallyInserted: pieceInstance.dynamicallyInserted !== undefined,
 			},
-			callBackStopped: 'piecePlaybackStopped', // Will cause a callback to be called, when the object stops playing:
+			callBackStopped: PlayoutChangedType.PIECE_PLAYBACK_STOPPED, // Will cause a callback to be called, when the object stops playing:
 		},
 		classes: controlObjClasses,
 		inGroup: partGroup && partGroup.id,

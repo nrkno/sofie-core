@@ -44,16 +44,10 @@ import {
 import { CreateFakeResult, QueueStudioJobSpy } from '../../../__mocks__/worker'
 
 import '../peripheralDevice'
-import {
-	OnPartPlaybackStartedProps,
-	OnPartPlaybackStoppedProps,
-	OnPiecePlaybackStartedProps,
-	OnPiecePlaybackStoppedProps,
-	OnTimelineTriggerTimeProps,
-	StudioJobs,
-} from '@sofie-automation/corelib/dist/worker/studio'
+import { OnTimelineTriggerTimeProps, StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 const DEBUG = false
 
@@ -304,108 +298,100 @@ describe('test peripheralDevice general API methods', () => {
 		expect(resultMessage).toEqual(replyMessage)
 	})
 
-	testInFiber('partPlaybackStarted', async () => {
+	testInFiber('playoutPlaybackChanged', async () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 
 		QueueStudioJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve(null)))
 
-		const partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
+		const partInstanceId = getRandomId()
+		const pieceInstanceId = getRandomId()
+		const time0 = getCurrentTime()
+		const time1 = getCurrentTime()
+		const time2 = getCurrentTime()
+		const time3 = getCurrentTime()
+		await MeteorCall.peripheralDevice.playoutPlaybackChanged(device._id, device.token, {
 			rundownPlaylistId: rundownPlaylistID,
-			partInstanceId: getRandomId(),
-			time: getCurrentTime(),
-		}
-		await MeteorCall.peripheralDevice.partPlaybackStarted(device._id, device.token, partPlaybackStartedResult)
+			changes: [
+				{
+					type: PlayoutChangedType.PART_PLAYBACK_STARTED,
+					objId: 'object-id',
+					data: {
+						partInstanceId,
+						time: time0,
+					},
+				},
+				{
+					type: PlayoutChangedType.PART_PLAYBACK_STOPPED,
+					objId: 'object-id',
+					data: {
+						partInstanceId,
+						time: time1,
+					},
+				},
+				{
+					type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+					objId: 'object-id',
+					data: {
+						partInstanceId,
+						pieceInstanceId,
+						time: time2,
+					},
+				},
+				{
+					type: PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
+					objId: 'object-id',
+					data: {
+						partInstanceId,
+						pieceInstanceId,
+						time: time3,
+					},
+				},
+			],
+		})
 
 		expect(QueueStudioJobSpy).toHaveBeenCalledTimes(1)
 		expect(QueueStudioJobSpy).toHaveBeenNthCalledWith(
 			1,
-			StudioJobs.OnPartPlaybackStarted,
+			StudioJobs.OnPlayoutPlaybackChanged,
 			device.studioId,
-			literal<OnPartPlaybackStartedProps>({
-				playlistId: partPlaybackStartedResult.rundownPlaylistId,
-				partInstanceId: partPlaybackStartedResult.partInstanceId,
-				startedPlayback: partPlaybackStartedResult.time,
-			})
-		)
-	})
-
-	testInFiber('partPlaybackStopped', async () => {
-		if (DEBUG) setLogLevel(LogLevel.DEBUG)
-
-		QueueStudioJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve(null)))
-
-		const partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
-			rundownPlaylistId: rundownPlaylistID,
-			partInstanceId: getRandomId(),
-			time: getCurrentTime(),
-		}
-
-		await MeteorCall.peripheralDevice.partPlaybackStopped(device._id, device.token, partPlaybackStoppedResult)
-
-		expect(QueueStudioJobSpy).toHaveBeenCalledTimes(1)
-		expect(QueueStudioJobSpy).toHaveBeenNthCalledWith(
-			1,
-			StudioJobs.OnPartPlaybackStopped,
-			device.studioId,
-			literal<OnPartPlaybackStoppedProps>({
-				playlistId: partPlaybackStoppedResult.rundownPlaylistId,
-				partInstanceId: partPlaybackStoppedResult.partInstanceId,
-				stoppedPlayback: partPlaybackStoppedResult.time,
-			})
-		)
-	})
-
-	testInFiber('piecePlaybackStarted', async () => {
-		if (DEBUG) setLogLevel(LogLevel.DEBUG)
-
-		QueueStudioJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve(null)))
-
-		const piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
-			rundownPlaylistId: rundownPlaylistID,
-			partInstanceId: getRandomId(),
-			pieceInstanceId: getRandomId(),
-			time: getCurrentTime(),
-		}
-
-		await MeteorCall.peripheralDevice.piecePlaybackStarted(device._id, device.token, piecePlaybackStartedResult)
-
-		expect(QueueStudioJobSpy).toHaveBeenCalledTimes(1)
-		expect(QueueStudioJobSpy).toHaveBeenNthCalledWith(
-			1,
-			StudioJobs.OnPiecePlaybackStarted,
-			device.studioId,
-			literal<OnPiecePlaybackStartedProps>({
-				playlistId: piecePlaybackStartedResult.rundownPlaylistId,
-				pieceInstanceId: piecePlaybackStartedResult.pieceInstanceId,
-				startedPlayback: piecePlaybackStartedResult.time,
-			})
-		)
-	})
-
-	testInFiber('piecePlaybackStopped', async () => {
-		if (DEBUG) setLogLevel(LogLevel.DEBUG)
-
-		QueueStudioJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve(null)))
-
-		const piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
-			rundownPlaylistId: rundownPlaylistID,
-			partInstanceId: getRandomId(),
-			pieceInstanceId: getRandomId(),
-			time: getCurrentTime(),
-		}
-
-		await MeteorCall.peripheralDevice.piecePlaybackStopped(device._id, device.token, piecePlaybackStoppedResult)
-
-		expect(QueueStudioJobSpy).toHaveBeenCalledTimes(1)
-		expect(QueueStudioJobSpy).toHaveBeenNthCalledWith(
-			1,
-			StudioJobs.OnPiecePlaybackStopped,
-			device.studioId,
-			literal<OnPiecePlaybackStoppedProps>({
-				playlistId: piecePlaybackStoppedResult.rundownPlaylistId,
-				partInstanceId: piecePlaybackStoppedResult.partInstanceId,
-				pieceInstanceId: piecePlaybackStoppedResult.pieceInstanceId,
-				stoppedPlayback: piecePlaybackStoppedResult.time,
+			literal<Parameters<StudioJobFunc[StudioJobs.OnPlayoutPlaybackChanged]>[0]>({
+				playlistId: rundownPlaylistID,
+				changes: [
+					{
+						type: PlayoutChangedType.PART_PLAYBACK_STARTED,
+						objId: 'object-id',
+						data: {
+							partInstanceId,
+							time: time0,
+						},
+					},
+					{
+						type: PlayoutChangedType.PART_PLAYBACK_STOPPED,
+						objId: 'object-id',
+						data: {
+							partInstanceId,
+							time: time1,
+						},
+					},
+					{
+						type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+						objId: 'object-id',
+						data: {
+							partInstanceId,
+							pieceInstanceId,
+							time: time2,
+						},
+					},
+					{
+						type: PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
+						objId: 'object-id',
+						data: {
+							partInstanceId,
+							pieceInstanceId,
+							time: time3,
+						},
+					},
+				],
 			})
 		)
 	})

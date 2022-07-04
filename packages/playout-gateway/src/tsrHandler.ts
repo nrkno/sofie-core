@@ -35,7 +35,14 @@ import { disableAtemUpload } from './config'
 import Debug from 'debug'
 import { FinishedTrace, sendTrace } from './influxdb'
 import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import { StatusObject } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import {
+	PartPlaybackCallbackData,
+	PiecePlaybackCallbackData,
+	PlayoutChangedResults,
+	PlayoutChangedType,
+	StatusObject,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 const debug = Debug('playout-gateway')
 
@@ -245,23 +252,9 @@ export class TSRHandler {
 				this.logger.error('Error in setTimelineTriggerTime', e)
 			})
 		})
+
 		this.tsr.on('timelineCallback', (time, objId, callbackName, data) => {
-			// @ts-expect-error Untyped bunch of methods
-			const method = PeripheralDeviceAPIMethods[callbackName]
-			if (method) {
-				this._coreHandler.core
-					.callMethod(method, [
-						Object.assign({}, data, {
-							objId: objId,
-							time: time,
-						}),
-					])
-					.catch((e) => {
-						this.logger.error('Error in timelineCallback', e)
-					})
-			} else {
-				this.logger.error(`Unknown callback method "${callbackName}"`)
-			}
+			this.handleTSRTimelineCallback(time, objId, callbackName, data)
 		})
 		this.tsr.on('resolveDone', (timelineHash: string, resolveDuration: number) => {
 			// Make sure we only report back once, per update timeline
@@ -1107,6 +1100,110 @@ export class TSRHandler {
 			}
 		})
 		return transformedTimeline
+	}
+
+	private changedResults: PlayoutChangedResults | undefined = undefined
+	private sendCallbacksTimeout: NodeJS.Timer | undefined = undefined
+	private sendCallbacksDebounceCount = 0
+	private handleTSRTimelineCallback(
+		time: number,
+		objId: string,
+		callbackName0: string,
+		data: PartPlaybackCallbackData | PiecePlaybackCallbackData
+	): void {
+		if (
+			[
+				PlayoutChangedType.PART_PLAYBACK_STARTED,
+				PlayoutChangedType.PART_PLAYBACK_STOPPED,
+				PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+				PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
+			].includes(callbackName0 as PlayoutChangedType)
+		) {
+			const callbackName = callbackName0 as PlayoutChangedType
+			// debounce
+			if (this.changedResults && this.changedResults.rundownPlaylistId !== data.rundownPlaylistId) {
+				// The playlistId changed. Send what we have right away and reset:
+				this._coreHandler.core
+					.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
+					.catch((e) => {
+						this.logger.error('Error in timelineCallback', e)
+					})
+				this.changedResults = undefined
+			}
+			if (!this.changedResults) {
+				this.changedResults = {
+					rundownPlaylistId: data.rundownPlaylistId,
+					changes: [],
+				}
+			}
+
+			if (
+				callbackName === PlayoutChangedType.PART_PLAYBACK_STARTED ||
+				callbackName === PlayoutChangedType.PART_PLAYBACK_STOPPED
+			) {
+				this.changedResults.changes.push({
+					type: callbackName,
+					objId,
+					data: {
+						time,
+						partInstanceId: (data as PartPlaybackCallbackData).partInstanceId,
+					},
+				})
+			} else if (
+				callbackName === PlayoutChangedType.PIECE_PLAYBACK_STARTED ||
+				callbackName === PlayoutChangedType.PIECE_PLAYBACK_STOPPED
+			) {
+				this.changedResults.changes.push({
+					type: callbackName,
+					objId,
+					data: {
+						time,
+						partInstanceId: (data as PiecePlaybackCallbackData).partInstanceId,
+						pieceInstanceId: (data as PiecePlaybackCallbackData).pieceInstanceId,
+					},
+				})
+			} else {
+				assertNever(callbackName)
+			}
+
+			if (this.sendCallbacksTimeout) {
+				// Max limit for debouncing:
+				if (this.sendCallbacksDebounceCount < 10) {
+					this.sendCallbacksDebounceCount++
+					clearTimeout(this.sendCallbacksTimeout)
+					this.sendCallbacksTimeout = undefined
+				}
+			}
+			if (!this.sendCallbacksTimeout) {
+				this.sendCallbacksTimeout = setTimeout(() => {
+					this.sendCallbacksDebounceCount = 0
+					this.sendCallbacksTimeout = undefined
+					this._coreHandler.core
+						.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
+						.catch((e) => {
+							this.logger.error('Error in timelineCallback', e)
+						})
+					this.changedResults = undefined
+				}, 100)
+			}
+		} else {
+			// @ts-expect-error Untyped bunch of methods
+			const method = PeripheralDeviceAPIMethods[callbackName]
+			if (method) {
+				this._coreHandler.core
+					.callMethod(method, [
+						Object.assign({}, data, {
+							objId: objId,
+							time: time,
+						}),
+					])
+					.catch((e) => {
+						this.logger.error('Error in timelineCallback', e)
+					})
+			} else {
+				this.logger.error(`Unknown callback method "${callbackName0}"`)
+			}
+		}
 	}
 }
 

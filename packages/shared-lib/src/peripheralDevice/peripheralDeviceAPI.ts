@@ -26,16 +26,41 @@ export interface PiecePlaybackStartedResult extends PiecePlaybackCallbackData {
 }
 export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
 
-export type PlayoutChangedResults = PlayoutChangedResult[]
-export type PlayoutChangedResult = {
-	callbackName: string
-	objId: string
-	time: number
-	data: Omit<
-		PartPlaybackStartedResult | PartPlaybackStoppedResult | PiecePlaybackStartedResult | PiecePlaybackStoppedResult,
-		'time'
-	>
+export type PlayoutChangedResults = {
+	rundownPlaylistId: RundownPlaylistId
+	changes: PlayoutChangedResult[]
 }
+export enum PlayoutChangedType {
+	PART_PLAYBACK_STARTED = 'partPlaybackStarted',
+	PART_PLAYBACK_STOPPED = 'partPlaybackStopped',
+	PIECE_PLAYBACK_STARTED = 'piecePlaybackStarted',
+	PIECE_PLAYBACK_STOPPED = 'piecePlaybackStopped',
+}
+export type PlayoutChangedResult = {
+	objId: string
+	type:
+		| PlayoutChangedType.PART_PLAYBACK_STARTED
+		| PlayoutChangedType.PART_PLAYBACK_STOPPED
+		| PlayoutChangedType.PIECE_PLAYBACK_STARTED
+		| PlayoutChangedType.PIECE_PLAYBACK_STOPPED
+} & (
+	| {
+			type: PlayoutChangedType.PART_PLAYBACK_STARTED
+			data: Omit<PartPlaybackStartedResult, 'rundownPlaylistId'>
+	  }
+	| {
+			type: PlayoutChangedType.PART_PLAYBACK_STOPPED
+			data: Omit<PartPlaybackStoppedResult, 'rundownPlaylistId'>
+	  }
+	| {
+			type: PlayoutChangedType.PIECE_PLAYBACK_STARTED
+			data: Omit<PiecePlaybackStartedResult, 'rundownPlaylistId'>
+	  }
+	| {
+			type: PlayoutChangedType.PIECE_PLAYBACK_STOPPED
+			data: Omit<PiecePlaybackStoppedResult, 'rundownPlaylistId'>
+	  }
+)
 
 // Note The actual type of a device is determined by the Category, Type and SubType
 
