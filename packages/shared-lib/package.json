@@ -40,7 +40,7 @@
 	],
 	"dependencies": {
 		"tslib": "^2.4.0",
-		"type-fest": "^2.12.2"
+		"type-fest": "^2.16.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

@@ -36,8 +36,8 @@
 		"watch-for-worker-changes": "nodemon --delay 2.5 --watch job-worker/dist --watch corelib/dist --watch shared-lib/dist --watch blueprints-integration/dist --watch server-core-integration/dist ../scripts/meteor-force-restart.js"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.17.12",
-		"@babel/plugin-transform-modules-commonjs": "^7.17.12",
+		"@babel/core": "^7.18.6",
+		"@babel/plugin-transform-modules-commonjs": "^7.18.6",
 		"@sofie-automation/code-standard-preset": "~2.0.2",
 		"@types/amqplib": "^0.5.17",
 		"@types/debug": "^4.1.7",
@@ -51,7 +51,7 @@
 		"copyfiles": "^2.4.1",
 		"jest": "^27.5.1",
 		"lerna": "^4.0.0",
-		"nodemon": "^2.0.16",
+		"nodemon": "^2.0.18",
 		"open-cli": "^7.0.1",
 		"rimraf": "^3.0.2",
 		"semver": "^7.3.7",

@@ -63,8 +63,8 @@
 		"influx": "^5.9.3",
 		"timeline-state-resolver": "7.3.0-release44.0",
 		"tslib": "^2.4.0",
-		"underscore": "^1.13.3",
-		"winston": "^3.7.2"
+		"underscore": "^1.13.4",
+		"winston": "^3.8.1"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [
