@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/server-core-integration",
-	"version": "1.44.0-in-development",
+	"version": "1.45.0-in-development",
 	"description": "Library for connecting to Core",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -70,7 +70,7 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/shared-lib": "1.44.0-in-development",
+		"@sofie-automation/shared-lib": "1.45.0-in-development",
 		"data-store": "^4.0.3",
 		"ejson": "^2.2.2",
 		"eventemitter3": "^4.0.7",
