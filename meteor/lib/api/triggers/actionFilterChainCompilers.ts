@@ -35,6 +35,9 @@ type CompiledFilter<T> = {
 	global: boolean | undefined
 	segment: 'current' | 'next' | undefined
 	part: 'current' | 'next' | undefined
+	arguments?: {
+		triggerMode: string
+	}
 	/**
 	 * The query compiler has determined that this filter will always return an empty set,
 	 * it's safe to skip it entirely.
