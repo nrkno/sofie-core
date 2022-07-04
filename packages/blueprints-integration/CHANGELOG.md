@@ -3,6 +3,50 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
+
+
+### Bug Fixes
+
+* race condition on manual rundown move ([#728](https://github.com/nrkno/tv-automation-server-core/issues/728)) ([a12f7d8](https://github.com/nrkno/tv-automation-server-core/commit/a12f7d8082fe1c08b5c68d6d536cbc5b32c1aebf))
+* remove deprecated ConfigManifestEntryType.Number ([cb777aa](https://github.com/nrkno/tv-automation-server-core/commit/cb777aa1d7738a8b72da8aa21943c58bc9b5df9c))
+
+
+### Features
+
+* **Action Triggers:** Select AdLib Action Trigger Modes ([#740](https://github.com/nrkno/tv-automation-server-core/issues/740)) ([311b9e4](https://github.com/nrkno/tv-automation-server-core/commit/311b9e41b46025bdf759fccc1c97d94318661c83))
+
+
+
+# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0...v1.43.0-in-testing.0) (2022-05-18)
+
+
+### Features
+
+* move more logic into workers ([#718](https://github.com/nrkno/tv-automation-server-core/issues/718)) ([3376826](https://github.com/nrkno/tv-automation-server-core/commit/3376826e4029985e3975d6d5a85f9ab1f06a9dd4))
+
+
+
+# [1.39.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.39.0) (2022-04-29)
+
+
+
+# [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.42.0-in-testing.0) (2022-04-29)
+
+
+### Bug Fixes
+
+* update supertimeline ([#703](https://github.com/nrkno/tv-automation-server-core/issues/703)) ([897d81e](https://github.com/nrkno/tv-automation-server-core/commit/897d81ef2648947cd23caee6edf80d26e5a05de0))
+
+
+### Features
+
+* piece postroll ([674d7c5](https://github.com/nrkno/tv-automation-server-core/commit/674d7c588998e59a794b1da64276f73637ae8556))
+
+
+
+
+
 # [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.43.0-in-testing.0) (2022-05-18)
 
 
