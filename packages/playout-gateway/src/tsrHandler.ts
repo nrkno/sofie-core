@@ -243,10 +243,10 @@ export class TSRHandler {
 			(time, objId, callbackName0, data: PartPlaybackCallbackData | PiecePlaybackCallbackData) => {
 				if (
 					[
-						PlayoutChangedType.partPlaybackStarted,
-						PlayoutChangedType.partPlaybackStopped,
-						PlayoutChangedType.piecePlaybackStarted,
-						PlayoutChangedType.piecePlaybackStopped,
+						PlayoutChangedType.PART_PLAYBACK_STARTED,
+						PlayoutChangedType.PART_PLAYBACK_STOPPED,
+						PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+						PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
 					].includes(callbackName0 as PlayoutChangedType)
 				) {
 					const callbackName = callbackName0 as PlayoutChangedType
@@ -268,8 +268,8 @@ export class TSRHandler {
 					}
 
 					if (
-						callbackName === PlayoutChangedType.partPlaybackStarted ||
-						callbackName === PlayoutChangedType.partPlaybackStopped
+						callbackName === PlayoutChangedType.PART_PLAYBACK_STARTED ||
+						callbackName === PlayoutChangedType.PART_PLAYBACK_STOPPED
 					) {
 						changedResults.changes.push({
 							type: callbackName,
@@ -280,8 +280,8 @@ export class TSRHandler {
 							},
 						})
 					} else if (
-						callbackName === PlayoutChangedType.piecePlaybackStarted ||
-						callbackName === PlayoutChangedType.piecePlaybackStopped
+						callbackName === PlayoutChangedType.PIECE_PLAYBACK_STARTED ||
+						callbackName === PlayoutChangedType.PIECE_PLAYBACK_STOPPED
 					) {
 						changedResults.changes.push({
 							type: callbackName,

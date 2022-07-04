@@ -994,25 +994,25 @@ export async function onPlayoutPlaybackChanged(
 
 			for (const change of data.changes) {
 				try {
-					if (change.type === PlayoutChangedType.partPlaybackStarted) {
+					if (change.type === PlayoutChangedType.PART_PLAYBACK_STARTED) {
 						await _onPartPlaybackStarted(context, cache, {
 							playlistId: playlist._id,
 							partInstanceId: change.data.partInstanceId,
 							startedPlayback: change.data.time,
 						})
-					} else if (change.type === PlayoutChangedType.partPlaybackStopped) {
+					} else if (change.type === PlayoutChangedType.PART_PLAYBACK_STOPPED) {
 						_onPartPlaybackStopped(context, cache, {
 							playlistId: playlist._id,
 							partInstanceId: change.data.partInstanceId,
 							stoppedPlayback: change.data.time,
 						})
-					} else if (change.type === PlayoutChangedType.piecePlaybackStarted) {
+					} else if (change.type === PlayoutChangedType.PIECE_PLAYBACK_STARTED) {
 						_onPiecePlaybackStarted(context, cache, {
 							playlistId: playlist._id,
 							pieceInstanceId: change.data.pieceInstanceId,
 							startedPlayback: change.data.time,
 						})
-					} else if (change.type === PlayoutChangedType.piecePlaybackStopped) {
+					} else if (change.type === PlayoutChangedType.PIECE_PLAYBACK_STOPPED) {
 						_onPiecePlaybackStopped(context, cache, {
 							playlistId: playlist._id,
 							partInstanceId: change.data.partInstanceId,

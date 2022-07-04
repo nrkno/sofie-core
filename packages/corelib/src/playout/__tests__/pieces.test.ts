@@ -65,14 +65,14 @@ describe('Pieces', () => {
 			content: {
 				deviceType: 0,
 				type: 'callback',
-				callBack: PlayoutChangedType.piecePlaybackStarted,
+				callBack: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
 				callBackData: {
 					rundownPlaylistId: playlistId,
 					partInstanceId: protectString('randomId9002'),
 					pieceInstanceId: protectString('randomId9000'),
 					dynamicallyInserted: false,
 				},
-				callBackStopped: PlayoutChangedType.piecePlaybackStopped,
+				callBackStopped: PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
 			},
 			enable: {
 				end: undefined,

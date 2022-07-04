@@ -31,33 +31,33 @@ export type PlayoutChangedResults = {
 	changes: PlayoutChangedResult[]
 }
 export enum PlayoutChangedType {
-	partPlaybackStarted = 'partPlaybackStarted',
-	partPlaybackStopped = 'partPlaybackStopped',
-	piecePlaybackStarted = 'piecePlaybackStarted',
-	piecePlaybackStopped = 'piecePlaybackStopped',
+	PART_PLAYBACK_STARTED = 'partPlaybackStarted',
+	PART_PLAYBACK_STOPPED = 'partPlaybackStopped',
+	PIECE_PLAYBACK_STARTED = 'piecePlaybackStarted',
+	PIECE_PLAYBACK_STOPPED = 'piecePlaybackStopped',
 }
 export type PlayoutChangedResult = {
 	objId: string
 	type:
-		| PlayoutChangedType.partPlaybackStarted
-		| PlayoutChangedType.partPlaybackStopped
-		| PlayoutChangedType.piecePlaybackStarted
-		| PlayoutChangedType.piecePlaybackStopped
+		| PlayoutChangedType.PART_PLAYBACK_STARTED
+		| PlayoutChangedType.PART_PLAYBACK_STOPPED
+		| PlayoutChangedType.PIECE_PLAYBACK_STARTED
+		| PlayoutChangedType.PIECE_PLAYBACK_STOPPED
 } & (
 	| {
-			type: PlayoutChangedType.partPlaybackStarted
+			type: PlayoutChangedType.PART_PLAYBACK_STARTED
 			data: Omit<PartPlaybackStartedResult, 'rundownPlaylistId'>
 	  }
 	| {
-			type: PlayoutChangedType.partPlaybackStopped
+			type: PlayoutChangedType.PART_PLAYBACK_STOPPED
 			data: Omit<PartPlaybackStoppedResult, 'rundownPlaylistId'>
 	  }
 	| {
-			type: PlayoutChangedType.piecePlaybackStarted
+			type: PlayoutChangedType.PIECE_PLAYBACK_STARTED
 			data: Omit<PiecePlaybackStartedResult, 'rundownPlaylistId'>
 	  }
 	| {
-			type: PlayoutChangedType.piecePlaybackStopped
+			type: PlayoutChangedType.PIECE_PLAYBACK_STOPPED
 			data: Omit<PiecePlaybackStoppedResult, 'rundownPlaylistId'>
 	  }
 )

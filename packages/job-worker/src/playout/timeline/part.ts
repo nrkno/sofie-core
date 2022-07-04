@@ -138,12 +138,12 @@ export function createPartGroupFirstObject(
 			deviceType: TSR.DeviceType.ABSTRACT,
 			type: 'callback',
 			// Will cause the playout-gateway to run a callback, when the object starts playing:
-			callBack: PlayoutChangedType.partPlaybackStarted,
+			callBack: PlayoutChangedType.PART_PLAYBACK_STARTED,
 			callBackData: {
 				rundownPlaylistId: playlistId,
 				partInstanceId: partInstance._id,
 			},
-			callBackStopped: PlayoutChangedType.partPlaybackStopped, // Will cause a callback to be called, when the object stops playing:
+			callBackStopped: PlayoutChangedType.PART_PLAYBACK_STOPPED, // Will cause a callback to be called, when the object stops playing:
 		},
 		inGroup: partGroup.id,
 		partInstanceId: partGroup.partInstanceId,

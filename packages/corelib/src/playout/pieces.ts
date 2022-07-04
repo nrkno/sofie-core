@@ -72,14 +72,14 @@ export function createPieceGroupAndCap(
 		content: {
 			deviceType: TSR.DeviceType.ABSTRACT,
 			type: 'callback',
-			callBack: PlayoutChangedType.piecePlaybackStarted,
+			callBack: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
 			callBackData: {
 				rundownPlaylistId: playlistId,
 				partInstanceId: pieceInstance.partInstanceId,
 				pieceInstanceId: pieceInstance._id,
 				dynamicallyInserted: pieceInstance.dynamicallyInserted !== undefined,
 			},
-			callBackStopped: PlayoutChangedType.piecePlaybackStopped, // Will cause a callback to be called, when the object stops playing:
+			callBackStopped: PlayoutChangedType.PIECE_PLAYBACK_STOPPED, // Will cause a callback to be called, when the object stops playing:
 		},
 		classes: controlObjClasses,
 		inGroup: partGroup && partGroup.id,
