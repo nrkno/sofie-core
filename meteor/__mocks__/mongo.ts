@@ -69,11 +69,11 @@ export namespace MongoMock {
 				throw new Error(`find being performed using unimplemented options: ${unimplementedUsedOptions}`)
 			}
 
-			const docsArray = _.values(this.documents)
-			let docs = _.compact(
-				query._id && _.isString(query._id)
+			const docsArray = Object.values(this.documents)
+			let docs: T[] = _.compact(
+				query._id && typeof query._id === 'string'
 					? [this.documents[query._id]]
-					: _.filter(docsArray, (doc) => mongoWhere(doc, query))
+					: docsArray.filter((doc) => mongoWhere(doc, query))
 			)
 
 			docs = mongoFindOptions(docs, options)

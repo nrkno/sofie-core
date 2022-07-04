@@ -16,7 +16,6 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import _ from 'underscore'
 import {
 	findPartInstanceInMapOrWrapToTemporary,
 	PartInstance,
@@ -25,7 +24,7 @@ import {
 import { Part } from '../../lib/collections/Parts'
 import { DBRundownPlaylist, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../lib/collections/Rundowns'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, objectFromEntries } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
@@ -509,7 +508,7 @@ export class RundownTimingCalculator {
 			asPlayedPlaylistDuration: asPlayedRundownDuration,
 			rundownExpectedDurations,
 			rundownAsPlayedDurations,
-			partCountdown: _.object(this.linearParts),
+			partCountdown: objectFromEntries(this.linearParts) as Record<string, number>,
 			partDurations: this.partDurations,
 			partPlayed: this.partPlayed,
 			partStartsAt: this.partStartsAt,

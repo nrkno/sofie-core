@@ -22,6 +22,7 @@ import { Studios } from '../../lib/collections/Studios'
 import { checkPieceContentStatus } from '../../lib/mediaObjects'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
+import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 	const rundowns = await Rundowns.findFetchAsync({
@@ -76,7 +77,7 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 								status !== PieceStatusCode.UNKNOWN &&
 								status !== PieceStatusCode.SOURCE_NOT_SET
 							) {
-								return {
+								return literal<IMediaObjectIssue>({
 									rundownId: part.rundownId,
 									segmentId: segment._id,
 									segmentRank: segment._rank,
@@ -87,7 +88,7 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 									name: piece.name,
 									status,
 									message,
-								}
+								})
 							}
 						}
 						return undefined
@@ -98,7 +99,7 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 		})
 	)
 
-	return _.flatten(await allStatus)
+	return _.compact(_.flatten(await allStatus))
 }
 
 class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownNotificationsAPI {

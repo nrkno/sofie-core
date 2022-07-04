@@ -668,13 +668,7 @@ export interface MongoCollection<DBInterface extends { _id: ProtectedString<any>
 	/** @deprecated - use createIndex */
 	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: CreateIndexesOptions): void
 
-	_dropIndex(
-		keys:
-			| {
-					[key: string]: number | string
-			  }
-			| string
-	): void
+	_dropIndex(indexName: string): void
 }
 
 export interface UpdateOptions {

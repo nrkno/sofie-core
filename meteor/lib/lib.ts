@@ -137,6 +137,12 @@ export function last<T>(values: T[]): T {
 	return _.last(values) as T
 }
 
+export function objectFromEntries<Key extends ProtectedString<any>, Val>(
+	entries: Array<[Key, Val]>
+): Record<string, Val> {
+	return Object.fromEntries(entries)
+}
+
 const cacheResultCache: {
 	[name: string]: {
 		ttl: number
@@ -285,7 +291,7 @@ export function waitForPromiseAll<T>(ps: (T | PromiseLike<T>)[]): T[] {
 export type Promisify<T> = { [K in keyof T]: Promise<T[K]> }
 export function waitForPromiseObj<T extends object>(obj: Promisify<T>): T {
 	const values = waitForPromiseAll(_.values<Promise<any>>(obj))
-	return _.object(_.keys(obj), values)
+	return _.object(_.keys(obj), values) as T
 }
 
 export type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T
