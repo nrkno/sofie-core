@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:experimental
 # BUILD IMAGE
 FROM node:14.19
-RUN curl "https://install.meteor.com/?release=2.7.2" | sh
+RUN curl "https://install.meteor.com/?release=2.7.3" | sh
 # Temporary change the NODE_ENV env variable, so that all libraries are installed:
 ENV NODE_ENV_TMP $NODE_ENV
 ENV NODE_ENV anythingButProduction
