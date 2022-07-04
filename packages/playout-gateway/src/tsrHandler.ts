@@ -125,7 +125,7 @@ type DeviceActionResult = {
 type UpdateDeviceOperationsResult =
 	| {
 			success: true
-			result: DeviceActionResult[]
+			results: DeviceActionResult[]
 	  }
 	| {
 			success: false
@@ -631,14 +631,11 @@ export class TSRHandler {
 			}
 		}
 
-		const resultsOrTimeout = await Promise.race([
-			Promise.all(ps).then(
-				(result) =>
-					({
-						success: true,
-						result,
-					} as UpdateDeviceOperationsResult)
-			),
+		const resultsOrTimeout = await Promise.race<UpdateDeviceOperationsResult>([
+			Promise.all(ps).then((results) => ({
+				success: true,
+				results,
+			})),
 			new Promise<UpdateDeviceOperationsResult>((resolve) =>
 				setTimeout(() => {
 					const keys = _.keys(promiseOperations)
@@ -649,7 +646,7 @@ export class TSRHandler {
 						success: false,
 						reason: 'timeout',
 						details: keys,
-					} as UpdateDeviceOperationsResult)
+					})
 				}, INIT_TIMEOUT)
 			), // Timeout if not all are resolved within INIT_TIMEOUT
 		])
@@ -679,16 +676,19 @@ export class TSRHandler {
 		return deviceOptions.debug || this._coreHandler.logDebug || false
 	}
 	private async _reportResult(resultsOrTimeout: UpdateDeviceOperationsResult): Promise<void> {
+		// Check if the updateDevice operation failed before completing
 		if (!resultsOrTimeout.success) {
+			// It failed because there was a global timeout (not a device-specific failure)
 			if (resultsOrTimeout.reason === 'timeout') {
 				await this._coreHandler.core.setStatus({
 					statusCode: StatusCode.FATAL,
 					messages: [
-						`Time-out during device update. Timed-out on devices: ${decorateIds(
+						`Time-out during device update. Timed-out on devices: ${stringifyIds(
 							resultsOrTimeout.details
-						).join(', ')}`,
+						)}`,
 					],
 				})
+				// It failed for an unknown reason
 			} else {
 				await this._coreHandler.core.setStatus({
 					statusCode: StatusCode.BAD,
@@ -699,7 +699,9 @@ export class TSRHandler {
 			return
 		}
 
-		const failures = resultsOrTimeout.result.filter((result) => !result.success)
+		// updateDevice finished successfully, let's see if any of the individual devices failed
+		const failures = resultsOrTimeout.results.filter((result) => !result.success)
+		// Group the failures according to what sort of an operation was executed
 		const addFailureDeviceIds = failures
 			.filter((failure) => failure.action === 'add')
 			.map((failure) => failure.deviceId)
@@ -707,6 +709,7 @@ export class TSRHandler {
 			.filter((failure) => failure.action === 'remove')
 			.map((failure) => failure.deviceId)
 
+		// There were no failures, good
 		if (failures.length === 0) {
 			await this._coreHandler.core.setStatus({
 				statusCode: StatusCode.GOOD,
@@ -714,16 +717,15 @@ export class TSRHandler {
 			})
 			return
 		}
+		// Something did fail, let's report it as the status
 		await this._coreHandler.core.setStatus({
 			statusCode: StatusCode.BAD,
 			messages: [
 				addFailureDeviceIds.length > 0
-					? `Unable to initialize devices, check configuration: ${decorateIds(addFailureDeviceIds).join(
-							', '
-					  )}`
+					? `Unable to initialize devices, check configuration: ${stringifyIds(addFailureDeviceIds)}`
 					: null,
 				removeFailureDeviceIds.length > 0
-					? `Failed to remove devices: ${decorateIds(removeFailureDeviceIds).join(', ')}`
+					? `Failed to remove devices: ${stringifyIds(removeFailureDeviceIds)}`
 					: null,
 			].filter(Boolean) as string[],
 		})
@@ -1113,6 +1115,6 @@ export function getHash(str: string): string {
 	return hash.update(str).digest('base64').replace(/[+/=]/g, '_') // remove +/= from strings, because they cause troubles
 }
 
-export function decorateIds(ids: string[]): string[] {
-	return ids.map((id) => `"${id}"`)
+export function stringifyIds(ids: string[]): string {
+	return ids.map((id) => `"${id}"`).join(', ')
 }
