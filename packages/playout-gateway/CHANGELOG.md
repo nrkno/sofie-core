@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
+
+
+### Bug Fixes
+
+* limit debounces ([5028281](https://github.com/nrkno/tv-automation-server-core/commit/50282810b72a39671688b55de25fdb9ea5046421))
+* remove deprecated ConfigManifestEntryType.Number ([cb777aa](https://github.com/nrkno/tv-automation-server-core/commit/cb777aa1d7738a8b72da8aa21943c58bc9b5df9c))
+* update tsr dep ([73b9192](https://github.com/nrkno/tv-automation-server-core/commit/73b9192f509f7569e023b9e6552b7be06d370ddf))
+
+
+### Features
+
+* implement playoutPlaybackChanged, to send callbacks in batches to Core ([a8927de](https://github.com/nrkno/tv-automation-server-core/commit/a8927de72a2bf70fe38d38b045e377e7eea16550))
+* **Playout Gateway:** Report invalid configuration as state ([#739](https://github.com/nrkno/tv-automation-server-core/issues/739)) ([fc9ffde](https://github.com/nrkno/tv-automation-server-core/commit/fc9ffdea293c514771bdfd34bb5272bfa4215379))
+
+
+
+# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0...v1.43.0-in-testing.0) (2022-05-18)
+
+
+
+# [1.39.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.39.0) (2022-04-29)
+
+
+
+# [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.42.0-in-testing.0) (2022-04-29)
+
+
+### Bug Fixes
+
+* update playout-gateway copied typings, avoid unnecessary clones ([fa58130](https://github.com/nrkno/tv-automation-server-core/commit/fa58130593097aca2a5991aaf9deb13dc7b2192e))
+* update supertimeline ([#703](https://github.com/nrkno/tv-automation-server-core/issues/703)) ([897d81e](https://github.com/nrkno/tv-automation-server-core/commit/897d81ef2648947cd23caee6edf80d26e5a05de0))
+
+
+
+
+
 # [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.43.0-in-testing.0) (2022-05-18)
 
 **Note:** Version bump only for package playout-gateway

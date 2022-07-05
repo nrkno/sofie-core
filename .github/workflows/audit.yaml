@@ -67,12 +67,11 @@ jobs:
       fail-fast: false
       matrix:
         package-name:
-          [
-            blueprints-integration,
-            server-core-integration,
-            playout-gateway,
-            mos-gateway,
-          ]
+          - blueprints-integration
+          - server-core-integration
+          - shared-lib
+          - playout-gateway
+          - mos-gateway
 
     steps:
       - uses: actions/checkout@v2

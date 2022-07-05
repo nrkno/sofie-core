@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.44.0-in-development",
+	"version": "1.44.0-in-testing.1",
 	"private": true,
 	"engines": {
 		"node": ">=14.19.1"
@@ -173,6 +173,11 @@
 		"mainModule": {
 			"client": "client/main.tsx",
 			"server": "server/main.ts"
+		},
+		"nodeModules": {
+			"recompile": {
+				"mos-connection": "legacy"
+			}
 		}
 	},
 	"standard-version": {
