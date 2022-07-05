@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
+
+
+### Bug Fixes
+
+* include shared-lib in ci workflows ([b2c69f0](https://github.com/nrkno/tv-automation-server-core/commit/b2c69f02d5f12627fa1f2fc2ee2b85c651a0be45))
+
 ## [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
 
 
