@@ -79,4 +79,16 @@
 	}
 
 	@include invalid-overlay();
+
+	&.invalid {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		opacity: 1;
+	}
+}
+
+.segment-opl__main-piece + .segment-opl__main-piece.invalid {
+	background-color: transparent;
 }

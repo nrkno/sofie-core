@@ -778,13 +778,16 @@ svg.icon {
 		align-self: start;
 		z-index: 1;
 		background: $segment-background-color;
-		width: 2em;
-		height: 2em;
+		width: 1.6em;
+		height: 1.6em;
 		padding: 0;
 
 		background: #5c5c5c;
 		border-radius: 2em;
 		transition: 0.3s background-color;
+
+		margin-top: 0.1em;
+		margin-right: 0.1em;
 
 		&:hover {
 			background: #8c8c8c;
@@ -794,6 +797,11 @@ svg.icon {
 		&:active {
 			background: $ui-button-primary;
 			transition: 0s background-color;
+		}
+
+		> svg {
+			position: relative;
+			top: 0.1em;
 		}
 	}
 }
