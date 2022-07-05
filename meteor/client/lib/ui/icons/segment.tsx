@@ -55,7 +55,7 @@ export const Storyboard = (props: React.SVGProps<SVGSVGElement>) => (
 			fillRule="evenodd"
 			clipRule="evenodd"
 			d="M19.5 18.0667H21.2135C22.3181 18.0667 23.2135 17.1712 23.2135 16.0667V11C23.2135 9.89543 22.3181 9 21.2135 9H19.5796C19.9948 9.36647 20.2567 9.90265 20.2567 10.5V16.5C20.2567 17.1347 19.9611 17.7003 19.5 18.0667Z"
-			fill="#A0A0A0"
+			fill="#FFFFFF"
 			opacity="0.66"
 			className="btn-icon"
 		/>
@@ -63,11 +63,11 @@ export const Storyboard = (props: React.SVGProps<SVGSVGElement>) => (
 			fillRule="evenodd"
 			clipRule="evenodd"
 			d="M15.5 18.0667H17.2135C18.3181 18.0667 19.2135 17.1712 19.2135 16.0667V11C19.2135 9.89543 18.3181 9 17.2135 9H15.5796C15.9948 9.36647 16.2567 9.90265 16.2567 10.5V16.5C16.2567 17.1347 15.9611 17.7003 15.5 18.0667Z"
-			fill="#A0A0A0"
+			fill="#FFFFFF"
 			opacity="0.89"
 			className="btn-icon"
 		/>
-		<rect x="4" y="9" width="11" height="9.06667" rx="2" fill="#A0A0A0" className="btn-icon" />
+		<rect x="4" y="9" width="11" height="9.06667" rx="2" fill="#FFFFFF" className="btn-icon" />
 	</svg>
 )
 
@@ -82,8 +82,8 @@ export const Timeline = (props: React.SVGProps<SVGSVGElement>) => (
 		{...props}
 	>
 		<rect y="0" width="27" height="27" rx="3" fill="#00000000" className="btn-bkg" />
-		<rect x="4" y="9" width="13" height="2" fill="#BABABA" className="btn-icon" />
-		<rect x="7" y="12" width="13" height="2" fill="#BABABA" className="btn-icon" />
-		<rect x="10" y="15" width="13" height="2" fill="#BABABA" className="btn-icon" />
+		<rect x="4" y="9" width="13" height="2" fill="#FFFFFF" className="btn-icon" />
+		<rect x="7" y="12" width="13" height="2" fill="#FFFFFF" className="btn-icon" />
+		<rect x="10" y="15" width="13" height="2" fill="#FFFFFF" className="btn-icon" />
 	</svg>
 )
