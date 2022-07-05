@@ -15,6 +15,7 @@ es5-shim                # ECMAScript 5 compatibility for older browsers
 ecmascript              # Enable ECMAScript2015+ syntax in app code
 typescript              # Enable TypeScript syntax in .ts and .tsx modules
 shell-server            # Server-side component of the `meteor shell` command
+modern-browsers          # Select when to allow use of the "modern" bundle
 
 static-html              # Define static page content in .html files
 react-meteor-data        # React higher-order component for reactively tracking Meteor data

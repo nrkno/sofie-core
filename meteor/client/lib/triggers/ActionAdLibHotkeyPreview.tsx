@@ -1,10 +1,11 @@
+import { Mongo } from 'meteor/mongo'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import React, { useContext, useState, useEffect } from 'react'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { assertNever } from '../../../lib/lib'
-import { FindOptions, MongoSelector } from '../../../lib/typings/meteor'
+import { MongoSelector } from '../../../lib/typings/meteor'
 import { useTracker } from '../ReactMeteorData/ReactMeteorData'
 import { SorensenContext } from '../SorensenContext'
 import { MountedAdLibTrigger, MountedAdLibTriggers } from './TriggersHandler'
@@ -53,7 +54,7 @@ export const ActionAdLibHotkeyPreview: React.FC<IProps> = function AdLibActionHo
 		}
 	}, [Sorensen])
 
-	const findOptions: FindOptions<MountedAdLibTrigger> = {
+	const findOptions: Mongo.Options<MountedAdLibTrigger> = {
 		fields: {
 			keys: 1,
 		},
