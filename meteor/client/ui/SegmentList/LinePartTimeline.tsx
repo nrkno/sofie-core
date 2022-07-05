@@ -9,7 +9,7 @@ import { LinePartTransitionPiece } from './LinePartTransitionPiece/LinePartTrans
 import { LinePartSecondaryPiece } from './LinePartSecondaryPiece/LinePartSecondaryPiece'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { OvertimeShadow } from './OvertimeShadow'
-import { StudioContext } from './SegmentOnePartLine'
+import { StudioContext } from './SegmentList'
 
 const TIMELINE_DEFAULT_BASE = 30 * 1000
 
