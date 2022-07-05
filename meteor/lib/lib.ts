@@ -9,6 +9,7 @@ import { MongoQuery } from './typings/meteor'
 import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 export { Time, TimeDuration }
 
 // Legacy compatability
@@ -332,6 +333,12 @@ export async function makePromise<T>(fcn: () => T): Promise<T> {
 				reject(e)
 			}
 		})
+	})
+}
+
+export function deferAsync(fcn: () => Promise<void>): void {
+	Meteor.defer(() => {
+		fcn().catch((e) => logger.error(stringifyError(e)))
 	})
 }
 

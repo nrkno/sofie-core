@@ -134,7 +134,7 @@ export async function internalUploadBlueprint(
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
-export async function innerUploadBlueprint(
+async function innerUploadBlueprint(
 	organizationId: OrganizationId | null,
 	blueprint: BlueprintLight | undefined,
 	blueprintId: BlueprintId,
@@ -249,7 +249,7 @@ export async function innerUploadBlueprint(
 }
 
 async function assignSystemBlueprint(methodContext: MethodContext, blueprintId: BlueprintId | null): Promise<void> {
-	SystemWriteAccess.coreSystem(methodContext)
+	await SystemWriteAccess.coreSystem(methodContext)
 
 	if (blueprintId !== undefined && blueprintId !== null) {
 		check(blueprintId, String)
