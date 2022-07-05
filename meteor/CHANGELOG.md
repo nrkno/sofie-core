@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.41.1](https://github.com/nrkno/sofie-core/compare/v1.41.0...v1.41.1) (2022-07-05)
+
+
+### Bug Fixes
+
+* transpile mos-connection for compatibility with CasparCG ([#744](https://github.com/nrkno/sofie-core/issues/744)) ([5250e02](https://github.com/nrkno/sofie-core/commit/5250e023d808c6a977429fbf4e4d7b9da3368831))
+
 ## [1.41.0](https://github.com/nrkno/sofie-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
 
 
