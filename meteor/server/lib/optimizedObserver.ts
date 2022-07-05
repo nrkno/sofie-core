@@ -125,7 +125,7 @@ export async function setUpOptimizedObserver<
 
 						if (hasPendingUpdate) {
 							// There is another pending update, make sure it gets executed asap
-							setImmediate(() => {
+							Meteor.defer(() => {
 								triggerUpdate({})
 							})
 						}
@@ -163,7 +163,7 @@ export async function setUpOptimizedObserver<
 
 			if (hasPendingUpdate) {
 				// An update is pending, let it be executed once the final observer is stored
-				setImmediate(() => {
+				Meteor.defer(() => {
 					triggerUpdate({})
 				})
 			}
