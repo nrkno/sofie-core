@@ -134,6 +134,8 @@ jobs:
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
           CI: true
+      - name: Modify dependencies to use npm packages
+        run: node scripts/prepublish.js
       - name: Publish to NPM
         id: publish-npm
         if: ${{ steps.do-publish.outputs.publish }}
