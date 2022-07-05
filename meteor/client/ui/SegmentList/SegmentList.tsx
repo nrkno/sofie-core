@@ -61,7 +61,7 @@ const COLUMN_SUPPORTED_LAYER_TYPES: Set<SourceLayerType> = new Set([
 	// SourceLayerType.UNKNOWN,
 ])
 
-const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(function SegmentOnePartLine(props, ref) {
+const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function SegmentList(props, ref) {
 	const innerRef = useRef<HTMLDivElement>(null)
 	const combinedRef = useCombinedRefs(null, ref, innerRef)
 	const { t } = useTranslation()
@@ -239,10 +239,7 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 						</div>
 					</div>
 					<ErrorBoundary>
-						<SwitchViewModeButton
-							currentMode={SegmentViewMode.OnePartPerLine}
-							onSwitchViewMode={props.onSwitchViewMode}
-						/>
+						<SwitchViewModeButton currentMode={SegmentViewMode.List} onSwitchViewMode={props.onSwitchViewMode} />
 					</ErrorBoundary>
 				</ContextMenuTrigger>
 				<div className="segment-opl__part-list">{parts}</div>
@@ -251,4 +248,4 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 	)
 })
 
-export const SegmentOnePartLine = React.memo(SegmentOnePartLineInner)
+export const SegmentList = React.memo(SegmentListInner)

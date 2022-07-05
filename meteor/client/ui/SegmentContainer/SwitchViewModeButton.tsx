@@ -9,8 +9,8 @@ function getNextMode(currentMode: SegmentViewMode): SegmentViewMode {
 		case SegmentViewMode.Timeline:
 			return SegmentViewMode.Storyboard
 		case SegmentViewMode.Storyboard:
-			return getUseOnePartPerLine() ? SegmentViewMode.OnePartPerLine : SegmentViewMode.Timeline
-		case SegmentViewMode.OnePartPerLine:
+			return getUseOnePartPerLine() ? SegmentViewMode.List : SegmentViewMode.Timeline
+		case SegmentViewMode.List:
 			return SegmentViewMode.Timeline
 	}
 }
@@ -47,7 +47,7 @@ export function SwitchViewModeButton({
 					<Storyboard />
 				</button>
 			)
-		case SegmentViewMode.OnePartPerLine:
+		case SegmentViewMode.List:
 			return (
 				<button
 					className="segment-timeline__switch-view-mode-button"

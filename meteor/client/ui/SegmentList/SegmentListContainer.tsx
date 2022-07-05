@@ -12,7 +12,7 @@ import {
 	ITrackedProps as ITrackedResolvedSegmentProps,
 } from '../SegmentContainer/withResolvedSegment'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { SegmentOnePartLine } from './SegmentOnePartLine'
+import { SegmentList } from './SegmentList'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
 
@@ -22,7 +22,7 @@ interface IProps extends IResolvedSegmentProps {
 	id: string
 }
 
-export const SegmentOnePartLineContainer = withResolvedSegment<IProps>(function SegmentOnePartLineContainer({
+export const SegmentListContainer = withResolvedSegment<IProps>(function SegmentListContainer({
 	rundownId,
 	rundownIdsBefore,
 	segmentId,
@@ -264,7 +264,7 @@ export const SegmentOnePartLineContainer = withResolvedSegment<IProps>(function 
 		// 	fixedSegmentDuration={props.fixedSegmentDuration}
 		// 	subscriptionsReady={initialSubscriptionsReady}
 		// />
-		<SegmentOnePartLine
+		<SegmentList
 			id={props.id}
 			ref={segmentRef}
 			key={unprotectString(props.segmentui._id)}

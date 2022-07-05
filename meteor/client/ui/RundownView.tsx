@@ -124,7 +124,7 @@ import { UIStateStorage } from '../lib/UIStateStorage'
 import { AdLibPieceUi, AdlibSegmentUi } from '../lib/shelf'
 import { SourceLayerLookup, fetchAndFilter } from './Shelf/AdLibPanel'
 import { matchFilter } from './Shelf/AdLibListView'
-import { SegmentOnePartLineContainer } from './SegmentOnePartLine/SegmentOnePartLineContainer'
+import { SegmentListContainer } from './SegmentList/SegmentListContainer'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -2393,9 +2393,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							studioMode={this.state.studioMode}
 						/>
 					)
-				case SegmentViewMode.OnePartPerLine:
+				case SegmentViewMode.List:
 					return (
-						<SegmentOnePartLineContainer
+						<SegmentListContainer
 							id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 							studio={studio}
 							showStyleBase={showStyleBase}
