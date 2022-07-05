@@ -7,7 +7,6 @@ import { IContextMenuContext } from '../RundownView'
 import { PartUi, PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
-import { Timeline } from '../../lib/ui/icons/segment'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
@@ -35,7 +34,8 @@ import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/Sto
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 // TODO: Remove feature-flag and integrate with regular SegmentViewMode switch button
-import { getUseOnePartPerLine } from '../../lib/localStorage'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -161,10 +161,6 @@ export const SegmentStoryboard = React.memo(
 				`segment.${props.segment._id}.useTimeOfDayCountdowns`,
 				newUseTimeOfDayCountdowns
 			)
-		}
-
-		const onSwitchViewMode = () => {
-			props.onSwitchViewMode(getUseOnePartPerLine() ? SegmentViewMode.OnePartPerLine : SegmentViewMode.Timeline)
 		}
 
 		const onClickPartIdent = (partId: PartId) => {
@@ -669,15 +665,9 @@ export const SegmentStoryboard = React.memo(
 								</div>
 							))}
 					</div>
-					<div className="segment-storyboard__storyboard-view-controls">
-						<button
-							className="segment-storyboard__storyboard-view-controls__button segment-storyboard__storyboard-view-controls__button--switch-mode segment-storyboard__storyboard-view-controls--switch-mode--timeline"
-							onClick={onSwitchViewMode}
-							title={t('Switch to Timeline mode')}
-						>
-							<Timeline />
-						</button>
-					</div>
+					<ErrorBoundary>
+						<SwitchViewModeButton currentMode={SegmentViewMode.Storyboard} onSwitchViewMode={props.onSwitchViewMode} />
+					</ErrorBoundary>
 					<div className="segment-storyboard__part-list__container" ref={listRef} onPointerDown={onListPointerDown}>
 						<OptionalVelocityComponent
 							animation={{

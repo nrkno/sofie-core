@@ -56,6 +56,10 @@ $duration-area-margin: 0.5em;
 			}
 		}
 
+		.segment-timeline__switch-view-mode-button {
+			grid-row: 1;
+		}
+
 		> h2.segment-opl__title__label {
 			margin: 0.35em 1em 0.2em 0;
 			padding: 0;

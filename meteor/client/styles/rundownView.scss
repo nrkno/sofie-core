@@ -770,6 +770,15 @@ svg.icon {
 	.segment-timeline__unsynced {
 		text-transform: uppercase;
 	}
+
+	.segment-timeline__switch-view-mode-button {
+		grid-row: header / main-view;
+		grid-column: timeline / end;
+		justify-self: end;
+		align-self: start;
+		z-index: 1;
+		background: $segment-background-color;
+	}
 }
 
 .segment-timeline {
@@ -779,8 +788,8 @@ svg.icon {
 		grid-column: segment-group-controls / timeline;
 		grid-row: header / end;
 		align-self: end;
-		grid-template-columns: 1.3fr 1fr 1fr 1fr;
-		padding: 0 0.3em 0.05em 0.3em;
+		grid-template-columns: 1fr 1fr 1fr;
+		padding: 0 1.2em 0.05em;
 
 		> .segment-timeline__timeline-zoom-buttons__button {
 			min-width: 22px;

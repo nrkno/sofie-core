@@ -19,6 +19,8 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ISourceLayerExtended } from '../../../lib/Rundown'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -206,7 +208,6 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 						id={`segment-name-${props.segment._id}`}
 						className={'segment-opl__title__label' + (props.segment.identifier ? ' identifier' : '')}
 						data-identifier={props.segment.identifier}
-						onClick={() => props.onSwitchViewMode(SegmentViewMode.Timeline)}
 					>
 						{props.segment.name}
 					</h2>
@@ -237,6 +238,12 @@ const SegmentOnePartLineInner = React.forwardRef<HTMLDivElement, IProps>(functio
 							)}
 						</div>
 					</div>
+					<ErrorBoundary>
+						<SwitchViewModeButton
+							currentMode={SegmentViewMode.OnePartPerLine}
+							onSwitchViewMode={props.onSwitchViewMode}
+						/>
+					</ErrorBoundary>
 				</ContextMenuTrigger>
 				<div className="segment-opl__part-list">{parts}</div>
 			</div>
