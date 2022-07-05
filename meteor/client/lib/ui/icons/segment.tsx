@@ -42,48 +42,54 @@ export const SmallPartFlag = (props: React.SVGProps<SVGSVGElement>) => (
 
 export const Storyboard = (props: React.SVGProps<SVGSVGElement>) => (
 	<svg
-		width="27"
-		height="27"
-		viewBox="0 0 27 27"
+		width="14"
+		height="14"
+		viewBox="0 0 14 8"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
 		role="presentation"
 		{...props}
 	>
 		<rect y="0" width="27" height="27" rx="3" fill="#00000000" className="btn-bkg" />
-		<path
-			fillRule="evenodd"
-			clipRule="evenodd"
-			d="M19.5 18.0667H21.2135C22.3181 18.0667 23.2135 17.1712 23.2135 16.0667V11C23.2135 9.89543 22.3181 9 21.2135 9H19.5796C19.9948 9.36647 20.2567 9.90265 20.2567 10.5V16.5C20.2567 17.1347 19.9611 17.7003 19.5 18.0667Z"
-			fill="#FFFFFF"
-			opacity="0.66"
-			className="btn-icon"
-		/>
-		<path
-			fillRule="evenodd"
-			clipRule="evenodd"
-			d="M15.5 18.0667H17.2135C18.3181 18.0667 19.2135 17.1712 19.2135 16.0667V11C19.2135 9.89543 18.3181 9 17.2135 9H15.5796C15.9948 9.36647 16.2567 9.90265 16.2567 10.5V16.5C16.2567 17.1347 15.9611 17.7003 15.5 18.0667Z"
-			fill="#FFFFFF"
-			opacity="0.89"
-			className="btn-icon"
-		/>
-		<rect x="4" y="9" width="11" height="9.06667" rx="2" fill="#FFFFFF" className="btn-icon" />
+		<rect width="9" height="5" rx="2" fill="#BBBBBB"/>
+		<rect y="6" width="9" height="2" rx="1" fill="#BBBBBB"/>
+		<path fill-rule="evenodd" clip-rule="evenodd" d="M9.5 5.0667H11.2135C12.3181 5.0667 13.2135 4.1712 13.2135 3.0667V2C13.2135 0.89543 12.3181 0 11.2135 0H9.5796C9.9948 0.36647 10.2567 0.90265 10.2567 1.5V3.5C10.2567 4.1347 9.9611 4.7003 9.5 5.0667Z" fill="#8B8B8B"/>
+		<path fill-rule="evenodd" clip-rule="evenodd" d="M9 8H12C12.5523 8 13 7.55228 13 7C13 6.44772 12.5523 6 12 6H9C9.55229 6 10 6.44772 10 7C10 7.55228 9.55228 8 9 8Z" fill="#8B8B8B"/>
 	</svg>
 )
 
 export const Timeline = (props: React.SVGProps<SVGSVGElement>) => (
 	<svg
-		width="27"
-		height="27"
-		viewBox="0 0 27 27"
+		width="14"
+		height="14"
+		viewBox="0 0 14 8"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
 		role="presentation"
 		{...props}
 	>
-		<rect y="0" width="27" height="27" rx="3" fill="#00000000" className="btn-bkg" />
-		<rect x="4" y="9" width="13" height="2" fill="#FFFFFF" className="btn-icon" />
-		<rect x="7" y="12" width="13" height="2" fill="#FFFFFF" className="btn-icon" />
-		<rect x="10" y="15" width="13" height="2" fill="#FFFFFF" className="btn-icon" />
+		<path d="M4 0H0V2H4V0Z" fill="#BBBBBB"/>
+		<path d="M4 3H0V5H4V3Z" fill="#BBBBBB"/>
+		<path d="M14 3H6V5H14V3Z" fill="#BBBBBB"/>
+		<path d="M4 6H0V8H4V6Z" fill="#BBBBBB"/>
+		<path d="M14 6H6V8H14V6Z" fill="#BBBBBB"/>
+		<path d="M14 0H6V2H14V0Z" fill="#BBBBBB"/>
 	</svg>
+)
+
+export const List = (props: React.SVGProps<SVGSVGElement>) => (
+	<svg
+		width="14"
+		height="14"
+		viewBox="0 0 14 8"
+		fill="none"
+		xmlns="http://www.w3.org/2000/svg"
+		role="presentation"
+		{...props}
+	>
+		<path d="M9 0H0V2H9V0Z" fill="#BBBBBB"/>
+		<path d="M14 3H0V5H14V3Z" fill="#BBBBBB"/>
+		<path d="M14 6H0V8H14V6Z" fill="#BBBBBB"/>
+	</svg>
+
 )

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { getUseOnePartPerLine } from '../../lib/localStorage'
-import { Storyboard, Timeline } from '../../lib/ui/icons/segment'
+import { Storyboard, Timeline, List } from '../../lib/ui/icons/segment'
 import { SegmentViewMode } from './SegmentViewModes'
 
 function getNextMode(currentMode: SegmentViewMode): SegmentViewMode {
@@ -32,7 +32,7 @@ export function SwitchViewModeButton({
 				<button
 					className="segment-timeline__switch-view-mode-button"
 					onClick={() => onSwitchViewMode(nextMode)}
-					title={t('Switch to Timeline mode')}
+					title={t('Switch to Timeline view')}
 				>
 					<Timeline />
 				</button>
@@ -42,7 +42,7 @@ export function SwitchViewModeButton({
 				<button
 					className="segment-timeline__switch-view-mode-button"
 					onClick={() => onSwitchViewMode(nextMode)}
-					title={t('Switch to Storyboard mode')}
+					title={t('Switch to Storyboard view')}
 				>
 					<Storyboard />
 				</button>
@@ -52,9 +52,9 @@ export function SwitchViewModeButton({
 				<button
 					className="segment-timeline__switch-view-mode-button"
 					onClick={() => onSwitchViewMode(nextMode)}
-					title={t('Switch to One Part Per Line mode')}
+					title={t('Switch to List view')}
 				>
-					<Timeline />
+					<List />
 				</button>
 			)
 	}
