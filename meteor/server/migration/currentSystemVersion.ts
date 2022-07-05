@@ -40,7 +40,7 @@
  * 1.38.0: Release 38 (2022-01-26)
  * 1.39.0: Release 39 (2022-02-04)
  * 1.40.0: Release 40 (Skipped)
- * 1.40.0: Release 41 (2022-04)
+ * 1.41.0: Release 41 (2022-06-29)
  */
 
 // Note: Only set this to release versions, (ie X.Y.Z), not pre-releases (ie X.Y.Z-0-pre-release)

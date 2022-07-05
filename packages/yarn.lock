@@ -3119,7 +3119,7 @@
   version "1.41.0-in-testing.1"
   dependencies:
     moment "2.29.3"
-    timeline-state-resolver-types "7.0.0-release41.2"
+    timeline-state-resolver-types "7.0.0"
     tslib "^2.3.1"
     type-fest "^2.11.1"
 
@@ -5160,10 +5160,10 @@ casparcg-connection@^5.1.0:
     xml2js "^0.4.19"
     xmlbuilder "^9.0.7"
 
-casparcg-state@2.1.1-nightly-20220216-113227-36bcfd5.0:
-  version "2.1.1-nightly-20220216-113227-36bcfd5.0"
-  resolved "https://registry.yarnpkg.com/casparcg-state/-/casparcg-state-2.1.1-nightly-20220216-113227-36bcfd5.0.tgz#dbedbee744678d08a0c99ecf267fc07aa62370c5"
-  integrity sha512-l7ZlZtAnNEQEv0ztBznL3h2ihCl4UclAlyKGY3S2aWosGys5tWY3tyAGbkqxSt+BOMhYlo+4AiZuLUOEKJTDNw==
+casparcg-state@2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/casparcg-state/-/casparcg-state-2.1.1.tgz#8d33bca7907f128b5a8a6918899ddc6d2d1413ae"
+  integrity sha512-p2EG2TsypyTHlLC+aiK65s0y9O22moGx3egZzfHU/PbnWmFeyYUo5eqU/s7sTdlyTpBNVgrbIJ7LPRgtgNOvWA==
   dependencies:
     casparcg-connection "^5.1.0"
     fast-clone "^1.5.13"
@@ -7916,10 +7916,10 @@ globby@^12.0.2:
     merge2 "^1.4.1"
     slash "^4.0.0"
 
-got@^11.8.2:
-  version "11.8.3"
-  resolved "https://registry.yarnpkg.com/got/-/got-11.8.3.tgz#f496c8fdda5d729a90b4905d2b07dbd148170770"
-  integrity sha512-7gtQ5KiPh1RtGS9/Jbv1ofDpBFuq42gyfEib+ejaRBJuj/3tQFeR5+gw57e4ipaU8c/rCjvX6fkQz2lyDlGAOg==
+got@^11.8.2, got@^11.8.5:
+  version "11.8.5"
+  resolved "https://registry.yarnpkg.com/got/-/got-11.8.5.tgz#ce77d045136de56e8f024bebb82ea349bc730046"
+  integrity sha512-o0Je4NvQObAuZPHLFoRSkdG2lTgtcynqymzg2Vupdx6PorhaT5MCbIyXG6d4D94kk8ZG57QeosgdiqfJWhEhlQ==
   dependencies:
     "@sindresorhus/is" "^4.0.0"
     "@szmarczak/http-timer" "^4.0.5"
@@ -10504,15 +10504,10 @@ minimist-options@4.1.0:
     is-plain-obj "^1.1.0"
     kind-of "^6.0.3"
 
-minimist@^0.1.0, minimist@^1.2.0, minimist@^1.2.5, minimist@^1.2.6:
+minimist@^0.1.0, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5, minimist@^1.2.6:
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.6.tgz#8637a5b759ea0d6e98702cfb3a9283323c93af44"
   integrity sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==
-
-minimist@^1.2.3:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
 
 minipass-collect@^1.0.2:
   version "1.0.2"
@@ -14650,28 +14645,28 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.0.0-release41.2:
-  version "7.0.0-release41.2"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0-release41.2.tgz#0bdb0e190a17368b7c70d81256fdafa18ac75660"
-  integrity sha512-BThI+tKOTPNlE9zGbfcqFbVKKznJCJTlv6UhKrEcbYJ7lDo/1sWRluWxFdvbdbbD+nlxScL3VwIXP4mD2ocUJA==
+timeline-state-resolver-types@7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0.tgz#99bc6272851b451951b84c41d781001d03e9c33f"
+  integrity sha512-M3Fxk1JzOaHv4XxK6QUG4L2g97VA/iRK+DdFyH73mpZ78LA0/jaNKnYKWetE2YiGRWcG6zB1nsO7qvUaRV1wNA==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.0.0-release41.2:
-  version "7.0.0-release41.2"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.0.0-release41.2.tgz#4bbadaa3b2b297726447290139f6222da27de36a"
-  integrity sha512-iq4WTwGt4CTWwh62ApDzQWoLRaFNZuerGei9tfSOqBLEK6S4f55f6410nFfWYNryBXesHBgNWKot9DHOmcfaiQ==
+timeline-state-resolver@7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.0.1.tgz#a73b516d7dc941e4f7dd4b23aa9c8d62f555caf3"
+  integrity sha512-VrRNhopYvF14QgL9ozbHgiWQmHkXp+yMzcDt6QzCMgJsRicwjsvrMbzgLmNRYd2HXfC0FbLPYLkxUUokNfq5dA==
   dependencies:
     "@tv2media/v-connection" "^5.1.1"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^5.1.0"
-    casparcg-state "2.1.1-nightly-20220216-113227-36bcfd5.0"
+    casparcg-state "2.1.1"
     debug "^4.3.1"
     deepmerge "^4.2.2"
     emberplus-connection "^0.1.2"
     eventemitter3 "^4.0.7"
-    got "^11.8.2"
+    got "^11.8.5"
     hyperdeck-connection "^0.4.3"
     obs-websocket-js "^4.0.3"
     osc "^2.4.2"
@@ -14682,7 +14677,7 @@ timeline-state-resolver@7.0.0-release41.2:
     sprintf-js "^1.1.2"
     superfly-timeline "8.2.1"
     threadedclass "^1.0.2"
-    timeline-state-resolver-types "7.0.0-release41.2"
+    timeline-state-resolver-types "7.0.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"

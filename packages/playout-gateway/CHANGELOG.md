@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.41.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
+
+
+### Bug Fixes
+
+* guard against sending multiple timelines to PoGw ([#732](https://github.com/nrkno/tv-automation-server-core/issues/732)) ([645b5c6](https://github.com/nrkno/tv-automation-server-core/commit/645b5c6ace37fb894207700044686ceac9b3b023))
+* some playout-gateway logging ([9ae203a](https://github.com/nrkno/tv-automation-server-core/commit/9ae203afd987f2572f096ac77e9abfc0747322c3))
+
+
+
+
+
 # [1.41.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.41.0-in-testing.1) (2022-04-28)
 
 

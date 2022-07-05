@@ -63,7 +63,9 @@
 	"name": "packages",
 	"resolutions": {
 		"node-license-validator/**/minimist": "^1.2.6",
+		"**/prebuild-install/minimist": "^1.2.6",
 		"lerna/**/trim-newlines": "^4.0.1",
-		"**/data-store/set-value": "^4.1.0"
+		"**/data-store/set-value": "^4.1.0",
+		"**/tv-automation-quantel-gateway-client/got": "^11.8.5"
 	}
 }
