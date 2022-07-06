@@ -15,10 +15,10 @@ interface IProps {
 	partDuration: number
 }
 
-function timeInBase(time: number, partDuration: number, timelineBase: number): string {
+function timeInBase(time: number, partDuration: number, timelineBase: number): number {
 	const pieceMaxDuration = Math.min(time, partDuration)
 	const size = Math.min(1, pieceMaxDuration / timelineBase)
-	return `${size * 100}%`
+	return size * 100
 }
 
 export const LinePartSecondaryPiece: React.FC<IProps> = function LinePartSecondaryPiece({
@@ -35,9 +35,12 @@ export const LinePartSecondaryPiece: React.FC<IProps> = function LinePartSeconda
 	const typeClass = piece?.sourceLayer?.type ? RundownUtils.getSourceLayerClassName(piece?.sourceLayer?.type) : ''
 
 	const pieceStyle = useMemo<CSSProperties>(() => {
+		const width = timeInBase(piece.renderedDuration ?? partDuration, partDuration, timelineBase)
+		const left = timeInBase(piece.renderedInPoint ?? 0, partDuration, timelineBase)
+		const overflow = Math.max(0, left + width - 100)
 		return {
-			width: timeInBase(piece.renderedDuration ?? partDuration, partDuration, timelineBase),
-			left: timeInBase(piece.renderedInPoint ?? 0, partDuration, timelineBase),
+			width: `${width - overflow}%`,
+			left: `${left}%`,
 		}
 	}, [piece, partDuration, timelineBase])
 
