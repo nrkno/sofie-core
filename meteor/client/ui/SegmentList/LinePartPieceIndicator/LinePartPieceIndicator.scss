@@ -1,22 +1,52 @@
 @import '../../../styles/itemTypeColors';
 
-.segment-opl__piece-indicator {
+.segment-opl__piece-indicator-placeholder {
+	position: relative;
 	flex: 0 1 1.3em;
 	width: 1.3em;
 	height: 1.3em;
 	line-height: 1.3em;
 	font-size: 1em;
-	text-align: center;
-	overflow: hidden;
-	border-radius: 3px;
 	margin-left: 0.2em;
-	box-sizing: border-box;
-	font-style: italic;
-	font-weight: 400;
-	text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
+	overflow: hidden;
 
-	background: #33333333;
+	> .segment-opl__piece-indicator {
+		width: 100%;
+		height: 100%;
+		text-align: center;
+		overflow: hidden;
+		border-radius: 3px;
+		box-sizing: border-box;
+		font-style: italic;
+		font-weight: 400;
+		text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 
-	@include piece-colors();
-	@include missing-overlay();
+		background: #33333333;
+
+		@include piece-colors();
+		@include missing-overlay();
+	}
+
+	&.multiple {
+		> .segment-opl__piece-indicator {
+			width: 80%;
+			position: absolute;
+		}
+
+		> .segment-opl__piece-indicator:nth-child(1) {
+			filter: brightness(0.5);
+			left: 20%;
+		}
+
+		> .segment-opl__piece-indicator:nth-child(2) {
+			filter: brightness(0.75);
+			left: 10%;
+		}
+
+		> .segment-opl__piece-indicator:last-child {
+			filter: none;
+			left: 0;
+			box-shadow: 0 0 2px black;
+		}
+	}
 }
