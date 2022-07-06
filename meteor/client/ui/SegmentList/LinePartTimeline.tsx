@@ -10,6 +10,7 @@ import { LinePartSecondaryPiece } from './LinePartSecondaryPiece/LinePartSeconda
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { OvertimeShadow } from './OvertimeShadow'
 import { StudioContext } from './SegmentList'
+import { PartAutoNextMarker } from './PartAutoNextMarker'
 
 const TIMELINE_DEFAULT_BASE = 30 * 1000
 
@@ -128,6 +129,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 					partRenderedDuration={partDuration}
 				/>
 			)}
+			{willAutoNextOut && <PartAutoNextMarker partDuration={partDuration} timelineBase={timelineBase} />}
 			{isLive && (
 				<OnAirLine
 					partInstance={part.instance}

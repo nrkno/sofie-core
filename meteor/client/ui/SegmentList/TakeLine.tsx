@@ -18,6 +18,7 @@ export const TakeLine: React.FC<IProps> = function TakeLine({ isNext, autoNext }
 			})}
 		>
 			{isNext && <div className="segment-opl__timeline-flag__label">{autoNext ? t('Auto') : t('Next')}</div>}
+			{!isNext && autoNext && <div className="segment-opl__timeline-flag__auto">{t('Auto')}</div>}
 		</div>
 	)
 }

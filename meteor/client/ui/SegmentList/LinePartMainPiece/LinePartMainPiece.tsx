@@ -44,9 +44,9 @@ function getPieceDuration(
 		  )
 }
 
-function widthInBase(pieceMaxDuration: number, timelineBase: number): string {
+function widthInBase(pieceMaxDuration: number, timelineBase: number): number {
 	const size = Math.min(1, pieceMaxDuration / timelineBase)
-	return `${size * 100}%`
+	return size * 100
 }
 
 function getScenes(piece: PieceUi): Array<number> | undefined {
@@ -153,7 +153,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 	const pieceStyle = useMemo<React.CSSProperties>(() => {
 		return {
 			// TODO: handle piece.enable.start
-			width: widthInBase(pieceMaxDuration, timelineBase),
+			width: `${widthInBase(pieceMaxDuration, timelineBase)}%`,
 		}
 	}, [pieceMaxDuration, timelineBase])
 
