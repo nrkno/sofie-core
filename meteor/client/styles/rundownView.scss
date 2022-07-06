@@ -503,7 +503,7 @@ svg.icon {
 			margin: 0;
 			padding: 0.3em;
 			line-height: 1.2em;
-			letter-spacing: 0px;
+			//letter-spacing: 0px;
 			font-weight: 400;
 			hyphens: auto;
 			-webkit-hyphens: auto;
@@ -778,11 +778,12 @@ svg.icon {
 		align-self: start;
 		z-index: 1;
 		background: $segment-background-color;
-		width: 1.6em;
-		height: 1.6em;
+		width: 1.4em;
+		height: 1.4em;
 		padding: 0;
 
 		background: #5c5c5c;
+		border: none;
 		border-radius: 2em;
 		transition: 0.3s background-color;
 
