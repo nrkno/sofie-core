@@ -17,8 +17,8 @@ import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
 import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
 
-type StudioContent = { studioId: StudioId }
 export namespace StudioReadAccess {
+	/** Handles read access for all studio document */
 	export function studio(selector: MongoQuery<{ _id: StudioId }>, cred: Credentials | ResolvedCredentials): boolean {
 		return studioContent({ studioId: selector._id }, cred)
 	}
@@ -58,34 +58,43 @@ export interface ExternalMessageContentAccess extends StudioContentAccess {
 export namespace StudioContentWriteAccess {
 	// These functions throws if access is not allowed.
 
-	export function rundownPlaylist(cred0: Credentials, existingPlaylist: RundownPlaylist | RundownPlaylistId) {
+	export async function rundownPlaylist(cred0: Credentials, existingPlaylist: RundownPlaylist | RundownPlaylistId) {
 		triggerWriteAccess()
 		if (existingPlaylist && isProtectedString(existingPlaylist)) {
 			const playlistId = existingPlaylist
-			const m = RundownPlaylists.findOne(playlistId)
+			const m = await RundownPlaylists.findOneAsync(playlistId)
 			if (!m) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 			existingPlaylist = m
 		}
 		return { ...anyContent(cred0, existingPlaylist.studioId), playlist: existingPlaylist }
 	}
+
+	/** Check for permission to restore snapshots into the studio */
 	export function dataFromSnapshot(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
-	export function timeline(cred0: Credentials, studioId: StudioId) {
-		return anyContent(cred0, studioId)
-	}
+
+	/** Check for permission to select active routesets in the studio */
 	export function routeSet(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
+
+	/** Check for permission to update the studio baseline */
 	export function baseline(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
+
+	/** Check for permission to modify a bucket or its contents belonging to the studio */
 	export function bucket(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
+
+	/** Check for permission to execute a function on a PeripheralDevice in the studio */
 	export function executeFunction(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
+
+	/** Check for permission to modify an ExternalMessageQueueObj */
 	export async function externalMessage(
 		cred0: Credentials,
 		existingMessage: ExternalMessageQueueObj | ExternalMessageQueueObjId
@@ -99,8 +108,12 @@ export namespace StudioContentWriteAccess {
 		}
 		return { ...anyContent(cred0, existingMessage.studioId), message: existingMessage }
 	}
-	/** Return credentials if writing is allowed, throw otherwise */
-	export function anyContent(cred0: Credentials, studioId: StudioId): StudioContentAccess {
+
+	/**
+	 * We don't have user levels, so we can use a simple check for all cases
+	 * Return credentials if writing is allowed, throw otherwise
+	 */
+	function anyContent(cred0: Credentials, studioId: StudioId): StudioContentAccess {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) {
 			const studio = fetchStudioLight(studioId)
@@ -129,9 +142,4 @@ export namespace StudioContentWriteAccess {
 			cred: cred,
 		}
 	}
-}
-export function studioContentAllowWrite(userId: UserId, doc: StudioContent): boolean {
-	const access = allowAccessToStudio({ userId: userId }, doc.studioId)
-	if (!access.update) return logNotAllowed('Studio content', access.reason)
-	return true
 }

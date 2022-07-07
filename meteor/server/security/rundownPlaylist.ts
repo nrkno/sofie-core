@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { MongoQuery, UserId } from '../../lib/typings/meteor'
+import { UserId } from '../../lib/typings/meteor'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToRundownPlaylist } from './lib/security'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
@@ -12,25 +12,25 @@ import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { StudioId } from '../../lib/collections/Studios'
 
-type RundownPlaylistContent = { playlistId: RundownPlaylistId }
 export namespace RundownPlaylistReadAccess {
+	/** Handles read access for all playlist document */
 	export async function rundownPlaylist(
 		id: RundownPlaylistId,
 		cred: Credentials | ResolvedCredentials
 	): Promise<boolean> {
-		return rundownPlaylistContent({ playlistId: id }, cred)
+		return rundownPlaylistContent(id, cred)
 	}
-	/** Handles read access for all rundown content (segments, parts, pieces etc..) */
-	export function rundownPlaylistContent(
-		selector: MongoQuery<RundownPlaylistContent>,
+	/** Handles read access for all playlist content (segments, parts, pieces etc..) */
+	export async function rundownPlaylistContent(
+		id: RundownPlaylistId,
 		cred: Credentials | ResolvedCredentials
-	): boolean {
+	): Promise<boolean> {
 		triggerWriteAccess()
-		check(selector, Object)
+		check(id, String)
 		if (!Settings.enableUserAccounts) return true
-		if (!selector.playlistId) throw new Meteor.Error(400, 'selector must contain playlistId')
+		if (!id) throw new Meteor.Error(400, 'selector must contain playlistId')
 
-		const access = allowAccessToRundownPlaylist(cred, selector.playlistId)
+		const access = await allowAccessToRundownPlaylist(cred, id)
 		if (!access.read) return logNotAllowed('RundownPlaylist content', access.reason)
 
 		return true
@@ -62,36 +62,52 @@ export interface RundownContentAccess {
 }
 
 export namespace RundownPlaylistContentWriteAccess {
-	export function rundown(cred0: Credentials, existingRundown: Rundown | RundownId): RundownContentAccess {
+	/** Access to playout for a playlist, from a rundown. ie the playlist and everything inside it. */
+	export async function rundown(
+		cred0: Credentials,
+		existingRundown: Rundown | RundownId
+	): Promise<RundownContentAccess> {
 		triggerWriteAccess()
 		if (existingRundown && isProtectedString(existingRundown)) {
 			const rundownId = existingRundown
-			const m = Rundowns.findOne(rundownId)
+			const m = await Rundowns.findOneAsync(rundownId)
 			if (!m) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 			existingRundown = m
 		}
-		return { ...anyContent(cred0, existingRundown.playlistId), rundown: existingRundown }
+
+		const access = await anyContent(cred0, existingRundown.playlistId)
+		return { ...access, rundown: existingRundown }
 	}
-	export function playout(cred0: Credentials, playlistId: RundownPlaylistId): RundownPlaylistContentAccess {
+	/** Access to playout for a playlist. ie the playlist and everything inside it. */
+	export async function playout(
+		cred0: Credentials,
+		playlistId: RundownPlaylistId
+	): Promise<RundownPlaylistContentAccess> {
 		return anyContent(cred0, playlistId)
 	}
-	/** Return credentials if writing is allowed, throw otherwise */
-	export function anyContent(cred0: Credentials, playlistId: RundownPlaylistId): RundownPlaylistContentAccess {
+	/**
+	 * We don't have user levels, so we can use a simple check for all cases
+	 * Return credentials if writing is allowed, throw otherwise
+	 */
+	async function anyContent(
+		cred0: Credentials,
+		playlistId: RundownPlaylistId
+	): Promise<RundownPlaylistContentAccess> {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) {
-			const playlist = RundownPlaylists.findOne(playlistId) || null
+			const playlist = await RundownPlaylists.findOneAsync(playlistId)
 			return {
 				userId: null,
 				organizationId: null,
 				studioId: playlist?.studioId || null,
-				playlist: playlist,
+				playlist: playlist || null,
 				cred: cred0,
 			}
 		}
 		const cred = resolveCredentials(cred0)
 		if (!cred.user) throw new Meteor.Error(403, `Not logged in`)
 		if (!cred.organizationId) throw new Meteor.Error(500, `User has no organization`)
-		const access = allowAccessToRundownPlaylist(cred, playlistId)
+		const access = await allowAccessToRundownPlaylist(cred, playlistId)
 		if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
 
 		return {

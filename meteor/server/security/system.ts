@@ -5,7 +5,6 @@ import { logNotAllowed } from './lib/lib'
 import { allowAccessToCoreSystem, allowAccessToCurrentUser, allowAccessToSystemStatus } from './lib/security'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
-import { waitForPromise } from '../../lib/lib'
 
 export namespace SystemReadAccess {
 	/** Handles read access for all organization content (segments, parts, pieces etc..) */
@@ -17,12 +16,14 @@ export namespace SystemReadAccess {
 
 		return true
 	}
+	/** Check if access is allowed to read a User, and that user is the current User */
 	export function currentUser(userId: UserId, cred: Credentials): boolean {
 		const access = allowAccessToCurrentUser(cred, userId)
 		if (!access.read) return logNotAllowed('Current user', access.reason)
 
 		return true
 	}
+	/** Check permissions to get the system status */
 	export function systemStatus(cred0: Credentials) {
 		// For reading only
 		triggerWriteAccess()
@@ -46,15 +47,18 @@ export namespace SystemWriteAccess {
 
 		return true
 	}
+	/** Check if access is allowed to modify a User, and that user is the current User */
 	export function currentUser(userId: UserId, cred: Credentials): boolean {
 		const access = allowAccessToCurrentUser(cred, userId)
-		if (!access.read) return logNotAllowed('Current user', access.reason)
+		if (!access.update) return logNotAllowed('Current user', access.reason)
 
 		return true
 	}
-	export function migrations(cred0: Credentials) {
-		return waitForPromise(coreSystem(cred0))
+	/** Check permissions to run migrations of all types */
+	export async function migrations(cred0: Credentials) {
+		return coreSystem(cred0)
 	}
+	/** Check permissions to perform a system-level action */
 	export async function systemActions(cred0: Credentials) {
 		return coreSystem(cred0)
 	}

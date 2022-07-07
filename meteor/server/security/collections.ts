@@ -38,7 +38,7 @@ import { Timeline } from '../../lib/collections/Timeline'
 import { rundownContentAllowWrite, pieceContentAllowWrite } from './rundown'
 import { SystemWriteAccess } from './system'
 import { Buckets } from '../../lib/collections/Buckets'
-import { studioContentAllowWrite } from './studio'
+import { StudioContentWriteAccess } from './studio'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { resolveCredentials } from './lib/credentials'
 
@@ -209,7 +209,7 @@ Buckets.allow({
 		return false
 	},
 	update(userId, doc, fields, _modifier) {
-		return studioContentAllowWrite(userId, doc) && rejectFields(doc, fields, ['_id'])
+		return StudioContentWriteAccess.bucket({ userId }, doc.studioId) && rejectFields(doc, fields, ['_id'])
 	},
 	remove(_userId, _doc) {
 		return false

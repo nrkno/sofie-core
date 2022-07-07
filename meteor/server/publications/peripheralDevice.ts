@@ -21,7 +21,7 @@ function checkAccess(cred: Credentials | ResolvedCredentials, selector: MongoQue
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	return (
 		NoSecurityReadAccess.any() ||
-		(selector._id && PeripheralDeviceReadAccess.peripheralDevice(selector, cred)) ||
+		(selector._id && PeripheralDeviceReadAccess.peripheralDevice(selector._id, cred)) ||
 		(selector.organizationId && OrganizationReadAccess.organizationContent<PeripheralDevice>(selector, cred)) ||
 		(selector.studioId && StudioReadAccess.studioContent<PeripheralDevice>(selector, cred))
 	)

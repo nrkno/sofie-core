@@ -78,7 +78,7 @@ export namespace ClientRundownAPI {
 		playlistId: RundownPlaylistId
 	): Promise<string[]> {
 		check(playlistId, String)
-		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
+		const access = await StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const playlist = access.playlist
 
 		const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist)
@@ -138,7 +138,7 @@ export namespace ClientRundownAPI {
 	): Promise<RundownPlaylistValidateBlueprintConfigResult> {
 		check(playlistId, String)
 
-		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
+		const access = await StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const rundownPlaylist = access.playlist
 
 		const studio = RundownPlaylistCollectionUtil.getStudio(rundownPlaylist)

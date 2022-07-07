@@ -37,7 +37,7 @@ export async function checkAccessToPlaylist(
 	context: MethodContext,
 	playlistId: RundownPlaylistId
 ): Promise<VerifiedRundownPlaylistContentAccess> {
-	const access = RundownPlaylistContentWriteAccess.playout(context, playlistId)
+	const access = await RundownPlaylistContentWriteAccess.playout(context, playlistId)
 	const playlist = access.playlist
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${playlistId}" not found!`)
 	return {
@@ -56,7 +56,7 @@ export async function checkAccessToRundown(
 	context: MethodContext,
 	rundownId: RundownId
 ): Promise<VerifiedRundownContentAccess> {
-	const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
+	const access = await RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 	const rundown = access.rundown
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	return {

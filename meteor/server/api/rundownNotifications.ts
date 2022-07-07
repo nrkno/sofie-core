@@ -108,7 +108,7 @@ class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownN
 		rundownIds: RundownId[]
 	): Promise<(PartNote & { rank: number })[]> {
 		triggerWriteAccessBecauseNoCheckNecessary()
-		if (!RundownPlaylistReadAccess.rundownPlaylistContent({ _id: playlistId }, this))
+		if (!(await RundownPlaylistReadAccess.rundownPlaylistContent(playlistId, this)))
 			throw new Meteor.Error(401, 'Invalid access creditials for Segment Parts Notes')
 
 		rundownIds.forEach((rundownId) => {
