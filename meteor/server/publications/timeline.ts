@@ -128,7 +128,7 @@ async function manipulateTimelinePublicationData(
 
 	if (updateProps.invalidateStudio) {
 		// If studio changed, or this is the first run, then fetch the studio
-		state.studio = fetchStudioLight(args.studioId)
+		state.studio = await fetchStudioLight(args.studioId)
 		state.routes = undefined
 	}
 

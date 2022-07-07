@@ -104,7 +104,7 @@ export async function allowAccessToShowStyleBase(
 	if (!showStyleBaseId) return noAccess('showStyleBaseId not set')
 	const cred = await resolveCredentials(cred0)
 
-	const showStyleBases = fetchShowStyleBasesLight({
+	const showStyleBases = await fetchShowStyleBasesLight({
 		_id: showStyleBaseId,
 	})
 	let access: Access<ShowStyleBaseLight | null> = allAccess(null)
@@ -129,7 +129,7 @@ export async function allowAccessToShowStyleVariant(
 		_id: showStyleVariantId,
 	})
 	const showStyleBaseIds = _.uniq(_.map(showStyleVariants, (v) => v.showStyleBaseId))
-	const showStyleBases = fetchShowStyleBasesLight({
+	const showStyleBases = await fetchShowStyleBasesLight({
 		_id: { $in: showStyleBaseIds },
 	})
 	let access: Access<ShowStyleBaseLight | null> = allAccess(null)
@@ -147,7 +147,7 @@ export async function allowAccessToStudio(
 	if (!isProtectedString(studioId)) return noAccess('studioId is not a string')
 	const cred = await resolveCredentials(cred0)
 
-	const studio = fetchStudioLight(studioId)
+	const studio = await fetchStudioLight(studioId)
 	if (!studio) return noAccess('Studio not found')
 
 	return {
@@ -194,7 +194,8 @@ export async function allowAccessToRundownContent(
 	const rundowns = await Rundowns.findFetchAsync({ _id: rundownId })
 	let access: Access<Rundown | null> = allAccess(null)
 	for (const rundown of rundowns) {
-		access = combineAccess(access, AccessRules.accessRundown(rundown, cred))
+		// TODO - this is reeally inefficient on db queries
+		access = combineAccess(access, await AccessRules.accessRundown(rundown, cred))
 	}
 	return access
 }
@@ -318,18 +319,18 @@ namespace AccessRules {
 			return allAccess(studio)
 		} else return noAccess(`User is not in the same organization as the studio ${studio._id}`)
 	}
-	export function accessRundownPlaylist(
+	export async function accessRundownPlaylist(
 		playlist: RundownPlaylist,
 		cred: ResolvedCredentials
-	): Access<RundownPlaylist> {
-		const studio = fetchStudioLight(playlist.studioId)
+	): Promise<Access<RundownPlaylist>> {
+		const studio = await fetchStudioLight(playlist.studioId)
 		if (!studio) return noAccess(`Studio of playlist "${playlist._id}" not found`)
 		return { ...accessStudio(studio, cred), document: playlist }
 	}
-	export function accessRundown(rundown: Rundown, cred: ResolvedCredentials): Access<Rundown> {
+	export async function accessRundown(rundown: Rundown, cred: ResolvedCredentials): Promise<Access<Rundown>> {
 		const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
 		if (!playlist) return noAccess(`Rundown playlist of rundown "${rundown._id}" not found`)
-		return { ...accessRundownPlaylist(playlist, cred), document: rundown }
+		return { ...(await accessRundownPlaylist(playlist, cred)), document: rundown }
 	}
 	export function accessPeripheralDevice(
 		device: PeripheralDevice,

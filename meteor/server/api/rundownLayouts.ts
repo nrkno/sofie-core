@@ -56,7 +56,7 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 
 	check(showStyleBaseId, String)
 
-	const showStyleBase = fetchShowStyleBaseLight(showStyleBaseId)
+	const showStyleBase = waitForPromise(fetchShowStyleBaseLight(showStyleBaseId))
 
 	let content = ''
 	try {

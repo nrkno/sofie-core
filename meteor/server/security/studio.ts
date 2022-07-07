@@ -116,7 +116,7 @@ export namespace StudioContentWriteAccess {
 	async function anyContent(cred0: Credentials, studioId: StudioId): Promise<StudioContentAccess> {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) {
-			const studio = fetchStudioLight(studioId)
+			const studio = await fetchStudioLight(studioId)
 			if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
 
 			return {

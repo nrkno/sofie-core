@@ -28,7 +28,7 @@ export async function saveEvaluation(
 	})
 
 	deferAsync(async () => {
-		const studio = fetchStudioLight(evaluation.studioId)
+		const studio = await fetchStudioLight(evaluation.studioId)
 		if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
 
 		const webhookUrls = _.compact((studio.settings.slackEvaluationUrls || '').split(','))

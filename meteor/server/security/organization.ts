@@ -61,7 +61,7 @@ export namespace OrganizationContentWriteAccess {
 		triggerWriteAccess()
 		if (existingStudio && isProtectedString(existingStudio)) {
 			const studioId = existingStudio
-			existingStudio = fetchStudioLight(studioId)
+			existingStudio = await fetchStudioLight(studioId)
 			if (!existingStudio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
 		}
 		return { ...(await anyContent(cred0, existingStudio)), studio: existingStudio }
@@ -112,7 +112,7 @@ export namespace OrganizationContentWriteAccess {
 		triggerWriteAccess()
 		if (existingShowStyleBase && isProtectedString(existingShowStyleBase)) {
 			const showStyleBaseId = existingShowStyleBase
-			existingShowStyleBase = fetchShowStyleBaseLight(showStyleBaseId)
+			existingShowStyleBase = await fetchShowStyleBaseLight(showStyleBaseId)
 			if (!existingShowStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found!`)
 		}
 		return { ...(await anyContent(cred0, existingShowStyleBase)), showStyleBase: existingShowStyleBase }

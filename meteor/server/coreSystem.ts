@@ -10,7 +10,7 @@ import {
 	compareSemverVersions,
 	isPrerelease,
 } from '../lib/collections/CoreSystem'
-import { getCurrentTime, unprotectString, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, unprotectString, waitForPromise, waitForPromiseAll } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from './migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './migration/currentSystemVersion'
@@ -152,9 +152,11 @@ function checkDatabaseVersions() {
 				}
 
 				const studioIds: { [studioId: string]: true } = {}
-				fetchShowStyleBasesLight({
-					blueprintId: blueprint._id,
-				}).forEach((showStyleBase) => {
+				waitForPromise(
+					fetchShowStyleBasesLight({
+						blueprintId: blueprint._id,
+					})
+				).forEach((showStyleBase) => {
 					if (o.statusCode === StatusCode.GOOD) {
 						o = compareSemverVersions(
 							parseVersion(blueprint.blueprintVersion),
