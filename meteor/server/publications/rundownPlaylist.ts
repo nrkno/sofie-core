@@ -16,7 +16,7 @@ meteorPublish(PubSub.rundownPlaylists, async function (selector0, token) {
 		NoSecurityReadAccess.any() ||
 		(selector.organizationId && OrganizationReadAccess.organizationContent(selector, cred)) ||
 		(selector.studioId && StudioReadAccess.studioContent(selector, cred)) ||
-		(isProtectedString(selector._id) && RundownPlaylistReadAccess.rundownPlaylist(selector._id, cred))
+		(isProtectedString(selector._id) && (await RundownPlaylistReadAccess.rundownPlaylist(selector._id, cred)))
 	) {
 		return RundownPlaylists.find(selector, modifier)
 	}

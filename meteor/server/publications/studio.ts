@@ -50,7 +50,7 @@ meteorPublish(PubSub.studios, async function (selector0, token) {
 	return null
 })
 meteorPublish(PubSub.studioOfDevice, async function (deviceId: PeripheralDeviceId, token) {
-	if (PeripheralDeviceReadAccess.peripheralDevice({ _id: deviceId }, { userId: this.userId, token })) {
+	if (PeripheralDeviceReadAccess.peripheralDevice(deviceId, { userId: this.userId, token })) {
 		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')

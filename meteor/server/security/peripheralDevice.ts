@@ -4,7 +4,7 @@ import { PeripheralDeviceId, PeripheralDevice, PeripheralDevices } from '../../l
 import { isProtectedString } from '../../lib/lib'
 import { logNotAllowed } from './lib/lib'
 import { MediaWorkFlows, MediaWorkFlow, MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
-import { MongoQuery, UserId } from '../../lib/typings/meteor'
+import { MongoQuery, MongoQueryKey, UserId } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { allowAccessToPeripheralDevice, allowAccessToPeripheralDeviceContent } from './lib/security'
 import { OrganizationId } from '../../lib/collections/Organization'
@@ -15,13 +15,14 @@ import { StudioContentWriteAccess } from './studio'
 
 type PeripheralDeviceContent = { deviceId: PeripheralDeviceId }
 export namespace PeripheralDeviceReadAccess {
+	/** Check for read access for a peripheral device */
 	export function peripheralDevice(
-		selector: MongoQuery<{ _id: PeripheralDeviceId }>,
+		deviceId: MongoQueryKey<PeripheralDeviceId>,
 		cred: Credentials | ResolvedCredentials
 	): boolean {
-		return peripheralDeviceContent({ deviceId: selector._id }, cred)
+		return peripheralDeviceContent({ deviceId }, cred)
 	}
-	/** Handles read access for all peripheraldevice content (commands, mediaWorkFlows, etc..) */
+	/** Check for read access for all peripheraldevice content (commands, mediaWorkFlows, etc..) */
 	export function peripheralDeviceContent(
 		selector: MongoQuery<PeripheralDeviceContent>,
 		cred: Credentials | ResolvedCredentials
@@ -55,7 +56,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 	/**
 	 * Check if a user is allowed to execute a PeripheralDevice function in a Studio
 	 */
-	export function executeFunction(cred0: Credentials, deviceId: PeripheralDeviceId) {
+	export function executeFunction(cred0: Credentials, deviceId: PeripheralDeviceId): ContentAccess {
 		const device = PeripheralDevices.findOne(deviceId)
 		if (!device || !device.studioId) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 
@@ -66,14 +67,18 @@ export namespace PeripheralDeviceContentWriteAccess {
 
 		return {
 			...access,
+			deviceId: device._id,
 			device,
 		}
 	}
 
+	/** Check for permission to modify a peripheralDevice */
 	export function peripheralDevice(cred0: Credentials, deviceId: PeripheralDeviceId) {
 		backwardsCompatibilityfix(cred0, deviceId)
 		return anyContent(cred0, deviceId)
 	}
+
+	/** Check for permission to modify a mediaWorkFlow */
 	export function mediaWorkFlow(
 		cred0: Credentials,
 		existingWorkFlow: MediaWorkFlow | MediaWorkFlowId
@@ -88,8 +93,9 @@ export namespace PeripheralDeviceContentWriteAccess {
 		backwardsCompatibilityfix(cred0, existingWorkFlow.deviceId)
 		return { ...anyContent(cred0, existingWorkFlow.deviceId), mediaWorkFlow: existingWorkFlow }
 	}
+
 	/** Return credentials if writing is allowed, throw otherwise */
-	export function anyContent(cred0: Credentials, deviceId: PeripheralDeviceId): ContentAccess {
+	function anyContent(cred0: Credentials, deviceId: PeripheralDeviceId): ContentAccess {
 		const span = profiler.startSpan('PeripheralDeviceContentWriteAccess.anyContent')
 		triggerWriteAccess()
 		check(deviceId, String)

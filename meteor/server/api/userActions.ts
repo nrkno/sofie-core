@@ -786,7 +786,7 @@ class ServerUserActionAPI
 				check(deviceId, String)
 				check(workId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, deviceId)
+				const access = PeripheralDeviceContentWriteAccess.executeFunction(this, deviceId)
 				return PackageManagerAPI.restartExpectation(access, workId)
 			}
 		)
@@ -801,7 +801,7 @@ class ServerUserActionAPI
 			async () => {
 				check(studioId, String)
 
-				const access = StudioContentWriteAccess.anyContent(this, studioId)
+				const access = StudioContentWriteAccess.executeFunction(this, studioId)
 				return PackageManagerAPI.restartAllExpectationsInStudio(access)
 			}
 		)
@@ -822,7 +822,7 @@ class ServerUserActionAPI
 				check(deviceId, String)
 				check(workId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, deviceId)
+				const access = PeripheralDeviceContentWriteAccess.executeFunction(this, deviceId)
 				return PackageManagerAPI.abortExpectation(access, workId)
 			}
 		)
@@ -843,7 +843,7 @@ class ServerUserActionAPI
 				check(deviceId, String)
 				check(containerId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, deviceId)
+				const access = PeripheralDeviceContentWriteAccess.executeFunction(this, deviceId)
 				return PackageManagerAPI.restartPackageContainer(access, containerId)
 			}
 		)

@@ -153,22 +153,20 @@ export function allowAccessToStudio(
 		remove: false, // only allowed through methods
 	}
 }
-export function allowAccessToRundownPlaylist(
+export async function allowAccessToRundownPlaylist(
 	cred0: Credentials | ResolvedCredentials,
-	playlistId: MongoQueryKey<RundownPlaylistId>
-): Access<RundownPlaylist | null> {
+	playlistId: RundownPlaylistId
+): Promise<Access<RundownPlaylist | null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!playlistId) return noAccess('playlistId not set')
 	const cred = resolveCredentials(cred0)
 
-	const playlists = RundownPlaylists.find({
-		_id: playlistId,
-	}).fetch()
-	let access: Access<RundownPlaylist | null> = allAccess(null)
-	for (const playlist of playlists) {
-		access = combineAccess(access, AccessRules.accessRundownPlaylist(playlist, cred))
+	const playlist = RundownPlaylists.findOne(playlistId)
+	if (playlist) {
+		return AccessRules.accessRundownPlaylist(playlist, cred)
+	} else {
+		return allAccess(null)
 	}
-	return access
 }
 export function allowAccessToRundown(
 	cred0: Credentials | ResolvedCredentials,

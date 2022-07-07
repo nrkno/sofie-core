@@ -15,16 +15,16 @@ import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-type RundownContent = { rundownId: RundownId }
 export namespace RundownReadAccess {
+	/** Check for read access to the rundown collection */
 	export function rundown(
 		selector: MongoQuery<{ _id: RundownId }>,
 		cred: Credentials | ResolvedCredentials
 	): boolean {
 		return rundownContent({ rundownId: selector._id }, cred)
 	}
-	/** Handles read access for all rundown content (segments, parts, pieces etc..) */
-	export function rundownContent<T extends RundownContent>(
+	/** Check for read access for all rundown content (segments, parts, pieces etc..) */
+	export function rundownContent<T extends { rundownId: RundownId }>(
 		selector: MongoQuery<T>,
 		cred: Credentials | ResolvedCredentials
 	): boolean {
@@ -37,6 +37,7 @@ export namespace RundownReadAccess {
 
 		return true
 	}
+	/** Check for read access for segments in a rundown */
 	export function segments(selector: MongoQuery<DBSegment>, cred: Credentials): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
@@ -50,7 +51,8 @@ export namespace RundownReadAccess {
 
 		return true
 	}
-	export function pieces<T extends RundownContent>(selector: MongoQuery<T>, cred: Credentials): boolean {
+	/** Check for read access for pieces in a rundown */
+	export function pieces<T extends { rundownId: RundownId }>(selector: MongoQuery<T>, cred: Credentials): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector.rundownId) throw new Meteor.Error(400, 'selector must contain rundownId')
@@ -60,6 +62,7 @@ export namespace RundownReadAccess {
 
 		return true
 	}
+	/** Check for read access for exoected media items in a rundown */
 	export function expectedMediaItems(selector: Mongo.Query<ExpectedMediaItem> | any, cred: Credentials) {
 		check(selector, Object)
 		if (selector.mediaFlowId) {
@@ -89,6 +92,8 @@ export namespace RundownReadAccess {
 			return true
 		}
 	}
+
+	/** Check for read access to expectedPlayoutItems */
 	export function expectedPlayoutItems(selector: Mongo.Query<ExpectedPlayoutItem> | any, cred: Credentials) {
 		check(selector, Object)
 		check(selector.studioId, String)
@@ -112,7 +117,7 @@ export namespace RundownReadAccess {
 		}
 	}
 }
-export function rundownContentAllowWrite(userId: UserId, doc: RundownContent): boolean {
+export function rundownContentAllowWrite(userId: UserId, doc: { rundownId: RundownId }): boolean {
 	triggerWriteAccess()
 	const access = allowAccessToRundown({ userId: userId }, doc.rundownId)
 	if (!access.update) return logNotAllowed('Rundown content', access.reason)

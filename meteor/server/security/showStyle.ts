@@ -16,13 +16,15 @@ import { SystemWriteAccess } from './system'
 import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../../lib/collections/optimizations'
 
 export namespace ShowStyleReadAccess {
+	/** Handles read access for all showstyle document */
 	export function showStyleBase(
 		selector: MongoQuery<{ _id: ShowStyleBaseId }>,
 		cred: Credentials | ResolvedCredentials
 	): boolean {
 		return showStyleBaseContent({ showStyleBaseId: selector._id }, cred)
 	}
-	/** Handles read access for all studioId content */
+
+	/** Handles read access for all showstyle content */
 	export function showStyleBaseContent<T extends { showStyleBaseId: ShowStyleBaseId | null }>(
 		selector: MongoQuery<T>,
 		cred: Credentials | ResolvedCredentials
@@ -37,6 +39,8 @@ export namespace ShowStyleReadAccess {
 
 		return true
 	}
+
+	/** Check for read access to the showstyle variants */
 	export function showStyleVariant(
 		selector: MongoQuery<{ _id: ShowStyleVariantId }>,
 		cred: Credentials | ResolvedCredentials
@@ -54,6 +58,7 @@ export namespace ShowStyleReadAccess {
 export namespace ShowStyleContentWriteAccess {
 	// These functions throws if access is not allowed.
 
+	/** Check permissions for write access to a showStyleVariant */
 	export function showStyleVariant(cred0: Credentials, existingVariant: ShowStyleVariant | ShowStyleVariantId) {
 		triggerWriteAccess()
 		if (existingVariant && isProtectedString(existingVariant)) {
@@ -64,6 +69,7 @@ export namespace ShowStyleContentWriteAccess {
 		}
 		return { ...anyContent(cred0, existingVariant.showStyleBaseId), showStyleVariant: existingVariant }
 	}
+	/** Check permissions for write access to a rundownLayout */
 	export function rundownLayout(cred0: Credentials, existingLayout: RundownLayoutBase | RundownLayoutId) {
 		triggerWriteAccess()
 		if (existingLayout && isProtectedString(existingLayout)) {
@@ -74,6 +80,7 @@ export namespace ShowStyleContentWriteAccess {
 		}
 		return { ...anyContent(cred0, existingLayout.showStyleBaseId), rundownLayout: existingLayout }
 	}
+	/** Check permissions for write access to a triggeredAction */
 	export function triggeredActions(
 		cred0: Credentials,
 		existingTriggeredAction: TriggeredActionsObj | TriggeredActionId
