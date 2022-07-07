@@ -92,3 +92,10 @@
 .segment-opl__main-piece + .segment-opl__main-piece.invalid {
 	background-color: transparent;
 }
+
+.segment-opl__part.segment-opl__part--next
+	> .segment-opl__part-timeline
+	> .segment-opl__main-piece
+	> .segment-opl__main-piece__label {
+	left: 3em;
+}

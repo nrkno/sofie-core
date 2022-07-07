@@ -15,6 +15,6 @@
 	z-index: 1;
 }
 
-.segment-opl__timeline-flag.segment-opl__take-line.auto + .segment-opl__transition-piece {
+.segment-opl__timeline-flag.segment-opl__take-line:not(.next).auto + .segment-opl__transition-piece {
 	top: 0.75em;
 }
