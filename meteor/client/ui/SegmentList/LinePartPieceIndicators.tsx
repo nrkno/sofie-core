@@ -1,6 +1,7 @@
 import React from 'react'
 import { ISourceLayerExtended, PieceExtended } from '../../../lib/Rundown'
 import { LinePartPieceIndicator } from './LinePartPieceIndicator/LinePartPieceIndicator'
+import { LinePartScriptPiece } from './LinePartPieceIndicator/LinePartScriptPiece'
 
 interface IProps {
 	pieces: PieceExtended[]
@@ -13,6 +14,7 @@ export const LinePartPieceIndicators: React.FC<IProps> = function LinePartPieceI
 }) {
 	return (
 		<div className="segment-opl__piece-indicators">
+			<LinePartScriptPiece pieces={pieces} />
 			{Object.entries(indicatorColumns).map(([label, sourceLayers]) => (
 				<LinePartPieceIndicator key={label} label={label} sourceLayers={sourceLayers} pieces={pieces} />
 			))}

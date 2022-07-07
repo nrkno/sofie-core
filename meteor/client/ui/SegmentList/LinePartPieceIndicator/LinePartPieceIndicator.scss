@@ -17,9 +17,9 @@
 		overflow: hidden;
 		border-radius: 3px;
 		box-sizing: border-box;
-		font-style: italic;
 		font-weight: 400;
 		text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
+		white-space: nowrap;
 
 		background: #33333333;
 
@@ -47,6 +47,23 @@
 			filter: none;
 			left: 0;
 			box-shadow: 0 0 2px black;
+		}
+	}
+
+	&.segment-opl__piece-indicator-placeholder--script {
+		width: 8em;
+		flex-basis: 8em;
+		overflow: hidden;
+		text-overflow: clip;
+
+		> .segment-opl__piece-indicator--script {
+			text-align: right;
+			direction: rtl;
+			font-style: italic;
+			font-weight: 300;
+			padding: 0 0.3em;
+			text-overflow: ellipsis;
+			overflow: hidden;
 		}
 	}
 }

@@ -57,7 +57,7 @@ const COLUMN_SUPPORTED_LAYER_TYPES: Set<SourceLayerType> = new Set([
 	SourceLayerType.AUDIO,
 	SourceLayerType.LOWER_THIRD,
 	// SourceLayerType.METADATA,
-	SourceLayerType.SCRIPT,
+	// SourceLayerType.SCRIPT, // No longer on the list of supported columns, since that's been moved to a specialized component
 	// SourceLayerType.UNKNOWN,
 ])
 

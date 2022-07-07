@@ -77,7 +77,7 @@ $duration-area-margin: 0.5em;
 			display: grid;
 			min-height: $part-height;
 			grid-template-rows: minmax($part-height, auto);
-			grid-template-columns: [header] $segment-header-width [timeline] minmax(10em, 1fr) [piece-icons] 300px [end];
+			grid-template-columns: [header] $segment-header-width [timeline] minmax(10em, 1fr) [piece-icons] 430px [end];
 			grid-template-areas: 'header timeline piece-icons';
 
 			@include invalid-overlay();
