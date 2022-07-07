@@ -4,52 +4,51 @@ import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { logNotAllowed } from './lib/lib'
 import { ShowStyleVariants, ShowStyleVariantId, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { RundownLayouts, RundownLayoutId, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { MongoQuery, UserId } from '../../lib/typings/meteor'
+import { MongoQuery, MongoQueryKey, UserId } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { allowAccessToShowStyleBase, allowAccessToShowStyleVariant } from './lib/security'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { Settings } from '../../lib/Settings'
-import { isProtectedString, waitForPromise } from '../../lib/lib'
+import { isProtectedString } from '../../lib/lib'
 import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { SystemWriteAccess } from './system'
 import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../../lib/collections/optimizations'
 
 export namespace ShowStyleReadAccess {
 	/** Handles read access for all showstyle document */
-	export function showStyleBase(
+	export async function showStyleBase(
 		selector: MongoQuery<{ _id: ShowStyleBaseId }>,
 		cred: Credentials | ResolvedCredentials
-	): boolean {
+	): Promise<boolean> {
 		return showStyleBaseContent({ showStyleBaseId: selector._id }, cred)
 	}
 
 	/** Handles read access for all showstyle content */
-	export function showStyleBaseContent<T extends { showStyleBaseId: ShowStyleBaseId | null }>(
+	export async function showStyleBaseContent<T extends { showStyleBaseId: ShowStyleBaseId | null }>(
 		selector: MongoQuery<T>,
 		cred: Credentials | ResolvedCredentials
-	): boolean {
+	): Promise<boolean> {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector.showStyleBaseId || !isProtectedString(selector.showStyleBaseId))
 			throw new Meteor.Error(400, 'selector must contain showStyleBaseId')
 
-		const access = allowAccessToShowStyleBase(cred, selector.showStyleBaseId)
+		const access = await allowAccessToShowStyleBase(cred, selector.showStyleBaseId)
 		if (!access.read) return logNotAllowed('ShowStyleBase content', access.reason)
 
 		return true
 	}
 
 	/** Check for read access to the showstyle variants */
-	export function showStyleVariant(
-		selector: MongoQuery<{ _id: ShowStyleVariantId }>,
+	export async function showStyleVariant(
+		showStyleVariantId: MongoQueryKey<ShowStyleVariantId>,
 		cred: Credentials | ResolvedCredentials
-	): boolean {
-		check(selector, Object)
+	): Promise<boolean> {
 		if (!Settings.enableUserAccounts) return true
-		if (!selector._id) throw new Meteor.Error(400, 'selector must contain _id')
+		if (!showStyleVariantId) throw new Meteor.Error(400, 'selector must contain _id')
 
-		const access = allowAccessToShowStyleVariant(cred, selector._id)
+		const access = await allowAccessToShowStyleVariant(cred, showStyleVariantId)
 		if (!access.read) return logNotAllowed('ShowStyleVariant', access.reason)
 
 		return true
@@ -59,59 +58,59 @@ export namespace ShowStyleContentWriteAccess {
 	// These functions throws if access is not allowed.
 
 	/** Check permissions for write access to a showStyleVariant */
-	export function showStyleVariant(cred0: Credentials, existingVariant: ShowStyleVariant | ShowStyleVariantId) {
+	export async function showStyleVariant(cred0: Credentials, existingVariant: ShowStyleVariant | ShowStyleVariantId) {
 		triggerWriteAccess()
 		if (existingVariant && isProtectedString(existingVariant)) {
 			const variantId = existingVariant
-			const m = ShowStyleVariants.findOne(variantId)
+			const m = await ShowStyleVariants.findOneAsync(variantId)
 			if (!m) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found!`)
 			existingVariant = m
 		}
-		return { ...anyContent(cred0, existingVariant.showStyleBaseId), showStyleVariant: existingVariant }
+		return { ...(await anyContent(cred0, existingVariant.showStyleBaseId)), showStyleVariant: existingVariant }
 	}
 	/** Check permissions for write access to a rundownLayout */
-	export function rundownLayout(cred0: Credentials, existingLayout: RundownLayoutBase | RundownLayoutId) {
+	export async function rundownLayout(cred0: Credentials, existingLayout: RundownLayoutBase | RundownLayoutId) {
 		triggerWriteAccess()
 		if (existingLayout && isProtectedString(existingLayout)) {
 			const layoutId = existingLayout
-			const m = RundownLayouts.findOne(layoutId)
+			const m = await RundownLayouts.findOneAsync(layoutId)
 			if (!m) throw new Meteor.Error(404, `RundownLayout "${layoutId}" not found!`)
 			existingLayout = m
 		}
-		return { ...anyContent(cred0, existingLayout.showStyleBaseId), rundownLayout: existingLayout }
+		return { ...(await anyContent(cred0, existingLayout.showStyleBaseId)), rundownLayout: existingLayout }
 	}
 	/** Check permissions for write access to a triggeredAction */
-	export function triggeredActions(
+	export async function triggeredActions(
 		cred0: Credentials,
 		existingTriggeredAction: TriggeredActionsObj | TriggeredActionId
 	) {
 		triggerWriteAccess()
 		if (existingTriggeredAction && isProtectedString(existingTriggeredAction)) {
 			const layoutId = existingTriggeredAction
-			const m = TriggeredActions.findOne(layoutId)
+			const m = await TriggeredActions.findOneAsync(layoutId)
 			if (!m) throw new Meteor.Error(404, `RundownLayout "${layoutId}" not found!`)
 			existingTriggeredAction = m
 		}
 		if (existingTriggeredAction.showStyleBaseId) {
 			return {
-				...anyContent(cred0, existingTriggeredAction.showStyleBaseId),
+				...(await anyContent(cred0, existingTriggeredAction.showStyleBaseId)),
 				triggeredActions: existingTriggeredAction,
 			}
 		} else {
-			return waitForPromise(SystemWriteAccess.coreSystem(cred0))
+			return SystemWriteAccess.coreSystem(cred0)
 		}
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
-	export function anyContent(
+	export async function anyContent(
 		cred0: Credentials,
 		showStyleBaseId: ShowStyleBaseId
-	): {
+	): Promise<{
 		userId: UserId | null
 		organizationId: OrganizationId | null
 		showStyleBaseId: ShowStyleBaseId | null
 		showStyleBase: ShowStyleBaseLight | null
 		cred: ResolvedCredentials | Credentials
-	} {
+	}> {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) {
 			return {
@@ -122,10 +121,11 @@ export namespace ShowStyleContentWriteAccess {
 				cred: cred0,
 			}
 		}
-		const cred = resolveCredentials(cred0)
+		const cred = await resolveCredentials(cred0)
 		if (!cred.user) throw new Meteor.Error(403, `Not logged in`)
 		if (!cred.organizationId) throw new Meteor.Error(500, `User has no organization`)
-		const access = allowAccessToShowStyleBase(cred, showStyleBaseId)
+
+		const access = await allowAccessToShowStyleBase(cred, showStyleBaseId)
 		if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
 
 		return {

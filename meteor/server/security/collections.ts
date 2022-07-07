@@ -48,9 +48,9 @@ CoreSystem.allow({
 	insert(): boolean {
 		return false
 	},
-	update(userId, doc, fields, _modifier) {
-		const cred = resolveCredentials({ userId: userId })
-		const access = allowAccessToCoreSystem(cred)
+	async update(userId, doc, fields, _modifier) {
+		const cred = await resolveCredentials({ userId: userId })
+		const access = await allowAccessToCoreSystem(cred)
 		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
 		return allowOnlyFields(doc, fields, ['support', 'systemInfo', 'name', 'logLevel', 'apm', 'cron'])
 	},
@@ -62,8 +62,8 @@ Users.allow({
 	insert(_userId, _doc) {
 		return false
 	},
-	update(userId, doc, fields, _modifier) {
-		const access = SystemWriteAccess.currentUser(userId, { userId })
+	async update(userId, doc, fields, _modifier) {
+		const access = await SystemWriteAccess.currentUser(userId, { userId })
 		if (!access) return logNotAllowed('CurrentUser', '')
 		return rejectFields(doc, fields, [
 			'_id',
@@ -85,8 +85,8 @@ Organizations.allow({
 	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, _modifier) {
-		const access = allowAccessToOrganization({ userId: userId }, doc._id)
+	async update(userId, doc, fields, _modifier) {
+		const access = await allowAccessToOrganization({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('Organization', access.reason)
 		return allowOnlyFields(doc, fields, ['userRoles'])
 	},
@@ -152,18 +152,18 @@ RundownPlaylists.allow({
 	},
 })
 Studios.allow({
-	insert(userId, doc: Studio): boolean {
-		const access = allowAccessToStudio({ userId: userId }, doc._id)
+	async insert(userId, doc: Studio) {
+		const access = await allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.insert) return logNotAllowed('Studio', access.reason)
 		return true
 	},
-	update(userId, doc, fields, _modifier) {
-		const access = allowAccessToStudio({ userId: userId }, doc._id)
+	async update(userId, doc, fields, _modifier) {
+		const access = await allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('Studio', access.reason)
 		return rejectFields(doc, fields, ['_id'])
 	},
-	remove(userId, doc) {
-		const access = allowAccessToStudio({ userId: userId }, doc._id)
+	async remove(userId, doc) {
+		const access = await allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.remove) return logNotAllowed('Studio', access.reason)
 		return true
 	},
@@ -207,8 +207,8 @@ Buckets.allow({
 	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, _modifier) {
-		return StudioContentWriteAccess.bucket({ userId }, doc.studioId) && rejectFields(doc, fields, ['_id'])
+	async update(userId, doc, fields, _modifier) {
+		return (await StudioContentWriteAccess.bucket({ userId }, doc.studioId)) && rejectFields(doc, fields, ['_id'])
 	},
 	remove(_userId, _doc) {
 		return false
@@ -220,8 +220,8 @@ ShowStyleBases.allow({
 	insert(): boolean {
 		return false
 	},
-	update(userId, doc, fields) {
-		const access = allowAccessToShowStyleBase({ userId: userId }, doc._id)
+	async update(userId, doc, fields) {
+		const access = await allowAccessToShowStyleBase({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 		return rejectFields(doc, fields, ['_id'])
 	},
@@ -233,8 +233,8 @@ ShowStyleVariants.allow({
 	insert(): boolean {
 		return false
 	},
-	update(userId, doc, fields) {
-		const access = allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
+	async update(userId, doc, fields) {
+		const access = await allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
 		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 
 		return rejectFields(doc, fields, ['showStyleBaseId'])
@@ -247,8 +247,8 @@ RundownLayouts.allow({
 	insert(): boolean {
 		return false
 	},
-	update(userId, doc, fields) {
-		const access = allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
+	async update(userId, doc, fields) {
+		const access = await allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
 		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 		return rejectFields(doc, fields, ['_id', 'showStyleBaseId'])
 	},
@@ -260,15 +260,15 @@ TriggeredActions.allow({
 	insert(): boolean {
 		return false
 	},
-	update(userId, doc, fields) {
-		const cred = resolveCredentials({ userId: userId })
+	async update(userId, doc, fields) {
+		const cred = await resolveCredentials({ userId: userId })
 
 		if (doc.showStyleBaseId) {
-			const access = allowAccessToShowStyleBase(cred, doc.showStyleBaseId)
+			const access = await allowAccessToShowStyleBase(cred, doc.showStyleBaseId)
 			if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 			return rejectFields(doc, fields, ['_id'])
 		} else {
-			const access = allowAccessToCoreSystem(cred)
+			const access = await allowAccessToCoreSystem(cred)
 			if (!access.update) return logNotAllowed('CoreSystem', access.reason)
 			return rejectFields(doc, fields, ['_id'])
 		}

@@ -79,9 +79,10 @@ meteorPublish(PubSub.rundowns, async function (playlistIds, showStyleBaseIds, to
 
 	if (
 		NoSecurityReadAccess.any() ||
-		(selector.organizationId && OrganizationReadAccess.organizationContent(selector, cred)) ||
-		(selector.studioId && StudioReadAccess.studioContent(selector, cred)) ||
-		(selector.rundownId && RundownReadAccess.rundown(selector, cred))
+		(selector.organizationId &&
+			(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
+		(selector.studioId && (await StudioReadAccess.studioContent(selector.studioId, cred))) ||
+		(selector._id && (await RundownReadAccess.rundown(selector._id, cred)))
 	) {
 		return Rundowns.find(selector, modifier)
 	}
@@ -96,8 +97,9 @@ meteorPublish(PubSub.segments, async function (selector, token) {
 	}
 	if (
 		NoSecurityReadAccess.any() ||
-		(selector.rundownId && RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) ||
-		(selector._id && RundownReadAccess.segments(selector, { userId: this.userId, token }))
+		(selector.rundownId &&
+			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))) ||
+		(selector._id && (await RundownReadAccess.segments(selector._id, { userId: this.userId, token })))
 	) {
 		return Segments.find(selector, modifier)
 	}
@@ -122,8 +124,9 @@ meteorPublish(PubSub.parts, async function (rundownIds, token) {
 
 	if (
 		NoSecurityReadAccess.any() ||
-		(selector.rundownId && RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) ||
-		(selector._id && RundownReadAccess.pieces(selector, { userId: this.userId, token }))
+		(selector.rundownId &&
+			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))) // ||
+		// (selector._id && await RundownReadAccess.pieces(selector._id, { userId: this.userId, token })) // TODO - the types for this did not match
 	) {
 		return Parts.find(selector, modifier)
 	}
@@ -148,7 +151,10 @@ meteorPublish(PubSub.partInstances, async function (rundownIds, playlistActivati
 		reset: { $ne: true },
 	}
 
-	if (NoSecurityReadAccess.any() || RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (
+		NoSecurityReadAccess.any() ||
+		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+	) {
 		return PartInstances.find(selector, modifier)
 	}
 	return null
@@ -167,7 +173,10 @@ meteorPublish(PubSub.partInstancesSimple, async function (selector, token) {
 	// Enforce only not-reset
 	selector.reset = { $ne: true }
 
-	if (NoSecurityReadAccess.any() || RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (
+		NoSecurityReadAccess.any() ||
+		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+	) {
 		return PartInstances.find(selector, modifier)
 	}
 	return null
@@ -187,7 +196,8 @@ meteorPublish(PubSub.partInstancesForSegmentPlayout, async function (selector, t
 
 	if (
 		NoSecurityReadAccess.any() ||
-		(selector.segmentPlayoutId && RundownReadAccess.rundownContent(selector, { userId: this.userId, token }))
+		(selector.segmentPlayoutId &&
+			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token })))
 	) {
 		return PartInstances.find(selector, modifier)
 	}
@@ -205,7 +215,7 @@ meteorPublish(PubSub.pieces, async function (selector: MongoQuery<Piece>, token?
 	}
 	if (
 		NoSecurityReadAccess.any() ||
-		RundownReadAccess.rundownContent({ rundownId: selector.startRundownId }, { userId: this.userId, token })
+		(await RundownReadAccess.rundownContent(selector.startRundownId, { userId: this.userId, token }))
 	) {
 		return Pieces.find(selector, modifier)
 	}
@@ -221,7 +231,10 @@ meteorPublish(PubSub.adLibPieces, async function (selector, token) {
 			'content.timelineObjects': 0,
 		},
 	}
-	if (NoSecurityReadAccess.any() || RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (
+		NoSecurityReadAccess.any() ||
+		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+	) {
 		return AdLibPieces.find(selector, modifier)
 	}
 	return null
@@ -240,7 +253,10 @@ meteorPublish(PubSub.pieceInstances, async function (selector, token) {
 	// Enforce only not-reset
 	selector.reset = { $ne: true }
 
-	if (NoSecurityReadAccess.any() || RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (
+		NoSecurityReadAccess.any() ||
+		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+	) {
 		return PieceInstances.find(selector, modifier)
 	}
 	return null
@@ -264,14 +280,18 @@ meteorPublish(PubSub.pieceInstancesSimple, async function (selector, token) {
 	// Enforce only not-reset
 	selector.reset = { $ne: true }
 
-	if (NoSecurityReadAccess.any() || RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (
+		NoSecurityReadAccess.any() ||
+		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+	) {
 		return PieceInstances.find(selector, modifier)
 	}
 	return null
 })
 meteorPublish(PubSub.expectedMediaItems, async function (selector, token) {
 	const allowed =
-		NoSecurityReadAccess.any() || RundownReadAccess.expectedMediaItems(selector, { userId: this.userId, token })
+		NoSecurityReadAccess.any() ||
+		(await RundownReadAccess.expectedMediaItems(selector, { userId: this.userId, token }))
 	if (!allowed) {
 		return null
 	} else if (allowed === true) {
@@ -287,7 +307,8 @@ meteorPublish(PubSub.expectedMediaItems, async function (selector, token) {
 })
 meteorPublish(PubSub.expectedPlayoutItems, async function (selector, token) {
 	const allowed =
-		NoSecurityReadAccess.any() || RundownReadAccess.expectedPlayoutItems(selector, { userId: this.userId, token })
+		NoSecurityReadAccess.any() ||
+		(await RundownReadAccess.expectedPlayoutItems(selector, { userId: this.userId, token }))
 	if (!allowed) {
 		return null
 	} else if (allowed === true) {
@@ -307,7 +328,10 @@ meteorPublish(PubSub.ingestDataCache, async function (selector, token) {
 	const modifier: FindOptions<IngestDataCacheObj> = {
 		fields: {},
 	}
-	if (NoSecurityReadAccess.any() || RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (
+		NoSecurityReadAccess.any() ||
+		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+	) {
 		return IngestDataCache.find(selector, modifier)
 	}
 	return null
@@ -322,7 +346,10 @@ meteorPublish(
 				'content.timelineObjects': 0,
 			},
 		}
-		if (NoSecurityReadAccess.any() || RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+		if (
+			NoSecurityReadAccess.any() ||
+			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+		) {
 			return RundownBaselineAdLibPieces.find(selector, modifier)
 		}
 		return null
@@ -333,7 +360,10 @@ meteorPublish(PubSub.adLibActions, async function (selector, token) {
 	const modifier: FindOptions<AdLibAction> = {
 		fields: {},
 	}
-	if (NoSecurityReadAccess.any() || RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (
+		NoSecurityReadAccess.any() ||
+		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+	) {
 		return AdLibActions.find(selector, modifier)
 	}
 	return null
@@ -343,7 +373,10 @@ meteorPublish(PubSub.rundownBaselineAdLibActions, async function (selector, toke
 	const modifier: FindOptions<RundownBaselineAdLibAction> = {
 		fields: {},
 	}
-	if (NoSecurityReadAccess.any() || RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (
+		NoSecurityReadAccess.any() ||
+		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+	) {
 		return RundownBaselineAdLibActions.find(selector, modifier)
 	}
 	return null

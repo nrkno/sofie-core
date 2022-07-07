@@ -30,7 +30,7 @@ export async function insertBlueprint(
 	type?: BlueprintManifestType,
 	name?: string
 ): Promise<BlueprintId> {
-	const { organizationId, cred } = OrganizationContentWriteAccess.blueprint(methodContext)
+	const { organizationId, cred } = await OrganizationContentWriteAccess.blueprint(methodContext)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (!cred.user || !cred.user.superAdmin) {
 			throw new Meteor.Error(401, 'Only super admins can create new blueprints')
@@ -64,7 +64,7 @@ export async function insertBlueprint(
 }
 export async function removeBlueprint(methodContext: MethodContext, blueprintId: BlueprintId): Promise<void> {
 	check(blueprintId, String)
-	OrganizationContentWriteAccess.blueprint(methodContext, blueprintId, true)
+	await OrganizationContentWriteAccess.blueprint(methodContext, blueprintId, true)
 	if (!blueprintId) throw new Meteor.Error(404, `Blueprint id "${blueprintId}" was not found`)
 
 	await Blueprints.removeAsync(blueprintId)
@@ -83,7 +83,7 @@ export async function uploadBlueprint(
 	check(blueprintName, Match.Maybe(String))
 
 	// TODO: add access control here
-	const { organizationId } = OrganizationContentWriteAccess.blueprint(context, blueprintId, true)
+	const { organizationId } = await OrganizationContentWriteAccess.blueprint(context, blueprintId, true)
 	if (!Meteor.isTest) logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	if (!blueprintId) throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)
@@ -258,10 +258,7 @@ async function assignSystemBlueprint(methodContext: MethodContext, blueprintId: 
 		if (!blueprint) throw new Meteor.Error(404, 'Blueprint not found')
 
 		if (blueprint.organizationId)
-			OrganizationReadAccess.organizationContent(
-				{ organizationId: blueprint.organizationId },
-				{ userId: methodContext.userId }
-			)
+			await OrganizationReadAccess.organizationContent(blueprint.organizationId, { userId: methodContext.userId })
 
 		if (blueprint.blueprintType !== BlueprintManifestType.SYSTEM)
 			throw new Meteor.Error(404, 'Blueprint not of type SYSTEM')

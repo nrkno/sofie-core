@@ -303,9 +303,7 @@ meteorCustomPublishArray(
 		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 		token: string | undefined
 	) {
-		if (
-			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })
-		) {
+		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')

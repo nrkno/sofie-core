@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, getCurrentTime, protectString, stringifyError } from '../../../lib/lib'
+import { getHash, getCurrentTime, protectString, stringifyError, waitForPromise } from '../../../lib/lib'
 import { StudioId } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
@@ -70,9 +70,8 @@ export function checkAccessAndGetPeripheralDevice(
 ): PeripheralDevice {
 	const span = profiler.startSpan('lib.checkAccessAndGetPeripheralDevice')
 
-	const { device: peripheralDevice } = PeripheralDeviceContentWriteAccess.peripheralDevice(
-		{ userId: context.userId, token },
-		deviceId
+	const { device: peripheralDevice } = waitForPromise(
+		PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
 	)
 	if (!peripheralDevice) {
 		throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)

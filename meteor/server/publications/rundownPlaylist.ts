@@ -14,8 +14,9 @@ meteorPublish(PubSub.rundownPlaylists, async function (selector0, token) {
 	}
 	if (
 		NoSecurityReadAccess.any() ||
-		(selector.organizationId && OrganizationReadAccess.organizationContent(selector, cred)) ||
-		(selector.studioId && StudioReadAccess.studioContent(selector, cred)) ||
+		(selector.organizationId &&
+			(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
+		(selector.studioId && (await StudioReadAccess.studioContent(selector.studioId, cred))) ||
 		(isProtectedString(selector._id) && (await RundownPlaylistReadAccess.rundownPlaylist(selector._id, cred)))
 	) {
 		return RundownPlaylists.find(selector, modifier)

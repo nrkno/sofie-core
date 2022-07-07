@@ -79,12 +79,12 @@ export function requestResetPassword(email: string): boolean {
 	return true
 }
 
-export function removeUser(context: MethodContext) {
+export async function removeUser(context: MethodContext) {
 	triggerWriteAccess()
 	if (!context.userId) throw new Meteor.Error(403, `Not logged in`)
-	const access = SystemWriteAccess.currentUser(context.userId, context)
+	const access = await SystemWriteAccess.currentUser(context.userId, context)
 	if (!access) return logNotAllowed('Current user', 'Invalid user id or permissions')
-	Users.remove(context.userId)
+	await Users.removeAsync(context.userId)
 	return true
 }
 
@@ -96,7 +96,7 @@ class ServerUserAPI extends MethodContextAPI implements NewUserAPI {
 		return makePromise(() => requestResetPassword(email))
 	}
 	async removeUser() {
-		return makePromise(() => removeUser(this))
+		return removeUser(this)
 	}
 }
 

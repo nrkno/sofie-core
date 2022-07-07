@@ -15,8 +15,10 @@ meteorPublish(PubSub.buckets, async function (selector, _token) {
 		fields: {},
 	}
 	if (
-		(isProtectedString(selector.studioId) && selector.studioId && StudioReadAccess.studioContent(selector, this)) ||
-		(isProtectedString(selector._id) && selector._id && BucketSecurity.allowReadAccess(this, selector._id))
+		(isProtectedString(selector.studioId) &&
+			selector.studioId &&
+			(await StudioReadAccess.studioContent(selector.studioId, this))) ||
+		(isProtectedString(selector._id) && selector._id && (await BucketSecurity.allowReadAccess(this, selector._id)))
 	) {
 		return Buckets.find(selector, modifier)
 	}
@@ -28,7 +30,7 @@ meteorPublish(PubSub.bucketAdLibPieces, async function (selector, _token) {
 	const modifier: FindOptions<BucketAdLib> = {
 		fields: {},
 	}
-	if (isProtectedString(selector.bucketId) && BucketSecurity.allowReadAccess(this, selector.bucketId)) {
+	if (isProtectedString(selector.bucketId) && (await BucketSecurity.allowReadAccess(this, selector.bucketId))) {
 		return BucketAdLibs.find(selector, modifier)
 	}
 	return null
@@ -39,7 +41,7 @@ meteorPublish(PubSub.bucketAdLibActions, async function (selector, _token) {
 	const modifier: FindOptions<BucketAdLibAction> = {
 		fields: {},
 	}
-	if (isProtectedString(selector.bucketId) && BucketSecurity.allowReadAccess(this, selector.bucketId)) {
+	if (isProtectedString(selector.bucketId) && (await BucketSecurity.allowReadAccess(this, selector.bucketId))) {
 		return BucketAdLibActions.find(selector, modifier)
 	}
 	return null

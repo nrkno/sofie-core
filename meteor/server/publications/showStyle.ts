@@ -16,8 +16,9 @@ meteorPublish(PubSub.showStyleBases, async function (selector0, token) {
 	}
 	if (
 		NoSecurityReadAccess.any() ||
-		(selector.organizationId && OrganizationReadAccess.organizationContent(selector, cred)) ||
-		(selector._id && ShowStyleReadAccess.showStyleBase(selector, cred))
+		(selector.organizationId &&
+			(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
+		(selector._id && (await ShowStyleReadAccess.showStyleBase(selector, cred)))
 	) {
 		return ShowStyleBases.find(selector, modifier)
 	}
@@ -30,8 +31,8 @@ meteorPublish(PubSub.showStyleVariants, async function (selector0, token) {
 	}
 	if (
 		NoSecurityReadAccess.any() ||
-		(selector.showStyleBaseId && ShowStyleReadAccess.showStyleBaseContent(selector, cred)) ||
-		(selector._id && ShowStyleReadAccess.showStyleVariant(selector, cred))
+		(selector.showStyleBaseId && (await ShowStyleReadAccess.showStyleBaseContent(selector, cred))) ||
+		(selector._id && (await ShowStyleReadAccess.showStyleVariant(selector._id, cred)))
 	) {
 		return ShowStyleVariants.find(selector, modifier)
 	}
@@ -43,7 +44,7 @@ meteorPublish(PubSub.rundownLayouts, async function (selector0, token) {
 	const modifier: FindOptions<RundownLayoutBase> = {
 		fields: {},
 	}
-	if (ShowStyleReadAccess.showStyleBaseContent(selector, cred)) {
+	if (await ShowStyleReadAccess.showStyleBaseContent(selector, cred)) {
 		return RundownLayouts.find(selector, modifier)
 	}
 	return null
@@ -56,7 +57,7 @@ meteorPublish(PubSub.triggeredActions, async function (selector0, token) {
 	}
 	if (
 		NoSecurityReadAccess.any() ||
-		(selector.showStyleBaseId && ShowStyleReadAccess.showStyleBaseContent(selector, cred))
+		(selector.showStyleBaseId && (await ShowStyleReadAccess.showStyleBaseContent(selector, cred)))
 	) {
 		return TriggeredActions.find(selector, modifier)
 	}

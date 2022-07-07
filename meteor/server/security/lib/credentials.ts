@@ -1,5 +1,5 @@
 import { UserId, User, Users } from '../../../lib/collections/Users'
-import { OrganizationId, Organizations } from '../../../lib/collections/Organization'
+import { DBOrganization, OrganizationId, Organizations } from '../../../lib/collections/Organization'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { cacheResult, isProtectedString, clearCacheResult } from '../../../lib/lib'
 import { LIMIT_CACHE_TIME } from './security'
@@ -43,7 +43,7 @@ export interface ResolvedPeripheralDeviceCredentials {
 export async function resolveAuthenticatedPeripheralDevice(
 	cred: Credentials
 ): Promise<ResolvedPeripheralDeviceCredentials | null> {
-	const resolved = resolveCredentials({ userId: null, token: cred.token })
+	const resolved = await resolveCredentials({ userId: null, token: cred.token })
 
 	if (resolved.device && resolved.organizationId) {
 		return {
@@ -61,7 +61,7 @@ export async function resolveAuthenticatedPeripheralDevice(
  * @returns null if the user was not found
  */
 export async function resolveAuthenticatedUser(cred: Credentials): Promise<ResolvedUserCredentials | null> {
-	const resolved = resolveCredentials({ userId: cred.userId })
+	const resolved = await resolveCredentials({ userId: cred.userId })
 
 	if (resolved.user && resolved.organizationId) {
 		return {
@@ -78,7 +78,7 @@ export async function resolveAuthenticatedUser(cred: Credentials): Promise<Resol
  * Note: this requires that the provided UserId comes from an up-to-date location in meteor, it must not be from user input
  * @returns The resolved object. If the identifiers were invalid then this object will have no properties
  */
-export function resolveCredentials(cred: Credentials | ResolvedCredentials): ResolvedCredentials {
+export async function resolveCredentials(cred: Credentials | ResolvedCredentials): Promise<ResolvedCredentials> {
 	const span = profiler.startSpan('security.lib.credentials')
 
 	if (isResolvedCredentials(cred)) {
@@ -88,7 +88,7 @@ export function resolveCredentials(cred: Credentials | ResolvedCredentials): Res
 
 	const resolved = cacheResult(
 		credCacheName(cred),
-		() => {
+		async () => {
 			const resolved: ResolvedCredentials = {
 				organizationId: null,
 			}
@@ -98,13 +98,13 @@ export function resolveCredentials(cred: Credentials | ResolvedCredentials): Res
 
 			// Lookup user, using userId:
 			if (cred.userId && isProtectedString(cred.userId)) {
-				const user = Users.findOne(cred.userId, {
+				const user = (await Users.findOneAsync(cred.userId, {
 					fields: {
 						_id: 1,
 						organizationId: 1,
 						superAdmin: 1,
 					},
-				}) as ResolvedUser
+				})) as ResolvedUser
 				if (user) {
 					resolved.user = user
 					resolved.organizationId = user.organizationId
@@ -114,7 +114,7 @@ export function resolveCredentials(cred: Credentials | ResolvedCredentials): Res
 			if (cred.token) {
 				// TODO - token is not enforced to be unique and can be defined by a connecting gateway.
 				// This is rather flawed in the current model..
-				const device = PeripheralDevices.findOne(
+				const device = (await PeripheralDevices.findOneAsync(
 					{ token: cred.token },
 					{
 						fields: {
@@ -123,7 +123,7 @@ export function resolveCredentials(cred: Credentials | ResolvedCredentials): Res
 							token: 1,
 						},
 					}
-				) as ResolvedPeripheralDevice
+				)) as ResolvedPeripheralDevice
 				if (device) {
 					resolved.device = device
 					resolved.organizationId = device.organizationId
@@ -139,8 +139,10 @@ export function resolveCredentials(cred: Credentials | ResolvedCredentials): Res
 
 			// Make sure the organizationId is valid
 			if (resolved.organizationId) {
-				const orgCount = Organizations.find(resolved.organizationId).count()
-				if (orgCount === 0) {
+				const org = (await Organizations.findOneAsync(resolved.organizationId, {
+					fields: { _id: 1 },
+				})) as Pick<DBOrganization, '_id'> | undefined
+				if (org) {
 					resolved.organizationId = null
 				}
 			}

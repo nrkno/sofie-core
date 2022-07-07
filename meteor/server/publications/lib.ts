@@ -58,7 +58,7 @@ export namespace AutoFillSelector {
 		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
 		if (Settings.enableUserAccounts) {
 			if (!selector.organizationId) {
-				cred = resolveCredentials(cred)
+				cred = await resolveCredentials(cred)
 				if (cred.organizationId) selector.organizationId = cred.organizationId as any
 				// TODO - should this block all access if cred.organizationId is not set
 			}
@@ -79,7 +79,7 @@ export namespace AutoFillSelector {
 		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
 		if (Settings.enableUserAccounts) {
 			if (!selector.deviceId) {
-				cred = resolveCredentials(cred)
+				cred = await resolveCredentials(cred)
 				if (cred.organizationId) {
 					const devices = (await PeripheralDevices.findFetchAsync(
 						{
@@ -109,7 +109,7 @@ export namespace AutoFillSelector {
 		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
 		if (Settings.enableUserAccounts) {
 			if (!selector.showStyleBaseId) {
-				cred = resolveCredentials({ userId: userId, token })
+				cred = await resolveCredentials({ userId: userId, token })
 				if (cred.organizationId) {
 					const showStyleBases = (await ShowStyleBases.findFetchAsync(
 						{

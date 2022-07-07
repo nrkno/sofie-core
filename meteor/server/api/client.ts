@@ -210,7 +210,7 @@ export namespace ServerClientAPI {
 					return rewrapError(methodName, e)
 				}
 			} else {
-				const credentials = getLoggedInCredentials(context)
+				const credentials = await getLoggedInCredentials(context)
 
 				// Start the db entry, but don't wait for it
 				const actionId: UserActionsLogItemId = getRandomId()
@@ -325,7 +325,7 @@ export namespace ServerClientAPI {
 			})
 		}
 
-		const access = PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+		const access = await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
 
 		await UserActionsLog.insertAsync(
 			literal<UserActionsLogItem>({
@@ -368,11 +368,11 @@ export namespace ServerClientAPI {
 				return Promise.reject(err)
 			})
 	}
-	function getLoggedInCredentials(methodContext: MethodContext): BasicAccessContext {
+	async function getLoggedInCredentials(methodContext: MethodContext): Promise<BasicAccessContext> {
 		let userId: UserId | null = null
 		let organizationId: OrganizationId | null = null
 		if (Settings.enableUserAccounts) {
-			const cred = resolveCredentials({ userId: methodContext.userId })
+			const cred = await resolveCredentials({ userId: methodContext.userId })
 			if (cred.user) userId = cred.user._id
 			organizationId = cred.organizationId
 		}

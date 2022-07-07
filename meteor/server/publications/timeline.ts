@@ -30,7 +30,7 @@ meteorPublish(PubSub.timeline, async function (selector, token) {
 	const modifier: FindOptions<TimelineComplete> = {
 		fields: {},
 	}
-	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
+	if (await StudioReadAccess.studioContent(selector._id, { userId: this.userId, token })) {
 		return Timeline.find(selector, modifier)
 	}
 	return null
@@ -40,9 +40,7 @@ meteorCustomPublishArray(
 	PubSub.timelineForDevice,
 	'studioTimeline',
 	async function (pub, deviceId: PeripheralDeviceId, token) {
-		if (
-			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })
-		) {
+		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
@@ -56,7 +54,7 @@ meteorCustomPublishArray(
 )
 
 meteorCustomPublishArray(PubSub.timelineForStudio, 'studioTimeline', async function (pub, studioId: StudioId, token) {
-	if (StudioReadAccess.studio({ _id: studioId }, { userId: this.userId, token })) {
+	if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
 		await createObserverForTimelinePublication(pub, PubSub.timelineForStudio, studioId)
 	}
 })
