@@ -111,11 +111,10 @@ class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownN
 		if (!(await RundownPlaylistReadAccess.rundownPlaylistContent(playlistId, this)))
 			throw new Meteor.Error(401, 'Invalid access creditials for Segment Parts Notes')
 
-		rundownIds.forEach((rundownId) => {
-			if (!RundownReadAccess.rundownContent({ rundownId }, this)) {
-				throw new Meteor.Error(401, 'Invalid access creditials for Segment Parts Notes')
-			}
-		})
+		if (!RundownReadAccess.rundownContent({ $in: rundownIds }, this)) {
+			throw new Meteor.Error(401, 'Invalid access creditials for Segment Parts Notes')
+		}
+
 		return makePromise(() => getSegmentPartNotes.apply(this, [playlistId, rundownIds]))
 	}
 	async getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
@@ -124,11 +123,10 @@ class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownN
 		return cacheResultAsync(
 			`getMediaObjectIssues${rundownIds.join(',')}`,
 			async () => {
-				rundownIds.forEach((rundownId) => {
-					if (!RundownReadAccess.rundownContent({ rundownId }, this)) {
-						throw new Meteor.Error(401, 'Invalid access creditials for Media Object Issues')
-					}
-				})
+				if (!RundownReadAccess.rundownContent({ $in: rundownIds }, this)) {
+					throw new Meteor.Error(401, 'Invalid access creditials for Media Object Issues')
+				}
+
 				return getMediaObjectIssues.apply(this, [rundownIds])
 			},
 			MEDIASTATUS_POLL_INTERVAL

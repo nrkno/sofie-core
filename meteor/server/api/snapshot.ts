@@ -449,11 +449,11 @@ async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Pro
 		if (snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
 			if (!snapshot.studioId)
 				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but hase no studioId`)
-			StudioContentWriteAccess.dataFromSnapshot(cred0, snapshot.studioId)
+			await StudioContentWriteAccess.dataFromSnapshot(cred0, snapshot.studioId)
 		} else if (snapshot.type === SnapshotType.SYSTEM) {
 			if (!snapshot.organizationId)
 				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but has no organizationId`)
-			OrganizationContentWriteAccess.dataFromSnapshot(cred0, snapshot.organizationId)
+			await OrganizationContentWriteAccess.dataFromSnapshot(cred0, snapshot.organizationId)
 		} else {
 			await SystemWriteAccess.coreSystem(cred0)
 		}
@@ -583,7 +583,7 @@ export async function storeSystemSnapshot(
 	reason: string
 ): Promise<SnapshotId> {
 	if (!_.isNull(studioId)) check(studioId, String)
-	const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(context)
+	const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -622,7 +622,7 @@ export async function storeDebugSnapshot(
 	reason: string
 ): Promise<SnapshotId> {
 	check(studioId, String)
-	const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(context)
+	const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -631,7 +631,7 @@ export async function storeDebugSnapshot(
 }
 export async function restoreSnapshot(context: MethodContext, snapshotId: SnapshotId): Promise<void> {
 	check(snapshotId, String)
-	const { cred } = OrganizationContentWriteAccess.snapshot(context)
+	const { cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -640,7 +640,7 @@ export async function restoreSnapshot(context: MethodContext, snapshotId: Snapsh
 }
 export async function removeSnapshot(context: MethodContext, snapshotId: SnapshotId): Promise<void> {
 	check(snapshotId, String)
-	const { snapshot, cred } = OrganizationContentWriteAccess.snapshot(context, snapshotId)
+	const { snapshot, cred } = await OrganizationContentWriteAccess.snapshot(context, snapshotId)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -678,8 +678,8 @@ if (!Settings.enableUserAccounts) {
 			check(params.studioId, Match.Optional(String))
 
 			const cred0: Credentials = { userId: null, token: params.token }
-			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
-			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
+			const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(cred0)
+			await StudioReadAccess.studio(protectString(params.studioId), cred)
 
 			return createSystemSnapshot(protectString(params.studioId), organizationId)
 		})
@@ -690,10 +690,10 @@ if (!Settings.enableUserAccounts) {
 			check(params.full, Match.Optional(String))
 
 			const cred0: Credentials = { userId: null, token: params.token }
-			const { cred } = OrganizationContentWriteAccess.snapshot(cred0)
+			const { cred } = await OrganizationContentWriteAccess.snapshot(cred0)
 			const playlist = RundownPlaylists.findOne(protectString(params.playlistId))
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
-			StudioReadAccess.studioContent({ studioId: playlist.studioId }, cred)
+			await StudioReadAccess.studioContent(playlist.studioId, cred)
 
 			return createRundownPlaylistSnapshot(playlist, params.full === 'true')
 		})
@@ -710,8 +710,8 @@ if (!Settings.enableUserAccounts) {
 			check(params.studioId, String)
 
 			const cred0: Credentials = { userId: null, token: params.token }
-			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
-			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
+			const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(cred0)
+			await StudioReadAccess.studio(protectString(params.studioId), cred)
 
 			return createDebugSnapshot(protectString(params.studioId), organizationId)
 		})

@@ -357,7 +357,7 @@ CPU JSON stringifying:       ${avg.cpuStringifying} ms (${comparison.cpuStringif
 function getTranslationBundle(context: MethodContext, bundleId: TranslationsBundleId) {
 	check(bundleId, String)
 
-	OrganizationContentWriteAccess.anyContent(context)
+	waitForPromise(OrganizationContentWriteAccess.translationBundle(context))
 	return ClientAPI.responseSuccess(getTranslationBundleInner(bundleId))
 }
 

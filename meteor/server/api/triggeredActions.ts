@@ -149,7 +149,7 @@ function apiCreateTriggeredActions(
 		const access = waitForPromise(SystemWriteAccess.coreSystem(context))
 		if (!access) throw new Meteor.Error(403, `Core System settings not writable`)
 	} else {
-		const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
+		const access = waitForPromise(ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId))
 		if (!access) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found`)
 	}
 
@@ -158,7 +158,7 @@ function apiCreateTriggeredActions(
 function apiRemoveTriggeredActions(context: MethodContext, id: TriggeredActionId) {
 	check(id, String)
 
-	const access = ShowStyleContentWriteAccess.triggeredActions(context, id)
+	const access = waitForPromise(ShowStyleContentWriteAccess.triggeredActions(context, id))
 	const triggeredActions = typeof access === 'boolean' ? access : access.triggeredActions
 	if (!triggeredActions) throw new Meteor.Error(404, `Action Trigger "${id}" not found`)
 

@@ -516,7 +516,7 @@ class ServerUserActionAPI
 				check(showStyleBaseId, String)
 				check(ingestItem, Object)
 
-				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				const access = await BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.importAdlibToBucket(access, showStyleBaseId, undefined, ingestItem)
 			}
 		)
@@ -709,7 +709,7 @@ class ServerUserActionAPI
 			async () => {
 				check(workflowId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
+				const access = await PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
 				return MediaManagerAPI.restartWorkflow(access)
 			}
 		)
@@ -724,7 +724,7 @@ class ServerUserActionAPI
 			async () => {
 				check(workflowId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
+				const access = await PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
 				return MediaManagerAPI.abortWorkflow(access)
 			}
 		)
@@ -739,7 +739,7 @@ class ServerUserActionAPI
 			async () => {
 				check(workflowId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
+				const access = await PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
 				return MediaManagerAPI.prioritizeWorkflow(access)
 			}
 		)
@@ -752,7 +752,7 @@ class ServerUserActionAPI
 			'mediaRestartAllWorkflows',
 			[],
 			async () => {
-				const access = OrganizationContentWriteAccess.mediaWorkFlows(this)
+				const access = await OrganizationContentWriteAccess.mediaWorkFlows(this)
 				return MediaManagerAPI.restartAllWorkflows(access)
 			}
 		)
@@ -765,7 +765,7 @@ class ServerUserActionAPI
 			'mediaAbortAllWorkflows',
 			[],
 			async () => {
-				const access = OrganizationContentWriteAccess.mediaWorkFlows(this)
+				const access = await OrganizationContentWriteAccess.mediaWorkFlows(this)
 				return MediaManagerAPI.abortAllWorkflows(access)
 			}
 		)
@@ -786,7 +786,7 @@ class ServerUserActionAPI
 				check(deviceId, String)
 				check(workId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.executeFunction(this, deviceId)
+				const access = await PeripheralDeviceContentWriteAccess.executeFunction(this, deviceId)
 				return PackageManagerAPI.restartExpectation(access, workId)
 			}
 		)
@@ -801,7 +801,7 @@ class ServerUserActionAPI
 			async () => {
 				check(studioId, String)
 
-				const access = StudioContentWriteAccess.executeFunction(this, studioId)
+				const access = await StudioContentWriteAccess.executeFunction(this, studioId)
 				return PackageManagerAPI.restartAllExpectationsInStudio(access)
 			}
 		)
@@ -822,7 +822,7 @@ class ServerUserActionAPI
 				check(deviceId, String)
 				check(workId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.executeFunction(this, deviceId)
+				const access = await PeripheralDeviceContentWriteAccess.executeFunction(this, deviceId)
 				return PackageManagerAPI.abortExpectation(access, workId)
 			}
 		)
@@ -843,7 +843,7 @@ class ServerUserActionAPI
 				check(deviceId, String)
 				check(containerId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.executeFunction(this, deviceId)
+				const access = await PeripheralDeviceContentWriteAccess.executeFunction(this, deviceId)
 				return PackageManagerAPI.restartPackageContainer(access, containerId)
 			}
 		)
@@ -917,7 +917,7 @@ class ServerUserActionAPI
 			async () => {
 				check(bucketId, String)
 
-				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				const access = await BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.removeBucket(access)
 			}
 		)
@@ -938,7 +938,7 @@ class ServerUserActionAPI
 				check(bucketId, String)
 				check(bucketProps, Object)
 
-				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				const access = await BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.modifyBucket(access, bucketProps)
 			}
 		)
@@ -953,7 +953,7 @@ class ServerUserActionAPI
 			async () => {
 				check(bucketId, String)
 
-				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				const access = await BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.emptyBucket(access)
 			}
 		)
@@ -969,7 +969,7 @@ class ServerUserActionAPI
 				check(studioId, String)
 				check(name, String)
 
-				const access = StudioContentWriteAccess.bucket(this, studioId)
+				const access = await StudioContentWriteAccess.bucket(this, studioId)
 				return BucketsAPI.createNewBucket(access, name)
 			}
 		)
@@ -984,7 +984,7 @@ class ServerUserActionAPI
 			'bucketsRemoveBucketAdLib',
 			[adlibId],
 			async () => {
-				const access = BucketSecurity.allowWriteAccessPiece(this, adlibId)
+				const access = await BucketSecurity.allowWriteAccessPiece(this, adlibId)
 				return BucketsAPI.removeBucketAdLib(access)
 			}
 		)
@@ -999,7 +999,7 @@ class ServerUserActionAPI
 			async () => {
 				check(actionId, String)
 
-				const access = BucketSecurity.allowWriteAccessAction(this, actionId)
+				const access = await BucketSecurity.allowWriteAccessAction(this, actionId)
 				return BucketsAPI.removeBucketAdLibAction(access)
 			}
 		)
@@ -1020,7 +1020,7 @@ class ServerUserActionAPI
 				check(adlibId, String)
 				check(adlibProps, Object)
 
-				const access = BucketSecurity.allowWriteAccessPiece(this, adlibId)
+				const access = await BucketSecurity.allowWriteAccessPiece(this, adlibId)
 				return BucketsAPI.modifyBucketAdLib(access, adlibProps)
 			}
 		)
@@ -1041,7 +1041,7 @@ class ServerUserActionAPI
 				check(actionId, String)
 				check(actionProps, Object)
 
-				const access = BucketSecurity.allowWriteAccessAction(this, actionId)
+				const access = await BucketSecurity.allowWriteAccessAction(this, actionId)
 				return BucketsAPI.modifyBucketAdLibAction(access, actionProps)
 			}
 		)
@@ -1064,7 +1064,7 @@ class ServerUserActionAPI
 				check(bucketId, String)
 				check(action, Object)
 
-				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				const access = await BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.saveAdLibActionIntoBucket(access, action)
 			}
 		)
@@ -1087,7 +1087,7 @@ class ServerUserActionAPI
 				check(routeSetId, String)
 				check(state, Boolean)
 
-				const access = StudioContentWriteAccess.routeSet(this, studioId)
+				const access = await StudioContentWriteAccess.routeSet(this, studioId)
 				return ServerPlayoutAPI.switchRouteSet(access, routeSetId, state)
 			}
 		)
@@ -1154,7 +1154,7 @@ class ServerUserActionAPI
 				check(subDeviceId, String)
 				check(disable, Boolean)
 
-				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, peripheralDeviceId)
+				const access = await PeripheralDeviceContentWriteAccess.peripheralDevice(this, peripheralDeviceId)
 				return ServerPeripheralDeviceAPI.disableSubDevice(access, subDeviceId, disable)
 			}
 		)

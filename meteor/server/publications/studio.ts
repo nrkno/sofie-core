@@ -42,15 +42,15 @@ meteorPublish(PubSub.studios, async function (selector0, token) {
 	}
 	if (
 		NoSecurityReadAccess.any() ||
-		(selector._id && StudioReadAccess.studio(selector, cred)) ||
-		(selector.organizationId && OrganizationReadAccess.organizationContent<DBStudio>(selector, cred))
+		(selector._id && (await StudioReadAccess.studio(selector._id, cred))) ||
+		(selector.organizationId && (await OrganizationReadAccess.organizationContent(selector.organizationId, cred)))
 	) {
 		return Studios.find(selector, modifier)
 	}
 	return null
 })
 meteorPublish(PubSub.studioOfDevice, async function (deviceId: PeripheralDeviceId, token) {
-	if (PeripheralDeviceReadAccess.peripheralDevice(deviceId, { userId: this.userId, token })) {
+	if (await PeripheralDeviceReadAccess.peripheralDevice(deviceId, { userId: this.userId, token })) {
 		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
@@ -60,7 +60,7 @@ meteorPublish(PubSub.studioOfDevice, async function (deviceId: PeripheralDeviceI
 		}
 
 		const studioId = peripheralDevice.studioId
-		if (StudioReadAccess.studioContent({ studioId }, { userId: this.userId, token })) {
+		if (studioId && (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token }))) {
 			return Studios.find(studioId, modifier)
 		}
 	}
@@ -72,7 +72,7 @@ meteorPublish(PubSub.externalMessageQueue, async function (selector, token) {
 	const modifier: FindOptions<ExternalMessageQueueObj> = {
 		fields: {},
 	}
-	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
+	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
 		return ExternalMessageQueue.find(selector, modifier)
 	}
 	return null
@@ -87,7 +87,7 @@ meteorPublish(PubSub.mediaObjects, async function (studioId, selector, token) {
 		fields: {},
 	}
 	selector.studioId = studioId
-	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
+	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
 		return MediaObjects.find(selector, modifier)
 	}
 	return null
@@ -98,7 +98,7 @@ meteorPublish(PubSub.expectedPackages, async function (selector, token) {
 	const modifier: FindOptions<ExpectedPackageDBBase> = {
 		fields: {},
 	}
-	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
+	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
 		return ExpectedPackages.find(selector, modifier)
 	}
 	return null
@@ -108,7 +108,7 @@ meteorPublish(PubSub.expectedPackageWorkStatuses, async function (selector, toke
 	const modifier: FindOptions<ExpectedPackageWorkStatus> = {
 		fields: {},
 	}
-	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
+	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
 		return ExpectedPackageWorkStatuses.find(selector, modifier)
 	}
 	return null
@@ -118,7 +118,7 @@ meteorPublish(PubSub.packageContainerStatuses, async function (selector, token) 
 	const modifier: FindOptions<ExpectedPackageWorkStatus> = {
 		fields: {},
 	}
-	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
+	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
 		return PackageContainerStatuses.find(selector, modifier)
 	}
 	return null
@@ -128,7 +128,7 @@ meteorPublish(PubSub.packageInfos, async function (selector, token) {
 	const modifier: FindOptions<ExpectedPackageWorkStatus> = {
 		fields: {},
 	}
-	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
+	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
 		return PackageInfos.find(selector, modifier)
 	}
 	return null
@@ -151,7 +151,7 @@ meteorPublish(
 		if (containerId) selector.containerId = containerId
 		if (packageId) selector.packageId = packageId
 
-		if (StudioReadAccess.studioContent(selector, { userId: this.userId })) {
+		if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId })) {
 			return PackageContainerPackageStatuses.find(selector, modifier)
 		}
 		return null
@@ -162,9 +162,7 @@ meteorCustomPublishArray(
 	PubSub.mappingsForDevice,
 	'studioMappings',
 	async function (pub, deviceId: PeripheralDeviceId, token) {
-		if (
-			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })
-		) {
+		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
@@ -178,7 +176,7 @@ meteorCustomPublishArray(
 )
 
 meteorCustomPublishArray(PubSub.mappingsForStudio, 'studioMappings', async function (pub, studioId: StudioId, token) {
-	if (StudioReadAccess.studio({ _id: studioId }, { userId: this.userId, token })) {
+	if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
 		await createObserverForMappingsPublication(pub, PubSub.mappingsForStudio, studioId)
 	}
 })

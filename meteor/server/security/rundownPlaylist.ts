@@ -104,7 +104,7 @@ export namespace RundownPlaylistContentWriteAccess {
 				cred: cred0,
 			}
 		}
-		const cred = resolveCredentials(cred0)
+		const cred = await resolveCredentials(cred0)
 		if (!cred.user) throw new Meteor.Error(403, `Not logged in`)
 		if (!cred.organizationId) throw new Meteor.Error(500, `User has no organization`)
 		const access = await allowAccessToRundownPlaylist(cred, playlistId)

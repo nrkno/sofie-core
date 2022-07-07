@@ -3,7 +3,7 @@ import { check } from '../../../lib/check'
 import { registerClassToMeteorMethods } from '../../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '../../../lib/api/studios'
 import { Studios, DBStudio, StudioId } from '../../../lib/collections/Studios'
-import { literal, getRandomId, makePromise, lazyIgnore } from '../../../lib/lib'
+import { literal, getRandomId, makePromise, lazyIgnore, waitForPromise } from '../../../lib/lib'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { MethodContextAPI, MethodContext } from '../../../lib/api/methods'
@@ -22,7 +22,7 @@ import { PackageContainerPackageStatuses } from '../../../lib/collections/Packag
 export function insertStudio(context: MethodContext | Credentials, newId?: StudioId): StudioId {
 	if (newId) check(newId, String)
 
-	const access = OrganizationContentWriteAccess.studio(context)
+	const access = waitForPromise(OrganizationContentWriteAccess.studio(context))
 	return insertStudioInner(access.organizationId, newId)
 }
 export function insertStudioInner(organizationId: OrganizationId | null, newId?: StudioId): StudioId {
@@ -52,7 +52,7 @@ export function insertStudioInner(organizationId: OrganizationId | null, newId?:
 }
 export function removeStudio(context: MethodContext, studioId: StudioId): void {
 	check(studioId, String)
-	const access = OrganizationContentWriteAccess.studio(context, studioId)
+	const access = waitForPromise(OrganizationContentWriteAccess.studio(context, studioId))
 	const studio = access.studio
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
 

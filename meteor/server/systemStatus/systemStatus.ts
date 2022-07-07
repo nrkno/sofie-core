@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, Time, getRandomId, assertNever, literal } from '../../lib/lib'
+import { getCurrentTime, Time, getRandomId, assertNever, literal, waitForPromise } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	parseVersion,
@@ -179,7 +179,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 export function getSystemStatus(cred0: Credentials, studioId?: StudioId): StatusResponse {
 	const checks: Array<CheckObj> = []
 
-	SystemReadAccess.systemStatus(cred0)
+	waitForPromise(SystemReadAccess.systemStatus(cred0))
 
 	// Check systemStatuses:
 	_.each(systemStatuses, (status: StatusObjectInternal, key: string) => {
@@ -260,7 +260,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 	if (studioId) {
 		// Check status for a certain studio:
 
-		if (!StudioReadAccess.studioContent({ studioId: studioId }, cred0)) {
+		if (!waitForPromise(StudioReadAccess.studioContent(studioId, cred0))) {
 			throw new Meteor.Error(403, `Not allowed`)
 		}
 		devices = PeripheralDevices.find({ studioId: studioId }).fetch()
@@ -268,9 +268,9 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 		if (Settings.enableUserAccounts) {
 			// Check status for the user's studios:
 
-			const cred = resolveCredentials(cred0)
+			const cred = waitForPromise(resolveCredentials(cred0))
 			if (!cred.organizationId) throw new Meteor.Error(500, 'user has no organization')
-			if (!OrganizationReadAccess.organizationContent({ organizationId: cred.organizationId }, cred)) {
+			if (!waitForPromise(OrganizationReadAccess.organizationContent(cred.organizationId, cred))) {
 				throw new Meteor.Error(403, `Not allowed`)
 			}
 			devices = PeripheralDevices.find({ organizationId: cred.organizationId }).fetch()

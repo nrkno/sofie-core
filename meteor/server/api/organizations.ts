@@ -68,7 +68,7 @@ export function createOrganization(organization: DBOrganizationBase): Organizati
 }
 
 export function removeOrganization(context: MethodContext, organizationId: OrganizationId) {
-	OrganizationContentWriteAccess.organization(context, organizationId)
+	waitForPromise(OrganizationContentWriteAccess.organization(context, organizationId))
 	const users = Users.find({ organizationId }).fetch()
 	users.forEach((user) => {
 		resetCredentials({ userId: user._id })

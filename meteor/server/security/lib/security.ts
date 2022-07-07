@@ -37,7 +37,7 @@ export function allowAccessToAnythingWhenSecurityDisabled(): Access<null> {
  * Check if access is allowed to the coreSystem collection
  * @param cred0 Credentials to check
  */
-export function allowAccessToCoreSystem(cred: ResolvedCredentials): Access<null> {
+export async function allowAccessToCoreSystem(cred: ResolvedCredentials): Promise<Access<null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 
 	return AccessRules.accessCoreSystem(cred)
@@ -47,13 +47,16 @@ export function allowAccessToCoreSystem(cred: ResolvedCredentials): Access<null>
  * Check if access is allowed to a User, and that user is the current User
  * @param cred0 Credentials to check
  */
-export function allowAccessToCurrentUser(cred0: Credentials | ResolvedCredentials, userId: UserId): Access<null> {
+export async function allowAccessToCurrentUser(
+	cred0: Credentials | ResolvedCredentials,
+	userId: UserId
+): Promise<Access<null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!userId) return noAccess('userId missing')
 	if (!isProtectedString(userId)) return noAccess('userId is not a string')
 
 	return {
-		...AccessRules.accessCurrentUser(cred0, userId),
+		...(await AccessRules.accessCurrentUser(cred0, userId)),
 		insert: false, // only allowed through methods
 		update: false, // only allowed through methods
 		remove: false, // only allowed through methods
@@ -64,7 +67,7 @@ export function allowAccessToCurrentUser(cred0: Credentials | ResolvedCredential
  * Check if access is allowed to the systemStatus collection
  * @param cred0 Credentials to check
  */
-export function allowAccessToSystemStatus(cred0: Credentials | ResolvedCredentials): Access<null> {
+export async function allowAccessToSystemStatus(cred0: Credentials | ResolvedCredentials): Promise<Access<null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 
 	return {
@@ -75,14 +78,14 @@ export function allowAccessToSystemStatus(cred0: Credentials | ResolvedCredentia
 	}
 }
 
-export function allowAccessToOrganization(
+export async function allowAccessToOrganization(
 	cred0: Credentials | ResolvedCredentials,
 	organizationId: OrganizationId | null
-): Access<DBOrganization | null> {
+): Promise<Access<DBOrganization | null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!organizationId) return noAccess('organizationId not set')
 	if (!isProtectedString(organizationId)) return noAccess('organizationId is not a string')
-	const cred = resolveCredentials(cred0)
+	const cred = await resolveCredentials(cred0)
 
 	const organization = Organizations.findOne(organizationId)
 	if (!organization) return noAccess('Organization not found')
@@ -93,13 +96,13 @@ export function allowAccessToOrganization(
 		remove: false, // only allowed through methods
 	}
 }
-export function allowAccessToShowStyleBase(
+export async function allowAccessToShowStyleBase(
 	cred0: Credentials | ResolvedCredentials,
 	showStyleBaseId: MongoQueryKey<ShowStyleBaseId>
-): Access<ShowStyleBaseLight | null> {
+): Promise<Access<ShowStyleBaseLight | null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!showStyleBaseId) return noAccess('showStyleBaseId not set')
-	const cred = resolveCredentials(cred0)
+	const cred = await resolveCredentials(cred0)
 
 	const showStyleBases = fetchShowStyleBasesLight({
 		_id: showStyleBaseId,
@@ -114,17 +117,17 @@ export function allowAccessToShowStyleBase(
 		remove: false, // only allowed through methods
 	}
 }
-export function allowAccessToShowStyleVariant(
+export async function allowAccessToShowStyleVariant(
 	cred0: Credentials | ResolvedCredentials,
 	showStyleVariantId: MongoQueryKey<ShowStyleVariantId>
-): Access<ShowStyleVariant | null> {
+): Promise<Access<ShowStyleVariant | null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!showStyleVariantId) return noAccess('showStyleVariantId not set')
-	const cred = resolveCredentials(cred0)
+	const cred = await resolveCredentials(cred0)
 
-	const showStyleVariants = ShowStyleVariants.find({
+	const showStyleVariants = await ShowStyleVariants.findFetchAsync({
 		_id: showStyleVariantId,
-	}).fetch()
+	})
 	const showStyleBaseIds = _.uniq(_.map(showStyleVariants, (v) => v.showStyleBaseId))
 	const showStyleBases = fetchShowStyleBasesLight({
 		_id: { $in: showStyleBaseIds },
@@ -135,14 +138,14 @@ export function allowAccessToShowStyleVariant(
 	}
 	return { ...access, document: _.last(showStyleVariants) || null }
 }
-export function allowAccessToStudio(
+export async function allowAccessToStudio(
 	cred0: Credentials | ResolvedCredentials,
 	studioId: StudioId
-): Access<StudioLight | null> {
+): Promise<Access<StudioLight | null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!studioId) return noAccess('studioId not set')
 	if (!isProtectedString(studioId)) return noAccess('studioId is not a string')
-	const cred = resolveCredentials(cred0)
+	const cred = await resolveCredentials(cred0)
 
 	const studio = fetchStudioLight(studioId)
 	if (!studio) return noAccess('Studio not found')
@@ -159,20 +162,20 @@ export async function allowAccessToRundownPlaylist(
 ): Promise<Access<RundownPlaylist | null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!playlistId) return noAccess('playlistId not set')
-	const cred = resolveCredentials(cred0)
+	const cred = await resolveCredentials(cred0)
 
-	const playlist = RundownPlaylists.findOne(playlistId)
+	const playlist = await RundownPlaylists.findOneAsync(playlistId)
 	if (playlist) {
 		return AccessRules.accessRundownPlaylist(playlist, cred)
 	} else {
 		return allAccess(null)
 	}
 }
-export function allowAccessToRundown(
+export async function allowAccessToRundown(
 	cred0: Credentials | ResolvedCredentials,
 	rundownId: MongoQueryKey<RundownId>
-): Access<Rundown | null> {
-	const access = allowAccessToRundownContent(cred0, rundownId)
+): Promise<Access<Rundown | null>> {
+	const access = await allowAccessToRundownContent(cred0, rundownId)
 	return {
 		...access,
 		insert: false, // only allowed through methods
@@ -180,34 +183,32 @@ export function allowAccessToRundown(
 		remove: false, // only allowed through methods
 	}
 }
-export function allowAccessToRundownContent(
+export async function allowAccessToRundownContent(
 	cred0: Credentials | ResolvedCredentials,
 	rundownId: MongoQueryKey<RundownId>
-): Access<Rundown | null> {
+): Promise<Access<Rundown | null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!rundownId) return noAccess('rundownId missing')
-	const cred = resolveCredentials(cred0)
+	const cred = await resolveCredentials(cred0)
 
-	const rundowns = Rundowns.find({
-		_id: rundownId,
-	}).fetch()
+	const rundowns = await Rundowns.findFetchAsync({ _id: rundownId })
 	let access: Access<Rundown | null> = allAccess(null)
 	for (const rundown of rundowns) {
 		access = combineAccess(access, AccessRules.accessRundown(rundown, cred))
 	}
 	return access
 }
-export function allowAccessToPeripheralDevice(
+export async function allowAccessToPeripheralDevice(
 	cred0: Credentials | ResolvedCredentials,
 	deviceId: PeripheralDeviceId
-): Access<PeripheralDevice | null> {
+): Promise<Access<PeripheralDevice | null>> {
 	if (!deviceId) return noAccess('deviceId missing')
 	if (!isProtectedString(deviceId)) return noAccess('deviceId is not a string')
 
-	const device = PeripheralDevices.findOne(deviceId)
+	const device = await PeripheralDevices.findOneAsync(deviceId)
 	if (!device) return noAccess('Device not found')
 
-	const access = allowAccessToPeripheralDeviceContent(cred0, device)
+	const access = await allowAccessToPeripheralDeviceContent(cred0, device)
 	return {
 		...access,
 		insert: false, // only allowed through methods
@@ -215,13 +216,13 @@ export function allowAccessToPeripheralDevice(
 	}
 }
 
-export function allowAccessToPeripheralDeviceContent(
+export async function allowAccessToPeripheralDeviceContent(
 	cred0: Credentials | ResolvedCredentials,
 	device: PeripheralDevice
-): Access<PeripheralDevice | null> {
+): Promise<Access<PeripheralDevice | null>> {
 	const span = profiler.startSpan('security.lib.security.allowAccessToPeripheralDeviceContent')
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
-	const cred = resolveCredentials(cred0)
+	const cred = await resolveCredentials(cred0)
 
 	const access = AccessRules.accessPeripheralDevice(device, cred)
 
@@ -254,14 +255,17 @@ namespace AccessRules {
 	 * @param cred0 Credentials to check
 	 * @param userId User to check access to
 	 */
-	export function accessCurrentUser(cred0: Credentials | ResolvedCredentials, userId: UserId): Access<null> {
+	export async function accessCurrentUser(
+		cred0: Credentials | ResolvedCredentials,
+		userId: UserId
+	): Promise<Access<null>> {
 		let credUserId: UserId | undefined = undefined
 		if (isResolvedCredentials(cred0) && cred0.user) {
 			credUserId = cred0.user._id
 		} else if (!isResolvedCredentials(cred0) && cred0.userId) {
 			credUserId = cred0.userId
 		} else {
-			const cred = resolveCredentials(cred0)
+			const cred = await resolveCredentials(cred0)
 			if (!cred.user) return noAccess('User in cred not found')
 			credUserId = cred.user._id
 		}

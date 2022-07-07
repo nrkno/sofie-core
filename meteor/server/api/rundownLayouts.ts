@@ -9,7 +9,7 @@ import {
 	RundownLayoutId,
 	CustomizableRegions,
 } from '../../lib/collections/RundownLayouts'
-import { literal, getRandomId, protectString, makePromise } from '../../lib/lib'
+import { literal, getRandomId, protectString, makePromise, waitForPromise } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
 import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
@@ -128,14 +128,14 @@ function apiCreateRundownLayout(
 	check(showStyleBaseId, String)
 	check(regionId, String)
 
-	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
+	const access = waitForPromise(ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId))
 
 	return createRundownLayout(name, type, showStyleBaseId, regionId, undefined, access.userId || undefined)
 }
 function apiRemoveRundownLayout(context: MethodContext, id: RundownLayoutId) {
 	check(id, String)
 
-	const access = ShowStyleContentWriteAccess.rundownLayout(context, id)
+	const access = waitForPromise(ShowStyleContentWriteAccess.rundownLayout(context, id))
 	const rundownLayout = access.rundownLayout
 	if (!rundownLayout) throw new Meteor.Error(404, `RundownLayout "${id}" not found`)
 

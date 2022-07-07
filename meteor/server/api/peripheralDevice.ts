@@ -9,7 +9,7 @@ import {
 	PeripheralDevice,
 } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, stringifyObjects, literal } from '../../lib/lib'
+import { getCurrentTime, protectString, makePromise, stringifyObjects, literal, waitForPromise } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
@@ -62,7 +62,9 @@ export namespace ServerPeripheralDeviceAPI {
 		check(deviceId, String)
 		const existingDevice = PeripheralDevices.findOne(deviceId)
 		if (existingDevice) {
-			PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
+			waitForPromise(
+				PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
+			)
 		}
 
 		check(token, String)

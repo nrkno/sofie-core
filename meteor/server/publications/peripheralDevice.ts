@@ -17,18 +17,19 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
  * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager
  */
 
-function checkAccess(cred: Credentials | ResolvedCredentials, selector: MongoQuery<PeripheralDevice>) {
+async function checkAccess(cred: Credentials | ResolvedCredentials, selector: MongoQuery<PeripheralDevice>) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	return (
 		NoSecurityReadAccess.any() ||
-		(selector._id && PeripheralDeviceReadAccess.peripheralDevice(selector._id, cred)) ||
-		(selector.organizationId && OrganizationReadAccess.organizationContent<PeripheralDevice>(selector, cred)) ||
-		(selector.studioId && StudioReadAccess.studioContent<PeripheralDevice>(selector, cred))
+		(selector._id && (await PeripheralDeviceReadAccess.peripheralDevice(selector._id, cred))) ||
+		(selector.organizationId &&
+			(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
+		(selector.studioId && (await StudioReadAccess.studioContent(selector.studioId, cred)))
 	)
 }
 meteorPublish(PubSub.peripheralDevices, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<PeripheralDevice>(this.userId, selector0, token)
-	if (checkAccess(cred, selector)) {
+	if (await checkAccess(cred, selector)) {
 		const modifier: FindOptions<PeripheralDevice> = {
 			fields: {
 				token: 0,
@@ -46,7 +47,7 @@ meteorPublish(PubSub.peripheralDevices, async function (selector0, token) {
 
 meteorPublish(PubSub.peripheralDevicesAndSubDevices, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<PeripheralDevice>(this.userId, selector0, token)
-	if (checkAccess(cred, selector)) {
+	if (await checkAccess(cred, selector)) {
 		const parents = PeripheralDevices.find(selector).fetch()
 
 		const modifier: FindOptions<PeripheralDevice> = {
@@ -73,21 +74,21 @@ meteorPublish(PubSub.peripheralDevicesAndSubDevices, async function (selector0, 
 meteorPublish(PubSub.peripheralDeviceCommands, async function (deviceId: PeripheralDeviceId, token) {
 	if (!deviceId) throw new Meteor.Error(400, 'deviceId argument missing')
 	check(deviceId, String)
-	if (PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })) {
+	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 		return PeripheralDeviceCommands.find({ deviceId: deviceId })
 	}
 	return null
 })
 meteorPublish(PubSub.mediaWorkFlows, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.deviceId(this.userId, selector0, token)
-	if (PeripheralDeviceReadAccess.peripheralDeviceContent(selector, cred)) {
+	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred)) {
 		return MediaWorkFlows.find(selector)
 	}
 	return null
 })
 meteorPublish(PubSub.mediaWorkFlowSteps, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.deviceId(this.userId, selector0, token)
-	if (PeripheralDeviceReadAccess.peripheralDeviceContent(selector, cred)) {
+	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(selector.deviceId, cred)) {
 		return MediaWorkFlowSteps.find(selector)
 	}
 	return null
