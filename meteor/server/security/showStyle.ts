@@ -117,7 +117,7 @@ export namespace ShowStyleContentWriteAccess {
 				userId: null,
 				organizationId: null,
 				showStyleBaseId: showStyleBaseId,
-				showStyleBase: fetchShowStyleBaseLight(showStyleBaseId) || null,
+				showStyleBase: (await fetchShowStyleBaseLight(showStyleBaseId)) || null,
 				cred: cred0,
 			}
 		}

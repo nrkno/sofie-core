@@ -482,7 +482,7 @@ async function restoreFromSnapshot(snapshot: AnySnapshot): Promise<void> {
 	if (snapshot.externalId && snapshot.segments && snapshot.type === 'mos') {
 		// Special: Not a snapshot, but a datadump of a MOS rundown
 		const studioId: StudioId = Meteor.settings.manualSnapshotIngestStudioId || 'studio0'
-		const studioExists = checkStudioExists(studioId)
+		const studioExists = await checkStudioExists(studioId)
 		if (studioExists) {
 			importIngestRundown(studioId, snapshot as unknown as IngestRundown)
 			return

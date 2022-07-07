@@ -105,7 +105,7 @@ export function fetchStudioIdFromDevice(peripheralDevice: PeripheralDevice): Stu
 
 	updateDeviceLastDataReceived(peripheralDevice._id)
 
-	const studioExists = checkStudioExists(studioId)
+	const studioExists = waitForPromise(checkStudioExists(studioId))
 	if (!studioExists) throw new Meteor.Error(404, `Studio "${studioId}" of device "${peripheralDevice._id}" not found`)
 
 	span?.end()

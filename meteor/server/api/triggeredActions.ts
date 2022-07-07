@@ -55,7 +55,7 @@ PickerPOST.route('/actionTriggers/upload/:showStyleBaseId?', (params, req: Incom
 
 	try {
 		if (showStyleBaseId !== undefined) {
-			const showStyleBase = fetchShowStyleBaseLight(showStyleBaseId)
+			const showStyleBase = waitForPromise(fetchShowStyleBaseLight(showStyleBaseId))
 			if (!showStyleBase) {
 				throw new Meteor.Error(
 					404,
