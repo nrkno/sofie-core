@@ -102,17 +102,21 @@ $duration-area-margin: 0.5em;
 
 				> .segment-opl__part-marker {
 					position: absolute;
-					height: $part-height;
+					top: $part-height * 0.15;
+					height: $part-height * 0.7;
 					width: $duration-area-width;
 					background: #ff00ff;
 					z-index: 0;
 
 					&--next {
 						background: $general-next-color;
+						clip-path: polygon(0% 0%, 0% 100%, 85% 100%, 100% 50%, 85% 0%);
 					}
 
 					&--live {
 						background: $general-live-color;
+						border-radius: 0 ($part-height * 0.7) ($part-height * 0.7) 0;
+						width: $duration-area-width - ($duration-area-margin / 2);
 					}
 				}
 
@@ -146,7 +150,14 @@ $duration-area-margin: 0.5em;
 
 			&--next {
 				> .segment-opl__part-header > .segment-opl__part-duration {
-					color: #000000;
+					text-shadow: 0 0 5px black;
+					font-weight: 500;
+				}
+			}
+
+			&--live {
+				> .segment-opl__part-header > .segment-opl__part-duration {
+					text-shadow: 0 0 5px black;
 				}
 			}
 
