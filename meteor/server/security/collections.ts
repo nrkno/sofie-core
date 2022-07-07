@@ -28,14 +28,13 @@ import { Segments } from '../../lib/collections/Segments'
 import { Parts } from '../../lib/collections/Parts'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { Pieces } from '../../lib/collections/Pieces'
-import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
+import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
+import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { Timeline } from '../../lib/collections/Timeline'
-import { rundownContentAllowWrite, pieceContentAllowWrite } from './rundown'
 import { SystemWriteAccess } from './system'
 import { Buckets } from '../../lib/collections/Buckets'
 import { StudioContentWriteAccess } from './studio'
@@ -361,92 +360,92 @@ Rundowns.allow({
 // Collections security set up:
 
 Segments.allow({
-	insert(userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 
 Parts.allow({
-	insert(userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 PartInstances.allow({
-	insert(userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 Pieces.allow({
-	insert(userId, doc): boolean {
-		return pieceContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return pieceContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return pieceContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 PieceInstances.allow({
-	insert(userId, doc: PieceInstance): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 AdLibPieces.allow({
-	insert(userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 RundownBaselineAdLibPieces.allow({
-	insert(userId, doc: RundownBaselineAdLibItem): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 IngestDataCache.allow({
-	insert(userId, doc: IngestDataCacheObj): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 

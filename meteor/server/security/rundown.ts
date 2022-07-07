@@ -12,8 +12,6 @@ import { ExpectedMediaItem } from '../../lib/collections/ExpectedMediaItems'
 import { PeripheralDevices, getStudioIdFromDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { ExpectedPlayoutItem } from '../../lib/collections/ExpectedPlayoutItems'
 import { Settings } from '../../lib/Settings'
-import { triggerWriteAccess } from './lib/securityVerify'
-import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace RundownReadAccess {
 	/** Check for read access to the rundown collection */
@@ -116,16 +114,4 @@ export namespace RundownReadAccess {
 			return true
 		}
 	}
-}
-export function rundownContentAllowWrite(userId: UserId, doc: { rundownId: RundownId }): boolean {
-	triggerWriteAccess()
-	const access = allowAccessToRundown({ userId: userId }, doc.rundownId)
-	if (!access.update) return logNotAllowed('Rundown content', access.reason)
-	return true
-}
-export function pieceContentAllowWrite(userId: UserId, doc: { startRundownId: RundownId }): boolean {
-	triggerWriteAccess()
-	const access = allowAccessToRundown({ userId: userId }, doc.startRundownId)
-	if (!access.update) return logNotAllowed('Rundown content', access.reason)
-	return true
 }
