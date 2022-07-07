@@ -25,6 +25,10 @@ export function LinePartScriptPiece({ pieces }: IProps) {
 		scriptLabel = scriptLabelSplit[1] || scriptLabelSplit[0]
 	}
 
+	// In order to have the left-hand-side ellipsis work it's magic, we need to wrap the text in LTR non-printable,
+	// control characters, otherwise the browser will move whatever leading punctuation there is to the end
+	scriptLabel = '\u202A' + scriptLabel + '\u202C'
+
 	return (
 		<div
 			className="segment-opl__piece-indicator-placeholder segment-opl__piece-indicator-placeholder--script"
