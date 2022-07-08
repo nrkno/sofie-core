@@ -12,7 +12,7 @@ import { IngestRundown } from '@sofie-automation/blueprints-integration'
 import { getExternalNRCSName } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { checkStudioExists } from '../../../lib/collections/optimizations'
 
-PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
+PickerPOST.route('/ingest/:studioId', async (params, req: IncomingMessage, response: ServerResponse) => {
 	check(params.studioId, String)
 	response.setHeader('Content-Type', 'text/plain')
 

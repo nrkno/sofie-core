@@ -47,8 +47,8 @@ import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { ConfigManifestEntryType, DeviceConfigManifest, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
-import { Studios } from '../../lib/collections/Studios'
 import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { checkStudioExists } from '../../lib/collections/optimizations'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -489,7 +489,7 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 }
 
-PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerPOST.route('/devices/:deviceId/uploadCredentials', async (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
@@ -499,7 +499,7 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
 
-		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
 		const url = new URL(req.url || '', 'http://localhost')
@@ -536,7 +536,7 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 	res.end(content)
 })
 
-PickerGET.route('/devices/:deviceId/oauthResponse', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerGET.route('/devices/:deviceId/oauthResponse', async (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
@@ -546,14 +546,14 @@ PickerGET.route('/devices/:deviceId/oauthResponse', (params, req: IncomingMessag
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
 
-		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, `Peripheral device "${deviceId}" is not attached to a studio`)
 
-		const studio = Studios.findOne(peripheralDevice.studioId)
-		if (!studio) throw new Meteor.Error(404, `Studio "${studio}" not found`)
+		if (!(await checkStudioExists(peripheralDevice.studioId)))
+			throw new Meteor.Error(404, `Studio "${peripheralDevice.studioId}" not found`)
 
 		const url = new URL(req.url || '', 'http://localhost')
 
@@ -587,7 +587,7 @@ PickerGET.route('/devices/:deviceId/oauthResponse', (params, req: IncomingMessag
 	res.end(content)
 })
 
-PickerPOST.route('/devices/:deviceId/resetAuth', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerPOST.route('/devices/:deviceId/resetAuth', async (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
@@ -597,7 +597,7 @@ PickerPOST.route('/devices/:deviceId/resetAuth', (params, req: IncomingMessage, 
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
 
-		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
 		PeripheralDevices.update(peripheralDevice._id, {
