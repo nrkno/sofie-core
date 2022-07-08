@@ -69,7 +69,7 @@ interface RoutedTimelineArgs {
 	readonly studioId: StudioId
 }
 
-interface RoutedTimelineContext {
+interface RoutedTimelineState {
 	timeline: TimelineComplete | undefined
 
 	// invalidateStudio: boolean
@@ -119,9 +119,9 @@ async function setupTimelinePublicationObservers(
 
 async function manipulateTimelinePublicationData(
 	args: RoutedTimelineArgs,
-	context: Partial<RoutedTimelineContext>,
+	state: Partial<RoutedTimelineState>,
 	updateProps: RoutedTimelineUpdateProps | undefined
-): Promise<RoutedTimeline[] | false> {
+): Promise<RoutedTimeline[] | null> {
 	if (!updateProps) {
 		// First fetch
 		updateProps = {
@@ -134,33 +134,29 @@ async function manipulateTimelinePublicationData(
 
 	if (updateProps.invalidateStudio) {
 		// If studio changed, or this is the first run, then fetch the studio
-		context.studio = fetchStudioLight(args.studioId)
-		context.routes = undefined
+		state.studio = fetchStudioLight(args.studioId)
+		state.routes = undefined
 	}
 
 	let invalidateTimeline = false
 
 	if (updateProps.timeline === null) {
-		context.timeline = undefined
+		state.timeline = undefined
 		invalidateTimeline = true
 	} else if (updateProps.timeline) {
-		if (context.timelineGenerated && context.timelineGenerated > Date.now() + 10000) {
+		if (state.timelineGenerated && state.timelineGenerated > Date.now() + 10000) {
 			// Take height for something going really really wrong with the generated time,
 			// like if a NTP-sync sets it to 50 years into the future or something...
 			logger.warn(
 				`Existing timeline is from the future, resetting time: ${new Date(
-					context.timelineGenerated
+					state.timelineGenerated
 				).toISOString()}`
 			)
-			context.timelineGenerated = 0
+			state.timelineGenerated = 0
 		}
 
-		if (
-			!context.timeline ||
-			!context.timelineGenerated ||
-			context.timelineGenerated <= updateProps.timeline.generated
-		) {
-			context.timeline = updateProps.timeline
+		if (!state.timeline || !state.timelineGenerated || state.timelineGenerated <= updateProps.timeline.generated) {
+			state.timeline = updateProps.timeline
 			invalidateTimeline = true
 		} else {
 			// Hm, the generated is actually older than what we've already sent
@@ -169,36 +165,36 @@ async function manipulateTimelinePublicationData(
 		}
 	}
 
-	if (!context.studio) {
+	if (!state.studio) {
 		// Looks like studio doesn't exist
 		return []
 	}
 
-	if (!context.routes) {
+	if (!state.routes) {
 		// Routes need recalculating
-		context.routes = getActiveRoutes(context.studio)
+		state.routes = getActiveRoutes(state.studio)
 		invalidateTimeline = true
 	}
 
 	if (invalidateTimeline) {
 		// Something changed, so regenerate the timeline
-		context.timelineHash = context.timeline?.timelineHash ?? getRandomId()
-		context.timelineGenerated = context.timeline?.generated ?? 0
-		const timeline = context.timeline ? deserializeTimelineBlob(context.timeline.timelineBlob) : []
-		context.routedTimeline = serializeTimelineBlob(getRoutedTimeline(timeline, context.routes))
+		state.timelineHash = state.timeline?.timelineHash ?? getRandomId()
+		state.timelineGenerated = state.timeline?.generated ?? 0
+		const timeline = state.timeline ? deserializeTimelineBlob(state.timeline.timelineBlob) : []
+		state.routedTimeline = serializeTimelineBlob(getRoutedTimeline(timeline, state.routes))
 	} else {
 		// Nothing was invalidated
-		return false
+		return null
 	}
 
 	// Return the new data
 	return [
 		literal<RoutedTimeline>({
 			_id: args.studioId,
-			mappingsHash: context.studio.mappingsHash,
-			timelineHash: context.timelineHash,
-			timelineBlob: context.routedTimeline,
-			generated: context.timeline?.generated ?? Date.now(),
+			mappingsHash: state.studio.mappingsHash,
+			timelineHash: state.timelineHash,
+			timelineBlob: state.routedTimeline,
+			generated: state.timeline?.generated ?? Date.now(),
 			published: Date.now(),
 		}),
 	]
@@ -213,7 +209,7 @@ async function createObserverForTimelinePublication(
 	const observer = await setUpOptimizedObserver<
 		RoutedTimeline,
 		RoutedTimelineArgs,
-		RoutedTimelineContext,
+		RoutedTimelineState,
 		RoutedTimelineUpdateProps
 	>(
 		`pub_${observerId}_${studioId}`,

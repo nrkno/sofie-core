@@ -191,7 +191,7 @@ interface RoutedMappingsArgs {
 	readonly studioId: StudioId
 }
 
-type RoutedMappingsContext = Record<string, never>
+type RoutedMappingsState = Record<string, never>
 
 interface RoutedMappingsUpdateProps {
 	invalidateStudio: boolean
@@ -218,9 +218,9 @@ async function setupMappingsPublicationObservers(
 }
 async function manipulateMappingsPublicationData(
 	args: RoutedMappingsArgs,
-	_context: Partial<RoutedMappingsContext>,
+	_state: Partial<RoutedMappingsState>,
 	_updateProps: Partial<RoutedMappingsUpdateProps> | undefined
-): Promise<RoutedMappings[] | false> {
+): Promise<RoutedMappings[] | null> {
 	// Prepare data for publication:
 
 	// Ignore _updateProps, as we arent caching anything so we have to rerun from scratch no matter what
@@ -249,7 +249,7 @@ async function createObserverForMappingsPublication(
 	const observer = await setUpOptimizedObserver<
 		RoutedMappings,
 		RoutedMappingsArgs,
-		RoutedMappingsContext,
+		RoutedMappingsState,
 		RoutedMappingsUpdateProps
 	>(
 		`pub_${observerId}_${studioId}`,

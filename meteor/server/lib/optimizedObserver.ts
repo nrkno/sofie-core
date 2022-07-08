@@ -3,6 +3,25 @@ import { ReadonlyDeep } from 'type-fest'
 import { clone, createManualPromise, lazyIgnore } from '../../lib/lib'
 import { logger } from '../logging'
 
+interface OptimizedObserver<TData, TArgs, TContext, UpdateProps> {
+	args: ReadonlyDeep<TArgs>
+	context: Partial<TContext>
+	lastData: TData[]
+	triggerUpdate: TriggerUpdate<UpdateProps>
+	stop: () => void
+	dataReceivers: Array<(args: ReadonlyDeep<TArgs>, newData: TData[], previousData: TData[]) => void>
+	newDataReceivers: Array<(args: ReadonlyDeep<TArgs>, newData: TData[], previousData: TData[]) => void>
+}
+
+/** Current fully setup optimized observers */
+const optimizedObservers: Record<string, OptimizedObserver<unknown, unknown, unknown, unknown>> = {}
+/** Setup in progress optimized observers */
+const pendingObservers: Record<string, Promise<OptimizedObserver<unknown, unknown, unknown, unknown>>> = {}
+
+export interface OptimizedObserverHandle {
+	stop: () => void
+}
+
 export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProps: Partial<UpdateProps>) => void
 
 /**
@@ -17,9 +36,9 @@ export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProp
 
  */
 export async function setUpOptimizedObserver<
-	Data,
+	PublicationDoc,
 	Args,
-	Context extends Record<string, any>,
+	State extends Record<string, any>,
 	UpdateProps extends Record<string, any>
 >(
 	identifier: string,
@@ -31,14 +50,14 @@ export async function setUpOptimizedObserver<
 	) => Promise<Meteor.LiveQueryHandle[]>,
 	manipulateData: (
 		args: ReadonlyDeep<Args>,
-		context: Partial<Context>,
+		state: Partial<State>,
 		newProps: ReadonlyDeep<Partial<UpdateProps> | undefined>
-	) => Promise<Data[] | false>,
-	receiveData: (args: ReadonlyDeep<Args>, newData: Data[], previousData: Data[]) => void,
+	) => Promise<PublicationDoc[] | null>,
+	receiveData: (args: ReadonlyDeep<Args>, newData: PublicationDoc[], previousData: PublicationDoc[]) => void,
 	lazynessDuration: number = 3 // ms
 ): Promise<OptimizedObserverHandle> {
 	const existingObserver = (optimizedObservers[identifier] || (await pendingObservers[identifier])) as
-		| OptimizedObserver<Data, Args, Context, UpdateProps>
+		| OptimizedObserver<PublicationDoc, Args, State, UpdateProps>
 		| undefined
 
 	if (existingObserver) {
@@ -78,7 +97,12 @@ export async function setUpOptimizedObserver<
 						// Mark the update as running
 						updateIsRunning = true
 
-						const o = optimizedObservers[identifier] as OptimizedObserver<Data, Args, Context, UpdateProps>
+						const o = optimizedObservers[identifier] as OptimizedObserver<
+							PublicationDoc,
+							Args,
+							State,
+							UpdateProps
+						>
 						if (o) {
 							// Fetch and clear the pending updates
 							const newProps = pendingUpdate as ReadonlyDeep<Partial<UpdateProps>>
@@ -90,7 +114,7 @@ export async function setUpOptimizedObserver<
 							const manipulateDuration = manipulateTime - start
 
 							// If result === false, that means no changes were made
-							if (result !== false) {
+							if (result !== null) {
 								for (const dataReceiver of o.dataReceivers) {
 									dataReceiver(o.args, result, o.lastData)
 								}
@@ -143,7 +167,7 @@ export async function setUpOptimizedObserver<
 			const args = clone<ReadonlyDeep<Args>>(args0)
 			const observers = await setupObservers(args, triggerUpdate)
 
-			const newObserver: OptimizedObserver<Data, Args, Context, UpdateProps> = {
+			const newObserver: OptimizedObserver<PublicationDoc, Args, State, UpdateProps> = {
 				args: args,
 				context: {},
 				lastData: [],
@@ -157,7 +181,7 @@ export async function setUpOptimizedObserver<
 
 			// Do the intial data load and emit
 			const result = await manipulateData(args, newObserver.context, undefined)
-			newObserver.lastData = result === false ? [] : result
+			newObserver.lastData = result === null ? [] : result
 			receiveData(args, newObserver.lastData, [])
 			updateIsRunning = false
 
@@ -182,7 +206,7 @@ export async function setUpOptimizedObserver<
 
 	return {
 		stop: () => {
-			const o = optimizedObservers[identifier] as OptimizedObserver<Data, Args, Context, UpdateProps>
+			const o = optimizedObservers[identifier] as OptimizedObserver<PublicationDoc, Args, State, UpdateProps>
 			if (o) {
 				const i = o.dataReceivers.indexOf(receiveData)
 				if (i != -1) {
@@ -197,20 +221,3 @@ export async function setUpOptimizedObserver<
 		},
 	}
 }
-
-export interface OptimizedObserverHandle {
-	stop: () => void
-}
-
-interface OptimizedObserver<TData, TArgs, TContext, UpdateProps> {
-	args: ReadonlyDeep<TArgs>
-	context: Partial<TContext>
-	lastData: TData[]
-	triggerUpdate: TriggerUpdate<UpdateProps>
-	stop: () => void
-	dataReceivers: Array<(args: ReadonlyDeep<TArgs>, newData: TData[], previousData: TData[]) => void>
-	newDataReceivers: Array<(args: ReadonlyDeep<TArgs>, newData: TData[], previousData: TData[]) => void>
-}
-
-const optimizedObservers: Record<string, OptimizedObserver<unknown, unknown, unknown, unknown>> = {}
-const pendingObservers: Record<string, Promise<OptimizedObserver<unknown, unknown, unknown, unknown>>> = {}

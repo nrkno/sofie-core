@@ -41,7 +41,7 @@ interface ExpectedPackagesPublicationUpdateProps {
 	invalidateRundownPlaylist?: boolean
 }
 
-interface ExpectedPackagesPublicationContext {
+interface ExpectedPackagesPublicationState {
 	studio: Studio | undefined
 	expectedPackages: ExpectedPackageDB[]
 	routedExpectedPackages: ResultingExpectedPackage[]
@@ -113,9 +113,9 @@ async function setupExpectedPackagesPublicationObservers(
 
 async function manipulateExpectedPackagesPublicationData(
 	args: ReadonlyDeep<ExpectedPackagesPublicationArgs>,
-	context: Partial<ExpectedPackagesPublicationContext>,
+	state: Partial<ExpectedPackagesPublicationState>,
 	updateProps: ExpectedPackagesPublicationUpdateProps | undefined
-): Promise<DBObj[] | false> {
+): Promise<DBObj[] | null> {
 	// Prepare data for publication:
 
 	if (!updateProps) {
@@ -135,8 +135,8 @@ async function manipulateExpectedPackagesPublicationData(
 		invalidateRoutedExpectedPackages = true
 		invalidateRoutedPlayoutExpectedPackages = true
 
-		context.studio = await Studios.findOneAsync(args.studioId)
-		if (!context.studio) {
+		state.studio = await Studios.findOneAsync(args.studioId)
+		if (!state.studio) {
 			logger.warn(`Pub.expectedPackagesForDevice: studio "${args.studioId}" not found!`)
 		}
 	}
@@ -145,14 +145,14 @@ async function manipulateExpectedPackagesPublicationData(
 		invalidateRoutedExpectedPackages = true
 		invalidateRoutedPlayoutExpectedPackages = true
 	}
-	if (updateProps.invalidateExpectedPackages || !context.expectedPackages) {
+	if (updateProps.invalidateExpectedPackages || !state.expectedPackages) {
 		invalidateRoutedExpectedPackages = true
 		invalidateRoutedPlayoutExpectedPackages = true
 
-		context.expectedPackages = await ExpectedPackages.findFetchAsync({
+		state.expectedPackages = await ExpectedPackages.findFetchAsync({
 			studioId: args.studioId,
 		})
-		if (!context.expectedPackages.length) {
+		if (!state.expectedPackages.length) {
 			logger.info(`Pub.expectedPackagesForDevice: no ExpectedPackages for studio "${args.studioId}" found`)
 		}
 	}
@@ -161,40 +161,40 @@ async function manipulateExpectedPackagesPublicationData(
 			studioId: args.studioId,
 			activationId: { $exists: true },
 		})
-		context.activePlaylist = activePlaylist
-		delete context.activeRundowns
+		state.activePlaylist = activePlaylist
+		delete state.activeRundowns
 
 		const selectPartInstances =
 			activePlaylist && RundownPlaylistCollectionUtil.getSelectedPartInstances(activePlaylist)
-		context.nextPartInstance = selectPartInstances?.nextPartInstance
-		context.currentPartInstance = selectPartInstances?.currentPartInstance
+		state.nextPartInstance = selectPartInstances?.nextPartInstance
+		state.currentPartInstance = selectPartInstances?.currentPartInstance
 
 		invalidateRoutedPlayoutExpectedPackages = true
 	}
 
-	if (!context.activeRundowns) {
-		context.activeRundowns = context.activePlaylist
+	if (!state.activeRundowns) {
+		state.activeRundowns = state.activePlaylist
 			? await Rundowns.findFetchAsync({
-					playlistId: context.activePlaylist._id,
+					playlistId: state.activePlaylist._id,
 			  })
 			: []
 	}
 
-	if (!context.studio) {
+	if (!state.studio) {
 		return []
 	}
-	const studio: Studio = context.studio
+	const studio: Studio = state.studio
 
 	if (invalidateRoutedExpectedPackages) {
 		// Map the expectedPackages onto their specified layer:
-		const routedMappingsWithPackages = routeExpectedPackages(studio, context.expectedPackages)
+		const routedMappingsWithPackages = routeExpectedPackages(studio, state.expectedPackages)
 
-		if (context.expectedPackages.length && !Object.keys(routedMappingsWithPackages).length) {
+		if (state.expectedPackages.length && !Object.keys(routedMappingsWithPackages).length) {
 			logger.info(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
 		}
 
-		context.routedExpectedPackages = generateExpectedPackages(
-			context.studio,
+		state.routedExpectedPackages = generateExpectedPackages(
+			state.studio,
 			args.filterPlayoutDeviceIds,
 			routedMappingsWithPackages,
 			Priorities.OTHER // low priority
@@ -202,19 +202,19 @@ async function manipulateExpectedPackagesPublicationData(
 	}
 	if (invalidateRoutedPlayoutExpectedPackages) {
 		// Use the expectedPackages of the Current and Next Parts:
-		const playoutNextExpectedPackages: ExpectedPackageDB[] = context.nextPartInstance
+		const playoutNextExpectedPackages: ExpectedPackageDB[] = state.nextPartInstance
 			? await generateExpectedPackagesForPartInstance(
 					args.studioId,
-					context.nextPartInstance.rundownId,
-					context.nextPartInstance
+					state.nextPartInstance.rundownId,
+					state.nextPartInstance
 			  )
 			: []
 
-		const playoutCurrentExpectedPackages: ExpectedPackageDB[] = context.currentPartInstance
+		const playoutCurrentExpectedPackages: ExpectedPackageDB[] = state.currentPartInstance
 			? await generateExpectedPackagesForPartInstance(
 					args.studioId,
-					context.currentPartInstance.rundownId,
-					context.currentPartInstance
+					state.currentPartInstance.rundownId,
+					state.currentPartInstance
 			  )
 			: []
 
@@ -223,7 +223,7 @@ async function manipulateExpectedPackagesPublicationData(
 		const nextRoutedMappingsWithPackages = routeExpectedPackages(studio, playoutNextExpectedPackages)
 
 		if (
-			context.currentPartInstance &&
+			state.currentPartInstance &&
 			!Object.keys(currentRoutedMappingsWithPackages).length &&
 			!Object.keys(nextRoutedMappingsWithPackages).length
 		) {
@@ -233,15 +233,15 @@ async function manipulateExpectedPackagesPublicationData(
 		}
 
 		// Filter, keep only the routed mappings for this device:
-		context.routedPlayoutExpectedPackages = [
+		state.routedPlayoutExpectedPackages = [
 			...generateExpectedPackages(
-				context.studio,
+				state.studio,
 				args.filterPlayoutDeviceIds,
 				currentRoutedMappingsWithPackages,
 				Priorities.PLAYOUT_CURRENT
 			),
 			...generateExpectedPackages(
-				context.studio,
+				state.studio,
 				args.filterPlayoutDeviceIds,
 				nextRoutedMappingsWithPackages,
 				Priorities.PLAYOUT_NEXT
@@ -259,13 +259,13 @@ async function manipulateExpectedPackagesPublicationData(
 			_id: protectString(`${args.deviceId}_expectedPackages`),
 			type: 'expected_packages',
 			studioId: args.studioId,
-			expectedPackages: context.routedExpectedPackages,
+			expectedPackages: state.routedExpectedPackages,
 		},
 		{
 			_id: protectString(`${args.deviceId}_playoutExpectedPackages`),
 			type: 'expected_packages',
 			studioId: args.studioId,
-			expectedPackages: context.routedPlayoutExpectedPackages,
+			expectedPackages: state.routedPlayoutExpectedPackages,
 		},
 		{
 			_id: protectString(`${args.deviceId}_packageContainers`),
@@ -277,14 +277,14 @@ async function manipulateExpectedPackagesPublicationData(
 			_id: protectString(`${args.deviceId}_rundownPlaylist`),
 			type: 'active_playlist',
 			studioId: args.studioId,
-			activeplaylist: context.activePlaylist
+			activeplaylist: state.activePlaylist
 				? {
-						_id: context.activePlaylist._id,
-						active: !!context.activePlaylist.activationId,
-						rehearsal: context.activePlaylist.rehearsal,
+						_id: state.activePlaylist._id,
+						active: !!state.activePlaylist.activationId,
+						rehearsal: state.activePlaylist.rehearsal,
 				  }
 				: undefined,
-			activeRundowns: context.activeRundowns.map((rundown) => {
+			activeRundowns: state.activeRundowns.map((rundown) => {
 				return {
 					_id: rundown._id,
 					_rank: rundown._rank,
@@ -319,7 +319,7 @@ meteorCustomPublishArray(
 			const observer = await setUpOptimizedObserver<
 				DBObj,
 				ExpectedPackagesPublicationArgs,
-				ExpectedPackagesPublicationContext,
+				ExpectedPackagesPublicationState,
 				ExpectedPackagesPublicationUpdateProps
 			>(
 				`pub_${PubSub.expectedPackagesForDevice}_${studioId}_${deviceId}_${JSON.stringify(
