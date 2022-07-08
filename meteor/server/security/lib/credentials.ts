@@ -1,5 +1,5 @@
 import { UserId, User, Users } from '../../../lib/collections/Users'
-import { DBOrganization, OrganizationId, Organizations } from '../../../lib/collections/Organization'
+import { OrganizationId } from '../../../lib/collections/Organization'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { cacheResult, isProtectedString, clearCacheResult } from '../../../lib/lib'
 import { LIMIT_CACHE_TIME } from './security'
@@ -137,15 +137,15 @@ export async function resolveCredentials(cred: Credentials | ResolvedCredentials
 			// 	if (user) resolved.user = user
 			// }
 
-			// Make sure the organizationId is valid
-			if (resolved.organizationId) {
-				const org = (await Organizations.findOneAsync(resolved.organizationId, {
-					fields: { _id: 1 },
-				})) as Pick<DBOrganization, '_id'> | undefined
-				if (org) {
-					resolved.organizationId = null
-				}
-			}
+			// // Make sure the organizationId is valid
+			// if (resolved.organizationId) {
+			// 	const org = (await Organizations.findOneAsync(resolved.organizationId, {
+			// 		fields: { _id: 1 },
+			// 	})) as Pick<DBOrganization, '_id'> | undefined
+			// 	if (org) {
+			// 		resolved.organizationId = null
+			// 	}
+			// }
 
 			return resolved
 		},

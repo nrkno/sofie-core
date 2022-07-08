@@ -1,8 +1,10 @@
+import '../../../__mocks__/_extendJest'
+
 import { MethodContext } from '../../../lib/api/methods'
 import { setCoreSystemStorePath } from '../../../lib/collections/CoreSystem'
 import { DBOrganization, OrganizationId, Organizations } from '../../../lib/collections/Organization'
 import { User, Users } from '../../../lib/collections/Users'
-import { protectString, waitForPromise } from '../../../lib/lib'
+import { protectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { UserId } from '../../../lib/typings/meteor'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
@@ -66,12 +68,12 @@ describe('Security', () => {
 			broadcastMediums: [],
 		}
 	}
-	function changeEnableUserAccounts(fcn: () => void) {
+	async function changeEnableUserAccounts(fcn: () => Promise<void>) {
 		try {
 			Settings.enableUserAccounts = false
-			fcn()
+			await fcn()
 			Settings.enableUserAccounts = true
-			fcn()
+			await fcn()
 		} catch (e) {
 			console.log(`Error happened when Settings.enableUserAccounts = ${Settings.enableUserAccounts}`)
 			throw e
@@ -100,27 +102,27 @@ describe('Security', () => {
 	const org1: DBOrganization = getOrg('org1')
 	const org2: DBOrganization = getOrg('org2')
 
-	function expectReadNotAllowed(fcn: () => Promise<boolean>) {
+	async function expectReadNotAllowed(fcn: () => Promise<boolean>) {
 		if (Settings.enableUserAccounts === false) return expectReadAllowed(fcn)
-		expect(waitForPromise(fcn())).toEqual(false)
+		return expect(fcn()).resolves.toEqual(false)
 	}
-	function expectReadAllowed(fcn: () => Promise<boolean>) {
-		expect(waitForPromise(fcn())).toEqual(true)
+	async function expectReadAllowed(fcn: () => Promise<boolean>) {
+		return expect(fcn()).resolves.toEqual(true)
 	}
-	function expectNotAllowed(fcn: () => Promise<any>) {
+	async function expectNotAllowed(fcn: () => Promise<any>) {
 		if (Settings.enableUserAccounts === false) return expectAllowed(fcn)
-		expect(() => waitForPromise(fcn)).toThrowError()
+		return expect(fcn()).rejects.toBeTruthy()
 	}
-	function expectNotLoggedIn(fcn: () => Promise<any>) {
+	async function expectNotLoggedIn(fcn: () => Promise<any>) {
 		if (Settings.enableUserAccounts === false) return expectAllowed(fcn)
-		expect(() => waitForPromise(fcn)).toThrowError(/not logged in/i)
+		return expect(fcn()).rejects.toMatchToString(/not logged in/i)
 	}
-	function expectNotFound(fcn: () => Promise<any>) {
+	async function expectNotFound(fcn: () => Promise<any>) {
 		// if (Settings.enableUserAccounts === false) return expectAllowed(fcn)
-		expect(() => waitForPromise(fcn)).toThrowError(/not found/i)
+		return expect(fcn()).rejects.toMatchToString(/not found/i)
 	}
-	function expectAllowed(fcn: () => Promise<any>) {
-		expect(() => waitForPromise(fcn)).not.toThrowError()
+	async function expectAllowed(fcn: () => Promise<any>) {
+		return expect(fcn()).resolves.not.toBeUndefined()
 	}
 	let env: DefaultEnvironment
 	beforeAllInFiber(async () => {
@@ -141,150 +143,166 @@ describe('Security', () => {
 		const access = await StudioContentWriteAccess.bucket(creator, env.studio._id)
 		const bucket = await BucketsAPI.createNewBucket(access, 'myBucket')
 
-		changeEnableUserAccounts(() => {
-			expectReadAllowed(async () => BucketSecurity.allowReadAccess(creator, bucket._id))
-			expectAllowed(async () => BucketSecurity.allowWriteAccess(creator, bucket._id))
+		await changeEnableUserAccounts(async () => {
+			await expectReadAllowed(async () => BucketSecurity.allowReadAccess(creator, bucket._id))
+			await expectAllowed(async () => BucketSecurity.allowWriteAccess(creator, bucket._id))
 			// expectAccessAllowed(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credUserA))
 
 			// Unknown bucket:
-			expectNotFound(async () => BucketSecurity.allowReadAccess(creator, unknownId))
-			expectNotFound(async () => BucketSecurity.allowWriteAccess(creator, unknownId))
-			expectNotFound(async () => BucketSecurity.allowWriteAccessPiece(creator, unknownId))
+			await expectNotFound(async () => BucketSecurity.allowReadAccess(creator, unknownId))
+			await expectNotFound(async () => BucketSecurity.allowWriteAccess(creator, unknownId))
+			await expectNotFound(async () => BucketSecurity.allowWriteAccessPiece(creator, unknownId))
 
 			// Not logged in:
-			expectReadNotAllowed(async () => BucketSecurity.allowReadAccess(nothing, bucket._id))
-			expectNotLoggedIn(async () => BucketSecurity.allowWriteAccess(nothing, bucket._id))
+			await expectReadNotAllowed(async () => BucketSecurity.allowReadAccess(nothing, bucket._id))
+			await expectNotLoggedIn(async () => BucketSecurity.allowWriteAccess(nothing, bucket._id))
 			// expectAccessNotLoggedIn(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credNothing))
 
 			// Non existing user:
-			expectReadNotAllowed(async () => BucketSecurity.allowReadAccess(nonExisting, bucket._id))
-			expectNotLoggedIn(async () => BucketSecurity.allowWriteAccess(nonExisting, bucket._id))
+			await expectReadNotAllowed(async () => BucketSecurity.allowReadAccess(nonExisting, bucket._id))
+			await expectNotLoggedIn(async () => BucketSecurity.allowWriteAccess(nonExisting, bucket._id))
 			// expectAccess(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credNonExistingUser))
 
 			// Other user in same org:
-			expectReadAllowed(async () => BucketSecurity.allowReadAccess(userB, bucket._id))
-			expectAllowed(async () => BucketSecurity.allowWriteAccess(userB, bucket._id))
+			await expectReadAllowed(async () => BucketSecurity.allowReadAccess(userB, bucket._id))
+			await expectAllowed(async () => BucketSecurity.allowWriteAccess(userB, bucket._id))
 			// expectAccess(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credUserB))
 
 			// Other user in other org:
-			expectReadNotAllowed(async () => BucketSecurity.allowReadAccess(wrongOrg, bucket._id))
-			expectNotAllowed(async () => BucketSecurity.allowWriteAccess(wrongOrg, bucket._id))
+			await expectReadNotAllowed(async () => BucketSecurity.allowReadAccess(wrongOrg, bucket._id))
+			await expectNotAllowed(async () => BucketSecurity.allowWriteAccess(wrongOrg, bucket._id))
 			// expectAccess(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credUserInWrongOrganization))
 		})
 	})
 
-	testInFiber('NoSecurity', () => {
-		changeEnableUserAccounts(() => {
-			expectAllowed(async () => NoSecurityReadAccess.any())
+	testInFiber('NoSecurity', async () => {
+		await changeEnableUserAccounts(async () => {
+			await expectAllowed(async () => NoSecurityReadAccess.any())
 		})
 	})
 	testInFiber('Organization', async () => {
 		setCoreSystemStorePath('/non-existent-path/')
 		const snapshotId = await storeSystemSnapshot(superAdmin, env.studio._id, 'for test')
 
-		changeEnableUserAccounts(() => {
+		await changeEnableUserAccounts(async () => {
 			const selectorId = org0._id
 			const selectorOrg = { organizationId: org0._id }
 
 			// === Read access: ===
 
 			// No user credentials:
-			expectReadNotAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, nothing))
-			expectReadNotAllowed(async () => OrganizationReadAccess.organization(selectorId, nothing))
-			expectReadNotAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, nothing))
+			await expectReadNotAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, nothing))
+			await expectReadNotAllowed(async () => OrganizationReadAccess.organization(selectorId, nothing))
+			await expectReadNotAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, nothing))
 			// Normal user:
-			expectReadAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, creator))
-			expectReadAllowed(async () => OrganizationReadAccess.organization(selectorId, creator))
-			expectReadAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, creator))
+			await expectReadAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, creator))
+			await expectReadAllowed(async () => OrganizationReadAccess.organization(selectorId, creator))
+			await expectReadAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, creator))
 			// Other normal user:
-			expectReadAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, userB))
-			expectReadAllowed(async () => OrganizationReadAccess.organization(selectorId, userB))
-			expectReadAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, userB))
+			await expectReadAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, userB))
+			await expectReadAllowed(async () => OrganizationReadAccess.organization(selectorId, userB))
+			await expectReadAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, userB))
 			// Non-existing user:
-			expectReadNotAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, nonExisting))
-			expectReadNotAllowed(async () => OrganizationReadAccess.organization(selectorId, nonExisting))
-			expectReadNotAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, nonExisting))
+			await expectReadNotAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, nonExisting))
+			await expectReadNotAllowed(async () => OrganizationReadAccess.organization(selectorId, nonExisting))
+			await expectReadNotAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, nonExisting))
 			// User in wrong organization:
-			expectReadNotAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, wrongOrg))
-			expectReadNotAllowed(async () => OrganizationReadAccess.organization(selectorId, wrongOrg))
-			expectReadNotAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, wrongOrg))
+			await expectReadNotAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, wrongOrg))
+			await expectReadNotAllowed(async () => OrganizationReadAccess.organization(selectorId, wrongOrg))
+			await expectReadNotAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, wrongOrg))
 			// SuperAdmin:
-			expectReadNotAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, otherSuperAdmin))
-			expectReadNotAllowed(async () => OrganizationReadAccess.organization(selectorId, otherSuperAdmin))
-			expectReadNotAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, otherSuperAdmin))
+			await expectReadNotAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, otherSuperAdmin))
+			await expectReadNotAllowed(async () => OrganizationReadAccess.organization(selectorId, otherSuperAdmin))
+			await expectReadNotAllowed(async () =>
+				OrganizationReadAccess.organizationContent(selectorId, otherSuperAdmin)
+			)
 
 			// === Write access: ===
 
 			// No user credentials:
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.organization(nothing, org0._id))
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.studio(nothing, env.studio))
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.evaluation(nothing))
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.mediaWorkFlows(nothing))
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.blueprint(nothing, env.studioBlueprint._id))
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.snapshot(nothing, snapshotId))
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.dataFromSnapshot(nothing, org0._id))
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.showStyleBase(nothing, env.showStyleBaseId))
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.translationBundle(nothing, selectorOrg))
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.organization(nothing, org0._id))
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.studio(nothing, env.studio))
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.evaluation(nothing))
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.mediaWorkFlows(nothing))
+			await expectNotLoggedIn(async () =>
+				OrganizationContentWriteAccess.blueprint(nothing, env.studioBlueprint._id)
+			)
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.snapshot(nothing, snapshotId))
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.dataFromSnapshot(nothing, org0._id))
+			await expectNotLoggedIn(async () =>
+				OrganizationContentWriteAccess.showStyleBase(nothing, env.showStyleBaseId)
+			)
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.translationBundle(nothing, selectorOrg))
 
 			// Normal user:
-			expectAllowed(async () => OrganizationContentWriteAccess.organization(creator, org0._id))
-			expectAllowed(async () => OrganizationContentWriteAccess.studio(creator, env.studio))
-			expectAllowed(async () => OrganizationContentWriteAccess.evaluation(creator))
-			expectAllowed(async () => OrganizationContentWriteAccess.mediaWorkFlows(creator))
-			expectAllowed(async () => OrganizationContentWriteAccess.blueprint(creator, env.studioBlueprint._id))
-			expectAllowed(async () => OrganizationContentWriteAccess.snapshot(creator, snapshotId))
-			expectAllowed(async () => OrganizationContentWriteAccess.dataFromSnapshot(creator, org0._id))
-			expectAllowed(async () => OrganizationContentWriteAccess.showStyleBase(creator, env.showStyleBaseId))
-			expectAllowed(async () => OrganizationContentWriteAccess.translationBundle(creator, selectorOrg))
+			await expectAllowed(async () => OrganizationContentWriteAccess.organization(creator, org0._id))
+			await expectAllowed(async () => OrganizationContentWriteAccess.studio(creator, env.studio))
+			await expectAllowed(async () => OrganizationContentWriteAccess.evaluation(creator))
+			await expectAllowed(async () => OrganizationContentWriteAccess.mediaWorkFlows(creator))
+			await expectAllowed(async () => OrganizationContentWriteAccess.blueprint(creator, env.studioBlueprint._id))
+			await expectAllowed(async () => OrganizationContentWriteAccess.snapshot(creator, snapshotId))
+			await expectAllowed(async () => OrganizationContentWriteAccess.dataFromSnapshot(creator, org0._id))
+			await expectAllowed(async () => OrganizationContentWriteAccess.showStyleBase(creator, env.showStyleBaseId))
+			await expectAllowed(async () => OrganizationContentWriteAccess.translationBundle(creator, selectorOrg))
 			// Other normal user:
-			expectAllowed(async () => OrganizationContentWriteAccess.organization(userB, org0._id))
-			expectAllowed(async () => OrganizationContentWriteAccess.studio(userB, env.studio))
-			expectAllowed(async () => OrganizationContentWriteAccess.evaluation(userB))
-			expectAllowed(async () => OrganizationContentWriteAccess.mediaWorkFlows(userB))
-			expectAllowed(async () => OrganizationContentWriteAccess.blueprint(userB, env.studioBlueprint._id))
-			expectAllowed(async () => OrganizationContentWriteAccess.snapshot(userB, snapshotId))
-			expectAllowed(async () => OrganizationContentWriteAccess.dataFromSnapshot(userB, org0._id))
-			expectAllowed(async () => OrganizationContentWriteAccess.showStyleBase(userB, env.showStyleBaseId))
-			expectAllowed(async () => OrganizationContentWriteAccess.translationBundle(userB, selectorOrg))
+			await expectAllowed(async () => OrganizationContentWriteAccess.organization(userB, org0._id))
+			await expectAllowed(async () => OrganizationContentWriteAccess.studio(userB, env.studio))
+			await expectAllowed(async () => OrganizationContentWriteAccess.evaluation(userB))
+			await expectAllowed(async () => OrganizationContentWriteAccess.mediaWorkFlows(userB))
+			await expectAllowed(async () => OrganizationContentWriteAccess.blueprint(userB, env.studioBlueprint._id))
+			await expectAllowed(async () => OrganizationContentWriteAccess.snapshot(userB, snapshotId))
+			await expectAllowed(async () => OrganizationContentWriteAccess.dataFromSnapshot(userB, org0._id))
+			await expectAllowed(async () => OrganizationContentWriteAccess.showStyleBase(userB, env.showStyleBaseId))
+			await expectAllowed(async () => OrganizationContentWriteAccess.translationBundle(userB, selectorOrg))
 			// Non-existing user:
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.organization(nonExisting, org0._id))
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.studio(nonExisting, env.studio))
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.evaluation(nonExisting))
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.mediaWorkFlows(nonExisting))
-			expectNotLoggedIn(async () =>
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.organization(nonExisting, org0._id))
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.studio(nonExisting, env.studio))
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.evaluation(nonExisting))
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.mediaWorkFlows(nonExisting))
+			await expectNotLoggedIn(async () =>
 				OrganizationContentWriteAccess.blueprint(nonExisting, env.studioBlueprint._id)
 			)
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.snapshot(nonExisting, snapshotId))
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.dataFromSnapshot(nonExisting, org0._id))
-			expectNotLoggedIn(async () =>
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.snapshot(nonExisting, snapshotId))
+			await expectNotLoggedIn(async () => OrganizationContentWriteAccess.dataFromSnapshot(nonExisting, org0._id))
+			await expectNotLoggedIn(async () =>
 				OrganizationContentWriteAccess.showStyleBase(nonExisting, env.showStyleBaseId)
 			)
-			expectNotLoggedIn(async () => OrganizationContentWriteAccess.translationBundle(nonExisting, selectorOrg))
+			await expectNotLoggedIn(async () =>
+				OrganizationContentWriteAccess.translationBundle(nonExisting, selectorOrg)
+			)
 			// User in wrong organization:
-			expectNotAllowed(async () => OrganizationContentWriteAccess.organization(wrongOrg, org0._id))
-			expectNotAllowed(async () => OrganizationContentWriteAccess.studio(wrongOrg, env.studio))
+			await expectNotAllowed(async () => OrganizationContentWriteAccess.organization(wrongOrg, org0._id))
+			await expectNotAllowed(async () => OrganizationContentWriteAccess.studio(wrongOrg, env.studio))
 			// expectNotAllowed(async() => OrganizationContentWriteAccess.evaluation(wrongOrg))
 			// expectNotAllowed(async() => OrganizationContentWriteAccess.mediaWorkFlows(wrongOrg))
-			expectNotAllowed(async () => OrganizationContentWriteAccess.blueprint(wrongOrg, env.studioBlueprint._id))
-			expectNotAllowed(async () => OrganizationContentWriteAccess.snapshot(wrongOrg, snapshotId))
-			expectNotAllowed(async () => OrganizationContentWriteAccess.dataFromSnapshot(wrongOrg, org0._id))
-			expectNotAllowed(async () => OrganizationContentWriteAccess.showStyleBase(wrongOrg, env.showStyleBaseId))
-			expectNotAllowed(async () => OrganizationContentWriteAccess.translationBundle(wrongOrg, selectorOrg))
+			await expectNotAllowed(async () =>
+				OrganizationContentWriteAccess.blueprint(wrongOrg, env.studioBlueprint._id)
+			)
+			await expectNotAllowed(async () => OrganizationContentWriteAccess.snapshot(wrongOrg, snapshotId))
+			await expectNotAllowed(async () => OrganizationContentWriteAccess.dataFromSnapshot(wrongOrg, org0._id))
+			await expectNotAllowed(async () =>
+				OrganizationContentWriteAccess.showStyleBase(wrongOrg, env.showStyleBaseId)
+			)
+			await expectNotAllowed(async () => OrganizationContentWriteAccess.translationBundle(wrongOrg, selectorOrg))
 
 			// Other SuperAdmin
-			expectNotAllowed(async () => OrganizationContentWriteAccess.organization(otherSuperAdmin, org0._id))
-			expectNotAllowed(async () => OrganizationContentWriteAccess.studio(otherSuperAdmin, env.studio))
+			await expectNotAllowed(async () => OrganizationContentWriteAccess.organization(otherSuperAdmin, org0._id))
+			await expectNotAllowed(async () => OrganizationContentWriteAccess.studio(otherSuperAdmin, env.studio))
 			// expectNotAllowed(async() => OrganizationContentWriteAccess.evaluation(otherSuperAdmin))
 			// expectNotAllowed(async() => OrganizationContentWriteAccess.mediaWorkFlows(otherSuperAdmin))
-			expectNotAllowed(async () =>
+			await expectNotAllowed(async () =>
 				OrganizationContentWriteAccess.blueprint(otherSuperAdmin, env.studioBlueprint._id)
 			)
-			expectNotAllowed(async () => OrganizationContentWriteAccess.snapshot(otherSuperAdmin, snapshotId))
-			expectNotAllowed(async () => OrganizationContentWriteAccess.dataFromSnapshot(otherSuperAdmin, org0._id))
-			expectNotAllowed(async () =>
+			await expectNotAllowed(async () => OrganizationContentWriteAccess.snapshot(otherSuperAdmin, snapshotId))
+			await expectNotAllowed(async () =>
+				OrganizationContentWriteAccess.dataFromSnapshot(otherSuperAdmin, org0._id)
+			)
+			await expectNotAllowed(async () =>
 				OrganizationContentWriteAccess.showStyleBase(otherSuperAdmin, env.showStyleBaseId)
 			)
-			expectNotAllowed(async () => OrganizationContentWriteAccess.translationBundle(otherSuperAdmin, selectorOrg))
+			await expectNotAllowed(async () =>
+				OrganizationContentWriteAccess.translationBundle(otherSuperAdmin, selectorOrg)
+			)
 		})
 	})
 })
