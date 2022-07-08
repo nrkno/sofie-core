@@ -213,9 +213,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 					this.subscribe(PubSub.showStyleVariants, {
 						_id: { $in: Array.from(showStyleVariantIds) },
 					})
-					this.subscribe(PubSub.rundowns, {
-						playlistId: { $in: Array.from(playlistIds) },
-					})
+					this.subscribe(PubSub.rundowns, Array.from(playlistIds), null)
 				})
 
 				this.autorun(() => {
