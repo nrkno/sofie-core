@@ -51,7 +51,7 @@ export namespace PackageManagerIntegration {
 	): Promise<void> {
 		type FromPackage = Omit<ExpectedPackageStatusAPI.WorkBaseInfoFromPackage, 'id'> & { id: ExpectedPackageId }
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 
@@ -141,7 +141,7 @@ export namespace PackageManagerIntegration {
 		deviceId: PeripheralDeviceId,
 		deviceToken: string
 	): Promise<void> {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 		await ExpectedPackageWorkStatuses.removeAsync({
 			$or: [
@@ -170,7 +170,7 @@ export namespace PackageManagerIntegration {
 			  }
 		)[]
 	): Promise<void> {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 
@@ -236,7 +236,7 @@ export namespace PackageManagerIntegration {
 		deviceId: PeripheralDeviceId,
 		deviceToken: string
 	): Promise<void> {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 		await PackageContainerPackageStatuses.removeAsync({
 			$or: [
@@ -263,7 +263,7 @@ export namespace PackageManagerIntegration {
 			  }
 		)[]
 	): Promise<void> {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 
@@ -323,7 +323,7 @@ export namespace PackageManagerIntegration {
 		deviceId: PeripheralDeviceId,
 		deviceToken: string
 	): Promise<void> {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 		await PackageContainerStatuses.removeAsync({
 			$or: [
@@ -343,7 +343,7 @@ export namespace PackageManagerIntegration {
 	): Promise<
 		Array<{ packageId: ExpectedPackageId; expectedContentVersionHash: string; actualContentVersionHash: string }>
 	> {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		check(packageIds, [String])
 		check(type, String)
 		if (!peripheralDevice.studioId)
@@ -374,7 +374,7 @@ export namespace PackageManagerIntegration {
 		actualContentVersionHash: string,
 		payload: any
 	): Promise<void> {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		check(packageId, String)
 		check(type, String)
 		if (!peripheralDevice.studioId)
@@ -409,7 +409,7 @@ export namespace PackageManagerIntegration {
 		type: string,
 		packageId: ExpectedPackageId
 	): Promise<void> {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		check(packageId, String)
 		check(type, String)
 		if (!peripheralDevice.studioId)

@@ -5,7 +5,7 @@ import { StudioId } from '../../../lib/collections/Studios'
 import { check } from '../../../lib/check'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { getRundownId, runIngestOperation } from './lib'
-import { protectString, stringifyError, waitForPromise } from '../../../lib/lib'
+import { protectString, stringifyError } from '../../../lib/lib'
 import { PickerPOST } from '../http'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
@@ -25,7 +25,7 @@ PickerPOST.route('/ingest/:studioId', async (params, req: IncomingMessage, respo
 			ingestRundown = JSON.parse(ingestRundown)
 		}
 
-		importIngestRundown(protectString<StudioId>(params.studioId), ingestRundown)
+		await importIngestRundown(protectString<StudioId>(params.studioId), ingestRundown)
 
 		response.statusCode = 200
 		response.end(content)
@@ -39,13 +39,13 @@ PickerPOST.route('/ingest/:studioId', async (params, req: IncomingMessage, respo
 		}
 	}
 })
-export function importIngestRundown(studioId: StudioId, ingestRundown: IngestRundown) {
-	const studioExists = waitForPromise(checkStudioExists(studioId))
+export async function importIngestRundown(studioId: StudioId, ingestRundown: IngestRundown): Promise<void> {
+	const studioExists = await checkStudioExists(studioId)
 	if (!studioExists) throw new Meteor.Error(404, `Studio ${studioId} does not exist`)
 
 	const rundownId = getRundownId(studioId, ingestRundown.externalId)
 
-	const existingDbRundown = Rundowns.findOne(rundownId)
+	const existingDbRundown = await Rundowns.findOneAsync(rundownId)
 	// If the RO exists and is not from http then don't replace it. Otherwise, it is free to be replaced
 	if (existingDbRundown && existingDbRundown.externalNRCSName !== getExternalNRCSName(undefined))
 		throw new Meteor.Error(
@@ -53,12 +53,10 @@ export function importIngestRundown(studioId: StudioId, ingestRundown: IngestRun
 			`Cannot replace existing rundown from '${existingDbRundown.externalNRCSName}' with http data`
 		)
 
-	waitForPromise(
-		runIngestOperation(studioId, IngestJobs.UpdateRundown, {
-			rundownExternalId: ingestRundown.externalId,
-			peripheralDeviceId: null,
-			ingestRundown: ingestRundown,
-			isCreateAction: true,
-		})
-	)
+	await runIngestOperation(studioId, IngestJobs.UpdateRundown, {
+		rundownExternalId: ingestRundown.externalId,
+		peripheralDeviceId: null,
+		ingestRundown: ingestRundown,
+		isCreateAction: true,
+	})
 }

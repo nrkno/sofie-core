@@ -100,7 +100,7 @@ PickerPOST.route('/blueprints/restore', async (_params, req: IncomingMessage, re
 			for (const id of _.keys(collection.assets)) {
 				try {
 					const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''
-					uploadBlueprintAsset({ userId: protectString(userId) }, id, collection.assets[id])
+					await uploadBlueprintAsset({ userId: protectString(userId) }, id, collection.assets[id])
 				} catch (e) {
 					logger.error('Blueprint assets upload failed: ' + e)
 					errors.push(e)
@@ -155,7 +155,7 @@ PickerPOST.route('/blueprints/assets', async (_params, req: IncomingMessage, res
 		for (const id of _.keys(collection)) {
 			try {
 				const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''
-				uploadBlueprintAsset({ userId: protectString(userId) }, id, collection[id])
+				await uploadBlueprintAsset({ userId: protectString(userId) }, id, collection[id])
 			} catch (e) {
 				logger.error('Blueprint assets upload failed: ' + e)
 				errors.push(e)
@@ -189,7 +189,7 @@ PickerGET.route('/blueprints/assets/(.*)', async (params, req, res) => {
 	if (filePath.match(/\.(png|svg)?$/)) {
 		const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''
 		try {
-			const data = retrieveBlueprintAsset({ userId: protectString(userId) }, filePath)
+			const data = await retrieveBlueprintAsset({ userId: protectString(userId) }, filePath)
 			const extension = path.extname(filePath)
 			if (extension === '.svg') {
 				res.setHeader('Content-Type', 'image/svg+xml')

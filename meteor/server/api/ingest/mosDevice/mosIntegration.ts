@@ -18,8 +18,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoCreate', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(rundown.ID)
 
@@ -43,8 +43,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoReplace', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(rundown.ID)
 
@@ -70,8 +70,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoDelete', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(rundownId)
 
@@ -93,8 +93,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoMetadata', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(rundownData.ID)
 
@@ -118,8 +118,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStatus', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(status.ID)
 
@@ -143,8 +143,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryStatus', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(status.RunningOrderId)
 		const partExternalId = parseMosString(status.ID)
@@ -171,8 +171,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryInsert', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(Action.RunningOrderID)
 
@@ -199,8 +199,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryReplace', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(Action.RunningOrderID)
 
@@ -227,8 +227,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryMove', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(Action.RunningOrderID)
 
@@ -253,8 +253,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryDelete', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(Action.RunningOrderID)
 
@@ -279,8 +279,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStorySwap', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(Action.RunningOrderID)
 
@@ -304,8 +304,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoReadyToAir', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		const rundownExternalId = parseMosString(Action.ID)
 
@@ -329,8 +329,8 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoFullStory', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = fetchStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
+		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
 
 		logger.info(`mosRoFullStory "${story.ID}"`)
 
@@ -356,7 +356,7 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemDelete', apmNamespace)
 
-		checkAccessAndGetPeripheralDevice(id, token, context)
+		await checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.warn(`mosRoItemDelete NOT SUPPORTED "${Action.StoryID}"`)
 		// @ts-ignore
@@ -373,7 +373,7 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemStatus', apmNamespace)
 
-		checkAccessAndGetPeripheralDevice(id, token, context)
+		await checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.warn(`mosRoItemStatus NOT SUPPORTED "${status.ID}"`)
 		// @ts-ignore
@@ -391,7 +391,7 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemInsert', apmNamespace)
 
-		checkAccessAndGetPeripheralDevice(id, token, context)
+		await checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.warn(`mosRoItemInsert NOT SUPPORTED "${Action.ItemID}"`)
 		// @ts-ignore
@@ -409,7 +409,7 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemReplace', apmNamespace)
 
-		checkAccessAndGetPeripheralDevice(id, token, context)
+		await checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.warn(`mosRoItemReplace NOT SUPPORTED "${Action.ItemID}"`)
 		// @ts-ignore
@@ -427,7 +427,7 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemMove', apmNamespace)
 
-		checkAccessAndGetPeripheralDevice(id, token, context)
+		await checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.warn(`mosRoItemMove NOT SUPPORTED "${Action.ItemID}"`)
 		// @ts-ignore
@@ -446,7 +446,7 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemSwap', apmNamespace)
 
-		checkAccessAndGetPeripheralDevice(id, token, context)
+		await checkAccessAndGetPeripheralDevice(id, token, context)
 
 		logger.warn(`mosRoItemSwap NOT SUPPORTED "${ItemID0}", "${ItemID1}"`)
 		// @ts-ignore

@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { check, Match } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
@@ -10,64 +9,78 @@ import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 
 export namespace MediaManagerIntegration {
-	export function getMediaWorkFlowStepRevisions(
+	export async function getMediaWorkFlowStepRevisions(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string
-	): MediaWorkFlowStepRevision[] {
+	): Promise<MediaWorkFlowStepRevision[]> {
 		logger.debug('getMediaWorkFlowStepRevisions')
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 		if (peripheralDevice.studioId) {
-			return _.map(
-				MediaWorkFlowSteps.find({
+			const rawSteps = (await MediaWorkFlowSteps.findFetchAsync(
+				{
 					studioId: peripheralDevice.studioId,
-				}).fetch(),
-				(ws: MediaWorkFlowStep) => {
-					return {
-						_id: ws._id,
-						_rev: ws._rev,
-					}
+				},
+				{
+					fields: {
+						_id: 1,
+						_rev: 1,
+					},
 				}
-			)
+			)) as Array<Pick<MediaWorkFlowStep, '_id' | '_rev'>>
+
+			return rawSteps.map((ws) => {
+				return {
+					_id: ws._id,
+					_rev: ws._rev,
+				}
+			})
 		} else {
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 		}
 	}
 
-	export function getMediaWorkFlowRevisions(
+	export async function getMediaWorkFlowRevisions(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string
-	): MediaWorkFlowRevision[] {
+	): Promise<MediaWorkFlowRevision[]> {
 		logger.debug('getMediaWorkFlowRevisions')
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 		if (peripheralDevice.studioId) {
-			return _.map(
-				MediaWorkFlows.find({
+			const rawWorkflows = (await MediaWorkFlows.findFetchAsync(
+				{
 					studioId: peripheralDevice.studioId,
-				}).fetch(),
-				(wf: MediaWorkFlow) => {
-					return {
-						_id: wf._id,
-						_rev: wf._rev,
-					}
+				},
+				{
+					fields: {
+						_id: 1,
+						_rev: 1,
+					},
 				}
-			)
+			)) as Array<Pick<MediaWorkFlow, '_id' | '_rev'>>
+
+			return rawWorkflows.map((wf) => {
+				return {
+					_id: wf._id,
+					_rev: wf._rev,
+				}
+			})
 		} else {
 			throw new Meteor.Error(400, 'Device "' + peripheralDevice._id + '" has no studio')
 		}
 	}
 
-	export function updateMediaWorkFlow(
+	export async function updateMediaWorkFlow(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		workFlowId: MediaWorkFlowId,
 		obj: MediaWorkFlow | null
-	): void {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+	): Promise<void> {
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (peripheralDevice.type !== PeripheralDeviceType.MEDIA_MANAGER)
 			throw new Meteor.Error(
 				400,
@@ -84,7 +97,7 @@ export namespace MediaManagerIntegration {
 			obj.deviceId = peripheralDevice._id
 			obj.studioId = peripheralDevice.studioId
 
-			MediaWorkFlows.upsert(workFlowId, obj)
+			await MediaWorkFlows.upsertAsync(workFlowId, obj)
 
 			if (obj.finished && !obj.success) {
 				logger.info('mm job failed')
@@ -92,22 +105,22 @@ export namespace MediaManagerIntegration {
 				logger.info('mm job success')
 			}
 		} else {
-			MediaWorkFlows.remove(workFlowId)
+			await MediaWorkFlows.removeAsync(workFlowId)
 
-			MediaWorkFlowSteps.remove({
+			await MediaWorkFlowSteps.removeAsync({
 				workFlowId: workFlowId,
 			})
 		}
 	}
 
-	export function updateMediaWorkFlowStep(
+	export async function updateMediaWorkFlowStep(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		stepId: MediaWorkFlowStepId,
 		obj: MediaWorkFlowStep | null
-	): void {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+	): Promise<void> {
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (peripheralDevice.type !== PeripheralDeviceType.MEDIA_MANAGER)
 			throw new Meteor.Error(
 				400,
@@ -123,7 +136,7 @@ export namespace MediaManagerIntegration {
 			check(obj._id, String)
 			check(obj.workFlowId, String)
 
-			const workflow = MediaWorkFlows.findOne(obj.workFlowId)
+			const workflow = await MediaWorkFlows.findOneAsync(obj.workFlowId)
 
 			if (!workflow) throw new Meteor.Error(404, `Workflow "${obj.workFlowId}" not found`)
 
@@ -131,9 +144,9 @@ export namespace MediaManagerIntegration {
 			obj.deviceId = peripheralDevice._id
 			obj.studioId = peripheralDevice.studioId
 
-			MediaWorkFlowSteps.upsert(stepId, obj)
+			await MediaWorkFlowSteps.upsertAsync(stepId, obj)
 		} else {
-			MediaWorkFlowSteps.remove(stepId)
+			await MediaWorkFlowSteps.removeAsync(stepId)
 		}
 	}
 }

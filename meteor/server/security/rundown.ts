@@ -78,7 +78,7 @@ export namespace RundownReadAccess {
 
 		if (!mediaManagerDevice) return false
 
-		mediaManagerDevice.studioId = getStudioIdFromDevice(mediaManagerDevice)
+		mediaManagerDevice.studioId = await getStudioIdFromDevice(mediaManagerDevice)
 
 		if (mediaManagerDevice && cred.token) {
 			// mediaManagerDevice.settings
@@ -106,7 +106,7 @@ export namespace RundownReadAccess {
 		})
 		if (!playoutDevice) return false
 
-		playoutDevice.studioId = getStudioIdFromDevice(playoutDevice)
+		playoutDevice.studioId = await getStudioIdFromDevice(playoutDevice)
 
 		if (playoutDevice && cred.token) {
 			return playoutDevice

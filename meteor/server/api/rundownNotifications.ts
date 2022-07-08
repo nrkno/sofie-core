@@ -111,11 +111,11 @@ class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownN
 		if (!(await RundownPlaylistReadAccess.rundownPlaylistContent(playlistId, this)))
 			throw new Meteor.Error(401, 'Invalid access creditials for Segment Parts Notes')
 
-		if (!RundownReadAccess.rundownContent({ $in: rundownIds }, this)) {
+		if (!(await RundownReadAccess.rundownContent({ $in: rundownIds }, this))) {
 			throw new Meteor.Error(401, 'Invalid access creditials for Segment Parts Notes')
 		}
 
-		return makePromise(() => getSegmentPartNotes.apply(this, [playlistId, rundownIds]))
+		return makePromise(() => getSegmentPartNotes(playlistId, rundownIds))
 	}
 	async getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 		triggerWriteAccessBecauseNoCheckNecessary()

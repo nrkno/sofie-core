@@ -69,7 +69,7 @@ async function postHandler(_params, req: BodyParsingIncomingMessage, res: Server
 	} as ServiceMessage
 
 	try {
-		const status = writeMessage(serviceMessage)
+		const status = await writeMessage(serviceMessage)
 		res.statusCode = status.isUpdate === true ? 200 : 201
 		res.setHeader('Content-Type', 'application/json; charset-utf8')
 		res.end(JSON.stringify(serviceMessage))
