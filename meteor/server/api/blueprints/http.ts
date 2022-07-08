@@ -6,14 +6,14 @@ import { ServerResponse, IncomingMessage } from 'http'
 import { check, Match } from '../../../lib/check'
 import { URL } from 'url'
 import { retrieveBlueprintAsset, uploadBlueprint, uploadBlueprintAsset } from './api'
-import { protectString, waitForPromise } from '../../../lib/lib'
+import { protectString } from '../../../lib/lib'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PickerGET, PickerPOST } from '../http'
 import path from 'path'
 
 const BLUEPRINT_ASSET_MAX_AGE = 15 * 24 * 3600 // 15 days, in seconds
 
-PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerPOST.route('/blueprints/restore/:blueprintId', async (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 	logger.debug(`Blueprint Upload: ${req.socket.remoteAddress} POST "${req.url}"`)
 
@@ -36,14 +36,12 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 		if (!_.isString(body) || body.length < 10)
 			throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
-		waitForPromise(
-			uploadBlueprint(
-				{ userId: protectString(userId) },
-				protectString<BlueprintId>(blueprintId),
-				body,
-				blueprintName,
-				force
-			)
+		await uploadBlueprint(
+			{ userId: protectString(userId) },
+			protectString<BlueprintId>(blueprintId),
+			body,
+			blueprintName,
+			force
 		)
 
 		res.statusCode = 200
@@ -55,7 +53,7 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 
 	res.end(content)
 })
-PickerPOST.route('/blueprints/restore', (_params, req: IncomingMessage, res: ServerResponse) => {
+PickerPOST.route('/blueprints/restore', async (_params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 	logger.debug(`Blueprint Upload: ${req.socket.remoteAddress} POST "${req.url}"`)
 
@@ -87,13 +85,11 @@ PickerPOST.route('/blueprints/restore', (_params, req: IncomingMessage, res: Ser
 		for (const id of _.keys(collection.blueprints)) {
 			try {
 				const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''
-				waitForPromise(
-					uploadBlueprint(
-						{ userId: protectString(userId) },
-						protectString<BlueprintId>(id),
-						collection.blueprints[id],
-						id
-					)
+				await uploadBlueprint(
+					{ userId: protectString(userId) },
+					protectString<BlueprintId>(id),
+					collection.blueprints[id],
+					id
 				)
 			} catch (e) {
 				logger.error('Blueprint restore failed: ' + e)
@@ -132,7 +128,7 @@ PickerPOST.route('/blueprints/restore', (_params, req: IncomingMessage, res: Ser
 })
 
 // TODO - should these be based on blueprintId?
-PickerPOST.route('/blueprints/assets', (_params, req: IncomingMessage, res: ServerResponse) => {
+PickerPOST.route('/blueprints/assets', async (_params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 	logger.debug(`Blueprint Asset: ${req.socket.remoteAddress} POST "${req.url}"`)
 
@@ -184,7 +180,7 @@ PickerPOST.route('/blueprints/assets', (_params, req: IncomingMessage, res: Serv
 
 	res.end(content)
 })
-PickerGET.route('/blueprints/assets/(.*)', (params, req, res) => {
+PickerGET.route('/blueprints/assets/(.*)', async (params, req, res) => {
 	logger.debug(`Blueprint Asset: ${req.socket.remoteAddress} GET "${req.url}"`)
 	// TODO - some sort of user verification
 	// for now just check it's a png to prevent snapshots being downloaded

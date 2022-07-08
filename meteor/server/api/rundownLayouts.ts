@@ -49,14 +49,14 @@ export function removeRundownLayout(layoutId: RundownLayoutId) {
 	RundownLayouts.remove(layoutId)
 }
 
-PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', async (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	const showStyleBaseId: ShowStyleBaseId = protectString(params.showStyleBaseId)
 
 	check(showStyleBaseId, String)
 
-	const showStyleBase = waitForPromise(fetchShowStyleBaseLight(showStyleBaseId))
+	const showStyleBase = await fetchShowStyleBaseLight(showStyleBaseId)
 
 	let content = ''
 	try {
@@ -75,7 +75,7 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 
 		layout.showStyleBaseId = showStyleBase._id
 
-		RundownLayouts.upsert(layout._id, layout)
+		await RundownLayouts.upsertAsync(layout._id, layout)
 
 		res.statusCode = 200
 	} catch (e) {
@@ -87,13 +87,13 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 	res.end(content)
 })
 
-PickerGET.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerGET.route('/shelfLayouts/download/:id', async (params, req: IncomingMessage, res: ServerResponse) => {
 	const layoutId: RundownLayoutId = protectString(params.id)
 
 	check(layoutId, String)
 
 	let content = ''
-	const layout = RundownLayouts.findOne(layoutId)
+	const layout = await RundownLayouts.findOneAsync(layoutId)
 	if (!layout) {
 		res.statusCode = 404
 		content = 'Shelf Layout not found'

@@ -21,7 +21,7 @@ const validCriticalities = Object.keys(Criticality)
  *
  * Picker route handler, see Picker documentation for interface details.
  */
-function postHandler(_params, req: BodyParsingIncomingMessage, res: ServerResponse) {
+async function postHandler(_params, req: BodyParsingIncomingMessage, res: ServerResponse) {
 	const { body } = req
 	if (!body) {
 		res.statusCode = 400

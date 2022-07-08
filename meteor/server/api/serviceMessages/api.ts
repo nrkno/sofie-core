@@ -13,7 +13,7 @@ PickerDELETE.route('/serviceMessages/:id', deleteHandler)
 /**
  * List all current messages stored on this instance
  */
-function getHandler(_params, _req: IncomingMessage, res: ServerResponse) {
+async function getHandler(_params, _req: IncomingMessage, res: ServerResponse) {
 	try {
 		const valuesArray = readAllMessages()
 		res.setHeader('Content-Type', 'application/json; charset-utf8')
@@ -28,7 +28,7 @@ function getHandler(_params, _req: IncomingMessage, res: ServerResponse) {
 /**
  * Delete a message
  */
-function deleteHandler(params, _req: IncomingMessage, res: ServerResponse) {
+async function deleteHandler(params, _req: IncomingMessage, res: ServerResponse) {
 	const { id } = params
 	try {
 		if (readAllMessages().find((m) => m.id === id)) {
@@ -48,7 +48,7 @@ function deleteHandler(params, _req: IncomingMessage, res: ServerResponse) {
 /**
  * Retrieves a single message based on a given id
  */
-function getMessageHandler(params, _req: IncomingMessage, res: ServerResponse) {
+async function getMessageHandler(params, _req: IncomingMessage, res: ServerResponse) {
 	const { id } = params
 	try {
 		const message = readAllMessages().find((m) => m.id === id)
