@@ -3,9 +3,25 @@
  */
 
 import { Meteor } from 'meteor/meteor'
+import { setMinimumBrowserVersions } from 'meteor/modern-browsers'
+
 Meteor.startup(() => {
 	console.log('startup')
 })
+
+setMinimumBrowserVersions(
+	{
+		chrome: 80,
+		firefox: 74,
+		edge: 80,
+		ie: Infinity,
+		mobile_safari: [13, 4],
+		opera: 67,
+		safari: [13, 1],
+		electron: 6,
+	},
+	'optional chaining'
+)
 
 import '../lib/main'
 

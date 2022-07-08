@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
+
+
+### Bug Fixes
+
+* include shared-lib in ci workflows ([b2c69f0](https://github.com/nrkno/tv-automation-server-core/commit/b2c69f02d5f12627fa1f2fc2ee2b85c651a0be45))
+
 ## [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
 
 
@@ -1427,6 +1434,14 @@ All notable changes to this project will be documented in this file. See [standa
 - update TSR dep (threadedclass update) ([1c38752](https://github.com/nrkno/tv-automation-server-core/commit/1c387528682368dbc49ee81aca0570cf642d41e5))
 - upgrade tsr ([32105d6](https://github.com/nrkno/tv-automation-server-core/commit/32105d623685f6feaa0ee30c723fcd494376fb11))
 - When removing or modifying a bucket adlib, the grouped adlibs ("behind it" in the GUI) should also be updated ([8a8c39d](https://github.com/nrkno/tv-automation-server-core/commit/8a8c39d26ead6f573c5fcad5075b0890e5bc17c9))
+
+
+### [1.41.1](https://github.com/nrkno/sofie-core/compare/v1.41.0...v1.41.1) (2022-07-05)
+
+
+### Bug Fixes
+
+* transpile mos-connection for compatibility with CasparCG ([#744](https://github.com/nrkno/sofie-core/issues/744)) ([5250e02](https://github.com/nrkno/sofie-core/commit/5250e023d808c6a977429fbf4e4d7b9da3368831))
 
 ## [1.41.0](https://github.com/nrkno/sofie-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
 
