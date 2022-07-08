@@ -71,9 +71,7 @@ function useSubscriptions(
 		useSubscription(PubSub.rundownPlaylists, {
 			_id: rundownPlaylistId,
 		}),
-		useSubscription(PubSub.rundowns, {
-			playlistId: rundownPlaylistId,
-		}),
+		useSubscription(PubSub.rundowns, [rundownPlaylistId], null),
 
 		useSubscription(PubSub.adLibActions, {
 			rundownId: {

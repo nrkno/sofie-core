@@ -11,7 +11,7 @@ import {
 import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
-import { literal, omit, protectString, unprotectString } from '../../../../../lib/lib'
+import { literal, omit, unprotectString } from '../../../../../lib/lib'
 import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
 import {
 	RundownPlaylist,
@@ -97,9 +97,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	}
 
 	useSubscription(PubSub.triggeredActions, showStyleBaseSelector)
-	useSubscription(PubSub.rundowns, {
-		showStyleBaseId: showStyleBaseId ?? protectString('Ignore All'),
-	})
+	useSubscription(PubSub.rundowns, null, showStyleBaseId ? [showStyleBaseId] : [])
 
 	useEffect(() => {
 		const debounce = setTimeout(() => {
@@ -213,13 +211,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		null
 	)
 
-	useSubscription(PubSub.partInstances, {
-		rundownId: rundown?._id ?? protectString('Ignore All'),
-		playlistActivationId: rundownPlaylist?.activationId,
-	})
-	useSubscription(PubSub.parts, {
-		rundownId: rundown?._id ?? protectString('Ignore All'),
-	})
+	useSubscription(PubSub.partInstances, rundown ? [rundown._id] : [], rundownPlaylist?.activationId)
+	useSubscription(PubSub.parts, rundown ? [rundown._id] : [])
 
 	const previewContext = useTracker(
 		() => {

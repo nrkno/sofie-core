@@ -23,15 +23,31 @@ import {
 	RundownBaselineAdLibAction,
 	RundownBaselineAdLibActions,
 } from '../../lib/collections/RundownBaselineAdLibActions'
+import { check, Match } from 'meteor/check'
 
-meteorPublish(PubSub.rundowns, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId<DBRundown>(this.userId, selector0, token)
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+meteorPublish(PubSub.rundowns, function (playlistIds, showStyleBaseIds, token) {
+	check(playlistIds, Match.Maybe(Array))
+	check(showStyleBaseIds, Match.Maybe(Array))
+
+	if (!playlistIds && !showStyleBaseIds)
+		throw new Meteor.Error(400, 'One of playlistIds and showStyleBaseIds must be provided')
+
+	// If values were provided, they must have values
+	if (playlistIds && playlistIds.length === 0) return null
+	if (showStyleBaseIds && showStyleBaseIds.length === 0) return null
+
+	const { cred, selector } = AutoFillSelector.organizationId<DBRundown>(this.userId, {}, token)
+
+	// Add the requested filter
+	if (playlistIds) selector.playlistId = { $in: playlistIds }
+	if (showStyleBaseIds) selector.showStyleBaseId = { $in: showStyleBaseIds }
+
 	const modifier: FindOptions<DBRundown> = {
 		fields: {
 			metaData: 0,
 		},
 	}
+
 	if (
 		NoSecurityReadAccess.any() ||
 		(selector.organizationId && OrganizationReadAccess.organizationContent(selector, cred)) ||
@@ -59,13 +75,22 @@ meteorPublish(PubSub.segments, function (selector, token) {
 	return null
 })
 
-meteorPublish(PubSub.parts, function (selector, token) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+meteorPublish(PubSub.parts, function (rundownIds, token) {
+	check(rundownIds, Array)
+
+	if (rundownIds.length === 0) return null
+
 	const modifier: FindOptions<DBPart> = {
 		fields: {
 			metaData: 0,
 		},
 	}
+
+	const selector: MongoQuery<DBPart> = {
+		rundownId: { $in: rundownIds },
+		reset: { $ne: true },
+	}
+
 	if (
 		(selector.rundownId && RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) ||
 		(selector._id && RundownReadAccess.pieces(selector, { userId: this.userId, token }))
@@ -74,8 +99,12 @@ meteorPublish(PubSub.parts, function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.partInstances, function (selector: MongoQuery<DBPartInstance>, token?: string) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+meteorPublish(PubSub.partInstances, function (rundownIds, playlistActivationId, token?: string) {
+	check(rundownIds, Array)
+	check(playlistActivationId, Match.Maybe(String))
+
+	if (rundownIds.length === 0 || !playlistActivationId) return null
+
 	const modifier: FindOptions<DBPartInstance> = {
 		fields: {
 			// @ts-ignore
@@ -83,8 +112,11 @@ meteorPublish(PubSub.partInstances, function (selector: MongoQuery<DBPartInstanc
 		},
 	}
 
-	// Enforce only not-reset
-	selector.reset = { $ne: true }
+	const selector: MongoQuery<DBPartInstance> = {
+		rundownId: { $in: rundownIds },
+		playlistActivationId: playlistActivationId,
+		reset: { $ne: true },
+	}
 
 	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
 		return PartInstances.find(selector, modifier)

@@ -29,10 +29,10 @@ import { Piece } from '../collections/Pieces'
 import { RundownBaselineAdLibAction } from '../collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibItem } from '../collections/RundownBaselineAdLibPieces'
 import { RundownLayoutBase } from '../collections/RundownLayouts'
-import { DBRundownPlaylist } from '../collections/RundownPlaylists'
-import { DBRundown } from '../collections/Rundowns'
+import { DBRundownPlaylist, RundownPlaylistActivationId, RundownPlaylistId } from '../collections/RundownPlaylists'
+import { DBRundown, RundownId } from '../collections/Rundowns'
 import { DBSegment } from '../collections/Segments'
-import { DBShowStyleBase } from '../collections/ShowStyleBases'
+import { DBShowStyleBase, ShowStyleBaseId } from '../collections/ShowStyleBases'
 import { DBShowStyleVariant } from '../collections/ShowStyleVariants'
 import { SnapshotItem } from '../collections/Snapshots'
 import { DBStudio, RoutedMappings, StudioId } from '../collections/Studios'
@@ -130,14 +130,24 @@ export interface PubSubTypes {
 	) => RundownBaselineAdLibAction
 	[PubSub.ingestDataCache]: (selector: MongoQuery<IngestDataCacheObj>, token?: string) => IngestDataCacheObj
 	[PubSub.rundownPlaylists]: (selector: MongoQuery<DBRundownPlaylist>, token?: string) => DBRundownPlaylist
-	[PubSub.rundowns]: (selector: MongoQuery<DBRundown>, token?: string) => DBRundown
+	[PubSub.rundowns]: (
+		/** RundownPlaylistId to fetch for, or null to not check */
+		playlistIds: RundownPlaylistId[] | null,
+		/** ShowStyleBaseId to fetch for, or null to not check */
+		showStyleBaseIds: ShowStyleBaseId[] | null,
+		token?: string
+	) => DBRundown
 	[PubSub.adLibActions]: (selector: MongoQuery<AdLibAction>, token?: string) => AdLibAction
 	[PubSub.adLibPieces]: (selector: MongoQuery<AdLibPiece>, token?: string) => AdLibPiece
 	[PubSub.pieces]: (selector: MongoQuery<Piece>, token?: string) => Piece
 	[PubSub.pieceInstances]: (selector: MongoQuery<PieceInstance>, token?: string) => PieceInstance
 	[PubSub.pieceInstancesSimple]: (selector: MongoQuery<PieceInstance>, token?: string) => PieceInstance
-	[PubSub.parts]: (selector: MongoQuery<DBPart>, token?: string) => DBPart
-	[PubSub.partInstances]: (selector: MongoQuery<PartInstance>, token?: string) => PartInstance
+	[PubSub.parts]: (rundownIds: RundownId[], token?: string) => DBPart
+	[PubSub.partInstances]: (
+		rundownIds: RundownId[],
+		playlistActivationId: RundownPlaylistActivationId | undefined,
+		token?: string
+	) => PartInstance
 	[PubSub.partInstancesSimple]: (selector: MongoQuery<PartInstance>, token?: string) => PartInstance
 	[PubSub.partInstancesForSegmentPlayout]: (selector: MongoQuery<PartInstance>, token?: string) => PartInstance
 	[PubSub.segments]: (selector: MongoQuery<DBSegment>, token?: string) => DBSegment

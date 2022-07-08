@@ -306,9 +306,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 				},
 			}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
 			if (playlist) {
-				this.subscribe(PubSub.rundowns, {
-					playlistId: playlist._id,
-				})
+				this.subscribe(PubSub.rundowns, [playlist._id], null)
 
 				this.autorun(() => {
 					const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
@@ -325,14 +323,8 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					this.subscribe(PubSub.segments, {
 						rundownId: { $in: rundownIds },
 					})
-					this.subscribe(PubSub.parts, {
-						rundownId: { $in: rundownIds },
-					})
-					this.subscribe(PubSub.partInstances, {
-						rundownId: { $in: rundownIds },
-						playlistActivationId: playlist.activationId,
-						reset: { $ne: true },
-					})
+					this.subscribe(PubSub.parts, rundownIds)
+					this.subscribe(PubSub.partInstances, rundownIds, playlist.activationId)
 					this.subscribe(PubSub.showStyleBases, {
 						_id: {
 							$in: showStyleBaseIds,

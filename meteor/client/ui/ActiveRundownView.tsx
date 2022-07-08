@@ -76,9 +76,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 
 			this.autorun(() => {
 				if (this.props.playlist) {
-					this.subscribe(PubSub.rundowns, {
-						playlistId: this.props.playlist._id,
-					})
+					this.subscribe(PubSub.rundowns, [this.props.playlist._id], null)
 				}
 
 				const subsReady = this.subscriptionsReady()
