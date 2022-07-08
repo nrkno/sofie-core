@@ -20,13 +20,18 @@ registerIndex(PeripheralDevices, {
 	token: 1,
 })
 
-export function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): StudioId | undefined {
+export async function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): Promise<StudioId | undefined> {
 	if (peripheralDevice.studioId) {
 		return peripheralDevice.studioId
 	}
 	if (peripheralDevice.parentDeviceId) {
 		// Also check the parent device:
-		const parentDevice = PeripheralDevices.findOne(peripheralDevice.parentDeviceId)
+		const parentDevice = (await PeripheralDevices.findOneAsync(peripheralDevice.parentDeviceId, {
+			fields: {
+				_id: 1,
+				studioId: 1,
+			},
+		})) as Pick<PeripheralDevice, '_id' | 'studioId'> | undefined
 		if (parentDevice) {
 			return parentDevice.studioId
 		}

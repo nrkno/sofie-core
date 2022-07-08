@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, getCurrentTime, protectString, stringifyError, waitForPromise } from '../../../lib/lib'
+import { getHash, getCurrentTime, protectString, stringifyError } from '../../../lib/lib'
 import { StudioId } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
@@ -63,15 +63,16 @@ export async function runIngestOperation<T extends keyof IngestJobFunc>(
 }
 
 /** Check Access and return PeripheralDevice, throws otherwise */
-export function checkAccessAndGetPeripheralDevice(
+export async function checkAccessAndGetPeripheralDevice(
 	deviceId: PeripheralDeviceId,
 	token: string | undefined,
 	context: Credentials | MethodContext
-): PeripheralDevice {
+): Promise<PeripheralDevice> {
 	const span = profiler.startSpan('lib.checkAccessAndGetPeripheralDevice')
 
-	const { device: peripheralDevice } = waitForPromise(
-		PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
+	const { device: peripheralDevice } = await PeripheralDeviceContentWriteAccess.peripheralDevice(
+		{ userId: context.userId, token },
+		deviceId
 	)
 	if (!peripheralDevice) {
 		throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
@@ -97,15 +98,15 @@ export function getPartId(rundownId: RundownId, partExternalId: string): PartId 
 	return protectString<PartId>(getHash(`${rundownId}_part_${partExternalId}`))
 }
 
-export function fetchStudioIdFromDevice(peripheralDevice: PeripheralDevice): StudioId {
+export async function fetchStudioIdFromDevice(peripheralDevice: PeripheralDevice): Promise<StudioId> {
 	const span = profiler.startSpan('mosDevice.lib.getStudioIdFromDevice')
 
-	const studioId = getStudioIdFromDevice(peripheralDevice)
+	const studioId = await getStudioIdFromDevice(peripheralDevice)
 	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
 
 	updateDeviceLastDataReceived(peripheralDevice._id)
 
-	const studioExists = waitForPromise(checkStudioExists(studioId))
+	const studioExists = await checkStudioExists(studioId)
 	if (!studioExists) throw new Meteor.Error(404, `Studio "${studioId}" of device "${peripheralDevice._id}" not found`)
 
 	span?.end()

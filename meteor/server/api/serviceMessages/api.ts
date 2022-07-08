@@ -15,7 +15,7 @@ PickerDELETE.route('/serviceMessages/:id', deleteHandler)
  */
 async function getHandler(_params, _req: IncomingMessage, res: ServerResponse) {
 	try {
-		const valuesArray = readAllMessages()
+		const valuesArray = await readAllMessages()
 		res.setHeader('Content-Type', 'application/json; charset-utf8')
 		res.end(JSON.stringify(valuesArray), 'utf-8')
 	} catch (error) {
@@ -31,8 +31,9 @@ async function getHandler(_params, _req: IncomingMessage, res: ServerResponse) {
 async function deleteHandler(params, _req: IncomingMessage, res: ServerResponse) {
 	const { id } = params
 	try {
-		if (readAllMessages().find((m) => m.id === id)) {
-			const deleted = deleteMessage(id)
+		const allMessages = await readAllMessages()
+		if (allMessages.find((m) => m.id === id)) {
+			const deleted = await deleteMessage(id)
 			res.setHeader('Content-Type', 'application/json; charset-utf8')
 			res.end(JSON.stringify(deleted), 'utf-8')
 		} else {
@@ -51,7 +52,8 @@ async function deleteHandler(params, _req: IncomingMessage, res: ServerResponse)
 async function getMessageHandler(params, _req: IncomingMessage, res: ServerResponse) {
 	const { id } = params
 	try {
-		const message = readAllMessages().find((m) => m.id === id)
+		const allMessages = await readAllMessages()
+		const message = allMessages.find((m) => m.id === id)
 		if (message) {
 			res.setHeader('Content-Type', 'application/json; charset-utf8')
 			res.end(JSON.stringify(message), 'utf-8')

@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import path from 'path'
 import { promises as fsp } from 'fs'
-import { getCurrentTime, protectString, unprotectString, getRandomId, waitForPromise } from '../../../lib/lib'
+import { getCurrentTime, protectString, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -13,7 +13,7 @@ import {
 import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../../methods'
-import { parseVersion, CoreSystem, SYSTEM_ID, getCoreSystem } from '../../../lib/collections/CoreSystem'
+import { parseVersion, CoreSystem, SYSTEM_ID, getCoreSystemAsync } from '../../../lib/collections/CoreSystem'
 import { evalBlueprint } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
 import { MethodContext, MethodContextAPI } from '../../../lib/api/methods'
@@ -91,11 +91,11 @@ export async function uploadBlueprint(
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
-export function uploadBlueprintAsset(_context: Credentials, fileId: string, body: string) {
+export async function uploadBlueprintAsset(_context: Credentials, fileId: string, body: string): Promise<void> {
 	check(fileId, String)
 	check(body, String)
 
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
@@ -108,18 +108,18 @@ export function uploadBlueprintAsset(_context: Credentials, fileId: string, body
 		}, fileId: ${fileId})`
 	)
 
-	waitForPromise(fsp.mkdir(path.join(system.storePath, parsedPath.dir), { recursive: true }))
-	waitForPromise(fsp.writeFile(path.join(system.storePath, fileId), data))
+	await fsp.mkdir(path.join(system.storePath, parsedPath.dir), { recursive: true })
+	await fsp.writeFile(path.join(system.storePath, fileId), data)
 }
-export function retrieveBlueprintAsset(_context: Credentials, fileId: string) {
+export async function retrieveBlueprintAsset(_context: Credentials, fileId: string): Promise<Buffer> {
 	check(fileId, String)
 
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
 	// TODO: add access control here
-	return waitForPromise(fsp.readFile(path.join(system.storePath, fileId)))
+	return fsp.readFile(path.join(system.storePath, fileId))
 }
 /** Only to be called from internal functions */
 export async function internalUploadBlueprint(
