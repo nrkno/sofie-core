@@ -120,6 +120,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				isNext={isNextPart}
 				isFinished={isFinished}
 				currentPartWillAutonext={currentPartWillAutonext}
+				hasAlreadyPlayed={hasAlreadyPlayed}
 			/>
 		</ContextMenuTrigger>
 	)

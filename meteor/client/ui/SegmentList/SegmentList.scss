@@ -379,6 +379,14 @@ $duration-area-margin: 0.5em;
 					position: absolute;
 					top: 0.1em;
 					margin-left: 0.3em;
+
+					> .segment-opl__freeze-marker-timer {
+						font-weight: 400;
+						-webkit-text-stroke: 0.2px #000;
+						filter: drop-shadow(0 0 5px #000);
+						color: $liveline-timecode-color;
+						margin-left: 0.25em;
+					}
 				}
 
 				> .segment-opl__part-auto-next-marker {

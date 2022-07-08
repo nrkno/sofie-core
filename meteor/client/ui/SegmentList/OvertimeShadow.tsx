@@ -19,6 +19,8 @@ interface IProps {
 	endsInFreeze: boolean
 	partRenderedDuration: number
 	isPartZeroBudget: boolean
+	isLive: boolean
+	hasAlreadyPlayed: boolean
 }
 
 function timeToPosition(time: number, timelineBase: number, maxDuration: number): string {
@@ -40,6 +42,8 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 	endsInFreeze,
 	partRenderedDuration,
 	isPartZeroBudget,
+	isLive,
+	hasAlreadyPlayed,
 }: WithTiming<IProps>) {
 	const livePosition = timingDurations.partPlayed?.[unprotectString(partId)] ?? 0
 
@@ -79,7 +83,7 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 				})}
 				style={overtimeStyle}
 			>
-				{mainSourceEnd && (originalDiff < 0 || diff > 0) && (
+				{mainSourceEnd && !isLive && !hasAlreadyPlayed && (originalDiff < 0 || diff > 0) && (
 					<span className="segment-opl__overtime-timer" role="timer">
 						{RundownUtils.formatDiffToTimecode(diff, true, false, true, false, true, undefined, false, true)}
 					</span>
@@ -88,6 +92,14 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 			{endsInFreeze && (
 				<div className="segment-opl__freeze-marker" style={freezeFrameIconStyle}>
 					<FreezeFrameIcon />
+					{mainSourceEnd &&
+						isLive &&
+						(originalDiff < 0 || Math.floor(diff / 1000) > 0) &&
+						livePosition > partRenderedDuration && (
+							<span className="segment-opl__freeze-marker-timer" role="timer">
+								{RundownUtils.formatDiffToTimecode(diff, true, false, true, false, true, undefined, false, true)}
+							</span>
+						)}
 				</div>
 			)}
 		</>

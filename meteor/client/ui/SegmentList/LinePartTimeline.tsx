@@ -20,6 +20,7 @@ interface IProps {
 	isNext: boolean
 	isFinished: boolean
 	currentPartWillAutonext: boolean
+	hasAlreadyPlayed: boolean
 }
 
 const supportedSourceLayerTypes = new Set(
@@ -62,6 +63,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 	isLive,
 	isNext,
 	currentPartWillAutonext,
+	hasAlreadyPlayed,
 }) {
 	// const [highlight] = useState(false)
 
@@ -127,6 +129,8 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 					endsInFreeze={endsInFreeze}
 					isPartZeroBudget={isPartZeroBudget}
 					partRenderedDuration={partDuration}
+					isLive={isLive}
+					hasAlreadyPlayed={hasAlreadyPlayed}
 				/>
 			)}
 			{willAutoNextOut && <PartAutoNextMarker partDuration={partDuration} timelineBase={timelineBase} />}
