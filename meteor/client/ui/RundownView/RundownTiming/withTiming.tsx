@@ -6,8 +6,25 @@ import { RundownTimingContext } from '../../../lib/rundownTiming'
 
 export type TimingFilterFunction = (durations: RundownTimingContext) => any
 
+export enum TimingTickResolution {
+	/** Used for things that we want to "tick" at the same time (every full second) for all things in the GUI. */
+	Synced = 0,
+	/** Updated with Low accuracy (ie about 4 times a second - based on LOW_RESOLUTION_TIMING_DECIMATOR). */
+	Low = 1,
+	/** Updated with high accuracy (ie many times per second), to be used for things like countdowns. */
+	High = 2,
+}
+
+export enum TimingDataResolution {
+	/** Data for the last synced (full-second) "tick". Whenever a component with TimingTickResolutionupdates for reasons other than timing, the durations will not change randomly. */
+	Synced = 0,
+	/** The most accurate data, whenever accessed. Used by components with TimingTickResolution.Low and TimingTickResolution.High. */
+	High = 2,
+}
+
 export interface WithTimingOptions {
-	isHighResolution?: boolean
+	tickResolution: TimingTickResolution
+	dataResolution: TimingDataResolution
 	filter?: TimingFilterFunction | string | (string | number)[]
 }
 export type WithTiming<T> = T & RundownTiming.InjectedROTimingProps & { children?: React.ReactNode }
@@ -29,12 +46,13 @@ type IWrappedComponent<IProps, IState> =
  * 		new (props: IProps, context: any ) => React.Component<IProps, IState>
  */
 export function withTiming<IProps, IState>(
-	options?: WithTimingOptions | ((props: IProps) => WithTimingOptions)
+	options?: Partial<WithTimingOptions> | ((props: IProps) => Partial<WithTimingOptions>)
 ): (
 	WrappedComponent: IWrappedComponent<IProps, IState>
-) => new (props: IProps, context: any) => React.Component<IProps, IState> {
+) => React.ComponentType<Omit<IProps, keyof RundownTiming.InjectedROTimingProps>> {
 	let expandedOptions: WithTimingOptions = {
-		isHighResolution: false,
+		tickResolution: TimingTickResolution.Synced,
+		dataResolution: TimingDataResolution.Synced,
 		...(typeof options === 'function' ? {} : options),
 	}
 
@@ -42,6 +60,7 @@ export function withTiming<IProps, IState>(
 		return class WithTimingHOCComponent extends React.Component<IProps, IState> {
 			static contextTypes = {
 				durations: PropTypes.object.isRequired,
+				syncedDurations: PropTypes.object.isRequired,
 			}
 
 			filterGetter: (o: any) => any
@@ -67,14 +86,14 @@ export function withTiming<IProps, IState>(
 
 			componentDidMount() {
 				window.addEventListener(
-					expandedOptions.isHighResolution ? RundownTiming.Events.timeupdateHR : RundownTiming.Events.timeupdate,
+					rundownTimingEventFromTickResolution(expandedOptions.tickResolution),
 					this.refreshComponent
 				)
 			}
 
 			componentWillUnmount() {
 				window.removeEventListener(
-					expandedOptions.isHighResolution ? RundownTiming.Events.timeupdateHR : RundownTiming.Events.timeupdate,
+					rundownTimingEventFromTickResolution(expandedOptions.tickResolution),
 					this.refreshComponent
 				)
 			}
@@ -93,7 +112,8 @@ export function withTiming<IProps, IState>(
 			}
 
 			render() {
-				const durations: RundownTimingContext = this.context.durations
+				const highResDurations: RundownTimingContext = this.context.durations
+				const syncedDurations: RundownTimingContext = this.context.syncedDurations
 
 				// If the timing HOC is supposed to be low resolution and we are rendering
 				// during a high resolution tick, the WrappedComponent will render using
@@ -102,12 +122,59 @@ export function withTiming<IProps, IState>(
 				// To bring it back to sync, we mark the component as dirty, which will
 				// force an update on the next low resoluton tick, regardless of what
 				// the filter says.
-				if (!!this.filterGetter && durations.isLowResolution !== !expandedOptions.isHighResolution) {
+				if (componentIsDirty(this.filterGetter, highResDurations, expandedOptions.dataResolution)) {
 					this.isDirty = true
 				}
 
-				return <WrappedComponent {...this.props} timingDurations={durations} />
+				return (
+					<WrappedComponent
+						{...this.props}
+						timingDurations={rundownTimingDataFromDataResolution(
+							expandedOptions.dataResolution,
+							highResDurations,
+							syncedDurations
+						)}
+					/>
+				)
 			}
 		}
+	}
+}
+
+function componentIsDirty(
+	filterGetter: (...args: any[]) => any | undefined,
+	highResDurations: RundownTimingContext,
+	dataResolution: TimingDataResolution
+) {
+	return this.filterGetter && highResDurations.isLowResolution && dataResolution !== TimingDataResolution.Synced
+}
+
+/**
+ * Finds the Rundown Timing Event that corresponds to a given TimingTickResolution
+ */
+function rundownTimingEventFromTickResolution(resolution: TimingTickResolution): RundownTiming.Events {
+	switch (resolution) {
+		case TimingTickResolution.High:
+			return RundownTiming.Events.timeupdateHighResolution
+		case TimingTickResolution.Low:
+			return RundownTiming.Events.timeupdateLowResolution
+		case TimingTickResolution.Synced:
+			return RundownTiming.Events.timeupdateSynced
+	}
+}
+
+/**
+ * Returns the durations corresponding to a given TimingDataResolution
+ */
+function rundownTimingDataFromDataResolution(
+	resolution: TimingDataResolution,
+	highResDurations: RundownTimingContext,
+	syncedDurations: RundownTimingContext
+): RundownTimingContext {
+	switch (resolution) {
+		case TimingDataResolution.High:
+			return highResDurations
+		case TimingDataResolution.Synced:
+			return syncedDurations
 	}
 }

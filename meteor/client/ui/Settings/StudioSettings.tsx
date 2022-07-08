@@ -15,6 +15,7 @@ import {
 	StudioRouteSetExclusivityGroup,
 	getActiveRoutes,
 	StudioPackageContainer,
+	StudioRouteType,
 } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -48,12 +49,12 @@ import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { unprotectString, protectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
-import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { ConfigManifestEntryType, MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
 import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
-import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/corelib/dist/constants'
+import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
+import { MongoCollection } from '../../../lib/collections/lib'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -134,12 +135,8 @@ const StudioDevices = withTranslation()(
 			})
 		}
 
-		isPlayoutConnected() {
-			let connected = false
-			this.props.studioDevices.map((device) => {
-				if (device.type === PeripheralDeviceType.PLAYOUT) connected = true
-			})
-			return connected
+		isPlayoutConnected(): boolean {
+			return !!this.props.studioDevices.find((device) => device.type === PeripheralDeviceType.PLAYOUT)
 		}
 
 		render() {
@@ -207,7 +204,7 @@ interface IDeviceMappingSettingsProps {
 
 const DeviceMappingSettings = withTranslation()(
 	class DeviceMappingSettings extends React.Component<Translated<IDeviceMappingSettingsProps>> {
-		renderOptionalInput(attribute: string, obj: any, collection: TransformedCollection<any, any>) {
+		renderOptionalInput(attribute: string, obj: any, collection: MongoCollection<any>) {
 			return (
 				<EditAttribute
 					modifiedClassName="bghl"
@@ -720,6 +717,7 @@ const StudioRoutings = withTranslation()(
 				mappedLayer: '',
 				outputMappedLayer: '',
 				remapping: {},
+				routeType: StudioRouteType.REROUTE,
 			}
 			const setObject = {}
 			setObject['routeSets.' + routeId + '.routes'] = newRoute
@@ -816,8 +814,8 @@ const StudioRoutings = withTranslation()(
 		}
 		updateRouteSetActive = (routeSetId: string, value: boolean) => {
 			const { t } = this.props
-			doUserAction(t, 'StudioSettings', UserAction.SWITCH_ROUTE_SET, (e) =>
-				MeteorCall.userAction.switchRouteSet(e, this.props.studio._id, routeSetId, value)
+			doUserAction(t, 'StudioSettings', UserAction.SWITCH_ROUTE_SET, (e, ts) =>
+				MeteorCall.userAction.switchRouteSet(e, ts, this.props.studio._id, routeSetId, value)
 			)
 		}
 
@@ -834,9 +832,12 @@ const StudioRoutings = withTranslation()(
 						const deviceTypeFromMappedLayer: TSR.DeviceType | undefined = route.mappedLayer
 							? this.props.studio.mappings[route.mappedLayer]?.device
 							: undefined
-						const routeDeviceType: TSR.DeviceType | undefined = route.mappedLayer
-							? deviceTypeFromMappedLayer
-							: route.deviceType
+						const routeDeviceType: TSR.DeviceType | undefined =
+							route.routeType === StudioRouteType.REMAP
+								? route.deviceType
+								: route.mappedLayer
+								? deviceTypeFromMappedLayer
+								: route.deviceType
 						return (
 							<div className="route-sets-editor mod pan mas" key={index}>
 								<button
@@ -875,8 +876,27 @@ const StudioRoutings = withTranslation()(
 										</label>
 									</div>
 									<div className="mod mvs mhs">
+										<label className="field">
+											{t('Route Type')}
+											{!route.mappedLayer ? (
+												<span className="mls">REMAP</span>
+											) : (
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`routeSets.${routeSetId}.routes.${index}.routeType`}
+													obj={this.props.studio}
+													type="dropdown"
+													options={StudioRouteType}
+													optionsAreNumbers={true}
+													collection={Studios}
+													className="input text-input input-l"
+												></EditAttribute>
+											)}
+										</label>
+									</div>
+									<div className="mod mvs mhs">
 										{t('Device Type')}
-										{route.mappedLayer ? (
+										{route.routeType === StudioRouteType.REROUTE && route.mappedLayer ? (
 											deviceTypeFromMappedLayer !== undefined ? (
 												<span className="mls">{TSR.DeviceType[deviceTypeFromMappedLayer]}</span>
 											) : (
@@ -895,7 +915,8 @@ const StudioRoutings = withTranslation()(
 											></EditAttribute>
 										)}
 									</div>
-									{routeDeviceType !== undefined && route.remapping !== undefined ? (
+									{route.routeType === StudioRouteType.REMAP ||
+									(routeDeviceType !== undefined && route.remapping !== undefined) ? (
 										<>
 											<div className="mod mvs mhs">
 												<label className="field">
@@ -925,6 +946,7 @@ const StudioRoutings = withTranslation()(
 													{
 														device: routeDeviceType,
 														...route.remapping,
+														deviceId: route.remapping?.deviceId ? protectString(route.remapping.deviceId) : undefined,
 													} as MappingExt
 												}
 												studio={this.props.studio}
@@ -2318,7 +2340,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		renderShowStyleEditButtons() {
 			const buttons: JSX.Element[] = []
 			if (this.props.studio) {
-				this.props.studio.supportedShowStyleBase.map((showStyleBaseId) => {
+				for (const showStyleBaseId of this.props.studio.supportedShowStyleBase) {
 					const showStyleBase = this.props.availableShowStyleBases.find(
 						(base) => base.showStyleBase._id === showStyleBaseId
 					)
@@ -2332,7 +2354,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 							></SettingsNavigation>
 						)
 					}
-				})
+				}
 			}
 			return buttons
 		}
@@ -2561,6 +2583,20 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									collection={Studios}
 								></EditAttribute>
 								{t('Allow Rundowns to be reset while on-air')}
+							</label>
+						</div>
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.preserveOrphanedSegmentPositionInRundown"
+									obj={this.props.studio}
+									type="checkbox"
+									collection={Studios}
+								></EditAttribute>
+								{t(
+									'Preserve position of segments when unsynced relative to other segments. Note: this has only been tested for the iNews gateway'
+								)}
 							</label>
 						</div>
 					</div>

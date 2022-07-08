@@ -27,6 +27,12 @@ export const DatePickerFromTo = withTranslation()(
 				dateTo: props.to ? new Date(props.to) : moment().startOf('day').toDate(),
 			}
 		}
+		static getDerivedStateFromProps(props: Readonly<IProps>): IState {
+			return {
+				dateFrom: props.from ? new Date(props.from) : moment().subtract(1, 'days').startOf('day').toDate(),
+				dateTo: props.to ? new Date(props.to) : moment().startOf('day').toDate(),
+			}
+		}
 		triggerOnchange = (state: IState) => {
 			this.props.onChange(state.dateFrom.valueOf(), state.dateTo.valueOf())
 		}

@@ -57,7 +57,7 @@ import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Run
 import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { getShowStyleConfigRef, getStudioConfigRef, ProcessedStudioConfig, ProcessedShowStyleConfig } from '../config'
 import _ = require('underscore')
 import { WatchedPackagesHelper } from './watchedPackages'
@@ -175,6 +175,11 @@ export class StudioBaselineContext extends StudioContext implements IStudioBasel
 	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
+
+	// hackGetMediaObjectDuration(mediaId: string): number | undefined {
+	// 	return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
+	// 		?.mediainfo?.format?.duration
+	// }
 }
 
 export class StudioUserContext extends StudioContext implements IStudioUserContext {
@@ -295,6 +300,11 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
+
+	// hackGetMediaObjectDuration(mediaId: string): number | undefined {
+	// 	return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
+	// 		?.mediainfo?.format?.duration
+	// }
 }
 export class GetRundownContext extends ShowStyleUserContext implements IGetRundownContext {
 	private cachedPlaylistsInStudio: Promise<Readonly<IBlueprintRundownPlaylist>[]> | undefined
@@ -494,6 +504,11 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
+
+	// hackGetMediaObjectDuration(mediaId: string): number | undefined {
+	// 	return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
+	// 		?.mediainfo?.format?.duration
+	// }
 }
 
 // /** Events */

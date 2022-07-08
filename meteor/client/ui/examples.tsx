@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { withTracker, translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import * as React from 'react'
-import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming'
+import {
+	TimingDataResolution,
+	TimingTickResolution,
+	withTiming,
+	WithTiming,
+} from './RundownView/RundownTiming/withTiming'
 import { withTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { Meteor } from 'meteor/meteor'
@@ -34,8 +39,8 @@ class SimpleComponent extends React.Component<SimpleComponentProps, SimpleCompon
 		)
 	}
 }
-function testSimpleComponent() {
-	const a = new SimpleComponent({
+export function testSimpleComponent() {
+	return new SimpleComponent({
 		myProp0: '',
 		// asdf: 123, // invalid argument
 	})
@@ -47,7 +52,7 @@ interface TranslatedSimpleComponentProps {
 interface TranslatedSimpleComponentState {
 	myState0: string
 }
-const TranslatedSimpleComponent = withTranslation()(
+export const TranslatedSimpleComponent = withTranslation()(
 	class TranslatedSimpleComponent extends React.Component<
 		Translated<TranslatedSimpleComponentProps>,
 		TranslatedSimpleComponentState
@@ -119,8 +124,8 @@ const ReactiveComponent = withTracker<ReactiveComponentProps, ReactiveComponentS
 		}
 	}
 )
-function testReactiveComponent() {
-	const a = new ReactiveComponent({
+export function testReactiveComponent() {
+	return new ReactiveComponent({
 		myProp0: '',
 		// myReactiveProp0: '', // invalid argument
 		// asdf: 123, // invalid argument
@@ -137,7 +142,7 @@ interface TranslatedReactiveComponentTrackedProps {
 	myReactiveProp0: string
 }
 
-const TranslatedReactiveComponent = translateWithTracker<
+export const TranslatedReactiveComponent = translateWithTracker<
 	TranslatedReactiveComponentProps,
 	TranslatedReactiveComponentState,
 	TranslatedReactiveComponentTrackedProps
@@ -185,8 +190,9 @@ interface WithTimingComponentProps {
 interface WithTimingComponentState {
 	myState0: string
 }
-const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingComponentState>({
-	isHighResolution: false,
+export const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingComponentState>({
+	dataResolution: TimingDataResolution.Synced,
+	tickResolution: TimingTickResolution.Synced,
 })(
 	class WithTimingComponent extends React.Component<WithTiming<WithTimingComponentProps>, WithTimingComponentState> {
 		_refreshTimer: number | undefined
@@ -214,12 +220,3 @@ const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingCompo
 		}
 	}
 )
-function testWithTimingComponent() {
-	const a = new WithTimingComponent(
-		{
-			myProp0: '',
-			// asdf: 123, // invalid argument
-		},
-		{}
-	)
-}

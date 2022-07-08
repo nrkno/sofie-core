@@ -287,7 +287,7 @@ async function manipulateExpectedPackagesPublicationData(
 			activeRundowns: state.activeRundowns.map((rundown) => {
 				return {
 					_id: rundown._id,
-					_rank: rundown._rank,
+					_rank: state.activePlaylist?.rundownIdsInOrder?.indexOf(rundown._id) ?? 0,
 				}
 			}),
 		},

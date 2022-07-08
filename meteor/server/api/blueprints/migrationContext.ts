@@ -42,9 +42,9 @@ import {
 import { check } from '../../../lib/check'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
-import { Mongo } from 'meteor/mongo'
 import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { Match } from 'meteor/check'
+import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
 
 class AbstractMigrationContextWithTriggeredActions {
 	protected showStyleBaseId: ShowStyleBaseId | null = null
@@ -196,7 +196,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		value = trimIfString(value)
 
-		let modifier: Mongo.Modifier<DBStudio> = {}
+		let modifier: MongoModifier<DBStudio> = {}
 		if (value === undefined) {
 			modifier = {
 				$unset: {
@@ -241,7 +241,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	getDevice(deviceId: string): TSR.DeviceOptionsAny | undefined {
 		check(deviceId, String)
 
-		const selector: Mongo.Selector<PeripheralDevice> = {
+		const selector: MongoQuery<PeripheralDevice> = {
 			type: PeripheralDeviceType.PLAYOUT,
 			studioId: this.studio._id,
 		}
@@ -254,7 +254,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		})
 
 		if (!parentDevice || !parentDevice.settings) return undefined
-		return (parentDevice.settings as PlayoutDeviceSettings).devices[deviceId]
+		return (parentDevice.settings as PlayoutDeviceSettings).devices[deviceId] as TSR.DeviceOptionsAny
 	}
 	insertDevice(deviceId: string, device: TSR.DeviceOptionsAny): string {
 		check(deviceId, String)
@@ -299,7 +299,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(500, `Device id "${deviceId}" is invalid`)
 		}
 
-		const selector: Mongo.Selector<PeripheralDevice> = {
+		const selector: MongoQuery<PeripheralDevice> = {
 			type: PeripheralDeviceType.PLAYOUT,
 			studioId: this.studio._id,
 		}
@@ -612,7 +612,7 @@ export class MigrationContextShowStyle
 
 		value = trimIfString(value)
 
-		const modifier: Mongo.Modifier<DBShowStyleBase> = {
+		const modifier: MongoModifier<DBShowStyleBase> = {
 			$set: {
 				[`blueprintConfig.${configId}`]: value,
 			},
@@ -668,7 +668,7 @@ export class MigrationContextShowStyle
 		const variant = this.getVariantFromDb(variantId)
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
-		const modifier: Mongo.Modifier<DBShowStyleVariant> = {
+		const modifier: MongoModifier<DBShowStyleVariant> = {
 			$set: {
 				[`blueprintConfig.${configId}`]: value,
 			},

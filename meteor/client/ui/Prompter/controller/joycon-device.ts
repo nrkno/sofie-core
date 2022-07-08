@@ -269,7 +269,7 @@ export class JoyConController extends ControllerAbstract {
 		}
 
 		if (joyconButtonHistory?.buttons?.length) {
-			joycon.buttons.forEach((o, i) => {
+			joycon.buttons.forEach((_o, i) => {
 				const oldBtn = joyconButtonHistory.buttons[i]
 				const newBtn = joycon.buttons[i]
 				if (!oldBtn && newBtn) {

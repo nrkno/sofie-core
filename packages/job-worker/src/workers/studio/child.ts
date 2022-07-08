@@ -52,7 +52,7 @@ export class StudioWorkerChild {
 		if (this.#staticData) throw new Error('Worker already initialised')
 
 		const mongoClient = await createMongoConnection(mongoUri)
-		const collections = getMongoCollections(mongoClient, dbName)
+		const collections = getMongoCollections(mongoClient, dbName, false)
 
 		// Load some 'static' data from the db
 		const dataCache = await loadWorkerDataCache(collections, this.#studioId)

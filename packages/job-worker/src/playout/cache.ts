@@ -1,5 +1,5 @@
 import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DbCacheWriteObject } from '../cache/CacheObject'
+import { DbCacheWriteObject, DbCacheWriteOptionalObject } from '../cache/CacheObject'
 import { CacheBase, ReadOnlyCache } from '../cache/CacheBase'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
@@ -123,7 +123,7 @@ export class CacheForPlayoutPreInit extends CacheBase<CacheForPlayout> {
 export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForStudioBase {
 	private toBeRemoved = false
 
-	public readonly Timeline: DbCacheWriteCollection<TimelineComplete>
+	public readonly Timeline: DbCacheWriteOptionalObject<TimelineComplete>
 
 	public readonly Segments: DbCacheReadCollection<DBSegment>
 	public readonly Parts: DbCacheReadCollection<DBPart>
@@ -143,7 +143,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		parts: DbCacheReadCollection<DBPart>,
 		partInstances: DbCacheWriteCollection<DBPartInstance>,
 		pieceInstances: DbCacheWriteCollection<PieceInstance>,
-		timeline: DbCacheWriteCollection<TimelineComplete>,
+		timeline: DbCacheWriteOptionalObject<TimelineComplete>,
 		baselineObjects: DbCacheReadCollection<RundownBaselineObj>
 	) {
 		super(context, playlistLock, playlistId, peripheralDevices, playlist, rundowns)
@@ -246,7 +246,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			DbCacheReadCollection<DBPart>,
 			DbCacheWriteCollection<DBPartInstance>,
 			DbCacheWriteCollection<PieceInstance>,
-			DbCacheWriteCollection<TimelineComplete>,
+			DbCacheWriteOptionalObject<TimelineComplete>,
 			DbCacheReadCollection<RundownBaselineObj>
 		]
 	> {
@@ -324,9 +324,11 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 				pieceInstancesSelector
 			),
 			// Future: This could be defered until we get to updateTimeline. It could be a small performance boost
-			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Timelines, {
-				_id: playlist.studioId,
-			}),
+			DbCacheWriteOptionalObject.createOptionalFromDatabase(
+				context,
+				context.directCollections.Timelines,
+				context.studioId
+			),
 		])
 
 		if (ingestCache) {
@@ -398,16 +400,7 @@ export function getOrderedSegmentsAndPartsFromPlayoutCache(cache: CacheForPlayou
 	segments: DBSegment[]
 	parts: DBPart[]
 } {
-	const rundowns = cache.Rundowns.findFetch(
-		{},
-		{
-			sort: {
-				_rank: 1,
-				_id: 1,
-			},
-		}
-	)
-	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, rundowns)
+	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, cache.Playlist.doc)
 }
 export function getRundownIDsFromCache(cache: CacheForPlayout): RundownId[] {
 	return cache.Rundowns.findFetch({}).map((r) => r._id)

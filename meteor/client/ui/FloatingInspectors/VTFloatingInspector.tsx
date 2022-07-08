@@ -7,10 +7,11 @@ import { NoticeLevel } from '../../lib/notifications/notifications'
 import { ExpectedPackage, VTContent } from '@sofie-automation/blueprints-integration'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
-import { Studio } from '../../../lib/collections/Studios'
+import { IStudioSettings, Studio } from '../../../lib/collections/Studios'
 import { PieceId, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { getPreviewUrlForExpectedPackagesAndContentMetaData } from '../../lib/ui/clipPreview'
 import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer'
+import classNames from 'classnames'
 
 interface IProps {
 	status: PieceStatusCode
@@ -50,83 +51,118 @@ function renderNotice(noticeLevel: NoticeLevel, noticeMessage: string | null): J
 	)
 }
 
-export const VTFloatingInspector: React.FunctionComponent<IProps> = (props: IProps) => {
-	const { t } = useTranslation()
-	const { timePosition } = props
+function shouldShowFloatingInspectorContent(status: PieceStatusCode, content: VTContent | undefined): boolean {
+	return status !== PieceStatusCode.SOURCE_NOT_SET && !!content?.fileName
+}
 
-	const itemDuration = (props.content ? props.content.sourceDuration : undefined) || props.renderedDuration || 0
-	const seek = props.content?.seek ?? 0
-	const loop = props.content?.loop ?? false
+const VideoPreviewPlayerInspector: React.FC<
+	React.PropsWithChildren<{
+		itemDuration: number
+		loop: boolean
+		seek: number
+		previewUrl: string
+		timePosition: number
+		studioSettings: IStudioSettings | undefined
+		floatingInspectorStyle: React.CSSProperties
+	}>
+> = ({ itemDuration, loop, seek, previewUrl, timePosition, studioSettings, floatingInspectorStyle, children }) => {
+	return (
+		<div
+			className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
+			style={floatingInspectorStyle}
+		>
+			<VideoPreviewPlayer
+				itemDuration={itemDuration}
+				loop={loop}
+				seek={seek}
+				previewUrl={previewUrl}
+				timePosition={timePosition}
+				studioSettings={studioSettings}
+			/>
+			{children}
+		</div>
+	)
+}
+
+export const VTFloatingInspector: React.FC<IProps> = ({
+	timePosition,
+	content,
+	renderedDuration,
+	pieceId,
+	studio,
+	expectedPackages,
+	contentMetaData,
+	hideHoverscrubPreview,
+	noticeLevel,
+	noticeMessage,
+	showMiniInspector,
+	itemElement,
+	displayOn,
+	floatingInspectorStyle,
+	typeClass,
+	status,
+}: IProps) => {
+	const { t } = useTranslation()
+
+	const itemDuration = content?.sourceDuration || renderedDuration || 0
+	const seek = content?.seek ?? 0
+	const loop = content?.loop ?? false
 
 	const offsetTimePosition = timePosition + seek
 
 	const previewUrl: string | undefined = getPreviewUrlForExpectedPackagesAndContentMetaData(
-		props.pieceId,
-		props.studio,
-		props.studio?.settings.mediaPreviewsUrl,
-		props.expectedPackages,
-		props.contentMetaData
+		pieceId,
+		studio,
+		studio?.settings.mediaPreviewsUrl,
+		expectedPackages,
+		contentMetaData
+	)
+
+	const showVideoPlayerInspector = !hideHoverscrubPreview && previewUrl
+	const showMiniInspectorClipData = shouldShowFloatingInspectorContent(status, content)
+	const showMiniInspectorNotice = noticeLevel !== null
+	const showMiniInspectorData = showMiniInspectorNotice || showMiniInspectorClipData
+	const showAnyFloatingInspector = showVideoPlayerInspector || showMiniInspectorData
+
+	if (!showAnyFloatingInspector) {
+		return null
+	}
+
+	const miniDataInspector = showMiniInspectorData && (
+		<div
+			className={classNames('segment-timeline__mini-inspector', typeClass, {
+				'segment-timeline__mini-inspector--sub-inspector': showVideoPlayerInspector,
+				'segment-timeline__mini-inspector--notice notice-critical': noticeLevel === NoticeLevel.CRITICAL,
+				'segment-timeline__mini-inspector--notice notice-warning': noticeLevel === NoticeLevel.WARNING,
+			})}
+			style={!showVideoPlayerInspector ? floatingInspectorStyle : undefined}
+		>
+			{showMiniInspectorNotice && renderNotice(noticeLevel, noticeMessage)}
+			{showMiniInspectorClipData && (
+				<div className="segment-timeline__mini-inspector__properties">
+					<span className="mini-inspector__label">{t('Clip:')}</span>
+					<span className="mini-inspector__value">{content?.fileName}</span>
+				</div>
+			)}
+		</div>
 	)
 
 	return (
-		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
-			{previewUrl ? (
-				!props.hideHoverscrubPreview || props.noticeLevel !== null ? (
-					<div
-						className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
-						style={props.floatingInspectorStyle}
-					>
-						{!props.hideHoverscrubPreview ? (
-							<VideoPreviewPlayer
-								itemDuration={itemDuration}
-								loop={loop}
-								seek={seek}
-								previewUrl={previewUrl}
-								timePosition={offsetTimePosition}
-								studioSettings={props.studio?.settings}
-							/>
-						) : null}
-						{props.noticeLevel !== null ? (
-							<div
-								className={
-									'segment-timeline__mini-inspector ' +
-									(!props.hideHoverscrubPreview ? 'segment-timeline__mini-inspector--sub-inspector ' : '') +
-									props.typeClass +
-									' ' +
-									(props.noticeLevel === NoticeLevel.CRITICAL
-										? 'segment-timeline__mini-inspector--notice notice-critical'
-										: props.noticeLevel === NoticeLevel.WARNING
-										? 'segment-timeline__mini-inspector--notice notice-warning'
-										: '')
-								}
-							>
-								{renderNotice(props.noticeLevel, props.noticeMessage)}
-							</div>
-						) : null}
-					</div>
-				) : null
-			) : (
-				<div
-					className={
-						'segment-timeline__mini-inspector ' +
-						props.typeClass +
-						' ' +
-						(props.noticeLevel === NoticeLevel.CRITICAL
-							? 'segment-timeline__mini-inspector--notice notice-critical'
-							: props.noticeLevel === NoticeLevel.WARNING
-							? 'segment-timeline__mini-inspector--notice notice-warning'
-							: '')
-					}
-					style={props.floatingInspectorStyle}
+		<FloatingInspector shown={showMiniInspector && itemElement !== undefined} displayOn={displayOn}>
+			{showVideoPlayerInspector ? (
+				<VideoPreviewPlayerInspector
+					itemDuration={itemDuration}
+					loop={loop}
+					seek={seek}
+					previewUrl={previewUrl}
+					timePosition={offsetTimePosition}
+					studioSettings={studio?.settings}
+					floatingInspectorStyle={floatingInspectorStyle}
 				>
-					{props.noticeLevel !== null ? renderNotice(props.noticeLevel, props.noticeMessage) : null}
-					{props.status !== PieceStatusCode.SOURCE_NOT_SET ? (
-						<div className="segment-timeline__mini-inspector__properties">
-							<span className="mini-inspector__label">{t('Clip:')}</span>
-							<span className="mini-inspector__value">{props.content && props.content.fileName}</span>
-						</div>
-					) : null}
-				</div>
+					{miniDataInspector}
+				</VideoPreviewPlayerInspector>
+			) : (
+				miniDataInspector
 			)}
 		</FloatingInspector>
 	)

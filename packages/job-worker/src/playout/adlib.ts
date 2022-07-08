@@ -23,7 +23,7 @@ import {
 	getSelectedPartInstancesFromCache,
 } from './cache'
 import { runJobWithPlayoutCache } from './lock'
-import { updateTimeline } from './timeline'
+import { updateTimeline } from './timeline/generate'
 import { selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
 import {
@@ -39,7 +39,7 @@ import {
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceLifespan, IBlueprintDirectPlayType, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../db'
@@ -293,11 +293,12 @@ export async function innerStartOrQueueAdLibPiece(
 	queue: boolean,
 	currentPartInstance: DBPartInstance,
 	adLibPiece: AdLibPiece | BucketAdLib
-): Promise<void> {
+): Promise<PartInstanceId | undefined> {
 	const playlist = cache.Playlist.doc
 	if (!playlist.activationId) throw new Error('RundownPlaylist is not active')
 
 	const span = context.startSpan('innerStartOrQueueAdLibPiece')
+	let queuedPartInstanceId: PartInstanceId | undefined
 	if (queue || adLibPiece.toBeQueued) {
 		const newPartInstance: DBPartInstance = {
 			_id: getRandomId(),
@@ -317,6 +318,11 @@ export async function innerStartOrQueueAdLibPiece(
 				title: adLibPiece.name,
 				expectedDuration: adLibPiece.expectedDuration,
 				expectedDurationWithPreroll: adLibPiece.expectedDuration, // Filled in later
+				// TODOSYNC: do tv2 use these?
+				// autoNext: adLibPiece.adlibAutoNext,
+				// autoNextOverlap: adLibPiece.adlibAutoNextOverlap,
+				// disableOutTransition: adLibPiece.adlibDisableOutTransition,
+				// transitionKeepaliveDuration: adLibPiece.adlibTransitionKeepAlive,
 			},
 		}
 		const newPieceInstance = convertAdLibToPieceInstance(
@@ -333,6 +339,7 @@ export async function innerStartOrQueueAdLibPiece(
 		)
 
 		await innerStartQueuedAdLib(context, cache, rundown, currentPartInstance, newPartInstance, [newPieceInstance])
+		queuedPartInstanceId = newPartInstance._id
 
 		// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 	} else {
@@ -351,6 +358,7 @@ export async function innerStartOrQueueAdLibPiece(
 	await updateTimeline(context, cache)
 
 	if (span) span.end()
+	return queuedPartInstanceId
 }
 
 export async function startStickyPieceOnSourceLayer(
@@ -472,12 +480,10 @@ export async function innerFindLastScriptedPieceOnLayer(
 		sourceLayerId: { $in: sourceLayerId },
 	}
 
-	const pieces: Pick<Piece, '_id' | 'startPartId' | 'enable'>[] = await context.directCollections.Pieces.findFetch(
-		query,
-		{
+	const pieces: Array<Pick<Piece, '_id' | 'startPartId' | 'enable'>> =
+		await context.directCollections.Pieces.findFetch(query, {
 			projection: { _id: 1, startPartId: 1, enable: 1 },
-		}
-	)
+		})
 
 	const part = cache.Parts.findOne(
 		{ _id: { $in: pieces.map((p) => p.startPartId) }, _rank: { $lte: currentPartInstance.part._rank } },
@@ -491,7 +497,7 @@ export async function innerFindLastScriptedPieceOnLayer(
 	const partStarted = currentPartInstance.timings?.startedPlayback
 	const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
-	const piece = pieces
+	const piecesSortedAsc = pieces
 		.filter((p) => p.startPartId === part._id && (p.enable.start === 'now' || p.enable.start <= nowInPart))
 		.sort((a, b) => {
 			if (a.enable.start === 'now' && b.enable.start === 'now') return 0
@@ -499,7 +505,12 @@ export async function innerFindLastScriptedPieceOnLayer(
 			if (b.enable.start === 'now') return 1
 
 			return b.enable.start - a.enable.start
-		})[0]
+		})
+
+	const piece = piecesSortedAsc.shift()
+	if (!piece) {
+		return
+	}
 
 	const fullPiece = await context.directCollections.Pieces.findOne(piece._id)
 	if (!fullPiece) return

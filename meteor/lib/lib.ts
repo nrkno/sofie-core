@@ -5,6 +5,11 @@ import { ITranslatableMessage } from '@sofie-automation/corelib/dist/Translatabl
 import { Meteor } from 'meteor/meteor'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from './logging'
+import { MongoQuery } from './typings/meteor'
+import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/mongo'
+
+import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
+export { Time, TimeDuration }
 
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
@@ -25,15 +30,13 @@ export async function MeteorPromiseCall(callName: string, ...args: any[]): Promi
 	})
 }
 
-export type Time = number
-export type TimeDuration = number
-
 // The diff is currently only used client-side
 const systemTime = {
 	hasBeenSet: false,
 	diff: 0,
 	stdDev: 9999,
 	lastSync: 0,
+	timeOriginDiff: 0,
 }
 /**
  * Returns the current (synced) time.
@@ -41,7 +44,7 @@ const systemTime = {
  * @return {Time}
  */
 export function getCurrentTime(): Time {
-	return Math.floor(Date.now() - systemTime.diff)
+	return Math.floor(Date.now() - (Meteor.isServer ? 0 : systemTime.diff))
 }
 export { systemTime }
 
@@ -196,31 +199,6 @@ export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: numb
 	}, t)
 }
 
-export function escapeHtml(text: string): string {
-	// Escape strings, so they are XML-compatible:
-
-	const map = {
-		'&': '&amp;',
-		'<': '&lt;',
-		'>': '&gt;',
-		'"': '&quot;',
-		"'": '&#039;',
-	}
-	const nbsp = String.fromCharCode(160) // non-breaking space (160)
-	map[nbsp] = ' ' // regular space
-
-	const textLength = text.length
-	let outText = ''
-	for (let i = 0; i < textLength; i++) {
-		const c = text[i]
-		if (map[c]) {
-			outText += map[c]
-		} else {
-			outText += c
-		}
-	}
-	return outText
-}
 const ticCache = {}
 /**
  * Performance debugging. tic() starts a timer, toc() traces the time since tic()
@@ -486,4 +464,15 @@ export enum LogLevel {
 	WARN = 'warn',
 	ERROR = 'error',
 	NONE = 'crit',
+}
+
+/**
+ * Convert a MongoQuery from @sofie-automation/corelib typings to Meteor typings.
+ * They aren't compatible yet because Meteor is using some 'loose' custom typings, rather than corelib which uses the strong typings given by the mongodb library
+ * Note: This assumes the queries are compatible. Due to how meteor uses the query they should be, but this has not been verified
+ * @param query MongoQuery as written in @sofie-automation/corelib syntax
+ * @returns MongoQuery as written in Meteor syntax
+ */
+export function convertCorelibToMeteorMongoQuery<T>(query: CoreLibMongoQuery<T>): MongoQuery<T> {
+	return query as any
 }

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import Moment from 'react-moment'
-import { withTiming, WithTiming } from './RundownTiming/withTiming'
+import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './RundownTiming/withTiming'
 import { RundownUtils } from '../../lib/rundown'
 import { withTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -28,6 +28,8 @@ const MarkerCountdownText = withTranslation()(
 		{}
 	>({
 		filter: 'currentTime',
+		tickResolution: TimingTickResolution.Low,
+		dataResolution: TimingDataResolution.Synced,
 	})(function MarkerCountdown(
 		props: Translated<
 			WithTiming<{

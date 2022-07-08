@@ -14,7 +14,7 @@ interface IProps {
 	onChange: (newVal: DBBlueprintTrigger) => void
 }
 
-const MODIFIER_MAP = {
+export const MODIFIER_MAP = {
 	ControlLeft: 'Control',
 	ControlRight: 'Control',
 	ShiftLeft: 'Shift',

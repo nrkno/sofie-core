@@ -11,8 +11,6 @@ import { UserError } from './error'
 
 export * from './hash'
 
-export type TimeDuration = number
-
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
 
 /**
@@ -93,7 +91,7 @@ export function getRandomString(numberOfChars?: number): string {
 	return Random.id(numberOfChars)
 }
 
-export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
+export function getRandomId<T extends ProtectedString<any>>(numberOfChars?: number): T {
 	return protectString(getRandomString(numberOfChars))
 }
 

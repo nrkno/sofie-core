@@ -4,7 +4,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from '../../../jobs'
@@ -29,7 +29,6 @@ export async function setupRundownBase(
 		},
 
 		playlistId: playlistId,
-		_rank: 0,
 
 		_id: rundownId,
 		externalId: 'MOCK_RUNDOWN',

@@ -4,7 +4,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PartNote, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from '../jobs'
 import { ReadonlyDeep } from 'type-fest'

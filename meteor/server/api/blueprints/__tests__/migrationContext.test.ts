@@ -583,7 +583,7 @@ describe('Test blueprint migrationContext', () => {
 					type: TSR.DeviceType.HYPERDECK,
 				}
 				const expectedDevice = {
-					...initialSettings.devices['device01'],
+					...(initialSettings.devices['device01'] as any),
 					...rawDevice,
 				}
 

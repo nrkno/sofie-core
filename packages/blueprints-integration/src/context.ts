@@ -102,6 +102,7 @@ export interface IPackageInfoContext {
 	 * eg, baseline packages can be accessed when generating the baseline objects, piece/adlib packages can be access when regenerating the segment they are from
 	 */
 	getPackageInfo: (packageId: string) => Readonly<PackageInfo.Any[]>
+	// hackGetMediaObjectDuration: (mediaId: string) => number | undefined // TODOSYNC: rework this, or remove it
 }
 
 export interface IStudioBaselineContext extends IStudioContext, IPackageInfoContext {}

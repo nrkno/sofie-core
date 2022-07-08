@@ -1,7 +1,7 @@
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
-import { getCurrentTime, getHash } from '../../lib/lib'
+import { getCurrentTime, getHash, Time } from '../../lib/lib'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { Parts, PartId } from '../../lib/collections/Parts'
 import { ServerPlayoutAPI } from './playout/playout'
@@ -86,10 +86,16 @@ class ServerUserActionAPI
 	extends MethodContextAPI
 	implements ReplaceOptionalWithNullInMethodArguments<NewUserActionAPI>
 {
-	async take(userEvent: string, rundownPlaylistId: RundownPlaylistId, fromPartInstanceId: PartInstanceId | null) {
+	async take(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
+		fromPartInstanceId: PartInstanceId | null
+	) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -104,6 +110,7 @@ class ServerUserActionAPI
 	}
 	async setNext(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		nextPartId: PartId,
 		timeOffset: number | null
@@ -111,6 +118,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -125,10 +133,16 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async setNextSegment(userEvent: string, rundownPlaylistId: RundownPlaylistId, nextSegmentId: SegmentId | null) {
+	async setNextSegment(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
+		nextSegmentId: SegmentId | null
+	) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -141,10 +155,17 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async moveNext(userEvent: string, rundownPlaylistId: RundownPlaylistId, partDelta: number, segmentDelta: number) {
+	async moveNext(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
+		partDelta: number,
+		segmentDelta: number
+	) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -159,10 +180,11 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async prepareForBroadcast(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+	async prepareForBroadcast(userEvent: string, eventTime: Time, rundownPlaylistId: RundownPlaylistId) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -173,10 +195,11 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async resetRundownPlaylist(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+	async resetRundownPlaylist(userEvent: string, eventTime: Time, rundownPlaylistId: RundownPlaylistId) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -187,10 +210,16 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async resetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean | null) {
+	async resetAndActivate(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
+		rehearsal: boolean | null
+	) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -203,10 +232,11 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async activate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
+	async activate(userEvent: string, eventTime: Time, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -219,10 +249,11 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async deactivate(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+	async deactivate(userEvent: string, eventTime: Time, rundownPlaylistId: RundownPlaylistId) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -233,10 +264,16 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async forceResetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
+	async forceResetAndActivate(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
+		rehearsal: boolean
+	) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -250,10 +287,16 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async disableNextPiece(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo: boolean | null) {
+	async disableNextPiece(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
+		undo: boolean | null
+	) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -268,6 +311,7 @@ class ServerUserActionAPI
 	}
 	async pieceTakeNow(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
@@ -275,6 +319,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -291,6 +336,7 @@ class ServerUserActionAPI
 	}
 	async setInOutPoints(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partId: PartId,
 		pieceId: PieceId,
@@ -300,6 +346,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLogForPlaylist(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -317,6 +364,7 @@ class ServerUserActionAPI
 	}
 	async executeAction(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
@@ -326,6 +374,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -346,6 +395,7 @@ class ServerUserActionAPI
 	}
 	async segmentAdLibPieceStart(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adlibPieceId: PieceId,
@@ -354,6 +404,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -373,6 +424,7 @@ class ServerUserActionAPI
 	}
 	async sourceLayerOnPartStop(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		sourceLayerIds: string[]
@@ -380,6 +432,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -396,6 +449,7 @@ class ServerUserActionAPI
 	}
 	async baselineAdLibPieceStart(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adlibPieceId: PieceId,
@@ -404,6 +458,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -421,10 +476,16 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async sourceLayerStickyPieceStart(userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
+	async sourceLayerStickyPieceStart(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
+		sourceLayerId: string
+	) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -439,6 +500,7 @@ class ServerUserActionAPI
 	}
 	async bucketAdlibImport(
 		userEvent: string,
+		eventTime: Time,
 		bucketId: BucketId,
 		showStyleBaseId: ShowStyleBaseId,
 		ingestItem: IngestAdlib
@@ -446,6 +508,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
 			'bucketAdlibImport',
 			[bucketId, showStyleBaseId, ingestItem],
 			async () => {
@@ -460,6 +523,7 @@ class ServerUserActionAPI
 	}
 	async bucketAdlibStart(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		bucketAdlibId: PieceId,
@@ -468,6 +532,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -485,11 +550,12 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async activateHold(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo: boolean | null) {
+	async activateHold(userEvent: string, eventTime: Time, rundownPlaylistId: RundownPlaylistId, undo: boolean | null) {
 		if (undo) {
 			return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 				this,
 				userEvent,
+				eventTime,
 				rundownPlaylistId,
 				() => {
 					check(rundownPlaylistId, String)
@@ -503,6 +569,7 @@ class ServerUserActionAPI
 			return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 				this,
 				userEvent,
+				eventTime,
 				rundownPlaylistId,
 				() => {
 					check(rundownPlaylistId, String)
@@ -514,10 +581,11 @@ class ServerUserActionAPI
 			)
 		}
 	}
-	async saveEvaluation(userEvent: string, evaluation: EvaluationBase) {
+	async saveEvaluation(userEvent: string, eventTime: Time, evaluation: EvaluationBase) {
 		return ServerClientAPI.runUserActionInLogForPlaylist(
 			this,
 			userEvent,
+			eventTime,
 			evaluation.playlistId,
 			() => {
 				//
@@ -529,26 +597,34 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async storeRundownSnapshot(userEvent: string, playlistId: RundownPlaylistId, reason: string) {
+	async storeRundownSnapshot(
+		userEvent: string,
+		eventTime: Time,
+		playlistId: RundownPlaylistId,
+		reason: string,
+		full: boolean
+	) {
 		return ServerClientAPI.runUserActionInLogForPlaylist(
 			this,
 			userEvent,
+			eventTime,
 			playlistId,
 			() => {
 				check(playlistId, String)
 				check(reason, String)
 			},
 			'storeRundownSnapshot',
-			[playlistId, reason],
+			[playlistId, reason, full],
 			async (access) => {
-				return storeRundownPlaylistSnapshot(access, playlistId, reason)
+				return storeRundownPlaylistSnapshot(access, reason, full)
 			}
 		)
 	}
-	async removeRundownPlaylist(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+	async removeRundownPlaylist(userEvent: string, eventTime: Time, rundownPlaylistId: RundownPlaylistId) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -559,10 +635,11 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async resyncRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId) {
+	async resyncRundownPlaylist(userEvent: string, eventTime: Time, playlistId: RundownPlaylistId) {
 		return ServerClientAPI.runUserActionInLogForPlaylist(
 			this,
 			userEvent,
+			eventTime,
 			playlistId,
 			() => {
 				check(playlistId, String)
@@ -574,10 +651,11 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async unsyncRundown(userEvent: string, rundownId: RundownId) {
+	async unsyncRundown(userEvent: string, eventTime: Time, rundownId: RundownId) {
 		return ServerClientAPI.runUserActionInLogForRundown(
 			this,
 			userEvent,
+			eventTime,
 			rundownId,
 			() => {
 				check(rundownId, String)
@@ -589,10 +667,11 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async removeRundown(userEvent: string, rundownId: RundownId) {
+	async removeRundown(userEvent: string, eventTime: Time, rundownId: RundownId) {
 		return ServerClientAPI.runUserActionInLogForRundown(
 			this,
 			userEvent,
+			eventTime,
 			rundownId,
 			() => {
 				check(rundownId, String)
@@ -604,10 +683,11 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async resyncRundown(userEvent: string, rundownId: RundownId) {
+	async resyncRundown(userEvent: string, eventTime: Time, rundownId: RundownId) {
 		return ServerClientAPI.runUserActionInLogForRundown(
 			this,
 			userEvent,
+			eventTime,
 			rundownId,
 			() => {
 				check(rundownId, String)
@@ -619,26 +699,41 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async mediaRestartWorkflow(userEvent: string, workflowId: MediaWorkFlowId) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, 'mediaRestartWorkflow', [workflowId], async () => {
-			check(workflowId, String)
-
-			const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
-			return MediaManagerAPI.restartWorkflow(access)
-		})
-	}
-	async mediaAbortWorkflow(userEvent: string, workflowId: MediaWorkFlowId) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, 'mediaAbortWorkflow', [workflowId], async () => {
-			check(workflowId, String)
-
-			const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
-			return MediaManagerAPI.abortWorkflow(access)
-		})
-	}
-	async mediaPrioritizeWorkflow(userEvent: string, workflowId: MediaWorkFlowId) {
+	async mediaRestartWorkflow(userEvent: string, eventTime: Time, workflowId: MediaWorkFlowId) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
+			'mediaRestartWorkflow',
+			[workflowId],
+			async () => {
+				check(workflowId, String)
+
+				const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
+				return MediaManagerAPI.restartWorkflow(access)
+			}
+		)
+	}
+	async mediaAbortWorkflow(userEvent: string, eventTime: Time, workflowId: MediaWorkFlowId) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
+			'mediaAbortWorkflow',
+			[workflowId],
+			async () => {
+				check(workflowId, String)
+
+				const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
+				return MediaManagerAPI.abortWorkflow(access)
+			}
+		)
+	}
+	async mediaPrioritizeWorkflow(userEvent: string, eventTime: Time, workflowId: MediaWorkFlowId) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
 			'mediaPrioritizeWorkflow',
 			[workflowId],
 			async () => {
@@ -649,22 +744,42 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async mediaRestartAllWorkflows(userEvent: string) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, 'mediaRestartAllWorkflows', [], async () => {
-			const access = OrganizationContentWriteAccess.mediaWorkFlows(this)
-			return MediaManagerAPI.restartAllWorkflows(access)
-		})
-	}
-	async mediaAbortAllWorkflows(userEvent: string) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, 'mediaAbortAllWorkflows', [], async () => {
-			const access = OrganizationContentWriteAccess.mediaWorkFlows(this)
-			return MediaManagerAPI.abortAllWorkflows(access)
-		})
-	}
-	async packageManagerRestartExpectation(userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
+	async mediaRestartAllWorkflows(userEvent: string, eventTime: Time) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
+			'mediaRestartAllWorkflows',
+			[],
+			async () => {
+				const access = OrganizationContentWriteAccess.mediaWorkFlows(this)
+				return MediaManagerAPI.restartAllWorkflows(access)
+			}
+		)
+	}
+	async mediaAbortAllWorkflows(userEvent: string, eventTime: Time) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
+			'mediaAbortAllWorkflows',
+			[],
+			async () => {
+				const access = OrganizationContentWriteAccess.mediaWorkFlows(this)
+				return MediaManagerAPI.abortAllWorkflows(access)
+			}
+		)
+	}
+	async packageManagerRestartExpectation(
+		userEvent: string,
+		eventTime: Time,
+		deviceId: PeripheralDeviceId,
+		workId: string
+	) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
 			'packageManagerRestartExpectation',
 			[deviceId, workId],
 			async () => {
@@ -676,10 +791,11 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async packageManagerRestartAllExpectations(userEvent: string, studioId: StudioId) {
+	async packageManagerRestartAllExpectations(userEvent: string, eventTime: Time, studioId: StudioId) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
 			'packageManagerRestartAllExpectations',
 			[studioId],
 			async () => {
@@ -690,10 +806,16 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async packageManagerAbortExpectation(userEvent: string, deviceId: PeripheralDeviceId, workId: string) {
+	async packageManagerAbortExpectation(
+		userEvent: string,
+		eventTime: Time,
+		deviceId: PeripheralDeviceId,
+		workId: string
+	) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
 			'packageManagerAbortExpectation',
 			[deviceId, workId],
 			async () => {
@@ -705,10 +827,16 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async packageManagerRestartPackageContainer(userEvent: string, deviceId: PeripheralDeviceId, containerId: string) {
+	async packageManagerRestartPackageContainer(
+		userEvent: string,
+		eventTime: Time,
+		deviceId: PeripheralDeviceId,
+		containerId: string
+	) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
 			'packageManagerRestartPackageContainer',
 			[deviceId, containerId],
 			async () => {
@@ -720,10 +848,11 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async regenerateRundownPlaylist(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+	async regenerateRundownPlaylist(userEvent: string, eventTime: Time, rundownPlaylistId: RundownPlaylistId) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
@@ -734,54 +863,74 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async generateRestartToken(userEvent: string) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, 'generateRestartToken', [], async () => {
+	async generateRestartToken(userEvent: string, eventTime: Time) {
+		return ServerClientAPI.runUserActionInLog(this, userEvent, eventTime, 'generateRestartToken', [], async () => {
 			SystemWriteAccess.system(this)
 			restartToken = getHash('restart_' + getCurrentTime())
 			return restartToken
 		})
 	}
-	async restartCore(userEvent: string, hashedRestartToken: string) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, 'restartCore', [hashedRestartToken], async () => {
-			check(hashedRestartToken, String)
-
-			SystemWriteAccess.system(this)
-
-			if (hashedRestartToken !== getHash(RESTART_SALT + restartToken)) {
-				throw new Meteor.Error(401, `Restart token is invalid`)
-			}
-
-			setTimeout(() => {
-				// eslint-disable-next-line no-process-exit
-				process.exit(0)
-			}, 3000)
-			return `Restarting Core in 3s.`
-		})
-	}
-
-	async guiFocused(userEvent: string, viewInfo: any[] | null) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, 'guiFocused', [viewInfo], async () => {
-			triggerWriteAccessBecauseNoCheckNecessary()
-		})
-	}
-	async guiBlurred(userEvent: string, viewInfo: any[] | null) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, 'guiBlurred', [viewInfo], async () => {
-			triggerWriteAccessBecauseNoCheckNecessary()
-		})
-	}
-
-	async bucketsRemoveBucket(userEvent: string, bucketId: BucketId) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, 'bucketsRemoveBucket', [bucketId], async () => {
-			check(bucketId, String)
-
-			const access = BucketSecurity.allowWriteAccess(this, bucketId)
-			return BucketsAPI.removeBucket(access)
-		})
-	}
-	async bucketsModifyBucket(userEvent: string, bucketId: BucketId, bucketProps: Partial<Omit<Bucket, '_id'>>) {
+	async restartCore(userEvent: string, eventTime: Time, hashedRestartToken: string) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
+			'restartCore',
+			[hashedRestartToken],
+			async () => {
+				check(hashedRestartToken, String)
+
+				SystemWriteAccess.system(this)
+
+				if (hashedRestartToken !== getHash(RESTART_SALT + restartToken)) {
+					throw new Meteor.Error(401, `Restart token is invalid`)
+				}
+
+				setTimeout(() => {
+					// eslint-disable-next-line no-process-exit
+					process.exit(0)
+				}, 3000)
+				return `Restarting Core in 3s.`
+			}
+		)
+	}
+
+	async guiFocused(userEvent: string, eventTime: Time, viewInfo: any[] | null) {
+		return ServerClientAPI.runUserActionInLog(this, userEvent, eventTime, 'guiFocused', [viewInfo], async () => {
+			triggerWriteAccessBecauseNoCheckNecessary()
+		})
+	}
+	async guiBlurred(userEvent: string, eventTime: Time, viewInfo: any[] | null) {
+		return ServerClientAPI.runUserActionInLog(this, userEvent, eventTime, 'guiBlurred', [viewInfo], async () => {
+			triggerWriteAccessBecauseNoCheckNecessary()
+		})
+	}
+
+	async bucketsRemoveBucket(userEvent: string, eventTime: Time, bucketId: BucketId) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
+			'bucketsRemoveBucket',
+			[bucketId],
+			async () => {
+				check(bucketId, String)
+
+				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				return BucketsAPI.removeBucket(access)
+			}
+		)
+	}
+	async bucketsModifyBucket(
+		userEvent: string,
+		eventTime: Time,
+		bucketId: BucketId,
+		bucketProps: Partial<Omit<Bucket, '_id'>>
+	) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
 			'bucketsModifyBucket',
 			[bucketId, bucketProps],
 			async () => {
@@ -793,18 +942,26 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async bucketsEmptyBucket(userEvent: string, bucketId: BucketId) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, 'bucketsEmptyBucket', [bucketId], async () => {
-			check(bucketId, String)
-
-			const access = BucketSecurity.allowWriteAccess(this, bucketId)
-			return BucketsAPI.emptyBucket(access)
-		})
-	}
-	async bucketsCreateNewBucket(userEvent: string, studioId: StudioId, name: string) {
+	async bucketsEmptyBucket(userEvent: string, eventTime: Time, bucketId: BucketId) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
+			'bucketsEmptyBucket',
+			[bucketId],
+			async () => {
+				check(bucketId, String)
+
+				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				return BucketsAPI.emptyBucket(access)
+			}
+		)
+	}
+	async bucketsCreateNewBucket(userEvent: string, eventTime: Time, studioId: StudioId, name: string) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
 			'bucketsCreateNewBucket',
 			[name, studioId],
 			async () => {
@@ -816,18 +973,26 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async bucketsRemoveBucketAdLib(userEvent: string, adlibId: PieceId) {
+	async bucketsRemoveBucketAdLib(userEvent: string, eventTime: Time, adlibId: PieceId) {
 		check(adlibId, String)
 
-		return ServerClientAPI.runUserActionInLog(this, userEvent, 'bucketsRemoveBucketAdLib', [adlibId], async () => {
-			const access = BucketSecurity.allowWriteAccessPiece(this, adlibId)
-			return BucketsAPI.removeBucketAdLib(access)
-		})
-	}
-	async bucketsRemoveBucketAdLibAction(userEvent: string, actionId: AdLibActionId) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
+			'bucketsRemoveBucketAdLib',
+			[adlibId],
+			async () => {
+				const access = BucketSecurity.allowWriteAccessPiece(this, adlibId)
+				return BucketsAPI.removeBucketAdLib(access)
+			}
+		)
+	}
+	async bucketsRemoveBucketAdLibAction(userEvent: string, eventTime: Time, actionId: AdLibActionId) {
+		return ServerClientAPI.runUserActionInLog(
+			this,
+			userEvent,
+			eventTime,
 			'bucketsRemoveBucketAdLibAction',
 			[actionId],
 			async () => {
@@ -838,10 +1003,16 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async bucketsModifyBucketAdLib(userEvent: string, adlibId: PieceId, adlibProps: Partial<Omit<BucketAdLib, '_id'>>) {
+	async bucketsModifyBucketAdLib(
+		userEvent: string,
+		eventTime: Time,
+		adlibId: PieceId,
+		adlibProps: Partial<Omit<BucketAdLib, '_id'>>
+	) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
 			'bucketsModifyBucketAdLib',
 			[adlibId, adlibProps],
 			async () => {
@@ -855,12 +1026,14 @@ class ServerUserActionAPI
 	}
 	async bucketsModifyBucketAdLibAction(
 		userEvent: string,
+		eventTime: Time,
 		actionId: AdLibActionId,
 		actionProps: Partial<Omit<BucketAdLibAction, '_id'>>
 	) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
 			'bucketsModifyBucketAdLib',
 			[actionId, actionProps],
 			async () => {
@@ -874,6 +1047,7 @@ class ServerUserActionAPI
 	}
 	async bucketsSaveActionIntoBucket(
 		userEvent: string,
+		eventTime: Time,
 		studioId: StudioId,
 		bucketId: BucketId,
 		action: AdLibActionCommon | BucketAdLibAction
@@ -881,6 +1055,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
 			'bucketsSaveActionIntoBucket',
 			[studioId, bucketId, action],
 			async () => {
@@ -895,6 +1070,7 @@ class ServerUserActionAPI
 	}
 	async switchRouteSet(
 		userEvent: string,
+		eventTime: Time,
 		studioId: StudioId,
 		routeSetId: string,
 		state: boolean
@@ -902,6 +1078,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
 			'packageManagerRestartAllExpectations',
 			[studioId, routeSetId, state],
 			async () => {
@@ -916,6 +1093,7 @@ class ServerUserActionAPI
 	}
 	async moveRundown(
 		userEvent: string,
+		eventTime: Time,
 		rundownId: RundownId,
 		intoPlaylistId: RundownPlaylistId | null,
 		rundownsIdsInPlaylistInOrder: RundownId[]
@@ -923,6 +1101,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLogForRundownOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			rundownId,
 			() => {
 				check(rundownId, String)
@@ -939,11 +1118,13 @@ class ServerUserActionAPI
 	}
 	async restoreRundownOrder(
 		userEvent: string,
+		eventTime: Time,
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
 			userEvent,
+			eventTime,
 			playlistId,
 			() => {
 				check(playlistId, String)
@@ -956,6 +1137,7 @@ class ServerUserActionAPI
 	}
 	async disablePeripheralSubDevice(
 		userEvent: string,
+		eventTime: Time,
 		peripheralDeviceId: PeripheralDeviceId,
 		subDeviceId: string,
 		disable: boolean
@@ -963,6 +1145,7 @@ class ServerUserActionAPI
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
+			eventTime,
 			'packageManagerRestartAllExpectations',
 			[peripheralDeviceId, subDeviceId, disable],
 			async () => {

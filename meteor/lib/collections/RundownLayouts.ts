@@ -1,4 +1,4 @@
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { RundownLayoutId, UserId, ShowStyleBaseId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -20,6 +20,7 @@ export enum RundownLayoutType {
 	RUNDOWN_LAYOUT = 'rundown_layout',
 	DASHBOARD_LAYOUT = 'dashboard_layout',
 	RUNDOWN_HEADER_LAYOUT = 'rundown_header_layout',
+	MINI_SHELF_LAYOUT = 'mini_shelf_layout',
 	CLOCK_PRESENTER_VIEW_LAYOUT = 'clock_presenter_view_layout',
 }
 
@@ -46,10 +47,12 @@ export enum RundownLayoutElementType {
 	FILTER = 'filter',
 	EXTERNAL_FRAME = 'external_frame',
 	ADLIB_REGION = 'adlib_region',
+	KEYBOARD_PREVIEW = 'keyboard_preview', // This is used by TV2
 	PIECE_COUNTDOWN = 'piece_countdown',
 	NEXT_INFO = 'next_info',
 	PLAYLIST_START_TIMER = 'playlist_start_timer',
 	PLAYLIST_END_TIMER = 'playlist_end_timer',
+	NEXT_BREAK_TIMING = 'next_break_timing',
 	END_WORDS = 'end_words',
 	SEGMENT_TIMING = 'segment_timing',
 	PART_TIMING = 'part_timing',
@@ -62,6 +65,7 @@ export enum RundownLayoutElementType {
 	SEGMENT_NAME = 'segment_name',
 	PART_NAME = 'part_name',
 	COLORED_BOX = 'colored_box',
+	MINI_RUNDOWN = 'mini_rundown',
 }
 
 export interface RundownLayoutElementBase {
@@ -91,6 +95,8 @@ export interface RequiresActiveLayers {
 export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.EXTERNAL_FRAME
 	url: string
+	scale: number
+	disableFocus?: boolean
 }
 
 export enum RundownLayoutAdLibRegionRole {
@@ -105,6 +111,15 @@ export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
 	role: RundownLayoutAdLibRegionRole
 	adlibRank: number
 	labelBelowPanel: boolean
+	thumbnailSourceLayerIds: string[] | undefined
+	thumbnailPriorityNextPieces: boolean
+	hideThumbnailsForActivePieces: boolean
+	showBlackIfNoThumbnailPiece: boolean
+}
+
+export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PIECE_COUNTDOWN
+	sourceLayerIds: string[] | undefined
 }
 
 export interface RundownLayoutPieceCountdown extends RundownLayoutElementBase {
@@ -117,6 +132,10 @@ export interface RundownLayoutNextInfo extends RundownLayoutElementBase {
 	showSegmentName: boolean
 	showPartTitle: boolean
 	hideForDynamicallyInsertedParts: boolean
+}
+
+export interface RundownLayoutMiniRundown extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.MINI_RUNDOWN
 }
 
 export interface RundownLayoutPlaylistStartTimer extends RundownLayoutElementBase {
@@ -135,6 +154,10 @@ export interface RundownLayoutPlaylistEndTimer extends RundownLayoutElementBase 
 	hideCountdown: boolean
 	hideDiff: boolean
 	hidePlannedEnd: boolean
+}
+
+export interface RundownLayoutNextBreakTiming extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.NEXT_BREAK_TIMING
 }
 
 export interface RundownLayoutEndWords extends RundownLayoutElementBase, RequiresActiveLayers {
@@ -236,6 +259,17 @@ export interface RundownLayoutFilter extends RundownLayoutFilterBase {
 	default: boolean
 }
 
+export interface RundownLayoutKeyboardPreview extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.KEYBOARD_PREVIEW
+}
+
+export enum DashboardPanelUnit {
+	/** Dashboard panels are defined in absolute (em) units */
+	EM = 'em',
+	/** Dashboard panels are defined in percent so that they scale with container/window size */
+	PERCENT = '%',
+}
+
 export interface DashboardPanelBase {
 	x: number
 	y: number
@@ -245,13 +279,21 @@ export interface DashboardPanelBase {
 	customClasses?: string[]
 }
 
-type DashboardPanel<T> = T & DashboardPanelBase
+export interface DashboardPanelUnits {
+	xUnit?: DashboardPanelUnit
+	yUnit?: DashboardPanelUnit
+	widthUnit?: DashboardPanelUnit
+	heightUnit?: DashboardPanelUnit
+}
+
+type DashboardPanel<T> = T & DashboardPanelBase & DashboardPanelUnits
 
 export type DashboardLayoutExternalFrame = DashboardPanel<RundownLayoutExternalFrame>
 export type DashboardLayoutAdLibRegion = DashboardPanel<RundownLayoutAdLibRegion>
 export type DashboardLayoutPieceCountdown = DashboardPanel<RundownLayoutPieceCountdown>
 export type DashboardLayoutNextInfo = DashboardPanel<RundownLayoutNextInfo>
 export type DashboardLayoutPlaylistStartTimer = DashboardPanel<RundownLayoutPlaylistStartTimer>
+export type DashboardLayoutNextBreakTiming = DashboardPanel<RundownLayoutNextBreakTiming>
 export type DashboardLayoutPlaylistEndTimer = DashboardPanel<RundownLayoutPlaylistEndTimer>
 export type DashboardLayoutEndsWords = DashboardPanel<RundownLayoutEndWords>
 export type DashboardLayoutSegmentCountDown = DashboardPanel<RundownLayoutSegmentTiming>
@@ -265,6 +307,8 @@ export type DashboardLayoutShowStyleDisplay = DashboardPanel<RundownLayoutShowSt
 export type DashboardLayoutSegmentName = DashboardPanel<RundownLayoutSegmentName>
 export type DashboardLayoutPartName = DashboardPanel<RundownLayoutPartName>
 export type DashboardLayoutColoredBox = DashboardPanel<RundownLayoutColoredBox>
+export type DashboardLayoutKeyboardPreview = DashboardPanel<RundownLayoutKeyboardPreview>
+export type DashboardLayoutMiniRundown = DashboardPanel<RundownLayoutMiniRundown>
 export type DashboardLayoutFilter = DashboardPanel<
 	RundownLayoutFilterBase & {
 		enableSearch: boolean
@@ -273,15 +317,22 @@ export type DashboardLayoutFilter = DashboardPanel<
 		buttonHeightScale: number
 
 		includeClearInRundownBaseline: boolean
-		assignHotKeys: boolean
 		overflowHorizontally?: boolean
 		showAsTimeline?: boolean
 		hide?: boolean
 		displayTakeButtons?: boolean
 		queueAllAdlibs?: boolean
 		toggleOnSingleClick?: boolean
+		/**
+		 * character or sequence that will be replaced with line break in buttons
+		 */
+		lineBreak?: string
 	}
 >
+export interface MiniShelfLayoutFilter extends RundownLayoutFilterBase {
+	buttonWidthScale: number
+	buttonHeightScale: number
+}
 
 export interface RundownLayoutBase {
 	_id: RundownLayoutId
@@ -316,6 +367,8 @@ export interface RundownViewLayout extends RundownLayoutBase {
 	countdownToSegmentRequireLayers: string[]
 	/** Always show planned segment duration instead of counting up/down when the segment is live */
 	fixedSegmentDuration: boolean
+	/** SourceLayer ids for which a piece duration label should be shown */
+	showDurationSourceLayers: ISourceLayer['_id'][]
 	/** Show only the listed source layers in the RundownView (sourceLayerIds) */
 	visibleSourceLayers?: string[]
 	/** Show only the listed output groups in the RundownView (outputLayerIds) */
@@ -326,6 +379,11 @@ export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {
 	exposeAsStandalone: boolean
 	openByDefault: boolean
 	startingHeight?: number
+	showBuckets: boolean
+	showInspector: boolean
+	disableContextMenu: boolean
+	/* Customizable region that the layout modifies. */
+	regionId: CustomizableRegions
 }
 
 export interface RundownLayout extends RundownLayoutShelfBase {
@@ -361,12 +419,16 @@ export enum ActionButtonType {
 	// RESET_RUNDOWN = 'reset_rundown',
 	QUEUE_ADLIB = 'queue_adlib', // The idea for it is that you would be able to press and hold this button
 	// and then click on whatever adlib you would like
+	READY_ON_AIR = 'ready_on_air',
+	STORE_SNAPSHOT = 'store_snapshot',
 }
 
 export interface DashboardLayoutActionButton extends DashboardPanelBase {
 	_id: string
 	type: ActionButtonType
 	label: string
+	/** When set, changes the label when the button is toggled on */
+	labelToggled?: string
 }
 
 export interface DashboardLayout extends RundownLayoutShelfBase {

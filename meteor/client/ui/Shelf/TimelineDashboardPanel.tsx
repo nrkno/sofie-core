@@ -5,22 +5,21 @@ import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
 import { DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
-import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter, AdLibPieceUi } from './AdLibPanel'
+import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './AdLibPanel'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { matchFilter } from './AdLibListView'
 import { DashboardPieceButton } from './DashboardPieceButton'
-import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ensureHasTrailingSlash, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import {
 	DashboardPanelInner,
 	dashboardElementStyle,
 	IDashboardPanelTrackedProps,
 	IDashboardPanelProps,
-	getUnfinishedPieceInstancesGrouped,
-	getNextPieceInstancesGrouped,
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { AdLibPieceUi, getNextPieceInstancesGrouped, getUnfinishedPieceInstancesGrouped } from '../../lib/shelf'
 
 export const TimelineDashboardPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IDashboardPanelProps>,
@@ -32,7 +31,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 			props.playlist,
 			props.showStyleBase
 		)
-		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
 		return {
 			...fetchAndFilter(props),
 			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
@@ -49,11 +48,28 @@ export const TimelineDashboardPanel = translateWithTracker<
 	class TimelineDashboardPanel extends DashboardPanelInner {
 		liveLine: HTMLDivElement
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
-		setTimelineRef = (el: HTMLDivElement) => {
-			this.liveLine = el
 
-			this.setRef(el)
+		constructor(props) {
+			super(props)
+		}
+
+		setRef = (ref: HTMLDivElement) => {
+			this.liveLine = ref
 			this.ensureLiveLineVisible()
+
+			const _panel = ref
+			if (_panel) {
+				const style = window.getComputedStyle(_panel)
+				// check if a special variable is set through CSS to indicate that we shouldn't expect
+				// double clicks to trigger AdLibs
+				const value = style.getPropertyValue(USER_AGENT_POINTER_PROPERTY)
+				const shouldBeSingleClick = !!value.match(UserAgentPointer.NO_POINTER)
+				if (this.state.singleClickMode !== shouldBeSingleClick) {
+					this.setState({
+						singleClickMode: shouldBeSingleClick,
+					})
+				}
+			}
 		}
 		componentDidUpdate(prevProps, prevState) {
 			super.componentDidUpdate(prevProps, prevState)
@@ -76,6 +92,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 			if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 				const filter = this.props.filter as DashboardLayoutFilter
 				const uniquenessIds = new Set<string>()
+				const liveSegment = this.props.uiSegments.find((i) => i.isLive)
 				if (!this.props.uiSegments || !this.props.playlist) {
 					return <Spinner />
 				} else {
@@ -83,7 +100,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 						matchFilter(
 							item,
 							this.props.showStyleBase,
-							this.props.uiSegments,
+							liveSegment,
 							this.props.filter,
 							this.state.searchFilter,
 							uniquenessIds
@@ -144,7 +161,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 												matchFilter(
 													item,
 													this.props.showStyleBase,
-													this.props.uiSegments,
+													liveSegment,
 													this.props.filter,
 													this.state.searchFilter,
 													uniquenessIds
@@ -163,7 +180,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 											})}
 										>
 											{(seg.isLive || (seg.isNext && !this.props.playlist.currentPartInstanceId)) && (
-												<div className="dashboard-panel__panel__group__liveline" ref={this.setTimelineRef}></div>
+												<div className="dashboard-panel__panel__group__liveline" ref={this.setRef}></div>
 											)}
 											{filteredPieces.map((adLibListItem: AdLibPieceUi) => {
 												return (
@@ -188,10 +205,12 @@ export const TimelineDashboardPanel = translateWithTracker<
 																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 																: ''
 														}
-														displayStyle={PieceDisplayStyle.BUTTONS}
 														widthScale={filter.buttonWidthScale}
 														heightScale={filter.buttonHeightScale}
 														showThumbnailsInList={filter.showThumbnailsInList}
+														canOverflowHorizontally={filter.overflowHorizontally}
+														displayStyle={filter.displayStyle}
+														toggleOnSingleClick={this.state.singleClickMode}
 													>
 														{adLibListItem.name}
 													</DashboardPieceButton>

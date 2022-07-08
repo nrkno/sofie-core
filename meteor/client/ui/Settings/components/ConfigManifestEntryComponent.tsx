@@ -5,10 +5,10 @@ import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../lib/api/deviceConfig'
 import { ConfigManifestEntry as BlueprintConfigManifestEntry } from '@sofie-automation/blueprints-integration'
-import { TransformedCollection } from '../../../../lib/typings/meteor'
+import { MongoCollection } from '../../../../lib/collections/lib'
 
 export const renderEditAttribute = (
-	collection: TransformedCollection<any, any>,
+	collection: MongoCollection<any>,
 	configField: ConfigManifestEntry | BlueprintConfigManifestEntry,
 	obj: object,
 	prefix?: string
@@ -87,7 +87,7 @@ export interface IConfigManifestEntryComponentProps {
 	obj: object
 	prefix?: string
 	hideLabel?: boolean
-	collection?: TransformedCollection<any, any>
+	collection?: MongoCollection<any>
 	className?: string
 }
 export const ConfigManifestEntryComponent = withTranslation()(

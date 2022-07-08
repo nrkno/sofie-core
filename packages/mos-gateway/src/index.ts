@@ -1,6 +1,7 @@
 import { Connector, Config } from './connector'
 import * as Winston from 'winston'
 import _ = require('underscore')
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -12,9 +13,9 @@ let deviceId: string = process.env.DEVICE_ID || ''
 let deviceToken: string = process.env.DEVICE_TOKEN || ''
 let disableWatchdog: boolean = process.env.DISABLE_WATCHDOG === '1' || false
 let unsafeSSL: boolean = process.env.UNSAFE_SSL === '1' || false
-let certs: string[] = (process.env.CERTIFICATES || '').split(';') || []
-let debug: boolean = false
-let printHelp: boolean = false
+const certs: string[] = (process.env.CERTIFICATES || '').split(';') || []
+let debug = false
+let printHelp = false
 
 let prevProcessArg = ''
 process.argv.forEach((val) => {
@@ -65,6 +66,7 @@ CLI                ENV
 -debug                               Debug mode
 -h, -help                            Displays this help message
 `)
+	// eslint-disable-next-line no-process-exit
 	process.exit(0)
 }
 
@@ -72,12 +74,12 @@ CLI                ENV
  * Used when JSON.stringifying values that might be circular
  * Usage: JSON.stringify(value, JSONStringifyCircular()))
  */
-let JSONStringifyCircular = () => {
-	let cacheValues: any[] = []
-	let cacheKeys: any[] = []
-	let stringifyFixer = (key: string, value: any) => {
+const JSONStringifyCircular = () => {
+	const cacheValues: any[] = []
+	const cacheKeys: any[] = []
+	const stringifyFixer = (key: string, value: any) => {
 		if (typeof value === 'object' && value !== null) {
-			let i = cacheValues.indexOf(value)
+			const i = cacheValues.indexOf(value)
 			if (i !== -1) {
 				// Duplicate reference found
 				try {
@@ -97,7 +99,7 @@ let JSONStringifyCircular = () => {
 	return stringifyFixer
 }
 // Setup logging --------------------------------------
-const { splat, combine, printf } = Winston.format
+const { printf } = Winston.format
 const myLogFormat = printf((obj) => {
 	return JSON.stringify(obj, JSONStringifyCircular())
 })
@@ -107,28 +109,28 @@ if (logPath) {
 	const transportConsole = new Winston.transports.Console({
 		level: 'debug',
 		handleExceptions: true,
-		handleRejections: true
+		handleRejections: true,
 	})
 	const transportFile = new Winston.transports.File({
 		level: 'debug',
 		handleExceptions: true,
 		handleRejections: true,
 		filename: logPath,
-		format: combine(splat(), myLogFormat)
+		format: myLogFormat,
 	})
 
 	logger = Winston.createLogger({
-		transports: [transportConsole, transportFile]
+		transports: [transportConsole, transportFile],
 	})
 	logger.info('Logging to', logPath)
 
 	// Hijack console.log:
-	// @ts-ignore
-	let orgConsoleLog = console.log
+	const orgConsoleLog = console.log
 	console.log = function (...args: any[]) {
 		// orgConsoleLog('a')
 		if (args.length >= 1) {
 			try {
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 				// @ts-ignore one or more arguments
 				logger.debug(...args)
 				// logger.debug(...args.map(JSONStringifyCircular()))
@@ -148,20 +150,19 @@ if (logPath) {
 		level: 'debug',
 		handleExceptions: true,
 		handleRejections: true,
-		format: combine(splat(), myLogFormat)
+		format: myLogFormat,
 	})
 
 	logger = Winston.createLogger({
-		transports: [transportConsole]
+		transports: [transportConsole],
 	})
 	logger.info('Logging to Console')
 
 	// Hijack console.log:
-	// @ts-ignore
-	let orgConsoleLog = console.log
 	console.log = function (...args: any[]) {
 		// orgConsoleLog('a')
 		if (args.length >= 1) {
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-ignore one or more arguments
 			logger.debug(...args)
 		}
@@ -192,19 +193,19 @@ logger.warn(`Test warn logging`)
 logger.debug(`Test debug logging`)
 
 // App config -----------------------------------------
-let config: Config = {
+const config: Config = {
 	process: {
 		unsafeSSL: unsafeSSL,
-		certificates: _.compact(certs)
+		certificates: _.compact(certs),
 	},
 	device: {
-		deviceId: deviceId,
-		deviceToken: deviceToken
+		deviceId: protectString(deviceId),
+		deviceToken: deviceToken,
 	},
 	core: {
 		host: host,
 		port: port,
-		watchdog: !disableWatchdog
+		watchdog: !disableWatchdog,
 	},
 	mos: {
 		self: {
@@ -221,10 +222,10 @@ let config: Config = {
 				'4': false,
 				'5': false,
 				'6': false,
-				'7': false
+				'7': false,
 			},
-			offspecFailover: true
-		}
+			offspecFailover: true,
+		},
 		// devices: [{
 		// 	primary: {
 		// 		id: '2012R2ENPS8VM',
@@ -235,10 +236,10 @@ let config: Config = {
 		// 		host: string;
 		// 	},*/
 		// }]
-	}
+	},
 }
 
-let c = new Connector(logger)
+const c = new Connector(logger)
 
 logger.info('Core:          ' + config.core.host + ':' + config.core.port)
 // logger.info('My Mos id:     ' + config.mos.self.mosID)

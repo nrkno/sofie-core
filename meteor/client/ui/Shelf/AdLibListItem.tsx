@@ -3,7 +3,6 @@ import ClassNames from 'classnames'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer, IOutputLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
-import { AdLibPieceUi } from './AdLibPanel'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { unprotectString } from '../../../lib/lib'
@@ -11,9 +10,10 @@ import renderItem from './Renderers/ItemRendererFactory'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { Studio } from '../../../lib/collections/Studios'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
-import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { contextMenuHoldToDisplayTime, ensureHasTrailingSlash } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 export interface IAdLibListItem extends AdLibPieceUi {
 	status: PieceStatusCode
@@ -36,8 +36,6 @@ interface IListViewItemProps {
 	onToggleAdLib?: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
 	playlist: RundownPlaylist
 }
-
-const _isMacLike = !!navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i)
 
 export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 	class AdLibListItem extends MeteorReactComponent<Translated<IListViewItemProps>> {
@@ -87,7 +85,7 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						status: this.props.piece.status,
 						message: this.props.piece.message,
 						metadata: this.props.piece.contentMetaData,
-						mediaPreviewUrl: this.props.studio.settings.mediaPreviewsUrl,
+						mediaPreviewUrl: ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl)!,
 						packageInfos: this.props.piece.contentPackageInfos,
 						studio: this.props.studio,
 					})}

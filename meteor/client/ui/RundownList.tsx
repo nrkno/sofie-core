@@ -102,7 +102,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 	const showStyleBases = ShowStyleBases.find().fetch()
 	const showStyleVariants = ShowStyleVariants.find().fetch()
 	const rundownLayouts = RundownLayouts.find({
-		$or: [{ exposeAsSelectableLayout: true }, { exposeAsShelf: true }],
+		$or: [{ exposeAsSelectableLayout: true }, { exposeAsStandalone: true }],
 	}).fetch()
 
 	return {
@@ -110,7 +110,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 		rundownPlaylists: RundownPlaylists.find({}, { sort: { created: -1 } })
 			.fetch()
 			.map((playlist: RundownPlaylist) => {
-				const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
+				const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 
 				const airStatuses: string[] = []
 				const statuses: string[] = []
@@ -226,27 +226,32 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 					}
 				})
 
-				MeteorCall.systemStatus
-					.getSystemStatus()
-					.then((systemStatus: StatusResponse) => {
-						this.setState({ systemStatus })
-					})
-					.catch(() => {
-						NotificationCenter.push(
-							new Notification(
-								'systemStatus_failed',
-								NoticeLevel.CRITICAL,
-								t('Could not get system status. Please consult system administrator.'),
-								'RundownList'
+				const refreshSystemStatus = () => {
+					MeteorCall.systemStatus
+						.getSystemStatus()
+						.then((systemStatus: StatusResponse) => {
+							this.setState({ systemStatus })
+						})
+						.catch(() => {
+							NotificationCenter.push(
+								new Notification(
+									'systemStatus_failed',
+									NoticeLevel.CRITICAL,
+									t('Could not get system status. Please consult system administrator.'),
+									'RundownList'
+								)
 							)
-						)
-					})
+						})
+				}
+
+				refreshSystemStatus()
+				setInterval(() => refreshSystemStatus, 5000)
 			}
 
 			private handleRundownDrop(rundownId: RundownId) {
 				const { t } = this.props
-				doUserAction(t, 'drag&drop in dropzone', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
-					MeteorCall.userAction.moveRundown(e, rundownId, null, [rundownId])
+				doUserAction(t, 'drag&drop in dropzone', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
+					MeteorCall.userAction.moveRundown(e, ts, rundownId, null, [rundownId])
 				)
 			}
 

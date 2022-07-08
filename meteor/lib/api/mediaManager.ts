@@ -1,22 +1,8 @@
+import * as Shared from '@sofie-automation/shared-lib/dist/peripheralDevice/mediaManager'
 export namespace MediaManagerAPI {
-	// Note: These are just the enums from media-manager that core needs to be aware of
+	export type WorkStepStatus = Shared.WorkStepStatus
+	export const WorkStepStatus = Shared.WorkStepStatus
 
-	export enum WorkStepStatus {
-		IDLE = 'idle',
-		WORKING = 'working',
-		DONE = 'done',
-		ERROR = 'error',
-		CANCELED = 'canceled',
-		SKIPPED = 'skipped',
-		BLOCKED = 'blocked',
-	}
-
-	export enum WorkStepAction {
-		COPY = 'copy',
-		DELETE = 'delete',
-		SCAN = 'scan',
-		GENERATE_PREVIEW = 'generate_preview',
-		GENERATE_THUMBNAIL = 'generate_thumbnail',
-		GENERATE_METADATA = 'generate_metadata',
-	}
+	export type WorkStepAction = Shared.WorkStepAction
+	export const WorkStepAction = Shared.WorkStepAction
 }

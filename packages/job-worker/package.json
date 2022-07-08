@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/job-worker",
-	"version": "1.41.0",
+	"version": "1.44.0-in-testing.1",
 	"description": "Worker for things",
 	"main": "dist/index.js",
 	"license": "MIT",
@@ -26,15 +26,12 @@
 		"watch": "jest --watch",
 		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"changelog": "standard-version",
-		"release": "yarn reset && yarn test && yarn changelog",
-		"reset": "git clean -dfx && git reset --hard && yarn",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
 		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.18 || ^16.14"
+		"node": "^14.19 || ^16.14"
 	},
 	"files": [
 		"/dist",
@@ -43,27 +40,26 @@
 		"/LICENSE"
 	],
 	"dependencies": {
+		"@slack/webhook": "^6.1.0",
 		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
 		"@sofie-automation/corelib": "link:../corelib",
+		"@sofie-automation/shared-lib": "link:../shared-lib",
+		"amqplib": "^0.8.0",
 		"debounce-fn": "^4.0.0",
 		"deepmerge": "^4.2.2",
-		"elastic-apm-node": "^3.26.0",
+		"elastic-apm-node": "^3.33.0",
 		"eventemitter3": "^4.0.7",
-		"mongodb": "^4.3.1",
+		"mongodb": "^4.6.0",
 		"p-lazy": "^3.1.0",
-		"superfly-timeline": "8.2.1",
+		"p-timeout": "^4.1.0",
+		"superfly-timeline": "^8.2.7",
 		"threadedclass": "^1.0.2",
-		"tslib": "^2.1.0",
-		"type-fest": "^2.11.1",
-		"underscore": "^1.13.2",
-		"vm2": "^3.9.5"
+		"tslib": "^2.4.0",
+		"type-fest": "^2.12.2",
+		"underscore": "^1.13.3",
+		"vm2": "^3.9.9"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged"
-		}
-	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
 			"prettier --write"

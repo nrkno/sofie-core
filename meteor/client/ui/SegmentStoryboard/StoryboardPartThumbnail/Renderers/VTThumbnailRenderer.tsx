@@ -5,10 +5,7 @@ import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspe
 import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 import { RundownUtils } from '../../../../lib/rundown'
 import { IProps } from './ThumbnailRendererFactory'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFilm, faSlash } from '@fortawesome/free-solid-svg-icons'
 import { getPreviewUrlForPieceUi, getThumbnailUrlForPieceUi } from '../../../../lib/ui/clipPreview'
-import { VideoPreviewPlayer } from '../../../../lib/VideoPreviewPlayer'
 import { RundownTimingConsumer } from '../../../RundownView/RundownTiming/RundownTimingConsumer'
 import { unprotectString } from '../../../../../lib/lib'
 import { FreezeFrameIcon } from '../../../../lib/ui/icons/freezeFrame'
@@ -60,32 +57,7 @@ export function VTThumbnailRenderer({
 				pieceId={pieceInstance.instance.piece._id}
 				expectedPackages={pieceInstance.instance.piece.expectedPackages}
 				studio={studio}
-				hideHoverscrubPreview={true}
 			/>
-			<div className="segment-storyboard__thumbnail__image-container">
-				{thumbnailUrl ? (
-					hovering && previewUrl ? (
-						<VideoPreviewPlayer
-							itemDuration={vtContent?.sourceDuration || 0}
-							loop={vtContent?.loop || false}
-							previewUrl={previewUrl}
-							seek={vtContent?.seek || 0}
-							timePosition={hoverScrubTimePosition}
-							studioSettings={studio.settings}
-						/>
-					) : (
-						<img src={thumbnailUrl} />
-					)
-				) : (
-					<div className="segment-storyboard__thumbnail__icon">
-						<span className="fa-layers fa-fw">
-							<FontAwesomeIcon icon={faFilm} />
-							<FontAwesomeIcon icon={faSlash} />
-						</span>
-					</div>
-				)}
-			</div>
-
 			<RundownTimingConsumer
 				filter={(timingContext) => ({
 					partPlayed: timingContext.partPlayed && timingContext.partPlayed[unprotectString(partId)],

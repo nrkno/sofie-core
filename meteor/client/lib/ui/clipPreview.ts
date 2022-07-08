@@ -8,8 +8,8 @@ import { RundownId } from '../../../lib/collections/Rundowns'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { getPackageContainerPackageStatus } from '../../../lib/globalStores'
 import { PieceUi } from '../../ui/SegmentContainer/withResolvedSegment'
-import { AdLibPieceUi } from '../../ui/Shelf/AdLibPanel'
 import { ensureHasTrailingSlash } from '../lib'
+import { AdLibPieceUi } from '../shelf'
 
 type OwnerId = PieceId | AdLibActionId | RundownBaselineAdLibActionId | RundownId | StudioId
 

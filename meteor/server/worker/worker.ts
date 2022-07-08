@@ -13,7 +13,6 @@ import {
 	getCurrentTime,
 	getRandomString,
 	ManualPromise,
-	MongoSelector,
 	stringifyError,
 	waitForPromise,
 } from '../../lib/lib'
@@ -25,6 +24,7 @@ import { fetchStudioLight } from '../../lib/collections/optimizations'
 import * as path from 'path'
 import { LogEntry } from 'winston'
 import { initializeWorkerStatus, setWorkerStatus } from './workerStatus'
+import { MongoQuery } from '../../lib/typings/meteor'
 
 interface JobEntry {
 	spec: JobSpec
@@ -179,7 +179,7 @@ async function fastTrackTimeline(newTimeline: TimelineComplete): Promise<void> {
 
 	// Store the timelineHash to the latest UserLog,
 	// so that it can be looked up later to set .gatewayDuration:
-	const selector: MongoSelector<UserActionsLogItem> = {
+	const selector: MongoQuery<UserActionsLogItem> = {
 		// Try to match the latest userActionLogItem:
 		success: { $exists: false },
 		// This could be improved (as it relies on that the internal execution takes no longer than 3000 ms),
@@ -211,6 +211,16 @@ async function logLine(msg: LogEntry): Promise<void> {
 
 let worker: Promisify<IpcJobWorker> | undefined
 Meteor.startup(() => {
+	if (Meteor.isDevelopment) {
+		// Ensure meteor restarts when the _force_restart file changes
+		try {
+			// eslint-disable-next-line node/no-missing-require, node/no-unpublished-require
+			require('../_force_restart')
+		} catch (e) {
+			// ignore
+		}
+	}
+
 	if (!process.env.MONGO_URL) throw new Error('MONGO_URL must be defined to launch Sofie')
 	// Note: MONGO_OPLOG_URL isn't required for the worker, but is required for meteor to not lag badly
 	if (!process.env.MONGO_OPLOG_URL) throw new Error('MONGO_OPLOG_URL must be defined to launch Sofie')

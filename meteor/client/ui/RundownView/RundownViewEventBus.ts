@@ -9,6 +9,7 @@ import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibItem } from '../Shelf/RundownViewBuckets'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { Bucket } from '../../../lib/collections/Buckets'
+import { TriggeredActionId } from '../../../lib/collections/TriggeredActions'
 
 export enum RundownViewEvents {
 	ACTIVATE_RUNDOWN_PLAYLIST = 'activateRundownPlaylist',
@@ -23,10 +24,12 @@ export enum RundownViewEvents {
 	REVEAL_IN_SHELF = 'revealInShelf',
 	SWITCH_SHELF_TAB = 'switchShelfTab',
 	SHELF_STATE = 'shelfState',
+	MINI_SHELF_QUEUE_ADLIB = 'miniShelfQueueAdLib',
 	GO_TO_PART = 'goToPart',
 	GO_TO_PART_INSTANCE = 'goToPartInstance',
 	SELECT_PIECE = 'selectPiece',
 	HIGHLIGHT = 'highlight',
+	TRIGGER_ACTION = 'triggerAction',
 
 	RENAME_BUCKET_ADLIB = 'renameBucketAdLib',
 	DELETE_BUCKET_ADLIB = 'deleteBucketAdLib',
@@ -57,6 +60,10 @@ export interface SwitchToShelfTabEvent extends IEventContext {
 
 export interface ShelfStateEvent extends IEventContext {
 	state: boolean | 'toggle'
+}
+
+export interface MiniShelfQueueAdLibEvent extends IEventContext {
+	forward: boolean
 }
 
 export interface GoToPartEvent extends IEventContext {
@@ -91,6 +98,10 @@ export interface BucketEvent extends IEventContext {
 	bucket: Bucket
 }
 
+export interface TriggerActionEvent extends IEventContext {
+	actionId: TriggeredActionId
+}
+
 class RundownViewEventBus0 extends EventEmitter {
 	emit(event: RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, e: ActivateRundownPlaylistEvent): boolean
 	emit(event: RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, e: BaseEvent): boolean
@@ -104,10 +115,12 @@ class RundownViewEventBus0 extends EventEmitter {
 	emit(event: RundownViewEvents.SHELF_STATE, e: ShelfStateEvent): boolean
 	emit(event: RundownViewEvents.REVEAL_IN_SHELF, e: RevealInShelfEvent): boolean
 	emit(event: RundownViewEvents.SWITCH_SHELF_TAB, e: SwitchToShelfTabEvent): boolean
+	emit(event: RundownViewEvents.MINI_SHELF_QUEUE_ADLIB, e: MiniShelfQueueAdLibEvent): boolean
 	emit(event: RundownViewEvents.GO_TO_PART, e: GoToPartEvent): boolean
 	emit(event: RundownViewEvents.GO_TO_PART_INSTANCE, e: GoToPartInstanceEvent): boolean
 	emit(event: RundownViewEvents.SELECT_PIECE, e: SelectPieceEvent): boolean
 	emit(event: RundownViewEvents.HIGHLIGHT, e: HighlightEvent): boolean
+	emit(event: RundownViewEvents.TRIGGER_ACTION, e: TriggerActionEvent): boolean
 	emit(event: RundownViewEvents.EMPTY_BUCKET, e: BucketEvent): boolean
 	emit(event: RundownViewEvents.DELETE_BUCKET, e: BucketEvent): boolean
 	emit(event: RundownViewEvents.RENAME_BUCKET, e: BucketEvent): boolean
@@ -130,10 +143,12 @@ class RundownViewEventBus0 extends EventEmitter {
 	on(event: RundownViewEvents.REVEAL_IN_SHELF, listener: (e: RevealInShelfEvent) => void): this
 	on(event: RundownViewEvents.SHELF_STATE, listener: (e: ShelfStateEvent) => void): this
 	on(event: RundownViewEvents.SWITCH_SHELF_TAB, listener: (e: SwitchToShelfTabEvent) => void): this
+	on(event: RundownViewEvents.MINI_SHELF_QUEUE_ADLIB, listener: (e: MiniShelfQueueAdLibEvent) => void): this
 	on(event: RundownViewEvents.GO_TO_PART, listener: (e: GoToPartEvent) => void): this
 	on(event: RundownViewEvents.GO_TO_PART_INSTANCE, listener: (e: GoToPartInstanceEvent) => void): this
 	on(event: RundownViewEvents.SELECT_PIECE, listener: (e: SelectPieceEvent) => void): this
 	on(event: RundownViewEvents.HIGHLIGHT, listener: (e: HighlightEvent) => void): this
+	on(event: RundownViewEvents.TRIGGER_ACTION, listener: (e: TriggerActionEvent) => void): this
 	on(event: RundownViewEvents.EMPTY_BUCKET, listener: (e: BucketEvent) => void): this
 	on(event: RundownViewEvents.DELETE_BUCKET, listener: (e: BucketEvent) => void): this
 	on(event: RundownViewEvents.RENAME_BUCKET, listener: (e: BucketEvent) => void): this

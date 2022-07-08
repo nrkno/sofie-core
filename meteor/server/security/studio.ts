@@ -23,13 +23,14 @@ export namespace StudioReadAccess {
 		return studioContent({ studioId: selector._id }, cred)
 	}
 	/** Handles read access for all studioId content */
-	export function studioContent(
-		selector: MongoQuery<StudioContent>,
+	export function studioContent<T extends { studioId?: StudioId }>(
+		selector: MongoQuery<T>,
 		cred: Credentials | ResolvedCredentials
 	): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
-		if (!selector.studioId) throw new Meteor.Error(400, 'selector must contain studioId')
+		if (!selector.studioId || !isProtectedString(selector.studioId))
+			throw new Meteor.Error(400, 'selector must contain studioId')
 
 		const access = allowAccessToStudio(cred, selector.studioId)
 		if (!access.read) return logNotAllowed('Studio content', access.reason)
@@ -126,7 +127,7 @@ export namespace StudioContentWriteAccess {
 		}
 	}
 }
-export function studioContentAllowWrite(userId, doc: StudioContent): boolean {
+export function studioContentAllowWrite(userId: UserId, doc: StudioContent): boolean {
 	const access = allowAccessToStudio({ userId: userId }, doc.studioId)
 	if (!access.update) return logNotAllowed('Studio content', access.reason)
 	return true

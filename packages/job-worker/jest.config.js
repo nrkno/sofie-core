@@ -9,6 +9,10 @@ module.exports = {
 			},
 			diagnostics: {
 				// ignoreCodes: ['TS151001'],
+				ignoreCodes: [
+					6133, // Declared but not used
+					6192, // All imports are unused
+				],
 			},
 		},
 	},

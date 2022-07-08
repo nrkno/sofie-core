@@ -7,13 +7,13 @@ import { Credentials, ResolvedCredentials } from './lib/credentials'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToRundown } from './lib/security'
 import { RundownId } from '../../lib/collections/Rundowns'
-import { protectString } from '../../lib/lib'
-import { Segments, SegmentId } from '../../lib/collections/Segments'
+import { Segments, DBSegment } from '../../lib/collections/Segments'
 import { ExpectedMediaItem } from '../../lib/collections/ExpectedMediaItems'
 import { PeripheralDevices, getStudioIdFromDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { ExpectedPlayoutItem } from '../../lib/collections/ExpectedPlayoutItems'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
+import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 type RundownContent = { rundownId: RundownId }
 export namespace RundownReadAccess {
@@ -24,8 +24,8 @@ export namespace RundownReadAccess {
 		return rundownContent({ rundownId: selector._id }, cred)
 	}
 	/** Handles read access for all rundown content (segments, parts, pieces etc..) */
-	export function rundownContent(
-		selector: MongoQuery<RundownContent>,
+	export function rundownContent<T extends RundownContent>(
+		selector: MongoQuery<T>,
 		cred: Credentials | ResolvedCredentials
 	): boolean {
 		check(selector, Object)
@@ -37,7 +37,7 @@ export namespace RundownReadAccess {
 
 		return true
 	}
-	export function segments(selector: MongoQuery<{ _id: SegmentId }>, cred: Credentials): boolean {
+	export function segments(selector: MongoQuery<DBSegment>, cred: Credentials): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector._id) throw new Meteor.Error(400, 'selector must contain _id')
@@ -50,7 +50,7 @@ export namespace RundownReadAccess {
 
 		return true
 	}
-	export function pieces(selector: MongoQuery<{ rundownId: RundownId }>, cred: Credentials): boolean {
+	export function pieces<T extends RundownContent>(selector: MongoQuery<T>, cred: Credentials): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector.rundownId) throw new Meteor.Error(400, 'selector must contain rundownId')
@@ -112,15 +112,15 @@ export namespace RundownReadAccess {
 		}
 	}
 }
-export function rundownContentAllowWrite(userId, doc: RundownContent): boolean {
+export function rundownContentAllowWrite(userId: UserId, doc: RundownContent): boolean {
 	triggerWriteAccess()
-	const access = allowAccessToRundown({ userId: protectString(userId) }, doc.rundownId)
+	const access = allowAccessToRundown({ userId: userId }, doc.rundownId)
 	if (!access.update) return logNotAllowed('Rundown content', access.reason)
 	return true
 }
-export function pieceContentAllowWrite(userId, doc: { startRundownId: RundownId }): boolean {
+export function pieceContentAllowWrite(userId: UserId, doc: { startRundownId: RundownId }): boolean {
 	triggerWriteAccess()
-	const access = allowAccessToRundown({ userId: protectString(userId) }, doc.startRundownId)
+	const access = allowAccessToRundown({ userId: userId }, doc.startRundownId)
 	if (!access.update) return logNotAllowed('Rundown content', access.reason)
 	return true
 }

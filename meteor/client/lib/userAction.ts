@@ -3,7 +3,7 @@ import { NotificationCenter, Notification, NoticeLevel } from './notifications/n
 import { ClientAPI } from '../../lib/api/client'
 import { Meteor } from 'meteor/meteor'
 import { eventContextForLog } from './clientAPI'
-import { assertNever } from '../../lib/lib'
+import { assertNever, Time } from '../../lib/lib'
 import { UserAction } from '../../lib/userAction'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
@@ -136,7 +136,7 @@ export function doUserAction<Result>(
 	t: i18next.TFunction,
 	userEvent: any,
 	action: UserAction,
-	fcn: (event: any) => Promise<ClientAPI.ClientResponse<Result>>,
+	fcn: (event: string, timeStamp: Time) => Promise<ClientAPI.ClientResponse<Result>>,
 	callback?: (err: any, res?: Result) => void | boolean,
 	okMessage?: string
 ) {
@@ -167,7 +167,8 @@ export function doUserAction<Result>(
 		}
 	}
 
-	fcn(eventContextForLog(userEvent))
+	const actionContext = eventContextForLog(userEvent)
+	fcn(actionContext[0], actionContext[1])
 		.then((res: ClientAPI.ClientResponse<Result>) => {
 			clearMethodTimeout()
 

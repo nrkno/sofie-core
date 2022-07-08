@@ -8,18 +8,12 @@ import {
 	ITranslatableMessage,
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
-import { Mongo } from 'meteor/mongo'
 import { AdLibAction, AdLibActions } from '../../collections/AdLibActions'
 import { AdLibPiece, AdLibPieces } from '../../collections/AdLibPieces'
 import { DBPart, PartId, Parts } from '../../collections/Parts'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../../collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../collections/RundownBaselineAdLibPieces'
-import {
-	DBRundownPlaylist,
-	RundownPlaylist,
-	RundownPlaylistId,
-	RundownPlaylists,
-} from '../../collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../collections/RundownPlaylists'
 import { ShowStyleBase } from '../../collections/ShowStyleBases'
 import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
@@ -28,6 +22,7 @@ import { DBRundown, RundownId, Rundowns } from '../../collections/Rundowns'
 import { memoizedIsolatedAutorun } from '../../../client/lib/reactiveData/reactiveDataHelper'
 import { DBSegment, Segments, SegmentId } from '../../collections/Segments'
 import { sortAdlibs } from '../../Rundown'
+import { ReactivePlaylistActionContext } from './actionFactory'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
@@ -40,6 +35,9 @@ type CompiledFilter<T> = {
 	global: boolean | undefined
 	segment: 'current' | 'next' | undefined
 	part: 'current' | 'next' | undefined
+	arguments?: {
+		triggerMode: string
+	}
 	/**
 	 * The query compiler has determined that this filter will always return an empty set,
 	 * it's safe to skip it entirely.
@@ -474,14 +472,7 @@ function compileAdLibPieceFilter(
 export function compileAdLibFilter(
 	filterChain: AdLibFilterChainLink[],
 	showStyleBase: ShowStyleBase
-): (
-	rundownPlaylistId: RundownPlaylistId,
-	currentRundownId: RundownId | null,
-	currentSegmentPartIds: PartId[],
-	nextSegmentPartIds: PartId[],
-	currentPartId: PartId | null,
-	nextPartId: PartId | null
-) => IWrappedAdLib[] {
+): (context: ReactivePlaylistActionContext) => IWrappedAdLib[] {
 	const onlyAdLibLinks = filterChain.filter((link) => link.object === 'adLib') as IAdLibFilterLink[]
 	const adLibPieceTypeFilter = compileAdLibPieceFilter(onlyAdLibLinks, showStyleBase)
 	const adLibActionTypeFilter = compileAdLibActionFilter(onlyAdLibLinks, showStyleBase)
@@ -489,30 +480,23 @@ export function compileAdLibFilter(
 	const clearAdLibs = compileAndRunClearFilter(onlyAdLibLinks, showStyleBase)
 	const stickyAdLibs = compileAndRunStickyFilter(onlyAdLibLinks, showStyleBase)
 
-	return (
-		rundownPlaylistId: RundownPlaylistId,
-		currentRundownId: RundownId | null,
-		currentSegmentPartIds: PartId[],
-		nextSegmentPartIds: PartId[],
-		currentPartId: PartId | null,
-		nextPartId: PartId | null
-	) => {
+	return (context: ReactivePlaylistActionContext) => {
 		let rundownBaselineAdLibItems: IWrappedAdLib[] = []
 		let adLibPieces: IWrappedAdLib[] = []
 		let rundownBaselineAdLibActions: IWrappedAdLib[] = []
 		let adLibActions: IWrappedAdLib[] = []
 		const segmentPartIds =
 			adLibPieceTypeFilter.segment === 'current'
-				? currentSegmentPartIds
+				? context.currentSegmentPartIds.get()
 				: adLibPieceTypeFilter.segment === 'next'
-				? nextSegmentPartIds
+				? context.nextSegmentPartIds.get()
 				: undefined
 
 		const singlePartId =
 			adLibPieceTypeFilter.part === 'current'
-				? currentPartId
+				? context.currentPartId.get()
 				: adLibPieceTypeFilter.part === 'next'
-				? nextPartId
+				? context.nextPartId.get()
 				: undefined
 
 		/** Note: undefined means that all parts are to be considered */
@@ -552,16 +536,15 @@ export function compileAdLibFilter(
 				}
 			}
 
-			if (!skip) {
+			const currentRundownId = context.currentRundownId.get()
+			if (!skip && currentRundownId) {
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === true)
 					rundownBaselineAdLibItems = RundownBaselineAdLibPieces.find(
 						{
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
-							...{
-								rundownId: currentRundownId,
-							},
-						} as Mongo.QueryWithModifiers<RundownBaselineAdLibItem>,
+							rundownId: currentRundownId,
+						} as MongoSelector<RundownBaselineAdLibItem>,
 						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, 'rundownBaselineAdLibItem'))
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === false)
@@ -569,10 +552,8 @@ export function compileAdLibFilter(
 						{
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
-							...{
-								rundownId: currentRundownId,
-							},
-						} as Mongo.QueryWithModifiers<AdLibPiece>,
+							rundownId: currentRundownId,
+						} as MongoSelector<AdLibPiece>,
 						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, 'adLibPiece'))
 			}
@@ -592,16 +573,15 @@ export function compileAdLibFilter(
 				}
 			}
 
-			if (!skip) {
+			const currentRundownId = context.currentRundownId.get()
+			if (!skip && currentRundownId) {
 				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === true)
 					rundownBaselineAdLibActions = RundownBaselineAdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
-							...{
-								rundownId: currentRundownId,
-							},
-						} as Mongo.QueryWithModifiers<RundownBaselineAdLibAction>,
+							rundownId: currentRundownId,
+						} as MongoSelector<RundownBaselineAdLibAction>,
 						adLibActionTypeFilter.options
 					).map((item) => wrapRundownBaselineAdLibAction(item, 'rundownBaselineAdLibAction'))
 				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === false)
@@ -609,10 +589,8 @@ export function compileAdLibFilter(
 						{
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
-							...{
-								rundownId: currentRundownId,
-							},
-						} as Mongo.QueryWithModifiers<AdLibAction>,
+							rundownId: currentRundownId,
+						} as MongoSelector<AdLibAction>,
 						adLibActionTypeFilter.options
 					).map((item) => wrapAdLibAction(item, 'adLibAction'))
 			}
@@ -626,23 +604,33 @@ export function compileAdLibFilter(
 				// Note: We need to return an array from within memoizedIsolatedAutorun,
 				// because _.isEqual (used in memoizedIsolatedAutorun) doesn't work with Maps..
 
-				const rundownRanks = memoizedIsolatedAutorun(
-					() =>
-						Rundowns.find(
+				const rundownPlaylistId = context.rundownPlaylistId.get()
+				const rundownRanks = memoizedIsolatedAutorun(() => {
+					const playlist = RundownPlaylists.findOne(rundownPlaylistId, {
+						projection: {
+							rundownIdsInOrder: 1,
+						},
+					}) as Pick<DBRundownPlaylist, 'rundownIdsInOrder'> | undefined
+
+					if (playlist?.rundownIdsInOrder) {
+						return playlist.rundownIdsInOrder
+					} else {
+						const rundowns = Rundowns.find(
 							{
 								playlistId: rundownPlaylistId,
 							},
 							{
 								fields: {
 									_id: 1,
-									_rank: 1,
 								},
 							}
-						).fetch() as Pick<DBRundown, '_id' | '_rank'>[],
-					`rundownsRanksForPlaylist_${rundownPlaylistId}`
-				)
-				rundownRanks.forEach((rundown) => {
-					rundownRankMap.set(rundown._id, rundown._rank)
+						).fetch() as Pick<DBRundown, '_id'>[]
+
+						return rundowns.map((r) => r._id)
+					}
+				}, `rundownsRanksForPlaylist_${rundownPlaylistId}`)
+				rundownRanks.forEach((id, index) => {
+					rundownRankMap.set(id, index)
 				})
 
 				const segmentRanks = memoizedIsolatedAutorun(

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import {
 	RundownPlaylist,
 	RundownPlaylistCollectionUtil,
@@ -33,6 +33,7 @@ import { getMinimumReactivePieceNotesForPart } from './getMinimumReactivePieceNo
 import { SegmentViewMode } from './SegmentViewModes'
 import { SegmentNote, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { AdlibSegmentUi } from '../../lib/shelf'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -84,10 +85,13 @@ export interface IProps {
 	isLastSegment: boolean
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
+	adLibSegmentUi?: AdlibSegmentUi
 	isFollowingOnAirSegment: boolean
 	rundownViewLayout: RundownViewLayout | undefined
 	countdownToSegmentRequireLayers: string[] | undefined
 	fixedSegmentDuration: boolean | undefined
+	studioMode: boolean
+	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
 
 export interface ITrackedProps {
@@ -195,7 +199,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 					: Math.random() * 2000 + 500
 			)
 
-			const rundownOrder = RundownPlaylistCollectionUtil.getRundownIDs(props.playlist)
+			const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)
 			const rundownIndex = rundownOrder.indexOf(segment.rundownId)
 
 			const o = RundownUtils.getResolvedSegment(
@@ -319,9 +323,39 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
 				!_.isEqual(props.countdownToSegmentRequireLayers, nextProps.countdownToSegmentRequireLayers) ||
 				props.rundownViewLayout !== nextProps.rundownViewLayout ||
-				props.fixedSegmentDuration !== nextProps.fixedSegmentDuration
+				props.fixedSegmentDuration !== nextProps.fixedSegmentDuration ||
+				!_.isEqual(props.adLibSegmentUi?.pieces, nextProps.adLibSegmentUi?.pieces) ||
+				props.adLibSegmentUi?.showShelf !== nextProps.adLibSegmentUi?.showShelf
 			) {
 				return true
+			}
+			// Check RundownViewLayout changes that are important to the segment
+			if (
+				!_.isEqual(
+					props.rundownViewLayout?.visibleSourceLayers,
+					nextProps.rundownViewLayout?.visibleSourceLayers
+				) ||
+				!_.isEqual(
+					props.rundownViewLayout?.visibleOutputLayers,
+					nextProps.rundownViewLayout?.visibleOutputLayers
+				) ||
+				!_.isEqual(props.rundownViewLayout?.liveLineProps, nextProps.rundownViewLayout?.liveLineProps)
+			) {
+				return true
+			}
+			const findNextOrCurrentPart = (parts: PartUi[]) => {
+				return (
+					parts.find(
+						(i) =>
+							i.instance._id === props.playlist.currentPartInstanceId ||
+							i.instance._id === nextProps.playlist.currentPartInstanceId
+					) ||
+					parts.find(
+						(i) =>
+							i.instance._id === props.playlist.nextPartInstanceId ||
+							i.instance._id === nextProps.playlist.nextPartInstanceId
+					)
+				)
 			}
 			// Check rundown changes that are important to the segment
 			if (
@@ -332,16 +366,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				((props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
 					props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId) &&
 					data.parts &&
-					(data.parts.find(
-						(i) =>
-							i.instance._id === props.playlist.currentPartInstanceId ||
-							i.instance._id === nextProps.playlist.currentPartInstanceId
-					) ||
-						data.parts.find(
-							(i) =>
-								i.instance._id === props.playlist.nextPartInstanceId ||
-								i.instance._id === nextProps.playlist.nextPartInstanceId
-						))) ||
+					findNextOrCurrentPart(data.parts)) ||
 				props.playlist.holdState !== nextProps.playlist.holdState ||
 				props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
 				props.playlist.activationId !== nextProps.playlist.activationId ||

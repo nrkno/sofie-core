@@ -461,15 +461,16 @@ svg.icon {
 	-webkit-user-select: none;
 
 	width: auto;
-	margin: 1em 1.5em;
+	margin: 0.8em 0.75em;
 	// padding: 0 0 0.15em 0.15em;
 
 	background: $segment-background-color;
-	box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.7);
+	box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.3);
 
 	--segment-layer-height: #{$segment-layer-height};
 	--infinite-piece-background-line-height: #{$segment-layer-height / 8};
 	border-radius: $segment-border-radius;
+	border-bottom: 1px solid black;
 
 	// padding has to be the same on both of these elements so that the layers and their controls line up
 	.segment-timeline__output-layers,
@@ -566,6 +567,8 @@ svg.icon {
 			grid-row: title-identifiers / end;
 
 			.segment-timeline__part-identifiers__identifier {
+				font-weight: 300;
+				text-shadow: none;
 				margin: 2.5px;
 				padding: 0 4px;
 				background-color: $part-identifier;
@@ -692,6 +695,12 @@ svg.icon {
 	.segment-timeline__mos-id {
 		display: none;
 	}
+
+	// TODOSYNC: Disabled for TV2
+	// the identifier is an installation-specific feature that needs to be supported by the blueprints. It's disabled in the UI by default.
+	// .segment-timeline__identifier {
+	// 	display: none;
+	// }
 
 	// This is the display in the top-left corner of the segment
 	.segment-timeline__timeUntil,
@@ -1147,8 +1156,7 @@ svg.icon {
 			&.segment-timeline__liveline__appendage--piece-countdown {
 				color: $liveline-timecode-color;
 				font-weight: 400;
-				text-shadow: -1px -1px 1px #000, 1px -1px 1px #000, -1px 1px 1px #000, 1px 1px 1px #000, 2px 2px 5px #000;
-
+				text-shadow: -1px -1px 4px #000, 1px -1px 4px #000, -1px 1px 4px #000, 1px 1px 4px #000, 2px 2px 5px #000;
 				white-space: nowrap;
 
 				> .segment-timeline__liveline__appendage--piece-countdown__content {
@@ -1831,6 +1839,134 @@ svg.icon {
 							background-color: rgba(0, 0, 0, 0.6);
 						}
 
+						// TODOSYNC: This was added by TV2, to be checked why?
+						// .segment-timeline__piece__label {
+						// 	position: relative;
+						// 	z-index: 10;
+						// 	margin: 0 0.3em;
+						// 	text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
+						// 	font-weight: 400;
+						// 	transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity
+						// 		($output-layer-group-collapse-animation-duration * 2/3);
+						// 	pointer-events: none;
+						// 	white-space: nowrap;
+
+						// 	transform: translate3d(0, 0, 1px); // Just to make it render in front
+
+						// 	&:not(.right-side) {
+						// 		overflow: hidden;
+						// 		text-overflow: ellipsis;
+						// 	}
+
+						// 	&.with-overflow {
+						// 		overflow: visible !important;
+						// 	}
+
+						// 	&.secondary {
+						// 		font-weight: 300;
+						// 	}
+
+						// 	&.third {
+						// 		font-weight: 200;
+						// 	}
+
+						// 	&.emphasis {
+						// 		font-weight: 500;
+						// 	}
+
+						// 	&.missing {
+						// 		color: orange;
+						// 	}
+
+						// 	&.first-words {
+						// 		position: absolute;
+						// 		left: 0;
+						// 		font-weight: 300;
+						// 		font-style: italic;
+
+						// 		> * {
+						// 			position: relative;
+						// 		}
+						// 	}
+
+						// 	&.right-side {
+						// 		position: absolute;
+						// 		right: 0;
+						// 		transform: translate3d(0, 0, 15px);
+						// 		text-align: right;
+						// 		margin: 0;
+						// 		padding: 0 0.3em;
+						// 		max-width: calc(100% - 10px);
+						// 		overflow: hidden;
+						// 		text-overflow: clip;
+
+						// 		> * {
+						// 			position: relative;
+						// 		}
+
+						// 		> .segment-timeline__piece__label {
+						// 			margin-right: 0 !important;
+						// 			margin-left: 5px !important;
+						// 			overflow: initial;
+						// 			max-width: none;
+						// 		}
+
+						// 		> .label-icon {
+						// 			margin: 0 -10px 0 0;
+						// 		}
+
+						// 		> .label-icon.label-infinite-icon {
+						// 			margin: 0 0 0 0;
+						// 		}
+						// 	}
+
+						// 	&.last-words {
+						// 		font-weight: 300;
+						// 		font-style: italic;
+
+						// 		display: block;
+						// 	}
+
+						// 	&.file-name {
+						// 		font-weight: 200;
+						// 	}
+
+						// 	&.label-icon {
+						// 		margin: 0;
+						// 	}
+
+						// 	&.label-overflow-time {
+						// 		text-shadow: 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px 1px 1px black,
+						// 			1px 1px 3px black, 1px 1px 8px black, 1px 1px 8px black, 1px 1px 8px black;
+						// 		top: -7px;
+						// 		right: -5px;
+						// 		color: white;
+						// 		font-weight: 600;
+						// 		padding: 0;
+						// 		font-size: 0.8em;
+						// 		margin: 0;
+						// 	}
+
+						// 	> .segment-timeline__piece__label {
+						// 		margin: 0;
+						// 		max-width: none;
+						// 	}
+
+						// 	> .segment-timeline__piece__label + .segment-timeline__piece__label {
+						// 		margin: 0 0.3em;
+						// 	}
+
+						// 	.segment-timeline__piece__label__transition-icon {
+						// 		max-width: 16px;
+						// 		max-height: 1.4em;
+						// 		vertical-align: top;
+						// 		height: 1.4em;
+						// 		object-fit: contain;
+						// 		object-position: center center;
+						// 		margin-left: 0.5em;
+						// 	}
+						// }
+
 						&.hide-overflow-labels {
 							.segment-timeline__piece__label {
 								&.overflow-label {
@@ -2101,6 +2237,7 @@ svg.icon {
 				> .segment-timeline__piece__label {
 					margin: 0;
 					max-width: none;
+					display: inline;
 				}
 
 				> .segment-timeline__piece__label + .segment-timeline__piece__label {
@@ -2117,6 +2254,24 @@ svg.icon {
 					margin-left: 0.5em;
 				}
 
+				&.with-duration {
+					display: inline-flex;
+					flex-direction: row;
+
+					.segment-timeline__piece__label__duration {
+						font-weight: 300;
+						font-size: 0.9em;
+						margin-left: 0.2em;
+					}
+
+					&.with-duration--left {
+						.segment-timeline__piece__label__duration {
+							order: -1;
+							margin-left: 0;
+							margin-right: 0.2em;
+						}
+					}
+				}
 				.segment-timeline__piece__label__colored-mark {
 					font-size: 600%;
 					line-height: 23px;
@@ -2875,6 +3030,35 @@ svg.icon {
 			padding: 0.2em 0.3em;
 			background: rgba(0, 0, 0, 0.25);
 			border-top-right-radius: 3px;
+		}
+
+		> .segment-timeline__mini-inspector__timecode {
+			display: block;
+			position: absolute;
+			top: 0;
+			right: 0;
+			font-weight: 400;
+			text-shadow: 0 0 1px rgba(0, 0, 0, 1);
+			font-size: 0.75em;
+			padding: 0.2em 0.3em;
+			background: rgba(0, 0, 0, 0.25);
+			border-bottom-left-radius: 3px;
+		}
+
+		> .segment-timeline__mini-inspector__frame-marker {
+			display: block;
+			position: absolute;
+			bottom: 1px;
+
+			&.segment-timeline__mini-inspector__frame-marker--first-frame {
+				left: 6px;
+			}
+
+			&.segment-timeline__mini-inspector__frame-marker--last-frame {
+				left: auto;
+				right: 6px;
+				transform: scaleX(-1);
+			}
 		}
 
 		> .video-preview {

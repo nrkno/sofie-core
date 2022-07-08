@@ -25,7 +25,7 @@ import {
 } from '../../lib/collections/RundownBaselineAdLibActions'
 
 meteorPublish(PubSub.rundowns, function (selector0, token: string) {
-	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
+	const { cred, selector } = AutoFillSelector.organizationId<DBRundown>(this.userId, selector0, token)
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBRundown> = {
 		fields: {
@@ -110,23 +110,26 @@ meteorPublish(PubSub.partInstancesSimple, function (selector: MongoQuery<DBPartI
 	}
 	return null
 })
-
-meteorPublish(PubSub.pieces, function (selector: MongoQuery<Piece>, token?: string) {
+meteorPublish(PubSub.partInstancesForSegmentPlayout, function (selector: MongoQuery<DBPartInstance>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<Piece> = {
+	const modifier: FindOptions<DBPartInstance> = {
 		fields: {
-			metaData: 0,
 			// @ts-ignore
-			'content.timelineObjects': 0,
+			'part.metaData': 0,
 		},
+		sort: {
+			takeCount: 1,
+		},
+		limit: 1,
 	}
-	if (RundownReadAccess.rundownContent({ rundownId: selector.startRundownId }, { userId: this.userId, token })) {
-		return Pieces.find(selector, modifier)
+
+	if (selector.segmentPlayoutId && RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+		return PartInstances.find(selector, modifier)
 	}
 	return null
 })
 
-meteorPublish(PubSub.piecesSimple, function (selector: MongoQuery<Piece>, token?: string) {
+meteorPublish(PubSub.pieces, function (selector: MongoQuery<Piece>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<Piece> = {
 		fields: {

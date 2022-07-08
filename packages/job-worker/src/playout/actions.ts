@@ -6,7 +6,7 @@ import { JobContext } from '../jobs'
 import { logger } from '../logging'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { onPartHasStoppedPlaying, resetRundownPlaylist, selectNextPart, setNextPart } from './lib'
-import { updateStudioTimeline, updateTimeline } from './timeline'
+import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { RundownEventContext } from '../blueprints/context'
 import { getCurrentTime } from '../lib'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -22,7 +22,6 @@ export async function activateRundownPlaylist(
 	logger.info('Activating rundown ' + cache.Playlist.doc._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 	rehearsal = !!rehearsal
-	// if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(403, `Rundown "${rundown._id}" is active and not in rehersal, cannot reactivate!`)
 
 	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
 		context,
@@ -49,10 +48,6 @@ export async function activateRundownPlaylist(
 			rehearsal: rehearsal,
 		},
 	})
-
-	// Re-Initialize the ActivationCache now when the rundownPlaylist is active
-	// const rundownsInPlaylist = cache.Rundowns.findFetch({})
-	// await cache.activationCache.initialize(cache.Playlist.doc, rundownsInPlaylist)
 
 	let rundown: DBRundown | undefined
 

@@ -4,13 +4,14 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { JobContext } from '../jobs'
 import { CacheBase } from '../cache/CacheBase'
-import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
+import { DbCacheReadCollection } from '../cache/CacheCollection'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { DbCacheWriteOptionalObject } from '../cache/CacheObject'
 
 export interface CacheForStudioBase {
 	readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
 
-	readonly Timeline: DbCacheWriteCollection<TimelineComplete>
+	readonly Timeline: DbCacheWriteOptionalObject<TimelineComplete>
 }
 
 /**
@@ -22,13 +23,13 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
 
 	public readonly RundownPlaylists: DbCacheReadCollection<DBRundownPlaylist>
-	public readonly Timeline: DbCacheWriteCollection<TimelineComplete>
+	public readonly Timeline: DbCacheWriteOptionalObject<TimelineComplete>
 
 	private constructor(
 		context: JobContext,
 		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
 		rundownPlaylists: DbCacheReadCollection<DBRundownPlaylist>,
-		timeline: DbCacheWriteCollection<TimelineComplete>
+		timeline: DbCacheWriteOptionalObject<TimelineComplete>
 	) {
 		super(context)
 
@@ -52,7 +53,11 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 				studioId,
 			}),
 			DbCacheReadCollection.createFromDatabase(context, context.directCollections.RundownPlaylists, { studioId }),
-			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Timelines, { _id: studioId }),
+			DbCacheWriteOptionalObject.createOptionalFromDatabase(
+				context,
+				context.directCollections.Timelines,
+				studioId
+			),
 		])
 
 		const res = new CacheForStudio(context, ...collections)

@@ -4,12 +4,12 @@ import NoraItemRenderer, { isNoraItem } from './NoraItemRenderer'
 import ActionItemRenderer, { isActionItem } from './ActionItemRenderer'
 
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibPieceUi } from '../../AdLibPanel'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import { Studio } from '../../../../../lib/collections/Studios'
 import { BucketAdLibItem } from '../../RundownViewBuckets'
 import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
 import { IAdLibListItem } from '../../AdLibListItem'
+import { AdLibPieceUi } from '../../../../lib/shelf'
 
 export default function renderItem(
 	piece: BucketAdLibItem | IAdLibListItem | PieceUi,

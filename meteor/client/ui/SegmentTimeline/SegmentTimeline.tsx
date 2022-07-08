@@ -39,7 +39,7 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownTimingContext } from '../../lib/rundownTiming'
-import { IOutputLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 
@@ -86,6 +86,7 @@ interface IProps {
 	lastValidPartIndex: number | undefined
 	budgetDuration?: number
 	showCountdownToSegment: boolean
+	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 	fixedSegmentDuration: boolean | undefined
 }
 interface IStateHeader {
@@ -122,11 +123,11 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 
 	componentDidMount() {
 		this.checkTimingChange()
-		window.addEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
+		window.addEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 	}
 
 	componentWillUnmount() {
-		window.removeEventListener(RundownTiming.Events.timeupdateHR, this.onTimeupdate)
+		window.removeEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 	}
 
 	onTimeupdate = () => {
@@ -720,6 +721,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							isLastSegment={this.props.isLastSegment}
 							isLastInSegment={false}
 							timelineWidth={this.state.timelineWidth}
+							showDurationSourceLayers={this.props.showDurationSourceLayers}
 						/>
 					)}
 					<SegmentTimelinePart
@@ -750,7 +752,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							previousPartIsLive &&
 							!!this.props.playlist.nextPartInstanceId
 						}
+						showDurationSourceLayers={this.props.showDurationSourceLayers}
 						part={part}
+						isBudgetGap={false}
 					/>
 					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
@@ -768,6 +772,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							isLastSegment={this.props.isLastSegment}
 							isLastInSegment={true}
 							timelineWidth={this.state.timelineWidth}
+							showDurationSourceLayers={this.props.showDurationSourceLayers}
 						/>
 					)}
 				</React.Fragment>
@@ -805,6 +810,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				isAfterLastValidInSegmentAndItsLive={false}
 				isBudgetGap={true}
 				part={BUDGET_GAP_PART}
+				showDurationSourceLayers={this.props.showDurationSourceLayers}
 			/>
 		)
 	}
@@ -1034,6 +1040,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							/>
 						)}
 				</div>
+
+				<div className="segment-timeline__identifier">{this.props.segment.identifier}</div>
 				<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
 					{this.props.playlist &&
 						this.props.parts &&

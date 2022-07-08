@@ -1,7 +1,13 @@
-import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { clone, getHash, getRandomString, getRank, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import {
+	clone,
+	getHash,
+	getRandomString,
+	normalizeArrayToMap,
+	stringifyError,
+} from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import {
@@ -11,29 +17,24 @@ import {
 	RemovePlaylistProps,
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { ReadonlyDeep } from 'type-fest'
-import {
-	BlueprintResultOrderedRundowns,
-	BlueprintResultRundownPlaylist,
-	IBlueprintRundown,
-} from '@sofie-automation/blueprints-integration'
+import { BlueprintResultRundownPlaylist, IBlueprintRundown } from '@sofie-automation/blueprints-integration'
 import { JobContext } from './jobs'
 import { logger } from './logging'
 import { resetRundownPlaylist } from './playout/lib'
 import { runJobWithPlaylistLock, runWithPlaylistCache } from './playout/lock'
-import { updateTimeline } from './playout/timeline'
+import { updateTimeline } from './playout/timeline/generate'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { WrappedStudioBlueprint } from './blueprints/cache'
 import { StudioUserContext } from './blueprints/context'
 import { getCurrentTime } from './lib'
-import _ = require('underscore')
 import { regeneratePlaylistAndRundownOrder, updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
-import { DbCacheWriteCollection } from './cache/CacheCollection'
 import { allowedToMoveRundownOutOfPlaylist } from './rundown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { RundownLock } from './jobs/lock'
 import { runWithRundownLock } from './ingest/lock'
 import { convertRundownToBlueprints } from './blueprints/context/lib'
+import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
 
 export async function handleRemoveRundownPlaylist(context: JobContext, data: RemovePlaylistProps): Promise<void> {
 	const removed = await runJobWithPlaylistLock(context, data, async (playlist) => {
@@ -156,11 +157,6 @@ export async function removeRundownFromDb(context: JobContext, lock: RundownLock
 	])
 }
 
-export interface RundownPlaylistAndOrder {
-	rundownPlaylist: DBRundownPlaylist
-	order: BlueprintResultOrderedRundowns
-}
-
 export function produceRundownPlaylistInfoFromRundown(
 	context: JobContext,
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint> | undefined,
@@ -168,7 +164,7 @@ export function produceRundownPlaylistInfoFromRundown(
 	playlistId: RundownPlaylistId,
 	playlistExternalId: string,
 	rundowns: ReadonlyDeep<Array<DBRundown>>
-): RundownPlaylistAndOrder {
+): DBRundownPlaylist {
 	let playlistInfo: BlueprintResultRundownPlaylist | null = null
 	try {
 		if (studioBlueprint?.blueprint?.getRundownPlaylistInfo) {
@@ -202,6 +198,7 @@ export function produceRundownPlaylistInfoFromRundown(
 			currentPartInstanceId: null,
 			nextPartInstanceId: null,
 			previousPartInstanceId: null,
+			rundownIdsInOrder: [],
 
 			...clone<DBRundownPlaylist | undefined>(existingPlaylist),
 
@@ -228,15 +225,46 @@ export function produceRundownPlaylistInfoFromRundown(
 		}
 	}
 
-	// If no order is provided, fall back to default sorting:
-	const order =
-		playlistInfo?.order ??
-		_.object(literal<Array<[string, number]>>(rundownsInDefaultOrder.map((i, index) => [i.externalId, index + 1])))
+	if (!newPlaylist.rundownRanksAreSetInSofie) {
+		if (playlistInfo?.order) {
+			// The blueprints gave us an order
 
-	return {
-		rundownPlaylist: newPlaylist,
-		order: order, // Note: if playlist.rundownRanksAreSetInSofie is set, this order should be ignored later
+			newPlaylist.rundownIdsInOrder = []
+
+			const blueprintOrder = Object.entries(playlistInfo.order)
+				.filter((e) => typeof e[1] === 'number')
+				.sort((a, b) => {
+					if (a[1] !== b[1]) {
+						return a[1] - b[1]
+					} else {
+						return a[0].localeCompare(b[0])
+					}
+				})
+
+			const rundownExternalIdMap = normalizeArrayToMap(rundownsInDefaultOrder, 'externalId')
+			for (const item of blueprintOrder) {
+				const rundown = rundownExternalIdMap.get(item[0])
+				if (rundown) {
+					newPlaylist.rundownIdsInOrder.push(rundown._id)
+				}
+			}
+		} else {
+			newPlaylist.rundownIdsInOrder = rundownsInDefaultOrder.map((rd) => rd._id)
+		}
 	}
+
+	// Make sure that every rundown was included in the sorting
+	for (const rundown of rundownsInDefaultOrder) {
+		if (!newPlaylist.rundownIdsInOrder.includes(rundown._id)) {
+			newPlaylist.rundownIdsInOrder.push(rundown._id)
+		}
+	}
+
+	// Ensure there aren't unused RundownIds
+	const expectedRundownIds = new Set(rundowns.map((rd) => rd._id))
+	newPlaylist.rundownIdsInOrder = newPlaylist.rundownIdsInOrder.filter((id) => expectedRundownIds.has(id))
+
+	return newPlaylist
 }
 
 function defaultPlaylistForRundown(
@@ -249,6 +277,7 @@ function defaultPlaylistForRundown(
 		currentPartInstanceId: null,
 		nextPartInstanceId: null,
 		previousPartInstanceId: null,
+		rundownIdsInOrder: [],
 
 		...clone<DBRundownPlaylist | undefined>(existingPlaylist),
 
@@ -261,52 +290,12 @@ function defaultPlaylistForRundown(
 	}
 }
 
-/** Set _rank and playlistId of rundowns in a playlist */
-export function updateRundownsInPlaylist(
-	_playlist: DBRundownPlaylist,
-	rundownRanks: BlueprintResultOrderedRundowns,
-	rundownCollection: DbCacheWriteCollection<DBRundown>
-): void {
-	let maxRank: number = Number.NEGATIVE_INFINITY
-	const unrankedRundowns: DBRundown[] = []
-
-	for (const rundown of rundownCollection.findFetch({})) {
-		const rundownRank = rundownRanks[unprotectString(rundown._id)]
-		if (rundownRank !== undefined) {
-			rundown._rank = rundownRank
-			rundownCollection.update(rundown._id, { $set: { _rank: rundownRank } })
-		} else {
-			unrankedRundowns.push(rundown)
-		}
-
-		if (!_.isNaN(Number(rundown._rank))) {
-			maxRank = Math.max(maxRank, rundown._rank)
-		} else {
-			unrankedRundowns.push(rundown)
-		}
-	}
-
-	// Place new/unknown rundowns at the end:
-
-	const orderedUnrankedRundowns = sortDefaultRundownInPlaylistOrder(unrankedRundowns)
-
-	orderedUnrankedRundowns.forEach((rundown) => {
-		rundownCollection.update({ externalId: rundown.externalId }, { $set: { _rank: ++maxRank } })
-	})
-}
-
 /** Move a rundown manually (by a user in Sofie)  */
 export async function moveRundownIntoPlaylist(
 	context: JobContext,
 	data: OrderMoveRundownToPlaylistProps
 ): Promise<void> {
 	const studio = context.studio
-
-	// Future: the locking here will clash with the ingest/playout operations, and be full of race conditions.
-	// We need to rethink the ownership of the playlistId and _rank property on the rundowns, and the requirements for where/when it can be changed
-
-	const rundown = await context.directCollections.Rundowns.findOne(data.rundownId)
-	if (!rundown || rundown.studioId !== context.studioId) throw new Error(`Rundown "${data.rundownId}" not found`)
 
 	if (data.intoPlaylistId) {
 		const tmpIntoPlaylist: Pick<DBRundownPlaylist, '_id' | 'studioId'> | undefined =
@@ -317,145 +306,166 @@ export async function moveRundownIntoPlaylist(
 			throw new Error(`RundownPlaylist "${data.intoPlaylistId}" not found`)
 	}
 
-	if (data.intoPlaylistId === null || rundown.playlistId !== data.intoPlaylistId) {
-		// Do a check if we're allowed to move out of currently playing playlist:
-		await runJobWithPlaylistLock(
-			context,
-			{ playlistId: rundown.playlistId },
-			async (oldPlaylist, oldPlaylistLock) => {
-				if (!oldPlaylist)
-					throw new Error(`RundownPlaylists "${rundown.playlistId}" for rundown "${rundown._id}" not found!`)
+	// Lock the rundown, to make sure that an ingest operation doesnt overwrite our playlistId changes
+	// Future: This lock is held for way longer than it needs to, but this is the safest to avoid a race condition
+	await runWithRundownLock(context, data.rundownId, async (rundown) => {
+		if (!rundown) throw new Error(`Rundown "${data.rundownId}" not found`)
 
-				if (!(await allowedToMoveRundownOutOfPlaylist(context, oldPlaylist, rundown))) {
-					throw new Error(`Not allowed to move currently playing rundown!`)
-				}
+		if (data.intoPlaylistId === null || rundown.playlistId !== data.intoPlaylistId) {
+			// Do a check if we're allowed to move out of currently playing playlist:
+			await runJobWithPlaylistLock(
+				context,
+				{ playlistId: rundown.playlistId },
+				async (oldPlaylist, oldPlaylistLock) => {
+					if (!oldPlaylist)
+						throw new Error(
+							`RundownPlaylists "${rundown.playlistId}" for rundown "${rundown._id}" not found!`
+						)
 
-				// Quickly Remove it from the old playlist so that we can free the lock
-				await context.directCollections.Rundowns.update(rundown._id, {
-					$set: { playlistId: protectString('__TMP__'), playlistIdIsSetInSofie: true },
-				})
-
-				// Regenerate the playlist
-				const newPlaylist = await regeneratePlaylistAndRundownOrder(context, oldPlaylistLock, oldPlaylist)
-				if (newPlaylist) {
-					// ensure the 'old' playout is updated to remove any references to the rundown
-					await updatePlayoutAfterChangingRundownInPlaylist(context, newPlaylist, oldPlaylistLock, null)
-				}
-			}
-		)
-	}
-
-	if (data.intoPlaylistId) {
-		// Move into an existing playlist:
-		await runJobWithPlaylistLock(
-			context,
-			{ playlistId: data.intoPlaylistId },
-			async (intoPlaylist, intoPlaylistLock) => {
-				if (!intoPlaylist)
-					throw new Error(`RundownPlaylists "${data.intoPlaylistId}" for rundown "${rundown._id}" not found!`)
-
-				const rundownsCollection = await DbCacheWriteCollection.createFromDatabase(
-					context,
-					context.directCollections.Rundowns,
-					{
-						playlistId: intoPlaylist._id,
+					if (!(await allowedToMoveRundownOutOfPlaylist(context, oldPlaylist, rundown))) {
+						throw new Error(`Not allowed to move currently playing rundown!`)
 					}
-				)
 
-				if (!intoPlaylist.rundownRanksAreSetInSofie) {
-					intoPlaylist.rundownRanksAreSetInSofie = true
-					await context.directCollections.RundownPlaylists.update(intoPlaylist._id, {
-						$set: {
-							rundownRanksAreSetInSofie: true,
-						},
+					// Quickly Remove it from the old playlist so that we can free the playlist lock
+					await context.directCollections.Rundowns.update(rundown._id, {
+						$set: { playlistId: protectString('__TMP__'), playlistIdIsSetInSofie: true },
 					})
+
+					// Regenerate the playlist
+					const newPlaylist = await regeneratePlaylistAndRundownOrder(context, oldPlaylistLock, oldPlaylist)
+					if (newPlaylist) {
+						// ensure the 'old' playout is updated to remove any references to the rundown
+						await updatePlayoutAfterChangingRundownInPlaylist(context, newPlaylist, oldPlaylistLock, null)
+					}
 				}
-				if (intoPlaylist._id === rundown.playlistId) {
-					// Move the rundown within the playlist
-					const i = data.rundownsIdsInPlaylistInOrder.indexOf(data.rundownId)
-					if (i === -1)
-						throw new Error(`RundownId "${data.rundownId}" not found in rundownsIdsInPlaylistInOrder`)
-
-					const rundownIdBefore: RundownId | undefined = data.rundownsIdsInPlaylistInOrder[i - 1]
-					const rundownIdAfter: RundownId | undefined = data.rundownsIdsInPlaylistInOrder[i + 1]
-					const rundownBefore: DBRundown | undefined =
-						rundownIdBefore && rundownsCollection.findOne(rundownIdBefore)
-					const rundownAfter: DBRundown | undefined =
-						rundownIdAfter && rundownsCollection.findOne(rundownIdAfter)
-
-					const newRank: number | undefined = getRank(rundownBefore, rundownAfter)
-					if (newRank === undefined) throw new Error(`newRank is undefined`)
-
-					rundownsCollection.update(rundown._id, {
-						$set: {
-							_rank: newRank,
-						},
-					})
-				} else {
-					// Moving from another playlist
-					rundownsCollection.replace(rundown)
-
-					// Note: When moving into another playlist, the rundown is placed last.
-					rundownsCollection.update(rundown._id, {
-						$set: {
-							playlistId: intoPlaylist._id,
-							playlistIdIsSetInSofie: true,
-							_rank: 99999, // The rank will be set later, in updateRundownsInPlaylist
-						},
-					})
-					rundown.playlistId = intoPlaylist._id
-					rundown.playlistIdIsSetInSofie = true
-
-					// When updating the rundowns in the playlist, the newly moved rundown will be given it's proper _rank:
-					updateRundownsInPlaylist(
-						intoPlaylist,
-						Object.fromEntries(
-							rundownsCollection
-								.findFetch({ _id: { $ne: rundown._id } })
-								.map((r) => [unprotectString(r._id), r._rank])
-						),
-						rundownsCollection
-					)
-				}
-
-				// Update the playlist and the order of the contents
-				const newPlaylist = await regeneratePlaylistAndRundownOrder(
-					context,
-					intoPlaylistLock,
-					intoPlaylist,
-					rundownsCollection
-				)
-				if (!newPlaylist) {
-					throw new Error(`RundownPlaylist must still be valid as it has some Rundowns`)
-				}
-
-				await rundownsCollection.updateDatabaseWithData()
-
-				// If the playlist is active this could have changed lookahead
-				await updatePlayoutAfterChangingRundownInPlaylist(context, newPlaylist, intoPlaylistLock, rundown)
-			}
-		)
-	} else {
-		// Move into a new playlist:
-
-		// No point locking, as we are creating something fresh and unique here
-
-		const externalId = getRandomString()
-		const playlist: DBRundownPlaylist = {
-			...defaultPlaylistForRundown(rundown, studio),
-			externalId: externalId,
-			_id: getPlaylistIdFromExternalId(studio._id, externalId),
+			)
 		}
-		await context.directCollections.RundownPlaylists.insertOne(playlist)
 
-		await context.directCollections.Rundowns.update(rundown._id, {
-			$set: {
-				playlistId: playlist._id,
-				playlistIdIsSetInSofie: true,
-				_rank: 1,
-			},
-		})
-	}
+		if (data.intoPlaylistId) {
+			// Move into an existing playlist:
+			await runJobWithPlaylistLock(
+				context,
+				{ playlistId: data.intoPlaylistId },
+				async (intoPlaylist, intoPlaylistLock) => {
+					if (!intoPlaylist)
+						throw new Error(
+							`RundownPlaylists "${data.intoPlaylistId}" for rundown "${rundown._id}" not found!`
+						)
+
+					const allRundowns = await context.directCollections.Rundowns.findFetch({
+						playlistId: intoPlaylist._id,
+					})
+
+					// Make sure the playlist is set to manual ordering
+					if (!intoPlaylist.rundownRanksAreSetInSofie) {
+						intoPlaylist.rundownRanksAreSetInSofie = true
+						// intoPlaylist.rundownRanks = TODO?
+						await context.directCollections.RundownPlaylists.update(intoPlaylist._id, {
+							$set: {
+								rundownRanksAreSetInSofie: true,
+							},
+						})
+					}
+
+					if (intoPlaylist._id === rundown.playlistId) {
+						// Move the rundown within the playlist
+						const i = data.rundownsIdsInPlaylistInOrder.indexOf(data.rundownId)
+						if (i === -1)
+							throw new Error(`RundownId "${data.rundownId}" not found in rundownsIdsInPlaylistInOrder`)
+
+						// Determine the new order of the rundowns
+						let newRundownIdOrder = intoPlaylist.rundownIdsInOrder.filter((id) => id !== data.rundownId) // shallow clone. remove self from current position
+						if (data.rundownsIdsInPlaylistInOrder.length === 1) {
+							// Push to the end. No order was specified
+							newRundownIdOrder.push(data.rundownId)
+						} else if (data.rundownsIdsInPlaylistInOrder.length === 2) {
+							// It looks like we were sent a fragment, rather than a complete order
+							if (i === 0) {
+								const otherId = data.rundownsIdsInPlaylistInOrder[1]
+								const otherIndex = newRundownIdOrder.indexOf(otherId)
+
+								// Push rundown before otherId (or the start)
+								if (otherIndex === -1) {
+									newRundownIdOrder.unshift(data.rundownId)
+								} else {
+									newRundownIdOrder.splice(otherIndex, 0, data.rundownId)
+								}
+							} else {
+								const otherId = data.rundownsIdsInPlaylistInOrder[0]
+								const otherIndex = newRundownIdOrder.indexOf(otherId)
+
+								// Push rundown after otherId (or the end)
+								if (otherIndex === -1) {
+									newRundownIdOrder.push(data.rundownId)
+								} else {
+									newRundownIdOrder.splice(otherIndex + 1, 0, data.rundownId)
+								}
+							}
+						} else {
+							// Replace the complete order
+							newRundownIdOrder = data.rundownsIdsInPlaylistInOrder
+						}
+
+						// Ensure that all the rundowns are present
+						newRundownIdOrder = sortRundownIDsInPlaylist(
+							newRundownIdOrder,
+							allRundowns.map((r) => r._id)
+						)
+
+						// Set on the playlist, the `regeneratePlaylistAndRundownOrder` call will persist it
+						intoPlaylist.rundownIdsInOrder = newRundownIdOrder
+					} else {
+						// Moving from another playlist
+						allRundowns.push(rundown)
+
+						// Put the rundown into the playlist (it will appear at the end until we save the order)
+						await context.directCollections.Rundowns.update(rundown._id, {
+							$set: {
+								playlistId: intoPlaylist._id,
+								playlistIdIsSetInSofie: true,
+							},
+						})
+						rundown.playlistId = intoPlaylist._id
+						rundown.playlistIdIsSetInSofie = true
+					}
+
+					// Update the playlist and the order of the contents
+					const newPlaylist = await regeneratePlaylistAndRundownOrder(
+						context,
+						intoPlaylistLock,
+						intoPlaylist,
+						allRundowns
+					)
+					if (!newPlaylist) {
+						throw new Error(`RundownPlaylist must still be valid as it has some Rundowns`)
+					}
+
+					// If the playlist is active this could have changed lookahead
+					await updatePlayoutAfterChangingRundownInPlaylist(context, newPlaylist, intoPlaylistLock, rundown)
+				}
+			)
+		} else {
+			// Move into a new playlist:
+
+			// No point locking the playlist, as we are creating something fresh and unique here
+
+			const externalId = getRandomString()
+			const playlist: DBRundownPlaylist = {
+				...defaultPlaylistForRundown(rundown, studio),
+				externalId: externalId,
+				_id: getPlaylistIdFromExternalId(studio._id, externalId),
+				rundownIdsInOrder: [rundown._id],
+			}
+			await context.directCollections.RundownPlaylists.insertOne(playlist)
+
+			await context.directCollections.Rundowns.update(rundown._id, {
+				$set: {
+					playlistId: playlist._id,
+					playlistIdIsSetInSofie: true,
+				},
+			})
+		}
+	})
 }
 
 /** Restore the order of rundowns in a playlist, giving control over the ordering back to the NRCS */

@@ -7,14 +7,15 @@ import { JobContext } from '../jobs'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { isTooCloseToAutonext, selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
-import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { PartEndState, VTContent } from '@sofie-automation/blueprints-integration'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
 import { getResolvedPieces } from './pieces'
 import { clone, getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { updateTimeline } from './timeline'
+import { updateTimeline } from './timeline/generate'
 import {
 	PieceInstanceId,
 	PieceInstanceInfiniteId,
@@ -359,7 +360,7 @@ export function updatePartInstanceOnTake(
 	}
 
 	// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
-	const tmpPieces = processAndPrunePieceInstanceTimings(
+	const tmpTakePieces = processAndPrunePieceInstanceTimings(
 		showStyle,
 		cache.PieceInstances.findFetch((p) => p.partInstanceId === takePartInstance._id),
 		0
@@ -367,8 +368,9 @@ export function updatePartInstanceOnTake(
 	const partPlayoutTimings = calculatePartTimings(
 		cache.Playlist.doc.holdState,
 		currentPartInstance?.part,
+		cache.PieceInstances.findFetch((p) => p.partInstanceId === currentPartInstance?._id).map((p) => p.piece),
 		takePartInstance.part,
-		tmpPieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
+		tmpTakePieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
 	)
 
 	const partInstanceM: any = {

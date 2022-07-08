@@ -83,7 +83,7 @@ export namespace ClientRundownAPI {
 		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const playlist = access.playlist
 
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
+		const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist)
 		const errors = rundowns.map((rundown) => {
 			if (!rundown.importVersions) return 'unknown'
 
@@ -124,7 +124,7 @@ export namespace ClientRundownAPI {
 		const studioBlueprint = studio.blueprintId ? await fetchBlueprintLight(studio.blueprintId) : null
 		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
 
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(rundownPlaylist)
+		const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(rundownPlaylist)
 		const uniqueShowStyleCompounds = _.uniq(
 			rundowns,
 			undefined,

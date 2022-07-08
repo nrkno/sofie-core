@@ -1,6 +1,6 @@
 import moment from 'moment'
-import i18n, { TFunction } from 'i18next'
-import Backend from 'i18next-xhr-backend'
+import i18n, { TFunction, TFunctionResult } from 'i18next'
+import Backend from 'i18next-http-backend'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
@@ -43,6 +43,14 @@ const i18nOptions = {
 	react: {
 		wait: true,
 		useSuspense: false,
+	},
+
+	backend: {
+		loadPath: '/locales/{{lng}}/{{ns}}.json',
+	},
+
+	detection: {
+		order: ['querystring', 'cookie', 'localStorage', 'sessionStorage', 'navigator'],
 	},
 }
 
@@ -151,9 +159,7 @@ class I18nContainer extends WithManagedTracker {
 }
 
 const container = new I18nContainer()
-const i18nTranslator: TFunction = (key, options) => {
-	return container.i18nTranslator(key, options)
-}
+const i18nTranslator: TFunction = (key: any, options?): TFunctionResult => container.i18nTranslator(key, options)
 
 export { i18nTranslator }
 

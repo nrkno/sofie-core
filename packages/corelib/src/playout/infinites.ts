@@ -15,7 +15,7 @@ import { DBRundown } from '../dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
 import { assertNever, flatten, getRandomId, literal, max, normalizeArrayToMapFunc } from '../lib'
 import { protectString } from '../protectedString'
-import { getPieceGroupId } from './ids'
+import { getPieceControlObjectId } from './ids'
 import { DBShowStyleBase } from '../dataModel/ShowStyleBase'
 import _ = require('underscore')
 import { MongoQuery } from '../mongo'
@@ -497,11 +497,11 @@ export interface PieceInstanceWithTimings extends PieceInstance {
 	priority: number
 }
 
-function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number | string {
-	const offset = newPiece.piece.prerollDuration
-	if (!offset) return start
-
-	return typeof start === 'number' ? start + offset : `#${getPieceGroupId(newPiece)}.start + ${offset}`
+/**
+ * Get the `enable: { start: ?? }` for the new piece in terms that can be used as an `end` for another object
+ */
+function getPieceStartTime(newPieceStart: number | 'now', newPiece: PieceInstance): number | string {
+	return typeof newPieceStart === 'number' ? newPieceStart : `#${getPieceControlObjectId(newPiece)}.start`
 }
 
 function isClear(piece?: PieceInstance): boolean {
@@ -551,6 +551,7 @@ export function processAndPrunePieceInstanceTimings(
 	}
 
 	const groupedPieces = _.groupBy(
+		// TODOSYNC tv2 to write some tests and restore: keepDisabledPieces ? pieces.filter((p) => !(p.disabled && p.hidden)) : pieces.filter((p) => !p.disabled),
 		keepDisabledPieces ? pieces : pieces.filter((p) => !p.disabled),
 		// At this stage, if a Piece is disabled, the `keepDisabledPieces` must be turned on. If that's the case
 		// we split out the disabled Pieces onto the sourceLayerId they actually exist on, instead of putting them
@@ -570,15 +571,15 @@ export function processAndPrunePieceInstanceTimings(
 
 		// Step through time
 		const activePieces: PieceInstanceOnInfiniteLayers = {}
-		for (const [start, pieces] of piecesByStart) {
+		for (const [newPiecesStart, pieces] of piecesByStart) {
 			const newPieces = findPieceInstancesOnInfiniteLayers(pieces)
 
 			// Apply the updates
 			// Note: order is important, the higher layers must be done first
-			updateWithNewPieces(results, activePieces, newPieces, start, includeVirtual, 'other')
-			updateWithNewPieces(results, activePieces, newPieces, start, includeVirtual, 'onSegmentEnd')
-			updateWithNewPieces(results, activePieces, newPieces, start, includeVirtual, 'onRundownEnd')
-			updateWithNewPieces(results, activePieces, newPieces, start, includeVirtual, 'onShowStyleEnd')
+			updateWithNewPieces(results, activePieces, newPieces, newPiecesStart, includeVirtual, 'other')
+			updateWithNewPieces(results, activePieces, newPieces, newPiecesStart, includeVirtual, 'onSegmentEnd')
+			updateWithNewPieces(results, activePieces, newPieces, newPiecesStart, includeVirtual, 'onRundownEnd')
+			updateWithNewPieces(results, activePieces, newPieces, newPiecesStart, includeVirtual, 'onShowStyleEnd')
 		}
 	}
 
@@ -589,7 +590,7 @@ function updateWithNewPieces(
 	results: PieceInstanceWithTimings[],
 	activePieces: PieceInstanceOnInfiniteLayers,
 	newPieces: PieceInstanceOnInfiniteLayers,
-	start: number | 'now',
+	newPiecesStart: number | 'now',
 	includeVirtual: boolean | undefined,
 	key: keyof PieceInstanceOnInfiniteLayers
 ): void {
@@ -597,7 +598,7 @@ function updateWithNewPieces(
 	if (newPiece) {
 		const activePiece = activePieces[key]
 		if (activePiece) {
-			activePiece.resolvedEndCap = offsetFromStart(start, newPiece)
+			activePiece.resolvedEndCap = getPieceStartTime(newPiecesStart, newPiece)
 		}
 		// track the new piece
 		activePieces[key] = newPiece
@@ -619,10 +620,10 @@ function updateWithNewPieces(
 				// when start === 0, we are likely to have multiple infinite continuations. Only stop the 'other' if it should not be considered for being on air
 				if (
 					activePieces.other &&
-					(start !== 0 || isCandidateBetterToBeContinued(activePieces.other, newPiece))
+					(newPiecesStart !== 0 || isCandidateBetterToBeContinued(activePieces.other, newPiece))
 				) {
 					// These modes should stop the 'other' when they start if not hidden behind a higher priority onEnd
-					activePieces.other.resolvedEndCap = offsetFromStart(start, newPiece)
+					activePieces.other.resolvedEndCap = getPieceStartTime(newPiecesStart, newPiece)
 					activePieces.other = undefined
 				}
 			}

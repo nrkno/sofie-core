@@ -1,25 +1,14 @@
-import {
-	PieceId,
-	RundownPlaylistActivationId,
-	RundownPlaylistId,
-	PartInstanceId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceId, RundownPlaylistActivationId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	PieceInstance,
 	PieceInstancePiece,
 	ResolvedPieceInstance,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import {
-	OnGenerateTimelineObjExt,
-	TimelineObjGeneric,
-	TimelineObjPieceAbstract,
-	TimelineObjRundown,
-	TimelineObjType,
-} from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { TimelineObjGeneric, TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceLifespan, TSR, IBlueprintPieceType } from '@sofie-automation/blueprints-integration/dist'
-import { clone, getRandomId, literal, normalizeArray, flatten, applyToArray } from '@sofie-automation/corelib/dist/lib'
+import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration/dist'
+import { clone, getRandomId, literal, normalizeArray, applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import { logger } from '../logging'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
@@ -30,18 +19,13 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import _ = require('underscore')
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
-import { getPieceFirstObjectId } from '@sofie-automation/corelib/dist/playout/ids'
 import { getCurrentTime } from '../lib'
 import { transformTimeline, TimelineContentObject } from '@sofie-automation/corelib/dist/playout/timeline'
 import {
 	PieceInstanceWithTimings,
 	processAndPrunePieceInstanceTimings,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import {
-	createPieceGroupAndCap,
-	PieceGroupMetadata,
-	PieceTimelineMetadata,
-} from '@sofie-automation/corelib/dist/playout/pieces'
+import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	if (a.pieceType === IBlueprintPieceType.OutTransition && b.pieceType !== IBlueprintPieceType.OutTransition) {
@@ -85,37 +69,6 @@ export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[
 	return pieces
 }
 
-export function createPieceGroupFirstObject(
-	playlistId: RundownPlaylistId,
-	pieceInstance: ReadonlyDeep<PieceInstance>,
-	pieceGroup: TimelineObjRundown & OnGenerateTimelineObjExt,
-	firstObjClasses?: string[]
-): TimelineObjPieceAbstract & OnGenerateTimelineObjExt {
-	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt>({
-		id: getPieceFirstObjectId(pieceInstance),
-		pieceInstanceId: unprotectString(pieceInstance._id),
-		infinitePieceInstanceId: pieceInstance.infinite?.infiniteInstanceId,
-		partInstanceId: pieceGroup.partInstanceId,
-		objectType: TimelineObjType.RUNDOWN,
-		enable: { start: 0 },
-		layer: pieceInstance.piece.sourceLayerId + '_firstobject',
-		content: {
-			deviceType: TSR.DeviceType.ABSTRACT,
-			type: 'callback',
-			callBack: 'piecePlaybackStarted',
-			callBackData: {
-				rundownPlaylistId: playlistId,
-				pieceInstanceId: pieceInstance._id,
-				dynamicallyInserted: pieceInstance.dynamicallyInserted !== undefined,
-			},
-			callBackStopped: 'piecePlaybackStopped', // Will cause a callback to be called, when the object stops playing:
-		},
-		classes: firstObjClasses,
-		inGroup: pieceGroup.id,
-	})
-	return firstObject
-}
-
 function resolvePieceTimeline(
 	objs: TimelineContentObject[],
 	baseTime: number,
@@ -128,14 +81,16 @@ function resolvePieceTimeline(
 	const unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
 		const obj = obj0 as any as TimelineObjRundown
-		const id = unprotectString((obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
+		const pieceInstanceId = unprotectString(
+			(obj.metaData as Partial<PieceTimelineMetadata> | undefined)?.pieceInstanceGroupId
+		)
 
-		if (!id) return
+		if (!pieceInstanceId) return
 
-		const pieceInstance = pieceInstanceMap[id]
+		const pieceInstance = pieceInstanceMap[pieceInstanceId]
 		// Erm... How?
 		if (!pieceInstance) {
-			unresolvedIds.push(id)
+			unresolvedIds.push(pieceInstanceId)
 			return
 		}
 
@@ -158,7 +113,7 @@ function resolvePieceTimeline(
 					resolvedDuration: undefined,
 				})
 			)
-			unresolvedIds.push(id)
+			unresolvedIds.push(pieceInstanceId)
 		}
 	})
 
@@ -227,13 +182,7 @@ export function getResolvedPieces(
 		nowInPart
 	)
 
-	const objs = flatten(
-		preprocessedPieces.map((piece) => {
-			const r = createPieceGroupAndCap(piece)
-			return [r.pieceGroup, ...r.capObjs]
-		})
-	)
-	objs.forEach((o) => {
+	const deNowify = (o: TimelineObjRundown) => {
 		applyToArray(o.enable, (enable) => {
 			if (enable.start === 'now' && partStarted) {
 				// Emulate playout starting now. TODO - ensure didnt break other uses
@@ -242,7 +191,14 @@ export function getResolvedPieces(
 				enable.start = 1
 			}
 		})
-	})
+		return o
+	}
+
+	const objs: TimelineObjGeneric[] = []
+	for (const piece of preprocessedPieces) {
+		const { controlObj, capObjs } = createPieceGroupAndCap(cache.PlaylistId, piece)
+		objs.push(deNowify(controlObj), ...capObjs.map(deNowify))
+	}
 
 	const resolvedPieces = resolvePieceTimeline(
 		transformTimeline(objs),

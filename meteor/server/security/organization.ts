@@ -31,13 +31,14 @@ export namespace OrganizationReadAccess {
 		return organizationContent({ organizationId: selector._id }, cred)
 	}
 	/** Handles read access for all organization content (UserActions, Evaluations etc..) */
-	export function organizationContent(
-		selector: MongoQuery<OrganizationContent>,
+	export function organizationContent<T extends { organizationId: OrganizationId | null | undefined }>(
+		selector: MongoQuery<T>,
 		cred: Credentials | ResolvedCredentials
 	): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
-		if (!selector.organizationId) throw new Meteor.Error(400, 'selector must contain organizationId')
+		if (!selector.organizationId || !isProtectedString(selector.organizationId))
+			throw new Meteor.Error(400, 'selector must contain organizationId')
 
 		const access = allowAccessToOrganization(cred, selector.organizationId)
 		if (!access.read) return logNotAllowed('Organization content', access.reason)
