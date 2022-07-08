@@ -186,7 +186,7 @@ function cleanOldCacheResult() {
 	})
 }
 const lazyIgnoreCache: { [name: string]: number } = {}
-export function lazyIgnore(name: string, f1: () => void, t: number): void {
+export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: number): void {
 	// Don't execute the function f1 until the time t has passed.
 	// Subsequent calls will extend the lazyness and ignore the previous call
 
@@ -195,7 +195,7 @@ export function lazyIgnore(name: string, f1: () => void, t: number): void {
 	}
 	lazyIgnoreCache[name] = Meteor.setTimeout(() => {
 		delete lazyIgnoreCache[name]
-		f1()
+		waitForPromise(f1())
 	}, t)
 }
 
