@@ -45,6 +45,15 @@ $duration-area-margin: 0.5em;
 				line-height: 1em;
 				color: #888;
 			}
+
+			> .negative {
+				color: $general-late-color;
+				font-weight: 500;
+			}
+
+			&.hidden {
+				visibility: hidden;
+			}
 		}
 
 		.segment-opl__timeUntil {

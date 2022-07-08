@@ -190,18 +190,20 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 					renderTag="div"
 				>
 					<div className="segment-opl__counters">
-						<div className="segment-opl__duration" tabIndex={0}>
-							{props.playlist &&
-								props.parts &&
-								props.parts.length > 0 &&
-								(!props.hasAlreadyPlayed || props.isNextSegment || props.isLiveSegment) && (
-									<SegmentDuration
-										segmentId={props.segment._id}
-										parts={props.parts}
-										label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
-										fixed={props.fixedSegmentDuration}
-									/>
-								)}
+						<div
+							className={classNames('segment-opl__duration', {
+								hidden: props.hasAlreadyPlayed && !props.isLiveSegment && !props.isNextSegment,
+							})}
+							tabIndex={0}
+						>
+							{props.playlist && props.parts && props.parts.length > 0 && (
+								<SegmentDuration
+									segmentId={props.segment._id}
+									parts={props.parts}
+									label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
+									fixed={props.fixedSegmentDuration}
+								/>
+							)}
 						</div>
 					</div>
 					<h2
