@@ -1,5 +1,5 @@
 import classNames from 'classnames'
-import React, { CSSProperties, useMemo, useRef, useState } from 'react'
+import React, { CSSProperties, useCallback, useMemo, useRef, useState } from 'react'
 import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { RundownUtils } from '../../../lib/rundown'
@@ -30,8 +30,8 @@ export const LinePartSecondaryPiece: React.FC<IProps> = function LinePartSeconda
 	partInstanceId,
 	partDuration,
 	timelineBase,
-	onClick,
-	onDoubleClick,
+	onClick: incomingOnClick,
+	onDoubleClick: incomingOnDoubleClick,
 }) {
 	const pieceEl = useRef<HTMLDivElement>(null)
 	const [hovering, setHover] = useState(false)
@@ -74,6 +74,20 @@ export const LinePartSecondaryPiece: React.FC<IProps> = function LinePartSeconda
 		}
 		setMousePosition(e.pageX - origin.left)
 	}
+
+	const onClick = useCallback(
+		(e: React.MouseEvent<HTMLDivElement>) => {
+			incomingOnClick && incomingOnClick(piece, e)
+		},
+		[piece]
+	)
+
+	const onDoubleClick = useCallback(
+		(e: React.MouseEvent<HTMLDivElement>) => {
+			incomingOnDoubleClick && incomingOnDoubleClick(piece, e)
+		},
+		[piece]
+	)
 
 	return (
 		<div
