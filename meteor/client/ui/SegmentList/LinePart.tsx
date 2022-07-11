@@ -23,6 +23,7 @@ interface IProps {
 	// isLastPartInSegment?: boolean
 	// isPlaylistLooping?: boolean
 	indicatorColumns: Record<string, ISourceLayerExtended[]>
+	adLibIndicatorColumns: Record<string, ISourceLayerExtended[]>
 	doesPlaylistHaveNextPart?: boolean
 	inHold: boolean
 	currentPartWillAutonext: boolean
@@ -42,6 +43,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 	hasAlreadyPlayed,
 	currentPartWillAutonext,
 	indicatorColumns,
+	adLibIndicatorColumns,
 	onContextMenu,
 	onPieceDoubleClick,
 }) {
@@ -115,7 +117,12 @@ export const LinePart: React.FC<IProps> = function LinePart({
 					<span>{part.instance.part.title}</span>
 				</h3>
 			</div>
-			<LinePartPieceIndicators pieces={part.pieces} indicatorColumns={indicatorColumns} />
+			<LinePartPieceIndicators
+				partId={part.partId}
+				pieces={part.pieces}
+				indicatorColumns={indicatorColumns}
+				adLibIndicatorColumns={adLibIndicatorColumns}
+			/>
 			<LinePartTimeline
 				part={part}
 				isLive={isLivePart}

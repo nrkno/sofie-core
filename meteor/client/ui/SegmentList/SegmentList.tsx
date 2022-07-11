@@ -17,7 +17,6 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { LinePart } from './LinePart'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ISourceLayerExtended } from '../../../lib/Rundown'
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
@@ -46,21 +45,6 @@ interface IProps {
 	onSwitchViewMode?: (newViewMode: SegmentViewMode) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
-
-// TODO: This is a horribly wonky hack for the prototype
-const BANNED_COLUMN_NAMES = new Set()
-
-// TODO: This is not great. Ideally, we would be able to figure out which SourceLayers are to be shown as columns
-// based on if they are used in the PGM or not. However, we don't have that information. We can figure out if
-// a given PIECE is going to be used on PGM, but SourceLayers can be shared across Outputs, so that's complicated
-// on this level.
-const COLUMN_SUPPORTED_LAYER_TYPES: Set<SourceLayerType> = new Set([
-	SourceLayerType.AUDIO,
-	SourceLayerType.LOWER_THIRD,
-	// SourceLayerType.METADATA,
-	// SourceLayerType.SCRIPT, // No longer on the list of supported columns, since that's been moved to a specialized component
-	// SourceLayerType.UNKNOWN,
-])
 
 const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function SegmentList(props, ref) {
 	const innerRef = useRef<HTMLDivElement>(null)
@@ -98,13 +82,25 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 		)
 	}
 
+	const adLibIndicatorColumns = useMemo(() => {
+		const sourceColumns: Record<string, ISourceLayerExtended[]> = {}
+		Object.values(props.segment.sourceLayers).forEach((sourceLayer) => {
+			if (!sourceLayer.onListViewAdLibColumn) return
+			let thisSourceColumn = sourceColumns[sourceLayer.name]
+			if (!thisSourceColumn) {
+				sourceColumns[sourceLayer.name] = []
+				thisSourceColumn = sourceColumns[sourceLayer.name]
+			}
+			thisSourceColumn.push(sourceLayer)
+		})
+		return sourceColumns
+	}, [props.segment.sourceLayers])
+
 	const indicatorColumns = useMemo(() => {
 		const sourceColumns: Record<string, ISourceLayerExtended[]> = {}
 		Object.values(props.segment.sourceLayers).forEach((sourceLayer) => {
 			if (sourceLayer.isHidden) return
-			// TODO: this is kind-of wonky, the selector on what goes into the columns should be better
-			if (!COLUMN_SUPPORTED_LAYER_TYPES.has(sourceLayer.type)) return
-			if (BANNED_COLUMN_NAMES.has(sourceLayer.name)) return
+			if (!sourceLayer.onListViewColumn) return
 			let thisSourceColumn = sourceColumns[sourceLayer.name]
 			if (!thisSourceColumn) {
 				sourceColumns[sourceLayer.name] = []
@@ -156,6 +152,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
 				currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}
 				indicatorColumns={indicatorColumns}
+				adLibIndicatorColumns={adLibIndicatorColumns}
 				doesPlaylistHaveNextPart={playlistHasNextPart}
 				onPieceDoubleClick={props.onPieceDoubleClick}
 			/>
