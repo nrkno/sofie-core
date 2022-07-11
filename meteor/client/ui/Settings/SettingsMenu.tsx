@@ -5,8 +5,8 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { NavLink } from 'react-router-dom'
 
-import { Studio, Studios } from '../../../lib/collections/Studios'
-import { PeripheralDevice, PeripheralDevices, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import { DBStudio, Studio, Studios } from '../../../lib/collections/Studios'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
@@ -19,6 +19,7 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Settings as MeteorSettings } from '../../../lib/Settings'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
+import { TFunction, useTranslation } from 'react-i18next'
 
 interface ISettingsMenuProps {
 	superAdmin?: boolean
@@ -65,81 +66,6 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 			this.state = {}
 		}
 
-		statusCodeString(statusCode: StatusCode) {
-			const t = this.props.t
-
-			switch (statusCode) {
-				case StatusCode.UNKNOWN:
-					return t('Unknown')
-				case StatusCode.GOOD:
-					return t('Good')
-				case StatusCode.WARNING_MINOR:
-					return t('Minor Warning')
-				case StatusCode.WARNING_MAJOR:
-					return t('Warning')
-				case StatusCode.BAD:
-					return t('Bad')
-				case StatusCode.FATAL:
-					return t('Fatal')
-			}
-		}
-
-		studioHasError(studio: Studio) {
-			if (!studio.name) return true
-			if (!studio.supportedShowStyleBase.length) return true
-			if (!studio.blueprintId) return true
-			const peripherals = this.props.peripheralDevices.filter((device) => device.studioId === studio._id)
-			if (!peripherals.length) return true
-			if (!peripherals.filter((device) => device.type === PeripheralDeviceType.PLAYOUT).length) return true
-			return false
-		}
-
-		showStyleHasError(showstyle: ShowStyleBase) {
-			if (!showstyle.sourceLayers) return true
-			if (!showstyle.outputLayers) return true
-			if (!showstyle.sourceLayers.length) return true
-			if (!showstyle.outputLayers.length) return true
-			if (!showstyle.outputLayers.filter((l) => l.isPGM).length) return true
-			return false
-		}
-
-		blueprintHasError(blueprint: Blueprint) {
-			if (!blueprint.name) return true
-			if (!blueprint.blueprintType) return true
-			return false
-		}
-
-		peripheralDeviceHasError(device: PeripheralDevice) {
-			if (!device.name) return true
-			return false
-		}
-
-		connectedString(connected: boolean) {
-			const t = this.props.t
-
-			if (connected) {
-				return t('Connected')
-			} else {
-				return t('Disconnected')
-			}
-		}
-
-		deviceTypeString(type: PeripheralDeviceType) {
-			const t = this.props.t
-
-			switch (type) {
-				case PeripheralDeviceType.MOS:
-					return t('MOS Gateway')
-				case PeripheralDeviceType.SPREADSHEET:
-					return t('Spreadsheet Gateway')
-				case PeripheralDeviceType.PLAYOUT:
-					return t('Play-out Gateway')
-				case PeripheralDeviceType.MEDIA_MANAGER:
-					return t('Media Manager')
-				default:
-					return t('Unknown Device')
-			}
-		}
 		onAddStudio() {
 			MeteorCall.studio.insertStudio().catch(console.error)
 		}
@@ -152,86 +78,6 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 			})
 		}
 
-		onDeleteStudio(studio: Studio) {
-			const { t } = this.props
-			doModalDialog({
-				title: t('Delete this Studio?'),
-				yes: t('Delete'),
-				no: t('Cancel'),
-				message: (
-					<React.Fragment>
-						<p>{t('Are you sure you want to delete the studio "{{studioId}}"?', { studioId: studio.name })}</p>
-						<p>{t('Please note: This action is irreversible!')}</p>
-					</React.Fragment>
-				),
-				onAccept: () => {
-					MeteorCall.studio.removeStudio(studio._id).catch(console.error)
-				},
-			})
-		}
-		onDeleteShowStyleBase(item: ShowStyleBase) {
-			const { t } = this.props
-			doModalDialog({
-				title: t('Delete this Show Style?'),
-				yes: t('Delete'),
-				no: t('Cancel'),
-				message: (
-					<React.Fragment>
-						<p>
-							{t('Are you sure you want to delete the show style "{{showStyleId}}"?', {
-								showStyleId: item && item.name,
-							})}
-						</p>
-						<p>{t('Please note: This action is irreversible!')}</p>
-					</React.Fragment>
-				),
-				onAccept: () => {
-					MeteorCall.showstyles.removeShowStyleBase(item._id).catch(console.error)
-				},
-			})
-		}
-		onDeleteBlueprint(blueprint: Blueprint) {
-			const { t } = this.props
-			doModalDialog({
-				title: t('Delete this Blueprint?'),
-				yes: t('Delete'),
-				no: t('Cancel'),
-				message: (
-					<React.Fragment>
-						<p>
-							{t('Are you sure you want to delete the blueprint "{{blueprintId}}"?', {
-								blueprintId: blueprint && blueprint.name,
-							})}
-						</p>
-						<p>{t('Please note: This action is irreversible!')}</p>
-					</React.Fragment>
-				),
-				onAccept: () => {
-					MeteorCall.blueprint.removeBlueprint(blueprint._id).catch(console.error)
-				},
-			})
-		}
-		onDeleteDevice(device: PeripheralDevice) {
-			const { t } = this.props
-			doModalDialog({
-				title: t('Remove this Device?'),
-				yes: t('Delete'),
-				no: t('Cancel'),
-				message: (
-					<React.Fragment>
-						<p>
-							{t('Are you sure you want to remove the device "{{deviceName}}" and all of it\'s sub-devices?', {
-								deviceName: device && device.name,
-							})}
-						</p>
-						<p>{t('Please note: This action is irreversible!')}</p>
-					</React.Fragment>
-				),
-				onAccept: () => {
-					MeteorCall.peripheralDevice.removePeripheralDevice(device._id).catch(console.error)
-				},
-			})
-		}
 		render() {
 			const { t } = this.props
 			return (
@@ -243,36 +89,9 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 						{t('Studios')}
 					</h2>
 					<hr className="vsubtle man" />
-					{this.props.studios.map((studio) => {
-						return [
-							<NavLink
-								activeClassName="selectable-selected"
-								className="settings-menu__settings-menu-item selectable clickable"
-								key={unprotectString(studio._id)}
-								to={'/settings/studio/' + studio._id}
-							>
-								<button
-									className="action-btn right"
-									onClick={(e) => {
-										e.preventDefault()
-										e.stopPropagation()
-										this.onDeleteStudio(studio)
-									}}
-								>
-									<FontAwesomeIcon icon={faTrash} />
-								</button>
-								{this.studioHasError(studio) ? (
-									<button className="action-btn right error-notice">
-										<FontAwesomeIcon icon={faExclamationTriangle} />
-									</button>
-								) : null}
-								<div className="selectable clickable">
-									<h3>{studio.name || t('Unnamed Studio')}</h3>
-								</div>
-							</NavLink>,
-							<hr className="vsubtle man" key={studio._id + '-hr'} />,
-						]
-					})}
+					{this.props.studios.map((studio) => (
+						<SettingsMenuStudio key={unprotectString(studio._id)} studio={studio} />
+					))}
 					<h2 className="mhs">
 						<button className="action-btn right" onClick={() => this.onAddShowStyleBase()}>
 							<FontAwesomeIcon icon={faPlus} />
@@ -280,42 +99,9 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 						{t('Show Styles')}
 					</h2>
 					<hr className="vsubtle man" />
-					{this.props.showStyleBases.map((showStyleBase) => {
-						return [
-							<NavLink
-								activeClassName="selectable-selected"
-								className="settings-menu__settings-menu-item selectable clickable"
-								key={unprotectString(showStyleBase._id)}
-								to={'/settings/showStyleBase/' + showStyleBase._id}
-							>
-								<div className="selectable clickable">
-									<button
-										className="action-btn right"
-										onClick={(e) => {
-											e.preventDefault()
-											e.stopPropagation()
-											this.onDeleteShowStyleBase(showStyleBase)
-										}}
-									>
-										<FontAwesomeIcon icon={faTrash} />
-									</button>
-									{this.showStyleHasError(showStyleBase) ? (
-										<button className="action-btn right error-notice">
-											<FontAwesomeIcon icon={faExclamationTriangle} />
-										</button>
-									) : null}
-									<h3>{showStyleBase.name || t('Unnamed Show Style')}</h3>
-									{showStyleBase.sourceLayers && showStyleBase.outputLayers && (
-										<p>
-											{t('Source Layers')}: {showStyleBase.sourceLayers.length.toString()} {t('Output Channels')}:{' '}
-											{showStyleBase.outputLayers.length.toString()}
-										</p>
-									)}
-								</div>
-							</NavLink>,
-							<hr className="vsubtle man" key={showStyleBase._id + '-hr'} />,
-						]
-					})}
+					{this.props.showStyleBases.map((showStyleBase) => (
+						<SettingsMenuShowStyle key={unprotectString(showStyleBase._id)} showStyleBase={showStyleBase} />
+					))}
 					{(!MeteorSettings.enableUserAccounts || this.props.superAdmin) && (
 						<React.Fragment>
 							<h2 className="mhs">
@@ -325,42 +111,9 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 								{t('Blueprints')}
 							</h2>
 							<hr className="vsubtle man" />
-							{this.props.blueprints.map((blueprint) => {
-								return (
-									<NavLink
-										activeClassName="selectable-selected"
-										className="settings-menu__settings-menu-item selectable clickable"
-										key={unprotectString(blueprint._id)}
-										to={'/settings/blueprint/' + blueprint._id}
-									>
-										<div className="selectable clickable">
-											<button
-												className="action-btn right"
-												onClick={(e) => {
-													e.preventDefault()
-													e.stopPropagation()
-													this.onDeleteBlueprint(blueprint)
-												}}
-											>
-												<FontAwesomeIcon icon={faTrash} />
-											</button>
-											{this.blueprintHasError(blueprint) ? (
-												<button className="action-btn right error-notice">
-													<FontAwesomeIcon icon={faExclamationTriangle} />
-												</button>
-											) : null}
-											<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
-											<p>
-												{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}
-											</p>
-											<p>
-												{t('Version')} {blueprint.blueprintVersion}
-											</p>
-										</div>
-										<hr className="vsubtle man" />
-									</NavLink>
-								)
-							})}
+							{this.props.blueprints.map((blueprint) => (
+								<SettingsMenuBlueprint key={unprotectString(blueprint._id)} blueprint={blueprint} />
+							))}
 						</React.Fragment>
 					)}
 					<h2 className="mhs">{t('Devices')}</h2>
@@ -369,38 +122,9 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 						.filter((device) => {
 							return device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
 						})
-						.map((device) => {
-							return [
-								<NavLink
-									activeClassName="selectable-selected"
-									className="settings-menu__settings-menu-item selectable clickable"
-									key={unprotectString(device._id)}
-									to={'/settings/peripheralDevice/' + device._id}
-								>
-									<button
-										className="action-btn right"
-										onClick={(e) => {
-											e.preventDefault()
-											e.stopPropagation()
-											this.onDeleteDevice(device)
-										}}
-									>
-										<FontAwesomeIcon icon={faTrash} />
-									</button>
-									{this.peripheralDeviceHasError(device) ? (
-										<button className="action-btn right error-notice">
-											<FontAwesomeIcon icon={faExclamationTriangle} />
-										</button>
-									) : null}
-									<h3>{device.name}</h3>
-									<p>
-										{device.connected ? t('Connected') : t('Disconnected')}, {t('Status')}:{' '}
-										{this.statusCodeString(device.status.statusCode)}
-									</p>
-								</NavLink>,
-								<hr className="vsubtle man" key={device._id + '-hr'} />,
-							]
-						})}
+						.map((device) => (
+							<SettingsMenuPeripheralDevice key={unprotectString(device._id)} device={device} />
+						))}
 					<h2 className="mhs">{t('Tools')}</h2>
 					<hr className="vsubtle man" />
 					{(!MeteorSettings.enableUserAccounts || this.props.superAdmin) && (
@@ -433,3 +157,282 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 		}
 	}
 )
+
+interface SettingsMenuStudioProps {
+	studio: DBStudio
+}
+function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
+	const { t } = useTranslation()
+
+	const onDeleteStudio = React.useCallback(
+		(e: React.MouseEvent) => {
+			e.preventDefault()
+			e.stopPropagation()
+
+			doModalDialog({
+				title: t('Delete this Studio?'),
+				yes: t('Delete'),
+				no: t('Cancel'),
+				message: (
+					<React.Fragment>
+						<p>{t('Are you sure you want to delete the studio "{{studioId}}"?', { studioId: studio.name })}</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</React.Fragment>
+				),
+				onAccept: () => {
+					MeteorCall.studio.removeStudio(studio._id).catch(console.error)
+				},
+			})
+		},
+		[t, studio.name, studio._id]
+	)
+
+	return (
+		<NavLink
+			activeClassName="selectable-selected"
+			className="settings-menu__settings-menu-item selectable clickable"
+			to={'/settings/studio/' + studio._id}
+		>
+			<button className="action-btn right" onClick={onDeleteStudio}>
+				<FontAwesomeIcon icon={faTrash} />
+			</button>
+			{studioHasError(studio) ? (
+				<button className="action-btn right error-notice">
+					<FontAwesomeIcon icon={faExclamationTriangle} />
+				</button>
+			) : null}
+			<div className="selectable clickable">
+				<h3>{studio.name || t('Unnamed Studio')}</h3>
+			</div>
+			<hr className="vsubtle man" />
+		</NavLink>
+	)
+}
+
+function studioHasError(studio: Studio): boolean {
+	if (!studio.name) return true
+	if (!studio.supportedShowStyleBase.length) return true
+	if (!studio.blueprintId) return true
+	// TODO - fix this
+	// const peripherals = props.peripheralDevices.filter((device) => device.studioId === studio._id)
+	// if (!peripherals.length) return true
+	// if (!peripherals.filter((device) => device.type === PeripheralDeviceType.PLAYOUT).length) return true
+	return false
+}
+
+interface SettingsMenuShowStyleProps {
+	showStyleBase: ShowStyleBase
+}
+function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
+	const { t } = useTranslation()
+
+	const onDeleteShowStyleBase = React.useCallback(
+		(e: React.MouseEvent) => {
+			e.preventDefault()
+			e.stopPropagation()
+
+			doModalDialog({
+				title: t('Delete this Show Style?'),
+				yes: t('Delete'),
+				no: t('Cancel'),
+				message: (
+					<React.Fragment>
+						<p>
+							{t('Are you sure you want to delete the show style "{{showStyleId}}"?', {
+								showStyleId: showStyleBase && showStyleBase.name,
+							})}
+						</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</React.Fragment>
+				),
+				onAccept: () => {
+					MeteorCall.showstyles.removeShowStyleBase(showStyleBase._id).catch(console.error)
+				},
+			})
+		},
+		[t, showStyleBase._id, showStyleBase.name]
+	)
+
+	return (
+		<NavLink
+			activeClassName="selectable-selected"
+			className="settings-menu__settings-menu-item selectable clickable"
+			key={unprotectString(showStyleBase._id)}
+			to={'/settings/showStyleBase/' + showStyleBase._id}
+		>
+			<div className="selectable clickable">
+				<button className="action-btn right" onClick={onDeleteShowStyleBase}>
+					<FontAwesomeIcon icon={faTrash} />
+				</button>
+				{showStyleHasError(showStyleBase) ? (
+					<button className="action-btn right error-notice">
+						<FontAwesomeIcon icon={faExclamationTriangle} />
+					</button>
+				) : null}
+				<h3>{showStyleBase.name || t('Unnamed Show Style')}</h3>
+				{showStyleBase.sourceLayers && showStyleBase.outputLayers && (
+					<p>
+						{t('Source Layers')}: {showStyleBase.sourceLayers.length.toString()} {t('Output Channels')}:{' '}
+						{showStyleBase.outputLayers.length.toString()}
+					</p>
+				)}
+			</div>
+			<hr className="vsubtle man" />
+		</NavLink>
+	)
+}
+
+function showStyleHasError(showstyle: ShowStyleBase): boolean {
+	if (!showstyle.sourceLayers) return true
+	if (!showstyle.outputLayers) return true
+	if (!showstyle.sourceLayers.length) return true
+	if (!showstyle.outputLayers.length) return true
+	if (!showstyle.outputLayers.filter((l) => l.isPGM).length) return true
+	return false
+}
+
+interface SettingsMenuBlueprintProps {
+	blueprint: Blueprint
+}
+function SettingsMenuBlueprint({ blueprint }: SettingsMenuBlueprintProps) {
+	const { t } = useTranslation()
+
+	const onDeleteBlueprint = React.useCallback(
+		(e: React.MouseEvent) => {
+			e.preventDefault()
+			e.stopPropagation()
+
+			doModalDialog({
+				title: t('Delete this Blueprint?'),
+				yes: t('Delete'),
+				no: t('Cancel'),
+				message: (
+					<React.Fragment>
+						<p>
+							{t('Are you sure you want to delete the blueprint "{{blueprintId}}"?', {
+								blueprintId: blueprint && blueprint.name,
+							})}
+						</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</React.Fragment>
+				),
+				onAccept: () => {
+					MeteorCall.blueprint.removeBlueprint(blueprint._id).catch(console.error)
+				},
+			})
+		},
+		[t, blueprint._id, blueprint.name]
+	)
+
+	return (
+		<NavLink
+			activeClassName="selectable-selected"
+			className="settings-menu__settings-menu-item selectable clickable"
+			to={'/settings/blueprint/' + blueprint._id}
+		>
+			<div className="selectable clickable">
+				<button className="action-btn right" onClick={onDeleteBlueprint}>
+					<FontAwesomeIcon icon={faTrash} />
+				</button>
+				{blueprintHasError(blueprint) ? (
+					<button className="action-btn right error-notice">
+						<FontAwesomeIcon icon={faExclamationTriangle} />
+					</button>
+				) : null}
+				<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
+				<p>
+					{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}
+				</p>
+				<p>
+					{t('Version')} {blueprint.blueprintVersion}
+				</p>
+			</div>
+			<hr className="vsubtle man" />
+		</NavLink>
+	)
+}
+
+function blueprintHasError(blueprint: Blueprint): boolean {
+	if (!blueprint.name) return true
+	if (!blueprint.blueprintType) return true
+	return false
+}
+
+interface SettingsMenuPeripheralDeviceProps {
+	device: PeripheralDevice
+}
+function SettingsMenuPeripheralDevice({ device }: SettingsMenuPeripheralDeviceProps) {
+	const { t } = useTranslation()
+
+	const onDeleteDevice = React.useCallback(
+		(e: React.MouseEvent) => {
+			e.preventDefault()
+			e.stopPropagation()
+
+			doModalDialog({
+				title: t('Remove this Device?'),
+				yes: t('Delete'),
+				no: t('Cancel'),
+				message: (
+					<React.Fragment>
+						<p>
+							{t('Are you sure you want to remove the device "{{deviceName}}" and all of it\'s sub-devices?', {
+								deviceName: device && device.name,
+							})}
+						</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</React.Fragment>
+				),
+				onAccept: () => {
+					MeteorCall.peripheralDevice.removePeripheralDevice(device._id).catch(console.error)
+				},
+			})
+		},
+		[t, device._id, device.name]
+	)
+
+	return (
+		<NavLink
+			activeClassName="selectable-selected"
+			className="settings-menu__settings-menu-item selectable clickable"
+			to={'/settings/peripheralDevice/' + device._id}
+		>
+			<button className="action-btn right" onClick={onDeleteDevice}>
+				<FontAwesomeIcon icon={faTrash} />
+			</button>
+			{peripheralDeviceHasError(device) ? (
+				<button className="action-btn right error-notice">
+					<FontAwesomeIcon icon={faExclamationTriangle} />
+				</button>
+			) : null}
+			<h3>{device.name}</h3>
+			<p>
+				{device.connected ? t('Connected') : t('Disconnected')}, {t('Status')}:{' '}
+				{statusCodeString(t, device.status.statusCode)}
+			</p>
+			<hr className="vsubtle man" key={device._id + '-hr'} />
+		</NavLink>
+	)
+}
+
+function peripheralDeviceHasError(device: PeripheralDevice): boolean {
+	if (!device.name) return true
+	return false
+}
+
+function statusCodeString(t: TFunction, statusCode: StatusCode): string {
+	switch (statusCode) {
+		case StatusCode.UNKNOWN:
+			return t('Unknown')
+		case StatusCode.GOOD:
+			return t('Good')
+		case StatusCode.WARNING_MINOR:
+			return t('Minor Warning')
+		case StatusCode.WARNING_MAJOR:
+			return t('Warning')
+		case StatusCode.BAD:
+			return t('Bad')
+		case StatusCode.FATAL:
+			return t('Fatal')
+	}
+}
