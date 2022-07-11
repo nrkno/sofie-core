@@ -79,14 +79,14 @@ export const LinePartSecondaryPiece: React.FC<IProps> = function LinePartSeconda
 		(e: React.MouseEvent<HTMLDivElement>) => {
 			incomingOnClick && incomingOnClick(piece, e)
 		},
-		[piece]
+		[piece, incomingOnClick]
 	)
 
 	const onDoubleClick = useCallback(
 		(e: React.MouseEvent<HTMLDivElement>) => {
 			incomingOnDoubleClick && incomingOnDoubleClick(piece, e)
 		},
-		[piece]
+		[piece, incomingOnDoubleClick]
 	)
 
 	return (
