@@ -4,7 +4,7 @@ import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { RundownHoldState, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Studio } from '../../../lib/collections/Studios'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { PartUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
+import { PartUi, PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { IContextMenuContext } from '../RundownView'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
@@ -43,7 +43,8 @@ interface IProps {
 	fixedSegmentDuration: boolean
 	showCountdownToSegment: boolean
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
-	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
+	onSwitchViewMode?: (newViewMode: SegmentViewMode) => void
+	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
 
 // TODO: This is a horribly wonky hack for the prototype
@@ -156,6 +157,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}
 				indicatorColumns={indicatorColumns}
 				doesPlaylistHaveNextPart={playlistHasNextPart}
+				onPieceDoubleClick={props.onPieceDoubleClick}
 			/>
 		)
 

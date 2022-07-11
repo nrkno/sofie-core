@@ -11,6 +11,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { OvertimeShadow } from './OvertimeShadow'
 import { StudioContext } from './SegmentList'
 import { PartAutoNextMarker } from './PartAutoNextMarker'
+import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 
 const TIMELINE_DEFAULT_BASE = 30 * 1000
 
@@ -21,6 +22,8 @@ interface IProps {
 	isFinished: boolean
 	currentPartWillAutonext: boolean
 	hasAlreadyPlayed: boolean
+	onPieceClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
 
 const supportedSourceLayerTypes = new Set(
@@ -64,6 +67,8 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 	isNext,
 	currentPartWillAutonext,
 	hasAlreadyPlayed,
+	onPieceClick,
+	onPieceDoubleClick,
 }) {
 	// const [highlight] = useState(false)
 
@@ -99,6 +104,8 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 					partDuration={partDuration}
 					partId={part.partId}
 					partInstanceId={part.instance._id}
+					onClick={onPieceClick}
+					onDoubleClick={onPieceDoubleClick}
 				/>
 			))}
 			{mainPiece && (

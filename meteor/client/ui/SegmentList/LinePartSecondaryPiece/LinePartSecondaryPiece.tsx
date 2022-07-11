@@ -6,6 +6,7 @@ import { RundownUtils } from '../../../lib/rundown'
 import { PieceHoverInspector } from '../PieceHoverInspector'
 import { StudioContext } from '../SegmentList'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
+import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 
 interface IProps {
 	piece: PieceExtended
@@ -13,6 +14,8 @@ interface IProps {
 	partInstanceId: PartInstanceId
 	timelineBase: number
 	partDuration: number
+	onClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
 
 function timeInBase(time: number, partDuration: number, timelineBase: number): number {
@@ -27,6 +30,8 @@ export const LinePartSecondaryPiece: React.FC<IProps> = function LinePartSeconda
 	partInstanceId,
 	partDuration,
 	timelineBase,
+	onClick,
+	onDoubleClick,
 }) {
 	const pieceEl = useRef<HTMLDivElement>(null)
 	const [hovering, setHover] = useState(false)
@@ -77,10 +82,13 @@ export const LinePartSecondaryPiece: React.FC<IProps> = function LinePartSeconda
 			style={pieceStyle}
 			data-duraton={piece.renderedDuration}
 			data-obj-id={piece.instance._id}
+			data-piece-id={piece.instance.isTemporary ? piece.instance.piece._id : piece.instance._id}
 			data-label={piece.instance.piece.name}
 			onPointerEnter={onPointerEnter}
 			onPointerLeave={onPointerLeave}
 			onPointerMove={onPointerMove}
+			onClick={onClick}
+			onDoubleClick={onDoubleClick}
 		>
 			<StudioContext.Consumer>
 				{(studio) =>

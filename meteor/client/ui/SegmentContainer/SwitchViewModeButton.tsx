@@ -20,7 +20,7 @@ export function SwitchViewModeButton({
 	onSwitchViewMode,
 }: {
 	currentMode: SegmentViewMode
-	onSwitchViewMode: (viewMode: SegmentViewMode) => void
+	onSwitchViewMode?: (viewMode: SegmentViewMode) => void
 }) {
 	const { t } = useTranslation()
 
@@ -31,7 +31,7 @@ export function SwitchViewModeButton({
 			return (
 				<button
 					className="segment-timeline__switch-view-mode-button"
-					onClick={() => onSwitchViewMode(nextMode)}
+					onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
 					title={t('Switch to Timeline view')}
 				>
 					<Timeline />
@@ -41,7 +41,7 @@ export function SwitchViewModeButton({
 			return (
 				<button
 					className="segment-timeline__switch-view-mode-button"
-					onClick={() => onSwitchViewMode(nextMode)}
+					onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
 					title={t('Switch to Storyboard view')}
 				>
 					<Storyboard />
@@ -51,7 +51,7 @@ export function SwitchViewModeButton({
 			return (
 				<button
 					className="segment-timeline__switch-view-mode-button"
-					onClick={() => onSwitchViewMode(nextMode)}
+					onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
 					title={t('Switch to List view')}
 				>
 					<List />

@@ -7,7 +7,7 @@ import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
-import { SegmentUi } from '../SegmentContainer/withResolvedSegment'
+import { PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
 import { LinePartPieceIndicators } from './LinePartPieceIndicators'
 import { LinePartTimeline } from './LinePartTimeline'
@@ -30,6 +30,7 @@ interface IProps {
 	displayLiveLineCounter: boolean
 	style?: React.CSSProperties
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
+	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
 
 export const LinePart: React.FC<IProps> = function LinePart({
@@ -42,6 +43,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 	currentPartWillAutonext,
 	indicatorColumns,
 	onContextMenu,
+	onPieceDoubleClick,
 }) {
 	const isFinished = (part.instance.timings?.stoppedPlayback ?? part.instance.timings?.takeOut) !== undefined
 	const [highlight] = useState(false)
@@ -121,6 +123,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				isFinished={isFinished}
 				currentPartWillAutonext={currentPartWillAutonext}
 				hasAlreadyPlayed={hasAlreadyPlayed}
+				onPieceDoubleClick={onPieceDoubleClick}
 			/>
 		</ContextMenuTrigger>
 	)
