@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ISourceLayerExtended, PieceExtended } from '../../../../lib/Rundown'
 import { LinePartIndicator } from './LinePartIndicator'
 
@@ -13,6 +14,7 @@ export const LinePartPieceIndicator: React.FC<IProps> = function LinePartPieceIn
 	pieces,
 	sourceLayers,
 }) {
+	const { t } = useTranslation()
 	const sourceLayerIds = useMemo(() => sourceLayers.map((layer) => layer._id), [sourceLayers])
 	const thisPieces = useMemo(
 		() =>
@@ -36,7 +38,7 @@ export const LinePartPieceIndicator: React.FC<IProps> = function LinePartPieceIn
 			overlay={
 				<>
 					<b>{label}</b>:{' '}
-					{thisPieces.length === 0 ? 'Not present' : thisPieces.map((piece) => piece.instance.piece.name).join(', ')}
+					{thisPieces.length === 0 ? t('Not present') : thisPieces.map((piece) => piece.instance.piece.name).join(', ')}
 				</>
 			}
 		/>

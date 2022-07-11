@@ -80,7 +80,7 @@ export const LinePartAdLibIndicator: React.FC<IProps> = function LinePartAdLibIn
 				<>
 					<b>{t('{{sourceLayer}} AdLibs', { sourceLayer: label })}</b>
 					{': '}
-					{allAdLibs.join(', ')}
+					{allAdLibs.length > 0 ? allAdLibs.join(', ') : t('Not present')}
 				</>
 			}
 		/>
