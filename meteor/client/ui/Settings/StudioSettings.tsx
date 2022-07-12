@@ -16,9 +16,13 @@ import { StudioDevices } from './Studio/Devices'
 import { StudioMappings } from './Studio/Mappings'
 import { StudioPackageManagerSettings } from './Studio/PackageManager'
 import { StudioGenericProperties } from './Studio/Generic'
+import { Redirect, Route, Switch } from 'react-router-dom'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
 
 interface IStudioSettingsProps {
 	match: {
+		url: string
+		path: string
 		params: {
 			studioId: StudioId
 		}
@@ -142,48 +146,45 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				<div className="studio-edit mod mhl mvn">
 					<div className="row">
 						<div className="col c12 r1-c12">
-							<StudioGenericProperties
-								studio={this.props.studio}
-								availableShowStyleBases={this.props.availableShowStyleBases}
-							/>
-						</div>
-					</div>
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<StudioDevices
-								studio={this.props.studio}
-								studioDevices={this.props.studioDevices}
-								availableDevices={this.props.availableDevices}
-							/>
-						</div>
-					</div>
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<ConfigManifestSettings
-								t={this.props.t}
-								i18n={this.props.i18n}
-								tReady={this.props.tReady}
-								manifest={this.props.blueprintConfigManifest}
-								object={this.props.studio}
-								layerMappings={this.getLayerMappingsFlat()}
-								collection={Studios}
-								configPath={'blueprintConfig'}
-							/>
-						</div>
-					</div>
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<StudioMappings studio={this.props.studio} manifest={this.props.layerMappingsManifest} />
-						</div>
-					</div>
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<StudioRoutings studio={this.props.studio} manifest={this.props.layerMappingsManifest} />
-						</div>
-					</div>
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<StudioPackageManagerSettings studio={this.props.studio} />
+							<ErrorBoundary>
+								<Switch>
+									<Route path={`${this.props.match.path}/generic`}>
+										<StudioGenericProperties
+											studio={this.props.studio}
+											availableShowStyleBases={this.props.availableShowStyleBases}
+										/>
+									</Route>
+									<Route path={`${this.props.match.path}/devices`}>
+										<StudioDevices
+											studio={this.props.studio}
+											studioDevices={this.props.studioDevices}
+											availableDevices={this.props.availableDevices}
+										/>
+									</Route>
+									<Route path={`${this.props.match.path}/blueprint-config`}>
+										<ConfigManifestSettings
+											t={this.props.t}
+											i18n={this.props.i18n}
+											tReady={this.props.tReady}
+											manifest={this.props.blueprintConfigManifest}
+											object={this.props.studio}
+											layerMappings={this.getLayerMappingsFlat()}
+											collection={Studios}
+											configPath={'blueprintConfig'}
+										/>
+									</Route>
+									<Route path={`${this.props.match.path}/mappings`}>
+										<StudioMappings studio={this.props.studio} manifest={this.props.layerMappingsManifest} />
+									</Route>
+									<Route path={`${this.props.match.path}/route-sets`}>
+										<StudioRoutings studio={this.props.studio} manifest={this.props.layerMappingsManifest} />
+									</Route>
+									<Route path={`${this.props.match.path}/package-manager`}>
+										<StudioPackageManagerSettings studio={this.props.studio} />
+									</Route>
+									<Redirect to={`${this.props.match.path}/generic`} />
+								</Switch>
+							</ErrorBoundary>
 						</div>
 					</div>
 				</div>

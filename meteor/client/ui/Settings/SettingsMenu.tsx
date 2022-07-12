@@ -3,7 +3,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { unprotectString } from '../../../lib/lib'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 
 import { DBStudio, Studio, Studios } from '../../../lib/collections/Studios'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
@@ -158,6 +158,62 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 	}
 )
 
+interface SettingsCollapsibleGroupProps {
+	links: Array<{ label: string; subPath: string }>
+	basePath: string
+}
+
+function SettingsCollapsibleGroup({
+	links,
+	children,
+	basePath,
+}: React.PropsWithChildren<SettingsCollapsibleGroupProps>) {
+	const [expanded, setExpanded] = React.useState(false)
+
+	const toggleExpanded = React.useCallback((e: React.MouseEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+
+		setExpanded((old) => !old)
+	}, [])
+
+	const location = useLocation()
+	React.useEffect(() => {
+		// Auto-expand if the current location starts with the basePath
+		if (location.pathname.startsWith(basePath)) {
+			setExpanded(true)
+		}
+	}, [location.pathname, basePath])
+
+	return (
+		<>
+			<NavLink
+				activeClassName="selectable-selected"
+				className="settings-menu__settings-menu-item selectable clickable"
+				to={basePath}
+				onClick={toggleExpanded}
+			>
+				{children}
+			</NavLink>
+			{expanded
+				? links.map((link, i) => (
+						<NavLink
+							key={i}
+							activeClassName="selectable-selected"
+							className="settings-menu__settings-menu-item selectable clickable"
+							to={`${basePath}/${link.subPath}`}
+						>
+							<div className="selectable clickable">
+								<h4>{link.label}</h4>
+							</div>
+						</NavLink>
+				  ))
+				: ''}
+			<hr className="vsubtle man" />
+		</>
+	)
+}
+
 interface SettingsMenuStudioProps {
 	studio: DBStudio
 }
@@ -187,12 +243,20 @@ function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
 		[t, studio.name, studio._id]
 	)
 
+	const childLinks = React.useMemo(
+		() => [
+			{ label: 'Generic Properties', subPath: `generic` },
+			{ label: 'Attached Devices', subPath: `devices` },
+			{ label: 'Blueprint Configuration', subPath: `blueprint-config` },
+			{ label: 'Layer Mappings', subPath: `mappings` },
+			{ label: 'Route Sets', subPath: `route-sets` },
+			{ label: 'Package Manager', subPath: `package-manager` },
+		],
+		[studio._id]
+	)
+
 	return (
-		<NavLink
-			activeClassName="selectable-selected"
-			className="settings-menu__settings-menu-item selectable clickable"
-			to={'/settings/studio/' + studio._id}
-		>
+		<SettingsCollapsibleGroup basePath={`/settings/studio/${studio._id}`} links={childLinks}>
 			<button className="action-btn right" onClick={onDeleteStudio}>
 				<FontAwesomeIcon icon={faTrash} />
 			</button>
@@ -204,8 +268,7 @@ function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
 			<div className="selectable clickable">
 				<h3>{studio.name || t('Unnamed Studio')}</h3>
 			</div>
-			<hr className="vsubtle man" />
-		</NavLink>
+		</SettingsCollapsibleGroup>
 	)
 }
 
