@@ -1535,6 +1535,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
+						activationId: 1,
 					},
 				}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
 				if (!playlist) return
