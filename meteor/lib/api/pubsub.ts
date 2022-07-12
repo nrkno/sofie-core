@@ -95,6 +95,10 @@ export enum PubSub {
 	packageContainerPackageStatuses = 'packageContainerPackageStatuses',
 	packageContainerStatuses = 'packageContainerStatuses',
 	packageInfos = 'packageInfos',
+
+	// For a PeripheralDevice
+	rundownsForDevice = 'rundownsForDevice',
+
 	// custom publications:
 	mappingsForDevice = 'mappingsForDevice',
 	timelineForDevice = 'timelineForDevice',
@@ -186,6 +190,9 @@ export interface PubSubTypes {
 		token?: string
 	) => PackageContainerStatusDB
 	[PubSub.packageInfos]: (selector: MongoQuery<PackageInfoDB>, token?: string) => PackageInfoDB
+
+	// For a PeripheralDevice
+	[PubSub.rundownsForDevice]: (deviceId: PeripheralDeviceId, token: string) => DBRundown
 
 	// custom publications:
 	[PubSub.mappingsForDevice]: (deviceId: PeripheralDeviceId, token?: string) => RoutedMappings
