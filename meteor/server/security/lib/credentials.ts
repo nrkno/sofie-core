@@ -20,7 +20,7 @@ export type ResolvedUser = Pick<User, '_id' | 'organizationId' | 'superAdmin'>
  * A minimal set of properties about the OeripheralDevice.
  * We keep it small so that we don't cache too much in memory or have to invalidate the credentials when something insignificant changes
  */
-export type ResolvedPeripheralDevice = Pick<PeripheralDevice, '_id' | 'organizationId' | 'token'>
+export type ResolvedPeripheralDevice = Pick<PeripheralDevice, '_id' | 'organizationId' | 'token' | 'studioId'>
 
 export interface ResolvedCredentials {
 	organizationId: OrganizationId | null
@@ -121,6 +121,7 @@ export async function resolveCredentials(cred: Credentials | ResolvedCredentials
 							_id: 1,
 							organizationId: 1,
 							token: 1,
+							studioId: 1,
 						},
 					}
 				)) as ResolvedPeripheralDevice
