@@ -24,23 +24,22 @@ import {
 	RundownBaselineAdLibActions,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { check, Match } from 'meteor/check'
-import { resolveCredentials } from '../security/lib/credentials'
 
-meteorPublish(PubSub.rundownsForDevice, function (deviceId, token) {
+meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
 	check(deviceId, String)
 	check(token, String)
 
-	const { cred, selector } = AutoFillSelector.organizationId<DBRundown>(this.userId, {}, token)
+	const { cred, selector } = await AutoFillSelector.organizationId<DBRundown>(this.userId, {}, token)
 
 	// Future: this should be reactive to studioId changes, but this matches how the other *ForDevice publications behave
 
-	const cred1 = resolveCredentials(cred)
-	if (!cred1.device) throw new Meteor.Error(403, 'Publication can only be used by authorized PeripheralDevices')
+	if (!cred || !cred.device)
+		throw new Meteor.Error(403, 'Publication can only be used by authorized PeripheralDevices')
 
 	// No studio, then no rundowns
-	if (!cred1.device.studioId) return null
+	if (!cred.device.studioId) return null
 
-	selector.studioId = cred1.device.studioId
+	selector.studioId = cred.device.studioId
 
 	const modifier: FindOptions<DBRundown> = {
 		fields: {
@@ -48,7 +47,7 @@ meteorPublish(PubSub.rundownsForDevice, function (deviceId, token) {
 		},
 	}
 
-	if (NoSecurityReadAccess.any() || StudioReadAccess.studioContent(selector, cred)) {
+	if (NoSecurityReadAccess.any() || (await StudioReadAccess.studioContent(selector.studioId, cred))) {
 		return Rundowns.find(selector, modifier)
 	}
 	return null

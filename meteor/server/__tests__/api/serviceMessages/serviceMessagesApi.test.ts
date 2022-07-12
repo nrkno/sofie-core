@@ -173,7 +173,7 @@ describe('Service messages internal API', () => {
 		})
 
 		it('should throw when message cant be written', async () => {
-			const spyUpdate = jest.spyOn(CoreSystem.CoreSystem, 'update').mockImplementation(() => {
+			const spyUpdate = jest.spyOn(CoreSystem.CoreSystem, 'updateAsync').mockImplementation(() => {
 				throw new Error('lol')
 			})
 			const cs = Object.assign({}, fakeCoreSystem, {
