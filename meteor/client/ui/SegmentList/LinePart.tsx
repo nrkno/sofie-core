@@ -111,7 +111,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 								)}
 							</span>
 						)}
-					{part.instance.part.expectedDuration === 0 && <span>⋯</span>}
+					{part.instance.part.expectedDuration === 0 && <span>––:––</span>}
 				</div>
 				<h3 className="segment-opl__part-title">
 					<span>{part.instance.part.title}</span>
