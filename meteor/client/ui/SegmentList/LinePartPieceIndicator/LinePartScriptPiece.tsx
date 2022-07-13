@@ -27,8 +27,8 @@ export function LinePartScriptPiece({ pieces }: IProps) {
 		const { top, left, width } = pieceEl.current.getBoundingClientRect()
 
 		setMiniInspectorPosition({
-			top: `${top}px`,
-			left: `${left + width / 2}px`,
+			top: `${top + window.scrollY}px`,
+			left: `${left + width / 2 + window.scrollX}px`,
 		})
 	}, [])
 
