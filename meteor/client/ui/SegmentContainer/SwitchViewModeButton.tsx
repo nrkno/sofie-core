@@ -2,7 +2,10 @@ import Tooltip from 'rc-tooltip'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { getUseOnePartPerLine } from '../../lib/localStorage'
-import { Storyboard, Timeline, List } from '../../lib/ui/icons/segment'
+import { TimelineView } from '../../lib/ui/icons/timelineView'
+import { StoryboardView } from '../../lib/ui/icons/storyboardView'
+import { ListView } from '../../lib/ui/icons/listView'
+
 import { SegmentViewMode } from './SegmentViewModes'
 
 function getNextMode(currentMode: SegmentViewMode): SegmentViewMode {
@@ -30,34 +33,34 @@ export function SwitchViewModeButton({
 	switch (nextMode) {
 		case SegmentViewMode.Timeline:
 			return (
-				<Tooltip overlay={t('Switch to Timeline view')}>
+				<Tooltip overlay={t('Switch to Timeline View')}>
 					<button
 						className="segment-timeline__switch-view-mode-button"
 						onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
 					>
-						<Timeline />
+						<TimelineView />
 					</button>
 				</Tooltip>
 			)
 		case SegmentViewMode.Storyboard:
 			return (
-				<Tooltip overlay={t('Switch to Storyboard view')}>
+				<Tooltip overlay={t('Switch to Storyboard View')}>
 					<button
 						className="segment-timeline__switch-view-mode-button"
 						onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
 					>
-						<Storyboard />
+						<StoryboardView />
 					</button>
 				</Tooltip>
 			)
 		case SegmentViewMode.List:
 			return (
-				<Tooltip overlay={t('Switch to List view')}>
+				<Tooltip overlay={t('Switch to List View')}>
 					<button
 						className="segment-timeline__switch-view-mode-button"
 						onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
 					>
-						<List />
+						<ListView />
 					</button>
 				</Tooltip>
 			)
