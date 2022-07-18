@@ -382,6 +382,7 @@ $duration-area-margin: 0.5em;
 					position: absolute;
 					top: 0.1em;
 					margin-left: 0.3em;
+					white-space: nowrap;
 
 					> .segment-opl__freeze-marker-timer {
 						font-weight: 400;
@@ -415,7 +416,7 @@ $duration-area-margin: 0.5em;
 				background: #141414;
 				display: flex;
 				padding-top: 0.6em;
-				padding-left: 4em;
+				padding-left: 5em;
 				padding-right: 0.5em;
 				justify-content: flex-end;
 
