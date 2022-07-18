@@ -17,9 +17,6 @@ interface IProps {
 
 export const LinePartAdLibIndicator: React.FC<IProps> = function LinePartAdLibIndicator({ sourceLayers, partId }) {
 	const { t } = useTranslation()
-	useEffect(() => {
-		console.log(sourceLayers)
-	}, [sourceLayers])
 
 	const sourceLayerIds = useMemo(() => sourceLayers.map((sourceLayer) => sourceLayer._id), [sourceLayers])
 	const label = useMemo(() => sourceLayers[0]?.name ?? '', [sourceLayers])
