@@ -2,7 +2,7 @@ import { ControllerAbstract } from './lib'
 import { PrompterConfigMode, PrompterViewInner } from '../PrompterView'
 import Spline from 'cubic-spline'
 
-type JoyconWithData = { index: number; mode: JoyconMode; axes: readonly number[]; buttons: number[] }
+type JoyconWithData = { index: number; timestamp: number; mode: JoyconMode; axes: readonly number[]; buttons: number[] }
 type JoyconMode = 'L' | 'R' | 'LR' | null
 
 /**
@@ -209,7 +209,13 @@ export class JoyConController extends ControllerAbstract {
 							: o.id.match('Product: 2007')
 							? 'R'
 							: null
-					joyconInputs.push({ index: o.index, mode, axes: o.axes, buttons: o.buttons.map((i) => i.value) })
+					joyconInputs.push({
+						index: o.index,
+						timestamp: o.timestamp,
+						mode,
+						axes: o.axes,
+						buttons: o.buttons.map((i) => i.value),
+					})
 				}
 			}
 		}
@@ -219,30 +225,36 @@ export class JoyConController extends ControllerAbstract {
 
 	private getActiveInputsOfJoycons(joycons: JoyconWithData[]): number {
 		let lastSeenSpeed = 0
+		let lastSeenSpeedTimestamp = 0
 
 		for (const joycon of joycons) {
-			// handle buttons at the same time as evaluating stick input
-			this.handleButtons(joycon)
+			// sort/filter by gamepad timestamp to use the most up-to-date input, in order to prevent the "stuck" dead joycon when going from pairs to singles
+			if (joycon.timestamp > lastSeenSpeedTimestamp) {
+				// handle buttons at the same time as evaluating stick input
+				this.handleButtons(joycon)
 
-			// hadle speed input
-			if (joycon.mode === 'L' || joycon.mode === 'R') {
-				// L or R mode
-				if (Math.abs(joycon.axes[0]) > this.deadBand) {
-					if (joycon.mode === 'L') {
-						lastSeenSpeed = joycon.axes[0] * -1 // in this mode, L is "negative"
-					} else if (joycon.mode === 'R') {
-						lastSeenSpeed = joycon.axes[0] * 1.4 // in this mode, R is "positive"
+				// hadle speed input
+				if (joycon.mode === 'L' || joycon.mode === 'R') {
+					// L or R mode
+					if (Math.abs(joycon.axes[0]) > this.deadBand) {
+						if (joycon.mode === 'L') {
+							lastSeenSpeed = joycon.axes[0] * -1 // in this mode, L is "negative"
+						} else if (joycon.mode === 'R') {
+							lastSeenSpeed = joycon.axes[0] * 1.4 // in this mode, R is "positive"
+							// factor increased by 1.4 to account for the R joystick being less sensitive than L
+						}
+						lastSeenSpeedTimestamp = joycon.timestamp
+					}
+				} else if (joycon.mode === 'LR') {
+					// L + R mode
+					// get the first one that is moving outside of the deadband, prioritizing the L controller
+					if (Math.abs(joycon.axes[1]) > this.deadBand) {
+						lastSeenSpeed = joycon.axes[1] * -1 // in this mode, we are "negative" on both sticks....
+					} else if (Math.abs(joycon.axes[3]) > this.deadBand) {
+						lastSeenSpeed = joycon.axes[3] * -1.4 // in this mode, we are "negative" on both sticks....
 						// factor increased by 1.4 to account for the R joystick being less sensitive than L
 					}
-				}
-			} else if (joycon.mode === 'LR') {
-				// L + R mode
-				// get the first one that is moving outside of the deadband, prioritizing the L controller
-				if (Math.abs(joycon.axes[1]) > this.deadBand) {
-					lastSeenSpeed = joycon.axes[1] * -1 // in this mode, we are "negative" on both sticks....
-				} else if (Math.abs(joycon.axes[3]) > this.deadBand) {
-					lastSeenSpeed = joycon.axes[3] * -1.4 // in this mode, we are "negative" on both sticks....
-					// factor increased by 1.4 to account for the R joystick being less sensitive than L
+					lastSeenSpeedTimestamp = joycon.timestamp
 				}
 			}
 		}
