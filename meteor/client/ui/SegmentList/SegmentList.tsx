@@ -195,6 +195,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 								hidden: props.hasAlreadyPlayed && !props.isLiveSegment && !props.isNextSegment,
 							})}
 							tabIndex={0}
+							onClick={onTimeUntilClick}
 						>
 							{props.playlist && props.parts && props.parts.length > 0 && (
 								<SegmentDuration
