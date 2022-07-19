@@ -60,7 +60,6 @@ export const LinePart: React.FC<IProps> = function LinePart({
 			partDocumentOffset: partDocumentOffset || undefined,
 			timeScale: 1,
 			mousePosition: { top: 0, left: 0 },
-			partStartsAt: 100,
 		})
 
 		if (onContextMenu && typeof onContextMenu === 'function') {

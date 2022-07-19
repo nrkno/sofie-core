@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { PubSub } from '../../../../lib/api/pubsub'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { AdLibActions, AdLibAction } from '../../../../lib/collections/AdLibActions'

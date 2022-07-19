@@ -155,6 +155,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				adLibIndicatorColumns={adLibIndicatorColumns}
 				doesPlaylistHaveNextPart={playlistHasNextPart}
 				onPieceDoubleClick={props.onPieceDoubleClick}
+				onContextMenu={props.onContextMenu}
 			/>
 		)
 
