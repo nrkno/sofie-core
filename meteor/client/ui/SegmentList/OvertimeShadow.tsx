@@ -77,22 +77,25 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 	return (
 		//mainSourceEnd && (originalDiff < 0 || diff > 0) ?
 		<>
-			<div
-				className={classNames('segment-opl__overtime-shadow', {
-					'segment-opl__overtime-shadow--no-end': isPartZeroBudget && !endsInFreeze,
-				})}
-				style={overtimeStyle}
-			>
-				{mainSourceEnd && !isLive && !hasAlreadyPlayed && (originalDiff < 0 || diff > 0) && (
-					<span className="segment-opl__overtime-timer" role="timer">
-						{RundownUtils.formatDiffToTimecode(diff, true, false, true, false, true, undefined, false, true)}
-					</span>
-				)}
-			</div>
+			{!isPartZeroBudget && (
+				<div
+					className={classNames('segment-opl__overtime-shadow', {
+						'segment-opl__overtime-shadow--no-end': isPartZeroBudget && !endsInFreeze,
+					})}
+					style={overtimeStyle}
+				>
+					{mainSourceEnd && !isLive && !hasAlreadyPlayed && (originalDiff < 0 || diff > 0) && (
+						<span className="segment-opl__overtime-timer" role="timer">
+							{RundownUtils.formatDiffToTimecode(diff, true, false, true, false, true, undefined, false, true)}
+						</span>
+					)}
+				</div>
+			)}
 			{endsInFreeze && (
 				<div className="segment-opl__freeze-marker" style={freezeFrameIconStyle}>
 					<FreezeFrameIcon />
-					{mainSourceEnd &&
+					{!isPartZeroBudget &&
+						mainSourceEnd &&
 						isLive &&
 						(originalDiff < 0 || Math.floor(diff / 1000) > 0) &&
 						livePosition > partRenderedDuration && (
@@ -100,6 +103,21 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 								{RundownUtils.formatDiffToTimecode(diff, true, false, true, false, true, undefined, false, true)}
 							</span>
 						)}
+					{isPartZeroBudget && mainSourceEnd && isLive && livePosition < mainSourceEnd && (
+						<span className="segment-opl__freeze-marker-timer" role="timer">
+							{RundownUtils.formatDiffToTimecode(
+								mainSourceEnd - livePosition,
+								true,
+								false,
+								true,
+								false,
+								true,
+								undefined,
+								false,
+								true
+							)}
+						</span>
+					)}
 				</div>
 			)}
 		</>

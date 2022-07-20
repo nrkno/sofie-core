@@ -92,7 +92,8 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 		? (mainPieceInPoint ?? 0) + mainPiece?.instance.piece.content.sourceDuration
 		: null
 
-	const isPartZeroBudget = part.instance.part.expectedDuration === 0
+	const isPartZeroBudget =
+		part.instance.part.expectedDuration === 0 || part.instance.part.expectedDuration === undefined
 
 	return (
 		<div className="segment-opl__part-timeline" data-base={timelineBase / 1000}>
