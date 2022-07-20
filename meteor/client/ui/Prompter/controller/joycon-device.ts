@@ -24,6 +24,7 @@ export class JoyConController extends ControllerAbstract {
 	private reverseSpeedSpline: Spline
 
 	private updateSpeedHandle: number | null = null
+	private timestampOfLastUsedJoyconInput: number = 0
 	private currentPosition = 0
 	private lastInputValue = ''
 	private lastButtonInputs: { [index: number]: { mode: JoyconMode; buttons: number[] } } = {}
@@ -225,11 +226,10 @@ export class JoyConController extends ControllerAbstract {
 
 	private getActiveInputsOfJoycons(joycons: JoyconWithData[]): number {
 		let lastSeenSpeed = 0
-		let lastSeenSpeedTimestamp = 0
 
 		for (const joycon of joycons) {
 			// sort/filter by gamepad timestamp to use the most up-to-date input, in order to prevent the "stuck" dead joycon when going from pairs to singles
-			if (joycon.timestamp > lastSeenSpeedTimestamp) {
+			if (joycon.timestamp >= this.timestampOfLastUsedJoyconInput) {
 				// handle buttons at the same time as evaluating stick input
 				this.handleButtons(joycon)
 
@@ -243,7 +243,7 @@ export class JoyConController extends ControllerAbstract {
 							lastSeenSpeed = joycon.axes[0] * 1.4 // in this mode, R is "positive"
 							// factor increased by 1.4 to account for the R joystick being less sensitive than L
 						}
-						lastSeenSpeedTimestamp = joycon.timestamp
+						this.timestampOfLastUsedJoyconInput = joycon.timestamp
 					}
 				} else if (joycon.mode === 'LR') {
 					// L + R mode
@@ -254,7 +254,7 @@ export class JoyConController extends ControllerAbstract {
 						lastSeenSpeed = joycon.axes[3] * -1.4 // in this mode, we are "negative" on both sticks....
 						// factor increased by 1.4 to account for the R joystick being less sensitive than L
 					}
-					lastSeenSpeedTimestamp = joycon.timestamp
+					this.timestampOfLastUsedJoyconInput = joycon.timestamp
 				}
 			}
 		}
