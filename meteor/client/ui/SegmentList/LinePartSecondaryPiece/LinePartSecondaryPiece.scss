@@ -11,7 +11,7 @@
 	@include missing-overlay();
 
 	/** This pseudo-element is used to increase the hit target of the main element */
-	&::before {
+	&::after {
 		content: ' ';
 		display: block;
 		position: absolute;
