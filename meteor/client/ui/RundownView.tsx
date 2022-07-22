@@ -122,7 +122,7 @@ import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/erro
 import { SegmentStoryboardContainer } from './SegmentStoryboard/SegmentStoryboardContainer'
 import { SegmentViewMode } from './SegmentContainer/SegmentViewModes'
 import { UIStateStorage } from '../lib/UIStateStorage'
-import { AdLibPieceUi, AdlibSegmentUi } from '../lib/shelf'
+import { AdLibPieceUi, AdlibSegmentUi, ShelfDisplayOptions } from '../lib/shelf'
 import { SourceLayerLookup, fetchAndFilter } from './Shelf/AdLibPanel'
 import { matchFilter } from './Shelf/AdLibListView'
 
@@ -1137,11 +1137,7 @@ interface ITrackedProps {
 	rundownViewLayoutId?: RundownLayoutId
 	rundownHeaderLayoutId?: RundownLayoutId
 	miniShelfLayoutId?: RundownLayoutId
-	shelfDisplayOptions: {
-		buckets: boolean
-		layout: boolean
-		inspector: boolean
-	}
+	shelfDisplayOptions: ShelfDisplayOptions
 	bucketDisplayFilter: number[] | undefined
 	currentPartInstance: PartInstance | undefined
 	nextPartInstance: PartInstance | undefined
@@ -1178,9 +1174,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	const params = queryStringParse(location.search)
 
-	const DEFAULT_DISPLAY_OPTIONS = 'layout,shelfLayout'
-
-	const displayOptions = ((params['display'] as string) || DEFAULT_DISPLAY_OPTIONS).split(',')
+	const displayOptions = ((params['display'] as string) || Settings.defaultShelfDisplayOptions).split(',')
 	const bucketDisplayFilter = !(params['buckets'] as string)
 		? undefined
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
@@ -1254,9 +1248,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownHeaderLayoutId: protectString((params['rundownHeaderLayout'] as string) || ''),
 		miniShelfLayoutId: protectString((params['miniShelfLayout'] as string) || ''),
 		shelfDisplayOptions: {
-			buckets: displayOptions.includes('buckets'),
-			layout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
-			inspector: displayOptions.includes('inspector'),
+			enableBuckets: displayOptions.includes('buckets'),
+			enableLayout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
+			enableInspector: displayOptions.includes('inspector'),
 		},
 		bucketDisplayFilter,
 		currentPartInstance,

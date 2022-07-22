@@ -36,6 +36,7 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShelfDisplayOptions } from '../../lib/shelf'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -58,13 +59,8 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	}>
 	rundownLayout?: RundownLayoutShelfBase
 	fullViewport?: boolean
-	shelfDisplayOptions: {
-		buckets: boolean
-		layout: boolean
-		inspector: boolean
-	}
+	shelfDisplayOptions: ShelfDisplayOptions
 	bucketDisplayFilter: number[] | undefined
-	showBuckets: boolean
 
 	onChangeExpanded: (value: boolean) => void
 	onChangeBottomMargin?: (newBottomMargin: string) => void
@@ -406,7 +402,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 				style={fullViewport ? undefined : this.getStyle()}
 				ref={this.setRef}
 			>
-				{!this.props.rundownLayout?.disableContextMenu && <ShelfContextMenu />}
+				{!this.props.rundownLayout?.disableContextMenu && (
+					<ShelfContextMenu shelfDisplayOptions={this.props.shelfDisplayOptions} />
+				)}
 				{!fullViewport && (
 					<div
 						className="rundown-view__shelf__handle dark"
@@ -418,7 +416,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					</div>
 				)}
 				<div className="rundown-view__shelf__contents">
-					{shelfDisplayOptions.layout ? (
+					{shelfDisplayOptions.enableLayout ? (
 						<ContextMenuTrigger
 							id="shelf-context-menu"
 							attributes={{
@@ -472,7 +470,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							</ErrorBoundary>
 						</ContextMenuTrigger>
 					) : null}
-					{shelfDisplayOptions.buckets ? (
+					{shelfDisplayOptions.enableBuckets ? (
 						<ErrorBoundary>
 							<RundownViewBuckets
 								buckets={this.props.buckets}
@@ -481,9 +479,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 								showStyleBase={this.props.showStyleBase}
 								fullViewport={
 									!!this.props.fullViewport &&
-									this.props.shelfDisplayOptions.buckets === true &&
-									this.props.shelfDisplayOptions.inspector === false &&
-									this.props.shelfDisplayOptions.layout === false
+									this.props.shelfDisplayOptions.enableBuckets === true &&
+									this.props.shelfDisplayOptions.enableInspector === false &&
+									this.props.shelfDisplayOptions.enableLayout === false
 								}
 								displayBuckets={this.props.bucketDisplayFilter}
 								selectedPiece={this.state.selectedPiece}
@@ -491,7 +489,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							/>
 						</ErrorBoundary>
 					) : null}
-					{shelfDisplayOptions.inspector ? (
+					{shelfDisplayOptions.enableInspector ? (
 						<ErrorBoundary>
 							<ShelfInspector
 								selected={this.state.selectedPiece}

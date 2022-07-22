@@ -9,7 +9,7 @@ import { BucketAdLibItem, BucketAdLibActionUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents } from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import { isActionItem } from './Inspector/ItemRenderers/ActionItemRenderer'
-import { AdLibPieceUi } from '../../lib/shelf'
+import { AdLibPieceUi, ShelfDisplayOptions } from '../../lib/shelf'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
@@ -17,6 +17,10 @@ export enum ContextType {
 	BUCKET = 'bucket',
 	BUCKET_ADLIB = 'bucket_adlib',
 	ADLIB = 'adlib',
+}
+
+interface ShelfContextMenuProps {
+	shelfDisplayOptions: ShelfDisplayOptions
 }
 
 interface ShelfContextMenuContextBase {
@@ -63,7 +67,7 @@ export function setShelfContextMenuContext(context: ShelfContextMenuContext | un
 	shelfContextMenuContext.set(context)
 }
 
-export default function ShelfContextMenu() {
+export default function ShelfContextMenu(props: ShelfContextMenuProps) {
 	const { t } = useTranslation()
 
 	const context = useTracker(() => {
@@ -160,17 +164,19 @@ export default function ShelfContextMenu() {
 							? renderStartExecuteAdLib(context.details)
 							: null}
 						<hr />
-						<MenuItem
-							onClick={(e) => {
-								e.persist()
-								RundownViewEventBus.emit(RundownViewEvents.SELECT_PIECE, {
-									piece: context.details.adLib,
-									context: e,
-								})
-							}}
-						>
-							{t('Inspect this AdLib')}
-						</MenuItem>
+						{props.shelfDisplayOptions.enableInspector && (
+							<MenuItem
+								onClick={(e) => {
+									e.persist()
+									RundownViewEventBus.emit(RundownViewEvents.SELECT_PIECE, {
+										piece: context.details.adLib,
+										context: e,
+									})
+								}}
+							>
+								{t('Inspect this AdLib')}
+							</MenuItem>
+						)}
 					</>
 				)}
 				{context && context.type === ContextType.BUCKET_ADLIB && (
@@ -240,16 +246,18 @@ export default function ShelfContextMenu() {
 						<hr />
 					</>
 				)}
-				<MenuItem
-					onClick={(e) => {
-						e.persist()
-						RundownViewEventBus.emit(RundownViewEvents.CREATE_BUCKET, {
-							context: e,
-						})
-					}}
-				>
-					{t('Create new Bucket')}
-				</MenuItem>
+				{props.shelfDisplayOptions.enableBuckets && (
+					<MenuItem
+						onClick={(e) => {
+							e.persist()
+							RundownViewEventBus.emit(RundownViewEvents.CREATE_BUCKET, {
+								context: e,
+							})
+						}}
+					>
+						{t('Create new Bucket')}
+					</MenuItem>
+				)}
 			</ContextMenu>
 		</Escape>
 	)
