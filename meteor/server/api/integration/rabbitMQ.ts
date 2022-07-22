@@ -211,8 +211,12 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 	triggerHandleOutgoingQueue() {
 		if (!this.handleOutgoingQueueTimeout) {
 			this.handleOutgoingQueueTimeout = setTimeout(() => {
-				this.handleOutgoingQueueTimeout = null
-				this.handleOutgoingQueue()
+				try {
+					this.handleOutgoingQueueTimeout = null
+					this.handleOutgoingQueue()
+				} catch (e) {
+					logger.error(`Unexpected error in AMQP triggerHandleOutgoingQueue`)
+				}
 			}, 100)
 		}
 	}
@@ -248,7 +252,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 				// Put the message back on the queue:
 				this.outgoingQueue.unshift(messageToSend)
 			} else {
-				logger.debug('RabbitMQ: message sent, waiting for ok...')
+				logger.debug('AMQP: message sent, waiting for ok...')
 			}
 		}
 	}
