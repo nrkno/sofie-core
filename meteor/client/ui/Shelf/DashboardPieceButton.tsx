@@ -369,13 +369,14 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	private handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		const { toggleOnSingleClick } = this.props
 		// if pointerId is not set, it means we are dealing with a mouse and not an emulated mouse event
-		if (this.pointerId === null && e.button === 0) {
-			// this is a main-button-click
-			if (toggleOnSingleClick) {
-				this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
-			} else {
-				this.props.onSelectAdLib(this.props.piece, e)
-			}
+		if (this.pointerId !== null || e.button !== 0) {
+			return
+		}
+		// this is a main-button-click
+		if (toggleOnSingleClick) {
+			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+		} else {
+			this.props.onSelectAdLib(this.props.piece, e)
 		}
 	}
 
@@ -396,9 +397,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		const { toggleOnSingleClick } = this.props
 		if (toggleOnSingleClick) {
 			return
-		} else {
-			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
 		}
+		this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
 	}
 
 	private handleOnPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -418,12 +418,13 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private handleOnPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
 		const { toggleOnSingleClick } = this.props
-		if (e.pointerId === this.pointerId) {
-			if (!toggleOnSingleClick) {
-				this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
-			}
-			e.preventDefault()
+		if (e.pointerId !== this.pointerId) {
+			return
 		}
+		if (!toggleOnSingleClick) {
+			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+		}
+		e.preventDefault()
 	}
 
 	renderHotkey = () => {
