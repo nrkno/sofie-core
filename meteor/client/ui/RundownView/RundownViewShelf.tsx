@@ -15,7 +15,11 @@ import {
 	UserAgentPointer,
 	USER_AGENT_POINTER_PROPERTY,
 } from '../../lib/lib'
-import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import {
+	DashboardLayoutFilter,
+	PieceDisplayStyle,
+	RundownLayoutFilterBase,
+} from '../../../lib/collections/RundownLayouts'
 import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
@@ -41,6 +45,7 @@ interface IRundownViewShelfProps {
 	adLibSegmentUi: AdlibSegmentUi
 	hotkeyGroup: string
 	studioMode: boolean
+	miniShelfFilter: RundownLayoutFilterBase | undefined
 }
 
 interface IRundownViewShelfTrackedProps {
@@ -220,6 +225,13 @@ class RundownViewShelfInner extends MeteorReactComponent<
 											disabled: adLibPiece.disabled,
 										},
 									})
+								}
+								displayStyle={PieceDisplayStyle.BUTTONS}
+								widthScale={3.27} // @todo: css
+								isSelected={false}
+								toggleOnSingleClick={
+									(this.props.miniShelfFilter as DashboardLayoutFilter)?.toggleOnSingleClick ||
+									this.state.singleClickMode
 								}
 								renderTag="span"
 								key={unprotectString(adLibPiece._id)}

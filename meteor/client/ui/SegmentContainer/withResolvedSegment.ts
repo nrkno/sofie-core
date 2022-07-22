@@ -28,7 +28,7 @@ import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveD
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
-import { RundownViewLayout } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutFilterBase, RundownViewLayout } from '../../../lib/collections/RundownLayouts'
 import { getMinimumReactivePieceNotesForPart } from './getMinimumReactivePieceNotesForPart'
 import { SegmentViewMode } from './SegmentViewModes'
 import { SegmentNote, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
@@ -86,6 +86,7 @@ export interface IProps {
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
 	adLibSegmentUi?: AdlibSegmentUi
+	miniShelfFilter: RundownLayoutFilterBase | undefined
 	isFollowingOnAirSegment: boolean
 	rundownViewLayout: RundownViewLayout | undefined
 	countdownToSegmentRequireLayers: string[] | undefined

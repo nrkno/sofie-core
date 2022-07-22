@@ -141,6 +141,18 @@ export const TimelineDashboardPanel = translateWithTracker<
 															},
 														})
 													}
+													playlist={this.props.playlist}
+													isOnAir={this.isAdLibOnAir(adLibListItem)}
+													mediaPreviewUrl={
+														this.props.studio
+															? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
+															: ''
+													}
+													widthScale={filter.buttonWidthScale}
+													heightScale={filter.buttonHeightScale}
+													displayStyle={PieceDisplayStyle.BUTTONS}
+													showThumbnailsInList={filter.showThumbnailsInList}
+													toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
 													renderTag="span"
 													key={unprotectString(adLibListItem._id)}
 													holdToDisplay={contextMenuHoldToDisplayTime()}
@@ -220,6 +232,20 @@ export const TimelineDashboardPanel = translateWithTracker<
 																},
 															})
 														}
+														playlist={this.props.playlist}
+														studio={this.props.studio}
+														isOnAir={this.isAdLibOnAir(adLibListItem)}
+														mediaPreviewUrl={
+															this.props.studio
+																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
+																: ''
+														}
+														widthScale={filter.buttonWidthScale}
+														heightScale={filter.buttonHeightScale}
+														showThumbnailsInList={filter.showThumbnailsInList}
+														canOverflowHorizontally={filter.overflowHorizontally}
+														displayStyle={filter.displayStyle}
+														toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
 														renderTag="span"
 														key={unprotectString(adLibListItem._id)}
 														holdToDisplay={contextMenuHoldToDisplayTime()}
