@@ -227,9 +227,6 @@ Meteor.startup(() => {
 		workerEntrypoint = path.join(process.env.WORKER_EXEC_DIR, 'dist/ipc.js')
 	}
 
-	// Set the restart timeout to a larger number, it can take quite a while for the thread to boot up
-	ThreadedClassManager.restartTimeout = 30000
-
 	logger.info('Worker threads initializing')
 	const workerInstanceId = `${Date.now()}_${getRandomString(4)}`
 	const workerId = initializeWorkerStatus(workerInstanceId, 'Default')
@@ -241,6 +238,7 @@ Meteor.startup(() => {
 			[workerId, jobFinished, interruptJobStream, getNextJob, queueJobWithoutResult, logLine, fastTrackTimeline],
 			{
 				autoRestart: true,
+				restartTimeout: 30000,
 			}
 		)
 	)
