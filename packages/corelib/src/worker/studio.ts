@@ -50,6 +50,7 @@ export enum StudioJobs {
 
 	DebugRegenerateNextPartInstance = 'debugRegenerateNextPartInstance',
 	DebugSyncInfinitesForNextPartInstance = 'debugSyncInfinitesForNextPartInstance',
+	DebugCrash = 'debugCrash',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -187,6 +188,7 @@ export type StudioJobFunc = {
 
 	[StudioJobs.DebugRegenerateNextPartInstance]: (data: DebugRegenerateNextPartInstanceProps) => void
 	[StudioJobs.DebugSyncInfinitesForNextPartInstance]: (data: DebugSyncInfinitesForNextPartInstanceProps) => void
+	[StudioJobs.DebugCrash]: (data: DebugRegenerateNextPartInstanceProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {
