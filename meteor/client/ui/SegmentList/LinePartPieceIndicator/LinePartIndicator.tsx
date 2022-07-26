@@ -7,6 +7,7 @@ import { RundownUtils } from '../../../lib/rundown'
 interface IProps {
 	overlay?: React.ReactNode
 	count: number
+	hasOriginInPreceedingPart: boolean
 	allSourceLayers: ISourceLayerExtended[]
 	thisSourceLayer?: ISourceLayerExtended
 	label?: string
@@ -17,6 +18,7 @@ export const LinePartIndicator: React.FC<IProps> = function LinePartIndicator({
 	count,
 	allSourceLayers,
 	thisSourceLayer,
+	hasOriginInPreceedingPart,
 	label,
 }) {
 	const typeClass = thisSourceLayer?.type ? RundownUtils.getSourceLayerClassName(thisSourceLayer.type) : undefined
@@ -35,7 +37,15 @@ export const LinePartIndicator: React.FC<IProps> = function LinePartIndicator({
 					<div className={classNames('segment-opl__piece-indicator', 'segment-opl__piece-indicator--no-piece')}></div>
 				)}
 				{count > 1 && <div className={classNames('segment-opl__piece-indicator', typeClass)}></div>}
-				{count > 0 && <div className={classNames('segment-opl__piece-indicator', typeClass)}>{label}</div>}
+				{count > 0 && (
+					<div
+						className={classNames('segment-opl__piece-indicator', typeClass, {
+							continuation: hasOriginInPreceedingPart,
+						})}
+					>
+						{label}
+					</div>
+				)}
 			</div>
 		</Tooltip>
 	)

@@ -29,12 +29,15 @@ export const LinePartPieceIndicator: React.FC<IProps> = function LinePartPieceIn
 
 	const hasPiece = thisPieces[0]
 
+	const hasOriginInPreceedingPart = hasPiece?.hasOriginInPreceedingPart || false
+
 	return (
 		<LinePartIndicator
 			allSourceLayers={sourceLayers}
 			count={thisPieces.length}
 			label={label.substring(0, 1)}
 			thisSourceLayer={hasPiece?.sourceLayer}
+			hasOriginInPreceedingPart={hasOriginInPreceedingPart}
 			overlay={
 				<>
 					<b>{label}</b>:{' '}
