@@ -36,6 +36,8 @@ interface IProps {
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
 
+const TOOLTIP_ALIGN = { points: ['tl', 'tl'], offset: [-8, -3] }
+
 export const LinePart: React.FC<IProps> = function LinePart({
 	part,
 	segment,
@@ -133,7 +135,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				<Tooltip
 					overlay={part.instance.part.title}
 					placement="topLeft"
-					align={{ points: ['tl', 'tl'], offset: [-8, -3] }}
+					align={TOOLTIP_ALIGN}
 					overlayClassName="segment-opl__title__label-tooltip"
 					mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
 					destroyTooltipOnHide
