@@ -6,6 +6,7 @@ import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 /*
  * **************************************************************************************
@@ -20,11 +21,11 @@ import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselin
 // Release 41
 export const addSteps = addMigrationSteps('1.41.0', [
 	{
-		id: `RundownBaselineObj.timelineObjectsString`,
+		id: `RundownBaselineObj.timelineObjectsString from objects`,
 		canBeRunAutomatically: true,
 		validate: () => {
 			const objects = RundownBaselineObjs.find({
-				timelineObjects: { $exists: true },
+				objects: { $exists: true },
 			}).count()
 			if (objects > 0) {
 				return `timelineObjects needs to be converted`
@@ -33,15 +34,17 @@ export const addSteps = addMigrationSteps('1.41.0', [
 		},
 		migrate: () => {
 			const objects = RundownBaselineObjs.find({
-				timelineObjects: { $exists: true },
+				objects: { $exists: true },
 			}).fetch()
 			for (const obj of objects) {
 				RundownBaselineObjs.update(obj._id, {
 					$set: {
-						timelineObjectsString: serializePieceTimelineObjectsBlob((obj as any).timelineObjects),
+						timelineObjectsString: serializePieceTimelineObjectsBlob(
+							(obj as any).objects as TimelineObjGeneric[]
+						),
 					},
 					$unset: {
-						timelineObjects: 1,
+						objects: 1,
 					},
 				})
 			}

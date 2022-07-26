@@ -53,13 +53,14 @@ export function calculatePartTimings(
 	holdState: RundownHoldState | undefined,
 	fromPart: CalculateTimingsFromPart | undefined,
 	toPart: CalculateTimingsToPart,
-	toPiece: CalculateTimingsPiece[]
+	toPieces: CalculateTimingsPiece[]
 	// toPartPreroll: number
 ): PartCalculatedTimings {
 	// If in a hold, we cant do the transition
-	const isInHold = holdState !== RundownHoldState.NONE && holdState !== undefined
+	const isInHold =
+		holdState !== RundownHoldState.NONE && holdState !== RundownHoldState.COMPLETE && holdState !== undefined
 
-	const toPartPreroll = calculatePartPreroll(toPiece)
+	const toPartPreroll = calculatePartPreroll(toPieces)
 
 	let inTransition: Omit<IBlueprintPartInTransition, 'blockTakeDuration'> | undefined
 	let allowTransitionPiece: boolean | undefined

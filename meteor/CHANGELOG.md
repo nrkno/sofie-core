@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.41.1](https://github.com/nrkno/sofie-core/compare/v1.41.0...v1.41.1) (2022-07-05)
+
+
+### Bug Fixes
+
+* transpile mos-connection for compatibility with CasparCG ([#744](https://github.com/nrkno/sofie-core/issues/744)) ([5250e02](https://github.com/nrkno/sofie-core/commit/5250e023d808c6a977429fbf4e4d7b9da3368831))
+
+## [1.41.0](https://github.com/nrkno/sofie-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
+
+
+### Features
+
+* **Prompter:** Suppoert for multiple Joycon controller for prompter ([f915320](https://github.com/nrkno/sofie-core/commit/f915320d1c7f78dd4692140dbcf46fb5a289d16b))
+
+
+### Bug Fixes
+
+* add migration step for RundowmBaselineObjects.objects -> .timeli… ([#736](https://github.com/nrkno/sofie-core/issues/736)) ([71b34b3](https://github.com/nrkno/sofie-core/commit/71b34b3f04729007e4924eefb4093856cec46347))
+* add timeout for commands sent to Core from gateways ([caed8c7](https://github.com/nrkno/sofie-core/commit/caed8c708387457fbd89a40bc3fa96209a48c555))
+* allow take out of hold in list part ([fed7b9f](https://github.com/nrkno/sofie-core/commit/fed7b9ff1aeabd1d48e641b1b8ab5f080cb7b95d))
+* APM is always enabled in Workers if the APM_HOST and APM_SECRET env variables are defined ([5415c1f](https://github.com/nrkno/sofie-core/commit/5415c1f37f2b7a7c8232cb0c51d6417c84a72f0d))
+* autonext out of hold missing transition ([bfae30c](https://github.com/nrkno/sofie-core/commit/bfae30ca80391d0c7031dc159c1ce451f973871a))
+* change reportPartInstanceHasStopped to use the cache instead of accessing collections directly ([85f94c6](https://github.com/nrkno/sofie-core/commit/85f94c60ddb37352cc05101de28d0775c08f219b))
+* cleans up PR after review ([bdbc105](https://github.com/nrkno/sofie-core/commit/bdbc105ae32d15a61d93120b0de384c36143cd44))
+* dashboard crash with `setRef is not a function` ([45ce84b](https://github.com/nrkno/sofie-core/commit/45ce84b91d5f57ba494dcd27fd25c0ed440a661b))
+* dont use versionExtended when checking db docs against current version ([1839d8b](https://github.com/nrkno/sofie-core/commit/1839d8b11dfafab550f8fecb28e6b2c211f737ea))
+* force target to be es2019 for corelib, because it is used client-side and Chrome (v71) in CasparCG2.1 does not support any newer targets. ([39d11ba](https://github.com/nrkno/sofie-core/commit/39d11ba1337e471dd95d776d6bd3a4a8cd938e1a))
+* guard against sending multiple timelines to PoGw ([#732](https://github.com/nrkno/sofie-core/issues/732)) ([645b5c6](https://github.com/nrkno/sofie-core/commit/645b5c6ace37fb894207700044686ceac9b3b023))
+* initial empty timeline could prevent Timeline publication ([79a6b7e](https://github.com/nrkno/sofie-core/commit/79a6b7e48e9d356d0b389fc3fcac2042520766d2))
+* job-worker got empty string when searching for version number ([562083d](https://github.com/nrkno/sofie-core/commit/562083dba9259d72704eff21230cb4cdf7a9ce6c))
+* job-worker returning UserError got lost, causing 'Internal error' to be reported to the user. Reduce amount of logging from failed UserActions ([fd32c45](https://github.com/nrkno/sofie-core/commit/fd32c45e2f01c9482a5e19aecdc5ed41ccd6627c))
+* mongo changestream watching broken. some logging not being routed correctly ([2e4b4e3](https://github.com/nrkno/sofie-core/commit/2e4b4e377eb7356dfcb21bdbe5f96182d8293192))
+* mongodb shouldnt convert undefined properties to null ([ed96de5](https://github.com/nrkno/sofie-core/commit/ed96de585a6e8155b513318c9882a58fa405dd81))
+* nextPartInstance can be undefined, move isFirstTake to after checking that there is a takePartInstance ([d3f7c8a](https://github.com/nrkno/sofie-core/commit/d3f7c8a46c0c5f68ded68a99d58ebe69683aec79))
+* part preroll too long when infinite continuation has preroll ([de35719](https://github.com/nrkno/sofie-core/commit/de357192da841307748bc5193076d48863955390))
+* **Prompter:** If collection changes are slow, Prompter may receive incomplete updates, and render some Script missing ([#720](https://github.com/nrkno/sofie-core/issues/720)) ([e9465eb](https://github.com/nrkno/sofie-core/commit/e9465eb0bbbc99fea5cc883d121e53b49c6517cc))
+* send setStoryStatus PLAY before STOP ([3bd46c8](https://github.com/nrkno/sofie-core/commit/3bd46c8ddb7966fb37010ea5b82005a677aa5452))
+* set worker-threads to auto-restart. Verify they do restart successfully ([b3be39b](https://github.com/nrkno/sofie-core/commit/b3be39b34238083a62ad290c7855f570a97e13ce))
+* some playout-gateway logging ([9ae203a](https://github.com/nrkno/sofie-core/commit/9ae203afd987f2572f096ac77e9abfc0747322c3))
+* **sonar:** install dependencies before sonar scan ([a004c36](https://github.com/nrkno/sofie-core/commit/a004c36e3564de8930202bb8e9ae116f3e9cd45d))
+* stopping an adlib-infinite stopped the piece too far in the future ([3fdedc9](https://github.com/nrkno/sofie-core/commit/3fdedc9fce31b80d76fd81463b56377949a2cf2c))
+* taken part could end up with a too high preroll, taken from some infinites which were never to be played ([15f08bd](https://github.com/nrkno/sofie-core/commit/15f08bd51776c566fbb46faca66aab16048afd53))
+* test ([fdce263](https://github.com/nrkno/sofie-core/commit/fdce263acd6df8c979f06cb9a4c238cf8e29f02e))
+* typo ([09b26ed](https://github.com/nrkno/sofie-core/commit/09b26edd9be411d279b1673b21eac773eac2906c))
+* update mos-connection ([8f4efdc](https://github.com/nrkno/sofie-core/commit/8f4efdcdc89d754685636f07ab5a2950bbb431bf))
+* update mos-connection to 2.0.0 ([583a6ea](https://github.com/nrkno/sofie-core/commit/583a6ea0186d515b3d0435e1ea1487182ef0f4ef))
+
 ## [1.41.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.38.4...v1.41.0-in-testing.1) (2022-04-28)
 
 

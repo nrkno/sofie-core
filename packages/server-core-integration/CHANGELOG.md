@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.41.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
+
+
+### Bug Fixes
+
+* add timeout for commands sent to Core from gateways ([caed8c7](https://github.com/nrkno/tv-automation-server-core/commit/caed8c708387457fbd89a40bc3fa96209a48c555))
+
+
+
+
+
 # [1.41.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.41.0-in-testing.1) (2022-04-28)
 
 

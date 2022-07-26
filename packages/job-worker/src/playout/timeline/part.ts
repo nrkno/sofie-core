@@ -79,6 +79,7 @@ export function transformPartIntoTimeline(
 				nowInParentGroup,
 				pieceInstance,
 				pieceEnable,
+				0,
 				pieceGroupFirstObjClasses,
 				isInHold,
 				false

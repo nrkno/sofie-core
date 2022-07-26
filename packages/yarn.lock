@@ -3150,7 +3150,7 @@
     fast-clone "^1.5.13"
     i18next "^19.9.2"
     influx "^5.9.2"
-    mos-connection "^1.0.6"
+    mos-connection "^2.0.0"
     object-path "^0.11.8"
     timecode "0.0.4"
     tslib "^2.1.0"
@@ -5182,10 +5182,10 @@ casparcg-connection@^5.1.0:
     xml2js "^0.4.19"
     xmlbuilder "^9.0.7"
 
-casparcg-state@2.1.1-nightly-20220216-113227-36bcfd5.0:
-  version "2.1.1-nightly-20220216-113227-36bcfd5.0"
-  resolved "https://registry.yarnpkg.com/casparcg-state/-/casparcg-state-2.1.1-nightly-20220216-113227-36bcfd5.0.tgz#dbedbee744678d08a0c99ecf267fc07aa62370c5"
-  integrity sha512-l7ZlZtAnNEQEv0ztBznL3h2ihCl4UclAlyKGY3S2aWosGys5tWY3tyAGbkqxSt+BOMhYlo+4AiZuLUOEKJTDNw==
+casparcg-state@2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/casparcg-state/-/casparcg-state-2.1.1.tgz#8d33bca7907f128b5a8a6918899ddc6d2d1413ae"
+  integrity sha512-p2EG2TsypyTHlLC+aiK65s0y9O22moGx3egZzfHU/PbnWmFeyYUo5eqU/s7sTdlyTpBNVgrbIJ7LPRgtgNOvWA==
   dependencies:
     casparcg-connection "^5.1.0"
     fast-clone "^1.5.13"
@@ -7938,10 +7938,10 @@ globby@^12.0.2:
     merge2 "^1.4.1"
     slash "^4.0.0"
 
-got@^11.8.2:
-  version "11.8.3"
-  resolved "https://registry.yarnpkg.com/got/-/got-11.8.3.tgz#f496c8fdda5d729a90b4905d2b07dbd148170770"
-  integrity sha512-7gtQ5KiPh1RtGS9/Jbv1ofDpBFuq42gyfEib+ejaRBJuj/3tQFeR5+gw57e4ipaU8c/rCjvX6fkQz2lyDlGAOg==
+got@^11.8.2, got@^11.8.5:
+  version "11.8.5"
+  resolved "https://registry.yarnpkg.com/got/-/got-11.8.5.tgz#ce77d045136de56e8f024bebb82ea349bc730046"
+  integrity sha512-o0Je4NvQObAuZPHLFoRSkdG2lTgtcynqymzg2Vupdx6PorhaT5MCbIyXG6d4D94kk8ZG57QeosgdiqfJWhEhlQ==
   dependencies:
     "@sindresorhus/is" "^4.0.0"
     "@szmarczak/http-timer" "^4.0.5"
@@ -10543,15 +10543,10 @@ minimist-options@4.1.0:
     is-plain-obj "^1.1.0"
     kind-of "^6.0.3"
 
-minimist@^0.1.0, minimist@^1.2.0, minimist@^1.2.5, minimist@^1.2.6:
+minimist@^0.1.0, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5, minimist@^1.2.6:
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.6.tgz#8637a5b759ea0d6e98702cfb3a9283323c93af44"
   integrity sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==
-
-minimist@^1.2.3:
-  version "1.2.5"
-  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
 
 minipass-collect@^1.0.2:
   version "1.0.2"
@@ -10701,10 +10696,10 @@ monitor-event-loop-delay@^1.0.0:
   resolved "https://registry.yarnpkg.com/monitor-event-loop-delay/-/monitor-event-loop-delay-1.0.0.tgz#b5ab78165a3bb93f2b275c50d01430c7f155d1f7"
   integrity sha512-YRIr1exCIfBDLZle8WHOfSo7Xg3M+phcZfq9Fx1L6Abo+atGp7cge5pM7PjyBn4s1oZI/BRD4EMrzQBbPpVb5Q==
 
-mos-connection@^1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-1.0.6.tgz#bae6918e9554fb83ed3d30a5f065116ba85f66ed"
-  integrity sha512-Ia/BvwQD+jBwBKPf0dV9Jr4R5Ufx2W/CuzL5OqbPeEutbbNDR0qVBnJxixk7d9ZoggVshnUk+fvuCp/MXu9dgA==
+mos-connection@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-2.0.0.tgz#bf6958e8cb1648357ed939c345498a2e0b843973"
+  integrity sha512-WsL63EuJFWI1PbG5Ul+I1W8LA3GoyKCY8igbJSlHbecUz+BGQe+decUfoiXdBkPfIdW/wrJN/yBMyxtNbi5sQA==
   dependencies:
     iconv-lite "^0.6.2"
     moment "^2.29.1"
@@ -14705,7 +14700,7 @@ timecode@0.0.4:
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^5.1.0"
-    casparcg-state "2.1.1-nightly-20220216-113227-36bcfd5.0"
+    casparcg-state "2.1.1"
     debug "^4.3.1"
     deepmerge "^4.2.2"
     emberplus-connection "^0.1.2"
