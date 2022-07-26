@@ -130,6 +130,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 
 	const renderedParts = props.parts.filter((part) => !(part.instance.part.invalid && part.instance.part.gap))
 	const isSinglePartInSegment = renderedParts.length === 1
+	let lastTimingGroup: string | undefined = undefined
 	renderedParts.forEach((part) => {
 		const isLivePart = part.instance._id === props.playlist.currentPartInstanceId
 		const isNextPart = part.instance._id === props.playlist.nextPartInstanceId
@@ -147,6 +148,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				isLivePart={isLivePart}
 				isNextPart={isNextPart}
 				isSinglePartInSegment={isSinglePartInSegment}
+				isPreceededByTimingGroupSibling={part.instance.part.displayDurationGroup === lastTimingGroup}
 				hasAlreadyPlayed={!!part.instance.timings?.stoppedPlayback || !!part.instance.timings?.takeOut}
 				displayLiveLineCounter={false}
 				inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
@@ -158,6 +160,8 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				onContextMenu={props.onContextMenu}
 			/>
 		)
+
+		lastTimingGroup = part.instance.part.displayDurationGroup
 
 		parts.push(partComponent)
 	})

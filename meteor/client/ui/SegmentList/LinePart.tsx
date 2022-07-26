@@ -27,6 +27,7 @@ interface IProps {
 	doesPlaylistHaveNextPart?: boolean
 	inHold: boolean
 	currentPartWillAutonext: boolean
+	isPreceededByTimingGroupSibling: boolean
 	// subscriptionsReady: boolean
 	displayLiveLineCounter: boolean
 	style?: React.CSSProperties
@@ -40,6 +41,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 	isNextPart,
 	isLivePart,
 	isSinglePartInSegment,
+	isPreceededByTimingGroupSibling,
 	hasAlreadyPlayed,
 	currentPartWillAutonext,
 	indicatorColumns,
@@ -69,6 +71,35 @@ export const LinePart: React.FC<IProps> = function LinePart({
 		return ctx
 	}, [segment, part, onContextMenu])
 
+	function PartDurationDisplay() {
+		if (isPreceededByTimingGroupSibling && part.instance.part.displayDurationGroup) {
+			return <div className="segment-opl__part-timing-group-marker"></div>
+		}
+
+		return (
+			<>
+				{part.instance.part.expectedDuration !== undefined &&
+					part.instance.part.expectedDuration > 0 &&
+					!isSinglePartInSegment && (
+						<span role="timer">
+							{RundownUtils.formatDiffToTimecode(
+								part.instance.part.expectedDuration,
+								false,
+								false,
+								true,
+								false,
+								true,
+								'+'
+							)}
+						</span>
+					)}
+				{(part.instance.part.expectedDuration === 0 || part.instance.part.expectedDuration === undefined) && (
+					<span>––:––</span>
+				)}
+			</>
+		)
+	}
+
 	return (
 		<ContextMenuTrigger
 			id="segment-timeline-context-menu"
@@ -79,6 +110,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 					'segment-opl__part--live': isLivePart,
 					'segment-opl__part--has-played': hasAlreadyPlayed,
 					'segment-opl__part--invalid': part.instance.part.invalid,
+					'segment-opl__part--timing-sibling': isPreceededByTimingGroupSibling,
 				}),
 				//@ts-ignore A Data attribue is perfectly fine
 				'data-part-instance-id': part.instance._id,
@@ -95,22 +127,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				{isNextPart && <div className="segment-opl__part-marker segment-opl__part-marker--next"></div>}
 				<div className="segment-opl__part-duration">
 					{/* <PartDisplayDuration part={part} fixed={true} /> */}
-					{part.instance.part.expectedDuration !== undefined &&
-						part.instance.part.expectedDuration > 0 &&
-						!isSinglePartInSegment && (
-							<span role="timer">
-								{RundownUtils.formatDiffToTimecode(
-									part.instance.part.expectedDuration,
-									false,
-									false,
-									true,
-									false,
-									true,
-									'+'
-								)}
-							</span>
-						)}
-					{part.instance.part.expectedDuration === 0 && <span>––:––</span>}
+					<PartDurationDisplay />
 				</div>
 				<h3 className="segment-opl__part-title">
 					<span>{part.instance.part.title}</span>

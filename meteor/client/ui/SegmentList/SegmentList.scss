@@ -111,6 +111,16 @@ $duration-area-margin: 0.5em;
 					'piece-icons';
 			}
 
+			.segment-opl__part-timing-group-marker {
+				width: 15px;
+				height: 15px;
+				border-left: 1px solid rgba(255, 255, 255, 0.5);
+				border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+				border-radius: 0 0 0 8px;
+				margin-left: 25px;
+				margin-top: -7px;
+			}
+
 			> .segment-opl__part-header {
 				display: grid;
 				position: relative;
@@ -192,12 +202,20 @@ $duration-area-margin: 0.5em;
 					text-shadow: 0 0 5px black;
 					font-weight: 500;
 				}
+
+				> .segment-opl__part-header > .segment-opl__part-duration > .segment-opl__part-timing-group-marker {
+					border-width: 0 0 2px 2px;
+				}
 			}
 
 			&--live {
 				> .segment-opl__part-header > .segment-opl__part-duration {
 					text-shadow: 0 0 5px black;
 					font-weight: 500;
+				}
+
+				> .segment-opl__part-header > .segment-opl__part-duration > .segment-opl__part-timing-group-marker {
+					border-width: 0 0 2px 2px;
 				}
 			}
 

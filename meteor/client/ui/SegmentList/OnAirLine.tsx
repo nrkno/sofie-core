@@ -66,16 +66,16 @@ export const OnAirLine = withTiming<IProps, {}>({
 		[livePosition, timelineBase, maxDuration]
 	)
 
-	const shadowStyle = useMemo<React.CSSProperties>(
-		() => ({
-			width: timeToPosition(livePosition, timelineBase, maxDuration),
-		}),
-		[livePosition, timelineBase, maxDuration]
-	)
+	// const shadowStyle = useMemo<React.CSSProperties>(
+	// 	() => ({
+	// 		width: timeToPosition(livePosition, timelineBase, maxDuration),
+	// 	}),
+	// 	[livePosition, timelineBase, maxDuration]
+	// )
 
 	return (
 		<>
-			<div className="segment-opl__timeline-shadow" style={shadowStyle}></div>
+			{/* <div className="segment-opl__timeline-shadow" style={shadowStyle}></div> */}
 			<div className="segment-opl__timeline-flag segment-opl__on-air-line" style={style}>
 				<div className="segment-opl__timeline-flag__label">{t('On Air')}</div>
 				<div className="segment-opl__on-air-line__countdown">
