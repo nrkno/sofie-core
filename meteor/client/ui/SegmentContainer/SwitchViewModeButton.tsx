@@ -33,7 +33,7 @@ export function SwitchViewModeButton({
 	switch (nextMode) {
 		case SegmentViewMode.Timeline:
 			return (
-				<Tooltip overlay={t('Switch to Timeline View')}>
+				<Tooltip overlay={t('Switch to Timeline View')} destroyTooltipOnHide>
 					<button
 						className="segment-timeline__switch-view-mode-button"
 						onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
@@ -44,7 +44,7 @@ export function SwitchViewModeButton({
 			)
 		case SegmentViewMode.Storyboard:
 			return (
-				<Tooltip overlay={t('Switch to Storyboard View')}>
+				<Tooltip overlay={t('Switch to Storyboard View')} destroyTooltipOnHide>
 					<button
 						className="segment-timeline__switch-view-mode-button"
 						onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
@@ -55,7 +55,7 @@ export function SwitchViewModeButton({
 			)
 		case SegmentViewMode.List:
 			return (
-				<Tooltip overlay={t('Switch to List View')}>
+				<Tooltip overlay={t('Switch to List View')} destroyTooltipOnHide>
 					<button
 						className="segment-timeline__switch-view-mode-button"
 						onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}

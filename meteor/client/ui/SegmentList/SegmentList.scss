@@ -463,3 +463,13 @@ $duration-area-margin: 0.5em;
 		}
 	}
 }
+
+.rc-tooltip.segment-opl__title__label-tooltip {
+	opacity: 1;
+	font-weight: 400;
+	font-size: 1rem;
+	text-transform: uppercase;
+	margin-top: -3px;
+	margin-left: -8px;
+	letter-spacing: -0.02em;
+}

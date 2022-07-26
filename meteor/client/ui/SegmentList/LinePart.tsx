@@ -1,9 +1,10 @@
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import classNames from 'classnames'
+import Tooltip from 'rc-tooltip'
 import React, { useCallback, useState } from 'react'
 import { ISourceLayerExtended, PartExtended } from '../../../lib/Rundown'
-import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { contextMenuHoldToDisplayTime, TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
@@ -129,9 +130,18 @@ export const LinePart: React.FC<IProps> = function LinePart({
 					{/* <PartDisplayDuration part={part} fixed={true} /> */}
 					<PartDurationDisplay />
 				</div>
-				<h3 className="segment-opl__part-title">
-					<span>{part.instance.part.title}</span>
-				</h3>
+				<Tooltip
+					overlay={part.instance.part.title}
+					placement="topLeft"
+					align={{ points: ['tl', 'tl'], offset: [-8, -3] }}
+					overlayClassName="segment-opl__title__label-tooltip"
+					mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+					destroyTooltipOnHide
+				>
+					<h3 className="segment-opl__part-title">
+						<span>{part.instance.part.title}</span>
+					</h3>
+				</Tooltip>
 			</div>
 			<LinePartPieceIndicators
 				partId={part.partId}
