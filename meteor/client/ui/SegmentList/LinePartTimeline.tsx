@@ -93,7 +93,8 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 		: null
 
 	const isPartZeroBudget =
-		part.instance.part.expectedDuration === 0 || part.instance.part.expectedDuration === undefined
+		(part.instance.part.expectedDuration === 0 || part.instance.part.expectedDuration === undefined) &&
+		!part.instance.part.displayDurationGroup
 
 	return (
 		<div className="segment-opl__part-timeline" data-base={timelineBase / 1000}>
@@ -147,6 +148,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 					partInstance={part.instance}
 					timelineBase={timelineBase}
 					maxDuration={endsInFreeze ? maxDuration : timelineBase}
+					endsInFreeze={endsInFreeze}
 				/>
 			)}
 		</div>

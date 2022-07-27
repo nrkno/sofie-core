@@ -11,11 +11,13 @@ import { useTranslation } from 'react-i18next'
 import { getAllowSpeaking } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
+import classNames from 'classnames'
 
 interface IProps {
 	partInstance: PartInstanceLimited
 	maxDuration: number
 	timelineBase: number
+	endsInFreeze: boolean
 }
 
 function timeToPosition(time: number, timelineBase: number, maxDuration: number): string {
@@ -29,7 +31,7 @@ export const OnAirLine = withTiming<IProps, {}>({
 	filter: 'currentTime',
 	dataResolution: TimingDataResolution.High,
 	tickResolution: TimingTickResolution.High,
-})(function OnAirLine({ partInstance, timingDurations, timelineBase, maxDuration }: WithTiming<IProps>) {
+})(function OnAirLine({ partInstance, timingDurations, timelineBase, maxDuration, endsInFreeze }: WithTiming<IProps>) {
 	const [livePosition, setLivePosition] = useState(0)
 	const { t } = useTranslation()
 
@@ -66,6 +68,8 @@ export const OnAirLine = withTiming<IProps, {}>({
 		[livePosition, timelineBase, maxDuration]
 	)
 
+	const frozen = !(livePosition < maxDuration || !endsInFreeze)
+
 	// const shadowStyle = useMemo<React.CSSProperties>(
 	// 	() => ({
 	// 		width: timeToPosition(livePosition, timelineBase, maxDuration),
@@ -76,8 +80,15 @@ export const OnAirLine = withTiming<IProps, {}>({
 	return (
 		<>
 			{/* <div className="segment-opl__timeline-shadow" style={shadowStyle}></div> */}
+			{frozen && <div className="segment-opl__frozen-overlay"></div>}
 			<div className="segment-opl__timeline-flag segment-opl__on-air-line" style={style}>
-				<div className="segment-opl__timeline-flag__label">{t('On Air')}</div>
+				<div
+					className={classNames('segment-opl__timeline-flag__label', {
+						animate: !frozen,
+					})}
+				>
+					{t('On Air')}
+				</div>
 				<div className="segment-opl__on-air-line__countdown">
 					<AutoNextStatus />
 					<CurrentPartRemaining
