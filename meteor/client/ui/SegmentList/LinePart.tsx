@@ -36,7 +36,7 @@ interface IProps {
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
 
-const TOOLTIP_ALIGN = { points: ['tl', 'tl'], offset: [-8, -2] }
+const TOOLTIP_ALIGN = { points: ['tl', 'tl'], offset: [-8, 0] }
 
 export const LinePart: React.FC<IProps> = function LinePart({
 	part,
