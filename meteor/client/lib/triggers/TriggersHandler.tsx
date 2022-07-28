@@ -172,7 +172,7 @@ export interface MountedGenericTrigger {
 export const MountedGenericTriggers = new Mongo.Collection<MountedGenericTrigger>(null)
 
 function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker.Computation {
-	const computation = Tracker.nonreactive(() =>
+	return Tracker.nonreactive(() =>
 		Tracker.autorun((computation) => {
 			const cleanUp = autorun()
 
@@ -181,12 +181,6 @@ function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker
 			}
 		})
 	)
-	if (Tracker.currentComputation) {
-		Tracker.currentComputation.onStop(() => {
-			computation.stop()
-		})
-	}
-	return computation
 }
 
 /**
