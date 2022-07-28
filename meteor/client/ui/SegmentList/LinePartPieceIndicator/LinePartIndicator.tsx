@@ -21,7 +21,11 @@ export const LinePartIndicator: React.FC<IProps> = function LinePartIndicator({
 	hasOriginInPreceedingPart,
 	label,
 }) {
-	const typeClass = thisSourceLayer?.type ? RundownUtils.getSourceLayerClassName(thisSourceLayer.type) : undefined
+	let typeClass = thisSourceLayer?.type ? RundownUtils.getSourceLayerClassName(thisSourceLayer.type) : undefined
+
+	if ((typeClass === undefined || typeClass === '') && thisSourceLayer?.isGuestInput) {
+		typeClass = 'guest'
+	}
 
 	return (
 		<Tooltip overlay={overlay} placement="top">
