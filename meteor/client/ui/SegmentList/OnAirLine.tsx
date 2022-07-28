@@ -68,6 +68,13 @@ export const OnAirLine = withTiming<IProps, {}>({
 		[livePosition, timelineBase, maxDuration]
 	)
 
+	const frozenOverlayStyle = useMemo<React.CSSProperties>(
+		() => ({
+			width: timeToPosition(maxDuration, timelineBase, maxDuration),
+		}),
+		[timelineBase, maxDuration]
+	)
+
 	const frozen = !(livePosition < maxDuration || !endsInFreeze)
 
 	// const shadowStyle = useMemo<React.CSSProperties>(
@@ -80,7 +87,7 @@ export const OnAirLine = withTiming<IProps, {}>({
 	return (
 		<>
 			{/* <div className="segment-opl__timeline-shadow" style={shadowStyle}></div> */}
-			{frozen && <div className="segment-opl__frozen-overlay"></div>}
+			{frozen && <div className="segment-opl__frozen-overlay" style={frozenOverlayStyle}></div>}
 			<div className="segment-opl__timeline-flag segment-opl__on-air-line" style={style}>
 				<div
 					className={classNames('segment-opl__timeline-flag__label', {
