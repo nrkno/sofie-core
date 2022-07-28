@@ -148,6 +148,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 				<OnAirLine
 					partInstance={part.instance}
 					timelineBase={timelineBase}
+					mainSourceEnd={mainSourceEnd}
 					maxDuration={endsInFreeze ? maxDuration : timelineBase}
 					endsInFreeze={endsInFreeze}
 				/>

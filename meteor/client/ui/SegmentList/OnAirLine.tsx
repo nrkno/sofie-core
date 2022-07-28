@@ -18,6 +18,7 @@ interface IProps {
 	maxDuration: number
 	timelineBase: number
 	endsInFreeze: boolean
+	mainSourceEnd: number | null
 }
 
 function timeToPosition(time: number, timelineBase: number, maxDuration: number): string {
@@ -31,7 +32,14 @@ export const OnAirLine = withTiming<IProps, {}>({
 	filter: 'currentTime',
 	dataResolution: TimingDataResolution.High,
 	tickResolution: TimingTickResolution.High,
-})(function OnAirLine({ partInstance, timingDurations, timelineBase, maxDuration, endsInFreeze }: WithTiming<IProps>) {
+})(function OnAirLine({
+	partInstance,
+	timingDurations,
+	timelineBase,
+	maxDuration,
+	endsInFreeze,
+	mainSourceEnd,
+}: WithTiming<IProps>) {
 	const [livePosition, setLivePosition] = useState(0)
 	const { t } = useTranslation()
 
@@ -70,12 +78,12 @@ export const OnAirLine = withTiming<IProps, {}>({
 
 	const frozenOverlayStyle = useMemo<React.CSSProperties>(
 		() => ({
-			width: timeToPosition(maxDuration, timelineBase, maxDuration),
+			width: timeToPosition(Math.min(mainSourceEnd ?? maxDuration, maxDuration), timelineBase, maxDuration),
 		}),
-		[timelineBase, maxDuration]
+		[timelineBase, maxDuration, mainSourceEnd]
 	)
 
-	const frozen = !(livePosition < maxDuration || !endsInFreeze)
+	const frozen = !(livePosition < (mainSourceEnd ?? maxDuration) || !endsInFreeze)
 
 	// const shadowStyle = useMemo<React.CSSProperties>(
 	// 	() => ({

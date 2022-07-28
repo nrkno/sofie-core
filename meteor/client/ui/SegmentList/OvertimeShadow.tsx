@@ -50,7 +50,10 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 	const livePosition = timingDurations.partPlayed?.[unprotectString(partId)] ?? 0
 
 	const originalDiff = mainSourceEnd - partRenderedDuration
-	const diff = mainSourceEnd - Math.max(livePosition, partRenderedDuration)
+	const diff =
+		mainSourceEnd > partRenderedDuration
+			? mainSourceEnd - Math.max(livePosition, partRenderedDuration)
+			: livePosition - mainSourceEnd
 
 	const overtimeShadowStyle = useMemo<React.CSSProperties>(
 		() => ({
@@ -111,8 +114,8 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 					{!isPartZeroBudget &&
 						mainSourceEnd &&
 						isLive &&
-						(originalDiff < 0 || Math.floor(diff / 1000) > 0) &&
-						livePosition > partRenderedDuration && (
+						((originalDiff < 0 && Math.ceil(diff / 1000) < 0) ||
+							(originalDiff >= 0 && Math.floor(diff / 1000) > 0 && livePosition > partRenderedDuration)) && (
 							<span className="segment-opl__freeze-marker-timer" role="timer">
 								{RundownUtils.formatDiffToTimecode(diff, true, false, true, false, true, undefined, false, true)}
 							</span>
