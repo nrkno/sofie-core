@@ -73,7 +73,7 @@
 		"lottie-web": "^5.8.1",
 		"meteor-node-stubs": "^1.1.0",
 		"moment": "^2.29.2",
-		"mos-connection": "^1.0.6",
+		"mos-connection": "^2.0.0",
 		"ntp-client": "^0.5.3",
 		"object-path": "^0.11.8",
 		"p-lazy": "^3.1.0",
@@ -122,7 +122,7 @@
 		"@types/deep-extend": "^0.4.32",
 		"@types/fibers": "^3.1.1",
 		"@types/jest": "^26.0.24",
-		"@types/meteor": "1.4.47",
+		"@types/meteor": "2.7.1",
 		"@types/mongodb": "^3.6.20",
 		"@types/node": "^14",
 		"@types/prop-types": "^15.7.4",
@@ -176,6 +176,11 @@
 		"mainModule": {
 			"client": "client/main.tsx",
 			"server": "server/main.ts"
+		},
+		"nodeModules": {
+			"recompile": {
+				"mos-connection": "legacy"
+			}
 		}
 	},
 	"standard-version": {

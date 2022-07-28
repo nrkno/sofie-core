@@ -30,6 +30,7 @@ export function transformPieceGroupAndObjects(
 	nowInPart: number,
 	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	pieceEnable: TSR.Timeline.TimelineEnable,
+	pieceStartOffset: number, // If the start of the piece has been offset inside the partgroup
 	firstObjClasses: string[],
 	isInHold: boolean,
 	includeHoldExceptObjects: boolean
@@ -39,7 +40,7 @@ export function transformPieceGroupAndObjects(
 		typeof partGroup.enable.start === 'number' && hasPieceInstanceDefinitelyEnded(pieceInstance, nowInPart)
 
 	// create a piece group for the pieces and then place all of them there
-	const { pieceGroup, capObjs } = createPieceGroupAndCap(pieceInstance, partGroup, pieceEnable)
+	const { pieceGroup, capObjs } = createPieceGroupAndCap(pieceInstance, partGroup, pieceEnable, pieceStartOffset)
 	const timelineObjs = [pieceGroup, ...capObjs]
 
 	if (!pieceInstance.piece.virtual && !hasDefinitelyEnded) {
