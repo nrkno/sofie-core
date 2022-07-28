@@ -18,6 +18,7 @@ interface IProps {
 	mainSourceEnd: number
 	endsInFreeze: boolean
 	partRenderedDuration: number
+	partActualDuration: number | undefined
 	isPartZeroBudget: boolean
 	isLive: boolean
 	hasAlreadyPlayed: boolean
@@ -41,6 +42,7 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 	mainSourceEnd,
 	endsInFreeze,
 	partRenderedDuration,
+	partActualDuration,
 	isPartZeroBudget,
 	isLive,
 	hasAlreadyPlayed,
@@ -50,10 +52,12 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 	const originalDiff = mainSourceEnd - partRenderedDuration
 	const diff = mainSourceEnd - Math.max(livePosition, partRenderedDuration)
 
-	const overtimeStyle = useMemo<React.CSSProperties>(
+	const overtimeShadowStyle = useMemo<React.CSSProperties>(
 		() => ({
 			left:
-				endsInFreeze && mainSourceEnd
+				partActualDuration !== undefined
+					? timeToPosition(partActualDuration, timelineBase, timelineBase)
+					: endsInFreeze && mainSourceEnd
 					? timeToPosition(
 							diff >= 0
 								? Math.min(mainSourceEnd, Math.max(livePosition, partRenderedDuration))
@@ -64,7 +68,14 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 					: timeToPosition(Math.max(livePosition, partRenderedDuration), timelineBase, timelineBase),
 			display: endsInFreeze && livePosition > mainSourceEnd ? 'none' : undefined,
 		}),
-		[livePosition, timelineBase, mainSourceEnd, partRenderedDuration, diff]
+		[livePosition, timelineBase, mainSourceEnd, partActualDuration, partRenderedDuration, diff]
+	)
+
+	const idealTakeTimeStyle = useMemo<React.CSSProperties>(
+		() => ({
+			left: timeToPosition(partActualDuration ?? partRenderedDuration, timelineBase, timelineBase),
+		}),
+		[timelineBase, partActualDuration, partRenderedDuration]
 	)
 
 	const freezeFrameIconStyle = useMemo<React.CSSProperties>(
@@ -78,18 +89,21 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 		//mainSourceEnd && (originalDiff < 0 || diff > 0) ?
 		<>
 			{!isPartZeroBudget && (
-				<div
-					className={classNames('segment-opl__overtime-shadow', {
-						'segment-opl__overtime-shadow--no-end': isPartZeroBudget && !endsInFreeze,
-					})}
-					style={overtimeStyle}
-				>
-					{mainSourceEnd && !isLive && !hasAlreadyPlayed && (originalDiff < 0 || diff > 0) && (
-						<span className="segment-opl__overtime-timer" role="timer">
-							{RundownUtils.formatDiffToTimecode(diff, true, false, true, false, true, undefined, false, true)}
-						</span>
-					)}
-				</div>
+				<>
+					<div
+						className={classNames('segment-opl__overtime-shadow', {
+							'segment-opl__overtime-shadow--no-end': isPartZeroBudget && !endsInFreeze,
+						})}
+						style={overtimeShadowStyle}
+					>
+						{mainSourceEnd && !isLive && !hasAlreadyPlayed && (originalDiff < 0 || diff > 0) && (
+							<span className="segment-opl__overtime-timer" role="timer">
+								{RundownUtils.formatDiffToTimecode(diff, true, false, true, false, true, undefined, false, true)}
+							</span>
+						)}
+					</div>
+					<div className="segment-opl__ideal-take-time" style={idealTakeTimeStyle}></div>
+				</>
 			)}
 			{endsInFreeze && (
 				<div className="segment-opl__freeze-marker" style={freezeFrameIconStyle}>

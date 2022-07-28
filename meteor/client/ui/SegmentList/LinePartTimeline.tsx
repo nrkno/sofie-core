@@ -138,6 +138,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 					endsInFreeze={endsInFreeze}
 					isPartZeroBudget={isPartZeroBudget}
 					partRenderedDuration={partDuration}
+					partActualDuration={part.instance.timings?.duration}
 					isLive={isLive}
 					hasAlreadyPlayed={hasAlreadyPlayed}
 				/>

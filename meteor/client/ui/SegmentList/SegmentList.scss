@@ -439,7 +439,6 @@ $duration-area-margin: 0.5em;
 					bottom: 0.7em;
 					background: rgba(0, 0, 0, 0.7);
 					pointer-events: none;
-					border-left: 2px solid $part-start-color;
 
 					> .segment-opl__overtime-timer {
 						display: block;
@@ -456,6 +455,18 @@ $duration-area-margin: 0.5em;
 						border-left: none;
 						background: linear-gradient(to right, transparent 0, rgba(0, 0, 0, 0.7) 120px);
 					}
+				}
+
+				> .segment-opl__ideal-take-time {
+					display: block;
+					position: absolute;
+					top: -4px;
+					left: 0;
+					right: 0;
+					width: 1;
+					bottom: 0.7em;
+					pointer-events: none;
+					border-left: 2px solid $part-start-color;
 				}
 
 				> .segment-opl__freeze-marker {
