@@ -304,6 +304,26 @@ $duration-area-margin: 0.5em;
 							top: -0.35em;
 							color: #000000;
 							background: $general-next-color;
+
+							&:not(.segment-opl__timeline-flag__label--autonext) {
+								border-top-right-radius: 0;
+								border-bottom-right-radius: 0;
+								padding-right: 0;
+
+								&::after {
+									content: ' ';
+									border-color: transparent transparent transparent $general-next-color;
+									display: block;
+									position: absolute;
+									bottom: 0;
+									left: auto;
+									right: -8px;
+									width: 0;
+									height: 0;
+									border-style: solid;
+									border-width: 10px 0 9px 8px;
+								}
+							}
 						}
 
 						&::after {
