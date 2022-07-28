@@ -449,6 +449,7 @@ $duration-area-margin: 0.5em;
 						margin-left: 0.3em;
 						color: #ffffff;
 						text-shadow: -1px -1px 1px #000, 1px -1px 1px #000, -1px 1px 1px #000, 1px 1px 1px #000, 2px 2px 3px #000;
+						white-space: nowrap;
 					}
 
 					&--no-end {
@@ -490,6 +491,7 @@ $duration-area-margin: 0.5em;
 					height: 1.2em;
 					$next-marker: #888;
 					border-left: 1px solid $next-marker;
+					white-space: nowrap;
 
 					> .segment-opl__timeline-flag__label {
 						position: absolute;
