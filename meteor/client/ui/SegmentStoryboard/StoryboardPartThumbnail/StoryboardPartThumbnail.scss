@@ -124,7 +124,7 @@
 					}
 				}
 				/* @keyframes duration | easing-function | delay | iteration-count | direction | fill-mode | play-state | name */
-				animation: 1s linear 0s infinite normal forwards segment-storyboard__thumbnail__countdown-icon--flash;
+				animation: 0.3s linear 0s infinite normal forwards segment-storyboard__thumbnail__countdown-icon--flash;
 			}
 
 			&:last-child {

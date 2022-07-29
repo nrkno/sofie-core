@@ -476,6 +476,24 @@ $duration-area-margin: 0.5em;
 					margin-left: 0.3em;
 					white-space: nowrap;
 
+					> .flash {
+						@keyframes segment-opl__freeze-marker--flash {
+							0% {
+								opacity: 0;
+							}
+							25% {
+								opacity: 0;
+							}
+							50% {
+								opacity: 1;
+							}
+							100% {
+								opacity: 1;
+							}
+						}
+						animation: 0.3s linear 0s infinite normal forwards segment-opl__freeze-marker--flash;
+					}
+
 					> .segment-opl__freeze-marker-timer {
 						font-weight: 400;
 						-webkit-text-stroke: 0.2px #000;

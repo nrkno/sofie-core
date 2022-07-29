@@ -62,6 +62,8 @@ export interface PieceUi extends PieceExtended {
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
 
+export const FREEZE_FRAME_FLASH = 5000
+
 export interface IProps {
 	// id: string
 	rundownId: RundownId

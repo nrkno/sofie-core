@@ -10,6 +10,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { RundownUtils } from '../../lib/rundown'
 import { FreezeFrameIcon } from '../../lib/ui/icons/freezeFrame'
 import classNames from 'classnames'
+import { FREEZE_FRAME_FLASH } from '../SegmentContainer/withResolvedSegment'
 
 interface IProps {
 	partId: PartId
@@ -117,13 +118,10 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 				</>
 			)}
 			{endsInFreeze && (
-				<div
-					className="segment-opl__freeze-marker"
-					style={freezeFrameIconStyle}
-					data-diff={toFreezeFrame}
-					data-original-diff={contentVsPartDiff}
-				>
-					<FreezeFrameIcon />
+				<div className="segment-opl__freeze-marker" style={freezeFrameIconStyle} data-to-freeze-frame={toFreezeFrame}>
+					<FreezeFrameIcon
+						className={isLive && mainSourceEnd - livePosition < FREEZE_FRAME_FLASH ? 'flash' : undefined}
+					/>
 					{!isPartZeroBudget &&
 						mainSourceEnd &&
 						isLive &&
