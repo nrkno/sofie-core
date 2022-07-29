@@ -8,6 +8,7 @@ import { contextMenuHoldToDisplayTime, TOOLTIP_DEFAULT_DELAY } from '../../lib/l
 import { RundownUtils } from '../../lib/rundown'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
+import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
 import { LinePartPieceIndicators } from './LinePartPieceIndicators'
@@ -127,7 +128,14 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				{isNextPart && <div className="segment-opl__part-marker segment-opl__part-marker--next"></div>}
 				<div className="segment-opl__part-duration">
 					{/* <PartDisplayDuration part={part} fixed={true} /> */}
-					<PartDurationDisplay />
+					{isLivePart && (
+						<CurrentPartRemaining
+							currentPartInstanceId={part.instance._id}
+							speaking={false}
+							heavyClassName="overtime"
+						/>
+					)}
+					{!isLivePart && <PartDurationDisplay />}
 				</div>
 				<Tooltip
 					overlay={part.instance.part.title}

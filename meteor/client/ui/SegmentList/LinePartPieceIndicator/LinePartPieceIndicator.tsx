@@ -18,12 +18,14 @@ export const LinePartPieceIndicator: React.FC<IProps> = function LinePartPieceIn
 	const sourceLayerIds = useMemo(() => sourceLayers.map((layer) => layer._id), [sourceLayers])
 	const thisPieces = useMemo(
 		() =>
-			pieces.filter(
-				(piece) =>
-					piece.sourceLayer &&
-					sourceLayerIds.includes(piece.sourceLayer._id) &&
-					(piece.renderedDuration === null || piece.renderedDuration > 0)
-			),
+			pieces
+				.filter(
+					(piece) =>
+						piece.sourceLayer &&
+						sourceLayerIds.includes(piece.sourceLayer._id) &&
+						(piece.renderedDuration === null || piece.renderedDuration > 0)
+				)
+				.sort((a, b) => (b.instance.dynamicallyInserted ?? 0) - (a.instance.dynamicallyInserted ?? 0)), // TODO: This is a quick & dirty way to handle someone switching a Backscreen from a graphic to a clip
 		[pieces, sourceLayerIds]
 	)
 
