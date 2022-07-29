@@ -33,9 +33,14 @@ const supportedSourceLayerTypes = new Set(
 	) as SourceLayerType[]
 )
 
-function findMainPiece(pieces: PieceExtended[]) {
+function findMainPiece(pieces: PieceExtended[], original?: boolean) {
 	return findPieceExtendedToShowFromOrderedResolvedInstances(
-		pieces.filter((piece) => piece.outputLayer?.isPGM && piece.sourceLayer?.onPresenterScreen),
+		pieces.filter(
+			(piece) =>
+				piece.outputLayer?.isPGM &&
+				piece.sourceLayer?.onPresenterScreen &&
+				(!original || !piece.instance.dynamicallyInserted)
+		),
 		supportedSourceLayerTypes
 	)
 }
@@ -73,10 +78,9 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 	// const [highlight] = useState(false)
 
 	const mainPiece = useMemo(() => findMainPiece(part.pieces), [part.pieces])
+	// const mainDisplayPiece = useMemo(() => findMainPiece(part.pieces), [part.pieces])
 	const transitionPiece = useMemo(() => findTransitionPiece(part.pieces), [part.pieces])
 	const timedGraphics = useMemo(() => findTimedGraphics(part.pieces), [part.pieces])
-
-	const mainPieceIsAdlibbed = part.instance.orphaned !== 'adlib-part' && !!mainPiece?.instance.dynamicallyInserted
 
 	const partDuration = part.renderedDuration
 	const mainPieceSourceDuration = mainPiece?.instance.piece.content.sourceDuration
@@ -100,19 +104,18 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 
 	return (
 		<div className="segment-opl__part-timeline" data-base={timelineBase / 1000}>
-			{!mainPieceIsAdlibbed &&
-				timedGraphics.map((piece) => (
-					<LinePartSecondaryPiece
-						key={unprotectString(piece.instance._id)}
-						piece={piece}
-						timelineBase={timelineBase}
-						partDuration={partDuration}
-						partId={part.partId}
-						partInstanceId={part.instance._id}
-						onClick={onPieceClick}
-						onDoubleClick={onPieceDoubleClick}
-					/>
-				))}
+			{timedGraphics.map((piece) => (
+				<LinePartSecondaryPiece
+					key={unprotectString(piece.instance._id)}
+					piece={piece}
+					timelineBase={timelineBase}
+					partDuration={partDuration}
+					partId={part.partId}
+					partInstanceId={part.instance._id}
+					onClick={onPieceClick}
+					onDoubleClick={onPieceDoubleClick}
+				/>
+			))}
 			{mainPiece && (
 				<StudioContext.Consumer>
 					{(studio) => (
