@@ -76,6 +76,8 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 	const transitionPiece = useMemo(() => findTransitionPiece(part.pieces), [part.pieces])
 	const timedGraphics = useMemo(() => findTimedGraphics(part.pieces), [part.pieces])
 
+	const mainPieceIsAdlibbed = part.instance.orphaned !== 'adlib-part' && !!mainPiece?.instance.dynamicallyInserted
+
 	const partDuration = part.renderedDuration
 	const mainPieceSourceDuration = mainPiece?.instance.piece.content.sourceDuration
 	const mainPieceInPoint = mainPiece?.renderedInPoint
@@ -87,7 +89,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 
 	const isInvalid = !!part.instance.part.invalid
 
-	const endsInFreeze = !part.instance.part.autoNext && mainPiece?.instance.piece.content.sourceDuration !== undefined
+	const endsInFreeze = !part.instance.part.autoNext && !!mainPiece?.instance.piece.content.sourceDuration
 	const mainSourceEnd = mainPiece?.instance.piece.content.sourceDuration
 		? (mainPieceInPoint ?? 0) + mainPiece?.instance.piece.content.sourceDuration
 		: null
@@ -98,18 +100,19 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 
 	return (
 		<div className="segment-opl__part-timeline" data-base={timelineBase / 1000}>
-			{timedGraphics.map((piece) => (
-				<LinePartSecondaryPiece
-					key={unprotectString(piece.instance._id)}
-					piece={piece}
-					timelineBase={timelineBase}
-					partDuration={partDuration}
-					partId={part.partId}
-					partInstanceId={part.instance._id}
-					onClick={onPieceClick}
-					onDoubleClick={onPieceDoubleClick}
-				/>
-			))}
+			{!mainPieceIsAdlibbed &&
+				timedGraphics.map((piece) => (
+					<LinePartSecondaryPiece
+						key={unprotectString(piece.instance._id)}
+						piece={piece}
+						timelineBase={timelineBase}
+						partDuration={partDuration}
+						partId={part.partId}
+						partInstanceId={part.instance._id}
+						onClick={onPieceClick}
+						onDoubleClick={onPieceDoubleClick}
+					/>
+				))}
 			{mainPiece && (
 				<StudioContext.Consumer>
 					{(studio) => (

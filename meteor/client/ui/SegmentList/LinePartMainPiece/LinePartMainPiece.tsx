@@ -139,7 +139,6 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 	partDuration,
 	timelineBase,
 	capToPartDuration,
-	isLive,
 	studio,
 }) {
 	const [hover, setHover] = useState(false)
@@ -263,7 +262,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 				<div className="segment-opl__main-piece__bkg">{getSplitItems(piece, 'segment-opl__main-piece__item')}</div>
 			)}
 			{anomalies}
-			{!isLive && <div className="segment-opl__main-piece__label">{piece.instance.piece.name}</div>}
+			<div className="segment-opl__main-piece__label">{piece.instance.piece.name}</div>
 			{studio && (
 				<PieceHoverInspector
 					hoverScrubTimePosition={mouseTimePosition * (piece.instance.piece.content.sourceDuration || 0)}
