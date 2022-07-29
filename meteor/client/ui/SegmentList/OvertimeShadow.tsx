@@ -99,9 +99,19 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 						})}
 						style={overtimeShadowStyle}
 					>
-						{mainSourceEnd && !isLive && !hasAlreadyPlayed && (originalDiff < 0 || diff > 0) && (
+						{mainSourceEnd && !isLive && !hasAlreadyPlayed && Math.floor(Math.abs(originalDiff) / 1000) !== 0 && (
 							<span className="segment-opl__overtime-timer" role="timer">
-								{RundownUtils.formatDiffToTimecode(diff, true, false, true, false, true, undefined, false, true)}
+								{RundownUtils.formatDiffToTimecode(
+									originalDiff,
+									true,
+									false,
+									true,
+									false,
+									true,
+									undefined,
+									false,
+									true
+								)}
 							</span>
 						)}
 					</div>

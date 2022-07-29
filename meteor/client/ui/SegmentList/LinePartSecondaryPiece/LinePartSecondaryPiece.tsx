@@ -24,7 +24,7 @@ function timeInBase(time: number, partDuration: number, timelineBase: number): n
 	return size * 100
 }
 
-export const LinePartSecondaryPiece: React.FC<IProps> = function LinePartSecondaryPiece({
+export const LinePartSecondaryPiece: React.FC<IProps> = React.memo(function LinePartSecondaryPiece({
 	piece,
 	partId,
 	partInstanceId,
@@ -127,4 +127,4 @@ export const LinePartSecondaryPiece: React.FC<IProps> = function LinePartSeconda
 			</StudioContext.Consumer>
 		</div>
 	)
-}
+})
