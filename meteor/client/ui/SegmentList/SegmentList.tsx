@@ -6,20 +6,14 @@ import { Studio } from '../../../lib/collections/Studios'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { PartUi, PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { IContextMenuContext } from '../RundownView'
-import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
-import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
+import { useCombinedRefs } from '../../lib/lib'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
-import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
-import { useTranslation } from 'react-i18next'
-import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { LinePart } from './LinePart'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ISourceLayerExtended } from '../../../lib/Rundown'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
-import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
+import { SegmentListHeader } from './SegmentListHeader'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -49,7 +43,6 @@ interface IProps {
 const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function SegmentList(props, ref) {
 	const innerRef = useRef<HTMLDivElement>(null)
 	const combinedRef = useCombinedRefs(null, ref, innerRef)
-	const { t } = useTranslation()
 	const [highlight, _setHighlight] = useState(false)
 	const [useTimeOfDayCountdowns, setUseTimeOfDayCountdowns] = useState(
 		UIStateStorage.getItemBoolean(
@@ -59,7 +52,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 		)
 	)
 
-	const getSegmentContext = (_props) => {
+	const getSegmentContext = () => {
 		const ctx = literal<IContextMenuContext>({
 			segment: props.segment,
 			part: props.parts.find((p) => isPartPlayable(p.instance.part)) || null,
@@ -110,17 +103,6 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 		})
 		return sourceColumns
 	}, [props.segment.sourceLayers])
-
-	let countdownToPartId: PartId | undefined = undefined
-	if (!props.isLiveSegment) {
-		const nextPart = props.isNextSegment
-			? props.parts.find((p) => p.instance._id === props.playlist.nextPartInstanceId)
-			: props.parts[0]
-
-		if (nextPart) {
-			countdownToPartId = nextPart.instance.part._id
-		}
-	}
 
 	const parts: ReactNode[] = []
 	// let currentPartIndex: number = -1
@@ -184,71 +166,23 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				data-segment-id={props.segment._id}
 				ref={combinedRef}
 			>
-				<ContextMenuTrigger
-					id="segment-timeline-context-menu"
-					collect={getSegmentContext}
-					attributes={{
-						className: 'segment-opl__title',
-					}}
-					holdToDisplay={contextMenuHoldToDisplayTime()}
-					renderTag="div"
-				>
-					<div className="segment-opl__counters">
-						<div
-							className={classNames('segment-opl__duration', {
-								hidden: props.hasAlreadyPlayed && !props.isLiveSegment && !props.isNextSegment,
-							})}
-							tabIndex={0}
-							onClick={onTimeUntilClick}
-						>
-							{props.playlist && props.parts && props.parts.length > 0 && (
-								<SegmentDuration
-									segmentId={props.segment._id}
-									parts={props.parts}
-									label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
-									fixed={props.fixedSegmentDuration}
-								/>
-							)}
-						</div>
-					</div>
-					<h2
-						id={`segment-name-${props.segment._id}`}
-						className={'segment-opl__title__label' + (props.segment.identifier ? ' identifier' : '')}
-						data-identifier={props.segment.identifier}
-					>
-						{props.segment.name}
-					</h2>
-					<div className="segment-opl__counters">
-						<div
-							className={classNames('segment-opl__timeUntil', {
-								'segment-opl__timeUntil--time-of-day': useTimeOfDayCountdowns,
-							})}
-							onClick={onTimeUntilClick}
-						>
-							{props.playlist && props.parts && props.parts.length > 0 && props.showCountdownToSegment && (
-								<PartCountdown
-									partId={countdownToPartId}
-									hideOnZero={!useTimeOfDayCountdowns}
-									useWallClock={useTimeOfDayCountdowns}
-									playlist={props.playlist}
-									label={
-										useTimeOfDayCountdowns ? (
-											<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
-										) : (
-											<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
-										)
-									}
-								/>
-							)}
-							{props.studio.settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
-								<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
-							)}
-						</div>
-					</div>
-					<ErrorBoundary>
-						<SwitchViewModeButton currentMode={SegmentViewMode.List} onSwitchViewMode={props.onSwitchViewMode} />
-					</ErrorBoundary>
-				</ContextMenuTrigger>
+				<SegmentListHeader
+					parts={props.parts}
+					segment={props.segment}
+					playlist={props.playlist}
+					studio={props.studio}
+					segmentNotes={props.segmentNotes}
+					isLiveSegment={props.isLiveSegment}
+					isNextSegment={props.isNextSegment}
+					hasAlreadyPlayed={props.hasAlreadyPlayed}
+					isQueuedSegment={props.isQueuedSegment}
+					fixedSegmentDuration={props.fixedSegmentDuration}
+					showCountdownToSegment={props.showCountdownToSegment}
+					useTimeOfDayCountdowns={useTimeOfDayCountdowns}
+					getSegmentContext={getSegmentContext}
+					onTimeUntilClick={onTimeUntilClick}
+					onSwitchViewMode={props.onSwitchViewMode}
+				/>
 				<div className="segment-opl__part-list">{parts}</div>
 			</div>
 		</StudioContext.Provider>

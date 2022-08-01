@@ -18,76 +18,6 @@ $duration-area-margin: 0.5em;
 .segment-timeline.segment-opl {
 	display: block;
 
-	> .segment-opl__title {
-		display: grid;
-		grid-template-rows: auto;
-		grid-template-columns: max-content max-content auto;
-
-		> .segment-opl__counters {
-			display: flex;
-		}
-
-		.segment-opl__duration,
-		.segment-opl__timeUntil {
-			box-sizing: border-box;
-			text-align: left;
-			padding: 0.45em $duration-area-margin 0 $duration-area-margin;
-			line-height: 1em;
-			font-weight: 400;
-			cursor: pointer;
-			transition: 0.3s color;
-			letter-spacing: 0;
-
-			> .segment-timeline__duration__label,
-			> .segment-timeline__timeUntil__label {
-				display: block;
-				font-size: 0.5em;
-				text-transform: uppercase;
-				line-height: 1em;
-				color: #888;
-			}
-
-			> .negative {
-				color: $general-late-color;
-				font-weight: 500;
-			}
-
-			&.hidden {
-				visibility: hidden;
-			}
-		}
-
-		.segment-opl__timeUntil {
-			color: #888;
-
-			&--time-of-day {
-				color: #fff;
-				font-weight: 500;
-			}
-		}
-
-		.segment-timeline__switch-view-mode-button {
-			grid-row: 1;
-		}
-
-		> h2.segment-opl__title__label {
-			padding: 0.33em 1em 0.15em 0;
-			margin: 0;
-			line-height: 1em;
-			font-weight: 400;
-			font-size: 1.5em;
-			box-sizing: border-box;
-			min-width: 4em;
-		}
-	}
-
-	&.next,
-	&.live {
-		> .segment-opl__title > h2.segment-opl__title__label {
-			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
-		}
-	}
-
 	> .segment-opl__part-list {
 		display: block;
 
@@ -550,6 +480,97 @@ $duration-area-margin: 0.5em;
 				height: 0;
 				border-bottom: 1px dashed $part-border-color;
 			}
+		}
+	}
+}
+
+.segment-opl__title {
+	display: grid;
+	grid-template-rows: auto;
+	grid-template-columns: max-content max-content auto;
+
+	> .segment-opl__counters {
+		display: flex;
+	}
+
+	.segment-opl__duration,
+	.segment-opl__timeUntil {
+		box-sizing: border-box;
+		text-align: left;
+		padding: 0.45em $duration-area-margin 0 $duration-area-margin;
+		line-height: 1em;
+		font-weight: 400;
+		cursor: pointer;
+		transition: 0.3s color;
+		letter-spacing: 0;
+
+		> .segment-timeline__duration__label,
+		> .segment-timeline__timeUntil__label {
+			display: block;
+			font-size: 0.5em;
+			text-transform: uppercase;
+			line-height: 1em;
+			color: #888;
+		}
+
+		> .negative {
+			color: $general-late-color;
+			font-weight: 500;
+		}
+
+		&.hidden {
+			visibility: hidden;
+		}
+	}
+
+	.segment-opl__timeUntil {
+		color: #888;
+
+		&--time-of-day {
+			color: #fff;
+			font-weight: 500;
+		}
+	}
+
+	.segment-timeline__switch-view-mode-button {
+		grid-row: 1;
+	}
+
+	> h2.segment-opl__title__label {
+		padding: 0.33em 1em 0.15em 0;
+		margin: 0;
+		line-height: 1em;
+		font-weight: 400;
+		font-size: 1.5em;
+		box-sizing: border-box;
+		min-width: 4em;
+	}
+}
+
+.segment-opl__title-float-parent {
+	position: fixed;
+	margin-top: 64px;
+	top: 0;
+	left: 0;
+	right: #{$fullscreen-controls__button--radius + 0.5rem};
+	z-index: 100;
+	padding: $segment-margin-x $segment-margin-y 0;
+	overflow: hidden;
+
+	.segment-opl__title {
+		background: $segment-background-color;
+		border-top-left-radius: $segment-border-radius;
+		border-top-right-radius: $segment-border-radius;
+		box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.3);
+	}
+}
+
+.segment-timeline.segment-opl,
+.segment-opl__title-float-parent {
+	&.next,
+	&.live {
+		.segment-opl__title > h2.segment-opl__title__label {
+			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
 		}
 	}
 }

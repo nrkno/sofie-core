@@ -36,7 +36,6 @@ $previewline-color: rgb(38, 137, 186);
 	functional part of the timeline starts at the same level as the segment title
 */
 $segment-timeline-padding: $segment-header-height 0 1.5em;
-$segment-border-radius: 11px;
 
 $segment-layer-height: 1.5em;
 $segment-layer-separator-color: transparentize(#000, 0.5);
@@ -461,7 +460,7 @@ svg.icon {
 	-webkit-user-select: none;
 
 	width: auto;
-	margin: 0.8em 0.75em;
+	margin: $segment-margin-x $segment-margin-y;
 	// padding: 0 0 0.15em 0.15em;
 
 	background: $segment-background-color;
@@ -770,40 +769,40 @@ svg.icon {
 	.segment-timeline__unsynced {
 		text-transform: uppercase;
 	}
+}
 
-	.segment-timeline__switch-view-mode-button {
-		grid-row: header / main-view;
-		grid-column: timeline / end;
-		justify-self: end;
-		align-self: start;
-		z-index: 1;
-		background: $segment-background-color;
-		width: 1.4em;
-		height: 1.4em;
-		padding: 0;
+.segment-timeline__switch-view-mode-button {
+	grid-row: header / main-view;
+	grid-column: timeline / end;
+	justify-self: end;
+	align-self: start;
+	z-index: 1;
+	background: $segment-background-color;
+	width: 1.4em;
+	height: 1.4em;
+	padding: 0;
 
-		background: #383838;
-		border: none;
-		border-radius: 2em;
-		transition: 0.3s background-color;
+	background: #383838;
+	border: none;
+	border-radius: 2em;
+	transition: 0.3s background-color;
 
-		margin-top: 0.1em;
-		margin-right: 0.1em;
+	margin-top: 0.1em;
+	margin-right: 0.1em;
 
-		&:hover {
-			background: #8c8c8c;
-			transition: 0s background-color;
-		}
+	&:hover {
+		background: #8c8c8c;
+		transition: 0s background-color;
+	}
 
-		&:active {
-			background: $ui-button-primary;
-			transition: 0s background-color;
-		}
+	&:active {
+		background: $ui-button-primary;
+		transition: 0s background-color;
+	}
 
-		> svg {
-			position: relative;
-			top: 0.1em;
-		}
+	> svg {
+		position: relative;
+		top: 0.1em;
 	}
 }
 
