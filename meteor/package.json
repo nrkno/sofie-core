@@ -189,7 +189,6 @@
 		}
 	},
 	"resolutions": {
-		"url-parse": "^1.5.9",
-		"mos-connection/moment": "^2.29.3"
+		"url-parse": "^1.5.9"
 	}
 }
