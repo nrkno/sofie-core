@@ -9,6 +9,7 @@ import { MongoQuery } from './typings/meteor'
 import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 export { Time, TimeDuration }
 
 // Legacy compatability
@@ -137,6 +138,12 @@ export function last<T>(values: T[]): T {
 	return _.last(values) as T
 }
 
+export function objectFromEntries<Key extends ProtectedString<any>, Val>(
+	entries: Array<[Key, Val]>
+): Record<string, Val> {
+	return Object.fromEntries(entries)
+}
+
 const cacheResultCache: {
 	[name: string]: {
 		ttl: number
@@ -144,7 +151,7 @@ const cacheResultCache: {
 	}
 } = {}
 /** Cache the result of function for a limited time */
-export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1000) {
+export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1000): T {
 	if (Math.random() < 0.01) {
 		Meteor.setTimeout(cleanOldCacheResult, 10000)
 	}
@@ -186,7 +193,7 @@ function cleanOldCacheResult() {
 	})
 }
 const lazyIgnoreCache: { [name: string]: number } = {}
-export function lazyIgnore(name: string, f1: () => void, t: number): void {
+export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: number): void {
 	// Don't execute the function f1 until the time t has passed.
 	// Subsequent calls will extend the lazyness and ignore the previous call
 
@@ -195,7 +202,7 @@ export function lazyIgnore(name: string, f1: () => void, t: number): void {
 	}
 	lazyIgnoreCache[name] = Meteor.setTimeout(() => {
 		delete lazyIgnoreCache[name]
-		f1()
+		waitForPromise(f1())
 	}, t)
 }
 
@@ -285,7 +292,7 @@ export function waitForPromiseAll<T>(ps: (T | PromiseLike<T>)[]): T[] {
 export type Promisify<T> = { [K in keyof T]: Promise<T[K]> }
 export function waitForPromiseObj<T extends object>(obj: Promisify<T>): T {
 	const values = waitForPromiseAll(_.values<Promise<any>>(obj))
-	return _.object(_.keys(obj), values)
+	return _.object(_.keys(obj), values) as T
 }
 
 export type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T
@@ -326,6 +333,12 @@ export async function makePromise<T>(fcn: () => T): Promise<T> {
 				reject(e)
 			}
 		})
+	})
+}
+
+export function deferAsync(fcn: () => Promise<void>): void {
+	Meteor.defer(() => {
+		fcn().catch((e) => logger.error(stringifyError(e)))
 	})
 }
 

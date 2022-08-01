@@ -623,7 +623,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 		renderPeripheralDevices() {
 			const devices: Array<DeviceInHierarchy> = []
 			const refs = {}
-			const devicesToAdd = {}
+			const devicesToAdd: Record<string, DeviceInHierarchy> = {}
 			// First, add all as references:
 			_.each(this.props.devices, (device) => {
 				const d: DeviceInHierarchy = {

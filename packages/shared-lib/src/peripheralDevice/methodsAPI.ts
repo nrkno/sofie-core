@@ -28,13 +28,10 @@ import { ExpectedPackageStatusAPI } from '../package-manager/package'
 import {
 	InitOptions,
 	StatusObject,
-	PiecePlaybackStartedResult,
-	PiecePlaybackStoppedResult,
-	PartPlaybackStartedResult,
-	PartPlaybackStoppedResult,
 	TimelineTriggerTimeResult,
 	DiffTimeResult,
 	TimeDiff,
+	PlayoutChangedResults,
 } from './peripheralDeviceAPI'
 import { MediaObject } from '../core/model/MediaObjects'
 import { MediaWorkFlow } from '../core/model/MediaWorkFlows'
@@ -46,18 +43,7 @@ export interface NewPeripheralDeviceAPI {
 	setStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: StatusObject): Promise<StatusObject>
 	ping(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 	getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<PeripheralDevicePublic>
-	partPlaybackStarted(deviceId: PeripheralDeviceId, deviceToken: string, r: PartPlaybackStartedResult): Promise<void>
-	partPlaybackStopped(deviceId: PeripheralDeviceId, deviceToken: string, r: PartPlaybackStoppedResult): Promise<void>
-	piecePlaybackStopped(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		r: PiecePlaybackStoppedResult
-	): Promise<void>
-	piecePlaybackStarted(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		r: PiecePlaybackStartedResult
-	): Promise<void>
+	playoutPlaybackChanged(deviceId: PeripheralDeviceId, deviceToken: string, r: PlayoutChangedResults): Promise<void>
 	pingWithCommand(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
@@ -340,10 +326,9 @@ export enum PeripheralDeviceAPIMethods {
 	'getTime' = 'systemTime.getTime',
 
 	'timelineTriggerTime' = 'peripheralDevice.timeline.setTimelineTriggerTime',
-	'partPlaybackStarted' = 'peripheralDevice.rundown.partPlaybackStarted',
-	'partPlaybackStopped' = 'peripheralDevice.rundown.partPlaybackStopped',
-	'piecePlaybackStarted' = 'peripheralDevice.rundown.piecePlaybackStarted',
-	'piecePlaybackStopped' = 'peripheralDevice.rundown.piecePlaybackStopped',
+
+	'playoutPlaybackChanged' = 'peripheralDevice.playout.playbackChanged',
+
 	'reportCommandError' = 'peripheralDevice.playout.reportCommandError',
 
 	'mosRoCreate' = 'peripheralDevice.mos.roCreate',

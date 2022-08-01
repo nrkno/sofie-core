@@ -99,8 +99,8 @@ function getAllNotesForSegmentAndParts(
 	const notes: Array<TrackedNote> = []
 
 	const rundownsMap = normalizeArrayToMap(rundowns, '_id')
-	const partsBySegment = _.groupBy(parts, (p) => p.segmentId)
-	const partInstancesBySegment = _.groupBy(deletedPartInstances, (p) => p.segmentId)
+	const partsBySegment = _.groupBy(parts, (p) => unprotectString(p.segmentId))
+	const partInstancesBySegment = _.groupBy(deletedPartInstances, (p) => unprotectString(p.segmentId))
 
 	for (const segment of segments) {
 		const segmentParts = partsBySegment[unprotectString(segment._id)] || []

@@ -1,6 +1,6 @@
 {
 	"name": "playout-gateway",
-	"version": "1.44.0-in-development",
+	"version": "1.45.0-in-development",
 	"private": true,
 	"description": "Connect to Core, play stuff",
 	"license": "MIT",
@@ -56,16 +56,16 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "1.44.0-in-development",
-		"@sofie-automation/server-core-integration": "1.44.0-in-development",
-		"@sofie-automation/shared-lib": "1.44.0-in-development",
-		"debug": "^4.3.2",
+		"@sofie-automation/blueprints-integration": "1.45.0-in-development",
+		"@sofie-automation/server-core-integration": "1.45.0-in-development",
+		"@sofie-automation/shared-lib": "1.45.0-in-development",
+		"debug": "^4.3.3",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.3",
-		"timeline-state-resolver": "7.1.0-release42.2",
+		"timeline-state-resolver": "7.4.0-nightly-release45-20220704-155301-5b2481f63.0",
 		"tslib": "^2.4.0",
-		"underscore": "^1.13.3",
-		"winston": "^3.7.2"
+		"underscore": "^1.13.4",
+		"winston": "^3.8.1"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

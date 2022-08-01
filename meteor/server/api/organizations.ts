@@ -1,4 +1,4 @@
-import { literal, getRandomId, makePromise, getCurrentTime, waitForPromise } from '../../lib/lib'
+import { literal, getRandomId, getCurrentTime, waitForPromise } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewOrganizationAPI, OrganizationAPIMethods } from '../../lib/api/organization'
 import { registerClassToMeteorMethods } from '../methods'
@@ -18,7 +18,7 @@ function createDefaultEnvironmentForOrg(orgId: OrganizationId) {
 	let systemBlueprintId: BlueprintId | undefined
 	let studioBlueprintId: BlueprintId | undefined
 	let showStyleBlueprintId: BlueprintId | undefined
-	const studioId = insertStudioInner(orgId)
+	const studioId = waitForPromise(insertStudioInner(orgId))
 	const showStyleId = waitForPromise(insertShowStyleBaseInner(orgId))
 
 	const core = CoreSystem.findOne()
@@ -67,9 +67,10 @@ export function createOrganization(organization: DBOrganizationBase): Organizati
 	return orgId
 }
 
-export function removeOrganization(context: MethodContext, organizationId: OrganizationId) {
-	OrganizationContentWriteAccess.organization(context, organizationId)
-	const users = Users.find({ organizationId }).fetch()
+async function removeOrganization(context: MethodContext, organizationId: OrganizationId) {
+	await OrganizationContentWriteAccess.organization(context, organizationId)
+
+	const users = await Users.findFetchAsync({ organizationId })
 	users.forEach((user) => {
 		resetCredentials({ userId: user._id })
 	})
@@ -78,7 +79,7 @@ export function removeOrganization(context: MethodContext, organizationId: Organ
 
 class ServerOrganizationAPI extends MethodContextAPI implements NewOrganizationAPI {
 	async removeOrganization(organizationId: OrganizationId) {
-		return makePromise(() => removeOrganization(this, organizationId))
+		return removeOrganization(this, organizationId)
 	}
 }
 

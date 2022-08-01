@@ -254,6 +254,7 @@ describe('Test sending messages to mocked endpoints', () => {
 					_id: msg._id,
 				},
 				fullDocument: msg,
+				collectionUUID: null as any,
 			})
 
 			// Run the queue

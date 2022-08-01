@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/corelib",
-	"version": "1.44.0-in-development",
+	"version": "1.45.0-in-development",
 	"private": true,
 	"description": "Internal library for some types shared by core and workers",
 	"main": "dist/index.js",
@@ -42,15 +42,15 @@
 		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
 		"@sofie-automation/shared-lib": "link:../shared-lib",
 		"fast-clone": "^1.5.13",
-		"i18next": "^19.9.2",
+		"i18next": "^21.8.12",
 		"influx": "^5.9.3",
 		"mos-connection": "^2.0.0",
 		"nanoid": "^3.3.4",
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",
 		"tslib": "^2.4.0",
-		"type-fest": "^2.12.2",
-		"underscore": "^1.13.3"
+		"type-fest": "^2.16.0",
+		"underscore": "^1.13.4"
 	},
 	"peerDependencies": {
 		"mongodb": "^4.4.1"
