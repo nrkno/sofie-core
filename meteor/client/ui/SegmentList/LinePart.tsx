@@ -1,10 +1,9 @@
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import classNames from 'classnames'
-import Tooltip from 'rc-tooltip'
 import React, { useCallback, useState } from 'react'
 import { ISourceLayerExtended, PartExtended } from '../../../lib/Rundown'
-import { contextMenuHoldToDisplayTime, TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
@@ -13,6 +12,7 @@ import { PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
 import { LinePartPieceIndicators } from './LinePartPieceIndicators'
 import { LinePartTimeline } from './LinePartTimeline'
+import { LinePartTitle } from './LinePartTitle'
 
 interface IProps {
 	segment: SegmentUi
@@ -36,8 +36,6 @@ interface IProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
-
-const TOOLTIP_ALIGN = { points: ['tl', 'tl'], offset: [-8, 0] }
 
 export const LinePart: React.FC<IProps> = function LinePart({
 	part,
@@ -137,18 +135,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 					)}
 					{!isLivePart && <PartDurationDisplay />}
 				</div>
-				<Tooltip
-					overlay={part.instance.part.title}
-					placement="topLeft"
-					align={TOOLTIP_ALIGN}
-					overlayClassName="segment-opl__title__label-tooltip"
-					mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
-					destroyTooltipOnHide
-				>
-					<h3 className="segment-opl__part-title">
-						<span>{part.instance.part.title}</span>
-					</h3>
-				</Tooltip>
+				<LinePartTitle title={part.instance.part.title} />
 			</div>
 			<LinePartPieceIndicators
 				partId={part.partId}
