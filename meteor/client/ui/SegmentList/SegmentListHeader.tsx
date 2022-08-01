@@ -65,7 +65,7 @@ export function SegmentListHeader({
 	}
 
 	function onChange(inView: boolean, entry: IntersectionObserverEntry) {
-		const shouldDetach = !inView && entry.boundingClientRect.top < window.innerHeight / 2
+		const shouldDetach = !inView && parts.length > 1 && entry.boundingClientRect.top < window.innerHeight / 2
 		setDetached(shouldDetach)
 	}
 
