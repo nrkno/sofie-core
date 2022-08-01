@@ -3116,7 +3116,7 @@
     webpack-sources "^1.4.3"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.41.0-in-testing.1"
+  version "1.41.0"
   dependencies:
     moment "2.29.3"
     timeline-state-resolver-types "7.0.0"
@@ -3144,13 +3144,13 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.41.0-in-testing.1"
+  version "1.41.1"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     fast-clone "^1.5.13"
     i18next "^19.9.2"
     influx "^5.9.2"
-    mos-connection "^2.0.0"
+    mos-connection "^2.0.1"
     object-path "^0.11.8"
     timecode "0.0.4"
     tslib "^2.1.0"
@@ -10627,10 +10627,15 @@ module-details-from-path@^1.0.3:
   resolved "https://registry.yarnpkg.com/module-details-from-path/-/module-details-from-path-1.0.3.tgz#114c949673e2a8a35e9d35788527aa37b679da2b"
   integrity sha1-EUyUlnPiqKNenTV4hSeqN7Z52is=
 
-moment@2.29.3, moment@^2.29.1:
+moment@2.29.3:
   version "2.29.3"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.3.tgz#edd47411c322413999f7a5940d526de183c031f3"
   integrity sha512-c6YRvhEo//6T2Jz/vVtYzqBzwvPT95JBQ+smCytzf7c50oMZRsR/a4w88aD34I+/QVSfnoAnSBFPJHItlOMJVw==
+
+moment@^2.29.4:
+  version "2.29.4"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.4.tgz#3dbe052889fe7c1b2ed966fcb3a77328964ef108"
+  integrity sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==
 
 mongodb-connection-string-url@^2.4.1:
   version "2.4.1"
@@ -10657,13 +10662,13 @@ monitor-event-loop-delay@^1.0.0:
   resolved "https://registry.yarnpkg.com/monitor-event-loop-delay/-/monitor-event-loop-delay-1.0.0.tgz#b5ab78165a3bb93f2b275c50d01430c7f155d1f7"
   integrity sha512-YRIr1exCIfBDLZle8WHOfSo7Xg3M+phcZfq9Fx1L6Abo+atGp7cge5pM7PjyBn4s1oZI/BRD4EMrzQBbPpVb5Q==
 
-mos-connection@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-2.0.0.tgz#bf6958e8cb1648357ed939c345498a2e0b843973"
-  integrity sha512-WsL63EuJFWI1PbG5Ul+I1W8LA3GoyKCY8igbJSlHbecUz+BGQe+decUfoiXdBkPfIdW/wrJN/yBMyxtNbi5sQA==
+mos-connection@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/mos-connection/-/mos-connection-2.0.1.tgz#6be8aa6641f1695870dd4c361de25f00ef6a4d5a"
+  integrity sha512-JKg4NIaLw8hmAJMUqem7RyJIJPKX19PEBHmbvKHY55eGYyTKITAWxcsdU/+K8ZXVejzgylmXYEqnhcfBhzCpOw==
   dependencies:
     iconv-lite "^0.6.2"
-    moment "^2.29.1"
+    moment "^2.29.4"
     tslib "^2.2.0"
     xml-js "^1.6.11"
     xmlbuilder "^15.1.1"
