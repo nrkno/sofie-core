@@ -216,6 +216,8 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 					this.handleOutgoingQueue()
 				} catch (e) {
 					logger.error(`Unexpected error in AMQP triggerHandleOutgoingQueue`)
+					this.handleOutgoingQueueTimeout = null
+					this.triggerHandleOutgoingQueue()
 				}
 			}, 100)
 		}
