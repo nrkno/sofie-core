@@ -561,7 +561,7 @@ class ServerUserActionAPI
 	}
 	async DEBUG_crashStudioWorker(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
 		// Make sure we never crash in production
-		if (Meteor.isProduction) return { success: 200 as const }
+		if (Meteor.isProduction) return ClientAPI.responseSuccess(undefined)
 
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
