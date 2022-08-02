@@ -239,6 +239,7 @@ Meteor.startup(() => {
 			{
 				autoRestart: true,
 				restartTimeout: 30000,
+				killTimeout: 30000,
 			}
 		)
 	)
