@@ -14,6 +14,8 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ISourceLayerExtended } from '../../../lib/Rundown'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SegmentListHeader } from './SegmentListHeader'
+import { useInView } from 'react-intersection-observer'
+import { getHeaderHeight } from '../../lib/viewPort'
 
 export const StudioContext = React.createContext<Studio | undefined>(undefined)
 
@@ -42,7 +44,18 @@ interface IProps {
 
 const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function SegmentList(props, ref) {
 	const innerRef = useRef<HTMLDivElement>(null)
-	const combinedRef = useCombinedRefs(null, ref, innerRef)
+	const {
+		ref: inViewRef,
+		inView,
+		entry,
+	} = useInView({
+		threshold: [0, 1],
+		rootMargin: `-${getHeaderHeight() + 12}px 0px 0px 0px`,
+		fallbackInView: true,
+		skip: !props.isLiveSegment && !props.isNextSegment,
+	})
+	console.log(inView, entry)
+	const combinedRef = useCombinedRefs(null, ref, innerRef, inViewRef)
 	const [highlight, _setHighlight] = useState(false)
 	const [useTimeOfDayCountdowns, setUseTimeOfDayCountdowns] = useState(
 		UIStateStorage.getItemBoolean(
@@ -148,6 +161,15 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 		parts.push(partComponent)
 	})
 
+	const isHeaderDetached =
+		(inView &&
+			(props.isLiveSegment || (props.isNextSegment && !props.playlist.currentPartInstanceId)) &&
+			parts.length > 1 &&
+			entry &&
+			entry.intersectionRatio < 1 &&
+			entry.boundingClientRect.top < window.innerHeight / 2) ??
+		false
+
 	return (
 		<StudioContext.Provider value={props.studio}>
 			<div
@@ -167,11 +189,13 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				ref={combinedRef}
 			>
 				<SegmentListHeader
+					isDetached={isHeaderDetached}
 					parts={props.parts}
 					segment={props.segment}
 					playlist={props.playlist}
 					studio={props.studio}
 					segmentNotes={props.segmentNotes}
+					highlight={highlight}
 					isLiveSegment={props.isLiveSegment}
 					isNextSegment={props.isNextSegment}
 					hasAlreadyPlayed={props.hasAlreadyPlayed}

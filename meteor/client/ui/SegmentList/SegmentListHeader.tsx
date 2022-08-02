@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import classNames from 'classnames'
-import { InView } from 'react-intersection-observer'
+// import { InView } from 'react-intersection-observer'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
@@ -15,16 +15,19 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { useTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IContextMenuContext } from '../RundownView'
-import { getHeaderHeight } from '../../lib/viewPort'
+// import { getHeaderHeight } from '../../lib/viewPort'
 import ReactDOM from 'react-dom'
 
 export function SegmentListHeader({
+	isDetached,
 	segment,
 	parts,
 	playlist,
 	studio,
+	highlight,
 	isLiveSegment,
 	isNextSegment,
+	isQueuedSegment,
 	useTimeOfDayCountdowns,
 	fixedSegmentDuration,
 	showCountdownToSegment,
@@ -33,11 +36,13 @@ export function SegmentListHeader({
 	getSegmentContext,
 	onTimeUntilClick,
 }: {
+	isDetached: boolean
 	segment: SegmentUi
 	playlist: RundownPlaylist
 	studio: Studio
 	parts: Array<PartUi>
 	segmentNotes: Array<SegmentNote>
+	highlight: boolean
 	isLiveSegment: boolean
 	isNextSegment: boolean
 	isQueuedSegment: boolean
@@ -50,7 +55,6 @@ export function SegmentListHeader({
 	getSegmentContext: () => IContextMenuContext
 }) {
 	const { t } = useTranslation()
-	const [isDetached, setDetached] = useState(false)
 
 	// TODO: This still needs to detect when it should stop being detached, because the original segment is no longer
 	// sufficiently in view
@@ -64,10 +68,10 @@ export function SegmentListHeader({
 		}
 	}
 
-	function onChange(inView: boolean, entry: IntersectionObserverEntry) {
-		const shouldDetach = !inView && parts.length > 1 && entry.boundingClientRect.top < window.innerHeight / 2
-		setDetached(shouldDetach)
-	}
+	// function onChange(inView: boolean, entry: IntersectionObserverEntry) {
+	// 	const shouldDetach = !inView && parts.length > 1 && entry.boundingClientRect.top < window.innerHeight / 2
+	// 	setDetached(shouldDetach)
+	// }
 
 	const contents = (
 		<ContextMenuTrigger
@@ -138,10 +142,29 @@ export function SegmentListHeader({
 	)
 
 	return (
-		<InView threshold={1} rootMargin={`-${getHeaderHeight()}px 0px 0px 0px`} onChange={onChange} as="div">
+		// <InView threshold={1} rootMargin={`-${getHeaderHeight()}px 0px 0px 0px`} onChange={onChange} as="div">
+		<>
 			{contents}
 			{isDetached &&
-				ReactDOM.createPortal(<div className="segment-opl__title-float-parent dark">{contents}</div>, document.body)}
-		</InView>
+				ReactDOM.createPortal(
+					<div
+						className={classNames('segment-opl__title-float-parent dark', {
+							live: isLiveSegment,
+							next: !isLiveSegment && isNextSegment,
+							queued: isQueuedSegment,
+
+							'has-played': hasAlreadyPlayed && !isLiveSegment && !isNextSegment,
+
+							'invert-flash': highlight,
+
+							'time-of-day-countdowns': useTimeOfDayCountdowns,
+						})}
+					>
+						{contents}
+					</div>,
+					document.body
+				)}
+		</>
+		// </InView>
 	)
 }
