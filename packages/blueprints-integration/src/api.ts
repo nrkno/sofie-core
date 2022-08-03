@@ -15,7 +15,6 @@ import {
 	IRundownDataChangedEventContext,
 	IRundownTimingEventContext,
 	IStudioBaselineContext,
-	IRundownUserContext,
 	IGetRundownContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
@@ -161,15 +160,6 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 		playoutStatus: 'previous' | 'current' | 'next'
 	) => void
 
-	/**
-	 * Allows the blueprint to remove the next part instance if it has become orphaned.
-	 * This call will only be made if the part instance has been orphaned.
-	 */
-	shouldRemoveOrphanedPartInstance?: (
-		context: IRundownUserContext,
-		partInstance: BlueprintRemoveOrphanedPartInstance
-	) => boolean
-
 	/** Execute an action defined by an IBlueprintActionManifest */
 	executeAction?: (
 		context: IActionExecutionContext,
@@ -289,11 +279,6 @@ export interface BlueprintSyncIngestPartInstance {
 	// Upcoming interface:
 	// adLibPieceInstances: IBlueprintAdlibPieceInstance[]
 	// adLibActionInstances: IBlueprintAdlibActionInstance[]
-}
-
-export interface BlueprintRemoveOrphanedPartInstance {
-	partInstance: IBlueprintPartInstance
-	pieceInstances: IBlueprintPieceInstance[]
 }
 
 /** Key is the ID of the external ID of the Rundown, Value is the rank to be assigned */
