@@ -10,8 +10,8 @@ interface IProps {
 
 export const RundownTimingConsumer = withTiming<IProps, {}>((props) => ({
 	filter: props.filter,
-	dataResolution: props.dataResolution,
-	tickResolution: props.tickResolution,
+	dataResolution: props.dataResolution ?? TimingDataResolution.Synced,
+	tickResolution: props.tickResolution ?? TimingTickResolution.Synced,
 }))(({ timingDurations, children }: WithTiming<IProps>) => {
 	return children ? children(timingDurations) : null
 })
