@@ -42,6 +42,8 @@ export class SyncIngestUpdateToPartInstanceContext
 	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance>
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
 
+	private partInstance: DBPartInstance | undefined
+
 	constructor(
 		private readonly _context: JobContext,
 		contextInfo: ContextInfo,
@@ -49,7 +51,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		studio: ReadonlyDeep<DBStudio>,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
-		private partInstance: DBPartInstance,
+		partInstance: DBPartInstance,
 		pieceInstances: PieceInstance[],
 		proposedPieceInstances: PieceInstance[],
 		private playStatus: 'previous' | 'current' | 'next'
@@ -62,6 +64,8 @@ export class SyncIngestUpdateToPartInstanceContext
 			_context.getShowStyleBlueprintConfig(showStyleCompound),
 			rundown
 		)
+
+		this.partInstance = partInstance
 
 		// Create temporary cache databases
 		this._pieceInstanceCache = DbCacheWriteCollection.createFromArray(
@@ -101,6 +105,8 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found`)
 		}
 
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
+
 		// filter the submission to the allowed ones
 		const piece = modifiedPiece
 			? postProcessPieces(
@@ -133,6 +139,8 @@ export class SyncIngestUpdateToPartInstanceContext
 	insertPieceInstance(piece0: IBlueprintPiece): IBlueprintPieceInstance {
 		const trimmedPiece: IBlueprintPiece = _.pick(piece0, IBlueprintPieceObjectsSampleKeys)
 
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
+
 		const piece = postProcessPieces(
 			this._context,
 			[trimmedPiece],
@@ -157,6 +165,8 @@ export class SyncIngestUpdateToPartInstanceContext
 		if (Object.keys(trimmedPiece).length === 0) {
 			throw new Error(`Cannot update PieceInstance "${pieceInstanceId}". Some valid properties must be defined`)
 		}
+
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
 		const pieceInstance = this._pieceInstanceCache.findOne(protectString(pieceInstanceId))
 		if (!pieceInstance) {
@@ -202,10 +212,14 @@ export class SyncIngestUpdateToPartInstanceContext
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		// filter the submission to the allowed ones
-		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(updatePart, IBlueprintMutatablePartSampleKeys)
+		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(updatePart, [
+			...IBlueprintMutatablePartSampleKeys,
+		])
 		if (Object.keys(trimmedProps).length === 0) {
 			throw new Error(`Cannot update PartInstance. Some valid properties must be defined`)
 		}
+
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
 		const update: any = {
 			$set: {},
@@ -229,7 +243,21 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		return convertPartInstanceToBlueprints(updatedPartInstance)
 	}
+
+	removePartInstance(): void {
+		if (this.playStatus !== 'next') throw new Error(`Only the 'next' PartInstance can be removed`)
+
+		if (this.partInstance) {
+			const partInstanceId = this.partInstance._id
+
+			this._partInstanceCache.remove(partInstanceId)
+			this._pieceInstanceCache.remove((piece) => piece.partInstanceId === partInstanceId)
+		}
+	}
+
 	removePieceInstances(...pieceInstanceIds: string[]): string[] {
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
+
 		const pieceInstances = this._pieceInstanceCache.findFetch({
 			partInstanceId: this.partInstance._id,
 			_id: { $in: protectStringArray(pieceInstanceIds) },

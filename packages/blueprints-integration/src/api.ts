@@ -150,6 +150,8 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	 * `playStatus: previous` means that the currentPartInstance is `orphaned: adlib-part`
 	 * and thus possibly depends on an already past PartInstance for some of it's properties. Therefore
 	 * the blueprint is allowed to modify the most recently played non-adlibbed PartInstance using ingested data.
+	 *
+	 * `newData: undefined` happens when the PartInstance is orphaned
 	 */
 	syncIngestUpdateToPartInstance?: (
 		context: ISyncIngestUpdateToPartInstanceContext,
@@ -260,7 +262,7 @@ export interface BlueprintResultPart {
 export interface BlueprintSyncIngestNewData {
 	// source: BlueprintSyncIngestDataSource
 	/** The new part */
-	part: IBlueprintPartDB
+	part: IBlueprintPartDB | undefined
 	/** A list of pieces (including infinites) that would be present in a fresh copy of this partInstance */
 	pieceInstances: IBlueprintPieceInstance[]
 	/** The adlib pieces belonging to this part */
