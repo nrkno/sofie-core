@@ -304,20 +304,13 @@ function findLastUnorphanedPartInstanceInSegment(
 } | null {
 	// Find the "latest" (last played), non-orphaned PartInstance in this Segment, in this play-through
 	const previousPartInstance = cache.PartInstances.findOne(
-		{
-			playlistActivationId: currentPartInstance.playlistActivationId,
-			segmentId: currentPartInstance.segmentId,
-			segmentPlayoutId: currentPartInstance.segmentPlayoutId,
-			takeCount: {
-				$lt: currentPartInstance.takeCount,
-			},
-			orphaned: {
-				$exists: false,
-			},
-			reset: {
-				$ne: true,
-			},
-		},
+		(p) =>
+			p.playlistActivationId === currentPartInstance.playlistActivationId &&
+			p.segmentId === currentPartInstance.segmentId &&
+			p.segmentPlayoutId === currentPartInstance.segmentPlayoutId &&
+			p.takeCount < currentPartInstance.takeCount &&
+			!!p.orphaned &&
+			!p.reset,
 		{
 			sort: {
 				takeCount: -1,

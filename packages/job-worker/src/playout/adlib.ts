@@ -485,10 +485,10 @@ export async function innerFindLastScriptedPieceOnLayer(
 			projection: { _id: 1, startPartId: 1, enable: 1 },
 		})
 
-	const part = cache.Parts.findOne(
-		{ _id: { $in: pieces.map((p) => p.startPartId) }, _rank: { $lte: currentPartInstance.part._rank } },
-		{ sort: { _rank: -1 } }
-	)
+	const pieceIdSet = new Set(pieces.map((p) => p.startPartId))
+	const part = cache.Parts.findOne((p) => pieceIdSet.has(p._id) && p._rank <= currentPartInstance.part._rank, {
+		sort: { _rank: -1 },
+	})
 
 	if (!part) {
 		return

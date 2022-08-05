@@ -119,9 +119,7 @@ export class WatchedPackagesHelper {
 	}
 
 	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
-		const pkg = this.packages.findOne({
-			blueprintPackageId: packageId,
-		})
+		const pkg = this.packages.findOne((pkg) => pkg.blueprintPackageId === packageId)
 		if (pkg) {
 			const info = this.packageInfos.findFetch({
 				packageId: pkg._id,

@@ -258,7 +258,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		})
 		if (!pieceDB) throw new Error(`Cannot find Piece ${piece._id}`)
 
-		return this._cache.Parts.findOne({ _id: pieceDB.startPartId })
+		return this._cache.Parts.findOne(pieceDB.startPartId)
 	}
 
 	async insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): Promise<IBlueprintPieceInstance> {

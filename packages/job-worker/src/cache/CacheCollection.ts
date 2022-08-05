@@ -69,7 +69,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		return this._collection.name
 	}
 
-	findFetch(selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>, options?: FindOptions<TDoc>): TDoc[] {
+	findFetch(selector: MongoQuery<TDoc> | SelectorFunction<TDoc>, options?: FindOptions<TDoc>): TDoc[] {
 		const span = this.context.startSpan(`DBCache.findFetch.${this.name}`)
 
 		selector = selector || {}
@@ -116,11 +116,20 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		if (span) span.end()
 		return res
 	}
-	findOne(
-		selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>,
-		options?: FindOneOptions<TDoc>
-	): TDoc | undefined {
-		return this.findFetch(selector, options)[0]
+	findOne(selector: TDoc['_id'] | SelectorFunction<TDoc>, options?: FindOneOptions<TDoc>): TDoc | undefined {
+		if (isProtectedString(selector)) {
+			const span = this.context.startSpan(`DBCache.findOne.${this.name}`)
+			const doc = this.documents.get(selector)
+			if (doc) {
+				const res = mongoFindOptions([doc.document], options)
+				if (span) span.end()
+				return res[0]
+			} else {
+				return undefined
+			}
+		} else {
+			return this.findFetch(selector, options)[0]
+		}
 	}
 
 	async fillWithDataFromDatabase(selector: MongoQuery<TDoc>): Promise<number> {
