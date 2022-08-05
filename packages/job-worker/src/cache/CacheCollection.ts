@@ -237,7 +237,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		if (span) span.end()
 		return doc._id
 	}
-	remove(selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>): Array<TDoc['_id']> {
+	remove(selector: TDoc['_id'] | SelectorFunction<TDoc>): Array<TDoc['_id']> {
 		this.assertNotToBeRemoved('remove')
 
 		const span = this.context.startSpan(`DBCache.remove.${this.name}`)

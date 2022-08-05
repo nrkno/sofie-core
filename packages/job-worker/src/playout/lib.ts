@@ -29,6 +29,7 @@ import { getCurrentTime } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { MongoQuery } from '../db'
+import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 
 /**
  * Reset the rundownPlaylist (all of the rundowns within the playlist):
@@ -540,13 +541,11 @@ function removePartInstancesWithPieceInstances(
 	cache: CacheForPlayout,
 	selector: MongoQuery<DBPartInstance>
 ): void {
-	const partInstancesToRemove = cache.PartInstances.remove(selector)
+	const partInstancesToRemove = cache.PartInstances.remove((p) => mongoWhere(p, selector))
 
 	// Reset any in the cache now
 	if (partInstancesToRemove.length) {
-		cache.PieceInstances.remove({
-			partInstanceId: { $in: partInstancesToRemove },
-		})
+		cache.PieceInstances.remove((p) => partInstancesToRemove.includes(p.partInstanceId))
 	}
 
 	// Defer ones which arent loaded

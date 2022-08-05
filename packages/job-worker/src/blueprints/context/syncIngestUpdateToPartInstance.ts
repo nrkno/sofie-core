@@ -236,10 +236,11 @@ export class SyncIngestUpdateToPartInstanceContext
 			_id: { $in: protectStringArray(pieceInstanceIds) },
 		})
 
-		this._pieceInstanceCache.remove({
-			_id: { $in: pieceInstances.map((p) => p._id) },
-		})
+		const pieceInstanceIdsToRemove = pieceInstances.map((p) => p._id)
 
-		return unprotectStringArray(pieceInstances.map((p) => p._id))
+		const pieceInstanceIdsSet = new Set(pieceInstanceIdsToRemove)
+		this._pieceInstanceCache.remove((p) => pieceInstanceIdsSet.has(p._id))
+
+		return unprotectStringArray(pieceInstanceIdsToRemove)
 	}
 }

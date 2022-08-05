@@ -534,14 +534,13 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			_id: { $in: protectStringArray(pieceInstanceIds) },
 		})
 
-		this._cache.PieceInstances.remove({
-			partInstanceId: partInstanceId,
-			_id: { $in: pieceInstances.map((p) => p._id) },
-		})
+		const pieceInstanceIdsToRemove = pieceInstances.map((p) => p._id)
+		const pieceInstanceIdsSet = new Set(pieceInstanceIdsToRemove)
+		this._cache.PieceInstances.remove((p) => p.partInstanceId === partInstanceId && pieceInstanceIdsSet.has(p._id))
 
 		this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 
-		return unprotectStringArray(pieceInstances.map((p) => p._id))
+		return unprotectStringArray(pieceInstanceIdsToRemove)
 	}
 
 	async takeAfterExecuteAction(take: boolean): Promise<boolean> {

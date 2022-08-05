@@ -148,7 +148,7 @@ export class RundownIngestDataCache {
 	}
 
 	delete(): void {
-		this.collection.remove({})
+		this.collection.remove(() => true)
 	}
 
 	async saveToDatabase(): Promise<Changes> {
