@@ -81,10 +81,9 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	}
 
 	if (cache.Playlist.doc.holdState === RundownHoldState.COMPLETE) {
-		cache.Playlist.update({
-			$set: {
-				holdState: RundownHoldState.NONE,
-			},
+		cache.Playlist.update((p) => {
+			p.holdState = RundownHoldState.NONE
+			return p
 		})
 		// If hold is active, then this take is to clear it
 	} else if (cache.Playlist.doc.holdState === RundownHoldState.ACTIVE) {
@@ -137,15 +136,16 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 
 	updatePartInstanceOnTake(context, cache, showStyle, blueprint, takeRundown, takePartInstance, currentPartInstance)
 
-	cache.Playlist.update({
-		$set: {
-			previousPartInstanceId: cache.Playlist.doc.currentPartInstanceId,
-			currentPartInstanceId: takePartInstance._id,
-			holdState:
-				!cache.Playlist.doc.holdState || cache.Playlist.doc.holdState === RundownHoldState.COMPLETE
-					? RundownHoldState.NONE
-					: cache.Playlist.doc.holdState + 1,
-		},
+	cache.Playlist.update((p) => {
+		p.previousPartInstanceId = p.currentPartInstanceId
+		p.currentPartInstanceId = takePartInstance._id
+
+		if (!p.holdState || p.holdState === RundownHoldState.COMPLETE) {
+			p.holdState = RundownHoldState.NONE
+		} else {
+			p.holdState = p.holdState + 1
+		}
+		return p
 	})
 
 	cache.PartInstances.update(takePartInstance._id, (p) => {
@@ -193,10 +193,9 @@ export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInst
 		cache.Playlist.doc.nextSegmentId === takeOrCurrentPartInstance.segmentId
 	) {
 		// clear the nextSegmentId if the newly taken partInstance says it was selected because of it
-		cache.Playlist.update({
-			$unset: {
-				nextSegmentId: 1,
-			},
+		cache.Playlist.update((p) => {
+			delete p.nextSegmentId
+			return p
 		})
 	}
 }
@@ -498,10 +497,9 @@ async function completeHold(
 	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
 	currentPartInstance: DBPartInstance | undefined
 ): Promise<void> {
-	cache.Playlist.update({
-		$set: {
-			holdState: RundownHoldState.COMPLETE,
-		},
+	cache.Playlist.update((p) => {
+		p.holdState = RundownHoldState.COMPLETE
+		return p
 	})
 
 	if (cache.Playlist.doc.currentPartInstanceId) {

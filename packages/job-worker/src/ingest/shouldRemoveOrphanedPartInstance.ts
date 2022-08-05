@@ -86,6 +86,9 @@ export async function shouldRemoveOrphanedPartInstance(
 			p.reset = true
 			return p
 		})
-		cache.Playlist.update({ $unset: { nextPartInstanceId: 1 } })
+		cache.Playlist.update((p) => {
+			p.nextPartInstanceId = null
+			return p
+		})
 	}
 }

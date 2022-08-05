@@ -355,11 +355,10 @@ async function getTimelineRundown(
 							objectType: TimelineObjType.RUNDOWN,
 						})
 					})
-					cache.Playlist.update({
-						$set: {
-							previousPersistentState: tlGenRes.persistentState,
-							trackedAbSessions: context2.knownSessions,
-						},
+					cache.Playlist.update((p) => {
+						p.previousPersistentState = tlGenRes.persistentState
+						p.trackedAbSessions = context2.knownSessions
+						return p
 					})
 				} catch (err) {
 					logger.error(`Error in showStyleBlueprint.onTimelineGenerate: ${stringifyError(err)}`)

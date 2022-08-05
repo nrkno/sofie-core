@@ -1,5 +1,5 @@
 import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { applyToArray, assertNever, clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
+import { applyToArray, assertNever, clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { Time, TSR } from '@sofie-automation/blueprints-integration'
 import _ = require('underscore')
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -43,27 +43,25 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 	removePartInstancesWithPieceInstances(context, cache, { rehearsal: true })
 	resetPartInstancesWithPieceInstances(context, cache)
 
-	cache.Playlist.update({
-		$set: {
-			previousPartInstanceId: null,
-			currentPartInstanceId: null,
-			holdState: RundownHoldState.NONE,
-			resetTime: getCurrentTime(),
-		},
-		$unset: {
-			startedPlayback: 1,
-			rundownsStartedPlayback: 1,
-			previousPersistentState: 1,
-			trackedAbSessions: 1,
-		},
+	cache.Playlist.update((p) => {
+		p.previousPartInstanceId = null
+		p.currentPartInstanceId = null
+		p.holdState = RundownHoldState.NONE
+		p.resetTime = getCurrentTime()
+
+		delete p.startedPlayback
+		delete p.rundownsStartedPlayback
+		delete p.previousPersistentState
+		delete p.trackedAbSessions
+
+		return p
 	})
 
 	if (cache.Playlist.doc.activationId) {
 		// generate a new activationId
-		cache.Playlist.update({
-			$set: {
-				activationId: getRandomId(),
-			},
+		cache.Playlist.update((p) => {
+			p.activationId = getRandomId()
+			return p
 		})
 
 		// put the first on queue:
@@ -349,22 +347,20 @@ export async function setNextPart(
 		})
 
 		const nextPartInstanceTmp = nextPartInfo.type === 'partinstance' ? nextPartInfo.instance : null
-		cache.Playlist.update({
-			$set: literal<Partial<DBRundownPlaylist>>({
-				nextPartInstanceId: newInstanceId,
-				nextPartManual: !!(setManually || nextPartInstanceTmp?.orphaned),
-				nextTimeOffset: nextTimeOffset || null,
-			}),
+		cache.Playlist.update((p) => {
+			p.nextPartInstanceId = newInstanceId
+			p.nextPartManual = !!(setManually || nextPartInstanceTmp?.orphaned)
+			p.nextTimeOffset = nextTimeOffset || null
+			return p
 		})
 	} else {
 		// Set to null
 
-		cache.Playlist.update({
-			$set: literal<Partial<DBRundownPlaylist>>({
-				nextPartInstanceId: null,
-				nextPartManual: !!setManually,
-				nextTimeOffset: null,
-			}),
+		cache.Playlist.update((p) => {
+			p.nextPartInstanceId = null
+			p.nextPartManual = !!setManually
+			p.nextTimeOffset = null
+			return p
 		})
 	}
 
@@ -440,16 +436,14 @@ export function setNextSegment(context: JobContext, cache: CacheForPlayout, next
 			throw new Error('Segment contains no valid parts')
 		}
 
-		cache.Playlist.update({
-			$set: {
-				nextSegmentId: nextSegment._id,
-			},
+		cache.Playlist.update((p) => {
+			p.nextSegmentId = nextSegment._id
+			return p
 		})
 	} else {
-		cache.Playlist.update({
-			$unset: {
-				nextSegmentId: 1,
-			},
+		cache.Playlist.update((p) => {
+			delete p.nextSegmentId
+			return p
 		})
 	}
 	if (span) span.end()

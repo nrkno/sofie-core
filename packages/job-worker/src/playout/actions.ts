@@ -44,23 +44,21 @@ export async function activateRundownPlaylist(
 	}
 
 	const newActivationId: RundownPlaylistActivationId = getRandomId()
-	cache.Playlist.update({
-		$set: {
-			activationId: newActivationId,
-			rehearsal: rehearsal,
-		},
+	cache.Playlist.update((p) => {
+		p.activationId = newActivationId
+		p.rehearsal = rehearsal
+		return p
 	})
 
 	let rundown: DBRundown | undefined
 
 	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 	if (!currentPartInstance || currentPartInstance.reset) {
-		cache.Playlist.update({
-			$set: {
-				currentPartInstanceId: null,
-				nextPartInstanceId: null,
-				previousPartInstanceId: null,
-			},
+		cache.Playlist.update((p) => {
+			p.currentPartInstanceId = null
+			p.nextPartInstanceId = null
+			p.previousPartInstanceId = null
+			return p
 		})
 
 		// If we are not playing anything, then regenerate the next part
@@ -186,16 +184,15 @@ export async function deactivateRundownPlaylistInner(
 
 	if (currentPartInstance) onPartHasStoppedPlaying(cache, currentPartInstance, getCurrentTime())
 
-	cache.Playlist.update({
-		$set: {
-			previousPartInstanceId: null,
-			currentPartInstanceId: null,
-			holdState: RundownHoldState.NONE,
-		},
-		$unset: {
-			activationId: 1,
-			nextSegmentId: 1,
-		},
+	cache.Playlist.update((p) => {
+		p.previousPartInstanceId = null
+		p.currentPartInstanceId = null
+		p.holdState = RundownHoldState.NONE
+
+		delete p.activationId
+		delete p.nextSegmentId
+
+		return p
 	})
 	await setNextPart(context, cache, null)
 

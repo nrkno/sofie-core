@@ -5,7 +5,6 @@ import {
 	RundownId,
 	PartInstanceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DbCacheReadCollection } from '../cache/CacheCollection'
@@ -27,7 +26,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { runJobWithPlaylistLock, runWithPlaylistCache } from '../playout/lock'
 import { removeSegmentContents } from './cleanup'
 import { CommitIngestData } from './lock'
-import { clone, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
+import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { PlaylistLock } from '../jobs/lock'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { ensureNextPartIsValid } from './updateNext'
@@ -111,36 +110,33 @@ export async function CommitIngestOperation(
 
 					// Discard proposed playlistId changes
 					trappedInPlaylistId = { id: oldPlaylist._id, externalId: oldPlaylist.externalId }
-					ingestCache.Rundown.update({
-						$set: {
-							playlistId: oldPlaylist._id,
-						},
+					ingestCache.Rundown.update((rd) => {
+						rd.playlistId = oldPlaylist._id
+						return rd
 					})
 
 					if (data.removeRundown) {
 						// Orphan the deleted rundown
-						ingestCache.Rundown.update({
-							$set: {
-								orphaned: 'deleted',
-							},
+						ingestCache.Rundown.update((rd) => {
+							rd.orphaned = 'deleted'
+							return rd
 						})
 					} else {
 						// The rundown is still synced, but is in the wrong playlist. Notify the user
-						ingestCache.Rundown.update({
-							$set: {
-								notes: [
-									...clone<RundownNote[]>(rundown.notes ?? []),
-									{
-										type: NoteSeverity.WARNING,
-										message: getTranslatedMessage(
-											ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN
-										),
-										origin: {
-											name: 'Data update',
-										},
+						ingestCache.Rundown.update((rd) => {
+							rd.notes = [
+								...(rd.notes ?? []),
+								{
+									type: NoteSeverity.WARNING,
+									message: getTranslatedMessage(
+										ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN
+									),
+									origin: {
+										name: 'Data update',
 									},
-								],
-							},
+								},
+							]
+							return rd
 						})
 					}
 				} else {
@@ -208,7 +204,10 @@ export async function CommitIngestOperation(
 		{ playlistId: newPlaylistId.id },
 		async (oldPlaylist, playlistLock) => {
 			// Ensure the rundown has the correct playlistId
-			ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId.id } })
+			ingestCache.Rundown.update((rd) => {
+				rd.playlistId = newPlaylistId.id
+				return rd
+			})
 
 			const finalRundown = getRundown(ingestCache)
 

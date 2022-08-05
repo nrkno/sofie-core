@@ -760,10 +760,9 @@ export async function saveChangesForRundown(
 	)
 	if (anythingChanged(rundownBaselineChanges)) {
 		// If any of the rundown baseline datas was modified, we'll update the baselineModifyHash of the rundown
-		cache.Rundown.update({
-			$set: {
-				baselineModifyHash: getCurrentTime() + '',
-			},
+		cache.Rundown.update((rd) => {
+			rd.baselineModifyHash = getCurrentTime() + ''
+			return rd
 		})
 	}
 
