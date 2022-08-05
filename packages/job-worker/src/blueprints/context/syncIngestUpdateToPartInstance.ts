@@ -231,10 +231,10 @@ export class SyncIngestUpdateToPartInstanceContext
 		return convertPartInstanceToBlueprints(updatedPartInstance)
 	}
 	removePieceInstances(...pieceInstanceIds: string[]): string[] {
-		const pieceInstances = this._pieceInstanceCache.findFetch({
-			partInstanceId: this.partInstance._id,
-			_id: { $in: protectStringArray(pieceInstanceIds) },
-		})
+		const rawPieceInstanceIdSet = new Set(protectStringArray(pieceInstanceIds))
+		const pieceInstances = this._pieceInstanceCache.findFetch(
+			(p) => p.partInstanceId === this.partInstance._id && rawPieceInstanceIdSet.has(p._id)
+		)
 
 		const pieceInstanceIdsToRemove = pieceInstances.map((p) => p._id)
 

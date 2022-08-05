@@ -233,8 +233,7 @@ export async function adLibPieceStart(context: JobContext, data: AdlibPieceStart
 
 			// Rundows that share the same showstyle variant as the current rundown, so adlibs from these rundowns are safe to play
 			const safeRundownIds = cache.Rundowns.findFetch(
-				{ showStyleVariantId: rundown.showStyleVariantId },
-				{ fields: { _id: 1 } }
+				(rd) => rd.showStyleVariantId === rundown.showStyleVariantId
 			).map((r) => r._id)
 
 			let adLibPiece: AdLibPiece | BucketAdLib | undefined

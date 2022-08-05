@@ -59,9 +59,7 @@ export async function updatePartInstanceRanks(
 		(p) => unprotectString(p.segmentId)
 	)
 	const groupedNewParts = _.groupBy(
-		cache.Parts.findFetch({
-			segmentId: { $in: changedSegmentIds as SegmentId[] },
-		}),
+		cache.Parts.findFetch((p) => changedSegmentIds.includes(p.segmentId)),
 		(p) => unprotectString(p.segmentId)
 	)
 

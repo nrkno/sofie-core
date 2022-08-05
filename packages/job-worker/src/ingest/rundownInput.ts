@@ -460,9 +460,9 @@ export async function handleRemoveOrphanedSegemnts(
 				)
 				.map((s) => s._id)
 
-			const hiddenSegmentIds = ingestCache.Segments.findFetch({
-				_id: { $in: stillHiddenSegments },
-			}).map((s) => s._id)
+			const hiddenSegmentIds = ingestCache.Segments.findFetch((s) => stillHiddenSegments.includes(s._id)).map(
+				(s) => s._id
+			)
 
 			const { result } = await regenerateSegmentsFromIngestData(
 				context,

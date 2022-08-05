@@ -309,15 +309,10 @@ function preserveOrphanedSegmentPositionInRundown(context: JobContext, cache: Ca
 	// It may work for mos-gateway, but this has not yet been tested and so is behind a feature/config field until it has been verified or adapted
 	if (context.studio.settings.preserveOrphanedSegmentPositionInRundown) {
 		// When we have orphaned segments, try to keep the order correct when adding and removing other segments
-		const orphanedDeletedSegments = cache.Segments.findFetch({
-			orphaned: SegmentOrphanedReason.DELETED,
-			rundownId: newSegment.rundownId,
-		})
+		const orphanedDeletedSegments = cache.Segments.findFetch((s) => s.orphaned === SegmentOrphanedReason.DELETED)
 		if (orphanedDeletedSegments.length) {
-			const allSegmentsByRank = cache.Segments.findFetch(
-				{ rundownId: newSegment.rundownId },
-				{ sort: { _rank: -1 } }
-			)
+			const allSegmentsByRank = cache.Segments.findFetch(null, { sort: { _rank: -1 } })
+
 			// Rank padding
 			const rankPad = 0.0001
 			for (const orphanedSegment of orphanedDeletedSegments) {
@@ -374,24 +369,24 @@ export function saveSegmentChangesToCache(
 	data: UpdateSegmentsResult,
 	isWholeRundownUpdate: boolean
 ): void {
-	const newPartIds = data.parts.map((p) => p._id)
-	const newSegmentIds = data.segments.map((p) => p._id)
+	const newPartIds = new Set(data.parts.map((p) => p._id))
+	const newSegmentIds = new Set(data.segments.map((p) => p._id))
 
 	const partChanges = saveIntoCache<DBPart>(
 		context,
 		cache.Parts,
-		isWholeRundownUpdate ? {} : { $or: [{ segmentId: { $in: newSegmentIds } }, { _id: { $in: newPartIds } }] },
+		isWholeRundownUpdate ? null : (p) => newSegmentIds.has(p.segmentId) || newPartIds.has(p._id),
 		data.parts
 	)
 	logChanges('Parts', partChanges)
-	const affectedPartIds = [...partChanges.removed, ...newPartIds]
+	const affectedPartIds = new Set([...partChanges.removed, ...newPartIds.values()])
 
 	logChanges(
 		'Pieces',
 		saveIntoCache<Piece>(
 			context,
 			cache.Pieces,
-			isWholeRundownUpdate ? {} : { startPartId: { $in: affectedPartIds } },
+			isWholeRundownUpdate ? null : (p) => affectedPartIds.has(p.startPartId),
 			data.pieces
 		)
 	)
@@ -400,7 +395,7 @@ export function saveSegmentChangesToCache(
 		saveIntoCache<AdLibAction>(
 			context,
 			cache.AdLibActions,
-			isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
+			isWholeRundownUpdate ? null : (p) => affectedPartIds.has(p.partId),
 			data.adlibActions
 		)
 	)
@@ -409,7 +404,7 @@ export function saveSegmentChangesToCache(
 		saveIntoCache<AdLibPiece>(
 			context,
 			cache.AdLibPieces,
-			isWholeRundownUpdate ? {} : { partId: { $in: affectedPartIds } },
+			isWholeRundownUpdate ? null : (p) => !!p.partId && affectedPartIds.has(p.partId),
 			data.adlibPieces
 		)
 	)
@@ -731,7 +726,7 @@ export async function saveChangesForRundown(
 
 	const { baselineObjects, baselineAdlibPieces, baselineAdlibActions } = await cache.loadBaselineCollections()
 	const rundownBaselineChanges = sumChanges(
-		saveIntoCache<RundownBaselineObj>(context, baselineObjects, {}, [
+		saveIntoCache<RundownBaselineObj>(context, baselineObjects, null, [
 			{
 				_id: getRandomId(7),
 				rundownId: dbRundown._id,
@@ -744,7 +739,7 @@ export async function saveChangesForRundown(
 		saveIntoCache<RundownBaselineAdLibItem>(
 			context,
 			baselineAdlibPieces,
-			{},
+			null,
 			postProcessAdLibPieces(
 				context,
 				showStyle.base.blueprintId,
@@ -756,7 +751,7 @@ export async function saveChangesForRundown(
 		saveIntoCache<RundownBaselineAdLibAction>(
 			context,
 			baselineAdlibActions,
-			{},
+			null,
 			postProcessGlobalAdLibActions(showStyle.base.blueprintId, dbRundown._id, rundownRes.globalActions || [])
 		)
 	)
@@ -786,7 +781,8 @@ export async function resolveSegmentChangesForUpdatedRundown(
 	)
 
 	/** Don't remove segments for now, orphan them instead. The 'commit' phase will clean them up if possible */
-	const removedSegments = cache.Segments.findFetch({ _id: { $nin: segmentChanges.segments.map((s) => s._id) } })
+	const changedSegmentIds = new Set(segmentChanges.segments.map((s) => s._id))
+	const removedSegments = cache.Segments.findFetch((s) => !changedSegmentIds.has(s._id))
 	for (const oldSegment of removedSegments) {
 		segmentChanges.segments.push({
 			...oldSegment,

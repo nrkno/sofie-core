@@ -253,7 +253,7 @@ function getPartInstanceTimelineInfo(
 	if (partInstance) {
 		const partLastStarted = partInstance.timings?.startedPlayback
 		const nowInPart = partLastStarted === undefined ? 0 : currentTime - partLastStarted
-		const currentPieces = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
+		const currentPieces = cache.PieceInstances.findFetch((p) => p.partInstanceId === partInstance._id)
 		const pieceInstances = processAndPrunePieceInstanceTimings(showStyle, currentPieces, nowInPart)
 
 		return {

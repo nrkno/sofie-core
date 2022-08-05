@@ -69,7 +69,7 @@ export class RundownIngestDataCache {
 	fetchRundown(): LocalIngestRundown | undefined {
 		const span = this.context.startSpan('ingest.ingestCache.loadCachedRundownData')
 
-		const cacheEntries = this.collection.findFetch({})
+		const cacheEntries = this.collection.findFetch(null)
 
 		const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
 		if (!cachedRundown) {
@@ -112,7 +112,7 @@ export class RundownIngestDataCache {
 	}
 
 	fetchSegment(segmentId: SegmentId): LocalIngestSegment | undefined {
-		const cacheEntries = this.collection.findFetch({ segmentId: segmentId })
+		const cacheEntries = this.collection.findFetch((d) => d.segmentId === segmentId)
 
 		const segmentEntries = cacheEntries.filter((e) => e.type === IngestCacheType.SEGMENT)
 		if (segmentEntries.length > 1)
@@ -144,11 +144,11 @@ export class RundownIngestDataCache {
 	update(ingestRundown: LocalIngestRundown): void {
 		// cache the Data:
 		const cacheEntries: IngestDataCacheObj[] = generateCacheForRundown(this.rundownId, ingestRundown)
-		saveIntoCache<IngestDataCacheObj>(this.context, this.collection, {}, cacheEntries)
+		saveIntoCache<IngestDataCacheObj>(this.context, this.collection, null, cacheEntries)
 	}
 
 	delete(): void {
-		this.collection.remove(() => true)
+		this.collection.remove(null)
 	}
 
 	async saveToDatabase(): Promise<Changes> {

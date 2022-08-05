@@ -237,10 +237,10 @@ export async function CommitIngestOperation(
 				rundownsInPlaylist.map((r) => r._id)
 			)
 
-			const segmentsChangedToHidden = ingestCache.Segments.findFetch({
-				_id: { $in: data.changedSegmentIds as SegmentId[] },
-				isHidden: true,
-			}).map((segment) => segment._id)
+			const changedSegmentIdsSet = new Set(data.changedSegmentIds)
+			const segmentsChangedToHidden = ingestCache.Segments.findFetch(
+				(s) => !!s.isHidden && changedSegmentIdsSet.has(s._id)
+			).map((segment) => segment._id)
 
 			// Do the segment removals
 			if (data.removedSegmentIds.length > 0 || segmentsChangedToHidden.length) {
@@ -265,7 +265,7 @@ export async function CommitIngestOperation(
 						.filter((segmentId) => !canRemoveSegment(currentPartInstance, nextPartInstance, segmentId))
 
 					for (const segmentId of [...data.removedSegmentIds, ...hiddenSegmentsToRestore]) {
-						const newParts = ingestCache.Parts.findFetch({ segmentId: segmentId })
+						const newParts = ingestCache.Parts.findFetch((p) => p.segmentId === segmentId)
 
 						// Blueprints have updated the hidden segment, so we won't try to preserve the contents
 						if (newParts.length) {
@@ -334,7 +334,7 @@ export async function CommitIngestOperation(
 						}
 					} else if (
 						!orphanDeletedSegmentIds.has(segmentId) &&
-						ingestCache.Parts.findFetch({ segmentId }).length === 0
+						!ingestCache.Parts.findOne((p) => p.segmentId === segmentId)
 					) {
 						// No parts in segment
 
@@ -556,7 +556,7 @@ async function updatePartInstancesBasicProperties(
 	playlist: ReadonlyDeep<DBRundownPlaylist>
 ) {
 	// Get a list of all the Parts that are known to exist
-	const knownPartIds = partCache.findFetch({}, { fields: { _id: 1 } }).map((p) => p._id)
+	const knownPartIds = partCache.findFetch(null).map((p) => p._id)
 
 	// Find all the partInstances which are not reset, and are not orphaned, but their Part no longer exist (ie they should be orphaned)
 	const partInstancesToOrphan: Array<Pick<DBPartInstance, '_id'>> =

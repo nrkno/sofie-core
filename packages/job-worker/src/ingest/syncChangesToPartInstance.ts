@@ -106,9 +106,9 @@ export async function syncChangesToPartInstances(
 				newPart,
 				piecesThatMayBeActive,
 			} of instances) {
-				const pieceInstancesInPart = cache.PieceInstances.findFetch({
-					partInstanceId: existingPartInstance._id,
-				})
+				const pieceInstancesInPart = cache.PieceInstances.findFetch(
+					(p) => p.partInstanceId === existingPartInstance._id
+				)
 
 				const partId = existingPartInstance.part._id
 				const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
@@ -116,11 +116,11 @@ export async function syncChangesToPartInstances(
 					pieceInstances: pieceInstancesInPart.map(convertPieceInstanceToBlueprints),
 				}
 
-				const referencedAdlibIds = _.compact(pieceInstancesInPart.map((p) => p.adLibSourceId))
-				const referencedAdlibs = ingestCache.AdLibPieces.findFetch({ _id: { $in: referencedAdlibIds } })
+				const referencedAdlibIds = new Set(_.compact(pieceInstancesInPart.map((p) => p.adLibSourceId)))
+				const referencedAdlibs = ingestCache.AdLibPieces.findFetch((p) => referencedAdlibIds.has(p._id))
 
-				const adlibPieces = ingestCache.AdLibPieces.findFetch({ partId: partId })
-				const adlibActions = ingestCache.AdLibActions.findFetch({ partId: partId })
+				const adlibPieces = ingestCache.AdLibPieces.findFetch((p) => p.partId === partId)
+				const adlibActions = ingestCache.AdLibActions.findFetch((p) => p.partId === partId)
 
 				const proposedPieceInstances = getPieceInstancesForPart(
 					context,
@@ -217,11 +217,10 @@ export async function syncChangesToPartInstances(
 					saveIntoCache(
 						context,
 						cache.PieceInstances,
-						{
-							partInstanceId: existingPartInstance._id,
-							'infinite.fromPreviousPart': true,
-							'infinite.fromPreviousPlayhead': { $ne: true },
-						},
+						(p) =>
+							p.partInstanceId === existingPartInstance._id &&
+							!!p.infinite?.fromPreviousPart &&
+							!p.infinite.fromPreviousPlayhead,
 						infinitePieces
 					)
 				}

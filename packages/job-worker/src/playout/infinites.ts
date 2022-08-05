@@ -28,6 +28,7 @@ import { ReadOnlyCache } from '../cache/CacheBase'
 import { CacheForIngest } from '../ingest/cache'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
+import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 
 /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -78,15 +79,14 @@ function getIdsBeforeThisPart(context: JobContext, cache: CacheForPlayout, nextP
 
 	const currentSegment = cache.Segments.findOne(nextPart.segmentId)
 	const segmentsBeforeThisInRundown = currentSegment
-		? cache.Segments.findFetch({
-				rundownId: nextPart.rundownId,
-				_rank: { $lt: currentSegment._rank },
-		  }).map((p) => p._id)
+		? cache.Segments.findFetch((s) => s.rundownId === nextPart.rundownId && s._rank < currentSegment._rank).map(
+				(p) => p._id
+		  )
 		: []
 
 	const sortedRundownIds = sortRundownIDsInPlaylist(
 		cache.Playlist.doc.rundownIdsInOrder,
-		cache.Rundowns.findFetch({}).map((rd) => rd._id)
+		cache.Rundowns.findFetch(null).map((rd) => rd._id)
 	)
 	const currentRundownIndex = sortedRundownIds.indexOf(nextPart.rundownId)
 	const rundownsBeforeThisInPlaylist =
@@ -114,7 +114,7 @@ export async function fetchPiecesThatMayBeActiveForPart(
 	const thisPiecesQuery = buildPiecesStartingInThisPartQuery(part)
 	piecePromises.push(
 		unsavedIngestCache?.RundownId === part.rundownId
-			? unsavedIngestCache.Pieces.findFetch(thisPiecesQuery)
+			? unsavedIngestCache.Pieces.findFetch((p) => mongoWhere(p, thisPiecesQuery))
 			: context.directCollections.Pieces.findFetch(thisPiecesQuery)
 	)
 
@@ -131,7 +131,7 @@ export async function fetchPiecesThatMayBeActiveForPart(
 			[] // other rundowns don't exist in the ingestCache
 		)
 		if (thisRundownPieceQuery) {
-			piecePromises.push(unsavedIngestCache.Pieces.findFetch(thisRundownPieceQuery))
+			piecePromises.push(unsavedIngestCache.Pieces.findFetch((p) => mongoWhere(p, thisRundownPieceQuery)))
 		}
 
 		// Find pieces for the previous rundowns
@@ -222,10 +222,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 		saveIntoCache(
 			context,
 			cache.PieceInstances,
-			{
-				partInstanceId: nextPartInstance._id,
-				'infinite.fromPreviousPlayhead': true,
-			},
+			(p) => p.partInstanceId === nextPartInstance._id && !!p.infinite?.fromPreviousPlayhead,
 			infinites
 		)
 	}

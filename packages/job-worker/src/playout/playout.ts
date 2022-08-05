@@ -1073,11 +1073,12 @@ function timelineTriggerTimeInner(
 
 		if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
 			// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
-			const remainingNowPieces = pieceInstanceCache.findFetch({
-				partInstanceId: activePlaylist.currentPartInstanceId,
-				dynamicallyInserted: { $exists: true },
-				disabled: { $ne: true },
-			})
+			const remainingNowPieces = pieceInstanceCache.findFetch(
+				(p) =>
+					p.partInstanceId === activePlaylist.currentPartInstanceId &&
+					p.dynamicallyInserted !== undefined &&
+					!p.disabled
+			)
 			for (const piece of remainingNowPieces) {
 				const pieceTakeTime = piece.dynamicallyInserted
 				if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {

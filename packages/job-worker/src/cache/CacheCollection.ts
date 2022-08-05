@@ -3,20 +3,14 @@ import { ReadonlyDeep } from 'type-fest'
 import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import _ = require('underscore')
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
-import {
-	FindOneOptions,
-	FindOptions,
-	mongoFindOptions,
-	mongoModify,
-	mongoWhere,
-} from '@sofie-automation/corelib/dist/mongo'
+import { FindOneOptions, FindOptions, mongoFindOptions, mongoModify } from '@sofie-automation/corelib/dist/mongo'
 import { AnyBulkWriteOperation } from 'mongodb'
 import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
 import { Changes, ChangedIds } from '../db/changes'
 import { JobContext } from '../jobs'
 
-type SelectorFunction<TDoc> = (doc: TDoc) => boolean
+export type SelectorFunction<TDoc extends { _id: ProtectedString<any> }> = (doc: TDoc) => boolean
 type DbCacheCollectionDocument<TDoc> = {
 	inserted?: boolean
 	updated?: boolean
@@ -69,42 +63,13 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		return this._collection.name
 	}
 
-	findFetch(selector: MongoQuery<TDoc> | SelectorFunction<TDoc>, options?: FindOptions<TDoc>): TDoc[] {
+	findFetch(selector: SelectorFunction<TDoc> | null, options?: FindOptions<TDoc>): TDoc[] {
 		const span = this.context.startSpan(`DBCache.findFetch.${this.name}`)
 
-		selector = selector || {}
-		if (isProtectedString(selector)) {
-			selector = { _id: selector } as MongoQuery<TDoc>
-		}
-
-		let docsToSearch = this.documents
-		if (
-			selector &&
-			typeof selector === 'object' &&
-			'_id' in selector &&
-			selector['_id'] &&
-			isProtectedString(selector['_id'])
-		) {
-			// Optimization: Make the lookup as small as possible:
-			docsToSearch = new Map()
-			const doc = this.documents.get(selector['_id'])
-			if (doc) {
-				docsToSearch.set(selector['_id'], doc)
-			}
-		}
-
 		const results: TDoc[] = []
-		docsToSearch.forEach((doc, _id) => {
+		this.documents.forEach((doc, _id) => {
 			if (doc === null) return
-			if (
-				!selector
-					? true
-					: isProtectedString(selector)
-					? selector === (_id as any)
-					: _.isFunction(selector)
-					? selector(doc.document)
-					: mongoWhere(doc.document, selector as any)
-			) {
+			if (selector === null || selector(doc.document)) {
 				if (doc.document['_id'] !== _id) {
 					throw new Error(`Error: document._id "${doc.document['_id']}" is not equal to the key "${_id}"`)
 				}
@@ -237,7 +202,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		if (span) span.end()
 		return doc._id
 	}
-	remove(selector: TDoc['_id'] | SelectorFunction<TDoc>): Array<TDoc['_id']> {
+	remove(selector: TDoc['_id'] | SelectorFunction<TDoc> | null): Array<TDoc['_id']> {
 		this.assertNotToBeRemoved('remove')
 
 		const span = this.context.startSpan(`DBCache.remove.${this.name}`)

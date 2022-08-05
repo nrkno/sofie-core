@@ -135,7 +135,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			return []
 		}
 
-		const pieceInstances = this._cache.PieceInstances.findFetch({ partInstanceId })
+		const pieceInstances = this._cache.PieceInstances.findFetch((p) => p.partInstanceId === partInstanceId)
 		return pieceInstances.map(convertPieceInstanceToBlueprints)
 	}
 	async getResolvedPieceInstances(part: 'current' | 'next'): Promise<IBlueprintResolvedPieceInstance[]> {
@@ -529,10 +529,10 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Cannot remove pieceInstances when no selected partInstance')
 		}
 
-		const pieceInstances = this._cache.PieceInstances.findFetch({
-			partInstanceId: partInstanceId,
-			_id: { $in: protectStringArray(pieceInstanceIds) },
-		})
+		const rawPieceInstanceIdSet = new Set(protectStringArray(pieceInstanceIds))
+		const pieceInstances = this._cache.PieceInstances.findFetch(
+			(p) => p.partInstanceId === partInstanceId && rawPieceInstanceIdSet.has(p._id)
+		)
 
 		const pieceInstanceIdsToRemove = pieceInstances.map((p) => p._id)
 		const pieceInstanceIdsSet = new Set(pieceInstanceIdsToRemove)

@@ -168,7 +168,7 @@ export function getResolvedPieces(
 	partInstance: DBPartInstance
 ): ResolvedPieceInstance[] {
 	const span = context.startSpan('getResolvedPieces')
-	const pieceInstances = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
+	const pieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === partInstance._id)
 
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 

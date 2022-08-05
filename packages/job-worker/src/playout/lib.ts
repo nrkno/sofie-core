@@ -436,7 +436,7 @@ export function setNextSegment(context: JobContext, cache: CacheForPlayout, next
 	const span = context.startSpan('setNextSegment')
 	if (nextSegment) {
 		// Just run so that errors will be thrown if something wrong:
-		const partsInSegment = cache.Parts.findFetch({ segmentId: nextSegment._id })
+		const partsInSegment = cache.Parts.findFetch((p) => p.segmentId === nextSegment._id)
 		if (!partsInSegment.find((p) => isPartPlayable(p))) {
 			throw new Error('Segment contains no valid parts')
 		}
@@ -551,7 +551,7 @@ function removePartInstancesWithPieceInstances(
 	// Defer ones which arent loaded
 	cache.deferAfterSave(async (cache) => {
 		// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
-		const partInstanceIdsInCache = cache.PartInstances.findFetch({}).map((p) => p._id)
+		const partInstanceIdsInCache = cache.PartInstances.findFetch(null).map((p) => p._id)
 
 		// Find all the partInstances which are not loaded, but should be removed
 		const removeFromDb = await context.directCollections.PartInstances.findFetch(
@@ -623,7 +623,7 @@ function resetPartInstancesWithPieceInstances(
 
 	// Defer ones which arent loaded
 	cache.deferAfterSave(async (cache) => {
-		const partInstanceIdsInCache = cache.PartInstances.findFetch({}).map((p) => p._id)
+		const partInstanceIdsInCache = cache.PartInstances.findFetch(null).map((p) => p._id)
 
 		// Find all the partInstances which are not loaded, but should be reset
 		const resetInDb = await context.directCollections.PartInstances.findFetch(
@@ -786,28 +786,22 @@ export function getRundownsSegmentsAndPartsFromCache(
 	playlist: Pick<ReadonlyDeep<DBRundownPlaylist>, 'rundownIdsInOrder'>
 ): { segments: DBSegment[]; parts: DBPart[] } {
 	const segments = sortSegmentsInRundowns(
-		segmentsCache.findFetch(
-			{},
-			{
-				sort: {
-					rundownId: 1,
-					_rank: 1,
-				},
-			}
-		),
+		segmentsCache.findFetch(null, {
+			sort: {
+				rundownId: 1,
+				_rank: 1,
+			},
+		}),
 		playlist
 	)
 
 	const parts = sortPartsInSortedSegments(
-		partsCache.findFetch(
-			{},
-			{
-				sort: {
-					rundownId: 1,
-					_rank: 1,
-				},
-			}
-		),
+		partsCache.findFetch(null, {
+			sort: {
+				rundownId: 1,
+				_rank: 1,
+			},
+		}),
 		segments
 	)
 
@@ -827,7 +821,7 @@ export function updateExpectedDurationWithPrerollForPartInstance(
 ): void {
 	const nextPartInstance = cache.PartInstances.findOne(partInstanceId)
 	if (nextPartInstance) {
-		const pieceInstances = cache.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id })
+		const pieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === nextPartInstance._id)
 
 		// Update expectedDurationWithPreroll of the next part instance, as it may have changed and is used by the ui until it is taken
 		const expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(
