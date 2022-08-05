@@ -16,6 +16,7 @@ $duration-area-width: 3.4em;
 $duration-area-margin: 0.5em;
 
 .segment-timeline.segment-opl {
+	position: relative;
 	display: block;
 
 	> .segment-opl__part-list {
@@ -554,7 +555,7 @@ $duration-area-margin: 0.5em;
 	left: 0;
 	right: #{$fullscreen-controls__button--radius + 0.5rem};
 	z-index: 100;
-	padding: $segment-margin-x $segment-margin-y 0;
+	padding: $segment-margin-y $segment-margin-x 0;
 	overflow: hidden;
 
 	.segment-opl__title {
@@ -562,6 +563,14 @@ $duration-area-margin: 0.5em;
 		border-top-left-radius: $segment-border-radius;
 		border-top-right-radius: $segment-border-radius;
 		box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.3);
+	}
+
+	&.stick {
+		position: absolute;
+		top: auto;
+		right: 0;
+		bottom: $part-height;
+		padding: $segment-margin-y 0 0;
 	}
 }
 

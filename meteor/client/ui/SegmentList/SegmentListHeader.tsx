@@ -15,11 +15,10 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { useTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IContextMenuContext } from '../RundownView'
-// import { getHeaderHeight } from '../../lib/viewPort'
-import ReactDOM from 'react-dom'
 
 export function SegmentListHeader({
 	isDetached,
+	isDetachedStick,
 	segment,
 	parts,
 	playlist,
@@ -37,6 +36,7 @@ export function SegmentListHeader({
 	onTimeUntilClick,
 }: {
 	isDetached: boolean
+	isDetachedStick: boolean
 	segment: SegmentUi
 	playlist: RundownPlaylist
 	studio: Studio
@@ -145,25 +145,24 @@ export function SegmentListHeader({
 		// <InView threshold={1} rootMargin={`-${getHeaderHeight()}px 0px 0px 0px`} onChange={onChange} as="div">
 		<>
 			{contents}
-			{isDetached &&
-				ReactDOM.createPortal(
-					<div
-						className={classNames('segment-opl__title-float-parent dark', {
-							live: isLiveSegment,
-							next: !isLiveSegment && isNextSegment,
-							queued: isQueuedSegment,
+			{isDetached && (
+				<div
+					className={classNames('segment-opl__title-float-parent dark', {
+						live: isLiveSegment,
+						next: !isLiveSegment && isNextSegment,
+						queued: isQueuedSegment,
+						stick: isDetachedStick,
 
-							'has-played': hasAlreadyPlayed && !isLiveSegment && !isNextSegment,
+						'has-played': hasAlreadyPlayed && !isLiveSegment && !isNextSegment,
 
-							'invert-flash': highlight,
+						'invert-flash': highlight,
 
-							'time-of-day-countdowns': useTimeOfDayCountdowns,
-						})}
-					>
-						{contents}
-					</div>,
-					document.body
-				)}
+						'time-of-day-countdowns': useTimeOfDayCountdowns,
+					})}
+				>
+					{contents}
+				</div>
+			)}
 		</>
 		// </InView>
 	)

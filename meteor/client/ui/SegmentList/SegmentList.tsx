@@ -1,4 +1,4 @@
-import React, { ReactNode, useMemo, useRef, useState } from 'react'
+import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import classNames from 'classnames'
 import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { RundownHoldState, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -54,8 +54,8 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 		fallbackInView: true,
 		skip: !props.isLiveSegment && !props.isNextSegment,
 	})
-	console.log(inView, entry)
 	const combinedRef = useCombinedRefs(null, ref, innerRef, inViewRef)
+	const [isHeaderDetachedStick, setHeaderDetachedStick] = useState(false)
 	const [highlight, _setHighlight] = useState(false)
 	const [useTimeOfDayCountdowns, setUseTimeOfDayCountdowns] = useState(
 		UIStateStorage.getItemBoolean(
@@ -170,6 +170,34 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 			entry.boundingClientRect.top < window.innerHeight / 2) ??
 		false
 
+	useLayoutEffect(() => {
+		if (!isHeaderDetached || !combinedRef.current) {
+			setHeaderDetachedStick(false)
+			return
+		}
+
+		const partEl = combinedRef.current.querySelector('.segment-opl__part')
+		if (!partEl) return
+
+		const { top, height } = combinedRef.current.getBoundingClientRect()
+		const absoluteTop = top + window.scrollY
+		const { height: partHeight } = partEl.getBoundingClientRect()
+
+		function onScroll() {
+			if (window.scrollY > absoluteTop + height - getHeaderHeight() - partHeight * 2 - 10) {
+				setHeaderDetachedStick(true)
+			} else {
+				setHeaderDetachedStick(false)
+			}
+		}
+
+		window.addEventListener('scroll', onScroll)
+
+		return () => {
+			window.removeEventListener('scroll', onScroll)
+		}
+	}, [isHeaderDetached, parts.length])
+
 	return (
 		<StudioContext.Provider value={props.studio}>
 			<div
@@ -190,6 +218,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 			>
 				<SegmentListHeader
 					isDetached={isHeaderDetached}
+					isDetachedStick={isHeaderDetachedStick}
 					parts={props.parts}
 					segment={props.segment}
 					playlist={props.playlist}
