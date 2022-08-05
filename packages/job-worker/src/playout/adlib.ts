@@ -195,11 +195,10 @@ async function pieceTakeNowAsAdlib(
 			}
 		}
 
-		cache.PieceInstances.update(pieceInstanceToCopy._id, {
-			$set: {
-				disabled: true,
-				hidden: true,
-			},
+		cache.PieceInstances.update(pieceInstanceToCopy._id, (p) => {
+			p.disabled = true
+			p.hidden = true
+			return p
 		})
 	}
 
@@ -637,14 +636,12 @@ export function innerStopPieces(
 				case PieceLifespan.OutOnSegmentChange:
 				case PieceLifespan.OutOnRundownChange: {
 					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
-					const up: Partial<PieceInstance> = {
-						userDuration: {
-							end: relativeStopAt,
-						},
-					}
 
-					cache.PieceInstances.update(pieceInstance._id, {
-						$set: up,
+					cache.PieceInstances.update(pieceInstance._id, (p) => {
+						p.userDuration = {
+							end: relativeStopAt,
+						}
+						return p
 					})
 
 					stoppedInstances.push(pieceInstance._id)

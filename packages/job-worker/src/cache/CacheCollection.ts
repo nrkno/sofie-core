@@ -1,9 +1,9 @@
-import { ICollection, MongoModifier, MongoQuery } from '../db'
+import { ICollection, MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import _ = require('underscore')
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
-import { FindOneOptions, FindOptions, mongoFindOptions, mongoModify } from '@sofie-automation/corelib/dist/mongo'
+import { FindOneOptions, FindOptions, mongoFindOptions } from '@sofie-automation/corelib/dist/mongo'
 import { AnyBulkWriteOperation } from 'mongodb'
 import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
@@ -234,7 +234,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 */
 	update(
 		selector: TDoc['_id'] | SelectorFunction<TDoc>,
-		modifier: ((doc: TDoc) => TDoc) | MongoModifier<TDoc> = {},
+		modifier: (doc: TDoc) => TDoc,
 		forceUpdate?: boolean
 	): Array<TDoc['_id']> {
 		this.assertNotToBeRemoved('update')
@@ -253,9 +253,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		for (const doc of docsMatchingSelector) {
 			const _id = doc._id
 
-			const newDoc: TDoc = _.isFunction(modifier)
-				? modifier(clone(doc))
-				: mongoModify({}, clone(doc), modifier as any)
+			const newDoc: TDoc = modifier(clone(doc))
 			if (newDoc._id !== _id) {
 				throw new Error(
 					`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`

@@ -32,7 +32,7 @@ import {
 } from '@sofie-automation/corelib/dist/protectedString'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { JobContext } from '../../jobs'
-import { EditableMongoModifier, MongoQuery } from '../../db'
+import { MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	innerFindLastPieceOnLayer,
@@ -41,7 +41,11 @@ import {
 	innerStartQueuedAdLib,
 	innerStopPieces,
 } from '../../playout/adlib'
-import { Piece, serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import {
+	Piece,
+	PieceTimelineObjectsBlob,
+	serializePieceTimelineObjectsBlob,
+} from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
 	convertPartInstanceToBlueprints,
@@ -333,13 +337,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Can only update piece instances in current or next part instance')
 		}
 
-		const update: EditableMongoModifier<PieceInstance> = {
-			$set: {},
-			$unset: {},
-		}
-
+		let timelineObjectsString: PieceTimelineObjectsBlob | undefined
 		if (trimmedPiece.content?.timelineObjects) {
-			update.$set['piece.timelineObjectsString'] = serializePieceTimelineObjectsBlob(
+			timelineObjectsString = serializePieceTimelineObjectsBlob(
 				postProcessTimelineObjects(
 					pieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
@@ -350,18 +350,19 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			trimmedPiece.content = omit(trimmedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
 		}
 
-		for (const [k, val] of Object.entries(trimmedPiece)) {
-			if (val === undefined) {
-				update.$unset[`piece.${k}`] = 1
-			} else {
-				// @ts-expect-error This can't key correctly because of the loosely typed `k`
-				update.$set[`piece.${k}`] = val
-			}
-		}
-
 		setupPieceInstanceInfiniteProperties(pieceInstance)
 
-		this._cache.PieceInstances.update(pieceInstance._id, update)
+		this._cache.PieceInstances.update(pieceInstance._id, (p) => {
+			if (timelineObjectsString !== undefined) p.piece.timelineObjectsString = timelineObjectsString
+
+			return {
+				...p,
+				piece: {
+					...p.piece,
+					...(trimmedPiece as any), // TODO: this needs to be more type safe
+				},
+			}
+		})
 
 		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
 		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)

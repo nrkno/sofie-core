@@ -58,10 +58,9 @@ export async function diffAndApplyChanges(
 
 	// Update segment ranks:
 	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
-		cache.Segments.update(getSegmentId(rundown._id, segmentExternalId), {
-			$set: {
-				_rank: newRank,
-			},
+		cache.Segments.update(getSegmentId(rundown._id, segmentExternalId), (s) => {
+			s._rank = newRank
+			return s
 		})
 	})
 
@@ -88,11 +87,13 @@ export async function diffAndApplyChanges(
 	// Remove/orphan old segments
 	const segmentIdsToRemove = new Set(Object.keys(segmentDiff.removed).map((id) => getSegmentId(rundown._id, id)))
 	// We orphan it and queue for deletion. the commit phase will complete if possible
-	const orphanedSegmentIds = cache.Segments.update((s) => segmentIdsToRemove.has(s._id), {
-		$set: {
-			orphaned: SegmentOrphanedReason.DELETED,
-		},
-	})
+	const orphanedSegmentIds = cache.Segments.update(
+		(s) => segmentIdsToRemove.has(s._id),
+		(s) => {
+			s.orphaned = SegmentOrphanedReason.DELETED
+			return s
+		}
+	)
 
 	if (!context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
 		// Remove everything inside the segment

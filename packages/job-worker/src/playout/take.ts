@@ -148,19 +148,19 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 		},
 	})
 
-	cache.PartInstances.update(takePartInstance._id, {
-		$set: {
-			isTaken: true,
-			'timings.take': now,
-			'timings.playOffset': timeOffset || 0,
-		},
+	cache.PartInstances.update(takePartInstance._id, (p) => {
+		p.isTaken = true
+		if (!p.timings) p.timings = {}
+		p.timings.take = now
+		p.timings.playOffset = timeOffset || 0
+		return p
 	})
 
 	if (cache.Playlist.doc.previousPartInstanceId) {
-		cache.PartInstances.update(cache.Playlist.doc.previousPartInstanceId, {
-			$set: {
-				'timings.takeOut': now,
-			},
+		cache.PartInstances.update(cache.Playlist.doc.previousPartInstanceId, (p) => {
+			if (!p.timings) p.timings = {}
+			p.timings.takeOut = now
+			return p
 		})
 	}
 
@@ -214,17 +214,21 @@ export function resetPreviousSegment(cache: CacheForPlayout): void {
 		// Reset the old segment
 		const segmentId = previousPartInstance.segmentId
 		const resetIds = new Set(
-			cache.PartInstances.update((p) => !p.reset && p.segmentId === segmentId, {
-				$set: {
-					reset: true,
-				},
-			})
+			cache.PartInstances.update(
+				(p) => !p.reset && p.segmentId === segmentId,
+				(p) => {
+					p.reset = true
+					return p
+				}
+			)
 		)
-		cache.PieceInstances.update((p) => resetIds.has(p.partInstanceId), {
-			$set: {
-				reset: true,
-			},
-		})
+		cache.PieceInstances.update(
+			(p) => resetIds.has(p.partInstanceId),
+			(p) => {
+				p.reset = true
+				return p
+			}
+		)
 	}
 }
 
@@ -241,10 +245,10 @@ async function afterTakeUpdateTimingsAndEvents(
 
 	// todo: should this be changed back to Meteor.defer, at least for the blueprint stuff?
 	if (takePartInstance) {
-		cache.PartInstances.update(takePartInstance._id, {
-			$set: {
-				'timings.takeDone': takeDoneTime,
-			},
+		cache.PartInstances.update(takePartInstance._id, (p) => {
+			if (!p.timings) p.timings = {}
+			p.timings.takeDone = takeDoneTime
+			return p
 		})
 
 		// Simulate playout, if no gateway
@@ -443,15 +447,14 @@ function startHold(
 		if (!instance.infinite) {
 			const infiniteInstanceId: PieceInstanceInfiniteId = getRandomId()
 			// mark current one as infinite
-			cache.PieceInstances.update(instance._id, {
-				$set: {
-					infinite: {
-						infiniteInstanceId: infiniteInstanceId,
-						infiniteInstanceIndex: 0,
-						infinitePieceId: instance.piece._id,
-						fromPreviousPart: false,
-					},
-				},
+			cache.PieceInstances.update(instance._id, (p) => {
+				p.infinite = {
+					infiniteInstanceId: infiniteInstanceId,
+					infiniteInstanceIndex: 0,
+					infinitePieceId: instance.piece._id,
+					fromPreviousPart: false,
+				}
+				return p
 			})
 
 			// make the extension

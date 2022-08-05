@@ -62,17 +62,20 @@ export function reportPartInstanceHasStarted(
 		let timestampUpdated = false
 		// If timings.startedPlayback has already been set, we shouldn't set it to another value:
 		if (!partInstance.timings?.startedPlayback) {
-			cache.PartInstances.update(partInstance._id, {
-				$set: {
-					isTaken: true,
-					'timings.startedPlayback': timestamp,
-				},
+			cache.PartInstances.update(partInstance._id, (p) => {
+				p.isTaken = true
+				if (!p.timings) p.timings = {}
+				p.timings.startedPlayback = timestamp
+				return p
 			})
 			timestampUpdated = true
 
 			// Unset stoppedPlayback if it is set:
 			if (partInstance.timings?.stoppedPlayback) {
-				cache.PartInstances.update(partInstance._id, { $unset: { 'timings.stoppedPlayback': 1 } })
+				cache.PartInstances.update(partInstance._id, (p) => {
+					if (p.timings) delete p.timings.stoppedPlayback
+					return p
+				})
 			}
 		}
 		// Update the playlist:
@@ -112,10 +115,10 @@ export function reportPartInstanceHasStopped(
 ): void {
 	let timestampUpdated = false
 	if (!partInstance.timings?.stoppedPlayback) {
-		cache.PartInstances.update(partInstance._id, {
-			$set: {
-				'timings.stoppedPlayback': timestamp,
-			},
+		cache.PartInstances.update(partInstance._id, (p) => {
+			if (!p.timings) p.timings = {}
+			p.timings.stoppedPlayback = timestamp
+			return p
 		})
 		timestampUpdated = true
 	}
@@ -135,11 +138,10 @@ export function reportPieceHasStarted(
 	timestamp: Time
 ): void {
 	if (pieceInstance.startedPlayback !== timestamp) {
-		cache.PieceInstances.update(pieceInstance._id, {
-			$set: {
-				startedPlayback: timestamp,
-				stoppedPlayback: 0,
-			},
+		cache.PieceInstances.update(pieceInstance._id, (p) => {
+			p.startedPlayback = timestamp
+			p.stoppedPlayback = 0
+			return p
 		})
 		// Update the copy in the next-part if there is one, so that the infinite has the same start after a take
 		const playlist = cache.Playlist.doc
@@ -169,10 +171,9 @@ export function reportPieceHasStopped(
 	timestamp: Time
 ): void {
 	if (pieceInstance.stoppedPlayback !== timestamp) {
-		cache.PieceInstances.update(pieceInstance._id, {
-			$set: {
-				stoppedPlayback: timestamp,
-			},
+		cache.PieceInstances.update(pieceInstance._id, (p) => {
+			p.stoppedPlayback = timestamp
+			return p
 		})
 		cache.deferAfterSave(() => {
 			handlePartInstanceTimingEvent(context, cache.PlaylistId, pieceInstance.partInstanceId)

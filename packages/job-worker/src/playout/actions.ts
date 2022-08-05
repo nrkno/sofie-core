@@ -13,6 +13,7 @@ import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/Rundo
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { executePeripheralDeviceFunction } from '../peripheralDevice'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
+import { RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export async function activateRundownPlaylist(
 	context: JobContext,
@@ -42,9 +43,10 @@ export async function activateRundownPlaylist(
 		await resetRundownPlaylist(context, cache)
 	}
 
+	const newActivationId: RundownPlaylistActivationId = getRandomId()
 	cache.Playlist.update({
 		$set: {
-			activationId: getRandomId(),
+			activationId: newActivationId,
 			rehearsal: rehearsal,
 		},
 	})
@@ -79,12 +81,20 @@ export async function activateRundownPlaylist(
 				cache.Playlist.doc.previousPartInstanceId,
 			])
 		)
-		cache.PartInstances.update((p) => partInstancesToPreserve.has(p._id), {
-			$set: { playlistActivationId: cache.Playlist.doc.activationId },
-		})
-		cache.PieceInstances.update((p) => partInstancesToPreserve.has(p.partInstanceId), {
-			$set: { playlistActivationId: cache.Playlist.doc.activationId },
-		})
+		cache.PartInstances.update(
+			(p) => partInstancesToPreserve.has(p._id),
+			(p) => {
+				p.playlistActivationId = newActivationId
+				return p
+			}
+		)
+		cache.PieceInstances.update(
+			(p) => partInstancesToPreserve.has(p.partInstanceId),
+			(p) => {
+				p.playlistActivationId = newActivationId
+				return p
+			}
+		)
 
 		if (cache.Playlist.doc.nextPartInstanceId) {
 			const nextPartInstance = cache.PartInstances.findOne(cache.Playlist.doc.nextPartInstanceId)
@@ -190,10 +200,10 @@ export async function deactivateRundownPlaylistInner(
 	await setNextPart(context, cache, null)
 
 	if (currentPartInstance) {
-		cache.PartInstances.update(currentPartInstance._id, {
-			$set: {
-				'timings.takeOut': getCurrentTime(),
-			},
+		cache.PartInstances.update(currentPartInstance._id, (p) => {
+			if (!p.timings) p.timings = {}
+			p.timings.takeOut = getCurrentTime()
+			return p
 		})
 	}
 	if (span) span.end()

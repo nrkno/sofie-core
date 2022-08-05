@@ -278,19 +278,18 @@ export async function setNextPart(
 		let newInstanceId: PartInstanceId
 		if (nextPartInfo.type === 'partinstance') {
 			newInstanceId = nextPartInfo.instance._id
-			cache.PartInstances.update(newInstanceId, {
-				$unset: {
-					consumesNextSegmentId: 1,
-				},
+			cache.PartInstances.update(newInstanceId, (p) => {
+				delete p.consumesNextSegmentId
+				return p
 			})
 			await syncPlayheadInfinitesForNextPartInstance(context, cache)
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
-			cache.PartInstances.update(newInstanceId, {
-				$set: {
-					consumesNextSegmentId: nextPartInfo.consumesNextSegmentId ?? false,
-				},
+			const consumesNextSegmentId = nextPartInfo.consumesNextSegmentId ?? false
+			cache.PartInstances.update(newInstanceId, (p) => {
+				p.consumesNextSegmentId = consumesNextSegmentId
+				return p
 			})
 			await syncPlayheadInfinitesForNextPartInstance(context, cache)
 		} else {
@@ -679,10 +678,10 @@ export function onPartHasStoppedPlaying(
 	stoppedPlayingTime: Time
 ): void {
 	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
-		cache.PartInstances.update(partInstance._id, {
-			$set: {
-				'timings.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
-			},
+		cache.PartInstances.update(partInstance._id, (p) => {
+			if (!p.timings) p.timings = {}
+			p.timings.duration = stoppedPlayingTime - (p.timings.startedPlayback || 0)
+			return p
 		})
 	} else {
 		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)

@@ -31,8 +31,10 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { JobContext } from '../../jobs'
 import { logChanges } from '../../cache/lib'
-import { EditableMongoModifier } from '../../db'
-import { serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import {
+	PieceTimelineObjectsBlob,
+	serializePieceTimelineObjectsBlob,
+} from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownUserContext
@@ -166,33 +168,30 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PieceInstance "${pieceInstanceId}" does not belong to the current PartInstance`)
 		}
 
-		const update: EditableMongoModifier<PieceInstance> = {
-			$set: {},
-			$unset: {},
-		}
-
-		if (updatedPiece.content?.timelineObjects) {
-			update.$set['piece.timelineObjectsString'] = serializePieceTimelineObjectsBlob(
+		let timelineObjectsString: PieceTimelineObjectsBlob | undefined
+		if (trimmedPiece.content?.timelineObjects) {
+			timelineObjectsString = serializePieceTimelineObjectsBlob(
 				postProcessTimelineObjects(
 					pieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
-					updatedPiece.content.timelineObjects
+					trimmedPiece.content.timelineObjects
 				)
 			)
 			// This has been processed
-			updatedPiece.content = omit(updatedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
+			trimmedPiece.content = omit(trimmedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
 		}
 
-		for (const [k, val] of Object.entries(trimmedPiece)) {
-			if (val === undefined) {
-				update.$unset[`piece.${k}`] = 1
-			} else {
-				// @ts-expect-error This can't key correctly because of the loosely typed `k`
-				update.$set[`piece.${k}`] = val
+		this._pieceInstanceCache.update(pieceInstance._id, (p) => {
+			if (timelineObjectsString !== undefined) p.piece.timelineObjectsString = timelineObjectsString
+
+			return {
+				...p,
+				piece: {
+					...p.piece,
+					...(trimmedPiece as any), // TODO: this needs to be more type safe
+				},
 			}
-		}
-
-		this._pieceInstanceCache.update(pieceInstance._id, update)
+		})
 
 		const updatedPieceInstance = this._pieceInstanceCache.findOne(pieceInstance._id)
 		if (!updatedPieceInstance) {

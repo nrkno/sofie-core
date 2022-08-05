@@ -681,10 +681,9 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 
 			if (nextPieceInstance) {
 				logger.debug((data.undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
-				cache.PieceInstances.update(nextPieceInstance._id, {
-					$set: {
-						disabled: !data.undo,
-					},
+				cache.PieceInstances.update(nextPieceInstance._id, (p) => {
+					p.disabled = !data.undo
+					return p
 				})
 
 				await updateTimeline(context, cache)
@@ -1058,10 +1057,9 @@ function timelineTriggerTimeInner(
 						pieceInstance.dynamicallyInserted &&
 						pieceInstance.piece.enable.start === 'now'
 					) {
-						pieceInstanceCache.update(pieceInstance._id, {
-							$set: {
-								'piece.enable.start': o.time,
-							},
+						pieceInstanceCache.update(pieceInstance._id, (p) => {
+							p.piece.enable.start = o.time
+							return p
 						})
 
 						const takeTime = pieceInstance.dynamicallyInserted
@@ -1083,11 +1081,10 @@ function timelineTriggerTimeInner(
 				const pieceTakeTime = piece.dynamicallyInserted
 				if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
 					// Disable and hide the instance
-					pieceInstanceCache.update(piece._id, {
-						$set: {
-							disabled: true,
-							hidden: true,
-						},
+					pieceInstanceCache.update(piece._id, (p) => {
+						p.disabled = true
+						p.hidden = true
+						return p
 					})
 				}
 			}
