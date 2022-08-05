@@ -595,30 +595,28 @@ function resetPartInstancesWithPieceInstances(
 	selector?: MongoQuery<DBPartInstance>
 ) {
 	const partInstancesToReset = cache.PartInstances.update(
-		selector
-			? {
-					...selector,
-					reset: { $ne: true },
-			  }
-			: (p) => !p.reset,
-		{
-			$set: {
-				reset: true,
-			},
+		(p) => {
+			if (p.reset) return false
+
+			if (selector) {
+				return mongoWhere(p, selector)
+			} else {
+				return true
+			}
+		},
+		(p) => {
+			p.reset = true
+			return p
 		}
 	)
 
 	// Reset any in the cache now
 	if (partInstancesToReset.length) {
 		cache.PieceInstances.update(
-			{
-				partInstanceId: { $in: partInstancesToReset },
-				reset: { $ne: true },
-			},
-			{
-				$set: {
-					reset: true,
-				},
+			(p) => partInstancesToReset.includes(p.partInstanceId) && !p.reset,
+			(p) => {
+				p.reset = true
+				return p
 			}
 		)
 	}

@@ -644,14 +644,9 @@ export function innerStopPieces(
 						},
 					}
 
-					cache.PieceInstances.update(
-						{
-							_id: pieceInstance._id,
-						},
-						{
-							$set: up,
-						}
-					)
+					cache.PieceInstances.update(pieceInstance._id, {
+						$set: up,
+					})
 
 					stoppedInstances.push(pieceInstance._id)
 					break

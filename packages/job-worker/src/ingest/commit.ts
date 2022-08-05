@@ -324,7 +324,13 @@ export async function CommitIngestOperation(
 							}
 						} else {
 							// This ensures that it doesn't accidently get played while hidden
-							ingestCache.Parts.update({ segmentId }, { $set: { invalid: true } })
+							ingestCache.Parts.update(
+								(p) => p.segmentId === segmentId,
+								(p) => {
+									p.invalid = true
+									return p
+								}
+							)
 						}
 					} else if (
 						!orphanDeletedSegmentIds.has(segmentId) &&

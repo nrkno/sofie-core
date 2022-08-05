@@ -268,7 +268,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * @returns All the ids that matched the selector
 	 */
 	update(
-		selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>,
+		selector: TDoc['_id'] | SelectorFunction<TDoc>,
 		modifier: ((doc: TDoc) => TDoc) | MongoModifier<TDoc> = {},
 		forceUpdate?: boolean
 	): Array<TDoc['_id']> {
@@ -276,19 +276,21 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 
 		const span = this.context.startSpan(`DBCache.update.${this.name}`)
 
-		const selectorInModify: MongoQuery<TDoc> = _.isFunction(selector)
-			? {}
-			: isProtectedString(selector)
-			? ({ _id: selector } as any)
-			: selector
+		let docsMatchingSelector: TDoc[] = []
+		if (isProtectedString(selector)) {
+			const doc = this.documents.get(selector)
+			if (doc) docsMatchingSelector.push(doc.document)
+		} else {
+			docsMatchingSelector = this.findFetch(selector)
+		}
 
 		const changedIds: Array<TDoc['_id']> = []
-		_.each(this.findFetch(selector), (doc) => {
+		for (const doc of docsMatchingSelector) {
 			const _id = doc._id
 
 			const newDoc: TDoc = _.isFunction(modifier)
 				? modifier(clone(doc))
-				: mongoModify(selectorInModify as any, clone(doc), modifier as any)
+				: mongoModify({}, clone(doc), modifier as any)
 			if (newDoc._id !== _id) {
 				throw new Error(
 					`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`
@@ -311,7 +313,8 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 				docEntry.updated = true
 			}
 			changedIds.push(_id)
-		})
+		}
+
 		if (span) span.end()
 		return changedIds
 	}

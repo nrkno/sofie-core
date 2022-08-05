@@ -144,16 +144,16 @@ export function reportPieceHasStarted(
 		// Update the copy in the next-part if there is one, so that the infinite has the same start after a take
 		const playlist = cache.Playlist.doc
 		if (pieceInstance.infinite && playlist.nextPartInstanceId) {
+			const infiniteInstanceId = pieceInstance.infinite.infiniteInstanceId
 			cache.PieceInstances.update(
-				{
-					partInstanceId: playlist.nextPartInstanceId,
-					'infinite.infiniteInstanceId': pieceInstance.infinite.infiniteInstanceId,
-				},
-				{
-					$set: {
-						startedPlayback: timestamp,
-						stoppedPlayback: 0,
-					},
+				(p) =>
+					p.partInstanceId === playlist.nextPartInstanceId &&
+					!!p.infinite &&
+					p.infinite.infiniteInstanceId === infiniteInstanceId,
+				(p) => {
+					p.startedPlayback = timestamp
+					p.stoppedPlayback = 0
+					return p
 				}
 			)
 		}
