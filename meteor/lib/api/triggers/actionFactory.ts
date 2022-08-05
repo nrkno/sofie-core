@@ -119,7 +119,9 @@ function createRundownPlaylistContext(
 	context: ActionContext,
 	filterChain: IBaseFilterLink[]
 ): ReactivePlaylistActionContext | undefined {
-	if (filterChain[0].object === 'view' && context.rundownPlaylistId) {
+	if (filterChain.length < 1) {
+		return undefined
+	} else if (filterChain[0].object === 'view' && context.rundownPlaylistId) {
 		return context as ReactivePlaylistActionContext
 	} else if (filterChain[0].object === 'view' && context.rundownPlaylist) {
 		const playlistContext = context as PlainPlaylistContext
