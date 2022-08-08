@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.41.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.1...v1.41.2-0) (2022-08-08)
+
+
+### Bug Fixes
+
+* update mos-connection ([7ead7f0](https://github.com/nrkno/tv-automation-server-core/commit/7ead7f04a063cb381f323329b13378840b6ba115))
+
+
+
+
+
 # [1.41.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
 
 
