@@ -3116,7 +3116,7 @@
     webpack-sources "^1.4.3"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.41.0-in-testing.1"
+  version "1.41.0"
   dependencies:
     moment "2.29.3"
     timeline-state-resolver-types "7.0.0"
@@ -3144,7 +3144,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.41.0-in-testing.1"
+  version "1.41.1"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     fast-clone "^1.5.13"
@@ -14589,6 +14589,16 @@ then-fs@^2.0.0:
   integrity sha1-cveS3Z0xcFqRrhnr/Piz+WjIHaI=
   dependencies:
     promise ">=3.2 <8"
+
+threadedclass@1.0.3-nightly--20220808-110410-b00ecb0.0:
+  version "1.0.3-nightly--20220808-110410-b00ecb0.0"
+  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.0.3-nightly--20220808-110410-b00ecb0.0.tgz#36d5adc0d0fdca70705933c847d7ae0c772a6d85"
+  integrity sha512-zaovJenWDgAWNaGrxuG5Fhp8XoTrUOesEflIItf/m25ip1AIaC+6SpfiF50Pj9c+mKTmwqL58lV1UdwASyxt4g==
+  dependencies:
+    callsites "^3.1.0"
+    eventemitter3 "^4.0.4"
+    is-running "^2.1.0"
+    tslib "^1.13.0"
 
 threadedclass@^0.8.0:
   version "0.8.3"

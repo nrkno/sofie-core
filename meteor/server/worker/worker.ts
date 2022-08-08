@@ -251,6 +251,13 @@ Meteor.startup(() => {
 
 	ThreadedClassManager.onEvent(
 		worker,
+		'error',
+		Meteor.bindEnvironment((e0) => {
+			logger.error('Error in Worker threads IPC: ', e0)
+		})
+	)
+	ThreadedClassManager.onEvent(
+		worker,
 		'restarted',
 		Meteor.bindEnvironment(() => {
 			logger.warn(`Worker threads restarted`)

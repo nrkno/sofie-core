@@ -1179,10 +1179,10 @@
   version "0.0.0"
   uid ""
 
-"@sofie-automation/sorensen@^1.3.2":
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@sofie-automation/sorensen/-/sorensen-1.3.2.tgz#ff2c45fa66e6d063a23aba3170235d9a3adcead6"
-  integrity sha512-kNoGg7mvX4tnNSJ6s24ZpLcZdVylnEUregyvcsAr6HHs8IRd+t02h9tZxrRaWcEsEokSe3NuDRjkntTz/aV6+g==
+"@sofie-automation/sorensen@^1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@sofie-automation/sorensen/-/sorensen-1.4.2.tgz#ca5e962374fc4af790f4b7238f8faabcb4cacb13"
+  integrity sha512-YT/2ng11jRYALdrfVkMSAt2HTXe13Vl3KUEdrIXXxZg89eoAz7/UlIaYxWlEdeEWR0vuobu2Gfrj4BpPsaZ+PQ==
 
 "@tokenizer/token@^0.3.0":
   version "0.3.0"
@@ -9882,10 +9882,10 @@ text-table@^0.2.0:
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=
 
-threadedclass@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.0.2.tgz#c5574cac282198433b9f3685202c5081df23206b"
-  integrity sha512-xkKqzipcLV25TqI3Z3eykpl5TiAGwg+h0DUwvYEh9GXRxvNcKZJIfl2l5/Bn6UxOuHAKXGT/HBN9PWDRf2P34g==
+threadedclass@1.0.3-nightly--20220808-110410-b00ecb0.0:
+  version "1.0.3-nightly--20220808-110410-b00ecb0.0"
+  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.0.3-nightly--20220808-110410-b00ecb0.0.tgz#36d5adc0d0fdca70705933c847d7ae0c772a6d85"
+  integrity sha512-zaovJenWDgAWNaGrxuG5Fhp8XoTrUOesEflIItf/m25ip1AIaC+6SpfiF50Pj9c+mKTmwqL58lV1UdwASyxt4g==
   dependencies:
     callsites "^3.1.0"
     eventemitter3 "^4.0.4"
