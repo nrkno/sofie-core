@@ -49,3 +49,14 @@ export async function handleDebugRegenerateNextPartInstance(
 		}
 	})
 }
+
+export async function handleDebugCrash(context: JobContext, data: DebugRegenerateNextPartInstanceProps): Promise<void> {
+	logger.info('debugCrash')
+
+	await runJobWithPlayoutCache(context, data, null, async (cache) => {
+		setTimeout(() => {
+			//@ts-expect-error: 2339
+			cache.callUndefined()
+		}, 10)
+	})
+}
