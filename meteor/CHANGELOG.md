@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.41.2](https://github.com/nrkno/sofie-core/compare/v1.41.2-0...v1.41.2) (2022-08-09)
+
+### [1.41.2-0](https://github.com/nrkno/sofie-core/compare/v1.41.1...v1.41.2-0) (2022-08-08)
+
+
+### Bug Fixes
+
+* update mos-connection ([7ead7f0](https://github.com/nrkno/sofie-core/commit/7ead7f04a063cb381f323329b13378840b6ba115))
+
 ### [1.41.1](https://github.com/nrkno/sofie-core/compare/v1.41.0...v1.41.1) (2022-07-05)
 
 

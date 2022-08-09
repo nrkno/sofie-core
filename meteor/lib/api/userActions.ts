@@ -148,6 +148,7 @@ export interface NewUserActionAPI extends MethodContext {
 		userEvent: string,
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
+	DEBUG_crashStudioWorker(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	removeRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
 	unsyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>> //
@@ -274,6 +275,8 @@ export enum UserActionAPIMethods {
 
 	'removeRundownPlaylist' = 'userAction.removeRundownPlaylist',
 	'resyncRundownPlaylist' = 'userAction.resyncRundownPlaylist',
+
+	'DEBUG_crashStudioWorker' = 'userAction.DEBUG_crashStudioWorker',
 
 	'removeRundown' = 'userAction.removeRundown',
 	'resyncRundown' = 'userAction.resyncRundown',
