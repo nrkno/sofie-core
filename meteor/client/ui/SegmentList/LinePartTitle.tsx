@@ -14,8 +14,8 @@ export function LinePartTitle({ title }: { title: string }) {
 	useLayoutEffect(() => {
 		if (!elRef.current) return
 
-		// scrollHeight can be larger than offsetHight by 1 pixel on HighDPI screens
-		if (elRef.current.scrollHeight > elRef.current.offsetHeight + 1) {
+		// scrollHeight can be larger than offsetHight by 2 pixel on HighDPI screens
+		if (elRef.current.scrollHeight > elRef.current.offsetHeight + 2) {
 			setTooltipEnabled(true)
 		} else {
 			setTooltipEnabled(false)
