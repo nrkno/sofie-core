@@ -130,23 +130,31 @@ $duration-area-margin: 0.5em;
 
 			&--next {
 				> .segment-opl__part-header > .segment-opl__part-duration {
-					text-shadow: 0 0 5px black;
 					font-weight: 500;
 				}
 
 				> .segment-opl__part-header > .segment-opl__part-duration > .segment-opl__part-timing-group-marker {
 					border-width: 0 0 2px 2px;
+				}
+
+				> .segment-opl__part-header {
+					background: $general-next-color;
+					text-shadow: 0 0 3px black;
 				}
 			}
 
 			&--live {
 				> .segment-opl__part-header > .segment-opl__part-duration {
-					text-shadow: 0 0 5px black;
 					font-weight: 500;
 				}
 
 				> .segment-opl__part-header > .segment-opl__part-duration > .segment-opl__part-timing-group-marker {
 					border-width: 0 0 2px 2px;
+				}
+
+				> .segment-opl__part-header {
+					background: $general-live-color;
+					text-shadow: 0 0 3px black;
 				}
 			}
 
