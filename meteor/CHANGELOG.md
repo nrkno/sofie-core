@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.41.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.2...v1.41.3) (2022-08-10)
+
+
+### Bug Fixes
+
+* Typo ([a55b963](https://github.com/nrkno/tv-automation-server-core/commit/a55b963382cb96624f423600aae41d3bea3edddb))
+
 ### [1.41.2](https://github.com/nrkno/sofie-core/compare/v1.41.2-0...v1.41.2) (2022-08-09)
 
 ### [1.41.2-0](https://github.com/nrkno/sofie-core/compare/v1.41.1...v1.41.2-0) (2022-08-08)
