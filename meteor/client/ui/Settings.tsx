@@ -47,12 +47,12 @@ export const Settings = withTranslation()(
 			}
 		}
 		render() {
-			const { t } = this.props
+			// const { t } = this.props
 			return (
 				<div className="mtl gutter has-statusbar">
-					<header className="mvs">
+					{/* <header className="mvs">
 						<h1>{t('System Settings')}</h1>
-					</header>
+					</header> */}
 					<div className="mod mvl mhs">
 						<div className="row">
 							<div className="col c12 rm-c3 settings-menu">
