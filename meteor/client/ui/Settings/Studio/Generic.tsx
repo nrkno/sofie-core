@@ -21,9 +21,7 @@ interface IStudioGenericPropertiesProps {
 		showStyleBase: ShowStyleBase
 	}>
 }
-interface IStudioGenericPropertiesState {
-	showAvailableDevices: boolean
-}
+interface IStudioGenericPropertiesState {}
 export const StudioGenericProperties = withTranslation()(
 	class StudioGenericProperties extends React.Component<
 		Translated<IStudioGenericPropertiesProps>,
@@ -31,10 +29,6 @@ export const StudioGenericProperties = withTranslation()(
 	> {
 		constructor(props: Translated<IStudioGenericPropertiesProps>) {
 			super(props)
-
-			this.state = {
-				showAvailableDevices: false,
-			}
 		}
 
 		getBlueprintOptions() {
