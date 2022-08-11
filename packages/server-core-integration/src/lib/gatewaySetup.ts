@@ -198,6 +198,8 @@ export function testLogging(logger: Winston.Logger) {
 	logger.info('Heres an obj', o)
 	logger.info('Heres many arguments', 'a', 'b', 'c', 'd')
 
+	logger.error('Heres another error:', err, 'and this text')
+
 	setTimeout(() => {
 		// Asynchronous error:
 		throw err
