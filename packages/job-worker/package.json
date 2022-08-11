@@ -52,7 +52,7 @@
 		"mongodb": "^4.3.1",
 		"p-lazy": "^3.1.0",
 		"superfly-timeline": "^8.2.7",
-		"threadedclass": "^1.0.2",
+		"threadedclass": "1.1.0",
 		"tslib": "^2.1.0",
 		"type-fest": "^2.11.1",
 		"underscore": "^1.13.2",

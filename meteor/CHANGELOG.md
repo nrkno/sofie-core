@@ -40,13 +40,25 @@ All notable changes to this project will be documented in this file. See [standa
 - upgrade tsr ([32105d6](https://github.com/nrkno/tv-automation-server-core/commit/32105d623685f6feaa0ee30c723fcd494376fb11))
 - When removing or modifying a bucket adlib, the grouped adlibs ("behind it" in the GUI) should also be updated ([8a8c39d](https://github.com/nrkno/tv-automation-server-core/commit/8a8c39d26ead6f573c5fcad5075b0890e5bc17c9))
 
-
-### [1.41.1](https://github.com/nrkno/sofie-core/compare/v1.41.0...v1.41.1) (2022-07-05)
-
+### [1.41.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.2...v1.41.3) (2022-08-10)
 
 ### Bug Fixes
 
-* transpile mos-connection for compatibility with CasparCG ([#744](https://github.com/nrkno/sofie-core/issues/744)) ([5250e02](https://github.com/nrkno/sofie-core/commit/5250e023d808c6a977429fbf4e4d7b9da3368831))
+- Typo ([a55b963](https://github.com/nrkno/tv-automation-server-core/commit/a55b963382cb96624f423600aae41d3bea3edddb))
+
+### [1.41.2](https://github.com/nrkno/sofie-core/compare/v1.41.2-0...v1.41.2) (2022-08-09)
+
+### [1.41.2-0](https://github.com/nrkno/sofie-core/compare/v1.41.1...v1.41.2-0) (2022-08-08)
+
+### Bug Fixes
+
+- update mos-connection ([7ead7f0](https://github.com/nrkno/sofie-core/commit/7ead7f04a063cb381f323329b13378840b6ba115))
+
+### [1.41.1](https://github.com/nrkno/sofie-core/compare/v1.41.0...v1.41.1) (2022-07-05)
+
+### Bug Fixes
+
+- transpile mos-connection for compatibility with CasparCG ([#744](https://github.com/nrkno/sofie-core/issues/744)) ([5250e02](https://github.com/nrkno/sofie-core/commit/5250e023d808c6a977429fbf4e4d7b9da3368831))
 
 ## [1.41.0](https://github.com/nrkno/sofie-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
 
