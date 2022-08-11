@@ -13,6 +13,16 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.42.0-in-testing.0) (2022-04-29)
 
+## [1.41.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.2...v1.41.3) (2022-08-10)
+
+**Note:** Version bump only for package playout-gateway
+
+## [1.41.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.1...v1.41.2-0) (2022-08-08)
+
+**Note:** Version bump only for package playout-gateway
+
+# [1.41.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
+
 ### Bug Fixes
 
 - missing/broken device debug logging in playout-gateway ([#702](https://github.com/nrkno/tv-automation-server-core/issues/702)) ([be3abb5](https://github.com/nrkno/tv-automation-server-core/commit/be3abb5b429ec60531a1dd115d526b8004f42642))

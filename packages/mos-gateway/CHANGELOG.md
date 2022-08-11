@@ -16,6 +16,18 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.42.0-in-testing.0) (2022-04-29)
 
+## [1.41.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.2...v1.41.3) (2022-08-10)
+
+**Note:** Version bump only for package mos-gateway
+
+## [1.41.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.1...v1.41.2-0) (2022-08-08)
+
+### Bug Fixes
+
+- update mos-connection ([7ead7f0](https://github.com/nrkno/tv-automation-server-core/commit/7ead7f04a063cb381f323329b13378840b6ba115))
+
+# [1.41.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
+
 ### Bug Fixes
 
 - update dep ([6e5a9b5](https://github.com/nrkno/tv-automation-server-core/commit/6e5a9b5d761811365c8a6893e6bdd3b85ee56fcf))

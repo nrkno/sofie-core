@@ -53,6 +53,7 @@ export enum StudioJobs {
 
 	GeneratePlaylistSnapshot = 'generatePlaylistSnapshot',
 	RestorePlaylistSnapshot = 'restorePlaylistSnapshot',
+	DebugCrash = 'debugCrash',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -220,6 +221,7 @@ export type StudioJobFunc = {
 
 	[StudioJobs.GeneratePlaylistSnapshot]: (data: GeneratePlaylistSnapshotProps) => GeneratePlaylistSnapshotResult
 	[StudioJobs.RestorePlaylistSnapshot]: (data: RestorePlaylistSnapshotProps) => RestorePlaylistSnapshotResult
+	[StudioJobs.DebugCrash]: (data: DebugRegenerateNextPartInstanceProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

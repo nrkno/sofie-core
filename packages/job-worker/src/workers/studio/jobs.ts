@@ -29,6 +29,7 @@ import { runJobWithStudioCache } from '../../studio/lock'
 import {
 	handleDebugSyncPlayheadInfinitesForNextPartInstance,
 	handleDebugRegenerateNextPartInstance,
+	handleDebugCrash,
 } from '../../playout/debug'
 import { removeEmptyPlaylists } from '../../studio/cleanup'
 import {
@@ -88,6 +89,7 @@ export const studioJobHandlers: StudioJobHandlers = {
 
 	[StudioJobs.GeneratePlaylistSnapshot]: handleGeneratePlaylistSnapshot,
 	[StudioJobs.RestorePlaylistSnapshot]: handleRestorePlaylistSnapshot,
+	[StudioJobs.DebugCrash]: handleDebugCrash,
 }
 
 async function updateTimelineDebug(context: JobContext, _data: void): Promise<void> {

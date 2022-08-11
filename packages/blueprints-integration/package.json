@@ -38,7 +38,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"moment": "2.29.3",
+		"moment": "2.29.4",
 		"timeline-state-resolver-types": "7.1.0-release42.1",
 		"tslib": "^2.3.1",
 		"type-fest": "^2.11.1"
