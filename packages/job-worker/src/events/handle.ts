@@ -308,9 +308,9 @@ async function notifyCurrentPlayingPartMOS(
 	newPlayingPartExternalId: string | null
 ): Promise<void> {
 	if (oldPlayingPartExternalId !== newPlayingPartExternalId) {
-		// Note: In an older version of sofie, we sent the STOP command before sending the PLAY command,
+		// Note: In an older version of sofie, we sent the PLAY command before sending the STOP command,
 		// since tests showed slightly better performance when doing so.
-		// However, this is not compatible with ENPS anymore, so we now send the PLAY command first.
+		// However, this is not compatible with ENPS anymore, so we now send the STOP command first.
 
 		if (oldPlayingPartExternalId) {
 			try {
