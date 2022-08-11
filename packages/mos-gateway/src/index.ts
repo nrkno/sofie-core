@@ -1,5 +1,5 @@
+import { setupGatewayProcess } from '@sofie-automation/server-core-integration'
 import { Connector, Config } from './connector'
-import * as Winston from 'winston'
 import _ = require('underscore')
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 
@@ -9,6 +9,7 @@ console.log('process started') // This is a message all Sofie processes log upon
 let host: string = process.env.CORE_HOST || '127.0.0.1'
 let port: number = parseInt(process.env.CORE_PORT + '', 10) || 3000
 let logPath: string = process.env.CORE_LOG || ''
+let logLevel: string | undefined = process.env.LOG_LEVEL || undefined
 let deviceId: string = process.env.DEVICE_ID || ''
 let deviceToken: string = process.env.DEVICE_TOKEN || ''
 let disableWatchdog: boolean = process.env.DISABLE_WATCHDOG === '1' || false
@@ -26,6 +27,8 @@ process.argv.forEach((val) => {
 		host = val
 	} else if (prevProcessArg.match(/-port/i)) {
 		port = parseInt(val, 10)
+	} else if (prevProcessArg.match(/-logLevel/i)) {
+		logLevel = val
 	} else if (prevProcessArg.match(/-log/i)) {
 		logPath = val
 	} else if (prevProcessArg.match(/-id/i)) {
@@ -70,108 +73,9 @@ CLI                ENV
 	process.exit(0)
 }
 
-/**
- * Used when JSON.stringifying values that might be circular
- * Usage: JSON.stringify(value, JSONStringifyCircular()))
- */
-const JSONStringifyCircular = () => {
-	const cacheValues: any[] = []
-	const cacheKeys: any[] = []
-	const stringifyFixer = (key: string, value: any) => {
-		if (typeof value === 'object' && value !== null) {
-			const i = cacheValues.indexOf(value)
-			if (i !== -1) {
-				// Duplicate reference found
-				try {
-					// If this value does not reference a parent it can be deduped
-					return JSON.parse(JSON.stringify(value))
-				} catch (error) {
-					// discard key if value cannot be deduped
-					return '[circular of ' + (cacheKeys[i] || '*root*') + ']'
-				}
-			}
-			// Store value in our collection
-			cacheValues.push(value)
-			cacheKeys.push(key)
-		}
-		return value
-	}
-	return stringifyFixer
-}
-// Setup logging --------------------------------------
-const { printf } = Winston.format
-const myLogFormat = printf((obj) => {
-	return JSON.stringify(obj, JSONStringifyCircular())
-})
-let logger: Winston.Logger
-if (logPath) {
-	// Log json to file, human-readable to console
-	const transportConsole = new Winston.transports.Console({
-		level: 'debug',
-		handleExceptions: true,
-		handleRejections: true,
-	})
-	const transportFile = new Winston.transports.File({
-		level: 'debug',
-		handleExceptions: true,
-		handleRejections: true,
-		filename: logPath,
-		format: myLogFormat,
-	})
-
-	logger = Winston.createLogger({
-		transports: [transportConsole, transportFile],
-	})
-	logger.info('Logging to', logPath)
-
-	// Hijack console.log:
-	const orgConsoleLog = console.log
-	console.log = function (...args: any[]) {
-		// orgConsoleLog('a')
-		if (args.length >= 1) {
-			try {
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore one or more arguments
-				logger.debug(...args)
-				// logger.debug(...args.map(JSONStringifyCircular()))
-			} catch (e) {
-				orgConsoleLog('CATCH')
-				orgConsoleLog(...args)
-				throw e
-			}
-			orgConsoleLog(...args)
-		}
-	}
-} else {
-	// custom json stringifier
-
-	// Log json to console
-	const transportConsole = new Winston.transports.Console({
-		level: 'debug',
-		handleExceptions: true,
-		handleRejections: true,
-		format: myLogFormat,
-	})
-
-	logger = Winston.createLogger({
-		transports: [transportConsole],
-	})
-	logger.info('Logging to Console')
-
-	// Hijack console.log:
-	console.log = function (...args: any[]) {
-		// orgConsoleLog('a')
-		if (args.length >= 1) {
-			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-			// @ts-ignore one or more arguments
-			logger.debug(...args)
-		}
-	}
-}
-
-// Because the default NodeJS-handler sucks and wont display error properly
-process.on('warning', (e: any) => {
-	logger.warn('Unhandled warning:', e, e.reason || e.message, e.stack)
+const { logger } = setupGatewayProcess({
+	logPath,
+	logLevel,
 })
 
 logger.info('------------------------------------------------------------------')

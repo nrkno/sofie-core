@@ -69,8 +69,7 @@
 		"@sofie-automation/shared-lib": "1.46.0-in-testing",
 		"mos-connection": "^2.0.1",
 		"tslib": "^2.4.0",
-		"underscore": "^1.13.4",
-		"winston": "^3.8.2"
+		"underscore": "^1.13.4"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
