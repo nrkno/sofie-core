@@ -1309,10 +1309,10 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.9.tgz#97edc9037ea0c38585320b28964dde3b39e4660d"
   integrity sha512-qcUXuemtEu+E5wZSJHNxUXeCZhAfXKQ41D+duX+VYPde7xyEVZci+/oXKJL13tnRs9lR2pr4fod59GT6/X1/yQ==
 
-"@types/meteor@^2.7.1":
-  version "2.7.1"
-  resolved "https://registry.yarnpkg.com/@types/meteor/-/meteor-2.7.1.tgz#654e7bf074496a61462db84ecf2f8700856e4525"
-  integrity sha512-bLoDKKKVRbLIUCA1Fy41+vLjRi6M1iMr3bGvq0Hz/66SraYuiQ0Mit1ql2Y4Z/7Oo+9YXYUikTlmgwSTNPE6PA==
+"@types/meteor@2.6.3":
+  version "2.6.3"
+  resolved "https://registry.yarnpkg.com/@types/meteor/-/meteor-2.6.3.tgz#3b79b3e7bb2d15d119acfb70199a11dd0d0c6f0c"
+  integrity sha512-T2AQEqGpNUefkD0tWOKtG6FOfXDVwl1OjZIJRtFHtRCctkohHVu4MB7FmqnjsP7eItBW2M7FJrRH1/VVNQLjkA==
   dependencies:
     "@types/connect" "*"
     "@types/jquery" "*"
