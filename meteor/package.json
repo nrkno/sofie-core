@@ -100,7 +100,7 @@
 		"react-timer-hoc": "^2.3.0",
 		"semver": "^7.3.7",
 		"superfly-timeline": "^8.2.8",
-		"threadedclass": "^1.0.2",
+		"threadedclass": "^1.1.0",
 		"timecode": "0.0.4",
 		"type-fest": "^2.16.0",
 		"underscore": "^1.13.4",
@@ -183,5 +183,8 @@
 		"scripts": {
 			"postbump": "yarn libs:syncVersionsAndChangelogs"
 		}
+	},
+	"resolutions": {
+		"url-parse": "^1.5.9"
 	}
 }
