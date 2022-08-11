@@ -6,6 +6,10 @@ import { AnyLockEvent } from '../locks'
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
 
+const FREEZE_LIMIT = 2500 // how long to wait for a response to a Ping
+const RESTART_TIMEOUT = 10000 // how long to wait for a restart to complete before throwing an error
+const KILL_TIMOUT = 10000 // how long to wait for a thread to terminate before throwing an error
+
 export class StudioWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<StudioWorkerChild>
 
@@ -32,6 +36,9 @@ export class StudioWorkerParent extends WorkerParentBase {
 			{
 				instanceName: `Studio: ${baseOptions.studioId}`,
 				autoRestart: true,
+				freezeLimit: FREEZE_LIMIT,
+				restartTimeout: RESTART_TIMEOUT,
+				killTimeout: KILL_TIMOUT,
 			}
 		)
 

@@ -106,6 +106,9 @@ export abstract class WorkerParentBase {
 	}
 
 	protected registerStatusEvents(workerThread: Promisify<any>): void {
+		ThreadedClassManager.onEvent(workerThread, 'error', (e0: any) => {
+			logger.error(`Error in Worker ${this.#prettyName}: `, e0)
+		})
 		ThreadedClassManager.onEvent(workerThread, 'restarted', () => {
 			logger.info(`Worker ${this.#prettyName} restarted`)
 			this.#threadStatus = ThreadStatus.PendingInit
