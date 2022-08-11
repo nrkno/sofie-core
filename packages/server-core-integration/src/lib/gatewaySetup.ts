@@ -218,6 +218,8 @@ export function testLogging(logger: Winston.Logger) {
 				reject(new Error('Rejecting promise!'))
 			}, 1)
 		})
+
+		// tslint:disable-next-line:no-floating-promises
 		p.then(() => {
 			// nothing
 		})

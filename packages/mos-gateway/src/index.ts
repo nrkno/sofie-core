@@ -75,7 +75,7 @@ CLI                ENV
 
 const { logger } = setupGatewayProcess({
 	logPath,
-	logLevel,
+	logLevel
 })
 
 logger.info('------------------------------------------------------------------')
@@ -100,7 +100,7 @@ logger.debug(`Test debug logging`)
 const config: Config = {
 	process: {
 		unsafeSSL: unsafeSSL,
-		certificates: _.compact(certs),
+		certificates: _.compact(certs)
 	},
 	device: {
 		deviceId: protectString(deviceId),
@@ -109,7 +109,7 @@ const config: Config = {
 	core: {
 		host: host,
 		port: port,
-		watchdog: !disableWatchdog,
+		watchdog: !disableWatchdog
 	},
 	mos: {
 		self: {
@@ -126,10 +126,10 @@ const config: Config = {
 				'4': false,
 				'5': false,
 				'6': false,
-				'7': false,
+				'7': false
 			},
-			offspecFailover: true,
-		},
+			offspecFailover: true
+		}
 		// devices: [{
 		// 	primary: {
 		// 		id: '2012R2ENPS8VM',
@@ -140,7 +140,7 @@ const config: Config = {
 		// 		host: string;
 		// 	},*/
 		// }]
-	},
+	}
 }
 
 const c = new Connector(logger)
