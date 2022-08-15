@@ -308,23 +308,23 @@ async function notifyCurrentPlayingPartMOS(
 	newPlayingPartExternalId: string | null
 ): Promise<void> {
 	if (oldPlayingPartExternalId !== newPlayingPartExternalId) {
-		// Note: In an older version of sofie, we sent the PLAY command before sending the STOP command,
-		// since tests showed slightly better performance when doing so.
-		// However, this is not compatible with ENPS anymore, so we now send the STOP command first.
-
-		if (oldPlayingPartExternalId) {
-			try {
-				await setStoryStatusMOS(
-					context,
-					peripheralDevice._id,
-					rundownExternalId,
-					oldPlayingPartExternalId,
-					MOS.IMOSObjectStatus.STOP
-				)
-			} catch (error) {
-				logger.error(`Error in setStoryStatus STOP: ${stringifyError(error)}`)
-			}
-		}
+		// Experiment: only send PLAY
+		// Reason 1: NRK ENPS "sendt tid" (elapsed time) stopped working in ENPS 8/9 when doing STOP prior to PLAY
+		// Reason 2: there's a delay between the STOP (yellow line disappears) and PLAY (yellow line re-appears), which annoys the users
+		// Reason 3: Troubleshooting/investigation: Test if this implementation changes the behaviour of the NOM-commands which spawn from the roElementsStat
+		// if (oldPlayingPartExternalId) {
+		// 	try {
+		// 		await setStoryStatusMOS(
+		// 			context,
+		// 			peripheralDevice._id,
+		// 			rundownExternalId,
+		// 			oldPlayingPartExternalId,
+		// 			MOS.IMOSObjectStatus.STOP
+		// 		)
+		// 	} catch (error) {
+		// 		logger.error(`Error in setStoryStatus STOP: ${stringifyError(error)}`)
+		// 	}
+		// }
 
 		if (newPlayingPartExternalId) {
 			try {
