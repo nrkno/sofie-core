@@ -105,6 +105,8 @@ export enum PubSub {
 	mappingsForStudio = 'mappingsForStudio',
 	timelineForStudio = 'timelineForStudio',
 	expectedPackagesForDevice = 'expectedPackagesForDevice',
+
+	mountedTriggersForDevice = 'mountedTriggersForDevice',
 }
 
 export interface PubSubTypes {

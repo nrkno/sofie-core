@@ -13,13 +13,7 @@ import {
 	RundownPlaylistId,
 	RundownPlaylists,
 } from '../../../lib/collections/RundownPlaylists'
-import {
-	ISourceLayer,
-	PlayoutActions,
-	ITranslatableMessage,
-	SomeAction,
-	TriggerType,
-} from '@sofie-automation/blueprints-integration'
+import { PlayoutActions, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import {
 	isPreviewableAction,
@@ -27,11 +21,8 @@ import {
 	createAction as libCreateAction,
 } from '../../../lib/api/triggers/actionFactory'
 import { PartId } from '../../../lib/collections/Parts'
-import { flatten, ProtectedString, protectString } from '../../../lib/lib'
+import { flatten, protectString } from '../../../lib/lib'
 import { IWrappedAdLib } from '../../../lib/api/triggers/actionFilterChainCompilers'
-import { AdLibActionId } from '../../../lib/collections/AdLibActions'
-import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { PieceId } from '../../../lib/collections/Pieces'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { preventDefault } from '../SorensenContext'
 import { getFinalKey } from './codesToKeyLabels'
@@ -39,6 +30,7 @@ import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../.
 import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../../lib/Settings'
 import { createInMemoryMongoCollection } from '../../../lib/collections/lib'
+import { MountedAdLibTrigger, MountedGenericTrigger } from '../../../lib/api/triggers/MountedTriggers'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -142,49 +134,7 @@ function getCurrentContext(): ReactivePlaylistActionContext | null {
 	return rundownPlaylistContext.get()
 }
 
-type MountedAdLibTriggerId = ProtectedString<'mountedAdLibTriggerId'>
-/** An AdLib action that will be triggered by hotkeys (can be AdLib, RundownBaselineAdLib, AdLib Action, Clear source layer, Sticky, etc.) */
-export interface MountedAdLibTrigger {
-	_id: MountedAdLibTriggerId
-	/** Rank of the Action that is mounted under `keys` */
-	_rank: number
-	/** The ID of the action that will be triggered */
-	triggeredActionId: TriggeredActionId
-	/** The type of the adLib being targeted */
-	type: IWrappedAdLib['type']
-	/** The ID in the collection specified by `type` */
-	targetId: AdLibActionId | RundownBaselineAdLibActionId | PieceId | ISourceLayer['_id']
-	/** Keys or combos that have a listener mounted to */
-	keys: string[]
-	/** Final keys in the `keys` combos, that can be used for figuring out where on the keyboard this action is mounted */
-	finalKeys: string[]
-	/** A label of the action, if available */
-	name?: string | ITranslatableMessage
-	/** SourceLayerId of the target, if available */
-	sourceLayerId?: ISourceLayer['_id']
-	/** A label of the target if available */
-	targetName?: string | ITranslatableMessage
-}
-
 export const MountedAdLibTriggers = createInMemoryMongoCollection<MountedAdLibTrigger>('MountedAdLibTrigger')
-
-type MountedGenericTriggerId = ProtectedString<'mountedGenericTriggerId'>
-/** A generic action that will be triggered by hotkeys (generic, i.e. non-AdLib) */
-export interface MountedGenericTrigger {
-	_id: MountedGenericTriggerId
-	/** Rank of the Action that is mounted under `keys1 */
-	_rank: number
-	/** The ID of the action that will be triggered */
-	triggeredActionId: TriggeredActionId
-	/** Keys or combos that have a listener mounted to */
-	keys: string[]
-	/** Final keys in the combos, that can be used for figuring out where on the keyboard this action is mounted */
-	finalKeys: string[]
-	/** A label of the action, if available */
-	name: string | ITranslatableMessage
-	/** Hint that all actions of this trigger are adLibs */
-	adLibOnly: boolean
-}
 
 export const MountedGenericTriggers = createInMemoryMongoCollection<MountedGenericTrigger>('MountedGenericTrigger')
 
