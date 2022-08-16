@@ -17,8 +17,6 @@ import { SegmentListHeader } from './SegmentListHeader'
 import { useInView } from 'react-intersection-observer'
 import { getHeaderHeight } from '../../lib/viewPort'
 
-export const StudioContext = React.createContext<Studio | undefined>(undefined)
-
 interface IProps {
 	id: string
 	isLiveSegment: boolean
@@ -199,46 +197,44 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 	}, [isHeaderDetached, parts.length])
 
 	return (
-		<StudioContext.Provider value={props.studio}>
-			<div
-				id={props.id}
-				className={classNames('segment-timeline', 'segment-opl', {
-					live: props.isLiveSegment,
-					next: !props.isLiveSegment && props.isNextSegment,
-					queued: props.isQueuedSegment,
+		<div
+			id={props.id}
+			className={classNames('segment-timeline', 'segment-opl', {
+				live: props.isLiveSegment,
+				next: !props.isLiveSegment && props.isNextSegment,
+				queued: props.isQueuedSegment,
 
-					'has-played': props.hasAlreadyPlayed && !props.isLiveSegment && !props.isNextSegment,
+				'has-played': props.hasAlreadyPlayed && !props.isLiveSegment && !props.isNextSegment,
 
-					'invert-flash': highlight,
+				'invert-flash': highlight,
 
-					'time-of-day-countdowns': useTimeOfDayCountdowns,
-				})}
-				data-segment-id={props.segment._id}
-				ref={combinedRef}
-			>
-				<SegmentListHeader
-					isDetached={isHeaderDetached}
-					isDetachedStick={isHeaderDetachedStick}
-					parts={props.parts}
-					segment={props.segment}
-					playlist={props.playlist}
-					studio={props.studio}
-					segmentNotes={props.segmentNotes}
-					highlight={highlight}
-					isLiveSegment={props.isLiveSegment}
-					isNextSegment={props.isNextSegment}
-					hasAlreadyPlayed={props.hasAlreadyPlayed}
-					isQueuedSegment={props.isQueuedSegment}
-					fixedSegmentDuration={props.fixedSegmentDuration}
-					showCountdownToSegment={props.showCountdownToSegment}
-					useTimeOfDayCountdowns={useTimeOfDayCountdowns}
-					getSegmentContext={getSegmentContext}
-					onTimeUntilClick={onTimeUntilClick}
-					onSwitchViewMode={props.onSwitchViewMode}
-				/>
-				<div className="segment-opl__part-list">{parts}</div>
-			</div>
-		</StudioContext.Provider>
+				'time-of-day-countdowns': useTimeOfDayCountdowns,
+			})}
+			data-segment-id={props.segment._id}
+			ref={combinedRef}
+		>
+			<SegmentListHeader
+				isDetached={isHeaderDetached}
+				isDetachedStick={isHeaderDetachedStick}
+				parts={props.parts}
+				segment={props.segment}
+				playlist={props.playlist}
+				studio={props.studio}
+				segmentNotes={props.segmentNotes}
+				highlight={highlight}
+				isLiveSegment={props.isLiveSegment}
+				isNextSegment={props.isNextSegment}
+				hasAlreadyPlayed={props.hasAlreadyPlayed}
+				isQueuedSegment={props.isQueuedSegment}
+				fixedSegmentDuration={props.fixedSegmentDuration}
+				showCountdownToSegment={props.showCountdownToSegment}
+				useTimeOfDayCountdowns={useTimeOfDayCountdowns}
+				getSegmentContext={getSegmentContext}
+				onTimeUntilClick={onTimeUntilClick}
+				onSwitchViewMode={props.onSwitchViewMode}
+			/>
+			<div className="segment-opl__part-list">{parts}</div>
+		</div>
 	)
 })
 

@@ -4,9 +4,9 @@ import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel
 import { PieceExtended } from '../../../../lib/Rundown'
 import { RundownUtils } from '../../../lib/rundown'
 import { PieceHoverInspector } from '../PieceHoverInspector'
-import { StudioContext } from '../SegmentList'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
+import StudioContext from '../../RundownView/StudioContext'
 
 interface IProps {
 	piece: PieceExtended

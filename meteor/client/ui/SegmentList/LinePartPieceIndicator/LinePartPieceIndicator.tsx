@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ISourceLayerExtended, PieceExtended } from '../../../../lib/Rundown'
+import StudioContext from '../../RundownView/StudioContext'
 import { LinePartIndicator } from './LinePartIndicator'
 
 interface IProps {
@@ -34,18 +35,29 @@ export const LinePartPieceIndicator: React.FC<IProps> = function LinePartPieceIn
 	const hasOriginInPreceedingPart = topPiece?.hasOriginInPreceedingPart || false
 
 	return (
-		<LinePartIndicator
-			allSourceLayers={sourceLayers}
-			count={thisPieces.length}
-			label={label.substring(0, 1)}
-			thisSourceLayer={topPiece?.sourceLayer}
-			hasOriginInPreceedingPart={hasOriginInPreceedingPart}
-			overlay={
-				<>
-					<b>{label}</b>:&nbsp;
-					{thisPieces.length === 0 ? t('Not present') : thisPieces.map((piece) => piece.instance.piece.name).join(', ')}
-				</>
-			}
-		/>
+		<StudioContext.Consumer>
+			{(studio) => {
+				if (!studio) return null
+				return (
+					<LinePartIndicator
+						allSourceLayers={sourceLayers}
+						count={thisPieces.length}
+						label={label.substring(0, 1)}
+						thisSourceLayer={topPiece?.sourceLayer}
+						hasOriginInPreceedingPart={hasOriginInPreceedingPart}
+						piece={topPiece}
+						studio={studio}
+						overlay={
+							<>
+								<b>{label}</b>:&nbsp;
+								{thisPieces.length === 0
+									? t('Not present')
+									: thisPieces.map((piece) => piece.instance.piece.name).join(', ')}
+							</>
+						}
+					/>
+				)
+			}}
+		</StudioContext.Consumer>
 	)
 }

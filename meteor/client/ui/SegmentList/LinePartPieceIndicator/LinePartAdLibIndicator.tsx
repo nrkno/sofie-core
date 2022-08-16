@@ -8,6 +8,7 @@ import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactM
 import { LinePartIndicator } from './LinePartIndicator'
 import { useTranslation } from 'react-i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import StudioContext from '../../RundownView/StudioContext'
 
 interface IProps {
 	sourceLayers: ISourceLayerExtended[]
@@ -59,7 +60,7 @@ export const LinePartAdLibIndicator: React.FC<IProps> = function LinePartAdLibIn
 		[] as AdLibAction[]
 	)
 
-	const allAdLibs = useMemo(
+	const allAdLibLabels = useMemo(
 		() =>
 			adLibPieces
 				.map((adLibPiece) => adLibPiece.name)
@@ -68,19 +69,29 @@ export const LinePartAdLibIndicator: React.FC<IProps> = function LinePartAdLibIn
 	)
 
 	return (
-		<LinePartIndicator
-			allSourceLayers={sourceLayers}
-			count={allAdLibs.length}
-			label={label.substring(0, 1)}
-			thisSourceLayer={sourceLayers[0]}
-			hasOriginInPreceedingPart={false}
-			overlay={
-				<>
-					<b>{t('{{sourceLayer}} AdLibs', { sourceLayer: label })}</b>
-					{': '}
-					{allAdLibs.length > 0 ? allAdLibs.join(', ') : t('Not present')}
-				</>
-			}
-		/>
+		<StudioContext.Consumer>
+			{(studio) => {
+				if (!studio) return null
+
+				return (
+					<LinePartIndicator
+						allSourceLayers={sourceLayers}
+						count={allAdLibLabels.length}
+						label={label.substring(0, 1)}
+						thisSourceLayer={sourceLayers[0]}
+						hasOriginInPreceedingPart={false}
+						studio={studio}
+						piece={adLibPieces[0]}
+						overlay={
+							<>
+								<b>{t('{{sourceLayer}} AdLibs', { sourceLayer: label })}</b>
+								{': '}
+								{allAdLibLabels.length > 0 ? allAdLibLabels.join(', ') : t('Not present')}
+							</>
+						}
+					/>
+				)
+			}}
+		</StudioContext.Consumer>
 	)
 }

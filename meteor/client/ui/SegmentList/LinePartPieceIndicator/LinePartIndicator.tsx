@@ -1,8 +1,12 @@
 import classNames from 'classnames'
 import Tooltip from 'rc-tooltip'
 import React from 'react'
+import { Studio } from '../../../../lib/collections/Studios'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
 import { RundownUtils } from '../../../lib/rundown'
+import { AdLibPieceUi } from '../../../lib/shelf'
+import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
+import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 
 interface IProps {
 	overlay?: React.ReactNode
@@ -11,9 +15,11 @@ interface IProps {
 	allSourceLayers: ISourceLayerExtended[]
 	thisSourceLayer?: ISourceLayerExtended
 	label?: string
+	piece?: AdLibPieceUi | PieceUi
+	studio: Studio
 }
 
-export const LinePartIndicator: React.FC<IProps> = function LinePartIndicator({
+export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function LinePartIndicator({
 	overlay,
 	count,
 	allSourceLayers,
@@ -53,4 +59,4 @@ export const LinePartIndicator: React.FC<IProps> = function LinePartIndicator({
 			</div>
 		</Tooltip>
 	)
-}
+})
