@@ -417,7 +417,7 @@ export enum ActionButtonType {
 	// RESET_RUNDOWN = 'reset_rundown',
 	QUEUE_ADLIB = 'queue_adlib', // The idea for it is that you would be able to press and hold this button
 	// and then click on whatever adlib you would like
-	KLAR_ON_AIR = 'klar_on_air',
+	READY_ON_AIR = 'ready_on_air',
 	STORE_SNAPSHOT = 'store_snapshot',
 }
 
