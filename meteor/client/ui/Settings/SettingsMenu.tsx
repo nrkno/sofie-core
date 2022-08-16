@@ -10,7 +10,7 @@ import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/Pe
 
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
-import { faPlus, faTrash, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faTrash, faExclamationTriangle, faCaretRight, faCaretDown } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -20,6 +20,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { Settings as MeteorSettings } from '../../../lib/Settings'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { TFunction, useTranslation } from 'react-i18next'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 
 interface ISettingsMenuProps {
 	superAdmin?: boolean
@@ -161,12 +162,14 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 interface SettingsCollapsibleGroupProps {
 	links: Array<{ label: string; subPath: string }>
 	basePath: string
+	title: string
 }
 
 function SettingsCollapsibleGroup({
 	links,
 	children,
 	basePath,
+	title,
 }: React.PropsWithChildren<SettingsCollapsibleGroupProps>) {
 	const [expanded, setExpanded] = React.useState(false)
 
@@ -188,24 +191,28 @@ function SettingsCollapsibleGroup({
 	return (
 		<>
 			<NavLink
-				activeClassName="selectable-selected"
+				// activeClassName="selectable-selected"
 				className="settings-menu__settings-menu-item selectable clickable"
 				to={basePath}
 				onClick={toggleExpanded}
 			>
 				{children}
+				<h3>
+					<span className="icon action-item">
+						<FontAwesomeIcon icon={expanded ? faCaretDown : faCaretRight} />
+					</span>
+					{title}
+				</h3>
 			</NavLink>
 			{expanded
 				? links.map((link, i) => (
 						<NavLink
 							key={i}
 							activeClassName="selectable-selected"
-							className="settings-menu__settings-menu-item selectable clickable"
+							className="settings-menu__settings-menu-item selectable clickable menu-item-child"
 							to={`${basePath}/${link.subPath}`}
 						>
-							<div className="selectable clickable">
-								<h4>{link.label}</h4>
-							</div>
+							<h4>{link.label}</h4>
 						</NavLink>
 				  ))
 				: ''}
@@ -245,18 +252,22 @@ function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
 
 	const childLinks = React.useMemo(
 		() => [
-			{ label: 'Generic Properties', subPath: `generic` },
-			{ label: 'Attached Devices', subPath: `devices` },
-			{ label: 'Blueprint Configuration', subPath: `blueprint-config` },
-			{ label: 'Layer Mappings', subPath: `mappings` },
-			{ label: 'Route Sets', subPath: `route-sets` },
-			{ label: 'Package Manager', subPath: `package-manager` },
+			{ label: t('Generic Properties'), subPath: `generic` },
+			{ label: t('Attached Devices'), subPath: `devices` },
+			{ label: t('Blueprint Configuration'), subPath: `blueprint-config` },
+			{ label: t('Layer Mappings'), subPath: `mappings` },
+			{ label: t('Route Sets'), subPath: `route-sets` },
+			{ label: t('Package Manager'), subPath: `package-manager` },
 		],
 		[studio._id]
 	)
 
 	return (
-		<SettingsCollapsibleGroup basePath={`/settings/studio/${studio._id}`} links={childLinks}>
+		<SettingsCollapsibleGroup
+			basePath={`/settings/studio/${studio._id}`}
+			links={childLinks}
+			title={studio.name || t('Unnamed Studio')}
+		>
 			<button className="action-btn right" onClick={onDeleteStudio}>
 				<FontAwesomeIcon icon={faTrash} />
 			</button>
@@ -265,9 +276,6 @@ function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
 					<FontAwesomeIcon icon={faExclamationTriangle} />
 				</button>
 			) : null}
-			<div className="selectable clickable">
-				<h3>{studio.name || t('Unnamed Studio')}</h3>
-			</div>
 		</SettingsCollapsibleGroup>
 	)
 }
@@ -316,32 +324,38 @@ function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
 		[t, showStyleBase._id, showStyleBase.name]
 	)
 
+	const childLinks = React.useMemo(
+		() => [
+			{ label: t('Generic Properties'), subPath: `generic` },
+			{ label: t('Source/Output Layers'), subPath: `layers` },
+			{ label: t('Action Triggers'), subPath: `action-triggers` },
+			{ label: t('Custom Hotkey Labels'), subPath: `hotkey-labels` },
+
+			...RundownLayoutsAPI.getSettingsManifest(t).map((region) => {
+				return { label: region.title, subPath: `layouts-${region._id}` }
+			}),
+
+			{ label: t('Blueprint Configuration'), subPath: `blueprint-config` },
+			{ label: t('Variants'), subPath: `variants` },
+		],
+		[showStyleBase._id]
+	)
+
 	return (
-		<NavLink
-			activeClassName="selectable-selected"
-			className="settings-menu__settings-menu-item selectable clickable"
-			key={unprotectString(showStyleBase._id)}
-			to={'/settings/showStyleBase/' + showStyleBase._id}
+		<SettingsCollapsibleGroup
+			basePath={`/settings/showStyleBase/${showStyleBase._id}`}
+			links={childLinks}
+			title={showStyleBase.name || t('Unnamed Show Style')}
 		>
-			<div className="selectable clickable">
-				<button className="action-btn right" onClick={onDeleteShowStyleBase}>
-					<FontAwesomeIcon icon={faTrash} />
+			<button className="action-btn right" onClick={onDeleteShowStyleBase}>
+				<FontAwesomeIcon icon={faTrash} />
+			</button>
+			{showStyleHasError(showStyleBase) ? (
+				<button className="action-btn right error-notice">
+					<FontAwesomeIcon icon={faExclamationTriangle} />
 				</button>
-				{showStyleHasError(showStyleBase) ? (
-					<button className="action-btn right error-notice">
-						<FontAwesomeIcon icon={faExclamationTriangle} />
-					</button>
-				) : null}
-				<h3>{showStyleBase.name || t('Unnamed Show Style')}</h3>
-				{showStyleBase.sourceLayers && showStyleBase.outputLayers && (
-					<p>
-						{t('Source Layers')}: {showStyleBase.sourceLayers.length.toString()} {t('Output Channels')}:{' '}
-						{showStyleBase.outputLayers.length.toString()}
-					</p>
-				)}
-			</div>
-			<hr className="vsubtle man" />
-		</NavLink>
+			) : null}
+		</SettingsCollapsibleGroup>
 	)
 }
 
@@ -393,23 +407,21 @@ function SettingsMenuBlueprint({ blueprint }: SettingsMenuBlueprintProps) {
 			className="settings-menu__settings-menu-item selectable clickable"
 			to={'/settings/blueprint/' + blueprint._id}
 		>
-			<div className="selectable clickable">
-				<button className="action-btn right" onClick={onDeleteBlueprint}>
-					<FontAwesomeIcon icon={faTrash} />
+			<button className="action-btn right" onClick={onDeleteBlueprint}>
+				<FontAwesomeIcon icon={faTrash} />
+			</button>
+			{blueprintHasError(blueprint) ? (
+				<button className="action-btn right error-notice">
+					<FontAwesomeIcon icon={faExclamationTriangle} />
 				</button>
-				{blueprintHasError(blueprint) ? (
-					<button className="action-btn right error-notice">
-						<FontAwesomeIcon icon={faExclamationTriangle} />
-					</button>
-				) : null}
-				<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
-				<p>
-					{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}
-				</p>
-				<p>
-					{t('Version')} {blueprint.blueprintVersion}
-				</p>
-			</div>
+			) : null}
+			<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
+			<p>
+				{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}
+			</p>
+			<p>
+				{t('Version')} {blueprint.blueprintVersion}
+			</p>
 			<hr className="vsubtle man" />
 		</NavLink>
 	)
