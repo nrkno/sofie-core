@@ -17,9 +17,13 @@ import { OutputLayerSettings } from './ShowStyle/OutputLayer'
 import { HotkeyLegendSettings } from './ShowStyle/HotkeyLegend'
 import { ShowStyleVariantsSettings } from './ShowStyle/VariantSettings'
 import { ShowStyleGenericProperties } from './ShowStyle/Generic'
+import { Switch, Route, Redirect } from 'react-router-dom'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
 
 interface IProps {
 	match: {
+		url: string
+		path: string
 		params: {
 			showStyleBaseId: ShowStyleBaseId
 		}
@@ -124,67 +128,69 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div className="studio-edit mod mhl mvn">
 					<div className="row">
 						<div className="col c12 r1-c12">
-							<ShowStyleGenericProperties
-								showStyleBase={showStyleBase}
-								compatibleStudios={this.props.compatibleStudios}
-							/>
-						</div>
-					</div>
-					<div className="row">
-						<div className="col c12 rl-c6">
-							<SourceLayerSettings showStyleBase={showStyleBase} />
-						</div>
-						<div className="col c12 rl-c6">
-							<OutputLayerSettings showStyleBase={showStyleBase} />
-						</div>
-					</div>
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<TriggeredActionsEditor showStyleBaseId={showStyleBase._id} />
-						</div>
-					</div>
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<HotkeyLegendSettings showStyleBase={showStyleBase} />
-						</div>
-					</div>
-					{RundownLayoutsAPI.getSettingsManifest(t).map((region) => {
-						return (
-							<div className="row" key={region._id}>
-								<div className="col c12 r1-c12">
-									<RundownLayoutEditor
-										showStyleBase={showStyleBase}
-										studios={this.props.compatibleStudios}
-										customRegion={region}
-									/>
-								</div>
-							</div>
-						)
-					})}
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<ConfigManifestSettings
-								t={this.props.t}
-								i18n={this.props.i18n}
-								tReady={this.props.tReady}
-								manifest={this.props.blueprintConfigManifest}
-								object={showStyleBase}
-								collection={ShowStyleBases}
-								layerMappings={layerMappings}
-								sourceLayers={sourceLayers}
-								configPath={'blueprintConfig'}
-							/>
-						</div>
-					</div>
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<ShowStyleVariantsSettings
-								showStyleVariants={this.props.showStyleVariants}
-								blueprintConfigManifest={this.props.blueprintConfigManifest}
-								showStyleBase={showStyleBase}
-								layerMappings={layerMappings}
-								sourceLayers={sourceLayers}
-							/>
+							<ErrorBoundary>
+								<Switch>
+									<Route path={`${this.props.match.path}/generic`}>
+										<ShowStyleGenericProperties
+											showStyleBase={showStyleBase}
+											compatibleStudios={this.props.compatibleStudios}
+										/>
+									</Route>
+									<Route path={`${this.props.match.path}/layers`}>
+										<div className="row">
+											<div className="col c12 rl-c6">
+												<SourceLayerSettings showStyleBase={showStyleBase} />
+											</div>
+											<div className="col c12 rl-c6">
+												<OutputLayerSettings showStyleBase={showStyleBase} />
+											</div>
+										</div>
+									</Route>
+									<Route path={`${this.props.match.path}/action-triggers`}>
+										<TriggeredActionsEditor showStyleBaseId={showStyleBase._id} />
+									</Route>
+									<Route path={`${this.props.match.path}/hotkey-labels`}>
+										<HotkeyLegendSettings showStyleBase={showStyleBase} />
+									</Route>
+
+									{RundownLayoutsAPI.getSettingsManifest(t).map((region) => {
+										return (
+											<Route key={region._id} path={`${this.props.match.path}/layouts-${region._id}`}>
+												<RundownLayoutEditor
+													showStyleBase={showStyleBase}
+													studios={this.props.compatibleStudios}
+													customRegion={region}
+												/>
+											</Route>
+										)
+									})}
+
+									<Route path={`${this.props.match.path}/blueprint-config`}>
+										<ConfigManifestSettings
+											t={this.props.t}
+											i18n={this.props.i18n}
+											tReady={this.props.tReady}
+											manifest={this.props.blueprintConfigManifest}
+											object={showStyleBase}
+											collection={ShowStyleBases}
+											layerMappings={layerMappings}
+											sourceLayers={sourceLayers}
+											configPath={'blueprintConfig'}
+										/>
+									</Route>
+									<Route path={`${this.props.match.path}/variants`}>
+										<ShowStyleVariantsSettings
+											showStyleVariants={this.props.showStyleVariants}
+											blueprintConfigManifest={this.props.blueprintConfigManifest}
+											showStyleBase={showStyleBase}
+											layerMappings={layerMappings}
+											sourceLayers={sourceLayers}
+										/>
+									</Route>
+
+									<Redirect to={`${this.props.match.path}/generic`} />
+								</Switch>
+							</ErrorBoundary>
 						</div>
 					</div>
 				</div>
