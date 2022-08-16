@@ -15,6 +15,8 @@ import { getElementWidth } from '../../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { PieceHoverInspector } from '../PieceHoverInspector'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
+import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 
 interface IProps {
 	partId: PartId
@@ -246,6 +248,9 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 		setMousePosition(e.pageX - origin.left)
 	}
 
+	const status = piece.instance.piece.status
+	const noticeLevel = status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null
+
 	return (
 		<PieceElement
 			className="segment-opl__main-piece"
@@ -262,7 +267,10 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 				<div className="segment-opl__main-piece__bkg">{getSplitItems(piece, 'segment-opl__main-piece__item')}</div>
 			)}
 			{anomalies}
-			<div className="segment-opl__main-piece__label">{piece.instance.piece.name}</div>
+			<div className="segment-opl__main-piece__label">
+				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
+				{piece.instance.piece.name}
+			</div>
 			{studio && (
 				<PieceHoverInspector
 					hoverScrubTimePosition={mouseTimePosition * (piece.instance.piece.content.sourceDuration || 0)}
