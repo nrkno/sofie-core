@@ -10,6 +10,7 @@ import { IContextMenuContext } from '../RundownView'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
+import { LinePartIdentifier } from './LinePartIdentifier'
 import { LinePartPieceIndicators } from './LinePartPieceIndicators'
 import { LinePartTimeline } from './LinePartTimeline'
 import { LinePartTitle } from './LinePartTitle'
@@ -136,6 +137,9 @@ export const LinePart: React.FC<IProps> = function LinePart({
 					{!isLivePart && <PartDurationDisplay />}
 				</div>
 				<LinePartTitle title={part.instance.part.title} />
+				{part.instance.part.identifier !== undefined && (
+					<LinePartIdentifier identifier={part.instance.part.identifier} />
+				)}
 			</div>
 			<LinePartPieceIndicators
 				partId={part.partId}

@@ -15,6 +15,8 @@ $part-border-color: #a7a7a760;
 $duration-area-width: 3.4em;
 $duration-area-margin: 0.5em;
 
+$identifier-area-width: 3em;
+
 .segment-timeline.segment-opl {
 	position: relative;
 	display: block;
@@ -57,8 +59,8 @@ $duration-area-margin: 0.5em;
 				position: relative;
 				background-color: $segment-title-background-color;
 				grid-area: header;
-				grid-template-columns: [countdown] $duration-area-width [title] auto [end];
-				grid-template-areas: 'countdown title';
+				grid-template-columns: [countdown] $duration-area-width [title] auto [identifier] $identifier-area-width [end];
+				grid-template-areas: 'countdown title identifier';
 
 				> .segment-opl__part-marker {
 					position: absolute;
@@ -93,7 +95,7 @@ $duration-area-margin: 0.5em;
 				}
 
 				> h3.segment-opl__part-title {
-					margin: 0.2em 2em 0.2em 0;
+					margin: 0.2em 0.2em 0.2em 0;
 					padding: 0;
 					line-height: 1em;
 					grid-area: title;
@@ -124,6 +126,26 @@ $duration-area-margin: 0.5em;
 						-webkit-box-orient: vertical;
 						-webkit-box-pack: center;
 						z-index: 1;
+					}
+				}
+
+				> .segment-opl__identifier-area {
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+					align-items: flex-end;
+					grid-area: identifier;
+					margin: 0.2em;
+
+					> .segment-opl__identifier {
+						display: inline-block;
+						padding: 0 4px 0 4px;
+						box-sizing: border-box;
+						background-color: $part-identifier;
+						border-radius: 8px 0 0 8px;
+						color: $part-identifier-text;
+						font-size: 0.85rem;
+						width: max-content;
 					}
 				}
 			}
