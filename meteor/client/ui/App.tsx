@@ -237,8 +237,8 @@ export const App = translateWithTracker(() => {
 
 			setInterval(this.cronJob, CRON_INTERVAL)
 
-			if (Settings.installationName) {
-				document.body.classList.add(Settings.installationName)
+			if (Settings.customizationClassName) {
+				document.body.classList.add(Settings.customizationClassName)
 			}
 			const uiZoom = getUIZoom()
 			if (uiZoom !== 1) {
