@@ -10,9 +10,15 @@ import { withTiming, WithTiming } from './RundownTiming/withTiming'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	RundownPlaylist,
+	RundownPlaylistId,
+	RundownPlaylistCollectionUtil,
+} from '../../../lib/collections/RundownPlaylists'
 import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -39,60 +45,58 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 		let segments: Array<SegmentUi> = []
 		if (playlist) {
 			const segmentMap = new Map<SegmentId, SegmentUi>()
-			segments = playlist
-				.getSegments(
-					{
-						isHidden: {
-							$ne: true,
-						},
+			segments = RundownPlaylistCollectionUtil.getSegments(
+				playlist,
+				{
+					isHidden: {
+						$ne: true,
 					},
-					{
-						fields: {
-							rundownId: 1,
-							name: 1,
-						},
-					}
-				)
-				.map((segment) => {
-					const segmentUi = literal<SegmentUi>({
-						...segment,
-						items: [],
-					})
-					segmentMap.set(segment._id, segmentUi)
-					return segmentUi
+				},
+				{
+					fields: {
+						rundownId: 1,
+						name: 1,
+					},
+				}
+			).map((segment) => {
+				const segmentUi = literal<SegmentUi>({
+					...segment,
+					items: [],
 				})
+				segmentMap.set(segment._id, segmentUi)
+				return segmentUi
+			})
 
-			const partInstancesMap = playlist.getActivePartInstancesMap()
-			playlist
-				.getUnorderedParts(
-					{
-						segmentId: {
-							$in: Array.from(segmentMap.keys()),
-						},
+			const partInstancesMap = RundownPlaylistCollectionUtil.getActivePartInstancesMap(playlist)
+			RundownPlaylistCollectionUtil.getUnorderedParts(
+				playlist,
+				{
+					segmentId: {
+						$in: Array.from(segmentMap.keys()),
 					},
-					{
-						fields: {
-							_rank: 1,
-							title: 1,
-							rundownId: 1,
-							segmentId: 1,
-							expectedDuration: 1,
-						},
-					}
-				)
-				.forEach((part) => {
-					const instance = findPartInstanceOrWrapToTemporary(partInstancesMap, part)
-					const partUi = literal<PartUi>({
-						partId: part._id,
-						instance,
-						pieces: [],
-						renderedDuration: 0,
-						startsAt: 0,
-						willProbablyAutoNext: false,
-					})
-					const segment = segmentMap.get(part.segmentId)
-					if (segment) segment.items.push(partUi)
+				},
+				{
+					fields: {
+						_rank: 1,
+						title: 1,
+						rundownId: 1,
+						segmentId: 1,
+						expectedDurationWithPreroll: 1,
+					},
+				}
+			).forEach((part) => {
+				const instance = findPartInstanceOrWrapToTemporary(partInstancesMap, part)
+				const partUi = literal<PartUi>({
+					partId: part._id,
+					instance,
+					pieces: [],
+					renderedDuration: 0,
+					startsAt: 0,
+					willProbablyAutoNext: false,
 				})
+				const segment = segmentMap.get(part.segmentId)
+				if (segment) segment.items.push(partUi)
+			})
 
 			segmentMap.forEach((segment) => {
 				// Sort parts by rank
@@ -134,7 +138,9 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 							width:
 								(Math.max(
 									(timingDurations && timingDurations[unprotectString(innerPart._id)]) || 0,
-									part.instance.timings?.duration || innerPart.expectedDuration || 0
+									part.instance.timings?.duration ||
+										calculatePartInstanceExpectedDurationWithPreroll(part.instance) ||
+										0
 								) /
 									(segmentDuration || 0)) *
 									100 +
@@ -150,7 +156,9 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 										((getCurrentTime() - (part.instance.timings?.startedPlayback || 0)) /
 											Math.max(
 												(timingDurations && timingDurations[unprotectString(innerPart._id)]) || 0,
-												part.instance.timings?.duration || innerPart.expectedDuration || 0
+												part.instance.timings?.duration ||
+													calculatePartInstanceExpectedDurationWithPreroll(part.instance) ||
+													0
 											)) *
 											100 +
 										'%',

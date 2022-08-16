@@ -26,7 +26,8 @@ $timeline-layer-height: 1em;
 	border-radius: 3px;
 }
 .segment-timeline__part-identifiers {
-	text-align: left;
+	text-align: right;
+	margin: 0 1px 0 2px;
 
 	.segment-timeline__part-identifiers__identifier {
 		display: inline-block;
@@ -43,7 +44,7 @@ $timeline-layer-height: 1em;
 .segment-timeline__timeline-container {
 	position: relative;
 	overflow: hidden;
-	contain: content style;
+	contain: layout paint style size;
 	touch-action: pan-y;
 
 	&.segment-timeline__timeline-container--grabbable {
@@ -67,11 +68,11 @@ $timeline-layer-height: 1em;
 		justify-content: flex-start;
 
 		will-change: transform;
-		contain: strict style;
+		contain: layout style;
 	}
 }
 .segment-timeline__zoom-area {
-	contain: strict style;
+	contain: strict;
 
 	.segment-timeline__timeline {
 		.segment-timeline__part {
@@ -81,7 +82,7 @@ $timeline-layer-height: 1em;
 }
 .segment-timeline__timeline-grid {
 	position: relative;
-	contain: strict style;
+	contain: strict;
 
 	.segment-timeline__timeline-grid__canvas {
 		position: absolute;
@@ -109,7 +110,7 @@ $timeline-layer-height: 1em;
 .segment-timeline__part {
 	flex: 0 0;
 	pointer-events: none;
-	contain: layout style;
+	contain: layout;
 
 	&.segment-timeline__part--end-of-segment {
 		// this is end of segment
@@ -119,7 +120,7 @@ $timeline-layer-height: 1em;
 		display: flex;
 		flex-flow: column nowrap;
 		min-height: 1em;
-		contain: strict style;
+		contain: layout style;
 		overflow: hidden;
 
 		.segment-timeline__layer {
@@ -129,7 +130,7 @@ $timeline-layer-height: 1em;
 			min-height: 1em;
 			line-height: 1em;
 			pointer-events: auto;
-			contain: strict style;
+			contain: layout style;
 
 			> * {
 				pointer-events: none;

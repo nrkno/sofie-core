@@ -3,157 +3,332 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.41.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
 
+
+### Bug Fixes
+
+* guard against sending multiple timelines to PoGw ([#732](https://github.com/nrkno/tv-automation-server-core/issues/732)) ([645b5c6](https://github.com/nrkno/tv-automation-server-core/commit/645b5c6ace37fb894207700044686ceac9b3b023))
+* some playout-gateway logging ([9ae203a](https://github.com/nrkno/tv-automation-server-core/commit/9ae203afd987f2572f096ac77e9abfc0747322c3))
+
+
+
+
+
+# [1.41.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.41.0-in-testing.1) (2022-04-28)
+
+
+### Bug Fixes
+
+* missing/broken device debug logging in playout-gateway ([#702](https://github.com/nrkno/tv-automation-server-core/issues/702)) ([be3abb5](https://github.com/nrkno/tv-automation-server-core/commit/be3abb5b429ec60531a1dd115d526b8004f42642))
+* PGW: change the default logLevel, from "verbose" which excluded debug-messages. "silly" means "everything" ([304241b](https://github.com/nrkno/tv-automation-server-core/commit/304241b3ffe7b0186500fb91e74ca2581c6e0883))
+* PGW: don't return the logger in event-listeners on threaded device ([207bcef](https://github.com/nrkno/tv-automation-server-core/commit/207bcefcbe66b29767b3bbe7e17e8f662f94cde2))
+* PGW: type issues in tsrHandler ([7c39f04](https://github.com/nrkno/tv-automation-server-core/commit/7c39f0430e2c65c34dd050c6046be9319161f69e))
+* update TSR dep (threadedclass update) ([1c38752](https://github.com/nrkno/tv-automation-server-core/commit/1c387528682368dbc49ee81aca0570cf642d41e5))
+* upgrade tsr ([32105d6](https://github.com/nrkno/tv-automation-server-core/commit/32105d623685f6feaa0ee30c723fcd494376fb11))
+
+
+
+# [1.41.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2...v1.41.0-in-testing.0) (2022-03-28)
+
+
+
+# [1.39.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.40.0-in-testing.1...v1.39.0-in-testing.5) (2022-03-11)
+
+
+
+# [1.40.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
+
+
+
+# [1.39.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-1...v1.39.0-in-testing.4) (2022-03-10)
+
+
+
+# [1.39.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
+
+
+
+# [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
+
+
+
+# [1.39.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
+
+
+
+# [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
+
+
+### Bug Fixes
+
+* add ccg retry interval to config manifest ([524cb15](https://github.com/nrkno/tv-automation-server-core/commit/524cb15dc09afd67b0228eb3dee40d259cc4df14))
+* add retryInterval to ccg playout-gw manifest ([d1da299](https://github.com/nrkno/tv-automation-server-core/commit/d1da29992c7f905ba332078536bafcf46c946cae))
+* influxdb for worker ([ee747b7](https://github.com/nrkno/tv-automation-server-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
+* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+* TS: support estimateResolveTimeMultiplier option ([5b07c06](https://github.com/nrkno/tv-automation-server-core/commit/5b07c06371b4bb6d16dcba4ec5744f21fa0fa619))
+* TSR dep ([8b506fa](https://github.com/nrkno/tv-automation-server-core/commit/8b506fa72fd368902f369e173502a19bac4bf7da))
+
+
+
+
+
+# [1.41.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.5...v1.41.0-in-testing.0) (2022-03-28)
+
+
+
+# [1.40.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
+
+
+
+# [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
+
+
+### Bug Fixes
+
+* influxdb for worker ([ee747b7](https://github.com/nrkno/tv-automation-server-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
+* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+
+
+
+
+
+# [1.40.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
+
+
+
+# [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
+
+
+### Bug Fixes
+
+* influxdb for worker ([ee747b7](https://github.com/nrkno/tv-automation-server-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
+* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+
+
+
+
+
+# [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
+# [1.39.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-1...v1.39.0-in-testing.4) (2022-03-10)
+
+
+
+# [1.39.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
+
+
+
+# [1.39.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
+
+
+
+# [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
+
+
+### Bug Fixes
+
+* add ccg retry interval to config manifest ([524cb15](https://github.com/nrkno/tv-automation-server-core/commit/524cb15dc09afd67b0228eb3dee40d259cc4df14))
+* add retryInterval to ccg playout-gw manifest ([d1da299](https://github.com/nrkno/tv-automation-server-core/commit/d1da29992c7f905ba332078536bafcf46c946cae))
+* TS: support estimateResolveTimeMultiplier option ([5b07c06](https://github.com/nrkno/tv-automation-server-core/commit/5b07c06371b4bb6d16dcba4ec5744f21fa0fa619))
+* TSR dep ([8b506fa](https://github.com/nrkno/tv-automation-server-core/commit/8b506fa72fd368902f369e173502a19bac4bf7da))
+
+
+
+
+
+# [1.39.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
+
+
+
+# [1.39.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
+
+
+
+# [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
+
+
+### Bug Fixes
+
+* influxdb for worker ([ee747b7](https://github.com/nrkno/tv-automation-server-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
+* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+
+
+µ
+
+
+# [1.39.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
 
 **Note:** Version bump only for package playout-gateway
 
 
 
 
+
+# [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
+
+
+### Bug Fixes
+
+* add ccg retry interval to config manifest ([524cb15](https://github.com/nrkno/tv-automation-server-core/commit/524cb15dc09afd67b0228eb3dee40d259cc4df14))
+* add retryInterval to ccg playout-gw manifest ([d1da299](https://github.com/nrkno/tv-automation-server-core/commit/d1da29992c7f905ba332078536bafcf46c946cae))
+* TS: support estimateResolveTimeMultiplier option ([5b07c06](https://github.com/nrkno/tv-automation-server-core/commit/5b07c06371b4bb6d16dcba4ec5744f21fa0fa619))
+* TSR dep ([8b506fa](https://github.com/nrkno/tv-automation-server-core/commit/8b506fa72fd368902f369e173502a19bac4bf7da))
+
+
+
+
+
+## [1.38.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0...v1.38.1) (2022-01-27)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.38.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.2...v1.38.0) (2022-01-26)
+
+
+### Bug Fixes
+
+* bug in PGW: When errors where logged, the deviceName logged was old ("uninitialized") ([5187b9a](https://github.com/nrkno/tv-automation-server-core/commit/5187b9a07a0d4643dea504897d74a97da201b698))
+
+
+
+# [1.38.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0-in-testing.1...v1.38.0-in-testing.2) (2021-12-17)
+
+
+
+# [1.38.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.1-0...v1.38.0-in-testing.1) (2021-12-17)
+
+
+
+# [1.38.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0...v1.38.0-in-testing.0) (2021-12-17)
+
+
+### Bug Fixes
+
+* PGW: only react on when the settings have changed on the PeripheralDevice ([0c4a3ea](https://github.com/nrkno/tv-automation-server-core/commit/0c4a3ea1e940193ad195f2a48b880c2f028fcf6a))
+* update code-preset, lints only changed files ([10fb7dc](https://github.com/nrkno/tv-automation-server-core/commit/10fb7dc9e024ffebd67c4accdf82d6bb0369893e))
+
+
+### Features
+
+* Rundown view, rundown header, and presenter view customization ([#551](https://github.com/nrkno/tv-automation-server-core/issues/551)) ([f945594](https://github.com/nrkno/tv-automation-server-core/commit/f945594ff7983618c79d66023e8628eeaa93f898)), closes [#554](https://github.com/nrkno/tv-automation-server-core/issues/554)
+* Store timeline objects as a data blob ([#617](https://github.com/nrkno/tv-automation-server-core/issues/617)) ([d36872d](https://github.com/nrkno/tv-automation-server-core/commit/d36872d1d94365199f5f3944964125fd003592cb))
+
+
+
+
+
+# [1.38.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0-in-testing.1...v1.38.0-in-testing.2) (2021-12-17)
+
+**Note:** Version bump only for package playout-gateway
+
+# [1.38.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0-in-testing.0...v1.38.0-in-testing.1) (2021-12-17)
+
+**Note:** Version bump only for package playout-gateway
+
+# [1.38.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0...v1.38.0-in-testing.0) (2021-12-17)
+
+### Bug Fixes
+
+- PGW: only react on when the settings have changed on the PeripheralDevice ([0c4a3ea](https://github.com/nrkno/tv-automation-server-core/commit/0c4a3ea1e940193ad195f2a48b880c2f028fcf6a))
+- update code-preset, lints only changed files ([10fb7dc](https://github.com/nrkno/tv-automation-server-core/commit/10fb7dc9e024ffebd67c4accdf82d6bb0369893e))
+
+### Features
+
+- Rundown view, rundown header, and presenter view customization ([#551](https://github.com/nrkno/tv-automation-server-core/issues/551)) ([f945594](https://github.com/nrkno/tv-automation-server-core/commit/f945594ff7983618c79d66023e8628eeaa93f898)), closes [#554](https://github.com/nrkno/tv-automation-server-core/issues/554)
+- Store timeline objects as a data blob ([#617](https://github.com/nrkno/tv-automation-server-core/issues/617)) ([d36872d](https://github.com/nrkno/tv-automation-server-core/commit/d36872d1d94365199f5f3944964125fd003592cb))
+
+# [1.37.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.13...v1.37.0) (2021-12-08)
+
+**Note:** Version bump only for package playout-gateway
 
 # [1.37.0-in-testing.13](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-testing.12...v1.37.0-in-testing.13) (2021-11-02)
 
 **Note:** Version bump only for package playout-gateway
 
-
-
-
-
 # [1.37.0-in-testing.11](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-4...v1.37.0-in-testing.11) (2021-10-22)
 
-
 ### Bug Fixes
 
-* add option on each device to debug-log that separately ([bc113b6](https://github.com/nrkno/tv-automation-server-core/commit/bc113b609eb964be5ea5ce88c9ab194ba3053f79))
-* don't emit slowFullfilledCommands as errors ([7b9b2ef](https://github.com/nrkno/tv-automation-server-core/commit/7b9b2ef1e7383a1d53584da492d666ff14fcd1e1))
-* PGW update TSR dep ([264b136](https://github.com/nrkno/tv-automation-server-core/commit/264b1362a714d599f31387bb5ca2699a7928ad84))
-* Playout-gateway: Improved debug-logging of devices ([a18dc70](https://github.com/nrkno/tv-automation-server-core/commit/a18dc7042baaa68eaca9b789c2c7abdcc7c69551))
-* Playout-gateway: update TSR dep (possible fix for quantel-rename port issue) ([7be8b3c](https://github.com/nrkno/tv-automation-server-core/commit/7be8b3c0f771a60b1682a5e31aded308364d1d9c))
-* **playout-gateway:** add option purgeUnknownElements, introduced in TSR ([9cd9e7c](https://github.com/nrkno/tv-automation-server-core/commit/9cd9e7c251ee2b17c5c31e2a229dfc3044266fd4))
-* prevent tsr going into init loop ([cca5b48](https://github.com/nrkno/tv-automation-server-core/commit/cca5b480f8060dcd70a94f55b6b636e66f1ff1ab))
-* single setTimeout for triggerUpdateDevice ([1031cbd](https://github.com/nrkno/tv-automation-server-core/commit/1031cbdbfb4a36f87ec4b2420b74677880c724b2))
-* update node version in docker to 12.22.6 ([4c0fe5e](https://github.com/nrkno/tv-automation-server-core/commit/4c0fe5e5a67dc482e092e052e48e463648dda7f1))
-* update tsr for atem-state ([94d2482](https://github.com/nrkno/tv-automation-server-core/commit/94d2482e9f846a46cbb9f10ab100107ef4a3239f))
-
+- add option on each device to debug-log that separately ([bc113b6](https://github.com/nrkno/tv-automation-server-core/commit/bc113b609eb964be5ea5ce88c9ab194ba3053f79))
+- don't emit slowFullfilledCommands as errors ([7b9b2ef](https://github.com/nrkno/tv-automation-server-core/commit/7b9b2ef1e7383a1d53584da492d666ff14fcd1e1))
+- PGW update TSR dep ([264b136](https://github.com/nrkno/tv-automation-server-core/commit/264b1362a714d599f31387bb5ca2699a7928ad84))
+- Playout-gateway: Improved debug-logging of devices ([a18dc70](https://github.com/nrkno/tv-automation-server-core/commit/a18dc7042baaa68eaca9b789c2c7abdcc7c69551))
+- Playout-gateway: update TSR dep (possible fix for quantel-rename port issue) ([7be8b3c](https://github.com/nrkno/tv-automation-server-core/commit/7be8b3c0f771a60b1682a5e31aded308364d1d9c))
+- **playout-gateway:** add option purgeUnknownElements, introduced in TSR ([9cd9e7c](https://github.com/nrkno/tv-automation-server-core/commit/9cd9e7c251ee2b17c5c31e2a229dfc3044266fd4))
+- prevent tsr going into init loop ([cca5b48](https://github.com/nrkno/tv-automation-server-core/commit/cca5b480f8060dcd70a94f55b6b636e66f1ff1ab))
+- single setTimeout for triggerUpdateDevice ([1031cbd](https://github.com/nrkno/tv-automation-server-core/commit/1031cbdbfb4a36f87ec4b2420b74677880c724b2))
+- update node version in docker to 12.22.6 ([4c0fe5e](https://github.com/nrkno/tv-automation-server-core/commit/4c0fe5e5a67dc482e092e052e48e463648dda7f1))
+- update tsr for atem-state ([94d2482](https://github.com/nrkno/tv-automation-server-core/commit/94d2482e9f846a46cbb9f10ab100107ef4a3239f))
 
 ### Features
 
-* add sisyfos channel by label mapping ([6e6d997](https://github.com/nrkno/tv-automation-server-core/commit/6e6d997a848f8942a61e145d85acd52acdb41565))
-
-
+- add sisyfos channel by label mapping ([6e6d997](https://github.com/nrkno/tv-automation-server-core/commit/6e6d997a848f8942a61e145d85acd52acdb41565))
 
 # [1.37.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-3...v1.37.0-in-testing.0) (2021-09-13)
 
-
 ### Bug Fixes
 
-* add missing TSR device options and layer mapping options ([#552](https://github.com/nrkno/tv-automation-server-core/issues/552)) ([3632509](https://github.com/nrkno/tv-automation-server-core/commit/3632509291c92343e629112a84799cceefac26a0))
-
-
+- add missing TSR device options and layer mapping options ([#552](https://github.com/nrkno/tv-automation-server-core/issues/552)) ([3632509](https://github.com/nrkno/tv-automation-server-core/commit/3632509291c92343e629112a84799cceefac26a0))
 
 # [1.36.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
 
-
-
 # [1.36.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.36.0-in-testing.8) (2021-08-10)
-
-
 
 # [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-1...v1.36.0-in-testing.7) (2021-07-20)
 
-
-
 # [1.36.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
-
-
 
 # [1.36.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
 
-
-
 # [1.36.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.2...v1.36.0-in-testing.3) (2021-07-12)
-
-
 
 # [1.36.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.1...v1.36.0-in-testing.2) (2021-07-12)
 
-
-
 # [1.36.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.0...v1.36.0-in-testing.1) (2021-07-12)
-
-
 
 # [1.36.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
 
-
 ### Features
 
-* rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
-
-
-
-
+- rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
 
 # [1.37.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-3...v1.37.0-in-testing.0) (2021-09-13)
 
-
 ### Bug Fixes
 
-* add missing TSR device options and layer mapping options ([#552](https://github.com/nrkno/tv-automation-server-core/issues/552)) ([3632509](https://github.com/nrkno/tv-automation-server-core/commit/3632509291c92343e629112a84799cceefac26a0))
-
-
+- add missing TSR device options and layer mapping options ([#552](https://github.com/nrkno/tv-automation-server-core/issues/552)) ([3632509](https://github.com/nrkno/tv-automation-server-core/commit/3632509291c92343e629112a84799cceefac26a0))
 
 # [1.36.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
-
-
 
 # [1.36.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.36.0-in-testing.8) (2021-08-10)
 
-
-
 # [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-1...v1.36.0-in-testing.7) (2021-07-20)
-
-
 
 # [1.36.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
 
-
-
 # [1.36.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
-
-
 
 # [1.36.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.2...v1.36.0-in-testing.3) (2021-07-12)
 
-
-
 # [1.36.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.1...v1.36.0-in-testing.2) (2021-07-12)
-
-
 
 # [1.36.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.0...v1.36.0-in-testing.1) (2021-07-12)
 
-
-
 # [1.36.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
-
 
 ### Features
 
-* rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
-
-
-
-
+- rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
 
 # [1.36.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
+
 ## [1.35.1-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.35.1-3) (2021-09-07)
 
 **Note:** Version bump only for package playout-gateway
-
-
-
-
 
 ## [1.35.1-2](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-1...v1.35.1-2) (2021-08-10)
 

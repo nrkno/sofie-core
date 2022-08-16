@@ -69,12 +69,18 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.launcherPort',
 			name: 'Launcher Port',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 		{
 			id: 'options.fps',
 			name: 'Frame rate',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.FLOAT,
+		},
+		{
+			id: 'options.retryInterval',
+			name: 'Retry interval',
+			hint: 'Time between retries for media that could not be loaded on first try. Set to -1 to disable.',
+			type: ConfigManifestEntryType.INT,
 		},
 		{
 			id: 'options.retryInterval',
@@ -461,8 +467,6 @@ type NoMappingSettingsDeviceTypes =
 	| TSRDeviceType.VIZMSE
 	| TSRDeviceType.SHOTOKU
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 type ImplementedMappingsManifest = Pick<MappingsManifest, Exclude<TSRDeviceType, NoMappingSettingsDeviceTypes>>
 
 const MAPPING_MANIFEST: ImplementedMappingsManifest = {
@@ -497,6 +501,11 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 			type: ConfigManifestEntryType.BOOLEAN,
 			optional: true,
 			hint: 'Whether to load to first frame',
+		},
+		{
+			id: 'options.retryInterval',
+			name: 'Media retry interval (ms), -1 disables, 0 default',
+			type: ConfigManifestEntryType.NUMBER,
 		},
 	],
 	[TSRDeviceType.HYPERDECK]: [
@@ -674,6 +683,12 @@ export const PLAYOUT_DEVICE_CONFIG: DeviceConfigManifest = {
 			id: 'reportAllCommands',
 			name: 'Report command timings on all commands',
 			type: ConfigManifestEntryType.BOOLEAN,
+		},
+		{
+			id: 'estimateResolveTimeMultiplier',
+			name: 'Adjust resolve-time estimation',
+			type: ConfigManifestEntryType.FLOAT,
+			defaultVal: 1,
 		},
 		{
 			id: 'devices',

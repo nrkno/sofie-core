@@ -17,8 +17,7 @@ import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { Credentials } from '../security/lib/credentials'
 import { OrganizationId } from '../../lib/collections/Organization'
 import deepmerge from 'deepmerge'
-import { ReadonlyDeep } from 'type-fest'
-import { DBRundown } from '../../lib/collections/Rundowns'
+import { ShowStyleBaseLight } from '../../lib/collections/optimizations'
 
 export async function getShowStyleCompound(
 	showStyleVariantId: ShowStyleVariantId
@@ -29,30 +28,6 @@ export async function getShowStyleCompound(
 	if (!showStyleBase) return undefined
 
 	return createShowStyleCompound(showStyleBase, showStyleVariant)
-}
-export async function getShowStyleCompoundForRundown(
-	rundown: Pick<ReadonlyDeep<DBRundown>, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>
-): Promise<ShowStyleCompound> {
-	const [showStyleBase, showStyleVariant] = await Promise.all([
-		ShowStyleBases.findOneAsync({ _id: rundown.showStyleBaseId }),
-		ShowStyleVariants.findOneAsync({ _id: rundown.showStyleVariantId }),
-	])
-	if (!showStyleBase)
-		throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" for Rundown "${rundown._id}" not found`)
-	if (!showStyleVariant)
-		throw new Meteor.Error(
-			404,
-			`ShowStyleVariant "${rundown.showStyleVariantId}" for Rundown "${rundown._id}" not found`
-		)
-
-	const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
-	if (!compound)
-		throw new Meteor.Error(
-			404,
-			`Failed to compile ShowStyleCompound for base "${rundown.showStyleBaseId}" and variant  "${rundown.showStyleVariantId}"`
-		)
-
-	return compound
 }
 
 export function createShowStyleCompound(
@@ -108,7 +83,7 @@ export async function insertShowStyleVariant(
 	return insertShowStyleVariantInner(showStyleBase, name)
 }
 export async function insertShowStyleVariantInner(
-	showStyleBase: ShowStyleBase,
+	showStyleBase: ShowStyleBaseLight,
 	name?: string
 ): Promise<ShowStyleVariantId> {
 	return ShowStyleVariants.insertAsync({

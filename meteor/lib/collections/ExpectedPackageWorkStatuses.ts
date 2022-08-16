@@ -1,37 +1,16 @@
-import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
-import { ProtectedString, registerCollection, Time } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { ExpectedPackageDBBase } from './ExpectedPackages'
-import { PeripheralDeviceId } from './PeripheralDevices'
 
-export type ExpectedPackageWorkStatusId = ProtectedString<'ExpectedPackageStatusId'>
+import { ExpectedPackageWorkStatusId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { ExpectedPackageWorkStatusId }
 
-/**
- * ExpectedPackageWorkStatus contains statuses about Work that is being performed on expected packages
- * This collection is populated by a Package Manager-device.
- */
+import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+export * from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
 
-export interface ExpectedPackageWorkStatus extends Omit<ExpectedPackageStatusAPI.WorkStatus, 'fromPackages'> {
-	_id: ExpectedPackageWorkStatusId
-
-	studioId: ExpectedPackageDBBase['studioId']
-	fromPackages: ExpectedPackageWorkStatusFromPackage[]
-
-	/** Which PeripheralDevice this update came from */
-	deviceId: PeripheralDeviceId
-
-	modified: Time
-}
-export interface ExpectedPackageWorkStatusFromPackage
-	extends Omit<ExpectedPackageStatusAPI.WorkBaseInfoFromPackage, 'id'> {
-	id: ExpectedPackageDBBase['_id']
-}
-
-export const ExpectedPackageWorkStatuses = createMongoCollection<ExpectedPackageWorkStatus, ExpectedPackageWorkStatus>(
-	'expectedPackageWorkStatuses'
+export const ExpectedPackageWorkStatuses = createMongoCollection<ExpectedPackageWorkStatus>(
+	CollectionName.ExpectedPackageWorkStatuses
 )
-registerCollection('ExpectedPackageStatuses', ExpectedPackageWorkStatuses)
 
 registerIndex(ExpectedPackageWorkStatuses, {
 	studioId: 1,

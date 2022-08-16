@@ -6,10 +6,10 @@ import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } fr
 import { RundownUtils } from '../../lib/rundown'
 import { withTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PlaylistTiming } from '../../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface IProps {
-	rundown: Rundown
+	rundown: Pick<Rundown, '_id' | 'name' | 'timing'>
 	playlist: RundownPlaylist
 }
 

@@ -1,4 +1,4 @@
-import { IMOSItem, MosString128, MosTime, MosDuration, MosModel, Utils as MosUtils } from 'mos-connection'
+import { MOS } from '@sofie-automation/corelib'
 import * as XMLBuilder from 'xmlbuilder'
 import * as _ from 'underscore'
 
@@ -10,7 +10,7 @@ import * as _ from 'underscore'
 
 /** Copied from mos-gateway */
 export function fixMosData(o: any): any {
-	if (_.isObject(o) && (o instanceof MosTime || o instanceof MosDuration || o instanceof MosString128)) {
+	if (_.isObject(o) && (o instanceof MOS.MosTime || o instanceof MOS.MosDuration || o instanceof MOS.MosString128)) {
 		return o.toString()
 	}
 	if (_.isArray(o)) {
@@ -30,11 +30,11 @@ export function fixMosData(o: any): any {
 
 export interface MosPluginMessage {
 	ncsReqAppInfo?: boolean
-	item?: IMOSItem
+	item?: MOS.IMOSItem
 }
 
 export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | undefined {
-	const doc: any = MosUtils.xml2js(xmlString)
+	const doc: any = MOS.Utils.xml2js(xmlString)
 
 	if (doc && doc.mos) {
 		const res: MosPluginMessage = {}
@@ -43,7 +43,7 @@ export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | 
 		}
 
 		if (doc.mos.ncsItem && doc.mos.ncsItem.item) {
-			res.item = MosModel.XMLMosItem.fromXML(doc.mos.ncsItem.item)
+			res.item = MOS.MosModel.XMLMosItem.fromXML(doc.mos.ncsItem.item)
 		}
 
 		return res
@@ -52,8 +52,8 @@ export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | 
 	}
 }
 
-export function generateMosPluginItemXml(item: IMOSItem): string {
+export function generateMosPluginItemXml(item: MOS.IMOSItem): string {
 	const builder = XMLBuilder.create('ncsItem')
-	MosModel.XMLMosItem.toXML(builder, item)
+	MOS.MosModel.XMLMosItem.toXML(builder, item)
 	return `<mos>${builder.toString()}</mos>`
 }

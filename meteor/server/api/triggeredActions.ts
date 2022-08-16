@@ -1,10 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
-import { registerClassToMeteorMethods } from '../methods'
+import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
 import { literal, getRandomId, protectString, makePromise, unprotectString } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
-import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
@@ -16,6 +16,7 @@ import {
 } from '../../lib/collections/TriggeredActions'
 import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from '../../lib/api/triggeredActions'
 import { SystemWriteAccess } from '../security/system'
+import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
 
 export function createTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null,
@@ -54,7 +55,7 @@ PickerPOST.route('/actionTriggers/upload/:showStyleBaseId?', (params, req: Incom
 
 	try {
 		if (showStyleBaseId !== undefined) {
-			const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+			const showStyleBase = fetchShowStyleBaseLight(showStyleBaseId)
 			if (!showStyleBase) {
 				throw new Meteor.Error(
 					404,
@@ -139,7 +140,7 @@ PickerGET.route('/actionTriggers/download/:showStyleBaseId?', (params, req: Inco
 function apiCreateTriggeredActions(
 	context: MethodContext,
 	showStyleBaseId: ShowStyleBaseId | null,
-	base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>>
+	base: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>> | null
 ) {
 	check(showStyleBaseId, Match.Maybe(String))
 	check(base, Match.Maybe(Object))
@@ -152,7 +153,7 @@ function apiCreateTriggeredActions(
 		if (!access) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found`)
 	}
 
-	return createTriggeredActions(showStyleBaseId, base)
+	return createTriggeredActions(showStyleBaseId, base || undefined)
 }
 function apiRemoveTriggeredActions(context: MethodContext, id: TriggeredActionId) {
 	check(id, String)
@@ -164,15 +165,18 @@ function apiRemoveTriggeredActions(context: MethodContext, id: TriggeredActionId
 	removeTriggeredActions(id)
 }
 
-class ServerTriggeredActionsAPI extends MethodContextAPI implements NewTriggeredActionsAPI {
+class ServerTriggeredActionsAPI
+	extends MethodContextAPI
+	implements ReplaceOptionalWithNullInMethodArguments<NewTriggeredActionsAPI>
+{
 	async createTriggeredActions(
 		showStyleBaseId: ShowStyleBaseId | null,
-		base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>>
+		base: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>> | null
 	) {
 		return makePromise(() => apiCreateTriggeredActions(this, showStyleBaseId, base))
 	}
-	async removeTriggeredActions(triggeredActionsId: TriggeredActionId) {
-		return makePromise(() => apiRemoveTriggeredActions(this, triggeredActionsId))
+	async removeTriggeredActions(triggeredActionId: TriggeredActionId) {
+		return makePromise(() => apiRemoveTriggeredActions(this, triggeredActionId))
 	}
 }
 registerClassToMeteorMethods(

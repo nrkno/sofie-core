@@ -15,6 +15,8 @@ import { logger } from '../logging'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { Blueprints } from '../../lib/collections/Blueprints'
 
 let j = 0
 
@@ -499,7 +501,12 @@ export const addSteps = addMigrationSteps('1.37.0', [
 			})
 		},
 	},
-	ensureCollectionProperty('RundownLayouts', { regionId: { $exists: false } }, 'regionId', CustomizableRegions.Shelf),
+	ensureCollectionProperty(
+		CollectionName.RundownLayouts,
+		{ regionId: { $exists: false } },
+		'regionId',
+		CustomizableRegions.Shelf
+	),
 	{
 		id: `RundownPlaylists.timing`,
 		canBeRunAutomatically: true,
@@ -579,6 +586,32 @@ export const addSteps = addMigrationSteps('1.37.0', [
 					)
 					Rundowns.update(obj._id, { $set: m })
 				}
+			})
+		},
+	},
+	{
+		id: `Blueprints.hasCode`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const count = Blueprints.find({
+				hasCode: {
+					$exists: false,
+				},
+			}).count()
+			if (count > 0) return `${count} blueprints need to be updated`
+			return false
+		},
+		migrate: () => {
+			Blueprints.find({
+				hasCode: {
+					$exists: false,
+				},
+			}).forEach((bp) => {
+				Blueprints.update(bp._id, {
+					$set: {
+						hasCode: !!bp.code,
+					},
+				})
 			})
 		},
 	},

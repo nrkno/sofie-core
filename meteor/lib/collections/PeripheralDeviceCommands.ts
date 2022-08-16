@@ -1,30 +1,17 @@
-import { getCurrentTime, Time, registerCollection, ProtectedString } from '../lib'
+import { getCurrentTime } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
-import { PeripheralDeviceId } from './PeripheralDevices'
 import { registerIndex } from '../database'
+import { PeripheralDeviceCommandId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { PeripheralDeviceCommandId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-/** A string, identifying a PeripheralDeviceCommand */
-export type PeripheralDeviceCommandId = ProtectedString<'PeripheralDeviceCommandId'>
+import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
+export * from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 
-export interface PeripheralDeviceCommand {
-	_id: PeripheralDeviceCommandId
-
-	deviceId: PeripheralDeviceId
-	functionName: string
-	args: Array<any>
-
-	hasReply: boolean
-	reply?: any
-	replyError?: any
-	replyTime?: number
-
-	time: Time // time
-}
-export const PeripheralDeviceCommands = createMongoCollection<PeripheralDeviceCommand, PeripheralDeviceCommand>(
-	'peripheralDeviceCommands'
+export const PeripheralDeviceCommands = createMongoCollection<PeripheralDeviceCommand>(
+	CollectionName.PeripheralDeviceCommands
 )
-registerCollection('PeripheralDeviceCommands', PeripheralDeviceCommands)
 
 // Monitor and remove old, lingering commands:
 const removeOldCommands = () => {

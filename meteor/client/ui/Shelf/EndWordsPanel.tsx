@@ -7,14 +7,14 @@ import {
 	RundownLayoutEndWords,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
-import { GetScriptPreview } from '../scriptPreview'
-import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { getScriptPreview } from '../../lib/ui/scriptPreview'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
 
 interface IEndsWordsPanelProps {
@@ -22,7 +22,7 @@ interface IEndsWordsPanelProps {
 	layout: RundownLayoutBase
 	panel: RundownLayoutEndWords
 	playlist: RundownPlaylist
-	showStyleBase: DBShowStyleBase
+	showStyleBase: ShowStyleBase
 }
 
 interface IEndsWordsPanelTrackedProps {
@@ -31,7 +31,7 @@ interface IEndsWordsPanelTrackedProps {
 
 interface IState {}
 
-export class EndWordsPanelInner extends MeteorReactComponent<
+class EndWordsPanelInner extends MeteorReactComponent<
 	Translated<IEndsWordsPanelProps & IEndsWordsPanelTrackedProps>,
 	IState
 > {
@@ -45,7 +45,7 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 		const { t, livePieceInstance, panel } = this.props
 		const content = livePieceInstance?.piece.content as Partial<ScriptContent> | undefined
 
-		const { endOfScript } = GetScriptPreview(content?.fullScript || '')
+		const { endOfScript } = getScriptPreview(content?.fullScript || '')
 
 		return (
 			<div
@@ -53,14 +53,7 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 					'end-words-panel timing',
 					isDashboardLayout ? (panel as DashboardLayoutEndsWords).customClasses : undefined
 				)}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutEndsWords) }),
-								fontSize: ((panel as DashboardLayoutEndsWords).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutEndsWords) : {}}
 			>
 				<div className="timing-clock left">
 					{!this.props.panel.hideLabel && <span className="timing-clock-label">{t('End Words')}</span>}
@@ -73,14 +66,14 @@ export class EndWordsPanelInner extends MeteorReactComponent<
 
 export const EndWordsPanel = translateWithTracker<IEndsWordsPanelProps, IState, IEndsWordsPanelTrackedProps>(
 	(props: IEndsWordsPanelProps) => {
-		return { livePieceInstance: getPieceWithManus(props) }
+		return { livePieceInstance: getPieceWithScript(props) }
 	},
 	(_data, props: IEndsWordsPanelProps, nextProps: IEndsWordsPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
 )(EndWordsPanelInner)
 
-function getPieceWithManus(props: IEndsWordsPanelProps): PieceInstance | undefined {
+function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefined {
 	const currentPartInstanceId: any = props.playlist.currentPartInstanceId
 
 	const unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet = getUnfinishedPieceInstancesReactive(

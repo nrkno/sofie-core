@@ -4,36 +4,29 @@
 # 'meteor add' and 'meteor remove' will edit this file for you,
 # but you can also edit it by hand.
 
-meteor-base@1.4.0             # Packages every Meteor app needs to have
-mobile-experience@1.1.0       # Packages for a great mobile UX
-mongo@1.10.1                   # The database Meteor supports right now
-reactive-var@1.0.11           # Reactive variable for tracker
+meteor-base             # Packages every Meteor app needs to have
+mobile-experience       # Packages for a great mobile UX
+mongo                   # The database Meteor supports right now
+reactive-var            # Reactive variable for tracker
 
-standard-minifier-css@1.7.2   # CSS minifier run for production mode
-standard-minifier-js@2.6.0    # JS minifier run for production mode
-es5-shim@4.8.0                # ECMAScript 5 compatibility for older browsers
-ecmascript@0.15.0             # Enable ECMAScript2015+ syntax in app code
-typescript@4.1.2                    # Enable TypeScript syntax in .ts and .tsx modules
-shell-server@0.5.0            # Server-side component of the `meteor shell` command
+standard-minifier-css   # CSS minifier run for production mode
+standard-minifier-js    # JS minifier run for production mode
+es5-shim                # ECMAScript 5 compatibility for older browsers
+ecmascript              # Enable ECMAScript2015+ syntax in app code
+typescript              # Enable TypeScript syntax in .ts and .tsx modules
+shell-server            # Server-side component of the `meteor shell` command
+modern-browsers          # Select when to allow use of the "modern" bundle
 
-#autopublish@1.0.7             # Publish all data to the clients (for prototyping)
-#insecure@1.0.7                # Allow all DB writes from clients (for prototyping)
-static-html                   # Define static page content in .html files
-react-meteor-data             # React higher-order component for reactively tracking Meteor data
+static-html              # Define static page content in .html files
+react-meteor-data        # React higher-order component for reactively tracking Meteor data
 
 
-tracker@1.2.0                       # Meteor's client-side reactive programming library
-session@1.2.0
-fourseven:scss@4.12.0
+tracker                  # Meteor's client-side reactive programming library
+session
+fourseven:scss
 
-#hwillson:stub-collections
-#nerdmed:catiline
-#runisland:static-assets
-dynamic-import@0.6.0
-#peerlibrary:computed-field
+dynamic-import
 meteorhacks:picker
 ostrio:meteor-root
-#underscore@1.0.10
-#mdg:validated-method
-accounts-password@1.7.0
-kschingiz:meteor-elastic-apm
+accounts-password
+# kschingiz:meteor-elastic-apm #Temporarily disabled, due to being incompatible with Meteor >2.3

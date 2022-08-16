@@ -9,8 +9,17 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
 import { IBlueprintActionTriggerMode, IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
-import { ensureHasTrailingSlash, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
-import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import {
+	contextMenuHoldToDisplayTime,
+	ensureHasTrailingSlash,
+	UserAgentPointer,
+	USER_AGENT_POINTER_PROPERTY,
+} from '../../lib/lib'
+import {
+	DashboardLayoutFilter,
+	PieceDisplayStyle,
+	RundownLayoutFilterBase,
+} from '../../../lib/collections/RundownLayouts'
 import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
@@ -25,6 +34,8 @@ import {
 	isAdLibNext,
 	isAdLibOnAir,
 } from '../../lib/shelf'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
+import { ContextType, setShelfContextMenuContext } from '../Shelf/ShelfContextMenu'
 
 interface IRundownViewShelfProps {
 	studio: Studio
@@ -34,7 +45,7 @@ interface IRundownViewShelfProps {
 	adLibSegmentUi: AdlibSegmentUi
 	hotkeyGroup: string
 	studioMode: boolean
-	registerHotkeys?: boolean
+	miniShelfFilter: RundownLayoutFilterBase | undefined
 }
 
 interface IRundownViewShelfTrackedProps {
@@ -203,32 +214,55 @@ class RundownViewShelfInner extends MeteorReactComponent<
 				<div className="dashboard-panel__panel">
 					{pieces.map((adLibPiece) => {
 						return (
-							// @todo: wrap in ContextMenuTrigger
-							<DashboardPieceButton
-								key={unprotectString(adLibPiece._id)}
-								piece={adLibPiece}
-								studio={this.props.studio}
-								layer={this.props.sourceLayers[adLibPiece.sourceLayerId]}
-								outputLayer={this.props.outputLayers[adLibPiece.outputLayerId]}
-								onToggleAdLib={this.onToggleAdLib}
-								onSelectAdLib={() => {
-									/* no-op */
-								}}
-								playlist={this.props.playlist}
-								isOnAir={this.isAdLibOnAir(adLibPiece)}
-								isNext={this.isAdLibNext(adLibPiece)}
-								mediaPreviewUrl={
-									this.props.studio
-										? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
-										: ''
+							<ContextMenuTrigger
+								id="shelf-context-menu"
+								collect={() =>
+									setShelfContextMenuContext({
+										type: ContextType.ADLIB,
+										details: {
+											adLib: adLibPiece,
+											onToggle: !adLibPiece.disabled ? this.onToggleAdLib : undefined,
+											disabled: adLibPiece.disabled,
+										},
+									})
 								}
 								displayStyle={PieceDisplayStyle.BUTTONS}
 								widthScale={3.27} // @todo: css
 								isSelected={false}
-								toggleOnSingleClick={this.state.singleClickMode}
+								toggleOnSingleClick={
+									(this.props.miniShelfFilter as DashboardLayoutFilter)?.toggleOnSingleClick ||
+									this.state.singleClickMode
+								}
+								renderTag="span"
+								key={unprotectString(adLibPiece._id)}
+								holdToDisplay={contextMenuHoldToDisplayTime()}
 							>
-								{adLibPiece.name}
-							</DashboardPieceButton>
+								<DashboardPieceButton
+									key={unprotectString(adLibPiece._id)}
+									piece={adLibPiece}
+									studio={this.props.studio}
+									layer={this.props.sourceLayers[adLibPiece.sourceLayerId]}
+									outputLayer={this.props.outputLayers[adLibPiece.outputLayerId]}
+									onToggleAdLib={this.onToggleAdLib}
+									onSelectAdLib={() => {
+										/* no-op */
+									}}
+									playlist={this.props.playlist}
+									isOnAir={this.isAdLibOnAir(adLibPiece)}
+									isNext={this.isAdLibNext(adLibPiece)}
+									mediaPreviewUrl={
+										this.props.studio
+											? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
+											: ''
+									}
+									displayStyle={PieceDisplayStyle.BUTTONS}
+									widthScale={3.27} // @todo: css
+									isSelected={false}
+									toggleOnSingleClick={this.state.singleClickMode}
+								>
+									{adLibPiece.name}
+								</DashboardPieceButton>
+							</ContextMenuTrigger>
 						)
 					})}
 				</div>

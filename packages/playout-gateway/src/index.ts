@@ -1,27 +1,31 @@
 import { Connector } from './connector'
 import { config, logPath, disableWatchdog, logLevel } from './config'
+
 import * as Winston from 'winston'
-export interface LoggerInstance extends Winston.LoggerInstance {
-	warning: never // logger.warning is not a function
-}
+
 console.log('process started') // This is a message all Sofie processes log upon startup
 
 // Setup logging --------------------------------------
-const logger = new Winston.Logger({}) as LoggerInstance
+let logger: Winston.Logger
 if (logPath) {
-	// Log json to file, human-readable to console
-	logger.add(Winston.transports.Console, {
-		level: logLevel || 'verbose',
+	const transportConsole = new Winston.transports.Console({
+		level: logLevel || 'silly',
 		handleExceptions: true,
-		json: false,
+		handleRejections: true,
 	})
-	logger.add(Winston.transports.File, {
-		level: logLevel || 'debug',
+	const transportFile = new Winston.transports.File({
+		level: logLevel || 'silly',
 		handleExceptions: true,
-		json: true,
+		handleRejections: true,
 		filename: logPath,
+		format: Winston.format.json(),
+	})
+
+	logger = Winston.createLogger({
+		transports: [transportConsole, transportFile],
 	})
 	logger.info('Logging to', logPath)
+
 	// Hijack console.log:
 	const orgConsoleLog = console.log
 	console.log = function (...args: any[]) {
@@ -33,18 +37,27 @@ if (logPath) {
 		}
 	}
 } else {
+	// custom json stringifier
+	const { splat, combine, printf } = Winston.format
+	const myFormat = printf((obj) => {
+		obj.localTimestamp = getCurrentTime()
+		obj.randomId = Math.round(Math.random() * 10000)
+		return JSON.stringify(obj) // make single line
+	})
+
 	// Log json to console
-	logger.add(Winston.transports.Console, {
+	const transportConsole = new Winston.transports.Console({
+		level: logLevel || 'silly',
 		handleExceptions: true,
-		json: true,
-		level: logLevel,
-		stringify: (obj) => {
-			obj.localTimestamp = getCurrentTime()
-			obj.randomId = Math.round(Math.random() * 10000)
-			return JSON.stringify(obj) // make single line
-		},
+		handleRejections: true,
+		format: combine(splat(), myFormat),
+	})
+
+	logger = Winston.createLogger({
+		transports: [transportConsole],
 	})
 	logger.info('Logging to Console')
+
 	// Hijack console.log:
 	console.log = function (...args: any[]) {
 		// orgConsoleLog('a')
@@ -63,12 +76,6 @@ function getCurrentTime() {
 }
 
 // Because the default NodeJS-handler sucks and wont display error properly
-process.on('unhandledRejection', (reason: any, p: any) => {
-	logger.error('Unhandled Promise rejection, see below')
-	logger.error('reason:', reason)
-	logger.error('promise:', p)
-	// logger.error('c:', c)
-})
 process.on('warning', (e: any) => {
 	logger.warn('Unhandled warning, see below')
 	logger.error('error', e)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { faCopy, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PlayoutActions, SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
@@ -17,11 +17,11 @@ import { PreviewContext } from './TriggeredActionsEditor'
 import { IWrappedAdLib } from '../../../../../lib/api/triggers/actionFilterChainCompilers'
 import { RundownUtils } from '../../../../lib/rundown'
 import { useTranslation } from 'react-i18next'
-import { translateMessage } from '../../../../../lib/api/TranslatableMessage'
 import { TriggerEditor } from './triggerEditors/TriggerEditor'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { iconDragHandle } from '../../../RundownList/icons'
 import { useDrag, useDrop } from 'react-dnd'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 interface IProps {
 	showStyleBase: ShowStyleBase | undefined
@@ -29,17 +29,17 @@ interface IProps {
 	selected?: boolean
 	previewContext: PreviewContext | null
 	locked?: boolean
-	onEdit: (e) => void
-	onRemove: (e) => void
-	onDuplicate: (e) => void
-	onFocus?: () => void
+	onEdit: (id: TriggeredActionId, e: React.UIEvent) => void
+	onRemove: (id: TriggeredActionId, e: React.UIEvent) => void
+	onDuplicate: (id: TriggeredActionId, e: React.UIEvent) => void
+	onFocus?: (id: TriggeredActionId) => void
 }
 
 let LAST_UP_SETTING = false
 
 export const TRIGGERED_ACTION_ENTRY_DRAG_TYPE = 'TriggeredActionEntry'
 
-export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEntry(
+export const TriggeredActionEntry: React.FC<IProps> = React.memo(function TriggeredActionEntry(
 	props: IProps
 ): React.ReactElement | null {
 	const { showStyleBase, triggeredActionId, selected, locked, previewContext, onEdit, onRemove, onDuplicate } = props
@@ -159,8 +159,9 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 			: t('Unknown')
 	}
 
-	function removeTrigger(index: number) {
-		if (triggeredAction) {
+	const removeTrigger = useCallback(
+		(index: number) => {
+			if (!triggeredAction) return
 			triggeredAction.triggers.splice(index, 1)
 
 			TriggeredActions.update(triggeredActionId, {
@@ -170,11 +171,23 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 			})
 
 			setSelectedTrigger(-1)
-		}
-	}
+		},
+		[triggeredAction, triggeredActionId]
+	)
 
-	function changeTrigger(index: number, newVal: DBBlueprintTrigger) {
-		if (triggeredAction) {
+	const focusTrigger = useCallback(
+		(index: number) => {
+			if (!triggeredAction) return
+			setSelectedTrigger(index)
+		},
+		[triggeredAction]
+	)
+
+	const closeTrigger = useCallback(() => setSelectedTrigger(-1), [])
+
+	const changeTrigger = useCallback(
+		(index: number, newVal: DBBlueprintTrigger) => {
+			if (!triggeredAction) return
 			triggeredAction.triggers.splice(index, 1, newVal)
 
 			LAST_UP_SETTING = !!newVal.up
@@ -186,69 +199,71 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 			})
 
 			setSelectedTrigger(-1)
-		}
-	}
+		},
+		[triggeredAction, triggeredActionId]
+	)
 
 	function addTrigger() {
-		if (triggeredAction) {
-			const index =
-				triggeredAction.triggers.push({
-					type: TriggerType.hotkey,
-					keys: '',
-					up: LAST_UP_SETTING,
-				}) - 1
+		if (!triggeredAction) return
 
-			TriggeredActions.update(triggeredActionId, {
-				$set: {
-					triggers: triggeredAction.triggers,
-				},
-			})
+		const index =
+			triggeredAction.triggers.push({
+				type: TriggerType.hotkey,
+				keys: '',
+				up: LAST_UP_SETTING,
+			}) - 1
 
-			setSelectedTrigger(index)
-			setSelectedAction(-1)
-		}
+		TriggeredActions.update(triggeredActionId, {
+			$set: {
+				triggers: triggeredAction.triggers,
+			},
+		})
+
+		setSelectedTrigger(index)
+		setSelectedAction(-1)
 	}
 
 	function addAction() {
-		if (triggeredAction) {
-			const index =
-				triggeredAction.actions.push({
-					action: PlayoutActions.adlib,
-					filterChain: [],
-				}) - 1
+		if (!triggeredAction) return
+		const index =
+			triggeredAction.actions.push({
+				action: PlayoutActions.adlib,
+				filterChain: [],
+			}) - 1
 
-			TriggeredActions.update(triggeredActionId, {
-				$set: {
-					actions: triggeredAction.actions,
-				},
-			})
+		TriggeredActions.update(triggeredActionId, {
+			$set: {
+				actions: triggeredAction.actions,
+			},
+		})
 
-			setSelectedTrigger(-1)
-			setSelectedAction(index)
-		}
+		setSelectedTrigger(-1)
+		setSelectedAction(index)
 	}
 
 	function removeAction(index: number) {
-		if (triggeredAction) {
-			triggeredAction.actions.splice(index, 1)
+		if (!triggeredAction) return
+		triggeredAction.actions.splice(index, 1)
 
-			TriggeredActions.update(triggeredActionId, {
-				$set: {
-					actions: triggeredAction.actions,
-				},
-			})
+		TriggeredActions.update(triggeredActionId, {
+			$set: {
+				actions: triggeredAction.actions,
+			},
+		})
 
-			setSelectedAction(-1)
-		}
+		setSelectedAction(-1)
 	}
 
+	const closeAction = useCallback(() => setSelectedAction(-1), [])
+	const focusAction = useCallback(() => props.onFocus && props.onFocus(triggeredActionId), [triggeredActionId])
+
 	useEffect(() => {
-		if (triggeredAction) {
-			LAST_UP_SETTING =
-				selectedTrigger >= 0
-					? !!triggeredAction.triggers[selectedTrigger]?.up
-					: triggeredAction.triggers[triggeredAction.triggers.length - 1]?.up ?? LAST_UP_SETTING
-		}
+		if (!triggeredAction) return
+
+		LAST_UP_SETTING =
+			selectedTrigger >= 0
+				? !!triggeredAction.triggers[selectedTrigger]?.up
+				: triggeredAction.triggers[triggeredAction.triggers.length - 1]?.up ?? LAST_UP_SETTING
 	}, [triggeredAction, triggeredAction?.triggers[triggeredAction.triggers.length - 1]?.up, selectedTrigger])
 
 	// do not render anything until we get the triggered action from the collection
@@ -265,6 +280,7 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 				dragPreview(el)
 				drop(el)
 			}}
+			data-obj-id={triggeredAction._id}
 		>
 			{!selected && !locked ? (
 				<div className="triggered-action-entry__drag-handle" ref={drag}>
@@ -277,12 +293,13 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 				{triggeredAction.triggers.map((trigger, index) => (
 					<TriggerEditor
 						key={index}
+						index={index}
 						trigger={trigger}
 						opened={selectedTrigger === index}
-						onChangeTrigger={(newVal) => changeTrigger(index, newVal)}
-						onFocus={() => setSelectedTrigger(index)}
-						onClose={() => setSelectedTrigger(-1)}
-						onRemove={() => removeTrigger(index)}
+						onChangeTrigger={changeTrigger}
+						onFocus={focusTrigger}
+						onClose={closeTrigger}
+						onRemove={removeTrigger}
 					/>
 				))}
 				<button
@@ -302,11 +319,11 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 						index={index}
 						triggeredAction={triggeredAction}
 						showStyleBase={showStyleBase}
-						onActionFocus={() => setSelectedAction(index)}
-						onFocus={props.onFocus}
-						onClose={() => setSelectedAction(-1)}
+						onActionFocus={setSelectedAction}
+						onFocus={focusAction}
+						onClose={closeAction}
 						opened={selectedAction === index}
-						onRemove={() => removeAction(index)}
+						onRemove={removeAction}
 					/>
 				))}
 				{triggeredAction.actions.length === 0 ? (
@@ -318,13 +335,13 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 				) : null}
 			</div>
 			<div className="triggered-action-entry__modify">
-				<button className="action-btn" onClick={onDuplicate}>
+				<button className="action-btn" onClick={(e) => onDuplicate(triggeredActionId, e)}>
 					<FontAwesomeIcon icon={faCopy} />
 				</button>
-				<button className="action-btn" onClick={onEdit}>
+				<button className="action-btn" onClick={(e) => onEdit(triggeredActionId, e)}>
 					<FontAwesomeIcon icon={faPencilAlt} />
 				</button>
-				<button className="action-btn" onClick={onRemove}>
+				<button className="action-btn" onClick={(e) => onRemove(triggeredActionId, e)}>
 					<FontAwesomeIcon icon={faTrash} />
 				</button>
 			</div>
@@ -374,4 +391,4 @@ export const TriggeredActionEntry: React.FC<IProps> = function TriggeredActionEn
 			) : null}
 		</div>
 	)
-}
+})

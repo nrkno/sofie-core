@@ -39,46 +39,46 @@ import {
 	ShowStyleVariantId,
 	DBShowStyleVariant,
 } from '../../../lib/collections/ShowStyleVariants'
-import { check, Match } from '../../../lib/check'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
+import { check } from '../../../lib/check'
+import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 import { Mongo } from 'meteor/mongo'
 import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+import { Match } from 'meteor/check'
 
 class AbstractMigrationContextWithTriggeredActions {
 	protected showStyleBaseId: ShowStyleBaseId | null = null
-	getTriggeredActionsId(triggeredActionId: string): string {
+	getTriggeredActionId(triggeredActionId: string): string {
 		return getHash((this.showStyleBaseId ?? 'core') + '_' + triggeredActionId)
 	}
-	private getProtectedTriggeredActionsId(triggeredActionId: string): TriggeredActionId {
-		return protectString<TriggeredActionId>(this.getTriggeredActionsId(triggeredActionId))
+	private getProtectedTriggeredActionId(triggeredActionId: string): TriggeredActionId {
+		return protectString<TriggeredActionId>(this.getTriggeredActionId(triggeredActionId))
 	}
 	getAllTriggeredActions(): IBlueprintTriggeredActions[] {
 		return TriggeredActions.find({
 			showStyleBaseId: this.showStyleBaseId,
 		}).map((triggeredActions) => unprotectObject(triggeredActions))
 	}
-	private getTriggeredActionFromDb(triggeredActionsId: string): TriggeredActionsObj | undefined {
+	private getTriggeredActionFromDb(triggeredActionId: string): TriggeredActionsObj | undefined {
 		const triggeredAction = TriggeredActions.findOne({
 			showStyleBaseId: this.showStyleBaseId,
-			_id: this.getProtectedTriggeredActionsId(triggeredActionsId),
+			_id: this.getProtectedTriggeredActionId(triggeredActionId),
 		})
 		if (triggeredAction) return triggeredAction
 
 		// Assume we were given the full id
 		return TriggeredActions.findOne({
 			showStyleBaseId: this.showStyleBaseId,
-			_id: protectString(triggeredActionsId),
+			_id: protectString(triggeredActionId),
 		})
 	}
-	getTriggeredAction(triggeredActionsId: string): IBlueprintTriggeredActions | undefined {
-		check(triggeredActionsId, String)
-		if (!triggeredActionsId) {
-			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionsId}" is invalid`)
+	getTriggeredAction(triggeredActionId: string): IBlueprintTriggeredActions | undefined {
+		check(triggeredActionId, String)
+		if (!triggeredActionId) {
+			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionId}" is invalid`)
 		}
 
-		return unprotectObject(this.getTriggeredActionFromDb(triggeredActionsId))
+		return unprotectObject(this.getTriggeredActionFromDb(triggeredActionId))
 	}
 	setTriggeredAction(triggeredActions: IBlueprintTriggeredActions) {
 		check(triggeredActions, Object)
@@ -97,7 +97,7 @@ class AbstractMigrationContextWithTriggeredActions {
 				...triggeredActions,
 				_rundownVersionHash: '',
 				showStyleBaseId: this.showStyleBaseId,
-				_id: this.getProtectedTriggeredActionsId(triggeredActions._id),
+				_id: this.getProtectedTriggeredActionId(triggeredActions._id),
 			})
 		} else {
 			TriggeredActions.update(
@@ -112,17 +112,17 @@ class AbstractMigrationContextWithTriggeredActions {
 			)
 		}
 	}
-	removeTriggeredAction(triggeredActionsId: string) {
-		check(triggeredActionsId, String)
-		if (!triggeredActionsId) {
-			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionsId}" is invalid`)
+	removeTriggeredAction(triggeredActionId: string) {
+		check(triggeredActionId, String)
+		if (!triggeredActionId) {
+			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionId}" is invalid`)
 		}
 
-		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActionsId)
+		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActionId)
 		if (currentTriggeredAction) {
 			TriggeredActions.remove({
 				_id: currentTriggeredAction._id,
-				showStyleBaseId: null,
+				showStyleBaseId: this.showStyleBaseId,
 			})
 		}
 	}
@@ -242,7 +242,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		check(deviceId, String)
 
 		const selector: Mongo.Selector<PeripheralDevice> = {
-			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			type: PeripheralDeviceType.PLAYOUT,
 			studioId: this.studio._id,
 		}
 		selector[`settings.devices.${deviceId}`] = { $exists: 1 }
@@ -265,7 +265,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		const parentDevice = PeripheralDevices.findOne(
 			{
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
 				studioId: this.studio._id,
 			},
 			{
@@ -300,7 +300,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		}
 
 		const selector: Mongo.Selector<PeripheralDevice> = {
-			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			type: PeripheralDeviceType.PLAYOUT,
 			studioId: this.studio._id,
 		}
 		selector[`settings.devices.${deviceId}`] = { $exists: 1 }
@@ -334,7 +334,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		m[`settings.devices.${deviceId}`] = 1
 		PeripheralDevices.update(
 			{
-				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+				type: PeripheralDeviceType.PLAYOUT,
 				studioId: this.studio._id,
 			},
 			{

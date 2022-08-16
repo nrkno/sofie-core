@@ -7,15 +7,25 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { TriggeredActionId, TriggeredActions } from '../../../lib/collections/TriggeredActions'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
-import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { ISourceLayer, PlayoutActions, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
+import {
+	RundownPlaylist,
+	RundownPlaylistCollectionUtil,
+	RundownPlaylistId,
+	RundownPlaylists,
+} from '../../../lib/collections/RundownPlaylists'
+import {
+	ISourceLayer,
+	PlayoutActions,
+	ITranslatableMessage,
+	SomeAction,
+	TriggerType,
+} from '@sofie-automation/blueprints-integration'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import {
-	createAction as libCreateAction,
 	isPreviewableAction,
 	ReactivePlaylistActionContext,
+	createAction as libCreateAction,
 } from '../../../lib/api/triggers/actionFactory'
-import { Tracker } from 'meteor/tracker'
 import { PartId } from '../../../lib/collections/Parts'
 import { flatten, ProtectedString, protectString } from '../../../lib/lib'
 import { IWrappedAdLib } from '../../../lib/api/triggers/actionFilterChainCompilers'
@@ -24,10 +34,10 @@ import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
 import { preventDefault } from '../SorensenContext'
 import { getFinalKey } from './codesToKeyLabels'
 import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../../ui/RundownView/RundownViewEventBus'
+import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../../lib/Settings'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
@@ -186,7 +196,7 @@ export function isMountedAdLibTrigger(
 }
 
 function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker.Computation {
-	const computation = Tracker.nonreactive(() =>
+	return Tracker.nonreactive(() =>
 		Tracker.autorun((computation) => {
 			const cleanUp = autorun()
 
@@ -195,12 +205,6 @@ function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker
 			}
 		})
 	)
-	if (Tracker.currentComputation) {
-		Tracker.currentComputation.onStop(() => {
-			computation.stop()
-		})
-	}
-	return computation
 }
 
 /**
@@ -293,6 +297,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			'Digit9',
 			'Digit0',
 		]
+		const systemActionKeys = ['AnyEnter', 'NumpadEnter', 'Tab']
 
 		const poisonKey: string | null = Settings.poisonKey
 
@@ -318,10 +323,12 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					ordered: false,
 					preventDefaultPartials: false,
 				})
-				localSorensen.bind('AnyEnter', preventDefault, {
-					global: false,
-					exclusive: true,
-				})
+				systemActionKeys.forEach((key) =>
+					localSorensen.bind(key, preventDefault, {
+						global: false,
+						exclusive: true,
+					})
+				)
 				fKeys.forEach((key) =>
 					localSorensen.bind(key, preventDefault, {
 						exclusive: false,
@@ -345,7 +352,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			}
 			localSorensen.unbind('Control+KeyF', preventDefault)
 			localSorensen.unbind('Control+F5', preventDefault)
-			localSorensen.unbind('AnyEnter', preventDefault)
+			systemActionKeys.forEach((key) => localSorensen.unbind(key, preventDefault))
 			fKeys.forEach((key) => localSorensen.unbind(key, preventDefault))
 			ctrlDigitKeys.forEach((key) => localSorensen.unbind(`Control+${key}`, preventDefault))
 		}
@@ -368,7 +375,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					nextPartInstanceId: 1,
 					currentPartInstanceId: 1,
 				},
-			})
+			}) as
+				| Pick<RundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInstanceId' | 'currentPartInstanceId'>
+				| undefined
 			if (playlist) {
 				let context = rundownPlaylistContext.get()
 				if (context === null) {
@@ -380,6 +389,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 						nextPartId: new ReactiveVar(props.nextPartId),
 						currentSegmentPartIds: new ReactiveVar(props.currentSegmentPartIds),
 						nextSegmentPartIds: new ReactiveVar(props.nextSegmentPartIds),
+						currentPartInstanceId: new ReactiveVar(playlist.currentPartInstanceId),
 					}
 					rundownPlaylistContext.set(context)
 				} else {
@@ -416,7 +426,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				},
 			})
 			if (playlist) {
-				return playlist.getRundownUnorderedIDs()
+				return RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 			}
 			return []
 		}, [props.rundownPlaylistId]) || []

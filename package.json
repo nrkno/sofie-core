@@ -4,23 +4,37 @@
 	"license": "MIT",
 	"private": true,
 	"engines": {
-		"node": "^12.21.0 || 14"
+		"node": "^14.18 || ^16.14"
 	},
 	"scripts": {
-		"postinstall": "yarn install:meteor && yarn install:packages",
-		"install:meteor": "cd meteor && meteor --version && meteor npm install",
+		"postinstall": "yarn install:packages && yarn install:meteor",
+		"install:meteor": "cd meteor && meteor --version && meteor npm install -g yarn && node ../scripts/fix-windows-yarn.js && meteor yarn install",
 		"install:packages": "cd packages && yarn install",
 		"start": "yarn install && yarn dev",
-		"dev": "yarn build:packages && yarn meteor:run",
+		"dev": "node ./scripts/run.js",
 		"build:packages": "cd packages && yarn build",
-		"meteor:run": "cd meteor && meteor npm run start",
+		"test:packages": "cd packages && yarn test",
+		"lint:packages": "cd packages && yarn lint",
+		"unit:packages": "cd packages && yarn unit",
+		"check-types:meteor": "cd meteor && yarn check-types",
+		"test:meteor": "cd meteor && yarn test",
+		"lint:meteor": "cd meteor && meteor yarn lint",
+		"unit:meteor": "cd meteor && meteor yarn unit",
+		"meteor:run": "cd meteor && meteor yarn start",
+		"lint": "yarn lint:meteor && yarn lint:packages",
+		"unit": "yarn unit:meteor && yarn unit:packages",
 		"validate:release": "yarn install && yarn build:packages && yarn validate:release:packages && yarn validate:release:meteor",
-		"validate:release:meteor": "cd meteor && meteor npm run validate:prod-dependencies && meteor npm run license-validate && meteor npm run lint && meteor npm run test",
-		"validate:release:packages": "cd packages && yarn validate:dependencies && yarn lint && yarn test",
+		"validate:release:meteor": "cd meteor && meteor yarn validate:prod-dependencies && meteor yarn license-validate && meteor yarn lint && meteor yarn test",
+		"validate:release:packages": "cd packages && yarn validate:dependencies && yarn test",
 		"meteor": "cd meteor && meteor",
-		"reset": "meteor node scripts/reset.js"
+		"docs:serve": "cd packages && yarn docs:serve",
+		"reset": "meteor node scripts/reset.js",
+		"test-all": "yarn install && yarn build:packages && yarn check-types:meteor && yarn lint:packages && yarn lint:meteor && yarn test:packages && yarn test:meteor"
 	},
 	"devDependencies": {
-		"rimraf": "^3.0.2"
+		"concurrently": "^6.4.0",
+		"rimraf": "^3.0.2",
+		"semver": "^7.3.5",
+		"snyk-nodejs-lockfile-parser": "^1.38.0"
 	}
 }

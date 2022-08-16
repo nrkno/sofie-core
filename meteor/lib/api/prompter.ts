@@ -2,10 +2,10 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
 import { ISourceLayer, ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
-import { getRandomId, normalizeArray, normalizeArrayToMap } from '../lib'
+import { RundownPlaylists, RundownPlaylistId, RundownPlaylistCollectionUtil } from '../collections/RundownPlaylists'
+import { normalizeArray, normalizeArrayToMap, protectString } from '../lib'
 import { SegmentId } from '../collections/Segments'
-import { PieceId } from '../collections/Pieces'
+import { Piece, PieceId, Pieces } from '../collections/Pieces'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../Rundown'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PartId } from '../collections/Parts'
@@ -13,7 +13,7 @@ import { FindOptions } from '../typings/meteor'
 import { PieceInstance, PieceInstances } from '../collections/PieceInstances'
 import { Rundown, RundownId } from '../collections/Rundowns'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../collections/ShowStyleBases'
-import { processAndPrunePieceInstanceTimings } from '../rundown/infinites'
+import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
@@ -45,12 +45,15 @@ export interface PrompterData {
 
 export namespace PrompterAPI {
 	// TODO: discuss: move this implementation to server-side?
-	export function getPrompterData(playlistId: RundownPlaylistId): PrompterData {
+	export function getPrompterData(playlistId: RundownPlaylistId): PrompterData | null {
 		check(playlistId, String)
 
 		const playlist = RundownPlaylists.findOne(playlistId)
-		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
-		const rundowns = playlist.getRundowns()
+
+		if (!playlist) {
+			return null
+		}
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
 		const rundownIdsToShowStyleBaseIds: Map<RundownId, ShowStyleBaseId> = new Map()
 		const rundownIdsToShowStyleBase: Map<RundownId, [ShowStyleBase, Record<string, ISourceLayer>] | undefined> =
 			new Map()
@@ -64,7 +67,8 @@ export namespace PrompterAPI {
 		}
 		const rundownMap = normalizeArrayToMap(rundowns, '_id')
 
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+		const { currentPartInstance, nextPartInstance } =
+			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
 		const groupedParts = getSegmentsWithPartInstances(
 			playlist,
@@ -121,6 +125,35 @@ export namespace PrompterAPI {
 		let previousRundown: Rundown | null = null
 		const rundownIds = rundowns.map((rundown) => rundown._id)
 
+		const allPiecesCache = new Map<PartId, Piece[]>()
+		Pieces.find({
+			startRundownId: { $in: rundownIds },
+		}).forEach((piece) => {
+			let pieces = allPiecesCache.get(piece.startPartId)
+			if (!pieces) {
+				pieces = []
+				allPiecesCache.set(piece.startPartId, pieces)
+			}
+			pieces?.push(piece)
+		})
+
+		const pieceInstanceFieldOptions: FindOptions<PieceInstance> = {
+			fields: {
+				startedPlayback: 0,
+				stoppedPlayback: 0,
+				userDuration: 0,
+			},
+		}
+
+		const currentPartInstancePieceInstances = currentPartInstance
+			? PieceInstances.find(
+					{
+						partInstanceId: currentPartInstance._id,
+					},
+					pieceInstanceFieldOptions
+			  ).fetch()
+			: undefined
+
 		groupedParts.forEach(({ segment, partInstances }, segmentIndex) => {
 			const segmentId = segment._id
 			const rundown = rundownMap.get(segment.rundownId)
@@ -149,14 +182,6 @@ export namespace PrompterAPI {
 					pieces: [],
 				}
 
-				const pieceInstanceFieldOptions: FindOptions<PieceInstance> = {
-					fields: {
-						startedPlayback: 0,
-						stoppedPlayback: 0,
-						userDuration: 0,
-					},
-				}
-
 				const rawPieceInstances = getPieceInstancesForPartInstance(
 					playlist.activationId,
 					rundown,
@@ -168,14 +193,8 @@ export namespace PrompterAPI {
 					orderedAllPartIds,
 					nextPartIsAfterCurrentPart,
 					currentPartInstance,
-					currentPartInstance
-						? PieceInstances.find(
-								{
-									partInstanceId: currentPartInstance._id,
-								},
-								pieceInstanceFieldOptions
-						  ).fetch()
-						: undefined,
+					currentPartInstancePieceInstances,
+					allPiecesCache,
 					pieceInstanceFieldOptions,
 					true
 				)
@@ -189,7 +208,7 @@ export namespace PrompterAPI {
 						true
 					)
 
-					preprocessedPieces.forEach((pieceInstance) => {
+					for (const pieceInstance of preprocessedPieces) {
 						const piece = pieceInstance.piece
 						const sourceLayer = showStyleBaseAndSLayers[1][piece.sourceLayerId] as ISourceLayer | undefined
 
@@ -197,7 +216,7 @@ export namespace PrompterAPI {
 							const content = piece.content as ScriptContent
 							if (content.fullScript) {
 								if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) >= 0) {
-									return // piece already included in prompter script
+									break // piece already included in prompter script
 								}
 								piecesIncluded.push(piece.continuesRefId || piece._id)
 								partData.pieces.push({
@@ -206,13 +225,13 @@ export namespace PrompterAPI {
 								})
 							}
 						}
-					})
+					}
 				}
 
 				if (partData.pieces.length === 0) {
 					// insert an empty line
 					partData.pieces.push({
-						id: getRandomId(),
+						id: protectString(`part_${partData.id}_empty`),
 						text: '',
 					})
 				}

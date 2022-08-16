@@ -1,0 +1,111 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Playout API Basic rundown control 1`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "blueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[{\\"id\\":\\"playlist_randomId9000_status\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"while\\":1},\\"layer\\":\\"rundown_status\\",\\"content\\":{\\"deviceType\\":0},\\"classes\\":[\\"rundown_active\\"]},{\\"id\\":\\"part_group_randomId9000_part0_0_randomId9002\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":\\"now\\"},\\"priority\\":5,\\"layer\\":\\"\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"group\\"},\\"children\\":[],\\"isGroup\\":true,\\"isPartGroup\\":true,\\"metaData\\":{\\"isPieceTimeline\\":true}},{\\"id\\":\\"part_group_firstobject_randomId9000_part0_0_randomId9002\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"group_first_object\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"callback\\",\\"callBack\\":\\"partPlaybackStarted\\",\\"callBackData\\":{\\"rundownPlaylistId\\":\\"playlist_randomId9000\\",\\"partInstanceId\\":\\"randomId9000_part0_0_randomId9002\\"},\\"callBackStopped\\":\\"partPlaybackStopped\\"},\\"inGroup\\":\\"part_group_randomId9000_part0_0_randomId9002\\",\\"classes\\":[]},{\\"id\\":\\"piece_group_randomId9000_part0_0_randomId9002_randomId9000_piece001\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"group\\"},\\"children\\":[],\\"inGroup\\":\\"part_group_randomId9000_part0_0_randomId9002\\",\\"isGroup\\":true,\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"vt0\\",\\"priority\\":5,\\"metaData\\":{\\"pieceId\\":\\"randomId9000_part0_0_randomId9002_randomId9000_piece001\\",\\"isPieceTimeline\\":true}},{\\"id\\":\\"piece_group_firstobject_randomId9000_part0_0_randomId9002_randomId9000_piece001\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"vt0_firstobject\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"callback\\",\\"callBack\\":\\"piecePlaybackStarted\\",\\"callBackData\\":{\\"rundownPlaylistId\\":\\"playlist_randomId9000\\",\\"pieceInstanceId\\":\\"randomId9000_part0_0_randomId9002_randomId9000_piece001\\",\\"dynamicallyInserted\\":false},\\"callBackStopped\\":\\"piecePlaybackStopped\\"},\\"classes\\":[\\"current_part\\"],\\"inGroup\\":\\"piece_group_randomId9000_part0_0_randomId9002_randomId9000_piece001\\"}]",
+    "timelineHash": "randomId9006",
+  },
+]
+`;
+
+exports[`Playout API Basic rundown control 2`] = `
+Object {
+  "_id": "randomId9000",
+  "_rank": 0,
+  "created": 0,
+  "externalId": "MOCK_RUNDOWN",
+  "externalNRCSName": "mock",
+  "importVersions": Object {
+    "blueprint": "",
+    "core": "",
+    "showStyleBase": "",
+    "showStyleVariant": "",
+    "studio": "",
+  },
+  "modified": 0,
+  "name": "Default Rundown",
+  "organizationId": null,
+  "playlistId": "playlist_randomId9000",
+  "showStyleBaseId": "mockShowStyleBase0",
+  "showStyleVariantId": "mockShowStyleVariant0",
+  "studioId": "mockStudio0",
+  "timing": Object {
+    "type": "none",
+  },
+}
+`;
+
+exports[`Playout API Basic rundown control 3`] = `
+Array [
+  Object {
+    "_id": "mockStudio0",
+    "generated": 12345,
+    "generationVersions": Object {
+      "blueprintId": "studioBlueprint0",
+      "blueprintVersion": "0.0.0",
+      "core": "0.0.0-test",
+      "studio": "asdf",
+    },
+    "timelineBlob": "[]",
+    "timelineHash": "randomId9007",
+  },
+]
+`;
+
+exports[`Playout API Basic rundown control 4`] = `
+Object {
+  "_id": "playlist_randomId9000",
+  "created": 0,
+  "currentPartInstanceId": null,
+  "externalId": "MOCK_RUNDOWNPLAYLIST",
+  "holdState": 0,
+  "modified": 0,
+  "name": "Default RundownPlaylist",
+  "nextPartInstanceId": null,
+  "nextPartManual": false,
+  "nextTimeOffset": null,
+  "organizationId": null,
+  "previousPartInstanceId": null,
+  "rehearsal": false,
+  "studioId": "mockStudio0",
+  "timing": Object {
+    "type": "none",
+  },
+}
+`;
+
+exports[`Playout API Basic rundown control 5`] = `
+Object {
+  "_id": "randomId9000",
+  "_rank": 0,
+  "created": 0,
+  "externalId": "MOCK_RUNDOWN",
+  "externalNRCSName": "mock",
+  "importVersions": Object {
+    "blueprint": "",
+    "core": "",
+    "showStyleBase": "",
+    "showStyleVariant": "",
+    "studio": "",
+  },
+  "modified": 0,
+  "name": "Default Rundown",
+  "organizationId": null,
+  "playlistId": "playlist_randomId9000",
+  "showStyleBaseId": "mockShowStyleBase0",
+  "showStyleVariantId": "mockShowStyleVariant0",
+  "studioId": "mockStudio0",
+  "timing": Object {
+    "type": "none",
+  },
+}
+`;

@@ -37,7 +37,7 @@ export const SupportPopUp = translateWithTracker<IProps, {}, ITrackedProps>((_pr
 		render() {
 			const { t } = this.props
 			return (
-				<div className="support-pop-up-panel">
+				<div className="support-pop-up-panel" role="dialog">
 					<h2 className="mhn mvn">{t('Help & Support')}</h2>
 					{this.props.children && <div className="support-pop-up-panel__actions">{this.props.children}</div>}
 					{!this.props.support.message && <DocumentationLink></DocumentationLink>}
@@ -53,38 +53,26 @@ export const SupportPopUp = translateWithTracker<IProps, {}, ITrackedProps>((_pr
 interface IToggleProps {
 	isOpen?: boolean
 	onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
+	title?: string
 }
 
-export class SupportPopUpToggle extends React.PureComponent<IToggleProps> {
-	// getMessages () {
-	// 	const core = CoreSystem.findOne()
-	// 	if (!core) {
-	// 		return ''
-	// 	}
-
-	// 	if (!core.support) {
-	// 		return ''
-	// 	}
-
-	// 	return core.support.message
-	// }
-	render() {
-		return (
-			<React.Fragment>
-				<button
-					className={ClassNames('status-bar__controls__button', 'support__toggle-button', {
-						'status-bar__controls__button--open': this.props.isOpen,
-						// 'status-bar__controls__button--has-messages': this.getMessages() !== ''
-					})}
-					role="button"
-					onClick={this.props.onClick}
-					tabIndex={0}
-				>
-					<FontAwesomeIcon icon={faQuestion} />
-				</button>
-			</React.Fragment>
-		)
-	}
+export function SupportPopUpToggle(props: IToggleProps) {
+	return (
+		<button
+			className={ClassNames('status-bar__controls__button', 'support__toggle-button', {
+				'status-bar__controls__button--open': props.isOpen,
+				// 'status-bar__controls__button--has-messages': this.getMessages() !== ''
+			})}
+			role="button"
+			onClick={props.onClick}
+			tabIndex={0}
+			aria-label={props.title}
+			aria-haspopup="dialog"
+			aria-pressed={props.isOpen ? 'true' : 'false'}
+		>
+			<FontAwesomeIcon icon={faQuestion} />
+		</button>
+	)
 }
 
 export const DocumentationLink = withTranslation()(

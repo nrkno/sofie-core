@@ -537,7 +537,7 @@ export interface CoreConfig {
  */
 export class CoreHandler {
 	core: CoreConnection
-	logger: Winston.LoggerInstance
+	logger: Winston.Logger
 	public _observers: Array<any> = []
 	private _deviceOptions: DeviceConfig
 	private _coreMosHandlers: Array<CoreMosDeviceHandler> = []
@@ -548,7 +548,7 @@ export class CoreHandler {
 	private _coreConfig?: CoreConfig
 	private _process?: Process
 
-	constructor (logger: Winston.LoggerInstance, deviceOptions: DeviceConfig) {
+	constructor (logger: Winston.Logger, deviceOptions: DeviceConfig) {
 		this.logger = logger
 		this._deviceOptions = deviceOptions
 	}

@@ -9,6 +9,8 @@ import { MeteorCall } from '../../../lib/api/methods'
 import * as _ from 'underscore'
 import { languageAnd } from '../../lib/language'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
+import { TFunction } from 'i18next'
+import { Meteor } from 'meteor/meteor'
 import { LogLevel } from '../../../lib/lib'
 
 interface IProps {}
@@ -60,74 +62,6 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 				})
 				.catch(console.error)
 		}
-		cleanUpOldData(): void {
-			const { t } = this.props
-			MeteorCall.system
-				.cleanupOldData(false)
-				.then((results) => {
-					console.log(results)
-					if (_.isString(results)) {
-						doModalDialog({
-							title: t('Error'),
-							message: results,
-							acceptOnly: true,
-							onAccept: () => {
-								// nothing
-							},
-						})
-					} else {
-						let count = 0
-						const affectedCollections: string[] = []
-						_.each(results, (result) => {
-							count += result.docsToRemove
-							if (result.docsToRemove > 0) {
-								affectedCollections.push(result.collectionName)
-							}
-						})
-						doModalDialog({
-							title: t('Remove old data'),
-							message: t(
-								'There are {{count}} documents in {{collections}} that can be removed, do you want to continue?',
-								{
-									count: count,
-									collections: languageAnd(t, affectedCollections),
-								}
-							),
-							yes: t('Yes'),
-							no: t('No'),
-							onAccept: () => {
-								MeteorCall.system
-									.cleanupOldData(true)
-									.then((results) => {
-										console.log(results)
-
-										if (_.isString(results)) {
-											doModalDialog({
-												title: t('Error'),
-												message: results,
-												acceptOnly: true,
-												onAccept: () => {
-													// nothing
-												},
-											})
-										} else {
-											doModalDialog({
-												title: t('Remove old data'),
-												message: t('The old data was removed.'),
-												acceptOnly: true,
-												onAccept: () => {
-													// nothing
-												},
-											})
-										}
-									})
-									.catch(console.error)
-							},
-						})
-					}
-				})
-				.catch(console.error)
-		}
 		render() {
 			const { t } = this.props
 
@@ -159,7 +93,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									attribute="logLevel"
 									obj={this.props.coreSystem}
 									type="dropdown"
-									options={LogLevel}
+									options={{ ...LogLevel, 'Use fallback': undefined }}
 									collection={CoreSystem}
 									className="mdinput"
 								/>
@@ -297,7 +231,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 							</button>
 						</div>
 						<div>
-							<button className="btn btn-default" onClick={() => this.cleanUpOldData()}>
+							<button className="btn btn-default" onClick={() => checkForOldDataAndCleanUp(t)}>
 								{t('Cleanup old data')}
 							</button>
 						</div>
@@ -315,7 +249,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 							</div>
 						</div>
 						<div className="field">
-							{t('Enable storing Rundown Playlist snapshots')}
+							{t('Enable automatic storage of Rundown Playlist snapshots periodically')}
 							<div className="mdi">
 								<EditAttribute
 									attribute="cron.storeRundownSnapshots.enabled"
@@ -324,6 +258,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									collection={CoreSystem}
 								></EditAttribute>
 							</div>
+							{t('Filter: If set, only store snapshots for certain rundowns')}
 							<div className="mdi">
 								<EditAttribute
 									modifiedClassName="bghl"
@@ -347,3 +282,103 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 		}
 	}
 )
+
+export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft: number = 0): void {
+	MeteorCall.system
+		.cleanupOldData(false)
+		.then((results) => {
+			console.log(results)
+			if (typeof results === 'string') {
+				if (retriesLeft <= 0) {
+					doModalDialog({
+						title: t('Error when checking for cleaning up'),
+						message: results,
+						acceptOnly: true,
+						onAccept: () => {
+							// nothing
+						},
+					})
+				} else {
+					// Try again:
+					Meteor.setTimeout(() => {
+						checkForOldDataAndCleanUp(t, retriesLeft - 1)
+					}, 300)
+				}
+			} else {
+				const collections = Object.values(results).filter((o) => o.docsToRemove > 0)
+				collections.sort((a, b) => {
+					return a.docsToRemove - b.docsToRemove
+				})
+
+				let totalCount = 0
+				const affectedCollections: string[] = []
+				_.each(results, (result) => {
+					totalCount += result.docsToRemove
+					if (result.docsToRemove > 0) {
+						affectedCollections.push(result.collectionName)
+					}
+				})
+				if (totalCount) {
+					doModalDialog({
+						title: t('Remove old data from database'),
+						message: (
+							<React.Fragment>
+								<p>
+									{t('There are {{count}} documents that can be removed, do you want to continue?', {
+										count: totalCount,
+										collections: languageAnd(t, affectedCollections),
+									})}
+								</p>
+								<p>
+									{t('Documents to be removed:')}
+									<ul>
+										{collections.map((o, index) => {
+											return (
+												<li key={index}>
+													{o.collectionName}: {o.docsToRemove}
+												</li>
+											)
+										})}
+									</ul>
+								</p>
+							</React.Fragment>
+						),
+
+						yes: t('Yes'),
+						no: t('No'),
+						onAccept: () => {
+							MeteorCall.system
+								.cleanupOldData(true)
+								.then((results) => {
+									console.log(results)
+
+									if (_.isString(results)) {
+										doModalDialog({
+											title: t('Error'),
+											message: results,
+											acceptOnly: true,
+											onAccept: () => {
+												checkForOldDataAndCleanUp(t, retriesLeft)
+											},
+											yes: t('Retry'),
+											no: t('Cancel'),
+										})
+									} else {
+										doModalDialog({
+											title: t('Remove old data'),
+											message: t('The old data was removed.'),
+											acceptOnly: true,
+											onAccept: () => {
+												// nothing
+											},
+										})
+									}
+								})
+								.catch(console.error)
+						},
+					})
+				}
+			}
+		})
+		.catch(console.error)
+}

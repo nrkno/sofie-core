@@ -1,10 +1,9 @@
-import { registerCollection, ProtectedString } from '../lib'
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { BlueprintId } from './Blueprints'
-import { ShowStyleBaseId } from './ShowStyleBases'
-import { UserId } from './Users'
 import { registerIndex } from '../database'
+import { RundownLayoutId, UserId, ShowStyleBaseId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+export { RundownLayoutId }
 import { DashboardPanel } from '../../client/ui/Shelf/DashboardPanel'
 
 /**
@@ -48,7 +47,7 @@ export enum RundownLayoutElementType {
 	FILTER = 'filter',
 	EXTERNAL_FRAME = 'external_frame',
 	ADLIB_REGION = 'adlib_region',
-	KEYBOARD_PREVIEW = 'keyboard_preview',
+	KEYBOARD_PREVIEW = 'keyboard_preview', // This is used by TV2
 	PIECE_COUNTDOWN = 'piece_countdown',
 	NEXT_INFO = 'next_info',
 	PLAYLIST_START_TIMER = 'playlist_start_timer',
@@ -235,6 +234,12 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	sourceLayerTypes: SourceLayerType[] | undefined
 	outputLayerIds: string[] | undefined
 	label: string[] | undefined
+	/**
+	 * If a tag filter is starting with a "!" char, it will turn into a NOT filter, i.e., the tag must
+	 * not be present, for the item to match the filter
+	 *
+	 * TODO: This should be made more explicit in the datastructure somehow.
+	 */
 	tags: string[] | undefined
 	displayStyle: PieceDisplayStyle
 	showThumbnailsInList: boolean
@@ -259,7 +264,9 @@ export interface RundownLayoutKeyboardPreview extends RundownLayoutElementBase {
 }
 
 export enum DashboardPanelUnit {
+	/** Dashboard panels are defined in absolute (em) units */
 	EM = 'em',
+	/** Dashboard panels are defined in percent so that they scale with container/window size */
 	PERCENT = '%',
 }
 
@@ -310,7 +317,6 @@ export type DashboardLayoutFilter = DashboardPanel<
 		buttonHeightScale: number
 
 		includeClearInRundownBaseline: boolean
-		assignHotKeys: boolean
 		overflowHorizontally?: boolean
 		showAsTimeline?: boolean
 		hide?: boolean
@@ -326,12 +332,7 @@ export type DashboardLayoutFilter = DashboardPanel<
 export interface MiniShelfLayoutFilter extends RundownLayoutFilterBase {
 	buttonWidthScale: number
 	buttonHeightScale: number
-
-	assignHotKeys: boolean
 }
-
-/** A string, identifying a RundownLayout */
-export type RundownLayoutId = ProtectedString<'RundownLayoutId'>
 
 export interface RundownLayoutBase {
 	_id: RundownLayoutId
@@ -367,8 +368,10 @@ export interface RundownViewLayout extends RundownLayoutBase {
 	/** Always show planned segment duration instead of counting up/down when the segment is live */
 	fixedSegmentDuration: boolean
 	/** SourceLayer ids for which a piece duration label should be shown */
-	showDurationSourceLayers: string[]
+	showDurationSourceLayers: ISourceLayer['_id'][]
+	/** Show only the listed source layers in the RundownView (sourceLayerIds) */
 	visibleSourceLayers?: string[]
+	/** Show only the listed output groups in the RundownView (outputLayerIds) */
 	visibleOutputLayers?: string[]
 }
 
@@ -376,7 +379,6 @@ export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {
 	exposeAsStandalone: boolean
 	openByDefault: boolean
 	startingHeight?: number
-	showBuckets: boolean
 	disableContextMenu: boolean
 	/* Customizable region that the layout modifies. */
 	regionId: CustomizableRegions
@@ -423,7 +425,8 @@ export interface DashboardLayoutActionButton extends DashboardPanelBase {
 	_id: string
 	type: ActionButtonType
 	label: string
-	labelToggled: string // different label for when the button is toggled on
+	/** When set, changes the label when the button is toggled on */
+	labelToggled?: string
 }
 
 export interface DashboardLayout extends RundownLayoutShelfBase {
@@ -431,8 +434,7 @@ export interface DashboardLayout extends RundownLayoutShelfBase {
 	actionButtons?: DashboardLayoutActionButton[]
 }
 
-export const RundownLayouts = createMongoCollection<RundownLayoutBase, RundownLayoutBase>('rundownLayouts')
-registerCollection('RundownLayouts', RundownLayouts)
+export const RundownLayouts = createMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts)
 
 // addIndex(RundownLayouts, {
 // 	studioId: 1,

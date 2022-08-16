@@ -59,20 +59,6 @@ export default withTranslation()(
 					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Show Buckets')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'showBuckets'}
-								obj={this.props.item}
-								options={RundownLayoutType}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
 							{t('Disable Context Menu')}
 							<EditAttribute
 								modifiedClassName="bghl"

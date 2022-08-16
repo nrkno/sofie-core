@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { BucketPanel } from './BucketPanel'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { ISourceLayer, IOutputLayer } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
@@ -27,7 +27,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import update from 'immutability-helper'
 
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { AdLibPieceUi } from '../../lib/shelf'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { IAdLibListItem } from './AdLibListItem'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
@@ -37,15 +37,15 @@ import RundownViewEventBus, {
 	BucketEvent,
 	IEventContext,
 } from '../RundownView/RundownViewEventBus'
-import { AdLibPieceUi } from '../../lib/shelf'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export interface BucketAdLibUi extends BucketAdLib {
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
-	status: RundownAPI.PieceStatusCode
+	status: PieceStatusCode
 }
 
-export interface BucketAdLibActionUi extends AdLibPiece {
+export interface BucketAdLibActionUi extends Omit<AdLibPiece, 'timelineObjectsString'> {
 	bucketId: BucketId
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
@@ -57,7 +57,8 @@ export interface BucketAdLibActionUi extends AdLibPiece {
 	adlibAction: BucketAdLibAction
 	contentMetaData?: any
 	message?: string | null
-	showStyleVariantId: ShowStyleVariantId
+	showStyleBaseId: ShowStyleBaseId
+	showStyleVariantId: ShowStyleVariantId | null
 	studioId: StudioId
 }
 
@@ -328,7 +329,7 @@ export const RundownViewBuckets = withTranslation()(
 				t,
 				e.context,
 				UserAction.CREATE_BUCKET,
-				(e) => MeteorCall.userAction.bucketsCreateNewBucket(e, t('New Bucket'), this.props.playlist.studioId, null),
+				(e) => MeteorCall.userAction.bucketsCreateNewBucket(e, this.props.playlist.studioId, t('New Bucket')),
 				(_err, res) => {
 					if (ClientAPI.isClientResponseSuccess(res)) {
 						this.setState({
@@ -604,7 +605,6 @@ export const RundownViewBuckets = withTranslation()(
 												onAdLibContext={this.onAdLibContext}
 												onSelectAdlib={this.props.onSelectPiece}
 												selectedPiece={this.props.selectedPiece}
-												hotkeyGroup={bucket.name.replace(/\W/, '_') + 'BucketPanel'}
 											/>
 										)}
 									</ContextMenuTrigger>

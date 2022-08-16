@@ -1,0 +1,86 @@
+import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { JobContext } from '../../jobs'
+import { sortPieceInstancesByStart } from '../pieces'
+import { findLookaheadObjectsForPart, LookaheadTimelineObject } from './findObjects'
+import { PartAndPieces, PartInstanceAndPieceInstances } from './util'
+
+export interface LookaheadResult {
+	timed: Array<LookaheadTimelineObject>
+	future: Array<LookaheadTimelineObject>
+}
+
+export function findLookaheadForLayer(
+	context: JobContext,
+	currentPartInstanceId: PartInstanceId | null,
+	partInstancesInfo: PartInstanceAndPieceInstances[],
+	previousPartInstanceInfo: PartInstanceAndPieceInstances | undefined,
+	orderedPartInfos: Array<PartAndPieces>,
+	layer: string,
+	lookaheadTargetFutureObjects: number,
+	lookaheadMaxSearchDistance: number
+): LookaheadResult {
+	const span = context.startSpan(`findLookaheadForlayer.${layer}`)
+	const res: LookaheadResult = {
+		timed: [],
+		future: [],
+	}
+
+	// Track the previous info for checking how the timeline will be built
+	let previousPart: DBPart | undefined
+	if (previousPartInstanceInfo) {
+		previousPart = previousPartInstanceInfo.part.part
+	}
+
+	// Generate timed/future objects for the partInstances
+	for (const partInstanceInfo of partInstancesInfo) {
+		if (!partInstanceInfo.onTimeline && lookaheadMaxSearchDistance <= 0) break
+
+		const partInfo: PartAndPieces = {
+			part: partInstanceInfo.part.part,
+			pieces: sortPieceInstancesByStart(partInstanceInfo.allPieces, partInstanceInfo.nowInPart),
+		}
+
+		const objs = findLookaheadObjectsForPart(
+			context,
+			currentPartInstanceId,
+			layer,
+			previousPart,
+			partInfo,
+			partInstanceInfo.part._id
+		)
+
+		if (partInstanceInfo.onTimeline) {
+			res.timed.push(...objs)
+		} else {
+			res.future.push(...objs)
+		}
+
+		previousPart = partInfo.part
+	}
+
+	if (lookaheadMaxSearchDistance > 1 && lookaheadTargetFutureObjects > 0) {
+		for (const partInfo of orderedPartInfos.slice(0, lookaheadMaxSearchDistance - 1)) {
+			// Stop if we have enough objects already
+			if (res.future.length >= lookaheadTargetFutureObjects) {
+				break
+			}
+
+			if (partInfo.pieces.length > 0 && isPartPlayable(partInfo.part)) {
+				const objs = findLookaheadObjectsForPart(
+					context,
+					currentPartInstanceId,
+					layer,
+					previousPart,
+					partInfo,
+					null
+				)
+				res.future.push(...objs)
+				previousPart = partInfo.part
+			}
+		}
+	}
+
+	if (span) span.end()
+	return res
+}

@@ -10,7 +10,7 @@ import {
 	compareSemverVersions,
 	isPrerelease,
 } from '../lib/collections/CoreSystem'
-import { getCurrentTime, unprotectString, waitForPromise, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, unprotectString, waitForPromiseAll } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from './migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './migration/currentSystemVersion'
@@ -19,16 +19,15 @@ import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
 import { Studios, StudioId } from '../lib/collections/Studios'
-import { logger, LogLevel, setLogLevel } from './logging'
+import { getEnvLogLevel, logger, LogLevel, setLogLevel } from './logging'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
-import { pushWorkToQueue } from './codeControl'
 const PackageInfo = require('../package.json')
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
-import { profiler } from './api/profiler'
-import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
+// import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+// import { profiler } from './api/profiler'
+import { TMP_TSR_VERSION, StatusCode } from '@sofie-automation/blueprints-integration'
 import { createShowStyleCompound } from './api/showStyles'
-import { StatusCode } from '../lib/api/systemStatus'
+import { fetchShowStyleBasesLight, fetchStudiosLight } from '../lib/collections/optimizations'
 
 export { PackageInfo }
 
@@ -78,7 +77,7 @@ function initializeCoreSystem() {
 		queueCheckBlueprintsConfig()
 	}
 
-	const blueprintsCursor = Blueprints.find({})
+	const blueprintsCursor = Blueprints.find({}, { fields: { code: 0 } })
 	blueprintsCursor.observeChanges({
 		added: observeBlueprintChanges,
 		changed: observeBlueprintChanges,
@@ -112,6 +111,7 @@ function initializeCoreSystem() {
 let lastDatabaseVersionBlueprintIds: { [id: string]: true } = {}
 function checkDatabaseVersions() {
 	// Core system
+	logger.debug('checkDatabaseVersions...')
 
 	const databaseSystem = getCoreSystem()
 	if (!databaseSystem) {
@@ -127,8 +127,15 @@ function checkDatabaseVersions() {
 
 		// Blueprints:
 		const blueprintIds: { [id: string]: true } = {}
-		Blueprints.find().forEach((blueprint) => {
-			if (blueprint.code) {
+		Blueprints.find(
+			{},
+			{
+				fields: {
+					code: 0, // Optimization, reduce bandwidth because the .code property is large
+				},
+			}
+		).forEach((blueprint) => {
+			if (blueprint.hasCode) {
 				blueprintIds[unprotectString(blueprint._id)] = true
 
 				// @ts-ignore
@@ -145,7 +152,7 @@ function checkDatabaseVersions() {
 				}
 
 				const studioIds: { [studioId: string]: true } = {}
-				ShowStyleBases.find({
+				fetchShowStyleBasesLight({
 					blueprintId: blueprint._id,
 				}).forEach((showStyleBase) => {
 					if (o.statusCode === StatusCode.GOOD) {
@@ -160,7 +167,7 @@ function checkDatabaseVersions() {
 					}
 
 					// TODO - is this correct for the current relationships? What about studio blueprints?
-					Studios.find({
+					fetchStudiosLight({
 						supportedShowStyleBase: showStyleBase._id,
 					}).forEach((studio) => {
 						if (!studioIds[unprotectString(studio._id)]) {
@@ -191,10 +198,11 @@ function checkDatabaseVersions() {
 		})
 		lastDatabaseVersionBlueprintIds = blueprintIds
 	}
+	logger.debug('checkDatabaseVersions done!')
 }
 function onCoreSystemChanged() {
 	checkDatabaseVersions()
-	updateLoggerLevel()
+	updateLoggerLevel(false)
 }
 
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -231,6 +239,7 @@ function checkBlueprintCompability(blueprint: Blueprint) {
 }
 
 let checkBlueprintsConfigTimeout: number | undefined
+let checkBlueprintsConfigRunning = false
 function queueCheckBlueprintsConfig() {
 	const RATE_LIMIT = 10000
 
@@ -246,55 +255,66 @@ function queueCheckBlueprintsConfig() {
 
 let lastBlueprintConfigIds: { [id: string]: true } = {}
 function checkBlueprintsConfig() {
-	waitForPromise(
-		pushWorkToQueue('checkBlueprintsConfig', 'checkBlueprintsConfig', async () => {
-			const blueprintIds: { [id: string]: true } = {}
+	if (checkBlueprintsConfigRunning) {
+		// already running, queue for later
+		queueCheckBlueprintsConfig()
+		return
+	}
+	checkBlueprintsConfigRunning = true
 
-			// Studios
-			_.each(Studios.find({}).fetch(), (studio) => {
-				const blueprint = Blueprints.findOne(studio.blueprintId)
-				if (!blueprint) return
+	logger.debug('checkBlueprintsConfig start')
 
-				const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.blueprintConfig)
-				const systemStatusId = `blueprintConfig_${blueprint._id}_studio_${studio._id}`
-				setBlueprintConfigStatus(systemStatusId, diff, studio._id)
-				blueprintIds[systemStatusId] = true
-			})
+	try {
+		const blueprintIds: { [id: string]: true } = {}
 
-			// ShowStyles
-			_.each(ShowStyleBases.find({}).fetch(), (showBase) => {
-				const blueprint = Blueprints.findOne(showBase.blueprintId)
-				if (!blueprint || !blueprint.showStyleConfigManifest) return
+		// Studios
+		_.each(Studios.find({}).fetch(), (studio) => {
+			const blueprint = Blueprints.findOne(studio.blueprintId)
+			if (!blueprint) return
 
-				const variants = ShowStyleVariants.find({
-					showStyleBaseId: showBase._id,
-				}).fetch()
+			const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.blueprintConfig)
+			const systemStatusId = `blueprintConfig_${blueprint._id}_studio_${studio._id}`
+			setBlueprintConfigStatus(systemStatusId, diff, studio._id)
+			blueprintIds[systemStatusId] = true
+		})
 
-				const allDiffs: string[] = []
+		// ShowStyles
+		_.each(ShowStyleBases.find({}).fetch(), (showBase) => {
+			const blueprint = Blueprints.findOne(showBase.blueprintId)
+			if (!blueprint || !blueprint.showStyleConfigManifest) return
 
-				_.each(variants, (variant) => {
-					const compound = createShowStyleCompound(showBase, variant)
-					if (!compound) return
+			const variants = ShowStyleVariants.find({
+				showStyleBaseId: showBase._id,
+			}).fetch()
 
-					const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
-					if (diff && diff.length) {
-						allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
-					}
-				})
-				const systemStatusId = `blueprintConfig_${blueprint._id}_showStyle_${showBase._id}`
-				setBlueprintConfigStatus(systemStatusId, allDiffs)
-				blueprintIds[systemStatusId] = true
-			})
+			const allDiffs: string[] = []
 
-			// Check for removed
-			_.each(lastBlueprintConfigIds, (_val, id: string) => {
-				if (!blueprintIds[id]) {
-					removeSystemStatus(id)
+			_.each(variants, (variant) => {
+				const compound = createShowStyleCompound(showBase, variant)
+				if (!compound) return
+
+				const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
+				if (diff && diff.length) {
+					allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
 				}
 			})
-			lastBlueprintConfigIds = blueprintIds
+			const systemStatusId = `blueprintConfig_${blueprint._id}_showStyle_${showBase._id}`
+			setBlueprintConfigStatus(systemStatusId, allDiffs)
+			blueprintIds[systemStatusId] = true
 		})
-	)
+
+		// Check for removed
+		_.each(lastBlueprintConfigIds, (_val, id: string) => {
+			if (!blueprintIds[id]) {
+				removeSystemStatus(id)
+			}
+		})
+		lastBlueprintConfigIds = blueprintIds
+	} finally {
+		checkBlueprintsConfigRunning = false
+
+		logger.debug('checkBlueprintsConfig done!')
+	}
 }
 function setBlueprintConfigStatus(systemStatusId: string, diff: string[], studioId?: StudioId) {
 	if (diff && diff.length > 0) {
@@ -371,48 +391,54 @@ function startupMessage() {
 }
 
 function startInstrumenting() {
-	if (process.env.JEST_WORKER_ID) {
+	if (Meteor.isTest) {
 		return
 	}
 
 	// attempt init elastic APM
-	const system = getCoreSystem()
-	const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
 
-	if (APM_HOST && system && system.apm) {
-		logger.info(`APM agent starting up`)
-		Agent.start({
-			serviceName: KIBANA_INDEX || 'tv-automation-server-core',
-			hostname: APP_HOST,
-			serverUrl: APM_HOST,
-			secretToken: APM_SECRET,
-			active: system.apm.enabled,
-			transactionSampleRate: system.apm.transactionSampleRate,
-			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
-		})
-		profiler.setActive(system.apm.enabled || false)
-	} else {
-		logger.info(`APM agent inactive`)
-		Agent.start({
-			serviceName: 'tv-automation-server-core',
-			active: false,
-			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
-		})
-	}
+	// Note: meteor-elastic-apm has been temporarily disabled due to being incompatible Meteor 2.3
+	// See https://github.com/Meteor-Community-Packages/meteor-elastic-apm/pull/61
+	//
+	// const system = getCoreSystem()
+	// const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
+
+	// if (APM_HOST && system && system.apm) {
+	// 	logger.info(`APM agent starting up`)
+	// 	Agent.start({
+	// 		serviceName: KIBANA_INDEX || 'tv-automation-server-core',
+	// 		hostname: APP_HOST,
+	// 		serverUrl: APM_HOST,
+	// 		secretToken: APM_SECRET,
+	// 		active: system.apm.enabled,
+	// 		transactionSampleRate: system.apm.transactionSampleRate,
+	// 		disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+	// 	})
+	// 	profiler.setActive(system.apm.enabled || false)
+	// } else {
+	// 	logger.info(`APM agent inactive`)
+	// 	Agent.start({
+	// 		serviceName: 'tv-automation-server-core',
+	// 		active: false,
+	// 		disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+	// 	})
+	// }
 }
-function updateLoggerLevel() {
+function updateLoggerLevel(startup: boolean) {
 	const coreSystem = getCoreSystem()
 
 	if (coreSystem) {
-		setLogLevel(coreSystem.logLevel || LogLevel.SILLY)
+		setLogLevel(coreSystem.logLevel ?? getEnvLogLevel() ?? LogLevel.SILLY, startup)
+	} else {
+		logger.error('updateLoggerLevel: CoreSystem not found')
 	}
 }
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		startupMessage()
+		updateLoggerLevel(true)
 		initializeCoreSystem()
 		startInstrumenting()
-		updateLoggerLevel()
 	}
 })

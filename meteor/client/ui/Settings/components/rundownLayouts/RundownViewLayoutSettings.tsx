@@ -2,7 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../../../lib/api/rundownLayouts'
 import { RundownLayoutBase, RundownLayouts } from '../../../../../lib/collections/RundownLayouts'
-import { DBShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import { unprotectString } from '../../../../../lib/lib'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 
@@ -14,20 +14,9 @@ function filterLayouts(
 }
 
 interface IProps {
-	showStyleBase: DBShowStyleBase
+	showStyleBase: ShowStyleBase
 	item: RundownLayoutBase
 	layouts: RundownLayoutBase[]
-}
-
-function undefinedOnEmptyArray(v: string[]): string[] | undefined {
-	if (Array.isArray(v)) {
-		if (v.length === 0) {
-			return undefined
-		} else {
-			return v
-		}
-	}
-	return undefined
 }
 
 export default function RundownViewLayoutSettings({ showStyleBase, item, layouts }: IProps) {
@@ -149,46 +138,6 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 				</span>
 			</div>
 			<div className="mod mvs mhs">
-				<div className="field">
-					{t('Select visible Source Layers')}
-					<EditAttribute
-						modifiedClassName="bghl"
-						attribute={'visibleSourceLayers'}
-						obj={item}
-						options={showStyleBase.sourceLayers
-							.sort((a, b) => a._rank - b._rank)
-							.map((sourceLayer) => ({
-								value: sourceLayer._id,
-								name: sourceLayer.name,
-							}))}
-						type="multiselect"
-						mutateUpdateValue={undefinedOnEmptyArray}
-						collection={RundownLayouts}
-						className="input text-input input-l dropdown"
-					></EditAttribute>
-				</div>
-			</div>
-			<div className="mod mvs mhs">
-				<div className="field">
-					{t('Select visible Output Groups')}
-					<EditAttribute
-						modifiedClassName="bghl"
-						attribute={'visibleOutputLayers'}
-						obj={item}
-						options={showStyleBase.outputLayers
-							.sort((a, b) => a._rank - b._rank)
-							.map((outputLayer) => ({
-								value: outputLayer._id,
-								name: outputLayer.name,
-							}))}
-						type="multiselect"
-						mutateUpdateValue={undefinedOnEmptyArray}
-						collection={RundownLayouts}
-						className="input text-input input-l dropdown"
-					></EditAttribute>
-				</div>
-			</div>
-			<div className="mod mvs mhs">
 				<label className="field">
 					{t('Require All Additional Source Layers')}
 					<EditAttribute
@@ -277,6 +226,46 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 				</label>
 			</div>
 			<div className="mod mvs mhs">
+				<div className="field">
+					{t('Select visible Source Layers')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={'visibleSourceLayers'}
+						obj={item}
+						options={showStyleBase.sourceLayers
+							.sort((a, b) => a._rank - b._rank)
+							.map((sourceLayer) => ({
+								value: sourceLayer._id,
+								name: sourceLayer.name,
+							}))}
+						type="multiselect"
+						mutateUpdateValue={undefinedOnEmptyArray}
+						collection={RundownLayouts}
+						className="input text-input input-l dropdown"
+					></EditAttribute>
+				</div>
+			</div>
+			<div className="mod mvs mhs">
+				<div className="field">
+					{t('Select visible Output Groups')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={'visibleOutputLayers'}
+						obj={item}
+						options={showStyleBase.outputLayers
+							.sort((a, b) => a._rank - b._rank)
+							.map((outputLayer) => ({
+								value: outputLayer._id,
+								name: outputLayer.name,
+							}))}
+						type="multiselect"
+						mutateUpdateValue={undefinedOnEmptyArray}
+						collection={RundownLayouts}
+						className="input text-input input-l dropdown"
+					></EditAttribute>
+				</div>
+			</div>
+			<div className="mod mvs mhs">
 				<label className="field">{t('Display piece duration for source layers')}</label>
 				<EditAttribute
 					modifiedClassName="bghl"
@@ -305,4 +294,15 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 			</div>
 		</>
 	)
+}
+
+function undefinedOnEmptyArray(v: string[]): string[] | undefined {
+	if (Array.isArray(v)) {
+		if (v.length === 0) {
+			return undefined
+		} else {
+			return v
+		}
+	}
+	return undefined
 }

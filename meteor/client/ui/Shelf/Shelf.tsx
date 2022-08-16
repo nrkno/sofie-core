@@ -36,13 +36,13 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShelfDisplayOptions } from '../../lib/shelf'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
 	ADLIB_LAYOUT_FILTER = 'adlib_layout_filter',
 	GLOBAL_ADLIB = 'global_adlib',
 	SYSTEM_HOTKEYS = 'system_hotkeys',
-	KEYBOARD = 'keyboard_preview',
 }
 export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
@@ -59,21 +59,10 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	}>
 	rundownLayout?: RundownLayoutShelfBase
 	fullViewport?: boolean
-	shelfDisplayOptions: {
-		buckets: boolean
-		layout: boolean
-		inspector: boolean
-	}
+	shelfDisplayOptions: ShelfDisplayOptions
 	bucketDisplayFilter: number[] | undefined
-	showBuckets: boolean
 
 	onChangeExpanded: (value: boolean) => void
-	onRegisterHotkeys: (
-		hotkeys: Array<{
-			key: string
-			label: string
-		}>
-	) => void
 	onChangeBottomMargin?: (newBottomMargin: string) => void
 }
 
@@ -138,7 +127,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+			doUserAction(t, e, UserAction.TAKE, (e) =>
+				MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+			)
 		}
 	}
 
@@ -186,6 +177,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			if (defaultTab) {
 				this.setState({
 					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${defaultTab._id}`,
+				})
+			} else if (this.props.rundownLayout.filters.length >= 0) {
+				// there is no AdLib dab so some default needs to be selected
+				this.setState({
+					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${this.props.rundownLayout.filters[0]._id}`,
 				})
 			}
 		}
@@ -406,7 +402,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 				style={fullViewport ? undefined : this.getStyle()}
 				ref={this.setRef}
 			>
-				{!this.props.rundownLayout?.disableContextMenu && <ShelfContextMenu />}
+				{!this.props.rundownLayout?.disableContextMenu && (
+					<ShelfContextMenu shelfDisplayOptions={this.props.shelfDisplayOptions} />
+				)}
 				{!fullViewport && (
 					<div
 						className="rundown-view__shelf__handle dark"
@@ -418,7 +416,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					</div>
 				)}
 				<div className="rundown-view__shelf__contents">
-					{shelfDisplayOptions.layout ? (
+					{shelfDisplayOptions.enableLayout ? (
 						<ContextMenuTrigger
 							id="shelf-context-menu"
 							attributes={{
@@ -472,8 +470,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							</ErrorBoundary>
 						</ContextMenuTrigger>
 					) : null}
-
-					{shelfDisplayOptions.buckets ? (
+					{shelfDisplayOptions.enableBuckets ? (
 						<ErrorBoundary>
 							<RundownViewBuckets
 								buckets={this.props.buckets}
@@ -482,9 +479,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 								showStyleBase={this.props.showStyleBase}
 								fullViewport={
 									!!this.props.fullViewport &&
-									this.props.shelfDisplayOptions.buckets === true &&
-									this.props.shelfDisplayOptions.inspector === false &&
-									this.props.shelfDisplayOptions.layout === false
+									this.props.shelfDisplayOptions.enableBuckets === true &&
+									this.props.shelfDisplayOptions.enableInspector === false &&
+									this.props.shelfDisplayOptions.enableLayout === false
 								}
 								displayBuckets={this.props.bucketDisplayFilter}
 								selectedPiece={this.state.selectedPiece}
@@ -492,7 +489,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							/>
 						</ErrorBoundary>
 					) : null}
-					{shelfDisplayOptions.inspector ? (
+					{shelfDisplayOptions.enableInspector ? (
 						<ErrorBoundary>
 							<ShelfInspector
 								selected={this.state.selectedPiece}

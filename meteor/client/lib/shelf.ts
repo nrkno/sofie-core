@@ -10,10 +10,16 @@ import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { DBSegment, SegmentId } from '../../lib/collections/Segments'
 import { DBShowStyleBase, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ScanInfoForPackages } from '../../lib/mediaObjects'
-import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
+import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
 
-export interface AdLibPieceUi extends AdLibPiece {
+export interface ShelfDisplayOptions {
+	enableBuckets: boolean
+	enableLayout: boolean
+	enableInspector: boolean
+}
+
+export interface AdLibPieceUi extends Omit<AdLibPiece, 'timelineObjectsString'> {
 	hotkey?: string
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
@@ -22,6 +28,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isSticky?: boolean
 	isAction?: boolean
 	isClearSourceLayer?: boolean
+	disabled?: boolean
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
 	contentMetaData?: any
 	contentPackageInfos?: ScanInfoForPackages
@@ -35,6 +42,7 @@ export interface AdlibSegmentUi extends DBSegment {
 	pieces: Array<AdLibPieceUi>
 	isLive: boolean
 	isNext: boolean
+	isCompatibleShowStyle: boolean
 }
 
 export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase: ShowStyleBase): PieceInstance[] {

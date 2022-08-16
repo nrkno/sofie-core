@@ -1,234 +1,20 @@
-import React from 'react'
-import { Meteor } from 'meteor/meteor'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { withTranslation } from 'react-i18next'
+import React, { useMemo } from 'react'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
-import ClassNames from 'classnames'
-import { Spinner } from '../../lib/Spinner'
-import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
-import { RundownAPI } from '../../../lib/api/rundown'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { IAdLibListItem } from './AdLibListItem'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import {
-	IOutputLayer,
-	ISourceLayer,
-	IBlueprintActionManifestDisplayContent,
-	PieceLifespan,
-	IBlueprintActionTriggerMode,
-	SomeTimelineContent,
-} from '@sofie-automation/blueprints-integration'
-import { PubSub } from '../../../lib/api/pubsub'
-import { doUserAction, UserAction } from '../../lib/userAction'
-import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { AdLibPanelToolbar } from './AdLibPanel'
-import { MeteorCall } from '../../../lib/api/methods'
+import { AdLibPanel } from './AdLibPanel'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { RundownUtils } from '../../lib/rundown'
-import { ShelfTabs } from './Shelf'
-import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
-import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
-import { translateMessage } from '../../../lib/api/TranslatableMessage'
-import { i18nTranslator } from '../i18n'
-import { getShowHiddenSourceLayers } from '../../lib/localStorage'
-import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
-
-interface IListViewPropsHeader {
-	onSelectAdLib: (piece: IAdLibListItem) => void
-	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: KeyboardEvent, mode?: IBlueprintActionTriggerMode) => void
-	onToggleSticky: (item: IAdLibListItem, e: any) => void
-	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
-	searchFilter: string | undefined
-	showStyleBase: ShowStyleBase
-	rundownAdLibs: Array<AdLibPieceUi>
-	playlist: RundownPlaylist
-	studio: Studio
-}
-
-interface IListViewStateHeader {
-	outputLayers: {
-		[key: string]: IOutputLayer
-	}
-	sourceLayers: {
-		[key: string]: ISourceLayer
-	}
-}
-
-const AdLibListView = withTranslation()(
-	class AdLibListView extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
-		table: HTMLTableElement
-
-		constructor(props: Translated<IListViewPropsHeader>) {
-			super(props)
-
-			this.state = {
-				outputLayers: {},
-				sourceLayers: {},
-			}
-		}
-
-		static getDerivedStateFromProps(props: IListViewPropsHeader) {
-			const tOLayers: {
-				[key: string]: IOutputLayer
-			} = {}
-			const tSLayers: {
-				[key: string]: ISourceLayer
-			} = {}
-
-			if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
-				props.showStyleBase.outputLayers.forEach((outputLayer) => {
-					tOLayers[outputLayer._id] = outputLayer
-				})
-				props.showStyleBase.sourceLayers.forEach((sourceLayer) => {
-					tSLayers[sourceLayer._id] = sourceLayer
-				})
-
-				return {
-					outputLayers: tOLayers,
-					sourceLayers: tSLayers,
-				}
-			}
-			return null
-		}
-
-		renderGlobalAdLibs() {
-			const { t } = this.props
-			const itemList: (IAdLibListItem & {
-				isSticky?: boolean
-				sourceLayer?: ISourceLayer
-				outputLayer?: IOutputLayer
-			})[] = []
-
-			return (
-				<tbody
-					id={'adlib-panel__list-view__globals'}
-					key="globals"
-					className={ClassNames('adlib-panel__list-view__list__segment')}
-				>
-					{itemList
-						.concat(this.props.rundownAdLibs)
-						.concat(
-							this.props.showStyleBase.sourceLayers
-								.filter((i) => i.isSticky)
-								.map((layer) =>
-									literal<IAdLibListItem & { souceLayer?: ISourceLayer; isSticky: boolean }>({
-										_id: protectString(layer._id),
-										name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
-										status: RundownAPI.PieceStatusCode.UNKNOWN,
-										sourceLayer: layer,
-										outputLayer: undefined,
-										lifespan: PieceLifespan.WithinPart,
-										isSticky: true,
-										sourceLayerId: layer._id,
-										externalId: '',
-										outputLayerId: '',
-										rundownId: protectString(''),
-										_rank: layer._rank,
-										content: { timelineObjects: [] },
-										noHotKey: false,
-									})
-								)
-						)
-						.map((item) => {
-							if (!item.isHidden) {
-								if (
-									item.isSticky &&
-									item.sourceLayer &&
-									(!this.props.searchFilter ||
-										item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0)
-								) {
-									return (
-										<AdLibListItem
-											key={unprotectString(item._id)}
-											piece={item}
-											layer={item.sourceLayer}
-											studio={this.props.studio}
-											selected={
-												(this.props.selectedPiece &&
-													RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
-													this.props.selectedPiece._id === item._id) ||
-												false
-											}
-											onToggleAdLib={this.props.onToggleSticky}
-											onSelectAdLib={this.props.onSelectAdLib}
-											playlist={this.props.playlist}
-										/>
-									)
-								} else if (
-									item.sourceLayer &&
-									item.outputLayer &&
-									(!this.props.searchFilter ||
-										item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0)
-								) {
-									return (
-										<AdLibListItem
-											key={unprotectString(item._id)}
-											piece={item}
-											layer={item.sourceLayer}
-											studio={this.props.studio}
-											selected={
-												(this.props.selectedPiece &&
-													RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
-													this.props.selectedPiece._id === item._id) ||
-												false
-											}
-											onToggleAdLib={this.props.onToggleAdLib}
-											onSelectAdLib={this.props.onSelectAdLib}
-											playlist={this.props.playlist}
-										/>
-									)
-								} else if (
-									!this.props.searchFilter ||
-									item.name.toUpperCase().indexOf(this.props.searchFilter.trim().toUpperCase()) >= 0
-								) {
-									return (
-										<AdLibListItem
-											key={unprotectString(item._id)}
-											piece={item}
-											layer={item.sourceLayer}
-											studio={this.props.studio}
-											selected={
-												(this.props.selectedPiece &&
-													RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
-													this.props.selectedPiece._id === item._id) ||
-												false
-											}
-											onToggleAdLib={this.props.onToggleAdLib}
-											onSelectAdLib={this.props.onSelectAdLib}
-											playlist={this.props.playlist}
-										/>
-									)
-								} else {
-									return null
-								}
-							} else {
-								return null
-							}
-						})}
-				</tbody>
-			)
-		}
-
-		setTableRef = (el) => {
-			this.table = el
-		}
-
-		render() {
-			return (
-				<div className="adlib-panel__list-view__list adlib-panel__list-view__list--no-segments">
-					<table className="adlib-panel__list-view__list__table scroll-sink" ref={this.setTableRef}>
-						{this.renderGlobalAdLibs()}
-					</table>
-				</div>
-			)
-		}
-	}
-)
+import { literal } from '../../../lib/lib'
+import {
+	PieceDisplayStyle,
+	RundownLayoutElementType,
+	RundownLayoutFilter,
+} from '../../../lib/collections/RundownLayouts'
+import { ShelfTabs } from './Shelf'
+import { useTranslation } from 'react-i18next'
+import { AdLibPieceUi } from '../../lib/shelf'
 
 interface IProps {
 	playlist: RundownPlaylist
@@ -236,334 +22,57 @@ interface IProps {
 	studio: Studio
 	visible: boolean
 	studioMode: boolean
-	hotkeyGroup: string
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 
 	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
 }
 
-interface IState {
-	selectedSegment: AdlibSegmentUi | undefined
-	followLive: boolean
-	filter: string | undefined
+export function GlobalAdLibPanel({
+	playlist,
+	studio,
+	showStyleBase,
+	selectedPiece,
+	studioMode,
+	visible,
+	onSelectPiece,
+}: IProps): JSX.Element {
+	const { t } = useTranslation()
+
+	const GLOBAL_ADLIB_FILTER: RundownLayoutFilter = useMemo(
+		() =>
+			literal<RundownLayoutFilter>({
+				_id: ShelfTabs.GLOBAL_ADLIB,
+				rundownBaseline: 'only',
+				name: t('Global AdLib'),
+				sourceLayerIds: undefined,
+				outputLayerIds: undefined,
+				type: RundownLayoutElementType.FILTER,
+				default: false,
+				sourceLayerTypes: undefined,
+				label: undefined,
+				tags: undefined,
+				displayStyle: PieceDisplayStyle.LIST,
+				currentSegment: false,
+				hideDuplicates: false,
+				rank: 1,
+				nextInCurrentPart: false,
+				oneNextPerSourceLayer: false,
+				showThumbnailsInList: false,
+			}),
+		[t]
+	)
+
+	return (
+		<AdLibPanel
+			playlist={playlist}
+			studio={studio}
+			showStyleBase={showStyleBase}
+			selectedPiece={selectedPiece}
+			onSelectPiece={onSelectPiece}
+			studioMode={studioMode}
+			visible={visible}
+			includeGlobalAdLibs={true}
+			filter={GLOBAL_ADLIB_FILTER}
+		/>
+	)
 }
-interface ITrackedProps {
-	sourceLayerLookup: { [id: string]: ISourceLayer }
-	rundownAdLibs: Array<AdLibPieceUi>
-	currentRundown: Rundown | undefined
-	studio: Studio
-}
-
-export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
-	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
-	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
-
-	let rundownAdLibs: Array<AdLibPieceUi> = []
-	let currentRundown: Rundown | undefined = undefined
-
-	if (props.playlist) {
-		const rundowns = props.playlist.getRundowns()
-		const rMap = normalizeArray(rundowns, '_id')
-		currentRundown = rundowns[0]
-		const partInstanceId = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
-		if (partInstanceId) {
-			const partInstance = PartInstances.findOne(partInstanceId)
-			if (partInstance) {
-				currentRundown = rMap[unprotectString(partInstance.rundownId)]
-			}
-		}
-
-		const rundownAdLibItems = RundownBaselineAdLibPieces.find(
-			{
-				rundownId: currentRundown._id,
-			},
-			{
-				sort: {
-					sourceLayerId: 1,
-					_rank: 1,
-				},
-			}
-		).fetch()
-		rundownAdLibs = rundownAdLibItems.map((item) => {
-			const uiAdLib: AdLibPieceUi = {
-				...item,
-				isGlobal: true,
-				outputLayer: outputLayerLookup[item.outputLayerId],
-				sourceLayer: sourceLayerLookup[item.sourceLayerId],
-			}
-
-			return uiAdLib
-		})
-
-		const globalAdLibActions = RundownBaselineAdLibActions.find(
-			{
-				rundownId: currentRundown._id,
-				partId: {
-					$exists: false,
-				},
-			},
-			{
-				// @ts-ignore deep-property
-				sort: { 'display._rank': 1 },
-			}
-		)
-			.fetch()
-			.map((action) => {
-				let sourceLayerId = ''
-				let outputLayerId = ''
-				let content: SomeTimelineContent = { timelineObjects: [] }
-				const isContent = RundownUtils.isAdlibActionContent(action.display)
-				if (isContent) {
-					sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
-					outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-					content = {
-						timelineObjects: [],
-						...(action.display as IBlueprintActionManifestDisplayContent).content,
-					}
-				}
-
-				return literal<AdLibPieceUi>({
-					_id: protectString(`${action._id}`),
-					name: translateMessage(action.display.label, i18nTranslator),
-					status: RundownAPI.PieceStatusCode.UNKNOWN,
-					isAction: true,
-					isGlobal: true,
-					expectedDuration: 0,
-					lifespan: PieceLifespan.WithinPart,
-					externalId: unprotectString(action._id),
-					rundownId: action.rundownId,
-					sourceLayer: sourceLayerLookup[sourceLayerId],
-					outputLayer: outputLayerLookup[outputLayerId],
-					sourceLayerId,
-					outputLayerId,
-					_rank: action.display._rank || 0,
-					content: content,
-					adlibAction: action,
-					uniquenessId: action.display.uniquenessId,
-					tags: action.display.tags,
-					currentPieceTags: action.display.currentPieceTags,
-					nextPieceTags: action.display.nextPieceTags,
-					noHotKey: action.display.noHotKey,
-					expectedPackages: action.expectedPackages,
-				})
-			})
-
-		rundownAdLibs = rundownAdLibs.concat(globalAdLibActions).sort((a, b) => a._rank - b._rank)
-
-		const showHiddenSourceLayers = getShowHiddenSourceLayers()
-
-		rundownAdLibs.forEach((uiAdLib) => {
-			// automatically assign hotkeys based on adLibItem index
-			const sourceLayer = uiAdLib.sourceLayerId && sourceLayerLookup[uiAdLib.sourceLayerId]
-
-			if (sourceLayer && sourceLayer.isHidden && !showHiddenSourceLayers) {
-				uiAdLib.isHidden = true
-			}
-			return uiAdLib
-		})
-	}
-
-	return {
-		sourceLayerLookup,
-		rundownAdLibs,
-		currentRundown,
-		studio: props.playlist.getStudio(),
-	}
-})(
-	class GlobalAdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-		usedHotkeys: Array<string> = []
-
-		constructor(props: Translated<IProps & ITrackedProps>) {
-			super(props)
-
-			this.state = {
-				selectedSegment: undefined,
-				filter: undefined,
-				followLive: true,
-			}
-		}
-
-		componentDidMount() {
-			this.autorun(() => {
-				if (this.props.currentRundown) {
-					this.subscribe(PubSub.rundownBaselineAdLibPieces, {
-						rundownId: this.props.currentRundown._id,
-					})
-					this.subscribe(PubSub.showStyleBases, {
-						_id: this.props.currentRundown.showStyleBaseId,
-					})
-				}
-			})
-
-			RundownViewEventBus.on(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
-		}
-
-		componentWillUnmount() {
-			this._cleanUp()
-
-			RundownViewEventBus.off(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
-		}
-
-		onFilterChange = (filter: string | undefined) => {
-			this.setState({
-				filter,
-			})
-		}
-
-		onToggleStickyItem = (item: IAdLibListItem, e: any) => {
-			this.onToggleSticky(unprotectString(item._id), e)
-		}
-
-		onToggleSticky = (sourceLayerId: string, e: any) => {
-			if (this.props.currentRundown && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
-				const { t } = this.props
-				doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
-					MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
-				)
-			}
-		}
-
-		onSelectAdLib = (piece: AdLibPieceUi) => {
-			this.props.onSelectPiece && this.props.onSelectPiece(piece)
-		}
-
-		onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => {
-			const { t } = this.props
-
-			if (adlibPiece.invalid) {
-				NotificationCenter.push(
-					new Notification(
-						t('Invalid AdLib'),
-						NoticeLevel.WARNING,
-						t('Cannot play this AdLib becasue it is marked as Invalid'),
-						'toggleAdLib'
-					)
-				)
-				return
-			}
-			if (adlibPiece.floated) {
-				NotificationCenter.push(
-					new Notification(
-						t('Floated AdLib'),
-						NoticeLevel.WARNING,
-						t('Cannot play this AdLib becasue it is marked as Floated'),
-						'toggleAdLib'
-					)
-				)
-				return
-			}
-			if (
-				queue &&
-				this.props.sourceLayerLookup &&
-				this.props.sourceLayerLookup[adlibPiece.sourceLayerId] &&
-				!this.props.sourceLayerLookup[adlibPiece.sourceLayerId].isQueueable
-			) {
-				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
-				queue = false
-			}
-
-			if (this.props.playlist && this.props.playlist.currentPartInstanceId && adlibPiece.isGlobal) {
-				const { t } = this.props
-				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-				if (adlibPiece.isAction && adlibPiece.adlibAction) {
-					const action = adlibPiece.adlibAction
-					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
-						MeteorCall.userAction.executeAction(
-							e,
-							this.props.playlist._id,
-							action._id,
-							action.actionId,
-							action.userData,
-							mode?.data
-						)
-					)
-				} else {
-					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
-						MeteorCall.userAction.baselineAdLibPieceStart(
-							e,
-							this.props.playlist._id,
-							currentPartInstanceId,
-							adlibPiece._id,
-							queue || false
-						)
-					)
-				}
-			}
-		}
-
-		onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
-			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
-				const { t } = this.props
-				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-				doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e) =>
-					MeteorCall.userAction.sourceLayerOnPartStop(
-						e,
-						this.props.playlist._id,
-						currentPartInstanceId,
-						sourceLayers.map((sl) => sl._id)
-					)
-				)
-			}
-		}
-
-		onRevealInShelf = (e: RevealInShelfEvent) => {
-			const { pieceId } = e
-			if (pieceId) {
-				let found = false
-				const index = this.props.rundownAdLibs.findIndex((piece) => piece._id === pieceId)
-				if (index >= 0) {
-					found = true
-				}
-
-				if (found) {
-					RundownViewEventBus.emit(RundownViewEvents.SWITCH_SHELF_TAB, {
-						tab: ShelfTabs.GLOBAL_ADLIB,
-					})
-
-					Meteor.setTimeout(() => {
-						const el = document.querySelector(`.adlib-panel__list-view__list__segment__item[data-obj-id="${pieceId}"]`)
-						if (el) {
-							el.scrollIntoView({
-								behavior: 'smooth',
-							})
-						}
-					}, 100)
-				}
-			}
-		}
-
-		renderListView() {
-			return (
-				<React.Fragment>
-					<AdLibPanelToolbar onFilterChange={this.onFilterChange} noSegments={true} searchFilter={this.state.filter} />
-					<AdLibListView
-						onSelectAdLib={this.onSelectAdLib}
-						onToggleAdLib={this.onToggleAdLib}
-						onToggleSticky={this.onToggleStickyItem}
-						selectedPiece={this.props.selectedPiece}
-						showStyleBase={this.props.showStyleBase}
-						rundownAdLibs={this.props.rundownAdLibs}
-						searchFilter={this.state.filter}
-						playlist={this.props.playlist}
-						studio={this.props.studio}
-					/>
-				</React.Fragment>
-			)
-		}
-
-		render() {
-			if (this.props.visible) {
-				if (!this.props.currentRundown) {
-					return <Spinner />
-				} else {
-					return (
-						<div className="adlib-panel super-dark" data-tab-id={ShelfTabs.GLOBAL_ADLIB}>
-							{this.renderListView()}
-						</div>
-					)
-				}
-			}
-			return null
-		}
-	}
-)

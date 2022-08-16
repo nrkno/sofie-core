@@ -7,7 +7,7 @@ import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { RundownUtils } from '../../../lib/rundown'
 import { getCurrentTime } from '../../../../lib/lib'
 import ClassNames from 'classnames'
-import { PlaylistTiming } from '../../../../lib/rundown/rundownTiming'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface IEndTimingProps {
 	rundownPlaylist: RundownPlaylist
@@ -34,17 +34,17 @@ export const PlaylistStartTiming = withTranslation()(
 					<React.Fragment>
 						{!this.props.hidePlannedStart &&
 							(rundownPlaylist.startedPlayback && rundownPlaylist.activationId && !rundownPlaylist.rehearsal ? (
-								<span className="timing-clock plan-start left">
+								<span className="timing-clock plan-start left" role="timer">
 									<span className="timing-clock-label left">{t('Started')}</span>
 									<Moment interval={0} format="HH:mm:ss" date={rundownPlaylist.startedPlayback} />
 								</span>
 							) : playlistExpectedStart ? (
-								<span className="timing-clock plan-start left">
+								<span className="timing-clock plan-start left" role="timer">
 									<span className="timing-clock-label left">{this.props.plannedStartText || t('Planned Start')}</span>
 									<Moment interval={0} format="HH:mm:ss" date={playlistExpectedStart} />
 								</span>
 							) : playlistExpectedEnd && playlistExpectedDuration ? (
-								<span className="timing-clock plan-start left">
+								<span className="timing-clock plan-start left" role="timer">
 									<span className="timing-clock-label left">{this.props.plannedStartText || t('Expected Start')}</span>
 									<Moment interval={0} format="HH:mm:ss" date={playlistExpectedEnd - playlistExpectedDuration} />
 								</span>
@@ -55,6 +55,7 @@ export const PlaylistStartTiming = withTranslation()(
 									heavy: getCurrentTime() > expectedStart,
 									light: getCurrentTime() <= expectedStart,
 								})}
+								role="timer"
 							>
 								<span className="timing-clock-label">{t('Diff')}</span>
 								{rundownPlaylist.startedPlayback

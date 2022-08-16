@@ -13,6 +13,7 @@ enum LocalStorageProperty {
 	IGNORE_PIECE_CONTENT_STATUS = 'ignorePieceContentStatus',
 	UI_ZOOM_LEVEL = 'uiZoomLevel',
 	HELP_MODE = 'helpMode',
+	LOG_NOTIFICATIONS = 'logNotifications',
 }
 
 const GUI_FLAGS: {
@@ -33,6 +34,10 @@ function localStorageGetCachedItem(key: LocalStorageProperty): string | null {
 function localStorageSetCachedItem(key: LocalStorageProperty, value: string): void {
 	GUI_FLAGS[key] = value
 	localStorage.setItem(key, value)
+}
+function localStorageUnsetCachedItem(key: LocalStorageProperty): void {
+	GUI_FLAGS[key] = null
+	localStorage.removeItem(key)
 }
 
 export function setAllowStudio(studioMode: boolean) {
@@ -127,4 +132,14 @@ export function setShelfFollowsOnAir(followOnAir: boolean) {
 export function getShelfFollowsOnAir(): boolean {
 	// follows on air === true is the default
 	return localStorageGetCachedItem(LocalStorageProperty.SHELF_FOLLOWS_ON_AIR) !== '0'
+}
+
+export function setReportNotifications(logNotifications: string) {
+	localStorageSetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS, logNotifications)
+}
+export function unsetReportNotifications() {
+	localStorageUnsetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS)
+}
+export function getReportNotifications(): string | null {
+	return localStorageGetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS)
 }

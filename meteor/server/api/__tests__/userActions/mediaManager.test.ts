@@ -1,25 +1,14 @@
-import { Meteor } from 'meteor/meteor'
+import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { getCurrentTime, getRandomId } from '../../../../lib/lib'
+import { getCurrentTime, getRandomId, protectString } from '../../../../lib/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
-import { ClientAPI } from '../../../../lib/api/client'
 import { MediaWorkFlowId, MediaWorkFlows } from '../../../../lib/collections/MediaWorkFlows'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { MeteorCall } from '../../../../lib/api/methods'
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed
-
-namespace UserActionAPI {
-	// Using our own method definition, to catch external API changes
-	export enum methods {
-		'mediaRestartWorkflow' = 'userAction.mediamanager.restartWorkflow',
-		'mediaAbortWorkflow' = 'userAction.mediamanager.abortWorkflow',
-		'mediaRestartAllWorkflows' = 'userAction.mediamanager.restartAllWorkflows',
-		'mediaAbortAllWorkflows' = 'userAction.mediamanager.abortAllWorkflows',
-		'mediaPrioritizeWorkflow' = 'userAction.mediamanager.mediaPrioritizeWorkflow',
-	}
-}
 
 describe('User Actions - Media Manager', () => {
 	let env: DefaultEnvironment
@@ -57,16 +46,11 @@ describe('User Actions - Media Manager', () => {
 	})
 	testInFiber('Restart workflow', async () => {
 		const { workFlowId } = setupMockWorkFlow(env)
-		{
-			// should fail if the workflow doesn't exist
-			expect(() => {
-				Meteor.call(
-					UserActionAPI.methods.mediaRestartWorkflow,
-					'',
-					'FAKE_ID'
-				) as ClientAPI.ClientResponseSuccess<void>
-			}).toThrowError(/not found/gi)
-		}
+
+		// should fail if the workflow doesn't exist
+		await expect(
+			MeteorCall.userAction.mediaRestartWorkflow('', protectString('FAKE_ID'))
+		).resolves.toMatchUserRawError(/not found/gi)
 
 		{
 			// should execute function on the target device
@@ -90,22 +74,17 @@ describe('User Actions - Media Manager', () => {
 				pResolve()
 			}, 50)
 
-			Meteor.call(UserActionAPI.methods.mediaRestartWorkflow, '', workFlowId)
+			await MeteorCall.userAction.mediaRestartWorkflow('', workFlowId)
 			await p
 		}
 	})
 	testInFiber('Abort worfklow', async () => {
 		const { workFlowId } = setupMockWorkFlow(env)
-		{
-			// should fail if the workflow doesn't exist
-			expect(() => {
-				Meteor.call(
-					UserActionAPI.methods.mediaAbortWorkflow,
-					'',
-					'FAKE_ID'
-				) as ClientAPI.ClientResponseSuccess<void>
-			}).toThrowError(/not found/gi)
-		}
+
+		// should fail if the workflow doesn't exist
+		await expect(
+			MeteorCall.userAction.mediaAbortWorkflow('', protectString('FAKE_ID'))
+		).resolves.toMatchUserRawError(/not found/gi)
 
 		{
 			// should execute function on the target device
@@ -129,22 +108,17 @@ describe('User Actions - Media Manager', () => {
 				pResolve()
 			}, 50)
 
-			Meteor.call(UserActionAPI.methods.mediaAbortWorkflow, '', workFlowId)
+			await MeteorCall.userAction.mediaAbortWorkflow('', workFlowId)
 			await p
 		}
 	})
 	testInFiber('Prioritize workflow', async () => {
 		const { workFlowId } = setupMockWorkFlow(env)
-		{
-			// should fail if the workflow doesn't exist
-			expect(() => {
-				Meteor.call(
-					UserActionAPI.methods.mediaPrioritizeWorkflow,
-					'',
-					'FAKE_ID'
-				) as ClientAPI.ClientResponseSuccess<void>
-			}).toThrowError(/not found/gi)
-		}
+
+		// should fail if the workflow doesn't exist
+		await expect(
+			MeteorCall.userAction.mediaPrioritizeWorkflow('', protectString('FAKE_ID'))
+		).resolves.toMatchUserRawError(/not found/gi)
 
 		{
 			// should execute function on the target device
@@ -168,7 +142,7 @@ describe('User Actions - Media Manager', () => {
 				pResolve()
 			}, 50)
 
-			Meteor.call(UserActionAPI.methods.mediaPrioritizeWorkflow, '', workFlowId)
+			await MeteorCall.userAction.mediaPrioritizeWorkflow('', workFlowId)
 			await p
 		}
 	})
@@ -190,7 +164,7 @@ describe('User Actions - Media Manager', () => {
 				})
 			}, 50)
 
-			Meteor.call(UserActionAPI.methods.mediaRestartAllWorkflows, '')
+			await MeteorCall.userAction.mediaRestartAllWorkflows('')
 		}
 	})
 	testInFiber('Abort all workflows', async () => {
@@ -211,7 +185,7 @@ describe('User Actions - Media Manager', () => {
 				})
 			}, 50)
 
-			Meteor.call(UserActionAPI.methods.mediaAbortAllWorkflows, '')
+			await MeteorCall.userAction.mediaAbortAllWorkflows('')
 		}
 	})
 })

@@ -1,8 +1,8 @@
 import { MethodContext } from '../../../lib/api/methods'
 import { setCoreSystemStorePath } from '../../../lib/collections/CoreSystem'
-import { DBOrganization, Organization, OrganizationId, Organizations } from '../../../lib/collections/Organization'
+import { DBOrganization, OrganizationId, Organizations } from '../../../lib/collections/Organization'
 import { User, Users } from '../../../lib/collections/Users'
-import { protectString, unprotectString } from '../../../lib/lib'
+import { protectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { UserId } from '../../../lib/typings/meteor'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
@@ -13,6 +13,7 @@ import { BucketSecurity } from '../buckets'
 import { Credentials } from '../lib/credentials'
 import { NoSecurityReadAccess } from '../noSecurity'
 import { OrganizationContentWriteAccess, OrganizationReadAccess } from '../organization'
+import { StudioContentWriteAccess } from '../studio'
 
 describe('Security', () => {
 	function getContext(cred: Credentials): MethodContext {
@@ -93,9 +94,9 @@ describe('Security', () => {
 
 	const unknownId = protectString('unknown')
 
-	const org0: Organization = getOrg('org0')
-	const org1: Organization = getOrg('org1')
-	const org2: Organization = getOrg('org2')
+	const org0: DBOrganization = getOrg('org0')
+	const org1: DBOrganization = getOrg('org1')
+	const org2: DBOrganization = getOrg('org2')
 
 	function expectReadNotAllowed(fcn: () => boolean) {
 		if (Settings.enableUserAccounts === false) return expectReadAllowed(fcn)
@@ -113,7 +114,7 @@ describe('Security', () => {
 		expect(fcn).toThrowError(/not logged in/i)
 	}
 	function expectNotFound(fcn: () => any) {
-		if (Settings.enableUserAccounts === false) return expectAllowed(fcn)
+		// if (Settings.enableUserAccounts === false) return expectAllowed(fcn)
 		expect(fcn).toThrowError(/not found/i)
 	}
 	function expectAllowed(fcn: () => any) {
@@ -135,41 +136,37 @@ describe('Security', () => {
 	})
 
 	testInFiber('Buckets', async () => {
-		const bucket = await BucketsAPI.createNewBucket(
-			creator,
-			'myBucket',
-			env.studio._id,
-			unprotectString(creator.userId)
-		)
+		const access = StudioContentWriteAccess.bucket(creator, env.studio._id)
+		const bucket = await BucketsAPI.createNewBucket(access, 'myBucket')
 
 		changeEnableUserAccounts(() => {
-			expectReadAllowed(() => BucketSecurity.allowReadAccess({ _id: bucket._id }, '', creator))
-			expectAllowed(() => BucketSecurity.allowWriteAccess({ _id: bucket._id }, creator))
+			expectReadAllowed(() => BucketSecurity.allowReadAccess(creator, bucket._id))
+			expectAllowed(() => BucketSecurity.allowWriteAccess(creator, bucket._id))
 			// expectAccessAllowed(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credUserA))
 
 			// Unknown bucket:
-			expectNotFound(() => BucketSecurity.allowReadAccess({ _id: unknownId }, '', creator))
-			expectNotFound(() => BucketSecurity.allowWriteAccess({ _id: unknownId }, creator))
-			expectNotFound(() => BucketSecurity.allowWriteAccessPiece({ _id: unknownId }, creator))
+			expectNotFound(() => BucketSecurity.allowReadAccess(creator, unknownId))
+			expectNotFound(() => BucketSecurity.allowWriteAccess(creator, unknownId))
+			expectNotFound(() => BucketSecurity.allowWriteAccessPiece(creator, unknownId))
 
 			// Not logged in:
-			expectReadNotAllowed(() => BucketSecurity.allowReadAccess({ _id: bucket._id }, '', nothing))
-			expectNotLoggedIn(() => BucketSecurity.allowWriteAccess({ _id: bucket._id }, nothing))
+			expectReadNotAllowed(() => BucketSecurity.allowReadAccess(nothing, bucket._id))
+			expectNotLoggedIn(() => BucketSecurity.allowWriteAccess(nothing, bucket._id))
 			// expectAccessNotLoggedIn(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credNothing))
 
 			// Non existing user:
-			expectReadNotAllowed(() => BucketSecurity.allowReadAccess({ _id: bucket._id }, '', nonExisting))
-			expectNotLoggedIn(() => BucketSecurity.allowWriteAccess({ _id: bucket._id }, nonExisting))
+			expectReadNotAllowed(() => BucketSecurity.allowReadAccess(nonExisting, bucket._id))
+			expectNotLoggedIn(() => BucketSecurity.allowWriteAccess(nonExisting, bucket._id))
 			// expectAccess(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credNonExistingUser))
 
 			// Other user in same org:
-			expectReadAllowed(() => BucketSecurity.allowReadAccess({ _id: bucket._id }, '', userB))
-			expectAllowed(() => BucketSecurity.allowWriteAccess({ _id: bucket._id }, userB))
+			expectReadAllowed(() => BucketSecurity.allowReadAccess(userB, bucket._id))
+			expectAllowed(() => BucketSecurity.allowWriteAccess(userB, bucket._id))
 			// expectAccess(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credUserB))
 
 			// Other user in other org:
-			expectReadNotAllowed(() => BucketSecurity.allowReadAccess({ _id: bucket._id }, '', wrongOrg))
-			expectNotAllowed(() => BucketSecurity.allowWriteAccess({ _id: bucket._id }, wrongOrg))
+			expectReadNotAllowed(() => BucketSecurity.allowReadAccess(wrongOrg, bucket._id))
+			expectNotAllowed(() => BucketSecurity.allowWriteAccess(wrongOrg, bucket._id))
 			// expectAccess(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credUserInWrongOrganization))
 		})
 	})
@@ -220,7 +217,7 @@ describe('Security', () => {
 			expectNotLoggedIn(() => OrganizationContentWriteAccess.organization(nothing, org0._id))
 			expectNotLoggedIn(() => OrganizationContentWriteAccess.studio(nothing, env.studio))
 			expectNotLoggedIn(() => OrganizationContentWriteAccess.evaluation(nothing))
-			expectNotLoggedIn(() => OrganizationContentWriteAccess.mediaWorkFlows(nothing, org0._id))
+			expectNotLoggedIn(() => OrganizationContentWriteAccess.mediaWorkFlows(nothing))
 			expectNotLoggedIn(() => OrganizationContentWriteAccess.blueprint(nothing, env.studioBlueprint._id))
 			expectNotLoggedIn(() => OrganizationContentWriteAccess.snapshot(nothing, snapshotId))
 			expectNotLoggedIn(() => OrganizationContentWriteAccess.dataFromSnapshot(nothing, org0._id))
@@ -231,7 +228,7 @@ describe('Security', () => {
 			expectAllowed(() => OrganizationContentWriteAccess.organization(creator, org0._id))
 			expectAllowed(() => OrganizationContentWriteAccess.studio(creator, env.studio))
 			expectAllowed(() => OrganizationContentWriteAccess.evaluation(creator))
-			expectAllowed(() => OrganizationContentWriteAccess.mediaWorkFlows(creator, org0._id))
+			expectAllowed(() => OrganizationContentWriteAccess.mediaWorkFlows(creator))
 			expectAllowed(() => OrganizationContentWriteAccess.blueprint(creator, env.studioBlueprint._id))
 			expectAllowed(() => OrganizationContentWriteAccess.snapshot(creator, snapshotId))
 			expectAllowed(() => OrganizationContentWriteAccess.dataFromSnapshot(creator, org0._id))
@@ -241,7 +238,7 @@ describe('Security', () => {
 			expectAllowed(() => OrganizationContentWriteAccess.organization(userB, org0._id))
 			expectAllowed(() => OrganizationContentWriteAccess.studio(userB, env.studio))
 			expectAllowed(() => OrganizationContentWriteAccess.evaluation(userB))
-			expectAllowed(() => OrganizationContentWriteAccess.mediaWorkFlows(userB, org0._id))
+			expectAllowed(() => OrganizationContentWriteAccess.mediaWorkFlows(userB))
 			expectAllowed(() => OrganizationContentWriteAccess.blueprint(userB, env.studioBlueprint._id))
 			expectAllowed(() => OrganizationContentWriteAccess.snapshot(userB, snapshotId))
 			expectAllowed(() => OrganizationContentWriteAccess.dataFromSnapshot(userB, org0._id))
@@ -251,7 +248,7 @@ describe('Security', () => {
 			expectNotLoggedIn(() => OrganizationContentWriteAccess.organization(nonExisting, org0._id))
 			expectNotLoggedIn(() => OrganizationContentWriteAccess.studio(nonExisting, env.studio))
 			expectNotLoggedIn(() => OrganizationContentWriteAccess.evaluation(nonExisting))
-			expectNotLoggedIn(() => OrganizationContentWriteAccess.mediaWorkFlows(nonExisting, org0._id))
+			expectNotLoggedIn(() => OrganizationContentWriteAccess.mediaWorkFlows(nonExisting))
 			expectNotLoggedIn(() => OrganizationContentWriteAccess.blueprint(nonExisting, env.studioBlueprint._id))
 			expectNotLoggedIn(() => OrganizationContentWriteAccess.snapshot(nonExisting, snapshotId))
 			expectNotLoggedIn(() => OrganizationContentWriteAccess.dataFromSnapshot(nonExisting, org0._id))
@@ -261,7 +258,7 @@ describe('Security', () => {
 			expectNotAllowed(() => OrganizationContentWriteAccess.organization(wrongOrg, org0._id))
 			expectNotAllowed(() => OrganizationContentWriteAccess.studio(wrongOrg, env.studio))
 			// expectNotAllowed(() => OrganizationContentWriteAccess.evaluation(wrongOrg))
-			expectNotAllowed(() => OrganizationContentWriteAccess.mediaWorkFlows(wrongOrg, org0._id))
+			// expectNotAllowed(() => OrganizationContentWriteAccess.mediaWorkFlows(wrongOrg))
 			expectNotAllowed(() => OrganizationContentWriteAccess.blueprint(wrongOrg, env.studioBlueprint._id))
 			expectNotAllowed(() => OrganizationContentWriteAccess.snapshot(wrongOrg, snapshotId))
 			expectNotAllowed(() => OrganizationContentWriteAccess.dataFromSnapshot(wrongOrg, org0._id))
@@ -272,7 +269,7 @@ describe('Security', () => {
 			expectNotAllowed(() => OrganizationContentWriteAccess.organization(otherSuperAdmin, org0._id))
 			expectNotAllowed(() => OrganizationContentWriteAccess.studio(otherSuperAdmin, env.studio))
 			// expectNotAllowed(() => OrganizationContentWriteAccess.evaluation(otherSuperAdmin))
-			expectNotAllowed(() => OrganizationContentWriteAccess.mediaWorkFlows(otherSuperAdmin, org0._id))
+			// expectNotAllowed(() => OrganizationContentWriteAccess.mediaWorkFlows(otherSuperAdmin))
 			expectNotAllowed(() => OrganizationContentWriteAccess.blueprint(otherSuperAdmin, env.studioBlueprint._id))
 			expectNotAllowed(() => OrganizationContentWriteAccess.snapshot(otherSuperAdmin, snapshotId))
 			expectNotAllowed(() => OrganizationContentWriteAccess.dataFromSnapshot(otherSuperAdmin, org0._id))

@@ -7,16 +7,15 @@ import {
 } from '../../lib/api/rundownNotifications'
 import { registerClassToMeteorMethods } from '../methods'
 import { RundownId, Rundowns } from '../../lib/collections/Rundowns'
-import { PartNote } from '../../lib/api/notes'
+import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { cacheResultAsync, makePromise, normalizeArrayToMap } from '../../lib/lib'
 import { getSegmentPartNotes } from '../../lib/rundownNotifications'
 import { MethodContextAPI } from '../../lib/api/methods'
 import { RundownReadAccess } from '../security/rundown'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import _ from 'underscore'
-import { RundownAPI } from '../../lib/api/rundown'
 import { Parts } from '../../lib/collections/Parts'
-import { Pieces } from '../../lib/collections/Pieces'
+import { Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
 import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studios } from '../../lib/collections/Studios'
@@ -71,9 +70,9 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 							// we don't want this to be in a non-reactive context, so we manage this computation manually
 							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
 							if (
-								status !== RundownAPI.PieceStatusCode.OK &&
-								status !== RundownAPI.PieceStatusCode.UNKNOWN &&
-								status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET
+								status !== PieceStatusCode.OK &&
+								status !== PieceStatusCode.UNKNOWN &&
+								status !== PieceStatusCode.SOURCE_NOT_SET
 							) {
 								return {
 									rundownId: part.rundownId,

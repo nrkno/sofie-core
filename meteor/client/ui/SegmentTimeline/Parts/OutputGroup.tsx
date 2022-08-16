@@ -9,6 +9,7 @@ import { SourceLayer } from './SourceLayer'
 import classNames from 'classnames'
 import { DEBUG_MODE } from '../SegmentTimelineDebugMode'
 import { RundownUtils } from '../../../lib/rundown'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
@@ -42,7 +43,7 @@ interface IOutputGroupProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	indexOffset: number
 	isPreview: boolean
-	showDurationSourceLayers?: Set<string>
+	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
 
 export function OutputGroup(props: IOutputGroupProps) {
@@ -50,6 +51,10 @@ export function OutputGroup(props: IOutputGroupProps) {
 		props.collapsedOutputs[props.layer._id] !== undefined
 			? props.collapsedOutputs[props.layer._id] === true
 			: props.layer.isDefaultCollapsed
+
+	function shouldShowDuration(sourceLayer: ISourceLayerExtended): boolean {
+		return !!props.showDurationSourceLayers && props.showDurationSourceLayers.has(sourceLayer._id)
+	}
 
 	function renderInside(isOutputGroupCollapsed) {
 		if (props.sourceLayers !== undefined) {
@@ -71,7 +76,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 							timeScale={props.timeScale}
 							autoNextPart={props.autoNextPart}
 							liveLinePadding={props.liveLinePadding}
-							layerIndex={props.indexOffset + index}
+							layerIndex={props.indexOffset + (isCollapsed ? 0 : index)}
 							mediaPreviewUrl={props.mediaPreviewUrl}
 							followLiveLine={props.followLiveLine}
 							isLiveLine={props.isLiveLine}
@@ -87,7 +92,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 							onPieceClick={props.onPieceClick}
 							onPieceDoubleClick={props.onPieceDoubleClick}
 							isPreview={props.isPreview}
-							showDurationSourceLayers={props.showDurationSourceLayers}
+							showDuration={shouldShowDuration(sourceLayer)}
 						/>
 					)
 				})
@@ -124,7 +129,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 						onPieceClick={props.onPieceClick}
 						onPieceDoubleClick={props.onPieceDoubleClick}
 						isPreview={props.isPreview}
-						showDurationSourceLayers={props.showDurationSourceLayers}
+						shouldShowDuration={shouldShowDuration}
 					/>
 				)
 			}
@@ -140,12 +145,14 @@ export function OutputGroup(props: IOutputGroupProps) {
 					collapsed: isCollapsed,
 					flattened: props.layer.isFlattened,
 				},
-				`layer-count-${props.sourceLayers?.length || 0}`
+				`layer-count-${props.layer.isFlattened ? 1 : isCollapsed ? 1 : props.sourceLayers?.length || 0}`
 			)}
 			data-layer-group-id={props.layer._id}
 		>
 			{DEBUG_MODE && (
-				<div className="segment-timeline__debug-info red">{RundownUtils.formatTimeToTimecode(props.startsAt)}</div>
+				<div className="segment-timeline__debug-info red">
+					{RundownUtils.formatTimeToTimecode(props.studio.settings, props.startsAt)}
+				</div>
 			)}
 			{renderInside(isCollapsed)}
 		</div>

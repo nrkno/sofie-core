@@ -1,27 +1,24 @@
-import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { literal, unprotectString } from '../../../lib/lib'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
-import { StatusCode, StatusResponse } from '../../../lib/api/systemStatus'
+import { StatusResponse } from '../../../lib/api/systemStatus'
 
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
+import { MeteorCall } from '../../../lib/api/methods'
 
 require('../api')
 const PackageInfo = require('../../../package.json')
-
-enum SystemStatusAPIMethods {
-	'getSystemStatus' = 'systemStatus.getSystemStatus',
-}
 
 describe('systemStatus API', () => {
 	let env: DefaultEnvironment
 
 	describe('General health endpoint', () => {
-		function callRoute(): MockResponseDataString {
+		async function callRoute(): Promise<MockResponseDataString> {
 			const routeName = '/health'
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()
@@ -32,7 +29,7 @@ describe('systemStatus API', () => {
 				url: `/health`,
 			})
 
-			route.handler({}, req, res, jest.fn())
+			await route.handler({}, req, res, jest.fn())
 
 			const resStr = parseResponseBuffer(res)
 			expect(resStr).toMatchObject(
@@ -53,7 +50,7 @@ describe('systemStatus API', () => {
 
 			// The system is uninitialized, the status will be BAD
 			const expectedStatus0 = StatusCode.BAD
-			const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+			const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 			expect(result0).toMatchObject({
 				status: status2ExternalStatus(expectedStatus0),
 				_status: expectedStatus0,
@@ -62,7 +59,7 @@ describe('systemStatus API', () => {
 
 			let systemHealth
 			try {
-				const response = callRoute()
+				const response = await callRoute()
 				expect(response.statusCode).toBe(500)
 				systemHealth = JSON.parse(response.bufferStr)
 			} catch (e) {
@@ -76,7 +73,7 @@ describe('systemStatus API', () => {
 	})
 
 	describe('Specific studio health endpoint', () => {
-		function callRoute(studioId?: string): MockResponseDataString {
+		async function callRoute(studioId?: string): Promise<MockResponseDataString> {
 			const routeName = '/health/:studioId'
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()
@@ -87,7 +84,7 @@ describe('systemStatus API', () => {
 				url: `/health/${studioId}`,
 			})
 
-			route.handler({ studioId: studioId || '' }, req, res, jest.fn())
+			await route.handler({ studioId: studioId || '' }, req, res, jest.fn())
 
 			const resStr = parseResponseBuffer(res)
 			expect(resStr).toMatchObject(
@@ -118,7 +115,7 @@ describe('systemStatus API', () => {
 
 			// The system is initialized, the status will be GOOD
 			const expectedStatus0 = StatusCode.GOOD
-			const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
+			const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 			expect(result0).toMatchObject({
 				status: status2ExternalStatus(expectedStatus0),
 				_status: expectedStatus0,
@@ -127,7 +124,7 @@ describe('systemStatus API', () => {
 
 			let systemHealth
 			try {
-				const response = callRoute(unprotectString(env.studio._id))
+				const response = await callRoute(unprotectString(env.studio._id))
 				expect(response.statusCode).toBe(200)
 				systemHealth = JSON.parse(response.bufferStr)
 			} catch (e) {

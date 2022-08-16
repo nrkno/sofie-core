@@ -4,7 +4,7 @@ import Moment from 'react-moment'
 
 import { FloatingInspector } from '../FloatingInspector'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
-import { GetScriptPreview } from '../scriptPreview'
+import { getScriptPreview } from '../../lib/ui/scriptPreview'
 
 interface IProps {
 	typeClass?: string
@@ -18,7 +18,7 @@ interface IProps {
 export function MicFloatingInspector(props: IProps) {
 	const { t } = useTranslation()
 
-	const { startOfScript, endOfScript, breakScript } = GetScriptPreview(props.content.fullScript || '')
+	const { startOfScript, endOfScript, breakScript } = getScriptPreview(props.content.fullScript || '')
 
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
@@ -40,9 +40,12 @@ export function MicFloatingInspector(props: IProps) {
 						)
 					) : props.content.lastWords ? (
 						<span className="mini-inspector__full-text">{props.content.lastWords}</span>
-					) : (
+					) : !props.content?.comment ? (
 						<span className="mini-inspector__system">{t('Script is empty')}</span>
-					)}
+					) : null}
+					{props.content?.comment ? (
+						<span className="mini-inspector__full-text text-comment text-end">{props.content.comment}</span>
+					) : null}
 				</div>
 				{props.content && props.content.lastModified ? (
 					<div className="mini-inspector__footer">

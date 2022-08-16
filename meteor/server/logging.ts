@@ -1,12 +1,15 @@
 import * as Winston from 'winston'
 import * as fs from 'fs'
 import { getAbsolutePath } from './lib'
-import { LogLevel } from '../lib/lib'
+import { LogLevel, stringifyError } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 
-export function setLogLevel(level: LogLevel) {
-	if (logger.level !== level) {
+export function getLogLevel(): LogLevel {
+	return logger.level as LogLevel
+}
+export function setLogLevel(level: LogLevel, startup = false) {
+	if (logger.level !== level || startup) {
 		logger.level = level
 		if (transports.console) {
 			transports.console.level = level
@@ -14,13 +17,21 @@ export function setLogLevel(level: LogLevel) {
 		if (transports.file) {
 			transports.file.level = level
 		}
-		if (!Meteor.isTest) console.log(`Setting logger level to "${level}"`)
+		if (!Meteor.isTest) {
+			// Note: We can't use logger.info here, since that might be supressed by the log level.
+			console.log(`Setting logger level to "${level}"`)
+		}
 	}
+}
+
+export function getEnvLogLevel(): LogLevel | undefined {
+	return Object.values(LogLevel).find((level) => level === process.env.LOG_LEVEL)
 }
 
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
 // because there's an error in the typings logging.debug() takes any, not only string
 interface LoggerInstanceFixed extends Winston.Logger {
+	// for cli and npm levels
 	error: LeveledLogMethodFixed
 	warn: LeveledLogMethodFixed
 	help: LeveledLogMethodFixed
@@ -28,10 +39,12 @@ interface LoggerInstanceFixed extends Winston.Logger {
 	info: LeveledLogMethodFixed
 	debug: LeveledLogMethodFixed
 	prompt: LeveledLogMethodFixed
+	http: LeveledLogMethodFixed
 	verbose: LeveledLogMethodFixed
 	input: LeveledLogMethodFixed
 	silly: LeveledLogMethodFixed
 
+	// for syslog levels only
 	emerg: LeveledLogMethodFixed
 	alert: LeveledLogMethodFixed
 	crit: LeveledLogMethodFixed
@@ -69,7 +82,7 @@ function safeStringify(o: any): string {
 	try {
 		return JSON.stringify(o) // make single line
 	} catch (e) {
-		return 'ERROR in safeStringify: ' + (e || 'N/A').toString()
+		return 'ERROR in safeStringify: ' + stringifyError(e)
 	}
 }
 if (logToFile || logPath !== '') {
@@ -96,12 +109,14 @@ if (logToFile || logPath !== '') {
 		}
 	}
 	const transportConsole = new Winston.transports.Console({
-		level: 'verbose',
+		level: getEnvLogLevel() ?? 'verbose',
 		handleExceptions: true,
+		handleRejections: true,
 	})
 	const transportFile = new Winston.transports.File({
-		level: 'silly',
+		level: getEnvLogLevel() ?? 'silly',
 		handleExceptions: true,
+		handleRejections: true,
 		filename: logPath,
 	})
 
@@ -116,8 +131,9 @@ if (logToFile || logPath !== '') {
 	console.log('Logging to ' + logPath)
 } else {
 	const transportConsole = new Winston.transports.Console({
-		level: 'silly',
+		level: getEnvLogLevel() ?? 'silly',
 		handleExceptions: true,
+		handleRejections: true,
 	})
 	transports = {
 		console: transportConsole,
@@ -139,5 +155,9 @@ if (logToFile || logPath !== '') {
 		})
 	}
 }
+
+process.on('exit', (code) => {
+	logger.info(`Process exiting with code: ${code}`)
+})
 
 export { logger, transports, LogLevel }

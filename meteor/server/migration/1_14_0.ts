@@ -1,5 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { ensureCollectionProperty } from './lib'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 /*
  * **************************************************************************************
@@ -12,5 +13,5 @@ import { ensureCollectionProperty } from './lib'
  */
 // Release 26
 export const addSteps = addMigrationSteps('1.14.0', [
-	ensureCollectionProperty('Studios', {}, 'routeSetExclusivityGroups', {}, undefined),
+	ensureCollectionProperty(CollectionName.Studios, {}, 'routeSetExclusivityGroups', {}),
 ])

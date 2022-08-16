@@ -1,4 +1,3 @@
-
 import { Connector, Config } from './connector'
 import * as Winston from 'winston'
 import _ = require('underscore')
@@ -6,16 +5,16 @@ import _ = require('underscore')
 console.log('process started') // This is a message all Sofie processes log upon startup
 
 // CLI arguments / Environment variables --------------
-let host: string 		= process.env.CORE_HOST 					|| '127.0.0.1'
-let port: number 		= parseInt(process.env.CORE_PORT + '', 10) 	|| 3000
-let logPath: string 	= process.env.CORE_LOG						|| ''
-let deviceId: string 	= process.env.DEVICE_ID						|| ''
-let deviceToken: string = process.env.DEVICE_TOKEN 				|| ''
-let disableWatchdog: boolean = (process.env.DISABLE_WATCHDOG === '1') 		|| false
-let unsafeSSL: boolean		= process.env.UNSAFE_SSL === '1' || false
-let certs: string[] 		= (process.env.CERTIFICATES || '').split(';') || []
-let debug: boolean 		= false
-let printHelp: boolean 	= false
+let host: string = process.env.CORE_HOST || '127.0.0.1'
+let port: number = parseInt(process.env.CORE_PORT + '', 10) || 3000
+let logPath: string = process.env.CORE_LOG || ''
+let deviceId: string = process.env.DEVICE_ID || ''
+let deviceToken: string = process.env.DEVICE_TOKEN || ''
+let disableWatchdog: boolean = process.env.DISABLE_WATCHDOG === '1' || false
+let unsafeSSL: boolean = process.env.UNSAFE_SSL === '1' || false
+let certs: string[] = (process.env.CERTIFICATES || '').split(';') || []
+let debug: boolean = false
+let printHelp: boolean = false
 
 let prevProcessArg = ''
 process.argv.forEach((val) => {
@@ -40,7 +39,7 @@ process.argv.forEach((val) => {
 		certs.push(val)
 		nextPrevProcessArg = prevProcessArg // so that we can get multiple certificates
 
-// arguments with no options:
+		// arguments with no options:
 	} else if (val.match(/-disableWatchdog/i)) {
 		disableWatchdog = true
 	} else if (val.match(/-unsafeSSL/i)) {
@@ -98,26 +97,31 @@ let JSONStringifyCircular = () => {
 	return stringifyFixer
 }
 // Setup logging --------------------------------------
-let logger = new (Winston.Logger)({
+const { splat, combine, printf } = Winston.format
+const myLogFormat = printf((obj) => {
+	return JSON.stringify(obj, JSONStringifyCircular())
 })
-
+let logger: Winston.Logger
 if (logPath) {
 	// Log json to file, human-readable to console
-	console.log('Logging to', logPath)
-	logger.add(Winston.transports.Console, {
+	const transportConsole = new Winston.transports.Console({
 		level: 'debug',
 		handleExceptions: true,
-		json: false
+		handleRejections: true
 	})
-	logger.add(Winston.transports.File, {
+	const transportFile = new Winston.transports.File({
 		level: 'debug',
 		handleExceptions: true,
-		json: true,
-		stringify: (obj: any) => {
-			return JSON.stringify(obj, JSONStringifyCircular())
-		},
-		filename: logPath
+		handleRejections: true,
+		filename: logPath,
+		format: combine(splat(), myLogFormat)
 	})
+
+	logger = Winston.createLogger({
+		transports: [transportConsole, transportFile]
+	})
+	logger.info('Logging to', logPath)
+
 	// Hijack console.log:
 	// @ts-ignore
 	let orgConsoleLog = console.log
@@ -125,7 +129,6 @@ if (logPath) {
 		// orgConsoleLog('a')
 		if (args.length >= 1) {
 			try {
-
 				// @ts-ignore one or more arguments
 				logger.debug(...args)
 				// logger.debug(...args.map(JSONStringifyCircular()))
@@ -138,16 +141,21 @@ if (logPath) {
 		}
 	}
 } else {
-	console.log('Logging to Console')
+	// custom json stringifier
+
 	// Log json to console
-	logger.add(Winston.transports.Console,{
+	const transportConsole = new Winston.transports.Console({
 		level: 'debug',
 		handleExceptions: true,
-		json: true,
-		stringify: (obj: any) => {
-			return JSON.stringify(obj, JSONStringifyCircular()) // make single line
-		}
+		handleRejections: true,
+		format: combine(splat(), myLogFormat)
 	})
+
+	logger = Winston.createLogger({
+		transports: [transportConsole]
+	})
+	logger.info('Logging to Console')
+
 	// Hijack console.log:
 	// @ts-ignore
 	let orgConsoleLog = console.log
@@ -161,9 +169,6 @@ if (logPath) {
 }
 
 // Because the default NodeJS-handler sucks and wont display error properly
-process.on('unhandledRejection', (e: any) => {
-	logger.error('Unhandled Promise rejection:', e, e.reason || e.message, e.stack)
-})
 process.on('warning', (e: any) => {
 	logger.warn('Unhandled warning:', e, e.reason || e.message, e.stack)
 })
@@ -242,7 +247,6 @@ logger.info('Core:          ' + config.core.host + ':' + config.core.port)
 // 	if (device.secondary) logger.info('Mos Secondary: ' + device.secondary.host)
 // })
 logger.info('------------------------------------------------------------------')
-c.init(config)
-.catch(logger.error)
+c.init(config).catch(logger.error)
 
 // @todo: remove this line of comment

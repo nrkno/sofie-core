@@ -2,273 +2,175 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
+import { normalizeArrayFunc, unprotectString } from '../lib'
+import { Studio, Studios } from './Studios'
 import {
-	Time,
-	applyClassToDocument,
-	registerCollection,
-	normalizeArray,
-	normalizeArrayFunc,
-	ProtectedString,
-	unprotectString,
-} from '../lib'
-import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Rundowns'
-import { Studio, Studios, StudioId } from './Studios'
-import { Segments, Segment, DBSegment, SegmentId } from './Segments'
-import { Parts, Part, DBPart, PartId } from './Parts'
-import { RundownPlaylistTiming, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
-import { PartInstance, PartInstances, PartInstanceId, SegmentPlayoutId } from './PartInstances'
+	sortPartsInSegments,
+	sortPartsInSortedSegments,
+	sortSegmentsInRundowns,
+} from '@sofie-automation/corelib/dist/playout/playlist'
+import { Rundowns, Rundown, DBRundown } from './Rundowns'
+import { Segments, Segment, DBSegment } from './Segments'
+import { Parts, Part, DBPart } from './Parts'
+import { PartInstance, PartInstances } from './PartInstances'
 import { createMongoCollection } from './lib'
-import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
-import { PieceInstanceInfiniteId } from './PieceInstances'
 import { ReadonlyDeep } from 'type-fest'
+import {
+	RundownPlaylistId,
+	ActiveInstanceId,
+	RundownPlaylistActivationId,
+	RundownId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { RundownPlaylistId, ActiveInstanceId, RundownPlaylistActivationId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-/** A string, identifying a RundownPlaylist */
-export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
-/** A string, identifying an activation of a playlist */
-export type ActiveInstanceId = ProtectedString<'ActiveInstanceId'>
-/** A string, identifying an activation of a playlist */
-export type RundownPlaylistActivationId = ProtectedString<'RundownPlaylistActivationId'>
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+export * from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
-/** Details of an ab-session requested by the blueprints in onTimelineGenerate */
-export interface ABSessionInfo {
-	/** The unique id of the session. */
-	id: string
-	/** The name of the session from the blueprints */
-	name: string
-	/** Set if the session is being by lookahead for a future part */
-	lookaheadForPartId?: PartId
-	/** Set if the session is being used by an infinite PieceInstance */
-	infiniteInstanceId?: PieceInstanceInfiniteId
-	/** Set to the PartInstances this session is used by, if not just used for lookahead */
-	partInstanceIds?: Array<PartInstanceId>
-}
+/** Note: Use RundownPlaylist instead */
+export type RundownPlaylist = DBRundownPlaylist
 
-export interface DBRundownPlaylist {
-	_id: RundownPlaylistId
-	/** External ID (source) of the playlist */
-	externalId: string | null
-	/** ID of the organization that owns the playlist */
-	organizationId?: OrganizationId | null
-	/** Studio that this playlist is assigned to */
-	studioId: StudioId
-
-	restoredFromSnapshotId?: RundownPlaylistId
-
-	/** A name to be displayed to the user */
-	name: string
-	/** Created timestamp */
-	created: Time
-	/** Last modified timestamp */
-	modified: Time
-	/** Rundown timing information */
-	timing: RundownPlaylistTiming
-	/** Is the playlist in rehearsal mode (can be used, when active: true) */
-	rehearsal?: boolean
-	/** Playout hold state */
-	holdState?: RundownHoldState
-	/** Truthy when the playlist is currently active in the studio. This is regenerated upon each activation/reset. */
-	activationId?: RundownPlaylistActivationId
-	/** Should the playlist loop at the end */
-	loop?: boolean
-	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
-	outOfOrderTiming?: boolean
-	/** Should time-of-day clocks be used instead of countdowns by default */
-	timeOfDayCountdowns?: boolean
-
-	/** the id of the Live Part - if empty, no part in this rundown is live */
-	currentPartInstanceId: PartInstanceId | null
-	/** the id of the Next Part - if empty, no segment will follow Live Part */
-	nextPartInstanceId: PartInstanceId | null
-	/** The time offset of the next line */
-	nextTimeOffset?: number | null
-	/** if nextPartId was set manually (ie from a user action) */
-	nextPartManual?: boolean
-	/** the id of the Previous Part */
-	previousPartInstanceId: PartInstanceId | null
-
-	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
-	nextSegmentId?: SegmentId
-
-	/** Actual time of playback starting */
-	startedPlayback?: Time
-	/** Timestamp for the last time an incorrect part was reported as started */
-	lastIncorrectPartPlaybackReported?: Time
-	/** Actual time of each rundown starting playback */
-	rundownsStartedPlayback?: Record<string, Time>
-
-	/** If the _rank of rundowns in this playlist has ben set manually by a user in Sofie */
-	rundownRanksAreSetInSofie?: boolean
-
-	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
-	previousPersistentState?: TimelinePersistentState
-	/** AB playback sessions calculated in the last call to ShowStyleBlueprint.onTimelineGenerate */
-	trackedAbSessions?: ABSessionInfo[]
-}
-
-export class RundownPlaylist implements DBRundownPlaylist {
-	public _id: RundownPlaylistId
-	public externalId: string
-	public organizationId: OrganizationId
-	public studioId: StudioId
-	public restoredFromSnapshotId?: RundownPlaylistId
-	public name: string
-	public created: Time
-	public modified: Time
-	public startedPlayback?: Time
-	public lastIncorrectPartPlaybackReported?: Time
-	public rundownsStartedPlayback?: Record<string, Time>
-	public timing: RundownPlaylistTiming
-	public rehearsal?: boolean
-	public holdState?: RundownHoldState
-	public activationId?: RundownPlaylistActivationId
-	public currentPartInstanceId: PartInstanceId | null
-	public nextPartInstanceId: PartInstanceId | null
-	public nextSegmentId?: SegmentId
-	public nextTimeOffset?: number | null
-	public nextPartManual?: boolean
-	public previousPartInstanceId: PartInstanceId | null
-	public loop?: boolean
-	public outOfOrderTiming?: boolean
-	public timeOfDayCountdowns?: boolean
-	public rundownRanksAreSetInSofie?: boolean
-
-	public previousPersistentState?: TimelinePersistentState
-	public trackedAbSessions?: ABSessionInfo[]
-
-	constructor(document: DBRundownPlaylist) {
-		for (const [key, value] of Object.entries(document)) {
-			this[key] = value
-		}
-	}
+/**
+ * Direct database accessors for the RundownPlaylist
+ * These used to reside on the Rundown class
+ */
+export class RundownPlaylistCollectionUtil {
 	/** Returns all Rundowns in the RundownPlaylist */
-	getRundowns(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): Rundown[] {
+	static getRundowns(
+		playlist: Pick<RundownPlaylist, '_id'>,
+		selector?: MongoQuery<Rundown>,
+		options?: FindOptions<Rundown>
+	): Rundown[] {
 		return Rundowns.find(
-			_.extend(
-				{
-					playlistId: this._id,
+			{
+				playlistId: playlist._id,
+				...selector,
+			},
+			{
+				sort: {
+					_rank: 1,
+					_id: 1,
 				},
-				selector
-			),
-			_.extend(
-				{
-					sort: {
-						_rank: 1,
-						_id: 1,
-					},
-				},
-				options
-			)
+				...options,
+			}
 		).fetch()
 	}
 	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist */
-	getRundownIDs(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): RundownId[] {
-		return this.getRundowns(
-			selector,
-			_.extend(
-				{
-					sort: {
-						_rank: 1,
-						_id: 1,
-					},
-					fields: {
-						_rank: 1,
-						_id: 1,
-					},
-				},
-				options
-			)
-		).map((i) => i._id)
+	static getRundownIDs(
+		playlist: Pick<RundownPlaylist, '_id'>,
+		selector?: MongoQuery<Rundown>,
+		options?: FindOptions<Rundown>
+	): RundownId[] {
+		return RundownPlaylistCollectionUtil.getRundowns(playlist, selector, {
+			sort: {
+				_rank: 1,
+				_id: 1,
+			},
+			fields: {
+				_rank: 1,
+				_id: 1,
+			},
+			...options,
+		}).map((i) => i._id)
 	}
-	getRundownUnorderedIDs(selector?: MongoQuery<DBRundown>): RundownId[] {
-		return this.getRundowns(selector, {
+	static getRundownUnorderedIDs(playlist: Pick<RundownPlaylist, '_id'>, selector?: MongoQuery<Rundown>): RundownId[] {
+		return RundownPlaylistCollectionUtil.getRundowns(playlist, selector, {
 			fields: {
 				_id: 1,
 			},
 		}).map((i) => i._id)
 	}
 	/** Return the studio for this RundownPlaylist */
-	getStudio(): Studio {
-		if (!this.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
-		const studio = Studios.findOne(this.studioId)
+	static getStudio(playlist: Pick<RundownPlaylist, '_id' | 'studioId'>): Studio {
+		if (!playlist.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
+		const studio = Studios.findOne(playlist.studioId)
 		if (studio) {
 			return studio
-		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
+		} else throw new Meteor.Error(404, 'Studio "' + playlist.studioId + '" not found!')
 	}
 	/** Returns all segments joined with their rundowns in their correct oreder for this RundownPlaylist */
-	getRundownsAndSegments(
-		selector?: MongoQuery<DBSegment>,
-		options?: FindOptions<DBSegment>
+	static getRundownsAndSegments(
+		playlist: Pick<RundownPlaylist, '_id'>,
+		selector?: MongoQuery<Segment>,
+		options?: FindOptions<Segment>
 	): Array<{
-		rundown: Rundown
+		rundown: Pick<
+			Rundown,
+			| '_id'
+			| 'name'
+			| '_rank'
+			| 'playlistId'
+			| 'timing'
+			| 'showStyleBaseId'
+			| 'showStyleVariantId'
+			| 'endOfRundownIsShowBreak'
+		>
 		segments: Segment[]
 	}> {
-		const rundowns = this.getRundowns(undefined, {
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
 			fields: {
 				name: 1,
 				_rank: 1,
 				playlistId: 1,
 				timing: 1,
 				showStyleBaseId: 1,
+				showStyleVariantId: 1,
 				endOfRundownIsShowBreak: 1,
 			},
 		})
 		const segments = Segments.find(
-			_.extend(
-				{
-					rundownId: {
-						$in: rundowns.map((i) => i._id),
-					},
+			{
+				rundownId: {
+					$in: rundowns.map((i) => i._id),
 				},
-				selector
-			),
-			_.extend(
-				{
-					sort: {
-						rundownId: 1,
-						_rank: 1,
-					},
+				...selector,
+			},
+			{
+				sort: {
+					rundownId: 1,
+					_rank: 1,
 				},
-				options
-			)
+				...options,
+			}
 		).fetch()
-		return RundownPlaylist._matchSegmentsAndRundowns(segments, rundowns)
+		return RundownPlaylistCollectionUtil._matchSegmentsAndRundowns(segments, rundowns)
 	}
 	/** Returns all segments in their correct order for this RundownPlaylist */
-	getSegments(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBSegment>): Segment[] {
-		const rundowns = this.getRundowns(undefined, {
+	static getSegments(
+		playlist: Pick<RundownPlaylist, '_id'>,
+		selector?: MongoQuery<Segment>,
+		options?: FindOptions<Segment>
+	): Segment[] {
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
 			fields: {
 				_rank: 1,
 				playlistId: 1,
 			},
 		})
 		const segments = Segments.find(
-			_.extend(
-				{
-					rundownId: {
-						$in: rundowns.map((i) => i._id),
-					},
+			{
+				rundownId: {
+					$in: rundowns.map((i) => i._id),
 				},
-				selector
-			),
-			_.extend(
-				{
-					sort: {
-						rundownId: 1,
-						_rank: 1,
-					},
+				...selector,
+			},
+			{
+				sort: {
+					rundownId: 1,
+					_rank: 1,
 				},
-				options
-			)
+				...options,
+			}
 		).fetch()
-		return RundownPlaylist._sortSegments(segments, rundowns)
+		return RundownPlaylistCollectionUtil._sortSegments(segments, rundowns)
 	}
-	getAllOrderedParts(selector?: MongoQuery<DBPart>, options?: FindOptions<DBPart>): Part[] {
-		const { parts } = this.getSegmentsAndPartsSync(undefined, selector, undefined, options)
-		return parts
-	}
-	getUnorderedParts(selector?: MongoQuery<DBPart>, options?: FindOptions<DBPart>): Part[] {
-		const rundowns = this.getRundowns(undefined, {
+	static getUnorderedParts(
+		playlist: Pick<RundownPlaylist, '_id'>,
+		selector?: MongoQuery<Part>,
+		options?: FindOptions<Part>
+	): Part[] {
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
 			fields: {
 				_id: 1,
 				_rank: 1,
@@ -293,13 +195,14 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		return parts
 	}
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
-	getSegmentsAndPartsSync(
-		segmentsQuery?: Mongo.Query<DBSegment>,
+	static getSegmentsAndPartsSync(
+		playlist: Pick<RundownPlaylist, '_id'>,
+		segmentsQuery?: Mongo.Query<Segment>,
 		partsQuery?: Mongo.Query<DBPart>,
 		segmentsOptions?: FindOptions<DBSegment>,
 		partsOptions?: FindOptions<DBPart>
 	): { segments: Segment[]; parts: Part[] } {
-		const rundowns = this.getRundowns(undefined, {
+		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
 			fields: {
 				_rank: 1,
 				playlistId: 1,
@@ -344,6 +247,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 					? {
 							...partsOptions?.fields,
 							rundownId: 1,
+							segmentId: 1,
 							_rank: 1,
 					  }
 					: undefined,
@@ -356,19 +260,29 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			}
 		).fetch()
 
-		const sortedSegments = RundownPlaylist._sortSegments(segments, rundowns)
+		const sortedSegments = RundownPlaylistCollectionUtil._sortSegments(segments, rundowns)
 		return {
 			segments: sortedSegments,
-			parts: RundownPlaylist._sortPartsInner(parts, sortedSegments),
+			parts: RundownPlaylistCollectionUtil._sortPartsInner(parts, sortedSegments),
 		}
 	}
-	getSelectedPartInstances(rundownIds0?: RundownId[]) {
+	static getSelectedPartInstances(
+		playlist: Pick<
+			RundownPlaylist,
+			'_id' | 'currentPartInstanceId' | 'previousPartInstanceId' | 'nextPartInstanceId'
+		>,
+		rundownIds0?: RundownId[]
+	) {
 		let rundownIds = rundownIds0
 		if (!rundownIds) {
-			rundownIds = this.getRundownIDs()
+			rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(playlist)
 		}
 
-		const ids = _.compact([this.currentPartInstanceId, this.previousPartInstanceId, this.nextPartInstanceId])
+		const ids = _.compact([
+			playlist.currentPartInstanceId,
+			playlist.previousPartInstanceId,
+			playlist.nextPartInstanceId,
+		])
 		const instances =
 			ids.length > 0
 				? PartInstances.find({
@@ -379,56 +293,56 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				: []
 
 		return {
-			currentPartInstance: instances.find((inst) => inst._id === this.currentPartInstanceId),
-			nextPartInstance: instances.find((inst) => inst._id === this.nextPartInstanceId),
-			previousPartInstance: instances.find((inst) => inst._id === this.previousPartInstanceId),
+			currentPartInstance: instances.find((inst) => inst._id === playlist.currentPartInstanceId),
+			nextPartInstance: instances.find((inst) => inst._id === playlist.nextPartInstanceId),
+			previousPartInstance: instances.find((inst) => inst._id === playlist.previousPartInstanceId),
 		}
 	}
-	getAllPartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<PartInstance>) {
-		const rundownIds = this.getRundownIDs()
 
-		selector = selector || {}
-		options = options || {}
+	static getAllPartInstances(
+		playlist: Pick<RundownPlaylist, '_id'>,
+		selector?: MongoQuery<PartInstance>,
+		options?: FindOptions<PartInstance>
+	) {
+		const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(playlist)
+
 		return PartInstances.find(
-			_.extend(
-				{
-					rundownId: { $in: rundownIds },
-				},
-				selector
-			),
-			_.extend(
-				{
-					sort: { takeCount: 1 },
-				},
-				options
-			)
+			{
+				rundownId: { $in: rundownIds },
+				...selector,
+			},
+			{
+				sort: { takeCount: 1 },
+				...options,
+			}
 		).fetch()
 	}
-	getActivePartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<PartInstance>) {
-		const newSelector = {
+	/** Return a list of PartInstances, omitting the reset ones (ie only the ones that are relevant) */
+	static getActivePartInstances(
+		playlist: Pick<RundownPlaylist, '_id'>,
+		selector?: MongoQuery<PartInstance>,
+		options?: FindOptions<PartInstance>
+	): PartInstance[] {
+		const newSelector: MongoQuery<PartInstance> = {
 			...selector,
 			reset: { $ne: true },
 		}
-		return this.getAllPartInstances(newSelector, options)
+		return RundownPlaylistCollectionUtil.getAllPartInstances(playlist, newSelector, options)
 	}
-	getActivePartInstancesMap(selector?: MongoQuery<PartInstance>, options?: FindOptions<PartInstance>) {
-		const instances = this.getActivePartInstances(selector, options)
+	static getActivePartInstancesMap(
+		playlist: Pick<RundownPlaylist, '_id'>,
+		selector?: MongoQuery<PartInstance>,
+		options?: FindOptions<PartInstance>
+	) {
+		const instances = RundownPlaylistCollectionUtil.getActivePartInstances(playlist, selector, options)
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
-	getPartInstancesForSegmentPlayout(rundownId: RundownId, segmentPlayoutId: SegmentPlayoutId) {
-		return PartInstances.find({ rundownId, segmentPlayoutId }, { sort: { takeCount: 1 } }).fetch()
-	}
-	static _sortSegments(segments: Segment[], rundowns: Array<ReadonlyDeep<DBRundown>>) {
-		const rundownsMap = normalizeArray(rundowns, '_id')
-		return segments.sort((a, b) => {
-			if (a.rundownId === b.rundownId) {
-				return a._rank - b._rank
-			} else {
-				const rdA = rundownsMap[unprotectString(a.rundownId)]
-				const rdB = rundownsMap[unprotectString(b.rundownId)]
-				return rdA._rank - rdB._rank
-			}
-		})
+
+	static _sortSegments<TSegment extends Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>(
+		segments: Array<TSegment>,
+		rundowns: Array<ReadonlyDeep<DBRundown>>
+	) {
+		return sortSegmentsInRundowns(segments, rundowns)
 	}
 	static _matchSegmentsAndRundowns<T extends DBRundown, E extends DBSegment>(segments: E[], rundowns: T[]) {
 		const rundownsMap = new Map<
@@ -449,29 +363,19 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		})
 		return Array.from(rundownsMap.values())
 	}
-	static _sortParts(parts: Part[], rundowns: DBRundown[], segments: Segment[]) {
-		return RundownPlaylist._sortPartsInner(parts, RundownPlaylist._sortSegments(segments, rundowns))
+	static _sortParts(
+		parts: Part[],
+		rundowns: DBRundown[],
+		segments: Array<Pick<Segment, '_id' | 'rundownId' | '_rank'>>
+	) {
+		return sortPartsInSegments(parts, rundowns, segments)
 	}
-	static _sortPartsInner<P extends DBPart>(parts: P[], sortedSegments: DBSegment[]): P[] {
-		const segmentRanks: { [segmentId: string]: number } = {}
-		_.each(sortedSegments, (segment, i) => (segmentRanks[unprotectString(segment._id)] = i))
-
-		return parts.sort((a, b) => {
-			if (a.segmentId === b.segmentId) {
-				return a._rank - b._rank
-			} else {
-				const segA = segmentRanks[unprotectString(a.segmentId)]
-				const segB = segmentRanks[unprotectString(b.segmentId)]
-				return segA - segB
-			}
-		})
+	static _sortPartsInner<P extends DBPart>(parts: P[], sortedSegments: Array<Pick<Segment, '_id'>>): P[] {
+		return sortPartsInSortedSegments(parts, sortedSegments)
 	}
 }
 
-export const RundownPlaylists = createMongoCollection<RundownPlaylist, DBRundownPlaylist>('rundownPlaylists', {
-	transform: (doc) => applyClassToDocument(RundownPlaylist, doc),
-})
-registerCollection('RundownPlaylists', RundownPlaylists)
+export const RundownPlaylists = createMongoCollection<RundownPlaylist>(CollectionName.RundownPlaylists)
 
 registerIndex(RundownPlaylists, {
 	studioId: 1,

@@ -1,20 +1,16 @@
-import { AdLibActionCommon } from './AdLibActions'
-import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
+import { RundownBaselineAdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { RundownBaselineAdLibActionId }
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-/** A string, identifying an RundownBaselineAdLibActionId */
-export type RundownBaselineAdLibActionId = ProtectedString<'RundownBaselineAdLibActionId'>
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+export * from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 
-export interface RundownBaselineAdLibAction extends AdLibActionCommon {
-	_id: RundownBaselineAdLibActionId
-}
+export const RundownBaselineAdLibActions = createMongoCollection<RundownBaselineAdLibAction>(
+	CollectionName.RundownBaselineAdLibActions
+)
 
-export const RundownBaselineAdLibActions = createMongoCollection<
-	RundownBaselineAdLibAction,
-	RundownBaselineAdLibAction
->('rundownBaselineAdLibActions')
-registerCollection('RundownBaselineAdLibActions', RundownBaselineAdLibActions)
 registerIndex(RundownBaselineAdLibActions, {
 	rundownId: 1,
 })

@@ -12,12 +12,13 @@ import {
 import { literal, getRandomId, protectString, makePromise } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
-import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { BlueprintId } from '../../lib/collections/Blueprints'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { UserId } from '../../lib/collections/Users'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
+import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
 
 export function createRundownLayout(
 	name: string,
@@ -55,7 +56,7 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 
 	check(showStyleBaseId, String)
 
-	const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+	const showStyleBase = fetchShowStyleBaseLight(showStyleBaseId)
 
 	let content = ''
 	try {
@@ -125,6 +126,7 @@ function apiCreateRundownLayout(
 	check(name, String)
 	check(type, String)
 	check(showStyleBaseId, String)
+	check(regionId, String)
 
 	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
 

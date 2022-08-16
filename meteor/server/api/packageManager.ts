@@ -1,66 +1,44 @@
-import { check } from '../../lib/check'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { MethodContext } from '../../lib/api/methods'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDevices,
+	PeripheralDeviceType,
+} from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
-import { StudioId } from '../../lib/collections/Studios'
-import { StudioContentWriteAccess } from '../security/studio'
+import { StudioContentAccess } from '../security/studio'
 
 export namespace PackageManagerAPI {
 	export async function restartExpectation(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
+		access: PeripheralDeviceContentWriteAccess.ContentAccess,
 		workId: string
 	): Promise<void> {
-		check(deviceId, String)
-		check(workId, String)
-		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
-
-		await PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartExpectation', workId)
-	}
-	export async function restartAllExpectations(context: MethodContext, deviceId: PeripheralDeviceId): Promise<void> {
-		check(deviceId, String)
-		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
-
-		await PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartAllExpectations')
+		await PeripheralDeviceAPI.executeFunction(access.deviceId, 'restartExpectation', workId)
 	}
 	export async function abortExpectation(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
+		access: PeripheralDeviceContentWriteAccess.ContentAccess,
 		workId: string
 	): Promise<any> {
-		check(deviceId, String)
-		check(workId, String)
-		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
-
-		await PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'abortExpectation', workId)
+		await PeripheralDeviceAPI.executeFunction(access.deviceId, 'abortExpectation', workId)
 	}
-	export async function restartAllExpectationsInStudio(context: MethodContext, studioId: StudioId): Promise<void> {
-		check(studioId, String)
-		StudioContentWriteAccess.anyContent(context, studioId)
 
+	export async function restartAllExpectationsInStudio(access: StudioContentAccess): Promise<void> {
 		const packageManagerDevices = PeripheralDevices.find({
-			studioId: studioId,
-			category: PeripheralDeviceAPI.DeviceCategory.PACKAGE_MANAGER,
-			type: PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER,
+			studioId: access.studioId,
+			category: PeripheralDeviceCategory.PACKAGE_MANAGER,
+			type: PeripheralDeviceType.PACKAGE_MANAGER,
 			subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 		}).fetch()
 
 		await Promise.all(
 			packageManagerDevices.map(async (packageManagerDevice) => {
-				return restartAllExpectations(context, packageManagerDevice._id)
+				return PeripheralDeviceAPI.executeFunction(packageManagerDevice._id, 'restartAllExpectations')
 			})
 		)
 	}
 	export async function restartPackageContainer(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
+		access: PeripheralDeviceContentWriteAccess.ContentAccess,
 		containerId: string
 	): Promise<void> {
-		check(deviceId, String)
-		check(containerId, String)
-		PeripheralDeviceContentWriteAccess.peripheralDevice(context, deviceId)
-
-		await PeripheralDeviceAPI.executeFunctionAsync(deviceId, 'restartPackageContainer', containerId)
+		await PeripheralDeviceAPI.executeFunction(access.deviceId, 'restartPackageContainer', containerId)
 	}
 }

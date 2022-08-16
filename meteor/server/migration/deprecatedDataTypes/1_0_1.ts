@@ -1,6 +1,6 @@
 import { Time, literal, protectString, getRandomId } from '../../../lib/lib'
 import { RundownImportVersions, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
-import { RundownNote } from '../../../lib/api/notes'
+import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PlaylistTimingType, TimelinePersistentState } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'

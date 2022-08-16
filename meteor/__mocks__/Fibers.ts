@@ -1,7 +1,7 @@
 let Fiber
 try {
 	Fiber = require('fibers-npm')
-} catch (e) {
+} catch (e: any) {
 	if (e.toString().match(/Missing binary/)) {
 		// Temporary workaround:
 		throw Error(`
@@ -31,28 +31,4 @@ ${e.toString()}`)
 export function isInFiber(): boolean {
 	return !!Fiber.current
 }
-export async function runInFiber<T>(fcn: () => T | Promise<T>): Promise<T> {
-	return new Promise((resolve, reject) => {
-		Fiber(() => {
-			try {
-				// Run the function
-				const out = fcn()
-				if (out instanceof Promise) {
-					out.then(resolve).catch((e) => {
-						console.log('Error: ' + e)
-						reject(e)
-					})
-				} else {
-					// the function has finished
-					resolve(out)
-				}
-			} catch (e) {
-				console.log('Error: ' + e)
-				if (e.stack) console.log(e.stack)
-				reject(e)
-			}
-		}).run()
-	})
-}
-
 export { Fiber }

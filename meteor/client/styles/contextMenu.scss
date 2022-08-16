@@ -25,6 +25,10 @@ nav.react-contextmenu {
 		background: none;
 		width: 100%;
 		text-align: left;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
+		max-width: 450px;
 	}
 
 	.react-contextmenu-label {

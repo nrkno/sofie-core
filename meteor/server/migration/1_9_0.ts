@@ -1,6 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 
 // Release 21
 export const addSteps = addMigrationSteps('1.9.0', [
@@ -10,12 +9,13 @@ export const addSteps = addMigrationSteps('1.9.0', [
 		validate: () => {
 			const devices = PeripheralDevices.find({}).fetch()
 			const monitors: any[][] = devices
-				.filter((d) => {
-					d.settings &&
-						d.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER &&
+				.filter(
+					(d) =>
+						d.settings &&
+						d.type === PeripheralDeviceType.MEDIA_MANAGER &&
 						(d.settings as any).monitors &&
 						(d.settings as any).monitors
-				})
+				)
 				.map((x) => Object.values((x.settings as any).monitors || []))
 			let scannerCount = 0
 			for (const mons of monitors) {
@@ -31,7 +31,7 @@ export const addSteps = addMigrationSteps('1.9.0', [
 			const devWithMonitor = devices.filter((d) => {
 				return (
 					d.settings &&
-					d.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER &&
+					d.type === PeripheralDeviceType.MEDIA_MANAGER &&
 					(d.settings as any).monitors &&
 					(d.settings as any).monitors
 				)
