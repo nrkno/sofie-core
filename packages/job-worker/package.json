@@ -53,7 +53,7 @@
 		"p-lazy": "^3.1.0",
 		"p-timeout": "^4.1.0",
 		"superfly-timeline": "^8.2.7",
-		"threadedclass": "^1.0.2",
+		"threadedclass": "^1.1.0",
 		"tslib": "^2.4.0",
 		"type-fest": "^2.12.2",
 		"underscore": "^1.13.3",

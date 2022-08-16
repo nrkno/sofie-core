@@ -11,6 +11,8 @@ nav.react-contextmenu {
 	overflow: hidden;
 	overflow-y: auto;
 	box-shadow: 5px 16px 80px 10px rgba(0, 0, 0, 0.75);
+	max-height: 100vh;
+	overscroll-behavior: contain;
 
 	hr {
 		margin: 0;
