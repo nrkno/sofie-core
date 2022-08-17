@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.41.4-0](https://github.com/nrkno/sofie-core/compare/v1.41.3...v1.41.4-0) (2022-08-17)
+
+
+### Bug Fixes
+
+* **RundownView:** check if studioMode is enabled when mounting TriggersHandler ([9ba0dd3](https://github.com/nrkno/sofie-core/commit/9ba0dd33ab3fa3549121e99b01384621709afeff))
+
 ### [1.41.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.2...v1.41.3) (2022-08-10)
 
 
