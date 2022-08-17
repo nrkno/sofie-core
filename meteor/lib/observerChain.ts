@@ -51,9 +51,37 @@ export function observerChain(): {
 	//  changed: (obj: T) => then(obj),
 	//  removed: () => then(null),
 	// })
+
+	const collectorObject: Record<string, any> = {}
+
+	let handle: Meteor.LiveQueryHandle
+
 	return {
-		next: () => {
-			throw new Error('Not implemented')
+		next: (key, cursorChain) => {
+			const cursor = cursorChain()
+			if (!cursor) {
+				throw new Error('Undefined behavior')
+			}
+			handle = cursor.observe({
+				added: (obj) => {
+					collectorObject[key] = obj
+					// call next link
+					throw new Error('Undefined behavior')
+				},
+				changed: (obj) => {
+					collectorObject[key] = obj
+					// call next link
+					throw new Error('Undefined behavior')
+				},
+				removed: () => {
+					delete collectorObject[key]
+					// tear down subsequent chain
+					throw new Error('Undefined behavior')
+				},
+			})
+
+			// return a next/end object
+			throw new Error('Undefined behavior')
 		},
 	}
 }
