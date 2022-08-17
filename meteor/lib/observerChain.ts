@@ -1,39 +1,60 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { MongoCursor } from './collections/lib'
-import { PartInstance, PartInstances } from './collections/PartInstances'
-import { Rundown, Rundowns } from './collections/Rundowns'
-import { ShowStyleBase } from './collections/ShowStyleBases'
-import { DBTriggeredActions } from './collections/TriggeredActions'
+import { Simplify } from 'type-fest'
+import { PartInstances } from './collections/PartInstances'
+import { Rundowns } from './collections/Rundowns'
+import { RundownPlaylists } from './collections/RundownPlaylists'
 
 observerChain()
-	.next('activePartInstance', () => PartInstances.find())
-	.next('currentRundown', (state) =>
-		state.activePartInstance ? Rundowns.find({ rundownId: state.activePartInstance.rundownId }) : null
+	.next('activePlaylist', () => RundownPlaylists.find({ activationId: { $exists: true } }))
+	.next('activePartInstance', (chain) => {
+		const activePartInstanceId =
+			chain.activePlaylist.currentPartInstanceId ?? chain.activePlaylist.nextPartInstanceId
+		if (!activePartInstanceId) return null
+		return PartInstances.find({ _id: activePartInstanceId })
+	})
+	.next('currentRundown', (chain) =>
+		chain.activePartInstance ? Rundowns.find({ rundownId: chain.activePartInstance.rundownId }) : null
 	)
 	.end((state) => {
 		console.log(state)
 	})
 
-type Link<T extends object, K> = {
-	next: NextFunction<T, string, K>
+/**
+ * https://stackoverflow.com/a/66011942
+ */
+type StringLiteral<T> = T extends `${string & T}` ? T : never
+
+/**
+ * https://github.com/sindresorhus/type-fest/issues/417#issuecomment-1178753251
+ */
+type Not<Yes, Not> = Yes extends Not ? never : Yes
+
+type Link<T> = {
+	next: <L extends string, K extends { _id: ProtectedString<any> }>(
+		key: Not<L, keyof T>,
+		cursorChain: (state: T) => MongoCursor<K> | null
+	) => Link<Simplify<T & { [P in StringLiteral<L>]: K }>>
+
 	end: (complete: (state: T) => void) => Meteor.LiveQueryHandle
 }
-type NextFunction<T extends { [key: string]: any }, L extends string, K extends { _id: ProtectedString<any> }> = (
-	key: L,
-	cursorChain: (state: Partial<T>) => MongoCursor<K> | null
-) => Link<T & Record<L, K>, {}>
 
 export function observerChain(): {
-	next: NextFunction<{}, string>
+	next: <L extends string, K extends { _id: ProtectedString<any> }>(
+		key: L,
+		cursorChain: () => MongoCursor<K> | null
+	) => Link<{ [P in StringLiteral<L>]: K }>
 } {
 	// const handle = cursor.observe({
-	// 	added: (obj: T) => then(obj),
-	// 	changed: (obj: T) => then(obj),
-	// 	removed: () => then(null),
+	//  added: (obj: T) => then(obj),
+	//  changed: (obj: T) => then(obj),
+	//  removed: () => then(null),
 	// })
 	return {
-		next: (fnc) => {},
+		next: () => {
+			throw new Error('Not implemented')
+		},
 	}
 }
 
