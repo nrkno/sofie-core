@@ -6,8 +6,9 @@ import { SegmentViewMode as SegmentViewModeIcon } from '../../lib/ui/icons/listV
 
 import { SegmentViewMode } from './SegmentViewModes'
 
-function getNextMode(currentMode: SegmentViewMode): SegmentViewMode {
+export function getNextMode(currentMode: SegmentViewMode | undefined): SegmentViewMode {
 	switch (currentMode) {
+		case undefined:
 		case SegmentViewMode.Timeline:
 			return SegmentViewMode.Storyboard
 		case SegmentViewMode.Storyboard:

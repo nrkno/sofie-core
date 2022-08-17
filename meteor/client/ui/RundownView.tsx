@@ -125,6 +125,7 @@ import { AdLibPieceUi, AdlibSegmentUi } from '../lib/shelf'
 import { SourceLayerLookup, fetchAndFilter } from './Shelf/AdLibPanel'
 import { matchFilter } from './Shelf/AdLibListView'
 import { SegmentListContainer } from './SegmentList/SegmentListContainer'
+import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -2091,6 +2092,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 		}
 
+		onSegmentViewModeChange = () => {
+			const nextMode = getNextSegmentViewMode(this.state.rundownSegmentViewMode)
+			this.setState({
+				rundownSegmentViewMode: nextMode,
+			})
+		}
+
 		onStudioRouteSetSwitch = (
 			e: React.MouseEvent<HTMLElement, MouseEvent>,
 			routeSetId: string,
@@ -2808,6 +2816,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									studioRouteSets={studio.routeSets}
 									studioRouteSetExclusivityGroups={studio.routeSetExclusivityGroups}
 									onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
+									onSegmentViewMode={this.onSegmentViewModeChange}
 								/>
 							</ErrorBoundary>
 							<ErrorBoundary>{this.renderSorensenContext()}</ErrorBoundary>

@@ -134,33 +134,6 @@
 			font-weight: 600;
 		}
 	}
-
-	.status-bar__controls__label {
-		font-size: 0.6rem;
-		text-align: center;
-		user-select: none;
-		margin-top: 2em;
-		margin-left: rem(5px);
-		margin-bottom: 3em;
-
-		.keyboard_key {
-			display: inline-block;
-			border: 1px solid #fff;
-			border-radius: 4px;
-			padding: 0 rem(3px);
-			margin-bottom: 0.2rem;
-			font-size: 0.9em;
-		}
-
-		&.status-bar__controls__label--fullscreen {
-			transition: 1s opacity;
-			opacity: 1;
-
-			@media screen and (display-mode: fullscreen) {
-				opacity: 0;
-			}
-		}
-	}
 }
 
 .rundown-view .status-bar {
@@ -184,6 +157,23 @@
 			background-color: #eee;
 			&.notifications__toggle-button {
 				background-color: #acacad;
+			}
+		}
+
+		&.status-bar__controls__button--segment-view-mode {
+			position: fixed;
+			right: 0.3125rem;
+			bottom: 8.3125rem;
+			z-index: 310;
+			text-align: right;
+
+			> svg {
+				width: 2em;
+				height: 2em;
+				position: relative;
+				left: -0.5em;
+				top: 0.1em;
+				transition: 0.5s fill;
 			}
 		}
 
