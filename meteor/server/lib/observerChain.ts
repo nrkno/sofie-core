@@ -1,55 +1,8 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
-import { MongoCursor } from './collections/lib'
+import { MongoCursor } from '../../lib/collections/lib'
 import { Simplify } from 'type-fest'
-import { DBPartInstance, PartInstances } from './collections/PartInstances'
-import { DBRundown, Rundowns } from './collections/Rundowns'
-import { RundownPlaylists } from './collections/RundownPlaylists'
-import { assertNever } from './lib'
-import { DBShowStyleBase, ShowStyleBases } from './collections/ShowStyleBases'
-import { TriggeredActions } from './collections/TriggeredActions'
-
-observerChain()
-	.next('activePlaylist', () => RundownPlaylists.find({ activationId: { $exists: true } }))
-	.next('activePartInstance', (chain) => {
-		const activePartInstanceId =
-			chain.activePlaylist.currentPartInstanceId ?? chain.activePlaylist.nextPartInstanceId
-		if (!activePartInstanceId) return null
-		return PartInstances.find({ _id: activePartInstanceId }, { fields: { rundownId: 1 }, limit: 1 }) as MongoCursor<
-			Pick<DBPartInstance, '_id' | 'rundownId'>
-		>
-	})
-	.next('currentRundown', (chain) =>
-		chain.activePartInstance
-			? (Rundowns.find(
-					{ rundownId: chain.activePartInstance.rundownId },
-					{ fields: { showStyleBaseId: 1 }, limit: 1 }
-			  ) as MongoCursor<Pick<DBRundown, '_id' | 'showStyleBaseId'>>)
-			: null
-	)
-	.next('showStyleBase', (chain) =>
-		chain.currentRundown
-			? (ShowStyleBases.find(
-					{ _id: chain.currentRundown.showStyleBaseId },
-					{ fields: { sourceLayers: 1, outputLayers: 1, hotkeyLegend: 1 }, limit: 1 }
-			  ) as MongoCursor<Pick<DBShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers' | 'hotkeyLegend'>>)
-			: null
-	)
-	.next('triggeredActions', (chain) =>
-		TriggeredActions.find({
-			$or: [
-				{
-					showStyleBaseId: chain.showStyleBase._id,
-				},
-				{
-					showStyleBaseId: null,
-				},
-			],
-		})
-	)
-	.end((state) => {
-		console.log(state)
-	})
+import { assertNever } from '../../lib/lib'
 
 /**
  * https://stackoverflow.com/a/66011942
@@ -76,29 +29,28 @@ export function observerChain(): {
 		cursorChain: () => MongoCursor<K> | null
 	) => Link<{ [P in StringLiteral<L>]: K }>
 } {
-	function createNextLink(collectorObject: Record<string, any>, liveQueryHandle: Meteor.LiveQueryHandle) {
+	function createNextLink(baseCollectorObject: Record<string, any>, liveQueryHandle: Meteor.LiveQueryHandle) {
 		let mode: 'next' | 'end' | undefined
 		let chainedCursor: (state: Record<string, any>) => MongoCursor<any> | null
 		let completeFunction: (state: Record<string, any> | null) => void
 		let chainedKey: string | undefined = undefined
 		let previousObserver: Meteor.LiveQueryHandle | null = null
-		const isStopped = false
 
 		let nextChanged: (obj) => void = () => {
 			if (mode === 'end') return
-			throw new Error('Unfinished observer chain. This is a memory leak.')
+			throw new Error('nextChanged: Unfinished observer chain. This is a memory leak.')
 		}
 		let nextStop: () => void = () => {
 			if (mode === 'end') return
-			throw new Error('Unfinished observer chain. This is a memory leak.')
+			throw new Error('nextChanged: Unfinished observer chain. This is a memory leak.')
 		}
 
-		function changedLink(obj) {
+		function changedLink(collectorObject) {
 			if (previousObserver) {
 				previousObserver.stop()
 				previousObserver = null
 			}
-			const cursorResult = chainedCursor(obj)
+			const cursorResult = chainedCursor(collectorObject)
 			if (cursorResult === null) {
 				nextStop()
 				return
@@ -109,7 +61,7 @@ export function observerChain(): {
 					if (!chainedKey) throw new Error('Chained key needs to be defined')
 					const newCollectorObject = {
 						...collectorObject,
-						chainedKey: doc,
+						[chainedKey]: doc,
 					}
 					nextStop()
 					nextChanged(newCollectorObject)
@@ -118,7 +70,7 @@ export function observerChain(): {
 					if (!chainedKey) throw new Error('Chained key needs to be defined')
 					const newCollectorObject = {
 						...collectorObject,
-						chainedKey: doc,
+						[chainedKey]: doc,
 					}
 					nextStop()
 					nextChanged(newCollectorObject)
@@ -128,10 +80,6 @@ export function observerChain(): {
 					nextStop()
 				},
 			})
-
-			if (isStopped) {
-				previousObserver.stop()
-			}
 		}
 
 		function changedEnd(obj) {
@@ -161,7 +109,7 @@ export function observerChain(): {
 						changedEnd(obj)
 						break
 					case undefined:
-						throw new Error('Unfinished observer chain. This is a memory leak.')
+						throw new Error('changed: mode: undefined, Unfinished observer chain. This is a memory leak.')
 					default:
 						assertNever(mode)
 				}
@@ -175,7 +123,6 @@ export function observerChain(): {
 						stopEnd()
 						break
 					case undefined:
-						console.error('Unfinished observer chain. This is a memory leak.')
 						break
 					default:
 						assertNever(mode)
@@ -188,7 +135,7 @@ export function observerChain(): {
 					chainedKey = key
 					chainedCursor = thisCursor
 					mode = 'next'
-					const { changed, stop, link } = createNextLink(collectorObject, liveQueryHandle)
+					const { changed, stop, link } = createNextLink(baseCollectorObject, liveQueryHandle)
 					nextChanged = changed
 					nextStop = stop
 					return link
@@ -213,7 +160,11 @@ export function observerChain(): {
 	return {
 		next: (key, cursorChain) => {
 			const nextLink = link.next(key, cursorChain)
-			changed({})
+			setImmediate(
+				Meteor.bindEnvironment(() => {
+					changed({})
+				})
+			)
 			return nextLink
 		},
 	}
