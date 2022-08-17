@@ -2,9 +2,7 @@ import Tooltip from 'rc-tooltip'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { getUseOnePartPerLine } from '../../lib/localStorage'
-import { TimelineView } from '../../lib/ui/icons/timelineView'
-import { StoryboardView } from '../../lib/ui/icons/storyboardView'
-import { ListView } from '../../lib/ui/icons/listView'
+import { SegmentViewMode as SegmentViewModeIcon } from '../../lib/ui/icons/listView'
 
 import { SegmentViewMode } from './SegmentViewModes'
 
@@ -29,40 +27,28 @@ export function SwitchViewModeButton({
 	const { t } = useTranslation()
 
 	const nextMode = getNextMode(currentMode)
+	let label = t('Switch Segment View Mode')
 
 	switch (nextMode) {
 		case SegmentViewMode.Timeline:
-			return (
-				<Tooltip overlay={t('Switch to Timeline View')} destroyTooltipOnHide>
-					<button
-						className="segment-timeline__switch-view-mode-button"
-						onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
-					>
-						<TimelineView />
-					</button>
-				</Tooltip>
-			)
+			label = t('Switch to Timeline View')
+			break
 		case SegmentViewMode.Storyboard:
-			return (
-				<Tooltip overlay={t('Switch to Storyboard View')} destroyTooltipOnHide>
-					<button
-						className="segment-timeline__switch-view-mode-button"
-						onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
-					>
-						<StoryboardView />
-					</button>
-				</Tooltip>
-			)
+			label = t('Switch to Storyboard View')
+			break
 		case SegmentViewMode.List:
-			return (
-				<Tooltip overlay={t('Switch to List View')} destroyTooltipOnHide>
-					<button
-						className="segment-timeline__switch-view-mode-button"
-						onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
-					>
-						<ListView />
-					</button>
-				</Tooltip>
-			)
+			label = t('Switch to List View')
+			break
 	}
+
+	return (
+		<Tooltip overlay={label} destroyTooltipOnHide>
+			<button
+				className="segment-timeline__switch-view-mode-button"
+				onClick={() => onSwitchViewMode && onSwitchViewMode(nextMode)}
+			>
+				<SegmentViewModeIcon />
+			</button>
+		</Tooltip>
+	)
 }
