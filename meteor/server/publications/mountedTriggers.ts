@@ -12,9 +12,11 @@ import { Meteor } from 'meteor/meteor'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { Rundowns } from '../../lib/collections/Rundowns'
-import { PartInstances } from '../../lib/collections/PartInstances'
+import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
 import { MountedTrigger } from '../../lib/api/triggers/MountedTriggers'
+import { ReadonlyDeep } from 'type-fest'
+import { Rundowns } from '../../lib/collections/Rundowns'
+import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 
 meteorCustomPublish(
 	PubSub.mountedTriggersForDevice,
@@ -28,7 +30,7 @@ meteorCustomPublish(
 			const studioId = peripheralDevice.studioId
 			if (!studioId) return
 
-			createObserverForMountedTriggersPublication(pub, PubSub.mountedTriggersForDevice, studioId)
+			await createObserverForMountedTriggersPublication(pub, PubSub.mountedTriggersForDevice, studioId)
 		}
 	}
 )
@@ -37,8 +39,12 @@ interface MountedTriggerArgs {
 	studioId: StudioId
 }
 
-interface MountedTriggersEnvironment {
+interface MountedTriggersState {
 	showStyleBase: ShowStyleBase
+}
+
+interface MountedTriggersUpdateProps {
+	partInstance: PartInstance | null
 }
 
 async function createObserverForMountedTriggersPublication(
@@ -46,7 +52,12 @@ async function createObserverForMountedTriggersPublication(
 	observerId: PubSub,
 	studioId: StudioId
 ) {
-	const observer = await setUpOptimizedObserver<MountedTrigger, MountedTriggerArgs, MountedTriggersEnvironment, {}>(
+	const observer = await setUpOptimizedObserver<
+		MountedTrigger,
+		MountedTriggerArgs,
+		MountedTriggersState,
+		MountedTriggersUpdateProps
+	>(
 		`pub_${observerId}_${studioId}`,
 		{ studioId },
 		setupActionTriggersObservers,
@@ -64,41 +75,34 @@ async function createObserverForMountedTriggersPublication(
 
 async function setupActionTriggersObservers(
 	args: { studioId: StudioId },
-	triggerUpdate: TriggerUpdate<{}>
+	triggerUpdate: TriggerUpdate<MountedTriggersUpdateProps>
 ): Promise<Meteor.LiveQueryHandle[]> {
 	let lastActiveRundownPlaylistId: RundownPlaylistId | null = null
-	const lastActiveRundownId: RundownId | null = null
-	const lastShowStyleBaseObserver: Meteor.LiveQueryHandle | null = null
+	let lastPartInstanceObserver: Meteor.LiveQueryHandle | null = null
 	const setupObserver = (activeRundownPlaylist: RundownPlaylist | null) => {
 		if (lastActiveRundownPlaylistId === activeRundownPlaylist?._id) {
+			triggerUpdate({ partInstance: null })
 			return
 		}
 		lastActiveRundownPlaylistId = activeRundownPlaylist?._id ?? null
 
-		if (lastShowStyleBaseObserver) {
-			lastShowStyleBaseObserver.stop()
-		}
+		if (lastPartInstanceObserver) lastPartInstanceObserver.stop()
 
 		const activePartInstanceId =
 			activeRundownPlaylist?.currentPartInstanceId ?? activeRundownPlaylist?.nextPartInstanceId
 		if (!activePartInstanceId) {
-			// TODO: tear down existing observers.
+			triggerUpdate({ partInstance: null })
 			return
 		}
 
-		PartInstances.find({
+		lastPartInstanceObserver = PartInstances.find({
 			_id: activePartInstanceId,
 		}).observe({
 			// TODO: Observe the part instances and feed that into currentShowStyleBaseId
+			added: (partInstance) => triggerUpdate({ partInstance }),
+			changed: (partInstance) => triggerUpdate({ partInstance }),
+			removed: () => triggerUpdate({ partInstance: null }),
 		})
-
-		// lastShowStyleBaseObserver = ShowStyleBases.find({
-		// 	_id: currentShowStyleBaseId,
-		// }).observe({
-		//     added: () => triggerUpdate({}),
-		// 	changed: () => triggerUpdate({}),
-		// 	removed: () => triggerUpdate({}),
-		// })
 	}
 	return [
 		RundownPlaylists.find({
@@ -113,12 +117,30 @@ async function setupActionTriggersObservers(
 		}),
 		{
 			stop: () => {
-				lastShowStyleBaseObserver?.stop()
+				lastPartInstanceObserver?.stop()
 			},
 		},
 	]
 }
 
-async function manipulateActionTriggers(): Promise<MountedTrigger[] | null> {
-	return []
+async function manipulateActionTriggers(
+	args: MountedTriggerArgs,
+	env: Partial<MountedTriggersState>,
+	props: ReadonlyDeep<Partial<MountedTriggersUpdateProps> | undefined>
+): Promise<MountedTrigger[]> {
+	if (!props || !props.partInstance) return []
+
+	const currentRundown = Rundowns.findOne(props.partInstance.rundownId)
+	if (!currentRundown) return []
+
+	const showStyleBase = ShowStyleBases.findOne(currentRundown.showStyleBaseId)
+	if (!showStyleBase) return []
+
+	const triggeredActions = TriggeredActions.find({
+		$or: [
+			{showStyleBaseId: showStyleBase._id},
+			{showStyleBaseId: null}
+		]
+	})
+	triggeredActions.
 }
