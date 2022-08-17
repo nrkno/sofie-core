@@ -1100,7 +1100,7 @@ interface IState {
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
-	rundownSegmentViewMode: SegmentViewMode | undefined
+	rundownDefaultSegmentViewMode: SegmentViewMode | undefined
 	segmentViewModes: Record<string, SegmentViewMode>
 	/** Minishelf data */
 	keyboardQueuedPiece: AdLibPieceUi | undefined
@@ -1322,10 +1322,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				segmentViewModes: this.props.playlist?._id
 					? UIStateStorage.getItemRecord(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
 					: {},
-				rundownSegmentViewMode: this.props.playlist?._id
+				rundownDefaultSegmentViewMode: this.props.playlist?._id
 					? (UIStateStorage.getItemString(
 							`rundownView.${this.props.playlist._id}`,
-							`rundownSegmentViewMode`,
+							`rundownDefaultSegmentViewMode`,
 							''
 					  ) as SegmentViewMode) || undefined
 					: undefined,
@@ -1797,10 +1797,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						`segmentViewModes`,
 						{}
 					),
-					rundownSegmentViewMode:
+					rundownDefaultSegmentViewMode:
 						(UIStateStorage.getItemString(
 							`rundownView.${this.props.playlist._id}`,
-							`rundownSegmentViewMode`,
+							`rundownDefaultSegmentViewMode`,
 							''
 						) as SegmentViewMode) || undefined,
 				})
@@ -2093,10 +2093,18 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onSegmentViewModeChange = () => {
-			const nextMode = getNextSegmentViewMode(this.state.rundownSegmentViewMode)
-			this.setState({
-				rundownSegmentViewMode: nextMode,
-			})
+			const nextMode = getNextSegmentViewMode(this.state.rundownDefaultSegmentViewMode)
+			this.setState(
+				{
+					segmentViewModes: {},
+					rundownDefaultSegmentViewMode: nextMode,
+				},
+				() => {
+					if (!this.props.playlist?._id) return
+					UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
+					UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, 'rundownDefaultSegmentViewMode', nextMode)
+				}
+			)
 		}
 
 		onStudioRouteSetSwitch = (
@@ -2380,7 +2388,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const userSegmentViewMode = this.state.segmentViewModes[unprotectString(segment._id)] as
 				| SegmentViewMode
 				| undefined
-			const userRundownSegmentViewMode = this.state.rundownSegmentViewMode
+			const userRundownSegmentViewMode = this.state.rundownDefaultSegmentViewMode
 			const displayMode =
 				userSegmentViewMode ?? userRundownSegmentViewMode ?? segment.displayAs ?? DEFAULT_SEGMENT_VIEW_MODE
 
