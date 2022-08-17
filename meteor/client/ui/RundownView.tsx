@@ -1099,6 +1099,7 @@ interface IState {
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
+	rundownSegmentViewMode: SegmentViewMode | undefined
 	segmentViewModes: Record<string, SegmentViewMode>
 	/** Minishelf data */
 	keyboardQueuedPiece: AdLibPieceUi | undefined
@@ -1320,6 +1321,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				segmentViewModes: this.props.playlist?._id
 					? UIStateStorage.getItemRecord(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
 					: {},
+				rundownSegmentViewMode: this.props.playlist?._id
+					? (UIStateStorage.getItemString(
+							`rundownView.${this.props.playlist._id}`,
+							`rundownSegmentViewMode`,
+							''
+					  ) as SegmentViewMode) || undefined
+					: undefined,
 				keyboardQueuedPiece: undefined,
 				uiSegmentMap: new Map(),
 				uiSegments: [],
@@ -1783,9 +1791,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				(prevProps.playlist === undefined || this.props.playlist._id !== prevProps.playlist._id)
 			) {
 				this.setState({
-					segmentViewModes: this.props.playlist?._id
-						? UIStateStorage.getItemRecord(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
-						: {},
+					segmentViewModes: UIStateStorage.getItemRecord(
+						`rundownView.${this.props.playlist._id}`,
+						`segmentViewModes`,
+						{}
+					),
+					rundownSegmentViewMode:
+						(UIStateStorage.getItemString(
+							`rundownView.${this.props.playlist._id}`,
+							`rundownSegmentViewMode`,
+							''
+						) as SegmentViewMode) || undefined,
 				})
 			}
 
@@ -2353,10 +2369,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			segmentIdsBeforeSegment: Set<SegmentId>,
 			rundownIdsBefore: RundownId[]
 		) {
-			const userSegmentDisplaymode = this.state.segmentViewModes[unprotectString(segment._id)] as
+			const userSegmentViewMode = this.state.segmentViewModes[unprotectString(segment._id)] as
 				| SegmentViewMode
 				| undefined
-			const displayMode = userSegmentDisplaymode ?? segment.displayAs ?? DEFAULT_SEGMENT_VIEW_MODE
+			const userRundownSegmentViewMode = this.state.rundownSegmentViewMode
+			const displayMode =
+				userSegmentViewMode ?? userRundownSegmentViewMode ?? segment.displayAs ?? DEFAULT_SEGMENT_VIEW_MODE
 
 			const showDurationSourceLayers = this.state.rundownViewLayout?.showDurationSourceLayers
 				? new Set<ISourceLayer['_id']>(this.state.rundownViewLayout?.showDurationSourceLayers)
