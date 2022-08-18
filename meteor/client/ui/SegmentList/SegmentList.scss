@@ -138,11 +138,12 @@ $identifier-area-width: 3em;
 					margin: 0.2em;
 
 					> .segment-opl__identifier {
+						font-weight: 300;
 						display: inline-block;
-						padding: 0 4px 0 4px;
+						padding: 1px 4px;
 						box-sizing: border-box;
 						background-color: $part-identifier;
-						border-radius: 8px 0 0 8px;
+						border-radius: 10px;
 						color: $part-identifier-text;
 						font-size: 0.85rem;
 						width: max-content;

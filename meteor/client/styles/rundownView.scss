@@ -569,10 +569,10 @@ svg.icon {
 				font-weight: 300;
 				text-shadow: none;
 				margin: 2.5px;
-				padding: 0 4px;
+				padding: 1px 4px;
 				background-color: $part-identifier;
 				color: $part-identifier-text;
-				border-radius: 0 10px 10px 0;
+				border-radius: 10px;
 				font-size: 0.85rem;
 
 				&:hover {
