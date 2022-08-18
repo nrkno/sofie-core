@@ -113,6 +113,7 @@ export function RundownRightHandControls(props: IProps) {
 			<VelocityReact.VelocityTransitionGroup
 				enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
 				leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}
+				className="status-bar__cell status-bar__cell--align-start"
 			>
 				<NotificationCenterPanelToggle
 					onClick={(e) => props.onToggleNotifications && props.onToggleNotifications(e, NoticeLevel.CRITICAL)}
@@ -163,6 +164,7 @@ export function RundownRightHandControls(props: IProps) {
 			<VelocityReact.VelocityTransitionGroup
 				enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
 				leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}
+				className="status-bar__cell status-bar__cell--align-end"
 			>
 				{props.isStudioMode && (
 					<button
