@@ -118,7 +118,7 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 				</>
 			)}
 			{endsInFreeze && (
-				<div className="segment-opl__freeze-marker" style={freezeFrameIconStyle} data-to-freeze-frame={toFreezeFrame}>
+				<div className="segment-opl__freeze-marker" style={freezeFrameIconStyle}>
 					<FreezeFrameIcon
 						className={isLive && mainSourceEnd - livePosition < FREEZE_FRAME_FLASH ? 'flash' : undefined}
 					/>
