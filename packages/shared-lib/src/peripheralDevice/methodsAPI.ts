@@ -302,6 +302,8 @@ export interface NewPeripheralDeviceAPI {
 		packageId: ExpectedPackageId
 	): Promise<void>
 
+	trigger(deviceId: PeripheralDeviceId, deviceToken: string, trigger: Record<string, any>): Promise<void>
+
 	determineDiffTime(): Promise<DiffTimeResult>
 	getTimeDiff(): Promise<TimeDiff>
 	getTime(): Promise<number>
@@ -394,4 +396,6 @@ export enum PeripheralDeviceAPIMethods {
 
 	'requestUserAuthToken' = 'peripheralDevice.spreadsheet.requestUserAuthToken',
 	'storeAccessToken' = 'peripheralDevice.spreadsheet.storeAccessToken',
+
+	'trigger' = 'peripheralDevice.input.trigger',
 }

@@ -43,6 +43,7 @@ import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
+import { MountedTrigger } from './triggers/MountedTriggers'
 
 export enum PubSub {
 	blueprints = 'blueprints',
@@ -206,6 +207,7 @@ export interface PubSubTypes {
 		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 		token?: string
 	) => DBObj
+	[PubSub.mountedTriggersForDevice]: (deviceId: PeripheralDeviceId, token?: string) => MountedTrigger
 }
 
 export function meteorSubscribe<K extends keyof PubSubTypes>(

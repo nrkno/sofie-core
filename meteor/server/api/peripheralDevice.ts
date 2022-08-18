@@ -1131,5 +1131,9 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	) {
 		await PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId)
 	}
+	// --- Triggers ---
+	async trigger(deviceId: PeripheralDeviceId, deviceToken: string, trigger: Record<string, any>): Promise<void> {
+		console.log(deviceId, deviceToken, trigger)
+	}
 }
 registerClassToMeteorMethods(PeripheralDeviceAPIMethods, ServerPeripheralDeviceAPIClass, false)
