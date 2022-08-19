@@ -793,6 +793,10 @@ svg.icon {
 	&:hover {
 		background: #8c8c8c;
 		transition: 0s background-color;
+		
+		> svg path{
+			color: #fff;
+		}
 	}
 
 	&:active {
@@ -805,6 +809,8 @@ svg.icon {
 		top: 0.1em;
 		color: #999999;
 	}
+					
+
 }
 
 .segment-timeline {
