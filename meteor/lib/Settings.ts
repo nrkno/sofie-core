@@ -76,7 +76,6 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	enableKeyboardPreview: true,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 	poisonKey: 'Escape',
-	customizationClassName: 'tv2',
 	useCountdownToFreezeFrame: true,
 })
 
