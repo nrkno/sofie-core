@@ -6,6 +6,10 @@ import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events
 import { Promisify, threadedClass, ThreadedClassManager } from 'threadedclass'
 import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
 
+const FREEZE_LIMIT = 1000 // how long to wait for a response to a Ping
+const RESTART_TIMEOUT = 10000 // how long to wait for a restart to complete before throwing an error
+const KILL_TIMOUT = 10000 // how long to wait for a thread to terminate before throwing an error
+
 export class EventsWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<EventsWorkerChild>
 
@@ -32,6 +36,9 @@ export class EventsWorkerParent extends WorkerParentBase {
 			{
 				instanceName: `Events: ${baseOptions.studioId}`,
 				autoRestart: true,
+				freezeLimit: FREEZE_LIMIT,
+				restartTimeout: RESTART_TIMEOUT,
+				killTimeout: KILL_TIMOUT,
 			}
 		)
 

@@ -559,6 +559,23 @@ class ServerUserActionAPI
 			}
 		)
 	}
+	async DEBUG_crashStudioWorker(userEvent: string, rundownPlaylistId: RundownPlaylistId) {
+		// Make sure we never crash in production
+		if (Meteor.isProduction) return ClientAPI.responseSuccess(undefined)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+			},
+			StudioJobs.DebugCrash,
+			{
+				playlistId: rundownPlaylistId,
+			}
+		)
+	}
 	async resyncRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId) {
 		return ServerClientAPI.runUserActionInLogForPlaylist(
 			this,
