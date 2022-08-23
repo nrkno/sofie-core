@@ -2938,7 +2938,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			return (
 				<SorensenContext.Consumer>
 					{(sorensen) =>
-						sorensen && (
+						sorensen &&
+						this.state.studioMode && (
 							<TriggersHandler
 								rundownPlaylistId={this.props.rundownPlaylistId}
 								showStyleBaseId={this.props.showStyleBase!._id}

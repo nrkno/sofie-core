@@ -1407,6 +1407,19 @@ All notable changes to this project will be documented in this file. See [standa
 - store user event timestamps ([#716](https://github.com/nrkno/tv-automation-server-core/issues/716)) ([8a45898](https://github.com/nrkno/tv-automation-server-core/commit/8a45898b1f5a666128e0b8ca516524d818de3a1d))
 - **UserLog:** highlight linked log entry ([4e9407d](https://github.com/nrkno/tv-automation-server-core/commit/4e9407d4ec840f2a4ece43fa6063a4ff38b98bd0))
 
+
+### [1.41.4](https://github.com/nrkno/sofie-core/compare/v1.41.4-0...v1.41.4) (2022-08-18)
+
+### [1.41.4-0](https://github.com/nrkno/sofie-core/compare/v1.41.3...v1.41.4-0) (2022-08-17)
+
+
+### Bug Fixes
+
+* **RundownView:** check if studioMode is enabled when mounting TriggersHandler ([9ba0dd3](https://github.com/nrkno/sofie-core/commit/9ba0dd33ab3fa3549121e99b01384621709afeff))
+
+### [1.41.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.2...v1.41.3) (2022-08-10)
+
+
 ### Bug Fixes
 
 - auto update lobby errors ([#709](https://github.com/nrkno/tv-automation-server-core/issues/709)) ([264b536](https://github.com/nrkno/tv-automation-server-core/commit/264b536ccd53441cc0b89990fac1eaa4f323bcf4))
