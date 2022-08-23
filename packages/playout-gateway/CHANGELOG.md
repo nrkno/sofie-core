@@ -54,9 +54,23 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-
-
 # [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.42.0-in-testing.0) (2022-04-29)
+
+## [1.41.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.4-0...v1.41.4) (2022-08-18)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+## [1.41.4-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.3...v1.41.4-0) (2022-08-17)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
 
 ## [1.41.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.2...v1.41.3) (2022-08-10)
 
