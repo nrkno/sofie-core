@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.41.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.4...v1.41.5) (2022-08-26)
+
+
+### Features
+
+* **MOS:** Suppress the roElementStat STOP status, only send PLAY ([cf71221](https://github.com/nrkno/tv-automation-server-core/commit/cf71221abcd9b7e3fc8f7b02637ae232e541b732))
+
 ### [1.41.4](https://github.com/nrkno/sofie-core/compare/v1.41.4-0...v1.41.4) (2022-08-18)
 
 ### [1.41.4-0](https://github.com/nrkno/sofie-core/compare/v1.41.3...v1.41.4-0) (2022-08-17)
