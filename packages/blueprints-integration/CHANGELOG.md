@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.41.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.4-0...v1.41.4) (2022-08-18)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+## [1.41.4-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.3...v1.41.4-0) (2022-08-17)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+## [1.41.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.2...v1.41.3) (2022-08-10)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+## [1.41.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.1...v1.41.2-0) (2022-08-08)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
 # [1.41.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
