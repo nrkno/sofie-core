@@ -170,6 +170,7 @@ export class DbCacheWriteObject<
 		if (!_.isEqual(this.doc, newDoc)) {
 			this._document = newDoc
 
+			if (!this._updated) logger.warn(`MODIFY ${this.name}`)
 			this._updated = true
 			return true
 		}
@@ -187,6 +188,8 @@ export class DbCacheWriteObject<
 			}
 
 			if (span) span.end()
+
+			this._updated = false
 
 			return {
 				added: 0,

@@ -1168,7 +1168,7 @@ export class TSRHandler {
 
 			if (this.sendCallbacksTimeout) {
 				// Max limit for debouncing:
-				if (this.sendCallbacksDebounceCount < 10) {
+				if (this.sendCallbacksDebounceCount < 50) {
 					this.sendCallbacksDebounceCount++
 					clearTimeout(this.sendCallbacksTimeout)
 					this.sendCallbacksTimeout = undefined
@@ -1184,7 +1184,7 @@ export class TSRHandler {
 							this.logger.error('Error in timelineCallback', e)
 						})
 					this.changedResults = undefined
-				}, 100)
+				}, 40)
 			}
 		} else {
 			// @ts-expect-error Untyped bunch of methods
