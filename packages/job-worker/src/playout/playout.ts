@@ -1255,7 +1255,7 @@ export async function stopPiecesOnSourceLayers(
 
 			const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
 			const sourceLayerIds = new Set(data.sourceLayerIds)
-			innerStopPieces(
+			const changedIds = innerStopPieces(
 				context,
 				cache,
 				showStyleBase,
@@ -1264,9 +1264,11 @@ export async function stopPiecesOnSourceLayers(
 				undefined
 			)
 
-			await syncPlayheadInfinitesForNextPartInstance(context, cache)
+			if (changedIds.length) {
+				await syncPlayheadInfinitesForNextPartInstance(context, cache)
 
-			await updateTimeline(context, cache)
+				await updateTimeline(context, cache)
+			}
 		}
 	)
 }
