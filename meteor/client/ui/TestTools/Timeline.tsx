@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
-import { deserializeTimelineBlob, RoutedTimeline } from '../../../lib/collections/Timeline'
-import { applyToArray, protectString } from '../../../lib/lib'
+import { deserializeTimelineBlob, RoutedTimeline, TimelineHash } from '../../../lib/collections/Timeline'
+import { applyToArray, normalizeArray, protectString } from '../../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import {
 	TimelineState,
@@ -11,6 +11,7 @@ import {
 	ResolvedTimeline,
 	ResolvedTimelineObject,
 	ResolvedStates,
+	TimelineObjectInstance,
 } from 'superfly-timeline'
 import { TimelineContentObject, transformTimeline } from '@sofie-automation/corelib/dist/playout/timeline'
 import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
@@ -128,6 +129,11 @@ function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
 				<div>
 					<h2 className="mhn">Instances</h2>
 					<TimelineInstancesTable resolvedTl={resolvedTl} />
+				</div>
+
+				<div>
+					<h2 className="mhn">Events</h2>
+					<TimelineChangesLog resolvedTl={resolvedTl} timelineHash={tlComplete?.timelineHash} />
 				</div>
 			</div>
 		</div>
@@ -308,6 +314,143 @@ function renderTimelineInstances(resolvedTl: ResolvedTimeline, filter: RegExp | 
 			</td>
 		</tr>
 	))
+}
+
+interface TimelineChangesLogProps {
+	timelineHash: TimelineHash | undefined
+	resolvedTl: ResolvedTimeline | undefined
+}
+
+interface ChangeEntry {
+	forceShow?: boolean
+	msg: string
+}
+
+function TimelineChangesLog({ resolvedTl, timelineHash }: TimelineChangesLogProps) {
+	const [lastResolvedTl, setLastResolvedTl] = useState<ResolvedTimeline | null>(null)
+	const [idFilter, setIdFilter] = useState<FilterInputValue>(undefined)
+
+	const [entries, setEntries] = useState<ChangeEntry[]>([])
+
+	useEffect(() => {
+		setEntries((old) => [
+			...old,
+			{
+				forceShow: true,
+				msg: `New timeline ${timelineHash}!`,
+			},
+		])
+	}, [timelineHash])
+
+	useEffect(() => {
+		const newEntries: ChangeEntry[] = [
+			// {
+			// 	msg: 'New timeline!',
+			// },
+		]
+
+		if (resolvedTl && lastResolvedTl) {
+			const keys = Array.from(
+				new Set([...Object.keys(lastResolvedTl.objects), ...Object.keys(resolvedTl.objects)])
+			).sort()
+
+			for (const objectId of keys) {
+				const oldObj = lastResolvedTl.objects[objectId] as ResolvedTimelineObject | undefined
+				const newObj = resolvedTl.objects[objectId] as ResolvedTimelineObject | undefined
+
+				if (oldObj && !newObj) {
+					newEntries.push({ msg: `Object "${objectId}" removed` })
+				} else if (!oldObj && newObj) {
+					newEntries.push({ msg: `Object "${objectId}" added with ${newObj.resolved.instances.length} instances` })
+					for (const instance of newObj.resolved.instances) {
+						newEntries.push({
+							msg: `Instance "${objectId}${instance.id}" added - start: ${instance.start} end: ${instance.end}`,
+						})
+					}
+				} else if (newObj && oldObj) {
+					const oldInstancesMap = normalizeArray(oldObj.resolved.instances, 'id')
+					const newInstancesMap = normalizeArray(oldObj.resolved.instances, 'id')
+
+					const instanceKeys = Array.from(
+						new Set([...Object.keys(oldInstancesMap), ...Object.keys(newInstancesMap)])
+					).sort()
+
+					for (const instanceId of instanceKeys) {
+						const oldInstance = oldInstancesMap[instanceId] as TimelineObjectInstance | undefined
+						const newInstance = newInstancesMap[instanceId] as TimelineObjectInstance | undefined
+
+						if (oldInstance && !newInstance) {
+							newEntries.push({ msg: `Instance "${objectId}${oldInstance.id}" removed` })
+						} else if (!oldInstance && newInstance) {
+							newEntries.push({
+								msg: `Instance "${objectId}${newInstance.id}" added - start: ${newInstance.start} end: ${newInstance.end}`,
+							})
+						} else if (newInstance && oldInstance) {
+							let changes = ''
+
+							if (newInstance.start !== oldInstance.start)
+								changes += ` start: ${newInstance.start} !== ${oldInstance.start}`
+							if (newInstance.end !== oldInstance.end) changes += ` end: ${newInstance.end} !== ${oldInstance.end}`
+
+							if (changes.length > 0) {
+								newEntries.push({ msg: `Instance "${objectId}${oldInstance.id}" changed:${changes}` })
+							}
+						} else {
+							// Ignore instance that is not present in either
+						}
+					}
+				} else {
+					// Ignore object that is not present in either
+				}
+			}
+
+			// TODO - do diff
+		}
+
+		if (newEntries.length) setEntries((old) => [...old, ...newEntries])
+		setLastResolvedTl(resolvedTl || null)
+	}, [resolvedTl])
+
+	const doClear = useCallback(() => {
+		setEntries([])
+	}, [])
+
+	const showEntries = useMemo(() => {
+		if (idFilter) {
+			if (typeof idFilter === 'string') {
+				return entries.filter((o) => o.forceShow || o.msg.includes(idFilter))
+			} else {
+				return entries.filter((o) => o.forceShow || !!o.msg.match(idFilter))
+			}
+		} else {
+			return entries
+		}
+	}, [entries, idFilter])
+
+	return (
+		<div>
+			<div className="flex-row mbl">
+				<div className="col">
+					Id Filter: <FilterInput filterChanged={setIdFilter} />
+				</div>
+				<div className="col">
+					<button onClick={doClear}>Clear Events</button>
+				</div>
+			</div>
+			<table className="testtools-timelinetable">
+				<tbody>
+					<tr>
+						<th>Msg</th>
+					</tr>
+					{showEntries.map((e, i) => (
+						<tr key={i}>
+							<td>{e.msg}</td>
+						</tr>
+					))}
+				</tbody>
+			</table>
+		</div>
+	)
 }
 
 function TimelineStudioSelect() {
