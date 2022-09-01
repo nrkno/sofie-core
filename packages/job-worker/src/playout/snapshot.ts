@@ -27,6 +27,7 @@ import { saveIntoDb } from '../db/changes'
 import { getPartId, getSegmentId } from '../ingest/lib'
 import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
+import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export async function handleGeneratePlaylistSnapshot(
 	context: JobContext,
@@ -123,7 +124,7 @@ export async function handleGeneratePlaylistSnapshot(
 	})
 
 	return {
-		snapshotJson: JSON.stringify(snapshot, undefined, 2),
+		snapshotJson: JSONBlobStringify(snapshot),
 	}
 }
 
@@ -132,7 +133,7 @@ export async function handleRestorePlaylistSnapshot(
 	props: RestorePlaylistSnapshotProps
 ): Promise<RestorePlaylistSnapshotResult> {
 	// Future: we should validate this against a schema or something
-	const snapshot: CoreRundownPlaylistSnapshot = JSON.parse(props.snapshotJson)
+	const snapshot: CoreRundownPlaylistSnapshot = JSONBlobParse(props.snapshotJson)
 
 	const oldPlaylistId = snapshot.playlistId
 

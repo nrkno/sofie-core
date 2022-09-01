@@ -73,6 +73,7 @@ import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { ReadonlyDeep } from 'type-fest'
 import { checkAccessToPlaylist, VerifiedRundownPlaylistContentAccess } from './lib'
 import { PackageInfo } from '../coreSystem'
+import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined
@@ -316,7 +317,7 @@ async function createRundownPlaylistSnapshot(
 		full,
 	})
 	const coreResult = await queuedJob.complete
-	const coreSnapshot: CoreRundownPlaylistSnapshot = JSON.parse(coreResult.snapshotJson)
+	const coreSnapshot: CoreRundownPlaylistSnapshot = JSONBlobParse(coreResult.snapshotJson)
 
 	const mediaObjectIds: Array<string> = [
 		...getPiecesMediaObjects(coreSnapshot.pieces),
@@ -529,7 +530,7 @@ async function restoreFromRundownPlaylistSnapshot(
 	}
 
 	const queuedJob = await QueueStudioJob(StudioJobs.RestorePlaylistSnapshot, studioId, {
-		snapshotJson: JSON.stringify(omit(snapshot, 'mediaObjects', 'userActions')),
+		snapshotJson: JSONBlobStringify(omit(snapshot, 'mediaObjects', 'userActions')),
 	})
 	await queuedJob.complete
 
