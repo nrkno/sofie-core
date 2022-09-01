@@ -81,6 +81,7 @@ export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 				this._publication.added(id, newDoc)
 			} else if (
 				this._docs[id]['mappingsHash'] !== newDoc['mappingsHash'] || // Fast-track for the timeline publications
+				this._docs[id]['timelineHash'] !== newDoc['timelineHash'] ||
 				!_.isEqual(this._docs[id], newDoc)
 			) {
 				// changed

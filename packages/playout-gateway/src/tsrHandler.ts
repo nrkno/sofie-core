@@ -1176,6 +1176,8 @@ export class TSRHandler {
 				assertNever(callbackName)
 			}
 
+			// Based on the use-case, we generally expect the callbacks to come in batches, so it only makes sense
+			// to wait a little bit to collect the changed callbacks
 			if (!this.sendCallbacksTimeout) {
 				this.sendCallbacksTimeout = setTimeout(this.sendChangedResults, 20)
 			}
