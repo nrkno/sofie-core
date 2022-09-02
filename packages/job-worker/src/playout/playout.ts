@@ -775,8 +775,8 @@ async function _onPartPlaybackStarted(
 		throw new Error(`PartInstance "${data.partInstanceId}" in RundownPlayst "${cache.PlaylistId}" not found!`)
 
 	// make sure we don't run multiple times, even if TSR calls us multiple times
-	const isPlaying = playingPartInstance.timings?.startedPlayback && !playingPartInstance.timings?.stoppedPlayback
-	if (!isPlaying) {
+	const hasStartedPlaying = !!playingPartInstance.timings?.startedPlayback
+	if (!hasStartedPlaying) {
 		logger.debug(
 			`Playout reports PartInstance "${data.partInstanceId}" has started playback on timestamp ${new Date(
 				data.startedPlayback
