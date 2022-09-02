@@ -370,7 +370,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	}
 
 	async saveAllToDatabase(): Promise<void> {
-		logger.debug('saveAllToDatabase')
+		logger.silly('saveAllToDatabase')
 		// TODO - ideally we should make sure to preserve the lock during this operation
 		if (!this.PlaylistLock.isLocked) {
 			throw new Error('Cannot save changes with released playlist lock')

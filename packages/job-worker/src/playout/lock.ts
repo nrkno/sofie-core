@@ -92,7 +92,7 @@ export async function runWithPlaylistCache<TRes>(
 
 	try {
 		const res = await fcn(fullCache)
-		logger.warn('runWithPlaylistCache: saveAllToDatabase')
+		logger.silly('runWithPlaylistCache: saveAllToDatabase')
 		await fullCache.saveAllToDatabase()
 
 		return res
