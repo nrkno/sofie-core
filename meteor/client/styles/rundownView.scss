@@ -517,49 +517,6 @@ svg.icon {
 			font-size: 0.75em;
 			font-weight: 400;
 			grid-row: title-notifications / title-identifiers;
-
-			> .segment-timeline__title__notes__note {
-				position: relative;
-				padding-left: 20px;
-				cursor: pointer;
-
-				&:not(:last-child) {
-					margin-bottom: 5px;
-				}
-
-				> svg {
-					position: absolute;
-					left: 0;
-					top: -0.1em;
-					height: 1.6em;
-					width: 1.6em;
-				}
-
-				> .segment-timeline__title__notes__count {
-					display: inline-block;
-					min-width: 1.1em;
-					line-height: 1.1em;
-					font-weight: 600;
-					text-align: center;
-					border-radius: 1em;
-					font-size: 0.9em;
-					position: relative;
-					top: -0.3em;
-					left: -0.3em;
-					white-space: nowrap;
-					padding: 0 2px 0 0.3em;
-				}
-
-				> svg.type-warning + .segment-timeline__title__notes__count {
-					background: yellow;
-					color: #000;
-				}
-
-				> svg.type-critical + .segment-timeline__title__notes__count {
-					background: red;
-					color: #fff;
-				}
-			}
 		}
 
 		.segment-timeline__part-identifiers {
@@ -793,8 +750,8 @@ svg.icon {
 	&:hover {
 		background: #8c8c8c;
 		transition: 0s background-color;
-		
-		> svg path{
+
+		> svg path {
 			color: #fff;
 		}
 	}
@@ -809,8 +766,6 @@ svg.icon {
 		top: 0.1em;
 		color: #999999;
 	}
-					
-
 }
 
 .segment-timeline {
@@ -2811,6 +2766,49 @@ svg.icon {
 	100% {
 		opacity: 1;
 		clip-path: inset(0 -100px 0 -100px);
+	}
+}
+
+.segment-timeline__title__notes__note {
+	position: relative;
+	padding-left: 20px;
+	cursor: pointer;
+
+	&:not(:last-child) {
+		margin-bottom: 5px;
+	}
+
+	> svg {
+		position: absolute;
+		left: 0;
+		top: -0.1em;
+		height: 1.6em;
+		width: 1.6em;
+	}
+
+	> .segment-timeline__title__notes__count {
+		display: inline-block;
+		min-width: 1.1em;
+		line-height: 1.1em;
+		font-weight: 600;
+		text-align: center;
+		border-radius: 1em;
+		font-size: 0.9em;
+		position: relative;
+		top: -0.3em;
+		left: -0.3em;
+		white-space: nowrap;
+		padding: 0 2px 0 0.3em;
+	}
+
+	> svg.type-warning + .segment-timeline__title__notes__count {
+		background: yellow;
+		color: #000;
+	}
+
+	> svg.type-critical + .segment-timeline__title__notes__count {
+		background: red;
+		color: #fff;
 	}
 }
 

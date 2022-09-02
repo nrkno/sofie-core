@@ -16,6 +16,8 @@ import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SegmentListHeader } from './SegmentListHeader'
 import { useInView } from 'react-intersection-observer'
 import { getHeaderHeight } from '../../lib/viewPort'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 interface IProps {
 	id: string
@@ -35,6 +37,7 @@ interface IProps {
 
 	fixedSegmentDuration: boolean
 	showCountdownToSegment: boolean
+	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onSwitchViewMode?: (newViewMode: SegmentViewMode) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -232,6 +235,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				getSegmentContext={getSegmentContext}
 				onTimeUntilClick={onTimeUntilClick}
 				onSwitchViewMode={props.onSwitchViewMode}
+				onHeaderNoteClick={props.onHeaderNoteClick}
 			/>
 			<div className="segment-opl__part-list">{parts}</div>
 		</div>

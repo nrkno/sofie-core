@@ -11,10 +11,12 @@ import { PartUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
-import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { useTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IContextMenuContext } from '../RundownView'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 
 export function SegmentListHeader({
 	isDetached,
@@ -24,6 +26,7 @@ export function SegmentListHeader({
 	playlist,
 	studio,
 	highlight,
+	segmentNotes,
 	isLiveSegment,
 	isNextSegment,
 	isQueuedSegment,
@@ -34,6 +37,7 @@ export function SegmentListHeader({
 	onSwitchViewMode,
 	getSegmentContext,
 	onTimeUntilClick,
+	onHeaderNoteClick,
 }: {
 	isDetached: boolean
 	isDetachedStick: boolean
@@ -53,6 +57,7 @@ export function SegmentListHeader({
 	onSwitchViewMode?: (newViewMode: SegmentViewMode) => void
 	onTimeUntilClick: () => void
 	getSegmentContext: () => IContextMenuContext
+	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
 }) {
 	const { t } = useTranslation()
 
@@ -72,6 +77,15 @@ export function SegmentListHeader({
 	// 	const shouldDetach = !inView && parts.length > 1 && entry.boundingClientRect.top < window.innerHeight / 2
 	// 	setDetached(shouldDetach)
 	// }
+
+	const criticalNotes = segmentNotes.reduce((prev, item) => {
+		if (item.type === NoteSeverity.ERROR) return ++prev
+		return prev
+	}, 0)
+	const warningNotes = segmentNotes.reduce((prev, item) => {
+		if (item.type === NoteSeverity.WARNING) return ++prev
+		return prev
+	}, 0)
 
 	const contents = (
 		<ContextMenuTrigger
@@ -135,6 +149,30 @@ export function SegmentListHeader({
 					)}
 				</div>
 			</div>
+			{(criticalNotes > 0 || warningNotes > 0) && (
+				<div className="segment-opl__notes">
+					{criticalNotes > 0 && (
+						<div
+							className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
+							onClick={() => onHeaderNoteClick && onHeaderNoteClick(segment._id, NoteSeverity.ERROR)}
+							aria-label={t('Critical problems')}
+						>
+							<CriticalIconSmall />
+							<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
+						</div>
+					)}
+					{warningNotes > 0 && (
+						<div
+							className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
+							onClick={() => onHeaderNoteClick && onHeaderNoteClick(segment._id, NoteSeverity.WARNING)}
+							aria-label={t('Warnings')}
+						>
+							<WarningIconSmall />
+							<div className="segment-timeline__title__notes__count">{warningNotes}</div>
+						</div>
+					)}
+				</div>
+			)}
 			<ErrorBoundary>
 				<SwitchViewModeButton currentMode={SegmentViewMode.List} onSwitchViewMode={onSwitchViewMode} />
 			</ErrorBoundary>

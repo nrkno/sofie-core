@@ -44,7 +44,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 		[segmentId]
 	)
 
-	const _piecesReady = useSubscription(
+	useSubscription(
 		PubSub.pieces,
 		{
 			startRundownId: rundownId,
@@ -74,7 +74,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 		[segmentId]
 	)
 
-	const _pieceInstancesReady = useSubscription(
+	useSubscription(
 		PubSub.pieceInstances,
 		{
 			rundownId: rundownId,
@@ -282,6 +282,8 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 			hasAlreadyPlayed={props.hasAlreadyPlayed}
 			onContextMenu={props.onContextMenu}
 			onSwitchViewMode={props.onSwitchViewMode}
+			onHeaderNoteClick={props.onHeaderNoteClick}
+			onPieceDoubleClick={props.onPieceDoubleClick}
 		/>
 	)
 })

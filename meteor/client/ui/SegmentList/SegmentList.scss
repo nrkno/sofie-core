@@ -519,7 +519,7 @@ $identifier-area-width: 3em;
 .segment-opl__title {
 	display: grid;
 	grid-template-rows: auto;
-	grid-template-columns: max-content max-content auto;
+	grid-template-columns: max-content max-content max-content auto;
 
 	> .segment-opl__counters {
 		display: flex;
@@ -576,6 +576,15 @@ $identifier-area-width: 3em;
 		font-size: 1.5em;
 		box-sizing: border-box;
 		min-width: 4em;
+	}
+
+	.segment-opl__notes {
+		font-size: 0.8em;
+		padding-top: 0.8em;
+
+		> .segment-timeline__title__notes__note {
+			display: inline-block;
+		}
 	}
 }
 
