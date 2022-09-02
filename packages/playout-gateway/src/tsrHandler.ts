@@ -104,8 +104,6 @@ export interface RoutedTimeline {
 	/** serialized JSON Array containing all timeline-objects */
 	timelineBlob: string
 	generated: number
-	/** The point in time the data was published */
-	published: number
 
 	// this is the old way of storing the timeline, kept for backwards-compatibility
 	timeline?: TimelineObjGeneric[]
@@ -446,23 +444,15 @@ export class TSRHandler {
 		this.logger.debug(
 			`Trigger new resolving (${context}, hash: ${timeline.timelineHash}, gen: ${new Date(
 				timeline.generated
-			).toISOString()}, pub: ${new Date(timeline.published).toISOString()})`
+			).toISOString()})`
 		)
 		if (fromTlChange) {
-			const trace = {
+			sendTrace({
 				measurement: 'playout-gateway:timelineReceived',
 				start: timeline.generated,
 				tags: {},
 				ended: Date.now(),
 				duration: Date.now() - timeline.generated,
-			}
-			sendTrace(trace)
-			sendTrace({
-				measurement: 'playout-gateway:timelinePublicationLatency',
-				start: timeline.published,
-				tags: {},
-				ended: Date.now(),
-				duration: Date.now() - timeline.published,
 			})
 		}
 
