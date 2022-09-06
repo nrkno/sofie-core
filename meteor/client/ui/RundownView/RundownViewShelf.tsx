@@ -229,10 +229,6 @@ class RundownViewShelfInner extends MeteorReactComponent<
 								displayStyle={PieceDisplayStyle.BUTTONS}
 								widthScale={3.27} // @todo: css
 								isSelected={false}
-								toggleOnSingleClick={
-									(this.props.miniShelfFilter as DashboardLayoutFilter)?.toggleOnSingleClick ||
-									this.state.singleClickMode
-								}
 								renderTag="span"
 								key={unprotectString(adLibPiece._id)}
 								holdToDisplay={contextMenuHoldToDisplayTime()}
@@ -258,7 +254,10 @@ class RundownViewShelfInner extends MeteorReactComponent<
 									displayStyle={PieceDisplayStyle.BUTTONS}
 									widthScale={3.27} // @todo: css
 									isSelected={false}
-									toggleOnSingleClick={this.state.singleClickMode}
+									toggleOnSingleClick={
+										(this.props.miniShelfFilter as DashboardLayoutFilter)?.toggleOnSingleClick ||
+										this.state.singleClickMode
+									}
 								>
 									{adLibPiece.name}
 								</DashboardPieceButton>
