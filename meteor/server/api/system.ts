@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { makePromise, sleep, waitForPromise } from '../../lib/lib'
+import { sleep } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -82,7 +82,7 @@ Meteor.startup(() => {
 	ensureIndexes()
 })
 
-export async function cleanupIndexes(
+async function cleanupIndexes(
 	context: MethodContext,
 	actuallyRemoveOldIndexes: boolean
 ): Promise<Array<IndexSpecification>> {
@@ -91,17 +91,17 @@ export async function cleanupIndexes(
 
 	return setupIndexes(actuallyRemoveOldIndexes)
 }
-export function cleanupOldData(
+async function cleanupOldData(
 	context: MethodContext,
 	actuallyRemoveOldData: boolean
-): string | CollectionCleanupResult {
+): Promise<string | CollectionCleanupResult> {
 	check(actuallyRemoveOldData, Boolean)
-	waitForPromise(SystemWriteAccess.coreSystem(context))
+	await SystemWriteAccess.coreSystem(context)
 
 	return cleanupOldDataInner(actuallyRemoveOldData)
 }
-export function runCronjob(context: MethodContext): void {
-	waitForPromise(SystemWriteAccess.coreSystem(context))
+async function runCronjob(context: MethodContext): Promise<void> {
+	await SystemWriteAccess.coreSystem(context)
 
 	return nightlyCronjobInner()
 }
@@ -354,11 +354,11 @@ CPU JSON stringifying:       ${avg.cpuStringifying} ms (${comparison.cpuStringif
 	}
 }
 
-function getTranslationBundle(context: MethodContext, bundleId: TranslationsBundleId) {
+async function getTranslationBundle(context: MethodContext, bundleId: TranslationsBundleId) {
 	check(bundleId, String)
 
-	waitForPromise(OrganizationContentWriteAccess.translationBundle(context))
-	return ClientAPI.responseSuccess(getTranslationBundleInner(bundleId))
+	await OrganizationContentWriteAccess.translationBundle(context)
+	return ClientAPI.responseSuccess(await getTranslationBundleInner(bundleId))
 }
 
 class SystemAPIClass extends MethodContextAPI implements SystemAPI {
@@ -366,16 +366,16 @@ class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 		return cleanupIndexes(this, actuallyRemoveOldIndexes)
 	}
 	async cleanupOldData(actuallyRemoveOldData: boolean) {
-		return makePromise(() => cleanupOldData(this, actuallyRemoveOldData))
+		return cleanupOldData(this, actuallyRemoveOldData)
 	}
 	async runCronjob() {
-		return makePromise(() => runCronjob(this))
+		return runCronjob(this)
 	}
 	async doSystemBenchmark(runCount: number = 1) {
 		return doSystemBenchmark(this, runCount)
 	}
 	async getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>> {
-		return makePromise(() => getTranslationBundle(this, bundleId))
+		return getTranslationBundle(this, bundleId)
 	}
 }
 registerClassToMeteorMethods(SystemAPIMethods, SystemAPIClass, false)

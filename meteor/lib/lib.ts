@@ -289,12 +289,6 @@ export function waitForPromiseAll<T>(ps: (T | PromiseLike<T>)[]): T[] {
 	return waitForPromise(Promise.all(ps))
 }
 
-export type Promisify<T> = { [K in keyof T]: Promise<T[K]> }
-export function waitForPromiseObj<T extends object>(obj: Promisify<T>): T {
-	const values = waitForPromiseAll(_.values<Promise<any>>(obj))
-	return _.object(_.keys(obj), values) as T
-}
-
 export type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T
 
 /**

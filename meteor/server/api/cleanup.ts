@@ -1,4 +1,4 @@
-import { ProtectedString, getCurrentTime, waitForPromise, getCollectionKey } from '../../lib/lib'
+import { ProtectedString, getCurrentTime, getCollectionKey } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
@@ -45,9 +45,9 @@ import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { AsyncMongoCollection } from '../../lib/collections/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-export function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanupResult | string {
+export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Promise<CollectionCleanupResult | string> {
 	if (actuallyCleanup) {
-		const notAllowedReason = isAllowedToRunCleanup()
+		const notAllowedReason = await isAllowedToRunCleanup()
 		if (notAllowedReason) return `Could not run the cleanup function due to: ${notAllowedReason}`
 	}
 
@@ -390,15 +390,13 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 
 	return result
 }
-function isAllowedToRunCleanup(): string | void {
+async function isAllowedToRunCleanup(): Promise<string | void> {
 	// HACK: TODO - should we check this?
 	// if (isAnyQueuedWorkRunning()) return `Another sync-function is running, try again later`
 
-	const studios = Studios.find({}, { fields: { _id: 1 } }).fetch()
+	const studios = await Studios.findFetchAsync({}, { fields: { _id: 1 } })
 	for (const studio of studios) {
-		const activePlaylist: RundownPlaylist | undefined = waitForPromise(
-			getActiveRundownPlaylistsInStudioFromDb(studio._id)
-		)[0]
+		const activePlaylist: RundownPlaylist | undefined = await getActiveRundownPlaylistsInStudioFromDb(studio._id)[0]
 		if (activePlaylist) {
 			return `There is an active RundownPlaylist: "${activePlaylist.name}" in studio "${studio.name}" (${activePlaylist._id}, ${studio._id})`
 		}

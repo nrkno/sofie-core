@@ -5,10 +5,10 @@ import '../../../lib/main' // include this in order to get all of the collection
 import { cleanupOldDataInner } from '../cleanup'
 
 describe('Cleanup', () => {
-	testInFiber('Check that all collections are covered', () => {
+	testInFiber('Check that all collections are covered', async () => {
 		expect(Collections.size).toBeGreaterThan(10)
 
-		const result = cleanupOldDataInner(false)
+		const result = await cleanupOldDataInner(false)
 		expect(typeof result).not.toBe('string')
 
 		for (const name of Collections.keys()) {

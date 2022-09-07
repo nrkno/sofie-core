@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
-import { unprotectString, protectString, waitTime } from '../../lib/lib'
+import { unprotectString, protectString, waitTime, waitForPromise } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewUserAPI, UserAPIMethods, createUser } from '../../lib/api/user'
 import { registerClassToMeteorMethods } from '../methods'
@@ -35,7 +35,7 @@ function afterCreateNewUser(userId: UserId, organization: DBOrganizationBase): O
 	sendVerificationEmail(userId)
 
 	// Create an organization for the user:
-	const orgId = createOrganization(organization)
+	const orgId = waitForPromise(createOrganization(organization))
 	// Add user to organization:
 	Users.update(userId, { $set: { organizationId: orgId } })
 	Organizations.update(orgId, {
