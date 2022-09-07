@@ -1466,7 +1466,7 @@ const ShowStyleVariantsSettings = withTranslation()(
 			const { t } = this.props
 			return (
 				<div>
-					<h2 className="mhn">{t('Showstyle Variants')}</h2>
+					<h2 className="mhn">{t('Show Style Variants')}</h2>
 					<table className="table expando settings-studio-showStyleVariants-table">
 						<tbody>{this.renderShowStyleVariants()}</tbody>
 					</table>
