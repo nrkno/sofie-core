@@ -3119,7 +3119,7 @@
   version "42.0.0"
   dependencies:
     moment "2.29.4"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.1.5"
+    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.1.6"
     tslib "^2.3.1"
     type-fest "^2.11.1"
 
@@ -3144,7 +3144,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.42.0-in-development"
+  version "42.0.0"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     fast-clone "^1.5.13"
@@ -5182,10 +5182,10 @@ casparcg-connection@^5.1.0:
     xml2js "^0.4.19"
     xmlbuilder "^9.0.7"
 
-casparcg-state@2.1.1-nightly-20220216-113227-36bcfd5.0:
-  version "2.1.1-nightly-20220216-113227-36bcfd5.0"
-  resolved "https://registry.yarnpkg.com/casparcg-state/-/casparcg-state-2.1.1-nightly-20220216-113227-36bcfd5.0.tgz#dbedbee744678d08a0c99ecf267fc07aa62370c5"
-  integrity sha512-l7ZlZtAnNEQEv0ztBznL3h2ihCl4UclAlyKGY3S2aWosGys5tWY3tyAGbkqxSt+BOMhYlo+4AiZuLUOEKJTDNw==
+casparcg-state@2.1.2-nightly-latest-20220819-074840-588e6e7.0:
+  version "2.1.2-nightly-latest-20220819-074840-588e6e7.0"
+  resolved "https://registry.yarnpkg.com/casparcg-state/-/casparcg-state-2.1.2-nightly-latest-20220819-074840-588e6e7.0.tgz#9245f5d906189cb78e377dc3da31eefb883a7557"
+  integrity sha512-B34c/Ts3pw0U7w0bHaR5SyFrPHaJt9IVNk4KU0yGphEd8NCmoX/6rQhpfecHStjY0uTFQwXpkiVaGaWcj+rkcw==
   dependencies:
     casparcg-connection "^5.1.0"
     fast-clone "^1.5.13"
@@ -14632,10 +14632,10 @@ threadedclass@^0.8.0:
     is-running "^2.1.0"
     tslib "^1.13.0"
 
-threadedclass@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.0.2.tgz#c5574cac282198433b9f3685202c5081df23206b"
-  integrity sha512-xkKqzipcLV25TqI3Z3eykpl5TiAGwg+h0DUwvYEh9GXRxvNcKZJIfl2l5/Bn6UxOuHAKXGT/HBN9PWDRf2P34g==
+threadedclass@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.1.0.tgz#3f0e3e91d41098a9c9aa98635fa043530702e269"
+  integrity sha512-+R9wHIHKMsmp0g1TKHZ9gcATD5Pohig4ZWqDqV2o1+VjKjw8KmUcTQZ0sJCj/G8hjFxXPp2QAZDHsmzTcqQJYQ==
   dependencies:
     callsites "^3.1.0"
     eventemitter3 "^4.0.4"
@@ -14677,23 +14677,23 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@2.1.5":
-  version "2.1.5"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-2.1.5.tgz#fce1f3b298c07c731befbc6080b50f95b17f3bbb"
-  integrity sha512-aXk8+opWJ0NGJyLg0Ok33axCzvSbu/jAcGxfK2P4ZWY4zVWDGEdcqLB54S0Ulad+fOOF45ObeOBSVOac+6PhOg==
+"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@2.1.6":
+  version "2.1.6"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-2.1.6.tgz#a5a255bda1da51b0d1b997131b9fbfee745ec6fd"
+  integrity sha512-9H2L2JIVrkAtDgVQ7xfGAWOWIRVYGyW1mb0YHkqgQULnUVCSLGBeQo7apI3x37li1oMLG5sQeuGDi1lRSEPD3A==
   dependencies:
     tslib "^2.3.1"
 
-"timeline-state-resolver@npm:@tv2media/timeline-state-resolver@2.1.5":
-  version "2.1.5"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver/-/timeline-state-resolver-2.1.5.tgz#0c992c5419ac480ffdceb0c4331f6476b85ceee8"
-  integrity sha512-KGdUKRTEkQSTFT67HZDH9E5GuTXBdYjMUA6uoEnR35TZ9fS4WwKAyCLNmoV94jD1PWdpK7SwgyRD7FqFOgMi5w==
+"timeline-state-resolver@npm:@tv2media/timeline-state-resolver@2.1.6":
+  version "2.1.6"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver/-/timeline-state-resolver-2.1.6.tgz#249bd906953c96ddbd76dea2333b9858bbb16368"
+  integrity sha512-l/WHNzjHErskLfHnZOZLQ512nUhrepX179CIm6IbZLjLkE1QXM8l8HBWpt07FM5Yo513L7pXTyQGjK1kdDqTxQ==
   dependencies:
     "@tv2media/v-connection" "^6.0.2"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^5.1.0"
-    casparcg-state "2.1.1-nightly-20220216-113227-36bcfd5.0"
+    casparcg-state "2.1.2-nightly-latest-20220819-074840-588e6e7.0"
     debug "^4.3.1"
     deepmerge "^4.2.2"
     emberplus-connection "^0.1.2"
@@ -14708,8 +14708,8 @@ timecode@0.0.4:
     request "^2.88.0"
     sprintf-js "^1.1.2"
     superfly-timeline "8.2.1"
-    threadedclass "^1.0.2"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.1.5"
+    threadedclass "^1.1.0"
+    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.1.6"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
