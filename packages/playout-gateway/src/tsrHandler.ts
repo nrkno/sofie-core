@@ -104,8 +104,6 @@ export interface RoutedTimeline {
 	/** serialized JSON Array containing all timeline-objects */
 	timelineBlob: string
 	generated: number
-	/** The point in time the data was published */
-	published: number
 
 	// this is the old way of storing the timeline, kept for backwards-compatibility
 	timeline?: TimelineObjGeneric[]
@@ -446,23 +444,15 @@ export class TSRHandler {
 		this.logger.debug(
 			`Trigger new resolving (${context}, hash: ${timeline.timelineHash}, gen: ${new Date(
 				timeline.generated
-			).toISOString()}, pub: ${new Date(timeline.published).toISOString()})`
+			).toISOString()})`
 		)
 		if (fromTlChange) {
-			const trace = {
+			sendTrace({
 				measurement: 'playout-gateway:timelineReceived',
 				start: timeline.generated,
 				tags: {},
 				ended: Date.now(),
 				duration: Date.now() - timeline.generated,
-			}
-			sendTrace(trace)
-			sendTrace({
-				measurement: 'playout-gateway:timelinePublicationLatency',
-				start: timeline.published,
-				tags: {},
-				ended: Date.now(),
-				duration: Date.now() - timeline.published,
 			})
 		}
 
@@ -1104,7 +1094,17 @@ export class TSRHandler {
 
 	private changedResults: PlayoutChangedResults | undefined = undefined
 	private sendCallbacksTimeout: NodeJS.Timer | undefined = undefined
-	private sendCallbacksDebounceCount = 0
+
+	private sendChangedResults = (): void => {
+		this.sendCallbacksTimeout = undefined
+		this._coreHandler.core
+			.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
+			.catch((e) => {
+				this.logger.error('Error in timelineCallback', e)
+			})
+		this.changedResults = undefined
+	}
+
 	private handleTSRTimelineCallback(
 		time: number,
 		objId: string,
@@ -1166,25 +1166,10 @@ export class TSRHandler {
 				assertNever(callbackName)
 			}
 
-			if (this.sendCallbacksTimeout) {
-				// Max limit for debouncing:
-				if (this.sendCallbacksDebounceCount < 10) {
-					this.sendCallbacksDebounceCount++
-					clearTimeout(this.sendCallbacksTimeout)
-					this.sendCallbacksTimeout = undefined
-				}
-			}
+			// Based on the use-case, we generally expect the callbacks to come in batches, so it only makes sense
+			// to wait a little bit to collect the changed callbacks
 			if (!this.sendCallbacksTimeout) {
-				this.sendCallbacksTimeout = setTimeout(() => {
-					this.sendCallbacksDebounceCount = 0
-					this.sendCallbacksTimeout = undefined
-					this._coreHandler.core
-						.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
-						.catch((e) => {
-							this.logger.error('Error in timelineCallback', e)
-						})
-					this.changedResults = undefined
-				}, 100)
+				this.sendCallbacksTimeout = setTimeout(this.sendChangedResults, 20)
 			}
 		} else {
 			// @ts-expect-error Untyped bunch of methods

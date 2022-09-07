@@ -189,7 +189,6 @@ async function manipulateTimelinePublicationData(
 			timelineHash: state.timelineHash,
 			timelineBlob: state.routedTimeline,
 			generated: state.timeline?.generated ?? Date.now(),
-			published: Date.now(),
 		}),
 	]
 }
@@ -210,9 +209,9 @@ async function createObserverForTimelinePublication(
 		{ studioId },
 		setupTimelinePublicationObservers,
 		manipulateTimelinePublicationData,
-		(_args, newData) => {
-			// Don't need to perform any deep diffing
-			pub.updatedDocs(newData)
+		(_args, data) => {
+			// Don't need to perform any deep diffing, that's being done by CustomPublishArray
+			pub.updatedDocs(data)
 		},
 		0 // ms
 	)
