@@ -2,11 +2,12 @@ import { Rundown, RundownId, Rundowns } from './collections/Rundowns'
 import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { Segments, SegmentOrphanedReason, Segment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
-import { unprotectString, literal, generateTranslation, normalizeArrayToMap, MongoFieldSpecifierOnes } from './lib'
+import { unprotectString, literal, generateTranslation, normalizeArrayToMap } from './lib'
 import * as _ from 'underscore'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
 import { RundownPlaylistCollectionUtil, RundownPlaylistId, RundownPlaylists } from './collections/RundownPlaylists'
 import { ITranslatableMessage, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 
 export function getSegmentPartNotes(playlistId: RundownPlaylistId, rundownIds: RundownId[]): TrackedNote[] {
 	const playlist = RundownPlaylists.findOne(playlistId)

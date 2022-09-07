@@ -15,7 +15,7 @@ import {
 	ConfigManifestEntryType,
 	TableConfigManifestEntry,
 	TableEntryConfigManifestEntry,
-} from '../../../../lib/api/deviceConfig'
+} from '@sofie-automation/corelib/dist/deviceConfig'
 import { ConfigManifestEntryComponent } from './ConfigManifestEntryComponent'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
 import { unprotectString } from '../../../../lib/lib'

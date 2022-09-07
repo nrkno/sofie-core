@@ -28,7 +28,7 @@ import {
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { literal, unprotectString, partial, protectString, MongoFieldSpecifierOnes } from '../../../lib/lib'
+import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
 import {
 	ensureHasTrailingSlash,
 	contextMenuHoldToDisplayTime,
@@ -67,6 +67,7 @@ import {
 	isAdLibDisplayedAsOnAir,
 	isAdLibOnAir,
 } from '../../lib/shelf'
+import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {

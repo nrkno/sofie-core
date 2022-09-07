@@ -10,14 +10,13 @@ import {
 	registerCollection,
 	stringifyError,
 	protectString,
-	MongoFieldSpecifier,
-	SortSpecifier,
 	waitForPromise,
 } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import type { AnyBulkWriteOperation, Collection as RawCollection, Db as RawDb, CreateIndexesOptions } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { MongoFieldSpecifier, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
 
 const ObserveChangeBufferTimeout = 2000
 

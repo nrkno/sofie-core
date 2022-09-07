@@ -46,7 +46,11 @@ import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPacka
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { ConfigManifestEntryType, DeviceConfigManifest, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
+import {
+	ConfigManifestEntryType,
+	DeviceConfigManifest,
+	TableConfigManifestEntry,
+} from '@sofie-automation/corelib/dist/deviceConfig'
 import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { checkStudioExists } from '../../lib/collections/optimizations'
 

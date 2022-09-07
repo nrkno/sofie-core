@@ -1,14 +1,5 @@
 import * as _ from 'underscore'
-import {
-	mongoWhere,
-	literal,
-	ProtectedString,
-	unprotectString,
-	protectString,
-	mongoModify,
-	mongoFindOptions,
-	sleep,
-} from '../lib/lib'
+import { literal, ProtectedString, unprotectString, protectString, sleep } from '../lib/lib'
 import { RandomMock } from './random'
 import { FindOptions, FindOneOptions } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
@@ -22,6 +13,7 @@ import {
 	UpdateOptions,
 	UpsertOptions,
 } from '../lib/collections/lib'
+import { mongoWhere, mongoFindOptions, mongoModify } from '@sofie-automation/corelib/dist/mongo'
 const clone = require('fast-clone')
 
 export namespace MongoMock {

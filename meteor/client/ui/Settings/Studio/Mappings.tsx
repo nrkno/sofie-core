@@ -11,7 +11,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
-import { ConfigManifestEntryType, MappingManifestEntry, MappingsManifest } from '../../../../lib/api/deviceConfig'
+import {
+	ConfigManifestEntryType,
+	MappingManifestEntry,
+	MappingsManifest,
+} from '@sofie-automation/corelib/dist/deviceConfig'
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
 import { MongoCollection } from '../../../../lib/collections/lib'
 import { renderEditAttribute } from '../components/ConfigManifestEntryComponent'

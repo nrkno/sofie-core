@@ -23,7 +23,7 @@ import { TSR } from '@sofie-automation/blueprints-integration'
 import { protectString } from '../../../../lib/lib'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../../lib/userAction'
-import { MappingsManifest } from '../../../../lib/api/deviceConfig'
+import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { DeviceMappingSettings } from './Mappings'
 
 interface IStudioRoutingsProps {
