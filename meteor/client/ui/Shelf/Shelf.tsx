@@ -403,7 +403,10 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 				ref={this.setRef}
 			>
 				{!this.props.rundownLayout?.disableContextMenu && (
-					<ShelfContextMenu shelfDisplayOptions={this.props.shelfDisplayOptions} />
+					<ShelfContextMenu
+						shelfDisplayOptions={this.props.shelfDisplayOptions}
+						hideDefaultStartExecute={!!this.props.rundownLayout?.hideDefaultStartExecute}
+					/>
 				)}
 				{!fullViewport && (
 					<div
