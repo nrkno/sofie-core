@@ -3214,10 +3214,10 @@
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
   integrity sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==
 
-"@tv2media/v-connection@^6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-6.0.0.tgz#6b9a5e7f9bb7ee929c51085b3da63f60092eb301"
-  integrity sha512-CxJDIUypXxorZaypDZ0u9IYo3pswfXGRWy9Mc5WvnJ+xi356cFFBNdQx6XAUTRON5MCbiGzSMfgipzwbd4Wmcg==
+"@tv2media/v-connection@^6.0.2":
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-6.0.2.tgz#319eb7e31e4f9d8b80e4ecd21068dda33c720640"
+  integrity sha512-1bbI2xz943i4k5dyMFs0miMR/Xr4xm5Ua2bPeoKuScrWokLmIbtmQGazIf7JQLxa010hGZTF7J8uUIe0f4JoYg==
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -13793,10 +13793,10 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0:
-  version "7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0.tgz#e6d1c364bbc65c8f4dcbf7194065e88088283597"
-  integrity sha512-Ioy/joPbO0I6IP4a4sQgXuG0OtiZNK1xjCf0nfdrQQrL4bTkFsGKJAdxRyPU+1RtWSF41hKpgxROEoQ2pEoeuA==
+timeline-state-resolver-types@7.3.0-nightly-release44-20220914-085659-53fbc9650.0:
+  version "7.3.0-nightly-release44-20220914-085659-53fbc9650.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.3.0-nightly-release44-20220914-085659-53fbc9650.0.tgz#2463d45f34e176bd73da275827d67b1b254df563"
+  integrity sha512-62Y87d6XQwKRXN4MtmxMMp9yo69yxDVDIi3OLIo5cUZYBj4GmmbGnh/4q/HmQ0wqd2qak7ZnewRZTRxxBgGRhg==
   dependencies:
     tslib "^2.3.1"
 
@@ -13807,12 +13807,12 @@ timeline-state-resolver-types@7.3.0-release44.0:
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0:
-  version "7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0.tgz#b8b8fc9afe22cca4844d00d9fb04b6aff8f038af"
-  integrity sha512-F362jiUFjbhCqudg2nSHQtpRhTnefDb0KM8AmCZ2o9vl0c/9ci2JZzb3xE9J2E6pYKju/USGLnOLagoijbu0gw==
+timeline-state-resolver@7.3.0-nightly-release44-20220914-085659-53fbc9650.0:
+  version "7.3.0-nightly-release44-20220914-085659-53fbc9650.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.3.0-nightly-release44-20220914-085659-53fbc9650.0.tgz#db641a34a5fbfebfc5074584f3debe01db6a7abe"
+  integrity sha512-SiVLeaDaZ8sjV3FKxSZOTItoH0la5h58ZWV2IHSW2kp7zOXhzeH3YNkFsgrrKW4+gsN+r5dsMKL90ygOdM4+Cw==
   dependencies:
-    "@tv2media/v-connection" "^6.0.0"
+    "@tv2media/v-connection" "^6.0.2"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^5.1.0"
@@ -13832,7 +13832,7 @@ timeline-state-resolver@7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.7"
     threadedclass "^1.1.0"
-    timeline-state-resolver-types "7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0"
+    timeline-state-resolver-types "7.3.0-nightly-release44-20220914-085659-53fbc9650.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
