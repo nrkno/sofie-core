@@ -13793,10 +13793,10 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.3.0-nightly-fix-log-errors-in-tsr-devices-20220913-142910-97689d35b.0:
-  version "7.3.0-nightly-fix-log-errors-in-tsr-devices-20220913-142910-97689d35b.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.3.0-nightly-fix-log-errors-in-tsr-devices-20220913-142910-97689d35b.0.tgz#83b394fce978e46568fefa34fe1a80021a930cfc"
-  integrity sha512-VYxpqBui7SEHH0sSDX+QrAlY1ijQLPho6+wubTB21iOQhMJQER6dYqjqLzV2TXM/6+fWBDeViMn/0n1RIes3Ow==
+timeline-state-resolver-types@7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0:
+  version "7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0.tgz#e6d1c364bbc65c8f4dcbf7194065e88088283597"
+  integrity sha512-Ioy/joPbO0I6IP4a4sQgXuG0OtiZNK1xjCf0nfdrQQrL4bTkFsGKJAdxRyPU+1RtWSF41hKpgxROEoQ2pEoeuA==
   dependencies:
     tslib "^2.3.1"
 
@@ -13807,10 +13807,10 @@ timeline-state-resolver-types@7.3.0-release44.0:
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.3.0-nightly-fix-log-errors-in-tsr-devices-20220913-142910-97689d35b.0:
-  version "7.3.0-nightly-fix-log-errors-in-tsr-devices-20220913-142910-97689d35b.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.3.0-nightly-fix-log-errors-in-tsr-devices-20220913-142910-97689d35b.0.tgz#5eb9d3c0803e1025daeae885c3b4bbfa8e3cc582"
-  integrity sha512-PWm5y5xuVL5jisa5WFZOc4FhS4ydzRhlU8DN9JKQMSh7A7yLyVfZemxqyefF5yXb904fLBs5Jqmc9rXPhauGQQ==
+timeline-state-resolver@7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0:
+  version "7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0.tgz#b8b8fc9afe22cca4844d00d9fb04b6aff8f038af"
+  integrity sha512-F362jiUFjbhCqudg2nSHQtpRhTnefDb0KM8AmCZ2o9vl0c/9ci2JZzb3xE9J2E6pYKju/USGLnOLagoijbu0gw==
   dependencies:
     "@tv2media/v-connection" "^6.0.0"
     atem-connection "2.4.0"
@@ -13832,7 +13832,7 @@ timeline-state-resolver@7.3.0-nightly-fix-log-errors-in-tsr-devices-20220913-142
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.7"
     threadedclass "^1.1.0"
-    timeline-state-resolver-types "7.3.0-nightly-fix-log-errors-in-tsr-devices-20220913-142910-97689d35b.0"
+    timeline-state-resolver-types "7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"

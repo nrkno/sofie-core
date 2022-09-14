@@ -61,7 +61,7 @@
 		"debug": "^4.3.3",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.3",
-		"timeline-state-resolver": "7.3.0-nightly-fix-log-errors-in-tsr-devices-20220913-142910-97689d35b.0",
+		"timeline-state-resolver": "7.3.0-nightly-fix-log-errors-in-tsr-devices-20220914-075514-666c144b1.0",
 		"tslib": "^2.4.0",
 		"underscore": "^1.13.3",
 		"winston": "^3.7.2"
