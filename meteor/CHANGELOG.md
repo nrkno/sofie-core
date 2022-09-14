@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.41.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.6...v1.41.7) (2022-09-14)
+
+
+### Bug Fixes
+
+* reset focus when dragging from iframe ([146f1b5](https://github.com/nrkno/tv-automation-server-core/commit/146f1b5f3bdbd3da28cfa1202fe4aec88b7603ac))
+* timings of adlib pieces drifting when regenerating timeline ([ec07061](https://github.com/nrkno/tv-automation-server-core/commit/ec07061825d434e28762d5d7c749b48ad36fad20)), closes [/github.com/nrkno/sofie-core/pull/703/commits/344d2efc0300fe169d938ed45aa9c631f74c03c9#diff-b80f8d92494eb6b27b501b72b4e46c74d2de0900f69b12b9c327121117aba79eR95](https://github.com/nrkno//github.com/nrkno/sofie-core/pull/703/commits/344d2efc0300fe169d938ed45aa9c631f74c03c9/issues/diff-b80f8d92494eb6b27b501b72b4e46c74d2de0900f69b12b9c327121117aba79eR95)
+
 ### [1.41.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.5...v1.41.6) (2022-08-26)
 
 ### [1.41.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.4...v1.41.5) (2022-08-26)
