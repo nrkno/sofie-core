@@ -21,6 +21,7 @@ export enum ContextType {
 
 interface ShelfContextMenuProps {
 	shelfDisplayOptions: ShelfDisplayOptions
+	hideDefaultStartExecute: boolean
 }
 
 interface ShelfContextMenuContextBase {
@@ -86,7 +87,7 @@ export default function ShelfContextMenu(props: ShelfContextMenuProps) {
 		adLib: T
 		onToggle?: (adLib: T, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => void
 		disabled?: boolean
-	}) {
+	}): JSX.Element | JSX.Element[] | null {
 		if (isActionItem(item.adLib)) {
 			const adLibAction = getActionItem(item.adLib)
 			const triggerModes = adLibAction?.triggerModes
@@ -108,7 +109,8 @@ export default function ShelfContextMenu(props: ShelfContextMenuProps) {
 					</MenuItem>
 				))
 			return (
-				(triggerModes !== undefined && triggerModes.length > 0 && triggerModes) || (
+				(triggerModes !== undefined && triggerModes.length > 0 && triggerModes) ||
+				(!props.hideDefaultStartExecute ? (
 					<MenuItem
 						onClick={(e) => {
 							e.persist()
@@ -119,10 +121,10 @@ export default function ShelfContextMenu(props: ShelfContextMenuProps) {
 						{(adLibAction?.display.triggerLabel && translateMessage(adLibAction?.display.triggerLabel, t)) ??
 							t('Execute')}
 					</MenuItem>
-				)
+				) : null)
 			)
 		} else {
-			return (
+			return !props.hideDefaultStartExecute ? (
 				<>
 					<MenuItem
 						onClick={(e) => {
@@ -145,9 +147,16 @@ export default function ShelfContextMenu(props: ShelfContextMenuProps) {
 						</MenuItem>
 					)}
 				</>
-			)
+			) : null
 		}
 	}
+
+	const startExecuteMenuItems =
+		context?.type === ContextType.ADLIB
+			? renderStartExecuteAdLib(context.details)
+			: context?.type === ContextType.BUCKET_ADLIB
+			? renderStartExecuteAdLib(context.details)
+			: null
 
 	return (
 		<Escape to="viewport">
@@ -157,13 +166,15 @@ export default function ShelfContextMenu(props: ShelfContextMenuProps) {
 				)}
 				{context && (context.type === ContextType.BUCKET_ADLIB || context.type === ContextType.ADLIB) && (
 					<>
-						<div className="react-contextmenu-label">{context.details.adLib.name}</div>
-						{context.type === ContextType.ADLIB
-							? renderStartExecuteAdLib(context.details)
-							: context.type === ContextType.BUCKET_ADLIB
-							? renderStartExecuteAdLib(context.details)
-							: null}
-						<hr />
+						{(startExecuteMenuItems !== null ||
+							props.shelfDisplayOptions.enableInspector ||
+							context.type === ContextType.BUCKET_ADLIB) && (
+							<>
+								<div className="react-contextmenu-label">{context.details.adLib.name}</div>
+								{startExecuteMenuItems}
+								<hr />
+							</>
+						)}
 						{props.shelfDisplayOptions.enableInspector && (
 							<MenuItem
 								onClick={(e) => {
