@@ -241,9 +241,6 @@ export namespace MongoMock {
 		}
 		rawCollection() {
 			return {
-				// indexes: () => {}
-				// stats: () => {}
-				// drop: () => {}
 				bulkWrite: async (updates: AnyBulkWriteOperation<any>[], _options) => {
 					await sleep(this.asyncBulkWriteDelay)
 
@@ -277,9 +274,6 @@ export namespace MongoMock {
 				collectionName: this._name,
 			}
 		}
-		// observe () {
-		// 	// todo
-		// }
 		private get documents(): MockCollection<T> {
 			if (!mockCollections[this._name]) mockCollections[this._name] = {}
 			return mockCollections[this._name]

@@ -196,7 +196,6 @@ async function doSystemBenchmarkInner() {
 			// MongoDB test: read
 			const DOC_COUNT = 100
 			// Prepare data in db:
-			const insertedIds: string[] = []
 			for (let i = 0; i < DOC_COUNT; i++) {
 				const objectToInsert = {
 					_id: 'myObject' + i,
@@ -209,7 +208,7 @@ async function doSystemBenchmarkInner() {
 					prop0: i,
 					indexedProp: i,
 				}
-				insertedIds.push(mongoTest.insert(objectToInsert))
+				mongoTest.insert(objectToInsert)
 				mongoTest.update(objectToInsert._id, {
 					$set: {
 						prop1: 'qwerty',

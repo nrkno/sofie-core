@@ -98,7 +98,6 @@ if (logToFile || logPath !== '') {
 			leadingZeros(time.getSeconds(), 2)
 		const logDirectory = getAbsolutePath() + '/.meteor/local/log'
 		logPath = logDirectory + '/log_' + startDate + '.log'
-		// let logPath = './log/'
 
 		if (!fs.existsSync(logDirectory)) {
 			fs.mkdirSync(logDirectory)

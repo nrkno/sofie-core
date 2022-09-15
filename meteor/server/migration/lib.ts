@@ -62,10 +62,10 @@ export function ensureCollectionPropertyManual<T = any>(
 	collectionName: CollectionName,
 	selector: Mongo.Selector<T>,
 	property: string,
-	inputType?: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
-	label?: string,
-	description?: string,
-	defaultValue?: any,
+	inputType: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
+	label: string,
+	description: string,
+	defaultValue: any,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
 	const collection = Collections.get(collectionName)
