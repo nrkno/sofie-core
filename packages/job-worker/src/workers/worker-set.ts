@@ -1,5 +1,5 @@
 import { StudioId, WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ChangeStream, ChangeStreamDocument, MongoClient } from 'mongodb'
+import { ChangeStream, ChangeStreamDocument, Document, MongoClient } from 'mongodb'
 import { LocksManager } from '../locks'
 import { IngestWorkerParent } from './ingest/parent'
 import { StudioWorkerParent } from './studio/parent'
@@ -106,7 +106,7 @@ export class StudioWorkerSet {
 	 * Can be extended if move collections are watched for a thread type
 	 */
 	private subscribeToCommonCacheInvalidations(dbName: string): void {
-		const attachChangesStream = <T>(
+		const attachChangesStream = <T extends Document>(
 			stream: ChangeStream<T>,
 			name: string,
 			fcn: (invalidations: InvalidateWorkerDataCache, change: ChangeStreamDocument<T>) => void
@@ -192,6 +192,6 @@ export class StudioWorkerSet {
 	public async terminate(): Promise<void> {
 		await Promise.allSettled(this.#threads.map(async (t) => t.terminate()))
 
-		await Promise.allSettled(this.#streams.map((s) => s.close()))
+		await Promise.allSettled(this.#streams.map(async (s) => s.close()))
 	}
 }

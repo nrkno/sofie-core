@@ -37,12 +37,17 @@ import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/Expe
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { ReadonlyDeep } from 'type-fest'
+import { ReadonlyDeep, Writable } from 'type-fest'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import EventEmitter = require('eventemitter3')
 
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
+
+export type EditableMongoModifier<TDoc> = {
+	$set: Writable<NonNullable<MongoModifier<TDoc>['$set']>>
+	$unset: Writable<NonNullable<MongoModifier<TDoc>['$unset']>>
+}
 
 export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	readonly name: string

@@ -276,7 +276,7 @@ export async function handleMosStoryStatus(context: JobContext, data: MosStorySt
 					},
 					{
 						$set: {
-							status: data.status,
+							'part.status': data.status,
 						},
 					}
 				),

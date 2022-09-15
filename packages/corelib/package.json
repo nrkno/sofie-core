@@ -53,7 +53,7 @@
 		"underscore": "^1.13.4"
 	},
 	"peerDependencies": {
-		"mongodb": "^4.4.1"
+		"mongodb": "^4.9.1"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

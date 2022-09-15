@@ -7,7 +7,7 @@ import { protectString, protectStringArray, unprotectStringArray } from '@sofie-
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { CacheForPlayout } from '../../playout/cache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
-import { ReadonlyDeep, SetRequired } from 'type-fest'
+import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
 import { ContextInfo, RundownUserContext } from './context'
 import {
@@ -31,7 +31,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { JobContext } from '../../jobs'
 import { logChanges } from '../../cache/lib'
-import { MongoModifier } from '../../db'
+import { EditableMongoModifier } from '../../db'
 import { serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export class SyncIngestUpdateToPartInstanceContext
@@ -166,7 +166,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PieceInstance "${pieceInstanceId}" does not belong to the current PartInstance`)
 		}
 
-		const update: SetRequired<MongoModifier<PieceInstance>, '$set' | '$unset'> = {
+		const update: EditableMongoModifier<PieceInstance> = {
 			$set: {},
 			$unset: {},
 		}
@@ -187,6 +187,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			if (val === undefined) {
 				update.$unset[`piece.${k}`] = 1
 			} else {
+				// @ts-expect-error This can't key correctly because of the loosely typed `k`
 				update.$set[`piece.${k}`] = val
 			}
 		}
