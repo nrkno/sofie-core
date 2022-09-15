@@ -40,7 +40,7 @@ export namespace MongoMock {
 		public _name: string
 		private _options: any = {}
 		// @ts-ignore used in test to check that it's a mock
-		private _isMock: true = true
+		private _isMock = true as const
 		private observers: ObserverEntry<T>[] = []
 
 		public asyncBulkWriteDelay = 100

@@ -70,7 +70,7 @@
 		"mos-connection": "^2.0.1",
 		"tslib": "^2.4.0",
 		"underscore": "^1.13.4",
-		"winston": "^3.8.1"
+		"winston": "^3.8.2"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

@@ -42,14 +42,14 @@
 		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
 		"@sofie-automation/shared-lib": "link:../shared-lib",
 		"fast-clone": "^1.5.13",
-		"i18next": "^21.8.12",
+		"i18next": "^21.9.1",
 		"influx": "^5.9.3",
 		"mos-connection": "^2.0.1",
 		"nanoid": "^3.3.4",
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",
 		"tslib": "^2.4.0",
-		"type-fest": "^2.16.0",
+		"type-fest": "^2.19.0",
 		"underscore": "^1.13.4"
 	},
 	"peerDependencies": {

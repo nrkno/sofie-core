@@ -15,7 +15,6 @@ export { Time, TimeDuration }
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
 export * from '@sofie-automation/corelib/dist/lib'
-// export * from '@sofie-automation/corelib/dist/mongo'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
