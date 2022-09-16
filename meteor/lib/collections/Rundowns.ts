@@ -4,8 +4,9 @@ import { FindOptions, MongoQuery } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
-import { RundownPlaylists, RundownPlaylist } from './RundownPlaylists'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
+import { RundownPlaylists } from '../clientCollections'
+import { RundownPlaylist } from './RundownPlaylists'
 
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { RundownId }

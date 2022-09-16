@@ -5,11 +5,8 @@ import {
 	setupDefaultRundownPlaylist,
 } from '../../../__mocks__/helpers/database'
 import { RundownUtils } from '../rundown'
-import {
-	RundownPlaylists,
-	RundownPlaylistId,
-	RundownPlaylistCollectionUtil,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists } from '../../../lib/clientCollections'
 
 describe('client/lib/rundown', () => {
 	let env: DefaultEnvironment

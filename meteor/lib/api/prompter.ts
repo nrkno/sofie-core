@@ -1,7 +1,7 @@
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
 import { ISourceLayer, ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylistCollectionUtil } from '../collections/RundownPlaylists'
+import { RundownPlaylistId, RundownPlaylistCollectionUtil } from '../collections/RundownPlaylists'
 import { normalizeArray, normalizeArrayToMap, protectString } from '../lib'
 import { SegmentId } from '../collections/Segments'
 import { Piece, PieceId, Pieces } from '../collections/Pieces'
@@ -13,6 +13,7 @@ import { PieceInstance, PieceInstances } from '../collections/PieceInstances'
 import { Rundown, RundownId } from '../collections/Rundowns'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../collections/ShowStyleBases'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
+import { RundownPlaylists } from '../clientCollections'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>

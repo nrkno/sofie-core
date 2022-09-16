@@ -11,7 +11,6 @@ import {
 	RundownPlaylist,
 	RundownPlaylistCollectionUtil,
 	RundownPlaylistId,
-	RundownPlaylists,
 } from '../../../lib/collections/RundownPlaylists'
 import {
 	ISourceLayer,
@@ -39,6 +38,7 @@ import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../.
 import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../../lib/Settings'
 import { createInMemoryMongoCollection } from '../../../lib/collections/lib'
+import { RundownPlaylists } from '../../../lib/clientCollections'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 

@@ -7,7 +7,6 @@ import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	RundownPlaylist,
-	RundownPlaylists,
 	RundownPlaylistId,
 	RundownPlaylistCollectionUtil,
 } from '../../../lib/collections/RundownPlaylists'
@@ -26,7 +25,7 @@ import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
 import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Rundowns } from '../../../lib/clientCollections'
+import { RundownPlaylists, Rundowns } from '../../../lib/clientCollections'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 const DEFAULT_UPDATE_THROTTLE = 250 //ms

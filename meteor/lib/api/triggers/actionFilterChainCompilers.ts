@@ -13,7 +13,6 @@ import { AdLibPiece, AdLibPieces } from '../../collections/AdLibPieces'
 import { DBPart, PartId, Parts } from '../../collections/Parts'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../../collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../collections/RundownBaselineAdLibPieces'
-import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../collections/RundownPlaylists'
 import { ShowStyleBase } from '../../collections/ShowStyleBases'
 import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
@@ -23,7 +22,8 @@ import { memoizedIsolatedAutorun } from '../../../client/lib/reactiveData/reacti
 import { DBSegment, Segments, SegmentId } from '../../collections/Segments'
 import { sortAdlibs } from '../../Rundown'
 import { ReactivePlaylistActionContext } from './actionFactory'
-import { Rundowns } from '../../clientCollections'
+import { RundownPlaylists, Rundowns } from '../../clientCollections'
+import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 

@@ -9,12 +9,14 @@ import {
 	ExternalMessageQueueObj,
 } from '../../lib/collections/ExternalMessageQueue'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
-import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
 import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
+import { RundownPlaylists } from '../serverCollections'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 
 export namespace StudioReadAccess {
 	/** Handles read access for all studio document */

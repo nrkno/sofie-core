@@ -2,7 +2,6 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Route, Switch } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Studios, Studio, StudioId } from '../../lib/collections/Studios'
 
 import { Spinner } from '../lib/Spinner'
@@ -10,6 +9,8 @@ import { RundownView } from './RundownView'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { objectPathGet } from '../../lib/lib'
 import { PubSub } from '../../lib/api/pubsub'
+import { RundownPlaylists } from '../../lib/clientCollections'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 
 interface IProps {
 	match: {

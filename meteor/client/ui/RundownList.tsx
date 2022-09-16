@@ -17,7 +17,6 @@ import {
 	RundownPlaylist,
 	RundownPlaylistCollectionUtil,
 	RundownPlaylistId,
-	RundownPlaylists,
 } from '../../lib/collections/RundownPlaylists'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
@@ -40,7 +39,7 @@ import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Rundowns } from '../../lib/clientCollections'
+import { RundownPlaylists, Rundowns } from '../../lib/clientCollections'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',

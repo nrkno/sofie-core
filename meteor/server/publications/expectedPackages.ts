@@ -14,11 +14,7 @@ import {
 	PackageContainerOnPackage,
 	AccessorOnPackage,
 } from '@sofie-automation/blueprints-integration'
-import {
-	DBRundownPlaylist,
-	RundownPlaylistCollectionUtil,
-	RundownPlaylists,
-} from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylistCollectionUtil } from '../../lib/collections/RundownPlaylists'
 import { clone, DBObj, literal, omit, protectString, unprotectObject, unprotectString } from '../../lib/lib'
 import deepExtend from 'deep-extend'
 import { logger } from '../logging'
@@ -27,7 +23,7 @@ import { PartInstance } from '../../lib/collections/PartInstances'
 import { StudioLight } from '../../lib/collections/optimizations'
 import { ReadonlyDeep } from 'type-fest'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Rundowns } from '../serverCollections'
+import { RundownPlaylists, Rundowns } from '../serverCollections'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId

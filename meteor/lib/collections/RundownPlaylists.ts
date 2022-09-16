@@ -13,8 +13,6 @@ import { Rundown, DBRundown } from './Rundowns'
 import { Segments, Segment, DBSegment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { PartInstance, PartInstances } from './PartInstances'
-import { createMongoCollection } from './lib'
-import { registerIndex } from '../database'
 import {
 	RundownPlaylistId,
 	ActiveInstanceId,
@@ -22,7 +20,6 @@ import {
 	RundownId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { RundownPlaylistId, ActiveInstanceId, RundownPlaylistActivationId }
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundowns } from '../clientCollections'
@@ -375,10 +372,3 @@ export class RundownPlaylistCollectionUtil {
 		return sortPartsInSortedSegments(parts, sortedSegments)
 	}
 }
-
-export const RundownPlaylists = createMongoCollection<RundownPlaylist>(CollectionName.RundownPlaylists)
-
-registerIndex(RundownPlaylists, {
-	studioId: 1,
-	activationId: 1,
-})

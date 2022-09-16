@@ -31,17 +31,14 @@ import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PieceId, Piece, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
-import {
-	RundownPlaylists,
-	RundownPlaylistId,
-	RundownPlaylistCollectionUtil,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue, MEDIASTATUS_POLL_INTERVAL } from '../../../lib/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { NoteSeverity, StatusCode } from '@sofie-automation/blueprints-integration'
 import { getAllowStudio, getIgnorePieceContentStatus } from '../../lib/localStorage'
+import { RundownPlaylists } from '../../../lib/clientCollections'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)

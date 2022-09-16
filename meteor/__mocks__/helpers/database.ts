@@ -48,7 +48,7 @@ import { literal, getCurrentTime, protectString, unprotectString, getRandomId, g
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { EmptyPieceTimelineObjectsBlob, Piece, Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
-import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { restartRandomId } from '../random'
@@ -70,7 +70,7 @@ import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Rundowns } from '../../server/serverCollections'
+import { RundownPlaylists, Rundowns } from '../../server/serverCollections'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',

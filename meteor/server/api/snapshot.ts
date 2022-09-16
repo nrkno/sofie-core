@@ -44,7 +44,6 @@ import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Bluepr
 import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { importIngestRundown } from './ingest/http'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { OrganizationId } from '../../lib/collections/Organization'
@@ -73,6 +72,9 @@ import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { ReadonlyDeep } from 'type-fest'
 import { checkAccessToPlaylist, VerifiedRundownPlaylistContentAccess } from './lib'
 import { PackageInfo } from '../coreSystem'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists } from '../serverCollections'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined

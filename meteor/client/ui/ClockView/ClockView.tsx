@@ -2,8 +2,6 @@ import React from 'react'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { WithTiming } from '../RundownView/RundownTiming/withTiming'
 
@@ -15,6 +13,8 @@ import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { PresenterScreen } from './PresenterScreen'
 import { OverlayScreen } from './OverlayScreen'
 import { OverlayScreenSaver } from './OverlayScreenSaver'
+import { RundownPlaylists } from '../../../lib/clientCollections'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 
 interface IPropsHeader {
 	key: string

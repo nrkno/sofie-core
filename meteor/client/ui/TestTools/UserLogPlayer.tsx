@@ -15,7 +15,8 @@ import { Snapshots, SnapshotType } from '../../../lib/collections/Snapshots'
 import { Link } from 'react-router-dom'
 import { CallUserActionAPIMethod } from '../../../lib/api/methods'
 import { UserActionAPIMethods } from '../../../lib/api/userActions'
-import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylists } from '../../../lib/clientCollections'
 
 interface NextUserLogAction {
 	message: UserActionsLogItem

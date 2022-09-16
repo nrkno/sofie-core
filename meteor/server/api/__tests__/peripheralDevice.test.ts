@@ -25,7 +25,6 @@ import {
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'
-import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
@@ -47,8 +46,8 @@ import { OnTimelineTriggerTimeProps, StudioJobFunc, StudioJobs } from '@sofie-au
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Rundowns } from '../../serverCollections'
+import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylists, Rundowns } from '../../serverCollections'
 
 const DEBUG = false
 

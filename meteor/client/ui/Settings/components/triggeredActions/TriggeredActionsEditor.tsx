@@ -13,11 +13,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
 import { literal, omit, unprotectString } from '../../../../../lib/lib'
 import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
-import {
-	RundownPlaylist,
-	RundownPlaylistCollectionUtil,
-	RundownPlaylists,
-} from '../../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../../lib/collections/PartInstances'
 import { Part, PartId, Parts } from '../../../../../lib/collections/Parts'
 import { MeteorCall } from '../../../../../lib/api/methods'
@@ -37,7 +33,7 @@ import { MongoQuery } from '../../../../../lib/typings/meteor'
 import _ from 'underscore'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Rundowns } from '../../../../../lib/clientCollections'
+import { RundownPlaylists, Rundowns } from '../../../../../lib/clientCollections'
 
 export interface PreviewContext {
 	rundownPlaylist: RundownPlaylist | null

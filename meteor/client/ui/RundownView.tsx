@@ -16,7 +16,6 @@ import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import {
 	RundownPlaylist,
-	RundownPlaylists,
 	RundownPlaylistId,
 	RundownPlaylistCollectionUtil,
 	RundownHoldState,
@@ -131,7 +130,7 @@ import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/Switch
 import { IProps as IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Rundowns } from '../../lib/clientCollections'
+import { RundownPlaylists, Rundowns } from '../../lib/clientCollections'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 

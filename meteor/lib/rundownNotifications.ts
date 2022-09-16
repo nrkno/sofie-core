@@ -4,10 +4,10 @@ import { Part, Parts } from './collections/Parts'
 import { unprotectString, literal, generateTranslation, normalizeArrayToMap } from './lib'
 import * as _ from 'underscore'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
-import { RundownPlaylistCollectionUtil, RundownPlaylistId, RundownPlaylists } from './collections/RundownPlaylists'
+import { RundownPlaylistCollectionUtil, RundownPlaylistId } from './collections/RundownPlaylists'
 import { ITranslatableMessage, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
-import { Rundowns } from './clientCollections'
+import { RundownPlaylists, Rundowns } from './clientCollections'
 import { RundownId, Rundown } from './collections/Rundowns'
 
 export function getSegmentPartNotes(playlistId: RundownPlaylistId, rundownIds: RundownId[]): TrackedNote[] {

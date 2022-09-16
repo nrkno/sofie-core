@@ -5,7 +5,6 @@ import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import {
 	RundownPlaylistId,
 	RundownPlaylist,
-	RundownPlaylists,
 	RundownPlaylistCollectionUtil,
 } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
@@ -40,7 +39,7 @@ import { parse as queryStringParse } from 'query-string'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Rundowns } from '../../../lib/clientCollections'
+import { RundownPlaylists, Rundowns } from '../../../lib/clientCollections'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>

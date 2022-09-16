@@ -1,15 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
-import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Settings } from '../../../lib/Settings'
 import { SegmentId, Segments } from '../../../lib/collections/Segments'
-import { Rundowns } from '../../serverCollections'
+import { RundownPlaylists, Rundowns } from '../../serverCollections'
 import { logger } from '../../logging'
 import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { runIngestOperation } from './lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { QueueStudioJob } from '../../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({

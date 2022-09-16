@@ -3,7 +3,7 @@ import { MongoQueryKey } from '../../../lib/typings/meteor'
 import { Settings } from '../../../lib/Settings'
 import { resolveCredentials, ResolvedCredentials, Credentials, isResolvedCredentials } from './credentials'
 import { allAccess, noAccess, combineAccess, Access } from './access'
-import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownCollectionUtil, RundownId } from '../../../lib/collections/Rundowns'
 import { StudioId } from '../../../lib/collections/Studios'
 import { isProtectedString } from '../../../lib/lib'
@@ -19,7 +19,7 @@ import {
 	ShowStyleBaseLight,
 	StudioLight,
 } from '../../../lib/collections/optimizations'
-import { Rundowns } from '../../serverCollections'
+import { RundownPlaylists, Rundowns } from '../../serverCollections'
 
 export const LIMIT_CACHE_TIME = 1000 * 60 * 15 // 15 minutes
 
