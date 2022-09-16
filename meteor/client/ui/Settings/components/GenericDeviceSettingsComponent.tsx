@@ -204,7 +204,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 				</th>
 			)
 
-			_.each(configSummaryFields, (config, field) => {
+			_.each(configSummaryFields, (_config, field) => {
 				// @ts-ignore underscore typings are incorrect
 				const fn = _.property(field.split('.'))
 				let val = fn(obj)

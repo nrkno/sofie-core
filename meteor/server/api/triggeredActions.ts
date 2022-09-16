@@ -106,7 +106,7 @@ PickerPOST.route(
 
 PickerGET.route(
 	'/actionTriggers/download/:showStyleBaseId?',
-	async (params, req: IncomingMessage, res: ServerResponse) => {
+	async (params, _req: IncomingMessage, res: ServerResponse) => {
 		const showStyleBaseId: ShowStyleBaseId | undefined = protectString(params.showStyleBaseId)
 
 		check(showStyleBaseId, Match.Maybe(String))
@@ -185,11 +185,4 @@ class ServerTriggeredActionsAPI
 		return apiRemoveTriggeredActions(this, triggeredActionId)
 	}
 }
-registerClassToMeteorMethods(
-	TriggeredActionsAPIMethods,
-	ServerTriggeredActionsAPI,
-	false,
-	(methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
-		return fcn.apply(methodContext, args)
-	}
-)
+registerClassToMeteorMethods(TriggeredActionsAPIMethods, ServerTriggeredActionsAPI, false)

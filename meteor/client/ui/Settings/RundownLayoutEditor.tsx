@@ -184,7 +184,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		}
 
-		onDeleteLayout = (e: any, item: RundownLayoutBase) => {
+		onDeleteLayout = (_e: any, item: RundownLayoutBase) => {
 			const { t } = this.props
 
 			doModalDialog({

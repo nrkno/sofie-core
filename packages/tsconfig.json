@@ -4,6 +4,9 @@
 		{ "path": "blueprints-integration" },
 		{ "path": "server-core-integration" },
 		{ "path": "mos-gateway" },
-		{ "path": "playout-gateway" }
+		{ "path": "playout-gateway" },
+		{ "path": "job-worker" },
+		{ "path": "corelib" },
+		{ "path": "shared-lib" }
 	]
 }

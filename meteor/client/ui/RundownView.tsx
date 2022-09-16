@@ -1203,7 +1203,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			  }).map((input, rundownIndex, rundownArray) => ({
 					...input,
 					segmentIdsBeforeEachSegment: input.segments.map(
-						(segment, segmentIndex, segmentArray) =>
+						(_segment, segmentIndex, segmentArray) =>
 							new Set([
 								...(_.flatten(
 									rundownArray.slice(0, rundownIndex).map((match) => match.segments.map((segment) => segment._id))
@@ -2063,7 +2063,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		onStudioRouteSetSwitch = (
 			e: React.MouseEvent<HTMLElement, MouseEvent>,
 			routeSetId: string,
-			routeSet: StudioRouteSet,
+			_routeSet: StudioRouteSet,
 			state: boolean
 		) => {
 			const { t } = this.props
@@ -2450,7 +2450,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			return false
 		}
 
-		onToggleNotifications = (e: React.MouseEvent<HTMLElement>, filter: NoticeLevel) => {
+		onToggleNotifications = (_e: React.MouseEvent<HTMLElement>, filter: NoticeLevel) => {
 			if (!this.state.isNotificationsCenterOpen === true) {
 				NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL)
 			}

@@ -70,7 +70,7 @@ import {
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 
 const bucketSource = {
-	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
+	beginDrag(props: IBucketPanelProps, _monitor: DragSourceMonitor, component: any) {
 		const size = {
 			width: 0,
 			height: 0,

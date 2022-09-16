@@ -673,7 +673,7 @@ export async function removeSnapshot(context: MethodContext, snapshotId: Snapsho
 if (!Settings.enableUserAccounts) {
 	// For backwards compatibility:
 
-	PickerGET.route('/snapshot/system/:studioId', async (params, req: IncomingMessage, response: ServerResponse) => {
+	PickerGET.route('/snapshot/system/:studioId', async (params, _req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, async () => {
 			check(params.studioId, Match.Optional(String))
 
@@ -698,14 +698,14 @@ if (!Settings.enableUserAccounts) {
 			return createRundownPlaylistSnapshot(playlist, params.full === 'true')
 		})
 	}
-	PickerGET.route('/snapshot/rundown/:playlistId', async (params, req: IncomingMessage, response: ServerResponse) =>
+	PickerGET.route('/snapshot/rundown/:playlistId', async (params, _req: IncomingMessage, response: ServerResponse) =>
 		createRundownSnapshot(response, params)
 	)
 	PickerGET.route(
 		'/snapshot/rundown/:playlistId/:full',
-		async (params, req: IncomingMessage, response: ServerResponse) => createRundownSnapshot(response, params)
+		async (params, _req: IncomingMessage, response: ServerResponse) => createRundownSnapshot(response, params)
 	)
-	PickerGET.route('/snapshot/debug/:studioId', async (params, req: IncomingMessage, response: ServerResponse) => {
+	PickerGET.route('/snapshot/debug/:studioId', async (params, _req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, async () => {
 			check(params.studioId, String)
 
@@ -717,7 +717,7 @@ if (!Settings.enableUserAccounts) {
 		})
 	})
 }
-PickerPOST.route('/snapshot/restore', async (params, req: IncomingMessage, response: ServerResponse) => {
+PickerPOST.route('/snapshot/restore', async (_params, req: IncomingMessage, response: ServerResponse) => {
 	const content = 'ok'
 	try {
 		response.setHeader('Content-Type', 'text/plain')
@@ -749,7 +749,7 @@ if (!Settings.enableUserAccounts) {
 	// Retrieve snapshot:
 	PickerGET.route(
 		'/snapshot/retrieve/:snapshotId',
-		async (params, req: IncomingMessage, response: ServerResponse) => {
+		async (params, _req: IncomingMessage, response: ServerResponse) => {
 			return handleResponse(response, async () => {
 				check(params.snapshotId, String)
 				return retreiveSnapshot(protectString(params.snapshotId), { userId: null })
@@ -760,7 +760,7 @@ if (!Settings.enableUserAccounts) {
 // Retrieve snapshot:
 PickerGET.route(
 	'/snapshot/:token/retrieve/:snapshotId',
-	async (params, req: IncomingMessage, response: ServerResponse) => {
+	async (params, _req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, async () => {
 			check(params.snapshotId, String)
 			return retreiveSnapshot(protectString(params.snapshotId), { userId: null, token: params.token })

@@ -100,7 +100,7 @@ export function acceptFormat(format: string, formats: Array<Array<string>>): boo
 	const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(format)
 	if (!match) return false // ingested format string is invalid
 
-	const mediaFormat = match.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
+	const mediaFormat = match.filter((_o, i) => new Set([2, 3, 5, 6, 7]).has(i))
 	for (const candidateFormat of formats) {
 		let failed = false
 		for (let i = 0; i < candidateFormat.length; i++) {
@@ -131,7 +131,7 @@ export function getAcceptedFormats(settings: IStudioSettings | undefined): Array
 		formatsString.split(',').map((res) => {
 			const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(res.trim())
 			if (match) {
-				return match.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
+				return match.filter((_o, i) => new Set([2, 3, 5, 6, 7]).has(i))
 			} else {
 				// specified format string was invalid
 				return false

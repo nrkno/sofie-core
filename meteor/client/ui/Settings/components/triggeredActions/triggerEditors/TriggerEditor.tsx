@@ -130,7 +130,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, index, ..
 							options={getTriggerTypes(t)}
 							overrideDisplayValue={trigger.type}
 							attribute={''}
-							updateFunction={(e, newVal) => onChangeType(newVal)}
+							updateFunction={(_e, newVal) => onChangeType(newVal)}
 						/>
 					</div>
 					<div>{triggerEditor}</div>
