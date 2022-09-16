@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import {
 	DashboardLayoutShowStyleDisplay,
 	RundownLayoutBase,
@@ -8,7 +7,7 @@ import {
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { dashboardElementPosition } from './DashboardPanel'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
@@ -32,19 +31,12 @@ class ShowStylePanelInner extends MeteorReactComponent<Translated<IShowStylePane
 
 	render() {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
-		const { t, panel } = this.props
+		const { t } = this.props
 
 		return (
 			<div
 				className="show-style-panel timing"
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutShowStyleDisplay) }),
-								fontSize: ((panel as DashboardLayoutShowStyleDisplay).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutShowStyleDisplay) : {}}
 			>
 				<span className="timing-clock left">
 					<span className="timing-clock-label">{t('Show Style')}</span>

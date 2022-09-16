@@ -7,9 +7,8 @@ import { ShowStyleVariantId } from '../lib/collections/ShowStyleVariants'
 import { DBRundown, RundownId } from '../lib/collections/Rundowns'
 import { DBSegment, SegmentId } from '../lib/collections/Segments'
 import { PartId, DBPart } from '../lib/collections/Parts'
-import { RundownAPI } from '../lib/api/rundown'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PieceId, Piece } from '../lib/collections/Pieces'
+import { IBlueprintPieceType, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { PieceId, Piece, PieceStatusCode, EmptyPieceTimelineObjectsBlob } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
 import { getRundownId } from '../server/api/ingest/lib'
 
@@ -85,6 +84,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		supportedShowStyleBase: [],
 		blueprintConfig: {},
 		settings: {
+			frameRate: 25,
 			mediaPreviewsUrl: '',
 			sofieUrl: '',
 		},
@@ -116,6 +116,7 @@ export function defaultPart(_id: PartId, rundownId: RundownId, segmentId: Segmen
 		_rank: 0,
 		externalId: unprotectString(_id),
 		title: 'Default Part',
+		expectedDurationWithPreroll: undefined,
 	}
 }
 export function defaultPiece(_id: PieceId, rundownId: RundownId, segmentId: SegmentId, partId: PartId): Piece {
@@ -126,15 +127,17 @@ export function defaultPiece(_id: PieceId, rundownId: RundownId, segmentId: Segm
 		startSegmentId: segmentId,
 		startPartId: partId,
 		name: 'Default Piece',
-		status: RundownAPI.PieceStatusCode.OK,
+		status: PieceStatusCode.OK,
 		lifespan: PieceLifespan.WithinPart,
+		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
 		enable: {
 			start: 0,
 		},
 		sourceLayerId: '',
 		outputLayerId: '',
-		content: { timelineObjects: [] },
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 }
 export function defaultAdLibPiece(_id: PieceId, rundownId: RundownId, partId: PartId): AdLibPiece {
@@ -145,10 +148,11 @@ export function defaultAdLibPiece(_id: PieceId, rundownId: RundownId, partId: Pa
 		partId: partId,
 		_rank: 0,
 		name: 'Default Adlib',
-		status: RundownAPI.PieceStatusCode.OK,
+		status: PieceStatusCode.OK,
 		lifespan: PieceLifespan.WithinPart,
 		sourceLayerId: '',
 		outputLayerId: '',
-		content: { timelineObjects: [] },
+		content: {},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 }

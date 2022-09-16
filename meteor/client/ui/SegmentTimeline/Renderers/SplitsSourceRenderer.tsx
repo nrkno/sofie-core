@@ -4,48 +4,16 @@ import { getElementWidth } from '../../../utils/dimensions'
 import ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 
-import {
-	SourceLayerType,
-	SplitsContent,
-	SplitsContentBoxContent,
-	SplitsContentBoxProperties,
-} from '@sofie-automation/blueprints-integration'
-import { literal } from '../../../../lib/lib'
+import { SplitsContent } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../../lib/rundown'
 import { SplitsFloatingInspector } from '../../FloatingInspectors/SplitsFloatingInspector'
-
-export enum SplitRole {
-	ART = 0,
-	BOX = 1,
-}
-
-export interface SplitSubItem {
-	_id: string
-	type: SourceLayerType
-	label: string
-	// TODO: To be replaced with the structure used by the Core
-	role: SplitRole
-	content?: SplitsContentBoxProperties['geometry']
-}
+import { getSplitPreview, SplitRole, SplitSubItem } from '../../../lib/ui/splitPreview'
 
 type IProps = ICustomLayerItemProps
 
 interface IState {
-	subItems: Array<SplitSubItem>
+	subItems: ReadonlyArray<SplitSubItem>
 }
-
-const DEFAULT_POSITIONS = [
-	{
-		x: 0.25,
-		y: 0.5,
-		scale: 0.5,
-	},
-	{
-		x: 0.75,
-		y: 0.5,
-		scale: 0.5,
-	},
-]
 
 export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState> {
 	leftLabel: HTMLSpanElement | null
@@ -58,25 +26,11 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		}
 	}
 
-	static generateSplitSubItems(
-		boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]
-	): SplitSubItem[] {
-		return boxSourceConfiguration.map((item, index) => {
-			return literal<SplitSubItem>({
-				_id: item.studioLabel + '_' + index,
-				type: item.type,
-				label: item.studioLabel,
-				role: SplitRole.BOX,
-				content: item.geometry || DEFAULT_POSITIONS[index],
-			})
-		})
-	}
-
 	static getDerivedStateFromProps(props: IProps): IState {
-		let subItems: Array<SplitSubItem> = []
+		let subItems: ReadonlyArray<SplitSubItem> = []
 		const splitContent = props.piece.instance.piece.content as Partial<SplitsContent> | undefined
 		if (splitContent && splitContent.boxSourceConfiguration) {
-			subItems = SplitsSourceRenderer.generateSplitSubItems(splitContent.boxSourceConfiguration)
+			subItems = getSplitPreview(splitContent.boxSourceConfiguration)
 		}
 
 		return {

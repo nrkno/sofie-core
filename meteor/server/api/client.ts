@@ -1,7 +1,5 @@
 import { check } from '../../lib/check'
-
-import { literal, getCurrentTime, Time, getRandomId, makePromise, waitForPromise, Awaited } from '../../lib/lib'
-
+import { literal, getCurrentTime, Time, getRandomId, stringifyError } from '../../lib/lib'
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
@@ -13,97 +11,275 @@ import { UserId } from '../../lib/typings/meteor'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { resolveCredentials } from '../security/lib/credentials'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
+import { isInTestWrite, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
+import { endTrace, sendTrace, startTrace } from './integration/influx'
+import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
+import { StudioId } from '../../lib/collections/Studios'
+import { QueueStudioJob } from '../worker/worker'
+import { profiler } from './profiler'
+import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	checkAccessToPlaylist,
+	checkAccessToRundown,
+	VerifiedRundownContentAccess,
+	VerifiedRundownPlaylistContentAccess,
+} from './lib'
+import { BasicAccessContext } from '../security/organization'
+import { NoticeLevel } from '../../client/lib/notifications/notifications'
+
+function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
+	let userError: UserError
+	if (UserError.isUserError(e)) {
+		userError = e
+	} else {
+		// Rewrap errors as a UserError
+		const err = e instanceof Error ? e : new Error(stringifyError(e))
+		userError = UserError.from(err, UserErrorMessage.InternalError)
+	}
+
+	logger.info(`UserAction "${methodName}" failed: ${stringifyError(userError)}`)
+
+	// Forward the error to the caller
+	return ClientAPI.responseError(userError)
+}
 
 export namespace ServerClientAPI {
-	export function clientErrorReport(
-		methodContext: MethodContext,
-		timestamp: Time,
-		errorObject: any,
-		errorString: string,
-		location: string
-	): void {
-		check(timestamp, Number)
-		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
-		logger.error(
-			`Uncaught error happened in GUI\n  in "${location}"\n  on "${
-				methodContext.connection ? methodContext.connection.clientAddress : 'N/A'
-			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}"\n${JSON.stringify(errorObject)}`
+	/**
+	 * Run a UserAction for a Playlist with a job sent to the Studio WorkerThread
+	 */
+	export async function runUserActionInLogForPlaylistOnWorker<T extends keyof StudioJobFunc>(
+		context: MethodContext,
+		userEvent: string,
+		playlistId: RundownPlaylistId,
+		checkArgs: () => void,
+		jobName: T,
+		jobArguments: Parameters<StudioJobFunc[T]>[0]
+	): Promise<ClientAPI.ClientResponse<ReturnType<StudioJobFunc[T]>>> {
+		return runUserActionInLog(
+			context,
+			userEvent,
+			`worker.${jobName}`,
+			[jobArguments],
+			async (_credentials, userActionMetadata) => {
+				checkArgs()
+
+				const access = checkAccessToPlaylist(context, playlistId)
+				return runStudioJob(access.playlist.studioId, jobName, jobArguments, userActionMetadata)
+			}
 		)
 	}
 
-	export function runInUserLog<Result>(
-		methodContext: MethodContext,
-		context: string,
+	/**
+	 * Run a UserAction for a Rundown with a job sent to the Studio WorkerThread
+	 */
+	export async function runUserActionInLogForRundownOnWorker<T extends keyof StudioJobFunc>(
+		context: MethodContext,
+		userEvent: string,
+		rundownId: RundownId,
+		checkArgs: () => void,
+		jobName: T,
+		jobArguments: Parameters<StudioJobFunc[T]>[0]
+	): Promise<ClientAPI.ClientResponse<ReturnType<StudioJobFunc[T]>>> {
+		return runUserActionInLog(
+			context,
+			userEvent,
+			`worker.${jobName}`,
+			[jobArguments],
+			async (_credentials, userActionMetadata) => {
+				checkArgs()
+
+				const access = checkAccessToRundown(context, rundownId)
+				return runStudioJob(access.rundown.studioId, jobName, jobArguments, userActionMetadata)
+			}
+		)
+	}
+
+	/**
+	 * Run a UserAction for a Playlist with a custom executor
+	 */
+	export async function runUserActionInLogForPlaylist<T>(
+		context: MethodContext,
+		userEvent: string,
+		playlistId: RundownPlaylistId,
+		checkArgs: () => void,
 		methodName: string,
 		args: any[],
-		fcn: () => Result | Promise<Result>
-	): Awaited<Result> {
-		const startTime = Date.now()
-		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
-		// allow handling it in the client code
+		fcn: (access: VerifiedRundownPlaylistContentAccess) => Promise<T>
+	): Promise<ClientAPI.ClientResponse<T>> {
+		return runUserActionInLog(context, userEvent, methodName, args, async () => {
+			checkArgs()
 
-		if (!methodContext.connection) {
-			// Called internally from server-side.
-			// Just run and return right away:
-			return waitForPromise(Promise.resolve(fcn()))
+			return fcn(checkAccessToPlaylist(context, playlistId))
+		})
+	}
+
+	/**
+	 * Run a UserAction for a Rundown with a custom executor
+	 */
+	export async function runUserActionInLogForRundown<T>(
+		context: MethodContext,
+		userEvent: string,
+		rundownId: RundownId,
+		checkArgs: () => void,
+		methodName: string,
+		args: any[],
+		fcn: (access: VerifiedRundownContentAccess) => Promise<T>
+	): Promise<ClientAPI.ClientResponse<T>> {
+		return runUserActionInLog(context, userEvent, methodName, args, async () => {
+			checkArgs()
+
+			return fcn(checkAccessToRundown(context, rundownId))
+		})
+	}
+
+	async function runStudioJob<T extends keyof StudioJobFunc>(
+		studioId: StudioId,
+		jobName: T,
+		jobArguments: Parameters<StudioJobFunc[T]>[0],
+		userActionMetadata: UserActionMetadata
+	): Promise<ReturnType<StudioJobFunc[T]>> {
+		const queuedJob = await QueueStudioJob(jobName, studioId, jobArguments)
+
+		try {
+			const span = profiler.startSpan('queued-job')
+			const res = await queuedJob.complete
+			span?.end()
+
+			return res
+		} finally {
+			try {
+				const timings = await queuedJob.getTimings
+				// If the worker reported timings, use them
+				if (timings.finishedTime && timings.startedTime) {
+					userActionMetadata.workerDuration = timings.finishedTime - timings.startedTime
+				}
+			} catch (_e) {
+				// Failed to get the timings, so ignore it
+			}
+		}
+	}
+
+	/** Metadata to track as the output of a UserAction */
+	export interface UserActionMetadata {
+		/** How long did the worker take to execute this job? */
+		workerDuration?: number
+	}
+
+	/**
+	 * Run a UserAction in the UserActionsLog
+	 */
+	export async function runUserActionInLog<TRes>(
+		context: MethodContext,
+		userEvent: string,
+		methodName: string,
+		methodArgs: unknown[],
+		fcn: (credentials: BasicAccessContext, userActionMetadata: UserActionMetadata) => Promise<TRes>
+	): Promise<ClientAPI.ClientResponse<TRes>> {
+		// If we are in the test write auth check mode, then bypass all special logic to ensure errors dont get mangled
+		if (isInTestWrite()) {
+			const result = await fcn({ organizationId: null, userId: null }, {})
+			return ClientAPI.responseSuccess(result)
 		}
 
-		const actionId: UserActionsLogItemId = getRandomId()
+		// Execute normally
+		const startTime = Date.now()
+		const transaction = profiler.startTransaction(methodName, 'userAction')
+		const influxTrace = startTrace('userFunction:' + methodName)
 
-		const { userId, organizationId } = getLoggedInCredentials(methodContext)
-
-		UserActionsLog.insert(
-			literal<UserActionsLogItem>({
-				_id: actionId,
-				clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
-				organizationId: organizationId,
-				userId: userId,
-				context: context,
-				method: methodName,
-				args: JSON.stringify(args),
-				timestamp: getCurrentTime(),
-			})
-		)
 		try {
-			const result = waitForPromise(fcn())
+			if (!context.connection) {
+				// Called internally from server-side.
+				// Just run and return right away:
+				try {
+					const result = await fcn({ organizationId: null, userId: null }, {})
 
-			// check the nature of the result
-			if (ClientAPI.isClientResponseError(result)) {
-				UserActionsLog.update(actionId, {
-					$set: {
-						success: false,
-						doneTime: getCurrentTime(),
-						executionTime: Date.now() - startTime,
-						errorMessage: `ClientResponseError: ${result.error}: ${result.message}`,
-					},
-				})
+					return ClientAPI.responseSuccess(result)
+				} catch (e) {
+					return rewrapError(methodName, e)
+				}
 			} else {
-				UserActionsLog.update(actionId, {
-					$set: {
-						success: true,
-						doneTime: getCurrentTime(),
-						executionTime: Date.now() - startTime,
-					},
+				const credentials = getLoggedInCredentials(context)
+
+				// Start the db entry, but don't wait for it
+				const actionId: UserActionsLogItemId = getRandomId()
+				const pInitialInsert = UserActionsLog.insertAsync(
+					literal<UserActionsLogItem>({
+						_id: actionId,
+						clientAddress: context.connection.clientAddress,
+						organizationId: credentials.organizationId,
+						userId: credentials.userId,
+						context: userEvent,
+						method: methodName,
+						args: JSON.stringify(methodArgs),
+						timestamp: getCurrentTime(),
+					})
+				).catch((e) => {
+					// If this fails make sure it is handled
+					logger.warn(`Failed to insert into UserActionsLog: ${stringifyError(e)}`)
 				})
+
+				const userActionMetadata: UserActionMetadata = {}
+				try {
+					const result = await fcn(credentials, userActionMetadata)
+
+					const completeTime = Date.now()
+					await UserActionsLog.updateAsync(actionId, {
+						$set: {
+							success: true,
+							doneTime: completeTime,
+							executionTime: completeTime - startTime,
+							workerTime: userActionMetadata.workerDuration,
+						},
+					})
+
+					return ClientAPI.responseSuccess(result)
+				} catch (e) {
+					const errorTime = Date.now()
+
+					const wrappedError = rewrapError(methodName, e)
+					const wrappedErrorStr = `ClientResponseError: ${translateMessage(
+						wrappedError.error.message,
+						interpollateTranslation
+					)}`
+
+					// Execute, but don't wait for it
+					pInitialInsert
+						.then(async () =>
+							UserActionsLog.updateAsync(actionId, {
+								$set: {
+									success: false,
+									doneTime: errorTime,
+									executionTime: errorTime - startTime,
+									workerTime: userActionMetadata.workerDuration,
+									errorMessage: wrappedErrorStr,
+								},
+							})
+						)
+						.catch((err) => {
+							// If this fails make sure it is handled
+							logger.warn(`Failed to update UserActionsLog: ${stringifyError(err)}`)
+						})
+
+					return wrappedError
+				}
+			}
+		} catch (e) {
+			// Make sure the transactions are completed even when we error
+			const errStr = stringifyError(e)
+
+			if (transaction) {
+				transaction.addLabels({ error: errStr })
+				transaction.end()
 			}
 
-			return result
-		} catch (e) {
-			// allow the exception to be handled by the Client code
-			logger.error(`Error in ${methodName}`)
-			const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-			logger.error(errMsg + '\n' + (e.stack || ''))
-			UserActionsLog.update(actionId, {
-				$set: {
-					success: false,
-					doneTime: getCurrentTime(),
-					executionTime: Date.now() - startTime,
-					errorMessage: errMsg,
-				},
-			})
-			throw e
+			if (!influxTrace.tags) influxTrace.tags = {}
+			influxTrace.tags['error'] = errStr
+			sendTrace(endTrace(influxTrace))
+
+			return rewrapError(methodName, e)
 		}
 	}
 
@@ -122,85 +298,54 @@ export namespace ServerClientAPI {
 		const actionId: UserActionsLogItemId = getRandomId()
 		const startTime = Date.now()
 
-		return new Promise((resolve, reject) => {
-			if (!methodContext.connection) {
-				// In this case, it was called internally from server-side.
-				// Just run and return right away:
-				try {
-					triggerWriteAccessBecauseNoCheckNecessary()
-					PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-						deviceId,
-						(err, result) => {
-							if (err) reject(err)
-							else resolve(result)
-						},
-						timeoutTime,
-						functionName,
-						...args
-					)
-				} catch (e) {
-					// allow the exception to be handled by the Client code
-					const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-					logger.error(errMsg)
-					reject(e)
-				}
-				return
-			}
-
-			const access = PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
-
-			UserActionsLog.insert(
-				literal<UserActionsLogItem>({
-					_id: actionId,
-					clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
-					organizationId: access.organizationId,
-					userId: access.userId,
-					context: context,
-					method: `${deviceId}: ${functionName}`,
-					args: JSON.stringify(args),
-					timestamp: getCurrentTime(),
-				})
-			)
-			try {
-				PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-					deviceId,
-					(err, result) => {
-						if (err) {
-							const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
-							logger.error(errMsg)
-							UserActionsLog.update(actionId, {
-								$set: {
-									success: false,
-									doneTime: getCurrentTime(),
-									executionTime: Date.now() - startTime,
-									errorMessage: errMsg,
-								},
-							})
-
-							reject(err)
-							return
-						}
-
-						UserActionsLog.update(actionId, {
-							$set: {
-								success: true,
-								doneTime: getCurrentTime(),
-								executionTime: Date.now() - startTime,
-							},
-						})
-
-						resolve(result)
-						return
-					},
-					timeoutTime,
-					functionName,
-					...args
-				)
-			} catch (e) {
-				// allow the exception to be handled by the Client code
+		if (!methodContext.connection) {
+			// In this case, it was called internally from server-side.
+			// Just run and return right away:
+			triggerWriteAccessBecauseNoCheckNecessary()
+			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+				deviceId,
+				timeoutTime,
+				functionName,
+				...args
+			).catch(async (e) => {
 				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
 				logger.error(errMsg)
-				UserActionsLog.update(actionId, {
+				// allow the exception to be handled by the Client code
+				return Promise.reject(e)
+			})
+		}
+
+		const access = PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+
+		await UserActionsLog.insertAsync(
+			literal<UserActionsLogItem>({
+				_id: actionId,
+				clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
+				organizationId: access.organizationId,
+				userId: access.userId,
+				context: context,
+				method: `${deviceId}: ${functionName}`,
+				args: JSON.stringify(args),
+				timestamp: getCurrentTime(),
+			})
+		)
+
+		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, functionName, ...args)
+			.then(async (result) => {
+				await UserActionsLog.updateAsync(actionId, {
+					$set: {
+						success: true,
+						doneTime: getCurrentTime(),
+						executionTime: Date.now() - startTime,
+					},
+				})
+
+				return result
+			})
+			.catch(async (err) => {
+				const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+				logger.error(errMsg)
+				await UserActionsLog.updateAsync(actionId, {
 					$set: {
 						success: false,
 						doneTime: getCurrentTime(),
@@ -208,15 +353,12 @@ export namespace ServerClientAPI {
 						errorMessage: errMsg,
 					},
 				})
-				reject(e)
-				return
-			}
-		})
+
+				// allow the exception to be handled by the Client code
+				return Promise.reject(err)
+			})
 	}
-	function getLoggedInCredentials(methodContext: MethodContext): {
-		userId: UserId | null
-		organizationId: OrganizationId | null
-	} {
+	function getLoggedInCredentials(methodContext: MethodContext): BasicAccessContext {
 		let userId: UserId | null = null
 		let organizationId: OrganizationId | null = null
 		if (Settings.enableUserAccounts) {
@@ -230,7 +372,26 @@ export namespace ServerClientAPI {
 
 class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 	async clientErrorReport(timestamp: Time, errorObject: any, errorString: string, location: string) {
-		return makePromise(() => ServerClientAPI.clientErrorReport(this, timestamp, errorObject, errorString, location))
+		check(timestamp, Number)
+		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
+		logger.error(
+			`Uncaught error happened in GUI\n  in "${location}"\n  on "${
+				this.connection ? this.connection.clientAddress : 'N/A'
+			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}"\n${JSON.stringify(errorObject)}`
+		)
+	}
+	async clientLogNotification(timestamp: Time, from: string, severity: NoticeLevel, message: string, source?: any) {
+		check(timestamp, Number)
+		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
+		const address = this.connection ? this.connection.clientAddress : 'N/A'
+		logger.debug(`Notification reported from "${from}": Severity ${severity}: ${message} (${source})`, {
+			time: timestamp,
+			from,
+			severity,
+			origMessage: message,
+			source,
+			address,
+		})
 	}
 	async callPeripheralDeviceFunction(
 		context: string,
@@ -239,26 +400,24 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		functionName: string,
 		...args: any[]
 	) {
-		return makePromise(async () => {
-			const methodContext: MethodContext = this // eslint-disable-line @typescript-eslint/no-this-alias
-			if (!Settings.enableUserAccounts) {
-				// Note: This is a temporary hack to keep backwards compatibility.
-				// in the case of not enableUserAccounts, a token is needed, but not provided when called from client
-				const device = PeripheralDevices.findOne(deviceId)
-				if (device) {
-					// @ts-ignore hack
-					methodContext.token = device.token
-				}
+		const methodContext: MethodContext = this // eslint-disable-line @typescript-eslint/no-this-alias
+		if (!Settings.enableUserAccounts) {
+			// Note: This is a temporary hack to keep backwards compatibility.
+			// in the case of not enableUserAccounts, a token is needed, but not provided when called from client
+			const device = PeripheralDevices.findOne(deviceId)
+			if (device) {
+				// @ts-ignore hack
+				methodContext.token = device.token
 			}
-			return ServerClientAPI.callPeripheralDeviceFunction(
-				methodContext,
-				context,
-				deviceId,
-				timeoutTime,
-				functionName,
-				...args
-			)
-		})
+		}
+		return ServerClientAPI.callPeripheralDeviceFunction(
+			methodContext,
+			context,
+			deviceId,
+			timeoutTime,
+			functionName,
+			...args
+		)
 	}
 }
 registerClassToMeteorMethods(ClientAPIMethods, ServerClientAPIClass, false)

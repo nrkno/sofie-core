@@ -6,6 +6,7 @@ import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
 import { SegmentTimelinePart } from '../Parts/SegmentTimelinePart'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 
 export const SegmentTimelinePartHoverPreview = ({
 	t,
@@ -41,7 +42,7 @@ export const SegmentTimelinePartHoverPreview = ({
 	isLastInSegment: boolean
 	totalSegmentDuration: number
 	parentTimeScale: number
-	showDurationSourceLayers?: Set<string>
+	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }) => {
 	const [miniInspectorEl, setMiniInnspectorEl] = useState<HTMLDivElement | null>(null)
 	const [containOffset, setContainOffset] = useState(0)
@@ -127,9 +128,6 @@ export const SegmentTimelinePartHoverPreview = ({
 						isBudgetGap={false}
 						showDurationSourceLayers={showDurationSourceLayers}
 					/>
-				)}
-				{!followingPart && isLastInSegment && (
-					<div className="segment-timeline__part segment-timeline__part--end-of-segment"></div>
 				)}
 			</div>
 		</div>

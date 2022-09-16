@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, Time, getRandomId, assertNever } from '../../lib/lib'
+import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
+import { getCurrentTime, Time, getRandomId, assertNever, literal } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	parseVersion,
@@ -17,7 +17,6 @@ import {
 	CheckError,
 	SystemInstanceId,
 	Component,
-	StatusCode,
 } from '../../lib/api/systemStatus'
 import { getRelevantSystemVersions } from '../coreSystem'
 import { StudioId } from '../../lib/collections/Studios'
@@ -26,6 +25,9 @@ import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
 import { SystemWriteAccess } from '../security/system'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
+import { Workers } from '../../lib/collections/Workers'
+import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -34,6 +36,7 @@ const integrationVersionAllowPrerelease = isPrerelease(PackageInfo.version)
 // Any libraries that if a gateway uses should match a certain version
 const expectedLibraryVersions: { [libName: string]: string } = {
 	'superfly-timeline': stripVersion(require('superfly-timeline/package.json').version),
+	// eslint-disable-next-line node/no-extraneous-require
 	'mos-connection': stripVersion(require('mos-connection/package.json').version),
 }
 
@@ -150,17 +153,17 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		},
 		checks: checks,
 	}
-	if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
+	if (device.type === PeripheralDeviceType.MOS) {
 		so.documentation = 'https://github.com/nrkno/tv-automation-mos-gateway'
-	} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+	} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
 		so.documentation = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
-	} else if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) {
+	} else if (device.type === PeripheralDeviceType.PLAYOUT) {
 		so.documentation = 'https://github.com/nrkno/tv-automation-playout-gateway'
-	} else if (device.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER) {
+	} else if (device.type === PeripheralDeviceType.MEDIA_MANAGER) {
 		so.documentation = 'https://github.com/nrkno/tv-automation-media-management'
-	} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
+	} else if (device.type === PeripheralDeviceType.INEWS) {
 		so.documentation = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
-	} else if (device.type === PeripheralDeviceAPI.DeviceType.PACKAGE_MANAGER) {
+	} else if (device.type === PeripheralDeviceType.PACKAGE_MANAGER) {
 		so.documentation = 'https://github.com/nrkno/tv-automation-package-manager'
 	} else {
 		assertNever(device.type)
@@ -201,7 +204,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 		updated: new Date(getCurrentTime()).toISOString(),
 		status: 'UNDEFINED',
 		_status: StatusCode.UNKNOWN,
-		documentation: 'https://github.com/nrkno/tv-automation-server-core',
+		documentation: 'https://github.com/nrkno/sofie-core',
 		_internal: {
 			// this _internal is set later
 			statusCodeString: StatusCode[StatusCode.UNKNOWN],
@@ -211,14 +214,60 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 		checks: checks,
 	}
 
+	// Check status of workers
+	const workerStatuses = Workers.find().fetch()
+	if (workerStatuses.length) {
+		for (const workerStatus of workerStatuses) {
+			if (!statusObj.components) statusObj.components = []
+			const status = workerStatus.connected ? StatusCode.GOOD : StatusCode.BAD
+			statusObj.components.push(
+				literal<Component>({
+					name: `worker-${workerStatus.name}`,
+					status: workerStatus.connected ? 'OK' : 'FAIL',
+					updated: new Date().toISOString(),
+					_status: status,
+					_internal: {
+						statusCodeString: StatusCode[status],
+						messages: [workerStatus.status],
+						versions: {},
+					},
+				})
+			)
+
+			WorkerThreadStatuses.find({
+				workerId: workerStatus._id,
+			}).forEach((wts) => {
+				if (!statusObj.components) statusObj.components = []
+				statusObj.components.push(
+					literal<Component>({
+						name: `worker-${wts.name}`,
+						status: status2ExternalStatus(wts.statusCode),
+						updated: new Date().toISOString(),
+						_status: wts.statusCode,
+						_internal: {
+							statusCodeString: StatusCode[status],
+							messages: [wts.reason],
+							versions: {},
+						},
+					})
+				)
+			})
+		}
+	}
+
+	// Check status of devices:
 	let devices: PeripheralDevice[] = []
 	if (studioId) {
+		// Check status for a certain studio:
+
 		if (!StudioReadAccess.studioContent({ studioId: studioId }, cred0)) {
 			throw new Meteor.Error(403, `Not allowed`)
 		}
 		devices = PeripheralDevices.find({ studioId: studioId }).fetch()
 	} else {
 		if (Settings.enableUserAccounts) {
+			// Check status for the user's studios:
+
 			const cred = resolveCredentials(cred0)
 			if (!cred.organization) throw new Meteor.Error(500, 'user has no organization')
 			if (!OrganizationReadAccess.organizationContent({ organizationId: cred.organization._id }, cred)) {
@@ -226,6 +275,8 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 			}
 			devices = PeripheralDevices.find({ organizationId: cred.organization._id }).fetch()
 		} else {
+			// Check status for all studios:
+
 			devices = PeripheralDevices.find({}).fetch()
 		}
 	}

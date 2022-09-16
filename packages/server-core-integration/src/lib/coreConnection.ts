@@ -72,7 +72,7 @@ export class CoreConnection extends EventEmitter {
 	private _destroyed: boolean = false
 	_queues: { [queueName: string]: Queue } = {}
 
-	constructor (coreOptions: CoreOptions) {
+	constructor(coreOptions: CoreOptions) {
 		super()
 
 		this._coreOptions = coreOptions
@@ -83,10 +83,10 @@ export class CoreConnection extends EventEmitter {
 			this._watchDog.startWatching()
 		}
 	}
-	static getStore (name: string) {
+	static getStore(name: string) {
 		return new DataStore(name)
 	}
-	static getCredentials (name: string): CoreCredentials {
+	static getCredentials(name: string): CoreCredentials {
 		let store = CoreConnection.getStore(name)
 
 		let credentials: CoreCredentials = store.get('CoreCredentials')
@@ -97,18 +97,18 @@ export class CoreConnection extends EventEmitter {
 
 		return credentials
 	}
-	static deleteCredentials (name: string) {
+	static deleteCredentials(name: string) {
 		let store = CoreConnection.getStore(name)
 
 		store.set('CoreCredentials', null)
 	}
-	static generateCredentials (): CoreCredentials {
+	static generateCredentials(): CoreCredentials {
 		return {
 			deviceId: Random.id(),
 			deviceToken: Random.id()
 		}
 	}
-	async init (ddpOptionsORParent?: DDPConnectorOptions | CoreConnection): Promise<string> {
+	async init(ddpOptionsORParent?: DDPConnectorOptions | CoreConnection): Promise<string> {
 		this._destroyed = false
 		this.on('connected', () => this._renewAutoSubscriptions())
 
@@ -174,7 +174,7 @@ export class CoreConnection extends EventEmitter {
 			return deviceId
 		}
 	}
-	async destroy (): Promise<void> {
+	async destroy(): Promise<void> {
 		this._destroyed = true
 		if (this._parent) {
 			this._removeParent()
@@ -210,12 +210,12 @@ export class CoreConnection extends EventEmitter {
 		)
 		this._children = []
 	}
-	addChild (child: CoreConnection) {
+	addChild(child: CoreConnection) {
 		this._children.push(child)
 
 		this._updateMaxListeners()
 	}
-	removeChild (childToRemove: CoreConnection) {
+	removeChild(childToRemove: CoreConnection) {
 		let removeIndex = -1
 		this._children.forEach((c, i) => {
 			if (c === childToRemove) removeIndex = i
@@ -224,39 +224,39 @@ export class CoreConnection extends EventEmitter {
 			this._children.splice(removeIndex, 1)
 		}
 	}
-	onConnectionChanged (cb: (connected: boolean) => void) {
+	onConnectionChanged(cb: (connected: boolean) => void) {
 		this.on('connectionChanged', cb)
 	}
-	onConnected (cb: () => void) {
+	onConnected(cb: () => void) {
 		this.on('connected', cb)
 	}
-	onDisconnected (cb: () => void) {
+	onDisconnected(cb: () => void) {
 		this.on('disconnected', cb)
 	}
-	onError (cb: (err: Error) => void) {
+	onError(cb: (err: Error) => void) {
 		this.on('error', cb)
 	}
-	onFailed (cb: (err: Error) => void) {
+	onFailed(cb: (err: Error) => void) {
 		this.on('failed', cb)
 	}
-	onInfo (cb: (message: any) => void) {
+	onInfo(cb: (message: any) => void) {
 		this.on('info', cb)
 	}
-	get ddp (): DDPConnector {
+	get ddp(): DDPConnector {
 		if (this._parent) return this._parent.ddp
 		else return this._ddp
 	}
-	get connected () {
+	get connected() {
 		return this._connected
 		// return (this.ddp ? this.ddp.connected : false)
 	}
-	get deviceId () {
+	get deviceId() {
 		return this._coreOptions.deviceId
 	}
-	setStatus (status: P.StatusObject): Promise<P.StatusObject> {
+	setStatus(status: P.StatusObject): Promise<P.StatusObject> {
 		return this.callMethod(P.methods.setStatus, [status])
 	}
-	callMethod (methodName: PeripheralDeviceAPI.methods | string, attrs?: Array<any>): Promise<any> {
+	callMethod(methodName: PeripheralDeviceAPI.methods | string, attrs?: Array<any>): Promise<any> {
 		return new Promise((resolve, reject) => {
 			if (this._destroyed) {
 				reject('callMethod: CoreConnection has been destroyed')
@@ -274,9 +274,28 @@ export class CoreConnection extends EventEmitter {
 				reject('callMehod: DDP client has not been initialized')
 				return
 			}
-			this.ddp.ddpClient.call(methodName, fullAttrs, (err: Error, id: string) => {
+			const timeout = setTimeout(() => {
+				// Timeout
+				console.error(`Timeout "${methodName}"`)
+				console.error(JSON.stringify(fullAttrs))
+				reject(
+					`Timeout when calling method "${methodName}", arguments: ${JSON.stringify(fullAttrs).slice(0, 200)}`
+				)
+			}, 10 * 1000) // 10 seconds
+			this.ddp.ddpClient.call(methodName, fullAttrs, (err: Error | string, id: string) => {
+				clearTimeout(timeout)
 				this._timeLastMethodReply = Date.now()
 				if (err) {
+					if (typeof err === 'object') {
+						// Add a custom toString() method, because the default object will just print "[object Object]"
+						err.toString = () => {
+							if (err.message) {
+								return err.message + (err.stack ? '\n' + err.stack : '')
+							} else {
+								return JSON.stringify(err)
+							}
+						}
+					}
 					reject(err)
 				} else {
 					resolve(id)
@@ -284,7 +303,7 @@ export class CoreConnection extends EventEmitter {
 			})
 		})
 	}
-	callMethodLowPrio (methodName: PeripheralDeviceAPI.methods | string, attrs?: Array<any>): Promise<any> {
+	callMethodLowPrio(methodName: PeripheralDeviceAPI.methods | string, attrs?: Array<any>): Promise<any> {
 		return new Promise((resolve, reject) => {
 			this.queuedMethodCalls.push({
 				f: () => {
@@ -296,23 +315,23 @@ export class CoreConnection extends EventEmitter {
 			this._triggerDoQueue()
 		})
 	}
-	unInitialize (): Promise<string> {
+	unInitialize(): Promise<string> {
 		return this.callMethod(P.methods.unInitialize)
 	}
-	mosManipulate (method: string, ...attrs: Array<any>) {
+	mosManipulate(method: string, ...attrs: Array<any>) {
 		return this.callMethod(method, attrs)
 	}
-	getPeripheralDevice (): Promise<any> {
+	getPeripheralDevice(): Promise<any> {
 		return this.callMethod(P.methods.getPeripheralDevice)
 	}
-	getCollection (collectionName: string): Collection {
+	getCollection(collectionName: string): Collection {
 		if (!this.ddp.ddpClient) {
 			throw new Error('getCollection: DDP client not initialized')
 		}
 		const collections = this.ddp.ddpClient.collections
 
 		let c: Collection = {
-			find (selector?: any): Array<CollectionObj> {
+			find(selector?: any): Array<CollectionObj> {
 				const collection = collections[collectionName] || {}
 				if (_.isUndefined(selector)) {
 					return _.values(collection)
@@ -324,13 +343,13 @@ export class CoreConnection extends EventEmitter {
 					return [collection[selector]]
 				}
 			},
-			findOne (selector: any): CollectionObj {
+			findOne(selector: any): CollectionObj {
 				return c.find(selector)[0]
 			}
 		}
 		return c
 	}
-	async subscribe (publicationName: string, ...params: Array<any>): Promise<string> {
+	async subscribe(publicationName: string, ...params: Array<any>): Promise<string> {
 		return new Promise((resolve, reject) => {
 			if (!this.ddp.ddpClient) {
 				reject('subscribe: DDP client is not initialized')
@@ -353,7 +372,7 @@ export class CoreConnection extends EventEmitter {
 	/**
 	 * Like a subscribe, but automatically renews it upon reconnection
 	 */
-	async autoSubscribe (publicationName: string, ...params: Array<any>): Promise<string> {
+	async autoSubscribe(publicationName: string, ...params: Array<any>): Promise<string> {
 		const subscriptionId = await this.subscribe(publicationName, ...params)
 		this._autoSubscriptions[subscriptionId] = {
 			publicationName: publicationName,
@@ -361,42 +380,42 @@ export class CoreConnection extends EventEmitter {
 		}
 		return subscriptionId
 	}
-	unsubscribe (subscriptionId: string): void {
+	unsubscribe(subscriptionId: string): void {
 		this.ddp.ddpClient?.unsubscribe(subscriptionId)
 		delete this._autoSubscriptions[subscriptionId]
 	}
-	observe (collectionName: string): Observer {
+	observe(collectionName: string): Observer {
 		if (!this.ddp.ddpClient) {
 			throw new Error('observe: DDP client not initialised')
 		}
 		return this.ddp.ddpClient.observe(collectionName)
 	}
-	getCurrentTime (): number {
+	getCurrentTime(): number {
 		return this._timeSync?.currentTime() || 0
 	}
-	hasSyncedTime (): boolean {
+	hasSyncedTime(): boolean {
 		return this._timeSync?.isGood() || false
 	}
-	syncTimeQuality (): number | null {
+	syncTimeQuality(): number | null {
 		return this._timeSync?.quality || null
 	}
-	setPingResponse (message: string) {
+	setPingResponse(message: string) {
 		this._watchDogPingResponse = message
 	}
-	putOnQueue<T> (queueName: string, fcn: () => Promise<T>): Promise<T> {
+	putOnQueue<T>(queueName: string, fcn: () => Promise<T>): Promise<T> {
 		if (!this._queues[queueName]) {
 			this._queues[queueName] = new Queue()
 		}
 		return this._queues[queueName].putOnQueue(fcn)
 	}
-	private _emitError (e: Error | string) {
+	private _emitError(e: Error | string) {
 		if (!this._destroyed) {
 			this.emit('error', e)
 		} else {
 			console.log('destroyed error', e)
 		}
 	}
-	private _setConnected (connected: boolean) {
+	private _setConnected(connected: boolean) {
 		let prevConnected = this._connected
 		this._connected = connected
 		if (prevConnected !== connected) {
@@ -406,7 +425,7 @@ export class CoreConnection extends EventEmitter {
 			this._triggerPing()
 		}
 	}
-	private _maybeSendInit (): Promise<any> {
+	private _maybeSendInit(): Promise<any> {
 		// If the connectionId has changed, we should report that to Core:
 		if (this.ddp && this.ddp.connectionId !== this._sentConnectionId) {
 			return this._sendInit()
@@ -414,7 +433,7 @@ export class CoreConnection extends EventEmitter {
 			return Promise.resolve()
 		}
 	}
-	private _sendInit (): Promise<string> {
+	private _sendInit(): Promise<string> {
 		if (!this.ddp || !this.ddp.connectionId) throw Error('Not connected to Core')
 
 		let options: P.InitOptions = {
@@ -438,12 +457,12 @@ export class CoreConnection extends EventEmitter {
 		this._sentConnectionId = options.connectionId
 		return this.callMethod(P.methods.initialize, [options])
 	}
-	private _removeParent () {
+	private _removeParent() {
 		if (this._parent) this._parent.removeChild(this)
 		this._parent = null
 		this._setConnected(false)
 	}
-	private _setParent (parent: CoreConnection) {
+	private _setParent(parent: CoreConnection) {
 		this._parent = parent
 		parent.addChild(this)
 
@@ -452,7 +471,7 @@ export class CoreConnection extends EventEmitter {
 		})
 		this._setConnected(parent.connected)
 	}
-	private _watchDogCheck () {
+	private _watchDogCheck() {
 		/*
 			Randomize a message and send it to Core.
 			Core should then reply with triggering executeFunction with the "pingResponse" method.
@@ -484,14 +503,14 @@ export class CoreConnection extends EventEmitter {
 			return
 		})
 	}
-	private _renewAutoSubscriptions () {
+	private _renewAutoSubscriptions() {
 		_.each(this._autoSubscriptions, (sub) => {
 			this.subscribe(sub.publicationName, ...sub.params).catch((e) =>
 				this._emitError('renewSubscr ' + sub.publicationName + ': ' + e)
 			)
 		})
 	}
-	private _triggerPing () {
+	private _triggerPing() {
 		if (!this._pingTimeout) {
 			this._pingTimeout = setTimeout(() => {
 				this._pingTimeout = null
@@ -499,7 +518,7 @@ export class CoreConnection extends EventEmitter {
 			}, 90 * 1000)
 		}
 	}
-	private _triggerDelayPing () {
+	private _triggerDelayPing() {
 		// delay the ping:
 		if (this._pingTimeout) {
 			clearTimeout(this._pingTimeout)
@@ -507,7 +526,7 @@ export class CoreConnection extends EventEmitter {
 		}
 		this._triggerPing()
 	}
-	private _ping () {
+	private _ping() {
 		try {
 			if (this.connected) {
 				this.callMethod(PeripheralDeviceAPI.methods.ping).catch((e) => this._emitError('_ping' + e))
@@ -519,7 +538,7 @@ export class CoreConnection extends EventEmitter {
 			this._triggerPing()
 		}
 	}
-	private _triggerDoQueue (time: number = 2) {
+	private _triggerDoQueue(time: number = 2) {
 		if (!this._triggerDoQueueTimer) {
 			this._triggerDoQueueTimer = setTimeout(() => {
 				this._triggerDoQueueTimer = null
@@ -528,7 +547,7 @@ export class CoreConnection extends EventEmitter {
 			}, time)
 		}
 	}
-	private _doQueue () {
+	private _doQueue() {
 		// check if we can send a call?
 		let timeSinceLastMethodCall = Date.now() - this._timeLastMethodCall
 		let timeSinceLastMethodReply = Date.now() - this._timeLastMethodReply
@@ -556,7 +575,7 @@ export class CoreConnection extends EventEmitter {
 			}
 		}
 	}
-	private _updateMaxListeners () {
+	private _updateMaxListeners() {
 		this.setMaxListeners(
 			10 + this._children.length * 10 // allow 10 listeners per child
 		)

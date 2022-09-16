@@ -6,9 +6,14 @@ import { protectString, makePromise, LogLevel } from '../../../lib/lib'
 import { PeripheralDeviceCommand, PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { setLogLevel } from '../../logging'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
-import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceId,
+	PeripheralDeviceType,
+} from '../../../lib/collections/PeripheralDevices'
 import { setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { MeteorCall } from '../../../lib/api/methods'
 
 require('../client') // include in order to create the Meteor methods needed
 
@@ -20,8 +25,8 @@ describe('ClientAPI', () => {
 	let mockDeviceId: PeripheralDeviceId = protectString('not set yet')
 	beforeAllInFiber(() => {
 		const mockDevice = setupMockPeripheralDevice(
-			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
-			PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			PeripheralDeviceCategory.PLAYOUT,
+			PeripheralDeviceType.PLAYOUT,
 			PeripheralDeviceAPI.SUBTYPE_PROCESS
 		)
 		mockDeviceId = mockDevice._id
@@ -30,9 +35,9 @@ describe('ClientAPI', () => {
 		testInFiber('Exports a Meteor method to the client', () => {
 			expect(MeteorMock.mockMethods[ClientAPIMethods.clientErrorReport]).toBeTruthy()
 		})
-		testInFiber('Returns a success response to the client', () => {
+		testInFiber('Returns a success response to the client', async () => {
 			// should not throw:
-			Meteor.call(ClientAPIMethods.clientErrorReport, 1000, { error: 'Some Error' }, 'MockLocation')
+			await MeteorCall.client.clientErrorReport(1000, { error: 'Some Error' }, 'MockString', 'MockLocation')
 		})
 	})
 
@@ -51,15 +56,12 @@ describe('ClientAPI', () => {
 			let promise: Promise<any>
 			beforeAllInFiber(async () => {
 				logMethodName = `${mockDeviceId}: ${mockFunctionName}`
-				promise = makePromise(() =>
-					Meteor.call(
-						ClientAPIMethods.callPeripheralDeviceFunction,
-						mockContext,
-						mockDeviceId,
-						undefined,
-						mockFunctionName,
-						...mockArgs
-					)
+				promise = MeteorCall.client.callPeripheralDeviceFunction(
+					mockContext,
+					mockDeviceId,
+					undefined,
+					mockFunctionName,
+					...mockArgs
 				)
 				await new Promise((resolve) => orgSetTimeout(resolve, 100))
 			})

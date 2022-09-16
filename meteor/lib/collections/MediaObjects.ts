@@ -1,11 +1,10 @@
-import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
 import { registerIndex } from '../database'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 
-/** A string, identifying a MediaObj */
-export type MediaObjId = ProtectedString<'MediaObjId'>
+import { MediaObjId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+export { MediaObjId }
 
 export interface MediaObject0 {
 	_id: MediaObjId
@@ -122,8 +121,8 @@ export interface MediaStreamCodec {
 	is_avc?: string
 }
 
-export const MediaObjects = createMongoCollection<MediaObject, MediaObject>('mediaObjects')
-registerCollection('MediaObjects', MediaObjects)
+export const MediaObjects = createMongoCollection<MediaObject>(CollectionName.MediaObjects)
+
 registerIndex(MediaObjects, {
 	studioId: 1,
 	collectionId: 1,

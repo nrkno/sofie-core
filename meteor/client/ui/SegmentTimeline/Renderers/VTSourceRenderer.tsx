@@ -14,7 +14,7 @@ import { Lottie } from '@crello/react-lottie'
 import * as loopAnimation from './icon-loop.json'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { VTContent } from '@sofie-automation/blueprints-integration'
-import { PieceStatusIcon } from '../PieceStatusIcon'
+import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
 import { ScanInfoForPackages } from '../../../../lib/mediaObjects'
@@ -23,6 +23,7 @@ import { RundownUtils } from '../../../lib/rundown'
 import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
 import StudioContext from '../../RundownView/StudioContext'
 import { Studio } from '../../../../lib/collections/Studios'
+import { Settings } from '../../../../lib/Settings'
 
 interface IProps extends ICustomLayerItemProps {
 	studio: Studio | undefined
@@ -488,19 +489,24 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					Math.abs(
 						(this.props.piece.renderedInPoint || 0) +
 							(vtContent.sourceDuration - seek) -
-							(this.props.part.instance.part.expectedDuration || 0)
+							(this.props.partExpectedDuration || 0)
 					) > 500))
 		) {
-			const lastFreeze = this.state.freezes && this.state.freezes[this.state.freezes.length - 1]
-			const endingFreezeStart =
-				lastFreeze &&
-				lastFreeze.start >= vtContent.sourceDuration &&
-				lastFreeze.start < vtContent.sourceDuration + (vtContent.postrollDuration || 0) &&
-				lastFreeze.start
-			const endOfContentAt =
-				(this.props.piece.renderedInPoint || 0) +
-				((endingFreezeStart || vtContent.sourceDuration + (vtContent.postrollDuration || 0)) - seek)
-			const counter = endOfContentAt - livePositionInPart
+			let endOfContentAt: number = vtContent.sourceDuration + (vtContent.postrollDuration || 0)
+
+			if (Settings.useCountdownToFreezeFrame) {
+				const lastFreeze = this.state.freezes && this.state.freezes[this.state.freezes.length - 1]
+				const endingFreezeStart =
+					lastFreeze &&
+					lastFreeze.start >= vtContent.sourceDuration &&
+					lastFreeze.start < vtContent.sourceDuration + (vtContent.postrollDuration || 0) &&
+					lastFreeze.start
+
+				// Count down to the ending freeze frame of the content, instead of using the planned end:
+				if (endingFreezeStart) endOfContentAt = endingFreezeStart
+			}
+
+			const counter = (this.props.piece.renderedInPoint || 0) + endOfContentAt - seek - livePositionInPart
 
 			if (counter > 0) {
 				countdown = (

@@ -231,7 +231,7 @@ export interface WithTrackerOptions<IProps, IState, TrackedProps> {
 type IWrappedComponent<IProps, IState, TrackedProps> =
 	| React.ComponentClass<IProps & TrackedProps, IState>
 	// | (new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>)
-	| ((props: IProps & TrackedProps) => JSX.Element)
+	| ((props: IProps & TrackedProps) => JSX.Element | null)
 export function withTracker<IProps, IState, TrackedProps>(
 	autorunFunction: (props: IProps) => TrackedProps,
 	checkUpdate?: (data: any, props: IProps, nextProps: IProps, state?: IState, nextState?: IState) => boolean,
@@ -327,7 +327,7 @@ export function useTracker<T, K extends undefined | T = undefined>(
 
 /**
  * A Meteor Subscription hook that allows using React Functional Components and the Hooks API with Meteor subscriptions.
- * Subscriptions will be torn down 100ms after unmounting the component.
+ * Subscriptions will be torn down 1000ms after unmounting the component.
  *
  * @export
  * @param {PubSub} sub The subscription to be subscribed to
@@ -344,7 +344,7 @@ export function useSubscription(sub: PubSub, ...args: any[]): boolean {
 			isReadyComp.stop()
 			setTimeout(() => {
 				subscription.stop()
-			}, 100)
+			}, 1000)
 		}
 	}, [stringifyObjects(args)])
 

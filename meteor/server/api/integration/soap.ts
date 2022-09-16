@@ -13,8 +13,6 @@ import { throwFatalError } from '../ExternalMessageQueue'
 import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { logger } from '../../logging'
 import { escapeHtml } from '../../../lib/lib'
-// import { XmlEntities as Entities } from 'html-entities'
-// const entities = new Entities()
 
 type ExternalMessageQueueObjSOAP0 = ExternalMessageQueueObjSOAP & ExternalMessageQueueObj
 export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP0 & ExternalMessageQueueObj) {
@@ -120,7 +118,6 @@ async function resolveSOAPFcnData(soapClient: soap.Client, valFcn: ExternalMessa
 				})
 			}
 			const xml: string = parser.toXml(val)
-			// resolve(entities.encode(xml))
 			resolve(xml)
 		} else {
 			reject(new Meteor.Error(401, 'Unknown SOAP function: ' + _.keys(valFcn._fcn)))

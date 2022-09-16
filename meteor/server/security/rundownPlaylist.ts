@@ -49,8 +49,20 @@ export interface RundownPlaylistContentAccess {
 	cred: ResolvedCredentials | Credentials
 }
 
+/**
+ * This is returned from a check of access to a rundown.
+ * Fields will be populated about the user, and the rundown if they have permission
+ */
+export interface RundownContentAccess {
+	userId: UserId | null
+	organizationId: OrganizationId | null
+	studioId: StudioId | null
+	rundown: Rundown | null
+	cred: ResolvedCredentials | Credentials
+}
+
 export namespace RundownPlaylistContentWriteAccess {
-	export function rundown(cred0: Credentials, existingRundown: Rundown | RundownId) {
+	export function rundown(cred0: Credentials, existingRundown: Rundown | RundownId): RundownContentAccess {
 		triggerWriteAccess()
 		if (existingRundown && isProtectedString(existingRundown)) {
 			const rundownId = existingRundown

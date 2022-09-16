@@ -93,9 +93,9 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 
 	handleKey = (e: KeyboardEvent) => {
 		if (this.props.show) {
-			if (e.key === 'Enter') {
+			if (e.code === 'Enter' || e.code === 'NumpadEnter') {
 				if (!this.props.warning) this.handleAccept(e)
-			} else if (e.key === 'Escape') {
+			} else if (e.code === 'Escape') {
 				if (this.props.secondaryText) {
 					this.handleSecondary(e)
 				} else {
@@ -154,7 +154,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 								}}
 								runOnMount={true}
 							>
-								<dialog open={true} className={'border-box overlay-m ' + this.props.className || ''}>
+								<dialog open={true} className={'border-box overlay-m ' + this.props.className || ''} role="alertdialog">
 									<div
 										className={'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'}
 									>

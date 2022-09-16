@@ -1,11 +1,9 @@
-import { registerCollection, Time, ProtectedString } from '../lib'
+import { Time } from '../lib'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
-import { PeripheralDeviceId } from './PeripheralDevices'
 import { registerIndex } from '../database'
-
-/** A string, identifying a MediaWorkFlow */
-export type MediaWorkFlowId = ProtectedString<'MediaWorkFlowId'>
+import { MediaWorkFlowId, StudioId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+export { MediaWorkFlowId }
 
 export interface MediaWorkFlow {
 	_id: MediaWorkFlowId
@@ -31,8 +29,8 @@ export interface MediaWorkFlow {
 	success: boolean
 }
 
-export const MediaWorkFlows = createMongoCollection<MediaWorkFlow, MediaWorkFlow>('mediaWorkFlows')
-registerCollection('MediaWorkFlows', MediaWorkFlows)
+export const MediaWorkFlows = createMongoCollection<MediaWorkFlow>(CollectionName.MediaWorkFlows)
+
 registerIndex(MediaWorkFlows, {
 	// TODO: add deviceId: 1,
 	mediaObjectId: 1,

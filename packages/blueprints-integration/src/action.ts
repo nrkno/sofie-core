@@ -32,12 +32,14 @@ export interface IBlueprintActionManifestDisplay {
 	currentPieceTags?: string[]
 	/** Piece tags to use to determine if action is set as next */
 	nextPieceTags?: string[]
-	/** String that can be used to identify adlibs that are equivalent to each other */
+	/**
+	 * String that can be used to identify adlibs that are equivalent to each other,
+	 * if there are multiple Adlibs with the same uniquenessId,
+	 * only one of them should be displayed in the GUI.
+	 */
 	uniquenessId?: string
 	/** When not playing, display in the UI as playing, and vice versa. Useful for Adlibs that toggle something off when taken */
 	invertOnAirState?: boolean
-	/** Do not assign a hotkey to this adlib */
-	noHotKey?: boolean
 }
 
 export interface IBlueprintActionManifestDisplayContent extends IBlueprintActionManifestDisplay {
@@ -63,13 +65,30 @@ export interface IBlueprintActionTriggerMode {
 }
 
 export interface IBlueprintActionManifest {
+	/**
+	 * An identifier for this Action
+	 * It should be unique within the part it belongs to, and consistent across ingest updates
+	 */
+	externalId: string
+
 	/** Id of the action */
 	actionId: string
 	/** Properties defining the action behaviour */
 	userData: ActionUserData
 
-	/** Set if ad-lib action should be limited in context to the current part/segment */
+	/**
+	 * Set if ad-lib action should be limited in context to the current part/segment
+	 * Note: Only valid for items returned from getSegment
+	 */
 	partId?: string
+
+	/**
+	 * Set to true if ad-lib action should can be used in any showstyle-variant. Default: false = only used by the current variant.
+	 * This is useful for actions in Buckets, so that they can be easily shared between rundowns.
+	 * Note: When used, this must be set for ALL adlibs of a certain type (not just a few variants).
+	 * Note: Only valid for items returned from getAdlibItem
+	 */
+	allVariants?: boolean
 
 	userDataManifest: {
 		/** List of editable fields in userData, to allow for customising */

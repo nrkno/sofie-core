@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import ClassNames from 'classnames'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import {
@@ -10,21 +9,26 @@ import {
 	IOutputLayer,
 	SourceLayerType,
 	VTContent,
-	Accessor,
+	NoraContent,
+	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IAdLibListItem } from './AdLibListItem'
-import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
+import SplitInputIcon from '../PieceIcons/Renderers/SplitInputIcon'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
 import { StyledTimecode } from '../../lib/StyledTimecode'
 import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
 import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
-import { Studio } from '../../../lib/collections/Studios'
+import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
-import { ensureHasTrailingSlash, isTouchDevice } from '../../lib/lib'
+import { getThumbnailUrlForAdLibPieceUi } from '../../lib/ui/clipPreview'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+
+import { isTouchDevice } from '../../lib/lib'
 import { AdLibPieceUi } from '../../lib/shelf'
+import { protectString } from '../../../lib/lib'
+import { Studio } from '../../../lib/collections/Studios'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -104,70 +108,32 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	getThumbnailUrl = (piece: IAdLibListItem, studio: Studio): string | undefined => {
-		if (piece.expectedPackages) {
-			// use Expected packages:
-			// Just use the first one we find.
-			// TODO: support multiple expected packages?
-
-			let thumbnailContainerId: string | undefined
-			let packageThumbnailPath: string | undefined
-			for (const expectedPackage of piece.expectedPackages) {
-				const sideEffect = getSideEffect(expectedPackage, studio)
-
-				packageThumbnailPath = sideEffect.thumbnailPackageSettings?.path
-				thumbnailContainerId = sideEffect.thumbnailContainerId
-
-				if (packageThumbnailPath && thumbnailContainerId) {
-					break // don't look further
-				}
-			}
-			if (packageThumbnailPath && thumbnailContainerId) {
-				const packageContainer = studio.packageContainers[thumbnailContainerId]
-				if (packageContainer) {
-					// Look up an accessor we can use:
-					for (const accessor of Object.values(packageContainer.container.accessors)) {
-						if (
-							(accessor.type === Accessor.AccessType.HTTP || accessor.type === Accessor.AccessType.HTTP_PROXY) &&
-							accessor.baseUrl
-						) {
-							// Currently we only support public accessors (ie has no networkId set)
-							if (!accessor.networkId) {
-								return [
-									accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
-									encodeURIComponent(
-										packageThumbnailPath.replace(/^\//, '') // trim leading slash
-									),
-								].join('/')
-							}
-						}
-					}
-				}
-			}
-		} else {
-			// Fallback to media objects
-			if (this.props.mediaPreviewUrl && piece.contentMetaData) {
-				if (piece.contentMetaData && piece.contentMetaData.previewPath && this.props.mediaPreviewUrl) {
-					return (
-						ensureHasTrailingSlash(this.props.mediaPreviewUrl ?? null) +
-						'media/thumbnail/' +
-						encodeURIComponent(piece.contentMetaData.mediaId)
-					)
-				}
-			}
-		}
-		return undefined
-	}
-
-	renderGraphics(renderThumbnail?: boolean) {
-		const thumbnailUrl = this.getThumbnailUrl(this.props.piece, this.props.studio)
+	renderGraphics(_renderThumbnail?: boolean) {
+		const adLib = this.props.piece as any as AdLibPieceUi
+		const noraContent = adLib.content as NoraContent | undefined
 		return (
 			<>
-				{thumbnailUrl && renderThumbnail && (
-					<div className="dashboard-panel__panel__button__thumbnail">
-						<img src={thumbnailUrl} />
-					</div>
-				)}
+				<L3rdFloatingInspector
+					showMiniInspector={this.state.isHovered}
+					content={noraContent}
+					floatingInspectorStyle={{
+						top: this.positionAndSize?.top + 'px',
+						left: this.positionAndSize?.left + 'px',
+						transform: 'translate(0, -100%)',
+					}}
+					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
+					itemElement={this.element}
+					piece={{
+						...adLib,
+						enable: { start: 0 },
+						startPartId: protectString(''),
+						invalid: false,
+						pieceType: IBlueprintPieceType.Normal,
+					}}
+					pieceRenderedDuration={adLib.expectedDuration || null}
+					pieceRenderedIn={null}
+					displayOn="viewport"
+				/>
 			</>
 		)
 	}
@@ -177,7 +143,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		let sourceDuration: number | undefined
 		const adLib = this.props.piece as any as AdLibPieceUi
 		if (this.props.piece.content && this.props.studio) {
-			thumbnailUrl = this.getThumbnailUrl(this.props.piece, this.props.studio!)
+			thumbnailUrl = getThumbnailUrlForAdLibPieceUi(this.props.piece, this.props.studio!, this.props.mediaPreviewUrl)
 			const vtContent = adLib.content as VTContent | undefined
 			sourceDuration = vtContent?.sourceDuration
 		}
@@ -185,7 +151,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			<>
 				{sourceDuration && (
 					<span className="dashboard-panel__panel__button__sub-label">
-						{sourceDuration ? <StyledTimecode time={sourceDuration || 0} /> : null}
+						{sourceDuration ? (
+							<StyledTimecode time={sourceDuration || 0} studioSettings={this.props.studio?.settings} />
+						) : null}
 					</span>
 				)}
 				<VTFloatingInspector
@@ -401,13 +369,14 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	private handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		const { toggleOnSingleClick } = this.props
 		// if pointerId is not set, it means we are dealing with a mouse and not an emulated mouse event
-		if (this.pointerId === null && e.button === 0) {
-			// this is a main-button-click
-			if (toggleOnSingleClick) {
-				this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
-			} else {
-				this.props.onSelectAdLib(this.props.piece, e)
-			}
+		if (this.pointerId !== null || e.button !== 0) {
+			return
+		}
+		// this is a main-button-click
+		if (toggleOnSingleClick) {
+			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+		} else {
+			this.props.onSelectAdLib(this.props.piece, e)
 		}
 	}
 
@@ -428,9 +397,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		const { toggleOnSingleClick } = this.props
 		if (toggleOnSingleClick) {
 			return
-		} else {
-			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
 		}
+		this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
 	}
 
 	private handleOnPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -449,10 +417,14 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	private handleOnPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-		if (e.pointerId === this.pointerId) {
-			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
-			e.preventDefault()
+		const { toggleOnSingleClick } = this.props
+		if (e.pointerId !== this.pointerId) {
+			return
 		}
+		if (!toggleOnSingleClick) {
+			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+		}
+		e.preventDefault()
 	}
 
 	renderHotkey = () => {
@@ -473,9 +445,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						floated: this.props.piece.floated,
 						active: this.state.active,
 
-						'source-missing': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
-						'source-broken': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': this.props.piece.status === RundownAPI.PieceStatusCode.UNKNOWN,
+						'source-missing': this.props.piece.status === PieceStatusCode.SOURCE_MISSING,
+						'source-broken': this.props.piece.status === PieceStatusCode.SOURCE_BROKEN,
+						'unknown-state': this.props.piece.status === PieceStatusCode.UNKNOWN,
 
 						live: this.props.isOnAir,
 						disabled: this.props.disabled,

@@ -1,5 +1,4 @@
 import { IncomingWebhook, IncomingWebhookResult } from '@slack/webhook'
-import { Meteor } from 'meteor/meteor'
 
 const webHookCache: { [webhookURL: string]: IncomingWebhook } = {}
 
@@ -16,15 +15,3 @@ export async function sendSlackMessageToWebhook(message: string, webhookURL: str
 	}
 	return webhook.send(message)
 }
-export const sendSlackMessageToWebhookSync: (message: string, webhookURL: string) => IncomingWebhookResult =
-	Meteor.wrapAsync(
-		(
-			message: string,
-			webhookURL: string,
-			callback: (err: Error | undefined, result?: IncomingWebhookResult) => void
-		) => {
-			sendSlackMessageToWebhook(message, webhookURL)
-				.then((result) => callback(undefined, result))
-				.catch((err) => callback(err))
-		}
-	)

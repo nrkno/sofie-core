@@ -1,14 +1,16 @@
 import { FindOptions } from '../typings/meteor'
-import { registerCollection, ProtectedString, protectString, LogLevel } from '../lib'
+import { LogLevel, protectString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import * as semver from 'semver'
 import { createMongoCollection } from './lib'
-import { BlueprintId } from './Blueprints'
 import _ from 'underscore'
-import { StatusCode } from '../api/systemStatus'
+import { CoreSystemId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { StatusCode } from '@sofie-automation/blueprints-integration'
+export { CoreSystemId }
 
-export const SYSTEM_ID = protectString('core')
+export const SYSTEM_ID: CoreSystemId = protectString('core')
 
 /**
  * Criticality level for service messages. Specification of criticality in server
@@ -38,9 +40,6 @@ export interface ServiceMessage {
 export interface ExternalServiceMessage extends Omit<ServiceMessage, 'timestamp'> {
 	timestamp: Date
 }
-
-/** A string, identifying a CoreSystem */
-export type CoreSystemId = ProtectedString<'CoreSystemId'>
 
 export interface ICoreSystem {
 	_id: CoreSystemId // always is 'core'
@@ -114,11 +113,13 @@ export const GENESIS_SYSTEM_VERSION = '0.0.0'
 // The CoreSystem collection will contain one (exactly 1) object.
 // This represents the "system"
 
-export const CoreSystem = createMongoCollection<ICoreSystem, ICoreSystem>('coreSystem')
-registerCollection('CoreSystem', CoreSystem)
+export const CoreSystem = createMongoCollection<ICoreSystem>(CollectionName.CoreSystem)
 
 export function getCoreSystem(): ICoreSystem | undefined {
 	return CoreSystem.findOne(SYSTEM_ID)
+}
+export async function getCoreSystemAsync(): Promise<ICoreSystem | undefined> {
+	return CoreSystem.findOneAsync(SYSTEM_ID)
 }
 export function getCoreSystemCursor(options?: FindOptions<ICoreSystem>) {
 	return CoreSystem.find(SYSTEM_ID, options)

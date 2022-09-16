@@ -1,13 +1,13 @@
 import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
-import { NoteType, TrackedNote } from './api/notes'
+import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { Segments, DBSegment, SegmentOrphanedReason } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
-import { unprotectString, literal, generateTranslation, normalizeArrayToMap, assertNever } from './lib'
+import { unprotectString, literal, generateTranslation, normalizeArrayToMap } from './lib'
 import * as _ from 'underscore'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
 import { MongoFieldSpecifierOnes } from './typings/meteor'
-import { RundownPlaylist } from './collections/RundownPlaylists'
-import { ITranslatableMessage } from './api/TranslatableMessage'
+import { RundownPlaylistCollectionUtil } from './collections/RundownPlaylists'
+import { ITranslatableMessage, NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 	const rundowns = Rundowns.find(
@@ -81,8 +81,8 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 		}
 	).fetch()
 
-	const sortedSegments = RundownPlaylist._sortSegments(segments, rundowns)
-	const sortedParts = RundownPlaylist._sortPartsInner(parts, segments)
+	const sortedSegments = RundownPlaylistCollectionUtil._sortSegments(segments, rundowns)
+	const sortedParts = RundownPlaylistCollectionUtil._sortPartsInner(parts, segments)
 
 	return getAllNotesForSegmentAndParts(rundowns, sortedSegments, sortedParts, deletedPartInstances)
 }
@@ -142,20 +142,22 @@ export function getBasicNotesForSegment(
 	}
 
 	if (segment.orphaned) {
-		let baseMessage: string
+		let message: ITranslatableMessage
 		switch (segment.orphaned) {
 			case SegmentOrphanedReason.DELETED:
-				baseMessage = 'Segment no longer exists in {{nrcs}}'
+				message = generateTranslation('Segment no longer exists in {{nrcs}}', {
+					nrcs: nrcsName,
+				})
 				break
 			case SegmentOrphanedReason.HIDDEN:
-				baseMessage = 'Segment was hidden in {{nrcs}}'
+				message = generateTranslation('Segment was hidden in {{nrcs}}', {
+					nrcs: nrcsName,
+				})
 				break
 		}
 		notes.push({
-			type: NoteType.WARNING,
-			message: generateTranslation(baseMessage, {
-				nrcs: nrcsName,
-			}),
+			type: NoteSeverity.WARNING,
+			message,
 			rank: segment._rank,
 			origin: {
 				segmentId: segment._id,
@@ -167,7 +169,7 @@ export function getBasicNotesForSegment(
 		const deletedPartInstances = partInstances.filter((p) => p.orphaned === 'deleted' && !p.reset)
 		if (deletedPartInstances.length > 0) {
 			notes.push({
-				type: NoteType.WARNING,
+				type: NoteSeverity.WARNING,
 				message: generateTranslation('The following parts no longer exist in {{nrcs}}: {{partNames}}', {
 					nrcs: nrcsName,
 					partNames: deletedPartInstances.map((p) => p.part.title).join(', '),
@@ -185,17 +187,15 @@ export function getBasicNotesForSegment(
 	for (const part of parts) {
 		const newNotes = part.notes?.slice() || []
 
-		// Temporarily disable showing invalidReason notifications
-		//		-- Jan Starzak, 2021/06/30
-		// if (part.invalidReason) {
-		// 	newNotes.push({
-		// 		type: NoteType.ERROR,
-		// 		message: part.invalidReason.message,
-		// 		origin: {
-		// 			name: part.title,
-		// 		},
-		// 	})
-		// }
+		if (part.invalidReason) {
+			newNotes.push({
+				type: part.invalidReason.severity ?? NoteSeverity.ERROR,
+				message: part.invalidReason.message,
+				origin: {
+					name: part.title,
+				},
+			})
+		}
 
 		if (newNotes.length > 0) {
 			notes.push(
@@ -216,24 +216,4 @@ export function getBasicNotesForSegment(
 	}
 
 	return notes
-}
-
-export enum ServerTranslatedMesssages {
-	PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN,
-}
-export function getTranslatedMessage(
-	key: ServerTranslatedMesssages,
-	args?: { [key: string]: any }
-): ITranslatableMessage {
-	switch (key) {
-		case ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN:
-			return generateTranslation(
-				'The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.',
-				args
-			)
-
-		default:
-			assertNever(key)
-			return { key, args }
-	}
 }

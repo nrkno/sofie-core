@@ -12,8 +12,8 @@ interface IPropsHeader {
 	liveLineHistorySize: number
 	timeScale: number
 	maxTimeScale: number
-	onScroll: (scrollLeft: number, event: MouseEvent) => void
-	onZoomChange: (newScale: number, event: MouseEvent) => void
+	onScroll: (scrollLeft: number, event: Event) => void
+	onZoomChange: (newScale: number, event: Event) => void
 }
 
 interface IStateHeader {
@@ -66,24 +66,6 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		}
 	}
 
-	outsideZoomAreaClick = (e: Event & any) => {
-		const offset = getElementDocumentOffset(this.parentElement)
-		const maxScrollLeft = this.props.segmentDuration - LIVELINE_HISTORY_SIZE / this.props.timeScale
-		if (offset) {
-			this.parentOffsetX = offset.left
-			this.parentOffsetY = offset.top
-			// - (this.props.liveLineHistorySize * (this.props.segmentDuration / this.state.width))
-			let seconds = ((e.clientX - this.parentOffsetX) / this.state.width) * maxScrollLeft
-			seconds -= this.props.liveLineHistorySize / this.props.timeScale
-			if (this.props.onScroll) {
-				this.props.onScroll(Math.min(Math.max(0, seconds), maxScrollLeft), e)
-			}
-
-			e.preventDefault()
-			e.stopPropagation()
-		}
-	}
-
 	onElementResize = (entries: ResizeObserverEntry[]) => {
 		let width: number
 		if (entries && entries[0] && entries[0].contentRect) {
@@ -98,7 +80,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		this.checkSmallMode()
 	}
 
-	zoomAreaMove = (e: Event | (TouchEvent & any)) => {
+	zoomAreaMove = (e: MouseEvent | TouchEvent) => {
 		let delta = 0
 
 		const maxScrollLeft = this.props.segmentDuration - LIVELINE_HISTORY_SIZE / this.props.timeScale
@@ -109,19 +91,20 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 				delta = (et.touches[0].clientX - this.clickOffsetX) / this.state.width
 				this.clickOffsetX = et.touches[0].clientX
 			} else {
-				this.zoomAreaEndMove(e) // cancel move if more touches than one
+				this.zoomAreaEndMove() // cancel move if more touches than one
 				return
 			}
 		} else {
-			delta = (e.clientX - this.clickOffsetX) / this.state.width
-			this.clickOffsetX = e.clientX
+			const em = e as MouseEvent
+			delta = (em.clientX - this.clickOffsetX) / this.state.width
+			this.clickOffsetX = em.clientX
 		}
 		if (this.props.onScroll) {
 			this.props.onScroll(Math.max(0, this.props.scrollLeft + delta * maxScrollLeft), e)
 		}
 	}
 
-	zoomAreaEndMove(_e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+	zoomAreaEndMove() {
 		if (!this._isTouch) {
 			document.removeEventListener('mousemove', this.zoomAreaMove)
 		} else {
@@ -144,7 +127,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 			document.addEventListener(
 				'mouseup',
 				() => {
-					this.zoomAreaEndMove(e)
+					this.zoomAreaEndMove()
 				},
 				{ once: true }
 			)
@@ -156,7 +139,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 			if (et.touches.length === 1) {
 				document.addEventListener('touchmove', this.zoomAreaMove)
 				document.addEventListener('touchend', () => {
-					this.zoomAreaEndMove(e)
+					this.zoomAreaEndMove()
 				})
 
 				clientX = et.touches[0].clientX
@@ -180,7 +163,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		})
 	}
 
-	zoomAreaLeftMove = (e: Event & any) => {
+	zoomAreaLeftMove = (e: MouseEvent) => {
 		const begin = Math.max(0, Math.min(1, (e.clientX - this.parentOffsetX) / this.state.width))
 		const end = (this.props.scrollLeft + this.props.scrollWidth) / this.props.segmentDuration
 		const newScale = (this.props.scrollWidth / ((end - begin) * this.props.segmentDuration)) * this.props.timeScale
@@ -190,7 +173,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		}
 	}
 
-	zoomAreaEndLeftMove(_e: React.SyntheticEvent<HTMLDivElement>) {
+	zoomAreaEndLeftMove() {
 		document.removeEventListener('mousemove', this.zoomAreaLeftMove)
 		this.setState({
 			zoomAreaResizeBegin: false,
@@ -198,7 +181,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		this.checkSmallMode()
 	}
 
-	zoomAreaLeftBeginMove(e: Event & any) {
+	zoomAreaLeftBeginMove(e: MouseEvent) {
 		e.preventDefault()
 		e.stopPropagation()
 
@@ -206,7 +189,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		document.addEventListener(
 			'mouseup',
 			() => {
-				this.zoomAreaEndLeftMove(e)
+				this.zoomAreaEndLeftMove()
 			},
 			{ once: true }
 		)
@@ -221,7 +204,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		})
 	}
 
-	zoomAreaEndRightMove(_e: React.SyntheticEvent<HTMLDivElement>) {
+	zoomAreaEndRightMove() {
 		document.removeEventListener('mousemove', this.zoomAreaRightMove)
 		this.setState({
 			zoomAreaResizeEnd: false,
@@ -229,7 +212,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		this.checkSmallMode()
 	}
 
-	zoomAreaRightMove = (e: Event & any) => {
+	zoomAreaRightMove = (e: MouseEvent) => {
 		const end = Math.max(0, Math.min(1, (e.clientX - this.parentOffsetX) / this.state.width))
 		const begin = this.props.scrollLeft / this.props.segmentDuration
 		const newScale = (this.props.scrollWidth / ((end - begin) * this.props.segmentDuration)) * this.props.timeScale
@@ -238,7 +221,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		}
 	}
 
-	zoomAreaRightBeginMove(e: Event & any) {
+	zoomAreaRightBeginMove(e: MouseEvent) {
 		e.preventDefault()
 		e.stopPropagation()
 
@@ -246,7 +229,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		document.addEventListener(
 			'mouseup',
 			() => {
-				this.zoomAreaEndRightMove(e)
+				this.zoomAreaEndRightMove()
 			},
 			{ once: true }
 		)
@@ -284,20 +267,6 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		const maxScrollLeft = this.props.segmentDuration - LIVELINE_HISTORY_SIZE / this.props.timeScale
 		return (
 			<div className="segment-timeline__zoom-area__controls" ref={this.setParentRef}>
-				<div
-					className="segment-timeline__zoom-area__controls__left-mask"
-					style={{
-						width: Math.min(100, Math.max(0, (this.props.scrollLeft / maxScrollLeft) * 100)).toString() + '%',
-					}}
-					onClick={(e) => this.outsideZoomAreaClick(e)}
-				></div>
-				<div
-					className="segment-timeline__zoom-area__controls__right-mask"
-					style={{
-						width: Math.min(100, Math.max(0, (1 - this.props.scrollLeft / maxScrollLeft) * 100)).toString() + '%',
-					}}
-					onClick={(e) => this.outsideZoomAreaClick(e)}
-				></div>
 				<div
 					className="segment-timeline__zoom-area__controls__selected-area"
 					style={{

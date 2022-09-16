@@ -2,6 +2,17 @@
 $liveline-timecode-color: $general-countdown-to-next-color; //$general-live-color;
 $hold-status-color: $liveline-timecode-color;
 
+.piece__label__colored-mark {
+	display: inline-block;
+	background-color: currentColor;
+	border-radius: 100%;
+	width: 0.75em;
+	height: 0.75em;
+	margin-right: 0.125em;
+	margin-left: 0.125em;
+	line-height: 0.75em;
+}
+
 .presenter-screen {
 	position: fixed;
 	top: 0;
@@ -197,7 +208,6 @@ $hold-status-color: $liveline-timecode-color;
 			.timing-clock {
 				position: relative;
 				margin-right: 1em;
-				font-family: 'Roboto', Helvetica Neue, Arial, sans-serif;
 				font-weight: 100;
 				color: $general-clock;
 				font-size: 1.5em;

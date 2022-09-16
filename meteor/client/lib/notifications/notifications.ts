@@ -2,13 +2,27 @@ import { ReactiveVar } from 'meteor/reactive-var'
 import * as _ from 'underscore'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
-import { Time, ProtectedString, unprotectString, isProtectedString, protectString } from '../../../lib/lib'
+import {
+	Time,
+	ProtectedString,
+	unprotectString,
+	isProtectedString,
+	protectString,
+	assertNever,
+	getRandomString,
+} from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
-import { RundownAPI } from '../../../lib/api/rundown'
+import {
+	isTranslatableMessage,
+	ITranslatableMessage,
+	translateMessage,
+} from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { RundownId } from '../../../lib/collections/Rundowns'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { MeteorCall } from '../../../lib/api/methods'
+import { i18nTranslator } from '../../ui/i18n'
+import { getReportNotifications } from '../localStorage'
 
 /**
  * Priority level for Notifications.
@@ -135,6 +149,39 @@ class NotificationCenter0 {
 	constructor() {
 		this.highlightedSource = new ReactiveVar<NotificationsSource>(undefined)
 		this.highlightedLevel = new ReactiveVar<NoticeLevel>(NoticeLevel.TIP)
+
+		const notifLogUserId = getReportNotifications()
+		if (notifLogUserId) {
+			let oldNotificationIds: string[] = []
+			Tracker.autorun(() => {
+				const newNotifIds = this.getNotificationIDs()
+				const oldNotifIds = new Set(oldNotificationIds)
+
+				newNotifIds
+					.filter((id) => !oldNotifIds.has(id))
+					.forEach((id) => {
+						const notification = notifications[id]
+
+						if (notification && !notification.snoozed) {
+							const message = isTranslatableMessage(notification.message)
+								? translateMessage(notification.message, i18nTranslator)
+								: typeof notification.message === 'string'
+								? notification.message
+								: '[React Element]'
+
+							MeteorCall.client.clientLogNotification(
+								notification.created,
+								notifLogUserId,
+								notification.status,
+								message,
+								notification.source
+							)
+						}
+					})
+
+				oldNotificationIds = newNotifIds
+			})
+		}
 	}
 
 	get isConcentrationMode(): boolean {
@@ -176,7 +223,7 @@ class NotificationCenter0 {
 	 * @memberof NotificationCenter0
 	 */
 	registerNotifier(source: Notifier): NotifierHandle {
-		const notifierId = Random.id()
+		const notifierId = getRandomString()
 
 		return new NotifierHandle(notifierId, source)
 	}
@@ -189,7 +236,7 @@ class NotificationCenter0 {
 	 * @memberof NotificationCenter0
 	 */
 	push(notice: Notification): NotificationHandle {
-		const id = notice.id || Random.id()
+		const id = notice.id || getRandomString()
 		notifications[id] = notice
 		notice.id = id
 		notificationsDep.changed()
@@ -261,6 +308,18 @@ class NotificationCenter0 {
 				})
 				.concat(Object.values(notifications))
 		)
+	}
+
+	/**
+	 * Get a reactive array of notificaiton id's in the Notification Center
+	 *
+	 * @returns {Array<string>}
+	 * @memberof NotificationCenter0
+	 */
+	getNotificationIDs(): Array<string> {
+		notificationsDep.depend()
+
+		return Object.keys(notifications)
 	}
 
 	/**
@@ -476,14 +535,23 @@ export class Notification extends EventEmitter {
 	}
 }
 
-export function getNoticeLevelForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoticeLevel | null {
-	return statusCode !== RundownAPI.PieceStatusCode.OK && statusCode !== RundownAPI.PieceStatusCode.UNKNOWN
-		? statusCode === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-			? NoticeLevel.CRITICAL
-			: // : innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
-			  // innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
-			  NoticeLevel.WARNING
-		: null
+export function getNoticeLevelForPieceStatus(statusCode: PieceStatusCode): NoticeLevel | null {
+	switch (statusCode) {
+		case PieceStatusCode.OK:
+		case PieceStatusCode.UNKNOWN:
+			return null
+		case PieceStatusCode.SOURCE_NOT_SET:
+			return NoticeLevel.CRITICAL
+		case PieceStatusCode.SOURCE_MISSING:
+			return NoticeLevel.WARNING
+		case PieceStatusCode.SOURCE_BROKEN:
+			return NoticeLevel.WARNING
+		case PieceStatusCode.SOURCE_HAS_ISSUES:
+			return NoticeLevel.NOTIFICATION
+		default:
+			assertNever(statusCode)
+			return NoticeLevel.WARNING
+	}
 }
 
 window['testNotification'] = function (

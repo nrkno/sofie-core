@@ -66,7 +66,6 @@ export type SomeContent =
 	| GraphicsContent
 	| UnknownContent
 	| EvsContent
-export type SomeTimelineContent = WithTimeline<SomeContent>
 
 export type UnknownContent = BaseContent
 
@@ -81,7 +80,6 @@ export interface VTContent extends BaseContent {
 	/** Duration of extra content past sourceDuration. Not planned to play back but present on the media and playable. */
 	postrollDuration?: number
 	editable?: VTEditableParameters
-	ignoreMediaObjectStatus?: boolean
 }
 
 export interface GraphicsContent extends BaseContent {
@@ -117,6 +115,7 @@ export interface ScriptContent extends BaseContent {
 	firstWords: string
 	lastWords: string
 	fullScript?: string
+	comment?: string
 	lastModified?: Time | null
 }
 
@@ -175,10 +174,7 @@ export interface SplitsContentBoxProperties {
 		}
 	}
 }
-export type SplitsContentBoxContent = Omit<
-	VTContent | CameraContent | RemoteContent | NoraContent | GraphicsContent,
-	'timelineObjects'
->
+export type SplitsContentBoxContent = VTContent | CameraContent | RemoteContent | NoraContent | GraphicsContent
 export interface SplitsContent extends BaseContent {
 	/** Array of contents, 0 is towards the rear */
 	boxSourceConfiguration: (SplitsContentBoxContent & SplitsContentBoxProperties)[]

@@ -1,45 +1,16 @@
-import { registerCollection, ProtectedString, protectString } from '../lib'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
 import { registerIndex } from '../database'
-import { ExpectedPackageDB, ExpectedPackageId } from './ExpectedPackages'
-import { PeripheralDeviceId } from './PeripheralDevices'
-import { PackageInfo } from '@sofie-automation/blueprints-integration'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-/**
- * The PackageInfos collection contains information related to Packages.
- * This collection is populated from a Package Manager-device.
- */
+import { PackageInfoId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+export { PackageInfoId }
 
-export type PackageInfoId = ProtectedString<'PackageInfoId'>
+import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
+export * from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 
-export interface PackageInfoDB extends PackageInfo.Base {
-	_id: PackageInfoId
-
-	/** Reference to the Package this document has info about */
-	packageId: ExpectedPackageId
-	/** Reference to the contentVersionHash of the ExpectedPackage, used to reference the expected content+version of the Package */
-	expectedContentVersionHash: ExpectedPackageDB['contentVersionHash']
-	/** Referring to the actual contentVersionHash of the Package, used to reference the exact content+version of the Package */
-	actualContentVersionHash: string
-
-	/** The studio this Package is in */
-	studioId: StudioId
-
-	/** Which PeripheralDevice this info comes from */
-	deviceId: PeripheralDeviceId
-
-	type: PackageInfo.Type
-	payload: any
-}
-
-export const PackageInfos = createMongoCollection<PackageInfoDB, PackageInfoDB>('packageInfos')
-registerCollection('PackageInfos', PackageInfos)
+export const PackageInfos = createMongoCollection<PackageInfoDB>(CollectionName.PackageInfos)
 
 registerIndex(PackageInfos, {
 	studioId: 1,
 	packageId: 1,
 })
-export function getPackageInfoId(packageId: ExpectedPackageId, type: string): PackageInfoId {
-	return protectString(`${packageId}_${type}`)
-}

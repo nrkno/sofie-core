@@ -1,10 +1,11 @@
 import ClassNames from 'classnames'
 import React, { ReactNode } from 'react'
 import { withTiming, WithTiming } from './withTiming'
-import { getCurrentTime, unprotectString } from '../../../../lib/lib'
+import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 import { SegmentId } from '../../../../lib/collections/Segments'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface ISegmentDurationProps {
 	segmentId: SegmentId
@@ -26,33 +27,32 @@ interface ISegmentDurationProps {
 export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function SegmentDuration(
 	props: WithTiming<ISegmentDurationProps>
 ) {
-	const { timingDurations } = props
 	let duration: number | undefined = undefined
 	let budget = 0
 	let playedOut = 0
 
-	if (props.parts && timingDurations.partPlayed) {
-		const { partPlayed } = timingDurations
-		const segmentBudgetDuration =
-			timingDurations.segmentBudgetDurations && timingDurations.segmentBudgetDurations[unprotectString(props.segmentId)]
-		if (segmentBudgetDuration !== undefined) {
-			budget = segmentBudgetDuration
-			const segmentStartedPlayback =
-				timingDurations.segmentStartedPlayback &&
-				timingDurations.segmentStartedPlayback[unprotectString(props.segmentId)]
-			playedOut =
-				segmentStartedPlayback !== undefined
-					? (timingDurations.currentTime ?? getCurrentTime()) - segmentStartedPlayback
-					: 0
-		} else {
+	const segmentBudgetDuration =
+		props.timingDurations.segmentBudgetDurations &&
+		props.timingDurations.segmentBudgetDurations[unprotectString(props.segmentId)]
+
+	if (segmentBudgetDuration !== undefined) {
+		budget = segmentBudgetDuration
+	}
+	if (props.parts && props.timingDurations.partPlayed) {
+		const { partPlayed } = props.timingDurations
+		if (segmentBudgetDuration === undefined) {
 			props.parts.forEach((part) => {
-				budget += part.instance.orphaned || part.instance.part.untimed ? 0 : part.instance.part.expectedDuration || 0
-			})
-			props.parts.forEach((part) => {
-				playedOut += (!part.instance.part.untimed ? partPlayed[unprotectString(part.instance.part._id)] : 0) || 0
+				budget +=
+					part.instance.orphaned || part.instance.part.untimed
+						? 0
+						: calculatePartInstanceExpectedDurationWithPreroll(part.instance) || 0
 			})
 		}
+		props.parts.forEach((part) => {
+			playedOut += (!part.instance.part.untimed ? partPlayed[unprotectString(part.instance.part._id)] : 0) || 0
+		})
 	}
+
 	duration = budget - playedOut
 
 	if (duration !== undefined) {
@@ -60,15 +60,15 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 			<>
 				{props.label}
 				{props.fixed ? (
-					<span className={ClassNames(props.className)}>
+					<span className={ClassNames(props.className)} role="timer">
 						{RundownUtils.formatDiffToTimecode(budget, false, false, true, false, true, '+')}
 					</span>
 				) : props.countUp ? (
-					<span className={ClassNames(props.className)}>
+					<span className={ClassNames(props.className)} role="timer">
 						{RundownUtils.formatDiffToTimecode(playedOut, false, false, true, false, true, '+')}
 					</span>
 				) : (
-					<span className={ClassNames(props.className, duration < 0 ? 'negative' : undefined)}>
+					<span className={ClassNames(props.className, duration < 0 ? 'negative' : undefined)} role="timer">
 						{RundownUtils.formatDiffToTimecode(duration, false, false, true, false, true, '+')}
 					</span>
 				)}

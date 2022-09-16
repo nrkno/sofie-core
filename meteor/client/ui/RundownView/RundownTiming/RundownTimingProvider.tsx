@@ -5,13 +5,12 @@ import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Part, PartId } from '../../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../../lib/lib'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstance } from '../../../../lib/collections/PartInstances'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../../lib/collections/RundownPlaylists'
+import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
-import { RundownTimingCalculator, RundownTimingContext } from '../../../../lib/rundown/rundownTiming'
-import { Rundown } from '../../../../lib/collections/Rundowns'
-import _ from 'underscore'
-import { DBSegment } from '../../../../lib/collections/Segments'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { RundownTimingCalculator, RundownTimingContext } from '../../../lib/rundownTiming'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15
@@ -67,30 +66,42 @@ export const RundownTimingProvider = withTracker<
 	let currentRundown: Rundown | undefined
 	const segmentEntryPartInstances: PartInstance[] = []
 	if (props.playlist) {
-		rundowns = props.playlist.getRundowns()
-		const { parts: incomingParts, segments: incomingSegments } = props.playlist.getSegmentsAndPartsSync()
+		rundowns = RundownPlaylistCollectionUtil.getRundowns(props.playlist)
+		const { parts: incomingParts, segments: incomingSegments } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(
+			props.playlist
+		)
 		parts = incomingParts
 		segments = incomingSegments
-		const partInstances = props.playlist.getActivePartInstances()
+		const partInstances = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist)
 
-		const currentPartInstance = partInstances.find((p) => p._id === props.playlist!.currentPartInstanceId)
-		const previousPartInstance = partInstances.find((p) => p._id === props.playlist!.previousPartInstanceId)
+		const currentPartInstance = partInstances.find((p) => p._id === props.playlist?.currentPartInstanceId)
+		const previousPartInstance = partInstances.find((p) => p._id === props.playlist?.previousPartInstanceId)
+
 		currentRundown = currentPartInstance ? rundowns.find((r) => r._id === currentPartInstance.rundownId) : rundowns[0]
-		segmentEntryPartInstances.push(
-			..._.compact([
-				currentPartInstance &&
-					props.playlist.getPartInstancesForSegmentPlayout(
-						currentPartInstance.rundownId,
-						currentPartInstance.segmentPlayoutId
-					)[0],
-				previousPartInstance &&
-					previousPartInstance.segmentPlayoutId !== currentPartInstance?.segmentPlayoutId &&
-					props.playlist.getPartInstancesForSegmentPlayout(
-						previousPartInstance.rundownId,
-						previousPartInstance.segmentPlayoutId
-					)[0],
-			])
-		)
+		// These are needed to retrieve the start time of a segment for calculating the remaining budget, in case the first partInstance was removed
+
+		const firstPartInstanceInCurrentSegmentPlay =
+			currentPartInstance &&
+			PartInstances.findOne(
+				{
+					rundownId: currentPartInstance.rundownId,
+					segmentPlayoutId: currentPartInstance.segmentPlayoutId,
+				},
+				{ sort: { takeCount: 1 } }
+			)
+		if (firstPartInstanceInCurrentSegmentPlay) segmentEntryPartInstances.push(firstPartInstanceInCurrentSegmentPlay)
+
+		const firstPartInstanceInPreviousSegmentPlay =
+			previousPartInstance &&
+			previousPartInstance.segmentPlayoutId !== currentPartInstance?.segmentPlayoutId &&
+			PartInstances.findOne(
+				{
+					rundownId: previousPartInstance.rundownId,
+					segmentPlayoutId: previousPartInstance.segmentPlayoutId,
+				},
+				{ sort: { takeCount: 1 } }
+			)
+		if (firstPartInstanceInPreviousSegmentPlay) segmentEntryPartInstances.push(firstPartInstanceInPreviousSegmentPlay)
 
 		partInstances.forEach((partInstance) => {
 			partInstancesMap.set(partInstance.part._id, partInstance)
@@ -162,6 +173,7 @@ export const RundownTimingProvider = withTracker<
 		refreshDecimator: number
 
 		private timingCalculator: RundownTimingCalculator = new RundownTimingCalculator()
+		/** last time (ms rounded down to full seconds) for which the timeupdateSynced event was dispatched */
 		private lastSyncedTime: number = 0
 
 		constructor(props: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
@@ -189,14 +201,14 @@ export const RundownTimingProvider = withTracker<
 			this.updateDurations(calmedDownNow, false)
 			this.dispatchHREvent(calmedDownNow)
 
-			const isLowResolution = this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0
-			if (isLowResolution) {
+			const dispatchLowResolution = this.refreshDecimator % LOW_RESOLUTION_TIMING_DECIMATOR === 0
+			if (dispatchLowResolution) {
 				this.dispatchLREvent(calmedDownNow)
 			}
 
 			const syncedEventTimeNow = Math.floor(now / 1000) * 1000
-			const isSynced = Math.abs(syncedEventTimeNow - this.lastSyncedTime) >= 1000
-			if (isSynced) {
+			const dispatchSynced = Math.abs(syncedEventTimeNow - this.lastSyncedTime) >= 1000
+			if (dispatchSynced) {
 				this.lastSyncedTime = syncedEventTimeNow
 				this.updateDurations(syncedEventTimeNow, true)
 				this.dispatchSyncedEvent(syncedEventTimeNow)
@@ -267,7 +279,7 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		updateDurations(now: number, isLowResolution: boolean) {
-			const { playlist, rundowns, currentRundown, parts, partInstancesMap, segmentEntryPartInstances, segments } =
+			const { playlist, rundowns, currentRundown, parts, partInstancesMap, segments, segmentEntryPartInstances } =
 				this.props
 			const updatedDurations = this.timingCalculator.updateDurations(
 				now,

@@ -11,8 +11,16 @@ import { Settings } from '../../lib/Settings'
 import { MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
-import { Studio, StudioId, Studios } from '../../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { StudioId } from '../../lib/collections/Studios'
+import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import {
+	fetchShowStyleBaseLight,
+	fetchStudioLight,
+	ShowStyleBaseLight,
+	StudioLight,
+} from '../../lib/collections/optimizations'
+
+export type BasicAccessContext = { organizationId: OrganizationId | null; userId: UserId | null }
 
 type OrganizationContent = { organizationId: OrganizationId }
 export namespace OrganizationReadAccess {
@@ -51,11 +59,11 @@ export namespace OrganizationContentWriteAccess {
 		return anyContent(cred0, { organizationId })
 	}
 
-	export function studio(cred0: Credentials, existingStudio?: Studio | StudioId) {
+	export function studio(cred0: Credentials, existingStudio?: StudioLight | StudioId) {
 		triggerWriteAccess()
 		if (existingStudio && isProtectedString(existingStudio)) {
 			const studioId = existingStudio
-			existingStudio = Studios.findOne(studioId)
+			existingStudio = fetchStudioLight(studioId)
 			if (!existingStudio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
 		}
 		return { ...anyContent(cred0, existingStudio), studio: existingStudio }
@@ -63,9 +71,9 @@ export namespace OrganizationContentWriteAccess {
 	export function evaluation(cred0: Credentials) {
 		return anyContent(cred0)
 	}
-	export function mediaWorkFlows(cred0: Credentials, organizationId: OrganizationId) {
+	export function mediaWorkFlows(cred0: Credentials) {
 		// "All mediaWOrkflows in all devices of an organization"
-		return anyContent(cred0, { organizationId: organizationId })
+		return anyContent(cred0)
 	}
 	export function blueprint(cred0: Credentials, existingBlueprint?: Blueprint | BlueprintId, allowMissing?: boolean) {
 		triggerWriteAccess()
@@ -89,11 +97,11 @@ export namespace OrganizationContentWriteAccess {
 	export function dataFromSnapshot(cred0: Credentials, organizationId: OrganizationId) {
 		return anyContent(cred0, { organizationId: organizationId })
 	}
-	export function showStyleBase(cred0: Credentials, existingShowStyleBase?: ShowStyleBase | ShowStyleBaseId) {
+	export function showStyleBase(cred0: Credentials, existingShowStyleBase?: ShowStyleBaseLight | ShowStyleBaseId) {
 		triggerWriteAccess()
 		if (existingShowStyleBase && isProtectedString(existingShowStyleBase)) {
 			const showStyleBaseId = existingShowStyleBase
-			existingShowStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+			existingShowStyleBase = fetchShowStyleBaseLight(showStyleBaseId)
 			if (!existingShowStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found!`)
 		}
 		return { ...anyContent(cred0, existingShowStyleBase), showStyleBase: existingShowStyleBase }

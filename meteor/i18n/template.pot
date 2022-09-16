@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2021-11-03T11:04:37.940Z\n"
-"PO-Revision-Date: 2021-11-03T11:04:37.940Z\n"
+"POT-Creation-Date: 2022-05-19T11:28:47.600Z\n"
+"PO-Revision-Date: 2022-05-19T11:28:47.600Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -438,37 +438,7 @@ msgid ""
 "you want to reset the rundown and go into On-Air mode?"
 msgstr ""
 
-msgid "{{currentRundownName}} - {{rundownPlaylistName}} (Looping)"
-msgstr ""
-
-msgid "{{currentRundownName}} - {{rundownPlaylistName}}"
-msgstr ""
-
-msgid "{{rundownPlaylistName}} (Looping)"
-msgstr ""
-
-msgid "Started"
-msgstr ""
-
-msgid "Planned Start"
-msgstr ""
-
-msgid "Expected Start"
-msgstr ""
-
 msgid "Hold"
-msgstr ""
-
-msgid "Next Loop at"
-msgstr ""
-
-msgid "Expected End"
-msgstr ""
-
-msgid "Diff"
-msgstr ""
-
-msgid "Next Break"
 msgstr ""
 
 msgid "Could not find a Piece that can be disabled."
@@ -560,13 +530,10 @@ msgstr ""
 msgid "Add ?studio=1 to the URL to enter studio mode"
 msgstr ""
 
+msgid "Exit"
+msgstr ""
+
 msgid "Error"
-msgstr ""
-
-msgid "Cancel currently pressed hotkey"
-msgstr ""
-
-msgid "Change to fullscreen mode"
 msgstr ""
 
 msgid "This rundown is now active. Are you sure you want to exit this screen?"
@@ -583,6 +550,12 @@ msgstr ""
 msgid "Could not restart Playout Gateway \"{{playoutDeviceName}}\"."
 msgstr ""
 
+msgid "Restart Playout"
+msgstr ""
+
+msgid "Do you want to restart the Playout Gateway?"
+msgstr ""
+
 msgid "Restart CasparCG Server"
 msgstr ""
 
@@ -595,13 +568,16 @@ msgstr ""
 msgid "Failed to restart CasparCG on device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
+msgid "Cancel currently pressed hotkey"
+msgstr ""
+
+msgid "Change to fullscreen mode"
+msgstr ""
+
 msgid "Show Hotkeys"
 msgstr ""
 
 msgid "Take a Snapshot"
-msgstr ""
-
-msgid "Restart Playout"
 msgstr ""
 
 msgid "Restart {{device}}"
@@ -667,6 +643,9 @@ msgid "(in: {{time}})"
 msgstr ""
 
 msgid "({{time}} ago)"
+msgstr ""
+
+msgid "Planned Start"
 msgstr ""
 
 msgid "Planned Duration"
@@ -741,6 +720,27 @@ msgstr ""
 msgid "Device {{deviceName}} is disconnected"
 msgstr ""
 
+msgid "Critical Problems"
+msgstr ""
+
+msgid "Warnings"
+msgstr ""
+
+msgid "Notifications"
+msgstr ""
+
+msgid "Rewind all Segments"
+msgstr ""
+
+msgid "Go to On Air Segment"
+msgstr ""
+
+msgid "Toggle Switchboard Panel"
+msgstr ""
+
+msgid "Toggle Support Panel"
+msgstr ""
+
 msgid "Just now"
 msgstr ""
 
@@ -789,6 +789,33 @@ msgstr ""
 msgid "All devices working correctly"
 msgstr ""
 
+msgid "Auto"
+msgstr ""
+
+msgid "Diff"
+msgstr ""
+
+msgid "Expected End"
+msgstr ""
+
+msgid "Next Loop at"
+msgstr ""
+
+msgid "Started"
+msgstr ""
+
+msgid "Expected Start"
+msgstr ""
+
+msgid "{{currentRundownName}} - {{rundownPlaylistName}} (Looping)"
+msgstr ""
+
+msgid "{{currentRundownName}} - {{rundownPlaylistName}}"
+msgstr ""
+
+msgid "{{rundownPlaylistName}} (Looping)"
+msgstr ""
+
 msgid "Switchboard"
 msgstr ""
 
@@ -798,22 +825,43 @@ msgstr ""
 msgid "Off"
 msgstr ""
 
-msgid "Auto"
+msgid "segment"
 msgstr ""
 
-msgid "Show End"
+msgid "Critical problems"
+msgstr ""
+
+msgid "On Air At"
+msgstr ""
+
+msgid "On Air In"
+msgstr ""
+
+msgid "Unsynced"
+msgstr ""
+
+msgid "Sources"
+msgstr ""
+
+msgid "Switch to Timeline mode"
+msgstr ""
+
+msgid "On Air"
 msgstr ""
 
 msgid "Loops to top"
 msgstr ""
 
-msgid "Set this part as <strong>Next</strong>"
+msgid "Show End"
 msgstr ""
 
-msgid "Set <strong>Next</strong> Here"
+msgid "BREAK"
 msgstr ""
 
-msgid "Play from Here"
+msgid "Break In"
+msgstr ""
+
+msgid "part"
 msgstr ""
 
 msgid "Set segment as <strong>Next</strong>"
@@ -825,16 +873,25 @@ msgstr ""
 msgid "Clear queued segment"
 msgstr ""
 
-msgid "On Air"
+msgid "Set this part as <strong>Next</strong>"
 msgstr ""
 
-msgid "On Air At"
+msgid "Set <strong>Next</strong> Here"
 msgstr ""
 
-msgid "On Air In"
+msgid "Play from Here"
 msgstr ""
 
-msgid "Unsynced"
+msgid "Switch to Storyboard mode"
+msgstr ""
+
+msgid "Zoom Out"
+msgstr ""
+
+msgid "Show All"
+msgstr ""
+
+msgid "Zoom In"
 msgstr ""
 
 msgid "Parts Duration"
@@ -1147,9 +1204,6 @@ msgstr ""
 msgid "URL"
 msgstr ""
 
-msgid "Scale"
-msgstr ""
-
 msgid "Role"
 msgstr ""
 
@@ -1160,6 +1214,96 @@ msgid "Place label below panel"
 msgstr ""
 
 msgid "Disabled"
+msgstr ""
+
+msgid "Show segment name"
+msgstr ""
+
+msgid "Show part title"
+msgstr ""
+
+msgid "Hide for dynamically inserted parts"
+msgstr ""
+
+msgid "Planned Start Text"
+msgstr ""
+
+msgid "Text to show above show start time"
+msgstr ""
+
+msgid "Hide Diff"
+msgstr ""
+
+msgid "Hide Planned Start"
+msgstr ""
+
+msgid "Planned End text"
+msgstr ""
+
+msgid "Text to show above show end time"
+msgstr ""
+
+msgid "Hide Planned End Label"
+msgstr ""
+
+msgid "Hide Diff Label"
+msgstr ""
+
+msgid "Hide Countdown"
+msgstr ""
+
+msgid "Hide End Time"
+msgstr ""
+
+msgid "Hide Label"
+msgstr ""
+
+msgid "Script Source Layers"
+msgstr ""
+
+msgid "Source layers containing script"
+msgstr ""
+
+msgid "Require Piece on Source Layer"
+msgstr ""
+
+msgid "Text"
+msgstr ""
+
+msgid "Show Rundown Name"
+msgstr ""
+
+msgid "Segment"
+msgstr ""
+
+msgid "Part"
+msgstr ""
+
+msgid "Show Piece Icon Color"
+msgstr ""
+
+msgid "Use color of primary piece as background of panel"
+msgstr ""
+
+msgid "Box color"
+msgstr ""
+
+msgid "Also Require Source Layers"
+msgstr ""
+
+msgid "Specify additional layers where at least one layer must have an active piece"
+msgstr ""
+
+msgid "Require All Additional Source Layers"
+msgstr ""
+
+msgid "All additional source layers must have active pieces"
+msgstr ""
+
+msgid "Scale"
+msgstr ""
+
+msgid "Custom Classes"
 msgstr ""
 
 msgid "Device ID"
@@ -1219,6 +1363,39 @@ msgid "Mini Shelf Layout"
 msgstr ""
 
 msgid "Rundown Header Layout"
+msgstr ""
+
+msgid "Live line countdown requires Source Layer"
+msgstr ""
+
+msgid ""
+"One of these source layers must have an active piece for the live line "
+"countdown to be show"
+msgstr ""
+
+msgid "Hide Rundown Divider"
+msgstr ""
+
+msgid "Hide rundown divider between rundowns in a playlist"
+msgstr ""
+
+msgid "Show Breaks as Segments"
+msgstr ""
+
+msgid "Segment countdown requires source layer"
+msgstr ""
+
+msgid ""
+"One of these source layers must have a piece for the countdown to segment "
+"on-air to be show"
+msgstr ""
+
+msgid "Fixed duration in Segment header"
+msgstr ""
+
+msgid ""
+"The segment duration in the segment header always displays the planned "
+"duration instead of acting as a counter"
 msgstr ""
 
 msgid "Select visible Source Layers"
@@ -1338,16 +1515,10 @@ msgstr ""
 msgid "Output Layer"
 msgstr ""
 
-msgid "Part"
-msgstr ""
-
 msgid "Pick"
 msgstr ""
 
 msgid "Pick last"
-msgstr ""
-
-msgid "Segment"
 msgstr ""
 
 msgid "Source Layer"
@@ -1498,6 +1669,9 @@ msgstr ""
 msgid "Reload statuses"
 msgstr ""
 
+msgid "Updated"
+msgstr ""
+
 msgid "Package Manager"
 msgstr ""
 
@@ -1507,7 +1681,13 @@ msgstr ""
 msgid "Statistics"
 msgstr ""
 
+msgid "Times"
+msgstr ""
+
 msgid "Connected Workers"
+msgstr ""
+
+msgid "Work-in-progress"
 msgstr ""
 
 msgid "WorkForce"
@@ -2256,6 +2436,9 @@ msgstr ""
 msgid "Click to show available Show Styles"
 msgstr ""
 
+msgid "Frame Rate"
+msgstr ""
+
 msgid "Enable \"Play from Anywhere\""
 msgstr ""
 
@@ -2280,6 +2463,12 @@ msgstr ""
 msgid "Multi-gateway-mode delay time"
 msgstr ""
 
+msgid "Preserve contents of playing segment when unsynced"
+msgstr ""
+
+msgid "Allow Rundowns to be reset while on-air"
+msgstr ""
+
 msgid "Remove indexes"
 msgstr ""
 
@@ -2287,17 +2476,6 @@ msgid "This will remove {{indexCount}} old indexes, do you want to continue?"
 msgstr ""
 
 msgid "{{indexCount}} indexes was removed."
-msgstr ""
-
-msgid "Remove old data"
-msgstr ""
-
-msgid ""
-"There are {{count}} documents in {{collections}} that can be removed, do "
-"you want to continue?"
-msgstr ""
-
-msgid "The old data was removed."
 msgstr ""
 
 msgid "Installation name"
@@ -2370,7 +2548,25 @@ msgstr ""
 msgid "Cleanup old data"
 msgstr ""
 
-msgid "Search..."
+msgid "Error when checking for cleaning up"
+msgstr ""
+
+msgid "Remove old data from database"
+msgstr ""
+
+msgid "There are {{count}} documents that can be removed, do you want to continue?"
+msgstr ""
+
+msgid "Documents to be removed:"
+msgstr ""
+
+msgid "Retry"
+msgstr ""
+
+msgid "Remove old data"
+msgstr ""
+
+msgid "The old data was removed."
 msgstr ""
 
 msgid "Last {{layerName}}"
@@ -2391,10 +2587,13 @@ msgstr ""
 msgid "Cannot play this AdLib because it is marked as Floated"
 msgstr ""
 
-msgid "Cannot play this AdLib becasue it is marked as Invalid"
+msgid "Search..."
 msgstr ""
 
-msgid "Cannot play this AdLib becasue it is marked as Floated"
+msgid "End Words"
+msgstr ""
+
+msgid "Global AdLib"
 msgstr ""
 
 msgid "AdLib does not provide any options"
@@ -2412,6 +2611,18 @@ msgstr ""
 msgid "Edit in Nora"
 msgstr ""
 
+msgid "Current Part"
+msgstr ""
+
+msgid "Next Part"
+msgstr ""
+
+msgid "Part Count Down"
+msgstr ""
+
+msgid "Part Count Up"
+msgstr ""
+
 msgid "New Bucket"
 msgstr ""
 
@@ -2422,6 +2633,18 @@ msgid "Are you sure you want to delete this Bucket?"
 msgstr ""
 
 msgid "Are you sure you want to empty (remove all adlibs inside) this Bucket?"
+msgstr ""
+
+msgid "Current Segment"
+msgstr ""
+
+msgid "Next Segment"
+msgstr ""
+
+msgid "Segment Count Down"
+msgstr ""
+
+msgid "Segment Count Up"
 msgstr ""
 
 msgid "Start this AdLib"
@@ -2454,10 +2677,13 @@ msgstr ""
 msgid "AdLib"
 msgstr ""
 
-msgid "Global AdLib"
+msgid "Shortcuts"
 msgstr ""
 
-msgid "Shortcuts"
+msgid "Show Style Variant"
+msgstr ""
+
+msgid "Local Time"
 msgstr ""
 
 msgid "System"
@@ -2686,7 +2912,7 @@ msgstr ""
 msgid "Sofie Automation Server Core will restart in {{time}}s..."
 msgstr ""
 
-msgid "Execution time*"
+msgid "Execution times"
 msgstr ""
 
 msgid "User ID"
@@ -2699,6 +2925,18 @@ msgid "Method"
 msgstr ""
 
 msgid "Parameters"
+msgstr ""
+
+msgid "Core"
+msgstr ""
+
+msgid "Worker"
+msgstr ""
+
+msgid "Gateway"
+msgstr ""
+
+msgid "TSR"
 msgstr ""
 
 msgid "User Activity Log"
@@ -2746,7 +2984,13 @@ msgstr ""
 msgid "Timeline"
 msgstr ""
 
+msgid "Mappings"
+msgstr ""
+
 msgid "User Log Player"
+msgstr ""
+
+msgid "Routed Mappings"
 msgstr ""
 
 msgid "Play from here"
@@ -2765,7 +3009,7 @@ msgid "Stop"
 msgstr ""
 
 msgid ""
-"Clip \"{{fileName}}\" can't be played because it isn't present on the "
+"Clip \"{{fileName}}\" can't be played because it doesn't exist on the "
 "playout system"
 msgstr ""
 
@@ -2789,16 +3033,16 @@ msgstr ""
 msgid "{{sourceLayer}} has {{audioStreams}} audio streams"
 msgstr ""
 
-msgid "Clip starts with {{frames}} {{type}} frame"
+msgid "Clip starts with {{frames}} {{type}} frames"
 msgstr ""
 
-msgid "This clip ends with {{type}} frames after {{count}} second"
+msgid "This clip ends with {{type}} frames after {{count}} seconds"
 msgstr ""
 
-msgid "{{frames}} {{type}} frame detected within the clip"
+msgid "{{frames}} {{type}} frames detected within the clip"
 msgstr ""
 
-msgid "{{frames}} {{type}} frame detected in clip"
+msgid "{{frames}} {{type}} frames detected in the clip"
 msgstr ""
 
 msgid "black"
@@ -2813,6 +3057,18 @@ msgstr ""
 msgid "Clip doesn't have audio & video"
 msgstr ""
 
+msgid "Clip starts with {{frames}} {{type}} frame"
+msgstr ""
+
+msgid "This clip ends with {{type}} frames after {{count}} second"
+msgstr ""
+
+msgid "{{frames}} {{type}} frame detected within the clip"
+msgstr ""
+
+msgid "{{frames}} {{type}} frame detected in clip"
+msgstr ""
+
 msgid "{{sourceLayer}} is being ingested"
 msgstr ""
 
@@ -2822,12 +3078,10 @@ msgstr ""
 msgid "Segment no longer exists in {{nrcs}}"
 msgstr ""
 
-msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
+msgid "Segment was hidden in {{nrcs}}"
 msgstr ""
 
-msgid ""
-"The Rundown was attempted to be moved out of the Playlist when it was on "
-"Air. Move it back and try again later."
+msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
 msgstr ""
 
 msgid "Toggle Shelf"
@@ -2867,8 +3121,24 @@ msgstr ""
 
 msgctxt "°°°°°°plural"
 msgid ""
-"There are {{count}} documents in {{collections}} that can be removed, do "
-"you want to continue?°°°°°°"
+"There are {{count}} documents that can be removed, do you want to "
+"continue?°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "Clip starts with {{frames}} {{type}} frames°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "This clip ends with {{type}} frames after {{count}} seconds°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "{{frames}} {{type}} frames detected within the clip°°°°°°"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "{{frames}} {{type}} frames detected in the clip°°°°°°"
 msgstr ""
 
 msgctxt "°°°°°°plural"

@@ -1,4 +1,4 @@
-
+// @ts-ignore
 import { CoreConnection } from '../src/index'
 import { PeripheralDeviceAPI as P } from '../src/lib/corePeripherals'
 
@@ -6,7 +6,8 @@ let core = new CoreConnection({
 	deviceId: 'ExampleDevice',
 	deviceToken: 'abcd',
 	deviceType: P.DeviceType.PLAYOUT,
-	deviceName: 'Jest test framework'
+	deviceName: 'Jest test framework',
+	deviceCategory: P.DeviceCategory.PLAYOUT
 })
 
 // let consolelog = console.log
@@ -17,10 +18,10 @@ let core = new CoreConnection({
 core.onConnectionChanged((connected) => {
 	console.log('onConnectionChanged', connected)
 })
-core.onConnected(() => {
+core.onConnected(async () => {
 	console.log('onConnected!')
 
-	setupSubscription()
+	await setupSubscription()
 })
 core.onDisconnected(() => {
 	console.log('onDisconnected!')
@@ -69,9 +70,9 @@ let setup = async () => {
 
 		await setupSubscription()
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			console.log('updating status')
-			core.setStatus({
+			await core.setStatus({
 				statusCode: P.StatusCode.GOOD,
 				messages: ['a']
 			})
@@ -79,12 +80,14 @@ let setup = async () => {
 
 		setTimeout(() => {
 			console.log('closing socket')
-			core.ddp.ddpClient['socket'].close()
+			if (core.ddp.ddpClient) {
+				core.ddp.ddpClient['socket'].close()
+			}
 		},1500)
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			console.log('updating status')
-			core.setStatus({
+			await core.setStatus({
 				statusCode: P.StatusCode.GOOD,
 				messages: ['b']
 			})
@@ -96,7 +99,7 @@ let setup = async () => {
 
 }
 
-setup()
+setup().then(console.log).catch(console.error)
 // .then(() => {
 // 	core.setStatus({
 // 		statusCode: P.StatusCode.GOOD,

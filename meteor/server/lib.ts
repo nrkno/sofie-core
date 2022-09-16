@@ -1,18 +1,8 @@
-import * as fs from 'fs'
-import { Meteor } from 'meteor/meteor'
+import process from 'process'
 import * as _ from 'underscore'
-
-export const fsWriteFile: (
-	path: fs.PathLike | number,
-	data: any,
-	options?: { encoding?: string | null; mode?: number | string; flag?: string } | string | undefined | null
-) => void = Meteor.wrapAsync(fs.writeFile)
-export const fsReadFile: (
-	path: fs.PathLike | number,
-	options?: { encoding?: null; flag?: string } | undefined | null
-) => Buffer = Meteor.wrapAsync(fs.readFile)
-export const fsUnlinkFile: (path: fs.PathLike) => void = Meteor.wrapAsync(fs.unlink)
-export const fsMakeDir: (path: fs.PathLike, options?: fs.MakeDirectoryOptions) => void = Meteor.wrapAsync(fs.mkdir)
+import fs from 'fs'
+import path from 'path'
+import { logger } from './logging'
 
 export function getAbsolutePath(): string {
 	// @ts-ignore Meteor.absolutePath is injected by the package ostrio:meteor-root
@@ -30,4 +20,36 @@ export function extractFunctionSignature(f: Function): string[] | undefined {
 			})
 		}
 	}
+}
+
+export type Translations = Record<string, string>
+
+// The /public directory in a Meteor app
+const public_dir = path.join(process.cwd(), '../web.browser/app')
+
+/**
+ * Get the i18next locale object for a given `languageCode`. If the translations file can not be found or it can't be
+ * parsed, it will return an empty object.
+ *
+ * @export
+ * @param {string} languageCode
+ * @return {*}  {Promise<Translations>}
+ */
+export async function getLocale(languageCode: string): Promise<Translations> {
+	const localePath = path.join(public_dir, 'locales', languageCode, 'translations.json')
+	if (localePath.indexOf(path.join(public_dir, 'locales')) !== 0) {
+		logger.error(localePath)
+		return {}
+	}
+
+	try {
+		const file = await fs.promises.readFile(localePath, {
+			encoding: 'utf-8',
+		})
+		return JSON.parse(file)
+	} catch (e) {
+		logger.error(`getLocale: Error when trying to read file "${localePath}": ${e}`)
+	}
+
+	return {}
 }

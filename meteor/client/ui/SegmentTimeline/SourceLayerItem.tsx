@@ -1,10 +1,8 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { ISourceLayerUi, IOutputLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer'
-import { RundownAPI } from '../../../lib/api/rundown'
-import { SourceLayerType, PieceLifespan, PieceTransitionType } from '@sofie-automation/blueprints-integration'
+import { IOutputLayerUi, ISourceLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer'
+import { IBlueprintPieceType, PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
-import ClassNames from 'classnames'
 import { DefaultLayerItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MicSourceRenderer } from './Renderers/MicSourceRenderer'
 import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
@@ -15,11 +13,11 @@ import { LocalLayerItemRenderer } from './Renderers/LocalLayerItemRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
-import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../RundownView/RundownViewEventBus'
 import { Studio } from '../../../lib/collections/Studios'
+import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
 import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
@@ -80,8 +78,8 @@ export interface ISourceLayerItemProps {
 	layerIndex: number
 	/** The studio this content belongs to */
 	studio: Studio | undefined
-	/** Source layers on which to display the piece duration next to any labels */
-	showDurationSourceLayers?: Set<string>
+	/** If source duration of piece's content should be displayed next to any labels */
+	showDuration?: boolean
 }
 interface ISourceLayerItemState {
 	/** Whether hover-scrub / inspector is shown */
@@ -94,8 +92,6 @@ interface ISourceLayerItemState {
 	cursorRawPosition: { clientX: number; clientY: number }
 	/** Timecode under cursor */
 	cursorTimePosition: number
-	/** Width of the element (px) excluding padding  */
-	elementWidth: number
 	/** A reference to this element (&self) */
 	itemElement: HTMLDivElement | null
 	/** Width of the child element anchored to the left side of this element */
@@ -107,9 +103,6 @@ interface ISourceLayerItemState {
 }
 export const SourceLayerItem = withTranslation()(
 	class SourceLayerItem extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
-		private _resizeObserver: ResizeObserver | undefined
-		private itemElement: HTMLDivElement | undefined
-
 		constructor(props) {
 			super(props)
 			this.state = {
@@ -127,7 +120,6 @@ export const SourceLayerItem = withTranslation()(
 					clientY: 0,
 				},
 				cursorTimePosition: 0,
-				elementWidth: 0,
 				itemElement: null,
 				leftAnchoredWidth: 0,
 				rightAnchoredWidth: 0,
@@ -139,242 +131,190 @@ export const SourceLayerItem = withTranslation()(
 			this.setState({
 				itemElement: e,
 			})
-			this.itemElement = e
 		}
 
 		convertTimeToPixels = (time: number) => {
 			return Math.round(this.props.timeScale * time)
 		}
 
-		getSourceDurationLabelAlignment = (): SourceDurationLabelAlignment => {
+		private getSourceDurationLabelAlignment = (): SourceDurationLabelAlignment => {
 			if (this.props.part && this.props.partStartsAt !== undefined && !this.props.isLiveLine) {
-				return this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth - 10
-					? 'left'
-					: 'right'
+				const elementWidth = this.getElementAbsoluteWidth()
+				return this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > elementWidth - 10 ? 'left' : 'right'
 			}
 			return 'right'
 		}
 
 		getItemLabelOffsetLeft = (): React.CSSProperties => {
-			if (this.props.relative) {
-				return {}
-			} else {
-				const maxLabelWidth = this.props.piece.maxLabelWidth
+			if (this.props.relative) return {}
+			const maxLabelWidth = this.props.piece.maxLabelWidth
 
-				if (this.props.part && this.props.partStartsAt !== undefined) {
-					//  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
-					const piece = this.props.piece
-					const innerPiece = piece.instance.piece
+			if (this.props.part && this.props.partStartsAt !== undefined) {
+				//  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
+				const piece = this.props.piece
 
-					const inTransitionDuration =
-						innerPiece.transitions && innerPiece.transitions.inTransition
-							? innerPiece.transitions.inTransition.duration || 0
-							: 0
-					const outTransitionDuration =
-						innerPiece.transitions && innerPiece.transitions.outTransition
-							? innerPiece.transitions.outTransition.duration || 0
-							: 0
+				const inPoint = piece.renderedInPoint || 0
+				const duration = Number.isFinite(piece.renderedDuration || 0)
+					? piece.renderedDuration || this.props.partDuration || this.props.part.renderedDuration || 0
+					: this.props.partDuration || this.props.part.renderedDuration || 0
 
-					const inPoint = piece.renderedInPoint || 0
-					const duration = Number.isFinite(piece.renderedDuration || 0)
-						? piece.renderedDuration || this.props.partDuration || this.props.part.renderedDuration || 0
-						: this.props.partDuration || this.props.part.renderedDuration || 0
+				const elementWidth = this.getElementAbsoluteWidth()
 
-					const widthConstrictedMode =
-						this.props.isTooSmallForText ||
-						(this.state.leftAnchoredWidth > 0 &&
-							this.state.rightAnchoredWidth > 0 &&
-							this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth)
+				const widthConstrictedMode =
+					this.props.isTooSmallForText ||
+					(this.state.leftAnchoredWidth > 0 &&
+						this.state.rightAnchoredWidth > 0 &&
+						this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > elementWidth)
 
-					const nextIsTouching = !!piece.cropped
+				const nextIsTouching = !!piece.cropped
 
-					if (this.props.followLiveLine && this.props.isLiveLine) {
-						const liveLineHistoryWithMargin = this.props.liveLineHistorySize - 10
-						if (
-							this.props.scrollLeft + liveLineHistoryWithMargin / this.props.timeScale >
-								inPoint +
-									this.props.partStartsAt +
-									inTransitionDuration +
-									this.state.leftAnchoredWidth / this.props.timeScale &&
-							this.props.scrollLeft + liveLineHistoryWithMargin / this.props.timeScale <
-								inPoint + duration + this.props.partStartsAt - outTransitionDuration
-						) {
-							const targetPos = this.convertTimeToPixels(
-								this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration
-							)
+				if (this.props.followLiveLine && this.props.isLiveLine) {
+					const liveLineHistoryWithMargin = this.props.liveLineHistorySize - 10
+					if (
+						this.props.scrollLeft + liveLineHistoryWithMargin / this.props.timeScale >
+							inPoint + this.props.partStartsAt + this.state.leftAnchoredWidth / this.props.timeScale &&
+						this.props.scrollLeft + liveLineHistoryWithMargin / this.props.timeScale <
+							inPoint + duration + this.props.partStartsAt
+					) {
+						const targetPos = this.convertTimeToPixels(this.props.scrollLeft - inPoint - this.props.partStartsAt)
 
-							return {
-								maxWidth:
-									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
-										: maxLabelWidth !== undefined
-										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-										: nextIsTouching
-										? '100%'
-										: 'none',
-								transform:
-									'translate3d(' +
-									Math.floor(
-										widthConstrictedMode
-											? targetPos
-											: Math.min(
-													targetPos,
-													this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10
-											  )
-									).toString() +
-									'px, 0, 0) ' +
-									'translate3d(' +
-									Math.floor(liveLineHistoryWithMargin).toString() +
-									'px, 0, 0) ' +
-									'translate3d(-100%, 0, 5px)',
-								willChange: 'transform',
-							}
-						} else if (
-							this.state.rightAnchoredWidth < this.state.elementWidth &&
-							this.state.leftAnchoredWidth < this.state.elementWidth &&
-							this.props.scrollLeft + liveLineHistoryWithMargin / this.props.timeScale >=
-								inPoint + duration + this.props.partStartsAt - outTransitionDuration
-						) {
-							const targetPos = this.convertTimeToPixels(
-								this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration
-							)
+						return {
+							maxWidth:
+								this.state.rightAnchoredWidth > 0
+									? (elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
+									: maxLabelWidth !== undefined
+									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+									: nextIsTouching
+									? '100%'
+									: 'none',
+							transform:
+								'translate(' +
+								Math.floor(
+									widthConstrictedMode
+										? targetPos
+										: Math.min(targetPos, elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10)
+								).toString() +
+								'px, 0) ' +
+								'translate(' +
+								Math.floor(liveLineHistoryWithMargin).toString() +
+								'px, 0) ' +
+								'translate(-100%, 0)',
+						}
+					} else if (
+						this.state.rightAnchoredWidth < elementWidth &&
+						this.state.leftAnchoredWidth < elementWidth &&
+						this.props.scrollLeft + liveLineHistoryWithMargin / this.props.timeScale >=
+							inPoint + duration + this.props.partStartsAt
+					) {
+						const targetPos = this.convertTimeToPixels(this.props.scrollLeft - inPoint - this.props.partStartsAt)
 
-							return {
-								maxWidth:
-									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
-										: maxLabelWidth !== undefined
-										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-										: nextIsTouching
-										? '100%'
-										: 'none',
-								transform:
-									'translate3d(' +
-									Math.floor(
-										Math.min(
-											targetPos,
-											this.state.elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10
-										)
-									).toString() +
-									'px, 0, 0) ' +
-									'translate3d(' +
-									Math.floor(liveLineHistoryWithMargin).toString() +
-									'px, 0, 0) ' +
-									'translate3d(-100%, 0, 5px)',
-								willChange: 'transform',
-							}
-						} else {
-							return {
-								maxWidth:
-									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
-										: maxLabelWidth !== undefined
-										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-										: nextIsTouching
-										? '100%'
-										: 'none',
-							}
+						return {
+							maxWidth:
+								this.state.rightAnchoredWidth > 0
+									? (elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
+									: maxLabelWidth !== undefined
+									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+									: nextIsTouching
+									? '100%'
+									: 'none',
+							transform:
+								'translate(' +
+								Math.floor(
+									Math.min(targetPos, elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10)
+								).toString() +
+								'px, 0) ' +
+								'translate(' +
+								Math.floor(liveLineHistoryWithMargin).toString() +
+								'px, 0) ' +
+								'translate3d(-100%, 0)',
 						}
 					} else {
-						if (
-							this.props.scrollLeft > inPoint + this.props.partStartsAt + inTransitionDuration &&
-							this.props.scrollLeft < inPoint + duration + this.props.partStartsAt - outTransitionDuration
-						) {
-							const targetPos = this.convertTimeToPixels(
-								this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration
-							)
+						return {
+							maxWidth:
+								this.state.rightAnchoredWidth > 0
+									? (elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
+									: maxLabelWidth !== undefined
+									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+									: nextIsTouching
+									? '100%'
+									: 'none',
+						}
+					}
+				} else {
+					if (
+						this.props.scrollLeft > inPoint + this.props.partStartsAt &&
+						this.props.scrollLeft < inPoint + duration + this.props.partStartsAt
+					) {
+						const targetPos = this.convertTimeToPixels(this.props.scrollLeft - inPoint - this.props.partStartsAt)
 
-							return {
-								maxWidth:
-									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
-										: maxLabelWidth !== undefined
-										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-										: nextIsTouching
-										? '100%'
-										: 'none',
-								transform:
-									'translate3d(' +
-									Math.floor(
-										widthConstrictedMode || this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0
-											? targetPos
-											: Math.min(
-													targetPos,
-													this.state.elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth
-											  )
-									).toString() +
-									'px,  0, 5px)',
-								willChange: 'transform',
-							}
-						} else {
-							return {
-								maxWidth:
-									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
-										: maxLabelWidth !== undefined
-										? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
-										: nextIsTouching
-										? '100%'
-										: 'none',
-							}
+						return {
+							maxWidth:
+								this.state.rightAnchoredWidth > 0
+									? (elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
+									: maxLabelWidth !== undefined
+									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+									: nextIsTouching
+									? '100%'
+									: 'none',
+							transform:
+								'translate(' +
+								Math.floor(
+									widthConstrictedMode || this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0
+										? targetPos
+										: Math.min(targetPos, elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth)
+								).toString() +
+								'px,  0)',
+						}
+					} else {
+						return {
+							maxWidth:
+								this.state.rightAnchoredWidth > 0
+									? (elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
+									: maxLabelWidth !== undefined
+									? this.convertTimeToPixels(maxLabelWidth).toString() + 'px'
+									: nextIsTouching
+									? '100%'
+									: 'none',
 						}
 					}
 				}
-				return {}
 			}
+			return {}
 		}
 
 		getItemLabelOffsetRight = (): React.CSSProperties => {
-			if (this.props.relative) {
-				return {}
-			} else {
-				if (this.props.part && this.props.partStartsAt !== undefined) {
-					//  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
-					const piece = this.props.piece
-					const innerPiece = piece.instance.piece
+			if (this.props.relative) return {}
 
-					// let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
-					const outTransitionDuration =
-						innerPiece.transitions && innerPiece.transitions.outTransition
-							? innerPiece.transitions.outTransition.duration || 0
-							: 0
+			if (!this.props.part || this.props.partStartsAt === undefined) return {}
 
-					const inPoint = piece.renderedInPoint || 0
-					const duration =
-						innerPiece.lifespan !== PieceLifespan.WithinPart || piece.renderedDuration === 0
-							? this.props.partDuration - inPoint
-							: Math.min(piece.renderedDuration || 0, this.props.partDuration - inPoint)
-					const outPoint = inPoint + duration
+			const piece = this.props.piece
+			const innerPiece = piece.instance.piece
 
-					// const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
+			const inPoint = piece.renderedInPoint || 0
+			const duration =
+				innerPiece.lifespan !== PieceLifespan.WithinPart || piece.renderedDuration === 0
+					? this.props.partDuration - inPoint
+					: Math.min(piece.renderedDuration || 0, this.props.partDuration - inPoint)
+			const outPoint = inPoint + duration
 
-					if (
-						this.props.scrollLeft + this.props.scrollWidth <
-							outPoint - outTransitionDuration + this.props.partStartsAt &&
-						this.props.scrollLeft + this.props.scrollWidth > inPoint + this.props.partStartsAt
-					) {
-						const targetPos = Math.max(
-							(this.props.scrollLeft +
-								this.props.scrollWidth -
-								outPoint -
-								this.props.partStartsAt -
-								outTransitionDuration) *
-								this.props.timeScale,
-							(this.state.elementWidth -
-								this.state.leftAnchoredWidth -
-								this.state.rightAnchoredWidth -
-								LEFT_RIGHT_ANCHOR_SPACER) *
-								-1
-						)
+			const elementWidth = this.getElementAbsoluteWidth()
 
-						return {
-							transform: 'translate3d(' + Math.floor(targetPos).toString() + 'px,  0, 15px)',
-							willChange: 'transform',
-						}
-					}
+			// const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
+
+			if (
+				this.props.scrollLeft + this.props.scrollWidth < outPoint + this.props.partStartsAt &&
+				this.props.scrollLeft + this.props.scrollWidth > inPoint + this.props.partStartsAt
+			) {
+				const targetPos = Math.max(
+					(this.props.scrollLeft + this.props.scrollWidth - outPoint - this.props.partStartsAt) * this.props.timeScale,
+					(elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth - LEFT_RIGHT_ANCHOR_SPACER) * -1
+				)
+
+				return {
+					transform: 'translate(' + Math.floor(targetPos).toString() + 'px,  0)',
 				}
-				return {}
 			}
+			return {}
 		}
 
 		getItemDuration = (returnInfinite?: boolean): number => {
@@ -417,18 +357,14 @@ export const SourceLayerItem = withTranslation()(
 			return itemDuration
 		}
 
+		getElementAbsoluteWidth(): number {
+			const itemDuration = this.getItemDuration()
+			return this.convertTimeToPixels(itemDuration)
+		}
+
 		getItemStyle(): { [key: string]: string } {
 			const piece = this.props.piece
 			const innerPiece = piece.instance.piece
-
-			const inTransitionDuration =
-				innerPiece.transitions && innerPiece.transitions.inTransition
-					? innerPiece.transitions.inTransition.duration || 0
-					: 0
-			const outTransitionDuration =
-				innerPiece.transitions && innerPiece.transitions.outTransition
-					? innerPiece.transitions.outTransition.duration || 0
-					: 0
 
 			// If this is a live line, take duration verbatim from SegmentLayerItemContainer with a fallback on expectedDuration.
 			// If not, as-run part "duration" limits renderdDuration which takes priority over MOS-import
@@ -436,19 +372,32 @@ export const SourceLayerItem = withTranslation()(
 
 			// let liveLinePadding = this.props.autoNextPart ? 0 : (this.props.isLiveLine ? this.props.liveLinePadding : 0)
 
-			const itemDuration = this.getItemDuration()
-
 			if (this.props.relative) {
+				const itemDuration = this.getItemDuration()
+
+				if (innerPiece.pieceType === IBlueprintPieceType.OutTransition) {
+					return {
+						left: 'auto',
+						right: '0',
+						width: ((itemDuration / (this.props.partDuration || 1)) * 100).toString() + '%',
+					}
+				}
 				return {
 					// also: don't render transitions in relative mode
 					left: (((piece.renderedInPoint || 0) / (this.props.partDuration || 1)) * 100).toString() + '%',
 					width: ((itemDuration / (this.props.partDuration || 1)) * 100).toString() + '%',
 				}
 			} else {
+				if (innerPiece.pieceType === IBlueprintPieceType.OutTransition) {
+					return {
+						left: 'auto',
+						right: '0',
+						width: this.getElementAbsoluteWidth().toString() + 'px',
+					}
+				}
 				return {
-					left: this.convertTimeToPixels((piece.renderedInPoint || 0) + inTransitionDuration).toString() + 'px',
-					width:
-						this.convertTimeToPixels(itemDuration - inTransitionDuration - outTransitionDuration).toString() + 'px',
+					left: this.convertTimeToPixels(piece.renderedInPoint || 0).toString() + 'px',
+					width: this.getElementAbsoluteWidth().toString() + 'px',
 				}
 			}
 		}
@@ -465,45 +414,6 @@ export const SourceLayerItem = withTranslation()(
 		// 		}
 		// 	}
 		// }
-
-		private measureElement = () => {
-			if (!this.itemElement) return
-			const width = getElementWidth(this.itemElement) || 0
-			if (this.state.elementWidth !== width) {
-				this.setState({
-					elementWidth: width,
-				})
-			}
-		}
-
-		private onResize = (entries: ResizeObserverEntry[]) => {
-			const firstEntry = entries && entries[0]
-
-			if (firstEntry && firstEntry.contentRect && firstEntry.contentRect.width) {
-				const width = firstEntry.contentRect!.width
-				if (this.state.elementWidth !== width) {
-					this.setState({
-						elementWidth: width,
-					})
-				}
-			}
-		}
-
-		private mountResizeObserver() {
-			if (this.props.isLiveLine && !this._resizeObserver && this.itemElement) {
-				this._resizeObserver = new ResizeObserver(this.onResize)
-				this._resizeObserver.observe(this.itemElement)
-
-				this.measureElement()
-			}
-		}
-
-		private unmountResizeObserver() {
-			if (this._resizeObserver) {
-				this._resizeObserver.disconnect()
-				this._resizeObserver = undefined
-			}
-		}
 
 		private highlightTimeout: NodeJS.Timer
 
@@ -522,19 +432,12 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		componentDidMount() {
-			if (this.props.isLiveLine) {
-				this.mountResizeObserver()
-			} else if (this.itemElement) {
-				this.measureElement()
-			}
-
 			RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		}
 
 		componentWillUnmount() {
 			super.componentWillUnmount && super.componentWillUnmount()
 			RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
-			this.unmountResizeObserver()
 			clearTimeout(this.highlightTimeout)
 		}
 
@@ -552,14 +455,6 @@ export const SourceLayerItem = withTranslation()(
 						})
 					}
 				}
-			}
-
-			if (this.props.isLiveLine && this.state.itemElement && !this._resizeObserver) {
-				this.mountResizeObserver()
-			} else if (!this.props.isLiveLine && this._resizeObserver) {
-				this.unmountResizeObserver()
-			} else if (!this.props.isLiveLine) {
-				this.measureElement()
 			}
 		}
 
@@ -783,48 +678,20 @@ export const SourceLayerItem = withTranslation()(
 				const piece = this.props.piece
 				const innerPiece = piece.instance.piece
 
+				const elementWidth = this.getElementAbsoluteWidth()
+
 				return (
 					<div
-						className={ClassNames('segment-timeline__piece', typeClass, {
-							'with-in-transition':
-								!this.props.relative &&
-								innerPiece.transitions &&
-								innerPiece.transitions.inTransition &&
-								(innerPiece.transitions.inTransition.duration || 0) > 0,
-							'with-out-transition':
-								!this.props.relative &&
-								innerPiece.transitions &&
-								innerPiece.transitions.outTransition &&
-								(innerPiece.transitions.outTransition.duration || 0) > 0,
-
-							'hide-overflow-labels':
-								this.state.leftAnchoredWidth > 0 &&
-								this.state.rightAnchoredWidth > 0 &&
-								this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth,
-
-							'super-infinite':
-								innerPiece.lifespan !== PieceLifespan.WithinPart &&
-								innerPiece.lifespan !== PieceLifespan.OutOnSegmentChange &&
-								innerPiece.lifespan !== PieceLifespan.OutOnSegmentEnd,
-							'infinite-starts':
-								innerPiece.lifespan !== PieceLifespan.WithinPart &&
-								innerPiece.lifespan !== PieceLifespan.OutOnSegmentChange &&
-								innerPiece.lifespan !== PieceLifespan.OutOnSegmentEnd &&
-								piece.instance.piece.startPartId === this.props.part.partId,
-
-							'not-in-vision': piece.instance.piece.notInVision,
-
-							'next-is-touching': this.props.piece.cropped,
-
-							'source-missing':
-								innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
-								innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET,
-							'source-broken': innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-							'unknown-state': innerPiece.status === RundownAPI.PieceStatusCode.UNKNOWN,
-							disabled: piece.instance.disabled,
-
-							'invert-flash': this.state.highlight,
-						})}
+						className={pieceUiClassNames(
+							piece,
+							'segment-timeline__piece',
+							this.props.layer.type,
+							this.props.part.partId,
+							this.state.highlight,
+							this.props.relative,
+							elementWidth,
+							this.state
+						)}
 						data-obj-id={piece.instance._id}
 						ref={this.setRef}
 						onClick={this.itemClick}
@@ -836,41 +703,19 @@ export const SourceLayerItem = withTranslation()(
 						style={this.getItemStyle()}
 					>
 						{this.renderInsideItem(typeClass)}
-						{DEBUG_MODE && (
+						{DEBUG_MODE && this.props.studio && (
 							<div className="segment-timeline__debug-info">
-								{innerPiece.enable.start} / {RundownUtils.formatTimeToTimecode(this.props.partDuration).substr(-5)} /{' '}
-								{piece.renderedDuration ? RundownUtils.formatTimeToTimecode(piece.renderedDuration).substr(-5) : 'X'} /{' '}
+								{innerPiece.enable.start} /{' '}
+								{RundownUtils.formatTimeToTimecode(this.props.studio.settings, this.props.partDuration).substr(-5)} /{' '}
+								{piece.renderedDuration
+									? RundownUtils.formatTimeToTimecode(this.props.studio.settings, piece.renderedDuration).substr(-5)
+									: 'X'}{' '}
+								/{' '}
 								{typeof innerPiece.enable.duration === 'number'
-									? RundownUtils.formatTimeToTimecode(innerPiece.enable.duration).substr(-5)
+									? RundownUtils.formatTimeToTimecode(this.props.studio.settings, innerPiece.enable.duration).substr(-5)
 									: ''}
 							</div>
 						)}
-						{innerPiece.transitions &&
-						innerPiece.transitions.inTransition &&
-						(innerPiece.transitions.inTransition.duration || 0) > 0 ? (
-							<div
-								className={ClassNames('segment-timeline__piece__transition', 'in', {
-									mix: innerPiece.transitions.inTransition.type === PieceTransitionType.MIX,
-									wipe: innerPiece.transitions.inTransition.type === PieceTransitionType.WIPE,
-								})}
-								style={{
-									width: this.convertTimeToPixels(innerPiece.transitions.inTransition.duration || 0).toString() + 'px',
-								}}
-							/>
-						) : null}
-						{innerPiece.transitions &&
-						innerPiece.transitions.outTransition &&
-						(innerPiece.transitions.outTransition.duration || 0) > 0 ? (
-							<div
-								className={ClassNames('segment-timeline__piece__transition', 'out', {
-									mix: innerPiece.transitions.outTransition.type === PieceTransitionType.MIX,
-									wipe: innerPiece.transitions.outTransition.type === PieceTransitionType.WIPE,
-								})}
-								style={{
-									width: this.convertTimeToPixels(innerPiece.transitions.outTransition.duration || 0).toString() + 'px',
-								}}
-							/>
-						) : null}
 					</div>
 				)
 			} else {

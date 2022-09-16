@@ -41,10 +41,10 @@ export interface ISourceLayerPropsBase {
 	layerIndex: number
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	isPreview: boolean
-	showDurationSourceLayers?: Set<string>
 }
 interface ISourceLayerProps extends ISourceLayerPropsBase {
 	layer: ISourceLayerUi
+	showDuration?: boolean
 }
 
 export function useMouseContext(props: ISourceLayerPropsBase) {
@@ -87,6 +87,9 @@ export function SourceLayer(props: ISourceLayerProps) {
 				//@ts-ignore A Data attribue is perfectly fine
 				'data-layer-id': props.layer._id,
 				onMouseUpCapture: (e) => onMouseUp(e),
+				role: 'log',
+				'aria-live': 'assertive',
+				'aria-label': props.layer.name,
 			}}
 			holdToDisplay={contextMenuHoldToDisplayTime()}
 			collect={getPartContext}
@@ -135,7 +138,7 @@ export function SourceLayer(props: ISourceLayerProps) {
 									onFollowLiveLine={props.onFollowLiveLine}
 									layerIndex={props.layerIndex}
 									isPreview={props.isPreview}
-									showDurationSourceLayers={props.showDurationSourceLayers}
+									showDuration={props.showDuration}
 								/>
 							)
 						})

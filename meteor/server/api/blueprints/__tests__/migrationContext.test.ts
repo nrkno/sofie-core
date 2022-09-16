@@ -1,7 +1,12 @@
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDeviceCategory,
+	PeripheralDevices,
+	PeripheralDeviceType,
+} from '../../../../lib/collections/PeripheralDevices'
 import { literal, getRandomId, protectString, unprotectString } from '../../../../lib/lib'
 import {
 	LookaheadMode,
@@ -19,7 +24,7 @@ import {
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
+import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 import { CoreSystem } from '../../../../lib/collections/CoreSystem'
@@ -400,8 +405,8 @@ describe('Test blueprint migrationContext', () => {
 					_id: getRandomId(),
 					name: 'Fake parent device',
 					organizationId: null,
-					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-					category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+					type: PeripheralDeviceType.PLAYOUT,
+					category: PeripheralDeviceCategory.PLAYOUT,
 					subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 					studioId: studio._id,
 					created: 0,
@@ -430,8 +435,8 @@ describe('Test blueprint migrationContext', () => {
 			function getPlayoutDevice(studio: Studio): PeripheralDevice {
 				const device = PeripheralDevices.findOne({
 					studioId: studio._id,
-					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-					category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+					type: PeripheralDeviceType.PLAYOUT,
+					category: PeripheralDeviceCategory.PLAYOUT,
 					subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 				})
 				expect(device).toBeTruthy()

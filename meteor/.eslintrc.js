@@ -19,6 +19,9 @@ const tmpRules = {
 	'@typescript-eslint/ban-ts-comment': 'off',
 	'no-useless-escape': 'off',
 	'@typescript-eslint/no-non-null-assertion': 'off',
+	'@typescript-eslint/unbound-method': 'off',
+	'@typescript-eslint/no-misused-promises': 'off',
+	'@typescript-eslint/no-unnecessary-type-assertion': 'off',
 }
 
 const tsBase = {
@@ -46,9 +49,14 @@ const tsBase = {
 				tryExtensions: ['.js', '.json', '.node', '.ts', '.tsx', '.d.ts'],
 			},
 		],
+		'node/no-extraneous-import': [
+			'error',
+			{
+				allowModules: ['meteor', 'mongodb'],
+			},
+		],
 		'jest/no-standalone-expect': 'off', // testInFiber confuses the rule
 
-		'@typescript-eslint/promise-function-async': ['error'], // TODO - move to preset
 		...tmpRules,
 	},
 }

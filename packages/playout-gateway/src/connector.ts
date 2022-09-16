@@ -1,7 +1,8 @@
 import { TSRHandler, TSRConfig } from './tsrHandler'
 import { CoreHandler, CoreConfig } from './coreHandler'
-import { LoggerInstance } from './index'
+import { Logger } from 'winston'
 import { Process } from './process'
+import { InfluxConfig } from './influxdb'
 // import {Conductor, DeviceType} from 'timeline-state-resolver'
 
 export interface Config {
@@ -9,6 +10,7 @@ export interface Config {
 	device: DeviceConfig
 	core: CoreConfig
 	tsr: TSRConfig
+	influx: InfluxConfig
 }
 export interface ProcessConfig {
 	/** Will cause the Node applocation to blindly accept all certificates. Not recommenced unless in local, controlled networks. */
@@ -23,10 +25,10 @@ export interface DeviceConfig {
 export class Connector {
 	private tsrHandler: TSRHandler | undefined
 	private coreHandler: CoreHandler | undefined
-	private _logger: LoggerInstance
+	private _logger: Logger
 	private _process: Process | undefined
 
-	constructor(logger: LoggerInstance) {
+	constructor(logger: Logger) {
 		this._logger = logger
 	}
 
@@ -49,7 +51,7 @@ export class Connector {
 
 			this._logger.info('Initialization done')
 			return
-		} catch (e) {
+		} catch (e: any) {
 			this._logger.error('Error during initialization:')
 			this._logger.error(e)
 			this._logger.error(e.stack)

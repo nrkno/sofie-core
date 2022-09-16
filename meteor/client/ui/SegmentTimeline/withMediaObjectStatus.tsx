@@ -3,13 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { PieceUi } from './SegmentTimelineContainer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import {
-	SourceLayerType,
-	VTContent,
-	LiveSpeakContent,
-	ISourceLayer,
-	GraphicsContent,
-} from '@sofie-automation/blueprints-integration'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { RundownUtils } from '../../lib/rundown'
 import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
@@ -56,21 +50,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 
 				if (this.props.piece && layer) {
 					const piece = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(this.props.piece!)
-					let objId: string | undefined = getMediaObjectMediaId(piece, layer)
-
-					switch (layer.type) {
-						case SourceLayerType.VT:
-							objId = piece.content ? (piece.content as VTContent).fileName?.toUpperCase() : undefined
-							break
-						case SourceLayerType.LIVE_SPEAK:
-							objId = piece.content ? (piece.content as LiveSpeakContent).fileName?.toUpperCase() : undefined
-							break
-						case SourceLayerType.GRAPHICS:
-							objId = piece.content ? (piece.content as GraphicsContent).fileName?.toUpperCase() : undefined
-							break
-						case SourceLayerType.TRANSITION:
-							objId = piece.content ? (piece.content as VTContent).fileName?.toUpperCase() : undefined
-					}
+					const objId: string | undefined = getMediaObjectMediaId(piece, layer)
 
 					if (objId && objId !== this.objId && this.props.studio) {
 						if (this.subscription) this.subscription.stop()
@@ -78,6 +58,9 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 						this.subscription = this.subscribe(PubSub.mediaObjects, this.props.studio._id, {
 							mediaId: this.objId,
 						})
+					} else if (!objId && objId !== this.objId) {
+						if (this.subscription) this.subscription.stop()
+						this.subscription = undefined
 					}
 				}
 

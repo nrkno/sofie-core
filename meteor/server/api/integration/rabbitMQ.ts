@@ -5,7 +5,7 @@ import { logger } from '../../logging'
 import { ExternalMessageQueueObjRabbitMQ } from '@sofie-automation/blueprints-integration'
 import { ExternalMessageQueueObj, ExternalMessageQueueObjId } from '../../../lib/collections/ExternalMessageQueue'
 import { ConfigRef } from '../blueprints/config'
-import { unprotectString } from '../../../lib/lib'
+import { stringifyError, unprotectString } from '../../../lib/lib'
 
 interface Message {
 	_id: ExternalMessageQueueObjId
@@ -72,7 +72,8 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 		} catch (e) {
 			// make sure this doesn't hang around
 			delete this.initializing
-			throw new Error(e)
+
+			throw e instanceof Error ? e : new Error(stringifyError(e))
 		}
 		delete this.initializing
 
@@ -210,8 +211,14 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 	triggerHandleOutgoingQueue() {
 		if (!this.handleOutgoingQueueTimeout) {
 			this.handleOutgoingQueueTimeout = setTimeout(() => {
-				this.handleOutgoingQueueTimeout = null
-				this.handleOutgoingQueue()
+				try {
+					this.handleOutgoingQueueTimeout = null
+					this.handleOutgoingQueue()
+				} catch (e) {
+					logger.error(`Unexpected error in AMQP triggerHandleOutgoingQueue`)
+					this.handleOutgoingQueueTimeout = null
+					this.triggerHandleOutgoingQueue()
+				}
 			}, 100)
 		}
 	}
@@ -247,7 +254,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 				// Put the message back on the queue:
 				this.outgoingQueue.unshift(messageToSend)
 			} else {
-				logger.debug('RabbitMQ: message sent, waiting for ok...')
+				logger.debug('AMQP: message sent, waiting for ok...')
 			}
 		}
 	}

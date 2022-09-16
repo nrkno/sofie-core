@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import ClassNames from 'classnames'
 import {
 	DashboardLayoutPlaylistName,
@@ -7,11 +6,13 @@ import {
 	RundownLayoutPlaylistName,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { dashboardElementPosition } from './DashboardPanel'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { PartInstance } from '../../../lib/collections/PartInstances'
+import { logger } from '../../../lib/logging'
 
 interface IPlaylistNamePanelProps {
 	visible?: boolean
@@ -44,14 +45,7 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 					'playlist-name-panel',
 					isDashboardLayout ? (panel as DashboardLayoutPlaylistName).customClasses : undefined
 				)}
-				style={_.extend(
-					isDashboardLayout
-						? {
-								...dashboardElementPosition({ ...(this.props.panel as DashboardLayoutPlaylistName) }),
-								fontSize: ((panel as DashboardLayoutPlaylistName).scale || 1) * 1.5 + 'em',
-						  }
-						: {}
-				)}
+				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutPlaylistName) : {}}
 			>
 				<div className="wrapper">
 					<span className="playlist-name">{this.props.playlist.name}</span>
@@ -67,13 +61,19 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 export const PlaylistNamePanel = withTracker<IPlaylistNamePanelProps, IState, IPlaylistNamePanelTrackedProps>(
 	(props: IPlaylistNamePanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
-			const livePart = props.playlist.getActivePartInstances({ _id: props.playlist.currentPartInstanceId })[0]
-			if (livePart) {
-				const currentRundown = props.playlist.getRundowns({ _id: livePart.rundownId })[0]
+			const livePart: PartInstance = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
+				_id: props.playlist.currentPartInstanceId,
+			})[0]
+			if (!livePart) {
+				logger.warn(
+					`No PartInstance found for PartInstanceId: ${props.playlist.currentPartInstanceId} in Playlist: ${props.playlist._id}`
+				)
+				return {}
+			}
+			const currentRundown = Rundowns.findOne({ _id: livePart.rundownId, playlistId: props.playlist._id })
 
-				return {
-					currentRundown,
-				}
+			return {
+				currentRundown,
 			}
 		}
 

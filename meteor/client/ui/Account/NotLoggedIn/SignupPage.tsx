@@ -6,6 +6,7 @@ import { getUser } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
 import { createUser } from '../../../../lib/api/user'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
 type ISignupPageProps = RouteComponentProps
 
@@ -85,7 +86,7 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 				if (!this.state.applications.length) throw new Error('Please tell us what you mainly do')
 				if (!this.state.broadcastMediums.length) throw new Error('Please select a broadcast medium')
 			} catch (error) {
-				this.handleError(error.message)
+				this.handleError(stringifyError(error))
 				return
 			}
 			createUser({

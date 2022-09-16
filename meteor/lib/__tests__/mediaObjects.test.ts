@@ -1,5 +1,5 @@
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import { PackageInfo } from '@sofie-automation/blueprints-integration'
+import { PackageInfo, WithTimeline } from '@sofie-automation/blueprints-integration'
 import {
 	buildFormatString,
 	acceptFormat,
@@ -15,12 +15,10 @@ import {
 	IBlueprintPieceGeneric,
 	PieceLifespan,
 	VTContent,
-	WithTimeline,
 } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings, Studio } from '../collections/Studios'
-import { RundownAPI } from '../api/rundown'
 import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
-import { PieceGeneric } from '../collections/Pieces'
+import { EmptyPieceTimelineObjectsBlob, PieceGeneric, PieceStatusCode } from '../collections/Pieces'
 
 describe('lib/mediaObjects', () => {
 	testInFiber('buildFormatString', () => {
@@ -83,6 +81,7 @@ describe('lib/mediaObjects', () => {
 			supportedMediaFormats: '1920x1080i5000, 1280x720, i5000, i5000tff',
 			mediaPreviewsUrl: '',
 			sofieUrl: '',
+			frameRate: 25,
 		})
 		expect(acceptedFormats).toEqual([
 			['1920', '1080', 'i', '5000', undefined],
@@ -164,6 +163,7 @@ describe('lib/mediaObjects', () => {
 			mediaPreviewsUrl: '',
 			supportedAudioStreams: '4',
 			sofieUrl: '',
+			frameRate: 25,
 		}
 		const mockStudio: Studio = {
 			...defaultStudio(protectString('studio0')),
@@ -236,19 +236,19 @@ describe('lib/mediaObjects', () => {
 
 		const piece1 = literal<PieceGeneric>({
 			_id: protectString('piece1'),
-			status: RundownAPI.PieceStatusCode.UNKNOWN,
+			status: PieceStatusCode.UNKNOWN,
 			name: 'Test_file',
-			adlibPreroll: 0,
+			prerollDuration: 0,
 			externalId: '',
 			lifespan: PieceLifespan.WithinPart,
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: literal<WithTimeline<VTContent>>({
+			content: literal<VTContent>({
 				fileName: 'test_file',
 				path: '',
-				timelineObjects: [],
 			}),
+			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
 
 		const sourcelayer1 = literal<ISourceLayer>({
@@ -324,48 +324,48 @@ describe('lib/mediaObjects', () => {
 
 		const piece2 = literal<PieceGeneric>({
 			_id: protectString('piece2'),
-			status: RundownAPI.PieceStatusCode.UNKNOWN,
+			status: PieceStatusCode.UNKNOWN,
 			name: 'Test_file_2',
-			adlibPreroll: 0,
+			prerollDuration: 0,
 			externalId: '',
 			lifespan: PieceLifespan.WithinPart,
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: literal<WithTimeline<VTContent>>({
+			content: literal<VTContent>({
 				fileName: 'test_file_2',
 				path: '',
-				timelineObjects: [],
 			}),
+			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
 
 		const piece3 = literal<PieceGeneric>({
 			_id: protectString('piece3'),
-			status: RundownAPI.PieceStatusCode.UNKNOWN,
+			status: PieceStatusCode.UNKNOWN,
 			name: 'Test_file_3',
-			adlibPreroll: 0,
+			prerollDuration: 0,
 			externalId: '',
 			lifespan: PieceLifespan.WithinPart,
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
-			content: literal<WithTimeline<VTContent>>({
+			content: literal<VTContent>({
 				fileName: 'test_file_3',
 				path: '',
-				timelineObjects: [],
 			}),
+			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
 
 		const status1 = checkPieceContentStatus(piece1, sourcelayer1, mockStudio)
-		expect(status1.status).toEqual(RundownAPI.PieceStatusCode.OK)
+		expect(status1.status).toEqual(PieceStatusCode.OK)
 		expect(status1.message).toBeFalsy()
 
 		const status2 = checkPieceContentStatus(piece2, sourcelayer1, mockStudio)
-		expect(status2.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_BROKEN)
+		expect(status2.status).toEqual(PieceStatusCode.SOURCE_BROKEN)
 		expect(status2.message).toContain('has the wrong format:')
 
 		const status3 = checkPieceContentStatus(piece3, sourcelayer1, mockStudio)
-		expect(status3.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_MISSING)
+		expect(status3.status).toEqual(PieceStatusCode.SOURCE_MISSING)
 		expect(status3.message).toContain('is not yet ready on the playout system')
 	})
 })

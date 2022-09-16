@@ -1,18 +1,18 @@
 {
 	"name": "mos-gateway",
-	"version": "1.37.1-in-testing.1",
+	"version": "42.0.0",
 	"private": true,
 	"description": "MOS-Gateway for the Sofie project",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/tv2/tv-automation-server-core.git",
 		"directory": "packages/mos-gateway"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/tv2/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/mos-gateway#readme",
+	"homepage": "https://github.com/tv2/tv-automation-server-core/blob/master/packages/mos-gateway#readme",
 	"author": {
 		"name": "Johan Nyman",
 		"email": "johan@superfly.tv",
@@ -37,17 +37,15 @@
 		"watch": "jest --watch",
 		"cov": "jest; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"send-coverage": "codecov -p ../..",
 		"inspect": "node --inspect dist/index.js",
 		"ci": "yarn test",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "node-license-validator -p -d --allow-licenses MIT 0BSD BSD BSD-2-Clause BSD-3-Clause ISC Apache Apache-2.0 Unlicense WTFPL --allow-packages cycle",
-		"start": "node dist/index.js",
-		"precommit": "lint-staged"
+		"license-validate": "node-license-validator -p -d --allow-licenses MIT 0BSD BSD BSD-2-Clause BSD-3-Clause ISC Apache Apache-2.0 Unlicense WTFPL ",
+		"start": "node dist/index.js"
 	},
 	"engines": {
-		"node": ">=12.20"
+		"node": "^14.18 || ^16.14"
 	},
 	"keywords": [
 		"mos",
@@ -64,18 +62,18 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/server-core-integration": "1.37.0-in-testing.13",
-		"mos-connection": "^1.0.3",
+		"@sofie-automation/server-core-integration": "npm:@tv2media/server-core-integration@1.41.0",
+		"mos-connection": "^2.0.1",
 		"tslib": "^2.3.1",
 		"underscore": "^1.12.1",
-		"winston": "^2.4.2"
+		"winston": "^3.5.1"
 	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
-			"prettier --write"
+			"prettier"
 		],
 		"*.{ts,tsx}": [
-			"yarn lint --fix"
+			"yarn lint"
 		]
 	}
 }

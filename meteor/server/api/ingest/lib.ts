@@ -1,27 +1,66 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, getCurrentTime, protectString, unprotectObject, clone, isProtectedString } from '../../../lib/lib'
-import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
+import { getHash, getCurrentTime, protectString, stringifyError } from '../../../lib/lib'
+import { StudioId } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
 	PeripheralDevices,
 	getStudioIdFromDevice,
 	PeripheralDeviceId,
+	PeripheralDeviceCategory,
 } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { SegmentId, Segment } from '../../../lib/collections/Segments'
+import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
 import { Credentials } from '../../security/lib/credentials'
-import { IngestRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
-import { ReadonlyDeep } from 'type-fest'
-import { ReadOnlyCache } from '../../cache/CacheBase'
-import { CacheForIngest } from './cache'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
+import { QueueIngestJob } from '../../worker/worker'
+import { checkStudioExists } from '../../../lib/collections/optimizations'
+
+/**
+ * Run an ingest operation via the worker.
+ * @param studioId Id of the studio
+ * @param name The name/id of the operation
+ * @param data Data for the operation
+ * @returns Wrapped 'client safe' response. Includes translatable friendly error messages
+ */
+export async function runIngestOperation<T extends keyof IngestJobFunc>(
+	studioId: StudioId,
+	name: T,
+	data: Parameters<IngestJobFunc[T]>[0]
+): Promise<ReturnType<IngestJobFunc[T]>> {
+	try {
+		const job = await QueueIngestJob(name, studioId, data)
+
+		const span = profiler.startSpan('queued-job')
+		const res = await job.complete
+
+		if (span) {
+			// These timings may want tracking better, for when APM is not enabled
+			try {
+				const timings = await job.getTimings
+				span.addLabels({
+					startedTime: timings.startedTime ? timings.startedTime - timings.queueTime : '-',
+					finishedTime: timings.finishedTime ? timings.finishedTime - timings.queueTime : '-',
+					completedTime: timings.completedTime - timings.queueTime,
+				})
+			} catch (_e) {
+				// Not worth handling
+			}
+
+			span.end()
+		}
+
+		return res
+	} catch (e) {
+		logger.warn(`Ingest operation "${name}" failed: ${stringifyError(e)}`)
+
+		throw e
+	}
+}
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -43,10 +82,10 @@ export function checkAccessAndGetPeripheralDevice(
 	return peripheralDevice
 }
 
-export function getRundownId(studio: ReadonlyDeep<Studio> | StudioId, rundownExternalId: string): RundownId {
-	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')
+export function getRundownId(studioId: StudioId, rundownExternalId: string): RundownId {
+	if (!studioId) throw new Meteor.Error(500, 'getRundownId: studio not set!')
 	if (!rundownExternalId) throw new Meteor.Error(401, 'getRundownId: rundownExternalId must be set!')
-	return protectString<RundownId>(getHash(`${isProtectedString(studio) ? studio : studio._id}_${rundownExternalId}`))
+	return protectString<RundownId>(getHash(`${studioId}_${rundownExternalId}`))
 }
 export function getSegmentId(rundownId: RundownId, segmentExternalId: string): SegmentId {
 	if (!rundownId) throw new Meteor.Error(401, 'getSegmentId: rundownId must be set!')
@@ -59,37 +98,19 @@ export function getPartId(rundownId: RundownId, partExternalId: string): PartId 
 	return protectString<PartId>(getHash(`${rundownId}_part_${partExternalId}`))
 }
 
-export function getStudioFromDevice(peripheralDevice: PeripheralDevice): Studio {
-	const span = profiler.startSpan('mosDevice.lib.getStudioFromDevice')
+export function fetchStudioIdFromDevice(peripheralDevice: PeripheralDevice): StudioId {
+	const span = profiler.startSpan('mosDevice.lib.getStudioIdFromDevice')
 
 	const studioId = getStudioIdFromDevice(peripheralDevice)
 	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
 
 	updateDeviceLastDataReceived(peripheralDevice._id)
 
-	const studio = Studios.findOne(studioId)
-	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" of device "${peripheralDevice._id}" not found`)
+	const studioExists = checkStudioExists(studioId)
+	if (!studioExists) throw new Meteor.Error(404, `Studio "${studioId}" of device "${peripheralDevice._id}" not found`)
 
 	span?.end()
-	return studio
-}
-export function getRundownPlaylist(rundown: Rundown): RundownPlaylist {
-	const span = profiler.startSpan('mosDevice.lib.getRundownPlaylist')
-
-	const playlist = RundownPlaylists.findOne(rundown.playlistId)
-	if (!playlist)
-		throw new Meteor.Error(500, `Rundown playlist "${rundown.playlistId}" of rundown "${rundown._id}" not found!`)
-
-	span?.end()
-	return playlist
-}
-export function getRundown(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ReadonlyDeep<Rundown> {
-	const rundown = cache.Rundown.doc
-	if (!rundown) {
-		const rundownId = getRundownId(cache.Studio.doc, cache.RundownExternalId)
-		throw new Meteor.Error(404, `Rundown "${rundownId}" ("${cache.RundownExternalId}") not found`)
-	}
-	return rundown
+	return studioId
 }
 export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevice {
 	if (!rundown.peripheralDeviceId)
@@ -101,7 +122,7 @@ export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevi
 			404,
 			`PeripheralDevice "${rundown.peripheralDeviceId}" of rundown "${rundown._id}" not found`
 		)
-	if (device.category !== PeripheralDeviceAPI.DeviceCategory.INGEST)
+	if (device.category !== PeripheralDeviceCategory.INGEST)
 		throw new Meteor.Error(
 			404,
 			`PeripheralDevice "${rundown.peripheralDeviceId}" of rundown "${rundown._id}" is not an INGEST device!`
@@ -110,50 +131,11 @@ export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevi
 }
 
 function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
-	PeripheralDevices.update(deviceId, {
+	PeripheralDevices.updateAsync(deviceId, {
 		$set: {
 			lastDataReceived: getCurrentTime(),
 		},
+	}).catch((err) => {
+		logger.error(`Error in updateDeviceLastDataReceived "${deviceId}": ${err}`)
 	})
-}
-
-export function canRundownBeUpdated(rundown: ReadonlyDeep<Rundown> | undefined, isCreateAction: boolean): boolean {
-	if (!rundown) return true
-	if (rundown.orphaned && !isCreateAction) {
-		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
-		return false
-	}
-	return true
-}
-export function canSegmentBeUpdated(
-	rundown: ReadonlyDeep<Rundown> | undefined,
-	segment: ReadonlyDeep<Segment> | undefined,
-	isCreateAction: boolean
-): boolean {
-	if (!canRundownBeUpdated(rundown, false)) {
-		return false
-	}
-
-	if (!segment) return true
-	if (segment.orphaned === 'deleted' && !isCreateAction) {
-		logger.info(`Segment "${segment._id}" has been unsynced and needs to be synced before it can be updated.`)
-		return false
-	}
-
-	return true
-}
-
-export function extendIngestRundownCore(
-	ingestRundown: IngestRundown,
-	existingDbRundown: ReadonlyDeep<Rundown> | undefined
-): ExtendedIngestRundown {
-	const extendedIngestRundown: ExtendedIngestRundown = {
-		...ingestRundown,
-		coreData: unprotectObject(clone(existingDbRundown)),
-	}
-	return extendedIngestRundown
-}
-export function modifyPlaylistExternalId(playlistExternalId: string | undefined, showStyleBase: ShowStyleBase) {
-	if (playlistExternalId) return `${showStyleBase._id}_${playlistExternalId}`
-	else return undefined
 }

@@ -1,21 +1,11 @@
-import { PieceGeneric } from './Pieces'
-import { registerCollection } from '../lib'
-import { IBlueprintAdLibPiece } from '@sofie-automation/blueprints-integration'
 import { createMongoCollection } from './lib'
-import { RundownId } from './Rundowns'
-import { PartId } from './Parts'
 import { registerIndex } from '../database'
 
-export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
-	/** Rundown this AdLib belongs to */
-	rundownId: RundownId
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+export * from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 
-	/** Part this AdLib belongs to */
-	partId?: PartId
-}
-
-export const AdLibPieces = createMongoCollection<AdLibPiece, AdLibPiece>('adLibPieces')
-registerCollection('AdLibPieces', AdLibPieces)
+export const AdLibPieces = createMongoCollection<AdLibPiece>(CollectionName.AdLibPieces)
 
 registerIndex(AdLibPieces, {
 	rundownId: 1,

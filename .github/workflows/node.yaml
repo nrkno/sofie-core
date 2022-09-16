@@ -16,17 +16,17 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 12.x
+          node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
         uses: actions/cache@v2
         with:
           path: |
             meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
+          key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
           yarn
@@ -45,17 +45,17 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 12.x
+          node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
         uses: actions/cache@v2
         with:
           path: |
             meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/package-lock.json') }}-${{ hashFiles('meteor/.meteor/release') }}
+          key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
           yarn
@@ -65,9 +65,14 @@ jobs:
       - name: Run Tests
         run: |
           cd meteor
-          meteor npm run ci
+          meteor yarn unitci
         env:
           CI: true
+      - name: Send coverage
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          # name: codecov-umbrella
 
   build-core:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
@@ -76,10 +81,6 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
       - name: Get the Docker tag
         id: docker-tag
         uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
@@ -109,6 +110,11 @@ jobs:
           else
             echo "Skipping docker build"
           fi
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        if: ${{ steps.image-tags.outputs.images }}
+        with:
+          node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
         if: ${{ steps.image-tags.outputs.images }}
       - name: Prepare Environment
@@ -167,10 +173,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
       - name: Get the Docker tag
         id: docker-tag
         uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
@@ -201,6 +203,11 @@ jobs:
           else
             echo "Skipping docker build"
           fi
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        if: ${{ steps.image-tags.outputs.images }}
+        with:
+          node-version-file: ".node-version"
       - name: Build
         if: ${{ steps.image-tags.outputs.images }}
         run: |
@@ -248,17 +255,19 @@ jobs:
             server-core-integration,
             playout-gateway,
             mos-gateway,
+            corelib,
+            job-worker,
           ]
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 12.x
+          node-version-file: ".node-version"
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -279,20 +288,30 @@ jobs:
       fail-fast: false
       matrix:
         package-name: [blueprints-integration, server-core-integration]
-        node-version: [12.x, 14.x]
-
-    # Gateways dont support node 10. but no tests to run anyway :)
-    # if: "!(endsWith(matrix.package-name, 'gateway') & matrix.node-version == '10.x')"
+        node-version: [14.x, 16.x]
+        include:
+          # include additional configs, to run certain packages in a single version of node
+          - node-version: 14.x
+            package-name: corelib
+            send-coverage: true
+          - node-version: 14.x
+            package-name: job-worker
+            send-coverage: true
+          # No tests for the gateways yet
+          # - node-version: 12.x
+          #   package-name: playout-gateway
+          # - node-version: 12.x
+          #   package-name: mos-gateway
 
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
       - name: Prepare Environment
         run: |
-          cd packages 
+          cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -304,25 +323,24 @@ jobs:
         env:
           CI: true
       - name: Send coverage
-        if: matrix.node-version == '12.x'
-        run: |
-          cd packages/${{ matrix.package-name }}
-          yarn send-coverage
-        env:
-          CI: true
+        if: matrix.node-version == '16.x' || matrix.send-coverage == true
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          # name: codecov-umbrella
 
-  typedoc-libs:
-    name: Generate Libs Typedoc
+  publish-docs:
+    name: Publish Docs
     runs-on: ubuntu-latest
     continue-on-error: true
     timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 12.x
+          node-version-file: ".node-version"
       - name: Prepare Environment
         run: |
           cd packages 
@@ -330,105 +348,25 @@ jobs:
           yarn build
         env:
           CI: true
+      - name: Run docusaurus
+        run: |
+          cd packages/documentation
+          yarn docs:build
+        env:
+          CI: true
       - name: Run typedoc
         run: |
           cd packages
-          yarn docs
+          yarn docs:typedoc
+          cp docs documentation/build/typedoc -R
         env:
           CI: true
       - name: Publish
-        # only run for release tags
-        # TODO - we should only do this if the latest release
-        if: contains(github.ref, 'refs/tags/')
+        if: github.ref == 'refs/heads/master' # always publish for just the master branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./packages/docs
-
-  prerelease-libs:
-    name: Prerelease Lib
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    # only run for branches
-    if: contains(github.ref, 'refs/heads/')
-
-    needs:
-      - test-packages
-
-    strategy:
-      fail-fast: false
-      matrix:
-        package-name: [blueprints-integration, server-core-integration]
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12.x
-      - name: Check release is desired
-        # TODO - or if something changed? perhaps always on the releaseX branches?
-        id: do-publish
-        run: |
-          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
-            echo "No Token"
-          elif ! git log --format=oneline -n 1 | grep -q "\[publish\]"; then
-            echo "Skip"
-          else
-            echo "Publish prerelease"
-            echo ::set-output name=publish::"1"
-          fi
-      - name: Prepare Environment
-        if: ${{ steps.do-publish.outputs.publish }}
-        run: |
-          cd packages 
-          yarn install
-        env:
-          CI: true
-      - name: Get the Prerelease tag
-        id: prerelease-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
-        with:
-          remove-version-tag-prefix: false
-      - name: Bump version
-        if: ${{ steps.do-publish.outputs.publish }}
-        run: |
-          cd packages
-          COMMIT_TIMESTAMP=$(git log -1 --pretty=format:%ct HEAD)
-          COMMIT_DATE=$(date -d @$COMMIT_TIMESTAMP +%Y%m%d-%H%M%S)
-          GIT_HASH=$(git rev-parse --short HEAD)
-          PRERELEASE_TAG=nightly-$(echo "${{ steps.prerelease-tag.outputs.tag }}" | sed -r 's/[^a-z0-9]+/-/gi')
-          yarn set-version prerelease --preid $PRERELEASE_TAG-$COMMIT_DATE-$GIT_HASH
-        env:
-          CI: true
-      - name: Build
-        if: ${{ steps.do-publish.outputs.publish }}
-        run: |
-          cd packages
-          yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
-        env:
-          CI: true
-      - name: Publish to NPM
-        id: publish-npm
-        if: ${{ steps.do-publish.outputs.publish }}
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-          cd packages/${{ matrix.package-name }}
-          NEW_VERSION=$(node -p "require('./package.json').version")
-          yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag nightly
-          echo ::set-output name=version::$NEW_VERSION
-        env:
-          CI: true
-      - name: Post published prerelease lib version comment in PR
-        if: ${{ steps.do-publish.outputs.publish }}
-        uses: mshick/add-pr-comment@v1
-        with:
-          message: |
-            ⚡ Published prerelease version **${{ matrix.package-name }}@${{ steps.publish-npm.outputs.version }}** to NPM
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CI: true
+          publish_dir: ./packages/documentation/build
 
   release-libs:
     name: Release Lib
@@ -450,10 +388,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js 12.x
-        uses: actions/setup-node@v1
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 12.x
+          node-version-file: ".node-version"
+      - name: Prepare Environment # have to run this first to make sure the semver lib is available
+        run: |
+          cd packages
+          yarn install
+        env:
+          CI: true
       - name: Check release is desired
         id: do-publish
         run: |
@@ -461,34 +405,18 @@ jobs:
             echo "No Token"
           else
 
+            yarn --ignore-scripts
+
             cd packages/${{ matrix.package-name }}
             PACKAGE_NAME=$(yarn info -s . name)
             PUBLISHED_VERSION=$(yarn info -s $PACKAGE_NAME version)
             THIS_VERSION=$(node -p "require('./package.json').version")
-            # Simple bash helper to comapre version numbers
-            verlte() {
-              [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
-            }
-            verlt() {
-              [ "$1" = "$2" ] && return 1 || verlte $1 $2
-            }
-            if verlt $PUBLISHED_VERSION $THIS_VERSION
-            then
-              echo "Publishing latest"
-              echo ::set-output name=tag::"latest"
-            else
-              echo "Publishing hotfix"
-              echo ::set-output name=tag::"hotfix"
-            fi
+            NPM_TAG=$(node ../../scripts/determine-npm-tag.js $PUBLISHED_VERSION $THIS_VERSION)
+
+            echo "Publishing $NPM_TAG"
+            echo ::set-output name=tag::"$NPM_TAG"
 
           fi
-      - name: Prepare Environment
-        if: ${{ steps.do-publish.outputs.tag }}
-        run: |
-          cd packages 
-          yarn install
-        env:
-          CI: true
       - name: Build
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
@@ -502,6 +430,35 @@ jobs:
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "`jq '.name |= sub("@sofie-automation";"@tv2media")' package.json --tab`" > package.json
           yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag ${{ steps.do-publish.outputs.tag }}
+        env:
+          CI: true
+  check-for-multiple-library-versions:
+    name: Check for multiple library versions
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version-file: ".node-version"
+      - uses: ./.github/actions/setup-meteor
+      - name: restore node_modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            meteor/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
+      - name: Prepare Environment
+        run: |
+          yarn
+        env:
+          CI: true
+      - name: Run check
+        run: |
+          node scripts/checkForMultipleVersions.mjs
         env:
           CI: true

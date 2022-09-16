@@ -23,7 +23,12 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle, faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDeviceCategory,
+	PeripheralDevices,
+	PeripheralDeviceType,
+} from '../../../lib/collections/PeripheralDevices'
 
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
@@ -40,17 +45,16 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { unprotectString, protectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
-import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { ConfigManifestEntryType, MappingManifestEntry, MappingsManifest } from '../../../lib/api/deviceConfig'
 import { renderEditAttribute } from './components/ConfigManifestEntryComponent'
-import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '../../../lib/constants'
+import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/corelib/dist/constants'
+import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -134,7 +138,7 @@ const StudioDevices = withTranslation()(
 		isPlayoutConnected() {
 			let connected = false
 			this.props.studioDevices.map((device) => {
-				if (device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT) connected = true
+				if (device.type === PeripheralDeviceType.PLAYOUT) connected = true
 			})
 			return connected
 		}
@@ -1391,8 +1395,8 @@ const StudioPackageManagerSettings = withTranslation()(
 
 			PeripheralDevices.find().forEach((device) => {
 				if (
-					device.category === PeripheralDeviceAPI.DeviceCategory.PLAYOUT &&
-					device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
+					device.category === PeripheralDeviceCategory.PLAYOUT &&
+					device.type === PeripheralDeviceType.PLAYOUT &&
 					device.settings
 				) {
 					const settings = device.settings as PlayoutDeviceSettings
@@ -2299,7 +2303,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						$exists: false,
 					},
 					type: {
-						$eq: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+						$eq: PeripheralDeviceType.PLAYOUT,
 					},
 				},
 				{
@@ -2440,6 +2444,20 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								<SettingsNavigation type="newshowstyle" />
 							</div>
 						</div>
+						<label className="field">
+							{t('Frame Rate')}
+							<div className="mdi">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.frameRate"
+									obj={this.props.studio}
+									type="int"
+									collection={Studios}
+									className="mdinput"
+								></EditAttribute>
+								<span className="mdfx"></span>
+							</div>
+						</label>
 						<div className="mod mtn mbm mhn">
 							<label className="field">
 								<EditAttribute
@@ -2545,6 +2563,44 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									collection={Studios}
 									className="mdinput"
 								></EditAttribute>
+							</label>
+						</div>
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.preserveUnsyncedPlayingSegmentContents"
+									obj={this.props.studio}
+									type="checkbox"
+									collection={Studios}
+								></EditAttribute>
+								{t('Preserve contents of playing segment when unsynced')}
+							</label>
+						</div>
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.allowRundownResetOnAir"
+									obj={this.props.studio}
+									type="checkbox"
+									collection={Studios}
+								></EditAttribute>
+								{t('Allow Rundowns to be reset while on-air')}
+							</label>
+						</div>
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.preserveOrphanedSegmentPositionInRundown"
+									obj={this.props.studio}
+									type="checkbox"
+									collection={Studios}
+								></EditAttribute>
+								{t(
+									'Preserve position of segments when unsynced relative to other segments. Note: this has only been tested for the iNews gateway'
+								)}
 							</label>
 						</div>
 					</div>

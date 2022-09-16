@@ -15,7 +15,8 @@ import {
 	IRundownDataChangedEventContext,
 	IRundownTimingEventContext,
 	IStudioBaselineContext,
-	IRemoveOrphanedPartInstanceContext,
+	IRundownUserContext,
+	IGetRundownContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -26,7 +27,7 @@ import {
 	IBlueprintPiece,
 	IBlueprintResolvedPieceInstance,
 	IBlueprintRundown,
-	IBlueprintRundownPlaylistInfo,
+	IBlueprintResultRundownPlaylist,
 	IBlueprintSegment,
 	IBlueprintRundownDB,
 	IBlueprintPieceInstance,
@@ -39,6 +40,7 @@ import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant } from './showStyle
 import { OnGenerateTimelineObj } from './timeline'
 import { IBlueprintConfig } from './common'
 import { ExpectedPackage } from './package'
+import { ReadonlyDeep } from 'type-fest'
 
 export enum BlueprintManifestType {
 	SYSTEM = 'system',
@@ -97,14 +99,15 @@ export interface StudioBlueprintManifest extends BlueprintManifestBase {
 	/** Returns the id of the show style to use for a rundown, return null to ignore that rundown */
 	getShowStyleId: (
 		context: IStudioUserContext,
-		showStyles: IBlueprintShowStyleBase[],
+		showStyles: ReadonlyDeep<Array<IBlueprintShowStyleBase>>,
 		ingestRundown: ExtendedIngestRundown
 	) => string | null
 
 	/** Returns information about the playlist this rundown is a part of, return null to not make it a part of a playlist */
 	getRundownPlaylistInfo?: (
 		context: IStudioUserContext,
-		rundowns: IBlueprintRundownDB[]
+		rundowns: IBlueprintRundownDB[],
+		playlistExternalId: string
 	) => BlueprintResultRundownPlaylist | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getStudioConfig. If not provided, getStudioConfig will return unprocessed blueprint config */
@@ -128,25 +131,35 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	/** Returns the id of the show style variant to use for a rundown, return null to ignore that rundown */
 	getShowStyleVariantId: (
 		context: IStudioUserContext,
-		showStyleVariants: IBlueprintShowStyleVariant[],
+		showStyleVariants: ReadonlyDeep<Array<IBlueprintShowStyleVariant>>,
 		ingestRundown: ExtendedIngestRundown
 	) => string | null
 
 	/** Generate rundown from ingest data. return null to ignore that rundown */
-	getRundown: (context: IShowStyleUserContext, ingestRundown: ExtendedIngestRundown) => BlueprintResultRundown
+	getRundown: (
+		context: IGetRundownContext,
+		ingestRundown: ExtendedIngestRundown
+	) => BlueprintResultRundown | null | Promise<BlueprintResultRundown | null>
 
 	/** Generate segment from ingest data */
-	getSegment: (context: ISegmentUserContext, ingestSegment: IngestSegment) => BlueprintResultSegment
+	getSegment: (
+		context: ISegmentUserContext,
+		ingestSegment: IngestSegment
+	) => BlueprintResultSegment | Promise<BlueprintResultSegment>
 
 	/**
-	 * Allows the blueprint to custom-modify the PartInstance, on ingest data update (this is run after getSegment() )
-	 * Warning: This is currently an experimental api, and is likely to break in the next release
+	 * Allows the blueprint to custom-modify the PartInstance, on ingest data update (this is run after getSegment())
+	 *
+	 * `playStatus: previous` means that the currentPartInstance is `orphaned: adlib-part`
+	 * and thus possibly depends on an already past PartInstance for some of it's properties. Therefore
+	 * the blueprint is allowed to modify the most recently played non-adlibbed PartInstance using ingested data.
 	 */
 	syncIngestUpdateToPartInstance?: (
 		context: ISyncIngestUpdateToPartInstanceContext,
 		existingPartInstance: BlueprintSyncIngestPartInstance,
 		newData: BlueprintSyncIngestNewData,
-		playoutStatus: 'current' | 'next'
+
+		playoutStatus: 'previous' | 'current' | 'next'
 	) => void
 
 	/**
@@ -154,9 +167,9 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	 * This call will only be made if the part instance has been orphaned.
 	 */
 	shouldRemoveOrphanedPartInstance?: (
-		context: IRemoveOrphanedPartInstanceContext,
+		context: IRundownUserContext,
 		partInstance: BlueprintRemoveOrphanedPartInstance
-	) => void
+	) => boolean
 
 	/** Execute an action defined by an IBlueprintActionManifest */
 	executeAction?: (
@@ -164,7 +177,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
-	) => void // Promise<void> | void
+	) => Promise<void>
 
 	/** Generate adlib piece from ingest data */
 	getAdlibItem?: (
@@ -232,7 +245,7 @@ export type BlueprintResultStudioBaseline = BlueprintResultBaseline
 export interface BlueprintResultRundown {
 	rundown: IBlueprintRundown
 	globalAdLibPieces: IBlueprintAdLibPiece[]
-	globalActions?: IBlueprintActionManifest[]
+	globalActions: IBlueprintActionManifest[]
 	baseline: BlueprintResultBaseline
 }
 export interface BlueprintResultSegment {
@@ -244,7 +257,7 @@ export interface BlueprintResultPart {
 	part: IBlueprintPart
 	pieces: IBlueprintPiece[]
 	adLibPieces: IBlueprintAdLibPiece[]
-	actions?: IBlueprintActionManifest[]
+	actions: IBlueprintActionManifest[]
 }
 
 export interface BlueprintSyncIngestNewData {
@@ -290,7 +303,7 @@ export interface BlueprintResultOrderedRundowns {
 }
 
 export interface BlueprintResultRundownPlaylist {
-	playlist: IBlueprintRundownPlaylistInfo
+	playlist: IBlueprintResultRundownPlaylist
 	/** Returns information about the order of rundowns in a playlist, null will use natural sorting on rundown name */
 	order: BlueprintResultOrderedRundowns | null
 }

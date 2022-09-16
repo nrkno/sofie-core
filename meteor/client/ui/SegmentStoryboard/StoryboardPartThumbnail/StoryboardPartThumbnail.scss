@@ -1,0 +1,165 @@
+@import '../../../styles/variables';
+@import '../../../styles/itemTypeColors';
+
+.segment-storyboard__part__thumbnail {
+	@include item-type-colors();
+	@include missing-overlay();
+
+	// LiveSpeak needs a bit of special set up, because the thumbnail may make the dual-color setup invisible
+	&.live-speak {
+		background-color: var(--segment-layer-background-live-speak-1);
+		background-position: 0 2.7em;
+		background-repeat: repeat-x;
+	}
+
+	position: relative;
+	width: 100%;
+	height: $segment-storyboard-thumbnail-height;
+	border-radius: 4px;
+	overflow: hidden;
+	cursor: default;
+
+	&.segment-storyboard__part__thumbnail--placeholder {
+		background: lighten($segment-background-color, 10%);
+	}
+
+	.segment-storyboard__thumbnail__icon {
+		opacity: 0.15;
+		text-align: center;
+		font-size: 3em;
+		margin-top: 0.35em;
+	}
+
+	> .segment-storyboard__thumbnail__contents {
+		position: absolute;
+		display: flex;
+		flex-direction: column;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+
+		> .segment-storyboard__thumbnail__item {
+			flex: 1 1;
+			@include item-type-colors();
+		}
+	}
+
+	> .segment-storyboard__thumbnail__label {
+		text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
+		font-weight: 400;
+		margin: 0.2em 0.4em;
+		overflow-wrap: break-word;
+
+		> .piece__status-icon {
+			line-height: 0.6em;
+		}
+
+		&.segment-storyboard__thumbnail__label--lg {
+			position: absolute;
+			text-align: center;
+			font-weight: 500;
+			font-size: 1.2em;
+			text-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+			bottom: 0.2rem;
+			left: 0;
+			right: 0;
+			margin: 0;
+		}
+
+		&.segment-storyboard__thumbnail__label--sm {
+			font-size: 0.85em;
+			letter-spacing: normal;
+		}
+
+		> .segment-storyboard__thumbnail__label__colored-mark {
+			font-size: 1em;
+			color: transparent;
+			display: inline-block;
+			height: 0.8em;
+			width: 0.8em;
+			border-radius: 100%;
+			margin-right: 0.5em;
+			vertical-align: middle;
+			box-shadow: 0 0 6px rgba(0, 0, 0, 1);
+			margin-top: -0.1em;
+		}
+	}
+
+	> .segment-storyboard__thumbnail__countdown {
+		position: absolute;
+		top: 0;
+		right: 0;
+		margin: 0.2em 0.4em;
+		left: auto;
+		font-weight: 400;
+		-webkit-text-stroke: 0.2px #000;
+		filter: drop-shadow(0 0 1px black);
+
+		> .segment-storyboard__thumbnail__countdown-icon {
+			margin-right: 0.2em;
+
+			&--flash {
+				@keyframes segment-storyboard__thumbnail__countdown-icon--flash {
+					0% {
+						opacity: 0;
+					}
+					25% {
+						opacity: 0;
+					}
+					50% {
+						opacity: 1;
+					}
+					100% {
+						opacity: 1;
+					}
+				}
+				/* @keyframes duration | easing-function | delay | iteration-count | direction | fill-mode | play-state | name */
+				animation: 1s linear 0s infinite normal forwards segment-storyboard__thumbnail__countdown-icon--flash;
+			}
+
+			&:last-child {
+				margin-right: 0;
+			}
+		}
+
+		&--playing {
+			color: $liveline-timecode-color;
+		}
+	}
+
+	&.remote > .segment-storyboard__thumbnail__icon {
+		opacity: 0.4;
+	}
+
+	&.vt,
+	&.live-speak {
+		> .segment-storyboard__thumbnail__label {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			word-wrap: break-word;
+			word-break: break-all;
+		}
+	}
+
+	> .segment-storyboard__thumbnail__image-container {
+		position: relative;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 16 / 9;
+		background: rgba(0, 0, 0, 0.3);
+		display: grid;
+		align-content: space-around;
+
+		> img,
+		> video {
+			max-width: 100%;
+			align-self: center;
+			justify-self: center;
+			background-color: black;
+			object-fit: contain;
+			aspect-ratio: 16/9;
+		}
+	}
+}

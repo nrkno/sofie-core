@@ -37,6 +37,7 @@ export function insertStudioInner(organizationId: OrganizationId | null, newId?:
 			blueprintConfig: {},
 			// testToolsConfig?: ITestToolsConfig
 			settings: {
+				frameRate: 25,
 				mediaPreviewsUrl: '',
 				sofieUrl: '',
 			},
