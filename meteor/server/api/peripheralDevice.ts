@@ -308,7 +308,7 @@ export namespace ServerPeripheralDeviceAPI {
 		if (Rundowns.find().count()) throw new Meteor.Error(400, 'Unable to run killProcess: Rundowns not empty!')
 
 		if (really) {
-			this.logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
+			logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
 			setTimeout(() => {
 				// eslint-disable-next-line no-process-exit
 				process.exit(0)
@@ -1015,7 +1015,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		return MediaScannerIntegration.updateMediaObject(this, deviceId, deviceToken, collectionId, id, doc)
 	}
 	async clearMediaObjectCollection(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string) {
-		return MediaScannerIntegration.clearMediaObjectCollection(deviceId, deviceToken, collectionId)
+		return MediaScannerIntegration.clearMediaObjectCollection(this, deviceId, deviceToken, collectionId)
 	}
 	// ------- Media Manager --------------
 	async getMediaWorkFlowRevisions(deviceId: PeripheralDeviceId, deviceToken: string) {
