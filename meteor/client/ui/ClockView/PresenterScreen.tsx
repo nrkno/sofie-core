@@ -9,7 +9,6 @@ import {
 	RundownPlaylistCollectionUtil,
 } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { Translated, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -32,7 +31,7 @@ import {
 	RundownLayoutPresenterView,
 	RundownLayouts,
 } from '../../../lib/collections/RundownLayouts'
-import { RundownLayoutId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId, RundownLayoutId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -40,6 +39,8 @@ import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
 import { parse as queryStringParse } from 'query-string'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundowns } from '../../../lib/clientCollections'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>

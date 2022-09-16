@@ -4,7 +4,6 @@ import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { IngestDataCache, IngestCacheType, IngestDataCacheObjId } from '../../lib/collections/IngestDataCache'
 import { getRandomId, getRandomString, protectString } from '../../lib/lib'
-import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
 import {
@@ -38,6 +37,8 @@ import '../cronjobs'
 import '../api/peripheralDevice'
 import { Meteor } from 'meteor/meteor'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Rundowns } from '../serverCollections'
 
 describe('cronjobs', () => {
 	beforeEach(() => {

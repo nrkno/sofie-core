@@ -30,8 +30,9 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Buckets, BucketId } from '../../../lib/collections/Buckets'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
-import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { check } from '../../../lib/check'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundowns } from '../../../lib/clientCollections'
 
 const PackageInfo = require('../../../package.json')
 

@@ -126,6 +126,17 @@ export function createInMemoryMongoCollection<DBInterface extends { _id: Protect
 	return new WrappedMongoCollection<DBInterface>(collection, name)
 }
 
+/**
+ * Create a Mongo Collection for use in the client (has sync apis)
+ * @param name Name of the collection
+ */
+export function createClientMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
+	name: CollectionName
+): AsyncMongoCollection<DBInterface> {
+	const collection = new Mongo.Collection<DBInterface>(name)
+	return new WrappedAsyncMongoCollection<DBInterface>(collection, name)
+}
+
 class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
 	implements MongoCollection<DBInterface>
 {

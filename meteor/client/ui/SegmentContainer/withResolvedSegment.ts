@@ -20,7 +20,6 @@ import { IContextMenuContext } from '../RundownView'
 import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
-import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { PartId, Part } from '../../../lib/collections/Parts'
@@ -34,6 +33,9 @@ import { SegmentViewMode } from './SegmentViewModes'
 import { SegmentNote, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { AdlibSegmentUi } from '../../lib/shelf'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundowns } from '../../../lib/clientCollections'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */

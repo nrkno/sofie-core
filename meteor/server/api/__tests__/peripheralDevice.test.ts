@@ -7,7 +7,6 @@ import {
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
-import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Parts } from '../../../lib/collections/Parts'
 import { EmptyPieceTimelineObjectsBlob, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
@@ -48,6 +47,8 @@ import { OnTimelineTriggerTimeProps, StudioJobFunc, StudioJobs } from '@sofie-au
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Rundowns } from '../../serverCollections'
 
 const DEBUG = false
 

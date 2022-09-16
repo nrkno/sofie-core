@@ -1,10 +1,11 @@
 import { ExpectedPackageDBType, ExpectedPackageId, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
-import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { assertNever, lazyIgnore } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { runIngestOperation } from './lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Rundowns } from '../../serverCollections'
 
 export function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: PackageInfoDB | null): void {
 	logger.info(`PackageInfo updated "${packageId}"`)

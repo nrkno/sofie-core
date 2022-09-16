@@ -5,7 +5,6 @@ import { PubSub } from '../../lib/api/pubsub'
 import { MongoQuery, FindOptions } from '../../lib/typings/meteor'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { RundownReadAccess } from '../security/rundown'
-import { Rundowns, DBRundown } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
@@ -24,6 +23,8 @@ import {
 	RundownBaselineAdLibActions,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { check, Match } from 'meteor/check'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundowns } from '../serverCollections'
 
 meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
 	check(deviceId, String)

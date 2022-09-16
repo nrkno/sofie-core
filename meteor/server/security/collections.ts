@@ -23,7 +23,7 @@ import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/Perip
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { MediaWorkFlowSteps, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
 import { MediaWorkFlows, MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
-import { Rundowns } from '../../lib/collections/Rundowns'
+import { Rundowns } from '../serverCollections'
 import { Segments } from '../../lib/collections/Segments'
 import { Parts } from '../../lib/collections/Parts'
 import { PartInstances } from '../../lib/collections/PartInstances'

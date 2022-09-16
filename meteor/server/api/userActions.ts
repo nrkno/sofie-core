@@ -2,7 +2,6 @@ import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import { getCurrentTime, getHash, Time } from '../../lib/lib'
-import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { Parts, PartId } from '../../lib/collections/Parts'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/api/userActions'
@@ -42,6 +41,8 @@ import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice
 import { StudioContentWriteAccess } from '../security/studio'
 import { BucketSecurity } from '../security/buckets'
 import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Rundowns } from '../serverCollections'
 
 async function pieceSetInOutPoints(
 	access: VerifiedRundownPlaylistContentAccess,

@@ -45,7 +45,6 @@ import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import { literal, getCurrentTime, protectString, unprotectString, getRandomId, getRandomString } from '../../lib/lib'
-import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { EmptyPieceTimelineObjectsBlob, Piece, Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
@@ -69,6 +68,9 @@ import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/Trig
 import { Workers, WorkerStatus } from '../../lib/collections/Workers'
 import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundowns } from '../../server/serverCollections'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',

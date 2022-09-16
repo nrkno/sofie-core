@@ -8,7 +8,7 @@ import {
 	PeripheralDeviceType,
 	PeripheralDevice,
 } from '../../lib/collections/PeripheralDevices'
-import { Rundowns } from '../../lib/collections/Rundowns'
+import { Rundowns } from '../serverCollections'
 import { getCurrentTime, protectString, stringifyObjects, literal } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'

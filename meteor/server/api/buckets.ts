@@ -9,7 +9,7 @@ import { ShowStyleVariantId, ShowStyleVariants } from '../../lib/collections/Sho
 import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { AdLibAction, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibActions, BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
-import { Rundowns } from '../../lib/collections/Rundowns'
+import { Rundowns } from '../serverCollections'
 import { runIngestOperation } from './ingest/lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { StudioContentAccess } from '../security/studio'

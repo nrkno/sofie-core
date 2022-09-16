@@ -1,6 +1,6 @@
 import '../../../__mocks__/_extendJest'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundowns } from '../../serverCollections'
 import { IBlueprintExternalMessageQueueType, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'

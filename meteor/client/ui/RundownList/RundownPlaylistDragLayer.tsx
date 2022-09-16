@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { DragLayer, DragLayerMonitor } from 'react-dnd'
 import { IRundownDragObject, RundownListDragDropTypes } from './DragAndDropTypes'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundowns } from '../../../lib/clientCollections'
 import RundownListItemView from './RundownListItemView'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { getElementWidth } from '../../utils/dimensions'

@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
-import { Rundowns, Rundown, RundownId } from '../../lib/collections/Rundowns'
 import { unprotectString, normalizeArray } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
@@ -27,6 +26,9 @@ import {
 } from './lib'
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { Studio, Studios } from '../../lib/collections/Studios'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundowns } from '../serverCollections'
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */

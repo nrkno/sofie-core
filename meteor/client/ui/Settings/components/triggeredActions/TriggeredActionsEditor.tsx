@@ -18,7 +18,6 @@ import {
 	RundownPlaylistCollectionUtil,
 	RundownPlaylists,
 } from '../../../../../lib/collections/RundownPlaylists'
-import { Rundown, RundownId, Rundowns } from '../../../../../lib/collections/Rundowns'
 import { PartInstances } from '../../../../../lib/collections/PartInstances'
 import { Part, PartId, Parts } from '../../../../../lib/collections/Parts'
 import { MeteorCall } from '../../../../../lib/api/methods'
@@ -36,6 +35,9 @@ import { Meteor } from 'meteor/meteor'
 import { doModalDialog } from '../../../../lib/ModalDialog'
 import { MongoQuery } from '../../../../../lib/typings/meteor'
 import _ from 'underscore'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundowns } from '../../../../../lib/clientCollections'
 
 export interface PreviewContext {
 	rundownPlaylist: RundownPlaylist | null

@@ -18,11 +18,12 @@ import { ShowStyleBase } from '../../collections/ShowStyleBases'
 import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
 import { FindOptions, MongoSelector } from '../../typings/meteor'
-import { DBRundown, RundownId, Rundowns } from '../../collections/Rundowns'
+import { DBRundown, RundownId } from '../../collections/Rundowns'
 import { memoizedIsolatedAutorun } from '../../../client/lib/reactiveData/reactiveDataHelper'
 import { DBSegment, Segments, SegmentId } from '../../collections/Segments'
 import { sortAdlibs } from '../../Rundown'
 import { ReactivePlaylistActionContext } from './actionFactory'
+import { Rundowns } from '../../clientCollections'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 

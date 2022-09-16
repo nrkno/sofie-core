@@ -5,9 +5,6 @@ import { Meteor } from 'meteor/meteor'
 import { ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
 import { RundownPlaylists, RundownPlaylist } from './RundownPlaylists'
-import { createMongoCollection } from './lib'
-import { registerIndex } from '../database'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -97,13 +94,3 @@ export class RundownCollectionUtil {
 		}
 	}
 }
-
-// export const Rundowns = createMongoCollection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
-export const Rundowns = createMongoCollection<DBRundown>(CollectionName.Rundowns)
-
-registerIndex(Rundowns, {
-	playlistId: 1,
-})
-registerIndex(Rundowns, {
-	playlistExternalId: 1,
-})

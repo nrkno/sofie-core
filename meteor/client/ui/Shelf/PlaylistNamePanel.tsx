@@ -10,9 +10,10 @@ import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/col
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundowns } from '../../../lib/clientCollections'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { logger } from '../../../lib/logging'
+import { logger } from '@sofie-automation/job-worker/dist/logging'
 
 interface IPlaylistNamePanelProps {
 	visible?: boolean

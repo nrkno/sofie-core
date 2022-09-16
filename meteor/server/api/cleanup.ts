@@ -26,7 +26,6 @@ import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselin
 import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
@@ -44,6 +43,8 @@ import { Settings } from '../../lib/Settings'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { AsyncMongoCollection } from '../../lib/collections/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Rundowns } from '../serverCollections'
 
 export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Promise<CollectionCleanupResult | string> {
 	if (actuallyCleanup) {

@@ -12,11 +12,12 @@ import {
 	TriggerType,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../logging'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { Blueprints } from '../../lib/collections/Blueprints'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundowns } from '../serverCollections'
 
 // Release 37 (2021-12-09)
 

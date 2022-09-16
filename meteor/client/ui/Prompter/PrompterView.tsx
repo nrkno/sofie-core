@@ -25,8 +25,9 @@ import { documentTitle } from '../../lib/DocumentTitleProvider'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Rundowns } from '../../../lib/clientCollections'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 const DEFAULT_UPDATE_THROTTLE = 250 //ms
 const PIECE_MISSING_UPDATE_THROTTLE = 2000 //ms

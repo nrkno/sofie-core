@@ -1,4 +1,4 @@
-import { Rundowns } from '../lib/collections/Rundowns'
+import { Rundowns } from './serverCollections'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'

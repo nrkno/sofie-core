@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import {
@@ -68,6 +67,8 @@ import {
 	isAdLibOnAir,
 } from '../../lib/shelf'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
+import { Rundowns } from '../../../lib/clientCollections'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, _monitor: DragSourceMonitor, component: any) {

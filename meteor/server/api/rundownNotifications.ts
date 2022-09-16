@@ -6,7 +6,6 @@ import {
 	MEDIASTATUS_POLL_INTERVAL,
 } from '../../lib/api/rundownNotifications'
 import { registerClassToMeteorMethods } from '../methods'
-import { RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { cacheResultAsync, makePromise, normalizeArrayToMap } from '../../lib/lib'
 import { getSegmentPartNotes } from '../../lib/rundownNotifications'
@@ -20,9 +19,10 @@ import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studios } from '../../lib/collections/Studios'
 import { checkPieceContentStatus } from '../../lib/mediaObjects'
-import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { Rundowns } from '../serverCollections'
 
 async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 	const rundowns = await Rundowns.findFetchAsync({

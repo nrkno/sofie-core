@@ -19,8 +19,8 @@ import {
 	RundownPlaylists,
 	RundownPlaylistId,
 	RundownPlaylistCollectionUtil,
+	RundownHoldState,
 } from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segment, SegmentId } from '../../lib/collections/Segments'
 import { Studio, Studios, StudioRouteSet, DBStudio } from '../../lib/collections/Studios'
 import { Part, PartId, Parts } from '../../lib/collections/Parts'
@@ -129,6 +129,9 @@ import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studi
 import { SegmentListContainer } from './SegmentList/SegmentListContainer'
 import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
 import { IProps as IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundowns } from '../../lib/clientCollections'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
