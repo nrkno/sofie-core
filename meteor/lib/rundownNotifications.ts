@@ -79,7 +79,7 @@ export function getSegmentPartNotes(playlistId: RundownPlaylistId, rundownIds: R
 				rundownId: 1,
 				orphaned: 1,
 				reset: 1,
-				// @ts-ignore
+				// @ts-expect-error deep property
 				'part.title': 1,
 			}),
 		}

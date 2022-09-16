@@ -140,7 +140,7 @@ meteorPublish(PubSub.partInstances, async function (rundownIds, playlistActivati
 
 	const modifier: FindOptions<DBPartInstance> = {
 		fields: {
-			// @ts-ignore
+			// @ts-expect-error Mongo typings aren't clever enough yet
 			'part.metaData': 0,
 		},
 	}
@@ -163,7 +163,7 @@ meteorPublish(PubSub.partInstancesSimple, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBPartInstance> = {
 		fields: {
-			// @ts-ignore
+			// @ts-expect-error Mongo typings aren't clever enough yet
 			'part.metaData': 0,
 			isTaken: 0,
 			timings: 0,
@@ -185,7 +185,7 @@ meteorPublish(PubSub.partInstancesForSegmentPlayout, async function (selector, t
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBPartInstance> = {
 		fields: {
-			// @ts-ignore
+			// @ts-expect-error Mongo typings aren't clever enough yet
 			'part.metaData': 0,
 		},
 		sort: {
@@ -209,8 +209,7 @@ meteorPublish(PubSub.pieces, async function (selector: MongoQuery<Piece>, token?
 	const modifier: FindOptions<Piece> = {
 		fields: {
 			metaData: 0,
-			// @ts-ignore
-			'content.timelineObjects': 0,
+			timelineObjectsString: 0,
 		},
 	}
 	if (
@@ -227,8 +226,7 @@ meteorPublish(PubSub.adLibPieces, async function (selector, token) {
 	const modifier: FindOptions<AdLibPiece> = {
 		fields: {
 			metaData: 0,
-			// @ts-ignore
-			'content.timelineObjects': 0,
+			timelineObjectsString: 0,
 		},
 	}
 	if (
@@ -243,10 +241,9 @@ meteorPublish(PubSub.pieceInstances, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<PieceInstance> = {
 		fields: {
-			// @ts-ignore
+			// @ts-expect-error Mongo typings aren't clever enough yet
 			'piece.metaData': 0,
-			// @ts-ignore
-			'piece.content.timelineObjects': 0,
+			'piece.timelineObjectsString': 0,
 		},
 	}
 
@@ -266,13 +263,10 @@ meteorPublish(PubSub.pieceInstancesSimple, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<PieceInstance> = {
 		fields: {
-			// @ts-ignore
+			// @ts-expect-error Mongo typings aren't clever enough yet
 			'piece.metaData': 0,
-			// @ts-ignore
-			'piece.content.timelineObjects': 0,
-			// @ts-ignore
+			'piece.timelineObjectsString': 0,
 			startedPlayback: 0,
-			// @ts-ignore
 			stoppedPlayback: 0,
 		},
 	}
@@ -342,8 +336,7 @@ meteorPublish(
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<RundownBaselineAdLibItem> = {
 			fields: {
-				// @ts-ignore
-				'content.timelineObjects': 0,
+				timelineObjectsString: 0,
 			},
 		}
 		if (

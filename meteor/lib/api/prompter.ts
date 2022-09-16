@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
 import { ISourceLayer, ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
@@ -243,9 +242,4 @@ export namespace PrompterAPI {
 		})
 		return data
 	}
-}
-
-if (Meteor.isClient) {
-	// @ts-ignore
-	window.getPrompterData = PrompterAPI.getPrompterData
 }

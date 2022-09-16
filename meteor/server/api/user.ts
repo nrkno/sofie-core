@@ -103,7 +103,7 @@ registerClassToMeteorMethods(UserAPIMethods, ServerUserAPI, false)
 Accounts.onCreateUser((options, user) => {
 	user.profile = options.profile
 
-	// @ts-ignore hack, add the property "createOrganization" to trigger creation of an org
+	// @ts-expect-error hack, add the property "createOrganization" to trigger creation of an org
 	const createOrganization = options.createOrganization
 	if (createOrganization) {
 		Meteor.defer(() => {

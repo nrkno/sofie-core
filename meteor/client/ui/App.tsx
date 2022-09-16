@@ -170,8 +170,7 @@ export const App = translateWithTracker(() => {
 				// and not in an active rundown
 				document.querySelector('.rundown.active') === null
 			) {
-				// forceReload is marked as deprecated, but it's still usable
-				// @ts-ignore
+				// @ts-expect-error forceReload is marked as deprecated, but it's still usable
 				setTimeout(() => window.location.reload(true))
 			}
 		}

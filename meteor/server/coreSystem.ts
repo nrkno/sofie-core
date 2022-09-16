@@ -138,8 +138,8 @@ function checkDatabaseVersions() {
 			if (blueprint.hasCode) {
 				blueprintIds[unprotectString(blueprint._id)] = true
 
-				// @ts-ignore
-				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) blueprint.databaseVersion = {}
+				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion))
+					blueprint.databaseVersion = { showStyle: {}, studio: {}, system: undefined }
 				if (!blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {}
 				if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
 
@@ -379,7 +379,7 @@ function startupMessage() {
 		logger.info(`Core starting up`)
 		logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
 
-		// @ts-ignore
+		// @ts-expect-error Its not always defined
 		if (global.gc) {
 			logger.info(`Manual garbage-collection is enabled`)
 		} else {

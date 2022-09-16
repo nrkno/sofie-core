@@ -208,7 +208,7 @@ export class RundownPlaylistCollectionUtil {
 			},
 			{
 				...segmentsOptions,
-				//@ts-ignore
+				//@ts-expect-error This is too clever for the compiler
 				fields: segmentsOptions?.fields
 					? {
 							...segmentsOptions?.fields,
@@ -233,7 +233,7 @@ export class RundownPlaylistCollectionUtil {
 			},
 			{
 				...partsOptions,
-				//@ts-ignore
+				//@ts-expect-error This is too clever for the compiler
 				fields: partsOptions?.fields
 					? {
 							...partsOptions?.fields,
@@ -242,7 +242,6 @@ export class RundownPlaylistCollectionUtil {
 							_rank: 1,
 					  }
 					: undefined,
-				//@ts-ignore
 				sort: {
 					...segmentsOptions?.sort,
 					rundownId: 1,

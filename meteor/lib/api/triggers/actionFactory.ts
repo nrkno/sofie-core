@@ -555,7 +555,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 
 	// return a NO-OP, if not recognized
 	return {
-		// @ts-ignore action.action is "never", based on TypeScript rules, but if input doesn't folllow them,
+		// @ts-expect-error action.action is "never", based on TypeScript rules, but if input doesn't folllow them,
 		// it can actually exist
 		action: action.action,
 		execute: () => {

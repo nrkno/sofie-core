@@ -39,7 +39,7 @@ export namespace MongoMock {
 	export class Collection<T extends CollectionObject> implements MongoCollection {
 		public _name: string
 		private _options: any = {}
-		// @ts-ignore used in test to check that it's a mock
+		// @ts-expect-error used in test to check that it's a mock
 		private _isMock = true as const
 		private observers: ObserverEntry<T>[] = []
 

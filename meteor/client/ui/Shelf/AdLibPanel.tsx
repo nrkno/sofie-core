@@ -331,7 +331,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 						},
 					},
 					{
-						// @ts-ignore deep-property
+						// @ts-expect-error deep-property
 						sort: { 'display._rank': 1 },
 					}
 				).map<{
@@ -446,7 +446,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 									},
 								},
 								{
-									// @ts-ignore deep-property
+									// @ts-expect-error deep-property
 									sort: { 'display._rank': 1 },
 								}
 							)

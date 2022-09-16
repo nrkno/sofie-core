@@ -259,7 +259,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			const part = PartInstances.findOne(selectedPart, {
 				fields: literal<MongoFieldSpecifierOnes<DBPartInstance>>({
 					rundownId: 1,
-					//@ts-ignore
+					//@ts-expect-error deep property
 					'part._id': 1,
 				}),
 			}) as Pick<PartInstance, 'rundownId'> | undefined
@@ -668,7 +668,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									getEventTimestamp(e),
 									piece.adlibAction._id,
 									partial<BucketAdLibAction>({
-										//@ts-ignore deep property
+										//@ts-expect-error deep property
 										'display.label': newName,
 									})
 								)
@@ -723,7 +723,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 										getEventTimestamp(e),
 										draggedB.adlibAction._id,
 										partial<BucketAdLibAction>({
-											//@ts-ignore deep property
+											//@ts-expect-error deep property
 											'display._rank': newRank,
 										})
 									)

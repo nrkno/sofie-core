@@ -205,7 +205,6 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 			)
 
 			_.each(configSummaryFields, (_config, field) => {
-				// @ts-ignore underscore typings are incorrect
 				const fn = _.property(field.split('.'))
 				let val = fn(obj)
 
@@ -258,7 +257,6 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 		renderDevices(configManifest: TableConfigManifestEntry, obj?: any, prefix?: string) {
 			const { t } = this.props
 			const deviceTypes = Object.keys(configManifest.config)
-			// @ts-ignore underscore typings are incorrect
 			const devices = _.property((prefix + configManifest.id).split('.'))(obj)
 
 			if (deviceTypes.length === 1) {
@@ -456,7 +454,6 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 			const configSummaryFields = this.getConfigSummaryFields(configManifest)
 
 			_.each(configSummaryFields, (_config, field) => {
-				// @ts-ignore underscore typings are incorrect
 				const fn = _.property(field.split('.'))
 				const val = fn(obj)
 
@@ -499,7 +496,6 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 		 */
 		renderConfigTable(configField: TableConfigManifestEntry, obj: object, prefix: string) {
 			const { t } = this.props
-			// @ts-ignore
 			const tableContent = _.property(prefix.substr(0, prefix.length - 1).split('.'))(obj)
 			const configTypes = Object.keys(configField.config)
 

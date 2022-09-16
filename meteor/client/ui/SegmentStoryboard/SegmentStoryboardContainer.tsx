@@ -137,7 +137,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 
 			const partInstance = PartInstances.findOne(props.playlist.nextPartInstanceId, {
 				fields: {
-					//@ts-ignore
+					//@ts-expect-error typescript doesnt like it
 					segmentId: 1,
 					'part._id': 1,
 				},
@@ -160,7 +160,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 
 			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInstanceId, {
 				fields: {
-					//@ts-ignore
+					//@ts-expect-error deep property
 					'part.autoNext': 1,
 					'part.expectedDuration': 1,
 				},

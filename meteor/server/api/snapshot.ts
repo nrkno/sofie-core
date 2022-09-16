@@ -478,7 +478,7 @@ async function restoreFromSnapshot(snapshot: AnySnapshot): Promise<void> {
 
 	if (!_.isObject(snapshot)) throw new Meteor.Error(500, `Restore input data is not an object`)
 	// First, some special (debugging) cases:
-	// @ts-ignore is's not really a snapshot here:
+	// @ts-expect-error is's not really a snapshot here:
 	if (snapshot.externalId && snapshot.segments && snapshot.type === 'mos') {
 		// Special: Not a snapshot, but a datadump of a MOS rundown
 		const studioId: StudioId = Meteor.settings.manualSnapshotIngestStudioId || 'studio0'
