@@ -14,7 +14,6 @@ import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments 
 import { ServerRundownAPI } from './rundown'
 import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
-import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
@@ -42,7 +41,8 @@ import { StudioContentWriteAccess } from '../security/studio'
 import { BucketSecurity } from '../security/buckets'
 import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Rundowns } from '../serverCollections'
+import { IngestDataCache, Rundowns } from '../serverCollections'
+import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
 async function pieceSetInOutPoints(
 	access: VerifiedRundownPlaylistContentAccess,

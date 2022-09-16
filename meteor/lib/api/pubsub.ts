@@ -1,3 +1,4 @@
+import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { Meteor } from 'meteor/meteor'
 import { AdLibAction } from '../collections/AdLibActions'
 import { AdLibPiece } from '../collections/AdLibPieces'
@@ -12,7 +13,6 @@ import { ExpectedPackageDB, ExpectedPackageId } from '../collections/ExpectedPac
 import { ExpectedPackageWorkStatus } from '../collections/ExpectedPackageWorkStatuses'
 import { ExpectedPlayoutItem } from '../collections/ExpectedPlayoutItems'
 import { ExternalMessageQueueObj } from '../collections/ExternalMessageQueue'
-import { IngestDataCacheObj } from '../collections/IngestDataCache'
 import { MediaObject } from '../collections/MediaObjects'
 import { MediaWorkFlow } from '../collections/MediaWorkFlows'
 import { MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'

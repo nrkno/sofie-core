@@ -65,12 +65,11 @@ import {
 import { OrganizationId } from '../../lib/collections/Organization'
 import { PackageInfo } from '../../server/coreSystem'
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
-import { Workers, WorkerStatus } from '../../lib/collections/Workers'
-import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
+import { WorkerStatus } from '../../lib/collections/Workers'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { RundownPlaylists, Rundowns } from '../../server/serverCollections'
+import { RundownPlaylists, Rundowns, Workers, WorkerThreadStatuses } from '../../server/serverCollections'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',

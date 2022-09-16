@@ -25,8 +25,7 @@ import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
 import { SystemReadAccess } from '../security/system'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { Workers } from '../../lib/collections/Workers'
-import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
+import { Workers, WorkerThreadStatuses } from '../serverCollections'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)

@@ -12,7 +12,6 @@ import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstan
 import { PartInstances, DBPartInstance } from '../../lib/collections/PartInstances'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
-import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
@@ -24,7 +23,8 @@ import {
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { check, Match } from 'meteor/check'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Rundowns } from '../serverCollections'
+import { IngestDataCache, Rundowns } from '../serverCollections'
+import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
 meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
 	check(deviceId, String)
