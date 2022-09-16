@@ -1443,6 +1443,7 @@ const ShowStyleVariantsSettings = withTranslation()(
 												collection={ShowStyleVariants}
 												configPath={'blueprintConfig'}
 												object={showStyleVariant}
+												alternateObject={this.props.showStyleBase}
 												layerMappings={this.props.layerMappings}
 												sourceLayers={this.props.sourceLayers}
 												subPanel={true}

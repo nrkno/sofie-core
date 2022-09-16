@@ -19,6 +19,7 @@ import {
 	ConfigManifestEntrySourceLayers,
 	ConfigManifestEntryLayerMappings,
 	SourceLayerType,
+	ConfigManifestEntrySelectFromColumn,
 } from '@sofie-automation/blueprints-integration'
 import { DBObj, ProtectedString, objectPathGet, getRandomString } from '../../../lib/lib'
 import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
@@ -70,9 +71,31 @@ function filterLayerMappings(
 	return result
 }
 
+function getTableColumnValues<DBInterface extends { _id: ProtectedString<any> }>(
+	item: ConfigManifestEntrySelectFromColumn<boolean>,
+	configPath: string,
+	object: DBInterface,
+	alternateObject?: any
+): string[] {
+	const attribute = `${configPath}.${item.tableId}`
+	const table = objectPathGet(object, attribute) ?? objectPathGet(alternateObject, attribute)
+	const result: string[] = []
+	if (!Array.isArray(table)) {
+		return result
+	}
+	table.forEach((row) => {
+		if (typeof row === 'object' && row[item.columnId] !== undefined) {
+			result.push(row[item.columnId])
+		}
+	})
+	return result
+}
+
 function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DBInterface, DBInterface>,
+	configPath: string,
 	object: DBInterface,
+	alternateObject: any | undefined,
 	item: BasicConfigManifestEntry,
 	attribute: string,
 	layerMappings?: { [key: string]: MappingsExt },
@@ -207,6 +230,18 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 				)
 			}
 			break
+		case ConfigManifestEntryType.SELECT_FROM_COLUMN:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type={item.multiple ? 'multiselect' : 'dropdown'}
+					options={getTableColumnValues(item, configPath, object, alternateObject)}
+					collection={collection}
+					className="input text-input dropdown input-l"
+				/>
+			)
 		default:
 			return null
 	}
@@ -220,6 +255,7 @@ interface IConfigManifestSettingsProps<
 
 	collection: TCol
 	object: DBInterface
+	alternateObject?: any
 	configPath: string
 
 	layerMappings?: { [key: string]: MappingsExt }
@@ -245,6 +281,8 @@ interface IConfigManifestTableProps<
 
 	collection: TCol
 	object: DBInterface
+	alternateObject?: any
+	configPath: string
 
 	layerMappings?: { [key: string]: MappingsExt }
 	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
@@ -470,7 +508,9 @@ export class ConfigManifestTable<
 										<td key={col.id}>
 											{getEditAttribute(
 												this.props.collection,
+												this.props.configPath,
 												this.props.object,
+												this.props.alternateObject,
 												col,
 												`${baseAttribute}.${sortedIndices[i]}.${col.id}`,
 												this.props.layerMappings,
@@ -690,7 +730,7 @@ export class ConfigManifestSettings<
 	}
 
 	renderEditableArea(item: ConfigManifestEntry, valIndex: string) {
-		const baseAttribute = `blueprintConfig.${valIndex}`
+		const baseAttribute = `${this.props.configPath}.${valIndex}`
 		const { t, collection, object, i18n, tReady } = this.props
 		switch (item.type) {
 			case ConfigManifestEntryType.TABLE:
@@ -705,9 +745,11 @@ export class ConfigManifestSettings<
 						item={item}
 						layerMappings={this.props.layerMappings}
 						sourceLayers={this.props.sourceLayers}
+						configPath={this.props.configPath}
 					/>
 				)
 			case ConfigManifestEntryType.SELECT:
+			case ConfigManifestEntryType.SELECT_FROM_COLUMN:
 			case ConfigManifestEntryType.LAYER_MAPPINGS:
 			case ConfigManifestEntryType.SOURCE_LAYERS:
 				return (
@@ -715,7 +757,9 @@ export class ConfigManifestSettings<
 						{t('Value')}
 						{getEditAttribute(
 							this.props.collection,
+							this.props.configPath,
 							this.props.object,
+							this.props.alternateObject,
 							item as BasicConfigManifestEntry,
 							baseAttribute,
 							this.props.layerMappings,
@@ -729,7 +773,9 @@ export class ConfigManifestSettings<
 						{t('Value')}
 						{getEditAttribute(
 							this.props.collection,
+							this.props.configPath,
 							this.props.object,
+							this.props.alternateObject,
 							item as BasicConfigManifestEntry,
 							baseAttribute,
 							this.props.layerMappings,
