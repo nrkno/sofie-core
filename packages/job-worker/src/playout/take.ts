@@ -256,7 +256,7 @@ async function afterTakeUpdateTimingsAndEvents(
 				reportPartInstanceHasStopped(context, cache, previousPartInstance, takeDoneTime)
 			}
 
-			// TODO is there anything we can do for simulating autoNext?
+			// TODO-GATEWAY is there anything we can do for simulating autoNext?
 		}
 
 		const takeRundown = takePartInstance ? cache.Rundowns.findOne(takePartInstance.rundownId) : undefined

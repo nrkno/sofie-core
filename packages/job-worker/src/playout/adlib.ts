@@ -624,7 +624,7 @@ export function innerStopPieces(
 	}
 
 	const resolvedPieces = getResolvedPieces(context, cache, showStyleBase, currentPartInstance)
-	const stopAt = getCurrentTime() + (timeOffset || 0) // TODO - should this be doing the latency compensation too?
+	const stopAt = getCurrentTime() + (timeOffset || 0) // TODO-GATEWAY - should this be doing the latency compensation too?
 	const relativeStopAt = stopAt - lastStartedPlayback
 
 	for (const pieceInstance of resolvedPieces) {

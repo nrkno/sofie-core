@@ -59,8 +59,8 @@ export interface PieceInstance
 		end: number
 	}
 
-	plannedStartedPlayback?: number
-	plannedStoppedPlayback?: number // TODO - is this necessary as well as userDuration?
+	plannedStartedPlayback?: number // TODO - this is never being set
+	plannedStoppedPlayback?: number // TODO - this is never being set
 }
 
 export interface ResolvedPieceInstance

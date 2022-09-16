@@ -163,6 +163,8 @@ export function reportPieceHasStarted(
 	pieceInstance: PieceInstance,
 	timestamp: Time
 ): void {
+	// TODO - set plannedStartedPlayback when single gateway mode?
+
 	if (pieceInstance.reportedStartedPlayback !== timestamp) {
 		cache.PieceInstances.update(pieceInstance._id, {
 			$set: {
@@ -202,6 +204,8 @@ export function reportPieceHasStopped(
 	pieceInstance: PieceInstance,
 	timestamp: Time
 ): void {
+	// TODO - set plannedStartedPlayback when single gateway mode?
+
 	if (pieceInstance.reportedStartedPlayback !== timestamp) {
 		cache.PieceInstances.update(pieceInstance._id, {
 			$set: {
