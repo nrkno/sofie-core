@@ -627,8 +627,6 @@ export function innerStopPieces(
 	const stopAt = getCurrentTime() + (timeOffset || 0) // TODO - should this be doing the latency compensation too?
 	const relativeStopAt = stopAt - lastStartedPlayback
 
-	const stoppedInfiniteIds = new Set<PieceId>()
-
 	for (const pieceInstance of resolvedPieces) {
 		if (
 			!pieceInstance.userDuration &&
@@ -647,9 +645,6 @@ export function innerStopPieces(
 						userDuration: {
 							end: relativeStopAt,
 						},
-					}
-					if (pieceInstance.infinite) {
-						stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
 					}
 
 					cache.PieceInstances.update(

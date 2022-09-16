@@ -1537,6 +1537,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
+						activationId: 1,
 					},
 				}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
 				if (!playlist) return
@@ -2951,7 +2952,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			return (
 				<SorensenContext.Consumer>
 					{(sorensen) =>
-						sorensen && (
+						sorensen &&
+						this.state.studioMode && (
 							<TriggersHandler
 								rundownPlaylistId={this.props.rundownPlaylistId}
 								showStyleBaseId={this.props.showStyleBase!._id}

@@ -169,7 +169,6 @@ export class DbCacheWriteObject<
 
 		if (!_.isEqual(this.doc, newDoc)) {
 			this._document = newDoc
-
 			this._updated = true
 			return true
 		}
@@ -187,6 +186,8 @@ export class DbCacheWriteObject<
 			}
 
 			if (span) span.end()
+
+			this._updated = false
 
 			return {
 				added: 0,

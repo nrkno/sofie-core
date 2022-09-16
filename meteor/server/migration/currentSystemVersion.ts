@@ -41,9 +41,10 @@
  * 1.39.0: Release 39 (2022-04-28)
  * 1.40.0: Release 40 (Skipped)
  * 1.41.0: Release 41 (2022-06-29)
- * 1.42.0: Release 42 (2022-05-xx)
- * 1.43.0: Release 43 (2022-06-xx)
+ * 1.42.0: Release 42 (Skipped)
+ * 1.43.0: Release 43 (Skipped)
+ * 1.44.0: Release 44 (2022-07-xx)
  */
 
 // Note: Only set this to release versions, (ie X.Y.Z), not pre-releases (ie X.Y.Z-0-pre-release)
-export const CURRENT_SYSTEM_VERSION = '1.43.0'
+export const CURRENT_SYSTEM_VERSION = '1.44.0'

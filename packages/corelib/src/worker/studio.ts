@@ -1,4 +1,4 @@
-import { Time } from '@sofie-automation/blueprints-integration'
+import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import {
 	AdLibActionId,
 	PartId,
@@ -36,10 +36,7 @@ export enum StudioJobs {
 	RemovePlaylist = 'removePlaylist',
 	RegeneratePlaylist = 'regeneratePlaylist',
 
-	OnPiecePlaybackStarted = 'onPiecePlaybackStarted',
-	OnPiecePlaybackStopped = 'onPiecePlaybackStopped',
-	OnPartPlaybackStarted = 'onPartPlaybackStarted',
-	OnPartPlaybackStopped = 'onPartPlaybackStopped',
+	OnPlayoutPlaybackChanged = 'onPlayoutPlaybackChanged',
 	OnTimelineTriggerTime = 'onTimelineTriggerTime',
 
 	UpdateStudioBaseline = 'updateStudioBaseline',
@@ -53,6 +50,7 @@ export enum StudioJobs {
 
 	GeneratePlaylistSnapshot = 'generatePlaylistSnapshot',
 	RestorePlaylistSnapshot = 'restorePlaylistSnapshot',
+	DebugCrash = 'debugCrash',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -120,22 +118,8 @@ export interface DisableNextPieceProps extends RundownPlayoutPropsBase {
 export type RemovePlaylistProps = RundownPlayoutPropsBase
 export type RegeneratePlaylistProps = RundownPlayoutPropsBase
 
-export interface OnPiecePlaybackStartedProps extends RundownPlayoutPropsBase {
-	pieceInstanceId: PieceInstanceId
-	startedPlayback: Time
-}
-export interface OnPiecePlaybackStoppedProps extends RundownPlayoutPropsBase {
-	partInstanceId: PartInstanceId
-	pieceInstanceId: PieceInstanceId
-	stoppedPlayback: Time
-}
-export interface OnPartPlaybackStartedProps extends RundownPlayoutPropsBase {
-	partInstanceId: PartInstanceId
-	startedPlayback: Time
-}
-export interface OnPartPlaybackStoppedProps extends RundownPlayoutPropsBase {
-	partInstanceId: PartInstanceId
-	stoppedPlayback: Time
+export interface OnPlayoutPlaybackChangedProps extends RundownPlayoutPropsBase {
+	changes: PlayoutChangedResults['changes']
 }
 export interface OnTimelineTriggerTimeProps {
 	results: Array<{ id: string; time: number }>
@@ -203,10 +187,7 @@ export type StudioJobFunc = {
 	[StudioJobs.RemovePlaylist]: (data: RemovePlaylistProps) => void
 	[StudioJobs.RegeneratePlaylist]: (data: RegeneratePlaylistProps) => void
 
-	[StudioJobs.OnPiecePlaybackStarted]: (data: OnPiecePlaybackStartedProps) => void
-	[StudioJobs.OnPiecePlaybackStopped]: (data: OnPiecePlaybackStoppedProps) => void
-	[StudioJobs.OnPartPlaybackStarted]: (data: OnPartPlaybackStartedProps) => void
-	[StudioJobs.OnPartPlaybackStopped]: (data: OnPartPlaybackStoppedProps) => void
+	[StudioJobs.OnPlayoutPlaybackChanged]: (data: OnPlayoutPlaybackChangedProps) => void
 	[StudioJobs.OnTimelineTriggerTime]: (data: OnTimelineTriggerTimeProps) => void
 
 	[StudioJobs.UpdateStudioBaseline]: () => string | false
@@ -220,6 +201,7 @@ export type StudioJobFunc = {
 
 	[StudioJobs.GeneratePlaylistSnapshot]: (data: GeneratePlaylistSnapshotProps) => GeneratePlaylistSnapshotResult
 	[StudioJobs.RestorePlaylistSnapshot]: (data: RestorePlaylistSnapshotProps) => RestorePlaylistSnapshotResult
+	[StudioJobs.DebugCrash]: (data: DebugRegenerateNextPartInstanceProps) => void
 }
 
 export function getStudioQueueName(id: StudioId): string {

@@ -55,10 +55,14 @@ export class LocksManager {
 		})
 
 		const timeout = setTimeout(() => {
-			if (!completedPromise.isResolved) {
-				// Aquire timed out!
-				this.pendingLocks.delete(lockId)
-				completedPromise.manualReject(new Error('Lock aquire timed out!'))
+			try {
+				if (!completedPromise.isResolved) {
+					// Aquire timed out!
+					this.pendingLocks.delete(lockId)
+					completedPromise.manualReject(new Error('Lock aquire timed out!'))
+				}
+			} catch (e) {
+				logger.error(`Unexpected error when timing out acquiring a lock: "${lockId}": ${e}`)
 			}
 		}, TimeoutAquireLock)
 
@@ -85,9 +89,13 @@ export class LocksManager {
 		})
 
 		const timeout = setTimeout(() => {
-			if (!completedPromise.isResolved) {
-				// Release timed out
-				completedPromise.manualResolve(true)
+			try {
+				if (!completedPromise.isResolved) {
+					// Release timed out
+					completedPromise.manualResolve(true)
+				}
+			} catch (e) {
+				logger.error(`Unexpected error when timing out releasing a lock: "${lockId}": ${e}`)
 			}
 		}, TimeoutReleaseLock)
 

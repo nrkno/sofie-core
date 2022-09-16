@@ -1,6 +1,6 @@
 {
 	"name": "automation-core",
-	"version": "1.44.0-in-development",
+	"version": "1.44.0-in-testing.1",
 	"private": true,
 	"engines": {
 		"node": ">=14.19.1"
@@ -75,7 +75,7 @@
 		"lottie-web": "^5.9.4",
 		"meteor-node-stubs": "^1.2.3",
 		"moment": "^2.29.2",
-		"mos-connection": "^2.0.0",
+		"mos-connection": "^2.0.1",
 		"ntp-client": "^0.5.3",
 		"object-path": "^0.11.8",
 		"p-lazy": "^3.1.0",
@@ -100,7 +100,7 @@
 		"react-timer-hoc": "^2.3.0",
 		"semver": "^7.3.7",
 		"superfly-timeline": "^8.2.7",
-		"threadedclass": "^1.0.2",
+		"threadedclass": "^1.1.0",
 		"timecode": "0.0.4",
 		"type-fest": "^2.12.2",
 		"underscore": "^1.13.3",
@@ -173,11 +173,19 @@
 		"mainModule": {
 			"client": "client/main.tsx",
 			"server": "server/main.ts"
+		},
+		"nodeModules": {
+			"recompile": {
+				"mos-connection": "legacy"
+			}
 		}
 	},
 	"standard-version": {
 		"scripts": {
 			"postbump": "yarn libs:syncVersionsAndChangelogs"
 		}
+	},
+	"resolutions": {
+		"url-parse": "^1.5.9"
 	}
 }

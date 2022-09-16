@@ -158,7 +158,7 @@ export async function updateTimeline(
 
 		const targetNowTime = getCurrentTime() + (nowOffsetLatency ?? 0)
 
-		const { currentPartInstance, previousPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+		const { currentPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 		if (currentPartInstance) {
 			// const willAutoNext = !!(
 			// 	nextPartInstance &&
