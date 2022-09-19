@@ -10,6 +10,7 @@ import { withTranslation } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
 import { EditAttribute, EditAttributeType, EditAttributeBase } from './EditAttribute'
 import { SorensenContext } from './SorensenContext'
+import { Settings } from '../../lib/Settings'
 
 interface IModalDialogAttributes {
 	show?: boolean
@@ -63,11 +64,11 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 
 	bindKeys = () => {
 		if (this.props.show) {
-			this.sorensen.bind('Enter', this.preventDefault, {
+			this.sorensen.bind(Settings.confirmKeyCode, this.preventDefault, {
 				up: false,
 				prepend: true,
 			})
-			this.sorensen.bind('Enter', this.handleKey, {
+			this.sorensen.bind(Settings.confirmKeyCode, this.handleKey, {
 				up: true,
 				prepend: true,
 			})
@@ -85,8 +86,8 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	}
 
 	unbindKeys = () => {
-		this.sorensen.unbind('Enter', this.preventDefault)
-		this.sorensen.unbind('Enter', this.handleKey)
+		this.sorensen.unbind(Settings.confirmKeyCode, this.preventDefault)
+		this.sorensen.unbind(Settings.confirmKeyCode, this.handleKey)
 		this.sorensen.unbind('Escape', this.preventDefault)
 		this.sorensen.unbind('Escape', this.handleKey)
 	}

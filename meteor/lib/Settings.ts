@@ -56,6 +56,13 @@ export interface ISettings {
 
 	/** If true, countdowns of videos will count down to the last freeze-frame of the video instead of to the end of the video */
 	useCountdownToFreezeFrame: boolean
+
+	/**
+	 * Which keyboard key is used as "Confirm" in modal dialogs etc.
+	 * In some installations, the rightmost Enter key (on the numpad) is dedicated for playout,
+	 * in such cases this must be set to 'Enter' to exclude it.
+	 */
+	confirmKeyCode: 'Enter' | 'AnyEnter'
 }
 
 /**
@@ -80,6 +87,7 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 	poisonKey: 'Escape',
 	useCountdownToFreezeFrame: true,
+	confirmKeyCode: 'Enter',
 })
 
 /**
