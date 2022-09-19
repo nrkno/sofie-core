@@ -1,19 +1,27 @@
 import React, { useMemo } from 'react'
 import { ISourceLayerExtended, PieceExtended } from '../../../../lib/Rundown'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import StudioContext from '../../RundownView/StudioContext'
 import { LinePartIndicator } from './LinePartIndicator'
 import { PieceIndicatorMenu } from './PieceIndicatorMenu'
+import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 
 interface IProps {
+	partId: PartId
 	label: string
 	sourceLayers: ISourceLayerExtended[]
 	pieces: PieceExtended[]
+	onPieceClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
 
 export const LinePartPieceIndicator: React.FC<IProps> = function LinePartPieceIndicator({
 	label,
 	pieces,
 	sourceLayers,
+	partId,
+	onPieceClick,
+	onPieceDoubleClick,
 }) {
 	const sourceLayerIds = useMemo(() => sourceLayers.map((layer) => layer._id), [sourceLayers])
 	const thisPieces = useMemo(
@@ -47,7 +55,16 @@ export const LinePartPieceIndicator: React.FC<IProps> = function LinePartPieceIn
 							hasOriginInPreceedingPart={hasOriginInPreceedingPart}
 							piece={topPiece}
 							studio={studio}
-							overlay={(ref) => <PieceIndicatorMenu pieces={thisPieces} parentEl={ref} />}
+							overlay={(ref, setIsOver) => (
+								<PieceIndicatorMenu
+									pieces={thisPieces}
+									parentEl={ref}
+									partId={partId}
+									setIsOver={setIsOver}
+									onPieceClick={onPieceClick}
+									onPieceDoubleClick={onPieceDoubleClick}
+								/>
+							)}
 						/>
 					</>
 				)

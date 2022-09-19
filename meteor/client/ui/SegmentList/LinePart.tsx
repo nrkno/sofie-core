@@ -35,6 +35,7 @@ interface IProps {
 	displayLiveLineCounter: boolean
 	style?: React.CSSProperties
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
+	onPieceClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 }
 
@@ -49,6 +50,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 	indicatorColumns,
 	adLibIndicatorColumns,
 	onContextMenu,
+	onPieceClick,
 	onPieceDoubleClick,
 }) {
 	const isFinished = (part.instance.timings?.stoppedPlayback ?? part.instance.timings?.takeOut) !== undefined
@@ -146,6 +148,8 @@ export const LinePart: React.FC<IProps> = function LinePart({
 				pieces={part.pieces}
 				indicatorColumns={indicatorColumns}
 				adLibIndicatorColumns={adLibIndicatorColumns}
+				onPieceClick={onPieceClick}
+				onPieceDoubleClick={onPieceDoubleClick}
 			/>
 			<LinePartTimeline
 				part={part}

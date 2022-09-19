@@ -1,13 +1,32 @@
-import React, { useLayoutEffect, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useState } from 'react'
 import Escape from 'react-escape'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { usePopper } from 'react-popper'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { StoryboardSecondaryPiece } from '../../SegmentStoryboard/StoryboardPartSecondaryPieces/StoryboardSecondaryPiece'
+import StudioContext from '../../RundownView/StudioContext'
+import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
+import { TOOLTIP_DEFAULT_DELAY } from '../../../lib/lib'
 
-export function PieceIndicatorMenu({ pieces, parentEl }: { pieces: PieceExtended[]; parentEl: HTMLDivElement | null }) {
+export function PieceIndicatorMenu({
+	pieces,
+	partId,
+	parentEl,
+	setIsOver,
+	onPieceClick,
+	onPieceDoubleClick,
+}: {
+	partId: PartId
+	pieces: PieceExtended[]
+	parentEl: HTMLDivElement | null
+	setIsOver: (isOver: boolean) => void
+	onPieceClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+}) {
 	const [indicatorMenuEl, setIndicatorMenuEl] = useState<HTMLDivElement | null>(null)
 	const { styles, attributes, update } = usePopper(parentEl, indicatorMenuEl, {
-		placement: 'top',
+		placement: 'bottom',
 		modifiers: [
 			{
 				name: 'offset',
@@ -23,18 +42,74 @@ export function PieceIndicatorMenu({ pieces, parentEl }: { pieces: PieceExtended
 		update && update().catch(console.error)
 	}, [pieces.length])
 
+	useEffect(() => {
+		if (!indicatorMenuEl) return
+
+		let timeout: NodeJS.Timeout | undefined = undefined
+
+		function onMouseEnter() {
+			setIsOver(true)
+		}
+
+		function onMouseLeave() {
+			timeout = setTimeout(() => {
+				setIsOver(false)
+			}, TOOLTIP_DEFAULT_DELAY * 1000)
+		}
+
+		indicatorMenuEl.addEventListener('mouseenter', onMouseEnter)
+		indicatorMenuEl.addEventListener('mouseleave', onMouseLeave)
+
+		return () => {
+			clearTimeout(timeout)
+			indicatorMenuEl.removeEventListener('mouseenter', onMouseEnter)
+			indicatorMenuEl.removeEventListener('mouseleave', onMouseLeave)
+		}
+	}, [indicatorMenuEl])
+
+	useLayoutEffect(() => {
+		if (!indicatorMenuEl) return
+
+		const parentEl = indicatorMenuEl.parentElement
+		if (!parentEl) return
+
+		// This is a hack, due to the unfortunate architecture of react-escape that doesn't allow specifying the
+		// zIndex of the escaping element.
+		parentEl.style.zIndex = '999'
+	}, [indicatorMenuEl])
+
+	if (pieces.length === 0) return null
+
 	return (
-		<Escape to="viewport">
-			<div
-				className="segment-opl__piece-indicator-menu"
-				ref={setIndicatorMenuEl}
-				style={styles.popper}
-				{...attributes.popper}
-			>
-				{pieces.map((piece) => (
-					<p key={unprotectString(piece.instance._id)}>{piece.instance.piece.name}</p>
-				))}
-			</div>
-		</Escape>
+		<StudioContext.Consumer>
+			{(studio) =>
+				studio && (
+					<Escape to="document">
+						<div
+							className="segment-opl__piece-indicator-menu"
+							ref={setIndicatorMenuEl}
+							style={styles.popper}
+							{...attributes.popper}
+						>
+							{pieces.map(
+								(piece) =>
+									!!piece.sourceLayer && (
+										<StoryboardSecondaryPiece
+											key={unprotectString(piece.instance._id)}
+											layer={piece.sourceLayer}
+											piece={piece}
+											partId={partId}
+											studio={studio}
+											isLiveLine={false}
+											onClick={(e) => onPieceClick && onPieceClick(piece, e)}
+											onDoubleClick={(e) => onPieceDoubleClick && onPieceDoubleClick(piece, e)}
+										/>
+									)
+							)}
+						</div>
+					</Escape>
+				)
+			}
+		</StudioContext.Consumer>
 	)
 }

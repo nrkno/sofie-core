@@ -1,14 +1,15 @@
 import classNames from 'classnames'
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Studio } from '../../../../lib/collections/Studios'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
+import { TOOLTIP_DEFAULT_DELAY } from '../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { AdLibPieceUi } from '../../../lib/shelf'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 
 interface IProps {
-	overlay: (ref: HTMLDivElement | null) => React.ReactNode
+	overlay: (ref: HTMLDivElement | null, setIsOver: (isOver: boolean) => void) => React.ReactNode
 	count: number
 	hasOriginInPreceedingPart: boolean
 	allSourceLayers: ISourceLayerExtended[]
@@ -28,19 +29,33 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 }) {
 	let typeClass = thisSourceLayer?.type ? RundownUtils.getSourceLayerClassName(thisSourceLayer.type) : undefined
 	const [element, setElement] = useState<HTMLDivElement | null>(null)
+	const mouseOutTimeOut = useRef<NodeJS.Timeout | undefined>(undefined)
 	const [isOver, setIsOver] = useState(false)
+	const [isOverlayOver, setIsOverlayOver] = useState(false)
 
 	if ((typeClass === undefined || typeClass === '') && thisSourceLayer?.isGuestInput) {
 		typeClass = 'guest'
 	}
 
-	function onMouseOver() {
-		setIsOver(true)
+	function onMouseEnter() {
+		clearTimeout(mouseOutTimeOut.current)
+		mouseOutTimeOut.current = setTimeout(() => {
+			setIsOver(true)
+		}, TOOLTIP_DEFAULT_DELAY * 1000)
 	}
 
-	function onMouseOut() {
-		setIsOver(false)
+	function onMouseLeave() {
+		clearTimeout(mouseOutTimeOut.current)
+		mouseOutTimeOut.current = setTimeout(() => {
+			setIsOver(false)
+		}, TOOLTIP_DEFAULT_DELAY * 1000)
 	}
+
+	useEffect(() => {
+		return () => {
+			clearTimeout(mouseOutTimeOut.current)
+		}
+	}, [])
 
 	return (
 		<>
@@ -52,8 +67,8 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 				})}
 				data-source-layer-ids={allSourceLayers.map((sourceLayer) => sourceLayer._id).join(' ')}
 				ref={setElement}
-				onMouseOver={onMouseOver}
-				onMouseOut={onMouseOut}
+				onMouseEnter={onMouseEnter}
+				onMouseLeave={onMouseLeave}
 			>
 				{count === 0 && (
 					<div className={classNames('segment-opl__piece-indicator', 'segment-opl__piece-indicator--no-piece')}></div>
@@ -69,7 +84,7 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 					</div>
 				)}
 			</div>
-			{isOver && overlay(element)}
+			{(isOver || isOverlayOver) && overlay(element, setIsOverlayOver)}
 		</>
 	)
 })
