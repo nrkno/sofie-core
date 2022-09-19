@@ -1,6 +1,5 @@
 import classNames from 'classnames'
-import Tooltip from 'rc-tooltip'
-import React from 'react'
+import React, { useState } from 'react'
 import { Studio } from '../../../../lib/collections/Studios'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
 import { RundownUtils } from '../../../lib/rundown'
@@ -9,7 +8,7 @@ import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 
 interface IProps {
-	overlay?: React.ReactNode
+	overlay: (ref: HTMLDivElement | null) => React.ReactNode
 	count: number
 	hasOriginInPreceedingPart: boolean
 	allSourceLayers: ISourceLayerExtended[]
@@ -28,13 +27,23 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 	label,
 }) {
 	let typeClass = thisSourceLayer?.type ? RundownUtils.getSourceLayerClassName(thisSourceLayer.type) : undefined
+	const [element, setElement] = useState<HTMLDivElement | null>(null)
+	const [isOver, setIsOver] = useState(false)
 
 	if ((typeClass === undefined || typeClass === '') && thisSourceLayer?.isGuestInput) {
 		typeClass = 'guest'
 	}
 
+	function onMouseOver() {
+		setIsOver(true)
+	}
+
+	function onMouseOut() {
+		setIsOver(false)
+	}
+
 	return (
-		<Tooltip overlay={overlay} placement="top">
+		<>
 			<div
 				className={classNames('segment-opl__piece-indicator-placeholder', {
 					multiple: count > 1,
@@ -42,6 +51,9 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 					'multiple--3': count > 2,
 				})}
 				data-source-layer-ids={allSourceLayers.map((sourceLayer) => sourceLayer._id).join(' ')}
+				ref={setElement}
+				onMouseOver={onMouseOver}
+				onMouseOut={onMouseOut}
 			>
 				{count === 0 && (
 					<div className={classNames('segment-opl__piece-indicator', 'segment-opl__piece-indicator--no-piece')}></div>
@@ -57,6 +69,7 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 					</div>
 				)}
 			</div>
-		</Tooltip>
+			{isOver && overlay(element)}
+		</>
 	)
 })

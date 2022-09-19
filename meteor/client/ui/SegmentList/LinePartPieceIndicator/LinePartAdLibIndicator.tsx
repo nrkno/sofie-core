@@ -82,13 +82,7 @@ export const LinePartAdLibIndicator: React.FC<IProps> = function LinePartAdLibIn
 						hasOriginInPreceedingPart={false}
 						studio={studio}
 						piece={adLibPieces[0]}
-						overlay={
-							<>
-								<b>{t('{{sourceLayer}} AdLibs', { sourceLayer: label })}</b>
-								{': '}
-								{allAdLibLabels.length > 0 ? allAdLibLabels.join(', ') : t('Not present')}
-							</>
-						}
+						overlay={() => null}
 					/>
 				)
 			}}
