@@ -146,7 +146,7 @@ function componentIsDirty(
 	highResDurations: RundownTimingContext,
 	dataResolution: TimingDataResolution
 ) {
-	return this.filterGetter && highResDurations.isLowResolution && dataResolution !== TimingDataResolution.Synced
+	return !!filterGetter && highResDurations.isLowResolution && dataResolution !== TimingDataResolution.Synced
 }
 
 /**

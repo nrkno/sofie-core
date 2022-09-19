@@ -195,7 +195,7 @@ function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase | und
 			return _.invert(typeOptionsWithLabels(t))[link.value] ?? String(link.value)
 		default:
 			assertNever(link)
-			//@ts-ignore fallback
+			//@ts-expect-error fallback
 			return String(link.value)
 	}
 }
@@ -224,7 +224,6 @@ function fieldValueMutate(link: IAdLibFilterLink, newValue: any) {
 			return String(newValue)
 		default:
 			assertNever(link)
-			//@ts-ignore fallback
 			return String(newValue)
 	}
 }
@@ -253,8 +252,8 @@ function fieldValueToEditorValue(link: IAdLibFilterLink) {
 			return link.value
 		default:
 			assertNever(link)
-			//@ts-ignore fallback
-			return String(newValue)
+			//@ts-expect-error fallback
+			return String(link.value)
 	}
 }
 

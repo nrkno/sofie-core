@@ -66,8 +66,6 @@ export namespace ServerRundownAPI {
 	export async function innerResyncRundown(rundown: Rundown): Promise<TriggerReloadDataResponse> {
 		logger.info('resyncRundown ' + rundown._id)
 
-		// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
-
 		// Orphaned flag will be reset by the response update
 		return IngestActions.reloadRundown(rundown)
 	}

@@ -78,11 +78,12 @@ export namespace MediaScannerIntegration {
 		}
 	}
 	export async function clearMediaObjectCollection(
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		collectionId: string
 	): Promise<void> {
-		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		const studioId = await getStudioIdFromDevice(peripheralDevice)
 

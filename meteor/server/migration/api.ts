@@ -3,45 +3,44 @@ import { registerClassToMeteorMethods } from '../methods'
 import { MigrationChunk, NewMigrationAPI, RunMigrationResult, MigrationAPIMethods } from '../../lib/api/migration'
 import * as Migrations from './databaseMigration'
 import { MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
-import { makePromise, waitForPromise } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { SystemWriteAccess } from '../security/system'
 
-function getMigrationStatus(context: MethodContext) {
-	waitForPromise(SystemWriteAccess.migrations(context))
+async function getMigrationStatus(context: MethodContext) {
+	await SystemWriteAccess.migrations(context)
 	return Migrations.getMigrationStatus()
 }
-function runMigration(
+async function runMigration(
 	context: MethodContext,
 	chunks: Array<MigrationChunk>,
 	hash: string,
 	inputResults: Array<MigrationStepInputResult>,
 	isFirstOfPartialMigrations?: boolean | null
-): RunMigrationResult {
+): Promise<RunMigrationResult> {
 	check(chunks, Array)
 	check(hash, String)
 	check(inputResults, Array)
 	check(isFirstOfPartialMigrations, Match.Maybe(Boolean))
 
-	waitForPromise(SystemWriteAccess.migrations(context))
+	await SystemWriteAccess.migrations(context)
 
 	return Migrations.runMigration(chunks, hash, inputResults, isFirstOfPartialMigrations || false)
 }
-function forceMigration(context: MethodContext, chunks: Array<MigrationChunk>) {
+async function forceMigration(context: MethodContext, chunks: Array<MigrationChunk>) {
 	check(chunks, Array)
-	waitForPromise(SystemWriteAccess.migrations(context))
+	await SystemWriteAccess.migrations(context)
 
 	return Migrations.forceMigration(chunks)
 }
-function resetDatabaseVersions(context: MethodContext) {
-	waitForPromise(SystemWriteAccess.migrations(context))
+async function resetDatabaseVersions(context: MethodContext) {
+	await SystemWriteAccess.migrations(context)
 
 	return Migrations.resetDatabaseVersions()
 }
 
 class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 	async getMigrationStatus() {
-		return makePromise(() => getMigrationStatus(this))
+		return getMigrationStatus(this)
 	}
 	async runMigration(
 		chunks: Array<MigrationChunk>,
@@ -49,13 +48,13 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		inputResults: Array<MigrationStepInputResult>,
 		isFirstOfPartialMigrations?: boolean | null
 	) {
-		return makePromise(() => runMigration(this, chunks, hash, inputResults, isFirstOfPartialMigrations))
+		return runMigration(this, chunks, hash, inputResults, isFirstOfPartialMigrations)
 	}
 	async forceMigration(chunks: Array<MigrationChunk>) {
-		return makePromise(() => forceMigration(this, chunks))
+		return forceMigration(this, chunks)
 	}
 	async resetDatabaseVersions() {
-		return makePromise(() => resetDatabaseVersions(this))
+		return resetDatabaseVersions(this)
 	}
 }
 registerClassToMeteorMethods(MigrationAPIMethods, ServerMigrationAPI, false)

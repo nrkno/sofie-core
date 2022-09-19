@@ -9,7 +9,7 @@ import {
 	PeripheralDevice,
 } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, stringifyObjects, literal, waitForPromise } from '../../lib/lib'
+import { getCurrentTime, protectString, stringifyObjects, literal } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
@@ -46,25 +46,27 @@ import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPacka
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { ConfigManifestEntryType, DeviceConfigManifest, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
+import {
+	ConfigManifestEntryType,
+	DeviceConfigManifest,
+	TableConfigManifestEntry,
+} from '@sofie-automation/corelib/dist/deviceConfig'
 import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { checkStudioExists } from '../../lib/collections/optimizations'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
-	export function initialize(
+	export async function initialize(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		options: PeripheralDeviceAPI.InitOptions
-	): PeripheralDeviceId {
+	): Promise<PeripheralDeviceId> {
 		triggerWriteAccess() // This is somewhat of a hack, since we want to check if it exists at all, before checking access
 		check(deviceId, String)
 		const existingDevice = PeripheralDevices.findOne(deviceId)
 		if (existingDevice) {
-			waitForPromise(
-				PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
-			)
+			await PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
 		}
 
 		check(token, String)
@@ -83,7 +85,7 @@ export namespace ServerPeripheralDeviceAPI {
 			const newVersionsStr = stringifyObjects(options.versions)
 			const oldVersionsStr = stringifyObjects(existingDevice.versions)
 
-			PeripheralDevices.update(deviceId, {
+			await PeripheralDevices.updateAsync(deviceId, {
 				$set: {
 					lastSeen: getCurrentTime(),
 					lastConnected: getCurrentTime(),
@@ -113,7 +115,7 @@ export namespace ServerPeripheralDeviceAPI {
 						: undefined,
 			})
 		} else {
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: deviceId,
 				organizationId: null,
 				created: getCurrentTime(),
@@ -147,25 +149,25 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		return deviceId
 	}
-	export function unInitialize(
+	export async function unInitialize(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string
-	): PeripheralDeviceId {
-		waitForPromise(checkAccessAndGetPeripheralDevice(deviceId, token, context))
+	): Promise<PeripheralDeviceId> {
+		await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		// TODO: Add an authorization for this?
 
-		PeripheralDevices.remove(deviceId)
+		await PeripheralDevices.removeAsync(deviceId)
 		return deviceId
 	}
-	export function setStatus(
+	export async function setStatus(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		status: PeripheralDeviceAPI.StatusObject
-	): PeripheralDeviceAPI.StatusObject {
-		const peripheralDevice = waitForPromise(checkAccessAndGetPeripheralDevice(deviceId, token, context))
+	): Promise<PeripheralDeviceAPI.StatusObject> {
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(deviceId, String)
 		check(token, String)
@@ -180,30 +182,32 @@ export namespace ServerPeripheralDeviceAPI {
 			logger.info(
 				`Changed status of device ${peripheralDevice._id} "${peripheralDevice.name}" to ${status.statusCode}`
 			)
+
 			// perform the update:
-			PeripheralDevices.update(deviceId, {
+			await PeripheralDevices.updateAsync(deviceId, {
 				$set: {
 					status: status,
 					connected: true,
 				},
 			})
 		} else if (!peripheralDevice.connected) {
-			PeripheralDevices.update(deviceId, {
+			await PeripheralDevices.updateAsync(deviceId, {
 				$set: {
 					connected: true,
 				},
 			})
 		}
+
 		return status
 	}
-	export function ping(context: MethodContext, deviceId: PeripheralDeviceId, token: string): void {
-		waitForPromise(checkAccessAndGetPeripheralDevice(deviceId, token, context))
+	export async function ping(context: MethodContext, deviceId: PeripheralDeviceId, token: string): Promise<void> {
+		await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(deviceId, String)
 		check(token, String)
 
 		// Update lastSeen
-		PeripheralDevices.update(deviceId, {
+		await PeripheralDevices.updateAsync(deviceId, {
 			$set: {
 				lastSeen: getCurrentTime(),
 			},
@@ -270,14 +274,14 @@ export namespace ServerPeripheralDeviceAPI {
 
 		transaction?.end()
 	}
-	export function pingWithCommand(
+	export async function pingWithCommand(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		message: string,
 		cb?: (err: any | null, msg: any) => void
-	) {
-		const peripheralDevice = waitForPromise(checkAccessAndGetPeripheralDevice(deviceId, token, context))
+	): Promise<void> {
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, 'pingResponse', message)
 			.then((res) => {
@@ -289,17 +293,22 @@ export namespace ServerPeripheralDeviceAPI {
 				if (cb) cb(err, null)
 			})
 
-		ping(context, deviceId, token)
+		await ping(context, deviceId, token)
 	}
-	export function killProcess(context: MethodContext, deviceId: PeripheralDeviceId, token: string, really: boolean) {
+	export async function killProcess(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		token: string,
+		really: boolean
+	): Promise<boolean> {
 		// This is used in integration tests only
-		const peripheralDevice = waitForPromise(checkAccessAndGetPeripheralDevice(deviceId, token, context))
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		// Make sure this never runs if this server isn't empty:
 		if (Rundowns.find().count()) throw new Meteor.Error(400, 'Unable to run killProcess: Rundowns not empty!')
 
 		if (really) {
-			this.logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
+			logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
 			setTimeout(() => {
 				// eslint-disable-next-line no-process-exit
 				process.exit(0)
@@ -360,15 +369,15 @@ export namespace ServerPeripheralDeviceAPI {
 			},
 		})
 	}
-	export function testMethod(
+	export async function testMethod(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		returnValue: string,
 		throwError?: boolean
-	): string {
+	): Promise<string> {
 		// used for integration tests with core-connection
-		waitForPromise(checkAccessAndGetPeripheralDevice(deviceId, token, context))
+		await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(deviceId, String)
 		check(token, String)
@@ -420,19 +429,25 @@ export namespace ServerPeripheralDeviceAPI {
 			},
 		})
 	}
-	export function removePeripheralDevice(context: MethodContext, deviceId: PeripheralDeviceId, token?: string) {
-		const peripheralDevice = waitForPromise(checkAccessAndGetPeripheralDevice(deviceId, token, context))
+	export async function removePeripheralDevice(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		token?: string
+	): Promise<void> {
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		logger.info(`Removing PeripheralDevice ${peripheralDevice._id}`)
 
-		PeripheralDevices.remove(peripheralDevice._id)
-		PeripheralDevices.remove({
-			parentDeviceId: peripheralDevice._id,
-		})
-		PeripheralDeviceCommands.remove({
-			deviceId: peripheralDevice._id,
-		})
-		// TODO: add others here (MediaWorkflows, etc?)
+		await Promise.allSettled([
+			PeripheralDevices.removeAsync(peripheralDevice._id),
+			PeripheralDevices.removeAsync({
+				parentDeviceId: peripheralDevice._id,
+			}),
+			PeripheralDeviceCommands.removeAsync({
+				deviceId: peripheralDevice._id,
+			}),
+			// TODO: add others here (MediaWorkflows, etc?)
+		])
 	}
 	export async function reportResolveDone(
 		context: MethodContext,
@@ -641,18 +656,18 @@ async function updatePeripheralDeviceLatency(totalLatency: number, peripheralDev
 }
 
 /** WHen a device has executed a PeripheralDeviceCommand, it will reply to this endpoint with the result */
-function functionReply(
+async function functionReply(
 	context: MethodContext,
 	deviceId: PeripheralDeviceId,
 	deviceToken: string,
 	commandId: PeripheralDeviceCommandId,
 	err: any,
 	result: any
-): void {
-	const device = waitForPromise(checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context))
+): Promise<void> {
+	const device = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 	// logger.debug('functionReply', err, result)
-	PeripheralDeviceCommands.update(
+	await PeripheralDeviceCommands.updateAsync(
 		{
 			_id: commandId,
 			deviceId: { $in: _.compact([device._id, device.parentDeviceId]) },
@@ -692,19 +707,19 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		err: any,
 		result: any
 	) {
-		return makePromise(() => functionReply(this, deviceId, deviceToken, commandId, err, result))
+		return functionReply(this, deviceId, deviceToken, commandId, err, result)
 	}
 	async initialize(deviceId: PeripheralDeviceId, deviceToken: string, options: PeripheralDeviceAPI.InitOptions) {
-		return makePromise(() => ServerPeripheralDeviceAPI.initialize(this, deviceId, deviceToken, options))
+		return ServerPeripheralDeviceAPI.initialize(this, deviceId, deviceToken, options)
 	}
 	async unInitialize(deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.unInitialize(this, deviceId, deviceToken))
+		return ServerPeripheralDeviceAPI.unInitialize(this, deviceId, deviceToken)
 	}
 	async setStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: PeripheralDeviceAPI.StatusObject) {
-		return makePromise(() => ServerPeripheralDeviceAPI.setStatus(this, deviceId, deviceToken, status))
+		return ServerPeripheralDeviceAPI.setStatus(this, deviceId, deviceToken, status)
 	}
 	async ping(deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.ping(this, deviceId, deviceToken))
+		return ServerPeripheralDeviceAPI.ping(this, deviceId, deviceToken)
 	}
 	async getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, this)
@@ -717,18 +732,16 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		message: string,
 		cb?: (err: any | null, msg: any) => void
 	) {
-		return makePromise(() => ServerPeripheralDeviceAPI.pingWithCommand(this, deviceId, deviceToken, message, cb))
+		return ServerPeripheralDeviceAPI.pingWithCommand(this, deviceId, deviceToken, message, cb)
 	}
 	async killProcess(deviceId: PeripheralDeviceId, deviceToken: string, really: boolean) {
-		return makePromise(() => ServerPeripheralDeviceAPI.killProcess(this, deviceId, deviceToken, really))
+		return ServerPeripheralDeviceAPI.killProcess(this, deviceId, deviceToken, really)
 	}
 	async testMethod(deviceId: PeripheralDeviceId, deviceToken: string, returnValue: string, throwError?: boolean) {
-		return makePromise(() =>
-			ServerPeripheralDeviceAPI.testMethod(this, deviceId, deviceToken, returnValue, throwError)
-		)
+		return ServerPeripheralDeviceAPI.testMethod(this, deviceId, deviceToken, returnValue, throwError)
 	}
 	async removePeripheralDevice(deviceId: PeripheralDeviceId, token?: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.removePeripheralDevice(this, deviceId, token))
+		return ServerPeripheralDeviceAPI.removePeripheralDevice(this, deviceId, token)
 	}
 
 	// ------ Playout Gateway --------
@@ -1002,7 +1015,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		return MediaScannerIntegration.updateMediaObject(this, deviceId, deviceToken, collectionId, id, doc)
 	}
 	async clearMediaObjectCollection(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string) {
-		return MediaScannerIntegration.clearMediaObjectCollection(deviceId, deviceToken, collectionId)
+		return MediaScannerIntegration.clearMediaObjectCollection(this, deviceId, deviceToken, collectionId)
 	}
 	// ------- Media Manager --------------
 	async getMediaWorkFlowRevisions(deviceId: PeripheralDeviceId, deviceToken: string) {

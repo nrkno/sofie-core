@@ -10,7 +10,7 @@ import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../../lib/col
 import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import { MappingsManifest } from '../../../lib/api/deviceConfig'
+import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { StudioRoutings } from './Studio/Routings'
 import { StudioDevices } from './Studio/Devices'
 import { StudioMappings } from './Studio/Mappings'

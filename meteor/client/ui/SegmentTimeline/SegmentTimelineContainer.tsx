@@ -502,7 +502,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			}
 		}
 
-		onGoToPartInner = (part: PartUi, timingDurations: RundownTimingContext, zoomInToFit?: boolean) => {
+		onGoToPartInner = (part: PartUi, _timingDurations: RundownTimingContext, zoomInToFit?: boolean) => {
 			this.setState((state) => {
 				let newScale: number | undefined
 

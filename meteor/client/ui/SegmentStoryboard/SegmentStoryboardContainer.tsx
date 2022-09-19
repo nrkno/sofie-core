@@ -137,7 +137,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 
 			const partInstance = PartInstances.findOne(props.playlist.nextPartInstanceId, {
 				fields: {
-					//@ts-ignore
+					//@ts-expect-error typescript doesnt like it
 					segmentId: 1,
 					'part._id': 1,
 				},
@@ -160,7 +160,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 
 			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInstanceId, {
 				fields: {
-					//@ts-ignore
+					//@ts-expect-error deep property
 					'part.autoNext': 1,
 					'part.expectedDuration': 1,
 				},
@@ -250,8 +250,8 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			liveLineHistorySize={LIVELINE_HISTORY_SIZE}
 			displayLiveLineCounter={props.displayLiveLineCounter}
 			onContextMenu={props.onContextMenu}
-			onFollowLiveLine={this.onFollowLiveLine}
-			onShowEntireSegment={this.onShowEntireSegment}
+			// onFollowLiveLine={this.onFollowLiveLine}
+			// onShowEntireSegment={this.onShowEntireSegment}
 			onScroll={onScroll}
 			isLastSegment={props.isLastSegment}
 			lastValidPartIndex={props.lastValidPartIndex}

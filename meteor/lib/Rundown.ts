@@ -16,7 +16,6 @@ import { invalidateAfter } from '../client/lib/invalidatingTime'
 import {
 	convertCorelibToMeteorMongoQuery,
 	getCurrentTime,
-	mongoWhereFilter,
 	ProtectedString,
 	protectString,
 	unprotectString,
@@ -29,6 +28,7 @@ import {
 import { Rundown, RundownId } from './collections/Rundowns'
 import { ShowStyleBaseId } from './collections/ShowStyleBases'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { mongoWhereFilter } from '@sofie-automation/corelib/dist/mongo'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */

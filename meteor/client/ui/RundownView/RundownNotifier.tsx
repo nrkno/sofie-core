@@ -469,7 +469,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					],
 					rank * 1000
 				)
-				newNotification.on('action', (notification, type) => {
+				newNotification.on('action', (_notification, type) => {
 					if (type === 'default') {
 						const handler = onRONotificationClick.get()
 						if (handler && typeof handler === 'function') {
@@ -625,7 +625,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						],
 						issue.segmentRank * 1000 + issue.partRank
 					)
-					newNotification.on('action', (notification, type) => {
+					newNotification.on('action', (_notification, type) => {
 						if (type === 'default') {
 							const handler = onRONotificationClick.get()
 							if (handler && typeof handler === 'function') {

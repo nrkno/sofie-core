@@ -175,8 +175,8 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 		if (blueprint.code) {
 			const blueprintManifest = evalBlueprint(blueprint)
 
-			// @ts-ignore
-			if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) blueprint.databaseVersion = {}
+			if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion))
+				blueprint.databaseVersion = { showStyle: {}, studio: {}, system: undefined }
 			if (!blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {}
 			if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
 			if (!blueprint.databaseVersion.system) blueprint.databaseVersion.system = undefined

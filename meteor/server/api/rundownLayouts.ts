@@ -87,7 +87,7 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', async (params, req: In
 	res.end(content)
 })
 
-PickerGET.route('/shelfLayouts/download/:id', async (params, req: IncomingMessage, res: ServerResponse) => {
+PickerGET.route('/shelfLayouts/download/:id', async (params, _req: IncomingMessage, res: ServerResponse) => {
 	const layoutId: RundownLayoutId = protectString(params.id)
 
 	check(layoutId, String)
@@ -155,11 +155,4 @@ class ServerRundownLayoutsAPI extends MethodContextAPI implements NewRundownLayo
 		return apiRemoveRundownLayout(this, rundownLayoutId)
 	}
 }
-registerClassToMeteorMethods(
-	RundownLayoutsAPIMethods,
-	ServerRundownLayoutsAPI,
-	false,
-	(methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
-		return fcn.apply(methodContext, args)
-	}
-)
+registerClassToMeteorMethods(RundownLayoutsAPIMethods, ServerRundownLayoutsAPI, false)

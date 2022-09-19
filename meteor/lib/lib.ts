@@ -15,7 +15,6 @@ export { Time, TimeDuration }
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
 export * from '@sofie-automation/corelib/dist/lib'
-export * from '@sofie-automation/corelib/dist/mongo'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -287,12 +286,6 @@ export function waitForPromiseAll<T1, T2>(ps: [T1 | PromiseLike<T1>, T2 | Promis
 export function waitForPromiseAll<T>(ps: (T | PromiseLike<T>)[]): T[]
 export function waitForPromiseAll<T>(ps: (T | PromiseLike<T>)[]): T[] {
 	return waitForPromise(Promise.all(ps))
-}
-
-export type Promisify<T> = { [K in keyof T]: Promise<T[K]> }
-export function waitForPromiseObj<T extends object>(obj: Promisify<T>): T {
-	const values = waitForPromiseAll(_.values<Promise<any>>(obj))
-	return _.object(_.keys(obj), values) as T
 }
 
 export type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T

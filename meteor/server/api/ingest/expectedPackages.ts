@@ -32,7 +32,7 @@ export async function generateExpectedPackagesForPartInstance(
 		},
 		{
 			fields: {
-				// @ts-expect-error
+				// @ts-expect-error deep property
 				'piece._id': 1,
 				'piece.expectedPackages': 1,
 			},

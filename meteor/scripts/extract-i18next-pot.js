@@ -64,7 +64,7 @@ const Parser = require('i18next-scanner').Parser
 const converter = require('i18next-conv')
 const glob = require('glob')
 
-var parserOptions = {
+const parserOptions = {
 	// Include react helpers into parsing
 	attr: {
 		list: ['data-i18n', 'i18nKey'],
@@ -88,10 +88,10 @@ var parserOptions = {
 	},
 }
 
-var parser = new Parser(parserOptions)
+const parser = new Parser(parserOptions)
 
-var fileGlob = args.files
-var outputFile = args.output
+const fileGlob = args.files
+const outputFile = args.output
 
 console.log('Extracting translatable strings...')
 console.log('This process may print out some error messages, but the translation template should work fine.')
@@ -105,7 +105,7 @@ glob(fileGlob, function (err, files) {
 	}
 
 	// console.debug('Loading content of ' + files.length + ' files')
-	var content = ''
+	let content = ''
 	files.map(function (file) {
 		content += fs.readFileSync(file, 'utf-8')
 	})
@@ -113,7 +113,7 @@ glob(fileGlob, function (err, files) {
 	// console.debug('Parsing translation keys out of content')
 	parser.parseFuncFromString(content, parserOptions)
 	parser.parseAttrFromString(content, parserOptions)
-	var json = parser.get().en.translation
+	const json = parser.get().en.translation
 
 	// console.debug('Converting ' + Object.keys(json).length + ' translation keys into gettext')
 	converter.i18nextToPot('en', JSON.stringify(json), { quiet: true }).then(function (data) {

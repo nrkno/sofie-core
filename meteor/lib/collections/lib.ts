@@ -10,14 +10,13 @@ import {
 	registerCollection,
 	stringifyError,
 	protectString,
-	MongoFieldSpecifier,
-	SortSpecifier,
 	waitForPromise,
 } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import type { AnyBulkWriteOperation, Collection as RawCollection, Db as RawDb, CreateIndexesOptions } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { MongoFieldSpecifier, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
 
 const ObserveChangeBufferTimeout = 2000
 
@@ -313,7 +312,6 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 			return this.insert(doc)
 		}).catch((err) => {
 			if (err.toString().match(/duplicate key/i)) {
-				// @ts-ignore id duplicate, doc._id must exist
 				return doc._id
 			} else {
 				throw err
@@ -446,7 +444,6 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 			return this.insert(doc)
 		} catch (err) {
 			if (stringifyError(err).match(/duplicate key/i)) {
-				// @ts-ignore id duplicate, doc._id must exist
 				return doc._id
 			} else {
 				throw err

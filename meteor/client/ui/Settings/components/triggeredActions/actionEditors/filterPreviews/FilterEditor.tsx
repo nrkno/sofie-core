@@ -102,7 +102,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 							options={props.fields}
 							overrideDisplayValue={props.field}
 							attribute={''}
-							updateFunction={(e, newVal) => props.onChangeField(newVal)}
+							updateFunction={(_e, newVal) => props.onChangeField(newVal)}
 						/>
 					</div>
 					<div>
@@ -114,7 +114,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 							options={props.values}
 							overrideDisplayValue={typeof props.value === 'number' ? String(props.value) : props.value}
 							attribute={''}
-							updateFunction={(e, newVal) => props.onChange(newVal)}
+							updateFunction={(_e, newVal) => props.onChange(newVal)}
 						/>
 					</div>
 					<div className="mts">

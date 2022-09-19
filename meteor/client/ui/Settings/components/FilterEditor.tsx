@@ -75,7 +75,7 @@ export default withTranslation()(
 			item: RundownLayoutBase,
 			tab: RundownLayoutFilterBase,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -520,9 +520,9 @@ export default withTranslation()(
 
 		renderFrame(
 			item: RundownLayoutBase,
-			tab: RundownLayoutExternalFrame,
+			_tab: RundownLayoutExternalFrame,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -574,9 +574,9 @@ export default withTranslation()(
 
 		renderAdLibRegion(
 			item: RundownLayoutBase,
-			tab: RundownLayoutAdLibRegion,
+			_tab: RundownLayoutAdLibRegion,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -670,9 +670,9 @@ export default withTranslation()(
 
 		renderPieceCountdown(
 			item: RundownLayoutBase,
-			tab: RundownLayoutPieceCountdown,
+			_tab: RundownLayoutPieceCountdown,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -711,9 +711,9 @@ export default withTranslation()(
 
 		renderNextInfo(
 			item: RundownLayoutBase,
-			tab: RundownLayoutNextInfo,
+			_tab: RundownLayoutNextInfo,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -778,9 +778,9 @@ export default withTranslation()(
 
 		renderPlaylistStartTimer(
 			item: RundownLayoutBase,
-			tab: RundownLayoutPlaylistStartTimer,
+			_tab: RundownLayoutPlaylistStartTimer,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -846,9 +846,9 @@ export default withTranslation()(
 
 		renderPlaylistEndTimer(
 			item: RundownLayoutBase,
-			tab: RundownLayoutPlaylistEndTimer,
+			_tab: RundownLayoutPlaylistEndTimer,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -953,9 +953,9 @@ export default withTranslation()(
 
 		renderEndWords(
 			item: RundownLayoutBase,
-			tab: RundownLayoutEndWords,
+			_tab: RundownLayoutEndWords,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1000,9 +1000,9 @@ export default withTranslation()(
 
 		renderSegmentTiming(
 			item: RundownLayoutBase,
-			tab: RundownLayoutSegmentTiming,
+			_tab: RundownLayoutSegmentTiming,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1043,9 +1043,9 @@ export default withTranslation()(
 		}
 		renderSegmentCountDown(
 			item: RundownLayoutBase,
-			tab: RundownLayoutSegmentTiming,
+			_tab: RundownLayoutSegmentTiming,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1087,9 +1087,9 @@ export default withTranslation()(
 
 		renderPartTiming(
 			item: RundownLayoutBase,
-			tab: RundownLayoutPartTiming,
+			_tab: RundownLayoutPartTiming,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1131,9 +1131,9 @@ export default withTranslation()(
 
 		renderTextLabel(
 			item: RundownLayoutBase,
-			tab: RundownLayoutTextLabel,
+			_tab: RundownLayoutTextLabel,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1172,9 +1172,9 @@ export default withTranslation()(
 
 		renderPlaylistName(
 			item: RundownLayoutBase,
-			tab: RundownLayoutPlaylistName,
+			_tab: RundownLayoutPlaylistName,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1213,9 +1213,9 @@ export default withTranslation()(
 
 		renderStudioName(
 			item: RundownLayoutBase,
-			tab: RundownLayoutStudioName,
+			_tab: RundownLayoutStudioName,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1241,9 +1241,9 @@ export default withTranslation()(
 
 		renderSegmentName(
 			item: RundownLayoutBase,
-			tab: RundownLayoutSegmentName,
+			_tab: RundownLayoutSegmentName,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1283,9 +1283,9 @@ export default withTranslation()(
 
 		renderPartName(
 			item: RundownLayoutBase,
-			tab: RundownLayoutPartName,
+			_tab: RundownLayoutPartName,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1339,9 +1339,9 @@ export default withTranslation()(
 
 		renderColoredBox(
 			item: RundownLayoutBase,
-			tab: RundownLayoutColoredBox,
+			_tab: RundownLayoutColoredBox,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1381,9 +1381,9 @@ export default withTranslation()(
 
 		renderShowStyleDisplay(
 			item: RundownLayoutBase,
-			tab: RundownLayoutShowStyleDisplay,
+			_tab: RundownLayoutShowStyleDisplay,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1409,9 +1409,9 @@ export default withTranslation()(
 
 		renderSystemStatus(
 			item: RundownLayoutBase,
-			tab: RundownLayoutSytemStatus,
+			_tab: RundownLayoutSytemStatus,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1437,9 +1437,9 @@ export default withTranslation()(
 
 		renderTimeOfDay(
 			item: RundownLayoutBase,
-			tab: RundownLayoutTimeOfDay,
+			_tab: RundownLayoutTimeOfDay,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1724,9 +1724,9 @@ export default withTranslation()(
 
 		renderKeyboardLayout(
 			item: RundownLayoutBase,
-			tab: RundownLayoutKeyboardPreview,
+			_tab: RundownLayoutKeyboardPreview,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1752,9 +1752,9 @@ export default withTranslation()(
 
 		renderNextBreakTiming(
 			item: RundownLayoutBase,
-			tab: RundownLayoutNextBreakTiming,
+			_tab: RundownLayoutNextBreakTiming,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props
@@ -1779,9 +1779,9 @@ export default withTranslation()(
 		}
 		renderMiniRundown(
 			item: RundownLayoutBase,
-			tab: RundownLayoutMiniRundown,
+			_tab: RundownLayoutMiniRundown,
 			index: number,
-			isRundownLayout: boolean,
+			_isRundownLayout: boolean,
 			isDashboardLayout: boolean
 		) {
 			const { t } = this.props

@@ -48,7 +48,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 			nextTags,
 		}
 	},
-	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	(_data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
 )(

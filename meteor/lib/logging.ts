@@ -88,7 +88,6 @@ if (Meteor.isServer) {
 		warning: getLogMethod('warn'),
 		notice: getLogMethod('notice'),
 	}
-	// @ts-ignore localStorage
 	if (localStorage && localStorage.getItem('developerMode') !== '1') {
 		// not in developerMode, don't log everything then:
 		logger.debug = noop

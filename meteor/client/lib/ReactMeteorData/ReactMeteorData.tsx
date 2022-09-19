@@ -175,14 +175,14 @@ class MeteorDataManager {
 	}
 }
 export const ReactMeteorData = {
-	UNSAFE_componentWillMount() {
+	UNSAFE_componentWillMount(this: any) {
 		this.data = {}
 		this._meteorDataManager = new MeteorDataManager(this, this._queueTrackerUpdates || false)
 		const newData = this._meteorDataManager.calculateData()
 		this._meteorDataManager.updateData(newData)
 	},
 
-	UNSAFE_componentWillUpdate(nextProps, nextState) {
+	UNSAFE_componentWillUpdate(this: any, nextProps: any, nextState: any) {
 		const saveProps = this.props
 		const saveState = this.state
 		let newData
@@ -205,7 +205,7 @@ export const ReactMeteorData = {
 		this._meteorDataManager.updateData(newData)
 	},
 
-	componentWillUnmount() {
+	componentWillUnmount(this: any) {
 		this._meteorDataManager.dispose()
 	},
 	// pick the MeteorReactComponent member functions, so they will be available in withTracker(() => { >here< })

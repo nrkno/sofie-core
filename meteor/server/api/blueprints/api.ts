@@ -236,7 +236,7 @@ async function innerUploadBlueprint(
 		// Note that the type has to be string in the manifest interfaces to allow attaching the
 		// stringified JSON in the first place.
 		const translations = (blueprintManifest as any).translations as TranslationsBundle[]
-		upsertBundles(translations, blueprintId)
+		await upsertBundles(translations, blueprintId)
 	}
 
 	// Parse the versions, just to verify that the format is correct:

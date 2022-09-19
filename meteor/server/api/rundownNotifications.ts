@@ -115,7 +115,7 @@ class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownN
 			throw new Meteor.Error(401, 'Invalid access creditials for Segment Parts Notes')
 		}
 
-		return makePromise(() => getSegmentPartNotes(playlistId, rundownIds))
+		return getSegmentPartNotes(playlistId, rundownIds)
 	}
 	async getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 		triggerWriteAccessBecauseNoCheckNecessary()

@@ -176,12 +176,12 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 	})
 }
 
-PickerGET.route('/api', async (params, req: IncomingMessage, res: ServerResponse) => {
+PickerGET.route('/api', async (_params, _req: IncomingMessage, res: ServerResponse) => {
 	res.statusCode = 301
 	res.setHeader('Location', '/api/0') // redirect to latest API version
 	res.end()
 })
-PickerGET.route('/api/0', async (params, req: IncomingMessage, res: ServerResponse) => {
+PickerGET.route('/api/0', async (_params, _req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'application/json')
 	res.statusCode = 200
 	res.end(JSON.stringify(index, undefined, 2))
