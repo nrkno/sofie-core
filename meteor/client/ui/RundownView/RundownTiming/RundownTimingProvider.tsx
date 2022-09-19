@@ -278,21 +278,22 @@ export const RundownTimingProvider = withTracker<
 			window.dispatchEvent(event)
 		}
 
-		updateDurations(now: number, isSynced: boolean) {
-			const { playlist, rundowns, currentRundown, parts, partInstancesMap } = this.props
+		updateDurations(now: number, isLowResolution: boolean) {
+			const { playlist, rundowns, currentRundown, parts, partInstancesMap, segments, segmentEntryPartInstances } =
+				this.props
 			const updatedDurations = this.timingCalculator.updateDurations(
 				now,
-				isSynced,
+				isLowResolution,
 				playlist,
 				rundowns,
 				currentRundown,
 				parts,
 				partInstancesMap,
-				//  segments, // TODOSYNC
-				this.props.defaultDuration
-				// segmentEntryPartInstances // TODOSYNC
+				segments,
+				this.props.defaultDuration,
+				segmentEntryPartInstances
 			)
-			if (!isSynced) {
+			if (!isLowResolution) {
 				this.durations = Object.assign(this.durations, updatedDurations)
 			} else {
 				this.syncedDurations = Object.assign(this.syncedDurations, updatedDurations)

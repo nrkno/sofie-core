@@ -201,10 +201,11 @@ export const App = translateWithTracker(() => {
 
 					// Use Keyboard API to lock the keyboard and disable all browser shortcuts
 					if ('keyboard' in navigator) {
-						// @ts-expect-error: Keyboard API isn't yet available in TypeScript DOM library,
-						// but we check for it's availability so it should be fine.
+						// Keyboard API isn't yet available in TypeScript DOM library,
+						// but we check for its availability, so it should be fine.
 						// Keyboard Lock: https://wicg.github.io/keyboard-lock/
 						navigator.keyboard
+							// @ts-expect-error
 							.lock()
 							.catch((e) => console.error('Could not get Keyboard Lock when running as a PWA', e))
 					}
@@ -236,6 +237,9 @@ export const App = translateWithTracker(() => {
 
 			setInterval(this.cronJob, CRON_INTERVAL)
 
+			if (Settings.customizationClassName) {
+				document.body.classList.add(Settings.customizationClassName)
+			}
 			const uiZoom = getUIZoom()
 			if (uiZoom !== 1) {
 				document.documentElement.style.fontSize = uiZoom * 16 + 'px'

@@ -1,4 +1,4 @@
-
+// @ts-ignore
 import { CoreConnection } from '../src/index'
 import { PeripheralDeviceAPI as P } from '../src/lib/corePeripherals'
 
@@ -6,7 +6,8 @@ let core = new CoreConnection({
 	deviceId: 'ExampleDevice',
 	deviceToken: 'abcd',
 	deviceType: P.DeviceType.PLAYOUT,
-	deviceName: 'Jest test framework'
+	deviceName: 'Jest test framework',
+	deviceCategory: P.DeviceCategory.PLAYOUT,
 })
 
 // let consolelog = console.log
@@ -17,10 +18,10 @@ let core = new CoreConnection({
 core.onConnectionChanged((connected) => {
 	console.log('onConnectionChanged', connected)
 })
-core.onConnected(() => {
+core.onConnected(async () => {
 	console.log('onConnected!')
 
-	setupSubscription()
+	await setupSubscription()
 })
 core.onDisconnected(() => {
 	console.log('onDisconnected!')
@@ -34,69 +35,76 @@ core.onFailed((err) => {
 
 let setupSubscription = () => {
 	console.log('Setup subscription')
-	return core.subscribe('peripheralDevices', {
-		_id: core.deviceId
-	})
-	.then(() => {
-		console.log('sub OK!')
-	})
+	return core
+		.subscribe('peripheralDevices', {
+			_id: core.deviceId,
+		})
+		.then(() => {
+			console.log('sub OK!')
+		})
 }
 let setupObserver = () => {
 	console.log('Setup observer')
 	let observer = core.observe('peripheralDevices')
-	observer.added = (id) =>	{ console.log('added', id) }
-	observer.changed = (id) =>	{ console.log('changed', id) }
-	observer.removed = (id) =>	{ console.log('removed', id) }
+	observer.added = (id) => {
+		console.log('added', id)
+	}
+	observer.changed = (id) => {
+		console.log('changed', id)
+	}
+	observer.removed = (id) => {
+		console.log('removed', id)
+	}
 }
 // Initiate connection to Core:
 
 let setup = async () => {
 	try {
-
 		console.log('init...')
 		await core.init({
 			host: '127.0.0.1',
-			port: 3000
+			port: 3000,
 		})
 		console.log('init!')
 
 		await core.setStatus({
 			statusCode: P.StatusCode.GOOD,
-			messages: ['']
+			messages: [''],
 		})
 
 		setupObserver()
 
 		await setupSubscription()
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			console.log('updating status')
-			core.setStatus({
+			await core.setStatus({
 				statusCode: P.StatusCode.GOOD,
-				messages: ['a']
+				messages: ['a'],
 			})
-		},500)
+		}, 500)
 
 		setTimeout(() => {
 			console.log('closing socket')
-			core.ddp.ddpClient['socket'].close()
-		},1500)
+			if (core.ddp.ddpClient) {
+				core.ddp.ddpClient['socket'].close()
+			}
+		}, 1500)
 
-		setTimeout(() => {
+		setTimeout(async () => {
 			console.log('updating status')
-			core.setStatus({
+			await core.setStatus({
 				statusCode: P.StatusCode.GOOD,
-				messages: ['b']
+				messages: ['b'],
 			})
-		},3500)
+		}, 3500)
 	} catch (e) {
 		console.log('ERROR ===========')
 		console.log(e, e.stack)
 	}
-
 }
 
-setup()
+setup().then(console.log).catch(console.error)
 // .then(() => {
 // 	core.setStatus({
 // 		statusCode: P.StatusCode.GOOD,

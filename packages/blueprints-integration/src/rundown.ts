@@ -1,11 +1,11 @@
 import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContent } from 'timeline-state-resolver-types'
-import { Time } from './common'
-import { ExpectedPackage } from './package'
-import { SomeContent, WithTimeline } from './content'
-import { ITranslatableMessage } from './translations'
-import { PartEndState } from './api'
 import { ActionUserData } from './action'
+import { PartEndState } from './api'
+import { Time } from './common'
+import { SomeContent, WithTimeline } from './content'
 import { NoteSeverity } from './lib'
+import { ExpectedPackage } from './package'
+import { ITranslatableMessage } from './translations'
 
 /** Playlist, as generated from Blueprints */
 export interface IBlueprintResultRundownPlaylist {
@@ -232,13 +232,13 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	identifier?: string
 
 	/** MediaObjects that when created/updated, should cause the blueprint to be rerun for the Segment of this Part */
-	// hackListenToMediaObjectUpdates?: HackPartMediaObjectSubscription[]
+	hackListenToMediaObjectUpdates?: HackPartMediaObjectSubscription[]
 }
 
-// export interface HackPartMediaObjectSubscription {
-// 	/** The playable reference (CasparCG clip name, quantel GUID, etc) */
-// 	mediaId: string
-// }
+export interface HackPartMediaObjectSubscription {
+	/** The playable reference (CasparCG clip name, quantel GUID, etc) */
+	mediaId: string
+}
 
 /** The Part generated from Blueprint */
 export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatablePart<TMetadata> {

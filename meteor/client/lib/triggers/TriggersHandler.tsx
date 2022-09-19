@@ -38,6 +38,7 @@ import { preventDefault } from '../SorensenContext'
 import { getFinalKey } from './codesToKeyLabels'
 import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../../ui/RundownView/RundownViewEventBus'
 import { Tracker } from 'meteor/tracker'
+import { Settings } from '../../../lib/Settings'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -124,7 +125,6 @@ function createAction(
 		},
 		listener: (e) => {
 			e.preventDefault()
-			// TODOSYNC: add e.stopPropagation() here?
 
 			const ctx = collectContext()
 			if (ctx) {
@@ -196,7 +196,7 @@ export function isMountedAdLibTrigger(
 }
 
 function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker.Computation {
-	const computation = Tracker.nonreactive(() =>
+	return Tracker.nonreactive(() =>
 		Tracker.autorun((computation) => {
 			const cleanUp = autorun()
 
@@ -205,12 +205,6 @@ function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker
 			}
 		})
 	)
-	if (Tracker.currentComputation) {
-		Tracker.currentComputation.onStop(() => {
-			computation.stop()
-		})
-	}
-	return computation
 }
 
 /**
@@ -235,6 +229,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				exclusive: true,
 				ordered: 'modifiersFirst',
 				preventDefaultPartials: false,
+				preventDefaultDown: true,
 				global: props.global ?? false,
 				tag: id,
 			})
@@ -302,13 +297,17 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			'Digit9',
 			'Digit0',
 		]
-		const systemActionKeys = ['Enter', 'NumpadEnter', 'Tab']
+		const systemActionKeys = ['AnyEnter', 'NumpadEnter', 'Tab']
+
+		const poisonKey: string | null = Settings.poisonKey
 
 		if (initialized) {
-			localSorensen.bind('Escape', poisonHotkeys, {
-				exclusive: false,
-				global: true,
-			})
+			if (poisonKey) {
+				localSorensen.bind(poisonKey, poisonHotkeys, {
+					exclusive: false,
+					global: true,
+				})
+			}
 
 			// block Control+KeyF only if this is running in a context where other key bindings will be bound
 			if (!props.simulateTriggerBinding) {
@@ -348,7 +347,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		}
 
 		return () => {
-			localSorensen.unbind('Escape', poisonHotkeys)
+			if (poisonKey) {
+				localSorensen.unbind(poisonKey, poisonHotkeys)
+			}
 			localSorensen.unbind('Control+KeyF', preventDefault)
 			localSorensen.unbind('Control+F5', preventDefault)
 			systemActionKeys.forEach((key) => localSorensen.unbind(key, preventDefault))

@@ -2894,6 +2894,16 @@
     url "^0.11.0"
     webpack-sources "^1.4.3"
 
+"@sofie-automation/blueprints-integration@1.41.3":
+  version "1.41.3"
+  resolved "https://registry.yarnpkg.com/@sofie-automation/blueprints-integration/-/blueprints-integration-1.41.3.tgz#032c250e097866a8a6961098ad2fb33ecce3a784"
+  integrity sha512-15O7lXfIGFTdo+8bliH9qRd2PDuR2R9PNUl0GeJlM0XRH4/FDJyVJnj9EAlJB6rYSODz3QhSA3hO+e+gpEtc+g==
+  dependencies:
+    moment "2.29.4"
+    timeline-state-resolver-types "7.0.0"
+    tslib "^2.3.1"
+    type-fest "^2.11.1"
+
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
   version "1.42.0-in-testing.0"
   dependencies:
@@ -2935,6 +2945,18 @@
     tslib "^2.1.0"
     type-fest "^2.11.1"
     underscore "^1.13.2"
+
+"@sofie-automation/server-core-integration@1.41.3":
+  version "1.41.3"
+  resolved "https://registry.yarnpkg.com/@sofie-automation/server-core-integration/-/server-core-integration-1.41.3.tgz#9cd71921167019289b09a2215a0863695b30a15a"
+  integrity sha512-6HFog4c0L5NFGernEMywdJUtKOkfKNES/uqInTID8bcgnnso8Rds+Ep/iZfMAKo4xKLACqhzkUKBO5+uYJ7I/Q==
+  dependencies:
+    data-store "^4.0.3"
+    ejson "^2.2.2"
+    faye-websocket "^0.11.4"
+    got "^11.8.5"
+    tslib "^2.3.1"
+    underscore "^1.12.1"
 
 "@svgr/babel-plugin-add-jsx-attribute@^5.4.0":
   version "5.4.0"
@@ -14027,6 +14049,13 @@ timecode@0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
+
+timeline-state-resolver-types@7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.0.0.tgz#99bc6272851b451951b84c41d781001d03e9c33f"
+  integrity sha512-M3Fxk1JzOaHv4XxK6QUG4L2g97VA/iRK+DdFyH73mpZ78LA0/jaNKnYKWetE2YiGRWcG6zB1nsO7qvUaRV1wNA==
+  dependencies:
+    tslib "^2.3.1"
 
 timeline-state-resolver-types@7.1.0-release42.1:
   version "7.1.0-release42.1"

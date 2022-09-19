@@ -230,7 +230,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							)
 						} else if (RundownLayoutsAPI.isColoredBox(panel)) {
 							return <ColoredBoxPanel key={panel._id} playlist={props.playlist} layout={rundownLayout} panel={panel} />
-							// } else if (RundownLayoutsAPI.isKeyboardMap(panel)) {
+							// } else if (Settings.enableKeyboardPreview && RundownLayoutsAPI.isKeyboardMap(panel)) {
 							// 	return (
 							// 		<KeyboardPreviewPanel
 							// 			key={panel._id}

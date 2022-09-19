@@ -1,7 +1,6 @@
 import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { applyToArray, assertNever, clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { Time, TSR } from '@sofie-automation/blueprints-integration'
-import _ = require('underscore')
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
@@ -30,6 +29,7 @@ import { getCurrentTime } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { MongoQuery } from '../db'
+import _ = require('underscore')
 
 /**
  * Reset the rundownPlaylist (all of the rundowns within the playlist):
@@ -490,6 +490,7 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 					break
 				}
 				case SegmentOrphanedReason.HIDDEN: {
+					// The segment is finished with. Queue it for attempted resync
 					rundownSegments.hidden.push(segment._id)
 					break
 				}

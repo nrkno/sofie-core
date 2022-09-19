@@ -214,6 +214,24 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		this.element = el
 	}
 
+	private handleOnMouseEnter = (_e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+		if (this.element) {
+			const { top, left, width, height } = this.element.getBoundingClientRect()
+			this.positionAndSize = {
+				top,
+				left,
+				width,
+				height,
+			}
+		}
+		this.setState({ isHovered: true })
+	}
+
+	private handleOnMouseLeave = (_e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+		this.setState({ isHovered: false })
+		this.positionAndSize = null
+	}
+
 	private handleOnPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (this.element) {
 			const { top, left, width, height } = this.element.getBoundingClientRect()
@@ -351,13 +369,14 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	private handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		const { toggleOnSingleClick } = this.props
 		// if pointerId is not set, it means we are dealing with a mouse and not an emulated mouse event
-		if (this.pointerId === null && e.button === 0) {
-			// this is a main-button-click
-			if (toggleOnSingleClick) {
-				this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
-			} else {
-				this.props.onSelectAdLib(this.props.piece, e)
-			}
+		if (this.pointerId !== null || e.button !== 0) {
+			return
+		}
+		// this is a main-button-click
+		if (toggleOnSingleClick) {
+			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+		} else {
+			this.props.onSelectAdLib(this.props.piece, e)
 		}
 	}
 
@@ -378,25 +397,34 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		const { toggleOnSingleClick } = this.props
 		if (toggleOnSingleClick) {
 			return
-		} else {
-			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
 		}
+		this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
 	}
 
 	private handleOnPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerType !== 'mouse') {
-			this.pointerId = e.pointerId
-			e.preventDefault()
+			const pointerCopy = e.pointerId
+			this.pointerId = pointerCopy
 		} else {
 			this.pointerId = null
 		}
 	}
 
-	private handleOnPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+	private handleOnPointerOut = (e: React.PointerEvent<HTMLDivElement>) => {
 		if (e.pointerId === this.pointerId) {
-			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
-			e.preventDefault()
+			this.pointerId = null
 		}
+	}
+
+	private handleOnPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+		const { toggleOnSingleClick } = this.props
+		if (e.pointerId !== this.pointerId) {
+			return
+		}
+		if (!toggleOnSingleClick) {
+			this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)
+		}
+		e.preventDefault()
 	}
 
 	renderHotkey = () => {
@@ -450,11 +478,12 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onPointerEnter={this.handleOnPointerEnter}
 				onPointerLeave={this.handleOnPointerLeave}
 				onMouseMove={this.handleOnMouseMove}
-				onTouchStart={!this.props.canOverflowHorizontally ? this.handleOnTouchStart : undefined}
-				onTouchEnd={!this.props.canOverflowHorizontally ? this.handleOnTouchEnd : undefined}
-				onTouchMove={!this.props.canOverflowHorizontally ? this.handleOnTouchMove : undefined}
 				onPointerDown={this.handleOnPointerDown}
+				onPointerOut={this.handleOnPointerOut}
 				onPointerUp={this.handleOnPointerUp}
+				onTouchStart={!this.props.canOverflowHorizontally ? this.handleOnMouseEnter : undefined}
+				onTouchEnd={!this.props.canOverflowHorizontally ? this.handleOnMouseLeave : undefined}
+				onTouchMove={!this.props.canOverflowHorizontally ? this.handleOnTouchMove : undefined}
 				data-obj-id={this.props.piece._id}
 			>
 				<div className="dashboard-panel__panel__button__content">

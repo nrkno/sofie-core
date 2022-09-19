@@ -19,7 +19,6 @@ export enum SourceLayerType {
 	/** Audio-only sources */
 	AUDIO = 7,
 	// CAMERA_MOVEMENT = 8,
-	// TODOSYNC: What is this intended to be used for? Why isnt UNKNOWN used instead?
 	METADATA = 9,
 	/** Graphical overlays on top of other video */
 	LOWER_THIRD = 10,

@@ -128,16 +128,14 @@ export async function calculateSegmentsFromIngestData(
 					// This isn't much entropy, blueprints may want to add more for each Part they generate
 					identifier: `rundownId=${rundown._id}`,
 				},
-				context.studio,
-				context.getStudioBlueprintConfig(),
+				context,
 				showStyle,
-				context.getShowStyleBlueprintConfig(showStyle),
 				rundown,
 				watchedPackages
 			)
 			let blueprintSegment0: BlueprintResultSegment | null = null
 			try {
-				blueprintSegment0 = blueprint.blueprint.getSegment(context2, ingestSegment)
+				blueprintSegment0 = await blueprint.blueprint.getSegment(context2, ingestSegment)
 			} catch (err) {
 				logger.error(`Error in showStyleBlueprint.getSegment: ${stringifyError(err)}`)
 				blueprintSegment0 = null
@@ -614,10 +612,8 @@ export async function getRundownFromIngestData(
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			identifier: `showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
 		},
-		context.studio,
-		context.getStudioBlueprintConfig(),
+		context,
 		showStyle.compound,
-		context.getShowStyleBlueprintConfig(showStyle.compound),
 		rundownBaselinePackages,
 		async () => {
 			// Note: This can cause a mild race-condition, in the case of two Rundowns being created at the same time.

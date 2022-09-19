@@ -28,7 +28,7 @@ import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveD
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
-import { RundownViewLayout } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutFilterBase, RundownViewLayout } from '../../../lib/collections/RundownLayouts'
 import { getMinimumReactivePieceNotesForPart } from './getMinimumReactivePieceNotesForPart'
 import { SegmentViewMode } from './SegmentViewModes'
 import { SegmentNote, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
@@ -86,6 +86,7 @@ export interface IProps {
 	ownCurrentPartInstance: PartInstance | undefined
 	ownNextPartInstance: PartInstance | undefined
 	adLibSegmentUi?: AdlibSegmentUi
+	miniShelfFilter: RundownLayoutFilterBase | undefined
 	isFollowingOnAirSegment: boolean
 	rundownViewLayout: RundownViewLayout | undefined
 	countdownToSegmentRequireLayers: string[] | undefined
@@ -318,11 +319,11 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				props.segmentRef !== nextProps.segmentRef ||
 				props.timeScale !== nextProps.timeScale ||
 				props.isFollowingOnAirSegment !== nextProps.isFollowingOnAirSegment ||
-				props.ownCurrentPartInstance !== nextProps.ownCurrentPartInstance ||
-				props.ownNextPartInstance !== nextProps.ownNextPartInstance ||
+				!_.isEqual(props.ownCurrentPartInstance, nextProps.ownCurrentPartInstance) ||
+				!_.isEqual(props.ownNextPartInstance, nextProps.ownNextPartInstance) ||
 				!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
 				!_.isEqual(props.countdownToSegmentRequireLayers, nextProps.countdownToSegmentRequireLayers) ||
-				props.rundownViewLayout !== nextProps.rundownViewLayout ||
+				!_.isEqual(props.rundownViewLayout, nextProps.rundownViewLayout) ||
 				props.fixedSegmentDuration !== nextProps.fixedSegmentDuration ||
 				!_.isEqual(props.adLibSegmentUi?.pieces, nextProps.adLibSegmentUi?.pieces) ||
 				props.adLibSegmentUi?.showShelf !== nextProps.adLibSegmentUi?.showShelf
@@ -371,9 +372,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset ||
 				props.playlist.activationId !== nextProps.playlist.activationId ||
 				PlaylistTiming.getExpectedStart(props.playlist.timing) !==
-					PlaylistTiming.getExpectedStart(nextProps.playlist.timing) ||
-				props.ownCurrentPartInstance !== nextProps.ownCurrentPartInstance ||
-				props.ownNextPartInstance !== nextProps.ownNextPartInstance
+					PlaylistTiming.getExpectedStart(nextProps.playlist.timing)
 			) {
 				return true
 			}

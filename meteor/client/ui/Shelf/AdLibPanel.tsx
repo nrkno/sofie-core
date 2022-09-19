@@ -339,7 +339,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			const segment = uiPartSegmentMap.get(action.partId)
 			if (segment) {
 				action.piece.disabled = !segment.isCompatibleShowStyle
-				segment.pieces.push(action.piece)
+				segment.pieces.push({ ...action.piece, segmentId: segment._id })
 			}
 		})
 
@@ -652,7 +652,6 @@ export function AdLibPanel({
 			) {
 				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 				return
-				// TODOSYNC: TV2 uses queue = false
 			}
 			if (currentPartInstanceId) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {

@@ -20,6 +20,7 @@ import { PeripheralDeviceId } from '../collections/PeripheralDevices'
 import { RundownBaselineAdLibActionId } from '../collections/RundownBaselineAdLibActions'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import { Time } from '../lib'
+import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(
@@ -111,15 +112,15 @@ export interface NewUserActionAPI extends MethodContext {
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
-	): Promise<ClientAPI.ClientResponse<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }>>
-	segmentAdLibPieceStart(
+	): Promise<ClientAPI.ClientResponse<ExecuteActionResult>>
+	segmentAdLibPieceStart<T>(
 		userEvent: string,
 		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adLibPieceId: PieceId,
 		queue: boolean
-	): Promise<ClientAPI.ClientResponse<void>>
+	): Promise<ClientAPI.ClientResponse<T>>
 	sourceLayerOnPartStop(
 		userEvent: string,
 		eventTime: Time,
@@ -127,14 +128,14 @@ export interface NewUserActionAPI extends MethodContext {
 		partInstanceId: PartInstanceId,
 		sourceLayerIds: string[]
 	): Promise<ClientAPI.ClientResponse<void>>
-	baselineAdLibPieceStart(
+	baselineAdLibPieceStart<T>(
 		userEvent: string,
 		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adlibPieceId: PieceId,
 		queue: boolean
-	): Promise<ClientAPI.ClientResponse<void>>
+	): Promise<ClientAPI.ClientResponse<T>>
 	sourceLayerStickyPieceStart(
 		userEvent: string,
 		eventTime: Time,

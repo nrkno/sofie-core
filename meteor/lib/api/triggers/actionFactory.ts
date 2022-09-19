@@ -389,6 +389,17 @@ function createRundownPlaylistSoftActivateAction(
 	}
 }
 
+function createRundownPlaylistSoftDeactivateAction(): ExecutableAction {
+	return {
+		action: PlayoutActions.deactivateRundownPlaylist,
+		execute: (t, e) => {
+			RundownViewEventBus.emit(RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, {
+				context: e,
+			})
+		},
+	}
+}
+
 function createRundownPlaylistSoftResyncAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
 	return {
 		action: PlayoutActions.resyncRundownPlaylist,
@@ -491,6 +502,9 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				}
 			}
 		case PlayoutActions.deactivateRundownPlaylist:
+			if (isActionTriggeredFromUiContext(action)) {
+				return createRundownPlaylistSoftDeactivateAction()
+			}
 			return createUserActionWithCtx(action, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, async (e, ts, ctx) =>
 				MeteorCall.userAction.deactivate(e, ts, ctx.rundownPlaylistId.get())
 			)
@@ -564,4 +578,8 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 			// Nothing
 		},
 	}
+}
+
+function isActionTriggeredFromUiContext(action: SomeAction): boolean {
+	return Meteor.isClient && action.filterChain.every((link) => link.object === 'view')
 }

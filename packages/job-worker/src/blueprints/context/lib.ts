@@ -1,23 +1,3 @@
-import {
-	IBlueprintPiece,
-	IBlueprintMutatablePart,
-	IBlueprintPieceInstance,
-	IBlueprintPartInstance,
-	IBlueprintResolvedPieceInstance,
-	IBlueprintPartDB,
-	IBlueprintAdLibPieceDB,
-	IBlueprintActionManifest,
-	IBlueprintShowStyleBase,
-	IBlueprintShowStyleVariant,
-	IBlueprintRundownDB,
-	IBlueprintPieceDB,
-	IBlueprintPieceGeneric,
-	RundownPlaylistTiming,
-	IOutputLayer,
-	ISourceLayer,
-	IBlueprintConfig,
-	IBlueprintSegmentDB,
-} from '@sofie-automation/blueprints-integration'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -32,9 +12,29 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { clone, literal, Complete } from '@sofie-automation/corelib/dist/lib'
+import { clone, Complete, literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
+import {
+	IBlueprintActionManifest,
+	IBlueprintAdLibPieceDB,
+	IBlueprintConfig,
+	IBlueprintMutatablePart,
+	IBlueprintPartDB,
+	IBlueprintPartInstance,
+	IBlueprintPiece,
+	IBlueprintPieceDB,
+	IBlueprintPieceGeneric,
+	IBlueprintPieceInstance,
+	IBlueprintResolvedPieceInstance,
+	IBlueprintRundownDB,
+	IBlueprintSegmentDB,
+	IBlueprintShowStyleBase,
+	IBlueprintShowStyleVariant,
+	IOutputLayer,
+	ISourceLayer,
+	RundownPlaylistTiming,
+} from '@sofie-automation/blueprints-integration'
 
 /**
  * Convert an object to have all the values of all keys (including optionals) be 'true'
@@ -91,7 +91,7 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 	displayDurationGroup: true,
 	displayDuration: true,
 	identifier: true,
-	// hackListenToMediaObjectUpdates: true,
+	hackListenToMediaObjectUpdates: true,
 })
 
 /*
@@ -219,7 +219,7 @@ export function convertPartToBlueprints(part: DBPart): IBlueprintPartDB {
 		displayDurationGroup: part.displayDurationGroup,
 		displayDuration: part.displayDuration,
 		identifier: part.identifier,
-		// hackListenToMediaObjectUpdates: part.hackListenToMediaObjectUpdates,
+		hackListenToMediaObjectUpdates: part.hackListenToMediaObjectUpdates,
 	}
 
 	return obj
