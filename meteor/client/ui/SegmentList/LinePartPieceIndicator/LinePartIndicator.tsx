@@ -9,7 +9,7 @@ import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 
 interface IProps {
-	overlay: (ref: HTMLDivElement | null, setIsOver: (isOver: boolean) => void) => React.ReactNode
+	overlay?: (ref: HTMLDivElement | null, setIsOver: (isOver: boolean) => void) => React.ReactNode
 	count: number
 	hasOriginInPreceedingPart: boolean
 	allSourceLayers: ISourceLayerExtended[]
@@ -84,7 +84,7 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 					</div>
 				)}
 			</div>
-			{(isOver || isOverlayOver) && overlay(element, setIsOverlayOver)}
+			{(isOver || isOverlayOver) && !!overlay && overlay(element, setIsOverlayOver)}
 		</>
 	)
 })
