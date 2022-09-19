@@ -140,6 +140,85 @@ export async function updateStudioTimeline(
 	if (span) span.end()
 }
 
+function deNowifyMultiGatewayTimeline(
+	context: JobContext,
+	cache: CacheForPlayout,
+	timelineObjs: TimelineObjRundown[],
+	timeOffsetIntoPart: Time | undefined
+): void {
+	const timelineObjsMap = normalizeArray(timelineObjs, 'id')
+
+	const nowOffsetLatency = calculateNowOffsetLatency(context, cache, timeOffsetIntoPart)
+	const targetNowTime = getCurrentTime() + (nowOffsetLatency ?? 0)
+
+	// Replace `start: 'now'` in currentPartInstance on timeline
+	const { currentPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
+	if (currentPartInstance) {
+		const currentPartGroupId = getPartGroupId(currentPartInstance)
+		if (!currentPartInstance.timings?.plannedStartedPlayback) {
+			// Looks like the part is just being taken
+			cache.PartInstances.update(currentPartInstance._id, (instance) => {
+				if (!instance.timings) instance.timings = {}
+				instance.timings.plannedStartedPlayback = targetNowTime
+				return instance
+			})
+
+			// Also mark the previous as ended
+			if (
+				previousPartInstance &&
+				!previousPartInstance.timings?.plannedStoppedPlayback &&
+				previousPartInstance.timings?.plannedStartedPlayback
+			) {
+				cache.PartInstances.update(previousPartInstance._id, (instance) => {
+					if (!instance.timings) instance.timings = {}
+					instance.timings.plannedStoppedPlayback = targetNowTime
+					return instance
+				})
+			}
+
+			// Reflect this in the timeline
+			const currentPartGroup = timelineObjsMap[currentPartGroupId]
+			if (currentPartGroup) {
+				applyToArray(currentPartGroup.enable, (val) => {
+					val.start = targetNowTime
+				})
+			} else {
+				logger.error(`Unable to find currentPartInstance group "${currentPartGroupId}" on timeline`)
+			}
+		}
+
+		// The relative time for 'now' to be resolved to, inside of the part group
+		const nowInPart = targetNowTime - (currentPartInstance.timings?.plannedStartedPlayback ?? targetNowTime)
+
+		// Ensure any pieces in the currentPartInstance have their now replaced
+		cache.PieceInstances.update(
+			(p) => p.partInstanceId === currentPartInstance._id,
+			(p) => {
+				if (p.piece.enable.start === 'now') {
+					p.piece.enable.start = nowInPart
+					return p
+				}
+
+				// No change
+				return false
+			}
+		)
+
+		// Pieces without concrete times will add some special 'now' objects to the timeline that they can reference
+		// Make sure that the all have concrete times attached
+		for (const obj of timelineObjs) {
+			const objMetadata = obj.metaData as Partial<PieceTimelineMetadata> | undefined
+			if (objMetadata?.isPieceTimeline && !Array.isArray(obj.enable) && obj.enable.start === 'now') {
+				if (obj.inGroup === currentPartGroupId) {
+					obj.enable = { start: nowInPart }
+				} else if (!obj.inGroup) {
+					obj.enable = { start: targetNowTime }
+				}
+			}
+		}
+	}
+}
+
 export async function updateTimeline(
 	context: JobContext,
 	cache: CacheForPlayout,
@@ -155,80 +234,11 @@ export async function updateTimeline(
 	const { versions, objs: timelineObjs } = await getTimelineRundown(context, cache)
 
 	flattenAndProcessTimelineObjects(context, timelineObjs)
-	const timelineObjsMap = normalizeArray(timelineObjs, 'id')
-
-	const nowOffsetLatency = calculateNowOffsetLatency(context, cache, timeOffsetIntoPart)
-	const targetNowTime = getCurrentTime() + (nowOffsetLatency ?? 0)
 
 	preserveOrReplaceNowTimesInObjects(cache, timelineObjs)
 
 	if (cache.isMultiGatewayMode) {
-		// Replace `start: 'now'` in currentPartInstance on timeline
-		const { currentPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
-		if (currentPartInstance) {
-			const currentPartGroupId = getPartGroupId(currentPartInstance)
-			if (!currentPartInstance.timings?.plannedStartedPlayback) {
-				// Looks like the part is just being taken
-				cache.PartInstances.update(currentPartInstance._id, (instance) => {
-					if (!instance.timings) instance.timings = {}
-					instance.timings.plannedStartedPlayback = targetNowTime
-					return instance
-				})
-
-				// Also mark the previous as ended
-				if (
-					previousPartInstance &&
-					!previousPartInstance.timings?.plannedStoppedPlayback &&
-					previousPartInstance.timings?.plannedStartedPlayback
-				) {
-					cache.PartInstances.update(previousPartInstance._id, (instance) => {
-						if (!instance.timings) instance.timings = {}
-						instance.timings.plannedStoppedPlayback = targetNowTime
-						return instance
-					})
-				}
-
-				// Reflect this in the timeline
-				const currentPartGroup = timelineObjsMap[currentPartGroupId]
-				if (currentPartGroup) {
-					applyToArray(currentPartGroup.enable, (val) => {
-						val.start = targetNowTime
-					})
-				} else {
-					logger.error(`Unable to find currentPartInstance group "${currentPartGroupId}" on timeline`)
-				}
-			}
-
-			// The relative time for 'now' to be resolved to, inside of the part group
-			const nowInPart = targetNowTime - (currentPartInstance.timings?.plannedStartedPlayback ?? targetNowTime)
-
-			// Ensure any pieces in the currentPartInstance have their now replaced
-			cache.PieceInstances.update(
-				(p) => p.partInstanceId === currentPartInstance._id,
-				(p) => {
-					if (p.piece.enable.start === 'now') {
-						p.piece.enable.start = nowInPart
-						return p
-					}
-
-					// No change
-					return false
-				}
-			)
-
-			// Pieces without concrete times will add some special 'now' objects to the timeline that they can reference
-			// Make sure that the all have concrete times attached
-			for (const obj of timelineObjs) {
-				const objMetadata = obj.metaData as Partial<PieceTimelineMetadata> | undefined
-				if (objMetadata?.isPieceTimeline && !Array.isArray(obj.enable) && obj.enable.start === 'now') {
-					if (obj.inGroup === currentPartGroupId) {
-						obj.enable = { start: nowInPart }
-					} else if (!obj.inGroup) {
-						obj.enable = { start: targetNowTime }
-					}
-				}
-			}
-		}
+		deNowifyMultiGatewayTimeline(context, cache, timelineObjs, timeOffsetIntoPart)
 
 		logAnyRemainingNowTimes(context, timelineObjs)
 	}
