@@ -278,8 +278,6 @@ class NotificationCenter0 {
 		}
 	}
 
-	private willSnooze: { [k: string]: boolean } = {}
-
 	/**
 	 * Get a reactive array of notificaitons in the Notification Center
 	 *

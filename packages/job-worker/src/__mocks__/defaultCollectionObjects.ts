@@ -42,6 +42,7 @@ export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioI
 		timing: {
 			type: PlaylistTimingType.None,
 		},
+		rundownIdsInOrder: [],
 	}
 }
 export function defaultRundown(
@@ -61,7 +62,6 @@ export function defaultRundown(
 		organizationId: null,
 
 		playlistId: playlistId,
-		_rank: 0,
 
 		_id: getRundownId(studioId, externalId),
 		externalId: externalId,

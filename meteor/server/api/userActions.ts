@@ -616,7 +616,7 @@ class ServerUserActionAPI
 			'storeRundownSnapshot',
 			[playlistId, reason, full],
 			async (access) => {
-				return storeRundownPlaylistSnapshot(access, playlistId, reason, full)
+				return storeRundownPlaylistSnapshot(access, reason, full)
 			}
 		)
 	}

@@ -13,7 +13,6 @@ import {
 	getCurrentTime,
 	getRandomString,
 	ManualPromise,
-	MongoSelector,
 	stringifyError,
 	waitForPromise,
 } from '../../lib/lib'
@@ -25,6 +24,7 @@ import { fetchStudioLight } from '../../lib/collections/optimizations'
 import * as path from 'path'
 import { LogEntry } from 'winston'
 import { initializeWorkerStatus, setWorkerStatus } from './workerStatus'
+import { MongoQuery } from '../../lib/typings/meteor'
 
 const FREEZE_LIMIT = 1000 // how long to wait for a response to a Ping
 const RESTART_TIMEOUT = 30000 // how long to wait for a restart to complete before throwing an error
@@ -183,7 +183,7 @@ async function fastTrackTimeline(newTimeline: TimelineComplete): Promise<void> {
 
 	// Store the timelineHash to the latest UserLog,
 	// so that it can be looked up later to set .gatewayDuration:
-	const selector: MongoSelector<UserActionsLogItem> = {
+	const selector: MongoQuery<UserActionsLogItem> = {
 		// Try to match the latest userActionLogItem:
 		success: { $exists: false },
 		// This could be improved (as it relies on that the internal execution takes no longer than 3000 ms),

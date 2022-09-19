@@ -1,5 +1,6 @@
 import {
 	ClientActions,
+	IAdlibPlayoutActionArguments,
 	IBaseFilterLink,
 	IGUIContextFilterLink,
 	IRundownPlaylistFilterLink,
@@ -14,7 +15,7 @@ import { Tracker } from 'meteor/tracker'
 import { MeteorCall } from '../methods'
 import { PartInstance, PartInstanceId, PartInstances } from '../../collections/PartInstances'
 import { PartId, Parts } from '../../collections/Parts'
-import { RundownPlaylist, RundownPlaylistId } from '../../collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil, RundownPlaylistId } from '../../collections/RundownPlaylists'
 import { ShowStyleBase } from '../../collections/ShowStyleBases'
 import { Studio } from '../../collections/Studios'
 import { assertNever } from '../../lib'
@@ -29,7 +30,7 @@ import {
 	IWrappedAdLib,
 } from './actionFilterChainCompilers'
 import { ClientAPI } from '../client'
-import { RundownId, Rundowns } from '../../collections/Rundowns'
+import { RundownId } from '../../collections/Rundowns'
 import { ReactiveVar } from 'meteor/reactive-var'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
@@ -118,7 +119,9 @@ function createRundownPlaylistContext(
 	context: ActionContext,
 	filterChain: IBaseFilterLink[]
 ): ReactivePlaylistActionContext | undefined {
-	if (filterChain[0].object === 'view' && context.rundownPlaylistId) {
+	if (filterChain.length < 1) {
+		return undefined
+	} else if (filterChain[0].object === 'view' && context.rundownPlaylistId) {
 		return context as ReactivePlaylistActionContext
 	} else if (filterChain[0].object === 'view' && context.rundownPlaylist) {
 		const playlistContext = context as PlainPlaylistContext
@@ -170,16 +173,7 @@ function createRundownPlaylistContext(
 				rundownPlaylist: new DummyReactiveVar(playlist),
 				currentRundownId: new DummyReactiveVar(
 					currentPartInstance?.rundownId ??
-						Rundowns.findOne(
-							{
-								playlistId: playlist._id,
-							},
-							{
-								sort: {
-									_rank: 1,
-								},
-							}
-						)?._id ??
+						RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)[0]?._id ??
 						null
 				),
 				currentPartId: new DummyReactiveVar(currentPartId),
@@ -202,7 +196,11 @@ function createRundownPlaylistContext(
  * @param {ShowStyleBase} showStyleBase
  * @return {*}  {ExecutableAdLibAction}
  */
-function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: ShowStyleBase): ExecutableAdLibAction {
+function createAdLibAction(
+	filterChain: AdLibFilterChainLink[],
+	showStyleBase: ShowStyleBase,
+	actionArguments: IAdlibPlayoutActionArguments | undefined
+): ExecutableAdLibAction {
 	const compiledAdLibFilter = compileAdLibFilter(filterChain, showStyleBase)
 
 	return {
@@ -270,7 +268,7 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 								wrappedAdLib._id,
 								wrappedAdLib.item.actionId,
 								wrappedAdLib.item.userData,
-								undefined
+								(actionArguments && actionArguments.triggerMode) || undefined
 							)
 						)
 						break
@@ -283,7 +281,7 @@ function createAdLibAction(filterChain: AdLibFilterChainLink[], showStyleBase: S
 								wrappedAdLib._id,
 								wrappedAdLib.item.actionId,
 								wrappedAdLib.item.userData,
-								undefined
+								(actionArguments && actionArguments.triggerMode) || undefined
 							)
 						)
 						break
@@ -475,7 +473,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 		case ClientActions.rewindSegments:
 			return createRewindSegmentsAction(action.filterChain)
 		case PlayoutActions.adlib:
-			return createAdLibAction(action.filterChain, showStyleBase)
+			return createAdLibAction(action.filterChain, showStyleBase, action.arguments || undefined)
 		case PlayoutActions.activateRundownPlaylist:
 			if (action.force) {
 				return createUserActionWithCtx(

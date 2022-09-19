@@ -9,7 +9,7 @@ import {
 	PeripheralDevice,
 } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, stringifyObjects } from '../../lib/lib'
+import { getCurrentTime, protectString, makePromise, stringifyObjects, literal } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
@@ -38,7 +38,7 @@ import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
-import { PickerPOST } from './http'
+import { PickerGET, PickerPOST } from './http'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
@@ -46,7 +46,9 @@ import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPacka
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { ConfigManifestEntryType, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
+import { ConfigManifestEntryType, DeviceConfigManifest, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
+import { Studios } from '../../lib/collections/Studios'
+import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -117,6 +119,7 @@ export namespace ServerPeripheralDeviceAPI {
 					statusCode: StatusCode.UNKNOWN,
 				},
 				studioId: protectString(''),
+				settings: {},
 				connected: true,
 				connectionId: options.connectionId,
 				lastSeen: getCurrentTime(),
@@ -133,7 +136,11 @@ export namespace ServerPeripheralDeviceAPI {
 				versions: options.versions,
 				// settings: {},
 
-				configManifest: options.configManifest,
+				configManifest:
+					options.configManifest ??
+					literal<DeviceConfigManifest>({
+						deviceConfig: [],
+					}),
 			})
 		}
 		return deviceId
@@ -239,113 +246,30 @@ export namespace ServerPeripheralDeviceAPI {
 
 		transaction?.end()
 	}
-
-	export async function partPlaybackStarted(
+	export async function playoutPlaybackChanged(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
-		r: PeripheralDeviceAPI.PartPlaybackStartedResult
+		changedResults: PlayoutChangedResults
 	): Promise<void> {
-		const transaction = profiler.startTransaction('partPlaybackStarted', apmNamespace)
+		const transaction = profiler.startTransaction('playoutPlaybackChanged', apmNamespace)
 
 		// This is called from the playout-gateway when a part starts playing.
 		// Note that this function can / might be called several times from playout-gateway for the same part
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		check(r.time, Number)
-		check(r.rundownPlaylistId, String)
-		check(r.partInstanceId, String)
-
 		if (!peripheralDevice.studioId)
 			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
 
-		const job = await QueueStudioJob(StudioJobs.OnPartPlaybackStarted, peripheralDevice.studioId, {
-			playlistId: r.rundownPlaylistId,
-			partInstanceId: r.partInstanceId,
-			startedPlayback: r.time,
-		})
-		await job.complete
+		if (changedResults.changes.length) {
+			check(changedResults.rundownPlaylistId, String)
 
-		transaction?.end()
-	}
-	export async function partPlaybackStopped(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
-		token: string,
-		r: PeripheralDeviceAPI.PartPlaybackStoppedResult
-	): Promise<void> {
-		const transaction = profiler.startTransaction('partPlaybackStopped', apmNamespace)
-
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
-
-		check(r.time, Number)
-		check(r.rundownPlaylistId, String)
-		check(r.partInstanceId, String)
-
-		if (!peripheralDevice.studioId)
-			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
-
-		const job = await QueueStudioJob(StudioJobs.OnPartPlaybackStopped, peripheralDevice.studioId, {
-			playlistId: r.rundownPlaylistId,
-			partInstanceId: r.partInstanceId,
-			stoppedPlayback: r.time,
-		})
-		await job.complete
-
-		transaction?.end()
-	}
-	export async function piecePlaybackStarted(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
-		token: string,
-		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
-	): Promise<void> {
-		const transaction = profiler.startTransaction('piecePlaybackStarted', apmNamespace)
-
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
-
-		check(r.time, Number)
-		check(r.rundownPlaylistId, String)
-		check(r.pieceInstanceId, String)
-		check(r.dynamicallyInserted, Match.Optional(Boolean))
-
-		if (!peripheralDevice.studioId)
-			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
-
-		const job = await QueueStudioJob(StudioJobs.OnPiecePlaybackStarted, peripheralDevice.studioId, {
-			playlistId: r.rundownPlaylistId,
-			pieceInstanceId: r.pieceInstanceId,
-			startedPlayback: r.time,
-		})
-		await job.complete
-
-		transaction?.end()
-	}
-	export async function piecePlaybackStopped(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
-		token: string,
-		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
-	): Promise<void> {
-		const transaction = profiler.startTransaction('piecePlaybackStopped', apmNamespace)
-
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
-
-		check(r.time, Number)
-		check(r.rundownPlaylistId, String)
-		check(r.pieceInstanceId, String)
-		check(r.dynamicallyInserted, Match.Optional(Boolean))
-
-		if (!peripheralDevice.studioId)
-			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
-
-		const job = await QueueStudioJob(StudioJobs.OnPiecePlaybackStopped, peripheralDevice.studioId, {
-			playlistId: r.rundownPlaylistId,
-			partInstanceId: r.partInstanceId,
-			pieceInstanceId: r.pieceInstanceId,
-			stoppedPlayback: r.time,
-		})
-		await job.complete
+			const job = await QueueStudioJob(StudioJobs.OnPlayoutPlaybackChanged, peripheralDevice.studioId, {
+				playlistId: changedResults.rundownPlaylistId,
+				changes: changedResults.changes,
+			})
+			await job.complete
+		}
 
 		transaction?.end()
 	}
@@ -354,7 +278,7 @@ export namespace ServerPeripheralDeviceAPI {
 		deviceId: PeripheralDeviceId,
 		token: string,
 		message: string,
-		cb?: Function
+		cb?: (err: any | null, msg: any) => void
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
@@ -610,6 +534,92 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 	res.end(content)
 })
 
+PickerGET.route('/devices/:deviceId/oauthResponse', (params, req: IncomingMessage, res: ServerResponse) => {
+	res.setHeader('Content-Type', 'text/plain')
+
+	let content = ''
+	try {
+		const deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+		check(deviceId, String)
+
+		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
+
+		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
+
+		if (!peripheralDevice.studioId)
+			throw new Meteor.Error(400, `Peripheral device "${deviceId}" is not attached to a studio`)
+
+		const studio = Studios.findOne(peripheralDevice.studioId)
+		if (!studio) throw new Meteor.Error(404, `Studio "${studio}" not found`)
+
+		const url = new URL(req.url || '', 'http://localhost')
+
+		let accessToken = url.searchParams.get('code') || undefined
+		const scopes = url.searchParams.get('scope') || undefined
+
+		check(accessToken, String)
+		check(scopes, String)
+
+		accessToken = (accessToken + '').trim()
+		if (accessToken && accessToken.length > 5) {
+			// If this fails, there's not much we can do except kick the user back to the
+			//  device config screen to try again.
+			PeripheralDeviceAPI.executeFunction(deviceId, 'receiveAuthToken', accessToken)
+				.then(() => {
+					logger.info(`Sent auth token to device "${deviceId}"`)
+				})
+				.catch(logger.error)
+		}
+
+		res.statusCode = 302
+		res.writeHead(302, {
+			Location: `/settings/peripheralDevice/${deviceId}`,
+		})
+	} catch (e) {
+		res.statusCode = 500
+		content = e + ''
+		logger.error('Upload credentials failed: ' + e)
+	}
+
+	res.end(content)
+})
+
+PickerPOST.route('/devices/:deviceId/resetAuth', (params, req: IncomingMessage, res: ServerResponse) => {
+	res.setHeader('Content-Type', 'text/plain')
+
+	let content = ''
+	try {
+		const deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+		check(deviceId, String)
+
+		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
+
+		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
+
+		PeripheralDevices.update(peripheralDevice._id, {
+			$unset: {
+				'secretSettings.credentials': true,
+				'secretSettings.accessToken': true,
+				'settings.secretCredentials': true,
+				'settings.secretAccessToken': true,
+				accessTokenUrl: true,
+			},
+		})
+
+		PeripheralDeviceAPI.executeFunction(deviceId, 'killProcess', 1).catch(logger.error)
+
+		res.statusCode = 200
+	} catch (e) {
+		res.statusCode = 500
+		content = e + ''
+		logger.error('Reset credentials failed: ' + e)
+	}
+
+	res.end(content)
+})
+
 async function updatePeripheralDeviceLatency(totalLatency: number, peripheralDevice: PeripheralDevice) {
 	/** How many latencies we store for statistics */
 	const LATENCIES_MAX_LENGTH = 100
@@ -702,7 +712,12 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	async getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
 		return makePromise(() => ServerPeripheralDeviceAPI.getPeripheralDevice(this, deviceId, deviceToken))
 	}
-	async pingWithCommand(deviceId: PeripheralDeviceId, deviceToken: string, message: string, cb?: Function) {
+	async pingWithCommand(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		message: string,
+		cb?: (err: any | null, msg: any) => void
+	) {
 		return makePromise(() => ServerPeripheralDeviceAPI.pingWithCommand(this, deviceId, deviceToken, message, cb))
 	}
 	async killProcess(deviceId: PeripheralDeviceId, deviceToken: string, really: boolean) {
@@ -725,33 +740,12 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	) {
 		return ServerPeripheralDeviceAPI.timelineTriggerTime(this, deviceId, deviceToken, r)
 	}
-	async partPlaybackStarted(
+	async playoutPlaybackChanged(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		r: PeripheralDeviceAPI.PartPlaybackStartedResult
+		changedResults: PlayoutChangedResults
 	) {
-		return ServerPeripheralDeviceAPI.partPlaybackStarted(this, deviceId, deviceToken, r)
-	}
-	async partPlaybackStopped(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		r: PeripheralDeviceAPI.PartPlaybackStartedResult
-	) {
-		return ServerPeripheralDeviceAPI.partPlaybackStopped(this, deviceId, deviceToken, r)
-	}
-	async piecePlaybackStopped(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
-	) {
-		return ServerPeripheralDeviceAPI.piecePlaybackStopped(this, deviceId, deviceToken, r)
-	}
-	async piecePlaybackStarted(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		r: PeripheralDeviceAPI.PiecePlaybackStartedResult
-	) {
-		return ServerPeripheralDeviceAPI.piecePlaybackStarted(this, deviceId, deviceToken, r)
+		return ServerPeripheralDeviceAPI.playoutPlaybackChanged(this, deviceId, deviceToken, changedResults)
 	}
 	async reportResolveDone(
 		deviceId: PeripheralDeviceId,

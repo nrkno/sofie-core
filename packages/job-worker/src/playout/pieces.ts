@@ -196,8 +196,8 @@ export function getResolvedPieces(
 
 	const objs: TimelineObjGeneric[] = []
 	for (const piece of preprocessedPieces) {
-		const { controlObj, capObjs } = createPieceGroupAndCap(cache.PlaylistId, piece)
-		objs.push(deNowify(controlObj), ...capObjs.map(deNowify))
+		const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(cache.PlaylistId, piece)
+		objs.push(deNowify(controlObj), ...capObjs.map(deNowify), deNowify(childGroup))
 	}
 
 	const resolvedPieces = resolvePieceTimeline(

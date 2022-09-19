@@ -379,6 +379,7 @@ export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {
 	exposeAsStandalone: boolean
 	openByDefault: boolean
 	startingHeight?: number
+	showInspector: boolean
 	disableContextMenu: boolean
 	hideDefaultStartExecute: boolean
 	/* Customizable region that the layout modifies. */

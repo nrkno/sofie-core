@@ -107,7 +107,7 @@ import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'
 import { SorensenContext } from '../lib/SorensenContext'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/corelib/dist/constants'
+import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { BreakSegment } from './SegmentTimeline/BreakSegment'
 import { PlaylistStartTiming } from './RundownView/RundownTiming/PlaylistStartTiming'
 import { RundownName } from './RundownView/RundownTiming/RundownName'
@@ -1162,7 +1162,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun(
-			(_playlistId) => RundownPlaylistCollectionUtil.getRundowns(playlist),
+			(_playlistId) => RundownPlaylistCollectionUtil.getRundownsOrdered(playlist),
 			'playlist.getRundowns',
 			playlistId
 		)
@@ -1543,11 +1543,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
+						activationId: 1,
 					},
 				}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
 				if (!playlist) return
 
-				const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
+				const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
 					fields: {
 						_id: 1,
 						showStyleBaseId: 1,
@@ -2774,31 +2775,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			]
 		}
 
-		renderSorensenContext() {
-			return (
-				<SorensenContext.Consumer>
-					{(sorensen) =>
-						sorensen &&
-						this.state.studioMode &&
-						this.props.studio &&
-						this.props.showStyleBase && (
-							<TriggersHandler
-								rundownPlaylistId={this.props.rundownPlaylistId}
-								showStyleBaseId={this.props.showStyleBase._id}
-								currentRundownId={this.props.currentRundown?._id || null}
-								currentPartId={this.props.currentPartInstance?.part._id || null}
-								nextPartId={this.props.nextPartInstance?.part._id || null}
-								currentSegmentPartIds={this.props.currentSegmentPartIds}
-								nextSegmentPartIds={this.props.nextSegmentPartIds}
-								sorensen={sorensen}
-								global={this.isHotkeyAllowed}
-							/>
-						)
-					}
-				</SorensenContext.Consumer>
-			)
-		}
-
 		renderRundownView(
 			studio: DBStudio,
 			playlist: RundownPlaylist,
@@ -3067,6 +3043,31 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					</ErrorBoundary>
 					<ErrorBoundary>{this.renderSorensenContext()}</ErrorBoundary>
 				</RundownTimingProvider>
+			)
+		}
+
+		renderSorensenContext() {
+			return (
+				<SorensenContext.Consumer>
+					{(sorensen) =>
+						sorensen &&
+						this.state.studioMode &&
+						this.props.studio &&
+						this.props.showStyleBase && (
+							<TriggersHandler
+								rundownPlaylistId={this.props.rundownPlaylistId}
+								showStyleBaseId={this.props.showStyleBase._id}
+								currentRundownId={this.props.currentRundown?._id || null}
+								currentPartId={this.props.currentPartInstance?.part._id || null}
+								nextPartId={this.props.nextPartInstance?.part._id || null}
+								currentSegmentPartIds={this.props.currentSegmentPartIds}
+								nextSegmentPartIds={this.props.nextSegmentPartIds}
+								sorensen={sorensen}
+								global={this.isHotkeyAllowed}
+							/>
+						)
+					}
+				</SorensenContext.Consumer>
 			)
 		}
 

@@ -77,14 +77,7 @@ export type SourceLayerLookup = Record<string, ISourceLayer>
 
 type MinimalRundown = Pick<
 	Rundown,
-	| '_id'
-	| 'name'
-	| '_rank'
-	| 'playlistId'
-	| 'timing'
-	| 'showStyleBaseId'
-	| 'showStyleVariantId'
-	| 'endOfRundownIsShowBreak'
+	'_id' | 'name' | 'playlistId' | 'timing' | 'showStyleBaseId' | 'showStyleVariantId' | 'endOfRundownIsShowBreak'
 >
 
 export interface AdLibFetchAndFilterProps {
@@ -137,7 +130,10 @@ function actionToAdLibPieceUi(
 }
 
 interface IFetchAndFilterProps {
-	playlist: Pick<RundownPlaylist, '_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId'>
+	playlist: Pick<
+		RundownPlaylist,
+		'_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId' | 'rundownIdsInOrder'
+	>
 	showStyleBase: Pick<ShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
@@ -275,13 +271,13 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 	uiSegments.forEach((segment) => (segment.pieces = []))
 
 	if (props.filter === undefined || props.filter.rundownBaseline !== 'only') {
-		const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(props.playlist)
+		const unorderedRundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(props.playlist)
 		const partIds = Array.from(uiPartSegmentMap.keys())
 
 		AdLibPieces.find(
 			{
 				rundownId: {
-					$in: rundownIds,
+					$in: unorderedRundownIds,
 				},
 				partId: {
 					$in: partIds,
@@ -307,11 +303,11 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			})
 
 		const adlibActions = memoizedIsolatedAutorun(
-			(rundownIds: RundownId[], partIds: PartId[]) =>
+			(unorderedRundownIds: RundownId[], partIds: PartId[]) =>
 				AdLibActions.find(
 					{
 						rundownId: {
-							$in: rundownIds,
+							$in: unorderedRundownIds,
 						},
 						partId: {
 							$in: partIds,
@@ -331,7 +327,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 					}
 				}),
 			'adLibActions',
-			rundownIds,
+			unorderedRundownIds,
 			partIds
 		)
 
@@ -368,10 +364,9 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 	) {
 		const t = i18nTranslator
 
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(props.playlist, undefined, {
+		const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(props.playlist, undefined, {
 			fields: {
 				_id: 1,
-				_rank: 1,
 				name: 1,
 			},
 		})
@@ -542,7 +537,12 @@ export function AdLibPanel({
 			fetchAndFilter({
 				playlist: playlist as Pick<
 					RundownPlaylist,
-					'_id' | 'studioId' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId'
+					| '_id'
+					| 'studioId'
+					| 'currentPartInstanceId'
+					| 'nextPartInstanceId'
+					| 'previousPartInstanceId'
+					| 'rundownIdsInOrder'
 				>,
 				showStyleBase: showStyleBase as Pick<ShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>,
 				filter,
@@ -554,6 +554,7 @@ export function AdLibPanel({
 			playlist.currentPartInstanceId,
 			playlist.nextPartInstanceId,
 			playlist.previousPartInstanceId,
+			playlist.rundownIdsInOrder,
 			showStyleBase._id,
 			showStyleBase.sourceLayers,
 			showStyleBase.outputLayers,

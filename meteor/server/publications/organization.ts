@@ -1,12 +1,13 @@
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
-import { Evaluations } from '../../lib/collections/Evaluations'
-import { Snapshots } from '../../lib/collections/Snapshots'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog'
+import { Evaluation, Evaluations } from '../../lib/collections/Evaluations'
+import { SnapshotItem, Snapshots } from '../../lib/collections/Snapshots'
+import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/typings/meteor'
 import { Organizations, DBOrganization } from '../../lib/collections/Organization'
+import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 
 meteorPublish(PubSub.organization, function (selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
@@ -18,14 +19,14 @@ meteorPublish(PubSub.organization, function (selector0, token) {
 			userRoles: 1, // to not expose too much information consider [`userRoles.${this.userId}`]: 1, and a method/publication for getting all the roles, or limiting the returned roles based on requesting user's role
 		},
 	}
-	if (OrganizationReadAccess.organizationContent(selector, cred)) {
+	if (OrganizationReadAccess.organizationContent(selector, cred) && isProtectedString(selector.organizationId)) {
 		return Organizations.find({ _id: selector.organizationId }, modifier)
 	}
 	return null
 })
 
 meteorPublish(PubSub.blueprints, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
+	const { cred, selector } = AutoFillSelector.organizationId<Blueprint>(this.userId, selector0, token)
 	const modifier: FindOptions<Blueprint> = {
 		fields: {
 			code: 0,
@@ -37,21 +38,21 @@ meteorPublish(PubSub.blueprints, function (selector0, token) {
 	return null
 })
 meteorPublish(PubSub.evaluations, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
+	const { cred, selector } = AutoFillSelector.organizationId<Evaluation>(this.userId, selector0, token)
 	if (OrganizationReadAccess.organizationContent(selector, cred)) {
 		return Evaluations.find(selector)
 	}
 	return null
 })
 meteorPublish(PubSub.snapshots, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
+	const { cred, selector } = AutoFillSelector.organizationId<SnapshotItem>(this.userId, selector0, token)
 	if (OrganizationReadAccess.organizationContent(selector, cred)) {
 		return Snapshots.find(selector)
 	}
 	return null
 })
 meteorPublish(PubSub.userActionsLog, function (selector0, token) {
-	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
+	const { cred, selector } = AutoFillSelector.organizationId<UserActionsLogItem>(this.userId, selector0, token)
 	if (OrganizationReadAccess.organizationContent(selector, cred)) {
 		return UserActionsLog.find(selector)
 	}

@@ -9,6 +9,7 @@ import classNames from 'classnames'
 import { EditAttribute } from '../../../../../../lib/EditAttribute'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { AdLibActionEditor } from './actionEditors/AdLibActionEditor'
 
 interface IProps {
 	action: SomeAction
@@ -32,6 +33,9 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 			}
 			break
 		case PlayoutActions.adlib:
+			if (action.arguments) {
+				result.push(t('Mode: {{triggerMode}}', { triggerMode: action.arguments.triggerMode }))
+			}
 			break
 		case PlayoutActions.createSnapshotForDebug:
 			break
@@ -100,7 +104,7 @@ function hasArguments(action: SomeAction): boolean {
 		case PlayoutActions.activateRundownPlaylist:
 			return action.force || action.rehearsal
 		case PlayoutActions.adlib:
-			return false
+			return !!action.arguments
 		case PlayoutActions.createSnapshotForDebug:
 			return false
 		case PlayoutActions.deactivateRundownPlaylist:
@@ -229,7 +233,7 @@ function getActionParametersEditor(
 				</div>
 			)
 		case PlayoutActions.adlib:
-			return null
+			return <AdLibActionEditor action={action} onChange={onChange} />
 		case PlayoutActions.createSnapshotForDebug:
 			return null
 		case PlayoutActions.deactivateRundownPlaylist:

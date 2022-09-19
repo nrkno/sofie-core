@@ -281,7 +281,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 										{this.renderDeviceSummary(configManifest, deviceId, device, this.isItemEdited)}
 										{this.isItemEdited('settings.' + configManifest.id + '.' + deviceId) && (
 											<tr className="expando-details hl" key={deviceId + '-details'}>
-												<td colSpan={6}>
+												<td colSpan={99}>
 													<div>
 														<div className="mod mvs mhs">
 															<label className="field">
@@ -345,7 +345,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 										{this.renderDeviceSummary(configManifest, deviceId, device, this.isItemEdited)}
 										{this.isItemEdited('settings.' + configManifest.id + '.' + deviceId) && (
 											<tr className="expando-details hl" key={deviceId + '-details'}>
-												<td colSpan={6}>
+												<td colSpan={99}>
 													<div>
 														<div className="mod mvs mhs">
 															<label className="field">
@@ -581,7 +581,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 											{this.renderConfigTableSummary(configField, tableEntry, prefix + '' + i, this.isItemEdited)}
 											{this.isItemEdited(prefix + '' + i) && (
 												<tr className="expando-details hl" key={i + '-details'}>
-													<td colSpan={6}>
+													<td colSpan={99}>
 														<div>
 															<div className="mod mvs mhs">
 																<label className="field">

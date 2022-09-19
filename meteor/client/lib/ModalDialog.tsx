@@ -289,6 +289,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		if (modalDialogGlobalContainerSingleton) {
 			logger.warn('modalDialogGlobalContainerSingleton called more than once!')
 		}
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		modalDialogGlobalContainerSingleton = this
 		this.state = {
 			queue: [],

@@ -39,8 +39,8 @@ class SimpleComponent extends React.Component<SimpleComponentProps, SimpleCompon
 		)
 	}
 }
-function testSimpleComponent() {
-	const a = new SimpleComponent({
+export function testSimpleComponent() {
+	return new SimpleComponent({
 		myProp0: '',
 		// asdf: 123, // invalid argument
 	})
@@ -52,7 +52,7 @@ interface TranslatedSimpleComponentProps {
 interface TranslatedSimpleComponentState {
 	myState0: string
 }
-const TranslatedSimpleComponent = withTranslation()(
+export const TranslatedSimpleComponent = withTranslation()(
 	class TranslatedSimpleComponent extends React.Component<
 		Translated<TranslatedSimpleComponentProps>,
 		TranslatedSimpleComponentState
@@ -124,8 +124,8 @@ const ReactiveComponent = withTracker<ReactiveComponentProps, ReactiveComponentS
 		}
 	}
 )
-function testReactiveComponent() {
-	const a = new ReactiveComponent({
+export function testReactiveComponent() {
+	return new ReactiveComponent({
 		myProp0: '',
 		// myReactiveProp0: '', // invalid argument
 		// asdf: 123, // invalid argument
@@ -142,7 +142,7 @@ interface TranslatedReactiveComponentTrackedProps {
 	myReactiveProp0: string
 }
 
-const TranslatedReactiveComponent = translateWithTracker<
+export const TranslatedReactiveComponent = translateWithTracker<
 	TranslatedReactiveComponentProps,
 	TranslatedReactiveComponentState,
 	TranslatedReactiveComponentTrackedProps
@@ -190,7 +190,7 @@ interface WithTimingComponentProps {
 interface WithTimingComponentState {
 	myState0: string
 }
-const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingComponentState>({
+export const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingComponentState>({
 	dataResolution: TimingDataResolution.Synced,
 	tickResolution: TimingTickResolution.Synced,
 })(
@@ -220,12 +220,3 @@ const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingCompo
 		}
 	}
 )
-function testWithTimingComponent() {
-	const a = new WithTimingComponent(
-		{
-			myProp0: '',
-			// asdf: 123, // invalid argument
-		},
-		{}
-	)
-}

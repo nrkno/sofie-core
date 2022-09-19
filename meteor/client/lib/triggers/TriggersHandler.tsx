@@ -29,7 +29,6 @@ import {
 import { PartId } from '../../../lib/collections/Parts'
 import { flatten, ProtectedString, protectString } from '../../../lib/lib'
 import { IWrappedAdLib } from '../../../lib/api/triggers/actionFilterChainCompilers'
-import { Mongo } from 'meteor/mongo'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { PieceId } from '../../../lib/collections/Pieces'
@@ -39,6 +38,7 @@ import { getFinalKey } from './codesToKeyLabels'
 import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../../ui/RundownView/RundownViewEventBus'
 import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../../lib/Settings'
+import { createInMemoryMongoCollection } from '../../../lib/collections/lib'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -167,7 +167,7 @@ export interface MountedAdLibTrigger {
 	targetName?: string | ITranslatableMessage
 }
 
-export const MountedAdLibTriggers = new Mongo.Collection<MountedAdLibTrigger>(null)
+export const MountedAdLibTriggers = createInMemoryMongoCollection<MountedAdLibTrigger>('MountedAdLibTrigger')
 
 type MountedGenericTriggerId = ProtectedString<'mountedGenericTriggerId'>
 /** A generic action that will be triggered by hotkeys (generic, i.e. non-AdLib) */
@@ -187,7 +187,7 @@ export interface MountedGenericTrigger {
 	adLibOnly: boolean
 }
 
-export const MountedGenericTriggers = new Mongo.Collection<MountedGenericTrigger>(null)
+export const MountedGenericTriggers = createInMemoryMongoCollection<MountedGenericTrigger>('MountedGenericTrigger')
 
 export function isMountedAdLibTrigger(
 	mountedTrigger: MountedAdLibTrigger | MountedGenericTrigger

@@ -8,6 +8,7 @@ import {
 	OrganizationId,
 	RundownPlaylistId,
 	StudioId,
+	RundownId,
 } from './Ids'
 
 /** Details of an ab-session requested by the blueprints in onTimelineGenerate */
@@ -88,8 +89,10 @@ export interface DBRundownPlaylist {
 	/** Actual time of each rundown starting playback */
 	rundownsStartedPlayback?: Record<string, Time>
 
-	/** If the _rank of rundowns in this playlist has ben set manually by a user in Sofie */
+	/** If the order of rundowns in this playlist has ben set manually by a user in Sofie */
 	rundownRanksAreSetInSofie?: boolean
+	/** If the order of rundowns in this playlist has ben set manually by a user/blueprints in Sofie */
+	rundownIdsInOrder: RundownId[]
 
 	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState

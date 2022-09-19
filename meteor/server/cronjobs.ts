@@ -9,7 +9,7 @@ import { IngestDataCache } from '../lib/collections/IngestDataCache'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/corelib/dist/constants'
+import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
 import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
@@ -175,7 +175,7 @@ export function nightlyCronjobInner() {
 		RundownPlaylists.find(filter).forEach((playlist) => {
 			lowPrioFcn(() => {
 				logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
-				ps.push(internalStoreRundownPlaylistSnapshot(null, playlist._id, 'Automatic, taken by cron job'))
+				ps.push(internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job'))
 			})
 		})
 	}

@@ -1,5 +1,6 @@
 import { Config } from './connector'
 import * as _ from 'underscore'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 
 // CLI arguments / Environment variables --------------
 let host: string = process.env.CORE_HOST || '127.0.0.1'
@@ -68,7 +69,7 @@ const config: Config = {
 		certificates: _.compact(certs),
 	},
 	device: {
-		deviceId: deviceId,
+		deviceId: protectString(deviceId),
 		deviceToken: deviceToken,
 	},
 	core: {

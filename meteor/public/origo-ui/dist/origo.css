@@ -770,16 +770,16 @@ h1 {
     padding-top: 56.25%; }
 
 .container9x16:before {
-  padding-top: calc(16/9 * 100%); }
+  padding-top: calc(16 / 9 * 100%); }
 
 .container1x1:before {
   padding-top: 100%; }
 
 .container2x3:before {
-  padding-top: calc(3/2 * 100%); }
+  padding-top: calc(3 / 2 * 100%); }
 
 .container3x4:before {
-  padding-top: calc(4/3 * 100%); }
+  padding-top: calc(4 / 3 * 100%); }
 
 .checkerboard-bg {
   position: absolute;
@@ -1234,7 +1234,7 @@ a[disabled] {
   border-color: #EEEEEE; }
 
 .dark {
-  background: #252627;
+  background: #343434;
   color: #FFFFFF; }
   .dark .link,
   .dark :link,

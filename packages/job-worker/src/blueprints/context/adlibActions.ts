@@ -15,7 +15,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../../logging'
@@ -27,7 +27,6 @@ import { getCurrentTime } from '../../lib'
 import {
 	protectString,
 	protectStringArray,
-	UnprotectedStringProperties,
 	unprotectString,
 	unprotectStringArray,
 } from '@sofie-automation/corelib/dist/protectedString'
@@ -241,9 +240,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 	}
 
-	async getPartForPreviousPiece(
-		piece: UnprotectedStringProperties<Pick<Piece, '_id'>>
-	): Promise<IBlueprintPart | undefined> {
+	async getPartForPreviousPiece(piece: Partial<Pick<IBlueprintPieceDB, '_id'>>): Promise<IBlueprintPart | undefined> {
 		if (!piece?._id) {
 			throw new Error('Cannot find Part from invalid Piece')
 		}

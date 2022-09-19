@@ -1,18 +1,36 @@
-import { Time, TSR, StatusCode } from '@sofie-automation/blueprints-integration'
+import { Time } from '@sofie-automation/blueprints-integration'
 import { assertNever } from '../lib'
 import { DeviceConfigManifest } from '../deviceConfig'
-import { PeripheralDeviceId, OrganizationId, StudioId } from './Ids'
-import { IngestDeviceSettings, IngestDeviceSecretSettings } from './PeripheralDeviceSettings/ingestDevice'
-import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
+import { PeripheralDeviceId, OrganizationId } from './Ids'
 
-export interface PeripheralDevice {
-	_id: PeripheralDeviceId
+import {
+	PeripheralDeviceStatusObject,
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+	PeripheralDeviceSubType,
+	PERIPHERAL_SUBTYPE_PROCESS,
+	MOS_DeviceType,
+	Spreadsheet_DeviceType,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
+export {
+	PeripheralDeviceStatusObject,
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+	PeripheralDeviceSubType,
+	PERIPHERAL_SUBTYPE_PROCESS,
+	MOS_DeviceType,
+	Spreadsheet_DeviceType,
+}
+
+import {
+	IngestDeviceSecretSettings,
+	PeripheralDevicePublic,
+} from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+
+export interface PeripheralDevice extends PeripheralDevicePublic {
 	/** If set, this device is owned by that organization */
 	organizationId: OrganizationId | null
-
-	/** Name of the device (set by the device, modifiable by user) */
-	name: string
 
 	/** Name of the device (set by the device) */
 	deviceName?: string
@@ -21,8 +39,6 @@ export interface PeripheralDevice {
 	type: PeripheralDeviceType
 	subType: PeripheralDeviceSubType
 
-	/** The studio this device is assigned to. Will be undefined for sub-devices */
-	studioId?: StudioId
 	parentDeviceId?: PeripheralDeviceId
 	/** Versions reported from the device */
 	versions?: {
@@ -44,8 +60,6 @@ export interface PeripheralDevice {
 
 	token: string
 
-	settings?: PlayoutDeviceSettings | IngestDeviceSettings | { [key: string]: any }
-
 	secretSettings?: IngestDeviceSecretSettings | { [key: string]: any }
 
 	/** Ignore this device when computing status in the GUI (other status reports are unaffected) */
@@ -59,43 +73,6 @@ export interface PeripheralDevice {
 	/** If an ingest device performing an oauth flow */
 	accessTokenUrl?: string
 }
-
-// Note The actual type of a device is determined by the Category, Type and SubType
-
-export interface PeripheralDeviceStatusObject {
-	statusCode: StatusCode
-	messages?: Array<string>
-}
-// Note The actual type of a device is determined by the Category, Type and SubType
-export enum PeripheralDeviceCategory {
-	INGEST = 'ingest',
-	PLAYOUT = 'playout',
-	MEDIA_MANAGER = 'media_manager',
-	PACKAGE_MANAGER = 'package_manager',
-}
-export enum PeripheralDeviceType {
-	// Ingest devices:
-	MOS = 'mos',
-	SPREADSHEET = 'spreadsheet',
-	INEWS = 'inews',
-	// Playout devices:
-	PLAYOUT = 'playout',
-	// Media-manager devices:
-	MEDIA_MANAGER = 'media_manager',
-	// Package_manager devices:
-	PACKAGE_MANAGER = 'package_manager',
-}
-export type PeripheralDeviceSubType =
-	| PERIPHERAL_SUBTYPE_PROCESS
-	| TSR.DeviceType
-	| MOS_DeviceType
-	| Spreadsheet_DeviceType
-
-/** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */
-export type PERIPHERAL_SUBTYPE_PROCESS = '_process'
-export const PERIPHERAL_SUBTYPE_PROCESS: PERIPHERAL_SUBTYPE_PROCESS = '_process'
-export type MOS_DeviceType = 'mos_connection'
-export type Spreadsheet_DeviceType = 'spreadsheet_connection'
 
 export function getExternalNRCSName(device: PeripheralDevice | undefined): string {
 	if (device) {

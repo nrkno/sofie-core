@@ -214,7 +214,7 @@ export const ExternalFramePanel = withTranslation()(
 
 				targetRundown = Rundowns.findOne(currentPart.rundownId)
 			} else {
-				targetRundown = RundownPlaylistCollectionUtil.getRundowns(playlist)[0]
+				targetRundown = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)[0]
 			}
 
 			if (!targetRundown) {

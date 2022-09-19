@@ -111,6 +111,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 	configOptions: PrompterConfig
 
+	// @ts-expect-error The manager inspects this instance
 	private _controller: PrompterControlManager
 
 	private checkWindowScroll: number | null = null
@@ -603,7 +604,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					},
 				}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
 				if (playlist) {
-					const rundownIDs = RundownPlaylistCollectionUtil.getRundownIDs(playlist)
+					const rundownIDs = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 					this.subscribe(PubSub.segments, {
 						rundownId: { $in: rundownIDs },
 					})

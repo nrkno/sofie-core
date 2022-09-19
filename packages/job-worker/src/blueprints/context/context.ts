@@ -57,7 +57,7 @@ import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Run
 import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { getShowStyleConfigRef, getStudioConfigRef, ProcessedStudioConfig, ProcessedShowStyleConfig } from '../config'
 import _ = require('underscore')
 import { WatchedPackagesHelper } from './watchedPackages'

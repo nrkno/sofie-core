@@ -66,7 +66,7 @@ export const RundownTimingProvider = withTracker<
 	let currentRundown: Rundown | undefined
 	const segmentEntryPartInstances: PartInstance[] = []
 	if (props.playlist) {
-		rundowns = RundownPlaylistCollectionUtil.getRundowns(props.playlist)
+		rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(props.playlist)
 		const { parts: incomingParts, segments: incomingSegments } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(
 			props.playlist
 		)

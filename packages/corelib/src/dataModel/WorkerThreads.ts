@@ -1,4 +1,4 @@
-import { StatusCode } from '@sofie-automation/blueprints-integration'
+import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import { WorkerId, WorkerThreadId } from './Ids'
 
 export interface WorkerThreadStatus {

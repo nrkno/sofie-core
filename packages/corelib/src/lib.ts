@@ -11,8 +11,6 @@ import { UserError } from './error'
 
 export * from './hash'
 
-export type TimeDuration = number
-
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
 
 /**

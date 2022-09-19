@@ -69,7 +69,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	Translated<IDashboardButtonProps> & T,
 	IState
 > {
-	private objId: string
 	private element: HTMLDivElement | null = null
 	private positionAndSize: {
 		top: number
@@ -248,28 +247,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	private handleOnTouchStart = (_e: React.TouchEvent<HTMLDivElement>) => {
-		if (this.element) {
-			const { top, left, width, height } = this.element.getBoundingClientRect()
-			this.positionAndSize = {
-				top,
-				left,
-				width,
-				height,
-			}
-		}
-	}
-
 	private handleOnPointerLeave = (_e: React.PointerEvent<HTMLDivElement>) => {
-		this.setState({ isHovered: false })
-		if (this.hoverTimeout) {
-			Meteor.clearTimeout(this.hoverTimeout)
-			this.hoverTimeout = null
-		}
-		this.positionAndSize = null
-	}
-
-	private handleOnTouchEnd = (_e: React.TouchEvent<HTMLDivElement>) => {
 		this.setState({ isHovered: false })
 		if (this.hoverTimeout) {
 			Meteor.clearTimeout(this.hoverTimeout)

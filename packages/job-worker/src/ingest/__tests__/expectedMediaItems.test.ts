@@ -19,7 +19,7 @@ import { ExpectedPackage, PieceLifespan, VTContent } from '@sofie-automation/blu
 import { updateExpectedPackagesOnRundown } from '../expectedPackages'
 import { runIngestJob, UpdateIngestRundownAction } from '../lock'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { ReadonlyDeep } from 'type-fest'
 
 describe('Expected Media Items', () => {
