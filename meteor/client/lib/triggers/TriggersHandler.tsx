@@ -297,7 +297,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			'Digit9',
 			'Digit0',
 		]
-		const systemActionKeys = ['AnyEnter', 'NumpadEnter', 'Tab']
+		const systemActionKeys = [Settings.confirmKeyCode, 'Tab']
 
 		const poisonKey: string | null = Settings.poisonKey
 
