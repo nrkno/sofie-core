@@ -35,11 +35,11 @@ export class Modal extends React.Component<IModalAttributes> {
 
 	bindKeys = () => {
 		if (this.props.show) {
-			this.sorensen.bind('AnyEnter', this.preventDefault, {
+			this.sorensen.bind('Enter', this.preventDefault, {
 				up: false,
 				prepend: true,
 			})
-			this.sorensen.bind('AnyEnter', this.handleKey, {
+			this.sorensen.bind('Enter', this.handleKey, {
 				up: true,
 				prepend: true,
 			})
@@ -57,8 +57,8 @@ export class Modal extends React.Component<IModalAttributes> {
 	}
 
 	unbindKeys = () => {
-		this.sorensen.unbind('AnyEnter', this.preventDefault)
-		this.sorensen.unbind('AnyEnter', this.handleKey)
+		this.sorensen.unbind('Enter', this.preventDefault)
+		this.sorensen.unbind('Enter', this.handleKey)
 		this.sorensen.unbind('Escape', this.preventDefault)
 		this.sorensen.unbind('Escape', this.handleKey)
 	}

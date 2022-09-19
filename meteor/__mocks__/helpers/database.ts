@@ -84,9 +84,11 @@ function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VE
 
 	let TSR_VERSION = ''
 	try {
+		// eslint-disable-next-line node/no-missing-require
 		TSR_VERSION = require('../../node_modules/timeline-state-resolver-types/package.json').version
 	} catch (e) {
-		TSR_VERSION = require('../../../packages/node_modules/timeline-state-resolver-types/package.json').version
+		TSR_VERSION =
+			require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json').version
 	}
 
 	return {
@@ -372,7 +374,7 @@ export async function setupMockShowStyleBlueprint(
 				getShowStyleVariantId: (): string | null => {
 					return SHOW_STYLE_VARIANT_ID
 				},
-				getRundown: (context: IShowStyleContext, ingestRundown: IngestRundown): BlueprintResultRundown => {
+				getRundown: (_context: IShowStyleContext, ingestRundown: IngestRundown): BlueprintResultRundown => {
 					const rundown: IBlueprintRundown = {
 						externalId: ingestRundown.externalId,
 						name: ingestRundown.name,
@@ -395,7 +397,7 @@ export async function setupMockShowStyleBlueprint(
 						baseline: { timelineObjects: [] },
 					}
 				},
-				getSegment: (context: unknown, ingestSegment: IngestSegment): BlueprintResultSegment => {
+				getSegment: (_context: unknown, ingestSegment: IngestSegment): BlueprintResultSegment => {
 					const segment: IBlueprintSegment = {
 						name: ingestSegment.name ? ingestSegment.name : ingestSegment.externalId,
 						metaData: ingestSegment.payload,

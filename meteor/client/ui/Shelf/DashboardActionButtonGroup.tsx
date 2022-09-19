@@ -24,8 +24,8 @@ export const DashboardActionButtonGroup = withTranslation()(
 		private take = (e: any) => {
 			if (this.props.studioMode) {
 				const { t } = this.props
-				doUserAction(t, e, UserAction.TAKE, (e) =>
-					MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+				doUserAction(t, e, UserAction.TAKE, (e, ts) =>
+					MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
 				)
 			}
 		}
@@ -33,8 +33,8 @@ export const DashboardActionButtonGroup = withTranslation()(
 		moveNext = (e: any, horizontalDelta: number, verticalDelta: number) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
-				doUserAction(t, e, UserAction.MOVE_NEXT, (e) =>
-					MeteorCall.userAction.moveNext(e, this.props.playlist._id, horizontalDelta, verticalDelta)
+				doUserAction(t, e, UserAction.MOVE_NEXT, (e, ts) =>
+					MeteorCall.userAction.moveNext(e, ts, this.props.playlist._id, horizontalDelta, verticalDelta)
 				)
 			}
 		}
@@ -42,9 +42,10 @@ export const DashboardActionButtonGroup = withTranslation()(
 		hold = (e: any) => {
 			const { t } = this.props
 			if (this.props.studioMode && this.props.playlist.activationId) {
-				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
+				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e, ts) =>
 					MeteorCall.userAction.activateHold(
 						e,
+						ts,
 						this.props.playlist._id,
 						this.props.playlist.holdState === RundownHoldState.PENDING
 					)
@@ -69,17 +70,17 @@ export const DashboardActionButtonGroup = withTranslation()(
 						message: t('Are you sure you want to deactivate this Rundown\n(This will clear the outputs)'),
 						warning: true,
 						onAccept: () => {
-							doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-								MeteorCall.userAction.deactivate(e, this.props.playlist._id)
+							doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e, ts) =>
+								MeteorCall.userAction.deactivate(e, ts, this.props.playlist._id)
 							)
 						},
 					})
 				} else {
-					doUserAction(t, e, UserAction.RESET_AND_ACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-						MeteorCall.userAction.resetAndActivate(e, this.props.playlist._id)
+					doUserAction(t, e, UserAction.RESET_AND_ACTIVATE_RUNDOWN_PLAYLIST, (e, ts) =>
+						MeteorCall.userAction.resetAndActivate(e, ts, this.props.playlist._id)
 					)
-					doUserAction(t, e, UserAction.TAKE, (e) =>
-						MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+					doUserAction(t, e, UserAction.TAKE, (e, ts) =>
+						MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
 					)
 				}
 			}
@@ -93,7 +94,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 				t,
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-				(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, reason, false),
+				(e, ts) => MeteorCall.userAction.storeRundownSnapshot(e, ts, playlistId, reason, false),
 				(err, snapshotId) => {
 					if (!err && snapshotId) {
 						const noticeLevel: NoticeLevel = NoticeLevel.NOTIFICATION

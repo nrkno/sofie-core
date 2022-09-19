@@ -44,19 +44,21 @@ export namespace ConfigRef {
 				const studio = await Studios.findOneAsync(studioId)
 				if (studio) {
 					return objectPathGet(studio.blueprintConfig, configId)
-				} else if (bailOnError)
+				} else if (bailOnError) {
 					throw new Meteor.Error(404, `Ref "${reference}": Studio "${studioId}" not found`)
+				}
 			} else if (m[1] === 'showStyle' && _.isString(m[2]) && _.isString(m[3])) {
 				const showStyleVariantId = protectString<ShowStyleVariantId>(m[2])
 				const configId = m[3]
 				const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
 				if (showStyleCompound) {
 					return objectPathGet(showStyleCompound.blueprintConfig, configId)
-				} else if (bailOnError)
+				} else if (bailOnError) {
 					throw new Meteor.Error(
 						404,
 						`Ref "${reference}": Showstyle variant "${showStyleVariantId}" not found`
 					)
+				}
 			}
 		}
 		return undefined

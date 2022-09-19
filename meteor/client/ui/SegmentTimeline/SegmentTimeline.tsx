@@ -815,10 +815,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		)
 	}
 
-	renderEndOfSegment() {
-		return <div className="segment-timeline__part segment-timeline__part--end-of-segment"></div>
-	}
-
 	getActiveOutputGroups(): IOutputLayerUi[] {
 		if (this.props.segment.outputLayers === undefined) return []
 
@@ -1100,7 +1096,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						<ErrorBoundary>
 							{this.renderTimeline()}
 							{this.renderBudgetGapPart()}
-							{this.renderEndOfSegment()}
 						</ErrorBoundary>
 					</div>
 					{this.renderEditorialLine()}

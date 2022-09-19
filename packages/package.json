@@ -9,6 +9,7 @@
 			"documentation"
 		],
 		"nohoist": [
+			"**/timeline-state-resolver-types",
 			"**/timecode"
 		]
 	},

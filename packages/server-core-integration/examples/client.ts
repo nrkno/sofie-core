@@ -7,7 +7,7 @@ let core = new CoreConnection({
 	deviceToken: 'abcd',
 	deviceType: P.DeviceType.PLAYOUT,
 	deviceName: 'Jest test framework',
-	deviceCategory: P.DeviceCategory.PLAYOUT
+	deviceCategory: P.DeviceCategory.PLAYOUT,
 })
 
 // let consolelog = console.log
@@ -35,35 +35,41 @@ core.onFailed((err) => {
 
 let setupSubscription = () => {
 	console.log('Setup subscription')
-	return core.subscribe('peripheralDevices', {
-		_id: core.deviceId
-	})
-	.then(() => {
-		console.log('sub OK!')
-	})
+	return core
+		.subscribe('peripheralDevices', {
+			_id: core.deviceId,
+		})
+		.then(() => {
+			console.log('sub OK!')
+		})
 }
 let setupObserver = () => {
 	console.log('Setup observer')
 	let observer = core.observe('peripheralDevices')
-	observer.added = (id) =>	{ console.log('added', id) }
-	observer.changed = (id) =>	{ console.log('changed', id) }
-	observer.removed = (id) =>	{ console.log('removed', id) }
+	observer.added = (id) => {
+		console.log('added', id)
+	}
+	observer.changed = (id) => {
+		console.log('changed', id)
+	}
+	observer.removed = (id) => {
+		console.log('removed', id)
+	}
 }
 // Initiate connection to Core:
 
 let setup = async () => {
 	try {
-
 		console.log('init...')
 		await core.init({
 			host: '127.0.0.1',
-			port: 3000
+			port: 3000,
 		})
 		console.log('init!')
 
 		await core.setStatus({
 			statusCode: P.StatusCode.GOOD,
-			messages: ['']
+			messages: [''],
 		})
 
 		setupObserver()
@@ -74,29 +80,28 @@ let setup = async () => {
 			console.log('updating status')
 			await core.setStatus({
 				statusCode: P.StatusCode.GOOD,
-				messages: ['a']
+				messages: ['a'],
 			})
-		},500)
+		}, 500)
 
 		setTimeout(() => {
 			console.log('closing socket')
 			if (core.ddp.ddpClient) {
 				core.ddp.ddpClient['socket'].close()
 			}
-		},1500)
+		}, 1500)
 
 		setTimeout(async () => {
 			console.log('updating status')
 			await core.setStatus({
 				statusCode: P.StatusCode.GOOD,
-				messages: ['b']
+				messages: ['b'],
 			})
-		},3500)
+		}, 3500)
 	} catch (e) {
 		console.log('ERROR ===========')
 		console.log(e, e.stack)
 	}
-
 }
 
 setup().then(console.log).catch(console.error)

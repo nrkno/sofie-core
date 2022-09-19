@@ -707,6 +707,7 @@ describe('Playout API', () => {
 				pieceInstances.map(async (pieceInstance) =>
 					onPiecePlaybackStopped(context, {
 						playlistId: playlistId0,
+						partInstanceId: pieceInstance.partInstanceId,
 						pieceInstanceId: pieceInstance._id,
 						stoppedPlayback:
 							(typeof pieceInstance.piece.enable.start === 'number'

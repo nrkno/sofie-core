@@ -8,7 +8,7 @@ import { TimelineObjGeneric, TimelineObjRundown } from '@sofie-automation/coreli
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration/dist'
-import { clone, getRandomId, literal, normalizeArray, flatten, applyToArray } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomId, literal, normalizeArray, applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import { logger } from '../logging'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
@@ -25,11 +25,7 @@ import {
 	PieceInstanceWithTimings,
 	processAndPrunePieceInstanceTimings,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import {
-	createPieceGroupAndCap,
-	PieceGroupMetadata,
-	PieceTimelineMetadata,
-} from '@sofie-automation/corelib/dist/playout/pieces'
+import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	if (a.pieceType === IBlueprintPieceType.OutTransition && b.pieceType !== IBlueprintPieceType.OutTransition) {
@@ -85,14 +81,16 @@ function resolvePieceTimeline(
 	const unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
 		const obj = obj0 as any as TimelineObjRundown
-		const id = unprotectString((obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
+		const pieceInstanceId = unprotectString(
+			(obj.metaData as Partial<PieceTimelineMetadata> | undefined)?.pieceInstanceGroupId
+		)
 
-		if (!id) return
+		if (!pieceInstanceId) return
 
-		const pieceInstance = pieceInstanceMap[id]
+		const pieceInstance = pieceInstanceMap[pieceInstanceId]
 		// Erm... How?
 		if (!pieceInstance) {
-			unresolvedIds.push(id)
+			unresolvedIds.push(pieceInstanceId)
 			return
 		}
 
@@ -115,7 +113,7 @@ function resolvePieceTimeline(
 					resolvedDuration: undefined,
 				})
 			)
-			unresolvedIds.push(id)
+			unresolvedIds.push(pieceInstanceId)
 		}
 	})
 
@@ -184,13 +182,7 @@ export function getResolvedPieces(
 		nowInPart
 	)
 
-	const objs = flatten(
-		preprocessedPieces.map((piece) => {
-			const r = createPieceGroupAndCap(piece)
-			return [r.pieceGroup, ...r.capObjs]
-		})
-	)
-	objs.forEach((o) => {
+	const deNowify = (o: TimelineObjRundown) => {
 		applyToArray(o.enable, (enable) => {
 			if (enable.start === 'now' && partStarted) {
 				// Emulate playout starting now. TODO - ensure didnt break other uses
@@ -199,7 +191,14 @@ export function getResolvedPieces(
 				enable.start = 1
 			}
 		})
-	})
+		return o
+	}
+
+	const objs: TimelineObjGeneric[] = []
+	for (const piece of preprocessedPieces) {
+		const { controlObj, capObjs } = createPieceGroupAndCap(cache.PlaylistId, piece)
+		objs.push(deNowify(controlObj), ...capObjs.map(deNowify))
+	}
 
 	const resolvedPieces = resolvePieceTimeline(
 		transformTimeline(objs),

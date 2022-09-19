@@ -74,7 +74,7 @@ export const RundownDropZone = DropTarget(
 		return connectDropTarget(
 			<div className={`rundown-dropzone ${activated ? 'open' : ''}`}>
 				<p>
-					<b>{t('Drop rundown here to move it out of its current playlist')}</b>
+					<b>{t('Drop Rundown here to move it out of its current Playlist')}</b>
 				</p>
 			</div>
 		)

@@ -6,7 +6,7 @@ import { isProtectedString } from '../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents } from '../ui/RundownView/RundownViewEventBus'
 import { Settings } from '../../lib/Settings'
 
-const HEADER_MARGIN = 15
+const HEADER_MARGIN = 15 // TODOSYNC: NRK uses 24? do we need to make this better somehow?
 const FALLBACK_HEADER_HEIGHT = 65
 
 let focusInterval: NodeJS.Timer | undefined

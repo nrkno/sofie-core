@@ -415,6 +415,12 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	 */
 	prerollDuration?: number
 
+	/**
+	 * How long this piece needs to continue it's content after a take has been done to ensure a
+	 * seemless transition into the next part.
+	 */
+	postrollDuration?: number
+
 	/** Whether the adlib should always be inserted queued */
 	toBeQueued?: boolean
 	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.

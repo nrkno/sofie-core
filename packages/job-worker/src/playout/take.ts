@@ -359,7 +359,7 @@ export function updatePartInstanceOnTake(
 	}
 
 	// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
-	const tmpPieces = processAndPrunePieceInstanceTimings(
+	const tmpTakePieces = processAndPrunePieceInstanceTimings(
 		showStyle,
 		cache.PieceInstances.findFetch((p) => p.partInstanceId === takePartInstance._id),
 		0
@@ -367,8 +367,9 @@ export function updatePartInstanceOnTake(
 	const partPlayoutTimings = calculatePartTimings(
 		cache.Playlist.doc.holdState,
 		currentPartInstance?.part,
+		cache.PieceInstances.findFetch((p) => p.partInstanceId === currentPartInstance?._id).map((p) => p.piece),
 		takePartInstance.part,
-		tmpPieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
+		tmpTakePieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
 	)
 
 	const partInstanceM: any = {

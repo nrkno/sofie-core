@@ -54,7 +54,7 @@ describe('Migrations', () => {
 	}
 	function userInput(
 		migrationStatus: GetMigrationStatusResult,
-		userInput?: { [key: string]: any }
+		userValues?: { [key: string]: any }
 	): MigrationStepInputResult[] {
 		return _.compact(
 			_.map(migrationStatus.migration.manualInputs, (manualInput) => {
@@ -62,7 +62,7 @@ describe('Migrations', () => {
 					return literal<MigrationStepInputResult>({
 						stepId: manualInput.stepId,
 						attribute: manualInput.attribute,
-						value: userInput && userInput[manualInput.stepId],
+						value: userValues && userValues[manualInput.stepId],
 					})
 				}
 			})
@@ -444,7 +444,7 @@ describe('Migrations', () => {
 		expect(steps.indexOf(myCoreMockStep2)).toEqual(1)
 		expect(steps.indexOf(myCoreMockStep3)).toEqual(2)
 		// Then, the System-blueprints migration steps:
-		// Todo: to-be-implemented..
+		to-be-implemented..
 
 		// Then, the Studio-blueprints migration steps:
 		expect(steps.indexOf(myStudioMockStep1)).toEqual(3)

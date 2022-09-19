@@ -12,6 +12,7 @@
 		"install:packages": "cd packages && yarn install",
 		"start": "yarn install && yarn dev",
 		"dev": "node ./scripts/run.js",
+		"restart:meteor": "node ./scripts/meteor-force-restart.js",
 		"build:packages": "cd packages && yarn build",
 		"test:packages": "cd packages && yarn test",
 		"lint:packages": "cd packages && yarn lint",
@@ -33,8 +34,8 @@
 	},
 	"devDependencies": {
 		"concurrently": "^6.4.0",
+		"snyk-nodejs-lockfile-parser": "^1.38.0",
 		"rimraf": "^3.0.2",
-		"semver": "^7.3.5",
-		"snyk-nodejs-lockfile-parser": "^1.38.0"
+		"semver": "^7.3.5"
 	}
 }

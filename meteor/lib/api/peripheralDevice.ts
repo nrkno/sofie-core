@@ -4,7 +4,6 @@ import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collecti
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
 import { ExpectedPackageStatusAPI, IngestPlaylist, TSR } from '@sofie-automation/blueprints-integration'
-import { PartInstanceId } from '../collections/PartInstances'
 import {
 	PeripheralDeviceId,
 	PeripheralDevice,
@@ -12,12 +11,10 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '../collections/PeripheralDevices'
-import { PieceInstanceId } from '../collections/PieceInstances'
 import { MediaWorkFlowId, MediaWorkFlow } from '../collections/MediaWorkFlows'
 import { MediaObject } from '../collections/MediaObjects'
 import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'
-import { RundownPlaylistId } from '../collections/RundownPlaylists'
-import { TimelineHash } from '../collections/Timeline'
+import { PartPlaybackCallbackData, PiecePlaybackCallbackData, TimelineHash } from '../collections/Timeline'
 import { ExpectedPackageId } from '../collections/ExpectedPackages'
 import { ExpectedPackageWorkStatusId } from '../collections/ExpectedPackageWorkStatuses'
 
@@ -497,16 +494,11 @@ export namespace PeripheralDeviceAPI {
 	}
 	export type TimelineTriggerTimeResult = Array<{ id: string; time: number }>
 
-	export interface PartPlaybackStartedResult {
-		rundownPlaylistId: RundownPlaylistId
-		partInstanceId: PartInstanceId
+	export interface PartPlaybackStartedResult extends PartPlaybackCallbackData {
 		time: number
 	}
 	export type PartPlaybackStoppedResult = PartPlaybackStartedResult
-	export interface PiecePlaybackStartedResult {
-		rundownPlaylistId: RundownPlaylistId
-		pieceInstanceId: PieceInstanceId
-		dynamicallyInserted?: boolean
+	export interface PiecePlaybackStartedResult extends PiecePlaybackCallbackData {
 		time: number
 	}
 	export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
@@ -533,8 +525,6 @@ export namespace PeripheralDeviceAPI {
 			// we've sent the command, let's just wait for the reply
 			const checkReply = () => {
 				const cmd = PeripheralDeviceCommands.findOne(commandId)
-				// if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
-				// logger.debug('checkReply')
 
 				if (cmd) {
 					const cmdId = cmd._id

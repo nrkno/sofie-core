@@ -50,8 +50,8 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 		const studio = Studios.findOne()
 		if (!studio) throw new Meteor.Error(404, `No studio found!`)
 
-		doUserAction(t, e, UserAction.PACKAGE_MANAGER_RESTART_WORK, (e) =>
-			MeteorCall.userAction.packageManagerRestartAllExpectations(e, studio._id)
+		doUserAction(t, e, UserAction.PACKAGE_MANAGER_RESTART_WORK, (e, ts) =>
+			MeteorCall.userAction.packageManagerRestartAllExpectations(e, ts, studio._id)
 		)
 	}
 	function renderExpectedPackageStatuses() {

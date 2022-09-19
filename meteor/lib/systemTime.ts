@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
-import { systemTime } from './lib'
+import { getCurrentTime, systemTime } from './lib'
 import { MeteorCall } from './api/methods'
 
 /** How often the client should sync its time to the server [ms] */
@@ -100,6 +100,7 @@ if (Meteor.isServer) {
 						systemTime.stdDev = stdDev
 						systemTime.lastSync = performance.now()
 						systemTime.hasBeenSet = true
+						systemTime.timeOriginDiff = getCurrentTime() - (performance.timeOrigin + performance.now())
 					}
 				})
 				.catch((err) => {

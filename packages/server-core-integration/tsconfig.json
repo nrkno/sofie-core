@@ -1,9 +1,6 @@
 {
 	"extends": "./tsconfig.build.json",
-	"exclude": [
-		"node_modules/**"
-	],
-	"include": ["examples/client.ts"],
+	"exclude": ["node_modules/**"],
 	"compilerOptions": {
 		"types": ["node", "jest"]
 	}

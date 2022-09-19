@@ -228,7 +228,7 @@ class RundownViewNotifier extends WithManagedTracker {
 													t,
 													event,
 													UserAction.RESYNC_RUNDOWN_PLAYLIST,
-													(e) => MeteorCall.userAction.resyncRundown(e, rundown._id),
+													(e, ts) => MeteorCall.userAction.resyncRundown(e, ts, rundown._id),
 													(err, reloadResult) => {
 														if (!err && reloadResult) {
 															handleRundownReloadResponse(t, rundown._id, reloadResult)

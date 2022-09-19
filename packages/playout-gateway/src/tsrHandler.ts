@@ -738,34 +738,6 @@ export class TSRHandler {
 					...info,
 				})
 			}
-			/*const onCommandError = (error: Error, context: CommandWithContext) => {
-				if (this._errorReporting) {
-					this.logger.warn('CommandError', device.deviceId, error.toString())
-					this.logger.info('Command context', context.timelineObjId, context.context)
-
-					// find the corresponding timeline object:
-					const obj = _.find(this.tsr.timeline, (obj) => {
-						return obj.id === context.timelineObjId
-					})
-
-					const errorString: string = device.deviceName +
-					(
-						error instanceof Error ?
-							error.toString() :
-						_.isObject(error) ?
-							JSON.stringify(error) :
-						error + ''
-					)
-					coreTsrHandler.onCommandError(errorString, {
-						timelineObjId:	context.timelineObjId,
-						context: 		context.context,
-						partId:		obj ? obj['partId']		: undefined,
-						pieceId:	obj ? obj['pieceId']	: undefined
-					})
-				} else {
-					this.logger.warn('CommandError', device.deviceId, error.toString(), error.stack)
-				}
-			}*/
 			const onCommandReport = (commandReport: CommandReport) => {
 				if (this._reportAllCommands) {
 					// Todo: send these to Core

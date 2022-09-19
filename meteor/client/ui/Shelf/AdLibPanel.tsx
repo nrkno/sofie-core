@@ -656,13 +656,22 @@ export function AdLibPanel({
 			if (currentPartInstanceId) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
-					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-						MeteorCall.userAction.executeAction(e, playlistId, action._id, action.actionId, action.userData, mode?.data)
+					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e, ts) =>
+						MeteorCall.userAction.executeAction(
+							e,
+							ts,
+							playlistId,
+							action._id,
+							action.actionId,
+							action.userData,
+							mode?.data
+						)
 					)
 				} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
-					doUserAction(t, e, UserAction.START_ADLIB, (e) =>
+					doUserAction(t, e, UserAction.START_ADLIB, (e, ts) =>
 						MeteorCall.userAction.segmentAdLibPieceStart(
 							e,
+							ts,
 							playlistId,
 							currentPartInstanceId,
 							adlibPiece._id,
@@ -670,9 +679,10 @@ export function AdLibPanel({
 						)
 					)
 				} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e, ts) =>
 						MeteorCall.userAction.baselineAdLibPieceStart(
 							e,
+							ts,
 							playlistId,
 							currentPartInstanceId,
 							adlibPiece._id,
@@ -680,8 +690,8 @@ export function AdLibPanel({
 						)
 					)
 				} else if (adlibPiece.isSticky) {
-					doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
-						MeteorCall.userAction.sourceLayerStickyPieceStart(e, playlistId, adlibPiece.sourceLayerId)
+					doUserAction(t, e, UserAction.START_STICKY_PIECE, (e, ts) =>
+						MeteorCall.userAction.sourceLayerStickyPieceStart(e, ts, playlistId, adlibPiece.sourceLayerId)
 					)
 				}
 			}
