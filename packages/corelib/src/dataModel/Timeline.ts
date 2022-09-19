@@ -111,9 +111,6 @@ export interface TimelineComplete {
 	timelineBlob: TimelineBlob
 	/** Version numbers of sofie at the time the timeline was generated */
 	generationVersions: TimelineCompleteGenerationVersions
-
-	/** The time to substitute in for 'now' */
-	nowTime: Time | null
 }
 
 export type TimelineBlob = ProtectedString<'TimelineBlob'>

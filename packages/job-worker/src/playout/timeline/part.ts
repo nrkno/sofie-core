@@ -94,14 +94,16 @@ export function transformPartIntoTimeline(
 	return timelineObjs
 }
 
+export interface PartEnable {
+	start: number | 'now' | string
+	duration?: number
+	end?: string
+}
+
 export function createPartGroup(
 	partInstance: DBPartInstance,
-	enable: TSR.Timeline.TimelineEnable
+	enable: PartEnable
 ): TimelineObjGroupPart & OnGenerateTimelineObjExt {
-	if (!enable.start) {
-		// TODO - is this loose enough?
-		enable.start = 'now'
-	}
 	const partGrp = literal<TimelineObjGroupPart & OnGenerateTimelineObjExt>({
 		id: getPartGroupId(partInstance),
 		objectType: TimelineObjType.RUNDOWN,

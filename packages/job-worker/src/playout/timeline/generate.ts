@@ -47,6 +47,8 @@ import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/conte
 import { buildTimelineObjsForRundown } from './rundown'
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
+import { getPartGroupId } from '@sofie-automation/corelib/dist/playout/ids'
+import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -121,14 +123,14 @@ export async function updateStudioTimeline(
 
 	flattenAndProcessTimelineObjects(context, baselineObjects)
 
-	const nowOffsetLatency = calculateNowOffsetTimeline(context, cache, undefined)
-	const newNowTime = typeof nowOffsetLatency === 'number' ? getCurrentTime() + nowOffsetLatency : null
-	// TODO - only preserve if nowTime hasnt changed?
+	// const nowOffsetLatency = calculateNowOffsetTimeline(context, cache, undefined)
+	// const newNowTime = typeof nowOffsetLatency === 'number' ? getCurrentTime() + nowOffsetLatency : null
+	// TODO - de-nowify any root objects, as that is reasonable to have here
 	preserveOrReplaceNowTimesInObjects(cache, baselineObjects)
 
 	logAnyRemainingNowTimes(context, cache, baselineObjects)
 
-	saveTimeline(context, cache, baselineObjects, versions, newNowTime)
+	saveTimeline(context, cache, baselineObjects, versions)
 
 	if (studioBaseline) {
 		updateBaselineExpectedPackagesOnStudio(context, cache, studioBaseline)
@@ -150,22 +152,21 @@ export async function updateTimeline(
 		throw new Error(`RundownPlaylist ("${cache.Playlist.doc._id}") is not active")`)
 	}
 
+	const { versions, objs: timelineObjs } = await getTimelineRundown(context, cache)
+
+	flattenAndProcessTimelineObjects(context, timelineObjs)
+	const timelineObjsMap = normalizeArray(timelineObjs, 'id')
+
 	const nowOffsetLatency = calculateNowOffsetTimeline(context, cache, timeOffsetIntoPart)
+	const targetNowTime = getCurrentTime() + (nowOffsetLatency ?? 0)
+
+	preserveOrReplaceNowTimesInObjects(cache, timelineObjs)
+
 	if (cache.isMultiGatewayMode) {
-		// TODO - can we do this later, after all db calls to minimise the risk of async drift?
-		// if (!currentPartInstance?.timings?.plannedStartedPlayback) {
-		// }
-
-		const targetNowTime = getCurrentTime() + (nowOffsetLatency ?? 0)
-
+		// Replace `start: 'now'` in currentPartInstance on timeline
 		const { currentPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 		if (currentPartInstance) {
-			// const willAutoNext = !!(
-			// 	nextPartInstance &&
-			// 	currentPartInstance.part.autoNext &&
-			// 	currentPartInstance.part.expectedDuration
-			// )
-
+			const currentPartGroupId = getPartGroupId(currentPartInstance)
 			if (!currentPartInstance.timings?.plannedStartedPlayback) {
 				// Looks like the part is just being taken
 				cache.PartInstances.update(currentPartInstance._id, (instance) => {
@@ -173,77 +174,62 @@ export async function updateTimeline(
 					instance.timings.plannedStartedPlayback = targetNowTime
 					return instance
 				})
+
+				// Also mark the previous as ended
+				if (
+					previousPartInstance &&
+					!previousPartInstance.timings?.plannedStoppedPlayback &&
+					previousPartInstance.timings?.plannedStartedPlayback
+				) {
+					cache.PartInstances.update(previousPartInstance._id, (instance) => {
+						if (!instance.timings) instance.timings = {}
+						instance.timings.plannedStoppedPlayback = targetNowTime
+						return instance
+					})
+				}
+
+				// Reflect this in the timeline
+				const currentPartGroup = timelineObjsMap[currentPartGroupId]
+				if (currentPartGroup) {
+					applyToArray(currentPartGroup.enable, (val) => {
+						val.start = targetNowTime
+					})
+				} else {
+					logger.error(`Unable to find currentPartInstance group "${currentPartGroupId}" on timeline`)
+				}
 			}
 
-			// if (willAutoNext) {
-			// TODO - should timings be set for autonext?
-			// 	// TODO - we need to know how long the current part will be active for.. doing that here feels like its way too early
-			// 	// We should be auto-nexting, so set the appropriate numbers
-			// 	cache.PartInstances.update(nextPartInstance._id, (instance) => {
-			// 		if (!instance.timings) instance.timings = {}
-			// 		instance.timings.plannedStoppedPlayback = partStopTime
-			// 		return instance
-			// 	})
-			// }
-		}
+			// The relative time for 'now' to be resolved to, inside of the part group
+			const nowInPart = (currentPartInstance.timings?.plannedStartedPlayback ?? targetNowTime) - targetNowTime
 
-		if (previousPartInstance) {
-			if (!previousPartInstance.timings?.plannedStartedPlayback) {
-				// We don't have a time for the previous part
-				cache.Playlist.update((playlist) => {
-					playlist.previousPartInstanceId = null
-					return playlist
-				})
-			} else if (!previousPartInstance.timings.plannedStoppedPlayback) {
-				// Make sure the stop of the previous part is set
-				const partStopTime = currentPartInstance?.timings?.plannedStartedPlayback ?? targetNowTime
-				cache.PartInstances.update(previousPartInstance._id, (instance) => {
-					if (!instance.timings) instance.timings = {}
-					instance.timings.plannedStoppedPlayback = partStopTime
-					return instance
-				})
+			// Ensure any pieces in the currentPartInstance have their now replaced
+			cache.PieceInstances.update(
+				(p) => p.partInstanceId === currentPartInstance._id,
+				(p) => {
+					if (p.piece.enable.start === 'now') {
+						p.piece.enable.start = nowInPart
+						return p
+					}
+
+					// No change
+					return false
+				}
+			)
+
+			// Pieces without concrete times will add some special 'now' objects to the timeline that they can reference
+			// Make sure that the all have concrete times attached
+			for (const obj of timelineObjs) {
+				const objMetadata = obj.metaData as Partial<PieceTimelineMetadata> | undefined
+				if (objMetadata?.isPieceTimeline && obj.id.endsWith(`_now`)) {
+					obj.enable = { start: targetNowTime }
+				}
 			}
 		}
+
+		logAnyRemainingNowTimes(context, cache, timelineObjs)
 	}
 
-	const { versions, objs: timelineObjs } = await getTimelineRundown(context, cache)
-
-	flattenAndProcessTimelineObjects(context, timelineObjs)
-
-	// const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-	// const currentPartGroupId = currentPartInstance ? getPartGroupId(currentPartInstance) : undefined
-
-	/** The timestamp that "now" was set to */
-	// const nowOffsetLatency = calculateNowOffsetTimeline(context, cache, timeOffsetIntoPart)
-	const newNowTime = typeof nowOffsetLatency === 'number' ? getCurrentTime() + nowOffsetLatency : null
-
-	// if (typeof nowOffsetLatency === 'number') {
-	// 	const nowTime = getCurrentTime() + nowOffsetLatency
-
-	// 	// We need to de-nowify the timeline, and use concrete times instead
-	// 	for (const obj of timelineObjs) {
-	// 		if (obj.id === currentPartGroupId) {
-	// 			// The current part group is allowed to be 'now'
-	// 			setNowForObjToValue(obj, nowTime)
-	// 		} else if (currentPartGroupId && obj.inGroup === currentPartGroupId) {
-	// 			// TODO - offset to compensate for group
-	// 			// Perhaps we don't need this if we replace all NOW times to be using a single root level now object?
-	// 			// Whatever pieceinstance stuff we do in timelineTriggerTime will need to be done elsewhere
-	// 			// setNowForObjToValue(obj, nowTime)
-	// 		} else if (!obj.inGroup) {
-	// 			// Objects at the root level can freely use now
-	// 			setNowForObjToValue(obj, nowTime)
-	// 		}
-	// 	}
-	// } else {
-	// Preserve any de-nowified numbers
-	// TODO - only preserve if nowTime hasnt changed?
-	preserveOrReplaceNowTimesInObjects(cache, timelineObjs)
-	// }
-
-	// logAnyRemainingNowTimes(context, cache, timelineObjs)
-
-	saveTimeline(context, cache, timelineObjs, versions, newNowTime)
+	saveTimeline(context, cache, timelineObjs, versions)
 
 	logger.debug('updateTimeline done!')
 
@@ -349,8 +335,7 @@ export function saveTimeline(
 	context: JobContext,
 	cache: CacheForStudioBase,
 	timelineObjs: TimelineObjGeneric[],
-	generationVersions: TimelineCompleteGenerationVersions,
-	nowTime: Time | null
+	generationVersions: TimelineCompleteGenerationVersions
 ): void {
 	const newTimeline: TimelineComplete = {
 		_id: context.studio._id,
@@ -358,7 +343,6 @@ export function saveTimeline(
 		generated: getCurrentTime(),
 		timelineBlob: serializeTimelineBlob(timelineObjs),
 		generationVersions: generationVersions,
-		nowTime: nowTime,
 	}
 
 	cache.Timeline.replace(newTimeline)

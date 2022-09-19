@@ -999,11 +999,6 @@ function timelineTriggerTimeInner(
 	// ------------------------------
 	const timeline = cache.Timeline.doc
 	if (timeline) {
-		if (timeline.nowTime) {
-			logger.warn(`Ignoring timelineTriggerTime as nowTime is already set`)
-			return
-		}
-
 		const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
 		let tlChanged = false
 
@@ -1072,7 +1067,7 @@ function timelineTriggerTimeInner(
 			}
 		}
 		if (tlChanged) {
-			saveTimeline(context, cache, timelineObjs, timeline.generationVersions, null)
+			saveTimeline(context, cache, timelineObjs, timeline.generationVersions)
 		}
 	}
 }

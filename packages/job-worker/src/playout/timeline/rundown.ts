@@ -25,7 +25,7 @@ import { protectString, unprotectString } from '@sofie-automation/corelib/dist/p
 import { JobContext } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import { SelectedPartInstancesTimelineInfo, SelectedPartInstanceTimelineInfo } from './generate'
-import { createPartGroup, createPartGroupFirstObject, transformPartIntoTimeline } from './part'
+import { createPartGroup, createPartGroupFirstObject, PartEnable, transformPartIntoTimeline } from './part'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { literal, normalizeArrayToMapFunc } from '@sofie-automation/corelib/dist/lib'
 import { getCurrentTime } from '../../lib'
@@ -122,7 +122,7 @@ export function buildTimelineObjsForRundown(
 		)
 
 		// The startTime of this start is used as the reference point for the calculated timings, so we can use 'now' and everything will lie after this point
-		const currentPartEnable: TSR.Timeline.TimelineEnable = { start: 'now' }
+		const currentPartEnable: PartEnable = { start: 'now' }
 		if (partInstancesInfo.current.partInstance.timings?.plannedStartedPlayback) {
 			// If we are recalculating the currentPart, then ensure it doesnt think it is starting now
 			currentPartEnable.start = partInstancesInfo.current.partInstance.timings.plannedStartedPlayback
@@ -388,12 +388,9 @@ function generateNextPartInstanceObjects(
 			.map((p) => p.piece)
 	)
 
-	const nextPartGroup = createPartGroup(nextPartInfo.partInstance, {})
-
-	nextPartGroup.enable = {
+	const nextPartGroup = createPartGroup(nextPartInfo.partInstance, {
 		start: `#${currentPartGroup.id}.end - ${currentToNextTimings.fromPartRemaining}`,
-		duration: nextPartGroup.enable.duration,
-	}
+	})
 
 	const nextPieceInstances = nextPartInfo?.pieceInstances.filter(
 		(i) => !i.infinite || i.infinite.infiniteInstanceIndex === 0
