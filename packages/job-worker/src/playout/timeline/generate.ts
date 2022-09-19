@@ -123,12 +123,12 @@ export async function updateStudioTimeline(
 
 	flattenAndProcessTimelineObjects(context, baselineObjects)
 
-	// const nowOffsetLatency = calculateNowOffsetTimeline(context, cache, undefined)
-	// const newNowTime = typeof nowOffsetLatency === 'number' ? getCurrentTime() + nowOffsetLatency : null
-	// TODO - de-nowify any root objects, as that is reasonable to have here
+	// Future: We should handle any 'now' objects that are at the root of this timeline
 	preserveOrReplaceNowTimesInObjects(cache, baselineObjects)
 
-	logAnyRemainingNowTimes(context, cache, baselineObjects)
+	if (cache.isMultiGatewayMode) {
+		logAnyRemainingNowTimes(context, baselineObjects)
+	}
 
 	saveTimeline(context, cache, baselineObjects, versions)
 
@@ -157,7 +157,7 @@ export async function updateTimeline(
 	flattenAndProcessTimelineObjects(context, timelineObjs)
 	const timelineObjsMap = normalizeArray(timelineObjs, 'id')
 
-	const nowOffsetLatency = calculateNowOffsetTimeline(context, cache, timeOffsetIntoPart)
+	const nowOffsetLatency = calculateNowOffsetLatency(context, cache, timeOffsetIntoPart)
 	const targetNowTime = getCurrentTime() + (nowOffsetLatency ?? 0)
 
 	preserveOrReplaceNowTimesInObjects(cache, timelineObjs)
@@ -200,7 +200,7 @@ export async function updateTimeline(
 			}
 
 			// The relative time for 'now' to be resolved to, inside of the part group
-			const nowInPart = (currentPartInstance.timings?.plannedStartedPlayback ?? targetNowTime) - targetNowTime
+			const nowInPart = targetNowTime - (currentPartInstance.timings?.plannedStartedPlayback ?? targetNowTime)
 
 			// Ensure any pieces in the currentPartInstance have their now replaced
 			cache.PieceInstances.update(
@@ -220,13 +220,17 @@ export async function updateTimeline(
 			// Make sure that the all have concrete times attached
 			for (const obj of timelineObjs) {
 				const objMetadata = obj.metaData as Partial<PieceTimelineMetadata> | undefined
-				if (objMetadata?.isPieceTimeline && obj.id.endsWith(`_now`)) {
-					obj.enable = { start: targetNowTime }
+				if (objMetadata?.isPieceTimeline && !Array.isArray(obj.enable) && obj.enable.start === 'now') {
+					if (obj.inGroup === currentPartGroupId) {
+						obj.enable = { start: nowInPart }
+					} else if (!obj.inGroup) {
+						obj.enable = { start: targetNowTime }
+					}
 				}
 			}
 		}
 
-		logAnyRemainingNowTimes(context, cache, timelineObjs)
+		logAnyRemainingNowTimes(context, timelineObjs)
 	}
 
 	saveTimeline(context, cache, timelineObjs, versions)
@@ -236,7 +240,7 @@ export async function updateTimeline(
 	if (span) span.end()
 }
 
-function calculateNowOffsetTimeline(
+function calculateNowOffsetLatency(
 	context: JobContext,
 	cache: CacheForStudioBase,
 	timeOffsetIntoPart: Time | undefined
@@ -282,51 +286,41 @@ function preserveOrReplaceNowTimesInObjects(cache: CacheForStudioBase, timelineO
 		}
 
 		if (oldNow !== undefined) {
-			setNowForObjToValue(tlo, oldNow)
-		}
-	})
-}
-
-function setNowForObjToValue(tlo: TimelineObjGeneric, oldNow: TSR.Timeline.TimelineEnable['start']): void {
-	applyToArray(tlo.enable, (enable) => {
-		if (enable.start === 'now') {
-			enable.start = oldNow
-			enable.setFromNow = true
-		}
-	})
-}
-
-function logAnyRemainingNowTimes(
-	_context: JobContext,
-	cache: CacheForStudioBase,
-	timelineObjs: Array<TimelineObjGeneric>
-): void {
-	if (cache.isMultiGatewayMode) {
-		const ids: string[] = []
-
-		const hasNow = (obj: TimelineEnableExt | TimelineEnableExt[]) => {
-			let res = false
-			applyToArray(obj, (enable) => {
-				if (enable.start === 'now') res = true
-			})
-			return res
-		}
-
-		for (const obj of timelineObjs) {
-			if (hasNow(obj.enable)) {
-				ids.push(obj.id)
-			}
-
-			for (const kf of obj.keyframes || []) {
-				if (hasNow(kf.enable)) {
-					ids.push(kf.id)
+			applyToArray(tlo.enable, (enable) => {
+				if (enable.start === 'now') {
+					enable.start = oldNow
+					enable.setFromNow = true
 				}
-			}
+			})
+		}
+	})
+}
+
+function logAnyRemainingNowTimes(_context: JobContext, timelineObjs: Array<TimelineObjGeneric>): void {
+	const ids: string[] = []
+
+	const hasNow = (obj: TimelineEnableExt | TimelineEnableExt[]) => {
+		let res = false
+		applyToArray(obj, (enable) => {
+			if (enable.start === 'now') res = true
+		})
+		return res
+	}
+
+	for (const obj of timelineObjs) {
+		if (hasNow(obj.enable)) {
+			ids.push(obj.id)
 		}
 
-		if (ids.length) {
-			logger.error(`Some timeline objects have unexpected now times!: ${JSON.stringify(ids)}`)
+		for (const kf of obj.keyframes || []) {
+			if (hasNow(kf.enable)) {
+				ids.push(kf.id)
+			}
 		}
+	}
+
+	if (ids.length) {
+		logger.error(`Some timeline objects have unexpected now times!: ${JSON.stringify(ids)}`)
 	}
 }
 

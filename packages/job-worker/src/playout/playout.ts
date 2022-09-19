@@ -947,7 +947,7 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 		await runJobWithStudioCache(context, async (studioCache) => {
 			const activePlaylists = studioCache.getActiveRundownPlaylists()
 
-			if (!studioCache.isMultiGatewayMode) {
+			if (studioCache.isMultiGatewayMode) {
 				logger.warn(`Ignoring timelineTriggerTime call for studio not using now times`)
 				return
 			}

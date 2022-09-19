@@ -245,23 +245,12 @@ export function getResolvedPiecesFromFullTimeline(
 	}
 }
 
-export interface DeNowifyResult {
-	aaa: true
-	// partInstances: Record<PartInstanceId, number>
-	// piecenstances: Record<PartInstanceId, number>
-}
 /**
  * Replace any start:'now' in the timeline with concrete times.
  * This assumes that the structure is of a typical timeline, with 'now' being present at the root level, and one level deep.
  * If the parent group of a 'now' is not using a numeric start value, it will not be fixed
  */
-export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: number): DeNowifyResult {
-	const result: DeNowifyResult = {
-		// partInstances: {},
-		// piecenstances: {},
-		aaa: true,
-	}
-
+function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: number): void {
 	for (const obj of transformedObjs) {
 		let groupAbsoluteStart: number | null = null
 
@@ -301,8 +290,6 @@ export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTi
 			}
 		}
 	}
-
-	return result
 }
 
 export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstancePiece): AdLibPiece {
