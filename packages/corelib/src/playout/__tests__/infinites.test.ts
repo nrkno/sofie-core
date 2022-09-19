@@ -634,7 +634,7 @@ describe('Infinites', () => {
 						'three',
 						PieceLifespan.OutOnRundownChange
 					),
-					stoppedPlayback: 5000,
+					plannedStoppedPlayback: 5000,
 				},
 			]
 			const part = { rundownId, segmentId }

@@ -1,7 +1,3 @@
-// jest.mock('../../../../corelib/dist/random', (...args) => require('../../__mocks__/random').setup(args), {
-// 	virtual: true,
-// })
-
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
@@ -662,14 +658,17 @@ describe('Playout API', () => {
 			const currentPartInstance = (await getSelectedPartInstances(context, playlist))
 				.currentPartInstance as DBPartInstance
 			expect(currentPartInstance).toBeTruthy()
-			expect(currentPartInstance.timings?.startedPlayback).toBe(now)
+			expect(currentPartInstance.timings?.reportedStartedPlayback).toBe(now)
+			expect(currentPartInstance.timings?.plannedStartedPlayback).toBe(now)
 
 			// the piece instances timings are set
 			const pieceInstances = await getAllPieceInstancesForPartInstance(currentPartInstance._id)
 			expect(pieceInstances).toHaveLength(2)
 			pieceInstances.forEach((pieceInstance) => {
-				expect(pieceInstance.startedPlayback).toBeTruthy()
-				expect(pieceInstance.startedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
+				expect(pieceInstance.reportedStartedPlayback).toBeTruthy()
+				expect(pieceInstance.reportedStartedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
+				expect(pieceInstance.plannedStartedPlayback).toBeTruthy()
+				expect(pieceInstance.plannedStartedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
 			})
 		}
 
@@ -748,11 +747,13 @@ describe('Playout API', () => {
 				currentPartInstanceBeforeTakeId
 			)
 			expect(previousPartInstanceAfterTake).toBeTruthy()
-			expect(previousPartInstanceAfterTake?.timings?.stoppedPlayback).toBe(now)
+			expect(previousPartInstanceAfterTake?.timings?.reportedStoppedPlayback).toBe(now)
+			expect(previousPartInstanceAfterTake?.timings?.plannedStoppedPlayback).toBe(now)
 
 			const pieceInstances2 = await getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId)
 			pieceInstances2.forEach((pieceInstance) => {
-				expect(pieceInstance.stoppedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
+				expect(pieceInstance.reportedStoppedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
+				expect(pieceInstance.plannedStoppedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
 			})
 		}
 	})

@@ -431,7 +431,7 @@ export async function innerFindLastPieceOnLayer(
 		playlistActivationId: cache.Playlist.doc.activationId,
 		rundownId: { $in: rundownIds },
 		'piece.sourceLayerId': { $in: sourceLayerId },
-		startedPlayback: {
+		plannedStartedPlayback: {
 			$exists: true,
 		},
 	}
@@ -449,7 +449,7 @@ export async function innerFindLastPieceOnLayer(
 	// TODO - will this cause problems?
 	return context.directCollections.PieceInstances.findOne(query, {
 		sort: {
-			startedPlayback: -1,
+			plannedStartedPlayback: -1,
 		},
 	})
 }
