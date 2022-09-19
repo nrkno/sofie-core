@@ -175,7 +175,7 @@ function queueJobAndWrapResult<TRes>(queueName: string, job: JobSpec, now: Time)
 }
 
 async function fastTrackTimeline(newTimeline: TimelineComplete): Promise<void> {
-	const studio = fetchStudioLight(newTimeline._id)
+	const studio = await fetchStudioLight(newTimeline._id)
 	if (!studio) throw new Error(`Studio "${newTimeline._id}" was not found for timeline fast-track`)
 
 	// Also do a fast-track for the timeline to be published faster:

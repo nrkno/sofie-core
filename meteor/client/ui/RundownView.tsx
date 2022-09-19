@@ -70,7 +70,7 @@ import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../..
 import { doUserAction, UserAction } from '../lib/userAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
-import { PubSub } from '../../lib/api/pubsub'
+import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 import {
 	RundownLayouts,
 	RundownLayoutType,
@@ -1517,9 +1517,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
 			})
-			this.subscribe(PubSub.rundowns, {
-				playlistId,
-			})
+			this.subscribe(PubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
@@ -1597,20 +1595,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						$in: rundownIDs,
 					},
 				})
-				this.subscribe(PubSub.parts, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(PubSub.partInstances, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-					playlistActivationId: playlist.activationId,
-					reset: {
-						$ne: true,
-					},
-				})
+				this.subscribe(PubSub.parts, rundownIDs)
+				this.subscribe(PubSub.partInstances, rundownIDs, playlist.activationId)
 			})
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1627,7 +1613,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					// Use Meteor.subscribe so that this subscription doesn't mess with this.subscriptionsReady()
 					// it's run in this.autorun, so the subscription will be stopped along with the autorun,
 					// so we don't have to manually clean up after ourselves.
-					Meteor.subscribe(PubSub.pieceInstances, {
+					meteorSubscribe(PubSub.pieceInstances, {
 						rundownId: {
 							$in: rundownIds,
 						},
@@ -1636,7 +1622,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								playlist.currentPartInstanceId,
 								playlist.nextPartInstanceId,
 								playlist.previousPartInstanceId,
-							].filter((p) => p !== null),
+							].filter((p): p is PartInstanceId => p !== null),
 						},
 						reset: {
 							$ne: true,
@@ -1646,13 +1632,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
 					if (previousPartInstance) {
-						Meteor.subscribe(PubSub.partInstancesForSegmentPlayout, {
+						meteorSubscribe(PubSub.partInstancesForSegmentPlayout, {
 							rundownId: previousPartInstance.rundownId,
 							segmentPlayoutId: previousPartInstance.segmentPlayoutId,
 						})
 					}
 					if (currentPartInstance) {
-						Meteor.subscribe(PubSub.partInstancesForSegmentPlayout, {
+						meteorSubscribe(PubSub.partInstancesForSegmentPlayout, {
 							rundownId: currentPartInstance.rundownId,
 							segmentPlayoutId: currentPartInstance.segmentPlayoutId,
 						})

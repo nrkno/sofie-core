@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Tracker } from 'meteor/tracker'
-import { PubSub } from '../../../lib/api/pubsub'
+import { meteorSubscribe, PubSubTypes } from '../../../lib/api/pubsub'
 import { Meteor } from 'meteor/meteor'
 
 export namespace ReactiveDataHelper {
@@ -190,8 +190,8 @@ export abstract class WithManagedTracker {
 		return this._subs.every((e) => e.ready())
 	}
 
-	protected subscribe(sub: PubSub, ...args: any[]) {
-		this._subs.push(Meteor.subscribe(sub, ...args))
+	protected subscribe<K extends keyof PubSubTypes>(sub: K, ...args: Parameters<PubSubTypes[K]>) {
+		this._subs.push(meteorSubscribe(sub, ...args))
 	}
 
 	protected autorun(

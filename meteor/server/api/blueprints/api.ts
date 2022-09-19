@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import path from 'path'
 import { promises as fsp } from 'fs'
-import { getCurrentTime, protectString, unprotectString, getRandomId, waitForPromise } from '../../../lib/lib'
+import { getCurrentTime, protectString, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -13,7 +13,7 @@ import {
 import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../../methods'
-import { parseVersion, CoreSystem, SYSTEM_ID, getCoreSystem } from '../../../lib/collections/CoreSystem'
+import { parseVersion, CoreSystem, SYSTEM_ID, getCoreSystemAsync } from '../../../lib/collections/CoreSystem'
 import { evalBlueprint } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
 import { MethodContext, MethodContextAPI } from '../../../lib/api/methods'
@@ -30,7 +30,7 @@ export async function insertBlueprint(
 	type?: BlueprintManifestType,
 	name?: string
 ): Promise<BlueprintId> {
-	const { organizationId, cred } = OrganizationContentWriteAccess.blueprint(methodContext)
+	const { organizationId, cred } = await OrganizationContentWriteAccess.blueprint(methodContext)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (!cred.user || !cred.user.superAdmin) {
 			throw new Meteor.Error(401, 'Only super admins can create new blueprints')
@@ -64,7 +64,7 @@ export async function insertBlueprint(
 }
 export async function removeBlueprint(methodContext: MethodContext, blueprintId: BlueprintId): Promise<void> {
 	check(blueprintId, String)
-	OrganizationContentWriteAccess.blueprint(methodContext, blueprintId, true)
+	await OrganizationContentWriteAccess.blueprint(methodContext, blueprintId, true)
 	if (!blueprintId) throw new Meteor.Error(404, `Blueprint id "${blueprintId}" was not found`)
 
 	await Blueprints.removeAsync(blueprintId)
@@ -83,7 +83,7 @@ export async function uploadBlueprint(
 	check(blueprintName, Match.Maybe(String))
 
 	// TODO: add access control here
-	const { organizationId } = OrganizationContentWriteAccess.blueprint(context, blueprintId, true)
+	const { organizationId } = await OrganizationContentWriteAccess.blueprint(context, blueprintId, true)
 	if (!Meteor.isTest) logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	if (!blueprintId) throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)
@@ -91,11 +91,11 @@ export async function uploadBlueprint(
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
-export function uploadBlueprintAsset(_context: Credentials, fileId: string, body: string) {
+export async function uploadBlueprintAsset(_context: Credentials, fileId: string, body: string): Promise<void> {
 	check(fileId, String)
 	check(body, String)
 
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
@@ -108,18 +108,18 @@ export function uploadBlueprintAsset(_context: Credentials, fileId: string, body
 		}, fileId: ${fileId})`
 	)
 
-	waitForPromise(fsp.mkdir(path.join(system.storePath, parsedPath.dir), { recursive: true }))
-	waitForPromise(fsp.writeFile(path.join(system.storePath, fileId), data))
+	await fsp.mkdir(path.join(system.storePath, parsedPath.dir), { recursive: true })
+	await fsp.writeFile(path.join(system.storePath, fileId), data)
 }
-export function retrieveBlueprintAsset(_context: Credentials, fileId: string) {
+export async function retrieveBlueprintAsset(_context: Credentials, fileId: string): Promise<Buffer> {
 	check(fileId, String)
 
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
 	// TODO: add access control here
-	return waitForPromise(fsp.readFile(path.join(system.storePath, fileId)))
+	return fsp.readFile(path.join(system.storePath, fileId))
 }
 /** Only to be called from internal functions */
 export async function internalUploadBlueprint(
@@ -134,7 +134,7 @@ export async function internalUploadBlueprint(
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
-export async function innerUploadBlueprint(
+async function innerUploadBlueprint(
 	organizationId: OrganizationId | null,
 	blueprint: BlueprintLight | undefined,
 	blueprintId: BlueprintId,
@@ -249,7 +249,7 @@ export async function innerUploadBlueprint(
 }
 
 async function assignSystemBlueprint(methodContext: MethodContext, blueprintId: BlueprintId | null): Promise<void> {
-	SystemWriteAccess.coreSystem(methodContext)
+	await SystemWriteAccess.coreSystem(methodContext)
 
 	if (blueprintId !== undefined && blueprintId !== null) {
 		check(blueprintId, String)
@@ -258,10 +258,7 @@ async function assignSystemBlueprint(methodContext: MethodContext, blueprintId: 
 		if (!blueprint) throw new Meteor.Error(404, 'Blueprint not found')
 
 		if (blueprint.organizationId)
-			OrganizationReadAccess.organizationContent(
-				{ organizationId: blueprint.organizationId },
-				{ userId: methodContext.userId }
-			)
+			await OrganizationReadAccess.organizationContent(blueprint.organizationId, { userId: methodContext.userId })
 
 		if (blueprint.blueprintType !== BlueprintManifestType.SYSTEM)
 			throw new Meteor.Error(404, 'Blueprint not of type SYSTEM')

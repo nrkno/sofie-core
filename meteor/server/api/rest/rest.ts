@@ -1,12 +1,12 @@
 import { ServerResponse, IncomingMessage } from 'http'
-import { Router, Params } from 'meteor/meteorhacks:picker'
+import { Params } from 'meteor/meteorhacks:picker'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { MeteorMethodSignatures } from '../../methods'
 import { PubSub } from '../../../lib/api/pubsub'
 import { MeteorPublications, MeteorPublicationSignatures } from '../../publications/lib'
 import { UserActionAPIMethods } from '../../../lib/api/userActions'
-import { PickerPOST, PickerGET } from '../http'
+import { PickerPOST, PickerGET, AsyncRouter } from '../http'
 import { logger } from '../../../lib/logging'
 import { ClientAPI } from '../../../lib/api/client'
 
@@ -134,7 +134,7 @@ function sendError(res: ServerResponse, e: any) {
 }
 
 function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource: string, fcn: (p: any[]) => any) {
-	const route: Router = routeType === 'POST' ? PickerPOST : PickerGET
+	const route: AsyncRouter = routeType === 'POST' ? PickerPOST : PickerGET
 
 	index[routeType].push(indexResource)
 	route.route(resource, async (params: Params, req: IncomingMessage, res: ServerResponse) => {
@@ -176,12 +176,12 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 	})
 }
 
-PickerGET.route('/api', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerGET.route('/api', async (params, req: IncomingMessage, res: ServerResponse) => {
 	res.statusCode = 301
 	res.setHeader('Location', '/api/0') // redirect to latest API version
 	res.end()
 })
-PickerGET.route('/api/0', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerGET.route('/api/0', async (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'application/json')
 	res.statusCode = 200
 	res.end(JSON.stringify(index, undefined, 2))

@@ -11,23 +11,21 @@
  * without knowing what particular case you are trying to solve.
  */
 
-import _ from 'underscore'
+import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { literal } from '@sofie-automation/corelib/dist/lib'
+import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import {
 	findPartInstanceInMapOrWrapToTemporary,
 	PartInstance,
 	wrapPartToTemporaryInstance,
 } from '../../lib/collections/PartInstances'
 import { Part } from '../../lib/collections/Parts'
-import { getCurrentTime } from '../../lib/lib'
+import { DBRundownPlaylist, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { getCurrentTime, objectFromEntries } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'
-import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
-import { literal } from '@sofie-automation/corelib/dist/lib'
-import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
@@ -603,7 +601,7 @@ export class RundownTimingCalculator {
 			asPlayedPlaylistDuration: asPlayedRundownDuration,
 			rundownExpectedDurations,
 			rundownAsPlayedDurations,
-			partCountdown: _.object(this.linearParts),
+			partCountdown: objectFromEntries(this.linearParts) as Record<string, number>,
 			partDurations: this.partDurations,
 			partPlayed: this.partPlayed,
 			partStartsAt: this.partStartsAt,

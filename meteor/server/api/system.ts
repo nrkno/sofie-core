@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { makePromise, sleep } from '../../lib/lib'
+import { makePromise, sleep, waitForPromise } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -87,7 +87,7 @@ export async function cleanupIndexes(
 	actuallyRemoveOldIndexes: boolean
 ): Promise<Array<IndexSpecification>> {
 	check(actuallyRemoveOldIndexes, Boolean)
-	SystemWriteAccess.coreSystem(context)
+	await SystemWriteAccess.coreSystem(context)
 
 	return setupIndexes(actuallyRemoveOldIndexes)
 }
@@ -96,12 +96,12 @@ export function cleanupOldData(
 	actuallyRemoveOldData: boolean
 ): string | CollectionCleanupResult {
 	check(actuallyRemoveOldData, Boolean)
-	SystemWriteAccess.coreSystem(context)
+	waitForPromise(SystemWriteAccess.coreSystem(context))
 
 	return cleanupOldDataInner(actuallyRemoveOldData)
 }
 export function runCronjob(context: MethodContext): void {
-	SystemWriteAccess.coreSystem(context)
+	waitForPromise(SystemWriteAccess.coreSystem(context))
 
 	return nightlyCronjobInner()
 }
@@ -286,7 +286,7 @@ async function doSystemBenchmarkInner() {
 	return result
 }
 async function doSystemBenchmark(context: MethodContext, runCount: number = 1): Promise<SystemBenchmarkResults> {
-	SystemWriteAccess.coreSystem(context)
+	await SystemWriteAccess.coreSystem(context)
 
 	if (runCount < 1) throw new Error(`runCount must be >= 1`)
 
@@ -357,7 +357,7 @@ CPU JSON stringifying:       ${avg.cpuStringifying} ms (${comparison.cpuStringif
 function getTranslationBundle(context: MethodContext, bundleId: TranslationsBundleId) {
 	check(bundleId, String)
 
-	OrganizationContentWriteAccess.anyContent(context)
+	waitForPromise(OrganizationContentWriteAccess.translationBundle(context))
 	return ClientAPI.responseSuccess(getTranslationBundleInner(bundleId))
 }
 

@@ -1,7 +1,3 @@
-// jest.mock('../../../../corelib/dist/random', (...args) => require('../../__mocks__/random').setup(args), {
-// 	virtual: true,
-// })
-
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,

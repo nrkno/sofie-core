@@ -17,12 +17,8 @@ import { TimeSync } from './timeSync'
 import { WatchDog } from './watchDog'
 import { Queue } from './queue'
 import { DeviceConfigManifest } from './configManifest'
-import { Random } from './random'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const DataStore = require('data-store')
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const PkgInfo = require('../../package.json')
 
@@ -102,31 +98,6 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 			this._watchDog = new WatchDog()
 			this._watchDog.on('message', (msg) => this._emitError('msg ' + msg))
 			this._watchDog.startWatching()
-		}
-	}
-	static getStore(name: string): any {
-		return new DataStore(name)
-	}
-	static getCredentials(name: string): CoreCredentials {
-		const store = CoreConnection.getStore(name)
-
-		let credentials: CoreCredentials = store.get('CoreCredentials')
-		if (!credentials) {
-			credentials = CoreConnection.generateCredentials()
-			store.set('CoreCredentials', credentials)
-		}
-
-		return credentials
-	}
-	static deleteCredentials(name: string): void {
-		const store = CoreConnection.getStore(name)
-
-		store.set('CoreCredentials', null)
-	}
-	static generateCredentials(): CoreCredentials {
-		return {
-			deviceId: protectString(Random.id()),
-			deviceToken: Random.id(),
 		}
 	}
 	async init(ddpOptionsORParent?: DDPConnectorOptions | CoreConnection): Promise<string> {

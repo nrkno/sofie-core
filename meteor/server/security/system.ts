@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { UserId } from '../../lib/collections/Users'
-import { Credentials, resolveCredentials } from './lib/credentials'
+import { Credentials, resolveAuthenticatedUser, resolveCredentials } from './lib/credentials'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToCoreSystem, allowAccessToCurrentUser, allowAccessToSystemStatus } from './lib/security'
 import { Settings } from '../../lib/Settings'
@@ -8,15 +8,27 @@ import { triggerWriteAccess } from './lib/securityVerify'
 
 export namespace SystemReadAccess {
 	/** Handles read access for all organization content (segments, parts, pieces etc..) */
-	export function coreSystem(cred: Credentials): boolean {
-		const access = allowAccessToCoreSystem(cred)
+	export async function coreSystem(cred0: Credentials): Promise<boolean> {
+		const cred = await resolveCredentials(cred0)
+
+		const access = await allowAccessToCoreSystem(cred)
 		if (!access.read) return logNotAllowed('CoreSystem', access.reason)
 
 		return true
 	}
-	export function currentUser(userId: UserId, cred: Credentials): boolean {
-		const access = allowAccessToCurrentUser(cred, userId)
+	/** Check if access is allowed to read a User, and that user is the current User */
+	export async function currentUser(userId: UserId, cred: Credentials): Promise<boolean> {
+		const access = await allowAccessToCurrentUser(cred, userId)
 		if (!access.read) return logNotAllowed('Current user', access.reason)
+
+		return true
+	}
+	/** Check permissions to get the system status */
+	export async function systemStatus(cred0: Credentials) {
+		// For reading only
+		triggerWriteAccess()
+		const access = await allowAccessToSystemStatus(cred0)
+		if (!access.read) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
 
 		return true
 	}
@@ -24,36 +36,30 @@ export namespace SystemReadAccess {
 export namespace SystemWriteAccess {
 	// These functions throws if access is not allowed.
 
-	export function coreSystem(cred0: Credentials) {
+	export async function coreSystem(cred0: Credentials) {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) return true
+		const cred = await resolveAuthenticatedUser(cred0)
+		if (!cred) throw new Meteor.Error(403, `Not logged in`)
 
-		const cred = resolveCredentials(cred0)
-		if (!cred.user) throw new Meteor.Error(403, `Not logged in`)
-		if (!cred.organization) throw new Meteor.Error(500, `User has no organization`)
-		const access = allowAccessToCoreSystem(cred)
-		if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
-
-		return true
-	}
-	export function currentUser(userId: UserId, cred: Credentials): boolean {
-		const access = allowAccessToCurrentUser(cred, userId)
-		if (!access.read) return logNotAllowed('Current user', access.reason)
+		const access = await allowAccessToCoreSystem(cred)
+		if (!access.configure) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
 
 		return true
 	}
-	export function migrations(cred0: Credentials) {
+	/** Check if access is allowed to modify a User, and that user is the current User */
+	export async function currentUser(userId: UserId, cred: Credentials): Promise<boolean> {
+		const access = await allowAccessToCurrentUser(cred, userId)
+		if (!access.update) return logNotAllowed('Current user', access.reason)
+
+		return true
+	}
+	/** Check permissions to run migrations of all types */
+	export async function migrations(cred0: Credentials) {
 		return coreSystem(cred0)
 	}
-	export function system(cred0: Credentials) {
+	/** Check permissions to perform a system-level action */
+	export async function systemActions(cred0: Credentials) {
 		return coreSystem(cred0)
-	}
-	export function systemStatusRead(cred0: Credentials) {
-		// For reading only
-		triggerWriteAccess()
-		const access = allowAccessToSystemStatus(cred0)
-		if (!access.read) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
-
-		return true
 	}
 }

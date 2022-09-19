@@ -219,7 +219,7 @@ export const App = translateWithTracker(() => {
 
 		componentDidMount() {
 			// Global subscription of the currently logged in user:
-			this.subscribe(PubSub.loggedInUser, {})
+			this.subscribe(PubSub.loggedInUser)
 			this.autorun(() => {
 				const user = getUser()
 				if (user?.organizationId) {
@@ -287,7 +287,7 @@ export const App = translateWithTracker(() => {
 						})
 					}}
 				>
-					<div className="container-fluid">
+					<div className="container-fluid header-clear">
 						{/* Header switch - render the usual header for all pages but the rundown view */}
 						{(!Settings.enableUserAccounts || this.props.user) && (
 							<ErrorBoundary>

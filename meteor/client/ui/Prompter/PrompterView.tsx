@@ -233,9 +233,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				}
 			) as Pick<RundownPlaylist, '_id'> | undefined
 			if (playlist?._id) {
-				this.subscribe(PubSub.rundowns, {
-					playlistId: playlist._id,
-				})
+				this.subscribe(PubSub.rundowns, [playlist._id], null)
 			}
 		})
 
@@ -594,7 +592,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		}
 
 		componentDidMount() {
-			this.subscribe(PubSub.rundowns, { playlistId: this.props.rundownPlaylistId })
+			this.subscribe(PubSub.rundowns, [this.props.rundownPlaylistId], null)
 
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId, {
@@ -608,14 +606,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					this.subscribe(PubSub.segments, {
 						rundownId: { $in: rundownIDs },
 					})
-					this.subscribe(PubSub.parts, {
-						rundownId: { $in: rundownIDs },
-					})
-					this.subscribe(PubSub.partInstances, {
-						rundownId: { $in: rundownIDs },
-						playlistActivationId: playlist.activationId,
-						reset: { $ne: true },
-					})
+					this.subscribe(PubSub.parts, rundownIDs)
+					this.subscribe(PubSub.partInstances, rundownIDs, playlist.activationId)
 					this.subscribe(PubSub.pieces, {
 						startRundownId: { $in: rundownIDs },
 					})
