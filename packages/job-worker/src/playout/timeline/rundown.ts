@@ -1,6 +1,7 @@
 import {
 	IBlueprintPieceType,
 	PieceLifespan,
+	Time,
 	TimelineObjClassesCore,
 	TSR,
 } from '@sofie-automation/blueprints-integration'
@@ -22,7 +23,6 @@ import {
 } from '@sofie-automation/corelib/dist/playout/timings'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { JobContext } from '../../jobs'
-import { Time } from 'superfly-timeline'
 import { ReadonlyDeep } from 'type-fest'
 import { SelectedPartInstancesTimelineInfo, SelectedPartInstanceTimelineInfo } from './generate'
 import { createPartGroup, createPartGroupFirstObject, transformPartIntoTimeline } from './part'

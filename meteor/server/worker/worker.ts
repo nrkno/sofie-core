@@ -14,9 +14,9 @@ import {
 	getRandomString,
 	ManualPromise,
 	stringifyError,
+	Time,
 	waitForPromise,
 } from '../../lib/lib'
-import { Time } from 'superfly-timeline'
 import { UserActionsLogItem, UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fastTrack'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'

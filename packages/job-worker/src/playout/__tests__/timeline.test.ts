@@ -23,7 +23,7 @@ import { fixSnapshot } from '../../__mocks__/helpers/snapshot'
 import { runJobWithPlayoutCache } from '../lock'
 import { updateTimeline } from '../timeline/generate'
 import { getSelectedPartInstances, getSortedPartsForRundown } from './lib'
-import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, IBlueprintPieceType, Time } from '@sofie-automation/blueprints-integration'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownPlaylistId, RundownId, PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
@@ -34,7 +34,6 @@ import {
 import { normalizeArrayToMap, literal, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { getPartGroupId, getPieceControlObjectId, getPieceGroupId } from '@sofie-automation/corelib/dist/playout/ids'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { Time } from 'superfly-timeline'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import {
