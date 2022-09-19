@@ -163,17 +163,19 @@ export function reportPieceHasStarted(
 	pieceInstance: PieceInstance,
 	timestamp: Time
 ): void {
-	// TODO - set plannedStartedPlayback when single gateway mode?
-
 	if (pieceInstance.reportedStartedPlayback !== timestamp) {
-		cache.PieceInstances.update(pieceInstance._id, {
-			$set: {
-				reportedStartedPlayback: timestamp,
-			},
-			$unset: {
-				reportedStoppedPlayback: 1,
-			},
+		cache.PieceInstances.update(pieceInstance._id, (piece) => {
+			piece.reportedStartedPlayback = timestamp
+			delete piece.reportedStoppedPlayback
+
+			if (!cache.isMultiGatewayMode) {
+				piece.plannedStartedPlayback = timestamp
+				delete piece.plannedStoppedPlayback
+			}
+
+			return piece
 		})
+
 		// Update the copy in the next-part if there is one, so that the infinite has the same start after a take
 		const playlist = cache.Playlist.doc
 		if (pieceInstance.infinite && playlist.nextPartInstanceId) {
@@ -182,13 +184,16 @@ export function reportPieceHasStarted(
 					partInstanceId: playlist.nextPartInstanceId,
 					'infinite.infiniteInstanceId': pieceInstance.infinite.infiniteInstanceId,
 				},
-				{
-					$set: {
-						reportedStartedPlayback: timestamp,
-					},
-					$unset: {
-						reportedStoppedPlayback: 1,
-					},
+				(piece) => {
+					piece.reportedStartedPlayback = timestamp
+					delete piece.reportedStoppedPlayback
+
+					if (!cache.isMultiGatewayMode) {
+						piece.plannedStartedPlayback = timestamp
+						delete piece.plannedStoppedPlayback
+					}
+
+					return piece
 				}
 			)
 		}
@@ -204,13 +209,15 @@ export function reportPieceHasStopped(
 	pieceInstance: PieceInstance,
 	timestamp: Time
 ): void {
-	// TODO - set plannedStartedPlayback when single gateway mode?
+	if (pieceInstance.reportedStoppedPlayback !== timestamp) {
+		cache.PieceInstances.update(pieceInstance._id, (piece) => {
+			piece.reportedStoppedPlayback = timestamp
 
-	if (pieceInstance.reportedStartedPlayback !== timestamp) {
-		cache.PieceInstances.update(pieceInstance._id, {
-			$set: {
-				reportedStoppedPlayback: timestamp,
-			},
+			if (!cache.isMultiGatewayMode) {
+				piece.plannedStoppedPlayback = timestamp
+			}
+
+			return piece
 		})
 		cache.deferAfterSave(() => {
 			handlePartInstanceTimingEvent(context, cache.PlaylistId, pieceInstance.partInstanceId)
