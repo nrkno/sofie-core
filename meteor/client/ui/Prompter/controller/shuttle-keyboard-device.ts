@@ -20,7 +20,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 	private currentPosition = 0
 
 	constructor(view: PrompterViewInner) {
-		super(view)
+		super()
 
 		this.prompterView = view
 		this.speedMap = view.configOptions.shuttle_speedMap || this.speedMap
@@ -35,7 +35,9 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 			...speedMap.slice(),
 		]
 	}
-	public destroy() {}
+	public destroy() {
+		// Nothing
+	}
 	public onKeyDown(e: KeyboardEvent) {
 		let speed = -1
 		let newSpeedStep = this.lastSpeedMapPosition

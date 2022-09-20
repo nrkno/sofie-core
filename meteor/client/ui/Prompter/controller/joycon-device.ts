@@ -30,7 +30,7 @@ export class JoyConController extends ControllerAbstract {
 	private lastButtonInputs: { [index: number]: { mode: JoyconMode; buttons: number[] } } = {}
 
 	constructor(view: PrompterViewInner) {
-		super(view)
+		super()
 		this.prompterView = view
 
 		// assigns params from URL or falls back to the default
@@ -79,7 +79,9 @@ export class JoyConController extends ControllerAbstract {
 		window.addEventListener('gamepaddisconnected', this.updateScrollPosition.bind(this))
 	}
 
-	public destroy() {}
+	public destroy() {
+		// Nothing
+	}
 	public onKeyDown(_e: KeyboardEvent) {
 		// Nothing
 	}

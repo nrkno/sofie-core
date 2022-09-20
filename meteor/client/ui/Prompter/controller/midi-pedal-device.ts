@@ -26,7 +26,7 @@ export class MidiPedalController extends ControllerAbstract {
 	private currentPosition = 0
 
 	constructor(view: PrompterViewInner) {
-		super(view)
+		super()
 		this.prompterView = view
 
 		// assigns params from URL or falls back to the default
