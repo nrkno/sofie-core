@@ -140,7 +140,10 @@ export function getAcceptedFormats(settings: IStudioSettings | undefined): Array
 	)
 }
 
-export function getMediaObjectMediaId(piece: Pick<PieceGeneric, 'content'>, sourceLayer: ISourceLayer) {
+export function getMediaObjectMediaId(
+	piece: Pick<PieceGeneric, 'content'>,
+	sourceLayer: ISourceLayer
+): string | undefined {
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 			return (piece.content as VTContent)?.fileName?.toUpperCase()
@@ -170,7 +173,13 @@ export function checkPieceContentStatus(
 	sourceLayer: ISourceLayer | undefined,
 	studio: Studio | undefined,
 	t?: i18next.TFunction
-) {
+): {
+	status: PieceStatusCode.OK | PieceStatusCode.UNKNOWN
+	metadata: MediaObject | null
+	packageInfos: ScanInfoForPackages | undefined
+	message: string | null
+	contentDuration: undefined
+} {
 	t =
 		t ||
 		((s: string, options?: _.Dictionary<any> | string) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options)) // kz: TODO not sure if this is ok - the second param can be a defaultValue

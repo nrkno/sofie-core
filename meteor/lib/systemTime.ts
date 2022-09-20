@@ -21,7 +21,7 @@ export class TimeJumpDetector {
 
 	constructor(private jumpCheckInterval: number, private onJumpDetected: (syncDiff: number) => void) {}
 
-	public start() {
+	public start(): void {
 		Meteor.setInterval(() => {
 			if (Meteor.isServer || Meteor.status().connected) {
 				this.detectTimeJump()

@@ -19,7 +19,7 @@ const registeredIndexes: CollectionsIndexes = {}
 export function registerIndex<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: AsyncMongoCollection<DBInterface>,
 	index: IndexSpecifier<DBInterface>
-) {
+): void {
 	if (!Meteor.isServer) return // only used server-side
 
 	const collectionName = collection.rawCollection().collectionName
@@ -29,6 +29,6 @@ export function registerIndex<DBInterface extends { _id: ProtectedString<any> }>
 
 	registeredIndexes[collectionName].indexes.push(index)
 }
-export function getTargetRegisteredIndexes() {
+export function getTargetRegisteredIndexes(): CollectionsIndexes {
 	return registeredIndexes
 }
