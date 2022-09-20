@@ -321,7 +321,7 @@ export namespace ServerPeripheralDeviceAPI {
 		access: PeripheralDeviceContentWriteAccess.ContentAccess,
 		subDeviceId: string,
 		disable: boolean
-	) {
+	): void {
 		const peripheralDevice = access.device
 		const deviceId = access.deviceId
 
@@ -413,7 +413,7 @@ export namespace ServerPeripheralDeviceAPI {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
-		accessToken: any
+		accessToken: unknown
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
@@ -772,7 +772,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	async requestUserAuthToken(deviceId: PeripheralDeviceId, deviceToken: string, authUrl: string) {
 		return ServerPeripheralDeviceAPI.requestUserAuthToken(this, deviceId, deviceToken, authUrl)
 	}
-	async storeAccessToken(deviceId: PeripheralDeviceId, deviceToken: string, authToken: any) {
+	async storeAccessToken(deviceId: PeripheralDeviceId, deviceToken: string, authToken: unknown) {
 		return ServerPeripheralDeviceAPI.storeAccessToken(this, deviceId, deviceToken, authToken)
 	}
 

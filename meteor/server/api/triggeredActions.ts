@@ -21,7 +21,7 @@ import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
 export async function createTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null,
 	base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>>
-) {
+): Promise<TriggeredActionId> {
 	const id: TriggeredActionId = getRandomId()
 	await TriggeredActions.insertAsync(
 		literal<TriggeredActionsObj>({
@@ -37,7 +37,7 @@ export async function createTriggeredActions(
 	return id
 }
 
-export async function removeTriggeredActions(triggeredActionId: TriggeredActionId) {
+export async function removeTriggeredActions(triggeredActionId: TriggeredActionId): Promise<void> {
 	await TriggeredActions.removeAsync(triggeredActionId)
 }
 

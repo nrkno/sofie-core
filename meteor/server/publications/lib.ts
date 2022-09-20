@@ -33,7 +33,7 @@ export function meteorPublish<K extends keyof PubSubTypes>(
 		this: SubscriptionContext,
 		...args: Parameters<PubSubTypes[K]>
 	) => Promise<MongoCursor<ReturnType<PubSubTypes[K]>> | null>
-) {
+): void {
 	const signature = extractFunctionSignature(callback)
 	if (signature) MeteorPublicationSignatures[name] = signature
 

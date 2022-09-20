@@ -15,6 +15,14 @@ import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../
 import { SystemWriteAccess } from './system'
 import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../../lib/collections/optimizations'
 
+export interface ShowStyleContentAccess {
+	userId: UserId | null
+	organizationId: OrganizationId | null
+	showStyleBaseId: ShowStyleBaseId | null
+	showStyleBase: ShowStyleBaseLight | null
+	cred: ResolvedCredentials | Credentials
+}
+
 export namespace ShowStyleReadAccess {
 	/** Handles read access for all showstyle document */
 	export async function showStyleBase(
@@ -58,7 +66,10 @@ export namespace ShowStyleContentWriteAccess {
 	// These functions throws if access is not allowed.
 
 	/** Check permissions for write access to a showStyleVariant */
-	export async function showStyleVariant(cred0: Credentials, existingVariant: ShowStyleVariant | ShowStyleVariantId) {
+	export async function showStyleVariant(
+		cred0: Credentials,
+		existingVariant: ShowStyleVariant | ShowStyleVariantId
+	): Promise<ShowStyleContentAccess & { showStyleVariant: ShowStyleVariant }> {
 		triggerWriteAccess()
 		if (existingVariant && isProtectedString(existingVariant)) {
 			const variantId = existingVariant
@@ -69,7 +80,10 @@ export namespace ShowStyleContentWriteAccess {
 		return { ...(await anyContent(cred0, existingVariant.showStyleBaseId)), showStyleVariant: existingVariant }
 	}
 	/** Check permissions for write access to a rundownLayout */
-	export async function rundownLayout(cred0: Credentials, existingLayout: RundownLayoutBase | RundownLayoutId) {
+	export async function rundownLayout(
+		cred0: Credentials,
+		existingLayout: RundownLayoutBase | RundownLayoutId
+	): Promise<ShowStyleContentAccess & { rundownLayout: RundownLayoutBase }> {
 		triggerWriteAccess()
 		if (existingLayout && isProtectedString(existingLayout)) {
 			const layoutId = existingLayout
@@ -83,7 +97,7 @@ export namespace ShowStyleContentWriteAccess {
 	export async function triggeredActions(
 		cred0: Credentials,
 		existingTriggeredAction: TriggeredActionsObj | TriggeredActionId
-	) {
+	): Promise<(ShowStyleContentAccess & { triggeredActions: TriggeredActionsObj }) | boolean> {
 		triggerWriteAccess()
 		if (existingTriggeredAction && isProtectedString(existingTriggeredAction)) {
 			const layoutId = existingTriggeredAction
@@ -104,13 +118,7 @@ export namespace ShowStyleContentWriteAccess {
 	export async function anyContent(
 		cred0: Credentials,
 		showStyleBaseId: ShowStyleBaseId
-	): Promise<{
-		userId: UserId | null
-		organizationId: OrganizationId | null
-		showStyleBaseId: ShowStyleBaseId | null
-		showStyleBase: ShowStyleBaseLight | null
-		cred: ResolvedCredentials | Credentials
-	}> {
+	): Promise<ShowStyleContentAccess> {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) {
 			return {
