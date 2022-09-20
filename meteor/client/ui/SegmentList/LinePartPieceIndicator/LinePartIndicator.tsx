@@ -17,6 +17,8 @@ interface IProps {
 	label?: string
 	piece?: AdLibPieceUi | PieceUi
 	studio: Studio
+	onClick?: React.EventHandler<React.MouseEvent<HTMLDivElement>>
+	onDoubleClick?: React.EventHandler<React.MouseEvent<HTMLDivElement>>
 }
 
 export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function LinePartIndicator({
@@ -26,6 +28,8 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 	thisSourceLayer,
 	hasOriginInPreceedingPart,
 	label,
+	onClick,
+	onDoubleClick,
 }) {
 	let typeClass = thisSourceLayer?.type ? RundownUtils.getSourceLayerClassName(thisSourceLayer.type) : undefined
 	const [element, setElement] = useState<HTMLDivElement | null>(null)
@@ -69,6 +73,8 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 				ref={setElement}
 				onMouseEnter={onMouseEnter}
 				onMouseLeave={onMouseLeave}
+				onClick={onClick}
+				onDoubleClick={onDoubleClick}
 			>
 				{count === 0 && (
 					<div className={classNames('segment-opl__piece-indicator', 'segment-opl__piece-indicator--no-piece')}></div>

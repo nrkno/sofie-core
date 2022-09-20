@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { PubSub } from '../../../../lib/api/pubsub'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { AdLibActions, AdLibAction } from '../../../../lib/collections/AdLibActions'
@@ -9,6 +9,7 @@ import { LinePartIndicator } from './LinePartIndicator'
 import { useTranslation } from 'react-i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import StudioContext from '../../RundownView/StudioContext'
+import RundownViewEventBus, { RundownViewEvents } from '../../RundownView/RundownViewEventBus'
 
 interface IProps {
 	sourceLayers: ISourceLayerExtended[]
@@ -68,6 +69,14 @@ export const LinePartAdLibIndicator: React.FC<IProps> = function LinePartAdLibIn
 		[adLibPieces, adLibActions]
 	)
 
+	const onDoubleClick = useCallback(() => {
+		const pieceId = adLibPieces[0]?._id || adLibActions[0]?._id
+		console.log(pieceId)
+		RundownViewEventBus.emit(RundownViewEvents.REVEAL_IN_SHELF, {
+			pieceId: pieceId,
+		})
+	}, [adLibPieces, adLibActions])
+
 	return (
 		<StudioContext.Consumer>
 			{(studio) => {
@@ -82,6 +91,7 @@ export const LinePartAdLibIndicator: React.FC<IProps> = function LinePartAdLibIn
 						hasOriginInPreceedingPart={false}
 						studio={studio}
 						piece={adLibPieces[0]}
+						onDoubleClick={onDoubleClick}
 					/>
 				)
 			}}
