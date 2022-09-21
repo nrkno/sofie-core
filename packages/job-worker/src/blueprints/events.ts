@@ -147,17 +147,19 @@ export function reportPieceHasStarted(
 		const playlist = cache.Playlist.doc
 		if (pieceInstance.infinite && playlist.nextPartInstanceId) {
 			const infiniteInstanceId = pieceInstance.infinite.infiniteInstanceId
-			cache.PieceInstances.update(
-				(p) =>
+			cache.PieceInstances.updateAll((p) => {
+				if (
 					p.partInstanceId === playlist.nextPartInstanceId &&
 					!!p.infinite &&
-					p.infinite.infiniteInstanceId === infiniteInstanceId,
-				(p) => {
+					p.infinite.infiniteInstanceId === infiniteInstanceId
+				) {
 					p.startedPlayback = timestamp
 					p.stoppedPlayback = 0
 					return p
+				} else {
+					return false
 				}
-			)
+			})
 		}
 		cache.deferAfterSave(() => {
 			handlePartInstanceTimingEvent(context, playlist._id, pieceInstance.partInstanceId)

@@ -87,13 +87,14 @@ export async function diffAndApplyChanges(
 	// Remove/orphan old segments
 	const segmentIdsToRemove = new Set(Object.keys(segmentDiff.removed).map((id) => getSegmentId(rundown._id, id)))
 	// We orphan it and queue for deletion. the commit phase will complete if possible
-	const orphanedSegmentIds = cache.Segments.update(
-		(s) => segmentIdsToRemove.has(s._id),
-		(s) => {
+	const orphanedSegmentIds = cache.Segments.updateAll((s) => {
+		if (segmentIdsToRemove.has(s._id)) {
 			s.orphaned = SegmentOrphanedReason.DELETED
 			return s
+		} else {
+			return false
 		}
-	)
+	})
 
 	if (!context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
 		// Remove everything inside the segment

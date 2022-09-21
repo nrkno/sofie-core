@@ -213,21 +213,23 @@ export function resetPreviousSegment(cache: CacheForPlayout): void {
 		// Reset the old segment
 		const segmentId = previousPartInstance.segmentId
 		const resetIds = new Set(
-			cache.PartInstances.update(
-				(p) => !p.reset && p.segmentId === segmentId,
-				(p) => {
+			cache.PartInstances.updateAll((p) => {
+				if (!p.reset && p.segmentId === segmentId) {
 					p.reset = true
 					return p
+				} else {
+					return false
 				}
-			)
+			})
 		)
-		cache.PieceInstances.update(
-			(p) => resetIds.has(p.partInstanceId),
-			(p) => {
+		cache.PieceInstances.updateAll((p) => {
+			if (resetIds.has(p.partInstanceId)) {
 				p.reset = true
 				return p
+			} else {
+				return false
 			}
-		)
+		})
 	}
 }
 

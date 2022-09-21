@@ -226,56 +226,50 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	}
 
 	/**
-	 * Update some documents
-	 * @param selector Filter function or mongo query
-	 * @param modifier
+	 * Update a single document
+	 * @param selector Id of the document to update
+	 * @param modifier The modifier to apply to the document. Return false to report the document as unchanged
 	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed
 	 * @returns All the ids that matched the selector
 	 */
-	update(
-		selector: TDoc['_id'] | SelectorFunction<TDoc>,
-		modifier: (doc: TDoc) => TDoc,
-		forceUpdate?: boolean
-	): Array<TDoc['_id']> {
+	update(selector: TDoc['_id'], modifier: (doc: TDoc) => TDoc | false, forceUpdate?: boolean): Array<TDoc['_id']> {
 		this.assertNotToBeRemoved('update')
 
 		const span = this.context.startSpan(`DBCache.update.${this.name}`)
 
-		let docsMatchingSelector: TDoc[] = []
-		if (isProtectedString(selector)) {
-			const doc = this.documents.get(selector)
-			if (doc) docsMatchingSelector.push(doc.document)
-		} else {
-			docsMatchingSelector = this.findFetch(selector)
-		}
+		if (!isProtectedString(selector)) throw new Error('DBCacheCollection.update expects an id as the selector')
+
+		const doc = this.documents.get(selector)
 
 		const changedIds: Array<TDoc['_id']> = []
-		for (const doc of docsMatchingSelector) {
-			const _id = doc._id
+		if (doc) {
+			const _id = doc.document._id
 
-			const newDoc: TDoc = modifier(clone(doc))
-			if (newDoc._id !== _id) {
-				throw new Error(
-					`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`
-				)
+			const newDoc = modifier(clone(doc.document))
+			if (newDoc) {
+				if (newDoc._id !== _id) {
+					throw new Error(
+						`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`
+					)
+				}
+
+				// ensure no properties are 'undefined'
+				deleteAllUndefinedProperties(newDoc)
+
+				const docEntry = this.documents.get(_id)
+				if (!docEntry) {
+					throw new Error(
+						`Error: Trying to update a document "${newDoc._id}", that went missing half-way through!`
+					)
+				}
+
+				const hasPendingChanges = docEntry.inserted || docEntry.updated // If the doc is already dirty, then there is no point trying to diff it
+				if (forceUpdate || hasPendingChanges || !_.isEqual(doc, newDoc)) {
+					docEntry.document = newDoc
+					docEntry.updated = true
+				}
+				changedIds.push(_id)
 			}
-
-			// ensure no properties are 'undefined'
-			deleteAllUndefinedProperties(newDoc)
-
-			const docEntry = this.documents.get(_id)
-			if (!docEntry) {
-				throw new Error(
-					`Error: Trying to update a document "${newDoc._id}", that went missing half-way through!`
-				)
-			}
-
-			const hasPendingChanges = docEntry.inserted || docEntry.updated // If the doc is already dirty, then there is no point trying to diff it
-			if (forceUpdate || hasPendingChanges || !_.isEqual(doc, newDoc)) {
-				docEntry.document = newDoc
-				docEntry.updated = true
-			}
-			changedIds.push(_id)
 		}
 
 		if (span) span.end()
@@ -283,8 +277,8 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	}
 
 	/**
-	 * Update documents
-	 * @param modifier
+	 * Update multiple documents
+	 * @param modifier The modifier to apply to all the documents. Return false to report a document as unchanged
 	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed
 	 * @returns All the ids that were changed
 	 */

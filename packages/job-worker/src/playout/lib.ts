@@ -587,31 +587,25 @@ function resetPartInstancesWithPieceInstances(
 	cache: CacheForPlayout,
 	selector?: MongoQuery<DBPartInstance>
 ) {
-	const partInstancesToReset = cache.PartInstances.update(
-		(p) => {
-			if (p.reset) return false
-
-			if (selector) {
-				return mongoWhere(p, selector)
-			} else {
-				return true
-			}
-		},
-		(p) => {
+	const partInstancesToReset = cache.PartInstances.updateAll((p) => {
+		if (!p.reset && (!selector || mongoWhere(p, selector))) {
 			p.reset = true
 			return p
+		} else {
+			return false
 		}
-	)
+	})
 
 	// Reset any in the cache now
 	if (partInstancesToReset.length) {
-		cache.PieceInstances.update(
-			(p) => partInstancesToReset.includes(p.partInstanceId) && !p.reset,
-			(p) => {
+		cache.PieceInstances.updateAll((p) => {
+			if (!p.reset && partInstancesToReset.includes(p.partInstanceId)) {
 				p.reset = true
 				return p
+			} else {
+				return false
 			}
-		)
+		})
 	}
 
 	// Defer ones which arent loaded

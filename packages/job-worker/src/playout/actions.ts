@@ -79,20 +79,22 @@ export async function activateRundownPlaylist(
 				cache.Playlist.doc.previousPartInstanceId,
 			])
 		)
-		cache.PartInstances.update(
-			(p) => partInstancesToPreserve.has(p._id),
-			(p) => {
+		cache.PartInstances.updateAll((p) => {
+			if (partInstancesToPreserve.has(p._id)) {
 				p.playlistActivationId = newActivationId
 				return p
+			} else {
+				return false
 			}
-		)
-		cache.PieceInstances.update(
-			(p) => partInstancesToPreserve.has(p.partInstanceId),
-			(p) => {
+		})
+		cache.PieceInstances.updateAll((p) => {
+			if (partInstancesToPreserve.has(p.partInstanceId)) {
 				p.playlistActivationId = newActivationId
 				return p
+			} else {
+				return false
 			}
-		)
+		})
 
 		if (cache.Playlist.doc.nextPartInstanceId) {
 			const nextPartInstance = cache.PartInstances.findOne(cache.Playlist.doc.nextPartInstanceId)
