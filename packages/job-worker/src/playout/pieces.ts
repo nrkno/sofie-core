@@ -164,7 +164,7 @@ function resolvePieceTimeline(
 export function getResolvedPieces(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	showStyleBase: ReadonlyDeep<Pick<DBShowStyleBase, 'sourceLayers'>>,
 	partInstance: DBPartInstance
 ): ResolvedPieceInstance[] {
 	const span = context.startSpan('getResolvedPieces')

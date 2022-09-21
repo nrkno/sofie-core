@@ -300,7 +300,7 @@ function checkBlueprintsConfig() {
 				const compound = createShowStyleCompound(showBase, variant)
 				if (!compound) return
 
-				const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
+				const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.combinedBlueprintConfig)
 				if (diff && diff.length) {
 					allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
 				}

@@ -35,6 +35,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { createShowStyleCompound } from '../showStyles'
 import { ReadonlyDeep } from 'type-fest'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -106,7 +107,7 @@ export async function setupMockShowStyleBase(
 				type: SourceLayerType.GRAPHICS,
 			}),
 		],
-		blueprintConfig: {},
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		blueprintId: blueprintId ?? protectString('blueprint0'),
 		// hotkeyLegend?: Array<HotkeyDefinition>
 		_rundownVersionHash: '',
@@ -128,7 +129,7 @@ export async function setupMockShowStyleVariant(
 		_id: protectString('mockShowStyleVariant' + dbI),
 		name: 'mockShowStyleVariant',
 		showStyleBaseId: showStyleBaseId,
-		blueprintConfig: {},
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)

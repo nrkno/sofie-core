@@ -69,6 +69,7 @@ import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/Trig
 import { Workers, WorkerStatus } from '../../lib/collections/Workers'
 import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -258,7 +259,7 @@ export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<S
 				type: SourceLayerType.GRAPHICS,
 			}),
 		],
-		blueprintConfig: {},
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		blueprintId: blueprintId,
 		// hotkeyLegend?: Array<HotkeyDefinition>
 		_rundownVersionHash: '',
@@ -277,7 +278,7 @@ export function setupMockShowStyleVariant(
 		_id: protectString('mockShowStyleVariant' + dbI++),
 		name: 'mockShowStyleVariant',
 		showStyleBaseId: showStyleBaseId,
-		blueprintConfig: {},
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)

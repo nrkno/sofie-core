@@ -7,7 +7,6 @@ import { JobContext } from '../jobs'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { isTooCloseToAutonext, selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { PartEndState, VTContent } from '@sofie-automation/blueprints-integration'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -495,7 +494,7 @@ function startHold(
 async function completeHold(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 	currentPartInstance: DBPartInstance | undefined
 ): Promise<void> {
 	cache.Playlist.update((p) => {
@@ -507,7 +506,14 @@ async function completeHold(
 		if (!currentPartInstance) throw new Error('currentPart not found!')
 
 		// Clear the current extension line
-		innerStopPieces(context, cache, showStyleBase, currentPartInstance, (p) => !!p.infinite?.fromHold, undefined)
+		innerStopPieces(
+			context,
+			cache,
+			showStyleCompound,
+			currentPartInstance,
+			(p) => !!p.infinite?.fromHold,
+			undefined
+		)
 	}
 
 	await updateTimeline(context, cache)

@@ -167,7 +167,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					outputLayers: [],
 					sourceLayers: [],
 					hotkeyLegend: [],
-					blueprintConfig: {},
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
 				})
 
@@ -176,7 +176,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					_id: variantId,
 					name: 'Default Variant',
 					showStyleBaseId: id,
-					blueprintConfig: {},
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
 				})
 
@@ -199,7 +199,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					blueprintId: protectString(''),
 					outputLayers: [],
 					sourceLayers: [],
-					blueprintConfig: {},
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
 				})
 
@@ -207,7 +207,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					_id: getRandomId(),
 					name: 'Default Variant',
 					showStyleBaseId: id,
-					blueprintConfig: {},
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
 				})
 			}

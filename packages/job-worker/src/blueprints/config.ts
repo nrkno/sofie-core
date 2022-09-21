@@ -128,9 +128,14 @@ export function preprocessShowStyleConfig(
 ): ProcessedShowStyleConfig {
 	let res: any = {}
 	if (blueprint.showStyleConfigManifest !== undefined) {
-		applyToConfig(res, blueprint.showStyleConfigManifest, showStyle.blueprintConfig, `ShowStyle ${showStyle._id}`)
+		applyToConfig(
+			res,
+			blueprint.showStyleConfigManifest,
+			showStyle.combinedBlueprintConfig,
+			`ShowStyle ${showStyle._id}`
+		)
 	} else {
-		res = showStyle.blueprintConfig
+		res = showStyle.combinedBlueprintConfig
 	}
 
 	try {

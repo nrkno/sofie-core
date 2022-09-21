@@ -600,7 +600,7 @@ export function innerStartAdLibPiece(
 export function innerStopPieces(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	showStyleBase: ReadonlyDeep<Pick<DBShowStyleBase, 'sourceLayers'>>,
 	currentPartInstance: DBPartInstance,
 	filter: (pieceInstance: PieceInstance) => boolean,
 	timeOffset: number | undefined

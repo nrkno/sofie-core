@@ -14,11 +14,11 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { clone, Complete, literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	IBlueprintActionManifest,
 	IBlueprintAdLibPieceDB,
-	IBlueprintConfig,
 	IBlueprintMutatablePart,
 	IBlueprintPartDB,
 	IBlueprintPartInstance,
@@ -349,7 +349,7 @@ export function convertShowStyleBaseToBlueprints(
 		blueprintId: unprotectString(showStyleBase.blueprintId),
 		outputLayers: clone<IOutputLayer[]>(showStyleBase.outputLayers),
 		sourceLayers: clone<ISourceLayer[]>(showStyleBase.sourceLayers),
-		blueprintConfig: clone<IBlueprintConfig>(showStyleBase.blueprintConfig),
+		blueprintConfig: applyAndValidateOverrides(showStyleBase.blueprintConfigWithOverrides).obj,
 	}
 
 	return obj
@@ -366,7 +366,7 @@ export function convertShowStyleVariantToBlueprints(
 	const obj: Complete<IBlueprintShowStyleVariant> = {
 		_id: unprotectString(showStyleVariant._id),
 		name: showStyleVariant.name,
-		blueprintConfig: clone<IBlueprintConfig>(showStyleVariant.blueprintConfig),
+		blueprintConfig: applyAndValidateOverrides(showStyleVariant.blueprintConfigWithOverrides).obj,
 	}
 
 	return obj

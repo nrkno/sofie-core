@@ -176,7 +176,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											collection={ShowStyleBases}
 											layerMappings={layerMappings}
 											sourceLayers={sourceLayers}
-											configPath={'blueprintConfig'}
+											configPath={'blueprintConfigWithOverrides.defaults'}
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/variants`}>

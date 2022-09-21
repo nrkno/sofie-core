@@ -9,7 +9,7 @@ import {
 	ShowStyleCompound,
 	ShowStyleVariant,
 } from '../../lib/collections/ShowStyleVariants'
-import { protectString, getRandomId } from '../../lib/lib'
+import { protectString, getRandomId, omit } from '../../lib/lib'
 import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
@@ -18,6 +18,11 @@ import { Credentials } from '../security/lib/credentials'
 import { OrganizationId } from '../../lib/collections/Organization'
 import deepmerge from 'deepmerge'
 import { ShowStyleBaseLight } from '../../lib/collections/optimizations'
+import {
+	applyAndValidateOverrides,
+	wrapDefaultObject,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 
 export async function getShowStyleCompound(
 	showStyleVariantId: ShowStyleVariantId
@@ -36,15 +41,18 @@ export function createShowStyleCompound(
 ): ShowStyleCompound | undefined {
 	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
 
-	const configs = deepmerge(showStyleBase.blueprintConfig, showStyleVariant.blueprintConfig, {
+	const baseConfig = applyAndValidateOverrides(showStyleBase.blueprintConfigWithOverrides).obj
+	const variantConfig = applyAndValidateOverrides(showStyleVariant.blueprintConfigWithOverrides).obj
+
+	const configs = deepmerge<IBlueprintConfig>(baseConfig, variantConfig, {
 		arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
 	})
 
 	return {
-		...showStyleBase,
+		...omit(showStyleBase, 'blueprintConfigWithOverrides'),
 		showStyleVariantId: showStyleVariant._id,
 		name: `${showStyleBase.name}-${showStyleVariant.name}`,
-		blueprintConfig: configs,
+		combinedBlueprintConfig: configs,
 		_rundownVersionHash: showStyleBase._rundownVersionHash,
 		_rundownVersionHashVariant: showStyleVariant._rundownVersionHash,
 	}
@@ -62,7 +70,7 @@ export async function insertShowStyleBaseInner(organizationId: OrganizationId | 
 		blueprintId: protectString(''),
 		outputLayers: [],
 		sourceLayers: [],
-		blueprintConfig: {},
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
 	}
 	ShowStyleBases.insert(showStyleBase)
@@ -90,7 +98,7 @@ export async function insertShowStyleVariantInner(
 		_id: getRandomId(),
 		showStyleBaseId: showStyleBase._id,
 		name: name || 'Variant',
-		blueprintConfig: {},
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
 	})
 }

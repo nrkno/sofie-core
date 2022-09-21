@@ -28,7 +28,6 @@ import { logger } from '../../logging'
 import _ = require('underscore')
 import { getCurrentTime, getSystemVersion } from '../../lib'
 import { getResolvedPiecesFromFullTimeline } from '../pieces'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import {
 	processAndPrunePieceInstanceTimings,
 	PieceInstanceWithTimings,
@@ -45,6 +44,7 @@ import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/context/lib'
 import { buildTimelineObjsForRundown } from './rundown'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -247,7 +247,7 @@ export interface SelectedPartInstanceTimelineInfo {
 function getPartInstanceTimelineInfo(
 	cache: CacheForPlayout,
 	currentTime: Time,
-	showStyle: ReadonlyDeep<DBShowStyleBase>,
+	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	partInstance: DBPartInstance | undefined
 ): SelectedPartInstanceTimelineInfo | undefined {
 	if (partInstance) {

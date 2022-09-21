@@ -29,6 +29,7 @@ import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowS
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 import { CoreSystem } from '../../../../lib/collections/CoreSystem'
 import { TriggeredActions } from '../../../../lib/collections/TriggeredActions'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(async () => {
@@ -666,7 +667,7 @@ describe('Test blueprint migrationContext', () => {
 				_id: protectString(ctx.getVariantId(id)),
 				name: 'test',
 				showStyleBaseId: showStyle._id,
-				blueprintConfig: config || {},
+				blueprintConfigWithOverrides: wrapDefaultObject(config || {}),
 				_rundownVersionHash: '',
 			})
 			ShowStyleVariants.insert(rawVariant)
@@ -766,7 +767,7 @@ describe('Test blueprint migrationContext', () => {
 						_id: protectString(variantId),
 						showStyleBaseId: getShowStyle(ctx)._id,
 						name: 'test2',
-						blueprintConfig: {},
+						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
 					}) as any as IBlueprintShowStyleVariant
 				)
@@ -1203,7 +1204,7 @@ describe('Test blueprint migrationContext', () => {
 			function getAllBaseConfigFromDb(showStyle: ShowStyleBase): IBlueprintConfig {
 				const showStyle2 = ShowStyleBases.findOne(showStyle._id) as ShowStyleBase
 				expect(showStyle2).toBeTruthy()
-				return showStyle2.blueprintConfig
+				return showStyle2.blueprintConfigWithOverrides.defaults
 			}
 
 			testInFiber('getBaseConfig: no id', () => {
@@ -1220,28 +1221,28 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
 
-				showStyle.blueprintConfig['conf1'] = 5
+				showStyle.blueprintConfigWithOverrides.defaults['conf1'] = 5
 				expect(ctx.getBaseConfig('conf1')).toEqual(5)
 
-				showStyle.blueprintConfig['conf2'] = '   af '
+				showStyle.blueprintConfigWithOverrides.defaults['conf2'] = '   af '
 				expect(ctx.getBaseConfig('conf2')).toEqual('af')
 			})
 
 			testInFiber('setBaseConfig: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 
 				expect(() => ctx.setBaseConfig('', 34)).toThrow(`[500] Config id "" is invalid`)
 
 				// BaseConfig should not have changed
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 			testInFiber('setBaseConfig: insert', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('conf1')).toBeFalsy()
 
 				ctx.setBaseConfig('conf1', 34)
@@ -1254,13 +1255,13 @@ describe('Test blueprint migrationContext', () => {
 
 				// BaseConfig should have changed
 				initialBaseConfig[expectedItem._id] = expectedItem.value
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 			testInFiber('setBaseConfig: insert undefined', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('confUndef')).toBeFalsy()
 
 				expect(() => ctx.setBaseConfig('confUndef', undefined as any)).toThrow(
@@ -1268,14 +1269,14 @@ describe('Test blueprint migrationContext', () => {
 				)
 
 				// BaseConfig should not have changed
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 
 			testInFiber('setBaseConfig: update', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('conf1')).toBeTruthy()
 
 				ctx.setBaseConfig('conf1', 'hello')
@@ -1288,13 +1289,13 @@ describe('Test blueprint migrationContext', () => {
 
 				// BaseConfig should have changed
 				initialBaseConfig[expectedItem._id] = expectedItem.value
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 			testInFiber('setBaseConfig: update undefined', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('conf1')).toBeTruthy()
 
 				expect(() => ctx.setBaseConfig('conf1', undefined as any)).toThrow(
@@ -1302,7 +1303,7 @@ describe('Test blueprint migrationContext', () => {
 				)
 
 				// BaseConfig should not have changed
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 
@@ -1310,20 +1311,20 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
 				ctx.setBaseConfig('conf1', true)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('conf1')).toBeTruthy()
 
 				// Should not error
 				ctx.removeBaseConfig('')
 
 				// BaseConfig should not have changed
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 			testInFiber('removeBaseConfig: missing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('conf1')).toBeTruthy()
 				expect(ctx.getBaseConfig('fake_conf')).toBeFalsy()
 
@@ -1331,13 +1332,13 @@ describe('Test blueprint migrationContext', () => {
 				ctx.removeBaseConfig('fake_conf')
 
 				// BaseConfig should not have changed
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 			testInFiber('removeBaseConfig: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('conf1')).toBeTruthy()
 
 				// Should not error
@@ -1345,7 +1346,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// BaseConfig should have changed
 				delete initialBaseConfig['conf1']
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 		})
@@ -1355,7 +1356,7 @@ describe('Test blueprint migrationContext', () => {
 					protectString(ctx.getVariantId(variantId))
 				) as ShowStyleVariant
 				expect(variant).toBeTruthy()
-				return variant.blueprintConfig
+				return variant.blueprintConfigWithOverrides.defaults
 			}
 
 			testInFiber('getVariantConfig: no variant id', () => {

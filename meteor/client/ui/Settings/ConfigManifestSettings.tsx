@@ -687,7 +687,7 @@ export class ConfigManifestSettings<
 	}
 
 	renderEditableArea(item: ConfigManifestEntry, valIndex: string) {
-		const baseAttribute = `blueprintConfig.${valIndex}`
+		const baseAttribute = `blueprintConfigWithOverrides.defaults.${valIndex}`
 		const { t, collection, object, i18n, tReady } = this.props
 		switch (item.type) {
 			case ConfigManifestEntryType.TABLE:

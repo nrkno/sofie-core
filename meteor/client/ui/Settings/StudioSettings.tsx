@@ -174,7 +174,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 											object={this.props.studio}
 											layerMappings={this.getLayerMappingsFlat()}
 											collection={Studios}
-											configPath={'blueprintConfig'}
+											configPath={'blueprintConfigWithOverrides.defaults'}
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/mappings`}>

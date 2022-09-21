@@ -59,7 +59,7 @@ export async function checkStudioExists(studioId: StudioId): Promise<boolean> {
 export async function fetchShowStyleBaseLight(showStyleId: ShowStyleBaseId): Promise<ShowStyleBaseLight | undefined> {
 	return ShowStyleBases.findOneAsync(showStyleId, {
 		fields: {
-			blueprintConfig: 0,
+			blueprintConfigWithOverrides: 0,
 			outputLayers: 0,
 			sourceLayers: 0,
 		},
@@ -70,7 +70,7 @@ export async function fetchShowStyleBasesLight(
 ): Promise<ShowStyleBaseLight[]> {
 	return ShowStyleBases.findFetchAsync(selector, {
 		fields: {
-			blueprintConfig: 0,
+			blueprintConfigWithOverrides: 0,
 			outputLayers: 0,
 			sourceLayers: 0,
 		},

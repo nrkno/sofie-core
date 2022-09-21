@@ -224,7 +224,7 @@ export namespace ClientRundownAPI {
 						id: id,
 						name: compound.name,
 						checkFailed: false,
-						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig),
+						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.combinedBlueprintConfig),
 					}
 				}
 			})

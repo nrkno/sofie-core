@@ -46,6 +46,7 @@ import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/
 import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { Match } from 'meteor/check'
 import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 class AbstractMigrationContextWithTriggeredActions {
 	protected showStyleBaseId: ShowStyleBaseId | null = null
@@ -402,7 +403,7 @@ export class MigrationContextShowStyle
 				...variant,
 				_id: this.getProtectedVariantId(variantId),
 				showStyleBaseId: this.showStyleBase._id,
-				blueprintConfig: {},
+				blueprintConfigWithOverrides: wrapDefaultObject({}),
 				_rundownVersionHash: '',
 			})
 		)
@@ -603,7 +604,7 @@ export class MigrationContextShowStyle
 	getBaseConfig(configId: string): ConfigItemValue | undefined {
 		check(configId, String)
 		if (configId === '') return undefined
-		const configItem = objectPathGet(this.showStyleBase.blueprintConfig, configId)
+		const configItem = objectPathGet(this.showStyleBase.blueprintConfigWithOverrides.defaults, configId)
 		return trimIfString(configItem)
 	}
 	setBaseConfig(configId: string, value: ConfigItemValue): void {
@@ -618,7 +619,7 @@ export class MigrationContextShowStyle
 
 		const modifier: MongoModifier<DBShowStyleBase> = {
 			$set: {
-				[`blueprintConfig.${configId}`]: value,
+				[`blueprintConfigWithOverrides.defaults.${configId}`]: value,
 			},
 		}
 		ShowStyleBases.update(
@@ -627,7 +628,7 @@ export class MigrationContextShowStyle
 			},
 			modifier
 		)
-		objectPathSet(this.showStyleBase.blueprintConfig, configId, value) // Update local
+		objectPathSet(this.showStyleBase.blueprintConfigWithOverrides.defaults, configId, value) // Update local
 	}
 	removeBaseConfig(configId: string): void {
 		check(configId, String)
@@ -638,12 +639,12 @@ export class MigrationContextShowStyle
 				},
 				{
 					$unset: {
-						[`blueprintConfig.${configId}`]: 1,
+						[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
 					},
 				}
 			)
 			// Update local:
-			objectPath.del(this.showStyleBase.blueprintConfig, configId)
+			objectPath.del(this.showStyleBase.blueprintConfigWithOverrides.defaults, configId)
 		}
 	}
 	getVariantConfig(variantId: string, configId: string): ConfigItemValue | undefined {
@@ -654,7 +655,7 @@ export class MigrationContextShowStyle
 		const variant = this.getVariantFromDb(variantId)
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
-		const configItem = objectPathGet(variant.blueprintConfig, configId)
+		const configItem = objectPathGet(variant.blueprintConfigWithOverrides.defaults, configId)
 		return trimIfString(configItem)
 	}
 	setVariantConfig(variantId: string, configId: string, value: ConfigItemValue): void {
@@ -674,7 +675,7 @@ export class MigrationContextShowStyle
 
 		const modifier: MongoModifier<DBShowStyleVariant> = {
 			$set: {
-				[`blueprintConfig.${configId}`]: value,
+				[`blueprintConfigWithOverrides.defaults.${configId}`]: value,
 			},
 		}
 		ShowStyleVariants.update(
@@ -683,7 +684,7 @@ export class MigrationContextShowStyle
 			},
 			modifier
 		)
-		objectPathSet(variant.blueprintConfig, configId, value) // Update local
+		objectPathSet(variant.blueprintConfigWithOverrides.defaults, configId, value) // Update local
 	}
 	removeVariantConfig(variantId: string, configId: string): void {
 		check(variantId, String)
@@ -699,12 +700,12 @@ export class MigrationContextShowStyle
 				},
 				{
 					$unset: {
-						[`blueprintConfig.${configId}`]: 1,
+						[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
 					},
 				}
 			)
 			// Update local:
-			objectPath.del(variant.blueprintConfig, configId)
+			objectPath.del(variant.blueprintConfigWithOverrides.defaults, configId)
 		}
 	}
 }
