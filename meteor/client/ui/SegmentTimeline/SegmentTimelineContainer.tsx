@@ -12,7 +12,7 @@ import { MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
-import { PubSub } from '../../../lib/api/pubsub'
+import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
@@ -413,7 +413,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					this.partInstanceSub.stop()
 				}
 				// we handle this subscription manually
-				this.partInstanceSub = Meteor.subscribe(PubSub.pieceInstances, {
+				this.partInstanceSub = meteorSubscribe(PubSub.pieceInstances, {
 					rundownId: this.props.rundownId,
 					partInstanceId: {
 						$in: partInstanceIds,

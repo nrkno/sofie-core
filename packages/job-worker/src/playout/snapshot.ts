@@ -32,7 +32,7 @@ export async function handleGeneratePlaylistSnapshot(
 	context: JobContext,
 	props: GeneratePlaylistSnapshotProps
 ): Promise<GeneratePlaylistSnapshotResult> {
-	const snapshot = runWithPlaylistLock(context, props.playlistId, async () => {
+	const snapshot = await runWithPlaylistLock(context, props.playlistId, async () => {
 		const snapshotId: SnapshotId = getRandomId()
 		logger.info(`Generating RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${props.playlistId}"`)
 

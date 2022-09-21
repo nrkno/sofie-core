@@ -36,7 +36,7 @@ import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/col
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
-import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, CoreSystem, parseVersion, getCoreSystemAsync } from '../../lib/collections/CoreSystem'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
@@ -132,7 +132,7 @@ async function createSystemSnapshot(
 	const snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating System snapshot "${snapshotId}"` + (studioId ? `for studio "${studioId}"` : ''))
 
-	const coreSystem = getCoreSystem()
+	const coreSystem = await getCoreSystemAsync()
 	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
 
 	if (Settings.enableUserAccounts && !organizationId)
@@ -411,7 +411,7 @@ async function storeSnaphot(
 	organizationId: OrganizationId | null,
 	comment: string
 ): Promise<SnapshotId> {
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
@@ -449,17 +449,17 @@ async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Pro
 		if (snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
 			if (!snapshot.studioId)
 				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but hase no studioId`)
-			StudioContentWriteAccess.dataFromSnapshot(cred0, snapshot.studioId)
+			await StudioContentWriteAccess.dataFromSnapshot(cred0, snapshot.studioId)
 		} else if (snapshot.type === SnapshotType.SYSTEM) {
 			if (!snapshot.organizationId)
 				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but has no organizationId`)
-			OrganizationContentWriteAccess.dataFromSnapshot(cred0, snapshot.organizationId)
+			await OrganizationContentWriteAccess.dataFromSnapshot(cred0, snapshot.organizationId)
 		} else {
-			SystemWriteAccess.coreSystem(cred0)
+			await SystemWriteAccess.coreSystem(cred0)
 		}
 	}
 
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
@@ -482,9 +482,9 @@ async function restoreFromSnapshot(snapshot: AnySnapshot): Promise<void> {
 	if (snapshot.externalId && snapshot.segments && snapshot.type === 'mos') {
 		// Special: Not a snapshot, but a datadump of a MOS rundown
 		const studioId: StudioId = Meteor.settings.manualSnapshotIngestStudioId || 'studio0'
-		const studioExists = checkStudioExists(studioId)
+		const studioExists = await checkStudioExists(studioId)
 		if (studioExists) {
-			importIngestRundown(studioId, snapshot as unknown as IngestRundown)
+			await importIngestRundown(studioId, snapshot as unknown as IngestRundown)
 			return
 		}
 		throw new Meteor.Error(500, `No Studio found`)
@@ -583,7 +583,7 @@ export async function storeSystemSnapshot(
 	reason: string
 ): Promise<SnapshotId> {
 	if (!_.isNull(studioId)) check(studioId, String)
-	const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(context)
+	const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -622,7 +622,7 @@ export async function storeDebugSnapshot(
 	reason: string
 ): Promise<SnapshotId> {
 	check(studioId, String)
-	const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(context)
+	const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -631,7 +631,7 @@ export async function storeDebugSnapshot(
 }
 export async function restoreSnapshot(context: MethodContext, snapshotId: SnapshotId): Promise<void> {
 	check(snapshotId, String)
-	const { cred } = OrganizationContentWriteAccess.snapshot(context)
+	const { cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -640,7 +640,7 @@ export async function restoreSnapshot(context: MethodContext, snapshotId: Snapsh
 }
 export async function removeSnapshot(context: MethodContext, snapshotId: SnapshotId): Promise<void> {
 	check(snapshotId, String)
-	const { snapshot, cred } = OrganizationContentWriteAccess.snapshot(context, snapshotId)
+	const { snapshot, cred } = await OrganizationContentWriteAccess.snapshot(context, snapshotId)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -650,7 +650,7 @@ export async function removeSnapshot(context: MethodContext, snapshotId: Snapsho
 
 	if (snapshot.fileName) {
 		// remove from disk
-		const system = getCoreSystem()
+		const system = await getCoreSystemAsync()
 		if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 		if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
@@ -678,8 +678,8 @@ if (!Settings.enableUserAccounts) {
 			check(params.studioId, Match.Optional(String))
 
 			const cred0: Credentials = { userId: null, token: params.token }
-			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
-			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
+			const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(cred0)
+			await StudioReadAccess.studio(protectString(params.studioId), cred)
 
 			return createSystemSnapshot(protectString(params.studioId), organizationId)
 		})
@@ -690,10 +690,10 @@ if (!Settings.enableUserAccounts) {
 			check(params.full, Match.Optional(String))
 
 			const cred0: Credentials = { userId: null, token: params.token }
-			const { cred } = OrganizationContentWriteAccess.snapshot(cred0)
+			const { cred } = await OrganizationContentWriteAccess.snapshot(cred0)
 			const playlist = RundownPlaylists.findOne(protectString(params.playlistId))
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
-			StudioReadAccess.studioContent({ studioId: playlist.studioId }, cred)
+			await StudioReadAccess.studioContent(playlist.studioId, cred)
 
 			return createRundownPlaylistSnapshot(playlist, params.full === 'true')
 		})
@@ -710,8 +710,8 @@ if (!Settings.enableUserAccounts) {
 			check(params.studioId, String)
 
 			const cred0: Credentials = { userId: null, token: params.token }
-			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
-			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
+			const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(cred0)
+			await StudioReadAccess.studio(protectString(params.studioId), cred)
 
 			return createDebugSnapshot(protectString(params.studioId), organizationId)
 		})
@@ -774,7 +774,7 @@ class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
 	}
 	async storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
 		check(playlistId, String)
-		const access = checkAccessToPlaylist(this, playlistId)
+		const access = await checkAccessToPlaylist(this, playlistId)
 		return storeRundownPlaylistSnapshot(access, reason)
 	}
 	async storeDebugSnapshot(studioId: StudioId, reason: string) {

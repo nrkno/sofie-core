@@ -25,24 +25,22 @@ import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { Time } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
 
-meteorPublish(PubSub.timeline, function (selector, token) {
+meteorPublish(PubSub.timeline, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<TimelineComplete> = {
 		fields: {},
 	}
-	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
+	if (await StudioReadAccess.studioContent(selector._id, { userId: this.userId, token })) {
 		return Timeline.find(selector, modifier)
 	}
 	return null
 })
 
-meteorCustomPublishArray<RoutedTimeline>(
+meteorCustomPublishArray(
 	PubSub.timelineForDevice,
 	'studioTimeline',
 	async function (pub, deviceId: PeripheralDeviceId, token) {
-		if (
-			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })
-		) {
+		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
@@ -55,15 +53,11 @@ meteorCustomPublishArray<RoutedTimeline>(
 	}
 )
 
-meteorCustomPublishArray<RoutedTimeline>(
-	PubSub.timelineForStudio,
-	'studioTimeline',
-	async function (pub, studioId: StudioId, token) {
-		if (StudioReadAccess.studio({ _id: studioId }, { userId: this.userId, token })) {
-			await createObserverForTimelinePublication(pub, PubSub.timelineForStudio, studioId)
-		}
+meteorCustomPublishArray(PubSub.timelineForStudio, 'studioTimeline', async function (pub, studioId: StudioId, token) {
+	if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
+		await createObserverForTimelinePublication(pub, PubSub.timelineForStudio, studioId)
 	}
-)
+})
 
 interface RoutedTimelineArgs {
 	readonly studioId: StudioId
@@ -134,7 +128,7 @@ async function manipulateTimelinePublicationData(
 
 	if (updateProps.invalidateStudio) {
 		// If studio changed, or this is the first run, then fetch the studio
-		state.studio = fetchStudioLight(args.studioId)
+		state.studio = await fetchStudioLight(args.studioId)
 		state.routes = undefined
 	}
 
@@ -195,7 +189,6 @@ async function manipulateTimelinePublicationData(
 			timelineHash: state.timelineHash,
 			timelineBlob: state.routedTimeline,
 			generated: state.timeline?.generated ?? Date.now(),
-			published: Date.now(),
 		}),
 	]
 }
@@ -216,9 +209,9 @@ async function createObserverForTimelinePublication(
 		{ studioId },
 		setupTimelinePublicationObservers,
 		manipulateTimelinePublicationData,
-		(_args, newData) => {
-			// Don't need to perform any deep diffing
-			pub.updatedDocs(newData)
+		(_args, data) => {
+			// Don't need to perform any deep diffing, that's being done by CustomPublishArray
+			pub.updatedDocs(data)
 		},
 		0 // ms
 	)

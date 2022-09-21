@@ -19,6 +19,7 @@ import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { Parts } from '../lib/collections/Parts'
 import { PartInstances } from '../lib/collections/PartInstances'
 import { PieceInstances } from '../lib/collections/PieceInstances'
+import { deferAsync } from '@sofie-automation/corelib/dist/lib'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -207,16 +208,21 @@ Meteor.startup(() => {
 
 	function cleanupPlaylists(force?: boolean) {
 		if (isLowSeason() || force) {
-			// Ensure there are no empty playlists on an interval
-			const studioIds = fetchStudioIds({})
-			Promise.all(
-				studioIds.map(async (studioId) => {
-					const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
-					await job.complete
-				})
-			).catch((e) => {
-				logger.error(`Cron: CleanupPlaylists error: ${e}`)
-			})
+			deferAsync(
+				async () => {
+					// Ensure there are no empty playlists on an interval
+					const studioIds = await fetchStudioIds({})
+					await Promise.all(
+						studioIds.map(async (studioId) => {
+							const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
+							await job.complete
+						})
+					)
+				},
+				(e) => {
+					logger.error(`Cron: CleanupPlaylists error: ${e}`)
+				}
+			)
 		}
 	}
 	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes

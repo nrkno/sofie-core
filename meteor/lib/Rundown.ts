@@ -275,8 +275,8 @@ export function getSegmentsWithPartInstances(
 	)
 	const playlistActivationId = playlist.activationId ?? protectString('')
 
-	const partsBySegment = _.groupBy(rawParts, (p) => p.segmentId)
-	const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => p.segmentId)
+	const partsBySegment = _.groupBy(rawParts, (p) => unprotectString(p.segmentId))
+	const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => unprotectString(p.segmentId))
 
 	return segments.map((segment) => {
 		const segmentParts = partsBySegment[unprotectString(segment._id)] || []

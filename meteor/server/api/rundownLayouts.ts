@@ -9,7 +9,7 @@ import {
 	RundownLayoutId,
 	CustomizableRegions,
 } from '../../lib/collections/RundownLayouts'
-import { literal, getRandomId, protectString, makePromise } from '../../lib/lib'
+import { literal, getRandomId, protectString } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
 import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
@@ -20,7 +20,7 @@ import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
 import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
 
-export function createRundownLayout(
+export async function createRundownLayout(
 	name: string,
 	type: RundownLayoutType,
 	showStyleBaseId: ShowStyleBaseId,
@@ -29,7 +29,7 @@ export function createRundownLayout(
 	userId?: UserId | undefined
 ) {
 	const id: RundownLayoutId = getRandomId()
-	RundownLayouts.insert(
+	await RundownLayouts.insertAsync(
 		literal<RundownLayoutBase>({
 			_id: id,
 			name,
@@ -45,18 +45,18 @@ export function createRundownLayout(
 	return id
 }
 
-export function removeRundownLayout(layoutId: RundownLayoutId) {
-	RundownLayouts.remove(layoutId)
+export async function removeRundownLayout(layoutId: RundownLayoutId) {
+	await RundownLayouts.removeAsync(layoutId)
 }
 
-PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', async (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	const showStyleBaseId: ShowStyleBaseId = protectString(params.showStyleBaseId)
 
 	check(showStyleBaseId, String)
 
-	const showStyleBase = fetchShowStyleBaseLight(showStyleBaseId)
+	const showStyleBase = await fetchShowStyleBaseLight(showStyleBaseId)
 
 	let content = ''
 	try {
@@ -75,7 +75,7 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 
 		layout.showStyleBaseId = showStyleBase._id
 
-		RundownLayouts.upsert(layout._id, layout)
+		await RundownLayouts.upsertAsync(layout._id, layout)
 
 		res.statusCode = 200
 	} catch (e) {
@@ -87,13 +87,13 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 	res.end(content)
 })
 
-PickerGET.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerGET.route('/shelfLayouts/download/:id', async (params, req: IncomingMessage, res: ServerResponse) => {
 	const layoutId: RundownLayoutId = protectString(params.id)
 
 	check(layoutId, String)
 
 	let content = ''
-	const layout = RundownLayouts.findOne(layoutId)
+	const layout = await RundownLayouts.findOneAsync(layoutId)
 	if (!layout) {
 		res.statusCode = 404
 		content = 'Shelf Layout not found'
@@ -116,7 +116,7 @@ PickerGET.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, res
 })
 
 /** Add RundownLayout into showStyleBase */
-function apiCreateRundownLayout(
+async function apiCreateRundownLayout(
 	context: MethodContext,
 	name: string,
 	type: RundownLayoutType,
@@ -128,18 +128,18 @@ function apiCreateRundownLayout(
 	check(showStyleBaseId, String)
 	check(regionId, String)
 
-	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
+	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
 
 	return createRundownLayout(name, type, showStyleBaseId, regionId, undefined, access.userId || undefined)
 }
-function apiRemoveRundownLayout(context: MethodContext, id: RundownLayoutId) {
+async function apiRemoveRundownLayout(context: MethodContext, id: RundownLayoutId) {
 	check(id, String)
 
-	const access = ShowStyleContentWriteAccess.rundownLayout(context, id)
+	const access = await ShowStyleContentWriteAccess.rundownLayout(context, id)
 	const rundownLayout = access.rundownLayout
 	if (!rundownLayout) throw new Meteor.Error(404, `RundownLayout "${id}" not found`)
 
-	removeRundownLayout(id)
+	await removeRundownLayout(id)
 }
 
 class ServerRundownLayoutsAPI extends MethodContextAPI implements NewRundownLayoutsAPI {
@@ -149,10 +149,10 @@ class ServerRundownLayoutsAPI extends MethodContextAPI implements NewRundownLayo
 		showStyleBaseId: ShowStyleBaseId,
 		regionId: CustomizableRegions
 	) {
-		return makePromise(() => apiCreateRundownLayout(this, name, type, showStyleBaseId, regionId))
+		return apiCreateRundownLayout(this, name, type, showStyleBaseId, regionId)
 	}
 	async removeRundownLayout(rundownLayoutId: RundownLayoutId) {
-		return makePromise(() => apiRemoveRundownLayout(this, rundownLayoutId))
+		return apiRemoveRundownLayout(this, rundownLayoutId)
 	}
 }
 registerClassToMeteorMethods(

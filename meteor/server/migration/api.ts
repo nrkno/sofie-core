@@ -3,12 +3,12 @@ import { registerClassToMeteorMethods } from '../methods'
 import { MigrationChunk, NewMigrationAPI, RunMigrationResult, MigrationAPIMethods } from '../../lib/api/migration'
 import * as Migrations from './databaseMigration'
 import { MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
-import { makePromise } from '../../lib/lib'
+import { makePromise, waitForPromise } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { SystemWriteAccess } from '../security/system'
 
 function getMigrationStatus(context: MethodContext) {
-	SystemWriteAccess.migrations(context)
+	waitForPromise(SystemWriteAccess.migrations(context))
 	return Migrations.getMigrationStatus()
 }
 function runMigration(
@@ -23,17 +23,19 @@ function runMigration(
 	check(inputResults, Array)
 	check(isFirstOfPartialMigrations, Match.Maybe(Boolean))
 
-	SystemWriteAccess.migrations(context)
+	waitForPromise(SystemWriteAccess.migrations(context))
 
 	return Migrations.runMigration(chunks, hash, inputResults, isFirstOfPartialMigrations || false)
 }
 function forceMigration(context: MethodContext, chunks: Array<MigrationChunk>) {
 	check(chunks, Array)
-	SystemWriteAccess.migrations(context)
+	waitForPromise(SystemWriteAccess.migrations(context))
+
 	return Migrations.forceMigration(chunks)
 }
 function resetDatabaseVersions(context: MethodContext) {
-	SystemWriteAccess.migrations(context)
+	waitForPromise(SystemWriteAccess.migrations(context))
+
 	return Migrations.resetDatabaseVersions()
 }
 

@@ -21,6 +21,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PlaylistLock } from '../jobs/lock'
 import { CacheForIngest } from '../ingest/cache'
 import { MongoQuery } from '../db'
+import { logger } from '../logging'
 
 /**
  * This is a cache used for playout operations.
@@ -369,6 +370,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	}
 
 	async saveAllToDatabase(): Promise<void> {
+		logger.silly('saveAllToDatabase')
 		// TODO - ideally we should make sure to preserve the lock during this operation
 		if (!this.PlaylistLock.isLocked) {
 			throw new Error('Cannot save changes with released playlist lock')

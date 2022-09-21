@@ -2,7 +2,7 @@ import {
 	CoreConnection,
 	CoreOptions,
 	DDPConnectorOptions,
-	CoreCredentials,
+	CollectionObj,
 } from '@sofie-automation/server-core-integration'
 
 import {
@@ -14,7 +14,6 @@ import {
 	MediaObject,
 	DeviceOptionsAny,
 } from 'timeline-state-resolver'
-import { CollectionObj } from '@sofie-automation/server-core-integration'
 
 import * as _ from 'underscore'
 import { DeviceConfig } from './connector'
@@ -82,7 +81,6 @@ export class CoreHandler {
 	private _studioId: string | undefined
 	private _timelineSubscription: string | null = null
 	private _expectedItemsSubscription: string | null = null
-	private _rundownsSubscription: string | null = null
 
 	private _statusInitialized = false
 	private _statusDestroyed = false
@@ -149,6 +147,7 @@ export class CoreHandler {
 			this.core.autoSubscribe('mappingsForDevice', this.core.deviceId),
 			this.core.autoSubscribe('timelineForDevice', this.core.deviceId),
 			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
+			this.core.autoSubscribe('rundownsForDevice', this.core.deviceId),
 		])
 
 		this.logger.info('Core: Subscriptions are set up!')
@@ -175,24 +174,14 @@ export class CoreHandler {
 		subDeviceId: string,
 		subDeviceType: DeviceType | PERIPHERAL_SUBTYPE_PROCESS
 	): CoreOptions {
-		let credentials: CoreCredentials
-
-		if (this._deviceOptions.deviceId && this._deviceOptions.deviceToken) {
-			credentials = {
-				deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
-				deviceToken: this._deviceOptions.deviceToken,
-			}
-		} else if (this._deviceOptions.deviceId) {
-			this.logger.warn('Token not set, only id! This might be unsecure!')
-			credentials = {
-				deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
-				deviceToken: 'unsecureToken',
-			}
-		} else {
-			credentials = CoreConnection.getCredentials(subDeviceId)
+		if (!this._deviceOptions.deviceId) {
+			// this.logger.warn('DeviceId not set, using a temporary random id!')
+			throw new Error('DeviceId is not set!')
 		}
+
 		const options: CoreOptions = {
-			...credentials,
+			deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
+			deviceToken: this._deviceOptions.deviceToken,
 
 			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 			deviceType: PeripheralDeviceType.PLAYOUT,
@@ -203,6 +192,12 @@ export class CoreHandler {
 
 			configManifest: PLAYOUT_DEVICE_CONFIG,
 		}
+
+		if (!options.deviceToken) {
+			this.logger.warn('Token not set, only id! This might be unsecure!')
+			options.deviceToken = 'unsecureToken'
+		}
+
 		if (subDeviceType === PERIPHERAL_SUBTYPE_PROCESS) options.versions = this._getVersions()
 		return options
 	}
@@ -288,22 +283,6 @@ export class CoreHandler {
 						this.logger.error(err)
 					})
 				this.logger.debug('VIZDEBUG: Subscription to expectedPlayoutItems done')
-				// Set up rundowns data subscription:
-				if (this._rundownsSubscription) {
-					this.core.unsubscribe(this._rundownsSubscription)
-					this._rundownsSubscription = null
-				}
-				this.core
-					.autoSubscribe('rundowns', {
-						studioId: studioId,
-					})
-					.then((subscriptionId) => {
-						this._rundownsSubscription = subscriptionId
-					})
-					.catch((err) => {
-						this.logger.error(err)
-					})
-				this.logger.debug('VIZDEBUG: Subscription to rundowns done')
 			}
 
 			if (this._tsrHandler) {

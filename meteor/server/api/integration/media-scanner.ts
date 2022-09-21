@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { MediaObject, MediaObjects, MediaObjId } from '../../../lib/collections/MediaObjects'
 import { getStudioIdFromDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { protectString } from '../../../lib/lib'
@@ -8,68 +7,83 @@ import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { MethodContext } from '../../../lib/api/methods'
 
 export namespace MediaScannerIntegration {
-	export function getMediaObjectRevisions(
+	export async function getMediaObjectRevisions(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		collectionId: string
-	): MediaObjectRevision[] {
+	): Promise<MediaObjectRevision[]> {
 		// logger.debug('getMediaObjectRevisions')
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studioId = getStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const studioId = await getStudioIdFromDevice(peripheralDevice)
 
 		if (studioId) {
-			return _.map(
-				MediaObjects.find({
+			const rawObjs = (await MediaObjects.findFetchAsync(
+				{
 					studioId: studioId,
 					collectionId: collectionId,
-				}).fetch(),
-				(mo: MediaObject) => {
-					return {
-						id: mo.objId,
-						rev: mo._rev,
-					}
+				},
+				{
+					fields: {
+						_id: 1,
+						objId: 1,
+						_rev: 1,
+					},
 				}
-			)
+			)) as Array<Pick<MediaObject, '_id' | 'objId' | '_rev'>>
+
+			return rawObjs.map((mo) => {
+				return {
+					id: mo.objId,
+					rev: mo._rev,
+				}
+			})
 		} else {
 			throw new Meteor.Error(400, 'getMediaObjectRevisions: Device "' + peripheralDevice._id + '" has no studio')
 		}
 	}
-	export function updateMediaObject(
+	export async function updateMediaObject(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		collectionId: string,
 		objId: string,
 		doc: MediaObject | null
-	) {
+	): Promise<void> {
 		// logger.debug('updateMediaObject')
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
-		const studioId = getStudioIdFromDevice(peripheralDevice)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const studioId = await getStudioIdFromDevice(peripheralDevice)
 
 		const _id: MediaObjId = protectString(collectionId + '_' + objId)
-		if (_.isNull(doc)) {
-			MediaObjects.remove(_id)
+		if (doc === null) {
+			await MediaObjects.removeAsync(_id)
 		} else if (doc) {
 			if (doc.mediaId !== doc.mediaId.toUpperCase())
 				throw new Meteor.Error(400, 'mediaId must only use uppercase characters')
-			const doc2 = _.extend(doc, {
+
+			const doc2 = {
+				...doc,
 				studioId: studioId,
 				collectionId: collectionId,
 				objId: objId,
 				_id: _id,
-			})
+			}
+
 			// logger.debug(doc2)
-			MediaObjects.upsert(_id, { $set: doc2 })
+			await MediaObjects.upsertAsync(_id, { $set: doc2 })
 		} else {
 			throw new Meteor.Error(400, 'missing doc argument')
 		}
 	}
-	export function clearMediaObjectCollection(deviceId: PeripheralDeviceId, token: string, collectionId: string) {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, this)
+	export async function clearMediaObjectCollection(
+		deviceId: PeripheralDeviceId,
+		token: string,
+		collectionId: string
+	): Promise<void> {
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
-		const studioId = getStudioIdFromDevice(peripheralDevice)
+		const studioId = await getStudioIdFromDevice(peripheralDevice)
 
-		MediaObjects.remove({ collectionId, studioId })
+		await MediaObjects.removeAsync({ collectionId, studioId })
 	}
 }

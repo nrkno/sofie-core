@@ -236,9 +236,9 @@ describe('Migrations', () => {
 		expect(migration.migrationNeeded).toEqual(true)
 		expect(migration.automaticStepCount).toEqual(3)
 
-		expect(_.find(migration.steps, (s) => s.id.match(/myCoreMockStep1/))).toBeTruthy()
-		expect(_.find(migration.steps, (s) => s.id.match(/myCoreMockStep2/))).toBeTruthy()
-		expect(_.find(migration.steps, (s) => s.id.match(/myCoreMockStep3/))).toBeTruthy()
+		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep1/))).toBeTruthy()
+		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep2/))).toBeTruthy()
+		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep3/))).toBeTruthy()
 
 		const studio = Studios.findOne() as Studio
 		expect(studio).toBeTruthy()

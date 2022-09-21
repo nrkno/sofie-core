@@ -30,6 +30,7 @@ export const addSteps = addMigrationSteps('1.32.0', [
 							foundAnything = collectionName
 							return true
 						}
+						return false
 					})
 					if (foundAnything) return `Deprecated collection "${foundAnything}" is not empty`
 				}

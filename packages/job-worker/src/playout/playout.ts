@@ -1,9 +1,4 @@
-import {
-	PartId,
-	PartInstanceId,
-	PieceInstanceId,
-	RundownPlaylistId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
@@ -706,7 +701,6 @@ function _onPiecePlaybackStarted(
 	context: JobContext,
 	cache: CacheForPlayout,
 	data: {
-		playlistId: RundownPlaylistId
 		pieceInstanceId: PieceInstanceId
 		startedPlayback: Time
 	}
@@ -737,7 +731,6 @@ function _onPiecePlaybackStopped(
 	context: JobContext,
 	cache: CacheForPlayout,
 	data: {
-		playlistId: RundownPlaylistId
 		partInstanceId: PartInstanceId
 		pieceInstanceId: PieceInstanceId
 		stoppedPlayback: Time
@@ -773,18 +766,17 @@ async function _onPartPlaybackStarted(
 	context: JobContext,
 	cache: CacheForPlayout,
 	data: {
-		playlistId: RundownPlaylistId
 		partInstanceId: PartInstanceId
 		startedPlayback: Time
 	}
 ) {
 	const playingPartInstance = cache.PartInstances.findOne(data.partInstanceId)
 	if (!playingPartInstance)
-		throw new Error(`PartInstance "${data.partInstanceId}" in RundownPlayst "${data.playlistId}" not found!`)
+		throw new Error(`PartInstance "${data.partInstanceId}" in RundownPlayst "${cache.PlaylistId}" not found!`)
 
 	// make sure we don't run multiple times, even if TSR calls us multiple times
-	const isPlaying = playingPartInstance.timings?.startedPlayback && !playingPartInstance.timings?.stoppedPlayback
-	if (!isPlaying) {
+	const hasStartedPlaying = !!playingPartInstance.timings?.startedPlayback
+	if (!hasStartedPlaying) {
 		logger.debug(
 			`Playout reports PartInstance "${data.partInstanceId}" has started playback on timestamp ${new Date(
 				data.startedPlayback
@@ -909,22 +901,13 @@ function _onPartPlaybackStopped(
 	context: JobContext,
 	cache: CacheForPlayout,
 	data: {
-		playlistId: RundownPlaylistId
 		partInstanceId: PartInstanceId
 		stoppedPlayback: Time
 	}
 ) {
 	const playlist = cache.Playlist.doc
-	if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
 
-	// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
-	const rundowns = cache.Rundowns.findFetch({ playlistId: playlist._id })
-
-	const partInstance = cache.PartInstances.findOne({
-		_id: data.partInstanceId,
-		rundownId: { $in: rundowns.map((r) => r._id) },
-	})
-
+	const partInstance = cache.PartInstances.findOne(data.partInstanceId)
 	if (partInstance) {
 		// make sure we don't run multiple times, even if TSR calls us multiple times
 
@@ -951,53 +934,38 @@ export async function onPlayoutPlaybackChanged(
 	context: JobContext,
 	data: OnPlayoutPlaybackChangedProps
 ): Promise<void> {
-	return runJobWithPlayoutCache(
-		context,
-		data,
-		(cache) => {
-			const playlist = cache.Playlist.doc
-			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
-		},
-		async (cache) => {
-			const playlist = cache.Playlist.doc
-			if (!playlist) throw new Error(`RundownPlaylist "${data.playlistId}" not found!`)
-
-			for (const change of data.changes) {
-				try {
-					if (change.type === PlayoutChangedType.PART_PLAYBACK_STARTED) {
-						await _onPartPlaybackStarted(context, cache, {
-							playlistId: playlist._id,
-							partInstanceId: change.data.partInstanceId,
-							startedPlayback: change.data.time,
-						})
-					} else if (change.type === PlayoutChangedType.PART_PLAYBACK_STOPPED) {
-						_onPartPlaybackStopped(context, cache, {
-							playlistId: playlist._id,
-							partInstanceId: change.data.partInstanceId,
-							stoppedPlayback: change.data.time,
-						})
-					} else if (change.type === PlayoutChangedType.PIECE_PLAYBACK_STARTED) {
-						_onPiecePlaybackStarted(context, cache, {
-							playlistId: playlist._id,
-							pieceInstanceId: change.data.pieceInstanceId,
-							startedPlayback: change.data.time,
-						})
-					} else if (change.type === PlayoutChangedType.PIECE_PLAYBACK_STOPPED) {
-						_onPiecePlaybackStopped(context, cache, {
-							playlistId: playlist._id,
-							partInstanceId: change.data.partInstanceId,
-							pieceInstanceId: change.data.pieceInstanceId,
-							stoppedPlayback: change.data.time,
-						})
-					} else {
-						assertNever(change)
-					}
-				} catch (err) {
-					logger.error(stringifyError(err))
+	return runJobWithPlayoutCache(context, data, null, async (cache) => {
+		for (const change of data.changes) {
+			try {
+				if (change.type === PlayoutChangedType.PART_PLAYBACK_STARTED) {
+					await _onPartPlaybackStarted(context, cache, {
+						partInstanceId: change.data.partInstanceId,
+						startedPlayback: change.data.time,
+					})
+				} else if (change.type === PlayoutChangedType.PART_PLAYBACK_STOPPED) {
+					_onPartPlaybackStopped(context, cache, {
+						partInstanceId: change.data.partInstanceId,
+						stoppedPlayback: change.data.time,
+					})
+				} else if (change.type === PlayoutChangedType.PIECE_PLAYBACK_STARTED) {
+					_onPiecePlaybackStarted(context, cache, {
+						pieceInstanceId: change.data.pieceInstanceId,
+						startedPlayback: change.data.time,
+					})
+				} else if (change.type === PlayoutChangedType.PIECE_PLAYBACK_STOPPED) {
+					_onPiecePlaybackStopped(context, cache, {
+						partInstanceId: change.data.partInstanceId,
+						pieceInstanceId: change.data.pieceInstanceId,
+						stoppedPlayback: change.data.time,
+					})
+				} else {
+					assertNever(change)
 				}
+			} catch (err) {
+				logger.error(stringifyError(err))
 			}
 		}
-	)
+	})
 }
 
 /**
@@ -1287,7 +1255,7 @@ export async function stopPiecesOnSourceLayers(
 
 			const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
 			const sourceLayerIds = new Set(data.sourceLayerIds)
-			innerStopPieces(
+			const changedIds = innerStopPieces(
 				context,
 				cache,
 				showStyleBase,
@@ -1296,9 +1264,11 @@ export async function stopPiecesOnSourceLayers(
 				undefined
 			)
 
-			await syncPlayheadInfinitesForNextPartInstance(context, cache)
+			if (changedIds.length) {
+				await syncPlayheadInfinitesForNextPartInstance(context, cache)
 
-			await updateTimeline(context, cache)
+				await updateTimeline(context, cache)
+			}
 		}
 	)
 }

@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { MongoQuery, FindOptions } from '../../lib/typings/meteor'
+import { FindOptions } from '../../lib/typings/meteor'
 import { BucketSecurity } from '../security/buckets'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
@@ -9,37 +9,39 @@ import { BucketAdLibActions, BucketAdLibAction } from '../../lib/collections/Buc
 import { StudioReadAccess } from '../security/studio'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 
-meteorPublish(PubSub.buckets, function (selector: MongoQuery<Bucket>, _token) {
+meteorPublish(PubSub.buckets, async function (selector, _token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<Bucket> = {
 		fields: {},
 	}
 	if (
-		(isProtectedString(selector.studioId) && selector.studioId && StudioReadAccess.studioContent(selector, this)) ||
-		(isProtectedString(selector._id) && selector._id && BucketSecurity.allowReadAccess(this, selector._id))
+		(isProtectedString(selector.studioId) &&
+			selector.studioId &&
+			(await StudioReadAccess.studioContent(selector.studioId, this))) ||
+		(isProtectedString(selector._id) && selector._id && (await BucketSecurity.allowReadAccess(this, selector._id)))
 	) {
 		return Buckets.find(selector, modifier)
 	}
 	return null
 })
 
-meteorPublish(PubSub.bucketAdLibPieces, function (selector: MongoQuery<BucketAdLib>, _token) {
+meteorPublish(PubSub.bucketAdLibPieces, async function (selector, _token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<BucketAdLib> = {
 		fields: {},
 	}
-	if (isProtectedString(selector.bucketId) && BucketSecurity.allowReadAccess(this, selector.bucketId)) {
+	if (isProtectedString(selector.bucketId) && (await BucketSecurity.allowReadAccess(this, selector.bucketId))) {
 		return BucketAdLibs.find(selector, modifier)
 	}
 	return null
 })
 
-meteorPublish(PubSub.bucketAdLibActions, function (selector: MongoQuery<BucketAdLibAction>, _token) {
+meteorPublish(PubSub.bucketAdLibActions, async function (selector, _token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<BucketAdLibAction> = {
 		fields: {},
 	}
-	if (isProtectedString(selector.bucketId) && BucketSecurity.allowReadAccess(this, selector.bucketId)) {
+	if (isProtectedString(selector.bucketId) && (await BucketSecurity.allowReadAccess(this, selector.bucketId))) {
 		return BucketAdLibActions.find(selector, modifier)
 	}
 	return null

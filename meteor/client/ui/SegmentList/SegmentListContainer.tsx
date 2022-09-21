@@ -44,16 +44,12 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 		[segmentId]
 	)
 
-	useSubscription(
-		PubSub.pieces,
-		{
-			startRundownId: rundownId,
-			startPartId: {
-				$in: partIds,
-			},
+	useSubscription(PubSub.pieces, {
+		startRundownId: rundownId,
+		startPartId: {
+			$in: partIds,
 		},
-		[partIds]
-	)
+	})
 
 	const partInstanceIds = useTracker(
 		() =>
@@ -74,19 +70,15 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 		[segmentId]
 	)
 
-	useSubscription(
-		PubSub.pieceInstances,
-		{
-			rundownId: rundownId,
-			partInstanceId: {
-				$in: partInstanceIds,
-			},
-			reset: {
-				$ne: true,
-			},
+	useSubscription(PubSub.pieceInstances, {
+		rundownId: rundownId,
+		partInstanceId: {
+			$in: partInstanceIds,
 		},
-		[rundownId, partInstanceIds]
-	)
+		reset: {
+			$ne: true,
+		},
+	})
 
 	useTracker(() => {
 		const segment = Segments.findOne(segmentId, {
