@@ -23,7 +23,7 @@ import { logger } from './logging'
 import { resetRundownPlaylist } from './playout/lib'
 import { runJobWithPlaylistLock, runWithPlaylistCache } from './playout/lock'
 import { updateTimeline } from './playout/timeline/generate'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBStudioHack } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { WrappedStudioBlueprint } from './blueprints/cache'
 import { StudioUserContext } from './blueprints/context'
 import { getCurrentTime } from './lib'
@@ -269,7 +269,7 @@ export function produceRundownPlaylistInfoFromRundown(
 
 function defaultPlaylistForRundown(
 	rundown: ReadonlyDeep<IBlueprintRundown>,
-	studio: ReadonlyDeep<DBStudio>,
+	studio: ReadonlyDeep<DBStudioHack>,
 	existingPlaylist?: ReadonlyDeep<DBRundownPlaylist>
 ): Omit<DBRundownPlaylist, '_id' | 'externalId'> {
 	return {

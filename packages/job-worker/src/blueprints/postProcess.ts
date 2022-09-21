@@ -1,4 +1,4 @@
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBStudioHack } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	TimelineObjGeneric,
 	TimelineObjRundown,
@@ -301,7 +301,7 @@ export function postProcessAdLibActions(
 }
 
 export function postProcessStudioBaselineObjects(
-	studio: ReadonlyDeep<DBStudio>,
+	studio: ReadonlyDeep<DBStudioHack>,
 	objs: TSR.TSRTimelineObjBase[]
 ): TimelineObjRundown[] {
 	return postProcessTimelineObjects(protectString('studio'), studio.blueprintId ?? protectString(''), objs)

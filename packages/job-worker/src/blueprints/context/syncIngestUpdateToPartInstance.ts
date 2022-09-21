@@ -28,7 +28,7 @@ import {
 	convertPartInstanceToBlueprints,
 } from './lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBStudioHack } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { JobContext } from '../../jobs'
 import { logChanges } from '../../cache/lib'
 import {
@@ -50,7 +50,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		private readonly _context: JobContext,
 		contextInfo: ContextInfo,
 		private readonly playlistActivationId: RundownPlaylistActivationId,
-		studio: ReadonlyDeep<DBStudio>,
+		studio: ReadonlyDeep<DBStudioHack>,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		partInstance: DBPartInstance,

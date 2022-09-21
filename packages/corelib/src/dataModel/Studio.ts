@@ -2,6 +2,9 @@ import { BlueprintMapping, IBlueprintConfig, PackageContainer, TSR } from '@sofi
 import { ProtectedString } from '../protectedString'
 import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, PeripheralDeviceId } from './Ids'
 
+// TODO-SETTINGS HACK
+export type DBStudioHack = Omit<DBStudio, 'mappings' | 'blueprintConfig'>
+
 export interface MappingsExt {
 	[layerName: string]: MappingExt
 }

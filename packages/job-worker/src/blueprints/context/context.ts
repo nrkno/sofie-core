@@ -26,7 +26,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBStudioHack } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	protectString,
 	protectStringArray,
@@ -136,7 +136,7 @@ export class CommonContext implements ICommonContext {
 export class StudioContext extends CommonContext implements IStudioContext {
 	constructor(
 		contextInfo: ContextInfo,
-		public readonly studio: ReadonlyDeep<DBStudio>,
+		public readonly studio: ReadonlyDeep<DBStudioHack>,
 		public readonly studioBlueprintConfig: ProcessedStudioConfig
 	) {
 		super(contextInfo)
@@ -157,8 +157,8 @@ export class StudioContext extends CommonContext implements IStudioContext {
 		return getStudioConfigRef(this.studio._id, configKey)
 	}
 	getStudioMappings(): Readonly<BlueprintMappings> {
-		// @ts-expect-error ProtectedString deviceId not compatible with string
 		return this.studio.mappings
+		// @ts-expect-error ProtectedString deviceId not compatible with string
 	}
 }
 
@@ -168,7 +168,7 @@ export class StudioBaselineContext extends StudioContext implements IStudioBasel
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
-		studio: ReadonlyDeep<DBStudio>,
+		studio: ReadonlyDeep<DBStudioHack>,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, studio, context.getStudioBlueprintConfig())
@@ -211,7 +211,7 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 
 	constructor(
 		contextInfo: UserContextInfo,
-		studio: ReadonlyDeep<DBStudio>,
+		studio: ReadonlyDeep<DBStudioHack>,
 		studioBlueprintConfig: ProcessedStudioConfig
 	) {
 		super(contextInfo, studio, studioBlueprintConfig)
@@ -247,7 +247,7 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 export class ShowStyleContext extends StudioContext implements IShowStyleContext {
 	constructor(
 		contextInfo: ContextInfo,
-		studio: ReadonlyDeep<DBStudio>,
+		studio: ReadonlyDeep<DBStudioHack>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		public readonly showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		public readonly showStyleBlueprintConfig: ProcessedShowStyleConfig
@@ -414,7 +414,7 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 
 	constructor(
 		contextInfo: ContextInfo,
-		studio: ReadonlyDeep<DBStudio>,
+		studio: ReadonlyDeep<DBStudioHack>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
@@ -454,7 +454,7 @@ export class RundownUserContext extends RundownContext implements IRundownUserCo
 
 export class RundownEventContext extends RundownContext implements IEventContext {
 	constructor(
-		studio: ReadonlyDeep<DBStudio>,
+		studio: ReadonlyDeep<DBStudioHack>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
@@ -561,7 +561,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 
 	constructor(
 		eventName: string,
-		studio: ReadonlyDeep<DBStudio>,
+		studio: ReadonlyDeep<DBStudioHack>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
@@ -614,7 +614,7 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 	}
 
 	constructor(
-		studio: ReadonlyDeep<DBStudio>,
+		studio: ReadonlyDeep<DBStudioHack>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,

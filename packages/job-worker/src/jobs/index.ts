@@ -11,7 +11,7 @@ import {
 import { ApmSpan } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBStudioHack } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
@@ -48,11 +48,14 @@ export interface JobContext extends StudioCacheContext {
 	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void
 }
 
+export type DBShowStyleBaseHack = Omit<DBShowStyleBase, 'sourceLayers' | 'outputLayers' | 'blueprintConfig'>
+export type DBShowStyleVariantHack = Omit<DBShowStyleVariant, 'blueprintConfig'>
+
 export interface StudioCacheContext {
 	readonly directCollections: Readonly<IDirectCollections>
 
 	readonly studioId: StudioId
-	readonly studio: ReadonlyDeep<DBStudio>
+	readonly studio: ReadonlyDeep<DBStudioHack>
 
 	readonly studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
 

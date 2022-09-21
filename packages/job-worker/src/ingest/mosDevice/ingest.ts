@@ -201,7 +201,7 @@ export async function handleMosRundownMetadata(context: JobContext, data: MosRun
 }
 
 export async function handleMosRundownStatus(context: JobContext, data: MosRundownStatusProps): Promise<void> {
-	const rundownId = getRundownId(context.studio, data.rundownExternalId)
+	const rundownId = getRundownId(context.studioId, data.rundownExternalId)
 
 	return runWithRundownLock(context, rundownId, async (rundown) => {
 		if (!rundown) throw new Error(`Rundown "${rundownId}" not found!`)
@@ -247,7 +247,7 @@ export async function handleMosRundownReadyToAir(context: JobContext, data: MosR
 }
 
 export async function handleMosStoryStatus(context: JobContext, data: MosStoryStatusProps): Promise<void> {
-	const rundownId = getRundownId(context.studio, data.rundownExternalId)
+	const rundownId = getRundownId(context.studioId, data.rundownExternalId)
 
 	return runWithRundownLock(context, rundownId, async (rundown) => {
 		if (!rundown) throw new Error(`Rundown "${rundownId}" not found!`)
