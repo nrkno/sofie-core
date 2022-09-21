@@ -1,8 +1,7 @@
 import classNames from 'classnames'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Studio } from '../../../../lib/collections/Studios'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
-import { TOOLTIP_DEFAULT_DELAY } from '../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { AdLibPieceUi } from '../../../lib/shelf'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
@@ -28,36 +27,44 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 	thisSourceLayer,
 	hasOriginInPreceedingPart,
 	label,
-	onClick,
+	onClick: onClickExternal,
 	onDoubleClick,
 }) {
 	let typeClass = thisSourceLayer?.type ? RundownUtils.getSourceLayerClassName(thisSourceLayer.type) : undefined
 	const [element, setElement] = useState<HTMLDivElement | null>(null)
-	const mouseOutTimeOut = useRef<NodeJS.Timeout | undefined>(undefined)
-	const [isOver, setIsOver] = useState(false)
-	const [isOverlayOver, setIsOverlayOver] = useState(false)
+	const [isMenuOpen, setIsMenuOpen] = useState(false)
 
 	if ((typeClass === undefined || typeClass === '') && thisSourceLayer?.isGuestInput) {
 		typeClass = 'guest'
 	}
 
-	function onMouseEnter() {
-		clearTimeout(mouseOutTimeOut.current)
-		mouseOutTimeOut.current = setTimeout(() => {
-			setIsOver(true)
-		}, TOOLTIP_DEFAULT_DELAY * 1000)
-	}
+	const onClickAway = useCallback(
+		function onClickAway(e: MouseEvent) {
+			if (!element) return
+			const composedPath = e.composedPath()
+			if (composedPath.includes(element)) return
+			if (
+				composedPath.find(
+					(el) => el instanceof HTMLElement && el.classList.contains('segment-opl__piece-indicator-menu')
+				)
+			)
+				return
+			setIsMenuOpen(false)
+			window.removeEventListener('mousedown', onClickAway)
+		},
+		[element]
+	)
 
-	function onMouseLeave() {
-		clearTimeout(mouseOutTimeOut.current)
-		mouseOutTimeOut.current = setTimeout(() => {
-			setIsOver(false)
-		}, TOOLTIP_DEFAULT_DELAY * 1000)
+	function onClick(e: React.MouseEvent<HTMLDivElement>) {
+		const shouldBeOpen = !isMenuOpen
+		setIsMenuOpen(shouldBeOpen)
+		onClickExternal && onClickExternal(e)
+		window.addEventListener('mousedown', onClickAway)
 	}
 
 	useEffect(() => {
 		return () => {
-			clearTimeout(mouseOutTimeOut.current)
+			window.removeEventListener('mousedown', onClickAway)
 		}
 	}, [])
 
@@ -71,8 +78,6 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 				})}
 				data-source-layer-ids={allSourceLayers.map((sourceLayer) => sourceLayer._id).join(' ')}
 				ref={setElement}
-				onMouseEnter={onMouseEnter}
-				onMouseLeave={onMouseLeave}
 				onClick={onClick}
 				onDoubleClick={onDoubleClick}
 			>
@@ -90,7 +95,7 @@ export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function Li
 					</div>
 				)}
 			</div>
-			{(isOver || isOverlayOver) && !!overlay && overlay(element, setIsOverlayOver)}
+			{isMenuOpen && !!overlay && overlay(element, setIsMenuOpen)}
 		</>
 	)
 })

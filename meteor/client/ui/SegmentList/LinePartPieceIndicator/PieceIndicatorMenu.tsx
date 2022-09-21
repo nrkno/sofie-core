@@ -7,7 +7,8 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { StoryboardSecondaryPiece } from '../../SegmentStoryboard/StoryboardPartSecondaryPieces/StoryboardSecondaryPiece'
 import StudioContext from '../../RundownView/StudioContext'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
-import { TOOLTIP_DEFAULT_DELAY } from '../../../lib/lib'
+
+const AUTO_HIDE_TIMEOUT = 7000
 
 export function PieceIndicatorMenu({
 	pieces,
@@ -48,13 +49,15 @@ export function PieceIndicatorMenu({
 		let timeout: NodeJS.Timeout | undefined = undefined
 
 		function onMouseEnter() {
+			clearTimeout(timeout)
 			setIsOver(true)
 		}
 
 		function onMouseLeave() {
+			clearTimeout(timeout)
 			timeout = setTimeout(() => {
 				setIsOver(false)
-			}, TOOLTIP_DEFAULT_DELAY * 1000)
+			}, AUTO_HIDE_TIMEOUT)
 		}
 
 		indicatorMenuEl.addEventListener('mouseenter', onMouseEnter)
