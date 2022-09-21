@@ -90,7 +90,8 @@ export function PieceIndicatorMenu({
 					<Escape to="document">
 						<div
 							className="segment-opl__piece-indicator-menu"
-							ref={setIndicatorMenuEl}
+							/** This is so that we avoid updating the state once the component has been unmounted */
+							ref={(el) => el !== null && setIndicatorMenuEl(el)}
 							style={styles.popper}
 							{...attributes.popper}
 						>
