@@ -472,20 +472,15 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('PartInstance could not be found')
 		}
 
-		const update: any = {
-			$set: {},
-			$unset: {},
-		}
-
-		for (const [k, val] of Object.entries(trimmedProps)) {
-			if (val === undefined) {
-				update.$unset[`part.${k}`] = val
-			} else {
-				update.$set[`part.${k}`] = val
+		this._cache.PartInstances.updateOne(partInstance._id, (p) => {
+			return {
+				...p,
+				part: {
+					...p.part,
+					...trimmedProps,
+				},
 			}
-		}
-
-		this._cache.PartInstances.updateOne(partInstance._id, update)
+		})
 
 		this.nextPartState = Math.max(
 			this.nextPartState,

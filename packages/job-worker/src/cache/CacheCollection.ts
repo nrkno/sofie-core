@@ -233,7 +233,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * @returns All the ids that matched the selector
 	 */
 	updateOne(selector: TDoc['_id'], modifier: (doc: TDoc) => TDoc | false, forceUpdate?: boolean): Array<TDoc['_id']> {
-		this.assertNotToBeRemoved('update')
+		this.assertNotToBeRemoved('updateOne')
 
 		const span = this.context.startSpan(`DBCache.update.${this.name}`)
 

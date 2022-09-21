@@ -141,7 +141,7 @@ describe('Test blueprint api context', () => {
 	async function getActionExecutionContext(jobContext: JobContext, cache: CacheForPlayout) {
 		const playlist = cache.Playlist.doc
 		expect(playlist).toBeTruthy()
-		const rundown = cache.Rundowns.findOne({}) as DBRundown
+		const rundown = cache.Rundowns.findOne(() => true) as DBRundown
 		expect(rundown).toBeTruthy()
 
 		const activationId = playlist.activationId as RundownPlaylistActivationId
@@ -1611,7 +1611,7 @@ describe('Test blueprint api context', () => {
 
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
-					const beforePieceInstancesCount = cache.PieceInstances.findFetch({}).length // Because only those frm current, next, prev are included..
+					const beforePieceInstancesCount = cache.PieceInstances.findFetch(null).length // Because only those frm current, next, prev are included..
 					expect(beforePieceInstancesCount).not.toEqual(0)
 
 					const pieceInstanceFromOther = (await jobContext.directCollections.PieceInstances.findOne({
@@ -1625,7 +1625,7 @@ describe('Test blueprint api context', () => {
 						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						context.removePieceInstances('next', [unprotectString(pieceInstanceFromOther._id)])
 					).resolves.toEqual([]) // Try and remove something belonging to a different part
-					expect(cache.PieceInstances.findFetch({}).length).toEqual(beforePieceInstancesCount)
+					expect(cache.PieceInstances.findFetch(null).length).toEqual(beforePieceInstancesCount)
 				})
 			})
 
@@ -1640,10 +1640,10 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PieceInstances.findFetch({}).length).not.toEqual(0)
+					expect(cache.PieceInstances.findFetch(null).length).not.toEqual(0)
 
 					// Find the instance, and create its backing piece
-					const targetPieceInstance = cache.PieceInstances.findOne({}) as PieceInstance
+					const targetPieceInstance = cache.PieceInstances.findOne(() => true) as PieceInstance
 					expect(targetPieceInstance).toBeTruthy()
 
 					await expect(
@@ -1725,7 +1725,7 @@ describe('Test blueprint api context', () => {
 						badProperty: 9, // This will be dropped
 					}
 					const resultPiece = await context.updatePartInstance('next', partInstance0Delta)
-					const partInstance1 = cache.PartInstances.findOne({}) as DBPartInstance
+					const partInstance1 = cache.PartInstances.findOne(() => true) as DBPartInstance
 					expect(partInstance1).toBeTruthy()
 
 					expect(resultPiece).toEqual(convertPartInstanceToBlueprints(partInstance1))

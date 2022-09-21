@@ -1993,7 +1993,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 					},
 					null,
 					async (cache) => {
-						const rundown0 = cache.Rundowns.findOne({}) as DBRundown
+						const rundown0 = cache.Rundowns.findOne(() => true) as DBRundown
 						expect(rundown0).toBeTruthy()
 
 						const currentPartInstance = getSelectedPartInstancesFromCache(cache)

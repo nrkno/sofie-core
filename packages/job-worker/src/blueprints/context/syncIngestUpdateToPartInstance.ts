@@ -207,20 +207,15 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`Cannot update PartInstance. Some valid properties must be defined`)
 		}
 
-		const update: any = {
-			$set: {},
-			$unset: {},
-		}
-
-		for (const [k, val] of Object.entries(trimmedProps)) {
-			if (val === undefined) {
-				update.$unset[`part.${k}`] = val
-			} else {
-				update.$set[`part.${k}`] = val
+		this._partInstanceCache.updateOne(this.partInstance._id, (p) => {
+			return {
+				...p,
+				part: {
+					...p.part,
+					...trimmedProps,
+				},
 			}
-		}
-
-		this._partInstanceCache.updateOne(this.partInstance._id, update)
+		})
 
 		const updatedPartInstance = this._partInstanceCache.findOne(this.partInstance._id)
 		if (!updatedPartInstance) {

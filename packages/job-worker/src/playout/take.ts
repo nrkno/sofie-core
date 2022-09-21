@@ -378,17 +378,16 @@ export function updatePartInstanceOnTake(
 		tmpTakePieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
 	)
 
-	const partInstanceM: any = {
-		$set: literal<Partial<DBPartInstance>>({
-			isTaken: true,
-			partPlayoutTimings: partPlayoutTimings,
-		}),
-	}
-	if (previousPartEndState) {
-		partInstanceM.$set.previousPartEndState = previousPartEndState
-	}
+	cache.PartInstances.updateOne(takePartInstance._id, (p) => {
+		p.isTaken = true
+		p.partPlayoutTimings = partPlayoutTimings
 
-	cache.PartInstances.updateOne(takePartInstance._id, partInstanceM)
+		if (previousPartEndState) {
+			p.previousPartEndState = previousPartEndState
+		}
+
+		return p
+	})
 }
 
 export async function afterTake(
