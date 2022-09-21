@@ -129,7 +129,7 @@ describe('test peripheralDevice general API methods', () => {
 			externalId: '',
 			name: 'Mock',
 			sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-			outputLayerId: env.showStyleBase.outputLayers[0]._id,
+			outputLayerId: Object.keys(env.showStyleBase.outputLayersWithOverrides.defaults)[0],
 			startPartId: protectString('part000'),
 			startSegmentId: segmentID,
 			startRundownId: rundownID,

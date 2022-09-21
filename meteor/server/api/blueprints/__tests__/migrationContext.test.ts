@@ -1029,10 +1029,10 @@ describe('Test blueprint migrationContext', () => {
 		})
 
 		describe('outputlayer', () => {
-			function getAllOutputLayersFromDb(showStyle: ShowStyleBase): IOutputLayer[] {
+			function getAllOutputLayersFromDb(showStyle: ShowStyleBase): Record<string, IOutputLayer | undefined> {
 				const showStyle2 = ShowStyleBases.findOne(showStyle._id) as ShowStyleBase
 				expect(showStyle2).toBeTruthy()
-				return showStyle2.outputLayers
+				return showStyle2.outputLayersWithOverrides.defaults
 			}
 
 			testInFiber('getOutputLayer: no id', () => {
@@ -1057,7 +1057,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertOutputLayer: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.insertOutputLayer('', {
@@ -1067,13 +1067,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[500] OutputLayer id "" is invalid`)
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 			testInFiber('insertOutputLayer: existing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.insertOutputLayer('pgm', {
@@ -1083,13 +1083,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[500] OutputLayer "pgm" already exists`)
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 			testInFiber('insertOutputLayer: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 
 				const rawLayer = {
 					name: 'test',
@@ -1099,18 +1099,18 @@ describe('Test blueprint migrationContext', () => {
 
 				ctx.insertOutputLayer('lay1', rawLayer)
 
-				initialOutputLayers.push({
+				initialOutputLayers['lay1'] = {
 					...rawLayer,
 					_id: 'lay1',
-				})
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				}
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 
 			testInFiber('updateOutputLayer: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.updateOutputLayer('', {
@@ -1120,13 +1120,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[500] OutputLayer id "" is invalid`)
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 			testInFiber('updateOutputLayer: missing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.updateOutputLayer('fake99', {
@@ -1136,13 +1136,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[404] OutputLayer "fake99" cannot be updated as it does not exist`)
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 			testInFiber('updateOutputLayer: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 				expect(ctx.getOutputLayer('lay1')).toBeTruthy()
 
 				const rawLayer = {
@@ -1151,51 +1151,50 @@ describe('Test blueprint migrationContext', () => {
 
 				ctx.updateOutputLayer('lay1', rawLayer)
 
-				_.each(initialOutputLayers, (layer, i) => {
-					if (layer._id === 'lay1') {
-						initialOutputLayers[i] = {
-							...layer,
-							...rawLayer,
-						}
-					}
-				})
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				initialOutputLayers['lay1'] = {
+					...initialOutputLayers['lay1']!,
+					...rawLayer,
+				}
+
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 
 			testInFiber('removeOutputLayer: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 
 				expect(() => ctx.removeOutputLayer('')).toThrow(`[500] OutputLayer id "" is invalid`)
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 			testInFiber('removeOutputLayer: missing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 				expect(ctx.getOutputLayer('fake99')).toBeFalsy()
 
 				// Should not error
 				ctx.removeOutputLayer('fake99')
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 			testInFiber('removeOutputLayer: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 				expect(ctx.getOutputLayer('lay1')).toBeTruthy()
 
 				// Should not error
 				ctx.removeOutputLayer('lay1')
 
-				const expectedOutputLayers = _.filter(initialOutputLayers, (layer) => layer._id !== 'lay1')
-				expect(getShowStyle(ctx).outputLayers).toEqual(expectedOutputLayers)
+				const expectedOutputLayers = { ...initialOutputLayers }
+				delete expectedOutputLayers['lay1']
+
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(expectedOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(expectedOutputLayers)
 			})
 		})

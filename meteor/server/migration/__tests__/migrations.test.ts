@@ -389,11 +389,10 @@ describe('Migrations', () => {
 			name: '',
 			organizationId: null,
 			blueprintId: protectString('showStyle0'),
-			outputLayers: [],
+			outputLayersWithOverrides: wrapDefaultObject({}),
 			sourceLayers: [],
 			hotkeyLegend: [],
-			// @ts-ignore
-			config: [],
+			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',
 		})
 
@@ -401,8 +400,7 @@ describe('Migrations', () => {
 			_id: protectString('variant0'),
 			name: '',
 			showStyleBaseId: protectString('showStyle0'),
-			// @ts-ignore
-			config: [],
+			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',
 		})
 

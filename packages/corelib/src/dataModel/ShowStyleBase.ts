@@ -34,7 +34,7 @@ export interface DBShowStyleBase {
 	hotkeyLegend?: Array<HotkeyDefinition>
 
 	/** "Outputs" in the UI */
-	outputLayers: IOutputLayer[]
+	outputLayersWithOverrides: ObjectWithOverrides<Record<string, IOutputLayer | undefined>>
 	/** "Layers" in the GUI */
 	sourceLayers: ISourceLayer[]
 

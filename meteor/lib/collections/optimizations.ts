@@ -60,7 +60,7 @@ export async function fetchShowStyleBaseLight(showStyleId: ShowStyleBaseId): Pro
 	return ShowStyleBases.findOneAsync(showStyleId, {
 		fields: {
 			blueprintConfigWithOverrides: 0,
-			outputLayers: 0,
+			outputLayersWithOverrides: 0,
 			sourceLayers: 0,
 		},
 	})
@@ -71,7 +71,7 @@ export async function fetchShowStyleBasesLight(
 	return ShowStyleBases.findFetchAsync(selector, {
 		fields: {
 			blueprintConfigWithOverrides: 0,
-			outputLayers: 0,
+			outputLayersWithOverrides: 0,
 			sourceLayers: 0,
 		},
 	})

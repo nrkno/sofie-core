@@ -521,7 +521,7 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `OutputLayer id "${outputLayerId}" is invalid`)
 		}
 
-		return _.find(this.showStyleBase.outputLayers, (part) => part._id === outputLayerId)
+		return this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId]
 	}
 	insertOutputLayer(outputLayerId: string, layer: OmitId<IOutputLayer>): string {
 		check(outputLayerId, String)
@@ -529,7 +529,7 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `OutputLayer id "${outputLayerId}" is invalid`)
 		}
 
-		const oldLayer = _.find(this.showStyleBase.outputLayers, (part) => part._id === outputLayerId)
+		const oldLayer = this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId]
 		if (oldLayer) {
 			throw new Meteor.Error(500, `OutputLayer "${outputLayerId}" already exists`)
 		}
@@ -543,13 +543,13 @@ export class MigrationContextShowStyle
 				_id: this.showStyleBase._id,
 			},
 			{
-				$push: {
-					outputLayers: fullLayer,
+				$set: {
+					[`outputLayersWithOverrides.defaults.${outputLayerId}`]: fullLayer,
 				},
 			}
 		)
-		if (!this.showStyleBase.outputLayers) this.showStyleBase.outputLayers = []
-		this.showStyleBase.outputLayers.push(fullLayer) // Update local
+
+		this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId] = fullLayer // Update local
 		return fullLayer._id
 	}
 	updateOutputLayer(outputLayerId: string, layer: Partial<IOutputLayer>): void {
@@ -558,27 +558,26 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `OutputLayer id "${outputLayerId}" is invalid`)
 		}
 
-		const localLayerIndex = _.findIndex(this.showStyleBase.outputLayers, (part) => part._id === outputLayerId)
-		if (localLayerIndex === -1) {
+		const oldLayer = this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId]
+		if (!oldLayer) {
 			throw new Meteor.Error(404, `OutputLayer "${outputLayerId}" cannot be updated as it does not exist`)
 		}
 
 		const fullLayer = {
-			...this.showStyleBase.outputLayers[localLayerIndex],
+			...oldLayer,
 			...layer,
 		}
 		ShowStyleBases.update(
 			{
 				_id: this.showStyleBase._id,
-				'outputLayers._id': outputLayerId,
 			},
 			{
 				$set: {
-					'outputLayers.$': fullLayer,
+					[`outputLayersWithOverrides.defaults.${outputLayerId}`]: fullLayer,
 				},
 			}
 		)
-		this.showStyleBase.outputLayers[localLayerIndex] = fullLayer // Update local
+		this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId] = fullLayer // Update local
 	}
 	removeOutputLayer(outputLayerId: string): void {
 		check(outputLayerId, String)
@@ -591,15 +590,13 @@ export class MigrationContextShowStyle
 				_id: this.showStyleBase._id,
 			},
 			{
-				$pull: {
-					outputLayers: {
-						_id: outputLayerId,
-					},
+				$unset: {
+					[`outputLayersWithOverrides.defaults.${outputLayerId}`]: 1,
 				},
 			}
 		)
 		// Update local:
-		this.showStyleBase.outputLayers = _.reject(this.showStyleBase.outputLayers, (c) => c._id === outputLayerId)
+		delete this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId]
 	}
 	getBaseConfig(configId: string): ConfigItemValue | undefined {
 		check(configId, String)
