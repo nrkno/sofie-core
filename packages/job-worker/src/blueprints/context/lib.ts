@@ -31,7 +31,6 @@ import {
 	IBlueprintSegmentDB,
 	IBlueprintShowStyleBase,
 	IBlueprintShowStyleVariant,
-	ISourceLayer,
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
 
@@ -347,7 +346,7 @@ export function convertShowStyleBaseToBlueprints(
 		_id: unprotectString(showStyleBase._id),
 		blueprintId: unprotectString(showStyleBase.blueprintId),
 		outputLayers: Object.values(applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides)),
-		sourceLayers: clone<ISourceLayer[]>(showStyleBase.sourceLayers),
+		sourceLayers: Object.values(applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides)),
 		blueprintConfig: applyAndValidateOverrides(showStyleBase.blueprintConfigWithOverrides).obj,
 	}
 

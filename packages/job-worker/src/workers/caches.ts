@@ -8,7 +8,6 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
@@ -17,7 +16,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { clone, deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import deepmerge = require('deepmerge')
-import { StudioCacheContext } from '../jobs'
+import { DBShowStyleBaseWithProcessedLayers, StudioCacheContext } from '../jobs'
 import { StudioCacheContextImpl } from './context'
 
 /**
@@ -105,7 +104,7 @@ export interface WorkerDataCache {
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
 	studioBlueprintConfig: ProcessedStudioConfig | undefined
 
-	showStyleBases: Map<ShowStyleBaseId, ReadonlyDeep<DBShowStyleBase> | null> // null when not found
+	showStyleBases: Map<ShowStyleBaseId, ReadonlyDeep<DBShowStyleBaseWithProcessedLayers> | null> // null when not found
 	showStyleVariants: Map<ShowStyleVariantId, ReadonlyDeep<DBShowStyleVariant> | null> // null when not found
 	showStyleBlueprints: Map<BlueprintId, ReadonlyDeep<WrappedShowStyleBlueprint> | null> // null when not found
 	showStyleBlueprintConfig: Map<ShowStyleVariantId, ProcessedShowStyleConfig>

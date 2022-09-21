@@ -45,7 +45,6 @@ import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/d
 import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/context/lib'
 import { buildTimelineObjsForRundown } from './rundown'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -296,13 +295,11 @@ async function getTimelineRundown(
 				)
 			}
 
-			const sourceLayers = applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj
-
 			const currentTime = getCurrentTime()
 			const partInstancesInfo: SelectedPartInstancesTimelineInfo = {
-				current: getPartInstanceTimelineInfo(cache, currentTime, sourceLayers, currentPartInstance),
-				next: getPartInstanceTimelineInfo(cache, currentTime, sourceLayers, nextPartInstance),
-				previous: getPartInstanceTimelineInfo(cache, currentTime, sourceLayers, previousPartInstance),
+				current: getPartInstanceTimelineInfo(cache, currentTime, showStyle.sourceLayers, currentPartInstance),
+				next: getPartInstanceTimelineInfo(cache, currentTime, showStyle.sourceLayers, nextPartInstance),
+				previous: getPartInstanceTimelineInfo(cache, currentTime, showStyle.sourceLayers, previousPartInstance),
 			}
 
 			// next (on pvw (or on pgm if first))

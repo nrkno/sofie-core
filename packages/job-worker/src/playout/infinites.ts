@@ -193,7 +193,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 
 		const nowInPart = getCurrentTime() - (currentPartInstance.timings?.startedPlayback ?? 0)
 		const prunedPieceInstances = processAndPrunePieceInstanceTimings(
-			showStyleBase,
+			showStyleBase.sourceLayers,
 			playingPieceInstances,
 			nowInPart,
 			undefined,

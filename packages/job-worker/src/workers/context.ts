@@ -1,5 +1,10 @@
 import { IDirectCollections } from '../db'
-import { JobContext, StudioCacheContext } from '../jobs'
+import {
+	DBShowStyleBaseWithProcessedLayers,
+	JobContext,
+	ShowStyleCompoundWithProcessedLayers,
+	StudioCacheContext,
+} from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import { WorkerDataCache } from './caches'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -36,6 +41,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { EventsJobFunc, getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 import { FastTrackTimelineFunc } from '../main'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export type QueueJobFunc = (queueName: string, jobName: string, jobData: unknown) => Promise<void>
 
@@ -69,9 +75,9 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		return this.cacheData.studioBlueprintConfig
 	}
 
-	async getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBase>>> {
+	async getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBaseWithProcessedLayers>>> {
 		const docsToLoad: ShowStyleBaseId[] = []
-		const loadedDocs: Array<ReadonlyDeep<DBShowStyleBase>> = []
+		const loadedDocs: Array<ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>> = []
 
 		// Figure out what is already cached, and what needs loading
 		for (const id of this.cacheData.studio.supportedShowStyleBase) {
@@ -97,7 +103,11 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 			// Now fill it in with the loaded docs
 			for (const doc0 of newDocs) {
 				// Freeze and cache it
-				const doc = deepFreeze(doc0)
+				const doc = deepFreeze<DBShowStyleBaseWithProcessedLayers>({
+					...doc0,
+					sourceLayers: applyAndValidateOverrides(doc0.sourceLayersWithOverrides).obj,
+					outputLayers: applyAndValidateOverrides(doc0.outputLayersWithOverrides).obj,
+				})
 				this.cacheData.showStyleBases.set(doc._id, doc ?? null)
 
 				// Add it to the result
@@ -108,7 +118,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		return loadedDocs
 	}
 
-	async getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBase>> {
+	async getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>> {
 		// Check if allowed
 		if (!this.cacheData.studio.supportedShowStyleBase.includes(id)) {
 			throw new Error(`ShowStyleBase "${id}" is not allowed in studio`)
@@ -117,11 +127,19 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		let doc = this.cacheData.showStyleBases.get(id)
 		if (doc === undefined) {
 			// Load the document
-			doc = await this.directCollections.ShowStyleBases.findOne(id)
+			const doc0 = await this.directCollections.ShowStyleBases.findOne(id)
 
 			// Freeze and cache it
-			doc = deepFreeze(doc)
-			this.cacheData.showStyleBases.set(id, doc ?? null)
+			if (doc0) {
+				doc = deepFreeze<DBShowStyleBaseWithProcessedLayers>({
+					...doc0,
+					sourceLayers: applyAndValidateOverrides(doc0.sourceLayersWithOverrides).obj,
+					outputLayers: applyAndValidateOverrides(doc0.outputLayersWithOverrides).obj,
+				})
+				this.cacheData.showStyleBases.set(id, doc)
+			} else {
+				this.cacheData.showStyleBases.set(id, null)
+			}
 		}
 
 		if (doc) {
@@ -205,7 +223,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 	async getShowStyleCompound(
 		variantId: ShowStyleVariantId,
 		baseId?: ShowStyleBaseId
-	): Promise<ReadonlyDeep<ShowStyleCompound>> {
+	): Promise<ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>> {
 		const [variant, base0] = await Promise.all([
 			this.getShowStyleVariant(variantId),
 			baseId ? this.getShowStyleBase(baseId) : null,
@@ -219,7 +237,11 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 			throw new Error(`Failed to compile ShowStyleCompound for base "${base._id}" and variant  "${variant._id}"`)
 		}
 
-		return compound
+		return {
+			...compound,
+			sourceLayers: base.sourceLayers,
+			outputLayers: base.outputLayers,
+		}
 	}
 
 	async getShowStyleBlueprint(id: ShowStyleBaseId): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>> {

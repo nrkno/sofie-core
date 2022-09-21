@@ -12,7 +12,7 @@ import { ApmSpan } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleBase, OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
@@ -48,6 +48,15 @@ export interface JobContext extends StudioCacheContext {
 	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void
 }
 
+export interface DBShowStyleBaseWithProcessedLayers extends DBShowStyleBase {
+	sourceLayers: SourceLayers
+	outputLayers: OutputLayers
+}
+export interface ShowStyleCompoundWithProcessedLayers extends ShowStyleCompound {
+	sourceLayers: SourceLayers
+	outputLayers: OutputLayers
+}
+
 export interface StudioCacheContext {
 	readonly directCollections: Readonly<IDirectCollections>
 
@@ -58,14 +67,14 @@ export interface StudioCacheContext {
 
 	getStudioBlueprintConfig(): ProcessedStudioConfig
 
-	getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBase>>>
-	getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBase>>
+	getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBaseWithProcessedLayers>>>
+	getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>>
 	getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<DBShowStyleVariant>>>
 	getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<DBShowStyleVariant>>
 	getShowStyleCompound(
 		variantId: ShowStyleVariantId,
 		baseId?: ShowStyleBaseId
-	): Promise<ReadonlyDeep<ShowStyleCompound>>
+	): Promise<ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>>
 
 	getShowStyleBlueprint(id: ShowStyleBaseId): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>>
 	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ShowStyleCompound>): ProcessedShowStyleConfig

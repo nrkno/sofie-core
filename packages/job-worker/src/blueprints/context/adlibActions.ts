@@ -15,7 +15,6 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../../logging'
@@ -31,7 +30,7 @@ import {
 	unprotectStringArray,
 } from '@sofie-automation/corelib/dist/protectedString'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
-import { JobContext } from '../../jobs'
+import { JobContext, ShowStyleCompoundWithProcessedLayers } from '../../jobs'
 import { MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
@@ -72,6 +71,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	private readonly _context: JobContext
 	private readonly _cache: CacheForPlayout
 	private readonly rundown: DBRundown
+	private readonly showStyleCompound2: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>
 	private readonly playlistActivationId: RundownPlaylistActivationId
 
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
@@ -85,7 +85,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		contextInfo: UserContextInfo,
 		context: JobContext,
 		cache: CacheForPlayout,
-		showStyle: ReadonlyDeep<ShowStyleCompound>,
+		showStyle: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
 		_showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: DBRundown,
 		watchedPackages: WatchedPackagesHelper
@@ -94,6 +94,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		this._context = context
 		this._cache = cache
 		this.rundown = rundown
+		this.showStyleCompound2 = showStyle
 		this.takeAfterExecute = false
 
 		if (!this._cache.Playlist.doc.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
@@ -146,7 +147,12 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			return []
 		}
 
-		const resolvedInstances = getResolvedPieces(this._context, this._cache, this.showStyleCompound, partInstance)
+		const resolvedInstances = getResolvedPieces(
+			this._context,
+			this._cache,
+			this.showStyleCompound2.sourceLayers,
+			partInstance
+		)
 		return resolvedInstances.map(convertResolvedPieceInstanceToBlueprints)
 	}
 
@@ -568,7 +574,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const stoppedIds = innerStopPieces(
 			this._context,
 			this._cache,
-			this.showStyleCompound,
+			this.showStyleCompound2.sourceLayers,
 			partInstance,
 			filter,
 			timeOffset

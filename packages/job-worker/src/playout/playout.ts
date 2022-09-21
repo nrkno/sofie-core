@@ -82,7 +82,6 @@ import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { INCORRECT_PLAYING_PART_DEBOUNCE, RESET_IGNORE_ERRORS } from './constants'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number): void {
@@ -614,7 +613,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 			// logger.info(o)
 			// logger.info(JSON.stringify(o, '', 2))
 
-			const allowedSourceLayers = applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj
+			const allowedSourceLayers = showStyleBase.sourceLayers
 
 			// logger.info('nowInPart', nowInPart)
 			// logger.info('filteredPieces', filteredPieces)
@@ -1255,7 +1254,7 @@ export async function stopPiecesOnSourceLayers(
 			const changedIds = innerStopPieces(
 				context,
 				cache,
-				showStyleBase,
+				showStyleBase.sourceLayers,
 				partInstance,
 				(pieceInstance) => sourceLayerIds.has(pieceInstance.piece.sourceLayerId),
 				undefined

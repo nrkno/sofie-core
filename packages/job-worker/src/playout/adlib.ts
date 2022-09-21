@@ -10,7 +10,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { assertNever, getRandomId, getRank, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
-import { JobContext } from '../jobs'
+import { DBShowStyleBaseWithProcessedLayers, JobContext } from '../jobs'
 import {
 	AdlibPieceStartProps,
 	StartStickyPieceOnSourceLayerProps,
@@ -44,10 +44,9 @@ import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-au
 import { PieceLifespan, IBlueprintDirectPlayType, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
-import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { executeActionInner } from './playout'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAsAdlibNowProps): Promise<void> {
 	return runJobWithPlayoutCache(
@@ -156,7 +155,7 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 async function pieceTakeNowAsAdlib(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	showStyleBase: ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>,
 	partInstance: DBPartInstance,
 	pieceToCopy: PieceInstancePiece,
 	pieceInstanceToCopy: PieceInstance | undefined
@@ -176,7 +175,7 @@ async function pieceTakeNowAsAdlib(
 	if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
 		// Ensure the piece being copied isnt currently live
 		if (pieceInstanceToCopy.startedPlayback && pieceInstanceToCopy.startedPlayback <= getCurrentTime()) {
-			const resolvedPieces = getResolvedPieces(context, cache, showStyleBase, partInstance)
+			const resolvedPieces = getResolvedPieces(context, cache, showStyleBase.sourceLayers, partInstance)
 			const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
 
 			if (
@@ -382,8 +381,7 @@ export async function startStickyPieceOnSourceLayer(
 			if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)
 
 			const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
-			const sourceLayers = applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj
-			const sourceLayer = sourceLayers[data.sourceLayerId]
+			const sourceLayer = showStyleBase.sourceLayers[data.sourceLayerId]
 			if (!sourceLayer) throw new Error(`Source layer "${data.sourceLayerId}" not found!`)
 
 			if (!sourceLayer.isSticky)
