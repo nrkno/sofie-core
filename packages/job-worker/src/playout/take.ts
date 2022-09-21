@@ -148,7 +148,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 		return p
 	})
 
-	cache.PartInstances.update(takePartInstance._id, (p) => {
+	cache.PartInstances.updateOne(takePartInstance._id, (p) => {
 		p.isTaken = true
 		if (!p.timings) p.timings = {}
 		p.timings.take = now
@@ -157,7 +157,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	})
 
 	if (cache.Playlist.doc.previousPartInstanceId) {
-		cache.PartInstances.update(cache.Playlist.doc.previousPartInstanceId, (p) => {
+		cache.PartInstances.updateOne(cache.Playlist.doc.previousPartInstanceId, (p) => {
 			if (!p.timings) p.timings = {}
 			p.timings.takeOut = now
 			return p
@@ -246,7 +246,7 @@ async function afterTakeUpdateTimingsAndEvents(
 
 	// todo: should this be changed back to Meteor.defer, at least for the blueprint stuff?
 	if (takePartInstance) {
-		cache.PartInstances.update(takePartInstance._id, (p) => {
+		cache.PartInstances.updateOne(takePartInstance._id, (p) => {
 			if (!p.timings) p.timings = {}
 			p.timings.takeDone = takeDoneTime
 			return p
@@ -388,7 +388,7 @@ export function updatePartInstanceOnTake(
 		partInstanceM.$set.previousPartEndState = previousPartEndState
 	}
 
-	cache.PartInstances.update(takePartInstance._id, partInstanceM)
+	cache.PartInstances.updateOne(takePartInstance._id, partInstanceM)
 }
 
 export async function afterTake(
@@ -448,7 +448,7 @@ function startHold(
 		if (!instance.infinite) {
 			const infiniteInstanceId: PieceInstanceInfiniteId = getRandomId()
 			// mark current one as infinite
-			cache.PieceInstances.update(instance._id, (p) => {
+			cache.PieceInstances.updateOne(instance._id, (p) => {
 				p.infinite = {
 					infiniteInstanceId: infiniteInstanceId,
 					infiniteInstanceIndex: 0,

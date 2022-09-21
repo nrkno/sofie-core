@@ -232,7 +232,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed
 	 * @returns All the ids that matched the selector
 	 */
-	update(selector: TDoc['_id'], modifier: (doc: TDoc) => TDoc | false, forceUpdate?: boolean): Array<TDoc['_id']> {
+	updateOne(selector: TDoc['_id'], modifier: (doc: TDoc) => TDoc | false, forceUpdate?: boolean): Array<TDoc['_id']> {
 		this.assertNotToBeRemoved('update')
 
 		const span = this.context.startSpan(`DBCache.update.${this.name}`)

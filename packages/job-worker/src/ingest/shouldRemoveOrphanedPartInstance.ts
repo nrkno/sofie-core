@@ -75,14 +75,14 @@ export async function shouldRemoveOrphanedPartInstance(
 		)
 	}
 	if (changed) {
-		cache.PartInstances.update(orphanedPartInstance._id, (p) => {
+		cache.PartInstances.updateOne(orphanedPartInstance._id, (p) => {
 			p.part.notes = notes
 			return p
 		})
 	}
 
 	if (shouldRemoveInstance && !isTooCloseToAutonext(playlistPartInstances.currentPartInstance)) {
-		cache.PartInstances.update(orphanedPartInstance._id, (p) => {
+		cache.PartInstances.updateOne(orphanedPartInstance._id, (p) => {
 			p.reset = true
 			return p
 		})

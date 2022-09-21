@@ -276,7 +276,7 @@ export async function setNextPart(
 		let newInstanceId: PartInstanceId
 		if (nextPartInfo.type === 'partinstance') {
 			newInstanceId = nextPartInfo.instance._id
-			cache.PartInstances.update(newInstanceId, (p) => {
+			cache.PartInstances.updateOne(newInstanceId, (p) => {
 				delete p.consumesNextSegmentId
 				return p
 			})
@@ -285,7 +285,7 @@ export async function setNextPart(
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
 			const consumesNextSegmentId = nextPartInfo.consumesNextSegmentId ?? false
-			cache.PartInstances.update(newInstanceId, (p) => {
+			cache.PartInstances.updateOne(newInstanceId, (p) => {
 				p.consumesNextSegmentId = consumesNextSegmentId
 				return p
 			})
@@ -666,7 +666,7 @@ export function onPartHasStoppedPlaying(
 	stoppedPlayingTime: Time
 ): void {
 	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
-		cache.PartInstances.update(partInstance._id, (p) => {
+		cache.PartInstances.updateOne(partInstance._id, (p) => {
 			if (!p.timings) p.timings = {}
 			p.timings.duration = stoppedPlayingTime - (p.timings.startedPlayback || 0)
 			return p
@@ -816,7 +816,7 @@ export function updateExpectedDurationWithPrerollForPartInstance(
 			pieceInstances.map((p) => p.piece)
 		)
 
-		cache.PartInstances.update(nextPartInstance._id, (doc) => {
+		cache.PartInstances.updateOne(nextPartInstance._id, (doc) => {
 			doc.part.expectedDurationWithPreroll = expectedDurationWithPreroll
 			return doc
 		})

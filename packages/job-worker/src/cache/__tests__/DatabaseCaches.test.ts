@@ -35,7 +35,7 @@ describe('DatabaseCaches', () => {
 					externalId: 'test',
 					expectedDurationWithPreroll: undefined,
 				})
-				cache.Parts.update(id, { $set: { title: 'Test2' } })
+				cache.Parts.updateOne(id, { $set: { title: 'Test2' } })
 
 				expect(cache.Parts.findOne(id)).toBeTruthy()
 				await expect(context.directCollections.Parts.findOne(id)).resolves.toBeFalsy()
@@ -68,7 +68,7 @@ describe('DatabaseCaches', () => {
 				expect(dbObj).toMatchObject({ title: 'Test2' })
 
 				// Update a document:
-				cache.Parts.update(
+				cache.Parts.updateOne(
 					{
 						title: 'Test2',
 					},
@@ -186,7 +186,7 @@ describe('DatabaseCaches', () => {
 				expect(deferAfterSaveFcn0).toHaveReturnedTimes(0)
 
 				// Update the document:
-				cache.Parts.update(id, { $set: { title: 'updated' } })
+				cache.Parts.updateOne(id, { $set: { title: 'updated' } })
 				// add new defered functions:
 				const deferFcn1 = jest.fn(async () => {
 					await expect(context.directCollections.Parts.findOne(id)).resolves.toMatchObject({
@@ -271,7 +271,7 @@ describe('DatabaseCaches', () => {
 						externalId: 'test',
 						expectedDurationWithPreroll: undefined,
 					})
-					cache.Parts.update(id, { $set: { title: 'insertthenupdate' } })
+					cache.Parts.updateOne(id, { $set: { title: 'insertthenupdate' } })
 
 					expect(cache.Parts.findOne(id)).toBeTruthy()
 					await expect(context.directCollections.Parts.findOne(id)).resolves.toBeFalsy()

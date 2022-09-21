@@ -58,7 +58,7 @@ export async function diffAndApplyChanges(
 
 	// Update segment ranks:
 	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
-		cache.Segments.update(getSegmentId(rundown._id, segmentExternalId), (s) => {
+		cache.Segments.updateOne(getSegmentId(rundown._id, segmentExternalId), (s) => {
 			s._rank = newRank
 			return s
 		})

@@ -350,7 +350,7 @@ function preserveOrphanedSegmentPositionInRundown(context: JobContext, cache: Ca
 						}
 					}
 				}
-				cache.Segments.update(orphanedSegment._id, (s) => {
+				cache.Segments.updateOne(orphanedSegment._id, (s) => {
 					s._rank = newRank
 					return s
 				})

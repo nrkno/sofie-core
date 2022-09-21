@@ -181,7 +181,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			trimmedPiece.content = omit(trimmedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
 		}
 
-		this._pieceInstanceCache.update(pieceInstance._id, (p) => {
+		this._pieceInstanceCache.updateOne(pieceInstance._id, (p) => {
 			if (timelineObjectsString !== undefined) p.piece.timelineObjectsString = timelineObjectsString
 
 			return {
@@ -220,7 +220,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			}
 		}
 
-		this._partInstanceCache.update(this.partInstance._id, update)
+		this._partInstanceCache.updateOne(this.partInstance._id, update)
 
 		const updatedPartInstance = this._partInstanceCache.findOne(this.partInstance._id)
 		if (!updatedPartInstance) {

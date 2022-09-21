@@ -352,7 +352,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		setupPieceInstanceInfiniteProperties(pieceInstance)
 
-		this._cache.PieceInstances.update(pieceInstance._id, (p) => {
+		this._cache.PieceInstances.updateOne(pieceInstance._id, (p) => {
 			if (timelineObjectsString !== undefined) p.piece.timelineObjectsString = timelineObjectsString
 
 			return {
@@ -485,7 +485,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 		}
 
-		this._cache.PartInstances.update(partInstance._id, update)
+		this._cache.PartInstances.updateOne(partInstance._id, update)
 
 		this.nextPartState = Math.max(
 			this.nextPartState,
@@ -558,7 +558,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		if (!partInstanceId) {
 			throw new Error('Cannot block take when there is no part playing')
 		}
-		this._cache.PartInstances.update(partInstanceId, (doc) => {
+		this._cache.PartInstances.updateOne(partInstanceId, (doc) => {
 			if (time) {
 				doc.blockTakeUntil = time
 			} else {

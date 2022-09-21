@@ -406,7 +406,7 @@ export async function handleUpdatedSegmentRanks(
 			const changedSegmentIds: SegmentId[] = []
 			for (const [externalId, rank] of Object.entries(data.newRanks)) {
 				const segmentId = getSegmentId(cache.RundownId, externalId)
-				const changed = cache.Segments.update(segmentId, (s) => {
+				const changed = cache.Segments.updateOne(segmentId, (s) => {
 					s._rank = rank
 					return s
 				})
@@ -477,7 +477,7 @@ export async function handleRemoveOrphanedSegemnts(
 				if (!changedHiddenSegments.includes(segmentId)) {
 					const segment = ingestCache.Segments.findOne(segmentId)
 					if (segment?.isHidden && segment.orphaned === SegmentOrphanedReason.HIDDEN) {
-						ingestCache.Segments.update(segmentId, (s) => {
+						ingestCache.Segments.updateOne(segmentId, (s) => {
 							delete s.orphaned
 							return s
 						})

@@ -199,7 +199,7 @@ export async function deactivateRundownPlaylistInner(
 	await setNextPart(context, cache, null)
 
 	if (currentPartInstance) {
-		cache.PartInstances.update(currentPartInstance._id, (p) => {
+		cache.PartInstances.updateOne(currentPartInstance._id, (p) => {
 			if (!p.timings) p.timings = {}
 			p.timings.takeOut = getCurrentTime()
 			return p

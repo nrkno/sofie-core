@@ -344,7 +344,7 @@ export async function CommitIngestOperation(
 							orphanHiddenSegmentIds.add(segmentId)
 						} else {
 							// We can hide it
-							ingestCache.Segments.update(segmentId, (s) => {
+							ingestCache.Segments.updateOne(segmentId, (s) => {
 								s.isHidden = true
 								delete s.orphaned
 								return s
@@ -359,7 +359,7 @@ export async function CommitIngestOperation(
 				removeSegmentContents(ingestCache, emptySegmentIds)
 				if (orphanDeletedSegmentIds.size) {
 					orphanDeletedSegmentIds.forEach((segmentId) => {
-						ingestCache.Segments.update(segmentId, (s) => {
+						ingestCache.Segments.updateOne(segmentId, (s) => {
 							s.orphaned = SegmentOrphanedReason.DELETED
 							return s
 						})
@@ -379,7 +379,7 @@ export async function CommitIngestOperation(
 						  )
 						: undefined
 					orphanHiddenSegmentIds.forEach((segmentId) => {
-						ingestCache.Segments.update(segmentId, (s) => {
+						ingestCache.Segments.updateOne(segmentId, (s) => {
 							return {
 								...s,
 								...oldSegments?.get(segmentId),

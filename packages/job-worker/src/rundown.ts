@@ -137,18 +137,18 @@ export function updatePartInstanceRanksAfterAdlib(cache: CacheForPlayout, segmen
 	const newRanks = calculateNewRanksForParts(segmentId, null, newParts, segmentPartInstances)
 	for (const [instanceId, info] of newRanks.entries()) {
 		if (info.deleted) {
-			cache.PartInstances.update(instanceId, (p) => {
+			cache.PartInstances.updateOne(instanceId, (p) => {
 				p.part._rank = info.rank
 				p.orphaned = 'deleted'
 				return p
 			})
 		} else if (info.deleted === undefined) {
-			cache.PartInstances.update(instanceId, (p) => {
+			cache.PartInstances.updateOne(instanceId, (p) => {
 				p.part._rank = info.rank
 				return p
 			})
 		} else {
-			cache.PartInstances.update(instanceId, (p) => {
+			cache.PartInstances.updateOne(instanceId, (p) => {
 				p.part._rank = info.rank
 				delete p.orphaned
 				return p
