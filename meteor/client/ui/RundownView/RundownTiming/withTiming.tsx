@@ -70,6 +70,10 @@ export function withTiming<IProps, IState>(
 			constructor(props, context) {
 				super(props, context)
 
+				this.configureOptions()
+			}
+
+			private configureOptions() {
 				if (typeof options === 'function') {
 					expandedOptions = {
 						...expandedOptions,

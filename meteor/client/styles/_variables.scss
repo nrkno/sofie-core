@@ -11,6 +11,9 @@ $inspector-shelf-tabs-height: 2.3em;
 
 $segment-header-height: 2.2em;
 $segment-group-controls-width: 120px;
+$segment-margin-y: 0.8em;
+$segment-margin-x: 0.75em;
+$segment-border-radius: 11px;
 
 $part-start-color: #a5a5a5;
 $segment-background-color: #000;
@@ -20,6 +23,8 @@ $hold-status-color: $liveline-timecode-color;
 
 $segment-storyboard-part-width: 166px;
 $segment-storyboard-thumbnail-height: 2.9rem;
+
+$portrait-mode-breakpoint: 35em;
 
 @function rem($pixels, $context: $browser-context) {
 	@return #{$pixels/$context}rem;

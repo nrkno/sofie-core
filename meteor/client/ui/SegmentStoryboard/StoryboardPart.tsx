@@ -84,7 +84,7 @@ export function StoryboardPart({
 		}
 
 		return ctx
-	}, [segment, part])
+	}, [segment, part, onContextMenu])
 
 	const highlightTimeout = useRef<number | null>(null)
 	const onHighlight = useCallback(

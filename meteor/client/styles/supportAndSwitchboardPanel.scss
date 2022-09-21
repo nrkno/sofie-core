@@ -2,9 +2,6 @@
 @import '_variables';
 
 .status-bar__controls__button.support__toggle-button {
-	position: fixed;
-	right: rem(5px);
-	bottom: rem(5px);
 	z-index: 310;
 	text-align: left;
 
@@ -35,7 +32,7 @@
 .support-pop-up-panel,
 .switchboard-pop-up-panel {
 	position: fixed;
-	bottom: rem(13px);
+	bottom: rem(8px);
 	right: -1px;
 	left: auto;
 	margin-right: rem(60px);
@@ -87,7 +84,6 @@
 }
 
 .switchboard-pop-up-panel {
-	bottom: 4.8rem;
 	top: auto;
 	z-index: -1;
 	white-space: nowrap;
