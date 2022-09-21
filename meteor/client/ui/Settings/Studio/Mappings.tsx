@@ -78,7 +78,7 @@ export const StudioMappings = withTranslation()(
 		}
 		removeLayer = (mappingId: string) => {
 			const unsetObject = {}
-			unsetObject['mappings.' + mappingId] = ''
+			unsetObject['mappingsWithOverrides.defaults.' + mappingId] = ''
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
 			})
@@ -87,11 +87,11 @@ export const StudioMappings = withTranslation()(
 			// find free key name
 			const newLayerKeyName = 'newLayer'
 			let iter = 0
-			while ((this.props.studio.mappings || {})[newLayerKeyName + iter.toString()]) {
+			while ((this.props.studio.mappingsWithOverrides.defaults || {})[newLayerKeyName + iter.toString()]) {
 				iter++
 			}
 			const setObject = {}
-			setObject['mappings.' + newLayerKeyName + iter.toString()] = {
+			setObject['mappingsWithOverrides.defaults.' + newLayerKeyName + iter.toString()] = {
 				device: TSR.DeviceType.CASPARCG,
 				deviceId: 'newDeviceId',
 			}
@@ -103,16 +103,16 @@ export const StudioMappings = withTranslation()(
 		updateLayerId = (edit: EditAttributeBase, newValue: string) => {
 			const oldLayerId = edit.props.overrideDisplayValue
 			const newLayerId = newValue + ''
-			const layer = this.props.studio.mappings[oldLayerId]
+			const layer = this.props.studio.mappingsWithOverrides.defaults[oldLayerId]
 
-			if (this.props.studio.mappings[newLayerId]) {
+			if (this.props.studio.mappingsWithOverrides.defaults[newLayerId]) {
 				throw new Meteor.Error(400, 'Layer "' + newLayerId + '" already exists')
 			}
 
 			const mSet = {}
 			const mUnset = {}
-			mSet['mappings.' + newLayerId] = layer
-			mUnset['mappings.' + oldLayerId] = 1
+			mSet['mappingsWithOverrides.defaults.' + newLayerId] = layer
+			mUnset['mappingsWithOverrides.defaults.' + oldLayerId] = 1
 
 			if (edit.props.collection) {
 				edit.props.collection.update(this.props.studio._id, {
@@ -159,7 +159,7 @@ export const StudioMappings = withTranslation()(
 
 			const activeRoutes = getActiveRoutes(this.props.studio)
 
-			return _.map(this.props.studio.mappings, (mapping: MappingExt, layerId: string) => {
+			return _.map(this.props.studio.mappingsWithOverrides.defaults, (mapping: MappingExt, layerId: string) => {
 				return (
 					<React.Fragment key={layerId}>
 						<tr
@@ -203,7 +203,7 @@ export const StudioMappings = withTranslation()(
 												{t('Layer ID')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'mappings'}
+													attribute={'mappingsWithOverrides.defaults'}
 													overrideDisplayValue={layerId}
 													obj={this.props.studio}
 													type="text"
@@ -219,7 +219,7 @@ export const StudioMappings = withTranslation()(
 												{t('Layer Name')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'mappings.' + layerId + '.layerName'}
+													attribute={'mappingsWithOverrides.defaults.' + layerId + '.layerName'}
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
@@ -233,7 +233,7 @@ export const StudioMappings = withTranslation()(
 												{t('Device Type')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'mappings.' + layerId + '.device'}
+													attribute={'mappingsWithOverrides.defaults.' + layerId + '.device'}
 													obj={this.props.studio}
 													type="dropdown"
 													options={TSR.DeviceType}
@@ -249,7 +249,7 @@ export const StudioMappings = withTranslation()(
 												{t('Device ID')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'mappings.' + layerId + '.deviceId'}
+													attribute={'mappingsWithOverrides.defaults.' + layerId + '.deviceId'}
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
@@ -265,7 +265,7 @@ export const StudioMappings = withTranslation()(
 												{t('Lookahead Mode')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'mappings.' + layerId + '.lookahead'}
+													attribute={'mappingsWithOverrides.defaults.' + layerId + '.lookahead'}
 													obj={this.props.studio}
 													type="dropdown"
 													options={LookaheadMode}
@@ -280,7 +280,7 @@ export const StudioMappings = withTranslation()(
 												{t('Lookahead Target Objects (Default = 1)')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'mappings.' + layerId + '.lookaheadDepth'}
+													attribute={'mappingsWithOverrides.defaults.' + layerId + '.lookaheadDepth'}
 													obj={this.props.studio}
 													type="int"
 													collection={Studios}
@@ -295,7 +295,7 @@ export const StudioMappings = withTranslation()(
 												})}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'mappings.' + layerId + '.lookaheadMaxSearchDistance'}
+													attribute={'mappingsWithOverrides.defaults.' + layerId + '.lookaheadMaxSearchDistance'}
 													obj={this.props.studio}
 													type="int"
 													collection={Studios}
@@ -306,7 +306,7 @@ export const StudioMappings = withTranslation()(
 										<DeviceMappingSettings
 											mapping={mapping}
 											studio={this.props.studio}
-											attribute={'mappings.' + layerId}
+											attribute={'mappingsWithOverrides.defaults.' + layerId}
 											manifest={manifest}
 										/>
 									</div>

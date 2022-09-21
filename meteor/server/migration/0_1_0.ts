@@ -9,6 +9,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariantId, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 /**
  * This file contains system specific migration steps.
@@ -63,8 +64,8 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					mediaPreviewsUrl: '',
 					sofieUrl: '',
 				},
-				mappings: {},
-				blueprintConfig: {},
+				mappingsWithOverrides: wrapDefaultObject({}),
+				blueprintConfigWithOverrides: wrapDefaultObject({}),
 				_rundownVersionHash: '',
 				routeSets: {},
 				routeSetExclusivityGroups: {},

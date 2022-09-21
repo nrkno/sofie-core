@@ -1,9 +1,7 @@
 import { BlueprintMapping, IBlueprintConfig, PackageContainer, TSR } from '@sofie-automation/blueprints-integration'
+import { ObjectWithOverrides } from '../settings/objectWithOverrides'
 import { ProtectedString } from '../protectedString'
 import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, PeripheralDeviceId } from './Ids'
-
-// TODO-SETTINGS HACK
-export type DBStudioHack = Omit<DBStudio, 'mappings' | 'blueprintConfig'>
 
 export interface MappingsExt {
 	[layerName: string]: MappingExt
@@ -66,7 +64,7 @@ export interface DBStudio {
 	blueprintId?: BlueprintId
 
 	/** Mappings between the physical devices / outputs and logical ones */
-	mappings: MappingsExt
+	mappingsWithOverrides: ObjectWithOverrides<MappingsExt>
 
 	/**
 	 * A hash that is to be changed whenever there is a change to the mappings or routeSets
@@ -78,7 +76,7 @@ export interface DBStudio {
 	supportedShowStyleBase: Array<ShowStyleBaseId>
 
 	/** Config values are used by the Blueprints */
-	blueprintConfig: IBlueprintConfig
+	blueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
 
 	settings: IStudioSettings
 

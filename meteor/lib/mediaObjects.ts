@@ -11,12 +11,13 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
 import * as i18next from 'i18next'
-import { IStudioSettings, routeExpectedPackages, Studio } from './collections/Studios'
+import { IStudioSettings, MappingsExt, routeExpectedPackages, Studio } from './collections/Studios'
 import { PackageInfos } from './collections/PackageInfos'
 import { assertNever, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
 import { getExpectedPackageId } from './collections/ExpectedPackages'
 import { PieceGeneric, PieceStatusCode } from './collections/Pieces'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -171,7 +172,8 @@ export interface ScanInfoForPackage {
 export function checkPieceContentStatus(
 	piece: Pick<PieceGeneric, '_id' | 'name' | 'content' | 'expectedPackages'>,
 	sourceLayer: ISourceLayer | undefined,
-	studio: Studio | undefined,
+	studio: Pick<Studio, '_id' | 'settings' | 'routeSets' | 'packageContainers'> | undefined,
+	studioMappings: ReadonlyDeep<MappingsExt>,
 	t?: i18next.TFunction
 ): {
 	status: PieceStatusCode.OK | PieceStatusCode.UNKNOWN
@@ -206,7 +208,7 @@ export function checkPieceContentStatus(
 
 			if (piece.expectedPackages.length) {
 				// Route the mappings
-				const routedMappingsWithPackages = routeExpectedPackages(studio, piece.expectedPackages)
+				const routedMappingsWithPackages = routeExpectedPackages(studio, studioMappings, piece.expectedPackages)
 
 				const checkedPackageContainers: { [containerId: string]: true } = {}
 

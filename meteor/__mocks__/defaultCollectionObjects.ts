@@ -11,6 +11,7 @@ import { IBlueprintPieceType, PieceLifespan } from '@sofie-automation/blueprints
 import { PieceId, Piece, PieceStatusCode, EmptyPieceTimelineObjectsBlob } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
 import { getRundownId } from '../server/api/ingest/lib'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): DBRundownPlaylist {
 	return {
@@ -80,9 +81,9 @@ export function defaultStudio(_id: StudioId): DBStudio {
 
 		name: 'mockStudio',
 		organizationId: null,
-		mappings: {},
+		mappingsWithOverrides: wrapDefaultObject({}),
 		supportedShowStyleBase: [],
-		blueprintConfig: {},
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		settings: {
 			frameRate: 25,
 			mediaPreviewsUrl: '',

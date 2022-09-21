@@ -128,7 +128,8 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 						const { metadata, packageInfos, status, contentDuration, message } = checkPieceContentStatus(
 							WithMediaObjectStatusHOCComponent.unwrapPieceInstance(piece!),
 							piece.sourceLayer || layer,
-							studio
+							studio,
+							studio.mappingsWithOverrides.defaults
 						)
 						if (RundownUtils.isAdLibPieceOrAdLibListItem(piece!)) {
 							if (status !== piece.status || metadata || packageInfos) {

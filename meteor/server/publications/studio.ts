@@ -34,6 +34,7 @@ import { PackageInfos } from '../../lib/collections/PackageInfos'
 import { PackageContainerStatuses } from '../../lib/collections/PackageContainerStatus'
 import { literal } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 meteorPublish(PubSub.studios, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)
@@ -224,7 +225,8 @@ async function manipulateMappingsPublicationData(
 	if (!studio) return []
 
 	const routes = getActiveRoutes(studio)
-	const routedMappings = getRoutedMappings(studio.mappings, routes)
+	const rawMappings = applyAndValidateOverrides(studio.mappingsWithOverrides)
+	const routedMappings = getRoutedMappings(rawMappings.obj, routes)
 
 	return [
 		literal<RoutedMappings>({

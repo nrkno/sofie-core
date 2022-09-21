@@ -26,8 +26,8 @@ export type BlueprintLight = Omit<Blueprint, 'code'>
 export async function fetchStudioLight(studioId: StudioId): Promise<StudioLight | undefined> {
 	return Studios.findOneAsync(studioId, {
 		fields: {
-			mappings: 0,
-			blueprintConfig: 0,
+			mappingsWithOverrides: 0,
+			blueprintConfigWithOverrides: 0,
 		},
 	})
 }

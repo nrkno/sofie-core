@@ -9,6 +9,7 @@ import {
 	objectPathGet,
 	objectPathSet,
 	omit,
+	clone,
 } from '../../../lib/lib'
 import { Studios, Studio, DBStudio } from '../../../lib/collections/Studios'
 import {
@@ -141,12 +142,12 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 	getMapping(mappingId: string): BlueprintMapping | undefined {
 		check(mappingId, String)
-		const mapping = this.studio.mappings[mappingId]
-		if (mapping) return unprotectObject(_.clone(mapping))
+		const mapping = this.studio.mappingsWithOverrides.defaults[mappingId]
+		if (mapping) return unprotectObject(clone(mapping))
 	}
 	insertMapping(mappingId: string, mapping: OmitId<BlueprintMapping>): string {
 		check(mappingId, String)
-		if (this.studio.mappings[mappingId]) {
+		if (this.studio.mappingsWithOverrides.defaults[mappingId]) {
 			throw new Meteor.Error(404, `Mapping "${mappingId}" cannot be inserted as it already exists`)
 		}
 		if (!mappingId) {
@@ -154,38 +155,41 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		}
 
 		const m: any = {}
-		m['mappings.' + mappingId] = mapping
+		m['mappingsWithOverrides.defaults.' + mappingId] = mapping
 		Studios.update(this.studio._id, { $set: m })
-		this.studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
+		this.studio.mappingsWithOverrides.defaults[mappingId] = m['mappingsWithOverrides.defaults.' + mappingId] // Update local
 		return mappingId
 	}
 	updateMapping(mappingId: string, mapping: Partial<BlueprintMapping>): void {
 		check(mappingId, String)
-		if (!this.studio.mappings[mappingId]) {
+		if (!this.studio.mappingsWithOverrides.defaults[mappingId]) {
 			throw new Meteor.Error(404, `Mapping "${mappingId}" cannot be updated as it does not exist`)
 		}
 
 		if (mappingId) {
 			const m: any = {}
-			m['mappings.' + mappingId] = _.extend(this.studio.mappings[mappingId], mapping)
+			m['mappingsWithOverrides.defaults.' + mappingId] = _.extend(
+				this.studio.mappingsWithOverrides.defaults[mappingId],
+				mapping
+			)
 			Studios.update(this.studio._id, { $set: m })
-			this.studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
+			this.studio.mappingsWithOverrides.defaults[mappingId] = m['mappingsWithOverrides.defaults.' + mappingId] // Update local
 		}
 	}
 	removeMapping(mappingId: string): void {
 		check(mappingId, String)
 		if (mappingId) {
 			const m: any = {}
-			m['mappings.' + mappingId] = 1
+			m['mappingsWithOverrides.defaults.' + mappingId] = 1
 			Studios.update(this.studio._id, { $unset: m })
-			delete this.studio.mappings[mappingId] // Update local
+			delete this.studio.mappingsWithOverrides.defaults[mappingId] // Update local
 		}
 	}
 
 	getConfig(configId: string): ConfigItemValue | undefined {
 		check(configId, String)
 		if (configId === '') return undefined
-		const configItem = objectPathGet(this.studio.blueprintConfig, configId)
+		const configItem = objectPathGet(this.studio.blueprintConfigWithOverrides.defaults, configId)
 		return trimIfString(configItem)
 	}
 	setConfig(configId: string, value: ConfigItemValue): void {
@@ -200,17 +204,17 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		if (value === undefined) {
 			modifier = {
 				$unset: {
-					[`blueprintConfig.${configId}`]: 1,
+					[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
 				},
 			}
-			objectPath.del(this.studio.blueprintConfig, configId) // Update local
+			objectPath.del(this.studio.blueprintConfigWithOverrides.defaults, configId) // Update local
 		} else {
 			modifier = {
 				$set: {
-					[`blueprintConfig.${configId}`]: value,
+					[`blueprintConfigWithOverrides.defaults.${configId}`]: value,
 				},
 			}
-			objectPathSet(this.studio.blueprintConfig, configId, value) // Update local
+			objectPathSet(this.studio.blueprintConfigWithOverrides.defaults, configId, value) // Update local
 		}
 		Studios.update(
 			{
@@ -229,12 +233,12 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 				},
 				{
 					$unset: {
-						[`blueprintConfig.${configId}`]: 1,
+						[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
 					},
 				}
 			)
 			// Update local:
-			objectPath.del(this.studio.blueprintConfig, configId)
+			objectPath.del(this.studio.blueprintConfigWithOverrides.defaults, configId)
 		}
 	}
 

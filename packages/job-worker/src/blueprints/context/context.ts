@@ -26,7 +26,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
-import { DBStudioHack } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBStudio, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	protectString,
 	protectStringArray,
@@ -66,6 +66,7 @@ import { JobContext } from '../../jobs'
 import { MongoQuery } from '../../db'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints, convertSegmentToBlueprints } from './lib'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -134,9 +135,11 @@ export class CommonContext implements ICommonContext {
 /** Studio */
 
 export class StudioContext extends CommonContext implements IStudioContext {
+	#processedMappings: ReadonlyDeep<MappingsExt> | undefined
+
 	constructor(
 		contextInfo: ContextInfo,
-		public readonly studio: ReadonlyDeep<DBStudioHack>,
+		public readonly studio: ReadonlyDeep<DBStudio>,
 		public readonly studioBlueprintConfig: ProcessedStudioConfig
 	) {
 		super(contextInfo)
@@ -157,8 +160,11 @@ export class StudioContext extends CommonContext implements IStudioContext {
 		return getStudioConfigRef(this.studio._id, configKey)
 	}
 	getStudioMappings(): Readonly<BlueprintMappings> {
-		return this.studio.mappings
+		if (!this.#processedMappings) {
+			this.#processedMappings = applyAndValidateOverrides(this.studio.mappingsWithOverrides).obj
+		}
 		// @ts-expect-error ProtectedString deviceId not compatible with string
+		return this.#processedMappings
 	}
 }
 
@@ -211,7 +217,7 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 
 	constructor(
 		contextInfo: UserContextInfo,
-		studio: ReadonlyDeep<DBStudioHack>,
+		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig
 	) {
 		super(contextInfo, studio, studioBlueprintConfig)
@@ -247,7 +253,7 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 export class ShowStyleContext extends StudioContext implements IShowStyleContext {
 	constructor(
 		contextInfo: ContextInfo,
-		studio: ReadonlyDeep<DBStudioHack>,
+		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		public readonly showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		public readonly showStyleBlueprintConfig: ProcessedShowStyleConfig
@@ -414,7 +420,7 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 
 	constructor(
 		contextInfo: ContextInfo,
-		studio: ReadonlyDeep<DBStudioHack>,
+		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
@@ -454,7 +460,7 @@ export class RundownUserContext extends RundownContext implements IRundownUserCo
 
 export class RundownEventContext extends RundownContext implements IEventContext {
 	constructor(
-		studio: ReadonlyDeep<DBStudioHack>,
+		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
@@ -561,7 +567,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 
 	constructor(
 		eventName: string,
-		studio: ReadonlyDeep<DBStudioHack>,
+		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
@@ -614,7 +620,7 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 	}
 
 	constructor(
-		studio: ReadonlyDeep<DBStudioHack>,
+		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,

@@ -23,6 +23,7 @@ import { checkPieceContentStatus } from '../../lib/mediaObjects'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 	const rundowns = await Rundowns.findFetchAsync({
@@ -63,6 +64,8 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 				const partMap = normalizeArrayToMap(parts, '_id')
 				const segmentsMap = normalizeArrayToMap(await pSegments, '_id')
 
+				const studioMappings = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
+
 				const pieceStatus = pieces.map(async (piece) =>
 					makePromise(() => {
 						// run these in parallel. checkPieceContentStatus does some db ops
@@ -71,7 +74,12 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 						const segment = part ? segmentsMap.get(part.segmentId) : undefined
 						if (segment && sourceLayer && part) {
 							// we don't want this to be in a non-reactive context, so we manage this computation manually
-							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
+							const { status, message } = checkPieceContentStatus(
+								piece,
+								sourceLayer,
+								studio,
+								studioMappings
+							)
 							if (
 								status !== PieceStatusCode.OK &&
 								status !== PieceStatusCode.UNKNOWN &&

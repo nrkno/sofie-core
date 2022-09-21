@@ -17,6 +17,7 @@ import { CommonContext } from './context'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { StudioCacheContext } from '../jobs'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
@@ -94,11 +95,13 @@ export function preprocessStudioConfig(
 	studio: ReadonlyDeep<DBStudio>,
 	blueprint: ReadonlyDeep<StudioBlueprintManifest>
 ): ProcessedStudioConfig {
+	const rawBlueprintConfig = applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
+
 	let res: any = {}
 	if (blueprint.studioConfigManifest !== undefined) {
-		applyToConfig(res, blueprint.studioConfigManifest, studio.blueprintConfig, `Studio ${studio._id}`)
+		applyToConfig(res, blueprint.studioConfigManifest, rawBlueprintConfig, `Studio ${studio._id}`)
 	} else {
-		res = studio.blueprintConfig
+		res = rawBlueprintConfig
 	}
 
 	// Expose special values as defined in the studio

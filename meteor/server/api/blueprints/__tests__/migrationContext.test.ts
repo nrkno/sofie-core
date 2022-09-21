@@ -50,7 +50,7 @@ describe('Test blueprint migrationContext', () => {
 			function getMappingFromDb(studio: Studio, mappingId: string): MappingExt | undefined {
 				const studio2 = Studios.findOne(studio._id) as Studio
 				expect(studio2).toBeTruthy()
-				return studio2.mappings[mappingId]
+				return studio2.mappingsWithOverrides.defaults[mappingId]
 			}
 
 			testInFiber('getMapping: no id', () => {
@@ -71,14 +71,14 @@ describe('Test blueprint migrationContext', () => {
 					deviceId: protectString('dev1'),
 					lookahead: LookaheadMode.NONE,
 				}
-				studio.mappings['mapping1'] = rawMapping
+				studio.mappingsWithOverrides.defaults['mapping1'] = rawMapping
 
 				const mapping = ctx.getMapping('mapping1') as BlueprintMapping
 				expect(mapping).toEqual(rawMapping)
 
 				// Ensure it is a copy
 				mapping.deviceId = 'changed'
-				expect(mapping).not.toEqual(studio.mappings['mapping1'])
+				expect(mapping).not.toEqual(studio.mappingsWithOverrides.defaults['mapping1'])
 			})
 
 			testInFiber('insertMapping: good', () => {
@@ -242,7 +242,7 @@ describe('Test blueprint migrationContext', () => {
 			function getAllConfigFromDb(studio: Studio): IBlueprintConfig {
 				const studio2 = Studios.findOne(studio._id) as Studio
 				expect(studio2).toBeTruthy()
-				return studio2.blueprintConfig
+				return studio2.blueprintConfigWithOverrides.defaults
 			}
 
 			testInFiber('getConfig: no id', () => {
@@ -259,28 +259,28 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 
-				studio.blueprintConfig['conf1'] = 5
+				studio.blueprintConfigWithOverrides.defaults['conf1'] = 5
 				expect(ctx.getConfig('conf1')).toEqual(5)
 
-				studio.blueprintConfig['conf2'] = '   af '
+				studio.blueprintConfigWithOverrides.defaults['conf2'] = '   af '
 				expect(ctx.getConfig('conf2')).toEqual('af')
 			})
 
 			testInFiber('setConfig: no id', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 
 				expect(() => ctx.setConfig('', 34)).toThrow(`[500] Config id "" is invalid`)
 
 				// Config should not have changed
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('setConfig: insert', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('conf1')).toBeFalsy()
 
 				ctx.setConfig('conf1', 34)
@@ -293,13 +293,13 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should have changed
 				initialConfig[expectedItem._id] = expectedItem.value
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('setConfig: insert undefined', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('confUndef')).toBeFalsy()
 
 				ctx.setConfig('confUndef', undefined as any)
@@ -312,14 +312,14 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should have changed
 				initialConfig[expectedItem._id] = expectedItem.value
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 
 			testInFiber('setConfig: update', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('conf1')).toBeTruthy()
 
 				ctx.setConfig('conf1', 'hello')
@@ -332,13 +332,13 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should have changed
 				initialConfig[expectedItem._id] = expectedItem.value
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('setConfig: update undefined', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('conf1')).toBeTruthy()
 
 				ctx.setConfig('conf1', undefined as any)
@@ -351,7 +351,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should have changed
 				initialConfig[expectedItem._id] = expectedItem.value
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 
@@ -359,20 +359,20 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				ctx.setConfig('conf1', true)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('conf1')).toBeTruthy()
 
 				// Should not error
 				ctx.removeConfig('')
 
 				// Config should not have changed
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('removeConfig: missing', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('conf1')).toBeTruthy()
 				expect(ctx.getConfig('fake_conf')).toBeFalsy()
 
@@ -380,13 +380,13 @@ describe('Test blueprint migrationContext', () => {
 				ctx.removeConfig('fake_conf')
 
 				// Config should not have changed
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('removeConfig: good', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('conf1')).toBeTruthy()
 
 				// Should not error
@@ -394,7 +394,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should have changed
 				delete initialConfig['conf1']
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 		})

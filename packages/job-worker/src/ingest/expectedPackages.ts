@@ -45,7 +45,7 @@ import {
 } from './expectedPlayoutItems'
 import { JobContext } from '../jobs'
 import { CacheForIngest } from './cache'
-import { DBStudioHack } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export async function updateExpectedPackagesOnRundown(context: JobContext, cache: CacheForIngest): Promise<void> {
 	// @todo: this call is for backwards compatibility and soon to be removed
@@ -162,7 +162,7 @@ export async function updateExpectedPackagesOnRundown(context: JobContext, cache
 // 	return packages
 // }
 function generateExpectedPackagesForPiece(
-	studio: ReadonlyDeep<DBStudioHack>,
+	studio: ReadonlyDeep<DBStudio>,
 	rundownId: RundownId,
 	partToSegmentIdMap: Map<PartId, SegmentId>,
 	pieces: (Piece | AdLibPiece)[],
@@ -190,7 +190,7 @@ function generateExpectedPackagesForPiece(
 	return packages
 }
 function generateExpectedPackagesForBaselineAdlibPiece(
-	studio: ReadonlyDeep<DBStudioHack>,
+	studio: ReadonlyDeep<DBStudio>,
 	rundownId: RundownId,
 	pieces: RundownBaselineAdLibItem[]
 ) {
@@ -211,7 +211,7 @@ function generateExpectedPackagesForBaselineAdlibPiece(
 	return packages
 }
 function generateExpectedPackagesForAdlibAction(
-	studio: ReadonlyDeep<DBStudioHack>,
+	studio: ReadonlyDeep<DBStudio>,
 	rundownId: RundownId,
 	partToSegmentIdMap: Map<PartId, SegmentId>,
 	actions: AdLibAction[]
@@ -237,7 +237,7 @@ function generateExpectedPackagesForAdlibAction(
 	return packages
 }
 function generateExpectedPackagesForBaselineAdlibAction(
-	studio: ReadonlyDeep<DBStudioHack>,
+	studio: ReadonlyDeep<DBStudio>,
 	rundownId: RundownId,
 	actions: RundownBaselineAdLibAction[]
 ) {
@@ -257,7 +257,7 @@ function generateExpectedPackagesForBaselineAdlibAction(
 	}
 	return packages
 }
-function generateExpectedPackagesForBucketAdlib(studio: ReadonlyDeep<DBStudioHack>, adlibs: BucketAdLib[]) {
+function generateExpectedPackagesForBucketAdlib(studio: ReadonlyDeep<DBStudio>, adlibs: BucketAdLib[]) {
 	const packages: ExpectedPackageDBFromBucketAdLib[] = []
 	for (const adlib of adlibs) {
 		if (adlib.expectedPackages) {
@@ -275,7 +275,7 @@ function generateExpectedPackagesForBucketAdlib(studio: ReadonlyDeep<DBStudioHac
 	return packages
 }
 function generateExpectedPackagesForBucketAdlibAction(
-	studio: ReadonlyDeep<DBStudioHack>,
+	studio: ReadonlyDeep<DBStudio>,
 	adlibActions: BucketAdLibAction[]
 ) {
 	const packages: ExpectedPackageDBFromBucketAdLibAction[] = []
@@ -295,7 +295,7 @@ function generateExpectedPackagesForBucketAdlibAction(
 	return packages
 }
 function generateExpectedPackageBases(
-	studio: ReadonlyDeep<DBStudioHack>,
+	studio: ReadonlyDeep<DBStudio>,
 	ownerId:
 		| PieceId
 		| AdLibActionId

@@ -27,6 +27,7 @@ import { generateExpectedPackagesForPartInstance } from '../api/ingest/expectedP
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { StudioLight } from '../../lib/collections/optimizations'
 import { ReadonlyDeep } from 'type-fest'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId
@@ -185,9 +186,11 @@ async function manipulateExpectedPackagesPublicationData(
 	}
 	const studio: Studio = state.studio
 
+	const studioMappings = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
+
 	if (invalidateRoutedExpectedPackages) {
 		// Map the expectedPackages onto their specified layer:
-		const routedMappingsWithPackages = routeExpectedPackages(studio, state.expectedPackages)
+		const routedMappingsWithPackages = routeExpectedPackages(studio, studioMappings, state.expectedPackages)
 
 		if (state.expectedPackages.length && !Object.keys(routedMappingsWithPackages).length) {
 			logger.info(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
@@ -219,8 +222,16 @@ async function manipulateExpectedPackagesPublicationData(
 			: []
 
 		// Map the expectedPackages onto their specified layer:
-		const currentRoutedMappingsWithPackages = routeExpectedPackages(studio, playoutCurrentExpectedPackages)
-		const nextRoutedMappingsWithPackages = routeExpectedPackages(studio, playoutNextExpectedPackages)
+		const currentRoutedMappingsWithPackages = routeExpectedPackages(
+			studio,
+			studioMappings,
+			playoutCurrentExpectedPackages
+		)
+		const nextRoutedMappingsWithPackages = routeExpectedPackages(
+			studio,
+			studioMappings,
+			playoutNextExpectedPackages
+		)
 
 		if (
 			state.currentPartInstance &&

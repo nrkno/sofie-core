@@ -575,7 +575,12 @@ class RundownViewNotifier extends WithManagedTracker {
 
 							if (!this.subscriptionsReady()) return
 
-							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
+							const { status, message } = checkPieceContentStatus(
+								piece,
+								sourceLayer,
+								studio,
+								studio.mappingsWithOverrides.defaults
+							)
 							if (status !== PieceStatusCode.UNKNOWN || message) {
 								localStatus.push({
 									name: piece.name,

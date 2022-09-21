@@ -37,7 +37,7 @@ export function getMinimumReactivePieceNotesForPart(
 
 		if (sourceLayerMap && piece.sourceLayerId && sourceLayerMap[piece.sourceLayerId]) {
 			const sourceLayer = sourceLayerMap[piece.sourceLayerId]
-			const st = checkPieceContentStatus(piece, sourceLayer, studio)
+			const st = checkPieceContentStatus(piece, sourceLayer, studio, studio.mappingsWithOverrides.defaults)
 			if (st.status !== PieceStatusCode.OK && st.status !== PieceStatusCode.UNKNOWN && !getIgnorePieceContentStatus()) {
 				notes.push({
 					type: getNoteSeverityForPieceStatus(st.status) || NoteSeverity.WARNING,

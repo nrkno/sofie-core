@@ -19,6 +19,7 @@ import { ShowStyleVariantsSettings } from './ShowStyle/VariantSettings'
 import { ShowStyleGenericProperties } from './ShowStyle/Generic'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 interface IProps {
 	match: {
@@ -99,7 +100,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		getLayerMappingsFlat() {
 			const mappings: { [key: string]: MappingsExt } = {}
 			_.each(this.props.compatibleStudios, (studio) => {
-				mappings[studio.name] = studio.mappings
+				mappings[studio.name] = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
 			})
 			return mappings
 		}

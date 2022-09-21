@@ -26,6 +26,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed
@@ -161,11 +162,14 @@ describe('Migrations', () => {
 							sofieUrl: '',
 							frameRate: 25,
 						},
-						mappings: {},
-						// @ts-ignore
-						config: [],
+						mappingsWithOverrides: wrapDefaultObject({}),
+						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
 						routeSets: {},
+						routeSetExclusivityGroups: {},
+						packageContainers: {},
+						previewContainerIds: [],
+						thumbnailContainerIds: [],
 					})
 				},
 			},
@@ -189,11 +193,14 @@ describe('Migrations', () => {
 							sofieUrl: '',
 							frameRate: 25,
 						},
-						mappings: {},
-						// @ts-ignore
-						config: [],
+						mappingsWithOverrides: wrapDefaultObject({}),
+						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
 						routeSets: {},
+						routeSetExclusivityGroups: {},
+						packageContainers: {},
+						previewContainerIds: [],
+						thumbnailContainerIds: [],
 					})
 				},
 			},
@@ -217,11 +224,14 @@ describe('Migrations', () => {
 							sofieUrl: '',
 							frameRate: 25,
 						},
-						mappings: {},
-						// @ts-ignore
-						config: [],
+						mappingsWithOverrides: wrapDefaultObject({}),
+						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
 						routeSets: {},
+						routeSetExclusivityGroups: {},
+						packageContainers: {},
+						previewContainerIds: [],
+						thumbnailContainerIds: [],
 					})
 				},
 			},

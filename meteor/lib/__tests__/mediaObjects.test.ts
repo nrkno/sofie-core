@@ -19,6 +19,7 @@ import {
 import { IStudioSettings, Studio } from '../collections/Studios'
 import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
 import { EmptyPieceTimelineObjectsBlob, PieceGeneric, PieceStatusCode } from '../collections/Pieces'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 describe('lib/mediaObjects', () => {
 	testInFiber('buildFormatString', () => {
@@ -169,6 +170,8 @@ describe('lib/mediaObjects', () => {
 			...defaultStudio(protectString('studio0')),
 			settings: mockStudioSettings,
 		}
+
+		const mockStudioMappings = applyAndValidateOverrides(mockStudio.mappingsWithOverrides).obj
 
 		MediaObjects.insert(
 			literal<MediaObject>({
@@ -356,15 +359,15 @@ describe('lib/mediaObjects', () => {
 			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
 
-		const status1 = checkPieceContentStatus(piece1, sourcelayer1, mockStudio)
+		const status1 = checkPieceContentStatus(piece1, sourcelayer1, mockStudio, mockStudioMappings)
 		expect(status1.status).toEqual(PieceStatusCode.OK)
 		expect(status1.message).toBeFalsy()
 
-		const status2 = checkPieceContentStatus(piece2, sourcelayer1, mockStudio)
+		const status2 = checkPieceContentStatus(piece2, sourcelayer1, mockStudio, mockStudioMappings)
 		expect(status2.status).toEqual(PieceStatusCode.SOURCE_BROKEN)
 		expect(status2.message).toContain('has the wrong format:')
 
-		const status3 = checkPieceContentStatus(piece3, sourcelayer1, mockStudio)
+		const status3 = checkPieceContentStatus(piece3, sourcelayer1, mockStudio, mockStudioMappings)
 		expect(status3.status).toEqual(PieceStatusCode.SOURCE_MISSING)
 		expect(status3.message).toContain('is not yet ready on the playout system')
 	})

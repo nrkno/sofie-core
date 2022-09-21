@@ -27,6 +27,7 @@ import {
 } from './lib'
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { Studio, Studios } from '../../lib/collections/Studios'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */
@@ -228,8 +229,9 @@ export namespace ClientRundownAPI {
 				}
 			})
 
+		const studioBlueprintConfig = applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
 		return {
-			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studio.blueprintConfig),
+			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studioBlueprintConfig),
 			showStyles: showStyleWarnings,
 		}
 	}

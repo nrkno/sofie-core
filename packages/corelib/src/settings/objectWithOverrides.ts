@@ -1,4 +1,5 @@
 import objectPath = require('object-path')
+import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
 import { assertNever, clone } from '../lib'
 
@@ -44,12 +45,21 @@ function getParentObjectPath(path: string): string | undefined {
 	return path.substring(0, lastIndex)
 }
 
+export function wrapDefaultObject<T extends object>(obj: T): ObjectWithOverrides<T> {
+	return {
+		defaults: obj,
+		overrides: [],
+	}
+}
+
 /**
  * Combine the ObjectWithOverrides to give the simplified object.
  * Also performs validation of the overrides, and classifies them
  * Note: No validation is done to make sure the type conforms to the typescript definition. It is assumed that the definitions which drive ui ensure that they dont violate the typings, and that any changes will be backwards compatible with old overrides
  */
-export function applyAndValidateOverrides<T extends object>(obj: ObjectWithOverrides<T>): ApplyOverridesResult<T> {
+export function applyAndValidateOverrides<T extends object>(
+	obj: ReadonlyDeep<ObjectWithOverrides<T>>
+): ApplyOverridesResult<T> {
 	const result: ApplyOverridesResult<T> = {
 		obj: clone(obj.defaults),
 		preserve: [],
