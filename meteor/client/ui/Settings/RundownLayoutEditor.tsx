@@ -138,6 +138,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						default: false,
 						nextInCurrentPart: false,
 						oneNextPerSourceLayer: false,
+						disableHoverInspector: false,
 					}),
 				},
 			})
