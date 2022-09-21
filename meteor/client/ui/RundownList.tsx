@@ -16,14 +16,15 @@ import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/Rundown
 import {
 	RundownPlaylist,
 	RundownPlaylistCollectionUtil,
+	RundownPlaylistId,
 	RundownPlaylists,
 } from '../../lib/collections/RundownPlaylists'
 import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { Studios } from '../../lib/collections/Studios'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBaseId, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariantId, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { extendMandadory, unprotectString } from '../../lib/lib'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
@@ -102,7 +103,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 	const showStyleBases = ShowStyleBases.find().fetch()
 	const showStyleVariants = ShowStyleVariants.find().fetch()
 	const rundownLayouts = RundownLayouts.find({
-		$or: [{ exposeAsSelectableLayout: true }, { exposeAsShelf: true }],
+		$or: [{ exposeAsSelectableLayout: true }, { exposeAsStandalone: true }],
 	}).fetch()
 
 	return {
@@ -110,7 +111,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 		rundownPlaylists: RundownPlaylists.find({}, { sort: { created: -1 } })
 			.fetch()
 			.map((playlist: RundownPlaylist) => {
-				const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
+				const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 
 				const airStatuses: string[] = []
 				const statuses: string[] = []
@@ -193,17 +194,17 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 				this.subscribe(PubSub.rundownLayouts, {})
 
 				this.autorun(() => {
-					const showStyleBaseIds: Set<string> = new Set()
-					const showStyleVariantIds: Set<string> = new Set()
-					const playlistIds: Set<string> = new Set(
+					const showStyleBaseIds: Set<ShowStyleBaseId> = new Set()
+					const showStyleVariantIds: Set<ShowStyleVariantId> = new Set()
+					const playlistIds: Set<RundownPlaylistId> = new Set(
 						RundownPlaylists.find()
 							.fetch()
-							.map((i) => unprotectString(i._id))
+							.map((i) => i._id)
 					)
 
 					for (const rundown of Rundowns.find().fetch()) {
-						showStyleBaseIds.add(unprotectString(rundown.showStyleBaseId))
-						showStyleVariantIds.add(unprotectString(rundown.showStyleVariantId))
+						showStyleBaseIds.add(rundown.showStyleBaseId)
+						showStyleVariantIds.add(rundown.showStyleVariantId)
 					}
 
 					this.subscribe(PubSub.showStyleBases, {
@@ -212,9 +213,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 					this.subscribe(PubSub.showStyleVariants, {
 						_id: { $in: Array.from(showStyleVariantIds) },
 					})
-					this.subscribe(PubSub.rundowns, {
-						playlistId: { $in: Array.from(playlistIds) },
-					})
+					this.subscribe(PubSub.rundowns, Array.from(playlistIds), null)
 				})
 
 				this.autorun(() => {
@@ -226,27 +225,32 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 					}
 				})
 
-				MeteorCall.systemStatus
-					.getSystemStatus()
-					.then((systemStatus: StatusResponse) => {
-						this.setState({ systemStatus })
-					})
-					.catch(() => {
-						NotificationCenter.push(
-							new Notification(
-								'systemStatus_failed',
-								NoticeLevel.CRITICAL,
-								t('Could not get system status. Please consult system administrator.'),
-								'RundownList'
+				const refreshSystemStatus = () => {
+					MeteorCall.systemStatus
+						.getSystemStatus()
+						.then((systemStatus: StatusResponse) => {
+							this.setState({ systemStatus })
+						})
+						.catch(() => {
+							NotificationCenter.push(
+								new Notification(
+									'systemStatus_failed',
+									NoticeLevel.CRITICAL,
+									t('Could not get system status. Please consult system administrator.'),
+									'RundownList'
+								)
 							)
-						)
-					})
+						})
+				}
+
+				refreshSystemStatus()
+				setInterval(() => refreshSystemStatus, 5000)
 			}
 
 			private handleRundownDrop(rundownId: RundownId) {
 				const { t } = this.props
-				doUserAction(t, 'drag&drop in dropzone', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
-					MeteorCall.userAction.moveRundown(e, rundownId, null, [rundownId])
+				doUserAction(t, 'drag&drop in dropzone', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
+					MeteorCall.userAction.moveRundown(e, ts, rundownId, null, [rundownId])
 				)
 			}
 

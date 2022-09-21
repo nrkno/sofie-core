@@ -15,7 +15,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../../logging'
@@ -27,7 +27,6 @@ import { getCurrentTime } from '../../lib'
 import {
 	protectString,
 	protectStringArray,
-	UnprotectedStringProperties,
 	unprotectString,
 	unprotectStringArray,
 } from '@sofie-automation/corelib/dist/protectedString'
@@ -76,6 +75,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the next partInstance */
 	public nextPartState: ActionPartChange = ActionPartChange.NONE
 	public takeAfterExecute: boolean
+	public queuedPartInstanceId: PartInstanceId | undefined = undefined
 
 	constructor(
 		contextInfo: UserContextInfo,
@@ -247,9 +247,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 	}
 
-	async getPartForPreviousPiece(
-		piece: UnprotectedStringProperties<Pick<Piece, '_id'>>
-	): Promise<IBlueprintPart | undefined> {
+	async getPartForPreviousPiece(piece: Partial<Pick<IBlueprintPieceDB, '_id'>>): Promise<IBlueprintPart | undefined> {
 		if (!piece?._id) {
 			throw new Error('Cannot find Part from invalid Piece')
 		}
@@ -445,6 +443,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		)
 
 		this.nextPartState = ActionPartChange.SAFE_CHANGE
+		this.queuedPartInstanceId = newPartInstance._id
 
 		return convertPartInstanceToBlueprints(newPartInstance)
 	}
@@ -592,4 +591,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		return unprotectStringArray(stoppedIds)
 	}
+
+	// hackGetMediaObjectDuration(mediaId: string): number | undefined {
+	// 	return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
+	// 		?.mediainfo?.format?.duration
+	// }
 }

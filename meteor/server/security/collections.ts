@@ -28,18 +28,18 @@ import { Segments } from '../../lib/collections/Segments'
 import { Parts } from '../../lib/collections/Parts'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { Pieces } from '../../lib/collections/Pieces'
-import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
+import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
+import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { Timeline } from '../../lib/collections/Timeline'
-import { rundownContentAllowWrite, pieceContentAllowWrite } from './rundown'
 import { SystemWriteAccess } from './system'
 import { Buckets } from '../../lib/collections/Buckets'
-import { studioContentAllowWrite } from './studio'
+import { StudioContentWriteAccess } from './studio'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
+import { resolveCredentials } from './lib/credentials'
 
 // Set up direct collection write access
 
@@ -48,8 +48,9 @@ CoreSystem.allow({
 	insert(): boolean {
 		return false
 	},
-	update(userId, doc, fields, _modifier) {
-		const access = allowAccessToCoreSystem({ userId: userId })
+	async update(userId, doc, fields, _modifier) {
+		const cred = await resolveCredentials({ userId: userId })
+		const access = await allowAccessToCoreSystem(cred)
 		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
 		return allowOnlyFields(doc, fields, ['support', 'systemInfo', 'name', 'logLevel', 'apm', 'cron'])
 	},
@@ -61,8 +62,8 @@ Users.allow({
 	insert(_userId, _doc) {
 		return false
 	},
-	update(userId, doc, fields, _modifier) {
-		const access = SystemWriteAccess.currentUser(userId, { userId })
+	async update(userId, doc, fields, _modifier) {
+		const access = await SystemWriteAccess.currentUser(userId, { userId })
 		if (!access) return logNotAllowed('CurrentUser', '')
 		return rejectFields(doc, fields, [
 			'_id',
@@ -84,8 +85,8 @@ Organizations.allow({
 	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, _modifier) {
-		const access = allowAccessToOrganization({ userId: userId }, doc._id)
+	async update(userId, doc, fields, _modifier) {
+		const access = await allowAccessToOrganization({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('Organization', access.reason)
 		return allowOnlyFields(doc, fields, ['userRoles'])
 	},
@@ -120,7 +121,7 @@ Snapshots.allow({
 	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, _modifier) {
+	update(_userId, doc, fields, _modifier) {
 		return allowOnlyFields(doc, fields, ['comment'])
 	},
 	remove(_userId, _doc) {
@@ -131,7 +132,7 @@ Blueprints.allow({
 	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, _modifier) {
+	update(_userId, doc, fields, _modifier) {
 		return allowOnlyFields(doc, fields, ['name', 'disableVersionChecks'])
 	},
 	remove(_userId, _doc) {
@@ -144,7 +145,6 @@ RundownPlaylists.allow({
 		return false
 	},
 	update(_userId, _doc, _fields, _modifier) {
-		// return true // tmp!
 		return false
 	},
 	remove(_userId, _doc) {
@@ -152,18 +152,18 @@ RundownPlaylists.allow({
 	},
 })
 Studios.allow({
-	insert(userId, doc: Studio): boolean {
-		const access = allowAccessToStudio({ userId: userId }, doc._id)
+	async insert(userId, doc: Studio) {
+		const access = await allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.insert) return logNotAllowed('Studio', access.reason)
 		return true
 	},
-	update(userId, doc, fields, _modifier) {
-		const access = allowAccessToStudio({ userId: userId }, doc._id)
+	async update(userId, doc, fields, _modifier) {
+		const access = await allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('Studio', access.reason)
 		return rejectFields(doc, fields, ['_id'])
 	},
-	remove(userId, doc) {
-		const access = allowAccessToStudio({ userId: userId }, doc._id)
+	async remove(userId, doc) {
+		const access = await allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.remove) return logNotAllowed('Studio', access.reason)
 		return true
 	},
@@ -186,7 +186,6 @@ MediaObjects.allow({
 		return false
 	},
 	update(_userId, _doc, _fields, _modifier) {
-		// return true // tmp!
 		return false
 	},
 	remove(_userId, _doc) {
@@ -208,8 +207,8 @@ Buckets.allow({
 	insert(_userId, _doc): boolean {
 		return false
 	},
-	update(userId, doc, fields, _modifier) {
-		return studioContentAllowWrite(userId, doc) && rejectFields(doc, fields, ['_id'])
+	async update(userId, doc, fields, _modifier) {
+		return (await StudioContentWriteAccess.bucket({ userId }, doc.studioId)) && rejectFields(doc, fields, ['_id'])
 	},
 	remove(_userId, _doc) {
 		return false
@@ -221,8 +220,8 @@ ShowStyleBases.allow({
 	insert(): boolean {
 		return false
 	},
-	update(userId, doc, fields) {
-		const access = allowAccessToShowStyleBase({ userId: userId }, doc._id)
+	async update(userId, doc, fields) {
+		const access = await allowAccessToShowStyleBase({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 		return rejectFields(doc, fields, ['_id'])
 	},
@@ -234,8 +233,8 @@ ShowStyleVariants.allow({
 	insert(): boolean {
 		return false
 	},
-	update(userId, doc, fields) {
-		const access = allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
+	async update(userId, doc, fields) {
+		const access = await allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
 		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 
 		return rejectFields(doc, fields, ['showStyleBaseId'])
@@ -248,8 +247,8 @@ RundownLayouts.allow({
 	insert(): boolean {
 		return false
 	},
-	update(userId, doc, fields) {
-		const access = allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
+	async update(userId, doc, fields) {
+		const access = await allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
 		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 		return rejectFields(doc, fields, ['_id', 'showStyleBaseId'])
 	},
@@ -261,13 +260,15 @@ TriggeredActions.allow({
 	insert(): boolean {
 		return false
 	},
-	update(userId, doc, fields) {
+	async update(userId, doc, fields) {
+		const cred = await resolveCredentials({ userId: userId })
+
 		if (doc.showStyleBaseId) {
-			const access = allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
+			const access = await allowAccessToShowStyleBase(cred, doc.showStyleBaseId)
 			if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 			return rejectFields(doc, fields, ['_id'])
 		} else {
-			const access = allowAccessToCoreSystem({ userId: userId })
+			const access = await allowAccessToCoreSystem(cred)
 			if (!access.update) return logNotAllowed('CoreSystem', access.reason)
 			return rejectFields(doc, fields, ['_id'])
 		}
@@ -282,7 +283,7 @@ PeripheralDevices.allow({
 	insert(_userId, _doc: PeripheralDevice): boolean {
 		return true
 	},
-	update(userId, doc, fields, _modifier) {
+	update(_userId, doc, fields, _modifier) {
 		return rejectFields(doc, fields, [
 			'type',
 			'parentDeviceId',
@@ -305,13 +306,13 @@ PeripheralDevices.allow({
 
 PeripheralDeviceCommands.allow({
 	insert(_userId, _doc: PeripheralDeviceCommand): boolean {
-		return true // TODO
+		return false
 	},
 	update(_userId, _doc, _fields, _modifier) {
 		return false
 	},
 	remove(_userId, _doc) {
-		return true // TODO
+		return false
 	},
 })
 
@@ -345,7 +346,6 @@ Rundowns.allow({
 		return false
 	},
 	update() {
-		// return true // tmp!
 		return false
 	},
 	remove() {
@@ -360,92 +360,92 @@ Rundowns.allow({
 // Collections security set up:
 
 Segments.allow({
-	insert(userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 
 Parts.allow({
-	insert(userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 PartInstances.allow({
-	insert(userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 Pieces.allow({
-	insert(userId, doc): boolean {
-		return pieceContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return pieceContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return pieceContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 PieceInstances.allow({
-	insert(userId, doc: PieceInstance): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 AdLibPieces.allow({
-	insert(userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 RundownBaselineAdLibPieces.allow({
-	insert(userId, doc: RundownBaselineAdLibItem): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 IngestDataCache.allow({
-	insert(userId, doc: IngestDataCacheObj): boolean {
-		return rundownContentAllowWrite(userId, doc)
+	insert(): boolean {
+		return false
 	},
-	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	update() {
+		return false
 	},
-	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+	remove() {
+		return false
 	},
 })
 

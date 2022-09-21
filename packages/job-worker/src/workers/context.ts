@@ -1,5 +1,5 @@
 import { IDirectCollections } from '../db'
-import { JobContext } from '../jobs'
+import { JobContext, StudioCacheContext } from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import { WorkerDataCache } from './caches'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -14,7 +14,8 @@ import { getIngestQueueName, IngestJobFunc } from '@sofie-automation/corelib/dis
 import { loadBlueprintById, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { ApmSpan, ApmTransaction } from '../profiler'
-import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { clone, deepFreeze, getRandomString, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { createShowStyleCompound } from '../showStyles'
@@ -38,17 +39,10 @@ import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timel
 
 export type QueueJobFunc = (queueName: string, jobName: string, jobData: unknown) => Promise<void>
 
-export class JobContextImpl implements JobContext {
-	private readonly locks: Array<LockBase> = []
-	private readonly caches: Array<ReadOnlyCacheBase<any>> = []
-
+export class StudioCacheContextImpl implements StudioCacheContext {
 	constructor(
 		readonly directCollections: Readonly<IDirectCollections>,
-		private readonly cacheData: WorkerDataCache,
-		private readonly locksManager: LocksManager,
-		private readonly transaction: ApmTransaction | undefined,
-		private readonly queueJob: QueueJobFunc,
-		private readonly fastTrackTimeline: FastTrackTimelineFunc | null
+		protected readonly cacheData: WorkerDataCache
 	) {}
 
 	get studio(): ReadonlyDeep<DBStudio> {
@@ -63,103 +57,6 @@ export class JobContextImpl implements JobContext {
 	get studioBlueprint(): ReadonlyObjectDeep<WrappedStudioBlueprint> {
 		// This is frozen at the point of populating the cache
 		return this.cacheData.studioBlueprint
-	}
-
-	trackCache(cache: ReadOnlyCacheBase<any>): void {
-		this.caches.push(cache)
-	}
-
-	async lockPlaylist(playlistId: RundownPlaylistId): Promise<PlaylistLock> {
-		const span = this.startSpan('lockPlaylist')
-		if (span) span.setLabel('playlistId', unprotectString(playlistId))
-
-		const lockId = getRandomString()
-		logger.silly(`PlaylistLock: Locking "${playlistId}"`)
-
-		const resourceId = `playlist:${playlistId}`
-		await this.locksManager.aquire(lockId, resourceId)
-
-		const doRelease = async () => {
-			const span = this.startSpan('unlockPlaylist')
-			if (span) span.setLabel('playlistId', unprotectString(playlistId))
-
-			await this.locksManager.release(lockId, resourceId)
-
-			if (span) span.end()
-		}
-		const lock = new PlaylistLockImpl(playlistId, doRelease)
-		this.locks.push(lock)
-
-		logger.silly(`PlaylistLock: Locked "${playlistId}"`)
-
-		if (span) span.end()
-
-		return lock
-	}
-
-	async lockRundown(rundownId: RundownId): Promise<RundownLock> {
-		const span = this.startSpan('lockRundown')
-		if (span) span.setLabel('rundownId', unprotectString(rundownId))
-
-		const lockId = getRandomString()
-		logger.info(`RundownLock: Locking "${rundownId}"`)
-
-		const resourceId = `rundown:${rundownId}`
-		await this.locksManager.aquire(lockId, resourceId)
-
-		const doRelease = async () => {
-			const span = this.startSpan('unlockRundown')
-			if (span) span.setLabel('rundownId', unprotectString(rundownId))
-
-			await this.locksManager.release(lockId, resourceId)
-
-			if (span) span.end()
-		}
-		const lock = new RundownLockImpl(rundownId, doRelease)
-		this.locks.push(lock)
-
-		logger.info(`RundownLock: Locked "${rundownId}"`)
-
-		if (span) span.end()
-
-		return lock
-	}
-
-	/** Ensure resources are cleaned up after the job completes */
-	async cleanupResources(): Promise<void> {
-		// Ensure all locks are freed
-		for (const lock of this.locks) {
-			if (lock.isLocked) {
-				logger.warn(`Lock never freed: ${lock}`)
-				await lock.release().catch((e) => {
-					logger.error(`Lock free failed: ${e}`)
-				})
-			}
-		}
-
-		// Ensure all caches were saved/aborted
-		if (!IS_PRODUCTION) {
-			for (const cache of this.caches) {
-				if (cache.hasChanges()) {
-					logger.warn(`Cache has unsaved changes: ${cache.DisplayName}`)
-				}
-			}
-		}
-	}
-
-	startSpan(spanName: string): ApmSpan | null {
-		if (this.transaction) return this.transaction.startSpan(spanName)
-		return null
-	}
-
-	async queueIngestJob<T extends keyof IngestJobFunc>(name: T, data: Parameters<IngestJobFunc[T]>[0]): Promise<void> {
-		await this.queueJob(getIngestQueueName(this.studioId), name, data)
-	}
-	async queueStudioJob<T extends keyof StudioJobFunc>(name: T, data: Parameters<StudioJobFunc[T]>[0]): Promise<void> {
-		await this.queueJob(getStudioQueueName(this.studioId), name, data)
-	}
-	async queueEventJob<T extends keyof EventsJobFunc>(name: T, data: Parameters<EventsJobFunc[T]>[0]): Promise<void> {
-		await this.queueJob(getEventsQueueName(this.studioId), name, data)
 	}
 
 	getStudioBlueprintConfig(): ProcessedStudioConfig {
@@ -360,6 +257,119 @@ export class JobContextImpl implements JobContext {
 		// Return the raw object, as it was frozen before being cached
 		return config
 	}
+}
+
+export class JobContextImpl extends StudioCacheContextImpl implements JobContext {
+	private readonly locks: Array<LockBase> = []
+	private readonly caches: Array<ReadOnlyCacheBase<any>> = []
+
+	constructor(
+		directCollections: Readonly<IDirectCollections>,
+		cacheData: WorkerDataCache,
+		private readonly locksManager: LocksManager,
+		private readonly transaction: ApmTransaction | undefined,
+		private readonly queueJob: QueueJobFunc,
+		private readonly fastTrackTimeline: FastTrackTimelineFunc | null
+	) {
+		super(directCollections, cacheData)
+	}
+
+	trackCache(cache: ReadOnlyCacheBase<any>): void {
+		this.caches.push(cache)
+	}
+
+	async lockPlaylist(playlistId: RundownPlaylistId): Promise<PlaylistLock> {
+		const span = this.startSpan('lockPlaylist')
+		if (span) span.setLabel('playlistId', unprotectString(playlistId))
+
+		const lockId = getRandomString()
+		logger.silly(`PlaylistLock: Locking "${playlistId}"`)
+
+		const resourceId = `playlist:${playlistId}`
+		await this.locksManager.aquire(lockId, resourceId)
+
+		const doRelease = async () => {
+			const span = this.startSpan('unlockPlaylist')
+			if (span) span.setLabel('playlistId', unprotectString(playlistId))
+
+			await this.locksManager.release(lockId, resourceId)
+
+			if (span) span.end()
+		}
+		const lock = new PlaylistLockImpl(playlistId, doRelease)
+		this.locks.push(lock)
+
+		logger.silly(`PlaylistLock: Locked "${playlistId}"`)
+
+		if (span) span.end()
+
+		return lock
+	}
+
+	async lockRundown(rundownId: RundownId): Promise<RundownLock> {
+		const span = this.startSpan('lockRundown')
+		if (span) span.setLabel('rundownId', unprotectString(rundownId))
+
+		const lockId = getRandomString()
+		logger.silly(`RundownLock: Locking "${rundownId}"`)
+
+		const resourceId = `rundown:${rundownId}`
+		await this.locksManager.aquire(lockId, resourceId)
+
+		const doRelease = async () => {
+			const span = this.startSpan('unlockRundown')
+			if (span) span.setLabel('rundownId', unprotectString(rundownId))
+
+			await this.locksManager.release(lockId, resourceId)
+
+			if (span) span.end()
+		}
+		const lock = new RundownLockImpl(rundownId, doRelease)
+		this.locks.push(lock)
+
+		logger.silly(`RundownLock: Locked "${rundownId}"`)
+
+		if (span) span.end()
+
+		return lock
+	}
+
+	/** Ensure resources are cleaned up after the job completes */
+	async cleanupResources(): Promise<void> {
+		// Ensure all locks are freed
+		for (const lock of this.locks) {
+			if (lock.isLocked) {
+				logger.warn(`Lock never freed: ${lock}`)
+				await lock.release().catch((e) => {
+					logger.error(`Lock free failed: ${e}`)
+				})
+			}
+		}
+
+		// Ensure all caches were saved/aborted
+		if (!IS_PRODUCTION) {
+			for (const cache of this.caches) {
+				if (cache.hasChanges()) {
+					logger.warn(`Cache has unsaved changes: ${cache.DisplayName}`)
+				}
+			}
+		}
+	}
+
+	startSpan(spanName: string): ApmSpan | null {
+		if (this.transaction) return this.transaction.startSpan(spanName)
+		return null
+	}
+
+	async queueIngestJob<T extends keyof IngestJobFunc>(name: T, data: Parameters<IngestJobFunc[T]>[0]): Promise<void> {
+		await this.queueJob(getIngestQueueName(this.studioId), name, data)
+	}
+	async queueStudioJob<T extends keyof StudioJobFunc>(name: T, data: Parameters<StudioJobFunc[T]>[0]): Promise<void> {
+		await this.queueJob(getStudioQueueName(this.studioId), name, data)
+	}
+	async queueEventJob<T extends keyof EventsJobFunc>(name: T, data: Parameters<EventsJobFunc[T]>[0]): Promise<void> {
+		await this.queueJob(getEventsQueueName(this.studioId), name, data)
+	}
 
 	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void {
 		if (this.fastTrackTimeline) {
@@ -444,13 +454,13 @@ class RundownLockImpl extends RundownLock {
 		if (!this.#isLocked) {
 			logger.warn(`RundownLock: Already released "${this.rundownId}"`)
 		} else {
-			logger.info(`RundownLock: Releasing "${this.rundownId}"`)
+			logger.silly(`RundownLock: Releasing "${this.rundownId}"`)
 
 			this.#isLocked = false
 
 			await this.doRelease()
 
-			logger.info(`RundownLock: Released "${this.rundownId}"`)
+			logger.silly(`RundownLock: Released "${this.rundownId}"`)
 
 			if (this.deferedFunctions.length > 0) {
 				for (const fcn of this.deferedFunctions) {

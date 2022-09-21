@@ -63,6 +63,7 @@ export const IBlueprintPieceObjectsSampleKeys = allKeysOfObject<IBlueprintPiece>
 	transitions: true,
 	lifespan: true,
 	prerollDuration: true,
+	postrollDuration: true,
 	toBeQueued: true,
 	expectedPlayoutItems: true,
 	tags: true,
@@ -90,6 +91,7 @@ export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutat
 	displayDurationGroup: true,
 	displayDuration: true,
 	identifier: true,
+	// hackListenToMediaObjectUpdates: true,
 })
 
 /*
@@ -160,6 +162,7 @@ function convertPieceGenericToBlueprintsInner(piece: PieceGeneric): Complete<IBl
 		outputLayerId: piece.outputLayerId,
 		transitions: clone(piece.transitions),
 		prerollDuration: piece.prerollDuration,
+		postrollDuration: piece.postrollDuration,
 		toBeQueued: piece.toBeQueued,
 		expectedPlayoutItems: clone(piece.expectedPlayoutItems),
 		tags: clone(piece.tags),
@@ -216,6 +219,7 @@ export function convertPartToBlueprints(part: DBPart): IBlueprintPartDB {
 		displayDurationGroup: part.displayDurationGroup,
 		displayDuration: part.displayDuration,
 		identifier: part.identifier,
+		// hackListenToMediaObjectUpdates: part.hackListenToMediaObjectUpdates,
 	}
 
 	return obj
@@ -232,6 +236,7 @@ export function convertAdLibPieceToBlueprints(adLib: AdLibPiece): IBlueprintAdLi
 		currentPieceTags: clone(adLib.currentPieceTags),
 		nextPieceTags: clone(adLib.nextPieceTags),
 		uniquenessId: adLib.uniquenessId,
+		invertOnAirState: adLib.invertOnAirState,
 	}
 
 	return obj
@@ -261,6 +266,7 @@ export function convertSegmentToBlueprints(segment: ReadonlyDeep<DBSegment>): IB
 		isHidden: segment.isHidden,
 		identifier: segment.identifier,
 		displayAs: segment.displayAs,
+		showShelf: segment.showShelf,
 	}
 
 	return obj
@@ -278,7 +284,6 @@ export function convertRundownToBlueprints(rundown: ReadonlyDeep<DBRundown>): IB
 		_id: unprotectString(rundown._id),
 		showStyleVariantId: unprotectString(rundown.showStyleVariantId),
 		playlistId: unprotectString(rundown.playlistId),
-		_rank: rundown._rank,
 		airStatus: rundown.airStatus,
 	}
 

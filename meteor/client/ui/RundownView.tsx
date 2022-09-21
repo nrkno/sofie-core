@@ -3,7 +3,7 @@ import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { VTContent, TSR, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { VTContent, TSR, NoteSeverity, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import CoreIcon from '@nrk/core-icons/jsx'
@@ -70,7 +70,7 @@ import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../..
 import { doUserAction, UserAction } from '../lib/userAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
-import { PubSub } from '../../lib/api/pubsub'
+import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 import {
 	RundownLayouts,
 	RundownLayoutType,
@@ -79,6 +79,7 @@ import {
 	RundownViewLayout,
 	RundownLayoutShelfBase,
 	RundownLayoutRundownHeader,
+	RundownLayoutFilterBase,
 } from '../../lib/collections/RundownLayouts'
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
@@ -86,19 +87,18 @@ import { NoraPreviewRenderer } from './FloatingInspectors/NoraFloatingInspector'
 import { Buckets, Bucket } from '../../lib/collections/Buckets'
 import { contextMenuHoldToDisplayTime, isEventInInputField } from '../lib/lib'
 import { OffsetPosition } from '../utils/positions'
-import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
+import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
-import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/DocumentTitleProvider'
-import { PartInstance } from '../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
-import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, {
 	ActivateRundownPlaylistEvent,
 	IEventContext,
+	MiniShelfQueueAdLibEvent,
 	RundownViewEvents,
 } from './RundownView/RundownViewEventBus'
 import StudioContext from './RundownView/StudioContext'
@@ -106,6 +106,7 @@ import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'
 import { SorensenContext } from '../lib/SorensenContext'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { BreakSegment } from './SegmentTimeline/BreakSegment'
 import { PlaylistStartTiming } from './RundownView/RundownTiming/PlaylistStartTiming'
 import { RundownName } from './RundownView/RundownTiming/RundownName'
@@ -120,6 +121,11 @@ import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/erro
 import { SegmentStoryboardContainer } from './SegmentStoryboard/SegmentStoryboardContainer'
 import { SegmentViewMode } from './SegmentContainer/SegmentViewModes'
 import { UIStateStorage } from '../lib/UIStateStorage'
+import { AdLibPieceUi, AdlibSegmentUi } from '../lib/shelf'
+import { SourceLayerLookup, fetchAndFilter } from './Shelf/AdLibPanel'
+import { matchFilter } from './Shelf/AdLibListView'
+import { SegmentListContainer } from './SegmentList/SegmentListContainer'
+import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -398,7 +404,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.DISABLE_NEXT_PIECE,
-					(e) => MeteorCall.userAction.disableNextPiece(e, this.props.playlist._id, false),
+					(e, ts) => MeteorCall.userAction.disableNextPiece(e, ts, this.props.playlist._id, false),
 					this.handleDisableNextPiece
 				)
 			}
@@ -412,7 +418,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.DISABLE_NEXT_PIECE,
-					(e) => MeteorCall.userAction.disableNextPiece(e, this.props.playlist._id, true),
+					(e, ts) => MeteorCall.userAction.disableNextPiece(e, ts, this.props.playlist._id, true),
 					this.handleDisableNextPiece
 				)
 			}
@@ -453,7 +459,7 @@ const RundownHeader = withTranslation()(
 										t,
 										e,
 										UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST,
-										(e) => MeteorCall.userAction.forceResetAndActivate(e, this.props.playlist._id, false),
+										(e, ts) => MeteorCall.userAction.forceResetAndActivate(e, ts, this.props.playlist._id, false),
 										handleResult
 									)
 								},
@@ -465,14 +471,14 @@ const RundownHeader = withTranslation()(
 								t,
 								e,
 								UserAction.ACTIVATE_RUNDOWN_PLAYLIST,
-								(e) => MeteorCall.userAction.activate(e, this.props.playlist._id, true),
+								(e, ts) => MeteorCall.userAction.activate(e, ts, this.props.playlist._id, true),
 								handleResult
 							)
 						},
 					})
 				} else {
-					doUserAction(t, e, UserAction.TAKE, (e) =>
-						MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+					doUserAction(t, e, UserAction.TAKE, (e, ts) =>
+						MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
 					)
 				}
 			}
@@ -487,8 +493,8 @@ const RundownHeader = withTranslation()(
 		hold = (e: any) => {
 			const { t } = this.props
 			if (this.props.studioMode && this.props.playlist.activationId) {
-				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
-					MeteorCall.userAction.activateHold(e, this.props.playlist._id, false)
+				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e, ts) =>
+					MeteorCall.userAction.activateHold(e, ts, this.props.playlist._id, false)
 				)
 			}
 		}
@@ -500,8 +506,8 @@ const RundownHeader = withTranslation()(
 				this.props.playlist.activationId &&
 				this.props.playlist.holdState === RundownHoldState.PENDING
 			) {
-				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e) =>
-					MeteorCall.userAction.activateHold(e, this.props.playlist._id, true)
+				doUserAction(t, e, UserAction.ACTIVATE_HOLD, (e, ts) =>
+					MeteorCall.userAction.activateHold(e, ts, this.props.playlist._id, true)
 				)
 			}
 		}
@@ -569,7 +575,7 @@ const RundownHeader = withTranslation()(
 								t,
 								e,
 								UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST,
-								(e) => MeteorCall.userAction.forceResetAndActivate(e, playlistId, false),
+								(e, ts) => MeteorCall.userAction.forceResetAndActivate(e, ts, playlistId, false),
 								handleResult
 							)
 						},
@@ -581,7 +587,7 @@ const RundownHeader = withTranslation()(
 						t,
 						e,
 						UserAction.DEACTIVATE_OTHER_RUNDOWN_PLAYLIST,
-						(e) => MeteorCall.userAction.forceResetAndActivate(e, playlistId, rehersal),
+						(e, ts) => MeteorCall.userAction.forceResetAndActivate(e, ts, playlistId, rehersal),
 						handleResult
 					)
 				},
@@ -605,7 +611,7 @@ const RundownHeader = withTranslation()(
 						t,
 						e,
 						UserAction.ACTIVATE_RUNDOWN_PLAYLIST,
-						(e) => MeteorCall.userAction.activate(e, this.props.playlist._id, false),
+						(e, ts) => MeteorCall.userAction.activate(e, ts, this.props.playlist._id, false),
 						(err) => {
 							if (!err) {
 								if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
@@ -632,7 +638,7 @@ const RundownHeader = withTranslation()(
 								t,
 								e,
 								UserAction.RESET_AND_ACTIVATE_RUNDOWN_PLAYLIST,
-								(e) => MeteorCall.userAction.resetAndActivate(e, this.props.playlist._id),
+								(e, ts) => MeteorCall.userAction.resetAndActivate(e, ts, this.props.playlist._id),
 								(err) => {
 									if (!err) {
 										onSuccess()
@@ -678,7 +684,7 @@ const RundownHeader = withTranslation()(
 						t,
 						e,
 						UserAction.ACTIVATE_RUNDOWN_PLAYLIST,
-						(e) => MeteorCall.userAction.activate(e, this.props.playlist._id, true),
+						(e, ts) => MeteorCall.userAction.activate(e, ts, this.props.playlist._id, true),
 						(err) => {
 							if (!err) {
 								onSuccess()
@@ -699,7 +705,7 @@ const RundownHeader = withTranslation()(
 							t,
 							e,
 							UserAction.PREPARE_FOR_BROADCAST,
-							(e) => MeteorCall.userAction.prepareForBroadcast(e, this.props.playlist._id),
+							(e, ts) => MeteorCall.userAction.prepareForBroadcast(e, ts, this.props.playlist._id),
 							(err) => {
 								if (!err) {
 									onSuccess()
@@ -751,8 +757,8 @@ const RundownHeader = withTranslation()(
 				if (this.rundownShouldHaveStarted()) {
 					if (this.props.playlist.rehearsal) {
 						// We're in rehearsal mode
-						doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-							MeteorCall.userAction.deactivate(e, this.props.playlist._id)
+						doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e, ts) =>
+							MeteorCall.userAction.deactivate(e, ts, this.props.playlist._id)
 						)
 					} else {
 						doModalDialog({
@@ -760,16 +766,16 @@ const RundownHeader = withTranslation()(
 							message: t('Are you sure you want to deactivate this Rundown?\n(This will clear the outputs)'),
 							warning: true,
 							onAccept: () => {
-								doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-									MeteorCall.userAction.deactivate(e, this.props.playlist._id)
+								doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e, ts) =>
+									MeteorCall.userAction.deactivate(e, ts, this.props.playlist._id)
 								)
 							},
 						})
 					}
 				} else {
 					// Do it right away
-					doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-						MeteorCall.userAction.deactivate(e, this.props.playlist._id)
+					doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e, ts) =>
+						MeteorCall.userAction.deactivate(e, ts, this.props.playlist._id)
 					)
 				}
 			}
@@ -785,7 +791,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.RESET_RUNDOWN_PLAYLIST,
-					(e) => MeteorCall.userAction.resetRundownPlaylist(e, this.props.playlist._id),
+					(e, ts) => MeteorCall.userAction.resetRundownPlaylist(e, ts, this.props.playlist._id),
 					() => {
 						this.deferFlushAndRewindSegments()
 					}
@@ -818,7 +824,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA,
-					(e) => MeteorCall.userAction.resyncRundownPlaylist(e, this.props.playlist._id),
+					(e, ts) => MeteorCall.userAction.resyncRundownPlaylist(e, ts, this.props.playlist._id),
 					(err, reloadResponse) => {
 						if (!err && reloadResponse) {
 							if (!handleRundownPlaylistReloadResponse(t, reloadResponse)) {
@@ -842,7 +848,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-					(e) => MeteorCall.userAction.storeRundownSnapshot(e, this.props.playlist._id, 'Taken by user'),
+					(e, ts) => MeteorCall.userAction.storeRundownSnapshot(e, ts, this.props.playlist._id, 'Taken by user', false),
 					() => {
 						NotificationCenter.push(
 							new Notification(
@@ -874,7 +880,7 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.RESET_AND_ACTIVATE_RUNDOWN_PLAYLIST,
-					(e) => MeteorCall.userAction.resetAndActivate(e, this.props.playlist._id),
+					(e, ts) => MeteorCall.userAction.resetAndActivate(e, ts, this.props.playlist._id),
 					(err) => {
 						if (!err) {
 							this.deferFlushAndRewindSegments()
@@ -1094,7 +1100,13 @@ interface IState {
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
+	rundownDefaultSegmentViewMode: SegmentViewMode | undefined
 	segmentViewModes: Record<string, SegmentViewMode>
+	/** Minishelf data */
+	keyboardQueuedPiece: AdLibPieceUi | undefined
+	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
+	uiSegments: AdlibSegmentUi[]
+	sourceLayerLookup: SourceLayerLookup
 }
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
@@ -1133,7 +1145,7 @@ interface ITrackedProps {
 	currentSegmentPartIds: PartId[]
 	nextSegmentPartIds: PartId[]
 }
-export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: Translated<IProps>) => {
 	let playlistId
 	if (props.match && props.match.params.playlistId) {
 		playlistId = decodeURIComponent(unprotectString(props.match.params.playlistId))
@@ -1147,11 +1159,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	let currentPartInstance: PartInstance | undefined
 	let nextPartInstance: PartInstance | undefined
 	let currentRundown: Rundown | undefined = undefined
-
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun(
-			(_playlistId) => RundownPlaylistCollectionUtil.getRundowns(playlist),
+			(_playlistId) => RundownPlaylistCollectionUtil.getRundownsOrdered(playlist),
 			'playlist.getRundowns',
 			playlistId
 		)
@@ -1164,17 +1175,23 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	const params = queryStringParse(location.search)
 
-	const DEFAULT_DISPLAY_OPTIONS = props.onlyShelf ? 'layout,shelfLayout' : 'buckets,layout,shelfLayout,inspector'
+	const DEFAULT_DISPLAY_OPTIONS = props.onlyShelf ? 'layout,shelfLayout' : 'buckets,layout,shelfLayout,inspector' // TODOSYNC: TV2 had removed buckets,inspector. check why
 
 	const displayOptions = ((params['display'] as string) || DEFAULT_DISPLAY_OPTIONS).split(',')
 	const bucketDisplayFilter = !(params['buckets'] as string)
 		? undefined
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
+	const showStyleBase = rundowns.length > 0 ? ShowStyleBases.findOne(rundowns[0].showStyleBaseId) : undefined
+	const showStyleVariant = rundowns.length > 0 ? ShowStyleVariants.findOne(rundowns[0].showStyleVariantId) : undefined
+
 	const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
 	for (const rundown of rundowns) {
 		rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
 	}
+
+	const rundownLayouts =
+		rundowns.length > 0 ? RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() : undefined
 
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
@@ -1202,10 +1219,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownsToShowstyles,
 		playlist,
 		studio: studio,
-		showStyleBase: rundowns.length > 0 ? ShowStyleBases.findOne(rundowns[0].showStyleBaseId) : undefined,
-		showStyleVariant: rundowns.length > 0 ? ShowStyleVariants.findOne(rundowns[0].showStyleVariantId) : undefined,
-		rundownLayouts:
-			rundowns.length > 0 ? RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() : undefined,
+		showStyleBase,
+		showStyleVariant,
+		rundownLayouts,
 		buckets:
 			(playlist &&
 				Buckets.find(
@@ -1306,6 +1322,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				segmentViewModes: this.props.playlist?._id
 					? UIStateStorage.getItemRecord(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
 					: {},
+				rundownDefaultSegmentViewMode: this.props.playlist?._id
+					? (UIStateStorage.getItemString(
+							`rundownView.${this.props.playlist._id}`,
+							`rundownDefaultSegmentViewMode`,
+							''
+					  ) as SegmentViewMode) || undefined
+					: undefined,
+				keyboardQueuedPiece: undefined,
+				uiSegmentMap: new Map(),
+				uiSegments: [],
+				sourceLayerLookup: {},
 			}
 		}
 
@@ -1388,6 +1415,22 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				if (!selectedShelfLayout) {
 					selectedShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForShelf(i))
 				}
+
+				// TODOSYNC: This was added by TV2, but this is a backwards-incompatible change
+				//						-- Jan Starzak, 2022/04/08
+				// if (!selectedViewLayout) {
+				// 	selectedViewLayout = props.rundownLayouts.find((i) =>
+				// 		RundownLayoutsAPI.isLayoutForRundownView(i)
+				// 	) as RundownViewLayout
+				// }
+
+				// if (!selectedHeaderLayout) {
+				// 	selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownHeader(i))
+				// }
+
+				// if (!selectedMiniShelfLayout) {
+				// 	selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForMiniShelf(i))
+				// }
 			}
 
 			let currentRundown: Rundown | undefined = undefined
@@ -1395,6 +1438,56 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				currentRundown = props.rundowns.find((rundown) => rundown._id === props.currentPartInstance?.rundownId)
 				if (!currentRundown) {
 					currentRundown = props.rundowns.find((rundown) => rundown._id === props.nextPartInstance?.rundownId)
+				}
+			}
+
+			const filteredUiSegmentMap: Map<SegmentId, AdlibSegmentUi> = new Map()
+			const filteredUiSegments: AdlibSegmentUi[] = []
+			let resultSourceLayerLookup: SourceLayerLookup = {}
+			if (props.playlist && props.showStyleBase && props.studio) {
+				let filter =
+					selectedMiniShelfLayout && RundownLayoutsAPI.isLayoutForMiniShelf(selectedMiniShelfLayout)
+						? selectedMiniShelfLayout.filters[0]
+						: undefined // Only allow 1 filter for now
+
+				// Check type of filter
+				if (filter && !RundownLayoutsAPI.isFilter(filter)) {
+					filter = undefined
+				}
+				const { uiSegmentMap, uiSegments, sourceLayerLookup } = fetchAndFilter({
+					playlist: props.playlist,
+					showStyleBase: props.showStyleBase,
+					includeGlobalAdLibs: false,
+					filter,
+				})
+				resultSourceLayerLookup = sourceLayerLookup
+				const liveSegment = uiSegments.find((i) => i.isLive === true)
+
+				for (const segment of uiSegmentMap.values()) {
+					const uniquenessIds = new Set<string>()
+					const filteredPieces = segment.pieces.filter((piece) =>
+						matchFilter(
+							piece,
+							props.showStyleBase!,
+							liveSegment,
+							filter
+								? {
+										...(filter as RundownLayoutFilterBase),
+										currentSegment:
+											!(segment.isHidden && segment.showShelf) && (filter as RundownLayoutFilterBase).currentSegment,
+								  }
+								: undefined,
+							undefined,
+							uniquenessIds
+						)
+					)
+					const filteredSegment = {
+						...segment,
+						pieces: filteredPieces,
+					}
+
+					filteredUiSegmentMap.set(segment._id, filteredSegment)
+					filteredUiSegments.push(filteredSegment)
 				}
 			}
 
@@ -1416,6 +1509,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						? selectedMiniShelfLayout
 						: undefined,
 				currentRundown,
+				uiSegmentMap: filteredUiSegmentMap,
+				uiSegments: filteredUiSegments,
+				sourceLayerLookup: resultSourceLayerLookup,
 			}
 		}
 
@@ -1425,9 +1521,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
 			})
-			this.subscribe(PubSub.rundowns, {
-				playlistId,
-			})
+			this.subscribe(PubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
@@ -1451,17 +1545,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
 						_id: 1,
+						activationId: 1,
 					},
 				}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
 				if (!playlist) return
 
-				const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
+				const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
 					fields: {
 						_id: 1,
 						showStyleBaseId: 1,
 						showStyleVariantId: 1,
 					},
 				}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
+
 				this.subscribe(PubSub.showStyleBases, {
 					_id: {
 						$in: rundowns.map((i) => i.showStyleBaseId),
@@ -1503,20 +1599,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						$in: rundownIDs,
 					},
 				})
-				this.subscribe(PubSub.parts, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(PubSub.partInstances, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-					playlistActivationId: playlist.activationId,
-					reset: {
-						$ne: true,
-					},
-				})
+				this.subscribe(PubSub.parts, rundownIDs)
+				this.subscribe(PubSub.partInstances, rundownIDs, playlist.activationId)
 			})
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1533,7 +1617,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					// Use Meteor.subscribe so that this subscription doesn't mess with this.subscriptionsReady()
 					// it's run in this.autorun, so the subscription will be stopped along with the autorun,
 					// so we don't have to manually clean up after ourselves.
-					Meteor.subscribe(PubSub.pieceInstances, {
+					meteorSubscribe(PubSub.pieceInstances, {
 						rundownId: {
 							$in: rundownIds,
 						},
@@ -1542,12 +1626,27 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								playlist.currentPartInstanceId,
 								playlist.nextPartInstanceId,
 								playlist.previousPartInstanceId,
-							].filter((p) => p !== null),
+							].filter((p): p is PartInstanceId => p !== null),
 						},
 						reset: {
 							$ne: true,
 						},
 					})
+					const { previousPartInstance, currentPartInstance } =
+						RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+
+					if (previousPartInstance) {
+						meteorSubscribe(PubSub.partInstancesForSegmentPlayout, {
+							rundownId: previousPartInstance.rundownId,
+							segmentPlayoutId: previousPartInstance.segmentPlayoutId,
+						})
+					}
+					if (currentPartInstance) {
+						meteorSubscribe(PubSub.partInstancesForSegmentPlayout, {
+							rundownId: currentPartInstance.rundownId,
+							segmentPlayoutId: currentPartInstance.segmentPlayoutId,
+						})
+					}
 				}
 			})
 			this.autorun(() => {
@@ -1565,6 +1664,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			RundownViewEventBus.on(RundownViewEvents.GO_TO_LIVE_SEGMENT, this.onGoToLiveSegment)
 			RundownViewEventBus.on(RundownViewEvents.GO_TO_TOP, this.onGoToTop)
+			RundownViewEventBus.on(RundownViewEvents.MINI_SHELF_QUEUE_ADLIB, this.eventQueueMiniShelfAdLib)
 
 			if (this.props.playlist) {
 				documentTitle.set(this.props.playlist.name)
@@ -1678,9 +1778,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				(prevProps.playlist === undefined || this.props.playlist._id !== prevProps.playlist._id)
 			) {
 				this.setState({
-					segmentViewModes: this.props.playlist?._id
-						? UIStateStorage.getItemRecord(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
-						: {},
+					segmentViewModes: UIStateStorage.getItemRecord(
+						`rundownView.${this.props.playlist._id}`,
+						`segmentViewModes`,
+						{}
+					),
+					rundownDefaultSegmentViewMode:
+						(UIStateStorage.getItemString(
+							`rundownView.${this.props.playlist._id}`,
+							`rundownDefaultSegmentViewMode`,
+							''
+						) as SegmentViewMode) || undefined,
 				})
 			}
 
@@ -1693,6 +1801,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 			if (Settings.enableUserAccounts && getAllowStudio() !== this.state.studioMode) {
 				this.setState({ studioMode: getAllowStudio() })
+			}
+			if (this.props.currentPartInstance?.segmentId !== prevProps.currentPartInstance?.segmentId) {
+				this.setState({ keyboardQueuedPiece: undefined })
 			}
 		}
 
@@ -1735,6 +1846,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_LIVE_SEGMENT, this.onGoToLiveSegment)
 			RundownViewEventBus.off(RundownViewEvents.GO_TO_TOP, this.onGoToTop)
+			RundownViewEventBus.off(RundownViewEvents.MINI_SHELF_QUEUE_ADLIB, this.eventQueueMiniShelfAdLib)
 		}
 
 		onBeforeUnload = (e: any) => {
@@ -1845,6 +1957,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
+		eventQueueMiniShelfAdLib = (e: MiniShelfQueueAdLibEvent) => {
+			this.queueMinishelfAdLib(e.context, e.forward)
+		}
+
 		onActivate = () => {
 			this.onGoToLiveSegment()
 		}
@@ -1863,7 +1979,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					t,
 					e,
 					UserAction.SET_NEXT,
-					(e) => MeteorCall.userAction.setNext(e, playlistId, part._id, offset),
+					(e, ts) => MeteorCall.userAction.setNext(e, ts, playlistId, part._id, offset),
 					(err) => {
 						this.setState({
 							manualSetAsNext: true,
@@ -1871,8 +1987,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						if (!err && take && this.props.playlist) {
 							const playlistId = this.props.playlist._id
 							const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-							doUserAction(t, e, UserAction.TAKE, (e) =>
-								MeteorCall.userAction.take(e, playlistId, currentPartInstanceId)
+							doUserAction(t, e, UserAction.TAKE, (e, ts) =>
+								MeteorCall.userAction.take(e, ts, playlistId, currentPartInstanceId)
 							)
 						}
 					}
@@ -1887,7 +2003,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					t,
 					e,
 					UserAction.SET_NEXT,
-					(e) => MeteorCall.userAction.setNextSegment(e, playlistId, segmentId),
+					(e, ts) => MeteorCall.userAction.setNextSegment(e, ts, playlistId, segmentId),
 					(err) => {
 						if (err) console.error(err)
 						this.setState({
@@ -1910,8 +2026,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				const idToCopy = item.instance.isTemporary ? item.instance.piece._id : item.instance._id
 				const playlistId = this.props.playlist._id
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-				doUserAction(t, e, UserAction.TAKE_PIECE, (e) =>
-					MeteorCall.userAction.pieceTakeNow(e, playlistId, currentPartInstanceId, idToCopy)
+				doUserAction(t, e, UserAction.TAKE_PIECE, (e, ts) =>
+					MeteorCall.userAction.pieceTakeNow(e, ts, playlistId, currentPartInstanceId, idToCopy)
 				)
 			}
 		}
@@ -1962,6 +2078,21 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 		}
 
+		onSegmentViewModeChange = () => {
+			const nextMode = getNextSegmentViewMode(this.state.rundownDefaultSegmentViewMode)
+			this.setState(
+				{
+					segmentViewModes: {},
+					rundownDefaultSegmentViewMode: nextMode,
+				},
+				() => {
+					if (!this.props.playlist?._id) return
+					UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
+					UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, 'rundownDefaultSegmentViewMode', nextMode)
+				}
+			)
+		}
+
 		onStudioRouteSetSwitch = (
 			e: React.MouseEvent<HTMLElement, MouseEvent>,
 			routeSetId: string,
@@ -1970,8 +2101,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		) => {
 			const { t } = this.props
 			if (this.props.studio) {
-				doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
-					MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
+				doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e, ts) =>
+					MeteorCall.userAction.switchRouteSet(e, ts, this.props.studio!._id, routeSetId, state)
 				)
 			}
 		}
@@ -1996,81 +2127,145 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			)
 		}
 
-		renderSegmentComponent(
-			segment: DBSegment,
-			rundownAndSegments: MatchedSegment,
-			rundownPlaylist: RundownPlaylist,
-			studio: DBStudio,
-			showStyleBase: DBShowStyleBase,
-			isLastSegment: boolean,
-			isFollowingOnAirSegment: boolean,
-			ownCurrentPartInstance: PartInstance | undefined,
-			ownNextPartInstance: PartInstance | undefined,
-			segmentIdsBeforeSegment: Set<SegmentId>,
-			rundownIdsBefore: RundownId[]
-		) {
-			const userSegmentDisplaymode = this.state.segmentViewModes[unprotectString(segment._id)] as
-				| SegmentViewMode
-				| undefined
-			const displayMode = userSegmentDisplaymode ?? segment.displayAs ?? DEFAULT_SEGMENT_VIEW_MODE
+		queueAdLibPiece = (adlibPiece: AdLibPieceUi, e: any) => {
+			const { t } = this.props
+			// TODO: Refactor this code to reduce code duplication
 
-			return displayMode === SegmentViewMode.Storyboard ? (
-				<SegmentStoryboardContainer
-					id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-					studio={studio}
-					showStyleBase={showStyleBase}
-					followLiveSegments={this.state.followLiveSegments}
-					rundownViewLayout={this.state.rundownViewLayout}
-					rundownId={rundownAndSegments.rundown._id}
-					segmentId={segment._id}
-					playlist={rundownPlaylist}
-					rundown={rundownAndSegments.rundown}
-					timeScale={this.state.timeScale}
-					onContextMenu={this.onContextMenu}
-					onSegmentScroll={this.onSegmentScroll}
-					segmentsIdsBefore={segmentIdsBeforeSegment}
-					rundownIdsBefore={rundownIdsBefore}
-					rundownsToShowstyles={this.props.rundownsToShowstyles}
-					isLastSegment={isLastSegment}
-					onPieceClick={this.onSelectPiece}
-					onPieceDoubleClick={this.onPieceDoubleClick}
-					onHeaderNoteClick={this.onHeaderNoteClick}
-					onSwitchViewMode={(viewMode) => this.onSwitchViewMode(segment._id, viewMode)}
-					ownCurrentPartInstance={ownCurrentPartInstance}
-					ownNextPartInstance={ownNextPartInstance}
-					isFollowingOnAirSegment={isFollowingOnAirSegment}
-					countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
-					fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
-				/>
-			) : (
-				<SegmentTimelineContainer
-					id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-					studio={studio}
-					showStyleBase={showStyleBase}
-					followLiveSegments={this.state.followLiveSegments}
-					rundownViewLayout={this.state.rundownViewLayout}
-					rundownId={rundownAndSegments.rundown._id}
-					segmentId={segment._id}
-					playlist={rundownPlaylist}
-					rundown={rundownAndSegments.rundown}
-					timeScale={this.state.timeScale}
-					onContextMenu={this.onContextMenu}
-					onSegmentScroll={this.onSegmentScroll}
-					segmentsIdsBefore={segmentIdsBeforeSegment}
-					rundownIdsBefore={rundownIdsBefore}
-					rundownsToShowstyles={this.props.rundownsToShowstyles}
-					isLastSegment={isLastSegment}
-					onPieceClick={this.onSelectPiece}
-					onPieceDoubleClick={this.onPieceDoubleClick}
-					onHeaderNoteClick={this.onHeaderNoteClick}
-					onSwitchViewMode={(viewMode) => this.onSwitchViewMode(segment._id, viewMode)}
-					ownCurrentPartInstance={ownCurrentPartInstance}
-					ownNextPartInstance={ownNextPartInstance}
-					isFollowingOnAirSegment={isFollowingOnAirSegment}
-					countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
-					fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
-				/>
-			)
+			if (adlibPiece.invalid) {
+				NotificationCenter.push(
+					new Notification(
+						t('Invalid AdLib'),
+						NoticeLevel.WARNING,
+						t('Cannot play this AdLib because it is marked as Invalid'),
+						'toggleAdLib'
+					)
+				)
+				return
+			}
+
+			if (adlibPiece.floated) {
+				NotificationCenter.push(
+					new Notification(
+						t('Floated Adlib'),
+						NoticeLevel.WARNING,
+						t('Cannot play this AdLib because it is marked as Floated'),
+						'toggleAdLib'
+					)
+				)
+				return
+			}
+
+			const sourceLayer = this.state.sourceLayerLookup[adlibPiece.sourceLayerId]
+
+			if (!adlibPiece.isAction && sourceLayer && !sourceLayer.isQueueable) {
+				NotificationCenter.push(
+					new Notification(
+						t('Not queueable'),
+						NoticeLevel.WARNING,
+						t('Cannot play this adlib because source layer is not queueable'),
+						'toggleAdLib'
+					)
+				)
+				return
+			}
+
+			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+				if (!(sourceLayer && sourceLayer.isClearable)) {
+					if (adlibPiece.isAction && adlibPiece.adlibAction) {
+						const action = adlibPiece.adlibAction
+						doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e, ts) =>
+							MeteorCall.userAction.executeAction(
+								e,
+								ts,
+								this.props.playlist!._id,
+								action._id,
+								action.actionId,
+								action.userData
+							)
+						)
+					} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
+						doUserAction(t, e, UserAction.START_ADLIB, (e, ts) =>
+							MeteorCall.userAction.segmentAdLibPieceStart(
+								e,
+								ts,
+								this.props.playlist!._id,
+								currentPartInstanceId,
+								adlibPiece._id,
+								true
+							)
+						)
+					} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
+						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e, ts) =>
+							MeteorCall.userAction.baselineAdLibPieceStart(
+								e,
+								ts,
+								this.props.playlist!._id,
+								currentPartInstanceId,
+								adlibPiece._id,
+								true
+							)
+						)
+					}
+				}
+			}
+		}
+
+		isAdLibQueueable = (piece: AdLibPieceUi) => {
+			return !piece.invalid && !piece.floated && (piece.isAction || piece.sourceLayer?.isQueueable)
+		}
+
+		findShelfOnlySegment = (begin: number, end: number) => {
+			const { uiSegments } = this.state
+			for (let i = begin; begin > end ? i > end : i < end; begin > end ? i-- : i++) {
+				const queueablePieces = uiSegments[i].pieces.filter(this.isAdLibQueueable)
+				if (uiSegments[i].isHidden && uiSegments[i].showShelf && uiSegments[i].pieces.length) {
+					return { segment: uiSegments[i], queueablePieces }
+				}
+			}
+			return undefined
+		}
+
+		queueMinishelfAdLib = (e: any, forward: boolean) => {
+			const { uiSegments, uiSegmentMap } = this.state
+			const { keyboardQueuedPiece } = this.state
+			let pieceToQueue: AdLibPieceUi | undefined
+			let currentSegmentId: SegmentId | undefined
+			if (keyboardQueuedPiece) {
+				const uiSegment = keyboardQueuedPiece.segmentId ? uiSegmentMap.get(keyboardQueuedPiece.segmentId) : undefined
+				if (uiSegment) {
+					const pieces = uiSegment.pieces.filter(this.isAdLibQueueable)
+					const nextPieceInd = pieces.findIndex((piece) => piece._id === keyboardQueuedPiece._id) + (forward ? 1 : -1)
+					if (nextPieceInd >= 0 && nextPieceInd < pieces.length) {
+						pieceToQueue = pieces[nextPieceInd]
+					}
+				}
+				currentSegmentId = keyboardQueuedPiece.segmentId
+			} else {
+				currentSegmentId = this.props.currentPartInstance?.segmentId
+			}
+
+			if (!pieceToQueue) {
+				if (currentSegmentId) {
+					const currentSegmentInd = uiSegments.findIndex((segment) => segment._id === currentSegmentId)
+					if (currentSegmentInd >= 0) {
+						const nextShelfOnlySegment = forward
+							? this.findShelfOnlySegment(currentSegmentInd + 1, uiSegments.length) ||
+							  this.findShelfOnlySegment(0, currentSegmentInd)
+							: this.findShelfOnlySegment(currentSegmentInd - 1, -1) ||
+							  this.findShelfOnlySegment(uiSegments.length - 1, currentSegmentInd)
+						if (nextShelfOnlySegment && nextShelfOnlySegment.queueablePieces.length) {
+							pieceToQueue =
+								nextShelfOnlySegment.queueablePieces[forward ? 0 : nextShelfOnlySegment.queueablePieces.length - 1]
+						}
+					}
+				}
+			}
+
+			if (pieceToQueue) {
+				this.queueAdLibPiece(pieceToQueue, e)
+				this.setState({ keyboardQueuedPiece: pieceToQueue })
+			}
 		}
 
 		renderSegments() {
@@ -2080,6 +2275,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			let globalIndex = 0
 			const rundowns = this.props.matchedSegments.map((m) => m.rundown._id)
+
 			return this.props.matchedSegments.map((rundownAndSegments, rundownIndex, rundownArray) => {
 				let currentSegmentIndex = -1
 				const rundownIdsBefore = rundowns.slice(0, rundownIndex)
@@ -2122,6 +2318,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								return (
 									<ErrorBoundary key={unprotectString(segment._id)}>
 										<VirtualElement
+											className={ClassNames({
+												'segment-timeline-wrapper--hidden': segment.isHidden,
+												'segment-timeline-wrapper--shelf': segment.showShelf,
+											})}
 											id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
 											margin={'100% 0px 100% 0px'}
 											initialShow={globalIndex++ < window.innerHeight / 260}
@@ -2131,6 +2331,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										>
 											{this.renderSegmentComponent(
 												segment,
+												segmentIndex,
 												rundownAndSegments,
 												this.props.playlist,
 												this.props.studio,
@@ -2154,6 +2355,131 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					</React.Fragment>
 				)
 			})
+		}
+
+		renderSegmentComponent(
+			segment: DBSegment,
+			index: number,
+			rundownAndSegments: MatchedSegment,
+			rundownPlaylist: RundownPlaylist,
+			studio: DBStudio,
+			showStyleBase: DBShowStyleBase,
+			isLastSegment: boolean,
+			isFollowingOnAirSegment: boolean,
+			ownCurrentPartInstance: PartInstance | undefined,
+			ownNextPartInstance: PartInstance | undefined,
+			segmentIdsBeforeSegment: Set<SegmentId>,
+			rundownIdsBefore: RundownId[]
+		) {
+			const userSegmentViewMode = this.state.segmentViewModes[unprotectString(segment._id)] as
+				| SegmentViewMode
+				| undefined
+			const userRundownSegmentViewMode = this.state.rundownDefaultSegmentViewMode
+			const displayMode =
+				userSegmentViewMode ?? userRundownSegmentViewMode ?? segment.displayAs ?? DEFAULT_SEGMENT_VIEW_MODE
+
+			const showDurationSourceLayers = this.state.rundownViewLayout?.showDurationSourceLayers
+				? new Set<ISourceLayer['_id']>(this.state.rundownViewLayout?.showDurationSourceLayers)
+				: undefined
+
+			switch (displayMode) {
+				case SegmentViewMode.Storyboard:
+					return (
+						<SegmentStoryboardContainer
+							id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+							studio={studio}
+							showStyleBase={showStyleBase}
+							followLiveSegments={this.state.followLiveSegments}
+							rundownViewLayout={this.state.rundownViewLayout}
+							rundownId={rundownAndSegments.rundown._id}
+							segmentId={segment._id}
+							playlist={rundownPlaylist}
+							rundown={rundownAndSegments.rundown}
+							timeScale={this.state.timeScale}
+							onContextMenu={this.onContextMenu}
+							onSegmentScroll={this.onSegmentScroll}
+							segmentsIdsBefore={segmentIdsBeforeSegment}
+							rundownIdsBefore={rundownIdsBefore}
+							rundownsToShowstyles={this.props.rundownsToShowstyles}
+							isLastSegment={isLastSegment}
+							onPieceClick={this.onSelectPiece}
+							onPieceDoubleClick={this.onPieceDoubleClick}
+							onHeaderNoteClick={this.onHeaderNoteClick}
+							onSwitchViewMode={(viewMode) => this.onSwitchViewMode(segment._id, viewMode)}
+							ownCurrentPartInstance={ownCurrentPartInstance}
+							ownNextPartInstance={ownNextPartInstance}
+							isFollowingOnAirSegment={isFollowingOnAirSegment}
+							countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
+							fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
+							studioMode={this.state.studioMode}
+						/>
+					)
+				case SegmentViewMode.List:
+					return (
+						<SegmentListContainer
+							id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+							studio={studio}
+							showStyleBase={showStyleBase}
+							followLiveSegments={this.state.followLiveSegments}
+							rundownViewLayout={this.state.rundownViewLayout}
+							rundownId={rundownAndSegments.rundown._id}
+							segmentId={segment._id}
+							playlist={rundownPlaylist}
+							rundown={rundownAndSegments.rundown}
+							timeScale={this.state.timeScale}
+							onContextMenu={this.onContextMenu}
+							onSegmentScroll={this.onSegmentScroll}
+							segmentsIdsBefore={segmentIdsBeforeSegment}
+							rundownIdsBefore={rundownIdsBefore}
+							rundownsToShowstyles={this.props.rundownsToShowstyles}
+							isLastSegment={isLastSegment}
+							onPieceClick={this.onSelectPiece}
+							onPieceDoubleClick={this.onPieceDoubleClick}
+							onHeaderNoteClick={this.onHeaderNoteClick}
+							onSwitchViewMode={(viewMode) => this.onSwitchViewMode(segment._id, viewMode)}
+							ownCurrentPartInstance={ownCurrentPartInstance}
+							ownNextPartInstance={ownNextPartInstance}
+							isFollowingOnAirSegment={isFollowingOnAirSegment}
+							countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
+							fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
+							studioMode={this.state.studioMode}
+						/>
+					)
+				case SegmentViewMode.Timeline:
+				default:
+					return (
+						<SegmentTimelineContainer
+							id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+							studio={studio}
+							showStyleBase={showStyleBase}
+							followLiveSegments={this.state.followLiveSegments}
+							rundownViewLayout={this.state.rundownViewLayout}
+							rundownId={rundownAndSegments.rundown._id}
+							segmentId={segment._id}
+							playlist={rundownPlaylist}
+							rundown={rundownAndSegments.rundown}
+							timeScale={this.state.timeScale}
+							onContextMenu={this.onContextMenu}
+							onSegmentScroll={this.onSegmentScroll}
+							segmentsIdsBefore={segmentIdsBeforeSegment}
+							rundownIdsBefore={rundownIdsBefore}
+							rundownsToShowstyles={this.props.rundownsToShowstyles}
+							isLastSegment={isLastSegment}
+							onPieceClick={this.onSelectPiece}
+							onPieceDoubleClick={this.onPieceDoubleClick}
+							onHeaderNoteClick={this.onHeaderNoteClick}
+							onSwitchViewMode={(viewMode) => this.onSwitchViewMode(segment._id, viewMode)}
+							ownCurrentPartInstance={ownCurrentPartInstance}
+							ownNextPartInstance={ownNextPartInstance}
+							isFollowingOnAirSegment={isFollowingOnAirSegment}
+							countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
+							fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
+							adLibSegmentUi={this.state.uiSegmentMap.get(segment._id)}
+							studioMode={this.state.studioMode}
+							showDurationSourceLayers={showDurationSourceLayers}
+						/>
+					)
+			}
 		}
 
 		renderSegmentsList() {
@@ -2339,7 +2665,14 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				t,
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-				(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, 'User requested log at' + getCurrentTime()),
+				(e, ts) =>
+					MeteorCall.userAction.storeRundownSnapshot(
+						e,
+						ts,
+						playlistId,
+						'User requested log at' + getCurrentTime(),
+						false
+					),
 				() => {
 					NotificationCenter.push(
 						new Notification(
@@ -2358,6 +2691,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				},
 				doneMessage
 			)
+		}
+
+		isAdLibQueueableAndNonFloated = (piece: AdLibPieceUi) => {
+			return (piece.isAction || piece.sourceLayer?.isQueueable) && !piece.invalid && !piece.floated
 		}
 
 		onShelfChangeExpanded = (value: boolean) => {
@@ -2473,27 +2810,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									studioRouteSets={studio.routeSets}
 									studioRouteSetExclusivityGroups={studio.routeSetExclusivityGroups}
 									onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
+									onSegmentViewMode={this.onSegmentViewModeChange}
 								/>
 							</ErrorBoundary>
-							<ErrorBoundary>
-								<SorensenContext.Consumer>
-									{(sorensen) =>
-										sorensen && (
-											<TriggersHandler
-												rundownPlaylistId={this.props.rundownPlaylistId}
-												showStyleBaseId={showStyleBase._id}
-												currentRundownId={this.props.currentRundown?._id || null}
-												currentPartId={this.props.currentPartInstance?.part._id || null}
-												nextPartId={this.props.nextPartInstance?.part._id || null}
-												currentSegmentPartIds={this.props.currentSegmentPartIds}
-												nextSegmentPartIds={this.props.nextSegmentPartIds}
-												sorensen={sorensen}
-												global={this.isHotkeyAllowed}
-											/>
-										)
-									}
-								</SorensenContext.Consumer>
-							</ErrorBoundary>
+							<ErrorBoundary>{this.renderSorensenContext()}</ErrorBoundary>
 							<ErrorBoundary>
 								<VelocityReact.VelocityTransitionGroup
 									enter={{
@@ -2684,7 +3004,31 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							bucketDisplayFilter={this.props.bucketDisplayFilter}
 						/>
 					</ErrorBoundary>
+					<ErrorBoundary>{this.renderSorensenContext()}</ErrorBoundary>
 				</RundownTimingProvider>
+			)
+		}
+
+		renderSorensenContext() {
+			return (
+				<SorensenContext.Consumer>
+					{(sorensen) =>
+						sorensen &&
+						this.state.studioMode && (
+							<TriggersHandler
+								rundownPlaylistId={this.props.rundownPlaylistId}
+								showStyleBaseId={this.props.showStyleBase!._id}
+								currentRundownId={this.props.currentRundown?._id || null}
+								currentPartId={this.props.currentPartInstance?.part._id || null}
+								nextPartId={this.props.nextPartInstance?.part._id || null}
+								currentSegmentPartIds={this.props.currentSegmentPartIds}
+								nextSegmentPartIds={this.props.nextSegmentPartIds}
+								sorensen={sorensen}
+								global={this.isHotkeyAllowed}
+							/>
+						)
+					}
+				</SorensenContext.Consumer>
 			)
 		}
 
@@ -2842,7 +3186,7 @@ export function handleRundownReloadResponse(
 							t,
 							'Missing rundown action',
 							UserAction.UNSYNC_RUNDOWN,
-							(e) => MeteorCall.userAction.unsyncRundown(e, rundownId),
+							(e, ts) => MeteorCall.userAction.unsyncRundown(e, ts, rundownId),
 							(err) => {
 								if (!err) {
 									notificationHandle.stop()
@@ -2873,7 +3217,7 @@ export function handleRundownReloadResponse(
 									t,
 									'Missing rundown action',
 									UserAction.REMOVE_RUNDOWN,
-									(e) => MeteorCall.userAction.removeRundown(e, rundownId),
+									(e, ts) => MeteorCall.userAction.removeRundown(e, ts, rundownId),
 									(err) => {
 										if (!err) {
 											notificationHandle.stop()

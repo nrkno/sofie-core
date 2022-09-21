@@ -17,6 +17,7 @@ export class LazyInitialise<T> {
 					})
 					.catch((e) => reject(e))
 			} catch (e) {
+				// Catch edge-case if init() throws synchronously:
 				reject(e)
 			}
 		})

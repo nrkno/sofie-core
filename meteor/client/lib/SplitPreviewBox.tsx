@@ -27,7 +27,9 @@ export const RenderSplitPreview = React.memo(function RenderSplitPreview({
 							},
 							{
 								second: array.length > 1 && index > 0 && item.type === array[index - 1].type,
-							}
+							},
+							{ upper: index >= array.length / 2 },
+							{ lower: index < array.length / 2 }
 						)}
 						key={item._id + '-preview'}
 						style={{
@@ -35,12 +37,11 @@ export const RenderSplitPreview = React.memo(function RenderSplitPreview({
 							top: ((item.content?.y ?? 0) * 100).toString() + '%',
 							width: ((item.content?.scale ?? 1) * 100).toString() + '%',
 							height: ((item.content?.scale ?? 1) * 100).toString() + '%',
-							clipPath:
-								item.content && item.content.crop
-									? `inset(${item.content.crop.top * 100}% ${item.content.crop.right * 100}% ${
-											item.content.crop.bottom * 100
-									  }% ${item.content.crop.left * 100}%)`
-									: undefined,
+							clipPath: item.content?.crop
+								? `inset(${item.content.crop.top * 100}% ${item.content.crop.right * 100}% ${
+										item.content.crop.bottom * 100
+								  }% ${item.content.crop.left * 100}%)`
+								: undefined,
 						}}
 					>
 						{showLabels && item.role === SplitRole.BOX && <div className="video-preview__label">{item.label}</div>}

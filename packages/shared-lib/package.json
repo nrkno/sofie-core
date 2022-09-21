@@ -1,0 +1,54 @@
+{
+	"name": "@sofie-automation/shared-lib",
+	"version": "1.45.0-in-development",
+	"private": false,
+	"description": "Library for types & values shared by core, workers and gateways",
+	"main": "dist/index.js",
+	"typings": "dist/index.d.ts",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"directory": "packages/sharelib"
+	},
+	"bugs": {
+		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+	},
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/sharelib#readme",
+	"scripts": {
+		"build": "rimraf dist && yarn build:main",
+		"build:main": "tsc -p tsconfig.build.json",
+		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "yarn lint:raw .",
+		"unit": "jest",
+		"test": "yarn lint && yarn unit",
+		"watch": "jest --watch",
+		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
+		"cov-open": "open-cli coverage/lcov-report/index.html",
+		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
+		"validate:dev-dependencies": "yarn audit --groups devDependencies",
+		"license-validate": "yarn sofie-licensecheck"
+	},
+	"engines": {
+		"node": "^14.19 || ^16.14"
+	},
+	"files": [
+		"/dist",
+		"/CHANGELOG.md",
+		"/README.md",
+		"/LICENSE"
+	],
+	"dependencies": {
+		"tslib": "^2.4.0",
+		"type-fest": "^2.16.0"
+	},
+	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
+	"lint-staged": {
+		"*.{js,css,json,md,scss}": [
+			"prettier --write"
+		],
+		"*.{ts,tsx}": [
+			"yarn lint:raw"
+		]
+	}
+}

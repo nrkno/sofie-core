@@ -1,10 +1,14 @@
 {
-	"extends": "./config/tsconfig.base",
-	"exclude": [
-		"node_modules/**",
-		"src/**/*spec.ts",
-		"src/**/integrationTests/*",
-		"src/**/__tests__/*",
-		"src/**/__mocks__/*"
-	]
+	"extends": "@sofie-automation/code-standard-preset/ts/tsconfig.bin",
+	"include": ["src/**/*.ts"],
+	"exclude": ["node_modules/**", "src/**/*spec.ts", "src/**/__tests__/*", "src/**/__mocks__/*"],
+	"compilerOptions": {
+		"outDir": "./dist",
+		"baseUrl": "./",
+		"paths": {
+			"*": ["./node_modules/*"],
+			"mos-gateway": ["./src/index.ts"]
+		},
+		"types": ["node"]
+	}
 }

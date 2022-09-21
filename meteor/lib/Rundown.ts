@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { Pieces, Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
@@ -12,9 +11,16 @@ import {
 	buildPastInfinitePiecesForThisPartQuery,
 	PieceInstanceWithTimings,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import { FindOptions } from './typings/meteor'
+import { FindOptions, MongoQuery } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
-import { getCurrentTime, mongoWhereFilter, ProtectedString, protectString, unprotectString } from './lib'
+import {
+	convertCorelibToMeteorMongoQuery,
+	getCurrentTime,
+	mongoWhereFilter,
+	ProtectedString,
+	protectString,
+	unprotectString,
+} from './lib'
 import {
 	RundownPlaylist,
 	RundownPlaylistActivationId,
@@ -96,7 +102,7 @@ export function fetchPiecesThatMayBeActiveForPart(
 		// Fast-path: if we already have the pieces, we can use them directly:
 		piecesStartingInPart = mongoWhereFilter(allPieces, selector)
 	} else {
-		piecesStartingInPart = Pieces.find(selector).fetch()
+		piecesStartingInPart = Pieces.find(convertCorelibToMeteorMongoQuery(selector)).fetch()
 	}
 
 	const partsBeforeThisInSegment = Array.from(partsBeforeThisInSegmentSet.values())
@@ -113,7 +119,9 @@ export function fetchPiecesThatMayBeActiveForPart(
 		// Fast-path: if we already have the pieces, we can use them directly:
 		infinitePieces = infinitePieceQuery ? mongoWhereFilter(allPieces, infinitePieceQuery) : []
 	} else {
-		infinitePieces = infinitePieceQuery ? Pieces.find(infinitePieceQuery).fetch() : []
+		infinitePieces = infinitePieceQuery
+			? Pieces.find(convertCorelibToMeteorMongoQuery(infinitePieceQuery)).fetch()
+			: []
 	}
 
 	return piecesStartingInPart.concat(infinitePieces) // replace spread with concat, as 3x is faster (https://stackoverflow.com/questions/48865710/spread-operator-vs-array-concat)
@@ -236,9 +244,9 @@ export function getPieceInstancesForPartInstance(
  *
  * @export
  * @param {RundownPlaylist} playlist
- * @param {(Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>)} [segmentsQuery]
- * @param {(Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>)} [partsQuery]
- * @param {Mongo.Query<PartInstance>} [partInstancesQuery]
+ * @param {(MongoQuery<DBSegment> | Mongo.QueryWithModifiers<DBSegment>)} [segmentsQuery]
+ * @param {(MongoQuery<DBPart> | Mongo.QueryWithModifiers<DBPart>)} [partsQuery]
+ * @param {MongoQuery<PartInstance>} [partInstancesQuery]
  * @param {FindOptions<DBSegment>} [segmentsOptions]
  * @param {FindOptions<DBPart>} [partsOptions]
  * @param {FindOptions<PartInstance>} [partInstancesOptions]
@@ -246,9 +254,9 @@ export function getPieceInstancesForPartInstance(
  */
 export function getSegmentsWithPartInstances(
 	playlist: RundownPlaylist,
-	segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>,
-	partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>,
-	partInstancesQuery?: Mongo.Query<PartInstance>,
+	segmentsQuery?: MongoQuery<DBSegment>,
+	partsQuery?: MongoQuery<DBPart>,
+	partInstancesQuery?: MongoQuery<PartInstance>,
 	segmentsOptions?: FindOptions<DBSegment>,
 	partsOptions?: FindOptions<DBPart>,
 	partInstancesOptions?: FindOptions<PartInstance>
@@ -267,8 +275,8 @@ export function getSegmentsWithPartInstances(
 	)
 	const playlistActivationId = playlist.activationId ?? protectString('')
 
-	const partsBySegment = _.groupBy(rawParts, (p) => p.segmentId)
-	const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => p.segmentId)
+	const partsBySegment = _.groupBy(rawParts, (p) => unprotectString(p.segmentId))
+	const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => unprotectString(p.segmentId))
 
 	return segments.map((segment) => {
 		const segmentParts = partsBySegment[unprotectString(segment._id)] || []

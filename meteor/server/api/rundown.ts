@@ -2,12 +2,12 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, RundownId } from '../../lib/collections/Rundowns'
-import { unprotectString, makePromise, normalizeArray, waitForPromise } from '../../lib/lib'
+import { unprotectString, normalizeArray } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylistId, RundownPlaylistCollectionUtil } from '../../lib/collections/RundownPlaylists'
@@ -20,18 +20,13 @@ import { createShowStyleCompound } from './showStyles'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import {
-	fetchBlueprintLight,
-	fetchBlueprintsLight,
-	fetchBlueprintVersion,
-	fetchShowStyleBaseLight,
-	fetchStudioLight,
-} from '../../lib/collections/optimizations'
-import {
 	checkAccessToPlaylist,
 	checkAccessToRundown,
 	VerifiedRundownContentAccess,
 	VerifiedRundownPlaylistContentAccess,
 } from './lib'
+import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
+import { Studio, Studios } from '../../lib/collections/Studios'
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */
@@ -78,35 +73,61 @@ export namespace ServerRundownAPI {
 	}
 }
 export namespace ClientRundownAPI {
-	export function rundownPlaylistNeedsResync(context: MethodContext, playlistId: RundownPlaylistId): string[] {
+	export async function rundownPlaylistNeedsResync(
+		context: MethodContext,
+		playlistId: RundownPlaylistId
+	): Promise<string[]> {
 		check(playlistId, String)
-		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
+		const access = await StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const playlist = access.playlist
 
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
-		const errors = rundowns.map((rundown) => {
-			if (!rundown.importVersions) return 'unknown'
+		const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist)
+		const errors = await Promise.all(
+			rundowns.map(async (rundown) => {
+				if (!rundown.importVersions) return 'unknown'
 
-			if (rundown.importVersions.core !== PackageInfo.version) return 'coreVersion'
+				if (rundown.importVersions.core !== PackageInfo.version) return 'coreVersion'
 
-			const showStyleVariant = ShowStyleVariants.findOne(rundown.showStyleVariantId)
-			if (!showStyleVariant) return 'missing showStyleVariant'
-			if (rundown.importVersions.showStyleVariant !== (showStyleVariant._rundownVersionHash || 0))
-				return 'showStyleVariant'
+				const showStyleVariant = (await ShowStyleVariants.findOneAsync(rundown.showStyleVariantId, {
+					fields: {
+						_id: 1,
+						_rundownVersionHash: 1,
+					},
+				})) as Pick<ShowStyleVariant, '_id' | '_rundownVersionHash'>
+				if (!showStyleVariant) return 'missing showStyleVariant'
+				if (rundown.importVersions.showStyleVariant !== (showStyleVariant._rundownVersionHash || 0))
+					return 'showStyleVariant'
 
-			const showStyleBase = fetchShowStyleBaseLight(rundown.showStyleBaseId)
-			if (!showStyleBase) return 'missing showStyleBase'
-			if (rundown.importVersions.showStyleBase !== (showStyleBase._rundownVersionHash || 0))
-				return 'showStyleBase'
+				const showStyleBase = (await ShowStyleBases.findOneAsync(rundown.showStyleBaseId, {
+					fields: {
+						_id: 1,
+						_rundownVersionHash: 1,
+						blueprintId: 1,
+					},
+				})) as Pick<ShowStyleBase, '_id' | '_rundownVersionHash' | 'blueprintId'>
+				if (!showStyleBase) return 'missing showStyleBase'
+				if (rundown.importVersions.showStyleBase !== (showStyleBase._rundownVersionHash || 0))
+					return 'showStyleBase'
 
-			const blueprintVersion = waitForPromise(fetchBlueprintVersion(showStyleBase.blueprintId))
-			if (!blueprintVersion) return 'missing blueprint'
-			if (rundown.importVersions.blueprint !== (blueprintVersion || 0)) return 'blueprint'
+				const blueprint = (await Blueprints.findOneAsync(showStyleBase.blueprintId, {
+					fields: {
+						_id: 1,
+						blueprintVersion: 1,
+					},
+				})) as Pick<Blueprint, '_id' | 'blueprintVersion'>
+				if (!blueprint.blueprintVersion) return 'missing blueprint'
+				if (rundown.importVersions.blueprint !== (blueprint.blueprintVersion || 0)) return 'blueprint'
 
-			const studio = fetchStudioLight(rundown.studioId)
-			if (!studio) return 'missing studio'
-			if (rundown.importVersions.studio !== (studio._rundownVersionHash || 0)) return 'studio'
-		})
+				const studio = (await Studios.findOneAsync(rundown.studioId, {
+					fields: {
+						_id: 1,
+						_rundownVersionHash: 1,
+					},
+				})) as Pick<Studio, '_id' | '_rundownVersionHash'>
+				if (!studio) return 'missing studio'
+				if (rundown.importVersions.studio !== (studio._rundownVersionHash || 0)) return 'studio'
+			})
+		)
 
 		return _.compact(errors)
 	}
@@ -117,14 +138,21 @@ export namespace ClientRundownAPI {
 	): Promise<RundownPlaylistValidateBlueprintConfigResult> {
 		check(playlistId, String)
 
-		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
+		const access = await StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const rundownPlaylist = access.playlist
 
 		const studio = RundownPlaylistCollectionUtil.getStudio(rundownPlaylist)
-		const studioBlueprint = studio.blueprintId ? await fetchBlueprintLight(studio.blueprintId) : null
+		const studioBlueprint = studio.blueprintId
+			? ((await Blueprints.findOneAsync(studio.blueprintId, {
+					fields: {
+						_id: 1,
+						studioConfigManifest: 1,
+					},
+			  })) as Pick<Blueprint, '_id' | 'studioConfigManifest'>)
+			: null
 		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
 
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(rundownPlaylist)
+		const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(rundownPlaylist)
 		const uniqueShowStyleCompounds = _.uniq(
 			rundowns,
 			undefined,
@@ -140,9 +168,17 @@ export namespace ClientRundownAPI {
 				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleVariantId) },
 			}),
 		])
-		const showStyleBlueprints = await fetchBlueprintsLight({
-			_id: { $in: _.uniq(_.compact(showStyleBases.map((c) => c.blueprintId))) },
-		})
+		const showStyleBlueprints = (await Blueprints.findFetchAsync(
+			{
+				_id: { $in: _.uniq(_.compact(showStyleBases.map((c) => c.blueprintId))) },
+			},
+			{
+				fields: {
+					_id: 1,
+					showStyleConfigManifest: 1,
+				},
+			}
+		)) as Array<Pick<Blueprint, '_id' | 'showStyleConfigManifest'>>
 
 		const showStyleBasesMap = normalizeArray(showStyleBases, '_id')
 		const showStyleVariantsMap = normalizeArray(showStyleVariants, '_id')
@@ -209,26 +245,26 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	}
 	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
 		check(playlistId, String)
-		const access = checkAccessToPlaylist(this, playlistId)
+		const access = await checkAccessToPlaylist(this, playlistId)
 
 		return ServerRundownAPI.resyncRundownPlaylist(access)
 	}
 	async rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
-		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(this, playlistId))
+		return ClientRundownAPI.rundownPlaylistNeedsResync(this, playlistId)
 	}
 	async rundownPlaylistValidateBlueprintConfig(playlistId: RundownPlaylistId) {
 		return ClientRundownAPI.rundownPlaylistValidateBlueprintConfig(this, playlistId)
 	}
 	async removeRundown(rundownId: RundownId) {
-		const access = checkAccessToRundown(this, rundownId)
+		const access = await checkAccessToRundown(this, rundownId)
 		return ServerRundownAPI.removeRundown(access)
 	}
 	async resyncRundown(rundownId: RundownId) {
-		const access = checkAccessToRundown(this, rundownId)
+		const access = await checkAccessToRundown(this, rundownId)
 		return ServerRundownAPI.innerResyncRundown(access.rundown)
 	}
 	async unsyncRundown(rundownId: RundownId) {
-		const access = checkAccessToRundown(this, rundownId)
+		const access = await checkAccessToRundown(this, rundownId)
 		return ServerRundownAPI.unsyncRundown(access)
 	}
 	async moveRundown(

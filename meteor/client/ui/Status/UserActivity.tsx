@@ -1,18 +1,23 @@
-import { Meteor } from 'meteor/meteor'
-import * as React from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import Moment from 'react-moment'
+import React, { useEffect, useState, useLayoutEffect } from 'react'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Time, unprotectString } from '../../../lib/lib'
-import * as _ from 'underscore'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
-import { withTranslation } from 'react-i18next'
+import { PubSub } from '../../../lib/api/pubsub'
+import { useTranslation } from 'react-i18next'
+import { parse as queryStringParse } from 'query-string'
+import { Link, useHistory, useLocation } from 'react-router-dom'
+import classNames from 'classnames'
+import Tooltip from 'rc-tooltip'
+
+const PARAM_DATE_FORMAT = 'YYYY-MM-DD'
+const PARAM_NAME_FROM_DATE = 'fromDate'
 
 interface IUserActionsListProps {
 	logItems: UserActionsLogItem[]
+	startDate?: number
+	highlighted?: string
 	onItemClick?: (item: UserActionsLogItem) => void
 	renderButtons?: (item: UserActionsLogItem) => React.ReactElement
 }
@@ -25,105 +30,132 @@ function prettyPrintJsonString(str: string): string {
 	}
 }
 
-export const UserActionsList = withTranslation()(
-	class UserActionsList extends React.Component<Translated<IUserActionsListProps>> {
-		renderMessageHead() {
-			const { t } = this.props
-			return (
-				<thead>
-					<tr>
-						<th className="c3 user-action-log__timestamp">{t('Timestamp')}</th>
-						<th className="c3 user-action-log__executionTime">{t('Execution times')}</th>
-						<th className="c1 user-action-log__userId">{t('User ID')}</th>
-						<th className="c2 user-action-log__clientAddress">{t('Client IP')}</th>
-						<th className="c3 user-action-log__context">{t('Action')}</th>
-						<th className="c3 user-action-log__method">{t('Method')}</th>
-						<th className="c1 user-action-log__status">{t('Status')}</th>
-						<th className="c1 user-action-log__args">{t('Parameters')}</th>
-						{this.props.renderButtons ? <th className="c1 user-action-log__buttons"></th> : null}
-					</tr>
-				</thead>
-			)
-		}
+export function UserActionsList(props: IUserActionsListProps) {
+	const { t } = useTranslation()
 
-		render() {
-			const { t } = this.props
-			return (
-				<table className="table user-action-log">
-					{this.renderMessageHead()}
-					<tbody>
-						{_.map(this.props.logItems, (msg) => {
-							return (
-								<tr
-									className={this.props.onItemClick ? 'clickable' : undefined}
-									key={unprotectString(msg._id)}
-									onClick={() => this.props.onItemClick && this.props.onItemClick(msg)}
-								>
-									<td className="user-action-log__timestamp">
-										<Moment format="YYYY/MM/DD HH:mm:ss.SSS">{msg.timestamp}</Moment>
-									</td>
-									<td className="user-action-log__executionTime">
-										<table>
-											{msg.executionTime ? (
-												<tr>
-													<td>{t('Core')}:</td>
-													<td>{msg.executionTime} ms</td>
-												</tr>
-											) : null}
-											{msg.workerTime ? (
-												<tr>
-													<td>{t('Worker')}:</td>
-													<td>{msg.workerTime} ms</td>
-												</tr>
-											) : null}
-											{msg.gatewayDuration ? (
-												<tr>
-													<td>{t('Gateway')}:</td>
-													<td>{msg.gatewayDuration.join(', ')} ms</td>
-												</tr>
-											) : null}
-											{msg.timelineResolveDuration ? (
-												<tr>
-													<td>{t('TSR')}:</td>
-													<td>{msg.timelineResolveDuration.join(', ')} ms</td>
-												</tr>
-											) : null}
-										</table>
-									</td>
-									<td className="user-action-log__userId">{msg.userId}</td>
-									<td className="user-action-log__clientAddress">{msg.clientAddress}</td>
-									<td className="user-action-log__context">{msg.context}</td>
-									<td className="user-action-log__method">{msg.method}</td>
-									<td className="user-action-log__status">
-										{msg.success ? 'Success' : msg.success === false ? 'Error: ' + msg.errorMessage : null}
-									</td>
-									<td className="user-action-log__args">{prettyPrintJsonString(msg.args)}</td>
-									{this.props.renderButtons ? (
-										<td className="user-action-log__buttons">{this.props.renderButtons(msg)}</td>
-									) : null}
-								</tr>
-							)
-						})}
-					</tbody>
-				</table>
-			)
-		}
+	function renderMessageHead() {
+		return (
+			<thead>
+				<tr>
+					<th className="c3 user-action-log__timestamp">{t('Timestamp')}</th>
+					<th className="c3 user-action-log__executionTime">{t('Execution times')}</th>
+					<th className="c1 user-action-log__userId">{t('User ID')}</th>
+					<th className="c2 user-action-log__clientAddress">{t('Client IP')}</th>
+					<th className="c3 user-action-log__context">{t('Action')}</th>
+					<th className="c3 user-action-log__method">{t('Method')}</th>
+					<th className="c1 user-action-log__status">{t('Status')}</th>
+					<th className="c1 user-action-log__args">{t('Parameters')}</th>
+					{props.renderButtons ? <th className="c1 user-action-log__buttons"></th> : null}
+				</tr>
+			</thead>
+		)
 	}
-)
 
-interface IUserActivityProps {}
-interface IUserActivityState {
-	dateFrom: Time
-	dateTo: Time
-}
-interface IUserActivityTrackedProps {
-	log: UserActionsLogItem[]
+	return (
+		<table className="table user-action-log">
+			{renderMessageHead()}
+			<tbody>
+				{props.logItems.map((msg) => {
+					const formattedTimestamp = moment(msg.timestamp).format('YYYY/MM/DD HH:mm:ss.SSS')
+					const anchorId = `t${msg.timestamp}`
+					const selfLink = `${location.pathname}?${PARAM_NAME_FROM_DATE}=${moment(props.startDate).format(
+						PARAM_DATE_FORMAT
+					)}#${anchorId}`
+					return (
+						<tr
+							className={classNames({
+								clickable: props.onItemClick,
+								hl: props.highlighted === anchorId,
+							})}
+							key={unprotectString(msg._id)}
+							onClick={() => props.onItemClick && props.onItemClick(msg)}
+						>
+							<td className="user-action-log__timestamp">
+								<Link id={anchorId} to={selfLink}>
+									{formattedTimestamp}
+								</Link>
+							</td>
+							<td className="user-action-log__executionTime">
+								<table>
+									<tbody>
+										{msg.clientTime ? (
+											<tr>
+												<td>
+													<Tooltip
+														overlay={t('Time from platform user event to Action received by Core')}
+														placement="top"
+														align="left"
+													>
+														<span>{t('GUI')}:</span>
+													</Tooltip>
+												</td>
+												<td>{Math.round((msg.timestamp - msg.clientTime) * 100) / 100} ms</td>
+											</tr>
+										) : null}
+										{msg.executionTime ? (
+											<tr>
+												<td>
+													<Tooltip overlay={t('Core + Worker processing time')} placement="top" align="left">
+														<span>{t('Core')}:</span>
+													</Tooltip>
+												</td>
+												<td>{msg.executionTime} ms</td>
+											</tr>
+										) : null}
+										{msg.workerTime ? (
+											<tr>
+												<td>{t('Worker')}:</td>
+												<td>{msg.workerTime} ms</td>
+											</tr>
+										) : null}
+										{msg.gatewayDuration ? (
+											<tr>
+												<td>{t('Gateway')}:</td>
+												<td>{msg.gatewayDuration.join(', ')} ms</td>
+											</tr>
+										) : null}
+										{msg.timelineResolveDuration ? (
+											<tr>
+												<td>{t('TSR')}:</td>
+												<td>{msg.timelineResolveDuration.join(', ')} ms</td>
+											</tr>
+										) : null}
+									</tbody>
+								</table>
+							</td>
+							<td className="user-action-log__userId">{msg.userId}</td>
+							<td className="user-action-log__clientAddress">{msg.clientAddress}</td>
+							<td className="user-action-log__context">{msg.context}</td>
+							<td className="user-action-log__method">{msg.method}</td>
+							<td className="user-action-log__status">
+								{msg.success ? 'Success' : msg.success === false ? 'Error: ' + msg.errorMessage : null}
+							</td>
+							<td className="user-action-log__args">{prettyPrintJsonString(msg.args)}</td>
+							{props.renderButtons ? <td className="user-action-log__buttons">{props.renderButtons(msg)}</td> : null}
+						</tr>
+					)
+				})}
+			</tbody>
+		</table>
+	)
 }
 
-const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState, IUserActivityTrackedProps>(
-	(_props: IUserActivityProps) => {
-		return {
-			log: UserActionsLog.find(
+function UserActivity() {
+	const { t } = useTranslation()
+
+	const [dateFrom, setDateFrom] = useState<Time>(moment().startOf('day').valueOf())
+	const [dateTo, setDateTo] = useState<Time>(moment().add(1, 'days').startOf('day').valueOf())
+
+	useSubscription(PubSub.userActionsLog, {
+		timestamp: {
+			$gte: dateFrom,
+			$lt: dateTo,
+		},
+	})
+
+	const log = useTracker(
+		() =>
+			UserActionsLog.find(
 				{},
 				{
 					sort: {
@@ -131,85 +163,66 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 					},
 				}
 			).fetch(),
+		[],
+		[]
+	)
+
+	const location = useLocation()
+	const history = useHistory()
+
+	useEffect(() => {
+		const queryParams = queryStringParse(location.search, {
+			arrayFormat: 'comma',
+		})
+
+		const qsStartDate = moment(queryParams[PARAM_NAME_FROM_DATE], PARAM_DATE_FORMAT, true)
+
+		if (qsStartDate.isValid()) {
+			setDateFrom(qsStartDate.startOf('day').valueOf())
+			setDateTo(qsStartDate.add(1, 'days').startOf('day').valueOf())
 		}
+	}, [location])
+
+	function onDateChange(from: Time, to: Time) {
+		setDateFrom(from)
+		setDateTo(to)
+		location.search = `?${PARAM_NAME_FROM_DATE}=` + moment(from).format(PARAM_DATE_FORMAT)
+		history.replace(location)
 	}
-)(
-	class UserActivity extends MeteorReactComponent<
-		Translated<IUserActivityProps & IUserActivityTrackedProps>,
-		IUserActivityState
-	> {
-		private _currentsub: string = ''
-		private _sub?: Meteor.SubscriptionHandle
-		constructor(props) {
-			super(props)
 
-			this.state = {
-				dateFrom: moment().startOf('day').valueOf(),
-				dateTo: moment().add(1, 'days').startOf('day').valueOf(),
-			}
-		}
-		componentDidMount() {
-			// Subscribe to data:
-			this.updateSubscription()
-		}
-		componentDidUpdate() {
-			this.updateSubscription()
-		}
-		updateSubscription() {
-			const h = this.state.dateFrom + '_' + this.state.dateTo
-			if (h !== this._currentsub) {
-				this._currentsub = h
-				if (this._sub) {
-					this._sub.stop()
-				}
-				this._sub = meteorSubscribe(PubSub.userActionsLog, {
-					timestamp: {
-						$gte: this.state.dateFrom,
-						$lt: this.state.dateTo,
-					},
-				})
-			}
-		}
-		componentWillUnmount() {
-			if (this._sub) {
-				this._sub.stop()
-			}
-			this._cleanUp()
-		}
+	const logItems = log.filter(({ timestamp }) => timestamp >= dateFrom && timestamp < dateTo)
 
-		handleChangeDate = (from: Time, to: Time) => {
-			this.setState({
-				dateFrom: from,
-				dateTo: to,
-			})
-		}
+	const [highlighted, setHighlighted] = useState<string | undefined>(undefined)
 
-		renderUserActivity() {
-			return (
-				<div>
-					<div className="paging">
-						<DatePickerFromTo from={this.state.dateFrom} to={this.state.dateTo} onChange={this.handleChangeDate} />
-					</div>
-					<UserActionsList
-						logItems={_.filter(this.props.log, (ua) => {
-							return ua.timestamp >= this.state.dateFrom && ua.timestamp < this.state.dateTo
-						})}
-					/>
+	function renderUserActivity() {
+		return (
+			<div>
+				<div className="paging">
+					<DatePickerFromTo from={dateFrom} to={dateTo} onChange={onDateChange} />
 				</div>
-			)
-		}
-
-		render() {
-			const { t } = this.props
-			return (
-				<div className="mhl gutter external-message-status">
-					<header className="mbs">
-						<h1>{t('User Activity Log')}</h1>
-					</header>
-					<div className="mod mvl">{this.renderUserActivity()}</div>
-				</div>
-			)
-		}
+				<UserActionsList logItems={logItems} startDate={dateFrom} highlighted={highlighted} />
+			</div>
+		)
 	}
-)
+
+	useLayoutEffect(() => {
+		const targetId = location.hash ? location.hash.substring(1) : undefined
+		if (highlighted !== targetId && logItems.length && targetId) {
+			const targetElement = document.getElementById(targetId)
+			if (!targetElement) return
+			targetElement.scrollIntoView()
+			setHighlighted(targetId)
+		}
+	}, [location, location.hash, highlighted, logItems.length])
+
+	return (
+		<div className="mhl gutter external-message-status">
+			<header className="mbs">
+				<h1>{t('User Activity Log')}</h1>
+			</header>
+			<div className="mod mvl">{renderUserActivity()}</div>
+		</div>
+	)
+}
+
 export { UserActivity }

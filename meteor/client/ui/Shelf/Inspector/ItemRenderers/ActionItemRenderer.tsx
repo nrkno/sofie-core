@@ -1,7 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibPieceUi } from '../../AdLibPanel'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
 import {
@@ -11,8 +10,7 @@ import {
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { AdLibActionCommon } from '../../../../../lib/collections/AdLibActions'
-import { createMongoCollection } from '../../../../../lib/collections/lib'
-import { TransformedCollection } from '../../../../../lib/typings/meteor'
+import { createInMemoryMongoCollection } from '../../../../../lib/collections/lib'
 import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
 import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../../lib/api/deviceConfig'
 import { Spinner } from '../../../../lib/Spinner'
@@ -30,6 +28,7 @@ import { actionToAdLibPieceUi } from '../../BucketPanel'
 import RundownViewEventBus, { RundownViewEvents } from '../../../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from '../../AdLibListItem'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { AdLibPieceUi } from '../../../../lib/shelf'
 
 export { isActionItem }
 
@@ -62,8 +61,7 @@ function transformedAdLibActionToAction(transformed: TransformedAdLibAction): Ad
 }
 
 // create a temporary collection to store changes to the AdLib Actions
-const LocalActionItems: TransformedCollection<TransformedAdLibAction, TransformedAdLibAction> =
-	createMongoCollection(null)
+const LocalActionItems = createInMemoryMongoCollection<TransformedAdLibAction>('TransformedAdLibAction')
 
 export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 	const piece = RundownUtils.isPieceInstance(props.piece)
@@ -198,9 +196,10 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			const { t, targetAction } = this.props
 
 			if (targetAction) {
-				doUserAction(t, e, UserAction.START_ADLIB, (e) =>
+				doUserAction(t, e, UserAction.START_ADLIB, (e, ts) =>
 					MeteorCall.userAction.executeAction(
 						e,
+						ts,
 						this.props.rundownPlaylist._id,
 						targetAction._id,
 						targetAction.actionId,
@@ -220,9 +219,10 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 					t,
 					e,
 					UserAction.SAVE_TO_BUCKET,
-					(e) =>
+					(e, ts) =>
 						MeteorCall.userAction.bucketsSaveActionIntoBucket(
 							e,
+							ts,
 							this.props.studio._id,
 							this.props.bucketIds[0],
 							transformedAdLibActionToAction(targetAction)

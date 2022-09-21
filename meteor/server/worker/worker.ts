@@ -13,7 +13,6 @@ import {
 	getCurrentTime,
 	getRandomString,
 	ManualPromise,
-	MongoSelector,
 	stringifyError,
 	waitForPromise,
 } from '../../lib/lib'
@@ -25,6 +24,11 @@ import { fetchStudioLight } from '../../lib/collections/optimizations'
 import * as path from 'path'
 import { LogEntry } from 'winston'
 import { initializeWorkerStatus, setWorkerStatus } from './workerStatus'
+import { MongoQuery } from '../../lib/typings/meteor'
+
+const FREEZE_LIMIT = 1000 // how long to wait for a response to a Ping
+const RESTART_TIMEOUT = 30000 // how long to wait for a restart to complete before throwing an error
+const KILL_TIMOUT = 30000 // how long to wait for a thread to terminate before throwing an error
 
 interface JobEntry {
 	spec: JobSpec
@@ -33,9 +37,9 @@ interface JobEntry {
 }
 
 interface JobQueue {
-	jobs: JobEntry[]
+	jobs: Array<JobEntry | null>
 	/** Notify that there is a job waiting (aka worker is long-polling) */
-	notifyWorker: ManualPromise<JobSpec> | null
+	notifyWorker: ManualPromise<JobSpec | null> | null
 }
 
 type JobCompletionHandler = (startedTime: number, finishedTime: number, err: any, result: any) => void
@@ -70,7 +74,7 @@ async function jobFinished(
 	}
 }
 /** This is called by each Worker Thread, when it is idle and wants another job */
-async function getNextJob(queueName: string): Promise<JobSpec> {
+async function getNextJob(queueName: string): Promise<JobSpec | null> {
 	// Check if there is a job waiting:
 	const queue = getOrCreateQueue(queueName)
 	const job = queue.jobs.shift()
@@ -99,6 +103,26 @@ async function getNextJob(queueName: string): Promise<JobSpec> {
 	// Wait to be notified about a job
 	queue.notifyWorker = createManualPromise()
 	return queue.notifyWorker
+}
+/** This is called by each Worker Thread, when it is idle and wants another job */
+async function interruptJobStream(queueName: string): Promise<void> {
+	// Check if there is a job waiting:
+	const queue = getOrCreateQueue(queueName)
+	if (queue.notifyWorker) {
+		const oldNotify = queue.notifyWorker
+		queue.notifyWorker = null
+
+		Meteor.defer(() => {
+			try {
+				// Notify the worker in the background
+				oldNotify.manualResolve(null)
+			} catch (e) {
+				// Ignore
+			}
+		})
+	} else {
+		queue.jobs.unshift(null)
+	}
 }
 async function queueJobWithoutResult(queueName: string, jobName: string, jobData: unknown): Promise<void> {
 	queueJobInner(queueName, {
@@ -151,7 +175,7 @@ function queueJobAndWrapResult<TRes>(queueName: string, job: JobSpec, now: Time)
 }
 
 async function fastTrackTimeline(newTimeline: TimelineComplete): Promise<void> {
-	const studio = fetchStudioLight(newTimeline._id)
+	const studio = await fetchStudioLight(newTimeline._id)
 	if (!studio) throw new Error(`Studio "${newTimeline._id}" was not found for timeline fast-track`)
 
 	// Also do a fast-track for the timeline to be published faster:
@@ -159,7 +183,7 @@ async function fastTrackTimeline(newTimeline: TimelineComplete): Promise<void> {
 
 	// Store the timelineHash to the latest UserLog,
 	// so that it can be looked up later to set .gatewayDuration:
-	const selector: MongoSelector<UserActionsLogItem> = {
+	const selector: MongoQuery<UserActionsLogItem> = {
 		// Try to match the latest userActionLogItem:
 		success: { $exists: false },
 		// This could be improved (as it relies on that the internal execution takes no longer than 3000 ms),
@@ -191,6 +215,16 @@ async function logLine(msg: LogEntry): Promise<void> {
 
 let worker: Promisify<IpcJobWorker> | undefined
 Meteor.startup(() => {
+	if (Meteor.isDevelopment) {
+		// Ensure meteor restarts when the _force_restart file changes
+		try {
+			// eslint-disable-next-line node/no-missing-require, node/no-unpublished-require
+			require('../_force_restart')
+		} catch (e) {
+			// ignore
+		}
+	}
+
 	if (!process.env.MONGO_URL) throw new Error('MONGO_URL must be defined to launch Sofie')
 	// Note: MONGO_OPLOG_URL isn't required for the worker, but is required for meteor to not lag badly
 	if (!process.env.MONGO_OPLOG_URL) throw new Error('MONGO_OPLOG_URL must be defined to launch Sofie')
@@ -215,11 +249,23 @@ Meteor.startup(() => {
 		threadedClass<IpcJobWorker, typeof IpcJobWorker>(
 			workerEntrypoint,
 			'IpcJobWorker',
-			[workerId, jobFinished, getNextJob, queueJobWithoutResult, logLine, fastTrackTimeline],
-			{}
+			[workerId, jobFinished, interruptJobStream, getNextJob, queueJobWithoutResult, logLine, fastTrackTimeline],
+			{
+				autoRestart: true,
+				freezeLimit: FREEZE_LIMIT,
+				restartTimeout: RESTART_TIMEOUT,
+				killTimeout: KILL_TIMOUT,
+			}
 		)
 	)
 
+	ThreadedClassManager.onEvent(
+		worker,
+		'error',
+		Meteor.bindEnvironment((e0) => {
+			logger.error('Error in Worker threads IPC: ', e0)
+		})
+	)
 	ThreadedClassManager.onEvent(
 		worker,
 		'restarted',

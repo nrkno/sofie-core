@@ -1,26 +1,29 @@
-import { DBRundown, RundownId, Rundowns } from './collections/Rundowns'
+import { Rundown, RundownId, Rundowns } from './collections/Rundowns'
 import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { Segments, DBSegment, SegmentOrphanedReason } from './collections/Segments'
+import { Segments, SegmentOrphanedReason, Segment } from './collections/Segments'
 import { Part, Parts } from './collections/Parts'
-import { unprotectString, literal, generateTranslation, normalizeArrayToMap } from './lib'
+import { unprotectString, literal, generateTranslation, normalizeArrayToMap, MongoFieldSpecifierOnes } from './lib'
 import * as _ from 'underscore'
 import { DBPartInstance, PartInstance, PartInstances } from './collections/PartInstances'
-import { MongoFieldSpecifierOnes } from './typings/meteor'
-import { RundownPlaylistCollectionUtil } from './collections/RundownPlaylists'
+import { RundownPlaylistCollectionUtil, RundownPlaylistId, RundownPlaylists } from './collections/RundownPlaylists'
 import { ITranslatableMessage, NoteSeverity } from '@sofie-automation/blueprints-integration'
 
-export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
+export function getSegmentPartNotes(playlistId: RundownPlaylistId, rundownIds: RundownId[]): TrackedNote[] {
+	const playlist = RundownPlaylists.findOne(playlistId)
+	if (!playlist) return []
+
 	const rundowns = Rundowns.find(
-		{ _id: { $in: rundownIds } },
+		{
+			_id: { $in: rundownIds },
+			playlistId: playlistId,
+		},
 		{
 			fields: {
 				_id: 1,
-				_rank: 1,
-				name: 1,
 				externalNRCSName: 1,
 			},
 		}
-	).fetch()
+	).fetch() as Array<Pick<Rundown, '_id' | 'externalNRCSName'>>
 
 	const segments = Segments.find(
 		{
@@ -39,7 +42,7 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 				orphaned: 1,
 			},
 		}
-	).fetch()
+	).fetch() as Array<SegmentForNotes>
 
 	const parts = Parts.find(
 		{
@@ -59,7 +62,7 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 				invalidReason: 1,
 			},
 		}
-	).fetch()
+	).fetch() as Array<PartForNotes>
 
 	const deletedPartInstances = PartInstances.find(
 		{
@@ -81,23 +84,23 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 		}
 	).fetch()
 
-	const sortedSegments = RundownPlaylistCollectionUtil._sortSegments(segments, rundowns)
+	const sortedSegments = RundownPlaylistCollectionUtil._sortSegments(segments, playlist)
 	const sortedParts = RundownPlaylistCollectionUtil._sortPartsInner(parts, segments)
 
 	return getAllNotesForSegmentAndParts(rundowns, sortedSegments, sortedParts, deletedPartInstances)
 }
 
 function getAllNotesForSegmentAndParts(
-	rundowns: DBRundown[],
-	segments: DBSegment[],
-	parts: Part[],
+	rundowns: Array<Pick<Rundown, '_id' | 'externalNRCSName'>>,
+	segments: SegmentForNotes[],
+	parts: PartForNotes[],
 	deletedPartInstances: PartInstance[]
 ): Array<TrackedNote> {
 	const notes: Array<TrackedNote> = []
 
 	const rundownsMap = normalizeArrayToMap(rundowns, '_id')
-	const partsBySegment = _.groupBy(parts, (p) => p.segmentId)
-	const partInstancesBySegment = _.groupBy(deletedPartInstances, (p) => p.segmentId)
+	const partsBySegment = _.groupBy(parts, (p) => unprotectString(p.segmentId))
+	const partInstancesBySegment = _.groupBy(deletedPartInstances, (p) => unprotectString(p.segmentId))
 
 	for (const segment of segments) {
 		const segmentParts = partsBySegment[unprotectString(segment._id)] || []
@@ -116,10 +119,16 @@ function getAllNotesForSegmentAndParts(
 	return notes
 }
 
+export type SegmentForNotes = Pick<Segment, '_id' | '_rank' | 'rundownId' | 'name' | 'notes' | 'orphaned'>
+export type PartForNotes = Pick<
+	Part,
+	'_id' | '_rank' | 'segmentId' | 'rundownId' | 'notes' | 'title' | 'invalid' | 'invalidReason'
+>
+
 export function getBasicNotesForSegment(
-	segment: DBSegment,
+	segment: SegmentForNotes,
 	nrcsName: string,
-	parts: Part[],
+	parts: PartForNotes[],
 	partInstances: Pick<DBPartInstance, 'orphaned' | 'reset' | 'part'>[]
 ): Array<TrackedNote> {
 	const notes: Array<TrackedNote> = []

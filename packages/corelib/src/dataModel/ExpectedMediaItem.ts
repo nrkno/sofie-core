@@ -28,6 +28,9 @@ export interface ExpectedMediaItemBase {
 
 	/** Time to wait before removing file */
 	lingerTime?: number
+
+	/** Frame that media manager should grab for thumbnail preview */
+	previewFrame?: number
 }
 /** @deprecated */
 export interface ExpectedMediaItemRundown extends ExpectedMediaItemBase {

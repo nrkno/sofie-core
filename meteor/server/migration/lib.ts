@@ -8,8 +8,8 @@ import {
 import { Collections, objectPathGet, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
-import { TransformedCollection } from '../../lib/typings/meteor'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { AsyncMongoCollection } from '../../lib/collections/lib'
 
 /**
  * Returns a migration step that ensures the provided property is set in the collection
@@ -162,11 +162,11 @@ export function removeCollectionProperty<T = any>(
 interface RenameContent {
 	content: { [newValue: string]: string }
 }
-export function renamePropertiesInCollection<T extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+export function renamePropertiesInCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	id: string,
-	collection: TransformedCollection<T, DBInterface>,
+	collection: AsyncMongoCollection<DBInterface>,
 	collectionName: string,
-	renames: Partial<{ [newAttr in keyof T]: string | RenameContent }>,
+	renames: Partial<{ [newAttr in keyof DBInterface]: string | RenameContent }>,
 	dependOnResultFrom?: string
 ) {
 	const m: any = {

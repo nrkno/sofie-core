@@ -1,6 +1,6 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { withTiming, WithTiming } from './withTiming'
+import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './withTiming'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartId } from '../../../../lib/collections/Parts'
 import { unprotectString } from '../../../../lib/lib'
@@ -16,7 +16,8 @@ interface IPartElapsedProps {
  * @extends React.Component<WithTiming<{}>>
  */
 export const CurrentPartElapsed = withTiming<IPartElapsedProps, {}>({
-	isHighResolution: true,
+	dataResolution: TimingDataResolution.High,
+	tickResolution: TimingTickResolution.High,
 })(
 	class CurrentPartElapsed extends React.Component<WithTiming<IPartElapsedProps>> {
 		render() {

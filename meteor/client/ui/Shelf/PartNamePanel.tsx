@@ -41,8 +41,8 @@ class PartNamePanelInner extends MeteorReactComponent<
 	}
 
 	render() {
-		const { t } = this.props
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+		const { t } = this.props
 
 		const sourceLayerType = this.props.instanceToShow?.sourceLayer?.type
 		let backgroundSourceLayer = sourceLayerType ? RundownUtils.getSourceLayerClassName(sourceLayerType) : undefined
@@ -80,9 +80,8 @@ export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, I
 			const selectedPartInstance = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
 				_id: selectedPartInstanceId,
 			})[0]
-			name = selectedPartInstance.part?.title
-
 			if (selectedPartInstance && props.panel.showPieceIconColor) {
+				name = selectedPartInstance.part?.title
 				const pieceInstances = PieceInstances.find({ partInstanceId: selectedPartInstance._id }).fetch()
 				instanceToShow = findPieceInstanceToShowFromInstances(
 					pieceInstances,

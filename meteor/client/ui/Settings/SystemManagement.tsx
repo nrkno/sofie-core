@@ -26,7 +26,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 })(
 	class SystemManagement extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
 		componentDidMount() {
-			meteorSubscribe(PubSub.coreSystem, null)
+			meteorSubscribe(PubSub.coreSystem)
 		}
 		cleanUpOldDatabaseIndexes(): void {
 			const { t } = this.props
@@ -234,6 +234,47 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 							<button className="btn btn-default" onClick={() => checkForOldDataAndCleanUp(t)}>
 								{t('Cleanup old data')}
 							</button>
+						</div>
+
+						<h2 className="mhn">{t('Cron jobs')}</h2>
+						<div className="field">
+							{t('Disable CasparCG restart job')}
+							<div className="mdi">
+								<EditAttribute
+									attribute="cron.casparCG.disabled"
+									obj={this.props.coreSystem}
+									type="checkbox"
+									collection={CoreSystem}
+								></EditAttribute>
+							</div>
+						</div>
+						<div className="field">
+							{t('Enable automatic storage of Rundown Playlist snapshots periodically')}
+							<div className="mdi">
+								<EditAttribute
+									attribute="cron.storeRundownSnapshots.enabled"
+									obj={this.props.coreSystem}
+									type="checkbox"
+									collection={CoreSystem}
+								></EditAttribute>
+							</div>
+							{t('Filter: If set, only store snapshots for certain rundowns')}
+							<div className="mdi">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="cron.storeRundownSnapshots.rundownNames"
+									obj={this.props.coreSystem}
+									type="text"
+									collection={CoreSystem}
+									className="mdinput"
+									label="Rundown Playlist names"
+									mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join(', '))}
+									mutateUpdateValue={(v) =>
+										v === undefined || v.length === 0 ? undefined : v.split(',').map((i) => i.trim())
+									}
+								/>
+							</div>
+							<div>{t('(Comma separated list. Empty - will store snapshots of all Rundown Playlists)')}</div>
 						</div>
 					</div>
 				</div>

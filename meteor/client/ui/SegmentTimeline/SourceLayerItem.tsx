@@ -9,7 +9,6 @@ import { VTSourceRenderer } from './Renderers/VTSourceRenderer'
 import { STKSourceRenderer } from './Renderers/STKSourceRenderer'
 import { L3rdSourceRenderer } from './Renderers/L3rdSourceRenderer'
 import { SplitsSourceRenderer } from './Renderers/SplitsSourceRenderer'
-import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 import { LocalLayerItemRenderer } from './Renderers/LocalLayerItemRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
@@ -19,56 +18,91 @@ import { unprotectString } from '../../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { Studio } from '../../../lib/collections/Studios'
 import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
-
+import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
+import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 
 export interface ISourceLayerItemProps {
+	/** SourceLayer this item is on */
 	layer: ISourceLayerUi
+	/** Output layer the source layer belongs to */
 	outputLayer: IOutputLayerUi
+	/** URL where media previews / thumbnails are available (e.g. media manager)  */
 	mediaPreviewUrl: string
-	// segment: SegmentUi
+	/** Part containing this item */
 	part: PartUi
+	/** When the part starts (unix timestamp)  */
 	partStartsAt: number
+	/** Part definite duration (generally set after part is played) */
 	partDuration: number
+	/** Part expected duration (before playout) */
 	partExpectedDuration: number
+	/** The piece being rendered in this layer */
 	piece: PieceUi
+	/** Scaling factor for this segment */
 	timeScale: number
+	/** Whether this part is live */
 	isLiveLine: boolean
+	/** Whether this part is next */
 	isNextLine: boolean
+	/** Seemingly always true? */
 	isPreview: boolean
+	/** Whether the element does not have enough width to render text */
 	isTooSmallForText: boolean
+	/** Callback fired when the segment tracks to the live line */
 	onFollowLiveLine?: (state: boolean, event: any) => void
+	/** Callback fired when the element is clicked */
 	onClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	/** Callback fired when the element is double-clicked */
 	onDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
+	/** Seemingly always true? */
 	relative?: boolean
+	/** Whether the movement of the element should follow the live line. False when the user is scrolling the segment themselves */
 	followLiveLine: boolean
+	/** True when we are automatically moving to the next part at the end of the allocated time */
 	autoNextPart: boolean
+	/** How much of the segment to show behind the live line position */
 	liveLineHistorySize: number
+	/** Position of the live line */
 	livePosition: number | null
+	/** Whether output groups are in "collapsed" mode, showing just a preview of each source layer */
 	outputGroupCollapsed: boolean
+	/** Amount of scroll relative to left of segment container */
 	scrollLeft: number
+	/** Width of element including content not visible due to overflow */
 	scrollWidth: number
+	/** Seemingly unused */
 	liveLinePadding: number
+	/** Index of this source layer in an array of sorted sourcelayers (generally sorted by rank) */
 	layerIndex: number
+	/** The studio this content belongs to */
 	studio: Studio | undefined
+	/** If source duration of piece's content should be displayed next to any labels */
+	showDuration?: boolean
 }
 interface ISourceLayerItemState {
+	/** Whether hover-scrub / inspector is shown */
 	showMiniInspector: boolean
+	/** Element position relative to document top-left */
 	elementPosition: OffsetPosition
+	/** Cursor position relative to element */
 	cursorPosition: OffsetPosition
-	scrollLeftOffset: number
+	/** Cursor position relative to entire viewport */
+	cursorRawPosition: { clientX: number; clientY: number }
+	/** Timecode under cursor */
 	cursorTimePosition: number
+	/** A reference to this element (&self) */
 	itemElement: HTMLDivElement | null
+	/** Width of the child element anchored to the left side of this element */
 	leftAnchoredWidth: number
+	/** Width of the child element anchored to the right side of this element */
 	rightAnchoredWidth: number
+	/** Set to `true` when the segment is "highlighted" (in focus, generally from a scroll event) */
 	highlight: boolean
 }
 export const SourceLayerItem = withTranslation()(
 	class SourceLayerItem extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
-		private _resizeObserver: ResizeObserver | undefined
-		private itemElement: HTMLDivElement | undefined
-
 		constructor(props) {
 			super(props)
 			this.state = {
@@ -81,7 +115,10 @@ export const SourceLayerItem = withTranslation()(
 					top: 0,
 					left: 0,
 				},
-				scrollLeftOffset: 0,
+				cursorRawPosition: {
+					clientX: 0,
+					clientY: 0,
+				},
 				cursorTimePosition: 0,
 				itemElement: null,
 				leftAnchoredWidth: 0,
@@ -94,11 +131,18 @@ export const SourceLayerItem = withTranslation()(
 			this.setState({
 				itemElement: e,
 			})
-			this.itemElement = e
 		}
 
 		convertTimeToPixels = (time: number) => {
 			return Math.round(this.props.timeScale * time)
+		}
+
+		private getSourceDurationLabelAlignment = (): SourceDurationLabelAlignment => {
+			if (this.props.part && this.props.partStartsAt !== undefined && !this.props.isLiveLine) {
+				const elementWidth = this.getElementAbsoluteWidth()
+				return this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > elementWidth - 10 ? 'left' : 'right'
+			}
+			return 'right'
 		}
 
 		getItemLabelOffsetLeft = (): React.CSSProperties => {
@@ -296,7 +340,9 @@ export const SourceLayerItem = withTranslation()(
 
 			if (
 				(innerPiece.lifespan !== PieceLifespan.WithinPart ||
-					(innerPiece.enable.start !== undefined && innerPiece.enable.duration === undefined)) &&
+					(innerPiece.enable.start !== undefined &&
+						innerPiece.enable.duration === undefined &&
+						piece.instance.userDuration?.end === undefined)) &&
 				!piece.cropped &&
 				piece.renderedDuration === null &&
 				piece.instance.userDuration === undefined
@@ -314,6 +360,18 @@ export const SourceLayerItem = withTranslation()(
 		getElementAbsoluteWidth(): number {
 			const itemDuration = this.getItemDuration()
 			return this.convertTimeToPixels(itemDuration)
+		}
+
+		getElementAbsoluteStyleWidth(): string {
+			const renderedInPoint = this.props.piece.renderedInPoint
+			if (renderedInPoint === 0) {
+				const itemPossiblyInfiniteDuration = this.getItemDuration(true)
+				if (!Number.isFinite(itemPossiblyInfiniteDuration)) {
+					return '100%'
+				}
+			}
+			const itemDuration = this.getItemDuration(false)
+			return this.convertTimeToPixels(itemDuration).toString() + 'px'
 		}
 
 		getItemStyle(): { [key: string]: string } {
@@ -351,10 +409,23 @@ export const SourceLayerItem = withTranslation()(
 				}
 				return {
 					left: this.convertTimeToPixels(piece.renderedInPoint || 0).toString() + 'px',
-					width: this.getElementAbsoluteWidth().toString() + 'px',
+					width: this.getElementAbsoluteStyleWidth(),
 				}
 			}
 		}
+
+		// TODO(Performance): use ResizeObserver to avoid style recalculations
+		// checkElementWidth = () => {
+		// 	if (this.state.itemElement && this._forceSizingRecheck) {
+		// 		this._forceSizingRecheck = false
+		// 		const width = getElementWidth(this.state.itemElement) || 0
+		// 		if (this.state.elementWidth !== width) {
+		// 			this.setState({
+		// 				elementWidth: width
+		// 			})
+		// 		}
+		// 	}
+		// }
 
 		private highlightTimeout: NodeJS.Timer
 
@@ -383,14 +454,18 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		componentDidUpdate(prevProps: ISourceLayerItemProps, _prevState: ISourceLayerItemState) {
-			if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
-				const scrollLeftOffset = this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft)
-				const cursorTimePosition = this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft)
-				if (this.state.scrollLeftOffset !== scrollLeftOffset && this.state.cursorTimePosition !== cursorTimePosition) {
-					this.setState({
-						scrollLeftOffset,
-						cursorTimePosition,
-					})
+			if (this.state.showMiniInspector) {
+				if (prevProps.scrollLeft !== this.props.scrollLeft) {
+					const cursorPosition = {
+						left: this.state.cursorRawPosition.clientX - this.state.elementPosition.left,
+						top: this.state.cursorRawPosition.clientY - this.state.elementPosition.top,
+					}
+					const cursorTimePosition = Math.max(cursorPosition.left, 0) / this.props.timeScale
+					if (this.state.cursorTimePosition !== cursorTimePosition) {
+						this.setState({
+							cursorTimePosition,
+						})
+					}
 				}
 			}
 		}
@@ -440,10 +515,13 @@ export const SourceLayerItem = withTranslation()(
 			const cursorTimePosition = Math.max(cursorPosition.left, 0) / this.props.timeScale
 
 			this.setState({
-				scrollLeftOffset: 0,
 				elementPosition: elementPos,
 				cursorPosition,
 				cursorTimePosition,
+				cursorRawPosition: {
+					clientX: e.clientX,
+					clientY: e.clientY,
+				},
 			})
 		}
 
@@ -452,11 +530,15 @@ export const SourceLayerItem = withTranslation()(
 				left: e.clientX - this.state.elementPosition.left,
 				top: e.clientY - this.state.elementPosition.top,
 			}
-			const cursorTimePosition = Math.max(cursorPosition.left, 0) / this.props.timeScale + this.state.scrollLeftOffset
+			const cursorTimePosition = Math.max(cursorPosition.left, 0) / this.props.timeScale
 
 			this.setState({
 				cursorPosition: _.extend(this.state.cursorPosition, cursorPosition),
 				cursorTimePosition,
+				cursorRawPosition: {
+					clientX: e.clientX,
+					clientY: e.clientY,
+				},
 			})
 		}
 
@@ -490,6 +572,7 @@ export const SourceLayerItem = withTranslation()(
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
+							getSourceDurationLabelAlignment={this.getSourceDurationLabelAlignment}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -532,6 +615,7 @@ export const SourceLayerItem = withTranslation()(
 							// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
+							getSourceDurationLabelAlignment={this.getSourceDurationLabelAlignment}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}
@@ -542,6 +626,8 @@ export const SourceLayerItem = withTranslation()(
 					)
 
 				case SourceLayerType.TRANSITION:
+					// TODOSYNC: TV2 uses other renderers, to be discussed.
+
 					return (
 						<TransitionSourceRenderer
 							key={unprotectString(this.props.piece.instance._id)}
@@ -573,6 +659,7 @@ export const SourceLayerItem = withTranslation()(
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
+							getSourceDurationLabelAlignment={this.getSourceDurationLabelAlignment}
 							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
 							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
 							setAnchoredElsWidths={this.setAnchoredElsWidths}

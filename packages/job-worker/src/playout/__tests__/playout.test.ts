@@ -1,7 +1,3 @@
-// jest.mock('../../../../corelib/dist/random', (...args) => require('../../__mocks__/random').setup(args), {
-// 	virtual: true,
-// })
-
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
@@ -22,10 +18,7 @@ import {
 	activateRundownPlaylist,
 	deactivateRundownPlaylist,
 	moveNextPart,
-	onPartPlaybackStarted,
-	onPartPlaybackStopped,
-	onPiecePlaybackStarted,
-	onPiecePlaybackStopped,
+	onPlayoutPlaybackChanged,
 	prepareRundownPlaylistForBroadcast,
 	resetRundownPlaylist,
 	setMinimumTakeSpan,
@@ -54,10 +47,11 @@ import {
 	defaultAdLibPiece,
 } from '../../__mocks__/defaultCollectionObjects'
 import { PieceLifespan } from '../../../../blueprints-integration/dist'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
 import { adjustFakeTime, getCurrentTime, useFakeCurrentTime } from '../../__mocks__/time'
+import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 // const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
 const mockExecutePeripheralDeviceFunction = jest
@@ -73,7 +67,7 @@ describe('Playout API', () => {
 	async function getAllRundownData(rundown: DBRundown) {
 		const segments = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
 		const parts = await context.directCollections.Parts.findFetch({ rundownId: rundown._id })
-		const sortedSegments = sortSegmentsInRundowns(segments, [rundown])
+		const sortedSegments = sortSegmentsInRundowns(segments, { rundownIdsInOrder: [rundown._id] })
 		return {
 			parts: sortPartsInSortedSegments(parts, sortedSegments),
 			segments: sortedSegments,
@@ -156,7 +150,7 @@ describe('Playout API', () => {
 
 		await resetRundownPlaylist(context, { playlistId: playlistId0 })
 
-		expect(Timeline.operations).toMatchObject([{ args: [{ _id: 'mockStudio0' }, undefined], type: 'findFetch' }])
+		expect(Timeline.operations).toMatchObject([{ args: ['mockStudio0', undefined], type: 'findOne' }])
 		Timeline.clearOpLog()
 
 		const orgRundownData = await getAllRundownData(await getRundown0())
@@ -182,8 +176,8 @@ describe('Playout API', () => {
 		}
 
 		expect(Timeline.operations).toMatchObject([
-			{ args: [{ _id: 'mockStudio0' }, undefined], type: 'findFetch' },
-			{ args: [1], type: 'bulkWrite' },
+			{ args: ['mockStudio0', undefined], type: 'findOne' },
+			{ args: ['mockStudio0'], type: 'replace' },
 		])
 		Timeline.clearOpLog()
 
@@ -202,8 +196,8 @@ describe('Playout API', () => {
 		}
 
 		expect(Timeline.operations).toMatchObject([
-			{ args: [{ _id: 'mockStudio0' }, undefined], type: 'findFetch' },
-			{ args: [1], type: 'bulkWrite' },
+			{ args: ['mockStudio0', undefined], type: 'findOne' },
+			{ args: ['mockStudio0'], type: 'replace' },
 		])
 		Timeline.clearOpLog()
 
@@ -225,8 +219,8 @@ describe('Playout API', () => {
 		})
 
 		expect(Timeline.operations).toMatchObject([
-			{ args: [{ _id: 'mockStudio0' }, undefined], type: 'findFetch' },
-			{ args: [1], type: 'bulkWrite' },
+			{ args: ['mockStudio0', undefined], type: 'findOne' },
+			{ args: ['mockStudio0'], type: 'replace' },
 		])
 		Timeline.clearOpLog()
 
@@ -566,7 +560,7 @@ describe('Playout API', () => {
 			)
 		).resolves.toHaveLength(3)
 	})
-	test('onPartPlaybackStarted, onPiecePlaybackStarted, onPartPlaybackStopped, onPiecePlaybackStopped', async () => {
+	test('onPlayoutPlaybackChanged', async () => {
 		const TIME_RANDOM = 5
 
 		const { rundownId: rundownId0, playlistId: playlistId0 } = await setupRundownWithAutoplayPart0(
@@ -619,30 +613,38 @@ describe('Playout API', () => {
 			expect(currentPartInstance?.part.expectedDuration).toBeGreaterThan(0)
 			expect(nextPartInstance?.part._id).toBe(parts[1]._id)
 
-			// simulate TSR starting part playback
+			// simulate TSR starting playing part and pieces:
 			const currentPartInstanceId = currentPartInstance?._id || protectString('')
-			await onPartPlaybackStarted(context, {
-				playlistId: playlistId0,
-				partInstanceId: currentPartInstanceId,
-				startedPlayback: now,
-			})
-
-			// simulate TSR starting each piece
 			const pieceInstances = await getAllPieceInstancesForPartInstance(currentPartInstanceId)
 			expect(pieceInstances).toHaveLength(2)
-			await Promise.all(
-				pieceInstances.map(async (pieceInstance) =>
-					onPiecePlaybackStarted(context, {
-						playlistId: playlistId0,
-						pieceInstanceId: pieceInstance._id,
-						startedPlayback:
-							(typeof pieceInstance.piece.enable.start === 'number'
-								? now + pieceInstance.piece.enable.start
-								: now) +
-							Math.random() * TIME_RANDOM,
-					})
-				)
-			)
+			await onPlayoutPlaybackChanged(context, {
+				playlistId: playlistId0,
+				changes: [
+					{
+						type: PlayoutChangedType.PART_PLAYBACK_STARTED,
+						objId: 'objectId',
+						data: {
+							partInstanceId: currentPartInstanceId,
+							time: now,
+						},
+					},
+					...pieceInstances.map((pieceInstance) => {
+						return {
+							type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+							objId: 'objectId',
+							data: {
+								partInstanceId: pieceInstance.partInstanceId,
+								pieceInstanceId: pieceInstance._id,
+								time:
+									(typeof pieceInstance.piece.enable.start === 'number'
+										? now + pieceInstance.piece.enable.start
+										: now) +
+									Math.random() * TIME_RANDOM,
+							},
+						}
+					}),
+				],
+			})
 		}
 
 		{
@@ -686,36 +688,50 @@ describe('Playout API', () => {
 			const currentPartInstanceBeforeTakeId = currentPartInstanceBeforeTake?._id
 			const nextPartInstanceBeforeTakeId = nextPartInstanceBeforeTake?._id
 
+			if (!currentPartInstanceBeforeTakeId) throw new Error('currentPartInstanceBeforeTakeId is falsy')
+			if (!nextPartInstanceBeforeTakeId) throw new Error('nextPartInstanceBeforeTakeId is falsy')
+
 			expect(currentPartInstanceBeforeTake?.part.expectedDuration).toBeTruthy()
-			const now = adjustFakeTime(currentPartInstanceBeforeTake?.part.expectedDuration ?? 0)
-			await onPartPlaybackStarted(context, {
-				playlistId: playlistId0,
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				partInstanceId: nextPartInstanceBeforeTakeId!,
-				startedPlayback: now,
-			})
-			await onPartPlaybackStopped(context, {
-				playlistId: playlistId0,
-				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				partInstanceId: currentPartInstanceBeforeTakeId!,
-				stoppedPlayback: now,
-			})
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const pieceInstances = await getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId!)
+			const pieceInstances = await getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId)
 			expect(pieceInstances).toHaveLength(2)
-			await Promise.all(
-				pieceInstances.map(async (pieceInstance) =>
-					onPiecePlaybackStopped(context, {
-						playlistId: playlistId0,
-						pieceInstanceId: pieceInstance._id,
-						stoppedPlayback:
-							(typeof pieceInstance.piece.enable.start === 'number'
-								? now + pieceInstance.piece.enable.start
-								: now) +
-							Math.random() * TIME_RANDOM,
-					})
-				)
-			)
+			const now = adjustFakeTime(currentPartInstanceBeforeTake?.part.expectedDuration ?? 0)
+			await onPlayoutPlaybackChanged(context, {
+				playlistId: playlistId0,
+
+				changes: [
+					{
+						type: PlayoutChangedType.PART_PLAYBACK_STARTED,
+						objId: 'objectId',
+						data: {
+							partInstanceId: nextPartInstanceBeforeTakeId,
+							time: now,
+						},
+					},
+					{
+						type: PlayoutChangedType.PART_PLAYBACK_STOPPED,
+						objId: 'objectId',
+						data: {
+							partInstanceId: currentPartInstanceBeforeTakeId,
+							time: now,
+						},
+					},
+					...pieceInstances.map((pieceInstance) => {
+						return {
+							type: PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
+							objId: 'objectId',
+							data: {
+								partInstanceId: pieceInstance.partInstanceId,
+								pieceInstanceId: pieceInstance._id,
+								time:
+									(typeof pieceInstance.piece.enable.start === 'number'
+										? now + pieceInstance.piece.enable.start
+										: now) +
+									Math.random() * TIME_RANDOM,
+							},
+						}
+					}),
+				],
+			})
 
 			const { currentPartInstance: currentPartInstanceAfterTake, nextPartInstance: nextPartInstanceAfterTake } =
 				await getSelectedPartInstances(context, await getPlaylist0())
@@ -730,8 +746,7 @@ describe('Playout API', () => {
 			expect(previousPartInstanceAfterTake).toBeTruthy()
 			expect(previousPartInstanceAfterTake?.timings?.stoppedPlayback).toBe(now)
 
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			const pieceInstances2 = await getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId!)
+			const pieceInstances2 = await getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId)
 			pieceInstances2.forEach((pieceInstance) => {
 				expect(pieceInstance.stoppedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
 			})

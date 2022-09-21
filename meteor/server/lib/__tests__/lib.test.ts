@@ -132,16 +132,13 @@ describe('server/lib', () => {
 			}).count()
 		).toEqual(1)
 
-		// expect(options.beforeInsert).toHaveBeenCalledTimes(1) - overwrites with single timeline object
+		expect(options.beforeInsert).toHaveBeenCalledTimes(0) //- overwrites with single timeline object
 		expect(options.beforeUpdate).toHaveBeenCalledTimes(1)
-		// expect(options.beforeRemove).toHaveBeenCalledTimes(1) - overwrites with single timeline object
+		expect(options.beforeRemove).toHaveBeenCalledTimes(0) // - overwrites with single timeline object
 		expect(options.beforeDiff).toHaveBeenCalledTimes(1)
-		// expect(options.insert).toHaveBeenCalledTimes(1)
-		// expect(options.update).toHaveBeenCalledTimes(1)
-		// expect(options.remove).toHaveBeenCalledTimes(1)
-		// expect(options.afterInsert).toHaveBeenCalledTimes(1)
+		expect(options.afterInsert).toHaveBeenCalledTimes(0)
 		expect(options.afterUpdate).toHaveBeenCalledTimes(1)
-		// expect(options.afterRemove).toHaveBeenCalledTimes(1)
+		expect(options.afterRemove).toHaveBeenCalledTimes(0)
 
 		expect(changes).toMatchObject({
 			updated: 1,

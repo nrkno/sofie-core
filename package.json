@@ -4,7 +4,7 @@
 	"license": "MIT",
 	"private": true,
 	"engines": {
-		"node": "^14.18 || ^16.14"
+		"node": "^14.19 || ^16.14"
 	},
 	"scripts": {
 		"postinstall": "yarn install:packages && yarn install:meteor",
@@ -12,14 +12,18 @@
 		"install:packages": "cd packages && yarn install",
 		"start": "yarn install && yarn dev",
 		"dev": "node ./scripts/run.js",
+		"restart:meteor": "node ./scripts/meteor-force-restart.js",
 		"build:packages": "cd packages && yarn build",
 		"test:packages": "cd packages && yarn test",
 		"lint:packages": "cd packages && yarn lint",
+		"unit:packages": "cd packages && yarn unit",
 		"check-types:meteor": "cd meteor && yarn check-types",
 		"test:meteor": "cd meteor && yarn test",
-		"lint:meteor": "cd meteor && yarn lint",
+		"lint:meteor": "cd meteor && meteor yarn lint",
+		"unit:meteor": "cd meteor && meteor yarn unit",
 		"meteor:run": "cd meteor && meteor yarn start",
 		"lint": "yarn lint:meteor && yarn lint:packages",
+		"unit": "yarn unit:meteor && yarn unit:packages",
 		"validate:release": "yarn install && yarn build:packages && yarn validate:release:packages && yarn validate:release:meteor",
 		"validate:release:meteor": "cd meteor && meteor yarn validate:prod-dependencies && meteor yarn license-validate && meteor yarn lint && meteor yarn test",
 		"validate:release:packages": "cd packages && yarn validate:dependencies && yarn test",
@@ -29,9 +33,9 @@
 		"test-all": "yarn install && yarn build:packages && yarn check-types:meteor && yarn lint:packages && yarn lint:meteor && yarn test:packages && yarn test:meteor"
 	},
 	"devDependencies": {
-		"concurrently": "^6.4.0",
-		"snyk-nodejs-lockfile-parser": "^1.38.0",
+		"concurrently": "^7.2.2",
 		"rimraf": "^3.0.2",
-		"semver": "^7.3.5"
+		"semver": "^7.3.7",
+		"snyk-nodejs-lockfile-parser": "^1.41.0"
 	}
 }

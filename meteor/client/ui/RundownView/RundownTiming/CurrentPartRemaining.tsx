@@ -1,6 +1,6 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { withTiming, WithTiming } from './withTiming'
+import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './withTiming'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartInstanceId } from '../../../../lib/collections/PartInstances'
 import { SpeechSynthesiser } from '../../../lib/speechSynthesis'
@@ -24,7 +24,9 @@ let prevDisplayTime: number | undefined = undefined
  * @extends React.Component<WithTiming<{}>>
  */
 export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
-	isHighResolution: true,
+	// TODOSYNC: TV2 uses TimingTickResolution.Synced for these
+	tickResolution: TimingTickResolution.High,
+	dataResolution: TimingDataResolution.High,
 })(
 	class CurrentPartRemaining extends React.Component<WithTiming<IPartRemainingProps>> {
 		render() {

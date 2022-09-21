@@ -25,6 +25,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { MOS } from '@sofie-automation/corelib'
 import { executePeripheralDeviceFunction } from '../peripheralDevice'
+import { DEFAULT_MOS_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 
 async function getBlueprintAndDependencies(context: JobContext, rundown: ReadonlyDeep<DBRundown>) {
 	const pShowStyle = context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
@@ -308,9 +309,9 @@ async function notifyCurrentPlayingPartMOS(
 	newPlayingPartExternalId: string | null
 ): Promise<void> {
 	if (oldPlayingPartExternalId !== newPlayingPartExternalId) {
-		// Note: In an older version of sofie, we sent the STOP command before sending the PLAY command,
+		// Note: In an older version of sofie, we sent the PLAY command before sending the STOP command,
 		// since tests showed slightly better performance when doing so.
-		// However, this is not compatible with ENPS anymore, so we now send the PLAY command first.
+		// However, this is not compatible with ENPS anymore, so we now send the STOP command first.
 
 		if (oldPlayingPartExternalId) {
 			try {
@@ -353,7 +354,7 @@ async function setStoryStatusMOS(
 	return executePeripheralDeviceFunction(
 		context,
 		deviceId,
-		null,
+		DEFAULT_MOS_TIMEOUT_TIME + 1000,
 		'setStoryStatus',
 		rundownExternalId,
 		storyId,

@@ -1,9 +1,11 @@
 import { RundownPlaylist, DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { DBPart, Part, PartId } from '../../../lib/collections/Parts'
+import { DBSegment } from '../../../lib/collections/Segments'
 import { DBRundown } from '../../../lib/collections/Rundowns'
-import { literal, protectString, unprotectString } from '../../../lib/lib'
+import { literal, protectString } from '../../../lib/lib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
+import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 
 const DEFAULT_DURATION = 4000
 
@@ -20,8 +22,9 @@ function makeMockPlaylist(): RundownPlaylist {
 		nextPartInstanceId: null,
 		previousPartInstanceId: null,
 		timing: {
-			type: 'none' as any,
+			type: PlaylistTimingType.None,
 		},
+		rundownIdsInOrder: [],
 	})
 }
 
@@ -32,9 +35,9 @@ function makeMockPart(
 	segmentId: string,
 	durations: {
 		budgetDuration?: number
-		expectedDuration?: number
 		displayDuration?: number
 		displayDurationGroup?: string
+		expectedDuration?: number
 	}
 ): Part {
 	return literal<DBPart>({
@@ -49,7 +52,19 @@ function makeMockPart(
 	})
 }
 
-function makeMockRundown(id: string, playlistId: string, rank: number) {
+function makeMockSegment(id: string, rank: number, rundownId: string): DBSegment {
+	return literal<DBSegment>({
+		_id: protectString(id),
+		name: 'mock-segment',
+		externalId: id,
+		externalModified: 0,
+		_rank: rank,
+		rundownId: protectString(rundownId),
+	})
+}
+
+function makeMockRundown(id: string, playlist: RundownPlaylist) {
+	playlist.rundownIdsInOrder.push(protectString(id))
 	return literal<DBRundown>({
 		_id: protectString(id),
 		externalId: id,
@@ -66,8 +81,7 @@ function makeMockRundown(id: string, playlistId: string, rank: number) {
 		name: 'test',
 		externalNRCSName: 'mockNRCS',
 		organizationId: protectString(''),
-		playlistId: protectString(playlistId),
-		_rank: rank,
+		playlistId: playlist._id,
 	})
 }
 
@@ -124,13 +138,16 @@ describe('rundown Timing Calculator', () => {
 		const rundownId = 'rundown1'
 		const segmentId1 = 'segment1'
 		const segmentId2 = 'segment2'
+		const segments: DBSegment[] = []
+		segments.push(makeMockSegment(segmentId1, 0, rundownId))
+		segments.push(makeMockSegment(segmentId2, 0, rundownId))
 		const parts: Part[] = []
 		parts.push(makeMockPart('part1', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part2', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part3', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part4', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
-		const rundown = makeMockRundown(rundownId, unprotectString(playlist._id), 0)
+		const rundown = makeMockRundown(rundownId, playlist)
 		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			0,
@@ -140,6 +157,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			// segments, // TODOSYNC: should updateDurations() include the segments?
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -203,6 +221,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
+				// segmentStartedPlayback: {}, // TODOSYNC: should updateDurations() include the segments?
 			})
 		)
 	})
@@ -218,13 +237,16 @@ describe('rundown Timing Calculator', () => {
 		const rundownId = 'rundown1'
 		const segmentId1 = 'segment1'
 		const segmentId2 = 'segment2'
+		const segments: DBSegment[] = []
+		segments.push(makeMockSegment(segmentId1, 0, rundownId))
+		segments.push(makeMockSegment(segmentId2, 0, rundownId))
 		const parts: Part[] = []
 		parts.push(makeMockPart('part1', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part2', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part3', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part4', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
-		const rundown = makeMockRundown(rundownId, unprotectString(playlist._id), 0)
+		const rundown = makeMockRundown(rundownId, playlist)
 		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			0,
@@ -234,6 +256,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			// segments, // TODOSYNC: should updateDurations() include the segments
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -297,6 +320,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
+				// segmentStartedPlayback: {}, // TODOSYNC: should updateDurations() include the segments
 			})
 		)
 	})
@@ -313,14 +337,17 @@ describe('rundown Timing Calculator', () => {
 		const rundownId2 = 'rundown2'
 		const segmentId1 = 'segment1'
 		const segmentId2 = 'segment2'
+		const segments: DBSegment[] = []
+		segments.push(makeMockSegment(segmentId1, 0, rundownId1))
+		segments.push(makeMockSegment(segmentId2, 0, rundownId2))
 		const parts: Part[] = []
 		parts.push(makeMockPart('part1', 0, rundownId1, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part2', 0, rundownId1, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part3', 0, rundownId2, segmentId2, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part4', 0, rundownId2, segmentId2, { expectedDuration: 1000 }))
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
-		const rundown1 = makeMockRundown(rundownId1, unprotectString(playlist._id), 0)
-		const rundown2 = makeMockRundown(rundownId1, unprotectString(playlist._id), 0)
+		const rundown1 = makeMockRundown(rundownId1, playlist)
+		const rundown2 = makeMockRundown(rundownId1, playlist)
 		const rundowns = [rundown1, rundown2]
 		const result = timing.updateDurations(
 			0,
@@ -330,6 +357,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			// segments, // TODOSYNC: should updateDurations() include the segments
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -395,6 +423,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
+				// segmentStartedPlayback: {}, // TODOSYNC: should updateDurations() include the segments
 			})
 		)
 	})
@@ -410,6 +439,9 @@ describe('rundown Timing Calculator', () => {
 		const rundownId1 = 'rundown1'
 		const segmentId1 = 'segment1'
 		const segmentId2 = 'segment2'
+		const segments: DBSegment[] = []
+		segments.push(makeMockSegment(segmentId1, 0, rundownId1))
+		segments.push(makeMockSegment(segmentId2, 0, rundownId1))
 		const parts: Part[] = []
 		parts.push(
 			makeMockPart('part1', 0, rundownId1, segmentId1, {
@@ -440,7 +472,7 @@ describe('rundown Timing Calculator', () => {
 			})
 		)
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
-		const rundown = makeMockRundown(rundownId1, unprotectString(playlist._id), 0)
+		const rundown = makeMockRundown(rundownId1, playlist)
 		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			0,
@@ -450,6 +482,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			// segments, // TODOSYNC: should updateDurations() include the segments
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
@@ -513,6 +546,8 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
+				// segmentBudgetDurations: {}, // TODOSYNC
+				// segmentStartedPlayback: {}, // TODOSYNC
 			})
 		)
 	})
@@ -528,6 +563,9 @@ describe('rundown Timing Calculator', () => {
 		const rundownId1 = 'rundown1'
 		const segmentId1 = 'segment1'
 		const segmentId2 = 'segment2'
+		const segments: DBSegment[] = []
+		segments.push(makeMockSegment(segmentId1, 0, rundownId1))
+		segments.push(makeMockSegment(segmentId2, 0, rundownId1))
 		const parts: Part[] = []
 		parts.push(
 			makeMockPart('part1', 0, rundownId1, segmentId1, {
@@ -549,7 +587,7 @@ describe('rundown Timing Calculator', () => {
 		)
 		parts.push(makeMockPart('part4', 0, rundownId1, segmentId2, { expectedDuration: 1000 }))
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
-		const rundown = makeMockRundown(rundownId1, unprotectString(playlist._id), 0)
+		const rundown = makeMockRundown(rundownId1, playlist)
 		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			0,
@@ -559,20 +597,21 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			// segments, // TODOSYNC
 			DEFAULT_DURATION
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
-				asPlayedPlaylistDuration: 4000,
+				asPlayedPlaylistDuration: 4000, // TODOSYNC, should this be 8000 after segment budget duration re-implementation?
 				currentPartWillAutoNext: false,
 				currentTime: 0,
 				rundownExpectedDurations: {
 					[rundownId1]: 4000,
 				},
 				rundownAsPlayedDurations: {
-					[rundownId1]: 4000,
+					[rundownId1]: 4000, // tv2 org: 8000
 				},
 				partCountdown: {
 					part1: 0,
@@ -616,8 +655,8 @@ describe('rundown Timing Calculator', () => {
 					part3: 2000,
 					part4: 3000,
 				},
-				remainingPlaylistDuration: 4000,
-				totalPlaylistDuration: 4000,
+				remainingPlaylistDuration: 4000, // 8000,
+				totalPlaylistDuration: 4000, // 8000,
 				breakIsLastRundown: undefined,
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
@@ -625,6 +664,7 @@ describe('rundown Timing Calculator', () => {
 					[segmentId1]: 5000,
 					[segmentId2]: 3000,
 				},
+				// segmentStartedPlayback: {}, // TODOSYNC
 			})
 		)
 	})

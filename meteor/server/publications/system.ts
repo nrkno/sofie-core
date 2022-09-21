@@ -6,8 +6,8 @@ import { Users } from '../../lib/collections/Users'
 import { SystemReadAccess } from '../security/system'
 import { OrganizationReadAccess } from '../security/organization'
 
-meteorPublish(PubSub.coreSystem, function (token) {
-	if (SystemReadAccess.coreSystem({ userId: this.userId, token })) {
+meteorPublish(PubSub.coreSystem, async function (token) {
+	if (await SystemReadAccess.coreSystem({ userId: this.userId, token })) {
 		return getCoreSystemCursor({
 			fields: {
 				// Include only specific fields in the result documents:
@@ -26,11 +26,11 @@ meteorPublish(PubSub.coreSystem, function (token) {
 	return null
 })
 
-meteorPublish(PubSub.loggedInUser, function (token) {
+meteorPublish(PubSub.loggedInUser, async function (token) {
 	const currentUserId = this.userId
 
 	if (!currentUserId) return null
-	if (SystemReadAccess.currentUser(currentUserId, { userId: this.userId, token })) {
+	if (await SystemReadAccess.currentUser(currentUserId, { userId: this.userId, token })) {
 		return Users.find(
 			{
 				_id: currentUserId,
@@ -49,9 +49,9 @@ meteorPublish(PubSub.loggedInUser, function (token) {
 	}
 	return null
 })
-meteorPublish(PubSub.usersInOrganization, function (selector, token) {
+meteorPublish(PubSub.usersInOrganization, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	if (OrganizationReadAccess.adminUsers(selector, { userId: this.userId, token })) {
+	if (await OrganizationReadAccess.adminUsers(selector.organizationId, { userId: this.userId, token })) {
 		return Users.find(selector, {
 			fields: {
 				_id: 1,

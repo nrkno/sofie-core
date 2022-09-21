@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
+import { getCurrentTime, systemTime, Time } from '../../lib/lib'
 
 export { multilineText, isEventInInputField }
 
@@ -69,7 +70,7 @@ export enum UserAgentPointer {
 
 type MutableRef<T> = ((instance: T | null) => void) | React.MutableRefObject<T | null> | null
 
-export function useCombinedRefs<T>(initial, ...refs: MutableRef<T>[]) {
+export function useCombinedRefs<T>(initial: T | null, ...refs: MutableRef<T>[]) {
 	const targetRef = useRef<T>(initial)
 
 	useEffect(() => {
@@ -142,3 +143,9 @@ export function isRunningInPWA() {
 	}
 	return true
 }
+
+export function getEventTimestamp(e: any): Time {
+	return e.timeStamp ? performance.timeOrigin + e.timeStamp + systemTime.timeOriginDiff : getCurrentTime()
+}
+
+export const TOOLTIP_DEFAULT_DELAY = 0.5

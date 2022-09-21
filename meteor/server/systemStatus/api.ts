@@ -3,7 +3,7 @@ import { StatusResponse, NewSystemStatusAPI, SystemStatusAPIMethods } from '../.
 import { getSystemStatus } from './systemStatus'
 import { ServerResponse, IncomingMessage } from 'http'
 import { PickerGET } from '../api/http'
-import { protectString, makePromise } from '../../lib/lib'
+import { protectString } from '../../lib/lib'
 
 import { Settings } from '../../lib/Settings'
 import { MethodContextAPI } from '../../lib/api/methods'
@@ -14,25 +14,25 @@ const apmNamespace = 'http'
 if (!Settings.enableUserAccounts) {
 	// For backwards compatibility:
 
-	PickerGET.route('/health', (params, req: IncomingMessage, res: ServerResponse) => {
+	PickerGET.route('/health', async (_params, _req: IncomingMessage, res: ServerResponse) => {
 		const transaction = profiler.startTransaction('health', apmNamespace)
-		const status = getSystemStatus({ userId: null })
+		const status = await getSystemStatus({ userId: null })
 		health(status, res)
 		transaction?.end()
 	})
-	PickerGET.route('/health/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
+	PickerGET.route('/health/:studioId', async (params, _req: IncomingMessage, res: ServerResponse) => {
 		const transaction = profiler.startTransaction(`health/${params.studioId}`, apmNamespace)
-		const status = getSystemStatus({ userId: null }, protectString(params.studioId))
+		const status = await getSystemStatus({ userId: null }, protectString(params.studioId))
 		health(status, res)
 		transaction?.end()
 	})
 }
-PickerGET.route('/health/:token', (params, req: IncomingMessage, res: ServerResponse) => {
-	const status = getSystemStatus({ userId: null, token: params.token })
+PickerGET.route('/health/:token', async (params, _req: IncomingMessage, res: ServerResponse) => {
+	const status = await getSystemStatus({ userId: null, token: params.token })
 	health(status, res)
 })
-PickerGET.route('/health/:token/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
-	const status = getSystemStatus({ userId: null, token: params.token }, protectString(params.studioId))
+PickerGET.route('/health/:token/:studioId', async (params, _req: IncomingMessage, res: ServerResponse) => {
+	const status = await getSystemStatus({ userId: null, token: params.token }, protectString(params.studioId))
 	health(status, res)
 })
 function health(status: StatusResponse, res: ServerResponse) {
@@ -47,7 +47,7 @@ function health(status: StatusResponse, res: ServerResponse) {
 
 class ServerSystemStatusAPI extends MethodContextAPI implements NewSystemStatusAPI {
 	async getSystemStatus() {
-		return makePromise(() => getSystemStatus(this))
+		return getSystemStatus(this)
 	}
 }
 registerClassToMeteorMethods(SystemStatusAPIMethods, ServerSystemStatusAPI, false)

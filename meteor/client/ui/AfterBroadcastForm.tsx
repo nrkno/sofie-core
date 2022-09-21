@@ -33,11 +33,11 @@ export function AfterBroadcastForm(props: IProps) {
 			}
 			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
 
-			doUserAction(t, e, UserAction.SAVE_EVALUATION, (e) => MeteorCall.userAction.saveEvaluation(e, evaluation))
+			doUserAction(t, e, UserAction.SAVE_EVALUATION, (e, ts) => MeteorCall.userAction.saveEvaluation(e, ts, evaluation))
 
 			if (shouldDeactivateRundown) {
-				doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-					MeteorCall.userAction.deactivate(e, props.playlist._id)
+				doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e, ts) =>
+					MeteorCall.userAction.deactivate(e, ts, props.playlist._id)
 				)
 			}
 
@@ -46,12 +46,12 @@ export function AfterBroadcastForm(props: IProps) {
 			})
 		}
 
-		if (answers.q0 !== 'nothing') {
+		if (answers.q0 !== 'nothing' || answers.q1.trim() !== '') {
 			doUserAction(
 				t,
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-				(e) => MeteorCall.userAction.storeRundownSnapshot(e, props.playlist._id, 'Evaluation form'),
+				(e, ts) => MeteorCall.userAction.storeRundownSnapshot(e, ts, props.playlist._id, 'Evaluation form', false),
 				(err, snapshotId) => {
 					if (!err && snapshotId) {
 						saveEvaluation(snapshotId)

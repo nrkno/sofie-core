@@ -1,15 +1,14 @@
+import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { protectString, protectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import {
 	moveRundownIntoPlaylist,
 	produceRundownPlaylistInfoFromRundown,
 	restoreRundownsInPlaylistToDefaultOrder,
-	updateRundownsInPlaylist,
 } from '../rundownPlaylists'
 import { MockJobContext, setupDefaultJobEnvironment } from '../__mocks__/context'
 import {
@@ -49,7 +48,7 @@ describe('Rundown', () => {
 			$set: {
 				playlistId: playlistId0,
 				playlistIdIsSetInSofie: true,
-				expectedStart: 1000,
+				timing: { type: PlaylistTimingType.ForwardTime, expectedStart: 1000 },
 				externalId: `${rundownId00}_ext`,
 			},
 		})
@@ -57,7 +56,7 @@ describe('Rundown', () => {
 			$set: {
 				playlistId: playlistId0,
 				playlistIdIsSetInSofie: true,
-				expectedStart: 2000,
+				timing: { type: PlaylistTimingType.ForwardTime, expectedStart: 2000 },
 				externalId: `${rundownId01}_ext`,
 			},
 		})
@@ -65,7 +64,7 @@ describe('Rundown', () => {
 			$set: {
 				playlistId: playlistId0,
 				playlistIdIsSetInSofie: true,
-				expectedStart: 3000,
+				timing: { type: PlaylistTimingType.ForwardTime, expectedStart: 3000 },
 				externalId: `${rundownId02}_ext`,
 			},
 		})
@@ -75,40 +74,30 @@ describe('Rundown', () => {
 		expect(rundown00.playlistId).toEqual(playlistId0)
 
 		// This should set the default sorting of the rundowns in the plylist:
-		const rundownsCollection = await DbCacheWriteCollection.createFromDatabase(
-			context,
-			context.directCollections.Rundowns,
-			{
-				playlistId: playlist0._id,
-			}
-		)
-		const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(
+		const allRundowns = await context.directCollections.Rundowns.findFetch({
+			playlistId: playlist0._id,
+		})
+		const rundownPlaylist = produceRundownPlaylistInfoFromRundown(
 			context,
 			undefined,
 			playlist0,
 			playlist0._id,
 			playlist0.externalId,
-			rundownsCollection.findFetch({})
+			allRundowns
 		)
-		updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundownsCollection)
-		await rundownsCollection.updateDatabaseWithData()
-
-		// Expect the rundowns to be in the right order:
-		const rundownsInPLaylist0 = await context.directCollections.Rundowns.findFetch(
-			{ playlistId: playlist0._id },
-			{ sort: { _rank: 1 } }
-		)
-		expect(rundownsInPLaylist0[0]).toMatchObject({ _id: 'rundown00', _rank: 1 })
-		expect(rundownsInPLaylist0[1]).toMatchObject({ _id: 'rundown01', _rank: 2 })
-		expect(rundownsInPLaylist0[2]).toMatchObject({ _id: 'rundown02', _rank: 3 })
+		await context.directCollections.RundownPlaylists.update(playlist0._id, rundownPlaylist)
+		expect(rundownPlaylist.rundownIdsInOrder).toEqual(['rundown00', 'rundown01', 'rundown02'])
 
 		const getRundownIDs = async (id: RundownPlaylistId) => {
-			const rundowns = await context.directCollections.Rundowns.findFetch(
-				{ playlistId: id },
-				{ sort: { _rank: 1 } }
-			)
-			return rundowns.map((r) => r._id)
+			const playlist = await context.directCollections.RundownPlaylists.findOne(id)
+			return playlist?.rundownIdsInOrder
 		}
+
+		// Ensure they stay still when restoring default order:
+		await restoreRundownsInPlaylistToDefaultOrder(context, {
+			playlistId: playlist0._id,
+		})
+		await expect(getRundownIDs(playlist0._id)).resolves.toEqual(['rundown00', 'rundown01', 'rundown02'])
 
 		// Move the rundown:
 		await moveRundownIntoPlaylist(context, {
@@ -144,10 +133,10 @@ describe('Rundown', () => {
 		await moveRundownIntoPlaylist(context, {
 			rundownId: rundownId02,
 			intoPlaylistId: playlist1._id,
-			rundownsIdsInPlaylistInOrder: protectStringArray(['rundown10', 'rundown02']),
+			rundownsIdsInPlaylistInOrder: protectStringArray(['rundown10', 'rundown02']), // Note: this gets ignored
 		})
 		await expect(getRundownIDs(playlist0._id)).resolves.toEqual(['rundown01', 'rundown00'])
-		await expect(getRundownIDs(playlist1._id)).resolves.toEqual(['rundown10', 'rundown02'])
+		await expect(getRundownIDs(playlist1._id)).resolves.toEqual(['rundown02', 'rundown10'])
 
 		// Move a rundown out of a playlist:
 		await moveRundownIntoPlaylist(context, {

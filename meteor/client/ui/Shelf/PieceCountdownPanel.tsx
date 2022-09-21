@@ -46,11 +46,11 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 	}
 
 	componentDidMount() {
-		window.addEventListener(RundownTiming.Events.timeupdate, this.updateTimecode)
+		window.addEventListener(RundownTiming.Events.timeupdateLowResolution, this.updateTimecode)
 	}
 
 	componentWillUnmount() {
-		window.removeEventListener(RundownTiming.Events.timeupdate, this.updateTimecode)
+		window.removeEventListener(RundownTiming.Events.timeupdateLowResolution, this.updateTimecode)
 	}
 
 	updateTimecode(e: TimingEvent) {
@@ -82,7 +82,7 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 				}}
 			>
 				<span
-					className={ClassNames('piece-countdown-panel__timecode', {
+					className={ClassNames('piece-countdown-panel__timecode', 'dashboard__panel--font-scaled', {
 						overtime: Math.floor(this.state.displayTimecode / 1000) > 0,
 					})}
 				>

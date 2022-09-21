@@ -1,4 +1,4 @@
-import { omit, unprotectObject } from '../lib'
+import { omit, protectString, unprotectObject } from '../lib'
 import * as _ from 'underscore'
 import { LookaheadMode, ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { Meteor } from 'meteor/meteor'
@@ -15,6 +15,7 @@ import {
 	MappingExt,
 	MappingsHash,
 	StudioLight,
+	StudioRouteType,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 export * from '@sofie-automation/corelib/dist/dataModel/Studio'
 
@@ -69,10 +70,21 @@ export function getRoutedMappings<M extends MappingExt>(
 		const routes = mappingRoutes.existing[inputLayer]
 		if (routes) {
 			for (const route of routes) {
-				const routedMapping: M = {
-					...inputMapping,
-					...(route.remapping || {}),
-				}
+				const routedMapping: M =
+					route.routeType === StudioRouteType.REMAP &&
+					route.deviceType &&
+					route.remapping &&
+					route.remapping.deviceId
+						? ({
+								...route.remapping,
+								lookahead: route.remapping.lookahead ?? LookaheadMode.NONE,
+								device: route.deviceType,
+								deviceId: protectString<any>(route.remapping.deviceId),
+						  } as M)
+						: {
+								...inputMapping,
+								...(route.remapping || {}),
+						  }
 				outputMappings[route.outputMappedLayer] = routedMapping
 			}
 		} else {
@@ -86,7 +98,7 @@ export function getRoutedMappings<M extends MappingExt>(
 			const routedMapping: MappingExt = {
 				lookahead: route.remapping.lookahead || LookaheadMode.NONE,
 				device: route.deviceType,
-				deviceId: route.remapping.deviceId,
+				deviceId: protectString<any>(route.remapping.deviceId),
 				...route.remapping,
 			}
 			outputMappings[route.outputMappedLayer] = routedMapping as M
@@ -131,7 +143,6 @@ export interface RoutedMappings {
 	mappings: { [layerName: string]: MappingExt }
 }
 
-/** TODO: TransformedCollection */
 export type Studio = DBStudio
 export const Studios = createMongoCollection<Studio>(CollectionName.Studios)
 

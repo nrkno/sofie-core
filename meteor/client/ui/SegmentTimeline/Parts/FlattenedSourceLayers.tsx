@@ -5,9 +5,11 @@ import { ISourceLayerUi } from '../SegmentTimelineContainer'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { ISourceLayerPropsBase, useMouseContext } from './SourceLayer'
+import { ISourceLayerExtended } from '../../../../lib/Rundown'
 
 interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 	layers: ISourceLayerUi[]
+	shouldShowDuration: (layer: ISourceLayerExtended) => boolean
 }
 
 export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps) {
@@ -70,6 +72,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps) {
 									scrollWidth={props.scrollWidth}
 									layerIndex={props.layerIndex}
 									isPreview={props.isPreview}
+									showDuration={props.shouldShowDuration(layer)}
 								/>
 							)
 						})

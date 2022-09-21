@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { getCurrentTime, Time, getRandomId, assertNever, literal } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
@@ -24,7 +23,7 @@ import { Settings } from '../../lib/Settings'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
-import { SystemWriteAccess } from '../security/system'
+import { SystemReadAccess } from '../security/system'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { Workers } from '../../lib/collections/Workers'
 import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
@@ -176,19 +175,19 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
  * Returns system status
  * @param studioId (Optional) If provided, limits the status to what's affecting the studio
  */
-export function getSystemStatus(cred0: Credentials, studioId?: StudioId): StatusResponse {
+export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): Promise<StatusResponse> {
 	const checks: Array<CheckObj> = []
 
-	SystemWriteAccess.systemStatusRead(cred0)
+	await SystemReadAccess.systemStatus(cred0)
 
 	// Check systemStatuses:
-	_.each(systemStatuses, (status: StatusObjectInternal, key: string) => {
+	for (const [key, status] of Object.entries(systemStatuses)) {
 		checks.push({
 			description: key,
 			status: status2ExternalStatus(status.statusCode),
 			updated: new Date(status.timestamp).toISOString(),
 			_status: status.statusCode,
-			errors: _.map(status.messages || [], (m): CheckError => {
+			errors: status.messages.map((m): CheckError => {
 				return {
 					type: 'message',
 					time: new Date(m.timestamp).toISOString(),
@@ -196,7 +195,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 				}
 			}),
 		})
-	})
+	}
 
 	const statusObj: StatusResponse = {
 		name: 'Sofie Automation system',
@@ -215,7 +214,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 	}
 
 	// Check status of workers
-	const workerStatuses = Workers.find().fetch()
+	const workerStatuses = await Workers.findFetchAsync({})
 	if (workerStatuses.length) {
 		for (const workerStatus of workerStatuses) {
 			if (!statusObj.components) statusObj.components = []
@@ -234,9 +233,8 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 				})
 			)
 
-			WorkerThreadStatuses.find({
-				workerId: workerStatus._id,
-			}).forEach((wts) => {
+			const statuses = await WorkerThreadStatuses.findFetchAsync({ workerId: workerStatus._id })
+			for (const wts of statuses) {
 				if (!statusObj.components) statusObj.components = []
 				statusObj.components.push(
 					literal<Component>({
@@ -251,7 +249,7 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 						},
 					})
 				)
-			})
+			}
 		}
 	}
 
@@ -260,24 +258,24 @@ export function getSystemStatus(cred0: Credentials, studioId?: StudioId): Status
 	if (studioId) {
 		// Check status for a certain studio:
 
-		if (!StudioReadAccess.studioContent({ studioId: studioId }, cred0)) {
+		if (!(await StudioReadAccess.studioContent(studioId, cred0))) {
 			throw new Meteor.Error(403, `Not allowed`)
 		}
-		devices = PeripheralDevices.find({ studioId: studioId }).fetch()
+		devices = await PeripheralDevices.findFetchAsync({ studioId: studioId })
 	} else {
 		if (Settings.enableUserAccounts) {
 			// Check status for the user's studios:
 
-			const cred = resolveCredentials(cred0)
-			if (!cred.organization) throw new Meteor.Error(500, 'user has no organization')
-			if (!OrganizationReadAccess.organizationContent({ organizationId: cred.organization._id }, cred)) {
+			const cred = await resolveCredentials(cred0)
+			if (!cred.organizationId) throw new Meteor.Error(500, 'user has no organization')
+			if (!(await OrganizationReadAccess.organizationContent(cred.organizationId, cred))) {
 				throw new Meteor.Error(403, `Not allowed`)
 			}
-			devices = PeripheralDevices.find({ organizationId: cred.organization._id }).fetch()
+			devices = await PeripheralDevices.findFetchAsync({ organizationId: cred.organizationId })
 		} else {
 			// Check status for all studios:
 
-			devices = PeripheralDevices.find({}).fetch()
+			devices = await PeripheralDevices.findFetchAsync({})
 		}
 	}
 	for (const device of devices) {
@@ -319,17 +317,17 @@ export function setSystemStatus(type: string, status: StatusObject) {
 		timestamp: Time
 	}> = []
 	if (status.messages) {
-		_.each(status.messages, (message) => {
-			const m = _.find(systemStatus.messages, (m) => m.message === message)
-			if (m) {
-				messages.push(m)
+		for (const message of status.messages) {
+			const existingMessage = systemStatus.messages.find((m) => m.message === message)
+			if (existingMessage) {
+				messages.push(existingMessage)
 			} else {
 				messages.push({
 					message: message,
 					timestamp: getCurrentTime(),
 				})
 			}
-		})
+		}
 	}
 	systemStatus.messages = messages
 }
@@ -344,15 +342,15 @@ function setStatus(statusObj: StatusResponse | Component): StatusCode {
 	let s: StatusCode = statusObj._status
 
 	if (statusObj.checks) {
-		_.each(statusObj.checks, (check: CheckObj) => {
+		for (const check of statusObj.checks) {
 			if (check._status > s) s = check._status
-		})
+		}
 	}
 	if (statusObj.components) {
-		_.each(statusObj.components, (component: Component) => {
+		for (const component of statusObj.components) {
 			const s2: StatusCode = setStatus(component)
 			if (s2 > s) s = s2
-		})
+		}
 	}
 	statusObj.status = status2ExternalStatus(s)
 	statusObj._status = s
@@ -362,27 +360,25 @@ function collectMesages(statusObj: StatusResponse | Component): Array<string> {
 	const allMessages: Array<string> = []
 
 	if (statusObj._internal) {
-		_.each(statusObj._internal.messages, (msg) => {
-			allMessages.push(msg)
-		})
+		allMessages.push(...statusObj._internal.messages)
 	}
 	if (statusObj.checks) {
-		_.each(statusObj.checks, (check: CheckObj) => {
+		for (const check of statusObj.checks) {
 			if (check._status !== StatusCode.GOOD && check.errors) {
-				_.each(check.errors, (errMsg) => {
+				for (const errMsg of check.errors) {
 					allMessages.push(`check ${check.description}: ${errMsg.message}`)
-				})
+				}
 			}
-		})
+		}
 	}
 	if (statusObj.components) {
-		_.each(statusObj.components, (component: Component) => {
+		for (const component of statusObj.components) {
 			const messages = collectMesages(component)
 
-			_.each(messages, (msg) => {
+			for (const msg of messages) {
 				allMessages.push(`${component.name}: ${msg}`)
-			})
-		})
+			}
+		}
 	}
 	return allMessages
 }

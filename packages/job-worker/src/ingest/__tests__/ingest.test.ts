@@ -95,7 +95,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			throw new Error('Not implemented')
 		})
 	})
-
 	async function getRundownData(query?: MongoQuery<DBRundown>) {
 		const rundown = (await context.directCollections.Rundowns.findOne(query)) as DBRundown
 		expect(rundown).toBeTruthy()
@@ -107,7 +106,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const rawSegments = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
 		const rawParts = await context.directCollections.Parts.findFetch({ rundownId: rundown._id })
 
-		const segments = sortSegmentsInRundowns(rawSegments, [rundown])
+		const segments = sortSegmentsInRundowns(rawSegments, { rundownIdsInOrder: [rundown._id] })
 		const parts = sortPartsInSortedSegments(rawParts, segments)
 
 		return {

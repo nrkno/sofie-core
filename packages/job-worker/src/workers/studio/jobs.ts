@@ -1,5 +1,5 @@
 import { runJobWithPlayoutCache } from '../../playout/lock'
-import { updateTimeline, updateStudioTimeline } from '../../playout/timeline'
+import { updateTimeline, updateStudioTimeline } from '../../playout/timeline/generate'
 import { JobContext } from '../../jobs'
 import { adLibPieceStart, startStickyPieceOnSourceLayer, takePieceAsAdlibNow } from '../../playout/adlib'
 import { StudioJobs, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
@@ -13,10 +13,7 @@ import {
 	handleTimelineTriggerTime,
 	handleUpdateTimelineAfterIngest,
 	moveNextPart,
-	onPartPlaybackStarted,
-	onPartPlaybackStopped,
-	onPiecePlaybackStarted,
-	onPiecePlaybackStopped,
+	onPlayoutPlaybackChanged,
 	prepareRundownPlaylistForBroadcast,
 	resetRundownPlaylist,
 	setNextPart,
@@ -29,6 +26,7 @@ import { runJobWithStudioCache } from '../../studio/lock'
 import {
 	handleDebugSyncPlayheadInfinitesForNextPartInstance,
 	handleDebugRegenerateNextPartInstance,
+	handleDebugCrash,
 } from '../../playout/debug'
 import { removeEmptyPlaylists } from '../../studio/cleanup'
 import {
@@ -37,6 +35,7 @@ import {
 	moveRundownIntoPlaylist,
 	restoreRundownsInPlaylistToDefaultOrder,
 } from '../../rundownPlaylists'
+import { handleGeneratePlaylistSnapshot, handleRestorePlaylistSnapshot } from '../../playout/snapshot'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -70,10 +69,7 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.RemovePlaylist]: handleRemoveRundownPlaylist,
 	[StudioJobs.RegeneratePlaylist]: handleRegenerateRundownPlaylist,
 
-	[StudioJobs.OnPiecePlaybackStarted]: onPiecePlaybackStarted,
-	[StudioJobs.OnPiecePlaybackStopped]: onPiecePlaybackStopped,
-	[StudioJobs.OnPartPlaybackStarted]: onPartPlaybackStarted,
-	[StudioJobs.OnPartPlaybackStopped]: onPartPlaybackStopped,
+	[StudioJobs.OnPlayoutPlaybackChanged]: onPlayoutPlaybackChanged,
 	[StudioJobs.OnTimelineTriggerTime]: handleTimelineTriggerTime,
 
 	[StudioJobs.UpdateStudioBaseline]: updateStudioBaseline,
@@ -84,6 +80,10 @@ export const studioJobHandlers: StudioJobHandlers = {
 
 	[StudioJobs.DebugSyncInfinitesForNextPartInstance]: handleDebugSyncPlayheadInfinitesForNextPartInstance,
 	[StudioJobs.DebugRegenerateNextPartInstance]: handleDebugRegenerateNextPartInstance,
+
+	[StudioJobs.GeneratePlaylistSnapshot]: handleGeneratePlaylistSnapshot,
+	[StudioJobs.RestorePlaylistSnapshot]: handleRestorePlaylistSnapshot,
+	[StudioJobs.DebugCrash]: handleDebugCrash,
 }
 
 async function updateTimelineDebug(context: JobContext, _data: void): Promise<void> {

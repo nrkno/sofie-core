@@ -9,7 +9,6 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstanceId, RundownId, SegmentId, SegmentPlayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DbCacheReadCollection } from '../cache/CacheCollection'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
 import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
 import {
@@ -24,7 +23,7 @@ import {
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS } from '@sofie-automation/corelib/dist/constants'
+import { PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS } from '@sofie-automation/shared-lib/dist/core/constants'
 import { logger } from '../logging'
 import { getCurrentTime } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
@@ -48,6 +47,7 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 			previousPartInstanceId: null,
 			currentPartInstanceId: null,
 			holdState: RundownHoldState.NONE,
+			resetTime: getCurrentTime(),
 		},
 		$unset: {
 			startedPlayback: 1,
@@ -288,7 +288,7 @@ export async function setNextPart(
 			newInstanceId = nextPartInstance._id
 			cache.PartInstances.update(newInstanceId, {
 				$set: {
-					consumesNextSegmentId: nextPartInfo.consumesNextSegmentId,
+					consumesNextSegmentId: nextPartInfo.consumesNextSegmentId ?? false,
 				},
 			})
 			await syncPlayheadInfinitesForNextPartInstance(context, cache)
@@ -340,8 +340,8 @@ export async function setNextPart(
 			cache.Playlist.doc.currentPartInstanceId,
 			cache.Playlist.doc.previousPartInstanceId,
 		])
-		// reset any previous instances of this part
 
+		// reset any previous instances of this part
 		resetPartInstancesWithPieceInstances(context, cache, {
 			_id: { $nin: selectedPartInstanceIds },
 			rundownId: nextPart.rundownId,
@@ -786,7 +786,7 @@ export function isTooCloseToAutonext(
 export function getRundownsSegmentsAndPartsFromCache(
 	partsCache: DbCacheReadCollection<DBPart>,
 	segmentsCache: DbCacheReadCollection<DBSegment>,
-	rundowns: Array<ReadonlyDeep<DBRundown>>
+	playlist: Pick<ReadonlyDeep<DBRundownPlaylist>, 'rundownIdsInOrder'>
 ): { segments: DBSegment[]; parts: DBPart[] } {
 	const segments = sortSegmentsInRundowns(
 		segmentsCache.findFetch(
@@ -798,7 +798,7 @@ export function getRundownsSegmentsAndPartsFromCache(
 				},
 			}
 		),
-		rundowns
+		playlist
 	)
 
 	const parts = sortPartsInSortedSegments(

@@ -15,27 +15,34 @@ import {
 	RundownId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ReadonlyDeep } from 'type-fest'
-import { StudioLight } from '../../../lib/collections/optimizations'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
+import { PieceInstancePiece, PieceInstances } from '../../../lib/collections/PieceInstances'
 
-export function generateExpectedPackagesForPartInstance(
-	studio: StudioLight,
+export async function generateExpectedPackagesForPartInstance(
+	studioId: StudioId,
 	rundownId: RundownId,
 	partInstance: PartInstance
 ) {
 	const packages: ExpectedPackageDBFromPiece[] = []
 
-	const pieceInstances = PieceInstances.find({
-		rundownId: rundownId,
-		partInstanceId: partInstance._id,
-	}).fetch()
+	const pieceInstances = (await PieceInstances.findFetchAsync(
+		{
+			rundownId: rundownId,
+			partInstanceId: partInstance._id,
+		},
+		{
+			fields: {
+				// @ts-expect-error
+				'piece._id': 1,
+				'piece.expectedPackages': 1,
+			},
+		}
+	)) as Array<{ piece: Pick<PieceInstancePiece, '_id' | 'expectedPackages'> }>
 
 	for (const pieceInstance of pieceInstances) {
 		if (pieceInstance.piece.expectedPackages) {
 			const bases = generateExpectedPackageBases(
-				studio,
+				studioId,
 				pieceInstance.piece._id,
 				pieceInstance.piece.expectedPackages
 			)
@@ -55,7 +62,7 @@ export function generateExpectedPackagesForPartInstance(
 
 // TODO - this is duplicated in the job-worker
 function generateExpectedPackageBases(
-	studio: ReadonlyDeep<StudioLight>,
+	studioId: StudioId,
 	ownerId:
 		| PieceId
 		| AdLibActionId
@@ -77,7 +84,7 @@ function generateExpectedPackageBases(
 			_id: getExpectedPackageId(ownerId, id),
 			blueprintPackageId: id,
 			contentVersionHash: getContentVersionHash(expectedPackage),
-			studioId: studio._id,
+			studioId: studioId,
 			created: Date.now(),
 		})
 	}

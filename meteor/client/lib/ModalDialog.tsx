@@ -93,7 +93,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 
 	handleKey = (e: KeyboardEvent) => {
 		if (this.props.show) {
-			if (e.code === 'Enter') {
+			if (e.code === 'Enter' || e.code === 'NumpadEnter') {
 				if (!this.props.warning) this.handleAccept(e)
 			} else if (e.code === 'Escape') {
 				if (this.props.secondaryText) {
@@ -288,6 +288,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 		if (modalDialogGlobalContainerSingleton) {
 			logger.warn('modalDialogGlobalContainerSingleton called more than once!')
 		}
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		modalDialogGlobalContainerSingleton = this
 		this.state = {
 			queue: [],

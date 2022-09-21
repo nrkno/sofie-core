@@ -1,15 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
-// Release 30
+// Release 30 (2021-03-22)
 export const addSteps = addMigrationSteps('1.18.0', [
 	//                     ^--- To be set to an absolute version number when doing the release
 	// add steps here:

@@ -28,11 +28,16 @@ export interface VerifiedRundownContentAccess extends RundownContentAccess {
 	studioId: StudioId
 }
 
-export function checkAccessToPlaylist(
+/**
+ * Check that the current user has write access to the specified playlist, and ensure that the playlist exists
+ * @param context
+ * @param playlistId Id of the playlist
+ */
+export async function checkAccessToPlaylist(
 	context: MethodContext,
 	playlistId: RundownPlaylistId
-): VerifiedRundownPlaylistContentAccess {
-	const access = RundownPlaylistContentWriteAccess.playout(context, playlistId)
+): Promise<VerifiedRundownPlaylistContentAccess> {
+	const access = await RundownPlaylistContentWriteAccess.playout(context, playlistId)
 	const playlist = access.playlist
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${playlistId}" not found!`)
 	return {
@@ -42,8 +47,16 @@ export function checkAccessToPlaylist(
 	}
 }
 
-export function checkAccessToRundown(context: MethodContext, rundownId: RundownId): VerifiedRundownContentAccess {
-	const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
+/**
+ * Check that the current user has write access to the specified rundown, and ensure that the rundown exists
+ * @param context
+ * @param rundownId Id of the rundown
+ */
+export async function checkAccessToRundown(
+	context: MethodContext,
+	rundownId: RundownId
+): Promise<VerifiedRundownContentAccess> {
+	const access = await RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 	const rundown = access.rundown
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	return {
@@ -51,18 +64,4 @@ export function checkAccessToRundown(context: MethodContext, rundownId: RundownI
 		rundown,
 		studioId: rundown.studioId,
 	}
-}
-
-export function checkAccessAndGetPlaylist(context: MethodContext, playlistId: RundownPlaylistId): RundownPlaylist {
-	const access = RundownPlaylistContentWriteAccess.playout(context, playlistId)
-	const playlist = access.playlist
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${playlistId}" not found!`)
-	return playlist
-}
-
-export function checkAccessAndGetRundown(context: MethodContext, rundownId: RundownId): Rundown {
-	const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
-	const rundown = access.rundown
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-	return rundown
 }

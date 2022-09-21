@@ -46,10 +46,10 @@ describe('Basic test of test environment', () => {
 				expect(isInFiber()).toBeTruthy()
 				return 'a'
 			})
-			.then(async (val) => {
+			.then(async (innerVal) => {
 				return new Promise((resolve) => {
 					expect(isInFiber()).toBeTruthy()
-					resolve(val)
+					resolve(innerVal)
 				})
 			})
 		expect(waitForPromise(p)).toEqual('a')
@@ -232,8 +232,7 @@ describe('Basic test of test environment', () => {
 })
 
 function asynchronousFibersFunction(a: number, b: number, c: number): number {
-	const val = innerAsynchronousFiberFunction(a, b) + c
-	return val
+	return innerAsynchronousFiberFunction(a, b) + c
 }
 
 const innerAsynchronousFiberFunction = Meteor.wrapAsync((val0, val1, cb) => {

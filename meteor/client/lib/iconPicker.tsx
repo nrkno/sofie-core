@@ -130,8 +130,8 @@ export const IconPicker = withTranslation()(
 									</label>
 								</div>
 							)}
-							{_.values(
-								_.mapObject(this.getFilteredIcons(), (value: IconDefinition, key) => {
+							{Object.entries(this.getFilteredIcons()).map(([key, value]) => {
+								if (value) {
 									return (
 										<div className="expco-item" key={key}>
 											<label className="action-btn" title={value.iconName} onClick={() => this.handleChange(value)}>
@@ -139,8 +139,10 @@ export const IconPicker = withTranslation()(
 											</label>
 										</div>
 									)
-								})
-							)}
+								} else {
+									return ''
+								}
+							})}
 						</div>
 					</div>
 				</div>

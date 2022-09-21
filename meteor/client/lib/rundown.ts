@@ -26,10 +26,9 @@ import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { literal, normalizeArray, getCurrentTime, applyToArray } from '../../lib/lib'
 import { PieceId } from '../../lib/collections/Pieces'
-import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
-import { createPieceGroupAndCap, PieceGroupMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
+import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
@@ -38,8 +37,9 @@ import { getShowHiddenSourceLayers } from './localStorage'
 import { Rundown, RundownId } from '../../lib/collections/Rundowns'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { AdLibPieceUi } from './shelf'
 
-interface PieceGroupMetadataExt extends PieceGroupMetadata {
+interface PieceTimelineMetadataExt extends PieceTimelineMetadata {
 	id: PieceId
 }
 
@@ -473,19 +473,19 @@ export namespace RundownUtils {
 						renderedInPoint: 0,
 					}
 
-					const { pieceGroup, capObjs } = createPieceGroupAndCap(piece)
-					pieceGroup.metaData = literal<PieceGroupMetadataExt>({
+					const { controlObj, capObjs } = createPieceGroupAndCap(playlist._id, piece)
+					controlObj.metaData = literal<PieceTimelineMetadataExt>({
 						id: piece.piece._id,
-						pieceId: piece._id,
+						pieceInstanceGroupId: piece._id,
 						isPieceTimeline: true,
 					})
-					partTimeline.push(pieceGroup)
+					partTimeline.push(controlObj)
 					partTimeline.push(...capObjs)
 
 					// if there is an userDuration override, override it for the timeline
 					if (piece.userDuration) {
-						delete pieceGroup.enable.duration
-						pieceGroup.enable.end = piece.userDuration.end
+						delete controlObj.enable.duration
+						controlObj.enable.end = piece.userDuration.end
 					}
 
 					// find the target output layer
@@ -557,7 +557,7 @@ export namespace RundownUtils {
 				const objs = Object.values(tlResolved.objects)
 				for (let i = 0; i < objs.length; i++) {
 					const obj = objs[i]
-					const obj0 = obj as unknown as TimelineObjectCoreExt<PieceGroupMetadataExt>
+					const obj0 = obj as unknown as TimelineObjectCoreExt<PieceTimelineMetadataExt>
 					if (obj.resolved.resolved && obj0.metaData) {
 						// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
 						const piece = piecesLookup.get(obj0.metaData.id)

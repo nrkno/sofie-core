@@ -122,6 +122,7 @@ export interface IBlueprintRundown<TMetadata = unknown> {
 export interface IBlueprintRundownDB<TMetadata = unknown>
 	extends IBlueprintRundown<TMetadata>,
 		IBlueprintRundownDBData {}
+
 /** Properties added to a rundown in Core */
 export interface IBlueprintRundownDBData {
 	_id: string
@@ -131,9 +132,6 @@ export interface IBlueprintRundownDBData {
 
 	/** RundownPlaylist this rundown is member of */
 	playlistId?: string
-
-	/** Rundown's place in the RundownPlaylist */
-	_rank?: number
 
 	/** Air-status, comes from NCS, examples: "READY" | "NOT READY" */
 	airStatus?: string
@@ -149,6 +147,7 @@ export interface IBlueprintSegmentRundown<TMetadata = unknown> {
 export enum SegmentDisplayMode {
 	Timeline = 'timeline',
 	Storyboard = 'storyboard',
+	List = 'list',
 }
 
 /** The Segment generated from Blueprint */
@@ -162,6 +161,8 @@ export interface IBlueprintSegment<TMetadata = unknown> {
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */
 	identifier?: string
 
+	/** Show the minishelf of the segment */
+	showShelf?: boolean
 	/** Segment display mode. Default mode is *SegmentDisplayMode.Timeline* */
 	displayAs?: SegmentDisplayMode
 }
@@ -228,7 +229,16 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */
 	identifier?: string
+
+	/** MediaObjects that when created/updated, should cause the blueprint to be rerun for the Segment of this Part */
+	// hackListenToMediaObjectUpdates?: HackPartMediaObjectSubscription[]
 }
+
+// export interface HackPartMediaObjectSubscription {
+// 	/** The playable reference (CasparCG clip name, quantel GUID, etc) */
+// 	mediaId: string
+// }
+
 /** The Part generated from Blueprint */
 export interface IBlueprintPart<TMetadata = unknown> extends IBlueprintMutatablePart<TMetadata> {
 	/** Id of the part from the gateway if this part does not map directly to an IngestPart. This must be unique for each part */
@@ -404,6 +414,12 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	 */
 	prerollDuration?: number
 
+	/**
+	 * How long this piece needs to continue it's content after a take has been done to ensure a
+	 * seemless transition into the next part.
+	 */
+	postrollDuration?: number
+
 	/** Whether the adlib should always be inserted queued */
 	toBeQueued?: boolean
 	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
@@ -523,6 +539,8 @@ export interface IBlueprintAdLibPiece<TMetadata = unknown> extends IBlueprintPie
 	 * only one of them should be displayed in the GUI.
 	 */
 	uniquenessId?: string
+	/** When not playing, display in the UI as playing, and vice versa. Useful for Adlibs that toggle something off when taken */
+	invertOnAirState?: boolean
 }
 /** The AdLib piece sent from Core */
 export interface IBlueprintAdLibPieceDB<TMetadata = unknown> extends IBlueprintAdLibPiece<TMetadata> {

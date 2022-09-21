@@ -6,7 +6,6 @@ import { check, Match } from '../../lib/check'
 import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
 import {
 	Snapshots,
-	DeprecatedSnapshotRundown,
 	SnapshotType,
 	SnapshotSystem,
 	SnapshotDebug,
@@ -14,12 +13,8 @@ import {
 	SnapshotRundownPlaylist,
 	SnapshotId,
 } from '../../lib/collections/Snapshots'
-import { Rundowns, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
-import { Segments, Segment, SegmentId } from '../../lib/collections/Segments'
-import { Part, Parts, PartId } from '../../lib/collections/Parts'
-import { Pieces, Piece, PieceId } from '../../lib/collections/Pieces'
-import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
+import { PieceGeneric } from '../../lib/collections/Pieces'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import {
 	getCurrentTime,
@@ -28,11 +23,10 @@ import {
 	fixValidPath,
 	protectString,
 	getRandomId,
-	unprotectString,
-	ProtectedString,
-	protectStringArray,
-	assertNever,
 	stringifyError,
+	omit,
+	unprotectStringArray,
+	unprotectString,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -42,48 +36,25 @@ import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/col
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
-import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, CoreSystem, parseVersion, getCoreSystemAsync } from '../../lib/collections/CoreSystem'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
-import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import {
-	ExpectedPackageDB,
-	ExpectedPackageDBType,
-	ExpectedPackages,
-	getExpectedPackageId,
-} from '../../lib/collections/ExpectedPackages'
-import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { importIngestRundown } from './ingest/http'
-import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { RundownPlaylists, DBRundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
-import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
-import { PartInstances, PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
-import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/1_0_1'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
-import { BasicAccessContext, OrganizationContentWriteAccess } from '../security/organization'
+import { OrganizationContentWriteAccess } from '../security/organization'
 import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
-import { getPartId, getSegmentId } from './ingest/lib'
-import { Piece as Piece_1_11_0 } from '../migration/deprecatedDataTypes/1_11_0'
-import { AdLibActions, AdLibAction, AdLibActionId } from '../../lib/collections/AdLibActions'
-import {
-	RundownBaselineAdLibActions,
-	RundownBaselineAdLibAction,
-	RundownBaselineAdLibActionId,
-} from '../../lib/collections/RundownBaselineAdLibActions'
-import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
 import { saveIntoDb, sumChanges } from '../lib/database'
 import * as fs from 'fs'
 import {
@@ -96,47 +67,19 @@ import {
 } from '../../lib/collections/PackageContainerPackageStatus'
 import { PackageInfoDB, PackageInfos } from '../../lib/collections/PackageInfos'
 import { checkStudioExists } from '../../lib/collections/optimizations'
+import { CoreRundownPlaylistSnapshot } from '@sofie-automation/corelib/dist/snapshots'
+import { QueueStudioJob } from '../worker/worker'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { ReadonlyDeep } from 'type-fest'
+import { checkAccessToPlaylist, VerifiedRundownPlaylistContentAccess } from './lib'
+import { PackageInfo } from '../coreSystem'
 
-interface DeprecatedRundownSnapshot {
-	// Old, from the times before rundownPlaylists
-	version: string
-	rundownId: RundownId
-	snapshot: DeprecatedSnapshotRundown
-	rundown: DBRundown
-	ingestData: Array<IngestDataCacheObj>
-	userActions: Array<UserActionsLogItem>
-	baselineObjs: Array<RundownBaselineObj>
-	baselineAdlibs: Array<RundownBaselineAdLibItem>
-	segments: Array<Segment>
-	parts: Array<Part>
-	pieces: Array<Piece>
-	adLibPieces: Array<AdLibPiece>
-	mediaObjects: Array<MediaObject>
-	expectedMediaItems: Array<ExpectedMediaItem>
-}
+interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
+	versionExtended: string | undefined
 
-interface RundownPlaylistSnapshot {
-	version: string
-	playlistId: RundownPlaylistId
 	snapshot: SnapshotRundownPlaylist
-	playlist: DBRundownPlaylist
-	rundowns: Array<DBRundown>
-	ingestData: Array<IngestDataCacheObj>
 	userActions: Array<UserActionsLogItem>
-	baselineObjs: Array<RundownBaselineObj>
-	baselineAdlibs: Array<RundownBaselineAdLibItem>
-	segments: Array<Segment>
-	parts: Array<Part>
-	partInstances: Array<PartInstance>
-	pieces: Array<Piece>
-	pieceInstances: Array<PieceInstance>
-	adLibPieces: Array<AdLibPiece>
-	adLibActions: Array<AdLibAction>
-	baselineAdLibActions: Array<RundownBaselineAdLibAction>
 	mediaObjects: Array<MediaObject>
-	expectedMediaItems: Array<ExpectedMediaItem>
-	expectedPlayoutItems: Array<ExpectedPlayoutItem>
-	expectedPackages: Array<ExpectedPackageDB>
 
 	expectedPackageWorkStatuses: Array<ExpectedPackageWorkStatus>
 	packageContainerPackageStatuses: Array<PackageContainerPackageStatusDB>
@@ -144,6 +87,7 @@ interface RundownPlaylistSnapshot {
 }
 interface SystemSnapshot {
 	version: string
+	versionExtended?: string
 	studioId: StudioId | null
 	snapshot: SnapshotSystem
 	studios: Array<Studio>
@@ -158,6 +102,7 @@ interface SystemSnapshot {
 }
 interface DebugSnapshot {
 	version: string
+	versionExtended?: string
 	studioId?: StudioId
 	snapshot: SnapshotDebug
 	system: SystemSnapshot
@@ -172,109 +117,7 @@ interface DeviceSnapshot {
 	replyTime: Time
 	content: any
 }
-type AnySnapshot = RundownPlaylistSnapshot | SystemSnapshot | DebugSnapshot | DeprecatedRundownSnapshot
-
-/**
- * Create a snapshot of all items related to a RundownPlaylist
- * @param playlistId
- */
-async function createRundownPlaylistSnapshot(
-	playlistId: RundownPlaylistId,
-	organizationId: OrganizationId | null
-): Promise<RundownPlaylistSnapshot> {
-	const snapshotId: SnapshotId = getRandomId()
-	logger.info(`Generating RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${playlistId}"`)
-
-	const playlist = await RundownPlaylists.findOneAsync(playlistId)
-	if (!playlist) throw new Meteor.Error(404, `Playlist "${playlistId}" not found`)
-	const rundowns = await Rundowns.findFetchAsync({ playlistId: playlist._id })
-	const rundownIds = rundowns.map((i) => i._id)
-	const ingestData = await IngestDataCache.findFetchAsync(
-		{ rundownId: { $in: rundownIds } },
-		{ sort: { modified: -1 } }
-	) // @todo: check sorting order
-	const userActions = await UserActionsLog.findFetchAsync({
-		args: {
-			$regex:
-				`.*(` +
-				rundownIds
-					.concat(playlistId as any)
-					.map((i) => `"${i}"`)
-					.join('|') +
-				`).*`,
-		},
-	})
-
-	const segments = await Segments.findFetchAsync({ rundownId: { $in: rundownIds } })
-	const parts = await Parts.findFetchAsync({ rundownId: { $in: rundownIds } })
-	const partInstances = await PartInstances.findFetchAsync({ rundownId: { $in: rundownIds } })
-	const pieces = await Pieces.findFetchAsync({ startRundownId: { $in: rundownIds } })
-	const pieceInstances = await PieceInstances.findFetchAsync({ rundownId: { $in: rundownIds } })
-	const adLibPieces = await AdLibPieces.findFetchAsync({ rundownId: { $in: rundownIds } })
-	const baselineAdlibs = await RundownBaselineAdLibPieces.findFetchAsync({ rundownId: { $in: rundownIds } })
-	const adLibActions = await AdLibActions.findFetchAsync({ rundownId: { $in: rundownIds } })
-	const baselineAdLibActions = await RundownBaselineAdLibActions.findFetchAsync({ rundownId: { $in: rundownIds } })
-	const mediaObjectIds: Array<string> = [
-		..._.compact(pieces.map((piece) => (piece.content as VTContent | undefined)?.fileName)),
-		..._.compact(adLibPieces.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName)),
-		..._.compact(baselineAdlibs.map((adLibPiece) => (adLibPiece.content as VTContent | undefined)?.fileName)),
-	]
-	const mediaObjects = await MediaObjects.findFetchAsync({
-		studioId: playlist.studioId,
-		mediaId: { $in: mediaObjectIds },
-	})
-	const expectedMediaItems = await ExpectedMediaItems.findFetchAsync({ partId: { $in: parts.map((i) => i._id) } })
-	const expectedPlayoutItems = await ExpectedPlayoutItems.findFetchAsync({ rundownId: { $in: rundownIds } })
-	const expectedPackages = await ExpectedPackages.findFetchAsync({ rundownId: { $in: rundownIds } })
-	const baselineObjs = await RundownBaselineObjs.findFetchAsync({ rundownId: { $in: rundownIds } })
-
-	const expectedPackageWorkStatuses = await ExpectedPackageWorkStatuses.findFetchAsync({
-		studioId: playlist.studioId,
-	})
-	const packageContainerPackageStatuses = await PackageContainerPackageStatuses.findFetchAsync({
-		studioId: playlist.studioId,
-	})
-	const packageInfos = await PackageInfos.findFetchAsync({
-		studioId: playlist.studioId,
-	})
-
-	logger.info(`Snapshot generation done`)
-	return {
-		version: CURRENT_SYSTEM_VERSION,
-		playlistId,
-		snapshot: {
-			_id: snapshotId,
-			organizationId: organizationId,
-			created: getCurrentTime(),
-			type: SnapshotType.RUNDOWNPLAYLIST,
-			playlistId,
-			studioId: playlist.studioId,
-			name: `Rundown_${playlist.name}_${playlist._id}_${formatDateTime(getCurrentTime())}`,
-			version: CURRENT_SYSTEM_VERSION,
-		},
-		playlist,
-		rundowns,
-		ingestData,
-		userActions,
-		baselineObjs,
-		baselineAdlibs,
-		segments,
-		parts,
-		partInstances,
-		pieces,
-		pieceInstances,
-		adLibPieces,
-		adLibActions,
-		baselineAdLibActions,
-		mediaObjects,
-		expectedMediaItems,
-		expectedPlayoutItems,
-		expectedPackages,
-		expectedPackageWorkStatuses,
-		packageContainerPackageStatuses,
-		packageInfos,
-	}
-}
+type AnySnapshot = RundownPlaylistSnapshot | SystemSnapshot | DebugSnapshot
 
 /**
  * Create a snapshot of all items related to the base system (all settings),
@@ -289,7 +132,7 @@ async function createSystemSnapshot(
 	const snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating System snapshot "${snapshotId}"` + (studioId ? `for studio "${studioId}"` : ''))
 
-	const coreSystem = getCoreSystem()
+	const coreSystem = await getCoreSystemAsync()
 	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
 
 	if (Settings.enableUserAccounts && !organizationId)
@@ -358,6 +201,7 @@ async function createSystemSnapshot(
 	logger.info(`Snapshot generation done`)
 	return {
 		version: CURRENT_SYSTEM_VERSION,
+		versionExtended: PackageInfo.versionExtended || PackageInfo.version || 'UNKNOWN',
 		studioId: studioId,
 		snapshot: {
 			_id: snapshotId,
@@ -398,9 +242,7 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 	})
 
 	const activePlaylistSnapshots = await Promise.all(
-		activePlaylists.map(async (playlist) => {
-			return createRundownPlaylistSnapshot(playlist._id, organizationId)
-		})
+		activePlaylists.map(async (playlist) => createRundownPlaylistSnapshot(playlist, true))
 	)
 
 	const timeline = await Timeline.findFetchAsync({})
@@ -436,6 +278,7 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 	logger.info(`Snapshot generation done`)
 	return {
 		version: CURRENT_SYSTEM_VERSION,
+		versionExtended: PackageInfo.versionExtended || PackageInfo.version || 'UNKNOWN',
 		studioId: studioId,
 		snapshot: {
 			_id: snapshotId,
@@ -450,6 +293,93 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 		timeline: timeline,
 		userActionLog: userActionLogLatest,
 		deviceSnaphots: deviceSnaphots,
+	}
+}
+
+function getPiecesMediaObjects(pieces: PieceGeneric[]): string[] {
+	return _.compact(pieces.map((piece) => (piece.content as VTContent | undefined)?.fileName))
+}
+
+async function createRundownPlaylistSnapshot(
+	playlist: ReadonlyDeep<RundownPlaylist>,
+	full: boolean = false
+): Promise<RundownPlaylistSnapshot> {
+	const snapshotId: SnapshotId = getRandomId()
+	logger.info(
+		`Generating ${full ? 'full ' : ''}RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${
+			playlist._id
+		}"`
+	)
+
+	const queuedJob = await QueueStudioJob(StudioJobs.GeneratePlaylistSnapshot, playlist.studioId, {
+		playlistId: playlist._id,
+		full,
+	})
+	const coreResult = await queuedJob.complete
+	const coreSnapshot: CoreRundownPlaylistSnapshot = JSON.parse(coreResult.snapshotJson)
+
+	const mediaObjectIds: Array<string> = [
+		...getPiecesMediaObjects(coreSnapshot.pieces),
+		...getPiecesMediaObjects(coreSnapshot.adLibPieces),
+		...getPiecesMediaObjects(coreSnapshot.baselineAdlibs),
+	]
+	const pMediaObjects = MediaObjects.findFetchAsync({
+		studioId: playlist.studioId,
+		mediaId: { $in: mediaObjectIds },
+	})
+
+	const rundownIds = unprotectStringArray(coreSnapshot.rundowns.map((i) => i._id))
+	const pUserActions = UserActionsLog.findFetchAsync({
+		args: {
+			$regex:
+				`.*(` +
+				rundownIds
+					.concat(unprotectString(playlist._id))
+					.map((i) => `"${i}"`)
+					.join('|') +
+				`).*`,
+		},
+	})
+
+	const pExpectedPackageWorkStatuses = ExpectedPackageWorkStatuses.findFetchAsync({
+		studioId: playlist.studioId,
+	})
+	const pPackageContainerPackageStatuses = PackageContainerPackageStatuses.findFetchAsync({
+		studioId: playlist.studioId,
+	})
+	const pPackageInfos = PackageInfos.findFetchAsync({
+		studioId: playlist.studioId,
+	})
+
+	const [mediaObjects, userActions, expectedPackageWorkStatuses, packageContainerPackageStatuses, packageInfos] =
+		await Promise.all([
+			pMediaObjects,
+			pUserActions,
+			pExpectedPackageWorkStatuses,
+			pPackageContainerPackageStatuses,
+			pPackageInfos,
+		])
+
+	return {
+		...coreSnapshot,
+		versionExtended: PackageInfo.versionExtended || PackageInfo.version || 'UNKNOWN',
+		snapshot: {
+			_id: snapshotId,
+			organizationId: playlist.organizationId ?? null,
+			created: getCurrentTime(),
+			type: SnapshotType.RUNDOWNPLAYLIST,
+			playlistId: playlist._id,
+			studioId: playlist.studioId,
+			name: `Rundown_${playlist.name}_${playlist._id}_${formatDateTime(getCurrentTime())}`,
+			version: CURRENT_SYSTEM_VERSION,
+		},
+
+		// Add on some collections that the worker is unaware of
+		mediaObjects,
+		userActions,
+		expectedPackageWorkStatuses,
+		packageContainerPackageStatuses,
+		packageInfos,
 	}
 }
 
@@ -481,7 +411,7 @@ async function storeSnaphot(
 	organizationId: OrganizationId | null,
 	comment: string
 ): Promise<SnapshotId> {
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
@@ -519,21 +449,17 @@ async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Pro
 		if (snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
 			if (!snapshot.studioId)
 				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but hase no studioId`)
-			StudioContentWriteAccess.dataFromSnapshot(cred0, snapshot.studioId)
-		} else if (snapshot.type === SnapshotType.RUNDOWN) {
-			if (!snapshot.studioId)
-				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but hase no studioId`)
-			StudioContentWriteAccess.dataFromSnapshot(cred0, snapshot.studioId)
+			await StudioContentWriteAccess.dataFromSnapshot(cred0, snapshot.studioId)
 		} else if (snapshot.type === SnapshotType.SYSTEM) {
 			if (!snapshot.organizationId)
 				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but has no organizationId`)
-			OrganizationContentWriteAccess.dataFromSnapshot(cred0, snapshot.organizationId)
+			await OrganizationContentWriteAccess.dataFromSnapshot(cred0, snapshot.organizationId)
 		} else {
-			SystemWriteAccess.coreSystem(cred0)
+			await SystemWriteAccess.coreSystem(cred0)
 		}
 	}
 
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
@@ -547,7 +473,7 @@ async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Pro
 
 	return readSnapshot
 }
-function restoreFromSnapshot(snapshot: AnySnapshot) {
+async function restoreFromSnapshot(snapshot: AnySnapshot): Promise<void> {
 	// Determine what kind of snapshot
 
 	if (!_.isObject(snapshot)) throw new Meteor.Error(500, `Restore input data is not an object`)
@@ -556,9 +482,9 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 	if (snapshot.externalId && snapshot.segments && snapshot.type === 'mos') {
 		// Special: Not a snapshot, but a datadump of a MOS rundown
 		const studioId: StudioId = Meteor.settings.manualSnapshotIngestStudioId || 'studio0'
-		const studioExists = checkStudioExists(studioId)
+		const studioExists = await checkStudioExists(studioId)
 		if (studioExists) {
-			importIngestRundown(studioId, snapshot as unknown as IngestRundown)
+			await importIngestRundown(studioId, snapshot as unknown as IngestRundown)
 			return
 		}
 		throw new Meteor.Error(500, `No Studio found`)
@@ -568,17 +494,24 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 
 	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot (${_.keys(snapshot)})`)
 
-	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) {
-		// A snapshot of a rundown (to be deprecated)
-		if ((snapshot as RundownPlaylistSnapshot).playlistId) {
-			// temporary check, from snapshots where the type was rundown, but it actually was a rundownPlaylist
-			return restoreFromRundownPlaylistSnapshot(snapshot as RundownPlaylistSnapshot)
-		} else {
-			return restoreFromDeprecatedRundownSnapshot(snapshot as DeprecatedRundownSnapshot)
+	if (snapshot.snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
+		const playlistSnapshot = snapshot as RundownPlaylistSnapshot
+
+		if (!isVersionSupported(parseVersion(playlistSnapshot.version || '0.18.0'))) {
+			throw new Meteor.Error(
+				400,
+				`Cannot restore, the snapshot comes from an older, unsupported version of Sofie`
+			)
 		}
-	} else if (snapshot.snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
+
+		// TODO: Improve this. This matches the 'old' behaviour
+		const studios = await Studios.findFetchAsync({})
+		const snapshotStudioExists = studios.find((studio) => studio._id === playlistSnapshot.playlist.studioId)
+		const studioId = snapshotStudioExists ? playlistSnapshot.playlist.studioId : studios[0]?._id
+		if (!studioId) throw new Meteor.Error(500, `No Studio found`)
+
 		// A snapshot of a rundownPlaylist
-		return restoreFromRundownPlaylistSnapshot(snapshot as RundownPlaylistSnapshot)
+		return restoreFromRundownPlaylistSnapshot(snapshot as RundownPlaylistSnapshot, studioId)
 	} else if (snapshot.snapshot.type === SnapshotType.SYSTEM) {
 		// A snapshot of a system
 		return restoreFromSystemSnapshot(snapshot as SystemSnapshot)
@@ -587,321 +520,30 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 	}
 }
 
-async function restoreFromDeprecatedRundownSnapshot(snapshot0: DeprecatedRundownSnapshot) {
-	// Convert the Rundown snaphost into a rundown playlist
-	// This is somewhat of a hack, it's just to be able to import older snapshots into the system
-
-	const snapshot = _.clone(snapshot0) as any as RundownPlaylistSnapshot
-
-	// Make up a rundownPlaylist:
-	snapshot.playlist = makePlaylistFromRundown_1_0_0(snapshot0.rundown)
-	snapshot.playlistId = snapshot.playlist._id
-
-	delete snapshot['rundown']
-	snapshot.rundowns = [snapshot0.rundown]
-	snapshot.rundowns[0]._rank = 0
-	snapshot.rundowns[0].playlistId = snapshot.playlist._id
-
-	return restoreFromRundownPlaylistSnapshot(snapshot)
-}
-export async function restoreFromRundownPlaylistSnapshot(
+async function restoreFromRundownPlaylistSnapshot(
 	snapshot: RundownPlaylistSnapshot,
-	studioId?: StudioId,
-	showStyleId?: ShowStyleBaseId
+	studioId: StudioId
 ): Promise<void> {
-	logger.info(`Restoring from rundown snapshot "${snapshot.snapshot.name}"`)
-	const oldPlaylistId = snapshot.playlistId
-
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
 
-	if (oldPlaylistId !== snapshot.playlist._id)
-		throw new Meteor.Error(
-			500,
-			`Restore snapshot: playlistIds don\'t match, "${oldPlaylistId}", "${snapshot.playlist._id}!"`
-		)
+	const queuedJob = await QueueStudioJob(StudioJobs.RestorePlaylistSnapshot, studioId, {
+		snapshotJson: JSON.stringify(omit(snapshot, 'mediaObjects', 'userActions')),
+	})
+	await queuedJob.complete
 
-	// const dbPlaylist = RundownPlaylists.findOne(playlistId)
-	// const dbRundowns = dbPlaylist ? dbPlaylist.getRundowns() : []
-	// const dbRundownMap = normalizeArray(dbRundowns, '_id')
-
-	// const unsynced = dbRundowns.reduce((p, v) => (p || v.unsynced), false)
-	// if (unsynced) throw new Meteor.Error(500, `Not allowed to restore into synced Rundown!`)
-	if (!studioId) {
-		const studios = await Studios.findFetchAsync({})
-		const snapshotStudioExists = studios.find((studio) => studio._id === snapshot.playlist.studioId)
-		if (studios.length >= 1 && !snapshotStudioExists) {
-			// TODO Choose better than just the first
-			snapshot.playlist.studioId = studios[0]._id
-		}
-	} else {
-		snapshot.playlist.studioId = studioId
-	}
-
-	const playlistId = (snapshot.playlist._id = getRandomId())
-	snapshot.playlist.restoredFromSnapshotId = snapshot.playlistId
-	delete snapshot.playlist.activationId
-
-	const showStyleVariants = await ShowStyleVariants.findFetchAsync({}) // TODO - this should be constrained by those allowed for the studio
-	for (const rd of snapshot.rundowns) {
-		if (!rd.orphaned) {
-			rd.orphaned = 'from-snapshot'
-		}
-
-		rd.playlistId = playlistId
-		rd.restoredFromSnapshotId = rd._id
-		delete rd.peripheralDeviceId
-		rd.studioId = snapshot.playlist.studioId
-		rd.notifiedCurrentPlayingPartExternalId = undefined
-
-		const snapshotShowStyleVariantExists = showStyleVariants.find(
-			(variant) => variant._id === rd.showStyleVariantId && variant.showStyleBaseId === rd.showStyleBaseId
-		)
-		if (!showStyleId) {
-			if (showStyleVariants.length >= 1 && !snapshotShowStyleVariantExists) {
-				// TODO Choose better than just the first
-				rd.showStyleBaseId = showStyleVariants[0].showStyleBaseId
-				rd.showStyleVariantId = showStyleVariants[0]._id
-			}
-		} else {
-			rd.showStyleBaseId = showStyleId
-		}
-	}
-
-	// Migrate old data:
-	// 1.12.0 Release 24:
-	const partSegmentIds: { [partId: string]: SegmentId } = {}
-	for (const part of snapshot.parts) {
-		partSegmentIds[unprotectString(part._id)] = part.segmentId
-	}
-	for (const piece of snapshot.pieces) {
-		const pieceOld = piece as any as Partial<Piece_1_11_0>
-		if (pieceOld.rundownId) {
-			piece.startRundownId = pieceOld.rundownId
-			delete pieceOld.rundownId
-		}
-		if (pieceOld.partId) {
-			piece.startPartId = pieceOld.partId
-			delete pieceOld.partId
-			piece.startSegmentId = partSegmentIds[unprotectString(piece.startPartId)]
-		}
-	}
-
-	// List any ids that need updating on other documents
-	const rundownIdMap = new Map<RundownId, RundownId>()
-	const getNewRundownId = (oldRundownId: RundownId) => {
-		const rundownId = rundownIdMap.get(oldRundownId)
-		if (!rundownId) {
-			throw new Meteor.Error(500, `Could not find new rundownId for "${oldRundownId}"`)
-		}
-		return rundownId
-	}
-	for (const rd of snapshot.rundowns) {
-		const oldId = rd._id
-		rd._id = getRandomId()
-		rundownIdMap.set(oldId, rd._id)
-	}
-	const partIdMap = new Map<PartId, PartId>()
-	for (const part of snapshot.parts) {
-		const oldId = part._id
-		part._id = part.externalId ? getPartId(getNewRundownId(part.rundownId), part.externalId) : getRandomId()
-
-		partIdMap.set(oldId, part._id)
-	}
-	const partInstanceIdMap = new Map<PartInstanceId, PartInstanceId>()
-	for (const partInstance of snapshot.partInstances) {
-		const oldId = partInstance._id
-		partInstance._id = getRandomId()
-		partInstanceIdMap.set(oldId, partInstance._id)
-		partInstance.part._id = partIdMap.get(partInstance.part._id) || getRandomId()
-	}
-	const segmentIdMap = new Map<SegmentId, SegmentId>()
-	for (const segment of snapshot.segments) {
-		const oldId = segment._id
-		segment._id = getSegmentId(getNewRundownId(segment.rundownId), segment.externalId)
-		segmentIdMap.set(oldId, segment._id)
-	}
-	type AnyPieceId = PieceId | AdLibActionId | RundownBaselineAdLibActionId
-	const pieceIdMap = new Map<AnyPieceId, AnyPieceId>()
-	for (const piece of snapshot.pieces) {
-		const oldId = piece._id
-		piece.startRundownId = getNewRundownId(piece.startRundownId)
-		piece.startPartId =
-			partIdMap.get(piece.startPartId) ||
-			getRandomIdAndWarn(`piece.startPartId=${piece.startPartId} of piece=${piece._id}`)
-		piece.startSegmentId =
-			segmentIdMap.get(piece.startSegmentId) ||
-			getRandomIdAndWarn(`piece.startSegmentId=${piece.startSegmentId} of piece=${piece._id}`)
-		piece._id = getRandomId()
-		pieceIdMap.set(oldId, piece._id)
-	}
-	for (const adlib of [
-		...snapshot.adLibPieces,
-		...snapshot.adLibActions,
-		...snapshot.baselineAdlibs,
-		...snapshot.baselineAdLibActions,
-	]) {
-		const oldId = adlib._id
-		if (adlib.partId) adlib.partId = partIdMap.get(adlib.partId)
-		adlib._id = getRandomId()
-		pieceIdMap.set(oldId, adlib._id)
-	}
-
-	for (const pieceInstance of snapshot.pieceInstances) {
-		pieceInstance._id = getRandomId()
-
-		pieceInstance.piece._id = (pieceIdMap.get(pieceInstance.piece._id) || getRandomId()) as PieceId // Note: don't warn if not found, as the piece may have been deleted
-		if (pieceInstance.infinite) {
-			pieceInstance.infinite.infinitePieceId =
-				pieceIdMap.get(pieceInstance.infinite.infinitePieceId) || getRandomId() // Note: don't warn if not found, as the piece may have been deleted
-		}
-	}
-
-	if (snapshot.playlist.currentPartInstanceId) {
-		snapshot.playlist.currentPartInstanceId =
-			partInstanceIdMap.get(snapshot.playlist.currentPartInstanceId) || snapshot.playlist.currentPartInstanceId
-	}
-	if (snapshot.playlist.nextPartInstanceId) {
-		snapshot.playlist.nextPartInstanceId =
-			partInstanceIdMap.get(snapshot.playlist.nextPartInstanceId) || snapshot.playlist.nextPartInstanceId
-	}
-	if (snapshot.playlist.previousPartInstanceId) {
-		snapshot.playlist.previousPartInstanceId =
-			partInstanceIdMap.get(snapshot.playlist.previousPartInstanceId) || snapshot.playlist.previousPartInstanceId
-	}
-
-	for (const expectedPackage of snapshot.expectedPackages) {
-		switch (expectedPackage.fromPieceType) {
-			case ExpectedPackageDBType.PIECE:
-			case ExpectedPackageDBType.ADLIB_PIECE:
-			case ExpectedPackageDBType.ADLIB_ACTION:
-			case ExpectedPackageDBType.BASELINE_ADLIB_PIECE:
-			case ExpectedPackageDBType.BASELINE_ADLIB_ACTION: {
-				expectedPackage.pieceId =
-					pieceIdMap.get(expectedPackage.pieceId) ||
-					getRandomIdAndWarn(`expectedPackage.pieceId=${expectedPackage.pieceId}`)
-				expectedPackage._id = getExpectedPackageId(expectedPackage.pieceId, expectedPackage.blueprintPackageId)
-
-				break
-			}
-			case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS: {
-				expectedPackage._id = getExpectedPackageId(
-					expectedPackage.rundownId,
-					expectedPackage.blueprintPackageId
-				)
-				break
-			}
-			case ExpectedPackageDBType.BUCKET_ADLIB:
-			case ExpectedPackageDBType.BUCKET_ADLIB_ACTION:
-			case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS: {
-				// ignore, these are not present in the rundown snapshot anyway.
-				logger.warn(`Unexpected ExpectedPackage in snapshot: ${JSON.stringify(expectedPackage)}`)
-				break
-			}
-
-			default:
-				assertNever(expectedPackage)
-				break
-		}
-	}
-
-	const rundownIds = snapshot.rundowns.map((r) => r._id)
-
-	// Apply the updates of any properties to any document
-	function updateItemIds<
-		T extends {
-			_id: ProtectedString<any>
-			rundownId?: RundownId
-			partInstanceId?: PartInstanceId
-			partId?: PartId
-			segmentId?: SegmentId
-			part?: unknown
-			piece?: unknown
-		}
-	>(objs: undefined | T[], updateId: boolean): T[] {
-		const updateIds = (obj: T) => {
-			if (obj.rundownId) {
-				obj.rundownId = getNewRundownId(obj.rundownId)
-			}
-
-			if (obj.partId) {
-				obj.partId = partIdMap.get(obj.partId) || getRandomId()
-			}
-			if (obj.segmentId) {
-				obj.segmentId = segmentIdMap.get(obj.segmentId) || getRandomId()
-			}
-			if (obj.partInstanceId) {
-				obj.partInstanceId = partInstanceIdMap.get(obj.partInstanceId) || getRandomId()
-			}
-
-			if (updateId) {
-				obj._id = getRandomId()
-			}
-
-			if (obj.part) {
-				updateIds(obj.part as any)
-			}
-			if (obj.piece) {
-				updateIds(obj.piece as any)
-			}
-
-			return obj
-		}
-		return (objs || []).map((obj) => updateIds(obj))
-	}
-
+	// Restore the collections that the worker is unaware of
 	await Promise.all([
-		saveIntoDb(RundownPlaylists, { _id: playlistId }, [snapshot.playlist]),
-		saveIntoDb(Rundowns, { playlistId }, snapshot.rundowns),
-		saveIntoDb(IngestDataCache, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.ingestData, true)),
 		// saveIntoDb(UserActionsLog, {}, snapshot.userActions),
-		saveIntoDb(RundownBaselineObjs, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.baselineObjs, true)),
-		saveIntoDb(
-			RundownBaselineAdLibPieces,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.baselineAdlibs, true)
-		),
-		saveIntoDb(
-			RundownBaselineAdLibActions,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.baselineAdLibActions, true)
-		),
-		saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.segments, false)),
-		saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.parts, false)),
-		saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.partInstances, false)),
-		saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false)),
-		saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieceInstances, false)),
-		saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true)),
-		saveIntoDb(AdLibActions, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibActions, true)),
 		saveIntoDb(
 			MediaObjects,
 			{ _id: { $in: _.map(snapshot.mediaObjects, (mediaObject) => mediaObject._id) } },
 			snapshot.mediaObjects
 		),
-		saveIntoDb(
-			ExpectedMediaItems,
-			{ partId: { $in: protectStringArray(_.keys(partIdMap)) } },
-			updateItemIds(snapshot.expectedMediaItems, true)
-		),
-		saveIntoDb(
-			ExpectedPlayoutItems,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPlayoutItems || [], false)
-		),
-		saveIntoDb(
-			ExpectedPackages,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPackages || [], false)
-		),
 	])
+}
 
-	logger.info(`Restore done`)
-}
-function getRandomIdAndWarn<T>(name: string): ProtectedString<T> {
-	logger.warn(`Couldn't find "${name}" when restoring snapshot`)
-	return getRandomId<T>()
-}
 async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void> {
 	logger.info(`Restoring from system snapshot "${snapshot.snapshot.name}"`)
 	const studioId = snapshot.studioId
@@ -909,18 +551,6 @@ async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
-	// Migrate data changes:
-	snapshot.studios = _.map(snapshot.studios, (studio) => {
-		if (!studio.routeSets) studio.routeSets = {}
-		return migrateConfigToBlueprintConfigOnObject(studio)
-	})
-	snapshot.showStyleBases = _.map(snapshot.showStyleBases, (showStyleBase) => {
-		// delete showStyleBase.runtimeArguments // todo: add this?
-		return migrateConfigToBlueprintConfigOnObject(showStyleBase)
-	})
-	snapshot.showStyleVariants = _.map(snapshot.showStyleVariants, (showStyleVariant) => {
-		return migrateConfigToBlueprintConfigOnObject(showStyleVariant)
-	})
 	if (snapshot.blueprints) {
 		snapshot.blueprints = _.map(snapshot.blueprints, (bp) => {
 			bp.hasCode = !!bp.code
@@ -953,7 +583,7 @@ export async function storeSystemSnapshot(
 	reason: string
 ): Promise<SnapshotId> {
 	if (!_.isNull(studioId)) check(studioId, String)
-	const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(context)
+	const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -971,12 +601,20 @@ export async function internalStoreSystemSnapshot(
 	return storeSnaphot(s, organizationId, reason)
 }
 export async function storeRundownPlaylistSnapshot(
-	access: BasicAccessContext,
-	playlistId: RundownPlaylistId,
-	reason: string
+	access: VerifiedRundownPlaylistContentAccess,
+	reason: string,
+	full?: boolean
 ): Promise<SnapshotId> {
-	const s = await createRundownPlaylistSnapshot(playlistId, access.organizationId)
+	const s = await createRundownPlaylistSnapshot(access.playlist, full)
 	return storeSnaphot(s, access.organizationId, reason)
+}
+export async function internalStoreRundownPlaylistSnapshot(
+	playlist: RundownPlaylist,
+	reason: string,
+	full?: boolean
+): Promise<SnapshotId> {
+	const s = await createRundownPlaylistSnapshot(playlist, full)
+	return storeSnaphot(s, playlist.organizationId || null, reason)
 }
 export async function storeDebugSnapshot(
 	context: MethodContext,
@@ -984,7 +622,7 @@ export async function storeDebugSnapshot(
 	reason: string
 ): Promise<SnapshotId> {
 	check(studioId, String)
-	const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(context)
+	const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -993,7 +631,7 @@ export async function storeDebugSnapshot(
 }
 export async function restoreSnapshot(context: MethodContext, snapshotId: SnapshotId): Promise<void> {
 	check(snapshotId, String)
-	const { cred } = OrganizationContentWriteAccess.snapshot(context)
+	const { cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -1002,7 +640,7 @@ export async function restoreSnapshot(context: MethodContext, snapshotId: Snapsh
 }
 export async function removeSnapshot(context: MethodContext, snapshotId: SnapshotId): Promise<void> {
 	check(snapshotId, String)
-	const { snapshot, cred } = OrganizationContentWriteAccess.snapshot(context, snapshotId)
+	const { snapshot, cred } = await OrganizationContentWriteAccess.snapshot(context, snapshotId)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -1012,7 +650,7 @@ export async function removeSnapshot(context: MethodContext, snapshotId: Snapsho
 
 	if (snapshot.fileName) {
 		// remove from disk
-		const system = getCoreSystem()
+		const system = await getCoreSystemAsync()
 		if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 		if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
@@ -1040,32 +678,40 @@ if (!Settings.enableUserAccounts) {
 			check(params.studioId, Match.Optional(String))
 
 			const cred0: Credentials = { userId: null, token: params.token }
-			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
-			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
+			const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(cred0)
+			await StudioReadAccess.studio(protectString(params.studioId), cred)
 
 			return createSystemSnapshot(protectString(params.studioId), organizationId)
 		})
 	})
-	PickerGET.route('/snapshot/rundown/:playlistId', async (params, req: IncomingMessage, response: ServerResponse) => {
+	async function createRundownSnapshot(response: ServerResponse, params) {
 		return handleResponse(response, async () => {
 			check(params.playlistId, String)
+			check(params.full, Match.Optional(String))
 
 			const cred0: Credentials = { userId: null, token: params.token }
-			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
+			const { cred } = await OrganizationContentWriteAccess.snapshot(cred0)
 			const playlist = RundownPlaylists.findOne(protectString(params.playlistId))
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
-			StudioReadAccess.studioContent({ studioId: playlist.studioId }, cred)
+			await StudioReadAccess.studioContent(playlist.studioId, cred)
 
-			return createRundownPlaylistSnapshot(playlist._id, organizationId)
+			return createRundownPlaylistSnapshot(playlist, params.full === 'true')
 		})
-	})
+	}
+	PickerGET.route('/snapshot/rundown/:playlistId', async (params, req: IncomingMessage, response: ServerResponse) =>
+		createRundownSnapshot(response, params)
+	)
+	PickerGET.route(
+		'/snapshot/rundown/:playlistId/:full',
+		async (params, req: IncomingMessage, response: ServerResponse) => createRundownSnapshot(response, params)
+	)
 	PickerGET.route('/snapshot/debug/:studioId', async (params, req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, async () => {
 			check(params.studioId, String)
 
 			const cred0: Credentials = { userId: null, token: params.token }
-			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
-			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
+			const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(cred0)
+			await StudioReadAccess.studio(protectString(params.studioId), cred)
 
 			return createDebugSnapshot(protectString(params.studioId), organizationId)
 		})
@@ -1128,8 +774,8 @@ class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
 	}
 	async storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
 		check(playlistId, String)
-		const access = OrganizationContentWriteAccess.snapshot(this)
-		return storeRundownPlaylistSnapshot(access, playlistId, reason)
+		const access = await checkAccessToPlaylist(this, playlistId)
+		return storeRundownPlaylistSnapshot(access, reason)
 	}
 	async storeDebugSnapshot(studioId: StudioId, reason: string) {
 		return storeDebugSnapshot(this, studioId, reason)

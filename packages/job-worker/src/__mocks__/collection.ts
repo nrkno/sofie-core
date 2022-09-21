@@ -30,10 +30,11 @@ import {
 	FindOptions as CacheFindOptions,
 } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import EventEmitter = require('eventemitter3')
 import { Collection, FindOptions, AnyBulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
-import { ICollection, IDirectCollections, MongoModifier, MongoQuery } from '../db'
+import { IChangeStream, IChangeStreamEvents, ICollection, IDirectCollections, MongoModifier, MongoQuery } from '../db'
 
 export interface CollectionOperation {
 	type: string
@@ -44,6 +45,14 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 	readonly #name: string
 	readonly #documents = new Map<TDoc['_id'], TDoc>()
 	readonly #ops: CollectionOperation[] = []
+
+	/** Allow watchers to be created on this collection */
+	allowWatchers = false
+
+	static fromReal<TDoc extends { _id: ProtectedString<any> }>(col: ICollection<TDoc>): MockMongoCollection<TDoc> {
+		// TODO - any type assertion?
+		return col as any as MockMongoCollection<TDoc>
+	}
 
 	constructor(name: CollectionName) {
 		this.#name = name
@@ -88,7 +97,7 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 				matchedDocs = []
 			}
 		} else {
-			matchedDocs = Array.from(this.#documents.values()).filter((doc) => mongoWhere(doc, selector))
+			matchedDocs = Array.from(this.#documents.values()).filter((doc) => mongoWhere(doc, selector as any))
 		}
 
 		if (options) {
@@ -217,10 +226,45 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 
 		return null
 	}
+
+	/**
+	 * The registered watchers
+	 * Note: These are not (yet?) automatically triggered upon changes
+	 */
+	watchers: MockChangeStream<TDoc>[] = []
+
+	watch(pipeline: any[]): IChangeStream<TDoc> {
+		if (!this.allowWatchers) throw new Error(`Watching this collection is not allowed`)
+
+		const newWatcher = new MockChangeStream(pipeline)
+		this.watchers.push(newWatcher)
+
+		return newWatcher
+	}
+}
+
+export class MockChangeStream<TDoc extends { _id: ProtectedString<any> }>
+	extends EventEmitter<IChangeStreamEvents<TDoc>>
+	implements IChangeStream<TDoc>
+{
+	constructor(public readonly pipeline: any[]) {
+		super()
+	}
+
+	closed = false
+
+	async close(): Promise<void> {
+		await defer()
+		this.closed = true
+	}
+}
+
+export async function defer(): Promise<void> {
+	return new Promise((resolve) => jest.requireActual('timers').setImmediate(resolve))
 }
 
 export function getMockCollections(): Readonly<IDirectCollections> {
-	const collections = Object.freeze(
+	return Object.freeze(
 		literal<IDirectCollections>({
 			AdLibActions: new MockMongoCollection<AdLibAction>(CollectionName.AdLibActions),
 			AdLibPieces: new MockMongoCollection<AdLibPiece>(CollectionName.AdLibPieces),
@@ -257,5 +301,4 @@ export function getMockCollections(): Readonly<IDirectCollections> {
 			ExternalMessageQueue: new MockMongoCollection(CollectionName.ExternalMessageQueue),
 		})
 	)
-	return collections
 }

@@ -5,11 +5,11 @@ import { faCheckSquare, faSquare } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
-import { TransformedCollection } from '../../lib/typings/meteor'
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { assertNever, getRandomString } from '../../lib/lib'
+import { MongoCollection } from '../../lib/collections/lib'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -70,7 +70,7 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 interface IEditAttributeBaseProps {
 	updateOnKey?: boolean
 	attribute?: string
-	collection?: TransformedCollection<any, any>
+	collection?: MongoCollection<any>
 	myObject?: any
 	obj?: any
 	options?: any

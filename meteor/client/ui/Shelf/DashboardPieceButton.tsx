@@ -12,7 +12,6 @@ import {
 	NoraContent,
 	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
-import { AdLibPieceUi } from './AdLibPanel'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IAdLibListItem } from './AdLibListItem'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInputIcon'
@@ -22,15 +21,18 @@ import { StyledTimecode } from '../../lib/StyledTimecode'
 import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
 import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
-import { protectString } from '../../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { getThumbnailUrlForAdLibPieceUi } from '../../lib/ui/clipPreview'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
+import { isTouchDevice } from '../../lib/lib'
+import { AdLibPieceUi } from '../../lib/shelf'
+import { protectString } from '../../../lib/lib'
+import { Studio } from '../../../lib/collections/Studios'
+
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
-	studio: Studio | undefined
+	studio: Studio
 	layer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
@@ -50,6 +52,8 @@ export interface IDashboardButtonProps {
 	editableName?: boolean
 	onNameChanged?: (e: any, value: string) => void
 	toggleOnSingleClick?: boolean
+	canOverflowHorizontally?: boolean
+	lineBreak?: string
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
@@ -66,7 +70,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	Translated<IDashboardButtonProps> & T,
 	IState
 > {
-	private objId: string
 	private element: HTMLDivElement | null = null
 	private positionAndSize: {
 		top: number
@@ -105,7 +108,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	renderGraphics() {
+	renderGraphics(_renderThumbnail?: boolean) {
 		const adLib = this.props.piece as any as AdLibPieceUi
 		const noraContent = adLib.content as NoraContent | undefined
 		return (
@@ -146,9 +149,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 		return (
 			<>
-				{thumbnailUrl && renderThumbnail && (
-					<img src={thumbnailUrl} className="dashboard-panel__panel__button__thumbnail" />
-				)}
 				{sourceDuration && (
 					<span className="dashboard-panel__panel__button__sub-label">
 						{sourceDuration ? (
@@ -182,6 +182,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					studio={this.props.studio}
 					displayOn="viewport"
 				/>
+				{thumbnailUrl && renderThumbnail && (
+					<div className="dashboard-panel__panel__button__thumbnail">
+						<img src={thumbnailUrl} />
+					</div>
+				)}
 			</>
 		)
 	}
@@ -225,6 +230,18 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
+	private handleOnTouchStart = (_e: React.TouchEvent<HTMLDivElement>) => {
+		if (this.element) {
+			const { top, left, width, height } = this.element.getBoundingClientRect()
+			this.positionAndSize = {
+				top,
+				left,
+				width,
+				height,
+			}
+		}
+	}
+
 	private handleOnPointerLeave = (_e: React.PointerEvent<HTMLDivElement>) => {
 		this.setState({ isHovered: false })
 		if (this.hoverTimeout) {
@@ -234,10 +251,29 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		this.positionAndSize = null
 	}
 
+	private handleOnTouchEnd = (_e: React.TouchEvent<HTMLDivElement>) => {
+		this.setState({ isHovered: false })
+		if (this.hoverTimeout) {
+			Meteor.clearTimeout(this.hoverTimeout)
+			this.hoverTimeout = null
+		}
+		this.positionAndSize = null
+	}
+
 	private handleOnMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+		this.handleMove(e.clientX)
+	}
+
+	private handleOnTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+		if (e.changedTouches && e.changedTouches.length) {
+			this.handleMove(e.changedTouches[0].clientX)
+		}
+	}
+
+	private handleMove = (clientX: number) => {
 		const timePercentage = Math.max(
 			0,
-			Math.min((e.clientX - (this.positionAndSize?.left || 0) - 5) / ((this.positionAndSize?.width || 1) - 10), 1)
+			Math.min((clientX - (this.positionAndSize?.left || 0) - 5) / ((this.positionAndSize?.width || 1) - 10), 1)
 		)
 		const sourceDuration = (this.props.piece.content as VTContent | undefined)?.sourceDuration || 0
 		this.setState({
@@ -325,12 +361,16 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	private handleOnMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+	private handleOnMouseDown = (e: React.PointerEvent<HTMLDivElement>) => {
 		// if mouseDown event is fired, that means that pointerDown did not fire, which means we are dealing with a mouse
 		this.pointerId = null
 		if (e.button) {
 			// this is some other button, main button is 0
 			this.props.onSelectAdLib(this.props.piece, e)
+		}
+		if (isTouchDevice()) {
+			// hide the hoverscrub
+			this.handleOnPointerLeave(e)
 		}
 	}
 
@@ -359,6 +399,12 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
+	renderHotkey = () => {
+		if (this.props.piece.hotkey) {
+			return <div className="dashboard-panel__panel__button__hotkey">{this.props.piece.hotkey}</div>
+		}
+	}
+
 	render() {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
@@ -380,7 +426,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						list: isList,
 						selected: this.props.isNext || this.props.isSelected,
 					},
-					this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)
+					this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type),
+					...(this.props.piece.tags ? this.props.piece.tags.map((tag) => `piece-tag--${tag}`) : [])
 				)}
 				style={{
 					width: isList
@@ -403,32 +450,41 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				onPointerEnter={this.handleOnPointerEnter}
 				onPointerLeave={this.handleOnPointerLeave}
 				onMouseMove={this.handleOnMouseMove}
+				onTouchStart={!this.props.canOverflowHorizontally ? this.handleOnTouchStart : undefined}
+				onTouchEnd={!this.props.canOverflowHorizontally ? this.handleOnTouchEnd : undefined}
+				onTouchMove={!this.props.canOverflowHorizontally ? this.handleOnTouchMove : undefined}
 				onPointerDown={this.handleOnPointerDown}
 				onPointerUp={this.handleOnPointerUp}
 				data-obj-id={this.props.piece._id}
 			>
-				{this.props.disableHoverInspector || !this.props.layer
-					? null
-					: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
-					? // VT should have thumbnails in "Button" layout.
-					  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
-					: this.props.layer.type === SourceLayerType.SPLITS
-					? this.renderSplits(isList && this.props.showThumbnailsInList)
-					: this.props.layer.type === SourceLayerType.GRAPHICS || this.props.layer.type === SourceLayerType.LOWER_THIRD
-					? this.renderGraphics(/*(isButtons || (isList && this.props.showThumbnailsInList)*/)
-					: null}
+				<div className="dashboard-panel__panel__button__content">
+					{this.props.disableHoverInspector || !this.props.layer
+						? null
+						: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
+						? // VT should have thumbnails in "Button" layout.
+						  this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList))
+						: this.props.layer.type === SourceLayerType.SPLITS
+						? this.renderSplits(isList && this.props.showThumbnailsInList)
+						: this.props.layer.type === SourceLayerType.GRAPHICS ||
+						  this.props.layer.type === SourceLayerType.LOWER_THIRD
+						? this.renderGraphics(isButtons || (isList && this.props.showThumbnailsInList))
+						: null}
 
-				{this.props.editableName ? (
-					<textarea
-						className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
-						value={this.state.label}
-						onChange={this.onNameChanged}
-						onBlur={this.onRenameTextBoxBlur}
-						ref={this.onRenameTextBoxShow}
-					></textarea>
-				) : (
-					<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
-				)}
+					{this.renderHotkey()}
+					<div className="dashboard-panel__panel__button__label-container">
+						{this.props.editableName ? (
+							<textarea
+								className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
+								value={this.state.label}
+								onChange={this.onNameChanged}
+								onBlur={this.onRenameTextBoxBlur}
+								ref={this.onRenameTextBoxShow}
+							></textarea>
+						) : (
+							<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
+						)}
+					</div>
+				</div>
 			</div>
 		)
 	}

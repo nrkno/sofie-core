@@ -20,7 +20,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 function stripObjectProperties(objs: Array<TimelineObjRundown & OnGenerateTimelineObj>, keepContent?: boolean): any[] {
-	const keys = _.compact([keepContent ? undefined : 'content', 'enable', 'objectType', 'keyframes'])
+	const keys = _.compact([keepContent ? undefined : 'content', 'enable', 'objectType', 'keyframes', 'metaData'])
 	return objs.map((o) => _.omit(o, ...keys))
 }
 

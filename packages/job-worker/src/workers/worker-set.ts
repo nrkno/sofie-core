@@ -146,10 +146,10 @@ export class StudioWorkerSet {
 					batchSize: 1,
 				}
 			),
-			`Blueprints"`,
+			`Blueprints`,
 			(invalidations, change) => {
-				if (change.documentKey) {
-					invalidations.blueprints.push((change.documentKey as any)._id)
+				if ('documentKey' in change) {
+					invalidations.blueprints.push(change.documentKey._id)
 				}
 			}
 		)
@@ -163,10 +163,10 @@ export class StudioWorkerSet {
 					batchSize: 1,
 				}
 			),
-			`ShowStyleBases"`,
+			`ShowStyleBases`,
 			(invalidations, change) => {
-				if (change.documentKey) {
-					invalidations.showStyleBases.push((change.documentKey as any)._id)
+				if ('documentKey' in change) {
+					invalidations.showStyleBases.push(change.documentKey._id)
 				}
 			}
 		)
@@ -182,8 +182,8 @@ export class StudioWorkerSet {
 			),
 			`ShowStyleVariants"`,
 			(invalidations, change) => {
-				if (change.documentKey) {
-					invalidations.showStyleVariants.push((change.documentKey as any)._id)
+				if ('documentKey' in change) {
+					invalidations.showStyleVariants.push(change.documentKey._id)
 				}
 			}
 		)

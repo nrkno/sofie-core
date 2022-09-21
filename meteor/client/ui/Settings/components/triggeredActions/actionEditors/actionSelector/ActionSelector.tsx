@@ -9,6 +9,7 @@ import classNames from 'classnames'
 import { EditAttribute } from '../../../../../../lib/EditAttribute'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { AdLibActionEditor } from './actionEditors/AdLibActionEditor'
 
 interface IProps {
 	action: SomeAction
@@ -32,6 +33,9 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 			}
 			break
 		case PlayoutActions.adlib:
+			if (action.arguments) {
+				result.push(t('Mode: {{triggerMode}}', { triggerMode: action.arguments.triggerMode }))
+			}
 			break
 		case PlayoutActions.createSnapshotForDebug:
 			break
@@ -85,6 +89,9 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 				result.push(t('Off'))
 			}
 			break
+		case ClientActions.miniShelfQueueAdLib:
+			result.push(t('Forward: {{forward}}', { forward: action.forward }))
+			break
 		default:
 			assertNever(action)
 			return action
@@ -97,7 +104,7 @@ function hasArguments(action: SomeAction): boolean {
 		case PlayoutActions.activateRundownPlaylist:
 			return action.force || action.rehearsal
 		case PlayoutActions.adlib:
-			return false
+			return !!action.arguments
 		case PlayoutActions.createSnapshotForDebug:
 			return false
 		case PlayoutActions.deactivateRundownPlaylist:
@@ -123,6 +130,8 @@ function hasArguments(action: SomeAction): boolean {
 		case ClientActions.rewindSegments:
 			return false
 		case ClientActions.showEntireCurrentSegment:
+			return true
+		case ClientActions.miniShelfQueueAdLib:
 			return true
 		default:
 			assertNever(action)
@@ -162,6 +171,8 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 			return t('Go to On Air line')
 		case ClientActions.showEntireCurrentSegment:
 			return t('Show entire On Air Segment')
+		case ClientActions.miniShelfQueueAdLib:
+			return t('Queue AdLib from Minishelf')
 		default:
 			assertNever(action)
 			return action
@@ -222,7 +233,7 @@ function getActionParametersEditor(
 				</div>
 			)
 		case PlayoutActions.adlib:
-			return null
+			return <AdLibActionEditor action={action} onChange={onChange} />
 		case PlayoutActions.createSnapshotForDebug:
 			return null
 		case PlayoutActions.deactivateRundownPlaylist:
@@ -351,6 +362,25 @@ function getActionParametersEditor(
 							onChange({
 								...action,
 								on: newVal,
+							})
+						}}
+					/>
+				</div>
+			)
+		case ClientActions.miniShelfQueueAdLib:
+			return (
+				<div className="mts">
+					<EditAttribute
+						className="form-control"
+						modifiedClassName="bghl"
+						type={'toggle'}
+						label={t('Forward')}
+						overrideDisplayValue={action.forward}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								forward: newVal,
 							})
 						}}
 					/>

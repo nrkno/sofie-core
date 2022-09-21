@@ -24,7 +24,7 @@ import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RESTART_SALT } from '../../../lib/api/userActions'
-import { CASPARCG_RESTART_TIME } from '../../../lib/constants'
+import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { StatusCodePill } from './StatusCodePill'
 
 interface IDeviceItemProps {
@@ -481,7 +481,7 @@ export const CoreItem = reacti18next.withTranslation()(
 													t,
 													e,
 													UserAction.GENERATE_RESTART_TOKEN,
-													(e) => MeteorCall.userAction.generateRestartToken(e),
+													(e, ts) => MeteorCall.userAction.generateRestartToken(e, ts),
 													(err, token) => {
 														if (err || !token) {
 															NotificationCenter.push(
@@ -499,7 +499,7 @@ export const CoreItem = reacti18next.withTranslation()(
 															t,
 															{},
 															UserAction.RESTART_CORE,
-															(e) => MeteorCall.userAction.restartCore(e, restartToken),
+															(e, ts) => MeteorCall.userAction.restartCore(e, ts, restartToken),
 															(err, token) => {
 																if (err || !token) {
 																	NotificationCenter.push(
@@ -623,7 +623,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 		renderPeripheralDevices() {
 			const devices: Array<DeviceInHierarchy> = []
 			const refs = {}
-			const devicesToAdd = {}
+			const devicesToAdd: Record<string, DeviceInHierarchy> = {}
 			// First, add all as references:
 			_.each(this.props.devices, (device) => {
 				const d: DeviceInHierarchy = {

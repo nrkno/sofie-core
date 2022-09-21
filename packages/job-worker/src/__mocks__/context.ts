@@ -5,7 +5,8 @@ import {
 	ShowStyleVariantId,
 	RundownId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
@@ -53,6 +54,7 @@ import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timel
 export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext {
 	const collections = getMockCollections()
 
+	// We don't bother 'saving' this to the db, as usually nothing will load it
 	const studio: DBStudio = {
 		...defaultStudio(studioId ?? protectString('mockStudio0')),
 		name: 'mockStudio',

@@ -5,6 +5,7 @@ import { StudioRouteSet, StudioRouteSetExclusivityGroup, StudioRouteBehavior } f
 import classNames from 'classnames'
 import { RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard'
 import Tooltip from 'rc-tooltip'
+import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 
 interface IProps {
 	onStudioRouteSetSwitch?: (
@@ -93,7 +94,11 @@ export const SwitchboardPopUp = withTranslation()(
 											(routeSets[1][1].defaultActive !== undefined &&
 												routeSets[1][1].active !== routeSets[1][1].defaultActive)) && (
 											<span className="switchboard-pop-up-panel__group__controls__notice">
-												<Tooltip overlay={t("This is not in it's normal setting")} placement="top">
+												<Tooltip
+													mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+													overlay={t("This is not in it's normal setting")}
+													placement="top"
+												>
 													<span>
 														<RouteSetOverrideIcon />
 													</span>
@@ -142,7 +147,11 @@ export const SwitchboardPopUp = withTranslation()(
 											</span>
 											{routeSet.defaultActive !== undefined && routeSet.active !== routeSet.defaultActive && (
 												<span className="switchboard-pop-up-panel__group__controls__notice">
-													<Tooltip overlay={t("This is not in it's normal setting")} placement="top">
+													<Tooltip
+														mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+														overlay={t("This is not in it's normal setting")}
+														placement="top"
+													>
 														<span>
 															<RouteSetOverrideIcon />
 														</span>

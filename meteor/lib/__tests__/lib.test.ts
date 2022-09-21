@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { testInFiber } from '../../__mocks__/helpers/jest'
+import { afterEachInFiber, testInFiber } from '../../__mocks__/helpers/jest'
 import { setLogLevel } from '../../server/logging'
 import {
 	MeteorPromiseCall,
@@ -11,16 +11,20 @@ import {
 	stringifyObjects,
 	partial,
 	partialExceptId,
-	escapeHtml,
 	protectString,
 	equalSets,
 	equivalentArrays,
 	LogLevel,
 } from '../lib'
+import { MeteorMock } from '../../__mocks__/meteor'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
 
 describe('lib/lib', () => {
+	afterEachInFiber(() => {
+		MeteorMock.mockSetServerEnvironment()
+	})
+
 	testInFiber('MeteorPromiseCall', () => {
 		// set up method:
 		Meteor.methods({
@@ -45,7 +49,10 @@ describe('lib/lib', () => {
 	})
 	testInFiber('getCurrentTime', () => {
 		systemTime.diff = 5439
+		MeteorMock.mockSetClientEnvironment()
 		expect(getCurrentTime() / 1000).toBeCloseTo((Date.now() - 5439) / 1000, 1)
+		MeteorMock.mockSetServerEnvironment()
+		expect(getCurrentTime() / 1000).toBeCloseTo(Date.now() / 1000, 1)
 	})
 
 	testInFiber('formatDateTime', () => {
@@ -193,11 +200,6 @@ describe('lib/lib', () => {
 		expect(formatDateTime(2579299201000)).toBe('2051-09-26 00:00:01')
 		expect(formatDateTime(2579299200000)).toBe('2051-09-26 00:00:00')
 		expect(formatDateTime(2579299344070)).toBe('2051-09-26 00:02:24')
-	})
-	testInFiber('escapeHtml', () => {
-		expect(escapeHtml(`<div>Hello & goodbye! Please use '"'-signs!</div>`)).toBe(
-			`&lt;div&gt;Hello &amp; goodbye! Please use &#039;&quot;&#039;-signs!&lt;/div&gt;`
-		)
 	})
 
 	testInFiber('equalSets', () => {
