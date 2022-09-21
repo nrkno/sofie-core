@@ -29,6 +29,7 @@ import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { calculatePartTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export async function takeNextPartInnerSync(context: JobContext, cache: CacheForPlayout, now: number): Promise<void> {
 	const span = context.startSpan('takeNextPartInner')
@@ -327,12 +328,15 @@ export function updatePartInstanceOnTake(
 ): void {
 	const playlist = cache.Playlist.doc
 
+	const sourceLayers = applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj
+
 	// TODO - the state could change after this sampling point. This should be handled properly
 	let previousPartEndState: PartEndState | undefined = undefined
 	if (blueprint.blueprint.getEndStateForPart && currentPartInstance) {
 		try {
 			const time = getCurrentTime()
-			const resolvedPieces = getResolvedPieces(context, cache, showStyle, currentPartInstance)
+
+			const resolvedPieces = getResolvedPieces(context, cache, sourceLayers, currentPartInstance)
 
 			const span = context.startSpan('blueprint.getEndStateForPart')
 			const context2 = new RundownContext(
@@ -365,7 +369,7 @@ export function updatePartInstanceOnTake(
 
 	// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
 	const tmpTakePieces = processAndPrunePieceInstanceTimings(
-		showStyle,
+		sourceLayers,
 		cache.PieceInstances.findAll((p) => p.partInstanceId === takePartInstance._id),
 		0
 	)

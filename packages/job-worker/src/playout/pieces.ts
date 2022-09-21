@@ -12,7 +12,7 @@ import { clone, getRandomId, literal, normalizeArray, applyToArray } from '@sofi
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import { logger } from '../logging'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { JobContext } from '../jobs'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
@@ -164,7 +164,7 @@ function resolvePieceTimeline(
 export function getResolvedPieces(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<Pick<DBShowStyleBase, 'sourceLayers'>>,
+	sourceLayers: SourceLayers,
 	partInstance: DBPartInstance
 ): ResolvedPieceInstance[] {
 	const span = context.startSpan('getResolvedPieces')
@@ -177,7 +177,7 @@ export function getResolvedPieces(
 	const nowInPart = now - (partStarted ?? 0)
 
 	const preprocessedPieces: ReadonlyDeep<PieceInstanceWithTimings[]> = processAndPrunePieceInstanceTimings(
-		showStyleBase,
+		sourceLayers,
 		pieceInstances,
 		nowInPart
 	)

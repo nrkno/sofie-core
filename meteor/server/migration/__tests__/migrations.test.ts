@@ -390,7 +390,7 @@ describe('Migrations', () => {
 			organizationId: null,
 			blueprintId: protectString('showStyle0'),
 			outputLayersWithOverrides: wrapDefaultObject({}),
-			sourceLayers: [],
+			sourceLayersWithOverrides: wrapDefaultObject({}),
 			hotkeyLegend: [],
 			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',

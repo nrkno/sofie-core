@@ -435,7 +435,7 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `SourceLayer id "${sourceLayerId}" is invalid`)
 		}
 
-		return _.find(this.showStyleBase.sourceLayers, (part) => part._id === sourceLayerId)
+		return this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId]
 	}
 	insertSourceLayer(sourceLayerId: string, layer: OmitId<ISourceLayer>): string {
 		check(sourceLayerId, String)
@@ -443,7 +443,7 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `SourceLayer id "${sourceLayerId}" is invalid`)
 		}
 
-		const oldLayer = _.find(this.showStyleBase.sourceLayers, (part) => part._id === sourceLayerId)
+		const oldLayer = this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId]
 		if (oldLayer) {
 			throw new Meteor.Error(500, `SourceLayer "${sourceLayerId}" already exists`)
 		}
@@ -457,13 +457,12 @@ export class MigrationContextShowStyle
 				_id: this.showStyleBase._id,
 			},
 			{
-				$push: {
-					sourceLayers: fullLayer,
+				$set: {
+					[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: fullLayer,
 				},
 			}
 		)
-		if (!this.showStyleBase.sourceLayers) this.showStyleBase.sourceLayers = []
-		this.showStyleBase.sourceLayers.push(fullLayer) // Update local
+		this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId] = fullLayer // Update local
 		return fullLayer._id
 	}
 	updateSourceLayer(sourceLayerId: string, layer: Partial<ISourceLayer>): void {
@@ -472,13 +471,13 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `SourceLayer id "${sourceLayerId}" is invalid`)
 		}
 
-		const localLayerIndex = _.findIndex(this.showStyleBase.sourceLayers, (part) => part._id === sourceLayerId)
-		if (localLayerIndex === -1) {
+		const oldLayer = this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId]
+		if (!oldLayer) {
 			throw new Meteor.Error(404, `SourceLayer "${sourceLayerId}" cannot be updated as it does not exist`)
 		}
 
 		const fullLayer = {
-			...this.showStyleBase.sourceLayers[localLayerIndex],
+			...oldLayer,
 			...layer,
 		}
 		ShowStyleBases.update(
@@ -488,11 +487,11 @@ export class MigrationContextShowStyle
 			},
 			{
 				$set: {
-					'sourceLayers.$': fullLayer,
+					[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: fullLayer,
 				},
 			}
 		)
-		this.showStyleBase.sourceLayers[localLayerIndex] = fullLayer // Update local
+		this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId] = fullLayer // Update local
 	}
 	removeSourceLayer(sourceLayerId: string): void {
 		check(sourceLayerId, String)
@@ -505,15 +504,13 @@ export class MigrationContextShowStyle
 				_id: this.showStyleBase._id,
 			},
 			{
-				$pull: {
-					sourceLayers: {
-						_id: sourceLayerId,
-					},
+				$unset: {
+					[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: 1,
 				},
 			}
 		)
 		// Update local:
-		this.showStyleBase.sourceLayers = _.reject(this.showStyleBase.sourceLayers, (c) => c._id === sourceLayerId)
+		delete this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId]
 	}
 	getOutputLayer(outputLayerId: string): IOutputLayer | undefined {
 		check(outputLayerId, String)

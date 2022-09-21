@@ -6,6 +6,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from '../../../jobs'
 import { getCurrentTime } from '../../../lib'
@@ -18,6 +19,9 @@ export async function setupRundownBase(
 	partPropsOverride: Partial<DBPart> = {},
 	piecePropsOverride: { piece0: Partial<Piece>; piece1: Partial<Piece> } = { piece0: {}, piece1: {} }
 ): Promise<{ rundown: DBRundown; segment0: DBSegment; part00: DBPart }> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const rundown: DBRundown = {
 		peripheralDeviceId: undefined,
 		organizationId: null,
@@ -84,8 +88,8 @@ export async function setupRundownBase(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyle.sourceLayers[0]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -106,8 +110,8 @@ export async function setupRundownBase(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyle.sourceLayers[1]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -128,6 +132,9 @@ export async function setupPart2(
 	partPropsOverride: Partial<DBPart> = {},
 	piece0PropsOverride: Partial<Piece> = {}
 ): Promise<{ part01: DBPart }> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
 		segmentId: segment0._id,
@@ -153,8 +160,8 @@ export async function setupPart2(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyle.sourceLayers[0]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -205,6 +212,9 @@ export async function setupRundownWithInTransitionPlannedPiece(
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<RundownId> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle)
 
 	const { part01 } = await setupPart2(context, rundownId, showStyle, rundown, segment0, {
@@ -226,8 +236,8 @@ export async function setupRundownWithInTransitionPlannedPiece(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyle.sourceLayers[2]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[2],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -250,8 +260,8 @@ export async function setupRundownWithInTransitionPlannedPiece(
 			start: 1000,
 			duration: 1000,
 		},
-		sourceLayerId: showStyle.sourceLayers[3]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[3],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -268,6 +278,9 @@ export async function setupRundownWithInTransitionContentDelay(
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<RundownId> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle)
 
 	const { part01 } = await setupPart2(context, rundownId, showStyle, rundown, segment0, {
@@ -289,8 +302,8 @@ export async function setupRundownWithInTransitionContentDelay(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyle.sourceLayers[2]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[2],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -308,6 +321,9 @@ export async function setupRundownWithInTransitionContentDelayAndPreroll(
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<RundownId> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle)
 
 	const { part01 } = await setupPart2(
@@ -339,8 +355,8 @@ export async function setupRundownWithInTransitionContentDelayAndPreroll(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyle.sourceLayers[2]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[2],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -358,6 +374,9 @@ export async function setupRundownWithInTransitionExistingInfinite(
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<RundownId> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const { rundown, segment0, part00 } = await setupRundownBase(context, playlistId, rundownId, showStyle)
 
 	const piece002: Piece = {
@@ -372,8 +391,8 @@ export async function setupRundownWithInTransitionExistingInfinite(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyle.sourceLayers[3]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[3],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.OutOnSegmentEnd,
 		invalid: false,
 		content: {},
@@ -400,8 +419,8 @@ export async function setupRundownWithInTransitionExistingInfinite(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyle.sourceLayers[2]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[2],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -419,6 +438,9 @@ export async function setupRundownWithInTransitionNewInfinite(
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<RundownId> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const { rundown, segment0, part00 } = await setupRundownBase(context, playlistId, rundownId, showStyle)
 
 	const { part01 } = await setupPart2(context, rundownId, showStyle, rundown, segment0, {
@@ -440,8 +462,8 @@ export async function setupRundownWithInTransitionNewInfinite(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyle.sourceLayers[2]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[2],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -462,8 +484,8 @@ export async function setupRundownWithInTransitionNewInfinite(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyle.sourceLayers[3]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[3],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.OutOnSegmentEnd,
 		invalid: false,
 		content: {},
@@ -480,6 +502,9 @@ export async function setupRundownWithInTransitionEnableHold(
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<RundownId> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		holdMode: PartHoldMode.FROM,
 	})
@@ -505,8 +530,8 @@ export async function setupRundownWithInTransitionEnableHold(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyle.sourceLayers[2]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[2],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -524,6 +549,9 @@ export async function setupRundownWithInTransitionDisabled(
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<RundownId> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		disableNextInTransition: true,
 	})
@@ -547,8 +575,8 @@ export async function setupRundownWithInTransitionDisabled(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyle.sourceLayers[2]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[2],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -566,6 +594,9 @@ export async function setupRundownWithOutTransition(
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<RundownId> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const { rundown, segment0, part00 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		outTransition: { duration: 1000 },
 	})
@@ -583,8 +614,8 @@ export async function setupRundownWithOutTransition(
 			start: 0, // will be overwritten
 			duration: 1000,
 		},
-		sourceLayerId: showStyle.sourceLayers[0]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -603,6 +634,9 @@ export async function setupRundownWithOutTransitionAndPreroll(
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<RundownId> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const { rundown, segment0, part00 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		outTransition: { duration: 1000 },
 	})
@@ -620,8 +654,8 @@ export async function setupRundownWithOutTransitionAndPreroll(
 			start: 0, // will be overwritten
 			duration: 1000,
 		},
-		sourceLayerId: showStyle.sourceLayers[0]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -640,6 +674,9 @@ export async function setupRundownWithOutTransitionAndPreroll2(
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<RundownId> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const { rundown, segment0, part00 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		outTransition: { duration: 250 },
 	})
@@ -657,8 +694,8 @@ export async function setupRundownWithOutTransitionAndPreroll2(
 			start: 0, // will be overwritten
 			duration: 250,
 		},
-		sourceLayerId: showStyle.sourceLayers[0]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -677,6 +714,9 @@ export async function setupRundownWithOutTransitionAndInTransition(
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<RundownId> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const { rundown, segment0, part00 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		outTransition: { duration: 600 },
 	})
@@ -694,8 +734,8 @@ export async function setupRundownWithOutTransitionAndInTransition(
 			start: 0, // will be overwritten
 			duration: 600,
 		},
-		sourceLayerId: showStyle.sourceLayers[2]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[2],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},
@@ -724,8 +764,8 @@ export async function setupRundownWithOutTransitionAndInTransition(
 			start: 0,
 			duration: 500,
 		},
-		sourceLayerId: showStyle.sourceLayers[2]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[2],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
 		content: {},

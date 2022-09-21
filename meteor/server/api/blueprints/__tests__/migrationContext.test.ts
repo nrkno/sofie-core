@@ -25,7 +25,7 @@ import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios
 import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
-import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBases, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 import { CoreSystem } from '../../../../lib/collections/CoreSystem'
 import { TriggeredActions } from '../../../../lib/collections/TriggeredActions'
@@ -852,10 +852,10 @@ describe('Test blueprint migrationContext', () => {
 		})
 
 		describe('sourcelayer', () => {
-			function getAllSourceLayersFromDb(showStyle: ShowStyleBase): ISourceLayer[] {
+			function getAllSourceLayersFromDb(showStyle: ShowStyleBase): SourceLayers {
 				const showStyle2 = ShowStyleBases.findOne(showStyle._id) as ShowStyleBase
 				expect(showStyle2).toBeTruthy()
-				return showStyle2.sourceLayers
+				return showStyle2.sourceLayersWithOverrides.defaults
 			}
 
 			testInFiber('getSourceLayer: no id', () => {
@@ -884,7 +884,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertSourceLayer: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.insertSourceLayer('', {
@@ -894,13 +894,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[500] SourceLayer id "" is invalid`)
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 			testInFiber('insertSourceLayer: existing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.insertSourceLayer('vt0', {
@@ -910,13 +910,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[500] SourceLayer "vt0" already exists`)
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 			testInFiber('insertSourceLayer: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 
 				const rawLayer = {
 					name: 'test',
@@ -926,18 +926,18 @@ describe('Test blueprint migrationContext', () => {
 
 				ctx.insertSourceLayer('lay1', rawLayer)
 
-				initialSourceLayers.push({
+				initialSourceLayers['lay1'] = {
 					...rawLayer,
 					_id: 'lay1',
-				})
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				}
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 
 			testInFiber('updateSourceLayer: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.updateSourceLayer('', {
@@ -947,13 +947,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[500] SourceLayer id "" is invalid`)
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 			testInFiber('updateSourceLayer: missing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.updateSourceLayer('fake99', {
@@ -963,13 +963,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[404] SourceLayer "fake99" cannot be updated as it does not exist`)
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 			testInFiber('updateSourceLayer: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 				expect(ctx.getSourceLayer('lay1')).toBeTruthy()
 
 				const rawLayer = {
@@ -979,52 +979,48 @@ describe('Test blueprint migrationContext', () => {
 
 				ctx.updateSourceLayer('lay1', rawLayer)
 
-				_.each(initialSourceLayers, (layer, i) => {
-					if (layer._id === 'lay1') {
-						initialSourceLayers[i] = {
-							...layer,
-							...rawLayer,
-						}
-					}
-				})
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				initialSourceLayers['lay1'] = {
+					...initialSourceLayers['lay1']!,
+					...rawLayer,
+				}
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 
 			testInFiber('removeSourceLayer: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 
 				expect(() => ctx.removeSourceLayer('')).toThrow(`[500] SourceLayer id "" is invalid`)
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 			testInFiber('removeSourceLayer: missing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 				expect(ctx.getSourceLayer('fake99')).toBeFalsy()
 
 				// Should not error
 				ctx.removeSourceLayer('fake99')
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 			testInFiber('removeSourceLayer: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 				expect(ctx.getSourceLayer('lay1')).toBeTruthy()
 
 				// Should not error
 				ctx.removeSourceLayer('lay1')
 
-				const expectedSourceLayers = _.filter(initialSourceLayers, (layer) => layer._id !== 'lay1')
-				expect(getShowStyle(ctx).sourceLayers).toEqual(expectedSourceLayers)
-				expect(getAllSourceLayersFromDb(showStyle)).toEqual(expectedSourceLayers)
+				delete initialSourceLayers['lay1']
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
+				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 		})
 
@@ -1191,11 +1187,9 @@ describe('Test blueprint migrationContext', () => {
 				// Should not error
 				ctx.removeOutputLayer('lay1')
 
-				const expectedOutputLayers = { ...initialOutputLayers }
-				delete expectedOutputLayers['lay1']
-
-				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(expectedOutputLayers)
-				expect(getAllOutputLayersFromDb(showStyle)).toEqual(expectedOutputLayers)
+				delete initialOutputLayers['lay1']
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
+				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 		})
 

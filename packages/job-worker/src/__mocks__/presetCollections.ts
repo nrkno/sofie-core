@@ -35,7 +35,10 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { createShowStyleCompound } from '../showStyles'
 import { ReadonlyDeep } from 'type-fest'
-import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	applyAndValidateOverrides,
+	wrapDefaultObject,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -71,42 +74,42 @@ export async function setupMockShowStyleBase(
 		_id: protectString('mockShowStyleBase' + dbI),
 		name: 'mockShowStyleBase',
 		organizationId: null,
-		outputLayers: [
-			literal<IOutputLayer>({
+		outputLayersWithOverrides: wrapDefaultObject({
+			[LAYER_IDS.OUTPUT_PGM]: literal<IOutputLayer>({
 				_id: LAYER_IDS.OUTPUT_PGM,
 				_rank: 0,
 				isPGM: true,
 				name: 'PGM',
 			}),
-		],
-		sourceLayers: [
-			literal<ISourceLayer>({
+		}),
+		sourceLayersWithOverrides: wrapDefaultObject({
+			[LAYER_IDS.SOURCE_CAM0]: literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_CAM0,
 				_rank: 0,
 				name: 'Camera',
 				type: SourceLayerType.CAMERA,
 				exclusiveGroup: 'main',
 			}),
-			literal<ISourceLayer>({
+			[LAYER_IDS.SOURCE_VT0]: literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_VT0,
 				_rank: 1,
 				name: 'VT',
 				type: SourceLayerType.VT,
 				exclusiveGroup: 'main',
 			}),
-			literal<ISourceLayer>({
+			[LAYER_IDS.SOURCE_TRANSITION0]: literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_TRANSITION0,
 				_rank: 2,
 				name: 'Transition',
 				type: SourceLayerType.TRANSITION,
 			}),
-			literal<ISourceLayer>({
+			[LAYER_IDS.SOURCE_GRAPHICS0]: literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_GRAPHICS0,
 				_rank: 3,
 				name: 'Graphic',
 				type: SourceLayerType.GRAPHICS,
 			}),
-		],
+		}),
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		blueprintId: blueprintId ?? protectString('blueprint0'),
 		// hotkeyLegend?: Array<HotkeyDefinition>
@@ -169,6 +172,9 @@ export async function setupDefaultRundown(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): Promise<void> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyleCompound.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyleCompound.sourceLayersWithOverrides).obj)
+
 	await context.directCollections.Rundowns.insertOne({
 		peripheralDeviceId: undefined,
 		organizationId: null,
@@ -230,8 +236,8 @@ export async function setupDefaultRundown(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyleCompound.sourceLayers[0]._id,
-		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		pieceType: IBlueprintPieceType.Normal,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
@@ -251,8 +257,8 @@ export async function setupDefaultRundown(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyleCompound.sourceLayers[1]._id,
-		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 		pieceType: IBlueprintPieceType.Normal,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
@@ -271,8 +277,8 @@ export async function setupDefaultRundown(
 		rundownId: rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
-		sourceLayerId: showStyleCompound.sourceLayers[1]._id,
-		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
@@ -301,8 +307,8 @@ export async function setupDefaultRundown(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyleCompound.sourceLayers[0]._id,
-		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		pieceType: IBlueprintPieceType.Normal,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
@@ -370,8 +376,8 @@ export async function setupDefaultRundown(
 		rundownId: rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
-		sourceLayerId: showStyleCompound.sourceLayers[0]._id,
-		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
@@ -384,8 +390,8 @@ export async function setupDefaultRundown(
 		rundownId: rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
-		sourceLayerId: showStyleCompound.sourceLayers[1]._id,
-		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}

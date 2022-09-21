@@ -61,7 +61,7 @@ export async function fetchShowStyleBaseLight(showStyleId: ShowStyleBaseId): Pro
 		fields: {
 			blueprintConfigWithOverrides: 0,
 			outputLayersWithOverrides: 0,
-			sourceLayers: 0,
+			sourceLayersWithOverrides: 0,
 		},
 	})
 }
@@ -72,8 +72,11 @@ export async function fetchShowStyleBasesLight(
 		fields: {
 			blueprintConfigWithOverrides: 0,
 			outputLayersWithOverrides: 0,
-			sourceLayers: 0,
+			sourceLayersWithOverrides: 0,
 		},
 	})
 }
-export type ShowStyleBaseLight = Omit<DBShowStyleBase, 'blueprintConfig' | 'outputLayers' | 'sourceLayers'>
+export type ShowStyleBaseLight = Omit<
+	DBShowStyleBase,
+	'blueprintConfigWithOverrides' | 'outputLayersWithOverrides' | 'sourceLayersWithOverrides'
+>

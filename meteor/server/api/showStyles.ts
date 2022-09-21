@@ -69,7 +69,7 @@ export async function insertShowStyleBaseInner(organizationId: OrganizationId | 
 		organizationId: organizationId,
 		blueprintId: protectString(''),
 		outputLayersWithOverrides: wrapDefaultObject({}),
-		sourceLayers: [],
+		sourceLayersWithOverrides: wrapDefaultObject({}),
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
 	}

@@ -234,34 +234,34 @@ export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<S
 				name: 'PGM',
 			}),
 		}),
-		sourceLayers: [
-			literal<ISourceLayer>({
+		sourceLayersWithOverrides: wrapDefaultObject({
+			[LAYER_IDS.SOURCE_CAM0]: literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_CAM0,
 				_rank: 0,
 				name: 'Camera',
 				type: SourceLayerType.CAMERA,
 				exclusiveGroup: 'main',
 			}),
-			literal<ISourceLayer>({
+			[LAYER_IDS.SOURCE_VT0]: literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_VT0,
 				_rank: 1,
 				name: 'VT',
 				type: SourceLayerType.VT,
 				exclusiveGroup: 'main',
 			}),
-			literal<ISourceLayer>({
+			[LAYER_IDS.SOURCE_TRANSITION0]: literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_TRANSITION0,
 				_rank: 2,
 				name: 'Transition',
 				type: SourceLayerType.TRANSITION,
 			}),
-			literal<ISourceLayer>({
+			[LAYER_IDS.SOURCE_GRAPHICS0]: literal<ISourceLayer>({
 				_id: LAYER_IDS.SOURCE_GRAPHICS0,
 				_rank: 3,
 				name: 'Graphic',
 				type: SourceLayerType.GRAPHICS,
 			}),
-		],
+		}),
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		blueprintId: blueprintId,
 		// hotkeyLegend?: Array<HotkeyDefinition>
@@ -556,8 +556,8 @@ export function setupDefaultRundown(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const outputLayers = applyAndValidateOverrides(env.showStyleBase.outputLayersWithOverrides).obj
-	const outputLayerIds = Object.keys(outputLayers)
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(env.showStyleBase.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(env.showStyleBase.sourceLayersWithOverrides).obj)
 
 	const rundown: DBRundown = {
 		peripheralDeviceId: env.ingestDevice._id,
@@ -628,7 +628,7 @@ export function setupDefaultRundown(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
 		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		pieceType: IBlueprintPieceType.Normal,
@@ -649,7 +649,7 @@ export function setupDefaultRundown(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
+		sourceLayerId: sourceLayerIds[1],
 		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		pieceType: IBlueprintPieceType.Normal,
@@ -669,7 +669,7 @@ export function setupDefaultRundown(
 		rundownId: segment0.rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
+		sourceLayerId: sourceLayerIds[1],
 		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
@@ -699,7 +699,7 @@ export function setupDefaultRundown(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
 		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		pieceType: IBlueprintPieceType.Normal,
@@ -770,7 +770,7 @@ export function setupDefaultRundown(
 		rundownId: segment0.rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
 		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
@@ -784,7 +784,7 @@ export function setupDefaultRundown(
 		rundownId: segment0.rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
+		sourceLayerId: sourceLayerIds[1],
 		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
@@ -800,8 +800,8 @@ export function setupRundownWithAutoplayPart0(
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): RundownId {
-	const outputLayers = applyAndValidateOverrides(env.showStyleBase.outputLayersWithOverrides).obj
-	const outputLayerIds = Object.keys(outputLayers)
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(env.showStyleBase.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(env.showStyleBase.sourceLayersWithOverrides).obj)
 
 	const rundown: DBRundown = defaultRundown(
 		unprotectString(rundownId),
@@ -838,7 +838,7 @@ export function setupRundownWithAutoplayPart0(
 		...defaultPiece(protectString(rundownId + '_piece000'), rundown._id, part00.segmentId, part00._id),
 		externalId: 'MOCK_PIECE_000',
 		name: 'Piece 000',
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
 		outputLayerId: outputLayerIds[0],
 	}
 	Pieces.insert(piece000)
@@ -847,7 +847,7 @@ export function setupRundownWithAutoplayPart0(
 		...defaultPiece(protectString(rundownId + '_piece001'), rundown._id, part00.segmentId, part00._id),
 		externalId: 'MOCK_PIECE_001',
 		name: 'Piece 001',
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
+		sourceLayerId: sourceLayerIds[1],
 		outputLayerId: outputLayerIds[0],
 	}
 	Pieces.insert(piece001)
@@ -858,7 +858,7 @@ export function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_ADLIB_000',
 		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
+		sourceLayerId: sourceLayerIds[1],
 		outputLayerId: outputLayerIds[0],
 	}
 
@@ -876,7 +876,7 @@ export function setupRundownWithAutoplayPart0(
 		...defaultPiece(protectString(rundownId + '_piece010'), rundown._id, part01.segmentId, part01._id),
 		externalId: 'MOCK_PIECE_010',
 		name: 'Piece 010',
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
 		outputLayerId: outputLayerIds[0],
 	}
 	Pieces.insert(piece010)
@@ -929,7 +929,7 @@ export function setupRundownWithAutoplayPart0(
 		rundownId: segment0.rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
 		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
@@ -943,7 +943,7 @@ export function setupRundownWithAutoplayPart0(
 		rundownId: segment0.rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
+		sourceLayerId: sourceLayerIds[1],
 		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,

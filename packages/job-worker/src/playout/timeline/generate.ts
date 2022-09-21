@@ -44,7 +44,8 @@ import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/context/lib'
 import { buildTimelineObjsForRundown } from './rundown'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -247,14 +248,14 @@ export interface SelectedPartInstanceTimelineInfo {
 function getPartInstanceTimelineInfo(
 	cache: CacheForPlayout,
 	currentTime: Time,
-	showStyle: ReadonlyDeep<ShowStyleCompound>,
+	sourceLayers: SourceLayers,
 	partInstance: DBPartInstance | undefined
 ): SelectedPartInstanceTimelineInfo | undefined {
 	if (partInstance) {
 		const partLastStarted = partInstance.timings?.startedPlayback
 		const nowInPart = partLastStarted === undefined ? 0 : currentTime - partLastStarted
 		const currentPieces = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
-		const pieceInstances = processAndPrunePieceInstanceTimings(showStyle, currentPieces, nowInPart)
+		const pieceInstances = processAndPrunePieceInstanceTimings(sourceLayers, currentPieces, nowInPart)
 
 		return {
 			partInstance,
@@ -295,11 +296,13 @@ async function getTimelineRundown(
 				)
 			}
 
+			const sourceLayers = applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj
+
 			const currentTime = getCurrentTime()
 			const partInstancesInfo: SelectedPartInstancesTimelineInfo = {
-				current: getPartInstanceTimelineInfo(cache, currentTime, showStyle, currentPartInstance),
-				next: getPartInstanceTimelineInfo(cache, currentTime, showStyle, nextPartInstance),
-				previous: getPartInstanceTimelineInfo(cache, currentTime, showStyle, previousPartInstance),
+				current: getPartInstanceTimelineInfo(cache, currentTime, sourceLayers, currentPartInstance),
+				next: getPartInstanceTimelineInfo(cache, currentTime, sourceLayers, nextPartInstance),
+				previous: getPartInstanceTimelineInfo(cache, currentTime, sourceLayers, previousPartInstance),
 			}
 
 			// next (on pvw (or on pgm if first))

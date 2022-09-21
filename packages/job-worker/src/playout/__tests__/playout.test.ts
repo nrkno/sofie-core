@@ -52,6 +52,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { adjustFakeTime, getCurrentTime, useFakeCurrentTime } from '../../__mocks__/time'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 // const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
 const mockExecutePeripheralDeviceFunction = jest
@@ -827,6 +828,9 @@ async function setupRundownWithAutoplayPart0(
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ShowStyleCompound>
 ): Promise<{ playlistId: RundownPlaylistId; rundownId: RundownId }> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+
 	const playlistId = await context.directCollections.RundownPlaylists.insertOne(
 		defaultRundownPlaylist(protectString(`playlist_${rundownId}`), context.studioId)
 	)
@@ -864,8 +868,8 @@ async function setupRundownWithAutoplayPart0(
 		...defaultPiece(protectString(rundownId + '_piece000'), rundown._id, part00.segmentId, part00._id),
 		externalId: 'MOCK_PIECE_000',
 		name: 'Piece 000',
-		sourceLayerId: showStyle.sourceLayers[0]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 	}
 	await context.directCollections.Pieces.insertOne(piece000)
 
@@ -873,8 +877,8 @@ async function setupRundownWithAutoplayPart0(
 		...defaultPiece(protectString(rundownId + '_piece001'), rundown._id, part00.segmentId, part00._id),
 		externalId: 'MOCK_PIECE_001',
 		name: 'Piece 001',
-		sourceLayerId: showStyle.sourceLayers[1]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 	}
 	await context.directCollections.Pieces.insertOne(piece001)
 
@@ -884,8 +888,8 @@ async function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_ADLIB_000',
 		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
-		sourceLayerId: showStyle.sourceLayers[1]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 	}
 
 	await context.directCollections.AdLibPieces.insertOne(adLibPiece000)
@@ -902,8 +906,8 @@ async function setupRundownWithAutoplayPart0(
 		...defaultPiece(protectString(rundownId + '_piece010'), rundown._id, part01.segmentId, part01._id),
 		externalId: 'MOCK_PIECE_010',
 		name: 'Piece 010',
-		sourceLayerId: showStyle.sourceLayers[0]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 	}
 	await context.directCollections.Pieces.insertOne(piece010)
 
@@ -955,8 +959,8 @@ async function setupRundownWithAutoplayPart0(
 		rundownId: segment0.rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
-		sourceLayerId: showStyle.sourceLayers[0]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
@@ -969,8 +973,8 @@ async function setupRundownWithAutoplayPart0(
 		rundownId: segment0.rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
-		sourceLayerId: showStyle.sourceLayers[1]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}

@@ -55,13 +55,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { ExpectedPackageDBBase, ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import {
-	applyToArray,
-	assertNever,
-	getRandomId,
-	normalizeArrayToMap,
-	stringifyError,
-} from '@sofie-automation/corelib/dist/lib'
+import { applyToArray, assertNever, getRandomId, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import {
 	afterTake,
@@ -88,6 +82,7 @@ import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { INCORRECT_PLAYING_PART_DEBOUNCE, RESET_IGNORE_ERRORS } from './constants'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number): void {
@@ -619,7 +614,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 			// logger.info(o)
 			// logger.info(JSON.stringify(o, '', 2))
 
-			const allowedSourceLayers = normalizeArrayToMap(showStyleBase.sourceLayers, '_id')
+			const allowedSourceLayers = applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj
 
 			// logger.info('nowInPart', nowInPart)
 			// logger.info('filteredPieces', filteredPieces)
@@ -634,7 +629,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 				const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
 
 				const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
-					const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+					const sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
 					if (
 						sourceLayer &&
 						sourceLayer.allowDisable &&
@@ -647,7 +642,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 
 				const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(
 					_.sortBy(filteredPieces, (piece: PieceInstance) => {
-						const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+						const sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
 						return sourceLayer?._rank || -9999
 					}),
 					nowInPart

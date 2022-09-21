@@ -20,6 +20,10 @@ export interface HotkeyDefinition {
 	up?: (e: any) => void
 	down?: (e: any) => void
 }
+
+export type OutputLayers = Record<string, IOutputLayer | undefined>
+export type SourceLayers = Record<string, ISourceLayer | undefined>
+
 export interface DBShowStyleBase {
 	_id: ShowStyleBaseId
 
@@ -34,9 +38,9 @@ export interface DBShowStyleBase {
 	hotkeyLegend?: Array<HotkeyDefinition>
 
 	/** "Outputs" in the UI */
-	outputLayersWithOverrides: ObjectWithOverrides<Record<string, IOutputLayer | undefined>>
+	outputLayersWithOverrides: ObjectWithOverrides<OutputLayers>
 	/** "Layers" in the GUI */
-	sourceLayers: ISourceLayer[]
+	sourceLayersWithOverrides: ObjectWithOverrides<SourceLayers>
 
 	/** Config values are used by the Blueprints */
 	blueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>

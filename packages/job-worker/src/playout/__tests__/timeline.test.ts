@@ -61,6 +61,7 @@ import { innerStartOrQueueAdLibPiece } from '../adlib'
 import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { adjustFakeTime, useFakeCurrentTime, useRealCurrentTime } from '../../__mocks__/time'
 import { restartRandomId } from '../../__mocks__/nanoid'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 interface PartTimelineTimings {
 	previousPart: TimelineEnableExt | null
@@ -1017,6 +1018,10 @@ describe('Timeline', () => {
 					rundownId: RundownId,
 					showStyle: ReadonlyDeep<ShowStyleCompound>
 				): Promise<RundownId> => {
+					const sourceLayerIds = Object.keys(
+						applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj
+					)
+
 					await setupRundownBase(
 						context,
 						playlistId,
@@ -1025,13 +1030,20 @@ describe('Timeline', () => {
 						{},
 						{
 							piece0: { prerollDuration: 500 },
-							piece1: { prerollDuration: 50, sourceLayerId: showStyle.sourceLayers[3]._id },
+							piece1: { prerollDuration: 50, sourceLayerId: sourceLayerIds[3] },
 						}
 					)
 
 					return rundownId
 				},
 				async (playlistId, _rundownId, parts, getPartInstances, checkTimings) => {
+					const outputLayerIds = Object.keys(
+						applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj
+					)
+					const sourceLayerIds = Object.keys(
+						applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj
+					)
+
 					// Take the only Part:
 					await doTakePart(context, playlistId, null, parts[0]._id, null)
 
@@ -1066,8 +1078,8 @@ describe('Timeline', () => {
 							externalId: 'fake',
 							name: 'Adlibbed piece',
 							lifespan: PieceLifespan.WithinPart,
-							sourceLayerId: showStyle.sourceLayers[0]._id,
-							outputLayerId: showStyle.outputLayers[0]._id,
+							sourceLayerId: sourceLayerIds[0],
+							outputLayerId: outputLayerIds[0],
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 							_rank: 0,
@@ -1166,6 +1178,10 @@ describe('Timeline', () => {
 					rundownId: RundownId,
 					showStyle: ReadonlyDeep<ShowStyleCompound>
 				): Promise<RundownId> => {
+					const sourceLayerIds = Object.keys(
+						applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj
+					)
+
 					await setupRundownBase(
 						context,
 						playlistId,
@@ -1174,13 +1190,20 @@ describe('Timeline', () => {
 						{},
 						{
 							piece0: { prerollDuration: 500 },
-							piece1: { prerollDuration: 50, sourceLayerId: showStyle.sourceLayers[3]._id },
+							piece1: { prerollDuration: 50, sourceLayerId: sourceLayerIds[3] },
 						}
 					)
 
 					return rundownId
 				},
 				async (playlistId, _rundownId, parts, getPartInstances, checkTimings) => {
+					const outputLayerIds = Object.keys(
+						applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj
+					)
+					const sourceLayerIds = Object.keys(
+						applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj
+					)
+
 					// Take the only Part:
 					await doTakePart(context, playlistId, null, parts[0]._id, null)
 
@@ -1226,8 +1249,8 @@ describe('Timeline', () => {
 							externalId: 'fake',
 							name: 'Adlibbed piece',
 							lifespan: PieceLifespan.WithinPart,
-							sourceLayerId: showStyle.sourceLayers[0]._id,
-							outputLayerId: showStyle.outputLayers[0]._id,
+							sourceLayerId: sourceLayerIds[0],
+							outputLayerId: outputLayerIds[0],
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 							_rank: 0,

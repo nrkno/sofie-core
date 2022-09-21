@@ -16,7 +16,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { assertNever, flatten, getRandomId, literal, max, normalizeArrayToMapFunc } from '../lib'
 import { protectString } from '../protectedString'
 import { getPieceControlObjectId } from './ids'
-import { DBShowStyleBase } from '../dataModel/ShowStyleBase'
+import { DBShowStyleBase, SourceLayers } from '../dataModel/ShowStyleBase'
 import _ = require('underscore')
 import { MongoQuery } from '../mongo'
 
@@ -534,7 +534,7 @@ function isCappedByAVirtual(
  * The stacking order of infinites is considered, to define the stop times
  */
 export function processAndPrunePieceInstanceTimings(
-	showStyle: ReadonlyDeep<Pick<DBShowStyleBase, 'sourceLayers'>>,
+	sourceLayers: SourceLayers,
 	pieces: PieceInstance[],
 	nowInPart: number,
 	keepDisabledPieces?: boolean,
@@ -544,8 +544,8 @@ export function processAndPrunePieceInstanceTimings(
 
 	// We want to group by exclusive groups, to let them be resolved
 	const exclusiveGroupMap = new Map<string, string>()
-	for (const layer of showStyle.sourceLayers) {
-		if (layer.exclusiveGroup) {
+	for (const layer of Object.values(sourceLayers)) {
+		if (layer?.exclusiveGroup) {
 			exclusiveGroupMap.set(layer._id, layer.exclusiveGroup)
 		}
 	}
