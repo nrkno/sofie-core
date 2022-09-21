@@ -87,6 +87,14 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 		[mainSourceEnd, timelineBase]
 	)
 
+	const shouldShowOvertimeTimer = !!(
+		mainSourceEnd &&
+		!isLive &&
+		!hasAlreadyPlayed &&
+		Math.floor(Math.abs(contentVsPartDiff) / 1000) !== 0
+	)
+	const shouldShowFreezeFrameTimer = !!(mainSourceEnd && isLive)
+
 	return (
 		//mainSourceEnd && (originalDiff < 0 || diff > 0) ?
 		<>
@@ -98,7 +106,7 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 						})}
 						style={overtimeShadowStyle}
 					>
-						{mainSourceEnd && !isLive && !hasAlreadyPlayed && Math.floor(Math.abs(contentVsPartDiff) / 1000) !== 0 && (
+						{shouldShowOvertimeTimer && (
 							<span className="segment-opl__overtime-timer" role="timer">
 								{RundownUtils.formatDiffToTimecode(
 									contentVsPartDiff,
@@ -123,8 +131,7 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 						className={isLive && mainSourceEnd - livePosition < FREEZE_FRAME_FLASH ? 'flash' : undefined}
 					/>
 					{!isPartZeroBudget &&
-						mainSourceEnd &&
-						isLive &&
+						shouldShowFreezeFrameTimer &&
 						((contentVsPartDiff < 0 && Math.floor(toFreezeFrame / 1000) > 0) ||
 							(contentVsPartDiff >= 0 &&
 								Math.floor(toFreezeFrame / 1000) > 0 &&
@@ -143,7 +150,7 @@ export const OvertimeShadow = withTiming<IProps, {}>((props) => ({
 								)}
 							</span>
 						)}
-					{isPartZeroBudget && mainSourceEnd && isLive && livePosition < mainSourceEnd && (
+					{isPartZeroBudget && shouldShowFreezeFrameTimer && livePosition < mainSourceEnd && (
 						<span className="segment-opl__freeze-marker-timer" role="timer">
 							{RundownUtils.formatDiffToTimecode(
 								mainSourceEnd - livePosition,
