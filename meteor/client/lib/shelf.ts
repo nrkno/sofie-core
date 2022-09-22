@@ -75,7 +75,11 @@ export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase:
 		}).fetch()
 	}
 
-	prospectivePieceInstances = processAndPrunePieceInstanceTimings(showsStyleBase, prospectivePieceInstances, 0)
+	prospectivePieceInstances = processAndPrunePieceInstanceTimings(
+		showsStyleBase.sourceLayersWithOverrides.defaults,
+		prospectivePieceInstances,
+		0
+	)
 
 	return prospectivePieceInstances
 }

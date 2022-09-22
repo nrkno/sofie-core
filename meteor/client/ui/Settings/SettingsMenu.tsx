@@ -360,11 +360,11 @@ function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
 }
 
 function showStyleHasError(showstyle: ShowStyleBase): boolean {
-	if (!showstyle.sourceLayers) return true
-	if (!showstyle.outputLayers) return true
-	if (!showstyle.sourceLayers.length) return true
-	if (!showstyle.outputLayers.length) return true
-	if (!showstyle.outputLayers.filter((l) => l.isPGM).length) return true
+	if (!showstyle.sourceLayersWithOverrides) return true
+	if (!showstyle.outputLayersWithOverrides) return true
+	if (!Object.keys(showstyle.sourceLayersWithOverrides.defaults).length) return true
+	if (!Object.keys(showstyle.outputLayersWithOverrides.defaults).length) return true
+	if (!Object.values(showstyle.outputLayersWithOverrides.defaults).find((l) => l && l.isPGM)) return true
 	return false
 }
 

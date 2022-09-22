@@ -3,11 +3,11 @@ import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { normalizeArray, unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, ShowStyleBase, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
-import { IBlueprintActionTriggerMode, IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { IBlueprintActionTriggerMode, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
 import {
 	contextMenuHoldToDisplayTime,
@@ -49,12 +49,8 @@ interface IRundownViewShelfProps {
 }
 
 interface IRundownViewShelfTrackedProps {
-	outputLayers: {
-		[key: string]: IOutputLayer
-	}
-	sourceLayers: {
-		[key: string]: ISourceLayer
-	}
+	outputLayers: OutputLayers
+	sourceLayers: SourceLayers
 	unfinishedAdLibIds: PieceId[]
 	unfinishedTags: string[]
 	nextAdLibIds: PieceId[]
@@ -280,8 +276,8 @@ export const RundownViewShelf = translateWithTracker<
 	IRundownViewShelfTrackedProps
 >(
 	(props: IRundownViewShelfProps) => {
-		const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id') // @todo: optimize
-		const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
+		const sourceLayerLookup = props.showStyleBase.sourceLayersWithOverrides.defaults
+		const outputLayerLookup = props.showStyleBase.outputLayersWithOverrides.defaults
 
 		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
 			(_currentPartInstanceId: PartInstanceId | null, _nextPartInstanceId: PartInstanceId | null) => {

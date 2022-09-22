@@ -234,8 +234,8 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							onSelectPiece(
 								actionToAdLibPieceUi(
 									res,
-									_.indexBy(this.props.showStyleBase.sourceLayers, '_id'),
-									_.indexBy(this.props.showStyleBase.outputLayers, '_id')
+									this.props.showStyleBase.sourceLayersWithOverrides.defaults,
+									this.props.showStyleBase.outputLayersWithOverrides.defaults
 								)
 							)
 						}

@@ -73,7 +73,7 @@ export function matchFilter(
 			return false
 		}
 		// Source layer types
-		const sourceLayerType = showStyleBase.sourceLayers.find((i) => i._id === item.sourceLayerId)
+		const sourceLayerType = showStyleBase.sourceLayersWithOverrides.defaults[item.sourceLayerId]
 		if (
 			sourceLayerType &&
 			filter.sourceLayerTypes !== undefined &&

@@ -54,7 +54,13 @@ import {
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import {
+	ShowStyleBases,
+	ShowStyleBase,
+	ShowStyleBaseId,
+	DBShowStyleBase,
+	SourceLayers,
+} from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import {
 	RONotificationEvent,
@@ -1113,7 +1119,7 @@ interface IState {
 	/** MiniShelf data */
 	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
 	uiSegments: AdlibSegmentUi[]
-	sourceLayerLookup: SourceLayerLookup
+	sourceLayerLookup: SourceLayers
 	miniShelfFilter: RundownLayoutFilterBase | undefined
 }
 
@@ -1447,7 +1453,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			const filteredUiSegmentMap: Map<SegmentId, AdlibSegmentUi> = new Map()
 			const filteredUiSegments: AdlibSegmentUi[] = []
-			let resultSourceLayerLookup: SourceLayerLookup = {}
+			let resultSourceLayerLookup: SourceLayers = {}
 			let miniShelfFilter: RundownLayoutFilterBase | undefined
 			if (props.playlist && props.showStyleBase && props.studio) {
 				const possibleMiniShelfFilter =

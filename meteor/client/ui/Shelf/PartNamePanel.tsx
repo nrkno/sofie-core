@@ -85,10 +85,7 @@ export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, I
 				const pieceInstances = PieceInstances.find({ partInstanceId: selectedPartInstance._id }).fetch()
 				instanceToShow = findPieceInstanceToShowFromInstances(
 					pieceInstances,
-					props.showStyleBase.sourceLayers.reduce((prev, curr) => {
-						prev[curr._id] = curr
-						return prev
-					}, {}),
+					props.showStyleBase.sourceLayersWithOverrides.defaults,
 					pieceIconSupportedLayers
 				)
 			}

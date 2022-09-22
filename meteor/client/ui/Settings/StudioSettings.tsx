@@ -203,12 +203,12 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 	}
 )
 
-export function findHighestRank(array: Array<{ _rank: number }>): { _rank: number } | null {
+export function findHighestRank(array: Array<{ _rank: number } | undefined>): { _rank: number } | null {
 	if (!array) return null
 	let max: { _rank: number } | null = null
 
 	array.forEach((value) => {
-		if (max === null || max._rank < value._rank) {
+		if (value && (max === null || max._rank < value._rank)) {
 			max = value
 		}
 	})

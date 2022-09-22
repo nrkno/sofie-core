@@ -17,9 +17,8 @@ import {
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, ShowStyleBase, ShowStyleBaseId, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import {
-	IOutputLayer,
 	ISourceLayer,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
@@ -168,8 +167,8 @@ interface IState {
 
 export function actionToAdLibPieceUi(
 	action: BucketAdLibAction,
-	sourceLayers: _.Dictionary<ISourceLayer>,
-	outputLayers: _.Dictionary<IOutputLayer>
+	sourceLayers: SourceLayers,
+	outputLayers: OutputLayers
 ): BucketAdLibActionUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
@@ -235,8 +234,8 @@ export interface IBucketPanelTrackedProps extends IDashboardPanelTrackedProps {
 	studio: Studio
 	showStyleBaseId: ShowStyleBaseId
 	showStyleVariantId: ShowStyleVariantId
-	outputLayers: Record<string, IOutputLayer>
-	sourceLayers: Record<string, ISourceLayer>
+	outputLayers: OutputLayers
+	sourceLayers: SourceLayers
 }
 
 interface BucketSourceCollectedProps {
@@ -296,21 +295,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		if (!showStyleVariantId)
 			throw new Meteor.Error(500, `No showStyleVariantId found for playlist ${props.playlist._id}`)
 
-		const tOLayers: {
-			[key: string]: IOutputLayer
-		} = {}
-		const tSLayers: {
-			[key: string]: ISourceLayer
-		} = {}
-
-		if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
-			props.showStyleBase.outputLayers.forEach((item) => {
-				tOLayers[item._id] = item
-			})
-			props.showStyleBase.sourceLayers.forEach((item) => {
-				tSLayers[item._id] = item
-			})
-		}
+		const tOLayers = props.showStyleBase ? props.showStyleBase.outputLayersWithOverrides.defaults : {}
+		const tSLayers = props.showStyleBase ? props.showStyleBase.sourceLayersWithOverrides.defaults : {}
 
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist,

@@ -111,7 +111,9 @@ function createAction(
 	listener: HotkeyTriggerListener
 	preview: () => IWrappedAdLib[]
 } {
-	const executableActions = actions.map((value) => libCreateAction(value, showStyleBase))
+	const executableActions = actions.map((value) =>
+		libCreateAction(value, showStyleBase.sourceLayersWithOverrides.defaults)
+	)
 	return {
 		preview: () => {
 			const ctx = collectContext()

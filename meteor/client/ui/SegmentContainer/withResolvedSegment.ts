@@ -383,8 +383,14 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			if (
 				typeof props.studio !== typeof nextProps.studio ||
 				!_.isEqual(props.studio.settings, nextProps.studio.settings) ||
-				!_.isEqual(props.showStyleBase.sourceLayers, nextProps.showStyleBase.sourceLayers) ||
-				!_.isEqual(props.showStyleBase.outputLayers, nextProps.showStyleBase.outputLayers)
+				!_.isEqual(
+					props.showStyleBase.sourceLayersWithOverrides,
+					nextProps.showStyleBase.sourceLayersWithOverrides
+				) ||
+				!_.isEqual(
+					props.showStyleBase.outputLayersWithOverrides,
+					nextProps.showStyleBase.outputLayersWithOverrides
+				)
 			) {
 				return true
 			}

@@ -13,7 +13,6 @@ import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { findHighestRank } from '../StudioSettings'
-import _ from 'underscore'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -33,8 +32,9 @@ export const OutputLayerSettings = withTranslation()(
 		}
 
 		isPGMChannelSet() {
-			if (!this.props.showStyleBase.outputLayers) return false
-			return this.props.showStyleBase.outputLayers.filter((layer) => layer.isPGM).length > 0
+			return !!Object.values(this.props.showStyleBase.outputLayersWithOverrides.defaults).find(
+				(layer) => layer && layer.isPGM
+			)
 		}
 
 		isItemEdited = (item: IOutputLayer) => {
@@ -82,7 +82,7 @@ export const OutputLayerSettings = withTranslation()(
 			})
 		}
 		onAddOutput = () => {
-			const maxRank = findHighestRank(this.props.showStyleBase.outputLayers)
+			const maxRank = findHighestRank(Object.values(this.props.showStyleBase.outputLayersWithOverrides.defaults))
 			const { t } = this.props
 
 			const newOutput = literal<IOutputLayer>({
@@ -112,11 +112,8 @@ export const OutputLayerSettings = withTranslation()(
 
 		renderOutputs() {
 			const { t } = this.props
-			return _.map(this.props.showStyleBase.outputLayers, (item, index) => {
-				const newItem = _.clone(item) as IOutputLayer & { index: number }
-				newItem.index = index
-				return newItem
-			})
+			return Object.values(this.props.showStyleBase.outputLayersWithOverrides.defaults)
+				.filter((l): l is IOutputLayer => !!l)
 				.sort((a, b) => {
 					return a._rank - b._rank
 				})
@@ -157,7 +154,7 @@ export const OutputLayerSettings = withTranslation()(
 												{t('Channel Name')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '.name'}
+													attribute={'outputLayersWithOverrides.defaults.' + item._id + '.name'}
 													obj={this.props.showStyleBase}
 													type="text"
 													collection={ShowStyleBases}
@@ -170,7 +167,7 @@ export const OutputLayerSettings = withTranslation()(
 												{t('Internal ID')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '._id'}
+													attribute={'outputLayersWithOverrides.defaults.' + item._id + '._id'}
 													obj={this.props.showStyleBase}
 													type="text"
 													collection={ShowStyleBases}
@@ -182,7 +179,7 @@ export const OutputLayerSettings = withTranslation()(
 											<label className="field">
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '.isPGM'}
+													attribute={'outputLayersWithOverrides.defaults.' + item._id + '.isPGM'}
 													obj={this.props.showStyleBase}
 													type="checkbox"
 													collection={ShowStyleBases}
@@ -196,7 +193,7 @@ export const OutputLayerSettings = withTranslation()(
 												{t('Display Rank')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '._rank'}
+													attribute={'outputLayersWithOverrides.defaults.' + item._id + '._rank'}
 													obj={this.props.showStyleBase}
 													type="int"
 													collection={ShowStyleBases}
@@ -208,7 +205,7 @@ export const OutputLayerSettings = withTranslation()(
 											<label className="field">
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '.isDefaultCollapsed'}
+													attribute={'outputLayersWithOverrides.defaults.' + item._id + '.isDefaultCollapsed'}
 													obj={this.props.showStyleBase}
 													type="checkbox"
 													collection={ShowStyleBases}
@@ -221,7 +218,7 @@ export const OutputLayerSettings = withTranslation()(
 											<label className="field">
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '.isFlattened'}
+													attribute={'outputLayersWithOverrides.defaults.' + item._id + '.isFlattened'}
 													obj={this.props.showStyleBase}
 													type="checkbox"
 													collection={ShowStyleBases}
@@ -245,20 +242,21 @@ export const OutputLayerSettings = withTranslation()(
 
 		render() {
 			const { t } = this.props
+
+			const outputLayerCount = Object.keys(this.props.showStyleBase.outputLayersWithOverrides.defaults).length
+
 			return (
 				<div>
 					<h2 className="mhn">
 						<Tooltip
 							overlay={t('Output channels are required for your studio to work')}
-							visible={getHelpMode() && !this.props.showStyleBase.outputLayers.length}
+							visible={getHelpMode() && !outputLayerCount}
 							placement="top"
 						>
 							<span>{t('Output channels')}</span>
 						</Tooltip>
 					</h2>
-					{!this.props.showStyleBase ||
-					!this.props.showStyleBase.outputLayers ||
-					!this.props.showStyleBase.outputLayers.length ? (
+					{!outputLayerCount ? (
 						<div className="error-notice">
 							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No output channels set')}
 						</div>

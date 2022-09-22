@@ -21,7 +21,7 @@ const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTit
 		? (props.piece.instance.piece as Piece)
 		: (props.piece as AdLibPieceUi)
 
-	const layer = props.showStyleBase.sourceLayers.find((layer) => layer._id === piece.sourceLayerId)
+	const layer = props.showStyleBase.sourceLayersWithOverrides.defaults[piece.sourceLayerId]
 
 	return (
 		<h2 className="shelf-inspector__title">

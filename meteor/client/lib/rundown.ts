@@ -24,7 +24,7 @@ import { PartInstance } from '../../lib/collections/PartInstances'
 import { Segment, SegmentId, Segments } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { literal, normalizeArray, getCurrentTime, applyToArray } from '../../lib/lib'
+import { literal, getCurrentTime, applyToArray } from '../../lib/lib'
 import { PieceId } from '../../lib/collections/Pieces'
 import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
@@ -331,26 +331,26 @@ export namespace RundownUtils {
 		if (segmentInfo && segmentInfo.partInstances.length > 0) {
 			// create local deep copies of the studio outputLayers and sourceLayers so that we can store
 			// pieces present on those layers inside and also figure out which layers are used when inside the rundown
-			const outputLayers = normalizeArray<IOutputLayerExtended>(
-				showStyleBase.outputLayers.map((layer) =>
-					literal<IOutputLayerExtended>({
+			const outputLayers: Record<string, IOutputLayerExtended> = {}
+			for (const [id, layer] of Object.entries(showStyleBase.outputLayersWithOverrides.defaults)) {
+				if (layer) {
+					outputLayers[id] = {
 						...layer,
 						sourceLayers: [],
 						used: false,
-					})
-				),
-				'_id'
-			)
-			const sourceLayers = normalizeArray<ISourceLayerExtended>(
-				showStyleBase.sourceLayers.map((layer) =>
-					literal<ISourceLayerExtended>({
+					}
+				}
+			}
+			const sourceLayers: Record<string, ISourceLayerExtended> = {}
+			for (const [id, layer] of Object.entries(showStyleBase.sourceLayersWithOverrides.defaults)) {
+				if (layer) {
+					sourceLayers[id] = {
 						...layer,
 						followingItems: [],
 						pieces: [],
-					})
-				),
-				'_id'
-			)
+					}
+				}
+			}
 
 			// create a lookup map to match original pieces to their resolved counterparts
 			const piecesLookup = new Map<PieceId, PieceExtended>()
@@ -459,7 +459,7 @@ export namespace RundownUtils {
 				const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
 				const preprocessedPieces = processAndPrunePieceInstanceTimings(
-					showStyleBase,
+					showStyleBase.sourceLayersWithOverrides.defaults,
 					rawPieceInstances,
 					nowInPart,
 					includeDisabledPieces

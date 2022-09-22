@@ -1,6 +1,6 @@
 import React from 'react'
 import _ from 'underscore'
-import { IAdLibFilterLink, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { IAdLibFilterLink, IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { assertNever } from '../../../../../../../lib/lib'
@@ -112,7 +112,9 @@ function fieldToOptions(
 			return {}
 		case 'outputLayerId':
 			return showStyleBase
-				? showStyleBase.outputLayers.map((layer) => ({ name: `${layer.name} (${layer._id})`, value: layer._id }))
+				? Object.values(showStyleBase.outputLayersWithOverrides.defaults)
+						.filter((v): v is IOutputLayer => !!v)
+						.map((layer) => ({ name: `${layer.name} (${layer._id})`, value: layer._id }))
 				: []
 		case 'part':
 			return {
@@ -126,7 +128,9 @@ function fieldToOptions(
 			}
 		case 'sourceLayerId':
 			return showStyleBase
-				? showStyleBase.sourceLayers.map((layer) => ({ name: `${layer.name} (${layer._id})`, value: layer._id }))
+				? Object.values(showStyleBase.sourceLayersWithOverrides.defaults)
+						.filter((v): v is ISourceLayer => !!v)
+						.map((layer) => ({ name: `${layer.name} (${layer._id})`, value: layer._id }))
 				: []
 		case 'sourceLayerType':
 			return _.pick(SourceLayerType, (key) => Number.isInteger(key))
@@ -159,7 +163,7 @@ function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase | und
 					? link.value
 							.map(
 								(outputLayerId) =>
-									showStyleBase.outputLayers.find((layer) => layer._id === outputLayerId)?.name ?? outputLayerId
+									showStyleBase.outputLayersWithOverrides.defaults[outputLayerId]?.name ?? outputLayerId
 							)
 							.join(', ')
 					: link.value.join(', ')
@@ -184,7 +188,7 @@ function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase | und
 					? link.value
 							.map(
 								(sourceLayerId) =>
-									showStyleBase.sourceLayers.find((layer) => layer._id === sourceLayerId)?.name ?? sourceLayerId
+									showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId]?.name ?? sourceLayerId
 							)
 							.join(', ')
 					: link.value.join(', ')

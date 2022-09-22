@@ -8,7 +8,7 @@ import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/col
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
-import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
+import { BlueprintManifestType, ConfigManifestEntry, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
@@ -107,13 +107,15 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 		getSourceLayersFlat() {
 			if (this.props.showStyleBase) {
-				return _.map(this.props.showStyleBase.sourceLayers, (layer) => {
-					return {
-						value: layer._id,
-						name: layer.name,
-						type: layer.type,
-					}
-				})
+				return Object.values(this.props.showStyleBase.sourceLayersWithOverrides.defaults)
+					.filter((layer): layer is ISourceLayer => !!layer)
+					.map((layer) => {
+						return {
+							value: layer._id,
+							name: layer.name,
+							type: layer.type,
+						}
+					})
 			} else {
 				return []
 			}

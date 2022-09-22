@@ -12,9 +12,8 @@ import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, ShowStyleBase, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import {
-	IOutputLayer,
 	ISourceLayer,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
@@ -74,8 +73,6 @@ export interface IAdLibPanelProps {
 	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
 }
 
-export type SourceLayerLookup = Record<string, ISourceLayer>
-
 type MinimalRundown = Pick<
 	Rundown,
 	'_id' | 'name' | 'playlistId' | 'timing' | 'showStyleBaseId' | 'showStyleVariantId' | 'endOfRundownIsShowBreak'
@@ -85,14 +82,14 @@ export interface AdLibFetchAndFilterProps {
 	uiSegments: Array<AdlibSegmentUi>
 	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
 	liveSegment: AdlibSegmentUi | undefined
-	sourceLayerLookup: SourceLayerLookup
+	sourceLayerLookup: SourceLayers
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
 }
 
 function actionToAdLibPieceUi(
 	action: AdLibAction | RundownBaselineAdLibAction,
-	sourceLayers: _.Dictionary<ISourceLayer>,
-	outputLayers: _.Dictionary<IOutputLayer>
+	sourceLayers: SourceLayers,
+	outputLayers: OutputLayers
 ): AdLibPieceUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
@@ -135,14 +132,14 @@ interface IFetchAndFilterProps {
 		RundownPlaylist,
 		'_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId' | 'rundownIdsInOrder'
 	>
-	showStyleBase: Pick<ShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>
+	showStyleBase: Pick<ShowStyleBase, '_id' | 'sourceLayersWithOverrides' | 'outputLayersWithOverrides'>
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
 }
 
 export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilterProps {
-	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
-	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
+	const sourceLayerLookup = props.showStyleBase && props.showStyleBase.sourceLayersWithOverrides.defaults
+	const outputLayerLookup = props.showStyleBase && props.showStyleBase.outputLayersWithOverrides.defaults
 
 	if (!props.playlist || !props.showStyleBase) {
 		return {
@@ -401,7 +398,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			// memoizedIsolatedAutorun
 
 			rundownBaselineAdLibs = memoizedIsolatedAutorun(
-				(currentRundownId: RundownId, sourceLayerLookup: SourceLayerLookup) => {
+				(currentRundownId: RundownId, sourceLayerLookup: SourceLayers) => {
 					const rundownAdLibItems: Array<Omit<RundownBaselineAdLibItem, 'timelineObjectsString'>> =
 						RundownBaselineAdLibPieces.find(
 							{
@@ -412,8 +409,8 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 							}
 						).fetch()
 					rundownBaselineAdLibs = rundownAdLibItems.concat(
-						props.showStyleBase.sourceLayers
-							.filter((i) => i.isSticky)
+						Object.values(sourceLayerLookup)
+							.filter((i): i is ISourceLayer => !!(i && i.isSticky))
 							.sort((a, b) => a._rank - b._rank)
 							.map((layer) =>
 								literal<AdLibPieceUi>({
@@ -488,9 +485,9 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 
 		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
 			const rundownBaselineClearAdLibs = memoizedIsolatedAutorun(
-				(sourceLayers: ISourceLayer[]) => {
-					return sourceLayers
-						.filter((i) => !!i.isClearable)
+				(sourceLayers: SourceLayers) => {
+					return Object.values(sourceLayers)
+						.filter((i): i is ISourceLayer => !!i && !!i.isClearable)
 						.sort((a, b) => a._rank - b._rank)
 						.map((layer) =>
 							literal<AdLibPieceUi>({
@@ -514,7 +511,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 						)
 				},
 				'rundownBaselineClearAdLibs',
-				props.showStyleBase.sourceLayers
+				props.showStyleBase.sourceLayersWithOverrides.defaults
 			)
 			rundownBaselineAdLibs = rundownBaselineAdLibs.concat(rundownBaselineClearAdLibs)
 		}
@@ -561,7 +558,10 @@ export function AdLibPanel({
 					| 'previousPartInstanceId'
 					| 'rundownIdsInOrder'
 				>,
-				showStyleBase: showStyleBase as Pick<ShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>,
+				showStyleBase: showStyleBase as Pick<
+					ShowStyleBase,
+					'_id' | 'sourceLayersWithOverrides' | 'outputLayersWithOverrides'
+				>,
 				filter,
 				includeGlobalAdLibs,
 			}),
@@ -573,8 +573,8 @@ export function AdLibPanel({
 			playlist.previousPartInstanceId,
 			playlist.rundownIdsInOrder,
 			showStyleBase._id,
-			showStyleBase.sourceLayers,
-			showStyleBase.outputLayers,
+			showStyleBase.sourceLayersWithOverrides,
+			showStyleBase.outputLayersWithOverrides,
 			filter,
 			includeGlobalAdLibs,
 		],

@@ -547,7 +547,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			if (!getIgnorePieceContentStatus()) {
 				const pieces = rPieces.get()
 				pieces.forEach((piece) => {
-					const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === piece.sourceLayerId)
+					const sourceLayer = showStyleBase.sourceLayersWithOverrides.defaults[piece.sourceLayerId]
 					const part = Parts.findOne(piece.startPartId, {
 						fields: {
 							_rank: 1,

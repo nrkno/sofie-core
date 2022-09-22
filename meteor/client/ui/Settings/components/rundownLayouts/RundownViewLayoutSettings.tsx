@@ -1,4 +1,5 @@
-import React from 'react'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../../../lib/api/rundownLayouts'
 import { RundownLayoutBase, RundownLayouts } from '../../../../../lib/collections/RundownLayouts'
@@ -21,6 +22,15 @@ interface IProps {
 
 export default function RundownViewLayoutSettings({ showStyleBase, item, layouts }: IProps) {
 	const { t } = useTranslation()
+
+	const sourceLayerOptions = useMemo(
+		() =>
+			Object.values(showStyleBase.sourceLayersWithOverrides.defaults)
+				.filter((s): s is ISourceLayer => !!s)
+				.sort((a, b) => a._rank - b._rank)
+				.map((sourceLayer) => ({ name: sourceLayer.name, value: sourceLayer._id })),
+		[showStyleBase.sourceLayersWithOverrides]
+	)
 
 	return (
 		<>
@@ -95,9 +105,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					modifiedClassName="bghl"
 					attribute={`liveLineProps.requiredLayerIds`}
 					obj={item}
-					options={showStyleBase.sourceLayers.map((l) => {
-						return { name: l.name, value: l._id }
-					})}
+					options={sourceLayerOptions}
 					type="multiselect"
 					label={t('Disabled')}
 					collection={RundownLayouts}
@@ -124,9 +132,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					modifiedClassName="bghl"
 					attribute={`liveLineProps.additionalLayers`}
 					obj={item}
-					options={showStyleBase.sourceLayers.map((l) => {
-						return { name: l.name, value: l._id }
-					})}
+					options={sourceLayerOptions}
 					type="multiselect"
 					label={t('Disabled')}
 					collection={RundownLayouts}
@@ -194,9 +200,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					modifiedClassName="bghl"
 					attribute={`countdownToSegmentRequireLayers`}
 					obj={item}
-					options={showStyleBase.sourceLayers.map((l) => {
-						return { name: l.name, value: l._id }
-					})}
+					options={sourceLayerOptions}
 					type="multiselect"
 					label={t('Disabled')}
 					collection={RundownLayouts}
@@ -232,12 +236,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 						modifiedClassName="bghl"
 						attribute={'visibleSourceLayers'}
 						obj={item}
-						options={showStyleBase.sourceLayers
-							.sort((a, b) => a._rank - b._rank)
-							.map((sourceLayer) => ({
-								value: sourceLayer._id,
-								name: sourceLayer.name,
-							}))}
+						options={sourceLayerOptions}
 						type="multiselect"
 						mutateUpdateValue={undefinedOnEmptyArray}
 						collection={RundownLayouts}
@@ -252,12 +251,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 						modifiedClassName="bghl"
 						attribute={'visibleOutputLayers'}
 						obj={item}
-						options={showStyleBase.outputLayers
-							.sort((a, b) => a._rank - b._rank)
-							.map((outputLayer) => ({
-								value: outputLayer._id,
-								name: outputLayer.name,
-							}))}
+						options={sourceLayerOptions}
 						type="multiselect"
 						mutateUpdateValue={undefinedOnEmptyArray}
 						collection={RundownLayouts}
@@ -281,9 +275,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					modifiedClassName="bghl"
 					attribute={`showDurationSourceLayers`}
 					obj={item}
-					options={showStyleBase.sourceLayers.map((l) => {
-						return { name: l.name, value: l._id }
-					})}
+					options={sourceLayerOptions}
 					type="multiselect"
 					label={t('Disabled')}
 					collection={RundownLayouts}

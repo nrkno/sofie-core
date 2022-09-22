@@ -11,7 +11,7 @@ import {
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
 import { ShowStyleBase, ShowStyleBaseId } from '../../../../../lib/collections/ShowStyleBases'
-import { flatten, normalizeArray } from '../../../../../lib/lib'
+import { flatten } from '../../../../../lib/lib'
 import { createAction, isPreviewableAction } from '../../../../../lib/api/triggers/actionFactory'
 import { PreviewContext } from './TriggeredActionsEditor'
 import { IWrappedAdLib } from '../../../../../lib/api/triggers/actionFilterChainCompilers'
@@ -130,7 +130,9 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		() => {
 			try {
 				if (triggeredAction && selected && showStyleBase) {
-					const executableActions = triggeredAction.actions.map((value) => createAction(value, showStyleBase))
+					const executableActions = triggeredAction.actions.map((value) =>
+						createAction(value, showStyleBase.sourceLayersWithOverrides.defaults)
+					)
 					const ctx = previewContext
 					if (ctx && ctx.rundownPlaylist) {
 						return flatten(
@@ -147,7 +149,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		[] as IWrappedAdLib[]
 	)
 
-	const sourceLayers = showStyleBase ? normalizeArray(showStyleBase.sourceLayers, '_id') : []
+	const sourceLayers = showStyleBase ? showStyleBase.sourceLayersWithOverrides.defaults : {}
 
 	function getType(sourceLayerId: string | undefined): SourceLayerType {
 		return sourceLayerId ? sourceLayers[sourceLayerId]?.type ?? SourceLayerType.UNKNOWN : SourceLayerType.UNKNOWN

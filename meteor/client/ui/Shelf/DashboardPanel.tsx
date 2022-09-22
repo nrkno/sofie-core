@@ -5,7 +5,7 @@ import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { IOutputLayer, ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
@@ -36,14 +36,11 @@ import {
 	isAdLibNext,
 	isAdLibOnAir,
 } from '../../lib/shelf'
+import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 interface IState {
-	outputLayers: {
-		[key: string]: IOutputLayer
-	}
-	sourceLayers: {
-		[key: string]: ISourceLayer
-	}
+	outputLayers: OutputLayers
+	sourceLayers: SourceLayers
 	searchFilter: string | undefined
 	selectedAdLib?: AdLibPieceUi
 	singleClickMode: boolean
@@ -156,20 +153,13 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	static getDerivedStateFromProps(
 		props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>
 	): Partial<IState> | null {
-		const tOLayers: {
-			[key: string]: IOutputLayer
-		} = {}
-		const tSLayers: {
-			[key: string]: ISourceLayer
-		} = {}
-
-		if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
-			props.showStyleBase.outputLayers.forEach((outputLayer) => {
-				tOLayers[outputLayer._id] = outputLayer
-			})
-			props.showStyleBase.sourceLayers.forEach((sourceLayer) => {
-				tSLayers[sourceLayer._id] = sourceLayer
-			})
+		if (
+			props.showStyleBase &&
+			props.showStyleBase.outputLayersWithOverrides &&
+			props.showStyleBase.sourceLayersWithOverrides
+		) {
+			const tOLayers = props.showStyleBase.outputLayersWithOverrides.defaults
+			const tSLayers = props.showStyleBase.sourceLayersWithOverrides.defaults
 
 			return {
 				outputLayers: tOLayers,

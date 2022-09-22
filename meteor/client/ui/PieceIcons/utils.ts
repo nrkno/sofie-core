@@ -1,6 +1,5 @@
 import { SourceLayerType, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { normalizeArray } from '../../../lib/lib'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { IPropsHeader } from './PieceIcon'
 import { PieceExtended } from '../../../lib/Rundown'
@@ -24,19 +23,14 @@ export function findPieceInstanceToShow(
 		}
 	}
 
-	const sourceLayers = showStyleBase
-		? normalizeArray<ISourceLayer>(
-				showStyleBase.sourceLayers.map((layer) => ({ ...layer })),
-				'_id'
-		  )
-		: {}
+	const sourceLayers = showStyleBase ? showStyleBase.sourceLayersWithOverrides.defaults : {}
 
 	return findPieceInstanceToShowFromInstances(pieceInstances, sourceLayers, selectedLayerTypes)
 }
 
 export function findPieceInstanceToShowFromInstances(
 	pieceInstances: PieceInstance[],
-	sourceLayers: Record<string, ISourceLayer>,
+	sourceLayers: SourceLayers,
 	selectedLayerTypes: Set<SourceLayerType>
 ): IFoundPieceInstance {
 	let foundSourceLayer: ISourceLayer | undefined

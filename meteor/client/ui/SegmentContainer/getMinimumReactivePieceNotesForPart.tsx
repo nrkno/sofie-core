@@ -4,7 +4,6 @@ import { Part } from '../../../lib/collections/Parts'
 import { Piece, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio } from '../../../lib/collections/Studios'
-import { normalizeArray } from '../../../lib/lib'
 import { checkPieceContentStatus, getNoteSeverityForPieceStatus } from '../../../lib/mediaObjects'
 import { getIgnorePieceContentStatus } from '../../lib/localStorage'
 
@@ -31,7 +30,7 @@ export function getMinimumReactivePieceNotesForPart(
 		}
 	).fetch() as Array<Pick<Piece, '_id' | 'name' | 'sourceLayerId' | 'content' | 'expectedPackages'>>
 
-	const sourceLayerMap = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
+	const sourceLayerMap = showStyleBase && showStyleBase.sourceLayersWithOverrides.defaults
 	for (const piece of pieces) {
 		// TODO: check statuses (like media availability) here
 
