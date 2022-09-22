@@ -488,7 +488,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 						)
 				)
 			} else {
-				if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+				if (isActionTriggeredFromUiContext(action)) {
 					return createRundownPlaylistSoftActivateAction(
 						action.filterChain as IGUIContextFilterLink[],
 						!!action.rehearsal
@@ -507,7 +507,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				MeteorCall.userAction.deactivate(e, ts, ctx.rundownPlaylistId.get())
 			)
 		case PlayoutActions.take:
-			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+			if (isActionTriggeredFromUiContext(action)) {
 				return createRundownPlaylistSoftTakeAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.TAKE, async (e, ts, ctx) =>
@@ -537,7 +537,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				)
 			)
 		case PlayoutActions.reloadRundownPlaylistData:
-			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+			if (isActionTriggeredFromUiContext(action)) {
 				return createRundownPlaylistSoftResyncAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA, async (e, ts, ctx) =>
@@ -547,7 +547,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				)
 			}
 		case PlayoutActions.resetRundownPlaylist:
-			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+			if (isActionTriggeredFromUiContext(action)) {
 				return createRundownPlaylistSoftResetRundownAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.RESET_RUNDOWN_PLAYLIST, async (e, ts, ctx) =>
