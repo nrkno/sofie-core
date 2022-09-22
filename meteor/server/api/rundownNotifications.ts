@@ -43,6 +43,8 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 				const showStyleBase = showStyle
 				const studio = rundownStudio
 
+				const sourceLayers = applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj
+
 				const pSegments = Segments.findFetchAsync({ rundownId: rundown._id })
 
 				const pieces = await Pieces.findFetchAsync({
@@ -69,7 +71,7 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 				const pieceStatus = pieces.map(async (piece) =>
 					makePromise(() => {
 						// run these in parallel. checkPieceContentStatus does some db ops
-						const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === piece.sourceLayerId)
+						const sourceLayer = sourceLayers[piece.sourceLayerId]
 						const part = partMap.get(piece.startPartId)
 						const segment = part ? segmentsMap.get(part.segmentId) : undefined
 						if (segment && sourceLayer && part) {

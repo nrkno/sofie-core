@@ -16,7 +16,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { assertNever, flatten, getRandomId, literal, max, normalizeArrayToMapFunc } from '../lib'
 import { protectString } from '../protectedString'
 import { getPieceControlObjectId } from './ids'
-import { DBShowStyleBase, SourceLayers } from '../dataModel/ShowStyleBase'
+import { SourceLayers } from '../dataModel/ShowStyleBase'
 import _ = require('underscore')
 import { MongoQuery } from '../mongo'
 
