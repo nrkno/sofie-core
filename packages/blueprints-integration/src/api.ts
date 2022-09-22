@@ -150,7 +150,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	 * and thus possibly depends on an already past PartInstance for some of it's properties. Therefore
 	 * the blueprint is allowed to modify the most recently played non-adlibbed PartInstance using ingested data.
 	 *
-	 * `newData: undefined` happens when the PartInstance is orphaned
+	 * `newData.part` will be `undefined` when the PartInstance is orphaned
 	 */
 	syncIngestUpdateToPartInstance?: (
 		context: ISyncIngestUpdateToPartInstanceContext,
