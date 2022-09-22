@@ -11,7 +11,7 @@ import {
 	PeripheralDeviceId,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
-import { setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
+import { setupMockPeripheralDevice, setupMockStudio } from '../../../__mocks__/helpers/database'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { MeteorCall } from '../../../lib/api/methods'
 
@@ -24,10 +24,12 @@ const orgSetTimeout = setTimeout
 describe('ClientAPI', () => {
 	let mockDeviceId: PeripheralDeviceId = protectString('not set yet')
 	beforeAllInFiber(() => {
+		const studio = setupMockStudio()
 		const mockDevice = setupMockPeripheralDevice(
 			PeripheralDeviceCategory.PLAYOUT,
 			PeripheralDeviceType.PLAYOUT,
-			PeripheralDeviceAPI.SUBTYPE_PROCESS
+			PeripheralDeviceAPI.SUBTYPE_PROCESS,
+			studio
 		)
 		mockDeviceId = mockDevice._id
 	})

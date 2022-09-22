@@ -320,7 +320,7 @@ function createAdLibAction(
 	}
 }
 
-function createShelfAction(filterChain: IGUIContextFilterLink[], state: boolean | 'toggle'): ExecutableAction {
+function createShelfAction(_filterChain: IGUIContextFilterLink[], state: boolean | 'toggle'): ExecutableAction {
 	return {
 		action: ClientActions.shelf,
 		execute: () => {
@@ -334,7 +334,7 @@ function createShelfAction(filterChain: IGUIContextFilterLink[], state: boolean 
 function createMiniShelfQueueAdLibAction(_filterChain: IGUIContextFilterLink[], forward: boolean): ExecutableAction {
 	return {
 		action: ClientActions.miniShelfQueueAdLib,
-		execute: (t, e) => {
+		execute: (_t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.MINI_SHELF_QUEUE_ADLIB, {
 				forward,
 				context: e,
@@ -364,7 +364,7 @@ function createRewindSegmentsAction(_filterChain: IGUIContextFilterLink[]): Exec
 function createRundownPlaylistSoftTakeAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
 	return {
 		action: PlayoutActions.take,
-		execute: (t, e) => {
+		execute: (_t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.TAKE, {
 				context: e,
 			})
@@ -378,7 +378,7 @@ function createRundownPlaylistSoftActivateAction(
 ): ExecutableAction {
 	return {
 		action: PlayoutActions.activateRundownPlaylist,
-		execute: (t, e) => {
+		execute: (_t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, {
 				context: e,
 				rehearsal,
@@ -390,7 +390,7 @@ function createRundownPlaylistSoftActivateAction(
 function createRundownPlaylistSoftResyncAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
 	return {
 		action: PlayoutActions.resyncRundownPlaylist,
-		execute: (t, e) => {
+		execute: (_t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, {
 				context: e,
 			})
@@ -414,7 +414,7 @@ function createShowEntireCurrentSegmentAction(_filterChain: IGUIContextFilterLin
 function createRundownPlaylistSoftResetRundownAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
 	return {
 		action: PlayoutActions.resetRundownPlaylist,
-		execute: (t, e) => {
+		execute: (_t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, {
 				context: e,
 			})
@@ -555,7 +555,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 
 	// return a NO-OP, if not recognized
 	return {
-		// @ts-ignore action.action is "never", based on TypeScript rules, but if input doesn't folllow them,
+		// @ts-expect-error action.action is "never", based on TypeScript rules, but if input doesn't folllow them,
 		// it can actually exist
 		action: action.action,
 		execute: () => {

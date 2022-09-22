@@ -37,6 +37,7 @@ import {
 	PartInstances,
 	PartInstanceId,
 	findPartInstanceOrWrapToTemporary,
+	PartInstance,
 } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
@@ -179,9 +180,25 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			segments: Segment[],
 			rundowns: Record<string, MinimalRundown>
 		) => {
-			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
-				props.playlist
-			)
+			const currentPartInstance =
+				currentPartInstanceId &&
+				(PartInstances.findOne(currentPartInstanceId, {
+					projection: {
+						_id: 1,
+						segmentId: 1,
+						rundownId: 1,
+					},
+				}) as Pick<PartInstance, '_id' | 'segmentId' | 'rundownId'> | undefined)
+			const nextPartInstance =
+				nextPartInstanceId &&
+				(PartInstances.findOne(nextPartInstanceId, {
+					projection: {
+						_id: 1,
+						segmentId: 1,
+						rundownId: 1,
+					},
+				}) as Pick<PartInstance, '_id' | 'segmentId' | 'rundownId'> | undefined)
+
 			// This is a map of partIds mapped onto segments they are part of
 			const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
 			const uiPartMap = new Map<PartId, DBPart>()
@@ -314,7 +331,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 						},
 					},
 					{
-						// @ts-ignore deep-property
+						// @ts-expect-error deep-property
 						sort: { 'display._rank': 1 },
 					}
 				).map<{
@@ -429,7 +446,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 									},
 								},
 								{
-									// @ts-ignore deep-property
+									// @ts-expect-error deep-property
 									sort: { 'display._rank': 1 },
 								}
 							)

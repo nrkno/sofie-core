@@ -13,13 +13,13 @@ import { StudioContentWriteAccess } from '../../security/studio'
 
 class ServerPlayoutAPIClass extends MethodContextAPI implements NewPlayoutAPI {
 	async updateStudioBaseline(studioId: StudioId): Promise<string | false> {
-		StudioContentWriteAccess.baseline(this, studioId)
+		await StudioContentWriteAccess.baseline(this, studioId)
 
 		const res = await QueueStudioJob(StudioJobs.UpdateStudioBaseline, studioId, undefined)
 		return res.complete
 	}
 	async shouldUpdateStudioBaseline(studioId: StudioId) {
-		const access = StudioContentWriteAccess.baseline(this, studioId)
+		const access = await StudioContentWriteAccess.baseline(this, studioId)
 
 		return ServerPlayoutAPI.shouldUpdateStudioBaseline(access)
 	}

@@ -8,7 +8,7 @@ This application is a part of the [**Sofie** TV News Studio Automation System](h
 
 ```
 // Development:
-yarn start -host 127.0.0.1 -port 3000 -log "log.log"
+yarn dev -host 127.0.0.1 -port 3000 -log "log.log"
 // Production:
 yarn start
 ```

@@ -16,7 +16,6 @@ import { invalidateAfter } from '../client/lib/invalidatingTime'
 import {
 	convertCorelibToMeteorMongoQuery,
 	getCurrentTime,
-	mongoWhereFilter,
 	ProtectedString,
 	protectString,
 	unprotectString,
@@ -29,6 +28,7 @@ import {
 import { Rundown, RundownId } from './collections/Rundowns'
 import { ShowStyleBaseId } from './collections/ShowStyleBases'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { mongoWhereFilter } from '@sofie-automation/corelib/dist/mongo'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -163,7 +163,7 @@ export function getPieceInstancesForPartInstance(
 	allPiecesCache?: Map<PartId, Piece[]>,
 	options?: FindOptions<PieceInstance>,
 	pieceInstanceSimulation?: boolean
-) {
+): PieceInstance[] {
 	if (partInstance.isTemporary) {
 		return getPieceInstancesForPart(
 			playlistActivationId || protectString(''),
@@ -275,8 +275,8 @@ export function getSegmentsWithPartInstances(
 	)
 	const playlistActivationId = playlist.activationId ?? protectString('')
 
-	const partsBySegment = _.groupBy(rawParts, (p) => p.segmentId)
-	const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => p.segmentId)
+	const partsBySegment = _.groupBy(rawParts, (p) => unprotectString(p.segmentId))
+	const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => unprotectString(p.segmentId))
 
 	return segments.map((segment) => {
 		const segmentParts = partsBySegment[unprotectString(segment._id)] || []
@@ -358,7 +358,7 @@ export function sortAdlibs<T>(
 		segmentRank: number | null
 		rundownRank: number | null
 	}[]
-) {
+): T[] {
 	adlibs = adlibs.sort((a, b) => {
 		// Sort by rundown rank, where applicable:
 		a.rundownRank = a.rundownRank ?? Number.POSITIVE_INFINITY

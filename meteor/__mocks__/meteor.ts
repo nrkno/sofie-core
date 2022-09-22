@@ -175,7 +175,7 @@ export namespace MeteorMock {
 		if (lastArg && typeof lastArg === 'function') {
 			const callback = args.pop()
 
-			this.defer(() => {
+			defer(() => {
 				try {
 					Promise.resolve(fcn.call(getMethodContext(), ...args))
 						.then((result) => {

@@ -17,6 +17,12 @@ export interface Access<T> {
 	// The document in question
 	document: T | null
 }
+
+/**
+ * Grant all access to all of the document
+ * @param document The document
+ * @param reason The reason for the access being granted
+ */
 export function allAccess<T>(document: T | null, reason?: string): Access<T> {
 	return {
 		read: true,
@@ -30,9 +36,20 @@ export function allAccess<T>(document: T | null, reason?: string): Access<T> {
 		document: document,
 	}
 }
+
+/**
+ * Deny all access to all of the document
+ * @param reason The reason for the access being denied
+ */
 export function noAccess(reason: string): Access<any> {
 	return combineAccess({}, allAccess(null, reason))
 }
+
+/**
+ * Combine access objects to find the minimum common overlap
+ * @param access0
+ * @param access1
+ */
 export function combineAccess<T>(
 	access0: Access<T> | { reason?: string; document?: null },
 	access1: Access<T>

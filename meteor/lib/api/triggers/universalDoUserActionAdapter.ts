@@ -7,12 +7,12 @@ import { getCurrentTime, Time } from '../../lib'
 
 export function doUserAction<Result>(
 	t: TFunction,
-	userEvent: any,
+	userEvent: string,
 	action: UserAction,
 	fcn: (event: string, timeStamp: Time) => Promise<ClientAPI.ClientResponse<Result>>,
 	callback?: (err: any, res?: Result) => void | boolean,
 	okMessage?: string
-) {
+): void {
 	if (Meteor.isClient) {
 		clientDoUserAction(t, userEvent, action, fcn, callback, okMessage)
 	} else {

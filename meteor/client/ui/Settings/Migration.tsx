@@ -244,7 +244,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 											className="input-full mtxs"
 											options={manualInput.dropdownOptions}
 											overrideDisplayValue={value}
-											updateFunction={(edit: EditAttributeBase, newValue: any) => {
+											updateFunction={(_edit: EditAttributeBase, newValue: any) => {
 												if (manualInput.attribute) {
 													const inputValues = this.state.inputValues
 													if (!inputValues[stepId]) inputValues[stepId] = {}

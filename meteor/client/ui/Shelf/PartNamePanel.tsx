@@ -100,7 +100,7 @@ export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, I
 			instanceToShow,
 		}
 	},
-	(data, props, nextProps) => {
+	(_data, props, nextProps) => {
 		return (
 			!_.isEqual(props.panel, nextProps.panel) ||
 			props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||

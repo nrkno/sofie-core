@@ -830,7 +830,7 @@ export class ConfigManifestSettings<
 									modifiedClassName="bghl"
 									type="dropdown"
 									options={this.getAddOptions()}
-									updateFunction={(e, v) => this.setState({ addItemId: v })}
+									updateFunction={(_e, v) => this.setState({ addItemId: v })}
 									overrideDisplayValue={this.state.addItemId}
 								/>
 							</div>

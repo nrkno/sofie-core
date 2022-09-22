@@ -54,8 +54,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 						return undefined
 					} else {
 						if (_.isObject(value)) {
-							// @ts-ignore
-							str = JSON.stringify(value, '', 2)
+							str = JSON.stringify(value, undefined, 2)
 						} else {
 							str = value + ''
 						}

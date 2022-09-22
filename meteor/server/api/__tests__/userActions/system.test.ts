@@ -1,4 +1,4 @@
-import { ConfigManifestEntryType } from '../../../../lib/api/deviceConfig'
+import { ConfigManifestEntryType } from '@sofie-automation/corelib/dist/deviceConfig'
 import { MeteorCall } from '../../../../lib/api/methods'
 import {
 	PeripheralDevice,

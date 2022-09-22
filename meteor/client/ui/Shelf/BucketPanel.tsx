@@ -28,7 +28,7 @@ import {
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { literal, unprotectString, partial, protectString, MongoFieldSpecifierOnes } from '../../../lib/lib'
+import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
 import {
 	ensureHasTrailingSlash,
 	contextMenuHoldToDisplayTime,
@@ -67,9 +67,10 @@ import {
 	isAdLibDisplayedAsOnAir,
 	isAdLibOnAir,
 } from '../../lib/shelf'
+import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 
 const bucketSource = {
-	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
+	beginDrag(props: IBucketPanelProps, _monitor: DragSourceMonitor, component: any) {
 		const size = {
 			width: 0,
 			height: 0,
@@ -258,7 +259,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			const part = PartInstances.findOne(selectedPart, {
 				fields: literal<MongoFieldSpecifierOnes<DBPartInstance>>({
 					rundownId: 1,
-					//@ts-ignore
+					//@ts-expect-error deep property
 					'part._id': 1,
 				}),
 			}) as Pick<PartInstance, 'rundownId'> | undefined
@@ -380,9 +381,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						_id: this.props.playlist.studioId,
 					})
 					this.autorun(() => {
-						const showStyles = RundownPlaylistCollectionUtil.getRundownsUnordered(this.props.playlist).map(
-							(rundown) => [rundown.showStyleBaseId, rundown.showStyleVariantId]
-						)
+						const showStyles: Array<[ShowStyleBaseId, ShowStyleVariantId]> =
+							RundownPlaylistCollectionUtil.getRundownsUnordered(this.props.playlist).map((rundown) => [
+								rundown.showStyleBaseId,
+								rundown.showStyleVariantId,
+							])
 						const showStyleBases = showStyles.map((showStyle) => showStyle[0])
 						const showStyleVariants = showStyles.map((showStyle) => showStyle[1])
 						this.subscribe(PubSub.bucketAdLibPieces, {
@@ -665,7 +668,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									getEventTimestamp(e),
 									piece.adlibAction._id,
 									partial<BucketAdLibAction>({
-										//@ts-ignore deep property
+										//@ts-expect-error deep property
 										'display.label': newName,
 									})
 								)
@@ -720,7 +723,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 										getEventTimestamp(e),
 										draggedB.adlibAction._id,
 										partial<BucketAdLibAction>({
-											//@ts-ignore deep property
+											//@ts-expect-error deep property
 											'display._rank': newRank,
 										})
 									)

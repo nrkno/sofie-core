@@ -30,7 +30,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 	constructor(t: i18next.TFunction) {
 		super()
 
-		this.subscribe(PubSub.coreSystem, null)
+		this.subscribe(PubSub.coreSystem)
 
 		this._translator = t
 

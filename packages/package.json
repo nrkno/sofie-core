@@ -27,7 +27,7 @@
 		"set-version": "lerna version --exact --no-changelog --no-git-tag-version --no-push --yes",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck --allowPackages \"caniuse-lite@1.0.30001341;mos-gateway@$(node -p \"require('mos-gateway/package.json').version\");playout-gateway@$(node -p \"require('playout-gateway/package.json').version\");sofie-documentation@$(node -p \"require('sofie-documentation/package.json').version\");@sofie-automation/corelib@$(node -p \"require('@sofie-automation/corelib/package.json').version\");@sofie-automation/shared-lib@$(node -p \"require('@sofie-automation/shared-lib/package.json').version\");@sofie-automation/job-worker@$(node -p \"require('@sofie-automation/job-worker/package.json').version\");lunr-languages@1.9.0\"",
+		"license-validate": "yarn sofie-licensecheck --allowPackages \"caniuse-lite@1.0.30001400;mos-gateway@$(node -p \"require('mos-gateway/package.json').version\");playout-gateway@$(node -p \"require('playout-gateway/package.json').version\");sofie-documentation@$(node -p \"require('sofie-documentation/package.json').version\");@sofie-automation/corelib@$(node -p \"require('@sofie-automation/corelib/package.json').version\");@sofie-automation/shared-lib@$(node -p \"require('@sofie-automation/shared-lib/package.json').version\");@sofie-automation/job-worker@$(node -p \"require('@sofie-automation/job-worker/package.json').version\");lunr-languages@1.9.0\"",
 		"lint": "lerna run --concurrency 4 --stream lint",
 		"unit": "lerna run --concurrency 2 --stream unit -- --coverage=false",
 		"test": "lerna run --concurrency 2 --stream test",
@@ -36,10 +36,10 @@
 		"watch-for-worker-changes": "nodemon --delay 2.5 --watch job-worker/dist --watch corelib/dist --watch shared-lib/dist --watch blueprints-integration/dist --watch server-core-integration/dist ../scripts/meteor-force-restart.js"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.17.12",
-		"@babel/plugin-transform-modules-commonjs": "^7.17.12",
+		"@babel/core": "^7.19.1",
+		"@babel/plugin-transform-modules-commonjs": "^7.18.6",
 		"@sofie-automation/code-standard-preset": "~2.0.2",
-		"@types/amqplib": "^0.5.17",
+		"@types/amqplib": "^0.8.2",
 		"@types/debug": "^4.1.7",
 		"@types/ejson": "^2.2.0",
 		"@types/got": "^9.6.12",
@@ -51,7 +51,7 @@
 		"copyfiles": "^2.4.1",
 		"jest": "^27.5.1",
 		"lerna": "^4.0.0",
-		"nodemon": "^2.0.16",
+		"nodemon": "^2.0.19",
 		"open-cli": "^7.0.1",
 		"rimraf": "^3.0.2",
 		"semver": "^7.3.7",
@@ -62,7 +62,6 @@
 	},
 	"name": "packages",
 	"resolutions": {
-		"lerna/**/trim-newlines": "^4.0.1",
-		"**/data-store/set-value": "^4.1.0"
+		"lerna/**/trim-newlines": "^4.0.1"
 	}
 }

@@ -285,7 +285,7 @@ export const AdLibRegionPanel = translateWithTracker<
 			isLiveLine: false,
 		})
 	},
-	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	(_data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
 )(AdLibRegionPanelWithStatus)

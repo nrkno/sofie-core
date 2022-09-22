@@ -1,7 +1,7 @@
 // this is expected to run from within `meteor`
 const process = require('process')
 const fs = require('fs')
-var path = require('path')
+const path = require('path')
 
 function mkdirSyncIfNotExists(p) {
 	if (fs.existsSync(p)) return
@@ -15,7 +15,7 @@ function copyFileSyncIfNotExists(source, target) {
 
 function copyFileSync(source, target) {
 
-	var targetFile = target
+	let targetFile = target
 
 	// If target is a directory, a new file with the same name will be created
 	if (fs.existsSync(target)) {
@@ -29,7 +29,7 @@ function copyFileSync(source, target) {
 
 function copyFolderRecursiveSync(source, target) {
 	// Check if folder needs to be created or integrated
-	var targetFolder = path.join(target, path.basename(source));
+	const targetFolder = path.join(target, path.basename(source));
 	if (!fs.existsSync(targetFolder)) {
 		fs.mkdirSync(targetFolder)
 	}

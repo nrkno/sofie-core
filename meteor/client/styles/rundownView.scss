@@ -93,9 +93,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 }
 
 .rundown-view {
-	padding-top: 4rem;
+	// padding-top: 4rem;
 	padding-bottom: 50vh;
-	padding-right: $statusbar-width;
+	// padding-right: $statusbar-width;
 	transition: 0s padding-right 0s;
 
 	.invert-flash {
@@ -142,11 +142,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 
 	&.notification-center-open {
-		padding-right: calc(#{$statusbar-width} + #{$notification-center-width});
+		padding-right: $notification-center-width;
 		transition: 0s padding-right 1s;
 
 		> .header .rundown-overview {
-			padding-right: calc(#{$statusbar-width} + #{$notification-center-width} + 1.5em);
+			padding-right: calc(#{$notification-center-width} + 1.5em);
 			transition: 0s padding-right 1s;
 		}
 	}
@@ -207,13 +207,6 @@ body.no-overflow {
 }
 
 .header.rundown {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	z-index: 200;
-	user-select: none;
-
 	.row {
 		width: 100%;
 

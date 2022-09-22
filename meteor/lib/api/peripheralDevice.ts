@@ -5,10 +5,6 @@ import { PubSub, meteorSubscribe } from './pubsub'
 import * as OrgApi from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 
-// Note: When making changes to this file, remember to also update the copy in core-integration library
-
-// Fakin these, so we don't have to expose this to the client
-
 export { TimeDiff, DiffTimeResult } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 export * from '@sofie-automation/shared-lib/dist/peripheralDevice/mediaManager'
 export {
