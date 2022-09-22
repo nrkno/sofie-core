@@ -310,6 +310,32 @@ export const SourceLayerSettings = withTranslation()(
 												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
+														attribute={'sourceLayers.' + item.index + '.onListViewColumn'}
+														obj={this.props.showStyleBase}
+														type="checkbox"
+														collection={ShowStyleBases}
+														className=""
+													></EditAttribute>
+													{t('Display in a column in List View')}
+												</label>
+											</div>
+											<div className="mod mvs mhs">
+												<label className="field">
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={'sourceLayers.' + item.index + '.onListViewAdLibColumn'}
+														obj={this.props.showStyleBase}
+														type="checkbox"
+														collection={ShowStyleBases}
+														className=""
+													></EditAttribute>
+													{t('Display AdLibs in a column in List View')}
+												</label>
+											</div>
+											<div className="mod mvs mhs">
+												<label className="field">
+													<EditAttribute
+														modifiedClassName="bghl"
 														attribute={'sourceLayers.' + item.index + '.isClearable'}
 														obj={this.props.showStyleBase}
 														type="checkbox"
