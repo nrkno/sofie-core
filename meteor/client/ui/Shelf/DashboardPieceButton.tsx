@@ -48,6 +48,7 @@ export interface IDashboardButtonProps {
 	isSelected?: boolean
 	queueAllAdlibs?: boolean
 	showThumbnailsInList?: boolean
+	disableHoverInspector?: boolean
 	editableName?: boolean
 	onNameChanged?: (e: any, value: string) => void
 	toggleOnSingleClick?: boolean
@@ -457,7 +458,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				data-obj-id={this.props.piece._id}
 			>
 				<div className="dashboard-panel__panel__button__content">
-					{!this.props.layer
+					{this.props.disableHoverInspector || !this.props.layer
 						? null
 						: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
 						? // VT should have thumbnails in "Button" layout.

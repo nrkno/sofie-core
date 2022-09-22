@@ -469,6 +469,19 @@ export default withTranslation()(
 								</label>
 							</div>
 							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Disable the hover Inspector when hovering over the button')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={`filters.${index}.disableHoverInspector`}
+										obj={item}
+										type="checkbox"
+										collection={RundownLayouts}
+										className="mod mas"
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
 								<label className="field" title="eg. when pieces in current part serve as data stores for adlibing">
 									{t('Current part can contain next pieces')}
 									<EditAttribute
