@@ -53,7 +53,8 @@ export const LinePart: React.FC<IProps> = function LinePart({
 	onPieceClick,
 	onPieceDoubleClick,
 }) {
-	const isFinished = (part.instance.timings?.stoppedPlayback ?? part.instance.timings?.takeOut) !== undefined
+	const isFinished =
+		(part.instance.timings?.reportedStoppedPlayback ?? part.instance.timings?.plannedStoppedPlayback) !== undefined
 	const [highlight] = useState(false)
 
 	const getPartContext = useCallback(() => {
