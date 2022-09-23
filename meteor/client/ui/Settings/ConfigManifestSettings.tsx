@@ -20,6 +20,15 @@ import {
 	ConfigManifestEntryLayerMappings,
 	SourceLayerType,
 	ConfigManifestEntrySelectFromColumn,
+	ConfigManifestEntryBoolean,
+	ConfigManifestEntryEnum,
+	ConfigManifestEntryFloat,
+	ConfigManifestEntryInt,
+	ConfigManifestEntryMultilineString,
+	ConfigManifestEntryNumber,
+	ConfigManifestEntrySelectFromOptions,
+	ConfigManifestEntryString,
+	ConfigManifestEntryJson,
 } from '@sofie-automation/blueprints-integration'
 import { DBObj, ProtectedString, objectPathGet, getRandomString } from '../../../lib/lib'
 import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
@@ -95,11 +104,11 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DBInterface, DBInterface>,
 	configPath: string,
 	object: DBInterface,
-	alternateObject: any | undefined,
-	item: BasicConfigManifestEntry,
+	item: BasicConfigManifestEntry | ResolvedBasicConfigManifestEntry,
 	attribute: string,
 	layerMappings?: { [key: string]: MappingsExt },
-	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
+	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>,
+	alternateObject?: any
 ) {
 	switch (item.type) {
 		case ConfigManifestEntryType.STRING:
@@ -201,35 +210,29 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 				/>
 			)
 		case ConfigManifestEntryType.SOURCE_LAYERS:
-			if (sourceLayers) {
-				return (
-					<EditAttribute
-						modifiedClassName="bghl"
-						attribute={attribute}
-						obj={object}
-						type={item.multiple ? 'multiselect' : 'dropdown'}
-						options={filterSourceLayers(item, sourceLayers)}
-						collection={collection}
-						className="input text-input dropdown input-l"
-					/>
-				)
-			}
-			break
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type={item.multiple ? 'multiselect' : 'dropdown'}
+					options={'options' in item ? item.options : filterSourceLayers(item, sourceLayers ?? [])}
+					collection={collection}
+					className="input text-input dropdown input-l"
+				/>
+			)
 		case ConfigManifestEntryType.LAYER_MAPPINGS:
-			if (layerMappings) {
-				return (
-					<EditAttribute
-						modifiedClassName="bghl"
-						attribute={attribute}
-						obj={object}
-						type={item.multiple ? 'multiselect' : 'dropdown'}
-						options={filterLayerMappings(item, layerMappings)}
-						collection={collection}
-						className="input text-input dropdown input-l"
-					/>
-				)
-			}
-			break
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type={item.multiple ? 'multiselect' : 'dropdown'}
+					options={'options' in item ? item.options : filterLayerMappings(item, layerMappings ?? {})}
+					collection={collection}
+					className="input text-input dropdown input-l"
+				/>
+			)
 		case ConfigManifestEntryType.SELECT_FROM_COLUMN:
 			return (
 				<EditAttribute
@@ -237,7 +240,7 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 					attribute={attribute}
 					obj={object}
 					type={item.multiple ? 'multiselect' : 'dropdown'}
-					options={getTableColumnValues(item, configPath, object, alternateObject)}
+					options={'options' in item ? item.options : getTableColumnValues(item, configPath, object, alternateObject)}
 					collection={collection}
 					className="input text-input dropdown input-l"
 				/>
@@ -247,6 +250,20 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 	}
 }
 
+type ResolvedBasicConfigManifestEntry =
+	| ConfigManifestEntryString
+	| ConfigManifestEntryMultilineString
+	| ConfigManifestEntryNumber
+	| ConfigManifestEntryInt
+	| ConfigManifestEntryFloat
+	| ConfigManifestEntryBoolean
+	| ConfigManifestEntryEnum
+	| ConfigManifestEntrySelectFromOptions<boolean>
+	| (ConfigManifestEntrySelectFromColumn<boolean> & { options: string[] })
+	| (ConfigManifestEntrySourceLayers<boolean> & { options: Array<{ name: string; value: string }> })
+	| (ConfigManifestEntryLayerMappings<boolean> & { options: Array<{ name: string; value: string }> })
+	| ConfigManifestEntryJson
+
 interface IConfigManifestSettingsProps<
 	TCol extends TransformedCollection<DBInterface, DBInterface>,
 	DBInterface extends { _id: ProtectedString<any> }
@@ -255,6 +272,7 @@ interface IConfigManifestSettingsProps<
 
 	collection: TCol
 	object: DBInterface
+	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
 	alternateObject?: any
 	configPath: string
 
@@ -281,6 +299,7 @@ interface IConfigManifestTableProps<
 
 	collection: TCol
 	object: DBInterface
+	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
 	alternateObject?: any
 	configPath: string
 
@@ -293,6 +312,7 @@ interface IConfigManifestTableState {
 	uploadFileKey: number // Used to force clear the input after use
 	sortColumn: number
 	sortOrder: 'asc' | 'desc'
+	resolvedColumns: ResolvedBasicConfigManifestEntry[]
 }
 
 export class ConfigManifestTable<
@@ -306,6 +326,7 @@ export class ConfigManifestTable<
 			uploadFileKey: Date.now(),
 			sortColumn: -1,
 			sortOrder: 'asc',
+			resolvedColumns: [],
 		}
 	}
 
@@ -421,6 +442,36 @@ export class ConfigManifestTable<
 		}
 	}
 
+	static getDerivedStateFromProps(
+		props: Translated<IConfigManifestTableProps<any, any>>
+	): Partial<IConfigManifestTableState> {
+		return {
+			resolvedColumns: props.item.columns.map((column): ResolvedBasicConfigManifestEntry => {
+				switch (column.type) {
+					case ConfigManifestEntryType.SOURCE_LAYERS:
+						return {
+							...column,
+							options: props.sourceLayers ? filterSourceLayers(column, props.sourceLayers) : [],
+						}
+					case ConfigManifestEntryType.LAYER_MAPPINGS:
+						return {
+							...column,
+							options: props.layerMappings ? filterLayerMappings(column, props.layerMappings) : [],
+						}
+					case ConfigManifestEntryType.SELECT_FROM_COLUMN:
+						return {
+							...column,
+							options: props.layerMappings
+								? getTableColumnValues(column, props.configPath, props.object, props.alternateObject)
+								: [],
+						}
+					default:
+						return column
+				}
+			}),
+		}
+	}
+
 	render() {
 		const { t } = this.props
 
@@ -510,11 +561,8 @@ export class ConfigManifestTable<
 												this.props.collection,
 												this.props.configPath,
 												this.props.object,
-												this.props.alternateObject,
 												col,
-												`${baseAttribute}.${sortedIndices[i]}.${col.id}`,
-												this.props.layerMappings,
-												this.props.sourceLayers
+												`${baseAttribute}.${sortedIndices[i]}.${col.id}`
 											)}
 										</td>
 									))}
@@ -746,6 +794,7 @@ export class ConfigManifestSettings<
 						layerMappings={this.props.layerMappings}
 						sourceLayers={this.props.sourceLayers}
 						configPath={this.props.configPath}
+						alternateObject={this.props.alternateObject}
 					/>
 				)
 			case ConfigManifestEntryType.SELECT:
@@ -759,11 +808,11 @@ export class ConfigManifestSettings<
 							this.props.collection,
 							this.props.configPath,
 							this.props.object,
-							this.props.alternateObject,
 							item as BasicConfigManifestEntry,
 							baseAttribute,
 							this.props.layerMappings,
-							this.props.sourceLayers
+							this.props.sourceLayers,
+							this.props.alternateObject
 						)}
 					</div>
 				)
@@ -775,11 +824,11 @@ export class ConfigManifestSettings<
 							this.props.collection,
 							this.props.configPath,
 							this.props.object,
-							this.props.alternateObject,
 							item as BasicConfigManifestEntry,
 							baseAttribute,
 							this.props.layerMappings,
-							this.props.sourceLayers
+							this.props.sourceLayers,
+							this.props.alternateObject
 						)}
 					</label>
 				)
