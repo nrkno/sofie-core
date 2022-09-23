@@ -231,7 +231,7 @@ export async function adLibPieceStart(context: JobContext, data: AdlibPieceStart
 			if (!rundown) throw new Error(`Rundown "${partInstance.rundownId}" not found!`)
 
 			// Rundows that share the same showstyle variant as the current rundown, so adlibs from these rundowns are safe to play
-			const safeRundownIds = cache.Rundowns.findFetch(
+			const safeRundownIds = cache.Rundowns.findAll(
 				(rd) => rd.showStyleVariantId === rundown.showStyleVariantId
 			).map((r) => r._id)
 

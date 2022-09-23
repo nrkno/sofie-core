@@ -106,7 +106,7 @@ export async function syncChangesToPartInstances(
 				newPart,
 				piecesThatMayBeActive,
 			} of instances) {
-				const pieceInstancesInPart = cache.PieceInstances.findFetch(
+				const pieceInstancesInPart = cache.PieceInstances.findAll(
 					(p) => p.partInstanceId === existingPartInstance._id
 				)
 
@@ -117,10 +117,10 @@ export async function syncChangesToPartInstances(
 				}
 
 				const referencedAdlibIds = new Set(_.compact(pieceInstancesInPart.map((p) => p.adLibSourceId)))
-				const referencedAdlibs = ingestCache.AdLibPieces.findFetch((p) => referencedAdlibIds.has(p._id))
+				const referencedAdlibs = ingestCache.AdLibPieces.findAll((p) => referencedAdlibIds.has(p._id))
 
-				const adlibPieces = ingestCache.AdLibPieces.findFetch((p) => p.partId === partId)
-				const adlibActions = ingestCache.AdLibActions.findFetch((p) => p.partId === partId)
+				const adlibPieces = ingestCache.AdLibPieces.findAll((p) => p.partId === partId)
+				const adlibActions = ingestCache.AdLibActions.findAll((p) => p.partId === partId)
 
 				const proposedPieceInstances = getPieceInstancesForPart(
 					context,

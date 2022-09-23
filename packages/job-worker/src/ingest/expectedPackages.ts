@@ -54,12 +54,12 @@ export async function updateExpectedPackagesOnRundown(context: JobContext, cache
 
 	const studio = context.studio
 
-	const pieces = cache.Pieces.findFetch(null)
-	const adlibs = cache.AdLibPieces.findFetch(null)
-	const actions = cache.AdLibActions.findFetch(null)
+	const pieces = cache.Pieces.findAll(null)
+	const adlibs = cache.AdLibPieces.findAll(null)
+	const actions = cache.AdLibActions.findAll(null)
 
 	const partToSegmentIdMap = new Map<PartId, SegmentId>()
-	for (const part of cache.Parts.findFetch(null)) {
+	for (const part of cache.Parts.findAll(null)) {
 		partToSegmentIdMap.set(part._id, part.segmentId)
 	}
 
@@ -95,7 +95,7 @@ export async function updateExpectedPackagesOnRundown(context: JobContext, cache
 			...generateExpectedPackagesForBaselineAdlibPiece(
 				studio,
 				cache.RundownId,
-				baselineAdlibPieceCache.findFetch(null)
+				baselineAdlibPieceCache.findAll(null)
 			)
 		)
 	} else {
@@ -108,7 +108,7 @@ export async function updateExpectedPackagesOnRundown(context: JobContext, cache
 			...generateExpectedPackagesForBaselineAdlibAction(
 				studio,
 				cache.RundownId,
-				baselineAdlibActionCache.findFetch(null)
+				baselineAdlibActionCache.findAll(null)
 			)
 		)
 	} else {

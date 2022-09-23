@@ -56,19 +56,19 @@ export async function updateExpectedPlayoutItemsOnRundown(context: JobContext, c
 		cache.RundownBaselineAdLibActions.get(),
 	])
 
-	for (const piece of cache.Pieces.findFetch(null)) {
+	for (const piece of cache.Pieces.findAll(null)) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, piece.startPartId, piece))
 	}
-	for (const piece of cache.AdLibPieces.findFetch(null)) {
+	for (const piece of cache.AdLibPieces.findAll(null)) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, piece.partId, piece))
 	}
-	for (const piece of baselineAdlibPieces.findFetch(null)) {
+	for (const piece of baselineAdlibPieces.findAll(null)) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, piece))
 	}
-	for (const action of cache.AdLibActions.findFetch(null)) {
+	for (const action of cache.AdLibActions.findAll(null)) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, action.partId, action))
 	}
-	for (const action of baselineAdlibActions.findFetch(null)) {
+	for (const action of baselineAdlibActions.findAll(null)) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, action))
 	}
 

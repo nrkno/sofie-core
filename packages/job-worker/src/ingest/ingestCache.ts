@@ -69,7 +69,7 @@ export class RundownIngestDataCache {
 	fetchRundown(): LocalIngestRundown | undefined {
 		const span = this.context.startSpan('ingest.ingestCache.loadCachedRundownData')
 
-		const cacheEntries = this.collection.findFetch(null)
+		const cacheEntries = this.collection.findAll(null)
 
 		const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
 		if (!cachedRundown) {
@@ -112,7 +112,7 @@ export class RundownIngestDataCache {
 	}
 
 	fetchSegment(segmentId: SegmentId): LocalIngestSegment | undefined {
-		const cacheEntries = this.collection.findFetch((d) => d.segmentId === segmentId)
+		const cacheEntries = this.collection.findAll((d) => d.segmentId === segmentId)
 
 		const segmentEntries = cacheEntries.filter((e) => e.type === IngestCacheType.SEGMENT)
 		if (segmentEntries.length > 1)

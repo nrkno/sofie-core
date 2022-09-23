@@ -218,9 +218,9 @@ export async function updateExpectedMediaItemForBucketAdLibAction(
 
 /** @deprecated */
 export function updateExpectedMediaItemsOnRundown(context: JobContext, cache: CacheForIngest): void {
-	const pieces = cache.Pieces.findFetch(null)
-	const adlibs = cache.AdLibPieces.findFetch(null)
-	const actions = cache.AdLibActions.findFetch(null)
+	const pieces = cache.Pieces.findAll(null)
+	const adlibs = cache.AdLibPieces.findAll(null)
+	const actions = cache.AdLibActions.findAll(null)
 
 	const eMIs = generateExpectedMediaItemsFull(context.studio._id, cache.RundownId, pieces, adlibs, actions)
 	saveIntoCache<ExpectedMediaItem>(context, cache.ExpectedMediaItems, null, eMIs)

@@ -68,25 +68,25 @@ export function canContinueAdlibOnEndInfinites(
 function getIdsBeforeThisPart(context: JobContext, cache: CacheForPlayout, nextPart: DBPart) {
 	const span = context.startSpan('getIdsBeforeThisPart')
 	// Get the normal parts
-	const partsBeforeThisInSegment = cache.Parts.findFetch(
+	const partsBeforeThisInSegment = cache.Parts.findAll(
 		(p) => p.segmentId === nextPart.segmentId && p._rank < nextPart._rank
 	)
 	// Find any orphaned parts
-	const partInstancesBeforeThisInSegment = cache.PartInstances.findFetch(
+	const partInstancesBeforeThisInSegment = cache.PartInstances.findAll(
 		(p) => p.segmentId === nextPart.segmentId && !!p.orphaned && p.part._rank < nextPart._rank
 	)
 	partsBeforeThisInSegment.push(...partInstancesBeforeThisInSegment.map((p) => p.part))
 
 	const currentSegment = cache.Segments.findOne(nextPart.segmentId)
 	const segmentsBeforeThisInRundown = currentSegment
-		? cache.Segments.findFetch((s) => s.rundownId === nextPart.rundownId && s._rank < currentSegment._rank).map(
+		? cache.Segments.findAll((s) => s.rundownId === nextPart.rundownId && s._rank < currentSegment._rank).map(
 				(p) => p._id
 		  )
 		: []
 
 	const sortedRundownIds = sortRundownIDsInPlaylist(
 		cache.Playlist.doc.rundownIdsInOrder,
-		cache.Rundowns.findFetch(null).map((rd) => rd._id)
+		cache.Rundowns.findAll(null).map((rd) => rd._id)
 	)
 	const currentRundownIndex = sortedRundownIds.indexOf(nextPart.rundownId)
 	const rundownsBeforeThisInPlaylist =
@@ -114,7 +114,7 @@ export async function fetchPiecesThatMayBeActiveForPart(
 	const thisPiecesQuery = buildPiecesStartingInThisPartQuery(part)
 	piecePromises.push(
 		unsavedIngestCache?.RundownId === part.rundownId
-			? unsavedIngestCache.Pieces.findFetch((p) => mongoWhere(p, thisPiecesQuery))
+			? unsavedIngestCache.Pieces.findAll((p) => mongoWhere(p, thisPiecesQuery))
 			: context.directCollections.Pieces.findFetch(thisPiecesQuery)
 	)
 
@@ -131,7 +131,7 @@ export async function fetchPiecesThatMayBeActiveForPart(
 			[] // other rundowns don't exist in the ingestCache
 		)
 		if (thisRundownPieceQuery) {
-			piecePromises.push(unsavedIngestCache.Pieces.findFetch((p) => mongoWhere(p, thisRundownPieceQuery)))
+			piecePromises.push(unsavedIngestCache.Pieces.findAll((p) => mongoWhere(p, thisRundownPieceQuery)))
 		}
 
 		// Find pieces for the previous rundowns
@@ -189,9 +189,7 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 			currentPartInstance,
 			nextPartInstance.part
 		)
-		const playingPieceInstances = cache.PieceInstances.findFetch(
-			(p) => p.partInstanceId === currentPartInstance._id
-		)
+		const playingPieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === currentPartInstance._id)
 
 		const nowInPart = getCurrentTime() - (currentPartInstance.timings?.startedPlayback ?? 0)
 		const prunedPieceInstances = processAndPrunePieceInstanceTimings(
@@ -248,7 +246,7 @@ export function getPieceInstancesForPart(
 
 	const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 	const playingPieceInstances = playingPartInstance
-		? cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
+		? cache.PieceInstances.findAll((p) => p.partInstanceId === playingPartInstance._id)
 		: []
 
 	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(

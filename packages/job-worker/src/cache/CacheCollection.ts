@@ -63,8 +63,14 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		return this._collection.name
 	}
 
-	findFetch(selector: SelectorFunction<TDoc> | null, options?: FindOptions<TDoc>): TDoc[] {
-		const span = this.context.startSpan(`DBCache.findFetch.${this.name}`)
+	/**
+	 * Find documents matching a criteria
+	 * @param selector selector function to match documents, or null to fetch all documents
+	 * @param options
+	 * @returns The matched documents
+	 */
+	findAll(selector: SelectorFunction<TDoc> | null, options?: FindOptions<TDoc>): TDoc[] {
+		const span = this.context.startSpan(`DBCache.findAll.${this.name}`)
 
 		const results: TDoc[] = []
 		this.documents.forEach((doc, _id) => {
@@ -81,6 +87,13 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		if (span) span.end()
 		return res
 	}
+
+	/**
+	 * Find a single document
+	 * @param selector Id or selector function
+	 * @param options
+	 * @returns The first matched document, if any
+	 */
 	findOne(selector: TDoc['_id'] | SelectorFunction<TDoc>, options?: FindOneOptions<TDoc>): TDoc | undefined {
 		if (isProtectedString(selector)) {
 			const span = this.context.startSpan(`DBCache.findOne.${this.name}`)
@@ -93,7 +106,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 				return undefined
 			}
 		} else {
-			return this.findFetch(selector, options)[0]
+			return this.findAll(selector, options)[0]
 		}
 	}
 
@@ -214,7 +227,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 				removedIds.push(selector)
 			}
 		} else {
-			const docsToRemove = this.findFetch(selector)
+			const docsToRemove = this.findAll(selector)
 			for (const doc of docsToRemove) {
 				removedIds.push(doc._id)
 				this.documents.set(doc._id, null)
@@ -229,7 +242,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * Update a single document
 	 * @param selector Id of the document to update
 	 * @param modifier The modifier to apply to the document. Return false to report the document as unchanged
-	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed
+	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed if the modifer returned a doc
 	 * @returns All the ids that matched the selector
 	 */
 	updateOne(selector: TDoc['_id'], modifier: (doc: TDoc) => TDoc | false, forceUpdate?: boolean): Array<TDoc['_id']> {

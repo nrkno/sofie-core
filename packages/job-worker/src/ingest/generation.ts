@@ -309,9 +309,9 @@ function preserveOrphanedSegmentPositionInRundown(context: JobContext, cache: Ca
 	// It may work for mos-gateway, but this has not yet been tested and so is behind a feature/config field until it has been verified or adapted
 	if (context.studio.settings.preserveOrphanedSegmentPositionInRundown) {
 		// When we have orphaned segments, try to keep the order correct when adding and removing other segments
-		const orphanedDeletedSegments = cache.Segments.findFetch((s) => s.orphaned === SegmentOrphanedReason.DELETED)
+		const orphanedDeletedSegments = cache.Segments.findAll((s) => s.orphaned === SegmentOrphanedReason.DELETED)
 		if (orphanedDeletedSegments.length) {
-			const allSegmentsByRank = cache.Segments.findFetch(null, { sort: { _rank: -1 } })
+			const allSegmentsByRank = cache.Segments.findAll(null, { sort: { _rank: -1 } })
 
 			// Rank padding
 			const rankPad = 0.0001
@@ -784,7 +784,7 @@ export async function resolveSegmentChangesForUpdatedRundown(
 
 	/** Don't remove segments for now, orphan them instead. The 'commit' phase will clean them up if possible */
 	const changedSegmentIds = new Set(segmentChanges.segments.map((s) => s._id))
-	const removedSegments = cache.Segments.findFetch((s) => !changedSegmentIds.has(s._id))
+	const removedSegments = cache.Segments.findAll((s) => !changedSegmentIds.has(s._id))
 	for (const oldSegment of removedSegments) {
 		segmentChanges.segments.push({
 			...oldSegment,

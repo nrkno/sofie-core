@@ -29,7 +29,7 @@ export async function shouldRemoveOrphanedPartInstance(
 	if (!playlistPartInstances.nextPartInstance?.orphaned) return
 
 	const orphanedPartInstance = playlistPartInstances.nextPartInstance
-	const pieceInstancesInPart = cache.PieceInstances.findFetch((p) => p.partInstanceId === orphanedPartInstance._id)
+	const pieceInstancesInPart = cache.PieceInstances.findAll((p) => p.partInstanceId === orphanedPartInstance._id)
 
 	const existingResultPartInstance: BlueprintRemoveOrphanedPartInstance = {
 		partInstance: convertPartInstanceToBlueprints(orphanedPartInstance),

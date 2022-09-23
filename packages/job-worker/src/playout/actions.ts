@@ -221,7 +221,7 @@ export async function prepareStudioForBroadcast(
 	const rundownPlaylistToBeActivated = cache.Playlist.doc
 	logger.info('prepareStudioForBroadcast ' + context.studio._id)
 
-	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
+	const playoutDevices = cache.PeripheralDevices.findAll((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
 	for (const device of playoutDevices) {
 		// Fire the command and don't wait for the result
@@ -253,7 +253,7 @@ export async function standDownStudio(
 ): Promise<void> {
 	logger.info('standDownStudio ' + context.studio._id)
 
-	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
+	const playoutDevices = cache.PeripheralDevices.findAll((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
 	for (const device of playoutDevices) {
 		// Fire the command and don't wait for the result

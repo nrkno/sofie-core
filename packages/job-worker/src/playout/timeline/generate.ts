@@ -253,7 +253,7 @@ function getPartInstanceTimelineInfo(
 	if (partInstance) {
 		const partLastStarted = partInstance.timings?.startedPlayback
 		const nowInPart = partLastStarted === undefined ? 0 : currentTime - partLastStarted
-		const currentPieces = cache.PieceInstances.findFetch((p) => p.partInstanceId === partInstance._id)
+		const currentPieces = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
 		const pieceInstances = processAndPrunePieceInstanceTimings(showStyle, currentPieces, nowInPart)
 
 		return {
@@ -304,7 +304,7 @@ async function getTimelineRundown(
 
 			// next (on pvw (or on pgm if first))
 			const pLookaheadObjs = getLookeaheadObjects(context, cache, partInstancesInfo)
-			const rawBaselineItems = cache.BaselineObjects.findFetch((o) => o.rundownId === activeRundown._id)
+			const rawBaselineItems = cache.BaselineObjects.findAll((o) => o.rundownId === activeRundown._id)
 			if (rawBaselineItems.length > 0) {
 				timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(rawBaselineItems))
 			} else {

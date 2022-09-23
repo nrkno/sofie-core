@@ -21,7 +21,7 @@ export function saveIntoCache<TDoc extends { _id: ProtectedString<any> }>(
 	newData: Array<TDoc>,
 	optionsOrg?: SaveIntoDbHooks<TDoc>
 ): ChangedIds<TDoc['_id']> {
-	return saveIntoBase(context, collection.name ?? '', collection.findFetch(filter), newData, {
+	return saveIntoBase(context, collection.name ?? '', collection.findAll(filter), newData, {
 		...optionsOrg,
 		insert: (doc) => collection.insert(doc),
 		update: (doc) => collection.replace(doc),

@@ -631,7 +631,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 					nowInPart = getCurrentTime() - partInstance.timings?.startedPlayback
 				}
 
-				const pieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === partInstance._id)
+				const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
 
 				const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
 					const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
@@ -1075,7 +1075,7 @@ function timelineTriggerTimeInner(
 
 		if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
 			// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
-			const remainingNowPieces = pieceInstanceCache.findFetch(
+			const remainingNowPieces = pieceInstanceCache.findAll(
 				(p) =>
 					p.partInstanceId === activePlaylist.currentPartInstanceId &&
 					p.dynamicallyInserted !== undefined &&

@@ -444,7 +444,7 @@ export async function handleRemoveOrphanedSegemnts(
 
 			// Find the segments that are still orphaned (in case they have resynced before this executes)
 			// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
-			const stillOrphanedSegments = ingestCache.Segments.findFetch((s) => !!s.orphaned)
+			const stillOrphanedSegments = ingestCache.Segments.findAll((s) => !!s.orphaned)
 
 			const stillHiddenSegments = stillOrphanedSegments
 				.filter(
@@ -459,7 +459,7 @@ export async function handleRemoveOrphanedSegemnts(
 				)
 				.map((s) => s._id)
 
-			const hiddenSegmentIds = ingestCache.Segments.findFetch((s) => stillHiddenSegments.includes(s._id)).map(
+			const hiddenSegmentIds = ingestCache.Segments.findAll((s) => stillHiddenSegments.includes(s._id)).map(
 				(s) => s._id
 			)
 

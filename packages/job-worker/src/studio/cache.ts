@@ -65,6 +65,6 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 	}
 
 	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): DBRundownPlaylist[] {
-		return this.RundownPlaylists.findFetch((p) => !!p.activationId && p._id !== excludeRundownPlaylistId)
+		return this.RundownPlaylists.findAll((p) => !!p.activationId && p._id !== excludeRundownPlaylistId)
 	}
 }

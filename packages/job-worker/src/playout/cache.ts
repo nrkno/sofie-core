@@ -182,7 +182,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			context,
 			null,
 			initCache.Playlist.doc,
-			initCache.Rundowns.findFetch(null).map((r) => r._id)
+			initCache.Rundowns.findAll(null).map((r) => r._id)
 		)
 
 		// Not strictly necessary, but make a copy of the collection that we know is writable
@@ -334,10 +334,10 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 		if (ingestCache) {
 			// Populate the collections with the cached data instead
-			segments.fillWithDataFromArray(ingestCache.Segments.findFetch(null), true)
-			parts.fillWithDataFromArray(ingestCache.Parts.findFetch(null), true)
+			segments.fillWithDataFromArray(ingestCache.Segments.findAll(null), true)
+			parts.fillWithDataFromArray(ingestCache.Parts.findAll(null), true)
 			if (baselineFromIngest) {
-				baselineObjects.fillWithDataFromArray(baselineFromIngest.findFetch(null), true)
+				baselineObjects.fillWithDataFromArray(baselineFromIngest.findAll(null), true)
 			}
 		}
 
@@ -405,7 +405,7 @@ export function getOrderedSegmentsAndPartsFromPlayoutCache(cache: CacheForPlayou
 	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, cache.Playlist.doc)
 }
 export function getRundownIDsFromCache(cache: CacheForPlayout): RundownId[] {
-	return cache.Rundowns.findFetch(null).map((r) => r._id)
+	return cache.Rundowns.findAll(null).map((r) => r._id)
 }
 export function getSelectedPartInstancesFromCache(cache: CacheForPlayout): {
 	currentPartInstance: DBPartInstance | undefined
@@ -427,7 +427,7 @@ export function getSelectedPartInstancesFromCache(cache: CacheForPlayout): {
 	}
 }
 export function getShowStyleIdsRundownMappingFromCache(cache: CacheForPlayout): Map<RundownId, ShowStyleBaseId> {
-	const rundowns = cache.Rundowns.findFetch(null)
+	const rundowns = cache.Rundowns.findAll(null)
 	const ret = new Map()
 
 	for (const rundown of rundowns) {

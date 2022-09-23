@@ -139,7 +139,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			return []
 		}
 
-		const pieceInstances = this._cache.PieceInstances.findFetch((p) => p.partInstanceId === partInstanceId)
+		const pieceInstances = this._cache.PieceInstances.findAll((p) => p.partInstanceId === partInstanceId)
 		return pieceInstances.map(convertPieceInstanceToBlueprints)
 	}
 	async getResolvedPieceInstances(part: 'current' | 'next'): Promise<IBlueprintResolvedPieceInstance[]> {
@@ -526,7 +526,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 
 		const rawPieceInstanceIdSet = new Set(protectStringArray(pieceInstanceIds))
-		const pieceInstances = this._cache.PieceInstances.findFetch(
+		const pieceInstances = this._cache.PieceInstances.findAll(
 			(p) => p.partInstanceId === partInstanceId && rawPieceInstanceIdSet.has(p._id)
 		)
 

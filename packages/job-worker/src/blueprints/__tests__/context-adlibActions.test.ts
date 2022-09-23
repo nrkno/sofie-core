@@ -1611,7 +1611,7 @@ describe('Test blueprint api context', () => {
 
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
-					const beforePieceInstancesCount = cache.PieceInstances.findFetch(null).length // Because only those frm current, next, prev are included..
+					const beforePieceInstancesCount = cache.PieceInstances.findAll(null).length // Because only those frm current, next, prev are included..
 					expect(beforePieceInstancesCount).not.toEqual(0)
 
 					const pieceInstanceFromOther = (await jobContext.directCollections.PieceInstances.findOne({
@@ -1625,7 +1625,7 @@ describe('Test blueprint api context', () => {
 						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						context.removePieceInstances('next', [unprotectString(pieceInstanceFromOther._id)])
 					).resolves.toEqual([]) // Try and remove something belonging to a different part
-					expect(cache.PieceInstances.findFetch(null).length).toEqual(beforePieceInstancesCount)
+					expect(cache.PieceInstances.findAll(null).length).toEqual(beforePieceInstancesCount)
 				})
 			})
 
@@ -1640,7 +1640,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PieceInstances.findFetch(null).length).not.toEqual(0)
+					expect(cache.PieceInstances.findAll(null).length).not.toEqual(0)
 
 					// Find the instance, and create its backing piece
 					const targetPieceInstance = cache.PieceInstances.findOne(() => true) as PieceInstance

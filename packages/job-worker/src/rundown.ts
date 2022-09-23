@@ -59,7 +59,7 @@ export async function updatePartInstanceRanks(
 		(p) => unprotectString(p.segmentId)
 	)
 	const groupedNewParts = _.groupBy(
-		cache.Parts.findFetch((p) => changedSegmentIds.includes(p.segmentId)),
+		cache.Parts.findAll((p) => changedSegmentIds.includes(p.segmentId)),
 		(p) => unprotectString(p.segmentId)
 	)
 
@@ -128,9 +128,9 @@ export async function updatePartInstanceRanks(
  * Syncs the ranks from matching Parts to PartInstances.
  */
 export function updatePartInstanceRanksAfterAdlib(cache: CacheForPlayout, segmentId: SegmentId): void {
-	const newParts = cache.Parts.findFetch((p) => p.segmentId === segmentId)
+	const newParts = cache.Parts.findAll((p) => p.segmentId === segmentId)
 	const segmentPartInstances = _.sortBy(
-		cache.PartInstances.findFetch((p) => p.segmentId === segmentId),
+		cache.PartInstances.findAll((p) => p.segmentId === segmentId),
 		(p) => p.part._rank
 	)
 

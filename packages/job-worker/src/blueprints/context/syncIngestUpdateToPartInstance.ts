@@ -226,7 +226,7 @@ export class SyncIngestUpdateToPartInstanceContext
 	}
 	removePieceInstances(...pieceInstanceIds: string[]): string[] {
 		const rawPieceInstanceIdSet = new Set(protectStringArray(pieceInstanceIds))
-		const pieceInstances = this._pieceInstanceCache.findFetch(
+		const pieceInstances = this._pieceInstanceCache.findAll(
 			(p) => p.partInstanceId === this.partInstance._id && rawPieceInstanceIdSet.has(p._id)
 		)
 

@@ -253,7 +253,7 @@ async function afterTakeUpdateTimingsAndEvents(
 		})
 
 		// Simulate playout, if no gateway
-		const playoutDevices = cache.PeripheralDevices.findFetch((d) => d.type === PeripheralDeviceType.PLAYOUT)
+		const playoutDevices = cache.PeripheralDevices.findAll((d) => d.type === PeripheralDeviceType.PLAYOUT)
 		if (playoutDevices.length === 0) {
 			logger.info(
 				`No Playout gateway attached to studio, reporting PartInstance "${
@@ -367,13 +367,13 @@ export function updatePartInstanceOnTake(
 	// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
 	const tmpTakePieces = processAndPrunePieceInstanceTimings(
 		showStyle,
-		cache.PieceInstances.findFetch((p) => p.partInstanceId === takePartInstance._id),
+		cache.PieceInstances.findAll((p) => p.partInstanceId === takePartInstance._id),
 		0
 	)
 	const partPlayoutTimings = calculatePartTimings(
 		cache.Playlist.doc.holdState,
 		currentPartInstance?.part,
-		cache.PieceInstances.findFetch((p) => p.partInstanceId === currentPartInstance?._id).map((p) => p.piece),
+		cache.PieceInstances.findAll((p) => p.partInstanceId === currentPartInstance?._id).map((p) => p.piece),
 		takePartInstance.part,
 		tmpTakePieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
 	)
@@ -440,7 +440,7 @@ function startHold(
 	const span = context.startSpan('startHold')
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
-	const itemsToCopy = cache.PieceInstances.findFetch(
+	const itemsToCopy = cache.PieceInstances.findAll(
 		(p) => p.partInstanceId === holdFromPartInstance._id && !!p.piece.extendOnHold
 	)
 	itemsToCopy.forEach((instance) => {

@@ -20,7 +20,7 @@ export function diffAndUpdateSegmentIds(
 ): CommitIngestData['renamedSegments'] {
 	const span = context.startSpan('mosDevice.ingest.diffAndApplyChanges')
 
-	const oldSegments = cache.Segments.findFetch(null)
+	const oldSegments = cache.Segments.findAll(null)
 	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
 	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
@@ -48,7 +48,7 @@ export async function diffAndApplyChanges(
 	const span = context.startSpan('mosDevice.ingest.diffAndApplyChanges')
 
 	// Fetch all existing segments:
-	const oldSegments = cache.Segments.findFetch(null)
+	const oldSegments = cache.Segments.findAll(null)
 
 	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
 	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
@@ -140,14 +140,14 @@ function applyExternalIdDiff(
 	})
 
 	// Move over those parts to the new segmentId.
-	for (const part of cache.Parts.findFetch(null)) {
+	for (const part of cache.Parts.findAll(null)) {
 		const newSegmentId = renamedSegments.get(part.segmentId)
 		if (newSegmentId) {
 			part.segmentId = newSegmentId
 			cache.Parts.replace(part)
 		}
 	}
-	for (const piece of cache.Pieces.findFetch(null)) {
+	for (const piece of cache.Pieces.findAll(null)) {
 		const newSegmentId = renamedSegments.get(piece.startSegmentId)
 		if (newSegmentId) {
 			piece.startSegmentId = newSegmentId

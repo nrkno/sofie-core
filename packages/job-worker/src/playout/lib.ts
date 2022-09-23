@@ -381,7 +381,7 @@ export async function setNextPart(
 			const resetPartInstanceIds = new Set<PartInstanceId>()
 			if (currentPartInstance) {
 				// Always clean the current segment, anything after the current part (except the next part)
-				const trailingInOldSegment = cache.PartInstances.findFetch(
+				const trailingInOldSegment = cache.PartInstances.findAll(
 					(p) =>
 						!p.reset &&
 						p._id !== currentPartInstance._id &&
@@ -402,7 +402,7 @@ export async function setNextPart(
 					nextPartInstance.part._rank < currentPartInstance.part._rank)
 			) {
 				// clean the whole segment if new, or jumping backwards
-				const newSegmentParts = cache.PartInstances.findFetch(
+				const newSegmentParts = cache.PartInstances.findAll(
 					(p) =>
 						!p.reset &&
 						p._id !== nextPartInstance._id &&
@@ -431,7 +431,7 @@ export function setNextSegment(context: JobContext, cache: CacheForPlayout, next
 	const span = context.startSpan('setNextSegment')
 	if (nextSegment) {
 		// Just run so that errors will be thrown if something wrong:
-		const partsInSegment = cache.Parts.findFetch((p) => p.segmentId === nextSegment._id)
+		const partsInSegment = cache.Parts.findAll((p) => p.segmentId === nextSegment._id)
 		if (!partsInSegment.find((p) => isPartPlayable(p))) {
 			throw new Error('Segment contains no valid parts')
 		}
@@ -464,7 +464,7 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 		selectedPartInstancesSegmentIds.add(selectedPartInstances.nextPartInstance.segmentId)
 
 	// Cleanup any orphaned segments once they are no longer being played. This also cleans up any adlib-parts, that have been marked as deleted as a deferred cleanup operation
-	const segments = cache.Segments.findFetch((s) => !!s.orphaned)
+	const segments = cache.Segments.findAll((s) => !!s.orphaned)
 	const orphanedSegmentIds = new Set(segments.map((s) => s._id))
 
 	const alterSegmentsFromRundowns = new Map<RundownId, { deleted: SegmentId[]; hidden: SegmentId[] }>()
@@ -508,7 +508,7 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 
 	const removePartInstanceIds: PartInstanceId[] = []
 	// Cleanup any orphaned partinstances once they are no longer being played (and the segment isnt orphaned)
-	const orphanedInstances = cache.PartInstances.findFetch((p) => p.orphaned === 'deleted' && !p.reset)
+	const orphanedInstances = cache.PartInstances.findAll((p) => p.orphaned === 'deleted' && !p.reset)
 	for (const partInstance of orphanedInstances) {
 		if (PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS && orphanedSegmentIds.has(partInstance.segmentId)) {
 			// If the segment is also orphaned, then don't delete it until it is clear
@@ -544,7 +544,7 @@ function removePartInstancesWithPieceInstances(
 	// Defer ones which arent loaded
 	cache.deferAfterSave(async (cache) => {
 		// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
-		const partInstanceIdsInCache = cache.PartInstances.findFetch(null).map((p) => p._id)
+		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
 
 		// Find all the partInstances which are not loaded, but should be removed
 		const removeFromDb = await context.directCollections.PartInstances.findFetch(
@@ -610,7 +610,7 @@ function resetPartInstancesWithPieceInstances(
 
 	// Defer ones which arent loaded
 	cache.deferAfterSave(async (cache) => {
-		const partInstanceIdsInCache = cache.PartInstances.findFetch(null).map((p) => p._id)
+		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
 
 		// Find all the partInstances which are not loaded, but should be reset
 		const resetInDb = await context.directCollections.PartInstances.findFetch(
@@ -773,7 +773,7 @@ export function getRundownsSegmentsAndPartsFromCache(
 	playlist: Pick<ReadonlyDeep<DBRundownPlaylist>, 'rundownIdsInOrder'>
 ): { segments: DBSegment[]; parts: DBPart[] } {
 	const segments = sortSegmentsInRundowns(
-		segmentsCache.findFetch(null, {
+		segmentsCache.findAll(null, {
 			sort: {
 				rundownId: 1,
 				_rank: 1,
@@ -783,7 +783,7 @@ export function getRundownsSegmentsAndPartsFromCache(
 	)
 
 	const parts = sortPartsInSortedSegments(
-		partsCache.findFetch(null, {
+		partsCache.findAll(null, {
 			sort: {
 				rundownId: 1,
 				_rank: 1,
@@ -808,7 +808,7 @@ export function updateExpectedDurationWithPrerollForPartInstance(
 ): void {
 	const nextPartInstance = cache.PartInstances.findOne(partInstanceId)
 	if (nextPartInstance) {
-		const pieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === nextPartInstance._id)
+		const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === nextPartInstance._id)
 
 		// Update expectedDurationWithPreroll of the next part instance, as it may have changed and is used by the ui until it is taken
 		const expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(
