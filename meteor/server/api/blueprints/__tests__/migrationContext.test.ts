@@ -1598,8 +1598,8 @@ describe('Test blueprint migrationContext', () => {
 				ctx.setTriggeredAction({
 					_id: blueprintLocalId,
 					_rank: 1001,
-					actions: [
-						{
+					actions: {
+						'0': {
 							action: ClientActions.shelf,
 							filterChain: [
 								{
@@ -1608,13 +1608,13 @@ describe('Test blueprint migrationContext', () => {
 							],
 							state: 'toggle',
 						},
-					],
-					triggers: [
-						{
+					},
+					triggers: {
+						'0': {
 							type: TriggerType.hotkey,
 							keys: 'Digit1',
 						},
-					],
+					},
 				})
 				const insertedTriggeredAction = ctx.getTriggeredAction(blueprintLocalId)
 				expect(insertedTriggeredAction).toBeTruthy()
@@ -1632,8 +1632,8 @@ describe('Test blueprint migrationContext', () => {
 				ctx.setTriggeredAction({
 					_id: 'mockTriggeredAction_core0',
 					_rank: 0,
-					actions: [
-						{
+					actions: {
+						'0': {
 							action: PlayoutActions.activateRundownPlaylist,
 							rehearsal: false,
 							filterChain: [
@@ -1642,13 +1642,13 @@ describe('Test blueprint migrationContext', () => {
 								},
 							],
 						},
-					],
-					triggers: [
-						{
+					},
+					triggers: {
+						'0': {
 							type: TriggerType.hotkey,
 							keys: 'Control+Shift+Enter',
 						},
-					],
+					},
 				})
 
 				const newCoreAction = ctx.getTriggeredAction('mockTriggeredAction_core0')

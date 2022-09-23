@@ -11,7 +11,7 @@ import {
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
 import { ShowStyleBase, ShowStyleBaseId } from '../../../../../lib/collections/ShowStyleBases'
-import { flatten } from '../../../../../lib/lib'
+import { flatten, last } from '../../../../../lib/lib'
 import { createAction, isPreviewableAction } from '../../../../../lib/api/triggers/actionFactory'
 import { PreviewContext } from './TriggeredActionsEditor'
 import { IWrappedAdLib } from '../../../../../lib/api/triggers/actionFilterChainCompilers'
@@ -22,6 +22,7 @@ import { EditAttribute } from '../../../../lib/EditAttribute'
 import { iconDragHandle } from '../../../RundownList/icons'
 import { useDrag, useDrop } from 'react-dnd'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { nanoid } from 'nanoid'
 
 interface IProps {
 	showStyleBase: ShowStyleBase | undefined
@@ -47,8 +48,8 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 	const triggeredAction = useTracker(() => TriggeredActions.findOne(triggeredActionId), [triggeredActionId])
 
 	const { t } = useTranslation()
-	const [selectedTrigger, setSelectedTrigger] = useState(-1)
-	const [selectedAction, setSelectedAction] = useState(-1)
+	const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null)
+	const [selectedAction, setSelectedAction] = useState<string | null>(null)
 
 	const [{ isDragging }, drag, dragPreview] = useDrag({
 		item: { id: triggeredActionId, type: TRIGGERED_ACTION_ENTRY_DRAG_TYPE },
@@ -130,7 +131,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		() => {
 			try {
 				if (triggeredAction && selected && showStyleBase) {
-					const executableActions = triggeredAction.actions.map((value) =>
+					const executableActions = Object.values(triggeredAction.actionsWithOverrides.defaults).map((value) =>
 						createAction(value, showStyleBase.sourceLayersWithOverrides.defaults)
 					)
 					const ctx = previewContext
@@ -162,45 +163,45 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 	}
 
 	const removeTrigger = useCallback(
-		(index: number) => {
+		(id: string) => {
 			if (!triggeredAction) return
-			triggeredAction.triggers.splice(index, 1)
+			delete triggeredAction.triggersWithOverrides.defaults[id]
 
 			TriggeredActions.update(triggeredActionId, {
 				$set: {
-					triggers: triggeredAction.triggers,
+					triggers: triggeredAction.triggersWithOverrides,
 				},
 			})
 
-			setSelectedTrigger(-1)
+			setSelectedTrigger(null)
 		},
 		[triggeredAction, triggeredActionId]
 	)
 
 	const focusTrigger = useCallback(
-		(index: number) => {
+		(id: string) => {
 			if (!triggeredAction) return
-			setSelectedTrigger(index)
+			setSelectedTrigger(id)
 		},
 		[triggeredAction]
 	)
 
-	const closeTrigger = useCallback(() => setSelectedTrigger(-1), [])
+	const closeTrigger = useCallback(() => setSelectedTrigger(null), [])
 
 	const changeTrigger = useCallback(
-		(index: number, newVal: DBBlueprintTrigger) => {
+		(id: string, newVal: DBBlueprintTrigger) => {
 			if (!triggeredAction) return
-			triggeredAction.triggers.splice(index, 1, newVal)
+			triggeredAction.triggersWithOverrides.defaults[id] = newVal
 
 			LAST_UP_SETTING = !!newVal.up
 
 			TriggeredActions.update(triggeredActionId, {
 				$set: {
-					triggers: triggeredAction.triggers,
+					triggers: triggeredAction.triggersWithOverrides,
 				},
 			})
 
-			setSelectedTrigger(-1)
+			setSelectedTrigger(null)
 		},
 		[triggeredAction, triggeredActionId]
 	)
@@ -208,65 +209,66 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 	function addTrigger() {
 		if (!triggeredAction) return
 
-		const index =
-			triggeredAction.triggers.push({
-				type: TriggerType.hotkey,
-				keys: '',
-				up: LAST_UP_SETTING,
-			}) - 1
+		const id = nanoid()
+		triggeredAction.triggersWithOverrides[id] = {
+			type: TriggerType.hotkey,
+			keys: '',
+			up: LAST_UP_SETTING,
+		}
 
 		TriggeredActions.update(triggeredActionId, {
 			$set: {
-				triggers: triggeredAction.triggers,
+				triggers: triggeredAction.triggersWithOverrides,
 			},
 		})
 
-		setSelectedTrigger(index)
-		setSelectedAction(-1)
+		setSelectedTrigger(id)
+		setSelectedAction(null)
 	}
 
 	function addAction() {
 		if (!triggeredAction) return
-		const index =
-			triggeredAction.actions.push({
-				action: PlayoutActions.adlib,
-				filterChain: [],
-			}) - 1
+
+		const id = nanoid()
+		triggeredAction.actionsWithOverrides.defaults[id] = {
+			action: PlayoutActions.adlib,
+			filterChain: [],
+		}
 
 		TriggeredActions.update(triggeredActionId, {
 			$set: {
-				actions: triggeredAction.actions,
+				actions: triggeredAction.actionsWithOverrides,
 			},
 		})
 
-		setSelectedTrigger(-1)
-		setSelectedAction(index)
+		setSelectedTrigger(null)
+		setSelectedAction(id)
 	}
 
-	function removeAction(index: number) {
+	function removeAction(id: string) {
 		if (!triggeredAction) return
-		triggeredAction.actions.splice(index, 1)
+		delete triggeredAction.actionsWithOverrides.defaults[id]
 
 		TriggeredActions.update(triggeredActionId, {
 			$set: {
-				actions: triggeredAction.actions,
+				actions: triggeredAction.actionsWithOverrides,
 			},
 		})
 
-		setSelectedAction(-1)
+		setSelectedAction(null)
 	}
 
-	const closeAction = useCallback(() => setSelectedAction(-1), [])
+	const closeAction = useCallback(() => setSelectedAction(null), [])
 	const focusAction = useCallback(() => props.onFocus && props.onFocus(triggeredActionId), [triggeredActionId])
 
+	const lastTrigger = last(Object.values(triggeredAction?.triggersWithOverrides?.defaults || {}))
 	useEffect(() => {
 		if (!triggeredAction) return
 
-		LAST_UP_SETTING =
-			selectedTrigger >= 0
-				? !!triggeredAction.triggers[selectedTrigger]?.up
-				: triggeredAction.triggers[triggeredAction.triggers.length - 1]?.up ?? LAST_UP_SETTING
-	}, [triggeredAction, triggeredAction?.triggers[triggeredAction.triggers.length - 1]?.up, selectedTrigger])
+		LAST_UP_SETTING = selectedTrigger
+			? !!triggeredAction.triggersWithOverrides.defaults[selectedTrigger]?.up
+			: lastTrigger?.up ?? LAST_UP_SETTING
+	}, [triggeredAction, lastTrigger?.up, selectedTrigger])
 
 	// do not render anything until we get the triggered action from the collection
 	if (!triggeredAction) return null
@@ -292,12 +294,12 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 				<div className="triggered-action-entry__drag-handle locked"></div>
 			)}
 			<div className="triggered-action-entry__triggers">
-				{triggeredAction.triggers.map((trigger, index) => (
+				{Object.entries(triggeredAction.triggersWithOverrides.defaults).map(([id, trigger]) => (
 					<TriggerEditor
-						key={index}
-						index={index}
+						key={id}
+						id={id}
 						trigger={trigger}
-						opened={selectedTrigger === index}
+						opened={selectedTrigger === id}
 						onChangeTrigger={changeTrigger}
 						onFocus={focusTrigger}
 						onClose={closeTrigger}
@@ -306,7 +308,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 				))}
 				<button
 					className={classNames('triggered-action-entry__add-trigger', {
-						force: triggeredAction.triggers.length === 0,
+						force: Object.keys(triggeredAction.triggersWithOverrides.defaults).length === 0,
 					})}
 					onClick={addTrigger}
 				>
@@ -314,21 +316,21 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 				</button>
 			</div>
 			<div className="triggered-action-entry__actions">
-				{triggeredAction.actions.map((action, index) => (
+				{Object.entries(triggeredAction.actionsWithOverrides.defaults).map(([id, action]) => (
 					<ActionEditor
-						key={index}
+						key={id}
 						action={action}
-						index={index}
+						id={id}
 						triggeredAction={triggeredAction}
 						showStyleBase={showStyleBase}
 						onActionFocus={setSelectedAction}
 						onFocus={focusAction}
 						onClose={closeAction}
-						opened={selectedAction === index}
+						opened={selectedAction === id}
 						onRemove={removeAction}
 					/>
 				))}
-				{triggeredAction.actions.length === 0 ? (
+				{Object.keys(triggeredAction.actionsWithOverrides.defaults).length === 0 ? (
 					<div className="triggered-action-entry__action">
 						<button className="triggered-action-entry__action-add clickable" onClick={addAction}>
 							{t('Select Action')}

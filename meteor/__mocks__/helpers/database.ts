@@ -177,8 +177,9 @@ export function setupMockTriggeredActions(
 			_rank: i * 1000,
 			_rundownVersionHash: 'asdf',
 			showStyleBaseId,
-			actions: [
-				{
+			blueprintUniqueId: null,
+			actionsWithOverrides: wrapDefaultObject({
+				'0': {
 					action: PlayoutActions.adlib,
 					filterChain: [
 						{
@@ -193,13 +194,13 @@ export function setupMockTriggeredActions(
 						},
 					],
 				},
-			],
-			triggers: [
-				{
+			}),
+			triggersWithOverrides: wrapDefaultObject({
+				'0': {
 					type: TriggerType.hotkey,
 					keys: `Key${String.fromCharCode(65 + i)}`, // KeyA and so on
 				},
-			],
+			}),
 			...doc,
 		}
 		mocks.push(mock)

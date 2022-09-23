@@ -460,10 +460,16 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		const previewAutoruns: Tracker.Computation[] = []
 
 		triggeredActions.forEach((pair) => {
-			const action = createAction(pair._id, pair.actions, showStyleBase, t, getCurrentContext)
+			const action = createAction(
+				pair._id,
+				Object.values(pair.actionsWithOverrides.defaults),
+				showStyleBase,
+				t,
+				getCurrentContext
+			)
 			if (!props.simulateTriggerBinding) {
 				createdActions.current.set(pair._id, action.listener)
-				pair.triggers.forEach((trigger) => {
+				Object.values(pair.triggersWithOverrides.defaults).forEach((trigger) => {
 					if (trigger.type === TriggerType.hotkey) {
 						bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
 					}
@@ -471,11 +477,15 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			}
 
 			if (pair.name) {
-				const triggers = pair.triggers.filter((trigger) => trigger.type === TriggerType.hotkey)
+				const triggers = Object.values(pair.triggersWithOverrides.defaults).filter(
+					(trigger) => trigger.type === TriggerType.hotkey
+				)
 				const genericTriggerId = protectString(`${pair._id}`)
 				const keys = triggers.map((trigger) => trigger.keys)
 				const finalKeys = keys.map((key) => getFinalKey(key))
-				const adLibOnly = pair.actions.every((actionDescriptor) => actionDescriptor.action === PlayoutActions.adlib)
+				const adLibOnly = Object.values(pair.actionsWithOverrides.defaults).every(
+					(actionDescriptor) => actionDescriptor.action === PlayoutActions.adlib
+				)
 				MountedGenericTriggers.upsert(genericTriggerId, {
 					$set: {
 						_id: genericTriggerId,
@@ -489,7 +499,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				})
 			}
 
-			const hotkeyTriggers = pair.triggers
+			const hotkeyTriggers = Object.values(pair.triggersWithOverrides.defaults)
 				.filter((trigger) => trigger.type === TriggerType.hotkey)
 				.map((trigger) => trigger.keys)
 
@@ -536,7 +546,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				triggeredActions.forEach((pair) => {
 					const actionListener = createdActions.current.get(pair._id)
 					if (actionListener) {
-						pair.triggers.forEach((trigger) => {
+						Object.values(pair.triggersWithOverrides.defaults).forEach((trigger) => {
 							if (trigger.type === TriggerType.hotkey) {
 								unbindHotkey(trigger.keys, actionListener)
 							}

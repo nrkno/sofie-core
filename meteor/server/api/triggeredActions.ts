@@ -17,10 +17,11 @@ import {
 import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from '../../lib/api/triggeredActions'
 import { SystemWriteAccess } from '../security/system'
 import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export async function createTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null,
-	base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>>
+	base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggersWithOverrides' | 'actionsWithOverrides' | 'name'>>
 ): Promise<TriggeredActionId> {
 	const id: TriggeredActionId = getRandomId()
 	await TriggeredActions.insertAsync(
@@ -29,9 +30,10 @@ export async function createTriggeredActions(
 			_rank: base?._rank ?? 0,
 			name: base?.name,
 			showStyleBaseId,
+			blueprintUniqueId: null,
 			_rundownVersionHash: '',
-			actions: base?.actions ?? [],
-			triggers: base?.triggers ?? [],
+			actionsWithOverrides: base?.actionsWithOverrides ?? wrapDefaultObject({}),
+			triggersWithOverrides: base?.triggersWithOverrides ?? wrapDefaultObject({}),
 		})
 	)
 	return id
@@ -77,10 +79,20 @@ PickerPOST.route(
 
 			// set new showStyleBaseId
 			for (let i = 0; i < triggeredActions.length; i++) {
+				const compatObj = triggeredActions[i] as any
+				if ('triggers' in compatObj) {
+					triggeredActions[i].triggersWithOverrides = wrapDefaultObject(compatObj.triggers)
+					delete compatObj.triggers
+				}
+				if ('actions' in compatObj) {
+					triggeredActions[i].actionsWithOverrides = wrapDefaultObject(compatObj.actions)
+					delete compatObj.actions
+				}
+
 				check(triggeredActions[i]._id, String)
 				check(triggeredActions[i].name, Match.Optional(Match.OneOf(String, Object)))
-				check(triggeredActions[i].triggers, Array)
-				check(triggeredActions[i].actions, Array)
+				check(triggeredActions[i].triggersWithOverrides, Object)
+				check(triggeredActions[i].actionsWithOverrides, Object)
 				triggeredActions[i].showStyleBaseId = showStyleBaseId ?? null
 				triggeredActions[i]._rundownVersionHash = ''
 			}
@@ -146,7 +158,7 @@ PickerGET.route(
 async function apiCreateTriggeredActions(
 	context: MethodContext,
 	showStyleBaseId: ShowStyleBaseId | null,
-	base: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>> | null
+	base: Partial<Pick<DBTriggeredActions, '_rank' | 'triggersWithOverrides' | 'actionsWithOverrides' | 'name'>> | null
 ) {
 	check(showStyleBaseId, Match.Maybe(String))
 	check(base, Match.Maybe(Object))
@@ -177,7 +189,9 @@ class ServerTriggeredActionsAPI
 {
 	async createTriggeredActions(
 		showStyleBaseId: ShowStyleBaseId | null,
-		base: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>> | null
+		base: Partial<
+			Pick<DBTriggeredActions, '_rank' | 'triggersWithOverrides' | 'actionsWithOverrides' | 'name'>
+		> | null
 	) {
 		return apiCreateTriggeredActions(this, showStyleBaseId, base)
 	}

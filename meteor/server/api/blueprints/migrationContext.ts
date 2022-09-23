@@ -8,8 +8,8 @@ import {
 	unprotectString,
 	objectPathGet,
 	objectPathSet,
-	omit,
 	clone,
+	Complete,
 } from '../../../lib/lib'
 import { Studios, Studio, DBStudio } from '../../../lib/collections/Studios'
 import {
@@ -48,6 +48,18 @@ import { Match } from 'meteor/check'
 import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
+function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj): IBlueprintTriggeredActions {
+	const obj: Complete<IBlueprintTriggeredActions> = {
+		_id: unprotectString(triggeredAction._id),
+		_rank: triggeredAction._rank,
+		name: triggeredAction.name,
+		triggers: clone(triggeredAction.triggersWithOverrides.defaults),
+		actions: clone(triggeredAction.actionsWithOverrides.defaults),
+	}
+
+	return obj
+}
+
 class AbstractMigrationContextWithTriggeredActions {
 	protected showStyleBaseId: ShowStyleBaseId | null = null
 	getTriggeredActionId(triggeredActionId: string): string {
@@ -59,7 +71,7 @@ class AbstractMigrationContextWithTriggeredActions {
 	getAllTriggeredActions(): IBlueprintTriggeredActions[] {
 		return TriggeredActions.find({
 			showStyleBaseId: this.showStyleBaseId,
-		}).map((triggeredActions) => unprotectObject(triggeredActions))
+		}).map(convertTriggeredActionToBlueprints)
 	}
 	private getTriggeredActionFromDb(triggeredActionId: string): TriggeredActionsObj | undefined {
 		const triggeredAction = TriggeredActions.findOne({
@@ -80,23 +92,34 @@ class AbstractMigrationContextWithTriggeredActions {
 			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionId}" is invalid`)
 		}
 
-		return unprotectObject(this.getTriggeredActionFromDb(triggeredActionId))
+		const obj = this.getTriggeredActionFromDb(triggeredActionId)
+		return obj ? convertTriggeredActionToBlueprints(obj) : undefined
 	}
 	setTriggeredAction(triggeredActions: IBlueprintTriggeredActions) {
 		check(triggeredActions, Object)
 		check(triggeredActions._id, String)
 		check(triggeredActions._rank, Number)
-		check(triggeredActions.actions, Array)
-		check(triggeredActions.triggers, Array)
+		check(triggeredActions.actions, Object)
+		check(triggeredActions.triggers, Object)
 		check(triggeredActions.name, Match.OneOf(Match.Optional(Object), Match.Optional(String)))
 		if (!triggeredActions) {
 			throw new Meteor.Error(500, `Triggered Actions object is invalid`)
 		}
 
+		const newObj: Omit<TriggeredActionsObj, '_id' | '_rundownVersionHash' | 'showStyleBaseId'> = {
+			// _rundownVersionHash: '',
+			// _id: this.getProtectedTriggeredActionId(triggeredActions._id),
+			_rank: triggeredActions._rank,
+			name: triggeredActions.name,
+			triggersWithOverrides: wrapDefaultObject(triggeredActions.triggers),
+			actionsWithOverrides: wrapDefaultObject(triggeredActions.actions),
+			blueprintUniqueId: triggeredActions._id,
+		}
+
 		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActions._id)
 		if (!currentTriggeredAction) {
 			TriggeredActions.insert({
-				...triggeredActions,
+				...newObj,
 				_rundownVersionHash: '',
 				showStyleBaseId: this.showStyleBaseId,
 				_id: this.getProtectedTriggeredActionId(triggeredActions._id),
@@ -107,9 +130,7 @@ class AbstractMigrationContextWithTriggeredActions {
 					_id: currentTriggeredAction._id,
 				},
 				{
-					$set: {
-						...omit(triggeredActions, '_id'),
-					},
+					$set: newObj,
 				}
 			)
 		}
