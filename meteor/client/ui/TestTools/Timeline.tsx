@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { deserializeTimelineBlob, RoutedTimeline, TimelineHash } from '../../../lib/collections/Timeline'
-import { applyToArray, normalizeArray, protectString } from '../../../lib/lib'
+import { applyToArray, clone, normalizeArray, protectString } from '../../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import {
 	TimelineState,
@@ -369,7 +369,7 @@ function TimelineChangesLog({ resolvedTl, timelineHash }: TimelineChangesLogProp
 					}
 				} else if (newObj && oldObj) {
 					const oldInstancesMap = normalizeArray(oldObj.resolved.instances, 'id')
-					const newInstancesMap = normalizeArray(oldObj.resolved.instances, 'id')
+					const newInstancesMap = normalizeArray(newObj.resolved.instances, 'id')
 
 					const instanceKeys = Array.from(
 						new Set([...Object.keys(oldInstancesMap), ...Object.keys(newInstancesMap)])
@@ -403,12 +403,10 @@ function TimelineChangesLog({ resolvedTl, timelineHash }: TimelineChangesLogProp
 					// Ignore object that is not present in either
 				}
 			}
-
-			// TODO - do diff
 		}
 
 		if (newEntries.length) setEntries((old) => [...old, ...newEntries])
-		setLastResolvedTl(resolvedTl || null)
+		setLastResolvedTl(clone(resolvedTl) || null)
 	}, [resolvedTl])
 
 	const doClear = useCallback(() => {
