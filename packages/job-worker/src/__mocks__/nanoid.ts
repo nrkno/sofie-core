@@ -18,3 +18,7 @@ export function resetRandomId(): void {
 export function randomString(): string {
 	return nanoid()
 }
+
+export function customAlphabet(): () => string {
+	return nanoid
+}
