@@ -64,8 +64,9 @@
 	display: block;
 	visibility: visible;
 	font-size: 16px;
+	letter-spacing: 0.03em;
 	line-height: 1.5;
-	opacity: 0.9;
+	opacity: 1;
 	float: left;
 	pointer-events: none;
 }
@@ -99,13 +100,13 @@
 }
 
 .rc-tooltip-inner {
-	background: #333333;
-	color: #ffffff;
+	background: #ccc;
+	color: #000;
 	display: inline-block;
-	padding: 8px 8px 6px;
+	padding: 4px 8px 4px 8px;
 	position: relative;
 	pointer-events: none;
-	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.25);
+	border-radius: 3px;
 }
 
 .rc-tooltip-arrow {
@@ -122,7 +123,7 @@
 	bottom: 4px;
 	margin-left: -5px;
 	border-width: 5px 5px 0;
-	border-top-color: #333333;
+	border-top-color: #ccc;
 }
 
 .rc-tooltip-placement-top .rc-tooltip-arrow {
@@ -143,7 +144,7 @@
 	left: 4px;
 	margin-top: -5px;
 	border-width: 5px 5px 5px 0;
-	border-right-color: #333333;
+	border-right-color: #ccc;
 }
 
 .rc-tooltip-placement-right .rc-tooltip-arrow {
@@ -165,7 +166,7 @@
 	right: 4px;
 	margin-top: -5px;
 	border-width: 5px 0 5px 5px;
-	border-left-color: #333333;
+	border-left-color: #ccc;
 }
 
 .rc-tooltip-placement-left .rc-tooltip-arrow {
@@ -187,7 +188,7 @@
 	top: 4px;
 	margin-left: -5px;
 	border-width: 0 5px 5px;
-	border-bottom-color: #333333;
+	border-bottom-color: #ccc;
 }
 
 .rc-tooltip-placement-bottom .rc-tooltip-arrow {

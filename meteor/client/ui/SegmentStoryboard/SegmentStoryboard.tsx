@@ -7,7 +7,6 @@ import { IContextMenuContext } from '../RundownView'
 import { PartUi, PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
-import { Timeline } from '../../lib/ui/icons/segment'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
@@ -34,8 +33,9 @@ import { OptionalVelocityComponent } from '../../lib/utilComponents'
 import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-
-export const StudioContext = React.createContext<Studio | undefined>(undefined)
+// TODO: Remove feature-flag and integrate with regular SegmentViewMode switch button
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 
 interface IProps {
 	id: string
@@ -159,10 +159,6 @@ export const SegmentStoryboard = React.memo(
 				`segment.${props.segment._id}.useTimeOfDayCountdowns`,
 				newUseTimeOfDayCountdowns
 			)
-		}
-
-		const onSwitchViewMode = () => {
-			props.onSwitchViewMode(SegmentViewMode.Timeline)
 		}
 
 		const onClickPartIdent = (partId: PartId) => {
@@ -559,178 +555,170 @@ export const SegmentStoryboard = React.memo(
 				aria-labelledby={`segment-name-${props.segment._id}`}
 				aria-roledescription={t('segment')}
 			>
-				<StudioContext.Provider value={props.studio}>
-					<ContextMenuTrigger
-						id="segment-timeline-context-menu"
-						collect={getSegmentContext}
-						attributes={{
-							className: 'segment-timeline__title',
-						}}
-						holdToDisplay={contextMenuHoldToDisplayTime()}
-						renderTag="div"
+				<ContextMenuTrigger
+					id="segment-timeline-context-menu"
+					collect={getSegmentContext}
+					attributes={{
+						className: 'segment-timeline__title',
+					}}
+					holdToDisplay={contextMenuHoldToDisplayTime()}
+					renderTag="div"
+				>
+					<h2
+						id={`segment-name-${props.segment._id}`}
+						className={'segment-timeline__title__label' + (props.segment.identifier ? ' identifier' : '')}
+						data-identifier={props.segment.identifier}
 					>
-						<h2
-							id={`segment-name-${props.segment._id}`}
-							className={'segment-timeline__title__label' + (props.segment.identifier ? ' identifier' : '')}
-							data-identifier={props.segment.identifier}
-						>
-							{props.segment.name}
-						</h2>
-						{(criticalNotes > 0 || warningNotes > 0) && (
-							<div className="segment-timeline__title__notes">
-								{criticalNotes > 0 && (
-									<div
-										className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
-										onClick={() =>
-											props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.ERROR)
-										}
-										aria-label={t('Critical problems')}
-									>
-										<CriticalIconSmall />
-										<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
-									</div>
-								)}
-								{warningNotes > 0 && (
-									<div
-										className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
-										onClick={() =>
-											props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.WARNING)
-										}
-										aria-label={t('Warnings')}
-									>
-										<WarningIconSmall />
-										<div className="segment-timeline__title__notes__count">{warningNotes}</div>
-									</div>
-								)}
-							</div>
-						)}
-						{identifiers.length > 0 && (
-							<div className="segment-timeline__part-identifiers">
-								{identifiers.map((ident) => (
-									<div
-										className="segment-timeline__part-identifiers__identifier"
-										key={ident.partId + ''}
-										onClick={() => onClickPartIdent(ident.partId)}
-									>
-										{ident.ident}
-									</div>
-								))}
-							</div>
-						)}
-					</ContextMenuTrigger>
-					<div className="segment-timeline__duration" tabIndex={0}>
-						{props.playlist &&
-							props.parts &&
-							props.parts.length > 0 &&
-							(!props.hasAlreadyPlayed || props.isNextSegment || props.isLiveSegment) && (
-								<SegmentDuration
-									segmentId={props.segment._id}
-									parts={props.parts}
-									label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
-									fixed={props.fixedSegmentDuration}
-								/>
+						{props.segment.name}
+					</h2>
+					{(criticalNotes > 0 || warningNotes > 0) && (
+						<div className="segment-timeline__title__notes">
+							{criticalNotes > 0 && (
+								<div
+									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
+									onClick={() =>
+										props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.ERROR)
+									}
+									aria-label={t('Critical problems')}
+								>
+									<CriticalIconSmall />
+									<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
+								</div>
 							)}
-					</div>
-					<div className="segment-timeline__timeUntil" onClick={onTimeUntilClick}>
-						{props.playlist && props.parts && props.parts.length > 0 && props.showCountdownToSegment && (
-							<PartCountdown
-								partId={countdownToPartId}
-								hideOnZero={!useTimeOfDayCountdowns}
-								useWallClock={useTimeOfDayCountdowns}
-								playlist={props.playlist}
-								label={
-									useTimeOfDayCountdowns ? (
-										<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
-									) : (
-										<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
-									)
-								}
-							/>
-						)}
-						{props.studio.settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
-							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
-						)}
-					</div>
-					<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
-					<div className="segment-timeline__source-layers" role="tree" aria-label={t('Sources')}>
-						{Object.values(props.segment.outputLayers)
-							.filter((outputGroup) => outputGroup.used)
-							.map((outputGroup) => (
-								<div className="segment-timeline__output-group" key={outputGroup._id}>
-									{filterSecondarySourceLayers(outputGroup.sourceLayers).map((sourceLayer) =>
-										sourceLayer.pieces.length > 0 ? (
-											<div className="segment-timeline__source-layer" key={sourceLayer._id} role="treeitem">
-												{sourceLayer.name}
-											</div>
-										) : null
-									)}
+							{warningNotes > 0 && (
+								<div
+									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
+									onClick={() =>
+										props.onHeaderNoteClick && props.onHeaderNoteClick(props.segment._id, NoteSeverity.WARNING)
+									}
+									aria-label={t('Warnings')}
+								>
+									<WarningIconSmall />
+									<div className="segment-timeline__title__notes__count">{warningNotes}</div>
+								</div>
+							)}
+						</div>
+					)}
+					{identifiers.length > 0 && (
+						<div className="segment-timeline__part-identifiers">
+							{identifiers.map((ident) => (
+								<div
+									className="segment-timeline__part-identifiers__identifier"
+									key={ident.partId + ''}
+									onClick={() => onClickPartIdent(ident.partId)}
+								>
+									{ident.ident}
 								</div>
 							))}
-					</div>
-					<div className="segment-storyboard__storyboard-view-controls">
-						<button
-							className="segment-storyboard__storyboard-view-controls__button segment-storyboard__storyboard-view-controls__button--switch-mode segment-storyboard__storyboard-view-controls--switch-mode--timeline"
-							onClick={onSwitchViewMode}
-							title={t('Switch to Timeline mode')}
-						>
-							<Timeline />
-						</button>
-					</div>
-					<div className="segment-storyboard__part-list__container" ref={listRef} onPointerDown={onListPointerDown}>
-						<OptionalVelocityComponent
-							animation={{
-								translateX: `-${scrollLeft}px`,
-							}}
-							duration={100}
-							shouldAnimate={animateScrollLeft}
-						>
-							<div
-								className={classNames('segment-storyboard__part-list', {
-									loading: !props.subscriptionsReady /*  */,
-								})}
-								style={!animateScrollLeft ? { transform: `translateX(-${scrollLeft}px)` } : undefined}
-							>
-								{parts}
-								<div
-									className={classNames(
-										'segment-storyboard__part-list',
-										'segment-storyboard__part-list--squished-parts',
-										{
-											hover: squishedHover !== null,
-										}
-									)}
-									style={{
-										minWidth: `${spaceLeft}px`,
-									}}
-									onPointerEnter={onSquishedPointerEnter}
-									onPointerLeave={onSquishedPointerLeave}
-									onPointerMove={onSquishedPointerMove}
-								>
-									{squishedParts}
-								</div>
-							</div>
-						</OptionalVelocityComponent>
-						<div
-							className="segment-storyboard__history-shade"
-							style={{
-								opacity: 1 - Math.min(1, Math.max(0, (PART_SHADE_WIDTH - scrollLeft) / PART_SHADE_WIDTH)),
-							}}
-						></div>
-						<div
-							className={classNames('segment-timeline__zoom-area', {
-								hidden: scrollLeft === 0 && !props.isLiveSegment,
-							})}
-						>
-							<SegmentScrollbar
-								scrollLeft={scrollLeft}
-								maxScrollLeft={maxScrollLeft}
-								onScrollLeftChange={onScrollbarChange}
-								onScrollStart={onScrollbarScrollStart}
-								onScrollEnd={onScrollbarScrollEnd}
-							/>
 						</div>
+					)}
+				</ContextMenuTrigger>
+				<div className="segment-timeline__duration" tabIndex={0}>
+					{props.playlist &&
+						props.parts &&
+						props.parts.length > 0 &&
+						(!props.hasAlreadyPlayed || props.isNextSegment || props.isLiveSegment) && (
+							<SegmentDuration
+								segmentId={props.segment._id}
+								parts={props.parts}
+								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
+								fixed={props.fixedSegmentDuration}
+							/>
+						)}
+				</div>
+				<div className="segment-timeline__timeUntil" onClick={onTimeUntilClick}>
+					{props.playlist && props.parts && props.parts.length > 0 && props.showCountdownToSegment && (
+						<PartCountdown
+							partId={countdownToPartId}
+							hideOnZero={!useTimeOfDayCountdowns}
+							useWallClock={useTimeOfDayCountdowns}
+							playlist={props.playlist}
+							label={
+								useTimeOfDayCountdowns ? (
+									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+								) : (
+									<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+								)
+							}
+						/>
+					)}
+					{props.studio.settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
+						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
+					)}
+				</div>
+				<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
+				<div className="segment-timeline__source-layers" role="tree" aria-label={t('Sources')}>
+					{Object.values(props.segment.outputLayers)
+						.filter((outputGroup) => outputGroup.used)
+						.map((outputGroup) => (
+							<div className="segment-timeline__output-group" key={outputGroup._id}>
+								{filterSecondarySourceLayers(outputGroup.sourceLayers).map((sourceLayer) =>
+									sourceLayer.pieces.length > 0 ? (
+										<div className="segment-timeline__source-layer" key={sourceLayer._id} role="treeitem">
+											{sourceLayer.name}
+										</div>
+									) : null
+								)}
+							</div>
+						))}
+				</div>
+				<ErrorBoundary>
+					<SwitchViewModeButton currentMode={SegmentViewMode.Storyboard} onSwitchViewMode={props.onSwitchViewMode} />
+				</ErrorBoundary>
+				<div className="segment-storyboard__part-list__container" ref={listRef} onPointerDown={onListPointerDown}>
+					<OptionalVelocityComponent
+						animation={{
+							translateX: `-${scrollLeft}px`,
+						}}
+						duration={100}
+						shouldAnimate={animateScrollLeft}
+					>
+						<div
+							className={classNames('segment-storyboard__part-list', {
+								loading: !props.subscriptionsReady /*  */,
+							})}
+							style={!animateScrollLeft ? { transform: `translateX(-${scrollLeft}px)` } : undefined}
+						>
+							{parts}
+							<div
+								className={classNames(
+									'segment-storyboard__part-list',
+									'segment-storyboard__part-list--squished-parts',
+									{
+										hover: squishedHover !== null,
+									}
+								)}
+								style={{
+									minWidth: `${spaceLeft}px`,
+								}}
+								onPointerEnter={onSquishedPointerEnter}
+								onPointerLeave={onSquishedPointerLeave}
+								onPointerMove={onSquishedPointerMove}
+							>
+								{squishedParts}
+							</div>
+						</div>
+					</OptionalVelocityComponent>
+					<div
+						className="segment-storyboard__history-shade"
+						style={{
+							opacity: 1 - Math.min(1, Math.max(0, (PART_SHADE_WIDTH - scrollLeft) / PART_SHADE_WIDTH)),
+						}}
+					></div>
+					<div
+						className={classNames('segment-timeline__zoom-area', {
+							hidden: scrollLeft === 0 && !props.isLiveSegment,
+						})}
+					>
+						<SegmentScrollbar
+							scrollLeft={scrollLeft}
+							maxScrollLeft={maxScrollLeft}
+							onScrollLeftChange={onScrollbarChange}
+							onScrollStart={onScrollbarScrollStart}
+							onScrollEnd={onScrollbarScrollEnd}
+						/>
 					</div>
-				</StudioContext.Provider>
+				</div>
 			</div>
 		)
 	})

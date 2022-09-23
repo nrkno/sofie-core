@@ -405,6 +405,7 @@ export namespace RundownLayoutsAPI {
 			nextInCurrentPart: false,
 			oneNextPerSourceLayer: false,
 			hideDuplicates: false,
+			disableHoverInspector: false,
 		}
 	}
 }

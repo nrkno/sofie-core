@@ -7,7 +7,11 @@ import { Timecode } from 'timecode'
 import { iterateDeeply, iterateDeeplyEnum, Time } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings } from './dataModel/Studio'
 import { UserError } from './error'
-import { nanoid } from 'nanoid'
+import { customAlphabet as createNanoid } from 'nanoid'
+
+/** Limited characterset to use for id generation */
+const UNMISTAKABLE_CHARS = '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghijkmnopqrstuvwxyz'
+const nanoid = createNanoid(UNMISTAKABLE_CHARS, 17)
 
 export * from './hash'
 

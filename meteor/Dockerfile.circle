@@ -1,5 +1,5 @@
 # DEPLOY IMAGE
-FROM node:14.19-slim
+FROM node:14-alpine
 COPY meteor/bundle /opt/core
 COPY meteor/docker-entrypoint.sh /opt
 WORKDIR /opt/core/
