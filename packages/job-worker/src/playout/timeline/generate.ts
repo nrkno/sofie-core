@@ -44,10 +44,9 @@ import { endTrace, sendTrace, startTrace } from '@sofie-automation/corelib/dist/
 import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/context/lib'
-import { buildTimelineObjsForRundown } from './rundown'
+import { buildTimelineObjsForRundown, RundownTimelineTimingInfo } from './rundown'
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
-import { getPartGroupId } from '@sofie-automation/corelib/dist/playout/ids'
 import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
@@ -144,73 +143,125 @@ function deNowifyMultiGatewayTimeline(
 	context: JobContext,
 	cache: CacheForPlayout,
 	timelineObjs: TimelineObjRundown[],
-	timeOffsetIntoPart: Time | undefined
+	timeOffsetIntoPart: Time | undefined,
+	timingInfo: RundownTimelineTimingInfo | undefined
 ): void {
-	const timelineObjsMap = normalizeArray(timelineObjs, 'id')
+	if (!timingInfo) return
 
 	const nowOffsetLatency = calculateNowOffsetLatency(context, cache, timeOffsetIntoPart)
 	const targetNowTime = getCurrentTime() + (nowOffsetLatency ?? 0)
 
 	// Replace `start: 'now'` in currentPartInstance on timeline
-	const { currentPartInstance, previousPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 	if (!currentPartInstance) return
 
-	const currentPartGroupId = getPartGroupId(currentPartInstance)
+	let currentPartGroupStartTime: number
+	let currentPartGroupEndTime: number | undefined
 	if (!currentPartInstance.timings?.plannedStartedPlayback) {
 		// Looks like the part is just being taken
-		cache.PartInstances.update(currentPartInstance._id, (instance) => {
-			if (!instance.timings) instance.timings = {}
-			instance.timings.plannedStartedPlayback = targetNowTime
-			return instance
-		})
-
-		// Also mark the previous as ended
-		if (
-			previousPartInstance &&
-			!previousPartInstance.timings?.plannedStoppedPlayback &&
-			previousPartInstance.timings?.plannedStartedPlayback
-		) {
-			cache.PartInstances.update(previousPartInstance._id, (instance) => {
-				if (!instance.timings) instance.timings = {}
-				instance.timings.plannedStoppedPlayback = targetNowTime
-				return instance
-			})
-		}
+		cache.PartInstances.update(
+			currentPartInstance._id,
+			(instance) => {
+				if (instance.timings?.plannedStartedPlayback !== targetNowTime) {
+					if (!instance.timings) instance.timings = {}
+					instance.timings.plannedStartedPlayback = targetNowTime
+					return instance
+				} else {
+					return false
+				}
+			},
+			true
+		)
 
 		// Reflect this in the timeline
-		const currentPartGroup = timelineObjsMap[currentPartGroupId]
-		if (currentPartGroup) {
-			applyToArray(currentPartGroup.enable, (val) => {
-				val.start = targetNowTime
-			})
-		} else {
-			logger.error(`Unable to find currentPartInstance group "${currentPartGroupId}" on timeline`)
-		}
+		timingInfo.currentPartGroup.enable.start = targetNowTime
+		currentPartGroupStartTime = targetNowTime
+	} else {
+		currentPartGroupStartTime = currentPartInstance.timings.plannedStartedPlayback
+	}
+
+	// Also mark the previous as ended
+	if (cache.Playlist.doc.previousPartInstanceId) {
+		const previousPartEndTime = currentPartGroupStartTime + (timingInfo.previousPartOverlap ?? 0)
+		cache.PartInstances.update(
+			cache.Playlist.doc.previousPartInstanceId,
+			(instance) => {
+				if (
+					instance.timings?.plannedStartedPlayback &&
+					instance.timings?.plannedStoppedPlayback !== previousPartEndTime
+				) {
+					if (!instance.timings) instance.timings = {}
+					instance.timings.plannedStoppedPlayback = previousPartEndTime
+					return instance
+				} else {
+					return false
+				}
+			},
+			true
+		)
+	}
+
+	if (timingInfo.currentPartDuration)
+		currentPartGroupEndTime = currentPartGroupStartTime + timingInfo.currentPartDuration
+
+	let nextPartGroupStartTime: number | undefined
+	if (nextPartInstance && timingInfo.nextPartGroup && currentPartGroupEndTime) {
+		// Auto-next has been setup, make sure the start of the nexted group is planned and correct
+
+		// Calculate the new start time for the auto-nexted group
+		nextPartGroupStartTime = currentPartGroupEndTime - (timingInfo.nextPartOverlap ?? 0)
+
+		timingInfo.nextPartGroup.enable.start = nextPartGroupStartTime
+
+		cache.PartInstances.update(
+			nextPartInstance._id,
+			(instance) => {
+				if (instance.timings?.plannedStartedPlayback !== nextPartGroupStartTime) {
+					if (!instance.timings) instance.timings = {}
+					instance.timings.plannedStartedPlayback = nextPartGroupStartTime
+					delete instance.timings.plannedStoppedPlayback
+					return instance
+				} else {
+					return false
+				}
+			},
+			true
+		)
+	} else if (nextPartInstance) {
+		// Make sure the next partInstance doesnt have a start time
+		cache.PartInstances.update(
+			nextPartInstance._id,
+			(instance) => {
+				if (instance.timings?.plannedStartedPlayback) {
+					delete instance.timings.plannedStartedPlayback
+					return instance
+				} else {
+					return false
+				}
+			},
+			true
+		)
 	}
 
 	// The relative time for 'now' to be resolved to, inside of the part group
-	const partPlannedStart = currentPartInstance.timings?.plannedStartedPlayback ?? targetNowTime
-	const nowInPart = targetNowTime - partPlannedStart
+	const nowInPart = targetNowTime - currentPartGroupStartTime
 
 	// Ensure any pieces in the currentPartInstance have their now replaced
-	cache.PieceInstances.update(
-		(p) => p.partInstanceId === currentPartInstance._id,
-		(p) => {
-			if (p.piece.enable.start === 'now') {
-				p.piece.enable.start = nowInPart
-				return p
-			}
-
-			return false
+	cache.PieceInstances.updateAll((p) => {
+		if (p.partInstanceId === currentPartInstance._id && p.piece.enable.start === 'now') {
+			p.piece.enable.start = nowInPart
+			return p
 		}
-	)
+
+		return false
+	}, true)
 
 	// Pieces without concrete times will add some special 'now' objects to the timeline that they can reference
 	// Make sure that the all have concrete times attached
 	for (const obj of timelineObjs) {
 		const objMetadata = obj.metaData as Partial<PieceTimelineMetadata> | undefined
 		if (objMetadata?.isPieceTimeline && !Array.isArray(obj.enable) && obj.enable.start === 'now') {
-			if (obj.inGroup === currentPartGroupId) {
+			if (obj.inGroup === timingInfo.currentPartGroup.id) {
 				obj.enable = { start: nowInPart }
 			} else if (!obj.inGroup) {
 				obj.enable = { start: targetNowTime }
@@ -218,36 +269,35 @@ function deNowifyMultiGatewayTimeline(
 		}
 	}
 
-	const partPlannedStarts = new Map<PartInstanceId, Time>()
-	partPlannedStarts.set(currentPartInstance._id, partPlannedStart)
-	if (nextPartInstance && nextPartInstance.timings?.plannedStartedPlayback)
-		partPlannedStarts.set(nextPartInstance._id, nextPartInstance.timings.plannedStartedPlayback)
+	const partPlannedStarts = new Map<PartInstanceId, [Time, Time | undefined]>()
+	partPlannedStarts.set(currentPartInstance._id, [currentPartGroupStartTime, currentPartGroupEndTime])
+	if (cache.Playlist.doc.nextPartInstanceId && nextPartGroupStartTime)
+		partPlannedStarts.set(cache.Playlist.doc.nextPartInstanceId, [nextPartGroupStartTime, undefined])
 
 	// Ensure any pieces have up to date timings
-	cache.PieceInstances.update(
-		(p) => partPlannedStarts.has(p.partInstanceId),
-		(p) => {
-			let changed = false
+	cache.PieceInstances.updateAll((p) => {
+		let changed = false
 
-			const partPlannedStart = partPlannedStarts.get(p.partInstanceId)
-			if (partPlannedStart && typeof p.piece.enable.start === 'number') {
-				const plannedStart = partPlannedStart + p.piece.enable.start
-				if (p.plannedStartedPlayback !== plannedStart) {
-					p.plannedStartedPlayback = plannedStart
-					changed = true
-				}
-				const plannedEnd =
-					p.userDuration?.end ??
-					(p.piece.enable.duration ? plannedStart + p.piece.enable.duration : undefined)
-				if (p.plannedStoppedPlayback !== plannedEnd) {
-					p.plannedStoppedPlayback = plannedEnd
-					changed = true
-				}
+		const rawTimings = partPlannedStarts.get(p.partInstanceId)
+		if (rawTimings && typeof p.piece.enable.start === 'number') {
+			const [partPlannedStart, partPlannedStop] = rawTimings
+
+			const plannedStart = partPlannedStart + p.piece.enable.start
+			if (p.plannedStartedPlayback !== plannedStart) {
+				p.plannedStartedPlayback = plannedStart
+				changed = true
 			}
-
-			return changed ? p : false
+			const plannedEnd =
+				p.userDuration?.end ??
+				(p.piece.enable.duration ? plannedStart + p.piece.enable.duration : partPlannedStop)
+			if (p.plannedStoppedPlayback !== plannedEnd) {
+				p.plannedStoppedPlayback = plannedEnd
+				changed = true
+			}
 		}
-	)
+
+		return changed ? p : false
+	}, true)
 }
 
 export async function updateTimeline(
@@ -262,14 +312,14 @@ export async function updateTimeline(
 		throw new Error(`RundownPlaylist ("${cache.Playlist.doc._id}") is not active")`)
 	}
 
-	const { versions, objs: timelineObjs } = await getTimelineRundown(context, cache)
+	const { versions, objs: timelineObjs, timingInfo } = await getTimelineRundown(context, cache)
 
 	flattenAndProcessTimelineObjects(context, timelineObjs)
 
 	preserveOrReplaceNowTimesInObjects(cache, timelineObjs)
 
 	if (cache.isMultiGatewayMode) {
-		deNowifyMultiGatewayTimeline(context, cache, timelineObjs, timeOffsetIntoPart)
+		deNowifyMultiGatewayTimeline(context, cache, timelineObjs, timeOffsetIntoPart, timingInfo)
 
 		logAnyRemainingNowTimes(context, timelineObjs)
 	}
@@ -425,7 +475,11 @@ function getPartInstanceTimelineInfo(
 async function getTimelineRundown(
 	context: JobContext,
 	cache: CacheForPlayout
-): Promise<{ objs: Array<TimelineObjRundown>; versions: TimelineCompleteGenerationVersions }> {
+): Promise<{
+	objs: Array<TimelineObjRundown>
+	versions: TimelineCompleteGenerationVersions
+	timingInfo: RundownTimelineTimingInfo | undefined
+}> {
 	const span = context.startSpan('getTimelineRundown')
 	try {
 		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObjExt> = []
@@ -464,9 +518,9 @@ async function getTimelineRundown(
 				logger.warn(`Missing Baseline objects for Rundown "${activeRundown._id}"`)
 			}
 
-			timelineObjs = timelineObjs.concat(
-				buildTimelineObjsForRundown(context, cache, activeRundown, partInstancesInfo)
-			)
+			const rundownTimelineResult = buildTimelineObjsForRundown(context, cache, activeRundown, partInstancesInfo)
+
+			timelineObjs = timelineObjs.concat(rundownTimelineResult.timeline)
 			timelineObjs = timelineObjs.concat(await pLookaheadObjs)
 
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
@@ -528,6 +582,7 @@ async function getTimelineRundown(
 					}
 				}),
 				versions: timelineVersions ?? generateTimelineVersions(context.studio, undefined, '-'),
+				timingInfo: rundownTimelineResult.timingInfo,
 			}
 		} else {
 			if (span) span.end()
@@ -535,6 +590,7 @@ async function getTimelineRundown(
 			return {
 				objs: [],
 				versions: generateTimelineVersions(context.studio, undefined, '-'),
+				timingInfo: undefined,
 			}
 		}
 	} catch (e) {
@@ -543,6 +599,7 @@ async function getTimelineRundown(
 		return {
 			objs: [],
 			versions: generateTimelineVersions(context.studio, undefined, '-'),
+			timingInfo: undefined,
 		}
 	}
 }

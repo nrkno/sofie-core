@@ -35,12 +35,27 @@ import { getPieceEnableInsidePart, transformPieceGroupAndObjects } from './piece
 import { logger } from '../../logging'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 
+export interface RundownTimelineTimingInfo {
+	currentPartGroup: TimelineObjGroupPart
+	currentPartDuration: number | undefined
+
+	previousPartOverlap?: number
+
+	nextPartGroup?: TimelineObjGroupPart
+	nextPartOverlap?: number
+}
+
+export interface RundownTimelineResult {
+	timeline: (TimelineObjRundown & OnGenerateTimelineObjExt)[]
+	timingInfo: RundownTimelineTimingInfo | undefined
+}
+
 export function buildTimelineObjsForRundown(
 	context: JobContext,
 	cache: ReadOnlyCache<CacheForPlayout>,
 	_activeRundown: DBRundown,
 	partInstancesInfo: SelectedPartInstancesTimelineInfo
-): (TimelineObjRundown & OnGenerateTimelineObjExt)[] {
+): RundownTimelineResult {
 	const span = context.startSpan('buildTimelineObjsForRundown')
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
@@ -88,6 +103,8 @@ export function buildTimelineObjsForRundown(
 		// maybe at the end of the show
 		logger.info(`No next part and no current part set on RundownPlaylist "${activePlaylist._id}".`)
 	}
+
+	let timingInfo: RundownTimelineTimingInfo | undefined
 
 	// Currently playing:
 	if (partInstancesInfo.current) {
@@ -139,6 +156,11 @@ export function buildTimelineObjsForRundown(
 		}
 		const currentPartGroup = createPartGroup(partInstancesInfo.current.partInstance, currentPartEnable)
 
+		timingInfo = {
+			currentPartGroup,
+			currentPartDuration: currentPartEnable.duration,
+		}
+
 		// Start generating objects
 		if (partInstancesInfo.previous) {
 			timelineObjs.push(
@@ -147,7 +169,7 @@ export function buildTimelineObjsForRundown(
 					activePlaylist,
 					partInstancesInfo.previous,
 					currentInfinitePieceIds,
-					currentPartGroup.id,
+					timingInfo,
 					currentPartInstanceTimings
 				)
 			)
@@ -200,14 +222,17 @@ export function buildTimelineObjsForRundown(
 					activePlaylist,
 					partInstancesInfo.current,
 					partInstancesInfo.next,
-					currentPartGroup
+					timingInfo
 				)
 			)
 		}
 	}
 
 	if (span) span.end()
-	return timelineObjs
+	return {
+		timeline: timelineObjs,
+		timingInfo,
+	}
 }
 
 function generateCurrentInfinitePieceObjects(
@@ -331,17 +356,18 @@ function generatePreviousPartInstanceObjects(
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	previousPartInfo: SelectedPartInstanceTimelineInfo,
 	currentInfinitePieceIds: Set<PieceInstanceInfinite['infinitePieceId']>,
-	currentPartGroupId: string,
+	timingInfo: RundownTimelineTimingInfo,
 	currentPartInstanceTimings: PartCalculatedTimings
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const partStartedPlayback = previousPartInfo.partInstance.timings?.plannedStartedPlayback
 	if (partStartedPlayback) {
 		// The previous part should continue for a while into the following part
 		const prevPartOverlapDuration = currentPartInstanceTimings.fromPartRemaining
+		timingInfo.previousPartOverlap = prevPartOverlapDuration
 
 		const previousPartGroup = createPartGroup(previousPartInfo.partInstance, {
 			start: partStartedPlayback,
-			end: `#${currentPartGroupId}.start + ${prevPartOverlapDuration}`,
+			end: `#${timingInfo.currentPartGroup.id}.start + ${prevPartOverlapDuration}`,
 		})
 		previousPartGroup.priority = -1
 
@@ -376,7 +402,7 @@ function generateNextPartInstanceObjects(
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	currentPartInfo: SelectedPartInstanceTimelineInfo,
 	nextPartInfo: SelectedPartInstanceTimelineInfo,
-	currentPartGroup: TimelineObjGroupPart
+	timingInfo: RundownTimelineTimingInfo
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const currentToNextTimings = calculatePartTimings(
 		activePlaylist.holdState,
@@ -389,8 +415,10 @@ function generateNextPartInstanceObjects(
 	)
 
 	const nextPartGroup = createPartGroup(nextPartInfo.partInstance, {
-		start: `#${currentPartGroup.id}.end - ${currentToNextTimings.fromPartRemaining}`,
+		start: `#${timingInfo.currentPartGroup.id}.end - ${currentToNextTimings.fromPartRemaining}`,
 	})
+	timingInfo.nextPartGroup = nextPartGroup
+	timingInfo.nextPartOverlap = currentToNextTimings.fromPartRemaining
 
 	const nextPieceInstances = nextPartInfo?.pieceInstances.filter(
 		(i) => !i.infinite || i.infinite.infiniteInstanceIndex === 0
