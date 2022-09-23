@@ -2359,7 +2359,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		renderSegmentComponent(
 			segment: DBSegment,
-			index: number,
+			_index: number,
 			rundownAndSegments: MatchedSegment,
 			rundownPlaylist: RundownPlaylist,
 			studio: DBStudio,
