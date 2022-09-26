@@ -33,7 +33,6 @@ import { OptionalVelocityComponent } from '../../lib/utilComponents'
 import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-// TODO: Remove feature-flag and integrate with regular SegmentViewMode switch button
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 

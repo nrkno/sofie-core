@@ -114,7 +114,7 @@ export const LinePart: React.FC<IProps> = function LinePart({
 					'segment-opl__part--invalid': part.instance.part.invalid,
 					'segment-opl__part--timing-sibling': isPreceededByTimingGroupSibling,
 				}),
-				//@ts-ignore A Data attribue is perfectly fine
+				//@ts-expect-error A Data attribue is perfectly fine
 				'data-part-instance-id': part.instance._id,
 				id: SegmentTimelinePartElementId + part.instance._id,
 				role: 'region',

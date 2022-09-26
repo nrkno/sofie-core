@@ -17,9 +17,6 @@ interface IProps {
 	onPointerMove?: React.PointerEventHandler<HTMLDivElement> | undefined
 	onClick?: React.EventHandler<React.MouseEvent<HTMLDivElement>>
 	onDoubleClick?: React.EventHandler<React.MouseEvent<HTMLDivElement>>
-
-	// TODO: Remove this hack
-	HACK_disableSourceStatus?: boolean
 }
 
 export const PieceElement = React.forwardRef<HTMLDivElement, React.PropsWithChildren<IProps>>(function PieceElement(
@@ -36,23 +33,12 @@ export const PieceElement = React.forwardRef<HTMLDivElement, React.PropsWithChil
 		onPointerMove,
 		onClick,
 		onDoubleClick,
-		HACK_disableSourceStatus,
 	}: React.PropsWithChildren<IProps>,
 	ref
 ) {
 	return (
 		<div
-			className={pieceUiClassNames(
-				piece,
-				className,
-				layer?.type,
-				partId,
-				highlight,
-				true,
-				undefined,
-				undefined,
-				!HACK_disableSourceStatus
-			)}
+			className={pieceUiClassNames(piece, className, layer?.type, partId, highlight, true, undefined, undefined)}
 			data-obj-id={piece.instance._id}
 			onPointerEnter={onPointerEnter}
 			onPointerLeave={onPointerLeave}

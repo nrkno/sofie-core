@@ -137,10 +137,9 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 
 			const partInstance = PartInstances.findOne(props.playlist.nextPartInstanceId, {
 				fields: {
-					//@ts-ignore
 					segmentId: 1,
 					'part._id': 1,
-				},
+				} as any,
 			})
 			if (!partInstance) {
 				return false
@@ -160,10 +159,9 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 
 			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInstanceId, {
 				fields: {
-					//@ts-ignore
 					'part.autoNext': 1,
 					'part.expectedDuration': 1,
-				},
+				} as any,
 			})
 			if (!currentPartInstance) {
 				return false
