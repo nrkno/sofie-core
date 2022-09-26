@@ -8,7 +8,7 @@
 	"scripts": {
 		"preinstall": "node -v",
 		"debug": "meteor run",
-		"libs:syncVersions": "cd ../packages && yarn sync-version",
+		"libs:syncVersions": "node scripts/libs-sync-version.js",
 		"libs:syncVersionsAndChangelogs": "cd ../packages && yarn sync-version-and-changelog",
 		"postinstall": "meteor yarn prepareForTest",
 		"prepareForTest": "node ../scripts/fixTestFibers.js",
