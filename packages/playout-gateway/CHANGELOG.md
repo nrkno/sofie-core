@@ -3,6 +3,46 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.41.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.6...v1.41.7) (2022-09-14)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+## [1.41.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.5...v1.41.6) (2022-08-26)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+## [1.41.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.4...v1.41.5) (2022-08-26)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+## [1.41.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.4-0...v1.41.4) (2022-08-18)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+## [1.41.4-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.3...v1.41.4-0) (2022-08-17)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
 ## [1.41.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.2...v1.41.3) (2022-08-10)
 
 **Note:** Version bump only for package playout-gateway

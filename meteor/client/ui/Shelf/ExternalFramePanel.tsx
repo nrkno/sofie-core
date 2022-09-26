@@ -458,6 +458,14 @@ export const ExternalFramePanel = withTranslation()(
 				cancelable: false,
 			})
 			window.dispatchEvent(event)
+
+			// When dragging from an iframe, the focus stays within the iframe.
+			// This can cause confusion among users, since Sofie-keyboard shortcuts doesn't work, until they click somewhere in Sofie.
+			// To solve this, we simply reset the focus so that the iframe doesn't have the focus anymore.
+			const activeElement = document.activeElement as HTMLElement | undefined
+			if (activeElement?.tagName === 'IFRAME') {
+				activeElement.blur?.()
+			}
 		}
 
 		registerHandlers = () => {

@@ -967,7 +967,7 @@ function getPieceEnableInsidePart(
 	partTimings: PartCalculatedTimings
 ): IBlueprintPiece['enable'] {
 	const pieceEnable = { ...pieceInstance.piece.enable }
-	if (typeof pieceEnable.start === 'number' && !pieceInstance.adLibSourceId) {
+	if (typeof pieceEnable.start === 'number' && !pieceInstance.dynamicallyInserted) {
 		// timed pieces should be offset based on the preroll of the part
 		pieceEnable.start += partTimings.toPartDelay
 
