@@ -62,7 +62,7 @@
 		"debug": "^4.3.3",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.3",
-		"timeline-state-resolver": "7.4.0-nightly-release45-20220704-155301-5b2481f63.0",
+		"timeline-state-resolver": "7.4.0-release46.0",
 		"tslib": "^2.4.0",
 		"underscore": "^1.13.4",
 		"winston": "^3.8.2"
