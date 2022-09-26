@@ -7,5 +7,12 @@
 
     .name {
         font-weight: 400;
+
+        &.overflow-ellipsis {
+            overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			display: block;
+        }
     }
 }

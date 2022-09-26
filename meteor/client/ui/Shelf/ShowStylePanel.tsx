@@ -38,13 +38,17 @@ class ShowStylePanelInner extends MeteorReactComponent<Translated<IShowStylePane
 				className="show-style-panel timing"
 				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutShowStyleDisplay) : {}}
 			>
-				<span className="timing-clock left">
+				<span className="timing-clock left show-style">
 					<span className="timing-clock-label">{t('Show Style')}</span>
-					<span className="name">{this.props.showStyleBase.name}</span>
+					<span className="name overflow-ellipsis" title={this.props.showStyleBase.name}>
+						{this.props.showStyleBase.name}
+					</span>
 				</span>
-				<span className="timing-clock left">
+				<span className="timing-clock left show-style">
 					<span className="timing-clock-label">{t('Show Style Variant')}</span>
-					<span className="name">{this.props.showStyleVariant.name}</span>
+					<span className="name overflow-ellipsis" title={this.props.showStyleVariant.name}>
+						{this.props.showStyleVariant.name}
+					</span>
 				</span>
 			</div>
 		)
