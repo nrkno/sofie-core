@@ -3092,10 +3092,10 @@
     webpack-sources "^3.2.2"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.45.0-in-development"
+  version "1.46.0-in-testing"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "7.4.0-nightly-release45-20220704-155301-5b2481f63.0"
+    timeline-state-resolver-types "7.4.0-release46.0"
     tslib "^2.4.0"
     type-fest "^2.19.0"
 
@@ -3120,7 +3120,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.45.0-in-development"
+  version "1.46.0-in-testing"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     "@sofie-automation/shared-lib" "link:shared-lib"
@@ -3136,7 +3136,7 @@
     underscore "^1.13.4"
 
 "@sofie-automation/shared-lib@link:shared-lib":
-  version "1.45.0-in-development"
+  version "1.46.0-in-testing"
   dependencies:
     tslib "^2.4.0"
     type-fest "^2.19.0"
@@ -13961,13 +13961,6 @@ timecode@0.0.4:
   version "0.0.4"
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
-
-timeline-state-resolver-types@7.4.0-nightly-release45-20220704-155301-5b2481f63.0:
-  version "7.4.0-nightly-release45-20220704-155301-5b2481f63.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.4.0-nightly-release45-20220704-155301-5b2481f63.0.tgz#ab052e721a6a4e8c66952e0d4842f25ead3ee98a"
-  integrity sha512-3oJL0/qsm33JDo2gojJzcNmlnA4EV4oQtyQTC0gtmH2CORIypfWtFjReZwM3Cfnll8k2JLx5upDnLk9//eMaLg==
-  dependencies:
-    tslib "^2.3.1"
 
 timeline-state-resolver-types@7.4.0-release46.0:
   version "7.4.0-release46.0"
