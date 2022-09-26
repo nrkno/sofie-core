@@ -24,10 +24,10 @@ import {
 import * as Winston from 'winston'
 import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
 import { CollectionObj } from '@sofie-automation/server-core-integration'
-
-// Note: This is a constant that should come from Core:
-/** After this time, MOS-messages are considered to have timed out */
-export const DEFAULT_MOS_TIMEOUT_TIME = 10 * 1000
+import {
+	DEFAULT_MOS_TIMEOUT_TIME,
+	DEFAULT_MOS_HEARTBEAT_INTERVAL,
+} from '@sofie-automation/shared-lib/dist/core/constants'
 
 export interface MosConfig {
 	self: IConnectionConfig
@@ -463,7 +463,16 @@ export class MosHandler {
 
 		deviceOptions = JSON.parse(JSON.stringify(deviceOptions)) // deep clone
 
+		// Note: This is useful to do when debugging locally, and running a mos-server on localhost:
+		// deviceOptions.primary.ports = {
+		// 	lower: 11540,
+		// 	upper: 11541,
+		// 	query: 11542,
+		// }
 		deviceOptions.primary.timeout = deviceOptions.primary.timeout || DEFAULT_MOS_TIMEOUT_TIME
+
+		deviceOptions.primary.heartbeatInterval =
+			deviceOptions.primary.heartbeatInterval || DEFAULT_MOS_HEARTBEAT_INTERVAL
 
 		const mosDevice: MosDevice = await this.mos.connect(deviceOptions)
 		this._ownMosDevices[deviceId] = mosDevice

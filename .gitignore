@@ -2,7 +2,7 @@ _gsdata_/
 settings.json
 meteor/.coverage/
 node_modules
-
+**/yarn-error.log
 
 # Exclude JetBrains IDE specific files
 .idea

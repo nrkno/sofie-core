@@ -170,8 +170,7 @@ export const App = translateWithTracker(() => {
 				// and not in an active rundown
 				document.querySelector('.rundown.active') === null
 			) {
-				// forceReload is marked as deprecated, but it's still usable
-				// @ts-ignore
+				// @ts-expect-error forceReload is marked as deprecated, but it's still usable
 				setTimeout(() => window.location.reload(true))
 			}
 		}
@@ -199,13 +198,10 @@ export const App = translateWithTracker(() => {
 						})
 						.catch((e) => console.error('Could not get FullScreen when running as a PWA', e))
 
-					// Use Keyboard API to lock the keyboard and disable all browser shortcuts
 					if ('keyboard' in navigator) {
-						// Keyboard API isn't yet available in TypeScript DOM library,
-						// but we check for its availability, so it should be fine.
 						// Keyboard Lock: https://wicg.github.io/keyboard-lock/
 						navigator.keyboard
-							// @ts-expect-error
+							// @ts-expect-error Use Keyboard API to lock the keyboard and disable all browser shortcuts, but we check for its availability, so it should be fine.
 							.lock()
 							.catch((e) => console.error('Could not get Keyboard Lock when running as a PWA', e))
 					}
@@ -219,7 +215,7 @@ export const App = translateWithTracker(() => {
 
 		componentDidMount() {
 			// Global subscription of the currently logged in user:
-			this.subscribe(PubSub.loggedInUser, {})
+			this.subscribe(PubSub.loggedInUser)
 			this.autorun(() => {
 				const user = getUser()
 				if (user?.organizationId) {
@@ -287,7 +283,7 @@ export const App = translateWithTracker(() => {
 						})
 					}}
 				>
-					<div className="container-fluid">
+					<div className="container-fluid header-clear">
 						{/* Header switch - render the usual header for all pages but the rundown view */}
 						{(!Settings.enableUserAccounts || this.props.user) && (
 							<ErrorBoundary>

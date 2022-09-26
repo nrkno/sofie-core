@@ -606,11 +606,9 @@ export const SourceLayerItem = withTranslation()(
 						/>
 					)
 				case SourceLayerType.LIVE_SPEAK:
-					// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
 					return (
 						<STKSourceRenderer
 							key={unprotectString(this.props.piece.instance._id)}
-							// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}
 							getSourceDurationLabelAlignment={this.getSourceDurationLabelAlignment}

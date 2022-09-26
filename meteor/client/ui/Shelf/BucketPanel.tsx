@@ -58,7 +58,6 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
-import { MongoFieldSpecifierOnes } from '../../../lib/typings/meteor'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import {
@@ -68,9 +67,10 @@ import {
 	isAdLibDisplayedAsOnAir,
 	isAdLibOnAir,
 } from '../../lib/shelf'
+import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 
 const bucketSource = {
-	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
+	beginDrag(props: IBucketPanelProps, _monitor: DragSourceMonitor, component: any) {
 		const size = {
 			width: 0,
 			height: 0,
@@ -259,7 +259,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			const part = PartInstances.findOne(selectedPart, {
 				fields: literal<MongoFieldSpecifierOnes<DBPartInstance>>({
 					rundownId: 1,
-					//@ts-ignore
+					//@ts-expect-error deep property
 					'part._id': 1,
 				}),
 			}) as Pick<PartInstance, 'rundownId'> | undefined
@@ -277,7 +277,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			}
 		}
 		if (showStyleVariantId === undefined) {
-			const rundown = RundownPlaylistCollectionUtil.getRundowns(
+			const rundown = RundownPlaylistCollectionUtil.getRundownsOrdered(
 				props.playlist,
 				{},
 				{
@@ -381,10 +381,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						_id: this.props.playlist.studioId,
 					})
 					this.autorun(() => {
-						const showStyles = RundownPlaylistCollectionUtil.getRundowns(this.props.playlist).map((rundown) => [
-							rundown.showStyleBaseId,
-							rundown.showStyleVariantId,
-						])
+						const showStyles: Array<[ShowStyleBaseId, ShowStyleVariantId]> =
+							RundownPlaylistCollectionUtil.getRundownsUnordered(this.props.playlist).map((rundown) => [
+								rundown.showStyleBaseId,
+								rundown.showStyleVariantId,
+							])
 						const showStyleBases = showStyles.map((showStyle) => showStyle[0])
 						const showStyleVariants = showStyles.map((showStyle) => showStyle[1])
 						this.subscribe(PubSub.bucketAdLibPieces, {
@@ -667,7 +668,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									getEventTimestamp(e),
 									piece.adlibAction._id,
 									partial<BucketAdLibAction>({
-										//@ts-ignore deep property
+										//@ts-expect-error deep property
 										'display.label': newName,
 									})
 								)
@@ -722,7 +723,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 										getEventTimestamp(e),
 										draggedB.adlibAction._id,
 										partial<BucketAdLibAction>({
-											//@ts-ignore deep property
+											//@ts-expect-error deep property
 											'display._rank': newRank,
 										})
 									)

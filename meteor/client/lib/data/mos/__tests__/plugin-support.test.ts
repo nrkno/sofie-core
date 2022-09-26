@@ -1,16 +1,19 @@
 import { createMosAppInfoXmlString } from '../plugin-support'
-import * as parser from 'xml2json'
+import { parseStringPromise } from 'xml2js'
 
 describe('createMosAppInfoXmlString', () => {
 	const xmlString = createMosAppInfoXmlString()
 
-	it('should return a string that is a valid XML document', () => {
+	it('should return a string that is a valid XML document', async () => {
 		expect(typeof xmlString).toEqual('string')
-		parser.toJson(xmlString) // will throw if invalid
+		await parseStringPromise(xmlString) // will throw if invalid
 	})
 
 	describe('XML document', () => {
-		const doc: any = parser.toJson(xmlString, { object: true })
+		let doc: any
+		beforeAll(async () => {
+			doc = await parseStringPromise(xmlString)
+		})
 
 		it('the root node should be named mos', () => {
 			const nodeNames = Object.keys(doc)
@@ -20,22 +23,35 @@ describe('createMosAppInfoXmlString', () => {
 		})
 
 		describe('mos node contents', () => {
-			const mos = doc.mos
+			let mos: any
+			beforeAll(async () => {
+				mos = doc.mos
+			})
 
 			//TODO: this should either be the official Sofie name or possibly the instance name?
 			it('node ncsID should be sofie-core', () => {
-				const expected = 'sofie-core'
+				const expected = ['sofie-core']
 
-				const actual = mos.ncsID
+				const actual = doc.mos.ncsID
 
 				expect(actual).toEqual(expected)
 			})
 
 			//TODO: this is completely bogus. The Nora plugin doesn't actually check the values
 			describe('node ncsAppInfo', () => {
-				const ncsAppInfo = mos.ncsAppInfo
+				let ncsAppInfo: any
+				beforeAll(async () => {
+					ncsAppInfo = mos.ncsAppInfo
+					expect(ncsAppInfo).toHaveLength(1)
+					ncsAppInfo = ncsAppInfo[0]
+				})
 				describe('node ncsInformation', () => {
-					const ncsInformation = ncsAppInfo.ncsInformation
+					let ncsInformation: any
+					beforeAll(async () => {
+						ncsInformation = ncsAppInfo.ncsInformation
+						expect(ncsInformation).toHaveLength(1)
+						ncsInformation = ncsInformation[0]
+					})
 
 					it('node userID should contain something', () => {
 						const actual = ncsInformation.userID

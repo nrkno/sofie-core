@@ -8,7 +8,6 @@ import {
 	ITranslatableMessage,
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
-import { Mongo } from 'meteor/mongo'
 import { AdLibAction, AdLibActions } from '../../collections/AdLibActions'
 import { AdLibPiece, AdLibPieces } from '../../collections/AdLibPieces'
 import { DBPart, PartId, Parts } from '../../collections/Parts'
@@ -36,6 +35,9 @@ type CompiledFilter<T> = {
 	global: boolean | undefined
 	segment: 'current' | 'next' | undefined
 	part: 'current' | 'next' | undefined
+	arguments?: {
+		triggerMode: string
+	}
 	/**
 	 * The query compiler has determined that this filter will always return an empty set,
 	 * it's safe to skip it entirely.
@@ -534,16 +536,15 @@ export function compileAdLibFilter(
 				}
 			}
 
-			if (!skip) {
+			const currentRundownId = context.currentRundownId.get()
+			if (!skip && currentRundownId) {
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === true)
 					rundownBaselineAdLibItems = RundownBaselineAdLibPieces.find(
 						{
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
-							...{
-								rundownId: context.currentRundownId.get(),
-							},
-						} as Mongo.QueryWithModifiers<RundownBaselineAdLibItem>,
+							rundownId: currentRundownId,
+						} as MongoSelector<RundownBaselineAdLibItem>,
 						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, 'rundownBaselineAdLibItem'))
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === false)
@@ -551,10 +552,8 @@ export function compileAdLibFilter(
 						{
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
-							...{
-								rundownId: context.currentRundownId.get(),
-							},
-						} as Mongo.QueryWithModifiers<AdLibPiece>,
+							rundownId: currentRundownId,
+						} as MongoSelector<AdLibPiece>,
 						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, 'adLibPiece'))
 			}
@@ -574,16 +573,15 @@ export function compileAdLibFilter(
 				}
 			}
 
-			if (!skip) {
+			const currentRundownId = context.currentRundownId.get()
+			if (!skip && currentRundownId) {
 				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === true)
 					rundownBaselineAdLibActions = RundownBaselineAdLibActions.find(
 						{
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
-							...{
-								rundownId: context.currentRundownId.get(),
-							},
-						} as Mongo.QueryWithModifiers<RundownBaselineAdLibAction>,
+							rundownId: currentRundownId,
+						} as MongoSelector<RundownBaselineAdLibAction>,
 						adLibActionTypeFilter.options
 					).map((item) => wrapRundownBaselineAdLibAction(item, 'rundownBaselineAdLibAction'))
 				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === false)
@@ -591,10 +589,8 @@ export function compileAdLibFilter(
 						{
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
-							...{
-								rundownId: context.currentRundownId.get(),
-							},
-						} as Mongo.QueryWithModifiers<AdLibAction>,
+							rundownId: currentRundownId,
+						} as MongoSelector<AdLibAction>,
 						adLibActionTypeFilter.options
 					).map((item) => wrapAdLibAction(item, 'adLibAction'))
 			}
@@ -609,23 +605,32 @@ export function compileAdLibFilter(
 				// because _.isEqual (used in memoizedIsolatedAutorun) doesn't work with Maps..
 
 				const rundownPlaylistId = context.rundownPlaylistId.get()
-				const rundownRanks = memoizedIsolatedAutorun(
-					() =>
-						Rundowns.find(
+				const rundownRanks = memoizedIsolatedAutorun(() => {
+					const playlist = RundownPlaylists.findOne(rundownPlaylistId, {
+						projection: {
+							rundownIdsInOrder: 1,
+						},
+					}) as Pick<DBRundownPlaylist, 'rundownIdsInOrder'> | undefined
+
+					if (playlist?.rundownIdsInOrder) {
+						return playlist.rundownIdsInOrder
+					} else {
+						const rundowns = Rundowns.find(
 							{
 								playlistId: rundownPlaylistId,
 							},
 							{
 								fields: {
 									_id: 1,
-									_rank: 1,
 								},
 							}
-						).fetch() as Pick<DBRundown, '_id' | '_rank'>[],
-					`rundownsRanksForPlaylist_${rundownPlaylistId}`
-				)
-				rundownRanks.forEach((rundown) => {
-					rundownRankMap.set(rundown._id, rundown._rank)
+						).fetch() as Pick<DBRundown, '_id'>[]
+
+						return rundowns.map((r) => r._id)
+					}
+				}, `rundownsRanksForPlaylist_${rundownPlaylistId}`)
+				rundownRanks.forEach((id, index) => {
+					rundownRankMap.set(id, index)
 				})
 
 				const segmentRanks = memoizedIsolatedAutorun(

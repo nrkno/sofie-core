@@ -43,7 +43,6 @@ Meteor.startup(() => {
 	// Test uncaught errors:
 
 	// Uncaught promises:
-	// @ts-ignore unhandled promise:
 	new Promise((_resolve, reject) => {
 		reject('Rejecting with string')
 	})

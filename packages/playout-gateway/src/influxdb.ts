@@ -1,3 +1,4 @@
+import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import * as Influx from 'influx'
 import { config } from './config'
 
@@ -61,11 +62,11 @@ export function endTrace(trace: Trace): FinishedTrace {
 export function sendTrace(trace: FinishedTrace): void {
 	if (!client || Number.isNaN(trace.duration)) return
 
-	const point = {
+	const point: Influx.IPoint = {
 		measurement: trace.measurement,
 		tags: {
 			...trace.tags,
-			host: config.device.deviceId,
+			host: unprotectString(config.device.deviceId),
 			...versions,
 		},
 		fields: {

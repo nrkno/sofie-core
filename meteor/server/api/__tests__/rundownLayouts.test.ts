@@ -61,6 +61,7 @@ describe('Rundown Layouts', () => {
 				exposeAsStandalone: false,
 				icon: '',
 				iconColor: '',
+				showInspector: true,
 				openByDefault: false,
 				disableContextMenu: true,
 				hideDefaultStartExecute: false,

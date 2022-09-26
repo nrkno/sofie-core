@@ -1,14 +1,23 @@
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { AnyBulkWriteOperation, Collection as MongoCollection, FindOptions } from 'mongodb'
+import { EventEmitter } from 'eventemitter3'
+import { AnyBulkWriteOperation, ChangeStream, Collection as MongoCollection, FindOptions } from 'mongodb'
+import { IChangeStreamEvents } from '.'
 import { startSpanManual } from '../profiler'
-import { ICollection, MongoModifier, MongoQuery } from './collections'
+import { IChangeStream, ICollection, MongoModifier, MongoQuery } from './collections'
 
 /** Wrap some APM and better error small query modifications around a Mongo.Collection */
 class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements ICollection<TDoc> {
 	readonly #collection: MongoCollection<TDoc>
 
-	constructor(collection: MongoCollection<TDoc>) {
+	/**
+	 * We don't always want to allow using collection watchers, because of their lifetime and potential for blocking up workqueues.
+	 * But we do want them (and the wrapped api) in cases where we are spawning background tasks that run by themselves.
+	 */
+	readonly #allowWatchers
+
+	constructor(collection: MongoCollection<TDoc>, allowWatchers: boolean) {
 		this.#collection = collection
+		this.#allowWatchers = allowWatchers
 	}
 
 	get name(): string {
@@ -157,10 +166,46 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 
 		if (span) span.end()
 	}
+
+	watch(pipeline: any[]): IChangeStream<TDoc> {
+		if (!this.#allowWatchers) throw new Error(`Watching collections is not allowed here`)
+
+		const rawStream = this.#collection.watch(pipeline, {
+			batchSize: 1,
+		})
+
+		return new WrappedChangeStream(rawStream)
+	}
+}
+
+class WrappedChangeStream<TDoc extends { _id: ProtectedString<any> }>
+	extends EventEmitter<IChangeStreamEvents<TDoc>>
+	implements IChangeStream<TDoc>
+{
+	readonly #stream: ChangeStream<TDoc>
+
+	constructor(stream: ChangeStream<TDoc>) {
+		super()
+
+		this.#stream = stream
+
+		// Forward events
+		this.#stream.on('end', () => this.emit('end'))
+		this.#stream.on('error', (e) => this.emit('error', e))
+		this.#stream.on('change', (change) => this.emit('change', change))
+	}
+
+	get closed(): boolean {
+		return this.#stream.closed
+	}
+	async close(): Promise<void> {
+		await this.#stream.close()
+	}
 }
 
 export function wrapMongoCollection<TDoc extends { _id: ProtectedString<any> }>(
-	rawCollection: MongoCollection<TDoc>
+	rawCollection: MongoCollection<TDoc>,
+	allowWatchers: boolean
 ): ICollection<TDoc> {
-	return new WrappedCollection(rawCollection)
+	return new WrappedCollection(rawCollection, allowWatchers)
 }

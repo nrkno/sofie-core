@@ -862,7 +862,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							outputLayer.sourceLayers
 								.filter((i) => showHiddenSourceLayers || !i.isHidden)
 								.sort((a, b) => a._rank - b._rank)
-								.map((sourceLayer, index, array) => {
+								.map((sourceLayer, _index, array) => {
 									return (
 										<div
 											key={sourceLayer._id}

@@ -516,7 +516,6 @@ describe('Infinites', () => {
 			externalId: string
 		): Rundown {
 			return literal<DBRundown>({
-				_rank: 0,
 				_id: id,
 				externalId,
 				organizationId: protectString('test'),

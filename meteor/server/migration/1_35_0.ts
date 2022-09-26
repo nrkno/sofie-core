@@ -1,15 +1,10 @@
 import { addMigrationSteps } from './databaseMigration'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import * as semver from 'semver'
-import {
-	PackageContainerPackageStatusDB,
-	PackageContainerPackageStatuses,
-} from '../../lib/collections/PackageContainerPackageStatus'
-import { MongoSelector } from '../../lib/typings/meteor'
-import { literal } from '../../lib/lib'
+import { PackageContainerPackageStatuses } from '../../lib/collections/PackageContainerPackageStatus'
 import { dropDeprecatedDatabase, getDeprecatedDatabase } from './deprecatedDatabases/1_35_0'
 
-// Release 35
+// Release 35 (2021-07-13)
 export const addSteps = addMigrationSteps('1.35.0', [
 	{
 		id: 'Fix badly named collection PackageContainerStatuses',
@@ -27,18 +22,16 @@ export const addSteps = addMigrationSteps('1.35.0', [
 				if (wrongCollection) {
 					// Find documents that is not (the possibly upcoming) packageContainerStatuses, but is instead of packageContainerPackageStatuses:
 					const count = wrongCollection
-						.find(
-							literal<MongoSelector<PackageContainerPackageStatusDB>>({
-								studioId: { $exists: true },
-								containerId: { $exists: true },
-								packageId: { $exists: true },
-								modified: { $exists: true },
-								status: { $exists: true },
-								'status.contentVersionHash': { $exists: true },
-								'status.isPlaceholder': { $exists: true },
-								'status.status': { $exists: true },
-							})
-						)
+						.find({
+							studioId: { $exists: true },
+							containerId: { $exists: true },
+							packageId: { $exists: true },
+							modified: { $exists: true },
+							status: { $exists: true },
+							'status.contentVersionHash': { $exists: true },
+							'status.isPlaceholder': { $exists: true },
+							'status.status': { $exists: true },
+						})
 						.count()
 					if (count)
 						return `Collection PackageContainerStatuses contains "${count}" documents that need to be moved`

@@ -12,7 +12,7 @@ function multilineText(txt: string) {
 }
 
 function isEventInInputField(e: Event) {
-	// @ts-ignore localName
+	// @ts-expect-error localName
 	return e && e.target && ['textarea', 'input'].indexOf(e.target.localName + '') !== -1
 }
 

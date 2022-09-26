@@ -26,7 +26,7 @@ describe('client/lib/rundown', () => {
 		const { currentPartInstance, nextPartInstance } =
 			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
+		const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 		const { parts, segments } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
 		const rundown = rundowns[0]
 		const segment = segments[0]

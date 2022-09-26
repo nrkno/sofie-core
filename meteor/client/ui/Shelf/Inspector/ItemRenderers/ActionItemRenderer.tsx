@@ -10,10 +10,9 @@ import {
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { AdLibActionCommon } from '../../../../../lib/collections/AdLibActions'
-import { createMongoCollection } from '../../../../../lib/collections/lib'
-import { TransformedCollection } from '../../../../../lib/typings/meteor'
+import { createInMemoryMongoCollection } from '../../../../../lib/collections/lib'
 import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
-import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../../lib/api/deviceConfig'
+import { ConfigManifestEntry, ConfigManifestEntryType } from '@sofie-automation/corelib/dist/deviceConfig'
 import { Spinner } from '../../../../lib/Spinner'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
@@ -62,8 +61,7 @@ function transformedAdLibActionToAction(transformed: TransformedAdLibAction): Ad
 }
 
 // create a temporary collection to store changes to the AdLib Actions
-const LocalActionItems: TransformedCollection<TransformedAdLibAction, TransformedAdLibAction> =
-	createMongoCollection(null)
+const LocalActionItems = createInMemoryMongoCollection<TransformedAdLibAction>('TransformedAdLibAction')
 
 export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 	const piece = RundownUtils.isPieceInstance(props.piece)

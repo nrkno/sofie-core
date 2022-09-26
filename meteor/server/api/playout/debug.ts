@@ -106,7 +106,7 @@ if (!Settings.enableUserAccounts) {
 		debug_forceClearAllCaches() {
 			logger.info('forceClearAllCaches')
 
-			const studioIds = fetchStudioIds({})
+			const studioIds = waitForPromise(fetchStudioIds({}))
 			waitForPromise(QueueForceClearAllCaches(studioIds))
 		},
 

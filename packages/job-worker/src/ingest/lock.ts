@@ -1,5 +1,5 @@
 import { SegmentId, PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { ReadOnlyCache } from '../cache/CacheBase'
@@ -170,7 +170,10 @@ function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {
 	const rundown = cache.Rundown.doc
 	if (!rundown) return new Map()
 
-	const segmentsAndParts = getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, [rundown])
+	const segmentsAndParts = getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, {
+		// Feed fake data because we only care about the single rundown
+		rundownIdsInOrder: [cache.RundownId],
+	})
 	const existingRundownParts = _.groupBy(segmentsAndParts.parts, (part) => unprotectString(part.segmentId))
 
 	const res = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()

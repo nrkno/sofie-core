@@ -1,7 +1,5 @@
 import { ProtectedString } from '../protectedString'
 
-/** A string, identifying a RundownPlaylist */
-export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
 /** A string, identifying an activation of a playlist */
 export type ActiveInstanceId = ProtectedString<'ActiveInstanceId'>
 /** A string, identifying an activation of a playlist */
@@ -36,23 +34,11 @@ export type ExpectedMediaItemId = ProtectedString<'ExpectedMediaItemId'>
  */
 export type ExpectedPlayoutItemId = ProtectedString<'ExpectedPlayoutItemId'>
 
-export type ExpectedPackageId = ProtectedString<'ExpectedPackageId'>
-export type ExpectedPackageWorkStatusId = ProtectedString<'ExpectedPackageStatusId'>
-
 /** A string, identifying a ExternalMessageQueueObj */
 export type ExternalMessageQueueObjId = ProtectedString<'ExternalMessageQueueObjId'>
 
 /** A string, identifying a IngestDataCacheObj */
 export type IngestDataCacheObjId = ProtectedString<'IngestDataCacheObjId'>
-
-/** A string, identifying a MediaObj */
-export type MediaObjId = ProtectedString<'MediaObjId'>
-
-/** A string, identifying a MediaWorkFlow */
-export type MediaWorkFlowId = ProtectedString<'MediaWorkFlowId'>
-
-/** A string, identifying a MediaWorkFlowStep */
-export type MediaWorkFlowStepId = ProtectedString<'MediaWorkFlowStepId'>
 
 /** A string, identifying a Organization */
 export type OrganizationId = ProtectedString<'OrganizationId'>
@@ -65,21 +51,11 @@ export type PackageContainerId = ProtectedString<'PackageContainerId'>
 /** Id of a package container */
 export type PackageContainerPackageId = ProtectedString<'PackageContainerPackageId'>
 
-/** A string, identifying a PartInstance */
-export type PartInstanceId = ProtectedString<'PartInstanceId'>
 export type SegmentPlayoutId = ProtectedString<'SegmentPlayoutId'>
 
 /** A string, identifying a Part */
 export type PartId = ProtectedString<'PartId'>
 
-/** A string, identifying a PeripheralDeviceCommand */
-export type PeripheralDeviceCommandId = ProtectedString<'PeripheralDeviceCommandId'>
-
-/** A string, identifying a PeripheralDevice */
-export type PeripheralDeviceId = ProtectedString<'PeripheralDeviceId'>
-
-/** A string, identifying a PieceInstance */
-export type PieceInstanceId = ProtectedString<'PieceInstanceId'>
 export type PieceInstanceInfiniteId = ProtectedString<'PieceInstanceInfiniteId'>
 
 /** A string, identifying a Piece */
@@ -108,9 +84,6 @@ export type ShowStyleVariantId = ProtectedString<'ShowStyleVariantId'>
 /** A string, identifying a Snapshot */
 export type SnapshotId = ProtectedString<'SnapshotId'>
 
-/** A string, identifying a Studio */
-export type StudioId = ProtectedString<'StudioId'>
-
 /** A string, identifying a TimelineObj */
 export type TimelineObjId = ProtectedString<'TimelineObjId'>
 
@@ -131,3 +104,5 @@ export type WorkerId = ProtectedString<'WorkerId'>
 
 /** A string, identifying a WorkerThread */
 export type WorkerThreadId = ProtectedString<'WorkerThreadId'>
+
+export * from '@sofie-automation/shared-lib/dist/core/model/Ids'

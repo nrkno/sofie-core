@@ -27,6 +27,7 @@ import _ = require('underscore')
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { CacheForIngest } from '../ingest/cache'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
 
 /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
@@ -83,12 +84,13 @@ function getIdsBeforeThisPart(context: JobContext, cache: CacheForPlayout, nextP
 		  }).map((p) => p._id)
 		: []
 
-	const currentRundown = cache.Rundowns.findOne(nextPart.rundownId)
-	const rundownsBeforeThisInPlaylist = currentRundown
-		? cache.Rundowns.findFetch({ playlistId: cache.Playlist.doc._id, _rank: { $lt: currentRundown._rank } }).map(
-				(p) => p._id
-		  )
-		: []
+	const sortedRundownIds = sortRundownIDsInPlaylist(
+		cache.Playlist.doc.rundownIdsInOrder,
+		cache.Rundowns.findFetch({}).map((rd) => rd._id)
+	)
+	const currentRundownIndex = sortedRundownIds.indexOf(nextPart.rundownId)
+	const rundownsBeforeThisInPlaylist =
+		currentRundownIndex === -1 ? [] : sortedRundownIds.slice(0, currentRundownIndex)
 
 	if (span) span.end()
 	return {

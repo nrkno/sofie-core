@@ -278,8 +278,6 @@ class NotificationCenter0 {
 		}
 	}
 
-	private willSnooze: { [k: string]: boolean } = {}
-
 	/**
 	 * Get a reactive array of notificaitons in the Notification Center
 	 *
@@ -361,7 +359,7 @@ class NotificationCenter0 {
 		if (filters && filters.length) {
 			const matchers = filters.map((filter) => _.matches(filter))
 			n = n.filter((v, _index, _array) =>
-				_.reduce<boolean, boolean>(
+				_.reduce<boolean[], boolean>(
 					matchers.map((m) => m(v)),
 					(value, memo) => value || memo,
 					false

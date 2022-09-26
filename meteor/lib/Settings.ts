@@ -29,7 +29,8 @@ export interface ISettings {
 	followOnAirSegmentsHistory: number
 	/** Clean up stuff that are older than this [ms] */
 	maximumDataAge: number
-
+	/** Enable the use of poison key if present and use the key specified. **/
+	poisonKey: string | null
 	/** If set, enables a check to ensure that the system time doesn't differ too much from the speficied NTP server time. */
 	enableNTPTimeChecker: null | {
 		host: string
@@ -38,9 +39,6 @@ export interface ISettings {
 	}
 	/** Default value used to toggle Shelf options when the 'display' URL argument is not provided. */
 	defaultShelfDisplayOptions: string
-
-	/** Enable the use of poison key if present and use the key specified. **/
-	poisonKey: string | null
 
 	/** The KeyboardPreview is a feature that is not implemented in the main Fork, and is kept here for compatibility */
 	enableKeyboardPreview: boolean
@@ -79,13 +77,13 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	// allowRundownResetOnAir: false,
 	defaultDisplayDuration: 3000,
 	allowMultiplePlaylistsInGUI: false,
+	poisonKey: 'Escape',
 	followOnAirSegmentsHistory: 0,
 	maximumDataAge: 1000 * 60 * 60 * 24 * 100, // 100 days
 	enableNTPTimeChecker: null,
 	defaultShelfDisplayOptions: 'buckets,layout,shelfLayout,inspector',
-	enableKeyboardPreview: true,
+	enableKeyboardPreview: false,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
-	poisonKey: 'Escape',
 	useCountdownToFreezeFrame: true,
 	confirmKeyCode: 'Enter',
 })

@@ -157,7 +157,7 @@ export const RundownSystemStatus = translateWithTracker(
 			playoutDevices: playout.onlineOffline,
 		}
 	},
-	(data, props: IProps, nextProps: IProps) => {
+	(_data, props: IProps, nextProps: IProps) => {
 		if (props.playlist._id === nextProps.playlist._id && props.studio._id === nextProps.studio._id) return false
 		return true
 	}

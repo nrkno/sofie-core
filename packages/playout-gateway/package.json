@@ -21,7 +21,7 @@
 	"contributors": [],
 	"scripts": {
 		"build": "rimraf dist && yarn build:main",
-		"buildstart": "yarn build && yarn start",
+		"buildstart": "yarn build && yarn dev",
 		"buildinspect": "yarn build && yarn inspect",
 		"build:main": "tsc -p tsconfig.build.json",
 		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
@@ -34,13 +34,13 @@
 		"ci": "yarn test",
 		"inspect": "node --inspect dist/index.js",
 		"start": "node dist/index.js",
+		"dev": "yarn start -id localDevPg",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck",
-		"precommit": "lint-staged"
+		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.18 || ^16.14"
+		"node": "^14.19 || ^16.14"
 	},
 	"keywords": [
 		"broadcast",
@@ -58,13 +58,14 @@
 	"dependencies": {
 		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
 		"@sofie-automation/server-core-integration": "link:../server-core-integration",
-		"debug": "^4.3.2",
+		"@sofie-automation/shared-lib": "link:../shared-lib",
+		"debug": "^4.3.3",
 		"fast-clone": "^1.5.13",
-		"influx": "^5.9.2",
+		"influx": "^5.9.3",
 		"timeline-state-resolver": "npm:@tv2media/timeline-state-resolver@2.1.6",
-		"tslib": "^2.3.1",
-		"underscore": "^1.12.1",
-		"winston": "^3.5.1"
+		"tslib": "^2.4.0",
+		"underscore": "^1.13.4",
+		"winston": "^3.8.2"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [
@@ -73,8 +74,5 @@
 		"*.{ts,tsx,js,jsx}": [
 			"yarn lint:raw"
 		]
-	},
-	"devDependencies": {
-		"@types/debug": "^4.1.7"
 	}
 }

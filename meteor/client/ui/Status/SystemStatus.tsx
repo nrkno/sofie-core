@@ -24,7 +24,7 @@ import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RESTART_SALT } from '../../../lib/api/userActions'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/corelib/dist/constants'
+import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { StatusCodePill } from './StatusCodePill'
 
 interface IDeviceItemProps {
@@ -623,7 +623,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 		renderPeripheralDevices() {
 			const devices: Array<DeviceInHierarchy> = []
 			const refs = {}
-			const devicesToAdd = {}
+			const devicesToAdd: Record<string, DeviceInHierarchy> = {}
 			// First, add all as references:
 			_.each(this.props.devices, (device) => {
 				const d: DeviceInHierarchy = {

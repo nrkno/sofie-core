@@ -15,8 +15,6 @@ module.exports = {
 	projectName: 'sofie-core',
 	themeConfig: {
 		image: 'img/pilot_fredag-05.jpg',
-		hideableSidebar: true,
-		autoCollapseSidebarCategories: true,
 		colorMode: {
 			defaultMode: 'light',
 			disableSwitch: false,
@@ -95,6 +93,12 @@ module.exports = {
 		prism: {
 			theme: lightCodeTheme,
 			darkTheme: darkCodeTheme,
+		},
+		docs: {
+			sidebar: {
+				hideable: true,
+				autoCollapseCategories: true,
+			},
 		},
 	},
 	presets: [

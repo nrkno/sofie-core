@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:experimental
 # BUILD IMAGE
-FROM node:14.18
-RUN curl "https://install.meteor.com/?release=2.5.6" | sh
+FROM node:14.19
+RUN curl "https://install.meteor.com/?release=2.7.3" | sh
 # Temporary change the NODE_ENV env variable, so that all libraries are installed:
 ENV NODE_ENV_TMP $NODE_ENV
 ENV NODE_ENV anythingButProduction
@@ -26,7 +26,7 @@ WORKDIR /opt/core/packages
 RUN yarn --prod --ignore-scripts
 
 # DEPLOY IMAGE
-FROM node:14.18-slim
+FROM node:14.19-slim
 COPY --from=0 /opt/bundle /opt/core
 COPY --from=0 /opt/core/packages /opt/packages
 COPY meteor/docker-entrypoint.sh /opt

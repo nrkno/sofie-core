@@ -49,7 +49,7 @@ export function withTiming<IProps, IState>(
 	options?: Partial<WithTimingOptions> | ((props: IProps) => Partial<WithTimingOptions>)
 ): (
 	WrappedComponent: IWrappedComponent<IProps, IState>
-) => new (props: IProps, context: any) => React.Component<IProps, IState> {
+) => React.ComponentType<Omit<IProps, keyof RundownTiming.InjectedROTimingProps>> {
 	let expandedOptions: WithTimingOptions = {
 		tickResolution: TimingTickResolution.Synced,
 		dataResolution: TimingDataResolution.Synced,
@@ -146,7 +146,7 @@ function componentIsDirty(
 	highResDurations: RundownTimingContext,
 	dataResolution: TimingDataResolution
 ) {
-	return this.filterGetter && highResDurations.isLowResolution && dataResolution !== TimingDataResolution.Synced
+	return !!filterGetter && highResDurations.isLowResolution && dataResolution !== TimingDataResolution.Synced
 }
 
 /**

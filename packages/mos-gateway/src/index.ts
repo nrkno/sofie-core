@@ -1,6 +1,7 @@
 import { Connector, Config } from './connector'
 import * as Winston from 'winston'
 import _ = require('underscore')
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -98,7 +99,7 @@ const JSONStringifyCircular = () => {
 	return stringifyFixer
 }
 // Setup logging --------------------------------------
-const { splat, combine, printf } = Winston.format
+const { printf } = Winston.format
 const myLogFormat = printf((obj) => {
 	return JSON.stringify(obj, JSONStringifyCircular())
 })
@@ -115,7 +116,7 @@ if (logPath) {
 		handleExceptions: true,
 		handleRejections: true,
 		filename: logPath,
-		format: combine(splat(), myLogFormat),
+		format: myLogFormat,
 	})
 
 	logger = Winston.createLogger({
@@ -149,7 +150,7 @@ if (logPath) {
 		level: 'debug',
 		handleExceptions: true,
 		handleRejections: true,
-		format: combine(splat(), myLogFormat),
+		format: myLogFormat,
 	})
 
 	logger = Winston.createLogger({
@@ -198,7 +199,7 @@ const config: Config = {
 		certificates: _.compact(certs),
 	},
 	device: {
-		deviceId: deviceId,
+		deviceId: protectString(deviceId),
 		deviceToken: deviceToken,
 	},
 	core: {

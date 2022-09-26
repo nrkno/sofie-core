@@ -5,11 +5,16 @@ import { ITranslatableMessage } from '@sofie-automation/corelib/dist/Translatabl
 import { Meteor } from 'meteor/meteor'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from './logging'
+import { MongoQuery } from './typings/meteor'
+import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/mongo'
+
+import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+export { Time, TimeDuration }
 
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
 export * from '@sofie-automation/corelib/dist/lib'
-export * from '@sofie-automation/corelib/dist/mongo'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
@@ -24,9 +29,6 @@ export async function MeteorPromiseCall(callName: string, ...args: any[]): Promi
 		})
 	})
 }
-
-export type Time = number
-export type TimeDuration = number
 
 // The diff is currently only used client-side
 const systemTime = {
@@ -135,6 +137,12 @@ export function last<T>(values: T[]): T {
 	return _.last(values) as T
 }
 
+export function objectFromEntries<Key extends ProtectedString<any>, Val>(
+	entries: Array<[Key, Val]>
+): Record<string, Val> {
+	return Object.fromEntries(entries)
+}
+
 const cacheResultCache: {
 	[name: string]: {
 		ttl: number
@@ -142,7 +150,7 @@ const cacheResultCache: {
 	}
 } = {}
 /** Cache the result of function for a limited time */
-export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1000) {
+export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1000): T {
 	if (Math.random() < 0.01) {
 		Meteor.setTimeout(cleanOldCacheResult, 10000)
 	}
@@ -184,7 +192,7 @@ function cleanOldCacheResult() {
 	})
 }
 const lazyIgnoreCache: { [name: string]: number } = {}
-export function lazyIgnore(name: string, f1: () => void, t: number): void {
+export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: number): void {
 	// Don't execute the function f1 until the time t has passed.
 	// Subsequent calls will extend the lazyness and ignore the previous call
 
@@ -193,35 +201,10 @@ export function lazyIgnore(name: string, f1: () => void, t: number): void {
 	}
 	lazyIgnoreCache[name] = Meteor.setTimeout(() => {
 		delete lazyIgnoreCache[name]
-		f1()
+		waitForPromise(f1())
 	}, t)
 }
 
-export function escapeHtml(text: string): string {
-	// Escape strings, so they are XML-compatible:
-
-	const map = {
-		'&': '&amp;',
-		'<': '&lt;',
-		'>': '&gt;',
-		'"': '&quot;',
-		"'": '&#039;',
-	}
-	const nbsp = String.fromCharCode(160) // non-breaking space (160)
-	map[nbsp] = ' ' // regular space
-
-	const textLength = text.length
-	let outText = ''
-	for (let i = 0; i < textLength; i++) {
-		const c = text[i]
-		if (map[c]) {
-			outText += map[c]
-		} else {
-			outText += c
-		}
-	}
-	return outText
-}
 const ticCache = {}
 /**
  * Performance debugging. tic() starts a timer, toc() traces the time since tic()
@@ -305,12 +288,6 @@ export function waitForPromiseAll<T>(ps: (T | PromiseLike<T>)[]): T[] {
 	return waitForPromise(Promise.all(ps))
 }
 
-export type Promisify<T> = { [K in keyof T]: Promise<T[K]> }
-export function waitForPromiseObj<T extends object>(obj: Promisify<T>): T {
-	const values = waitForPromiseAll(_.values<Promise<any>>(obj))
-	return _.object(_.keys(obj), values)
-}
-
 export type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T
 
 /**
@@ -349,6 +326,12 @@ export async function makePromise<T>(fcn: () => T): Promise<T> {
 				reject(e)
 			}
 		})
+	})
+}
+
+export function deferAsync(fcn: () => Promise<void>): void {
+	Meteor.defer(() => {
+		fcn().catch((e) => logger.error(stringifyError(e)))
 	})
 }
 
@@ -487,4 +470,15 @@ export enum LogLevel {
 	WARN = 'warn',
 	ERROR = 'error',
 	NONE = 'crit',
+}
+
+/**
+ * Convert a MongoQuery from @sofie-automation/corelib typings to Meteor typings.
+ * They aren't compatible yet because Meteor is using some 'loose' custom typings, rather than corelib which uses the strong typings given by the mongodb library
+ * Note: This assumes the queries are compatible. Due to how meteor uses the query they should be, but this has not been verified
+ * @param query MongoQuery as written in @sofie-automation/corelib syntax
+ * @returns MongoQuery as written in Meteor syntax
+ */
+export function convertCorelibToMeteorMongoQuery<T>(query: CoreLibMongoQuery<T>): MongoQuery<T> {
+	return query as any
 }

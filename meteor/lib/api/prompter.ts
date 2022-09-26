@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
 import { ISourceLayer, ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
@@ -53,7 +52,7 @@ export namespace PrompterAPI {
 		if (!playlist) {
 			return null
 		}
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
+		const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 		const rundownIdsToShowStyleBaseIds: Map<RundownId, ShowStyleBaseId> = new Map()
 		const rundownIdsToShowStyleBase: Map<RundownId, [ShowStyleBase, Record<string, ISourceLayer>] | undefined> =
 			new Map()
@@ -243,9 +242,4 @@ export namespace PrompterAPI {
 		})
 		return data
 	}
-}
-
-if (Meteor.isClient) {
-	// @ts-ignore
-	window.getPrompterData = PrompterAPI.getPrompterData
 }

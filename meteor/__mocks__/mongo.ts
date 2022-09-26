@@ -1,28 +1,19 @@
 import * as _ from 'underscore'
-import {
-	mongoWhere,
-	literal,
-	ProtectedString,
-	unprotectString,
-	protectString,
-	mongoModify,
-	mongoFindOptions,
-	sleep,
-} from '../lib/lib'
+import { literal, ProtectedString, unprotectString, protectString, sleep } from '../lib/lib'
 import { RandomMock } from './random'
-import {
-	UpsertOptions,
-	UpdateOptions,
-	FindOptions,
-	ObserveChangesCallbacks,
-	ObserveCallbacks,
-	FindOneOptions,
-} from '../lib/typings/meteor'
+import { FindOptions, FindOneOptions } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import type { AnyBulkWriteOperation } from 'mongodb'
-import { AsyncMongoCollection } from '../lib/collections/lib'
+import {
+	AsyncMongoCollection,
+	ObserveCallbacks,
+	ObserveChangesCallbacks,
+	UpdateOptions,
+	UpsertOptions,
+} from '../lib/collections/lib'
+import { mongoWhere, mongoFindOptions, mongoModify } from '@sofie-automation/corelib/dist/mongo'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -48,7 +39,8 @@ export namespace MongoMock {
 	export class Collection<T extends CollectionObject> implements MongoCollection {
 		public _name: string
 		private _options: any = {}
-		private _isMock: true = true // used in test to check that it's a mock
+		// @ts-expect-error used in test to check that it's a mock
+		private _isMock = true as const
 		private observers: ObserverEntry<T>[] = []
 
 		public asyncBulkWriteDelay = 100
@@ -69,11 +61,11 @@ export namespace MongoMock {
 				throw new Error(`find being performed using unimplemented options: ${unimplementedUsedOptions}`)
 			}
 
-			const docsArray = _.values(this.documents)
-			let docs = _.compact(
-				query._id && _.isString(query._id)
+			const docsArray = Object.values(this.documents)
+			let docs: T[] = _.compact(
+				query._id && typeof query._id === 'string'
 					? [this.documents[query._id]]
-					: _.filter(docsArray, (doc) => mongoWhere(doc, query))
+					: docsArray.filter((doc) => mongoWhere(doc, query))
 			)
 
 			docs = mongoFindOptions(docs, options)
@@ -249,9 +241,6 @@ export namespace MongoMock {
 		}
 		rawCollection() {
 			return {
-				// indexes: () => {}
-				// stats: () => {}
-				// drop: () => {}
 				bulkWrite: async (updates: AnyBulkWriteOperation<any>[], _options) => {
 					await sleep(this.asyncBulkWriteDelay)
 
@@ -285,9 +274,6 @@ export namespace MongoMock {
 				collectionName: this._name,
 			}
 		}
-		// observe () {
-		// 	// todo
-		// }
 		private get documents(): MockCollection<T> {
 			if (!mockCollections[this._name]) mockCollections[this._name] = {}
 			return mockCollections[this._name]

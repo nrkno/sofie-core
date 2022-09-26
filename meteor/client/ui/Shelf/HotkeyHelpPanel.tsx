@@ -12,9 +12,9 @@ import {
 } from '../../lib/triggers/TriggersHandler'
 import { SorensenContext } from '../../lib/SorensenContext'
 import { codesToKeyLabels } from '../../lib/triggers/codesToKeyLabels'
-import { Mongo } from 'meteor/mongo'
 import { TFunction } from 'i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { MongoCursor } from '../../../lib/collections/lib'
 
 interface IProps {
 	visible?: boolean
@@ -29,7 +29,7 @@ interface IProps {
 const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
 
 function mountedTriggerToHotkeyList(
-	hotkeys: Mongo.Cursor<MountedAdLibTrigger | MountedGenericTrigger>,
+	hotkeys: MongoCursor<MountedAdLibTrigger | MountedGenericTrigger>,
 	sorensen: Sorensen | null,
 	t: TFunction
 ) {

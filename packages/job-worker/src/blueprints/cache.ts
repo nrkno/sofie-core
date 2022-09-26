@@ -57,7 +57,10 @@ export async function loadBlueprintById(
 			})
 
 			// Future: we should look at freezing the object inside the vm
-			const entry = vm.run(blueprint.code, `db/blueprint/${blueprint.name || blueprint._id}.js`)
+			const entry = vm.run(
+				'__run_result = ' + blueprint.code + '; __run_result || blueprint',
+				`db/blueprint/${blueprint.name || blueprint._id}.js`
+			)
 			manifest = entry.default
 		} catch (e) {
 			throw new Error(`Syntax error in blueprint "${blueprint._id}": ${stringifyError(e)}`)

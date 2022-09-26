@@ -16,7 +16,6 @@ const tmpRules = {
 	'@typescript-eslint/no-var-requires': 'off',
 	'@typescript-eslint/no-empty-function': 'off',
 	'@typescript-eslint/no-inferrable-types': 'off',
-	'@typescript-eslint/ban-ts-comment': 'off',
 	'no-useless-escape': 'off',
 	'@typescript-eslint/no-non-null-assertion': 'off',
 	'@typescript-eslint/unbound-method': 'off',
@@ -56,7 +55,7 @@ const tsBase = {
 			},
 		],
 		'jest/no-standalone-expect': 'off', // testInFiber confuses the rule
-
+		'@typescript-eslint/no-duplicate-enum-values': 'off',
 		...tmpRules,
 	},
 }

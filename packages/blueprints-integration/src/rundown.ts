@@ -122,6 +122,7 @@ export interface IBlueprintRundown<TMetadata = unknown> {
 export interface IBlueprintRundownDB<TMetadata = unknown>
 	extends IBlueprintRundown<TMetadata>,
 		IBlueprintRundownDBData {}
+
 /** Properties added to a rundown in Core */
 export interface IBlueprintRundownDBData {
 	_id: string
@@ -131,9 +132,6 @@ export interface IBlueprintRundownDBData {
 
 	/** RundownPlaylist this rundown is member of */
 	playlistId?: string
-
-	/** Rundown's place in the RundownPlaylist */
-	_rank?: number
 
 	/** Air-status, comes from NCS, examples: "READY" | "NOT READY" */
 	airStatus?: string
@@ -225,7 +223,16 @@ export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	/** Classes to set on the TimelineGroupObj for the following part */
 	classesForNext?: string[]
 
+	/**
+	 * Use and provide timing to a `displayDurationGroup` with the same ID. This allows Parts to "share" timing.
+	 *
+	 * **NOTE**: The behavior of the system is undefined when using both `displayDurationGroups` and `budgetDuration`
+	 */
 	displayDurationGroup?: string
+	/**
+	 * How long to make the Part appear in the UI, if other than expectedDuration.
+	 *
+	 * **NOTE**: The behavior of the system is undefined when using both `displayDurationGroups` and `budgetDuration` */
 	displayDuration?: number
 
 	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */

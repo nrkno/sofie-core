@@ -135,7 +135,7 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 			AllMeteorMethods.push(methodName)
 		}
 	})
-	// @ts-ignore: incompatible due to userId
+	// @ts-expect-error: incompatible due to userId
 	Meteor.methods(methods)
 }
 export function getRunningMethods() {

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2022-05-19T11:28:47.600Z\n"
-"PO-Revision-Date: 2022-05-19T11:28:47.600Z\n"
+"POT-Creation-Date: 2022-08-02T12:04:21.289Z\n"
+"PO-Revision-Date: 2022-08-02T12:04:21.289Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -206,18 +206,6 @@ msgstr ""
 msgid "Next"
 msgstr ""
 
-msgid "Could not get system status. Please consult system administrator."
-msgstr ""
-
-msgid "Welcome to the Sofie Automation system"
-msgstr ""
-
-msgid "Sofie Automation version"
-msgstr ""
-
-msgid "Sofie status"
-msgstr ""
-
 msgid "Test test"
 msgstr ""
 
@@ -231,9 +219,6 @@ msgid "Until end of segment"
 msgstr ""
 
 msgid "Until next rundown"
-msgstr ""
-
-msgid "Until end of rundown"
 msgstr ""
 
 msgid "Until end of showstyle"
@@ -279,6 +264,9 @@ msgid "Prompter"
 msgstr ""
 
 msgid "End of script"
+msgstr ""
+
+msgid "Could not get system status. Please consult system administrator."
 msgstr ""
 
 msgid "There are no rundowns ingested into Sofie."
@@ -343,10 +331,10 @@ msgstr ""
 msgid "Documentation is available at"
 msgstr ""
 
-msgid "Using local Sofie order"
+msgid "Use {{nrcsName}} order"
 msgstr ""
 
-msgid "Change order in playlist to override"
+msgid "Reset Sort Order"
 msgstr ""
 
 msgid "Enable configuration mode by adding ?configure=1 to the address bar."
@@ -355,7 +343,7 @@ msgstr ""
 msgid "You need to run migrations to set the system up for operation."
 msgstr ""
 
-msgid "Drop rundown here to move it out of its current playlist"
+msgid "Drop Rundown here to move it out of its current Playlist"
 msgstr ""
 
 msgid "Sofie Automation"
@@ -537,6 +525,24 @@ msgid "Error"
 msgstr ""
 
 msgid "This rundown is now active. Are you sure you want to exit this screen?"
+msgstr ""
+
+msgid "Invalid AdLib"
+msgstr ""
+
+msgid "Cannot play this AdLib because it is marked as Invalid"
+msgstr ""
+
+msgid "Floated Adlib"
+msgstr ""
+
+msgid "Cannot play this AdLib because it is marked as Floated"
+msgstr ""
+
+msgid "Not queueable"
+msgstr ""
+
+msgid "Cannot play this adlib because source layer is not queueable"
 msgstr ""
 
 msgid ""
@@ -792,13 +798,13 @@ msgstr ""
 msgid "Auto"
 msgstr ""
 
-msgid "Diff"
-msgstr ""
-
 msgid "Expected End"
 msgstr ""
 
 msgid "Next Loop at"
+msgstr ""
+
+msgid "Diff"
 msgstr ""
 
 msgid "Started"
@@ -814,6 +820,9 @@ msgid "{{currentRundownName}} - {{rundownPlaylistName}}"
 msgstr ""
 
 msgid "{{rundownPlaylistName}} (Looping)"
+msgstr ""
+
+msgid "Floated AdLib"
 msgstr ""
 
 msgid "Switchboard"
@@ -1086,10 +1095,19 @@ msgstr ""
 msgid "Upload Blueprints"
 msgstr ""
 
-msgid "Spreadsheet credentials succesfully uploaded."
+msgid "OAuth credentials succesfully uploaded."
 msgstr ""
 
-msgid "Failed to upload spreadsheet credentials: {{errorMessage}}"
+msgid "Failed to upload OAuth credentials: {{errorMessage}}"
+msgstr ""
+
+msgid "OAuth credentials successfuly reset"
+msgstr ""
+
+msgid "Failed to reset OAuth credentials: {{errorMessage}}"
+msgstr ""
+
+msgid "Reset Authentication"
 msgstr ""
 
 msgid "Application credentials"
@@ -1098,9 +1116,7 @@ msgstr ""
 msgid "Access token"
 msgstr ""
 
-msgid ""
-"Click on the link below and accept the permissions request. Paste the "
-"received URL below."
+msgid "Click on the link below and accept the permissions request."
 msgstr ""
 
 msgid "Waiting for gateway to generate URL..."
@@ -1118,25 +1134,10 @@ msgstr ""
 msgid "Show thumbnails next to list items"
 msgstr ""
 
-msgid "X"
-msgstr ""
-
-msgid "Y"
-msgstr ""
-
-msgid "Width"
-msgstr ""
-
-msgid "Height"
-msgstr ""
-
 msgid "Button width scale factor"
 msgstr ""
 
 msgid "Button height scale factor"
-msgstr ""
-
-msgid "Display Rank"
 msgstr ""
 
 msgid "Only Display AdLibs from Current Segment"
@@ -1161,9 +1162,6 @@ msgid "Label contains"
 msgstr ""
 
 msgid "Tags must contain"
-msgstr ""
-
-msgid "Register Shortcuts for this Panel"
 msgstr ""
 
 msgid "Hide Panel from view"
@@ -1202,6 +1200,9 @@ msgid ""
 msgstr ""
 
 msgid "URL"
+msgstr ""
+
+msgid "Display Rank"
 msgstr ""
 
 msgid "Role"
@@ -1298,6 +1299,18 @@ msgid "Require All Additional Source Layers"
 msgstr ""
 
 msgid "All additional source layers must have active pieces"
+msgstr ""
+
+msgid "X"
+msgstr ""
+
+msgid "Y"
+msgstr ""
+
+msgid "Width"
+msgstr ""
+
+msgid "Height"
 msgstr ""
 
 msgid "Scale"
@@ -1404,6 +1417,12 @@ msgstr ""
 msgid "Select visible Output Groups"
 msgstr ""
 
+msgid "Display piece duration for source layers"
+msgstr ""
+
+msgid "Piece on selected source layers will have a duration label shown"
+msgstr ""
+
 msgid "Expose layout as a standalone page"
 msgstr ""
 
@@ -1413,13 +1432,31 @@ msgstr ""
 msgid "Default shelf height"
 msgstr ""
 
+msgid "Show Buckets"
+msgstr ""
+
+msgid "Show Inspector"
+msgstr ""
+
+msgid "Disable Context Menu"
+msgstr ""
+
 msgid "This action has an invalid combination of filters"
+msgstr ""
+
+msgid "Use Trigger Mode"
+msgstr ""
+
+msgid "Trigger Mode"
 msgstr ""
 
 msgid "Force"
 msgstr ""
 
 msgid "Rehearsal"
+msgstr ""
+
+msgid "Mode: {{triggerMode}}"
 msgstr ""
 
 msgid "Undo"
@@ -1438,6 +1475,9 @@ msgid "Toggle"
 msgstr ""
 
 msgid "On"
+msgstr ""
+
+msgid "Forward: {{forward}}"
 msgstr ""
 
 msgid "Activate Rundown"
@@ -1473,6 +1513,9 @@ msgstr ""
 msgid "Show entire On Air Segment"
 msgstr ""
 
+msgid "Queue AdLib from Minishelf"
+msgstr ""
+
 msgid "Force (deactivate others)"
 msgstr ""
 
@@ -1489,6 +1532,9 @@ msgid "By Parts"
 msgstr ""
 
 msgid "State"
+msgstr ""
+
+msgid "Forward"
 msgstr ""
 
 msgid "Action"
@@ -1834,6 +1880,9 @@ msgstr ""
 msgid "Action Buttons"
 msgstr ""
 
+msgid "Toggled Label"
+msgstr ""
+
 msgid "Icon"
 msgstr ""
 
@@ -2028,7 +2077,19 @@ msgstr ""
 msgid "Key"
 msgstr ""
 
+msgid "Host Key"
+msgstr ""
+
+msgid "Source Layer type"
+msgstr ""
+
+msgid "Key color"
+msgstr ""
+
 msgid "Custom Hotkey Labels"
+msgstr ""
+
+msgid "AHK"
 msgstr ""
 
 msgid "Remove this Variant?"
@@ -2192,6 +2253,9 @@ msgid "None"
 msgstr ""
 
 msgid "New Layer"
+msgstr ""
+
+msgid "Route Type"
 msgstr ""
 
 msgid "Source Layer not found"
@@ -2469,6 +2533,11 @@ msgstr ""
 msgid "Allow Rundowns to be reset while on-air"
 msgstr ""
 
+msgid ""
+"Preserve position of segments when unsynced relative to other segments. "
+"Note: this has only been tested for the iNews gateway"
+msgstr ""
+
 msgid "Remove indexes"
 msgstr ""
 
@@ -2548,6 +2617,20 @@ msgstr ""
 msgid "Cleanup old data"
 msgstr ""
 
+msgid "Disable CasparCG restart job"
+msgstr ""
+
+msgid "Enable automatic storage of Rundown Playlist snapshots periodically"
+msgstr ""
+
+msgid "Filter: If set, only store snapshots for certain rundowns"
+msgstr ""
+
+msgid ""
+"(Comma separated list. Empty - will store snapshots of all Rundown "
+"Playlists)"
+msgstr ""
+
 msgid "Error when checking for cleaning up"
 msgstr ""
 
@@ -2575,19 +2658,15 @@ msgstr ""
 msgid "Clear {{layerName}}"
 msgstr ""
 
-msgid "Invalid AdLib"
-msgstr ""
-
-msgid "Cannot play this AdLib because it is marked as Invalid"
-msgstr ""
-
-msgid "Floated AdLib"
-msgstr ""
-
-msgid "Cannot play this AdLib because it is marked as Floated"
-msgstr ""
-
 msgid "Search..."
+msgstr ""
+
+msgid ""
+"Are you sure you want to deactivate this Rundown\n"
+"(This will clear the outputs)"
+msgstr ""
+
+msgid "Successfully stored snapshot"
 msgstr ""
 
 msgid "End Words"
@@ -2621,6 +2700,9 @@ msgid "Part Count Down"
 msgstr ""
 
 msgid "Part Count Up"
+msgstr ""
+
+msgid "Until end of rundown"
 msgstr ""
 
 msgid "New Bucket"
@@ -2925,6 +3007,15 @@ msgid "Method"
 msgstr ""
 
 msgid "Parameters"
+msgstr ""
+
+msgid "Time from platform user event to Action received by Core"
+msgstr ""
+
+msgid "GUI"
+msgstr ""
+
+msgid "Core + Worker processing time"
 msgstr ""
 
 msgid "Core"

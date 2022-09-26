@@ -132,9 +132,9 @@ export function dashboardElementStyle(el: DashboardPositionableElement): React.C
 					: `calc(${-1 * el.y - 1} * var(--dashboard-button-grid-height))`
 				: getVerticalOffsetFromHeight(el),
 
-		fontSize: el.scale ? el.scale * 1.5 + 'em' : undefined,
-		// @ts-ignore
-		'--dashboard-panel-scale': el.scale || undefined,
+		// @ts-expect-error css variables
+		'--dashboard-panel-scale': el.scale || 1,
+		'--dashboard-panel-scaled-font-size': (el.scale || 1) * 1.5 + 'em',
 	}
 }
 
@@ -181,11 +181,11 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	componentDidMount() {
 		this.autorun(() => {
-			const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(this.props.playlist)
-			if (rundownIds.length > 0) {
+			const unorderedRundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(this.props.playlist)
+			if (unorderedRundownIds.length > 0) {
 				this.subscribe(PubSub.pieceInstances, {
 					rundownId: {
-						$in: rundownIds,
+						$in: unorderedRundownIds,
 					},
 					startedPlayback: {
 						$exists: true,
@@ -669,7 +669,7 @@ export const DashboardPanel = translateWithTracker<
 			nextTags,
 		}
 	},
-	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	(_data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
 )(DashboardPanelInner)

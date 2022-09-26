@@ -112,6 +112,7 @@ export function setupMockPeripheralDevice(
 		name: 'mockDevice',
 		organizationId: null,
 		studioId: studio ? studio._id : undefined,
+		settings: {},
 
 		category: category,
 		type: type,
@@ -562,7 +563,6 @@ export function setupDefaultRundown(
 		},
 
 		playlistId: playlistId,
-		_rank: 0,
 
 		_id: rundownId,
 		externalId: 'MOCK_RUNDOWN_' + rundownId,
@@ -581,6 +581,12 @@ export function setupDefaultRundown(
 		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)
+
+	RundownPlaylists.update(playlistId, {
+		$push: {
+			rundownIdsInOrder: rundown._id,
+		},
+	})
 
 	const segment0: DBSegment = {
 		_id: protectString(rundownId + '_segment0'),
