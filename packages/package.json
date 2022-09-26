@@ -20,7 +20,6 @@
 		"build": "yarn lerna run build",
 		"build:try": "yarn lerna run --no-bail build",
 		"watch": "lerna run --parallel build:main -- --watch --preserveWatchOutput",
-		"sync-version": "yarn set-version $(node -p \"require('../meteor/package.json').version\")",
 		"stage-versions": "git add -u */package.json */CHANGELOG.md lerna.json",
 		"set-version": "lerna version --exact --no-changelog --no-git-tag-version --no-push --yes",
 		"set-version-and-changelog": "lerna version --exact --force-publish --conventional-commits --no-git-tag-version --no-push --yes",
