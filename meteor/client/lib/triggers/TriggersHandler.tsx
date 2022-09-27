@@ -4,7 +4,7 @@ import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import Sorensen from '@sofie-automation/sorensen'
 import { PubSub } from '../../../lib/api/pubsub'
-import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { TriggeredActionId, TriggeredActions } from '../../../lib/collections/TriggeredActions'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
 import {
@@ -39,6 +39,8 @@ import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../.
 import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../../lib/Settings'
 import { createInMemoryMongoCollection } from '../../../lib/collections/lib'
+import { UIShowStyleBases } from '../../ui/Collections'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -93,9 +95,7 @@ function useSubscriptions(
 				$in: rundownIds,
 			},
 		}),
-		useSubscription(PubSub.showStyleBases, {
-			_id: showStyleBaseId,
-		}),
+		useSubscription(PubSub.uiShowStyleBase, showStyleBaseId),
 	]
 
 	return !allReady.some((state) => state === false)
@@ -104,16 +104,14 @@ function useSubscriptions(
 function createAction(
 	_id: TriggeredActionId,
 	actions: SomeAction[],
-	showStyleBase: ShowStyleBase,
+	showStyleBase: UIShowStyleBase,
 	t: TFunction,
 	collectContext: () => ReactivePlaylistActionContext | null
 ): {
 	listener: HotkeyTriggerListener
 	preview: () => IWrappedAdLib[]
 } {
-	const executableActions = actions.map((value) =>
-		libCreateAction(value, showStyleBase.sourceLayersWithOverrides.defaults)
-	)
+	const executableActions = actions.map((value) => libCreateAction(value, showStyleBase.sourceLayers))
 	return {
 		preview: () => {
 			const ctx = collectContext()
@@ -431,7 +429,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			return []
 		}, [props.rundownPlaylistId]) || []
 
-	const showStyleBase = useTracker(() => ShowStyleBases.findOne(props.showStyleBaseId), [props.showStyleBaseId])
+	const showStyleBase = useTracker(() => UIShowStyleBases.findOne(props.showStyleBaseId), [props.showStyleBaseId])
 
 	useSubscriptions(props.rundownPlaylistId, rundownIds, props.showStyleBaseId)
 

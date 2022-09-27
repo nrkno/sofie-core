@@ -14,7 +14,6 @@ import { createInMemoryMongoCollection } from '../../../../../lib/collections/li
 import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
 import { ConfigManifestEntry, ConfigManifestEntryType } from '@sofie-automation/corelib/dist/deviceConfig'
 import { Spinner } from '../../../../lib/Spinner'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 import { ProtectedString } from '../../../../../lib/lib'
 import { PartId } from '../../../../../lib/collections/Parts'
@@ -29,12 +28,13 @@ import RundownViewEventBus, { RundownViewEvents } from '../../../RundownView/Run
 import { IAdLibListItem } from '../../AdLibListItem'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { AdLibPieceUi } from '../../../../lib/shelf'
+import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 
 export { isActionItem }
 
 export interface IProps {
 	piece: PieceUi | IAdLibListItem | BucketAdLibActionUi
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	studio: Studio
 	rundownPlaylist: RundownPlaylist
 	onSelectPiece: (piece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined) => void
@@ -232,11 +232,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 
 						if (res) {
 							onSelectPiece(
-								actionToAdLibPieceUi(
-									res,
-									this.props.showStyleBase.sourceLayersWithOverrides.defaults,
-									this.props.showStyleBase.outputLayersWithOverrides.defaults
-								)
+								actionToAdLibPieceUi(res, this.props.showStyleBase.sourceLayers, this.props.showStyleBase.outputLayers)
 							)
 						}
 					}

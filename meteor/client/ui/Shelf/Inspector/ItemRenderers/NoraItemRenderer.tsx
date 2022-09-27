@@ -5,17 +5,17 @@ import { NoraItemEditor } from './NoraItemEditor'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../../../lib/rundown'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
 import { Studio } from '../../../../../lib/collections/Studios'
 import { IAdLibListItem } from '../../AdLibListItem'
+import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 
 export { isNoraItem }
 
 interface INoraSuperRendererProps {
 	piece: IAdLibListItem | PieceUi
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	studio: Studio
 }
 

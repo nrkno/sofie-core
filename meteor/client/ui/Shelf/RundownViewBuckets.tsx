@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { BucketPanel } from './BucketPanel'
-import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { ISourceLayer, IOutputLayer } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
@@ -38,6 +38,7 @@ import RundownViewEventBus, {
 	IEventContext,
 } from '../RundownView/RundownViewEventBus'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 export interface BucketAdLibUi extends BucketAdLib {
 	sourceLayer?: ISourceLayer
@@ -81,7 +82,7 @@ export function isAdLib(item: BucketAdLibItem): item is BucketAdLibUi {
 interface IBucketsProps {
 	buckets: Bucket[] | undefined
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	shouldQueue: boolean
 	fullViewport: boolean
 	displayBuckets?: number[]

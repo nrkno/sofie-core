@@ -153,13 +153,9 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	static getDerivedStateFromProps(
 		props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>
 	): Partial<IState> | null {
-		if (
-			props.showStyleBase &&
-			props.showStyleBase.outputLayersWithOverrides &&
-			props.showStyleBase.sourceLayersWithOverrides
-		) {
-			const tOLayers = props.showStyleBase.outputLayersWithOverrides.defaults
-			const tSLayers = props.showStyleBase.sourceLayersWithOverrides.defaults
+		if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
+			const tOLayers = props.showStyleBase.outputLayers
+			const tSLayers = props.showStyleBase.sourceLayers
 
 			return {
 				outputLayers: tOLayers,

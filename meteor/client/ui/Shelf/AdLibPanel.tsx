@@ -12,7 +12,7 @@ import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
-import { OutputLayers, ShowStyleBase, SourceLayers } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import {
 	ISourceLayer,
 	PieceLifespan,
@@ -58,13 +58,14 @@ import { sortAdlibs } from '../../../lib/Rundown'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { AdLibListView } from './AdLibListView'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
 	playlist: RundownPlaylist
 	studio: Studio
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	studioMode: boolean
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
@@ -132,14 +133,14 @@ interface IFetchAndFilterProps {
 		RundownPlaylist,
 		'_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId' | 'rundownIdsInOrder'
 	>
-	showStyleBase: Pick<ShowStyleBase, '_id' | 'sourceLayersWithOverrides' | 'outputLayersWithOverrides'>
+	showStyleBase: Pick<UIShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
 }
 
 export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilterProps {
-	const sourceLayerLookup = props.showStyleBase && props.showStyleBase.sourceLayersWithOverrides.defaults
-	const outputLayerLookup = props.showStyleBase && props.showStyleBase.outputLayersWithOverrides.defaults
+	const sourceLayerLookup = props.showStyleBase && props.showStyleBase.sourceLayers
+	const outputLayerLookup = props.showStyleBase && props.showStyleBase.outputLayers
 
 	if (!props.playlist || !props.showStyleBase) {
 		return {
@@ -511,7 +512,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 						)
 				},
 				'rundownBaselineClearAdLibs',
-				props.showStyleBase.sourceLayersWithOverrides.defaults
+				props.showStyleBase.sourceLayers
 			)
 			rundownBaselineAdLibs = rundownBaselineAdLibs.concat(rundownBaselineClearAdLibs)
 		}
@@ -558,10 +559,7 @@ export function AdLibPanel({
 					| 'previousPartInstanceId'
 					| 'rundownIdsInOrder'
 				>,
-				showStyleBase: showStyleBase as Pick<
-					ShowStyleBase,
-					'_id' | 'sourceLayersWithOverrides' | 'outputLayersWithOverrides'
-				>,
+				showStyleBase: showStyleBase as Pick<UIShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>,
 				filter,
 				includeGlobalAdLibs,
 			}),
@@ -573,8 +571,8 @@ export function AdLibPanel({
 			playlist.previousPartInstanceId,
 			playlist.rundownIdsInOrder,
 			showStyleBase._id,
-			showStyleBase.sourceLayersWithOverrides,
-			showStyleBase.outputLayersWithOverrides,
+			showStyleBase.sourceLayers,
+			showStyleBase.outputLayers,
 			filter,
 			includeGlobalAdLibs,
 		],

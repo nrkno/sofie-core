@@ -9,7 +9,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { RundownLayoutFilter, RundownLayoutShelfBase } from '../../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -37,6 +36,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { ShelfDisplayOptions } from '../../lib/shelf'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -50,7 +50,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	playlist: RundownPlaylist
 	currentRundown: Rundown
 	studio: Studio
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	showStyleVariant: ShowStyleVariant
 	studioMode: boolean
 	hotkeys: Array<{

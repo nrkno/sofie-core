@@ -270,8 +270,7 @@ export const AdLibRegionPanel = translateWithTracker<
 			  }
 			: undefined
 
-		const sourceLayer =
-			thumbnailPiece && props.showStyleBase.sourceLayersWithOverrides.defaults[thumbnailPiece.piece.sourceLayerId]
+		const sourceLayer = thumbnailPiece && props.showStyleBase.sourceLayers[thumbnailPiece.piece.sourceLayerId]
 
 		return Object.assign({}, fetchAndFilter(props), {
 			studio,

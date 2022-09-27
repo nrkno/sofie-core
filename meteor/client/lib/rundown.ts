@@ -23,7 +23,7 @@ import {
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { Segment, SegmentId, Segments } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { literal, getCurrentTime, applyToArray } from '../../lib/lib'
 import { PieceId } from '../../lib/collections/Pieces'
 import { PartId } from '../../lib/collections/Parts'
@@ -38,6 +38,7 @@ import { Rundown, RundownId } from '../../lib/collections/Rundowns'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { AdLibPieceUi } from './shelf'
+import { UIShowStyleBase } from '../../lib/api/showStyles'
 
 interface PieceTimelineMetadataExt extends PieceTimelineMetadata {
 	id: PieceId
@@ -252,7 +253,7 @@ export namespace RundownUtils {
 	 * @return {*}  {({
 	 */
 	export function getResolvedSegment(
-		showStyleBase: ShowStyleBase,
+		showStyleBase: UIShowStyleBase,
 		playlist: RundownPlaylist,
 		rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>,
 		segment: Segment,
@@ -332,7 +333,7 @@ export namespace RundownUtils {
 			// create local deep copies of the studio outputLayers and sourceLayers so that we can store
 			// pieces present on those layers inside and also figure out which layers are used when inside the rundown
 			const outputLayers: Record<string, IOutputLayerExtended> = {}
-			for (const [id, layer] of Object.entries(showStyleBase.outputLayersWithOverrides.defaults)) {
+			for (const [id, layer] of Object.entries(showStyleBase.outputLayers)) {
 				if (layer) {
 					outputLayers[id] = {
 						...layer,
@@ -342,7 +343,7 @@ export namespace RundownUtils {
 				}
 			}
 			const sourceLayers: Record<string, ISourceLayerExtended> = {}
-			for (const [id, layer] of Object.entries(showStyleBase.sourceLayersWithOverrides.defaults)) {
+			for (const [id, layer] of Object.entries(showStyleBase.sourceLayers)) {
 				if (layer) {
 					sourceLayers[id] = {
 						...layer,
@@ -459,7 +460,7 @@ export namespace RundownUtils {
 				const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
 				const preprocessedPieces = processAndPrunePieceInstanceTimings(
-					showStyleBase.sourceLayersWithOverrides.defaults,
+					showStyleBase.sourceLayers,
 					rawPieceInstances,
 					nowInPart,
 					includeDisabledPieces

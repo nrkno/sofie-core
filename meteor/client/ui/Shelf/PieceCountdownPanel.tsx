@@ -16,13 +16,13 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
-import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 interface IPieceCountdownPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPieceCountdown
 	playlist: RundownPlaylist
-	showStyleBase: DBShowStyleBase
+	showStyleBase: UIShowStyleBase
 }
 
 interface IPieceCountdownPanelTrackedProps {

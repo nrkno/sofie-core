@@ -3,6 +3,7 @@ import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
+	convertToUIShowStyleBase,
 } from '../../../__mocks__/helpers/database'
 import { RundownUtils } from '../rundown'
 import {
@@ -19,7 +20,7 @@ describe('client/lib/rundown', () => {
 		playlistId = setupDefaultRundownPlaylist(env).playlistId
 	})
 	testInFiber('RundownUtils.getResolvedSegment', () => {
-		const showStyleBase = env.showStyleBase
+		const showStyleBase = convertToUIShowStyleBase(env.showStyleBase)
 		const playlist = RundownPlaylists.findOne(playlistId)
 		if (!playlist) throw new Error('Rundown not found')
 

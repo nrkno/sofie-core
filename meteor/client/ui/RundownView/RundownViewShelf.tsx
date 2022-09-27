@@ -5,7 +5,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { unprotectString } from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { OutputLayers, ShowStyleBase, SourceLayers } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
 import { IBlueprintActionTriggerMode, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
@@ -36,12 +36,13 @@ import {
 } from '../../lib/shelf'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ContextType, setShelfContextMenuContext } from '../Shelf/ShelfContextMenu'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 interface IRundownViewShelfProps {
 	studio: Studio
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	adLibSegmentUi: AdlibSegmentUi
 	hotkeyGroup: string
 	studioMode: boolean
@@ -276,8 +277,8 @@ export const RundownViewShelf = translateWithTracker<
 	IRundownViewShelfTrackedProps
 >(
 	(props: IRundownViewShelfProps) => {
-		const sourceLayerLookup = props.showStyleBase.sourceLayersWithOverrides.defaults
-		const outputLayerLookup = props.showStyleBase.outputLayersWithOverrides.defaults
+		const sourceLayerLookup = props.showStyleBase.sourceLayers
+		const outputLayerLookup = props.showStyleBase.outputLayers
 
 		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
 			(_currentPartInstanceId: PartInstanceId | null, _nextPartInstanceId: PartInstanceId | null) => {

@@ -11,9 +11,9 @@ import { PartId } from '../collections/Parts'
 import { FindOptions } from '../typings/meteor'
 import { PieceInstance, PieceInstances } from '../collections/PieceInstances'
 import { Rundown, RundownId } from '../collections/Rundowns'
-import { ShowStyleBaseId, ShowStyleBases, SourceLayers } from '../collections/ShowStyleBases'
+import { ShowStyleBaseId, SourceLayers } from '../collections/ShowStyleBases'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { UIShowStyleBases } from '../../client/ui/Collections'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
@@ -58,10 +58,8 @@ export namespace PrompterAPI {
 		const rundownIdsToShowStyleBase: Map<RundownId, SourceLayers | undefined> = new Map()
 		for (const rundown of rundowns) {
 			rundownIdsToSourceLayers.set(rundown._id, rundown.showStyleBaseId)
-			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
-			const sourceLayers = showStyleBase
-				? applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj
-				: undefined
+			const showStyleBase = UIShowStyleBases.findOne(rundown.showStyleBaseId)
+			const sourceLayers = showStyleBase?.sourceLayers
 			rundownIdsToShowStyleBase.set(rundown._id, sourceLayers)
 		}
 		const rundownMap = normalizeArrayToMap(rundowns, '_id')

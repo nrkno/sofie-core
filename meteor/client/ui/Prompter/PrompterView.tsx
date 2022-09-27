@@ -628,11 +628,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						},
 					}
 				).fetch() as Pick<Rundown, '_id' | 'showStyleBaseId'>[]
-				this.subscribe(PubSub.showStyleBases, {
-					_id: {
-						$in: rundowns.map((rundown) => rundown.showStyleBaseId),
-					},
-				})
+				for (const rundown of rundowns) {
+					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+				}
 			})
 		}
 

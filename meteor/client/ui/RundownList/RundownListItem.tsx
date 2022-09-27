@@ -1,6 +1,5 @@
 import React from 'react'
 import { Rundown, RundownCollectionUtil, RundownId } from '../../../lib/collections/Rundowns'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -38,6 +37,8 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
+import { UIShowStyleBases } from '../Collections'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 export const HTML_ID_PREFIX = 'rundown-'
 
@@ -54,7 +55,7 @@ export interface IRundownListItemProps {
 
 interface IRundownListItemTrackedProps {
 	studio: Studio | undefined
-	showStyleBase: ShowStyleBase | undefined
+	showStyleBase: UIShowStyleBase | undefined
 	showStyleVariant: ShowStyleVariant | undefined
 }
 
@@ -150,7 +151,7 @@ const dropCollect: DropTargetCollector<IRundownDropTargetProps, IRundownListItem
 export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, IRundownListItemTrackedProps>(
 	(props: Translated<IRundownListItemProps>) => {
 		let studio: Studio | undefined = undefined
-		let showStyle: ShowStyleBase | undefined = undefined
+		let showStyle: UIShowStyleBase | undefined = undefined
 		let showStyleVariant: ShowStyleVariant | undefined = undefined
 
 		try {
@@ -159,7 +160,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 			// this is fine, we'll probably have it eventually and the component can render without it
 		}
 		try {
-			showStyle = RundownCollectionUtil.getShowStyleBase(props.rundown)
+			showStyle = UIShowStyleBases.findOne(props.rundown.showStyleBaseId)
 		} catch (e) {
 			// this is fine, we'll probably have it eventually and the component can render without it
 		}

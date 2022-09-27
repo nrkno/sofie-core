@@ -44,7 +44,15 @@ import {
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
-import { literal, getCurrentTime, protectString, unprotectString, getRandomId, getRandomString } from '../../lib/lib'
+import {
+	literal,
+	getCurrentTime,
+	protectString,
+	unprotectString,
+	getRandomId,
+	getRandomString,
+	Complete,
+} from '../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
@@ -73,6 +81,7 @@ import {
 	applyAndValidateOverrides,
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { UIShowStyleBase } from '../../lib/api/showStyles'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -1001,3 +1010,13 @@ export function setupMockWorker(doc?: Partial<WorkerStatus>): {
 // const studioBlueprint
 // const showStyleBlueprint
 // const showStyleVariant
+
+export function convertToUIShowStyleBase(showStyleBase: ShowStyleBase): UIShowStyleBase {
+	return literal<Complete<UIShowStyleBase>>({
+		_id: showStyleBase._id,
+		name: showStyleBase.name,
+		hotkeyLegend: showStyleBase.hotkeyLegend,
+		sourceLayers: applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj,
+		outputLayers: applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj,
+	})
+}

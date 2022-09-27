@@ -15,7 +15,6 @@ import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
 import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Parts, PartId, Part } from '../../../lib/collections/Parts'
 import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
@@ -42,6 +41,7 @@ import { RankedNote, IMediaObjectIssue, MEDIASTATUS_POLL_INTERVAL } from '../../
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { NoteSeverity, StatusCode } from '@sofie-automation/blueprints-integration'
 import { getAllowStudio, getIgnorePieceContentStatus } from '../../lib/localStorage'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -99,7 +99,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	private mediaObjectsPollInterval = 0
 	private allNotesPollInterval = 0
 
-	constructor(playlistId: RundownPlaylistId | undefined, showStyleBase: ShowStyleBase, studio: Studio) {
+	constructor(playlistId: RundownPlaylistId | undefined, showStyleBase: UIShowStyleBase, studio: Studio) {
 		super()
 		this._notificationList = new NotificationList([])
 		this._mediaStatusDep = new Tracker.Dependency()
@@ -495,7 +495,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveMediaStatus(playlistId: RundownPlaylistId, showStyleBase: ShowStyleBase, studio: Studio) {
+	private reactiveMediaStatus(playlistId: RundownPlaylistId, showStyleBase: UIShowStyleBase, studio: Studio) {
 		let mediaObjectsPollLock: boolean = false
 		const MEDIAOBJECTS_POLL_INTERVAL = MEDIASTATUS_POLL_INTERVAL
 
@@ -547,7 +547,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			if (!getIgnorePieceContentStatus()) {
 				const pieces = rPieces.get()
 				pieces.forEach((piece) => {
-					const sourceLayer = showStyleBase.sourceLayersWithOverrides.defaults[piece.sourceLayerId]
+					const sourceLayer = showStyleBase.sourceLayers[piece.sourceLayerId]
 					const part = Parts.findOne(piece.startPartId, {
 						fields: {
 							_rank: 1,
@@ -930,7 +930,7 @@ interface IProps {
 	// }
 	playlistId: RundownPlaylistId
 	studio: Studio
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 }
 
 export const RundownNotifier = class RundownNotifier extends React.Component<IProps> {

@@ -3,16 +3,16 @@ import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { IAdLibListItem } from '../../AdLibListItem'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 import { Studio } from '../../../../../lib/collections/Studios'
 import { MediaObject } from '../../../../../lib/collections/MediaObjects'
 import { BucketAdLibUi } from '../../RundownViewBuckets'
 import { AdLibPieceUi } from '../../../../lib/shelf'
+import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 
 export default function DefaultItemRenderer(props: {
 	piece: PieceUi | IAdLibListItem | BucketAdLibUi
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	studio: Studio
 }): JSX.Element {
 	if (RundownUtils.isAdLibPiece(props.piece)) {

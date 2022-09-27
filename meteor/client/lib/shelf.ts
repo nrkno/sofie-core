@@ -8,10 +8,10 @@ import { PieceId } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { DBSegment, SegmentId } from '../../lib/collections/Segments'
-import { DBShowStyleBase, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ScanInfoForPackages } from '../../lib/mediaObjects'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
+import { UIShowStyleBase } from '../../lib/api/showStyles'
 
 export interface ShelfDisplayOptions {
 	enableBuckets: boolean
@@ -45,7 +45,7 @@ export interface AdlibSegmentUi extends DBSegment {
 	isCompatibleShowStyle: boolean
 }
 
-export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase: ShowStyleBase): PieceInstance[] {
+export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase: UIShowStyleBase): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
 	if (playlist.activationId && playlist.nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
@@ -76,7 +76,7 @@ export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase:
 	}
 
 	prospectivePieceInstances = processAndPrunePieceInstanceTimings(
-		showsStyleBase.sourceLayersWithOverrides.defaults,
+		showsStyleBase.sourceLayers,
 		prospectivePieceInstances,
 		0
 	)
@@ -86,7 +86,7 @@ export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase:
 
 export function getUnfinishedPieceInstancesGrouped(
 	playlist: RundownPlaylist,
-	showStyleBase: DBShowStyleBase
+	showStyleBase: UIShowStyleBase
 ): { unfinishedPieceInstances: PieceInstance[]; unfinishedAdLibIds: PieceId[]; unfinishedTags: string[] } {
 	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
 
@@ -109,7 +109,7 @@ export function getUnfinishedPieceInstancesGrouped(
 
 export function getNextPieceInstancesGrouped(
 	playlist: RundownPlaylist,
-	showsStyleBase: DBShowStyleBase
+	showsStyleBase: UIShowStyleBase
 ): { nextAdLibIds: PieceId[]; nextTags: string[]; nextPieceInstances: PieceInstance[] } {
 	const nextPieceInstances = getNextPiecesReactive(playlist, showsStyleBase)
 

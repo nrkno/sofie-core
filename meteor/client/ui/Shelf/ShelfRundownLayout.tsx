@@ -2,7 +2,6 @@ import * as React from 'react'
 import { RundownLayout } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { ExternalFramePanel } from './ExternalFramePanel'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { OverflowingContainer } from './OverflowingContainer'
 import ClassNames from 'classnames'
 import { ShelfTabs, DEFAULT_TAB as SHELF_DEFAULT_TAB } from './Shelf'
@@ -16,11 +15,12 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { useTranslation } from 'react-i18next'
 import { BucketAdLibItem } from './RundownViewBuckets'
 import { IAdLibListItem } from './AdLibListItem'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 export interface IShelfRundownLayoutProps {
 	rundownLayout: RundownLayout | undefined
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	studioMode: boolean
 	studio: Studio
 	selectedTab: string | undefined

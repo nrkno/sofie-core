@@ -54,13 +54,7 @@ import {
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
-import {
-	ShowStyleBases,
-	ShowStyleBase,
-	ShowStyleBaseId,
-	DBShowStyleBase,
-	SourceLayers,
-} from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId, SourceLayers } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import {
 	RONotificationEvent,
@@ -135,6 +129,8 @@ import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studi
 import { SegmentListContainer } from './SegmentList/SegmentListContainer'
 import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
 import { IProps as IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
+import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { UIShowStyleBases } from './Collections'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -317,7 +313,7 @@ const TimingDisplay = withTranslation()(
 
 interface IRundownHeaderProps {
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	showStyleVariant: ShowStyleVariant
 	currentRundown: Rundown | undefined
 	studio: Studio
@@ -1139,7 +1135,7 @@ interface ITrackedProps {
 	matchedSegments: MatchedSegment[]
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio?: Studio
-	showStyleBase?: ShowStyleBase
+	showStyleBase?: UIShowStyleBase
 	showStyleVariant?: ShowStyleVariant
 	rundownLayouts?: Array<RundownLayoutBase>
 	buckets: Bucket[]
@@ -1191,7 +1187,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
 	const showStyleBaseId = currentRundown?.showStyleBaseId ?? rundowns[0]?.showStyleBaseId
-	const showStyleBase = showStyleBaseId ? ShowStyleBases.findOne(showStyleBaseId) : undefined
+	const showStyleBase = showStyleBaseId ? UIShowStyleBases.findOne(showStyleBaseId) : undefined
 	const showStyleVariantId = currentRundown?.showStyleVariantId ?? rundowns[0]?.showStyleVariantId
 	const showStyleVariant = showStyleVariantId ? ShowStyleVariants.findOne(showStyleVariantId) : undefined
 
@@ -1571,11 +1567,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					},
 				}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
 
-				this.subscribe(PubSub.showStyleBases, {
-					_id: {
-						$in: rundowns.map((i) => i.showStyleBaseId),
-					},
-				})
+				for (const rundown of rundowns) {
+					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+				}
+
 				this.subscribe(PubSub.showStyleVariants, {
 					_id: {
 						$in: rundowns.map((i) => i.showStyleVariantId),
@@ -2461,7 +2456,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			rundownAndSegments: MatchedSegment,
 			rundownPlaylist: RundownPlaylist,
 			studio: DBStudio,
-			showStyleBase: DBShowStyleBase,
+			showStyleBase: UIShowStyleBase,
 			isLastSegment: boolean,
 			isFollowingOnAirSegment: boolean,
 			ownCurrentPartInstance: PartInstance | undefined,
@@ -2786,7 +2781,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		renderRundownView(
 			studio: DBStudio,
 			playlist: RundownPlaylist,
-			showStyleBase: ShowStyleBase,
+			showStyleBase: UIShowStyleBase,
 			showStyleVariant: ShowStyleVariant
 		) {
 			const { t } = this.props

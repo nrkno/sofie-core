@@ -8,7 +8,7 @@ import {
 	RundownPlaylists,
 	RundownPlaylistCollectionUtil,
 } from '../../../lib/collections/RundownPlaylists'
-import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
@@ -40,6 +40,8 @@ import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
 import { parse as queryStringParse } from 'query-string'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIShowStyleBases } from '../Collections'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -67,7 +69,7 @@ export interface RundownOverviewTrackedProps {
 	nextSegment: SegmentUi | undefined
 	nextPartInstance: PartUi | undefined
 	currentShowStyleBaseId: ShowStyleBaseId | undefined
-	currentShowStyleBase: ShowStyleBase | undefined
+	currentShowStyleBase: UIShowStyleBase | undefined
 	currentShowStyleVariantId: ShowStyleVariantId | undefined
 	currentShowStyleVariant: ShowStyleVariant | undefined
 	nextShowStyleBaseId: ShowStyleBaseId | undefined
@@ -89,14 +91,14 @@ function getShowStyleBaseIdSegmentPartUi(
 	nextPartInstance: PartInstance | undefined
 ): {
 	showStyleBaseId: ShowStyleBaseId | undefined
-	showStyleBase: ShowStyleBase | undefined
+	showStyleBase: UIShowStyleBase | undefined
 	showStyleVariantId: ShowStyleVariantId | undefined
 	showStyleVariant: ShowStyleVariant | undefined
 	segment: SegmentUi | undefined
 	partInstance: PartUi | undefined
 } {
 	let showStyleBaseId: ShowStyleBaseId | undefined = undefined
-	let showStyleBase: ShowStyleBase | undefined = undefined
+	let showStyleBase: UIShowStyleBase | undefined = undefined
 	let showStyleVariantId: ShowStyleVariantId | undefined = undefined
 	let showStyleVariant: ShowStyleVariant | undefined = undefined
 	let segment: SegmentUi | undefined = undefined
@@ -118,7 +120,7 @@ function getShowStyleBaseIdSegmentPartUi(
 	if (currentRundown && segmentIndex >= 0) {
 		const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(playlist)
 		const rundownIndex = rundownOrder.indexOf(partInstance.rundownId)
-		showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+		showStyleBase = UIShowStyleBases.findOne(showStyleBaseId)
 		showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
 
 		if (showStyleBase) {
@@ -182,7 +184,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 	let currentSegment: SegmentUi | undefined = undefined
 	let currentPartInstanceUi: PartUi | undefined = undefined
 	let currentShowStyleBaseId: ShowStyleBaseId | undefined = undefined
-	let currentShowStyleBase: ShowStyleBase | undefined = undefined
+	let currentShowStyleBase: UIShowStyleBase | undefined = undefined
 	let currentShowStyleVariantId: ShowStyleVariantId | undefined = undefined
 	let currentShowStyleVariant: ShowStyleVariant | undefined = undefined
 
@@ -325,11 +327,11 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					})
 					this.subscribe(PubSub.parts, rundownIds)
 					this.subscribe(PubSub.partInstances, rundownIds, playlist.activationId)
-					this.subscribe(PubSub.showStyleBases, {
-						_id: {
-							$in: showStyleBaseIds,
-						},
-					})
+
+					for (const rundown of rundowns) {
+						this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+					}
+
 					this.subscribe(PubSub.showStyleVariants, {
 						_id: {
 							$in: showStyleVariantIds,

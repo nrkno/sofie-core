@@ -17,7 +17,7 @@ import {
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { OutputLayers, ShowStyleBase, ShowStyleBaseId, SourceLayers } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, ShowStyleBaseId, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import {
 	ISourceLayer,
 	PieceLifespan,
@@ -67,6 +67,7 @@ import {
 	isAdLibOnAir,
 } from '../../lib/shelf'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, _monitor: DragSourceMonitor, component: any) {
@@ -215,7 +216,7 @@ export function actionToAdLibPieceUi(
 export interface IBucketPanelProps {
 	bucket: Bucket
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	shouldQueue: boolean
 	editableName?: boolean
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
@@ -295,8 +296,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		if (!showStyleVariantId)
 			throw new Meteor.Error(500, `No showStyleVariantId found for playlist ${props.playlist._id}`)
 
-		const tOLayers = props.showStyleBase ? props.showStyleBase.outputLayersWithOverrides.defaults : {}
-		const tSLayers = props.showStyleBase ? props.showStyleBase.sourceLayersWithOverrides.defaults : {}
+		const tOLayers = props.showStyleBase ? props.showStyleBase.outputLayers : {}
+		const tSLayers = props.showStyleBase ? props.showStyleBase.sourceLayers : {}
 
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist,
@@ -388,11 +389,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								$in: [null, ...showStyleVariants], // null = valid for all variants
 							},
 						})
-						this.subscribe(PubSub.showStyleBases, {
-							_id: {
-								$in: showStyleBases,
-							},
-						})
+						for (const showStyleBaseId of _.uniq(showStyleBases)) {
+							this.subscribe(PubSub.uiShowStyleBase, showStyleBaseId)
+						}
 					})
 
 					window.addEventListener(MOSEvents.dragenter, this.onDragEnter)

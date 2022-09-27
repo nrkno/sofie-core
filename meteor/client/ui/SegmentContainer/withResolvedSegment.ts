@@ -17,7 +17,7 @@ import {
 	SegmentExtended,
 } from '../../../lib/Rundown'
 import { IContextMenuContext } from '../RundownView'
-import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
@@ -34,6 +34,7 @@ import { SegmentViewMode } from './SegmentViewModes'
 import { SegmentNote, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { AdlibSegmentUi } from '../../lib/shelf'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -72,7 +73,7 @@ export interface IProps {
 	rundownIdsBefore: RundownId[]
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio: Studio
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	playlist: RundownPlaylist
 	rundown: MinimalRundown
 	timeScale: number
@@ -383,14 +384,8 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			if (
 				typeof props.studio !== typeof nextProps.studio ||
 				!_.isEqual(props.studio.settings, nextProps.studio.settings) ||
-				!_.isEqual(
-					props.showStyleBase.sourceLayersWithOverrides,
-					nextProps.showStyleBase.sourceLayersWithOverrides
-				) ||
-				!_.isEqual(
-					props.showStyleBase.outputLayersWithOverrides,
-					nextProps.showStyleBase.outputLayersWithOverrides
-				)
+				!_.isEqual(props.showStyleBase.sourceLayers, nextProps.showStyleBase.sourceLayers) ||
+				!_.isEqual(props.showStyleBase.outputLayers, nextProps.showStyleBase.outputLayers)
 			) {
 				return true
 			}
