@@ -43,7 +43,8 @@ import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
-import { DBSourceLayer } from './showStyles'
+import { DBOutputLayer, DBSourceLayer } from './showStyles'
+import { DBDeviceMapping } from './studios'
 
 export enum PubSub {
 	blueprints = 'blueprints',
@@ -107,6 +108,8 @@ export enum PubSub {
 	timelineForStudio = 'timelineForStudio',
 	expectedPackagesForDevice = 'expectedPackagesForDevice',
 	sourceLayersForShowStyleBase = 'sourceLayersForShowStyleBase',
+	outputLayersForShowStyleBase = 'outputLayersForShowStyleBase',
+	deviceMappingsForStudio = 'deviceMappingsForStudio',
 }
 
 export enum CustomCollectionName {
@@ -114,6 +117,8 @@ export enum CustomCollectionName {
 	StudioTimeline = 'studioTimeline',
 	ExpectedPackagesForDevice = 'deviceExpectedPackages',
 	SourceLayersForShowStyleBase = 'sourceLayersForShowStyleBase',
+	OutputLayersForShowStyleBase = 'outputLayersForShowStyleBase',
+	DeviceMappingsForStudio = 'deviceMappingsForStudio',
 }
 
 export interface PubSubTypes {
@@ -214,6 +219,8 @@ export interface PubSubTypes {
 		token?: string
 	) => DBObj
 	[PubSub.sourceLayersForShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => DBSourceLayer
+	[PubSub.outputLayersForShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => DBOutputLayer
+	[PubSub.deviceMappingsForStudio]: (studioId: StudioId) => DBDeviceMapping
 }
 
 export type CustomCollectionType = {
@@ -221,6 +228,8 @@ export type CustomCollectionType = {
 	[CustomCollectionName.StudioTimeline]: RoutedTimeline
 	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj
 	[CustomCollectionName.SourceLayersForShowStyleBase]: DBSourceLayer
+	[CustomCollectionName.OutputLayersForShowStyleBase]: DBOutputLayer
+	[CustomCollectionName.DeviceMappingsForStudio]: DBDeviceMapping
 }
 
 export function meteorSubscribe<K extends keyof PubSubTypes>(

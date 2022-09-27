@@ -1,4 +1,5 @@
-import { StudioId } from '../collections/Studios'
+import { MappingExt, StudioId } from '../collections/Studios'
+import { ProtectedString } from '../lib'
 
 export interface NewStudiosAPI {
 	insertStudio(): Promise<StudioId>
@@ -8,4 +9,11 @@ export interface NewStudiosAPI {
 export enum StudiosAPIMethods {
 	'insertStudio' = 'studio.insertStudio',
 	'removeStudio' = 'studio.removeStudio',
+}
+
+export type DBDeviceMappingId = ProtectedString<'DBDeviceMapping'>
+export interface DBDeviceMapping {
+	_id: DBDeviceMappingId
+	studioId: StudioId
+	mappings: MappingExt
 }

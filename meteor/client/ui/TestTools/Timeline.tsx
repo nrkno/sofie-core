@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
-import { deserializeTimelineBlob, RoutedTimeline } from '../../../lib/collections/Timeline'
+import { deserializeTimelineBlob } from '../../../lib/collections/Timeline'
 import { applyToArray, protectString } from '../../../lib/lib'
 import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import {

@@ -1,4 +1,4 @@
-import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
 import { ProtectedString } from '../lib'
@@ -22,4 +22,11 @@ export interface DBSourceLayer {
 	_id: DBSourceLayerId
 	showStyleBaseId: ShowStyleBaseId
 	sourceLayer: ISourceLayer
+}
+
+export type DBOutputLayerId = ProtectedString<'DBOutputLayer'>
+export interface DBOutputLayer {
+	_id: DBOutputLayerId
+	showStyleBaseId: ShowStyleBaseId
+	outputLayer: IOutputLayer
 }
