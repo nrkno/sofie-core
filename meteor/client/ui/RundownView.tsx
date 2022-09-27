@@ -128,6 +128,7 @@ import { matchFilter } from './Shelf/AdLibListView'
 import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { SegmentListContainer } from './SegmentList/SegmentListContainer'
 import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
+import { IProps as IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -2473,108 +2474,46 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				? new Set<ISourceLayer['_id']>(this.state.rundownViewLayout?.showDurationSourceLayers)
 				: undefined
 
+			const resolvedSegmentProps: IResolvedSegmentProps & { id: string } = {
+				id: SEGMENT_TIMELINE_ELEMENT_ID + segment._id,
+				studio: studio,
+				showStyleBase: showStyleBase,
+				followLiveSegments: this.state.followLiveSegments,
+				rundownViewLayout: this.state.rundownViewLayout,
+				rundownId: rundownAndSegments.rundown._id,
+				segmentId: segment._id,
+				playlist: rundownPlaylist,
+				rundown: rundownAndSegments.rundown,
+				timeScale: this.state.timeScale,
+				onContextMenu: this.onContextMenu,
+				onSegmentScroll: this.onSegmentScroll,
+				segmentsIdsBefore: segmentIdsBeforeSegment,
+				rundownIdsBefore: rundownIdsBefore,
+				rundownsToShowstyles: this.props.rundownsToShowstyles,
+				isLastSegment: isLastSegment,
+				onPieceClick: this.onSelectPiece,
+				onPieceDoubleClick: this.onPieceDoubleClick,
+				onHeaderNoteClick: this.onHeaderNoteClick,
+				onSwitchViewMode: (viewMode) => this.onSwitchViewMode(segment._id, viewMode),
+				ownCurrentPartInstance: ownCurrentPartInstance,
+				ownNextPartInstance: ownNextPartInstance,
+				isFollowingOnAirSegment: isFollowingOnAirSegment,
+				miniShelfFilter: this.state.miniShelfFilter,
+				countdownToSegmentRequireLayers: this.state.rundownViewLayout?.countdownToSegmentRequireLayers,
+				fixedSegmentDuration: this.state.rundownViewLayout?.fixedSegmentDuration,
+				studioMode: this.state.studioMode,
+				adLibSegmentUi: this.state.uiSegmentMap.get(segment._id),
+				showDurationSourceLayers: showDurationSourceLayers,
+			}
+
 			switch (displayMode) {
 				case SegmentViewMode.Storyboard:
-					return (
-						<SegmentStoryboardContainer
-							id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-							studio={studio}
-							showStyleBase={showStyleBase}
-							followLiveSegments={this.state.followLiveSegments}
-							rundownViewLayout={this.state.rundownViewLayout}
-							rundownId={rundownAndSegments.rundown._id}
-							segmentId={segment._id}
-							playlist={rundownPlaylist}
-							rundown={rundownAndSegments.rundown}
-							timeScale={this.state.timeScale}
-							onContextMenu={this.onContextMenu}
-							onSegmentScroll={this.onSegmentScroll}
-							segmentsIdsBefore={segmentIdsBeforeSegment}
-							rundownIdsBefore={rundownIdsBefore}
-							rundownsToShowstyles={this.props.rundownsToShowstyles}
-							isLastSegment={isLastSegment}
-							onPieceClick={this.onSelectPiece}
-							onPieceDoubleClick={this.onPieceDoubleClick}
-							onHeaderNoteClick={this.onHeaderNoteClick}
-							onSwitchViewMode={(viewMode) => this.onSwitchViewMode(segment._id, viewMode)}
-							ownCurrentPartInstance={ownCurrentPartInstance}
-							ownNextPartInstance={ownNextPartInstance}
-							isFollowingOnAirSegment={isFollowingOnAirSegment}
-							miniShelfFilter={this.state.miniShelfFilter}
-							countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
-							fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
-							studioMode={this.state.studioMode}
-						/>
-					)
+					return <SegmentStoryboardContainer {...resolvedSegmentProps} />
 				case SegmentViewMode.List:
-					return (
-						<SegmentListContainer
-							id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-							studio={studio}
-							showStyleBase={showStyleBase}
-							followLiveSegments={this.state.followLiveSegments}
-							rundownViewLayout={this.state.rundownViewLayout}
-							rundownId={rundownAndSegments.rundown._id}
-							segmentId={segment._id}
-							playlist={rundownPlaylist}
-							rundown={rundownAndSegments.rundown}
-							timeScale={this.state.timeScale}
-							onContextMenu={this.onContextMenu}
-							onSegmentScroll={this.onSegmentScroll}
-							segmentsIdsBefore={segmentIdsBeforeSegment}
-							rundownIdsBefore={rundownIdsBefore}
-							rundownsToShowstyles={this.props.rundownsToShowstyles}
-							isLastSegment={isLastSegment}
-							onPieceClick={this.onSelectPiece}
-							onPieceDoubleClick={this.onPieceDoubleClick}
-							onHeaderNoteClick={this.onHeaderNoteClick}
-							onSwitchViewMode={(viewMode) => this.onSwitchViewMode(segment._id, viewMode)}
-							ownCurrentPartInstance={ownCurrentPartInstance}
-							ownNextPartInstance={ownNextPartInstance}
-							isFollowingOnAirSegment={isFollowingOnAirSegment}
-							countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
-							fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
-							adLibSegmentUi={this.state.uiSegmentMap.get(segment._id)}
-							miniShelfFilter={this.state.miniShelfFilter}
-							studioMode={this.state.studioMode}
-							showDurationSourceLayers={showDurationSourceLayers}
-						/>
-					)
+					return <SegmentListContainer {...resolvedSegmentProps} />
 				case SegmentViewMode.Timeline:
 				default:
-					return (
-						<SegmentTimelineContainer
-							id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-							studio={studio}
-							showStyleBase={showStyleBase}
-							followLiveSegments={this.state.followLiveSegments}
-							rundownViewLayout={this.state.rundownViewLayout}
-							rundownId={rundownAndSegments.rundown._id}
-							segmentId={segment._id}
-							playlist={rundownPlaylist}
-							rundown={rundownAndSegments.rundown}
-							timeScale={this.state.timeScale}
-							onContextMenu={this.onContextMenu}
-							onSegmentScroll={this.onSegmentScroll}
-							segmentsIdsBefore={segmentIdsBeforeSegment}
-							rundownIdsBefore={rundownIdsBefore}
-							rundownsToShowstyles={this.props.rundownsToShowstyles}
-							isLastSegment={isLastSegment}
-							onPieceClick={this.onSelectPiece}
-							onPieceDoubleClick={this.onPieceDoubleClick}
-							onHeaderNoteClick={this.onHeaderNoteClick}
-							onSwitchViewMode={(viewMode) => this.onSwitchViewMode(segment._id, viewMode)}
-							ownCurrentPartInstance={ownCurrentPartInstance}
-							ownNextPartInstance={ownNextPartInstance}
-							isFollowingOnAirSegment={isFollowingOnAirSegment}
-							countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
-							fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
-							adLibSegmentUi={this.state.uiSegmentMap.get(segment._id)}
-							miniShelfFilter={this.state.miniShelfFilter}
-							studioMode={this.state.studioMode}
-							showDurationSourceLayers={showDurationSourceLayers}
-						/>
-					)
+					return <SegmentTimelineContainer {...resolvedSegmentProps} />
 			}
 		}
 
