@@ -2133,7 +2133,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			)
 		}
 
-		onPieceQueued = (err: any, res: ExecuteActionResult | undefined) => {
+		onPieceQueued = (err: any, res: ExecuteActionResult | void) => {
 			if (!err && res) {
 				if (res.taken) {
 					this.keyboardQueuedPartInstanceId = undefined
