@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { getCurrentTime, systemTime, Time } from '../../lib/lib'
+import { CustomCollectionType } from '../../lib/api/pubsub'
+import { Mongo } from 'meteor/mongo'
 
 export { multilineText, isEventInInputField }
 
@@ -149,3 +151,9 @@ export function getEventTimestamp(e: any): Time {
 }
 
 export const TOOLTIP_DEFAULT_DELAY = 0.5
+
+export function createCustomMongoCollection<K extends keyof CustomCollectionType>(
+	name: K
+): Mongo.Collection<CustomCollectionType[K]> {
+	return new Mongo.Collection<CustomCollectionType[K]>(name)
+}

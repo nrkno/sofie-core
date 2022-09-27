@@ -1,5 +1,5 @@
 import { Meteor, Subscription } from 'meteor/meteor'
-import { PubSub, PubSubTypes } from '../../lib/api/pubsub'
+import { CustomCollectionName, PubSub, PubSubTypes } from '../../lib/api/pubsub'
 import { ProtectedString, protectStringObject, unprotectString, waitForPromise } from '../../lib/lib'
 import _ from 'underscore'
 import { SubscriptionContext } from '../publications/lib'
@@ -114,7 +114,7 @@ export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 /** Convenience function for making custom publications of array-data */
 export function meteorCustomPublishArray<K extends keyof PubSubTypes>(
 	publicationName: K,
-	customCollectionName: string,
+	customCollectionName: CustomCollectionName,
 	cb: (
 		this: SubscriptionContext,
 		publication: CustomPublishArray<ReturnType<PubSubTypes[K]>>,

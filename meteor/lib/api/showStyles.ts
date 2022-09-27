@@ -1,5 +1,7 @@
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
+import { ProtectedString } from '../lib'
 
 export interface NewShowStylesAPI {
 	insertShowStyleBase(): Promise<ShowStyleBaseId>
@@ -13,4 +15,11 @@ export enum ShowStylesAPIMethods {
 	'insertShowStyleVariant' = 'showstyles.insertShowStyleVariant',
 	'removeShowStyleBase' = 'showstyles.removeShowStyleBase',
 	'removeShowStyleVariant' = 'showstyles.removeShowStyleVariant',
+}
+
+export type DBSourceLayerId = ProtectedString<'DBSourceLayer'>
+export interface DBSourceLayer {
+	_id: DBSourceLayerId
+	showStyleBaseId: ShowStyleBaseId
+	sourceLayer: ISourceLayer
 }

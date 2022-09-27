@@ -3,7 +3,7 @@ import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-met
 import * as _ from 'underscore'
 import { deserializeTimelineBlob, RoutedTimeline } from '../../../lib/collections/Timeline'
 import { applyToArray, protectString } from '../../../lib/lib'
-import { PubSub } from '../../../lib/api/pubsub'
+import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import {
 	TimelineState,
 	Resolver,
@@ -16,13 +16,13 @@ import { TimelineContentObject, transformTimeline } from '@sofie-automation/core
 import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { StudioSelect } from './StudioSelect'
 import { StudioId } from '../../../lib/collections/Studios'
-import { Mongo } from 'meteor/mongo'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Classnames from 'classnames'
+import { createCustomMongoCollection } from '../../lib/lib'
 
-export const StudioTimeline = new Mongo.Collection<RoutedTimeline>('studioTimeline')
+export const StudioTimeline = createCustomMongoCollection(CustomCollectionName.StudioTimeline)
 
 interface TimelineViewRouteParams {
 	studioId: string | undefined

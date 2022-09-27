@@ -43,6 +43,7 @@ import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
+import { DBSourceLayer } from './showStyles'
 
 export enum PubSub {
 	blueprints = 'blueprints',
@@ -105,6 +106,14 @@ export enum PubSub {
 	mappingsForStudio = 'mappingsForStudio',
 	timelineForStudio = 'timelineForStudio',
 	expectedPackagesForDevice = 'expectedPackagesForDevice',
+	sourceLayersForShowStyleBase = 'sourceLayersForShowStyleBase',
+}
+
+export enum CustomCollectionName {
+	StudioMappings = 'studioMappings',
+	StudioTimeline = 'studioTimeline',
+	ExpectedPackagesForDevice = 'deviceExpectedPackages',
+	SourceLayersForShowStyleBase = 'sourceLayersForShowStyleBase',
 }
 
 export interface PubSubTypes {
@@ -204,6 +213,14 @@ export interface PubSubTypes {
 		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 		token?: string
 	) => DBObj
+	[PubSub.sourceLayersForShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => DBSourceLayer
+}
+
+export type CustomCollectionType = {
+	[CustomCollectionName.StudioMappings]: RoutedMappings
+	[CustomCollectionName.StudioTimeline]: RoutedTimeline
+	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj
+	[CustomCollectionName.SourceLayersForShowStyleBase]: DBSourceLayer
 }
 
 export function meteorSubscribe<K extends keyof PubSubTypes>(
