@@ -555,7 +555,7 @@ export class ConfigManifestTable<
 						<tbody>
 							{_.map(vals, (val, i) => (
 								<tr key={sortedIndices[i]}>
-									{_.map(configEntry.columns, (col) => (
+									{_.map(this.state.resolvedColumns, (col) => (
 										<td key={col.id}>
 											{getEditAttribute(
 												this.props.collection,
