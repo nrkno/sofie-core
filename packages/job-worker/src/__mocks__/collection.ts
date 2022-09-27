@@ -24,17 +24,17 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { clone, literal } from '@sofie-automation/corelib/dist/lib'
 import {
+	FindOptions as CacheFindOptions,
 	mongoFindOptions,
 	mongoModify,
 	mongoWhere,
-	FindOptions as CacheFindOptions,
 } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import EventEmitter = require('eventemitter3')
-import { Collection, FindOptions, AnyBulkWriteOperation } from 'mongodb'
+import { AnyBulkWriteOperation, Collection, FindOptions } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
-import _ = require('underscore')
 import { IChangeStream, IChangeStreamEvents, ICollection, IDirectCollections, MongoModifier, MongoQuery } from '../db'
+import _ = require('underscore')
 
 export interface CollectionOperation {
 	type: string
@@ -299,6 +299,8 @@ export function getMockCollections(): Readonly<IDirectCollections> {
 			PackageInfos: new MockMongoCollection(CollectionName.PackageInfos),
 
 			ExternalMessageQueue: new MockMongoCollection(CollectionName.ExternalMessageQueue),
+
+			MediaObjects: new MockMongoCollection(CollectionName.MediaObjects),
 		})
 	)
 }

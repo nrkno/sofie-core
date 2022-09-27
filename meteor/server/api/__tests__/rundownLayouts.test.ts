@@ -61,10 +61,10 @@ describe('Rundown Layouts', () => {
 				exposeAsStandalone: false,
 				icon: '',
 				iconColor: '',
-				showBuckets: true,
 				showInspector: true,
 				openByDefault: false,
 				disableContextMenu: true,
+				hideDefaultStartExecute: false,
 				regionId: CustomizableRegions.Shelf,
 			})
 			return { rundownLayout: mockLayout, rundownLayoutId }

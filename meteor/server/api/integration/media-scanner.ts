@@ -1,10 +1,12 @@
 import { Meteor } from 'meteor/meteor'
-import { MediaObject, MediaObjects, MediaObjId } from '../../../lib/collections/MediaObjects'
+import * as _ from 'underscore'
 import { getStudioIdFromDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { protectString } from '../../../lib/lib'
 import { MediaObjectRevision } from '../../../lib/api/peripheralDevice'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { MethodContext } from '../../../lib/api/methods'
+import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
+import { MediaObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace MediaScannerIntegration {
 	export async function getMediaObjectRevisions(

@@ -20,6 +20,7 @@ import { PeripheralDeviceId } from '../collections/PeripheralDevices'
 import { RundownBaselineAdLibActionId } from '../collections/RundownBaselineAdLibActions'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import { Time } from '../lib'
+import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(
@@ -111,7 +112,7 @@ export interface NewUserActionAPI extends MethodContext {
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
-	): Promise<ClientAPI.ClientResponse<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }>>
+	): Promise<ClientAPI.ClientResponse<ExecuteActionResult>>
 	segmentAdLibPieceStart(
 		userEvent: string,
 		eventTime: Time,

@@ -1,4 +1,4 @@
-import { ITranslatableMessage } from '../../blueprints-integration/dist'
+import { ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 
 // Mock 't' function for i18next to find the keys
 function t(key: string): string {
