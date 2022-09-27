@@ -7,20 +7,20 @@ import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
 let writeAccess = false
 let writeAccessTest = false
-export function testWriteAccess() {
+export function testWriteAccess(): void {
 	writeAccessTest = true
 }
-export function isInTestWrite() {
+export function isInTestWrite(): boolean {
 	return writeAccessTest
 }
 /** Called inside access control function, to indicate that a check was made */
-export function triggerWriteAccess() {
+export function triggerWriteAccess(): void {
 	if (writeAccessTest) {
 		writeAccess = true
 		throw new Meteor.Error(200, 'triggerWriteAccess') // to be ignored in verifyMethod
 	}
 }
-export function verifyWriteAccess() {
+export function verifyWriteAccess(): string {
 	if (!writeAccessTest) {
 		return 'writeAccessTest not set!'
 	}
@@ -32,7 +32,7 @@ export function verifyWriteAccess() {
 	return ''
 }
 /** Used in methods that needs no access control */
-export function triggerWriteAccessBecauseNoCheckNecessary() {
+export function triggerWriteAccessBecauseNoCheckNecessary(): void {
 	triggerWriteAccess()
 }
 
@@ -58,7 +58,7 @@ Meteor.startup(() => {
 	}
 })
 
-export async function verifyAllMethods() {
+export async function verifyAllMethods(): Promise<boolean> {
 	// Verify all Meteor methods
 	let ok = true
 	for (const methodName of AllMeteorMethods) {

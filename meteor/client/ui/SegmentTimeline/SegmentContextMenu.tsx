@@ -66,15 +66,14 @@ export const SegmentContextMenu = withTranslation()(
 						)}
 						{part && !part.instance.part.invalid && timecode !== null && (
 							<>
-								{startsAt !== null && (
-									<MenuItem
-										onClick={(e) => this.props.onSetNext(part.instance.part, e)}
-										disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
-									>
-										<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span> (
-										{RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
-									</MenuItem>
-								)}
+								<MenuItem
+									onClick={(e) => this.props.onSetNext(part.instance.part, e)}
+									disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
+								>
+									<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span>
+									{startsAt !== null &&
+										'\u00a0(' + RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000) + ')'}
+								</MenuItem>
 								{startsAt !== null && part && this.props.enablePlayFromAnywhere ? (
 									<>
 										<MenuItem

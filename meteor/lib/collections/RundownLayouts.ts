@@ -253,6 +253,7 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	 * 'only': show only Rundown Baseline AdLib Pieces matching this filter
 	 */
 	rundownBaseline: boolean | 'only'
+	disableHoverInspector: boolean
 }
 
 export interface RundownLayoutFilter extends RundownLayoutFilterBase {

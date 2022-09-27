@@ -19,7 +19,10 @@ import { BlueprintId } from '../../lib/collections/Blueprints'
  * @param bundles the bundles to insert or update
  * @param originBlueprintId id of the blueprint the translation bundles belongs to
  */
-export async function upsertBundles(bundles: BlueprintTranslationsbundle[], originBlueprintId: BlueprintId) {
+export async function upsertBundles(
+	bundles: BlueprintTranslationsbundle[],
+	originBlueprintId: BlueprintId
+): Promise<void> {
 	for (const bundle of bundles) {
 		const { type, language, data } = bundle
 

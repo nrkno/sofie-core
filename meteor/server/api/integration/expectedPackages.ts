@@ -372,7 +372,7 @@ export namespace PackageManagerIntegration {
 		packageId: ExpectedPackageId,
 		expectedContentVersionHash: string,
 		actualContentVersionHash: string,
-		payload: any
+		payload: unknown
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		check(packageId, String)

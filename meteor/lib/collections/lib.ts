@@ -27,7 +27,7 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
 	hashName: string,
 	hashFields: string[],
 	skipEnsureUpdatedOnStart?: boolean
-) {
+): void {
 	const doUpdate = (id: DBInterface['_id'], obj: any) => {
 		const newHash = getHash(stringifyObjects(_.pick(obj, ...hashFields)))
 

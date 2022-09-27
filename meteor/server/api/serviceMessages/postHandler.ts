@@ -3,6 +3,7 @@ import { logger } from '../../logging'
 import { ServiceMessage, Criticality } from '../../../lib/collections/CoreSystem'
 import { writeMessage } from './serviceMessagesApi'
 import moment from 'moment'
+import { Params } from 'meteor/meteorhacks:picker'
 
 export { BodyParsingIncomingMessage, postHandler }
 
@@ -21,7 +22,7 @@ const validCriticalities = Object.keys(Criticality)
  *
  * Picker route handler, see Picker documentation for interface details.
  */
-async function postHandler(_params, req: BodyParsingIncomingMessage, res: ServerResponse) {
+async function postHandler(_params: Params, req: BodyParsingIncomingMessage, res: ServerResponse): Promise<void> {
 	const { body } = req
 	if (!body) {
 		res.statusCode = 400

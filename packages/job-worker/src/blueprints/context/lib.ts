@@ -121,10 +121,20 @@ function convertPieceInstanceToBlueprintsInner(pieceInstance: PieceInstance): Co
 	return obj
 }
 
+/**
+ * Convert a PieceInstance into IBlueprintPieceInstance, for passing into the blueprints
+ * @param pieceInstance the PieceInstance to convert
+ * @returns a cloned complete and clean IBlueprintPieceInstance
+ */
 export function convertPieceInstanceToBlueprints(pieceInstance: PieceInstance): IBlueprintPieceInstance {
 	return convertPieceInstanceToBlueprintsInner(pieceInstance)
 }
 
+/**
+ * Convert a ResolvedPieceInstance into IBlueprintResolvedPieceInstance, for passing into the blueprints
+ * @param pieceInstance the ResolvedPieceInstance to convert
+ * @returns a cloned complete and clean IBlueprintResolvedPieceInstance
+ */
 export function convertResolvedPieceInstanceToBlueprints(
 	pieceInstance: ResolvedPieceInstance
 ): IBlueprintResolvedPieceInstance {
@@ -137,6 +147,11 @@ export function convertResolvedPieceInstanceToBlueprints(
 	return obj
 }
 
+/**
+ * Convert a DBPartInstance into IBlueprintPartInstance, for passing into the blueprints
+ * @param partInstance the DBPartInstance to convert
+ * @returns a cloned complete and clean IBlueprintPartInstance
+ */
 export function convertPartInstanceToBlueprints(partInstance: DBPartInstance): IBlueprintPartInstance {
 	const obj: Complete<IBlueprintPartInstance> = {
 		_id: unprotectString(partInstance._id),
@@ -178,6 +193,11 @@ function convertPieceGenericToBlueprintsInner(piece: PieceGeneric): Complete<IBl
 	return obj
 }
 
+/**
+ * Convert a Piece into IBlueprintPieceDB, for passing into the blueprints
+ * @param piece the Piece to convert
+ * @returns a cloned complete and clean IBlueprintPieceDB
+ */
 export function convertPieceToBlueprints(piece: PieceInstancePiece): IBlueprintPieceDB {
 	const obj: Complete<IBlueprintPieceDB> = {
 		...convertPieceGenericToBlueprintsInner(piece),
@@ -193,6 +213,11 @@ export function convertPieceToBlueprints(piece: PieceInstancePiece): IBlueprintP
 	return obj
 }
 
+/**
+ * Convert a DBPart into IBlueprintPartDB, for passing into the blueprints
+ * @param part the Part to convert
+ * @returns a cloned complete and clean IBlueprintPartDB
+ */
 export function convertPartToBlueprints(part: DBPart): IBlueprintPartDB {
 	const obj: Complete<IBlueprintPartDB> = {
 		_id: unprotectString(part._id),
@@ -225,6 +250,11 @@ export function convertPartToBlueprints(part: DBPart): IBlueprintPartDB {
 	return obj
 }
 
+/**
+ * Convert a AdLibPiece into IBlueprintAdLibPieceDB, for passing into the blueprints
+ * @param adLib the AdLibPiece to convert
+ * @returns a cloned complete and clean IBlueprintAdLibPieceDB
+ */
 export function convertAdLibPieceToBlueprints(adLib: AdLibPiece): IBlueprintAdLibPieceDB {
 	const obj: Complete<IBlueprintAdLibPieceDB> = {
 		...convertPieceGenericToBlueprintsInner(adLib),
@@ -241,6 +271,12 @@ export function convertAdLibPieceToBlueprints(adLib: AdLibPiece): IBlueprintAdLi
 
 	return obj
 }
+
+/**
+ * Convert a AdLibAction into IBlueprintActionManifest, for passing into the blueprints
+ * @param action the AdLibAction to convert
+ * @returns a cloned complete and clean IBlueprintActionManifest
+ */
 export function convertAdLibActionToBlueprints(action: AdLibAction): IBlueprintActionManifest {
 	const obj: Complete<IBlueprintActionManifest> = {
 		externalId: action.externalId,
@@ -258,6 +294,11 @@ export function convertAdLibActionToBlueprints(action: AdLibAction): IBlueprintA
 	return obj
 }
 
+/**
+ * Convert a DBSegment into IBlueprintSegmentDB, for passing into the blueprints
+ * @param segment the DBSegment to convert
+ * @returns a cloned complete and clean IBlueprintSegmentDB
+ */
 export function convertSegmentToBlueprints(segment: ReadonlyDeep<DBSegment>): IBlueprintSegmentDB {
 	const obj: Complete<IBlueprintSegmentDB> = {
 		_id: unprotectString(segment._id),
@@ -272,6 +313,11 @@ export function convertSegmentToBlueprints(segment: ReadonlyDeep<DBSegment>): IB
 	return obj
 }
 
+/**
+ * Convert a DBRundown into IBlueprintRundownDB, for passing into the blueprints
+ * @param rundown the DBRundown to convert
+ * @returns a cloned complete and clean IBlueprintRundownDB
+ */
 export function convertRundownToBlueprints(rundown: ReadonlyDeep<DBRundown>): IBlueprintRundownDB {
 	const obj: Complete<IBlueprintRundownDB> = {
 		externalId: rundown.externalId,
@@ -290,6 +336,11 @@ export function convertRundownToBlueprints(rundown: ReadonlyDeep<DBRundown>): IB
 	return obj
 }
 
+/**
+ * Convert a DBShowStyleBase into IBlueprintShowStyleBase, for passing into the blueprints
+ * @param showStyleBase the DBShowStyleBase to convert
+ * @returns a cloned complete and clean IBlueprintShowStyleBase
+ */
 export function convertShowStyleBaseToBlueprints(
 	showStyleBase: ReadonlyDeep<DBShowStyleBase>
 ): IBlueprintShowStyleBase {
@@ -303,6 +354,12 @@ export function convertShowStyleBaseToBlueprints(
 
 	return obj
 }
+
+/**
+ * Convert a DBShowStyleVariant into IBlueprintShowStyleVariant, for passing into the blueprints
+ * @param showStyleVariant the DBShowStyleVariant to convert
+ * @returns a cloned complete and clean IBlueprintShowStyleVariant
+ */
 export function convertShowStyleVariantToBlueprints(
 	showStyleVariant: ReadonlyDeep<DBShowStyleVariant>
 ): IBlueprintShowStyleVariant {

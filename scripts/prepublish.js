@@ -40,7 +40,7 @@ const basePath = path.resolve('./packages')
 
         let changed = false
         // Rewrite internal dependencies to target the correct version, so that it works when published to npm:
-        for (const dep of Object.keys(p.package.dependencies)) {
+        for (const dep of Object.keys(p.package.dependencies || {})) {
 
             const foundPackage = packages.find(p => p.package.name === dep)
             if (foundPackage) {

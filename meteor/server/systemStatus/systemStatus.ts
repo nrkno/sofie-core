@@ -296,7 +296,7 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 
 	return statusObj
 }
-export function setSystemStatus(type: string, status: StatusObject) {
+export function setSystemStatus(type: string, status: StatusObject): void {
 	let systemStatus: StatusObjectInternal = systemStatuses[type]
 	if (!systemStatus) {
 		systemStatus = {
@@ -331,7 +331,7 @@ export function setSystemStatus(type: string, status: StatusObject) {
 	}
 	systemStatus.messages = messages
 }
-export function removeSystemStatus(type: string) {
+export function removeSystemStatus(type: string): void {
 	delete systemStatuses[type]
 }
 /** Random id for this running instance of core */

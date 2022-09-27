@@ -70,7 +70,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 	}
 
 	/** Check for permission to modify a peripheralDevice */
-	export async function peripheralDevice(cred0: Credentials, deviceId: PeripheralDeviceId) {
+	export async function peripheralDevice(cred0: Credentials, deviceId: PeripheralDeviceId): Promise<ContentAccess> {
 		await backwardsCompatibilityfix(cred0, deviceId)
 		return anyContent(cred0, deviceId)
 	}

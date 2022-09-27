@@ -15,7 +15,6 @@ import {
 	IRundownDataChangedEventContext,
 	IRundownTimingEventContext,
 	IStudioBaselineContext,
-	IRundownUserContext,
 	IGetRundownContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
@@ -153,6 +152,8 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	 * `playStatus: previous` means that the currentPartInstance is `orphaned: adlib-part`
 	 * and thus possibly depends on an already past PartInstance for some of it's properties. Therefore
 	 * the blueprint is allowed to modify the most recently played non-adlibbed PartInstance using ingested data.
+	 *
+	 * `newData.part` will be `undefined` when the PartInstance is orphaned
 	 */
 	syncIngestUpdateToPartInstance?: (
 		context: ISyncIngestUpdateToPartInstanceContext,
@@ -161,15 +162,6 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 
 		playoutStatus: 'previous' | 'current' | 'next'
 	) => void
-
-	/**
-	 * Allows the blueprint to remove the next part instance if it has become orphaned.
-	 * This call will only be made if the part instance has been orphaned.
-	 */
-	shouldRemoveOrphanedPartInstance?: (
-		context: IRundownUserContext,
-		partInstance: BlueprintRemoveOrphanedPartInstance
-	) => boolean
 
 	/** Execute an action defined by an IBlueprintActionManifest */
 	executeAction?: (
@@ -263,7 +255,7 @@ export interface BlueprintResultPart {
 export interface BlueprintSyncIngestNewData {
 	// source: BlueprintSyncIngestDataSource
 	/** The new part */
-	part: IBlueprintPartDB
+	part: IBlueprintPartDB | undefined
 	/** A list of pieces (including infinites) that would be present in a fresh copy of this partInstance */
 	pieceInstances: IBlueprintPieceInstance[]
 	/** The adlib pieces belonging to this part */
@@ -290,11 +282,6 @@ export interface BlueprintSyncIngestPartInstance {
 	// Upcoming interface:
 	// adLibPieceInstances: IBlueprintAdlibPieceInstance[]
 	// adLibActionInstances: IBlueprintAdlibActionInstance[]
-}
-
-export interface BlueprintRemoveOrphanedPartInstance {
-	partInstance: IBlueprintPartInstance
-	pieceInstances: IBlueprintPieceInstance[]
 }
 
 /** Key is the ID of the external ID of the Rundown, Value is the rank to be assigned */
