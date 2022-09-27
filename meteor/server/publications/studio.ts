@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
-import { PubSub } from '../../lib/api/pubsub'
+import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import {
 	Studios,
 	DBStudio,
@@ -162,7 +162,7 @@ meteorPublish(
 
 meteorCustomPublishArray(
 	PubSub.mappingsForDevice,
-	'studioMappings',
+	CustomCollectionName.StudioMappings,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = PeripheralDevices.findOne(deviceId)
@@ -177,11 +177,15 @@ meteorCustomPublishArray(
 	}
 )
 
-meteorCustomPublishArray(PubSub.mappingsForStudio, 'studioMappings', async function (pub, studioId: StudioId, token) {
-	if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
-		await createObserverForMappingsPublication(pub, PubSub.mappingsForStudio, studioId)
+meteorCustomPublishArray(
+	PubSub.mappingsForStudio,
+	CustomCollectionName.StudioMappings,
+	async function (pub, studioId: StudioId, token) {
+		if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
+			await createObserverForMappingsPublication(pub, PubSub.mappingsForStudio, studioId)
+		}
 	}
-})
+)
 
 interface RoutedMappingsArgs {
 	readonly studioId: StudioId

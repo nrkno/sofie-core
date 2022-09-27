@@ -17,6 +17,7 @@ import { logger } from '../logging'
 import type { AnyBulkWriteOperation, Collection as RawCollection, Db as RawDb, CreateIndexesOptions } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { MongoFieldSpecifier, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { CustomCollectionType } from '../api/pubsub'
 
 const ObserveChangeBufferTimeout = 2000
 
@@ -124,6 +125,17 @@ export function createInMemoryMongoCollection<DBInterface extends { _id: Protect
 ): MongoCollection<DBInterface> {
 	const collection = new Mongo.Collection<DBInterface>(null)
 	return new WrappedMongoCollection<DBInterface>(collection, name)
+}
+
+/**
+ * Create a Mongo Collection for a virtual collection populated by a custom-publication
+ * @param name Name of the custom-collection
+ */
+export function createCustomPublicationMongoCollection<K extends keyof CustomCollectionType>(
+	name: K
+): MongoCollection<CustomCollectionType[K]> {
+	const collection = new Mongo.Collection<CustomCollectionType[K]>(name)
+	return new WrappedMongoCollection<CustomCollectionType[K]>(collection, name)
 }
 
 class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<any> }>

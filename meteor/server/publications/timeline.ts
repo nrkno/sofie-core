@@ -10,7 +10,7 @@ import {
 	TimelineBlob,
 } from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
-import { PubSub } from '../../lib/api/pubsub'
+import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/collections/lib'
 import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
@@ -38,7 +38,7 @@ meteorPublish(PubSub.timeline, async function (selector, token) {
 
 meteorCustomPublishArray(
 	PubSub.timelineForDevice,
-	'studioTimeline',
+	CustomCollectionName.StudioTimeline,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = PeripheralDevices.findOne(deviceId)
@@ -53,11 +53,15 @@ meteorCustomPublishArray(
 	}
 )
 
-meteorCustomPublishArray(PubSub.timelineForStudio, 'studioTimeline', async function (pub, studioId: StudioId, token) {
-	if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
-		await createObserverForTimelinePublication(pub, PubSub.timelineForStudio, studioId)
+meteorCustomPublishArray(
+	PubSub.timelineForStudio,
+	CustomCollectionName.StudioTimeline,
+	async function (pub, studioId: StudioId, token) {
+		if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
+			await createObserverForTimelinePublication(pub, PubSub.timelineForStudio, studioId)
+		}
 	}
-})
+)
 
 interface RoutedTimelineArgs {
 	readonly studioId: StudioId

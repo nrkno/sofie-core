@@ -44,6 +44,9 @@ import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
 
+/**
+ * Ids of possible DDP subscriptions
+ */
 export enum PubSub {
 	blueprints = 'blueprints',
 	coreSystem = 'coreSystem',
@@ -107,6 +110,10 @@ export enum PubSub {
 	expectedPackagesForDevice = 'expectedPackagesForDevice',
 }
 
+/**
+ * Type definitions for all DDP subscriptions.
+ * All the PubSub ids must be present here, or they will produce type errors when used
+ */
 export interface PubSubTypes {
 	[PubSub.blueprints]: (selector: MongoQuery<Blueprint>, token?: string) => Blueprint
 	[PubSub.coreSystem]: (token?: string) => ICoreSystem
@@ -206,6 +213,31 @@ export interface PubSubTypes {
 	) => DBObj
 }
 
+/**
+ * Ids of possible Custom collections, populated by DDP subscriptions
+ */
+export enum CustomCollectionName {
+	StudioMappings = 'studioMappings',
+	StudioTimeline = 'studioTimeline',
+	ExpectedPackagesForDevice = 'deviceExpectedPackages',
+}
+
+/**
+ * Type definitions for all custom collections.
+ * All the CustomCollectionName ids must be present here, or they will produce type errors when used
+ */
+export type CustomCollectionType = {
+	[CustomCollectionName.StudioMappings]: RoutedMappings
+	[CustomCollectionName.StudioTimeline]: RoutedTimeline
+	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj
+}
+
+/**
+ * Type safe wrapper around Meteor.subscribe()
+ * @param name name of the subscription
+ * @param args arguments to the subscription
+ * @returns Meteor subscription handle
+ */
 export function meteorSubscribe<K extends keyof PubSubTypes>(
 	name: K,
 	...args: Parameters<PubSubTypes[K]>
