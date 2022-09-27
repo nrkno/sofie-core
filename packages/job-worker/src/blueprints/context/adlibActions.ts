@@ -1,5 +1,6 @@
 import {
 	IActionExecutionContext,
+	IDataStoreActionExecutionContext,
 	IBlueprintMutatablePart,
 	IBlueprintPart,
 	IBlueprintPartInstance,
@@ -66,9 +67,69 @@ export enum ActionPartChange {
 	SAFE_CHANGE = 1,
 }
 
+export class DatastoreActionExecutionContext
+	extends ShowStyleUserContext
+	implements IDataStoreActionExecutionContext, IEventContext
+{
+	protected readonly _context: JobContext
+
+	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
+	public currentPartState: ActionPartChange = ActionPartChange.NONE
+	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the next partInstance */
+	public nextPartState: ActionPartChange = ActionPartChange.NONE
+
+	constructor(
+		contextInfo: UserContextInfo,
+		context: JobContext,
+		showStyle: ReadonlyDeep<ShowStyleCompound>,
+		watchedPackages: WatchedPackagesHelper
+	) {
+		super(contextInfo, context, showStyle, watchedPackages)
+		this._context = context
+	}
+
+	async setTimelineDatastoreValue(key: string, value: unknown, mode: 'temporary' | 'indefinite'): Promise<void> {
+		const collection = this._context.directCollections.TimelineDatastores
+		const entry = await collection.findOne({ studioId: this._context.studioId, key })
+
+		if (!entry) {
+			await collection.insertOne({
+				_id: getRandomId(),
+				studioId: this._context.studioId,
+
+				key,
+				value,
+
+				modified: Date.now(),
+				mode,
+			})
+		} else {
+			await collection.update(entry._id, {
+				$set: {
+					value,
+					mode,
+					modified: Date.now(),
+				},
+			})
+		}
+	}
+
+	async removeTimelineDatastoreValue(key: string): Promise<void> {
+		const collection = this._context.directCollections.TimelineDatastores
+		await collection.remove({ studioId: this._context.studioId, key })
+	}
+
+	getCurrentTime(): number {
+		return getCurrentTime()
+	}
+}
+
 /** Actions */
-export class ActionExecutionContext extends ShowStyleUserContext implements IActionExecutionContext, IEventContext {
-	private readonly _context: JobContext
+export class ActionExecutionContext
+	extends DatastoreActionExecutionContext
+	implements IActionExecutionContext, IEventContext
+{
+	// private readonly _context: JobContext
 	private readonly _cache: CacheForPlayout
 	private readonly rundown: DBRundown
 	private readonly playlistActivationId: RundownPlaylistActivationId
@@ -90,7 +151,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, context, showStyle, watchedPackages)
-		this._context = context
+		// this._context = context
 		this._cache = cache
 		this.rundown = rundown
 		this.takeAfterExecute = false
@@ -110,10 +171,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 				logger.warn(`Blueprint action requested unknown PartInstance "${part}"`)
 				throw new Error(`Unknown part "${part}"`)
 		}
-	}
-
-	getCurrentTime(): number {
-		return getCurrentTime()
 	}
 
 	async getPartInstance(part: 'current' | 'next'): Promise<IBlueprintPartInstance | undefined> {
@@ -167,7 +224,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
-				// @ts-expect-error metaData is `unknown` so no subkeys are known to be valid
 				query[`piece.metaData.${key}`] = value
 			}
 		}
@@ -201,7 +257,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
-				// @ts-expect-error metaData is `unknown` so no subkeys are known to be valid
 				query[`metaData.${key}`] = value
 			}
 		}
@@ -558,37 +613,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 			return doc
 		})
-	}
-
-	async setTimelineDatastoreValue(key: string, value: unknown, mode: 'temporary' | 'infinite'): Promise<void> {
-		const collection = this._context.directCollections.TimelineDatastores
-		const entry = await collection.findOne({ studioId: this._context.studioId, key })
-
-		if (!entry) {
-			await collection.insertOne({
-				_id: getRandomId(),
-				studioId: this._context.studioId,
-
-				key,
-				value,
-
-				modified: Date.now(),
-				mode,
-			})
-		} else {
-			await collection.update(entry._id, {
-				$set: {
-					value,
-					mode,
-					modified: Date.now(),
-				},
-			})
-		}
-	}
-
-	async removeTimelineDatastoreValue(key: string): Promise<void> {
-		const collection = this._context.directCollections.TimelineDatastores
-		await collection.remove({ studioId: this._context.studioId, key })
 	}
 
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {

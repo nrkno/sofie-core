@@ -148,7 +148,15 @@ export interface ISegmentUserContext extends IUserNotesContext, IRundownContext,
 }
 
 /** Actions */
-export interface IActionExecutionContext extends IShowStyleUserContext, IEventContext {
+export interface IDataStoreActionExecutionContext extends IShowStyleUserContext, IEventContext {
+	setTimelineDatastoreValue(key: string, value: any, mode: 'temporary' | 'indefinite'): Promise<void>
+	removeTimelineDatastoreValue(key: string): Promise<void>
+}
+
+export interface IActionExecutionContext
+	extends IShowStyleUserContext,
+		IEventContext,
+		IDataStoreActionExecutionContext {
 	/** Data fetching */
 	// getIngestRundown(): IngestRundown // TODO - for which part?
 	/** Get a PartInstance which can be modified */
@@ -208,9 +216,6 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 	takeAfterExecuteAction(take: boolean): Promise<boolean>
 	/** Inform core that a take out of the current partinstance should be blocked until the specified time */
 	blockTakeUntil(time: Time | null): Promise<void>
-
-	setTimelineDatastoreValue(key: string, value: any, mode: 'temporary' | 'infinite'): Promise<void>
-	removeTimelineDatastoreValue(key: string): Promise<void>
 
 	/** Misc actions */
 	// updateAction(newManifest: Pick<IBlueprintAdLibActionManifest, 'description' | 'payload'>): void // only updates itself. to allow for the next one to do something different

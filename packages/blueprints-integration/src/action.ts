@@ -104,6 +104,8 @@ export interface IBlueprintActionManifest {
 	/** Optional ways of executing this action. The default option is computed from the display properties */
 	triggerModes?: IBlueprintActionTriggerMode[]
 
+	// supportsDataStoreFastRoute?: boolean
+
 	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
 	 * @deprecated replaced by .expectedPackages
 	 */

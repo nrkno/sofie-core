@@ -110,10 +110,29 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 						)
 						break
 					case IBlueprintDirectPlayType.AdLibAction: {
+						const playlist = cache.PlaylistId
 						const executeProps = pieceToCopy.allowDirectPlay
+						const showStyle = await context.getShowStyleCompound(
+							rundown.showStyleVariantId,
+							rundown.showStyleBaseId
+						)
+						const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+
+						const currentPartInstance = playlist.currentPartInstanceId
+							? await context.directCollections.PartInstances.findOne(playlist.currentPartInstanceId)
+							: undefined
+						if (!currentPartInstance)
+							throw new Error(
+								`Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`
+							)
+
 						await executeActionInner(
 							context,
 							cache,
+							rundown,
+							showStyle,
+							blueprint,
+							currentPartInstance,
 							null, // TODO: should this be able to retrieve any watched packages?
 							async (actionContext, _rundown, _currentPartInstance, blueprint) => {
 								if (!blueprint.blueprint.executeAction)
