@@ -2,16 +2,16 @@ import { Time } from './common'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import { PackageInfo } from './packageInfo'
 import {
+	IBlueprintMutatablePart,
 	IBlueprintPart,
 	IBlueprintPartInstance,
 	IBlueprintPiece,
+	IBlueprintPieceDB,
 	IBlueprintPieceInstance,
 	IBlueprintResolvedPieceInstance,
-	IBlueprintMutatablePart,
-	IBlueprintSegmentDB,
-	IBlueprintPieceDB,
-	IBlueprintSegmentRundown,
 	IBlueprintRundownPlaylist,
+	IBlueprintSegmentDB,
+	IBlueprintSegmentRundown,
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { OnGenerateTimelineObj } from './timeline'
@@ -102,7 +102,7 @@ export interface IPackageInfoContext {
 	 * eg, baseline packages can be accessed when generating the baseline objects, piece/adlib packages can be access when regenerating the segment they are from
 	 */
 	getPackageInfo: (packageId: string) => Readonly<PackageInfo.Any[]>
-	// hackGetMediaObjectDuration: (mediaId: string) => number | undefined // TODOSYNC: rework this, or remove it
+	hackGetMediaObjectDuration: (mediaId: string) => Promise<number | undefined>
 }
 
 export interface IStudioBaselineContext extends IStudioContext, IPackageInfoContext {}
@@ -217,7 +217,7 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 
 /** Actions */
 export interface ISyncIngestUpdateToPartInstanceContext extends IRundownUserContext {
-	/** Sync a pieceInstance. Inserts the pieceInstance if new, updates if existing. Optionally pass in a mutated Piece, to change the content of the instance */
+	/** Sync a pieceInstance. Inserts the pieceInstance if new, updates if existing. Optionally pass in a mutated Piece, to override the content of the instance */
 	syncPieceInstance(
 		pieceInstanceId: string,
 		mutatedPiece?: Omit<IBlueprintPiece, 'lifespan'>
@@ -225,7 +225,7 @@ export interface ISyncIngestUpdateToPartInstanceContext extends IRundownUserCont
 
 	/** Insert a pieceInstance. Returns id of new PieceInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
 	insertPieceInstance(piece: IBlueprintPiece): IBlueprintPieceInstance
-	/** Update a piecesInstance */
+	/** Update a pieceInstance */
 	updatePieceInstance(pieceInstanceId: string, piece: Partial<IBlueprintPiece>): IBlueprintPieceInstance
 	/** Remove a pieceInstance */
 	removePieceInstances(...pieceInstanceIds: string[]): string[]
@@ -248,6 +248,9 @@ export interface ISyncIngestUpdateToPartInstanceContext extends IRundownUserCont
 
 	/** Update a partInstance */
 	updatePartInstance(props: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance
+
+	/** Remove the partInstance. This is only valid when `playstatus: 'next'` */
+	removePartInstance(): void
 }
 
 /** Events */
@@ -259,6 +262,7 @@ export interface IEventContext {
 export interface ITimelineEventContext extends IEventContext, IRundownContext {
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
 	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
+	readonly previousPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
 	/**
 	 * Get the full session id for an ab playback session.

@@ -344,7 +344,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (queue && sourceLayer && !sourceLayer.isQueueable) {
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 			return
-			// TODOSYNC: TV2 uses queue = false
 		}
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
@@ -572,6 +571,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											heightScale={filter.buttonHeightScale}
 											displayStyle={filter.displayStyle}
 											showThumbnailsInList={filter.showThumbnailsInList}
+											disableHoverInspector={filter.disableHoverInspector ?? false}
 											toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
 											isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}
 											disabled={adLibPiece.disabled}

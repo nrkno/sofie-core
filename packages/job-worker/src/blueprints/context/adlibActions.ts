@@ -21,7 +21,7 @@ import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/l
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
-import { ShowStyleUserContext, UserContextInfo } from './context'
+import { getMediaObjectDuration, ShowStyleUserContext, UserContextInfo } from './context'
 import { WatchedPackagesHelper } from './watchedPackages'
 import { getCurrentTime } from '../../lib'
 import {
@@ -86,18 +86,11 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		context: JobContext,
 		cache: CacheForPlayout,
 		showStyle: ReadonlyDeep<ShowStyleCompound>,
-		showStyleBlueprintConfig: ProcessedShowStyleConfig,
+		_showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: DBRundown,
 		watchedPackages: WatchedPackagesHelper
 	) {
-		super(
-			contextInfo,
-			context.studio,
-			context.getStudioBlueprintConfig(),
-			showStyle,
-			showStyleBlueprintConfig,
-			watchedPackages
-		)
+		super(contextInfo, context, showStyle, watchedPackages)
 		this._context = context
 		this._cache = cache
 		this.rundown = rundown
@@ -588,8 +581,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		return unprotectStringArray(stoppedIds)
 	}
 
-	// hackGetMediaObjectDuration(mediaId: string): number | undefined {
-	// 	return MediaObjects.findOne({ mediaId: mediaId.toUpperCase(), studioId: protectString(this.studioId) })
-	// 		?.mediainfo?.format?.duration
-	// }
+	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
+		return getMediaObjectDuration(this._context, mediaId, this.studioId)
+	}
 }

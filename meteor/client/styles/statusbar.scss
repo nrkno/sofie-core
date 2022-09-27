@@ -3,6 +3,8 @@
 
 .status-bar {
 	position: fixed;
+	display: flex;
+	flex-direction: column;
 	top: 0;
 	width: $statusbar-width;
 	right: 0;
@@ -24,6 +26,20 @@
 		right: auto;
 	}
 
+	> .status-bar__cell {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+
+		&--align-start {
+			justify-content: flex-start;
+		}
+
+		&--align-end {
+			justify-content: flex-end;
+		}
+	}
+
 	.status-bar__controls__button {
 		margin-left: rem(5px);
 		position: relative;
@@ -38,6 +54,7 @@
 		font-size: 1em;
 		box-sizing: border-box;
 		padding: 0;
+		text-align: center;
 		cursor: pointer;
 
 		&.notifications-text {
@@ -127,38 +144,14 @@
 		}
 
 		&.status-bar__controls__button--route-set {
-			display: inline;
 			opacity: 1;
 			font-size: 0.7em;
 			text-transform: uppercase;
 			font-weight: 600;
 		}
-	}
 
-	.status-bar__controls__label {
-		font-size: 0.6rem;
-		text-align: center;
-		user-select: none;
-		margin-top: 2em;
-		margin-left: rem(5px);
-		margin-bottom: 3em;
-
-		.keyboard_key {
-			display: inline-block;
-			border: 1px solid #fff;
-			border-radius: 4px;
-			padding: 0 rem(3px);
-			margin-bottom: 0.2rem;
-			font-size: 0.9em;
-		}
-
-		&.status-bar__controls__label--fullscreen {
-			transition: 1s opacity;
-			opacity: 1;
-
-			@media screen and (display-mode: fullscreen) {
-				opacity: 0;
-			}
+		&.status-bar__controls__button--segment-view-mode {
+			padding-top: 3px;
 		}
 	}
 }
@@ -187,19 +180,22 @@
 			}
 		}
 
+		&.status-bar__controls__button--segment-view-mode {
+			> svg {
+				width: 2em;
+				height: 2em;
+				color: #fff;
+				transition: 0.5s fill;
+			}
+		}
+
 		&.status-bar__controls__button--switchboard-panel {
-			position: fixed;
-			right: 0.3125rem;
-			bottom: 4.3125rem;
 			z-index: 310;
-			text-align: right;
+			padding-top: 3px;
 
 			> svg {
 				width: 2em;
 				height: 2em;
-				position: relative;
-				left: -0.5em;
-				top: 0.1em;
 				transition: 0.5s fill;
 
 				&.status-bar__controls__button--switchboard-panel__notification {

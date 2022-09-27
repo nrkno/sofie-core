@@ -282,7 +282,7 @@ $dashboard-button-height: 5.625em;
 		height: $dashboard-button-height;
 		margin: 4px;
 		vertical-align: top;
-		cursor: default;
+		cursor: pointer;
 
 		@include item-type-colors();
 		@include invalid-overlay();

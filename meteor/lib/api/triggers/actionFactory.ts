@@ -387,6 +387,17 @@ function createRundownPlaylistSoftActivateAction(
 	}
 }
 
+function createRundownPlaylistSoftDeactivateAction(): ExecutableAction {
+	return {
+		action: PlayoutActions.deactivateRundownPlaylist,
+		execute: (_t, e) => {
+			RundownViewEventBus.emit(RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, {
+				context: e,
+			})
+		},
+	}
+}
+
 function createRundownPlaylistSoftResyncAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
 	return {
 		action: PlayoutActions.resyncRundownPlaylist,
@@ -477,7 +488,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 						)
 				)
 			} else {
-				if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+				if (isActionTriggeredFromUiContext(action)) {
 					return createRundownPlaylistSoftActivateAction(
 						action.filterChain as IGUIContextFilterLink[],
 						!!action.rehearsal
@@ -489,11 +500,14 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				}
 			}
 		case PlayoutActions.deactivateRundownPlaylist:
+			if (isActionTriggeredFromUiContext(action)) {
+				return createRundownPlaylistSoftDeactivateAction()
+			}
 			return createUserActionWithCtx(action, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, async (e, ts, ctx) =>
 				MeteorCall.userAction.deactivate(e, ts, ctx.rundownPlaylistId.get())
 			)
 		case PlayoutActions.take:
-			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+			if (isActionTriggeredFromUiContext(action)) {
 				return createRundownPlaylistSoftTakeAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.TAKE, async (e, ts, ctx) =>
@@ -523,7 +537,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				)
 			)
 		case PlayoutActions.reloadRundownPlaylistData:
-			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+			if (isActionTriggeredFromUiContext(action)) {
 				return createRundownPlaylistSoftResyncAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA, async (e, ts, ctx) =>
@@ -533,7 +547,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				)
 			}
 		case PlayoutActions.resetRundownPlaylist:
-			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+			if (isActionTriggeredFromUiContext(action)) {
 				return createRundownPlaylistSoftResetRundownAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.RESET_RUNDOWN_PLAYLIST, async (e, ts, ctx) =>
@@ -562,4 +576,8 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 			// Nothing
 		},
 	}
+}
+
+function isActionTriggeredFromUiContext(action: SomeAction): boolean {
+	return Meteor.isClient && action.filterChain.every((link) => link.object === 'view')
 }

@@ -41,7 +41,6 @@ import {
 	orphanedHiddenSegmentPropertiesToPreserve,
 	SegmentOrphanedReason,
 } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { shouldRemoveOrphanedPartInstance } from './shouldRemoveOrphanedPartInstance'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
@@ -425,14 +424,6 @@ export async function CommitIngestOperation(
 
 				// sync changes to the 'selected' partInstances
 				await syncChangesToPartInstances(context, playoutCache, ingestCache, showStyle, blueprint, newRundown)
-
-				await shouldRemoveOrphanedPartInstance(
-					context,
-					playoutCache,
-					showStyle,
-					blueprint.blueprint,
-					newRundown
-				)
 
 				playoutCache.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this

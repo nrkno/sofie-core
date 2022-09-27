@@ -97,8 +97,8 @@ export async function updateStudioTimeline(
 			studioBaseline = blueprint.getBaseline(
 				new StudioBaselineContext(
 					{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
+					context,
 					studio,
-					context.getStudioBlueprintConfig(),
 					watchedPackages
 				)
 			)

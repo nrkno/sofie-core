@@ -53,6 +53,10 @@ export interface ISourceLayer {
 	allowDisable?: boolean
 	/** If set to true, items in this layer will be used for presenters screen display */
 	onPresenterScreen?: boolean
+	/** If set to true, this layer will receive a column of it's own in the List View */
+	onListViewColumn?: boolean
+	/** If set to true, adLibs on this layer will receive a column of it's own in the List View */
+	onListViewAdLibColumn?: boolean
 }
 
 /** A layer output group, f.g. PGM, Studio Monitor 1, etc. */

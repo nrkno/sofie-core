@@ -39,6 +39,7 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
+import { MediaObjects } from '@sofie-automation/corelib/dist/dataModel/MediaObjects'
 import EventEmitter = require('eventemitter3')
 
 export type MongoQuery<TDoc> = Filter<TDoc>
@@ -112,6 +113,8 @@ export interface IDirectCollections {
 	PackageInfos: ICollection<PackageInfoDB>
 
 	ExternalMessageQueue: ICollection<ExternalMessageQueueObj>
+
+	MediaObjects: ICollection<MediaObjects>
 }
 
 /**
@@ -190,6 +193,8 @@ export function getMongoCollections(
 				database.collection(CollectionName.ExternalMessageQueue),
 				allowWatchers
 			),
+
+			MediaObjects: wrapMongoCollection(database.collection(CollectionName.MediaObjects), allowWatchers),
 		})
 	)
 }

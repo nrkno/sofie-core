@@ -8,7 +8,7 @@ import { FastTrackTimelineFunc, LogLineWithSourceFunc } from '../../main'
 
 const FREEZE_LIMIT = 10000 // how long to wait for a response to a Ping
 const RESTART_TIMEOUT = 10000 // how long to wait for a restart to complete before throwing an error
-const KILL_TIMOUT = 10000 // how long to wait for a thread to terminate before throwing an error
+const KILL_TIMEOUT = 10000 // how long to wait for a thread to terminate before throwing an error
 
 export class IngestWorkerParent extends WorkerParentBase {
 	readonly #thread: Promisify<IngestWorkerChild>
@@ -39,7 +39,7 @@ export class IngestWorkerParent extends WorkerParentBase {
 				autoRestart: true,
 				freezeLimit: FREEZE_LIMIT,
 				restartTimeout: RESTART_TIMEOUT,
-				killTimeout: KILL_TIMOUT,
+				killTimeout: KILL_TIMEOUT,
 			}
 		)
 

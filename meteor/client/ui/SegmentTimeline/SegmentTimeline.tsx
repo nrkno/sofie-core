@@ -42,6 +42,7 @@ import { RundownTimingContext } from '../../lib/rundownTiming'
 import { IOutputLayer, ISourceLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
+import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 
 interface IProps {
 	id: string
@@ -1111,8 +1112,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						onScroll={this.props.onScroll}
 						onShowEntireSegment={this.props.onShowEntireSegment}
 						onZoomChange={this.props.onZoomChange}
-						onSwitchViewMode={this.props.onSwitchViewMode}
 					/>
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<SwitchViewModeButton currentMode={SegmentViewMode.Timeline} onSwitchViewMode={this.props.onSwitchViewMode} />
 				</ErrorBoundary>
 				<ErrorBoundary>
 					<SegmentTimelineZoom

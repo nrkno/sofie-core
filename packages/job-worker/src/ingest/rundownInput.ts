@@ -1,19 +1,4 @@
 import { PeripheralDeviceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import {
-	IngestRegenerateRundownProps,
-	IngestRegenerateSegmentProps,
-	IngestRemovePartProps,
-	IngestRemoveRundownProps,
-	IngestRemoveSegmentProps,
-	IngestUpdatePartProps,
-	IngestUpdateRundownMetaDataProps,
-	IngestUpdateRundownProps,
-	IngestUpdateSegmentProps,
-	IngestUpdateSegmentRanksProps,
-	RemoveOrphanedSegmentsProps,
-	UserRemoveRundownProps,
-	UserUnsyncRundownProps,
-} from '@sofie-automation/corelib/dist/worker/ingest'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
@@ -40,6 +25,21 @@ import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import {
+	IngestRegenerateRundownProps,
+	IngestRegenerateSegmentProps,
+	IngestRemovePartProps,
+	IngestRemoveRundownProps,
+	IngestRemoveSegmentProps,
+	IngestUpdatePartProps,
+	IngestUpdateRundownMetaDataProps,
+	IngestUpdateRundownProps,
+	IngestUpdateSegmentProps,
+	IngestUpdateSegmentRanksProps,
+	RemoveOrphanedSegmentsProps,
+	UserRemoveRundownProps,
+	UserUnsyncRundownProps,
+} from '@sofie-automation/corelib/dist/worker/ingest'
 
 export async function handleRemovedRundown(context: JobContext, data: IngestRemoveRundownProps): Promise<void> {
 	return runIngestJob(

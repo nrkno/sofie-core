@@ -108,8 +108,8 @@ export const SegmentTimelineContainer = withResolvedSegment(
 				followLiveLine: false,
 				livePosition: 0,
 				displayTimecode: 0,
-				isLiveSegment: false,
-				isNextSegment: false,
+				isLiveSegment: !!props.ownCurrentPartInstance,
+				isNextSegment: !!props.ownNextPartInstance,
 				autoNextPart: false,
 				currentLivePart: undefined,
 				currentNextPart: undefined,
@@ -748,6 +748,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 							showStyleBase={this.props.showStyleBase}
 							adLibSegmentUi={this.props.adLibSegmentUi}
 							hotkeyGroup={unprotectString(this.props.segmentui._id) + '_RundownViewShelf'}
+							miniShelfFilter={this.props.miniShelfFilter}
 							studioMode={this.props.studioMode}
 						/>
 					)}

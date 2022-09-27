@@ -3418,12 +3418,7 @@ commander@^5.1.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-5.1.0.tgz#46abbd1652f8e059bddaef99bbdcb2ad9cf179ae"
   integrity sha512-P0CysNDQ7rtVw4QIQtm+MRxV66vKFSvlsQvGYXZWR3qFU0jlMKHZZZgw8e+8DSah4UDKMqnknRDQz+xuQXQ/Zg==
 
-commander@^6.2.0:
-  version "6.2.1"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-6.2.1.tgz#0792eb682dfbc325999bb2b84fddddba110ac73c"
-  integrity sha512-U7VdrJFnJgo4xjrHpTzu0yrHPGImdsmD95ZlgYSEajAn2JKzDhDTPG9kBTefmObL2w/ngeZnilk+OV9CG3d7UA==
-
-commander@^9.3.0:
+commander@^9.0.0, commander@^9.3.0:
   version "9.4.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-9.4.0.tgz#bc4a40918fefe52e22450c111ecd6b7acce6f11c"
   integrity sha512-sRPT+umqkz90UA8M1yqYfnHlZA7fF6nSphDtxeywPZ49ysjxDQybzk13CL+mXekDRG92skbcqCLVovuCusNmFw==
@@ -4241,10 +4236,10 @@ end-of-stream@^1.0.0, end-of-stream@^1.1.0, end-of-stream@^1.4.1, end-of-stream@
   dependencies:
     once "^1.4.0"
 
-ensure-array@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/ensure-array/-/ensure-array-1.0.0.tgz#317e9fc632c656bb849eb649133528e205b23abc"
-  integrity sha512-A+3Ntl5WS+GjDnHtC67dKIjw+IoGoeFdNvjn3ZfKEmZgWUz0nxBPE4W52QMCbGZsat0VwWskD5T6AEpe3T2d1g==
+ensure-type@^1.5.0:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/ensure-type/-/ensure-type-1.5.1.tgz#e65ec8d4c6ee6f35b43675d4243258cb4c8f6159"
+  integrity sha512-Dxe+mVF4MupV6eueWiFa6hUd9OL9lIM2/LqR40k1P+dwG+G2il2UigXTU9aQlaw+Y/N0BKSaTofNw73htTbC5g==
 
 eol@^0.9.1:
   version "0.9.1"
@@ -5513,10 +5508,10 @@ i18next-http-backend@^1.4.1:
   dependencies:
     cross-fetch "3.1.5"
 
-i18next-scanner@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/i18next-scanner/-/i18next-scanner-3.3.0.tgz#ec2776a7667f6b5df7b674968a081e806418b148"
-  integrity sha512-wVCv2HCpFWi/KIU/UiWgzUZg3Ih9zO8GLRv0aAQWJ7LUukrLaNkzdtVdkED6b4AiEDfCuM4X1KLcBi+pvL6JzQ==
+i18next-scanner@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/i18next-scanner/-/i18next-scanner-4.0.0.tgz#e18f63267012e6acdfff7a11ef22fc2e77fdaf02"
+  integrity sha512-jVSEDhpjbfSp7KYzM0CYTn+xMzLNuHeqp1q+9RZuPNuICX8jvsPJjNU9tFPlKPI5IHlZDvbc4bG+3QbUMfTS3A==
   dependencies:
     acorn "^8.0.4"
     acorn-dynamic-import "^4.0.0"
@@ -5525,9 +5520,9 @@ i18next-scanner@^3.3.0:
     acorn-walk "^8.0.0"
     chalk "^4.1.0"
     clone-deep "^4.0.0"
-    commander "^6.2.0"
+    commander "^9.0.0"
     deepmerge "^4.0.0"
-    ensure-array "^1.0.0"
+    ensure-type "^1.5.0"
     eol "^0.9.1"
     esprima-next "^5.7.0"
     gulp-sort "^2.0.0"
@@ -8403,10 +8398,10 @@ react-i18next@*, react-i18next@^11.18.6:
     "@babel/runtime" "^7.14.5"
     html-parse-stringify "^3.0.1"
 
-react-intersection-observer@^8.33.1:
-  version "8.34.0"
-  resolved "https://registry.yarnpkg.com/react-intersection-observer/-/react-intersection-observer-8.34.0.tgz#6f6e67831c52e6233f6b6cc7eb55814820137c42"
-  integrity sha512-TYKh52Zc0Uptp5/b4N91XydfSGKubEhgZRtcg1rhTKABXijc4Sdr1uTp5lJ8TN27jwUsdXxjHXtHa0kPj704sw==
+react-intersection-observer@^9.4.0:
+  version "9.4.0"
+  resolved "https://registry.yarnpkg.com/react-intersection-observer/-/react-intersection-observer-9.4.0.tgz#f6b6e616e625f9bf255857c5cba9dbf7b1825ec7"
+  integrity sha512-v0403CmomOVlzhqFXlzOxg0ziLcVq8mfbP0AwAcEQWgZmR2OulOT79Ikznw4UlB3N+jlUYqLMe4SDHUOyp0t2A==
 
 react-is@^16.12.0, react-is@^16.13.1, react-is@^16.6.0, react-is@^16.7.0:
   version "16.13.1"
@@ -9790,9 +9785,9 @@ text-table@^0.2.0:
   integrity sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==
 
 threadedclass@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.1.0.tgz#3f0e3e91d41098a9c9aa98635fa043530702e269"
-  integrity sha512-+R9wHIHKMsmp0g1TKHZ9gcATD5Pohig4ZWqDqV2o1+VjKjw8KmUcTQZ0sJCj/G8hjFxXPp2QAZDHsmzTcqQJYQ==
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.1.1.tgz#6813b3c401b3d55264f6225c9d2c15516d7efa97"
+  integrity sha512-HffBjerRZGOlhUBt9Ue8nYCuV6khK9er86w4svTvf1Xn6ibAyJok290o2MJ/qJ1vy0A4UphEo3DSsxFN5g+TBQ==
   dependencies:
     callsites "^3.1.0"
     eventemitter3 "^4.0.4"
@@ -9837,10 +9832,10 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.4.0-nightly-release45-20220704-155301-5b2481f63.0:
-  version "7.4.0-nightly-release45-20220704-155301-5b2481f63.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.4.0-nightly-release45-20220704-155301-5b2481f63.0.tgz#ab052e721a6a4e8c66952e0d4842f25ead3ee98a"
-  integrity sha512-3oJL0/qsm33JDo2gojJzcNmlnA4EV4oQtyQTC0gtmH2CORIypfWtFjReZwM3Cfnll8k2JLx5upDnLk9//eMaLg==
+timeline-state-resolver-types@7.4.0-release46.1:
+  version "7.4.0-release46.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.4.0-release46.1.tgz#e5c5e3959bc931d1b6adde72589b30e7c7681f20"
+  integrity sha512-PDzQdjiP6bSVm7O+QEqSZ7teYxU/1JfxkdLmvei+z23PldJ3yEBpG/uI/C+OfadeZMRQdKYErBRGQqn5VYSq0Q==
   dependencies:
     tslib "^2.3.1"
 

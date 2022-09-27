@@ -80,10 +80,6 @@ export const SourceLayerSettings = withTranslation()(
 					return t('Split Screen')
 				case SourceLayerType.VT:
 					return t('Clips')
-				case SourceLayerType.METADATA:
-					return t('Metadata')
-				// case SourceLayerType.CAMERA_MOVEMENT:
-				// 	return t('Camera Movement')
 				case SourceLayerType.UNKNOWN:
 					return t('Unknown Layer')
 				case SourceLayerType.AUDIO:
@@ -304,6 +300,32 @@ export const SourceLayerSettings = withTranslation()(
 														className=""
 													></EditAttribute>
 													{t("Display on Presenter's Screen")}
+												</label>
+											</div>
+											<div className="mod mvs mhs">
+												<label className="field">
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={'sourceLayers.' + item.index + '.onListViewColumn'}
+														obj={this.props.showStyleBase}
+														type="checkbox"
+														collection={ShowStyleBases}
+														className=""
+													></EditAttribute>
+													{t('Display in a column in List View')}
+												</label>
+											</div>
+											<div className="mod mvs mhs">
+												<label className="field">
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={'sourceLayers.' + item.index + '.onListViewAdLibColumn'}
+														obj={this.props.showStyleBase}
+														type="checkbox"
+														collection={ShowStyleBases}
+														className=""
+													></EditAttribute>
+													{t('Display AdLibs in a column in List View')}
 												</label>
 											</div>
 											<div className="mod mvs mhs">

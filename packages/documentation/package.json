@@ -1,6 +1,6 @@
 {
 	"name": "sofie-documentation",
-	"version": "1.45.0-in-development",
+	"version": "1.47.0-in-development",
 	"private": true,
 	"scripts": {
 		"docusaurus": "docusaurus",
@@ -38,6 +38,5 @@
 			"last 1 firefox version",
 			"last 1 safari version"
 		]
-	},
-	"dependencies": {}
+	}
 }
