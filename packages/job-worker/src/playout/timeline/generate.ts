@@ -1,4 +1,4 @@
-import { BlueprintId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { JobContext } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import { BlueprintResultBaseline, OnGenerateTimelineObj, Time, TSR } from '@sofie-automation/blueprints-integration'
@@ -44,10 +44,11 @@ import { endTrace, sendTrace, startTrace } from '@sofie-automation/corelib/dist/
 import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/context/lib'
-import { buildTimelineObjsForRundown, RundownTimelineTimingInfo } from './rundown'
+import { buildTimelineObjsForRundown, getInfinitePartGroupId, RundownTimelineTimingInfo } from './rundown'
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
 import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -147,6 +148,8 @@ function deNowifyMultiGatewayTimeline(
 	timingInfo: RundownTimelineTimingInfo | undefined
 ): void {
 	if (!timingInfo) return
+
+	const timelineObjsMap = normalizeArray(timelineObjs, 'id')
 
 	const nowOffsetLatency = calculateNowOffsetLatency(context, cache, timeOffsetIntoPart)
 	const targetNowTime = getCurrentTime() + (nowOffsetLatency ?? 0)
@@ -269,19 +272,19 @@ function deNowifyMultiGatewayTimeline(
 		}
 	}
 
-	const partPlannedStarts = new Map<PartInstanceId, [Time, Time | undefined]>()
-	partPlannedStarts.set(currentPartInstance._id, [currentPartGroupStartTime, currentPartGroupEndTime])
-	if (cache.Playlist.doc.nextPartInstanceId && nextPartGroupStartTime)
-		partPlannedStarts.set(cache.Playlist.doc.nextPartInstanceId, [nextPartGroupStartTime, undefined])
+	const autoSetPlannedTimings = (
+		p: PieceInstance,
+		partPlannedStart: Time,
+		partPlannedEnd: Time | undefined
+	): PieceInstance | false => {
+		if (p.infinite && p.infinite.infiniteInstanceIndex > 0 && p.plannedStartedPlayback) {
+			// If not the start of an infinite chain, then the plannedStartedPlayback flows differently
+			return false
+		}
 
-	// Ensure any pieces have up to date timings
-	cache.PieceInstances.updateAll((p) => {
 		let changed = false
 
-		const rawTimings = partPlannedStarts.get(p.partInstanceId)
-		if (rawTimings && typeof p.piece.enable.start === 'number') {
-			const [partPlannedStart, partPlannedStop] = rawTimings
-
+		if (typeof p.piece.enable.start === 'number') {
 			const plannedStart = partPlannedStart + p.piece.enable.start
 			if (p.plannedStartedPlayback !== plannedStart) {
 				p.plannedStartedPlayback = plannedStart
@@ -289,7 +292,7 @@ function deNowifyMultiGatewayTimeline(
 			}
 			const plannedEnd =
 				p.userDuration?.end ??
-				(p.piece.enable.duration ? plannedStart + p.piece.enable.duration : partPlannedStop)
+				(p.piece.enable.duration ? plannedStart + p.piece.enable.duration : partPlannedEnd)
 			if (p.plannedStoppedPlayback !== plannedEnd) {
 				p.plannedStoppedPlayback = plannedEnd
 				changed = true
@@ -297,7 +300,83 @@ function deNowifyMultiGatewayTimeline(
 		}
 
 		return changed ? p : false
+	}
+
+	const existingInfiniteTimings = new Map<PieceInstanceInfiniteId, Time>()
+	if (cache.Playlist.doc.previousPartInstanceId) {
+		const previousPartInstanceId = cache.Playlist.doc.previousPartInstanceId
+		const pieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === previousPartInstanceId)
+		for (const pieceInstance of pieceInstances) {
+			// Track the timings for the infinites
+			const plannedStartedPlayback = pieceInstance.plannedStartedPlayback
+			if (pieceInstance.infinite && plannedStartedPlayback) {
+				existingInfiniteTimings.set(pieceInstance.infinite.infiniteInstanceId, plannedStartedPlayback)
+			}
+		}
+	}
+
+	const preserveOrTrackInfiniteTimings = (p: PieceInstance): PieceInstance | false => {
+		let changed = false
+		if (p.infinite) {
+			const plannedStartedPlayback = existingInfiniteTimings.get(p.infinite.infiniteInstanceId)
+			if (plannedStartedPlayback) {
+				// Found a value from the previousPartInstance, lets preserve it
+				if (p.plannedStartedPlayback !== plannedStartedPlayback) {
+					p.plannedStartedPlayback = plannedStartedPlayback
+					changed = true
+				}
+			} else {
+				const plannedStartedPlayback = p.plannedStartedPlayback
+				if (plannedStartedPlayback) {
+					existingInfiniteTimings.set(p.infinite.infiniteInstanceId, plannedStartedPlayback)
+				}
+			}
+
+			// Update the timeline group
+			const startedPlayback = plannedStartedPlayback ?? p.plannedStartedPlayback
+			if (startedPlayback) {
+				const infinitePartGroupId = getInfinitePartGroupId(p._id)
+				const infinitePartGroupObj = timelineObjsMap[infinitePartGroupId]
+				if (
+					infinitePartGroupObj &&
+					!Array.isArray(infinitePartGroupObj.enable) &&
+					typeof infinitePartGroupObj.enable.start === 'string'
+				) {
+					infinitePartGroupObj.enable.start = startedPlayback
+					changed = true
+				}
+			}
+		}
+
+		return changed ? p : false
+	}
+
+	// Ensure any pieces have up to date timings
+	cache.PieceInstances.updateAll((p) => {
+		if (p.partInstanceId === currentPartInstance._id) {
+			let res = autoSetPlannedTimings(p, currentPartGroupStartTime, currentPartGroupEndTime)
+			res = preserveOrTrackInfiniteTimings(res || p) || res
+
+			return res
+		} else {
+			return false
+		}
 	}, true)
+
+	if (cache.Playlist.doc.nextPartInstanceId && nextPartGroupStartTime) {
+		const nextPartGroupStartTime0 = nextPartGroupStartTime
+		cache.PieceInstances.updateAll((p) => {
+			if (p.partInstanceId === currentPartInstance._id) {
+				let res = autoSetPlannedTimings(p, nextPartGroupStartTime0, undefined)
+
+				res = preserveOrTrackInfiniteTimings(res || p) || res
+
+				return res
+			} else {
+				return false
+			}
+		}, true)
+	}
 }
 
 export async function updateTimeline(

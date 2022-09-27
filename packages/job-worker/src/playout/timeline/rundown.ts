@@ -5,7 +5,7 @@ import {
 	TimelineObjClassesCore,
 	TSR,
 } from '@sofie-automation/blueprints-integration'
-import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstanceInfinite } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
@@ -235,6 +235,10 @@ export function buildTimelineObjsForRundown(
 	}
 }
 
+export function getInfinitePartGroupId(pieceInstanceId: PieceInstanceId): string {
+	return getPartGroupId(protectString<PartInstanceId>(unprotectString(pieceInstanceId))) + '_infinite'
+}
+
 function generateCurrentInfinitePieceObjects(
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	currentPartInfo: SelectedPartInstanceTimelineInfo,
@@ -258,7 +262,7 @@ function generateCurrentInfinitePieceObjects(
 	const infiniteGroup = createPartGroup(currentPartInfo.partInstance, {
 		start: `#${currentPartGroup.id}.start`, // This gets overriden with a concrete time if the original piece is known to have already started
 	})
-	infiniteGroup.id = getPartGroupId(protectString<PartInstanceId>(unprotectString(pieceInstance._id))) + '_infinite' // This doesnt want to belong to a part, so force the ids
+	infiniteGroup.id = getInfinitePartGroupId(pieceInstance._id) // This doesnt want to belong to a part, so force the ids
 	infiniteGroup.priority = 1
 
 	const groupClasses: string[] = ['current_part']
