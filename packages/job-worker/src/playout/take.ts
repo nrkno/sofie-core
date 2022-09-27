@@ -99,6 +99,18 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	const takeRundown: DBRundown | undefined = cache.Rundowns.findOne(takePartInstance.rundownId)
 	if (!takeRundown) throw new Error(`takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 
+	// Autonext may have setup the plannedStartedPlayback. Clear it so that a new value is generated
+	cache.PartInstances.update(takePartInstance._id, (p) => {
+		if (p.timings && p.timings.plannedStartedPlayback) {
+			delete p.timings.plannedStartedPlayback
+			delete p.timings.plannedStoppedPlayback
+			return p
+		} else {
+			// No change
+			return false
+		}
+	})
+
 	// it is only a first take if the Playlist has no startedPlayback and the taken PartInstance is not untimed
 	const isFirstTake = !cache.Playlist.doc.startedPlayback && !takePartInstance.part.untimed
 
