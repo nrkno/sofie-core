@@ -32,7 +32,7 @@ import {
 } from '@sofie-automation/corelib/dist/protectedString'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { JobContext } from '../../jobs'
-import { EditableMongoModifier, MongoQuery } from '../../db'
+import { MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	innerFindLastPieceOnLayer,
@@ -41,7 +41,11 @@ import {
 	innerStartQueuedAdLib,
 	innerStopPieces,
 } from '../../playout/adlib'
-import { Piece, serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import {
+	Piece,
+	PieceTimelineObjectsBlob,
+	serializePieceTimelineObjectsBlob,
+} from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
 	convertPartInstanceToBlueprints,
@@ -128,7 +132,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			return []
 		}
 
-		const pieceInstances = this._cache.PieceInstances.findFetch({ partInstanceId })
+		const pieceInstances = this._cache.PieceInstances.findAll((p) => p.partInstanceId === partInstanceId)
 		return pieceInstances.map(convertPieceInstanceToBlueprints)
 	}
 	async getResolvedPieceInstances(part: 'current' | 'next'): Promise<IBlueprintResolvedPieceInstance[]> {
@@ -251,7 +255,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		})
 		if (!pieceDB) throw new Error(`Cannot find Piece ${piece._id}`)
 
-		return this._cache.Parts.findOne({ _id: pieceDB.startPartId })
+		return this._cache.Parts.findOne(pieceDB.startPartId)
 	}
 
 	async insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): Promise<IBlueprintPieceInstance> {
@@ -326,13 +330,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Can only update piece instances in current or next part instance')
 		}
 
-		const update: EditableMongoModifier<PieceInstance> = {
-			$set: {},
-			$unset: {},
-		}
-
+		let timelineObjectsString: PieceTimelineObjectsBlob | undefined
 		if (trimmedPiece.content?.timelineObjects) {
-			update.$set['piece.timelineObjectsString'] = serializePieceTimelineObjectsBlob(
+			timelineObjectsString = serializePieceTimelineObjectsBlob(
 				postProcessTimelineObjects(
 					pieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
@@ -343,18 +343,19 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			trimmedPiece.content = omit(trimmedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
 		}
 
-		for (const [k, val] of Object.entries(trimmedPiece)) {
-			if (val === undefined) {
-				update.$unset[`piece.${k}`] = 1
-			} else {
-				// @ts-expect-error This can't key correctly because of the loosely typed `k`
-				update.$set[`piece.${k}`] = val
-			}
-		}
-
 		setupPieceInstanceInfiniteProperties(pieceInstance)
 
-		this._cache.PieceInstances.update(pieceInstance._id, update)
+		this._cache.PieceInstances.updateOne(pieceInstance._id, (p) => {
+			if (timelineObjectsString !== undefined) p.piece.timelineObjectsString = timelineObjectsString
+
+			return {
+				...p,
+				piece: {
+					...p.piece,
+					...(trimmedPiece as any), // TODO: this needs to be more type safe
+				},
+			}
+		})
 
 		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
 		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)
@@ -464,20 +465,15 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('PartInstance could not be found')
 		}
 
-		const update: any = {
-			$set: {},
-			$unset: {},
-		}
-
-		for (const [k, val] of Object.entries(trimmedProps)) {
-			if (val === undefined) {
-				update.$unset[`part.${k}`] = val
-			} else {
-				update.$set[`part.${k}`] = val
+		this._cache.PartInstances.updateOne(partInstance._id, (p) => {
+			return {
+				...p,
+				part: {
+					...p.part,
+					...trimmedProps,
+				},
 			}
-		}
-
-		this._cache.PartInstances.update(partInstance._id, update)
+		})
 
 		this.nextPartState = Math.max(
 			this.nextPartState,
@@ -522,19 +518,18 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Cannot remove pieceInstances when no selected partInstance')
 		}
 
-		const pieceInstances = this._cache.PieceInstances.findFetch({
-			partInstanceId: partInstanceId,
-			_id: { $in: protectStringArray(pieceInstanceIds) },
-		})
+		const rawPieceInstanceIdSet = new Set(protectStringArray(pieceInstanceIds))
+		const pieceInstances = this._cache.PieceInstances.findAll(
+			(p) => p.partInstanceId === partInstanceId && rawPieceInstanceIdSet.has(p._id)
+		)
 
-		this._cache.PieceInstances.remove({
-			partInstanceId: partInstanceId,
-			_id: { $in: pieceInstances.map((p) => p._id) },
-		})
+		const pieceInstanceIdsToRemove = pieceInstances.map((p) => p._id)
+		const pieceInstanceIdsSet = new Set(pieceInstanceIdsToRemove)
+		this._cache.PieceInstances.remove((p) => p.partInstanceId === partInstanceId && pieceInstanceIdsSet.has(p._id))
 
 		this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 
-		return unprotectStringArray(pieceInstances.map((p) => p._id))
+		return unprotectStringArray(pieceInstanceIdsToRemove)
 	}
 
 	async takeAfterExecuteAction(take: boolean): Promise<boolean> {
@@ -551,7 +546,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		if (!partInstanceId) {
 			throw new Error('Cannot block take when there is no part playing')
 		}
-		this._cache.PartInstances.update(partInstanceId, (doc) => {
+		this._cache.PartInstances.updateOne(partInstanceId, (doc) => {
 			if (time) {
 				doc.blockTakeUntil = time
 			} else {

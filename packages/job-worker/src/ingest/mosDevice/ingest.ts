@@ -236,10 +236,9 @@ export async function handleMosRundownReadyToAir(context: JobContext, data: MosR
 			// If rundown is orphaned, then it should be ignored
 			if (cache.Rundown.doc.orphaned) return null
 
-			cache.Rundown.update({
-				$set: {
-					airStatus: data.status,
-				},
+			cache.Rundown.update((rd) => {
+				rd.airStatus = data.status
+				return rd
 			})
 
 			return handleUpdatedRundownMetaDataInner(context, cache, ingestRundown, data.peripheralDeviceId)

@@ -5,7 +5,6 @@ import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timel
 import { JobContext } from '../jobs'
 import { CacheBase } from '../cache/CacheBase'
 import { DbCacheReadCollection } from '../cache/CacheCollection'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DbCacheWriteOptionalObject } from '../cache/CacheObject'
 
 export interface CacheForStudioBase {
@@ -66,11 +65,6 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 	}
 
 	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): DBRundownPlaylist[] {
-		return this.RundownPlaylists.findFetch({
-			activationId: { $exists: true },
-			_id: {
-				$ne: excludeRundownPlaylistId || protectString(''),
-			},
-		})
+		return this.RundownPlaylists.findAll((p) => !!p.activationId && p._id !== excludeRundownPlaylistId)
 	}
 }

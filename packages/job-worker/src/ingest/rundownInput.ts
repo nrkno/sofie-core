@@ -406,10 +406,9 @@ export async function handleUpdatedSegmentRanks(
 			const changedSegmentIds: SegmentId[] = []
 			for (const [externalId, rank] of Object.entries(data.newRanks)) {
 				const segmentId = getSegmentId(cache.RundownId, externalId)
-				const changed = cache.Segments.update(segmentId, {
-					$set: {
-						_rank: rank,
-					},
+				const changed = cache.Segments.updateOne(segmentId, (s) => {
+					s._rank = rank
+					return s
 				})
 
 				if (changed.length === 0) {
@@ -445,7 +444,7 @@ export async function handleRemoveOrphanedSegemnts(
 
 			// Find the segments that are still orphaned (in case they have resynced before this executes)
 			// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
-			const stillOrphanedSegments = ingestCache.Segments.findFetch((s) => !!s.orphaned)
+			const stillOrphanedSegments = ingestCache.Segments.findAll((s) => !!s.orphaned)
 
 			const stillHiddenSegments = stillOrphanedSegments
 				.filter(
@@ -460,9 +459,9 @@ export async function handleRemoveOrphanedSegemnts(
 				)
 				.map((s) => s._id)
 
-			const hiddenSegmentIds = ingestCache.Segments.findFetch({
-				_id: { $in: stillHiddenSegments },
-			}).map((s) => s._id)
+			const hiddenSegmentIds = ingestCache.Segments.findAll((s) => stillHiddenSegments.includes(s._id)).map(
+				(s) => s._id
+			)
 
 			const { result } = await regenerateSegmentsFromIngestData(
 				context,
@@ -478,7 +477,10 @@ export async function handleRemoveOrphanedSegemnts(
 				if (!changedHiddenSegments.includes(segmentId)) {
 					const segment = ingestCache.Segments.findOne(segmentId)
 					if (segment?.isHidden && segment.orphaned === SegmentOrphanedReason.HIDDEN) {
-						ingestCache.Segments.update(segmentId, { $unset: { orphaned: 1 } })
+						ingestCache.Segments.updateOne(segmentId, (s) => {
+							delete s.orphaned
+							return s
+						})
 						changedHiddenSegments.push(segmentId)
 					}
 				}

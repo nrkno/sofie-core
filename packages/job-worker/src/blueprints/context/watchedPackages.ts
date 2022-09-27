@@ -59,7 +59,7 @@ export class WatchedPackagesHelper {
 			context.directCollections.PackageInfos,
 			{
 				studioId: studioId,
-				packageId: { $in: watchedPackages.findFetch({}).map((p) => p._id) },
+				packageId: { $in: watchedPackages.findAll(null).map((p) => p._id) },
 			}
 		)
 
@@ -76,7 +76,7 @@ export class WatchedPackagesHelper {
 		cache: CacheForIngest,
 		func: ((pkg: ExpectedPackageDB) => boolean) | undefined
 	): Promise<WatchedPackagesHelper> {
-		const packages = cache.ExpectedPackages.findFetch(func ?? {})
+		const packages = cache.ExpectedPackages.findAll(func ?? null)
 
 		// Load all the packages and the infos that are watched
 		const watchedPackages = DbCacheReadCollection.createFromArray(
@@ -105,27 +105,23 @@ export class WatchedPackagesHelper {
 		const watchedPackages = DbCacheReadCollection.createFromArray(
 			context,
 			context.directCollections.ExpectedPackages,
-			this.packages.findFetch(func)
+			this.packages.findAll(func)
 		)
 
-		const newPackageIds = new Set(watchedPackages.findFetch({}).map((p) => p._id))
+		const newPackageIds = new Set(watchedPackages.findAll(null).map((p) => p._id))
 		const watchedPackageInfos = DbCacheReadCollection.createFromArray(
 			context,
 			context.directCollections.PackageInfos,
-			this.packageInfos.findFetch((info) => newPackageIds.has(info.packageId))
+			this.packageInfos.findAll((info) => newPackageIds.has(info.packageId))
 		)
 
 		return new WatchedPackagesHelper(watchedPackages, watchedPackageInfos)
 	}
 
 	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
-		const pkg = this.packages.findOne({
-			blueprintPackageId: packageId,
-		})
+		const pkg = this.packages.findOne((pkg) => pkg.blueprintPackageId === packageId)
 		if (pkg) {
-			const info = this.packageInfos.findFetch({
-				packageId: pkg._id,
-			})
+			const info = this.packageInfos.findAll((p) => p.packageId === pkg._id)
 			return unprotectObjectArray(info)
 		} else {
 			return []

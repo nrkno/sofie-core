@@ -13,6 +13,7 @@ import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/Rundo
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { executePeripheralDeviceFunction } from '../peripheralDevice'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
+import { RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export async function activateRundownPlaylist(
 	context: JobContext,
@@ -42,23 +43,22 @@ export async function activateRundownPlaylist(
 		await resetRundownPlaylist(context, cache)
 	}
 
-	cache.Playlist.update({
-		$set: {
-			activationId: getRandomId(),
-			rehearsal: rehearsal,
-		},
+	const newActivationId: RundownPlaylistActivationId = getRandomId()
+	cache.Playlist.update((p) => {
+		p.activationId = newActivationId
+		p.rehearsal = rehearsal
+		return p
 	})
 
 	let rundown: DBRundown | undefined
 
 	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 	if (!currentPartInstance || currentPartInstance.reset) {
-		cache.Playlist.update({
-			$set: {
-				currentPartInstanceId: null,
-				nextPartInstanceId: null,
-				previousPartInstanceId: null,
-			},
+		cache.Playlist.update((p) => {
+			p.currentPartInstanceId = null
+			p.nextPartInstanceId = null
+			p.previousPartInstanceId = null
+			return p
 		})
 
 		// If we are not playing anything, then regenerate the next part
@@ -79,11 +79,21 @@ export async function activateRundownPlaylist(
 				cache.Playlist.doc.previousPartInstanceId,
 			])
 		)
-		cache.PartInstances.update((p) => partInstancesToPreserve.has(p._id), {
-			$set: { playlistActivationId: cache.Playlist.doc.activationId },
+		cache.PartInstances.updateAll((p) => {
+			if (partInstancesToPreserve.has(p._id)) {
+				p.playlistActivationId = newActivationId
+				return p
+			} else {
+				return false
+			}
 		})
-		cache.PieceInstances.update((p) => partInstancesToPreserve.has(p.partInstanceId), {
-			$set: { playlistActivationId: cache.Playlist.doc.activationId },
+		cache.PieceInstances.updateAll((p) => {
+			if (partInstancesToPreserve.has(p.partInstanceId)) {
+				p.playlistActivationId = newActivationId
+				return p
+			} else {
+				return false
+			}
 		})
 
 		if (cache.Playlist.doc.nextPartInstanceId) {
@@ -176,24 +186,23 @@ export async function deactivateRundownPlaylistInner(
 
 	if (currentPartInstance) onPartHasStoppedPlaying(cache, currentPartInstance, getCurrentTime())
 
-	cache.Playlist.update({
-		$set: {
-			previousPartInstanceId: null,
-			currentPartInstanceId: null,
-			holdState: RundownHoldState.NONE,
-		},
-		$unset: {
-			activationId: 1,
-			nextSegmentId: 1,
-		},
+	cache.Playlist.update((p) => {
+		p.previousPartInstanceId = null
+		p.currentPartInstanceId = null
+		p.holdState = RundownHoldState.NONE
+
+		delete p.activationId
+		delete p.nextSegmentId
+
+		return p
 	})
 	await setNextPart(context, cache, null)
 
 	if (currentPartInstance) {
-		cache.PartInstances.update(currentPartInstance._id, {
-			$set: {
-				'timings.takeOut': getCurrentTime(),
-			},
+		cache.PartInstances.updateOne(currentPartInstance._id, (p) => {
+			if (!p.timings) p.timings = {}
+			p.timings.takeOut = getCurrentTime()
+			return p
 		})
 	}
 	if (span) span.end()
@@ -212,7 +221,7 @@ export async function prepareStudioForBroadcast(
 	const rundownPlaylistToBeActivated = cache.Playlist.doc
 	logger.info('prepareStudioForBroadcast ' + context.studio._id)
 
-	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
+	const playoutDevices = cache.PeripheralDevices.findAll((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
 	for (const device of playoutDevices) {
 		// Fire the command and don't wait for the result
@@ -244,7 +253,7 @@ export async function standDownStudio(
 ): Promise<void> {
 	logger.info('standDownStudio ' + context.studio._id)
 
-	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
+	const playoutDevices = cache.PeripheralDevices.findAll((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
 	for (const device of playoutDevices) {
 		// Fire the command and don't wait for the result

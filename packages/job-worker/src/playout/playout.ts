@@ -563,7 +563,10 @@ export async function activateHold(context: JobContext, data: ActivateHoldProps)
 			)
 			if (hasDynamicallyInserted) throw UserError.create(UserErrorMessage.HoldAfterAdlib)
 
-			cache.Playlist.update({ $set: { holdState: RundownHoldState.PENDING } })
+			cache.Playlist.update((p) => {
+				p.holdState = RundownHoldState.PENDING
+				return p
+			})
 
 			await updateTimeline(context, cache)
 		}
@@ -583,7 +586,10 @@ export async function deactivateHold(context: JobContext, data: DeactivateHoldPr
 				throw UserError.create(UserErrorMessage.HoldNotCancelable)
 		},
 		async (cache) => {
-			cache.Playlist.update({ $set: { holdState: RundownHoldState.NONE } })
+			cache.Playlist.update((p) => {
+				p.holdState = RundownHoldState.NONE
+				return p
+			})
 
 			await updateTimeline(context, cache)
 		}
@@ -625,7 +631,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 					nowInPart = getCurrentTime() - partInstance.timings?.startedPlayback
 				}
 
-				const pieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === partInstance._id)
+				const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
 
 				const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
 					const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
@@ -681,10 +687,9 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 
 			if (nextPieceInstance) {
 				logger.debug((data.undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
-				cache.PieceInstances.update(nextPieceInstance._id, {
-					$set: {
-						disabled: !data.undo,
-					},
+				cache.PieceInstances.updateOne(nextPieceInstance._id, (p) => {
+					p.disabled = !data.undo
+					return p
 				})
 
 				await updateTimeline(context, cache)
@@ -817,12 +822,11 @@ async function _onPartPlaybackStarted(
 				}
 			}
 
-			cache.Playlist.update({
-				$set: {
-					previousPartInstanceId: playlist.currentPartInstanceId,
-					currentPartInstanceId: playingPartInstance._id,
-					holdState: RundownHoldState.NONE,
-				},
+			cache.Playlist.update((p) => {
+				p.previousPartInstanceId = playlist.currentPartInstanceId
+				p.currentPartInstanceId = playingPartInstance._id
+				p.holdState = RundownHoldState.NONE
+				return p
 			})
 
 			reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
@@ -867,12 +871,11 @@ async function _onPartPlaybackStarted(
 			if (previousReported && Date.now() - previousReported > INCORRECT_PLAYING_PART_DEBOUNCE) {
 				// first time this has happened for a while, let's try to progress the show:
 
-				cache.Playlist.update({
-					$set: {
-						previousPartInstanceId: null,
-						currentPartInstanceId: playingPartInstance._id,
-						lastIncorrectPartPlaybackReported: Date.now(), // save the time to prevent the system to go in a loop
-					},
+				cache.Playlist.update((p) => {
+					p.previousPartInstanceId = null
+					p.currentPartInstanceId = playingPartInstance._id
+					p.lastIncorrectPartPlaybackReported = Date.now() // save the time to prevent the system to go in a loop
+					return p
 				})
 
 				reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
@@ -1058,10 +1061,9 @@ function timelineTriggerTimeInner(
 						pieceInstance.dynamicallyInserted &&
 						pieceInstance.piece.enable.start === 'now'
 					) {
-						pieceInstanceCache.update(pieceInstance._id, {
-							$set: {
-								'piece.enable.start': o.time,
-							},
+						pieceInstanceCache.updateOne(pieceInstance._id, (p) => {
+							p.piece.enable.start = o.time
+							return p
 						})
 
 						const takeTime = pieceInstance.dynamicallyInserted
@@ -1073,20 +1075,20 @@ function timelineTriggerTimeInner(
 
 		if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
 			// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
-			const remainingNowPieces = pieceInstanceCache.findFetch({
-				partInstanceId: activePlaylist.currentPartInstanceId,
-				dynamicallyInserted: { $exists: true },
-				disabled: { $ne: true },
-			})
+			const remainingNowPieces = pieceInstanceCache.findAll(
+				(p) =>
+					p.partInstanceId === activePlaylist.currentPartInstanceId &&
+					p.dynamicallyInserted !== undefined &&
+					!p.disabled
+			)
 			for (const piece of remainingNowPieces) {
 				const pieceTakeTime = piece.dynamicallyInserted
 				if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
 					// Disable and hide the instance
-					pieceInstanceCache.update(piece._id, {
-						$set: {
-							disabled: true,
-							hidden: true,
-						},
+					pieceInstanceCache.updateOne(piece._id, (p) => {
+						p.disabled = true
+						p.hidden = true
+						return p
 					})
 				}
 			}

@@ -105,9 +105,9 @@ export async function syncChangesToPartInstances(
 				newPart,
 				piecesThatMayBeActive,
 			} of instances) {
-				const pieceInstancesInPart = cache.PieceInstances.findFetch({
-					partInstanceId: existingPartInstance._id,
-				})
+				const pieceInstancesInPart = cache.PieceInstances.findAll(
+					(p) => p.partInstanceId === existingPartInstance._id
+				)
 
 				const partId = existingPartInstance.part._id
 				const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
@@ -128,21 +128,23 @@ export async function syncChangesToPartInstances(
 
 				logger.info(`Syncing ingest changes for part: ${partId} (orphaned: ${!!newPart})`)
 
-				const referencedAdlibIds = _.compact(pieceInstancesInPart.map((p) => p.adLibSourceId))
+				const referencedAdlibIds = new Set(_.compact(pieceInstancesInPart.map((p) => p.adLibSourceId)))
 				const newResultData: BlueprintSyncIngestNewData = {
 					part: newPart ? convertPartToBlueprints(newPart) : undefined,
 					pieceInstances: proposedPieceInstances.map(convertPieceInstanceToBlueprints),
 					adLibPieces: newPart
-						? ingestCache.AdLibPieces.findFetch({ partId: newPart._id }).map(convertAdLibPieceToBlueprints)
+						? ingestCache.AdLibPieces.findAll((p) => p.partId === newPart._id).map(
+								convertAdLibPieceToBlueprints
+						  )
 						: [],
 					actions: newPart
-						? ingestCache.AdLibActions.findFetch({ partId: newPart._id }).map(
+						? ingestCache.AdLibActions.findAll((p) => p.partId === newPart._id).map(
 								convertAdLibActionToBlueprints
 						  )
 						: [],
-					referencedAdlibs: ingestCache.AdLibPieces.findFetch({
-						_id: { $in: referencedAdlibIds },
-					}).map(convertAdLibPieceToBlueprints),
+					referencedAdlibs: ingestCache.AdLibPieces.findAll((p) => referencedAdlibIds.has(p._id)).map(
+						convertAdLibPieceToBlueprints
+					),
 				}
 
 				const syncContext = new SyncIngestUpdateToPartInstanceContext(
@@ -199,10 +201,9 @@ export async function syncChangesToPartInstances(
 				if (changed) {
 					// TODO - these dont get shown to the user currently
 					// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?
-					cache.PartInstances.update(existingPartInstance._id, {
-						$set: {
-							'part.notes': notes,
-						},
+					cache.PartInstances.updateOne(existingPartInstance._id, (p) => {
+						p.part.notes = notes
+						return p
 					})
 				}
 
@@ -284,20 +285,13 @@ function findLastUnorphanedPartInstanceInSegment(
 } | null {
 	// Find the "latest" (last played), non-orphaned PartInstance in this Segment, in this play-through
 	const previousPartInstance = cache.PartInstances.findOne(
-		{
-			playlistActivationId: currentPartInstance.playlistActivationId,
-			segmentId: currentPartInstance.segmentId,
-			segmentPlayoutId: currentPartInstance.segmentPlayoutId,
-			takeCount: {
-				$lt: currentPartInstance.takeCount,
-			},
-			orphaned: {
-				$exists: false,
-			},
-			reset: {
-				$ne: true,
-			},
-		},
+		(p) =>
+			p.playlistActivationId === currentPartInstance.playlistActivationId &&
+			p.segmentId === currentPartInstance.segmentId &&
+			p.segmentPlayoutId === currentPartInstance.segmentPlayoutId &&
+			p.takeCount < currentPartInstance.takeCount &&
+			!!p.orphaned &&
+			!p.reset,
 		{
 			sort: {
 				takeCount: -1,
