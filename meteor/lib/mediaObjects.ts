@@ -11,7 +11,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
 import * as i18next from 'i18next'
-import { IStudioSettings, MappingsExt, routeExpectedPackages, Studio } from './collections/Studios'
+import { IStudioSettings, MappingsExt, MappingsExtWithPackage, Studio } from './collections/Studios'
 import { PackageInfos } from './collections/PackageInfos'
 import { assertNever, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
@@ -173,7 +173,7 @@ export function checkPieceContentStatus(
 	piece: Pick<PieceGeneric, '_id' | 'name' | 'content' | 'expectedPackages'>,
 	sourceLayer: ISourceLayer | undefined,
 	studio: Pick<Studio, '_id' | 'settings' | 'packageContainers'> | undefined,
-	studioMappings: ReadonlyDeep<MappingsExt>,
+	_routedMappings: ReadonlyDeep<MappingsExt>,
 	t?: i18next.TFunction
 ): {
 	status: PieceStatusCode.OK | PieceStatusCode.UNKNOWN
@@ -208,7 +208,9 @@ export function checkPieceContentStatus(
 
 			if (piece.expectedPackages.length) {
 				// Route the mappings
-				const routedMappingsWithPackages = routeExpectedPackages(studio, studioMappings, piece.expectedPackages)
+				// TODO-SETTINGS this wants the unrouted mappings, which are not exposed to the ui... rewrite it to work with what it has..
+				// const routedMappingsWithPackages = routeExpectedPackages(studio, studioMappings, piece.expectedPackages)
+				const routedMappingsWithPackages: MappingsExtWithPackage = {}
 
 				const checkedPackageContainers: { [containerId: string]: true } = {}
 
