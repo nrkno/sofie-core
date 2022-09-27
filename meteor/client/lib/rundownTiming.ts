@@ -103,14 +103,14 @@ export class RundownTimingCalculator {
 		partInstancesMap: Map<PartId, PartInstance>,
 		segments: DBSegment[],
 		/** Fallback duration for Parts that have no as-played duration of their own. */
-		defaultDuration?: number,
+		defaultDuration: number = Settings.defaultDisplayDuration,
 		/** The first played-out PartInstance in the current playing segment and
 		 * optionally the first played-out PartInstance in the previously playing segment if the
 		 * previousPartInstance of the current RundownPlaylist is from a different Segment than
 		 * the currentPartInstance.
 		 *
 		 * This is being used for calculating Segment Duration Budget */
-		segmentEntryPartInstances?: PartInstance[] // TODO: Should this actually be optional? Doesn't seem to be used optionally.
+		segmentEntryPartInstances: PartInstance[]
 	): RundownTimingContext {
 		let totalRundownDuration = 0
 		let remainingRundownDuration = 0
@@ -165,7 +165,7 @@ export class RundownTimingCalculator {
 				}
 			})
 
-			segmentEntryPartInstances?.forEach((partInstance) => {
+			segmentEntryPartInstances.forEach((partInstance) => {
 				if (partInstance.timings?.startedPlayback !== undefined)
 					this.segmentStartedPlayback[unprotectString(partInstance.segmentId)] =
 						partInstance.timings?.startedPlayback
@@ -258,9 +258,7 @@ export class RundownTimingCalculator {
 						Math.max(
 							0,
 							this.displayDurationGroups[partInstance.part.displayDurationGroup],
-							partInstance.part.gap
-								? MINIMAL_NONZERO_DURATION
-								: defaultDuration || Settings.defaultDisplayDuration
+							partInstance.part.gap ? MINIMAL_NONZERO_DURATION : defaultDuration
 						)
 					partExpectedDuration =
 						partExpectedDuration || this.displayDurationGroups[partInstance.part.displayDurationGroup] || 0
@@ -298,8 +296,7 @@ export class RundownTimingCalculator {
 						(memberOfDisplayDurationGroup
 							? displayDurationFromGroup
 							: calculatePartInstanceExpectedDurationWithPreroll(partInstance)) ||
-						defaultDuration ||
-						Settings.defaultDisplayDuration
+						defaultDuration
 					partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
 					this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
 					const segmentStartedPlayback =
@@ -335,8 +332,7 @@ export class RundownTimingCalculator {
 						(partInstance.timings?.duration && partInstance.timings?.duration + playOffset) ||
 							displayDurationFromGroup ||
 							calculatePartInstanceExpectedDurationWithPreroll(partInstance) ||
-							defaultDuration ||
-							Settings.defaultDisplayDuration
+							defaultDuration
 					)
 					partDisplayDuration = partDisplayDurationNoPlayback
 					this.partPlayed[unprotectString(partInstance.part._id)] =
@@ -412,7 +408,7 @@ export class RundownTimingCalculator {
 
 				// Handle invalid parts by overriding the values to preset values for Invalid parts
 				if (partInstance.part.invalid && !partInstance.part.gap) {
-					partDisplayDuration = defaultDuration || Settings.defaultDisplayDuration
+					partDisplayDuration = defaultDuration
 					this.partPlayed[unprotectString(partInstance.part._id)] = 0
 				}
 
