@@ -172,7 +172,7 @@ export interface ScanInfoForPackage {
 export function checkPieceContentStatus(
 	piece: Pick<PieceGeneric, '_id' | 'name' | 'content' | 'expectedPackages'>,
 	sourceLayer: ISourceLayer | undefined,
-	studio: Pick<Studio, '_id' | 'settings' | 'routeSets' | 'packageContainers'> | undefined,
+	studio: Pick<Studio, '_id' | 'settings' | 'packageContainers'> | undefined,
 	studioMappings: ReadonlyDeep<MappingsExt>,
 	t?: i18next.TFunction
 ): {
