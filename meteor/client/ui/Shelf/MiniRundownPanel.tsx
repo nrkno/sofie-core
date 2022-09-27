@@ -46,19 +46,31 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 	static nextSegmentCssClass: string = 'next-segment'
 	static panelContainerId: string = 'mini-rundown-panel__container'
 	static nextSegmentId: string = 'mini-rundown__next-segment'
+	static currentSegmentId: string = 'mini-rundown__current-segment'
 
 	constructor(props) {
 		super(props)
 		this.state = {}
 	}
 
+	componentDidMount() {
+		this.scrollIntoView()
+	}
+
 	componentDidUpdate() {
+		this.scrollIntoView()
+	}
+
+	scrollIntoView() {
 		Meteor.setTimeout(() => {
 			const container = document.getElementById(MiniRundownPanelInner.panelContainerId)
-			const element = document.getElementById(MiniRundownPanelInner.nextSegmentId)
-			if (container && element) {
-				const magicLineHeight: number = 49
-				container.scrollTop = element.offsetTop - magicLineHeight
+			if (!container) return
+			const nextElement = document.getElementById(MiniRundownPanelInner.nextSegmentId)
+			const currentElement = document.getElementById(MiniRundownPanelInner.currentSegmentId)
+			if (nextElement) {
+				container.scrollTop = nextElement.offsetTop - nextElement.clientHeight
+			} else if (currentElement) {
+				container.scrollTop = currentElement.offsetTop
 			}
 		}, 500)
 	}
@@ -142,6 +154,7 @@ function getMiniRundownList(
 	const miniRundownSegments: MiniRundownSegment[] = []
 
 	allSegments?.forEach((segment: Segment) => {
+		if (segment.isHidden) return
 		miniRundownSegments.push({
 			identifier: getSegmentIdentifier(segment),
 			segmentName: getSegmentName(segment),
@@ -193,5 +206,12 @@ function getElementKey(prefix: string, identifier: string, index: number): strin
 }
 
 function getIdAttributeForNextSegment(cssClass: string) {
-	return cssClass === MiniRundownPanelInner.nextSegmentCssClass ? { id: MiniRundownPanelInner.nextSegmentId } : {}
+	switch (cssClass) {
+		case MiniRundownPanelInner.nextSegmentCssClass:
+			return { id: MiniRundownPanelInner.nextSegmentId }
+		case MiniRundownPanelInner.currentSegmentCssClass:
+			return { id: MiniRundownPanelInner.currentSegmentId }
+		default:
+			return {}
+	}
 }

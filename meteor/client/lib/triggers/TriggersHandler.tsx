@@ -123,7 +123,6 @@ function createAction(
 		},
 		listener: (e) => {
 			e.preventDefault()
-			// TODOSYNC: add e.stopPropagation() here?
 
 			const ctx = collectContext()
 			if (ctx) {
@@ -296,7 +295,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			'Digit9',
 			'Digit0',
 		]
-		const systemActionKeys = ['Enter', 'NumpadEnter', 'Tab']
+		const systemActionKeys = [Settings.confirmKeyCode, 'Tab']
 
 		const poisonKey: string | null = Settings.poisonKey
 

@@ -3095,7 +3095,7 @@
   version "1.46.0-in-testing"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "7.4.0-release46.0"
+    timeline-state-resolver-types "7.4.0-release46.1"
     tslib "^2.4.0"
     type-fest "^2.19.0"
 
@@ -13962,17 +13962,17 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.4.0-release46.0:
-  version "7.4.0-release46.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.4.0-release46.0.tgz#d3d7b635f3ba120d6fffe205b5fe8254a9111078"
-  integrity sha512-W5xlqAp7YDKvclfPSpVmYOdqxlM1imZOrLZVVBvX2pUkACII9Uzj5LVr1AbYML9RowHXdjpWQXoNCaaNGFhMUw==
+timeline-state-resolver-types@7.4.0-release46.1:
+  version "7.4.0-release46.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.4.0-release46.1.tgz#e5c5e3959bc931d1b6adde72589b30e7c7681f20"
+  integrity sha512-PDzQdjiP6bSVm7O+QEqSZ7teYxU/1JfxkdLmvei+z23PldJ3yEBpG/uI/C+OfadeZMRQdKYErBRGQqn5VYSq0Q==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.4.0-release46.0:
-  version "7.4.0-release46.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.4.0-release46.0.tgz#9b2f9568a26a947c716a5ecd6df24b2f45dcad89"
-  integrity sha512-QkWaUgHcd2YXXUiv4kQfMqf+datbWRAG8756Yt4eCoAJpTxqBSRDkDAUAZBqHjJmPJVqrYW+bNvkGA14+3RYNg==
+timeline-state-resolver@7.4.0-release46.1:
+  version "7.4.0-release46.1"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.4.0-release46.1.tgz#2538cb4938e4519e79eb846b67792d9a2c76aa96"
+  integrity sha512-qjnAkW2eGb9mQMrTHzij4167iKHV7Nz/HpGjuSHr38wabKHw6Vf5oYeZeFyK9jlL2E+204/5mrXSBDwlm/pbSg==
   dependencies:
     "@tv2media/v-connection" "^6.0.2"
     atem-connection "2.4.0"
@@ -13994,7 +13994,7 @@ timeline-state-resolver@7.4.0-release46.0:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.8"
     threadedclass "^1.1.0"
-    timeline-state-resolver-types "7.4.0-release46.0"
+    timeline-state-resolver-types "7.4.0-release46.1"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.5"
     underscore "^1.13.4"

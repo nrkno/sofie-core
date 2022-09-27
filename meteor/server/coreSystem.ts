@@ -19,7 +19,7 @@ import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
 import { Studios, StudioId, Studio } from '../lib/collections/Studios'
-import { logger, LogLevel, setLogLevel } from './logging'
+import { getEnvLogLevel, logger, LogLevel, setLogLevel } from './logging'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
 const PackageInfo = require('../package.json')
@@ -433,7 +433,7 @@ function updateLoggerLevel(startup: boolean) {
 	const coreSystem = getCoreSystem()
 
 	if (coreSystem) {
-		setLogLevel(coreSystem.logLevel || LogLevel.SILLY, startup)
+		setLogLevel(coreSystem.logLevel ?? getEnvLogLevel() ?? LogLevel.SILLY, startup)
 	} else {
 		logger.error('updateLoggerLevel: CoreSystem not found')
 	}
