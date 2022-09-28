@@ -1,0 +1,24 @@
+name: Scheduled Automerge Master -> Staging
+
+on:
+  schedule:
+    - cron: '0 0 * * 1-5' # At 00:00, Monday through Friday
+  workflow_dispatch: # on button click
+
+jobs:
+  merge-master-to-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set Git config
+        run: |
+          git config --local user.email "Sofie-Automation@users.noreply.github.com"
+          git config --local user.name "GitHub Actions # Sofie-Automation"
+      - name: Merge 'master' to 'staging'
+        run: |
+          git fetch --unshallow
+          git checkout staging
+          git pull
+          git merge --no-ff origin/master -m "Automerge 'master' to 'staging'"
+          git push
+
