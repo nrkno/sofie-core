@@ -205,11 +205,11 @@ Timeline.allow({
 	},
 })
 TimelineDatastore.allow({
-	insert(userId, doc): boolean {
-		return studioContentAllowWrite(userId, doc)
+	insert(_userId, _doc): boolean {
+		return false
 	},
-	update(userId, doc, fields, _modifier) {
-		return studioContentAllowWrite(userId, doc) && rejectFields(doc, fields, ['_id'])
+	update(_userId, _doc, _fields, _modifier) {
+		return false
 	},
 	remove(_userId, _doc) {
 		return false

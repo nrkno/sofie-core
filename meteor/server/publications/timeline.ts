@@ -41,13 +41,13 @@ meteorPublish(PubSub.timeline, async function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.timelineDatastore, function (selector, token) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+meteorPublish(PubSub.timelineDatastore, async function (studioId, token) {
+	if (!studioId) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<TimelineDatastoreEntry> = {
 		fields: {},
 	}
-	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
-		return TimelineDatastore.find(selector, modifier)
+	if (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token })) {
+		return TimelineDatastore.find({ studioId }, modifier)
 	}
 	return null
 })
@@ -68,24 +68,22 @@ meteorCustomPublish(
 		}
 	}
 )
-meteorCustomPublishArray<TimelineDatastoreEntry>(
-	PubSub.timelineDatastoreForDevice,
-	'studioTimelineDatastore',
-	function (pub, deviceId: PeripheralDeviceId, token) {
-		if (
-			PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })
-		) {
-			const peripheralDevice = PeripheralDevices.findOne(deviceId)
+meteorPublish(PubSub.timelineDatastoreForDevice, async function (deviceId, token) {
+	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
+		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
-			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
+		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
-			const studioId = peripheralDevice.studioId
-			if (!studioId) return []
-
-			createObserverForTimelineDatastorePublication(pub, PubSub.timelineDatastoreForDevice, studioId)
+		const studioId = peripheralDevice.studioId
+		if (!studioId) return null
+		const modifier: FindOptions<TimelineDatastoreEntry> = {
+			fields: {},
 		}
+
+		return TimelineDatastore.find({ studioId }, modifier)
 	}
-)
+	return null
+})
 
 meteorCustomPublish(
 	PubSub.timelineForStudio,
@@ -246,46 +244,4 @@ async function createObserverForTimelinePublication(pub: CustomPublish<RoutedTim
 		pub,
 		0 // ms
 	)
-}
-function createObserverForTimelineDatastorePublication(
-	pub: CustomPublishArray<TimelineDatastoreEntry>,
-	observerId: PubSub,
-	studioId: StudioId
-) {
-	const observer = setUpOptimizedObserver<TimelineDatastoreEntry[], { studioId: StudioId | undefined }>(
-		`pub_${observerId}_${studioId}`,
-		(triggerUpdate) => {
-			// Set up observers:
-			return [
-				TimelineDatastore.find({ studioId }).observe({
-					added: () => triggerUpdate({ studioId: studioId }),
-					changed: () => triggerUpdate({ studioId: studioId }),
-					removed: () => triggerUpdate({ studioId: undefined }),
-				}),
-			]
-		},
-		() => {
-			// Initialize data
-			return {
-				studioId: studioId,
-			}
-		},
-		(newData: { studioId: StudioId | undefined }) => {
-			// Prepare data for publication:
-
-			if (!newData.studioId) {
-				return []
-			} else {
-				const datastore = TimelineDatastore.find({ studioId }).fetch()
-
-				return datastore
-			}
-		},
-		(newData) => {
-			pub.updatedDocs(newData)
-		}
-	)
-	pub.onStop(() => {
-		observer.stop()
-	})
 }

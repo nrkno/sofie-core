@@ -1,4 +1,4 @@
-import { Time } from './common'
+import { DatastorePersistenceMode, Time } from './common'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import { PackageInfo } from './packageInfo'
 import {
@@ -149,7 +149,14 @@ export interface ISegmentUserContext extends IUserNotesContext, IRundownContext,
 
 /** Actions */
 export interface IDataStoreActionExecutionContext extends IShowStyleUserContext, IEventContext {
-	setTimelineDatastoreValue(key: string, value: any, mode: 'temporary' | 'indefinite'): Promise<void>
+	/**
+	 * Setting a value in the datastore allows us to overwrite parts of a timeline content object with that value
+	 * @param key Key to use when referencing from the timeline object
+	 * @param value Value to overwrite the timeline object's content with
+	 * @param mode In temporary mode the value may be removed when the key is no longer on the timeline
+	 */
+	setTimelineDatastoreValue(key: string, value: any, mode: DatastorePersistenceMode): Promise<void>
+	/** Deletes a previously set value from the datastore */
 	removeTimelineDatastoreValue(key: string): Promise<void>
 }
 

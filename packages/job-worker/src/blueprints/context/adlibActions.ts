@@ -61,6 +61,8 @@ import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { moveNextPartInner } from '../../playout/playout'
 import _ = require('underscore')
 import { ProcessedShowStyleConfig } from '../config'
+import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
+import { getDatastoreId } from '../../playout/datastore'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -73,11 +75,6 @@ export class DatastoreActionExecutionContext
 {
 	protected readonly _context: JobContext
 
-	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
-	public currentPartState: ActionPartChange = ActionPartChange.NONE
-	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the next partInstance */
-	public nextPartState: ActionPartChange = ActionPartChange.NONE
-
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
@@ -88,35 +85,29 @@ export class DatastoreActionExecutionContext
 		this._context = context
 	}
 
-	async setTimelineDatastoreValue(key: string, value: unknown, mode: 'temporary' | 'indefinite'): Promise<void> {
+	async setTimelineDatastoreValue(key: string, value: unknown, mode: DatastorePersistenceMode): Promise<void> {
+		const studioId = this._context.studioId
+		const id = protectString(`${studioId}_${key}`)
 		const collection = this._context.directCollections.TimelineDatastores
-		const entry = await collection.findOne({ studioId: this._context.studioId, key })
 
-		if (!entry) {
-			await collection.insertOne({
-				_id: getRandomId(),
-				studioId: this._context.studioId,
+		await collection.replace({
+			_id: id,
+			studioId: studioId,
 
-				key,
-				value,
+			key,
+			value,
 
-				modified: Date.now(),
-				mode,
-			})
-		} else {
-			await collection.update(entry._id, {
-				$set: {
-					value,
-					mode,
-					modified: Date.now(),
-				},
-			})
-		}
+			modified: Date.now(),
+			mode,
+		})
 	}
 
 	async removeTimelineDatastoreValue(key: string): Promise<void> {
+		const studioId = this._context.studioId
+		const id = getDatastoreId(studioId, key)
 		const collection = this._context.directCollections.TimelineDatastores
-		await collection.remove({ studioId: this._context.studioId, key })
+
+		await collection.remove({ _id: id })
 	}
 
 	getCurrentTime(): number {
@@ -224,6 +215,7 @@ export class ActionExecutionContext
 			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
+				// @ts-expect-error metaData is `unknown` so no subkeys are known to be valid
 				query[`piece.metaData.${key}`] = value
 			}
 		}
@@ -257,6 +249,7 @@ export class ActionExecutionContext
 			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
+				// @ts-expect-error metaData is `unknown` so no subkeys are known to be valid
 				query[`metaData.${key}`] = value
 			}
 		}

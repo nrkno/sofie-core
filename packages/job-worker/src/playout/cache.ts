@@ -13,7 +13,6 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import _ = require('underscore')
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { cleanupRundownsForRemovedPlaylist } from '../rundownPlaylists'
@@ -126,7 +125,6 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	private toBeRemoved = false
 
 	public readonly Timeline: DbCacheWriteOptionalObject<TimelineComplete>
-	public readonly TimelineDatastore: DbCacheWriteCollection<DBTimelineDatastoreEntry>
 
 	public readonly Segments: DbCacheReadCollection<DBSegment>
 	public readonly Parts: DbCacheReadCollection<DBPart>
@@ -147,13 +145,11 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		partInstances: DbCacheWriteCollection<DBPartInstance>,
 		pieceInstances: DbCacheWriteCollection<PieceInstance>,
 		timeline: DbCacheWriteOptionalObject<TimelineComplete>,
-		timelineDatastore: DbCacheWriteCollection<DBTimelineDatastoreEntry>,
 		baselineObjects: DbCacheReadCollection<RundownBaselineObj>
 	) {
 		super(context, playlistLock, playlistId, peripheralDevices, playlist, rundowns)
 
 		this.Timeline = timeline
-		this.TimelineDatastore = timelineDatastore
 
 		this.Segments = segments
 		this.Parts = parts
@@ -252,7 +248,6 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			DbCacheWriteCollection<DBPartInstance>,
 			DbCacheWriteCollection<PieceInstance>,
 			DbCacheWriteOptionalObject<TimelineComplete>,
-			DbCacheWriteCollection<DBTimelineDatastoreEntry>,
 			DbCacheReadCollection<RundownBaselineObj>
 		]
 	> {
@@ -335,9 +330,6 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 				context.directCollections.Timelines,
 				context.studioId
 			),
-			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.TimelineDatastores, {
-				studioId: context.studioId,
-			}),
 		])
 
 		if (ingestCache) {

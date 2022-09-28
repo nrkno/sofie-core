@@ -1,10 +1,17 @@
+import { DatastorePersistenceMode } from '@sofie-automation/blueprints-integration'
+import { StudioId, TimelineDatastoreEntryId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { JobContext } from '../jobs'
 import { CacheForPlayout } from './cache'
 
-export async function cleanTimelineDatastore(_context: JobContext, cache: CacheForPlayout): Promise<void> {
+export function getDatastoreId(studioId: StudioId, key: string): TimelineDatastoreEntryId {
+	return protectString<TimelineDatastoreEntryId>(`${studioId}_${key}`)
+}
+
+/** Remove documents in the TimelineDatastore collection where mode is temporary and has no references from the timeline */
+export async function cleanTimelineDatastore(context: JobContext, cache: CacheForPlayout): Promise<void> {
 	const timeline = cache.Timeline.doc
-	const datastore = cache.TimelineDatastore.findFetch({})
 
 	if (!timeline) {
 		return
@@ -12,10 +19,15 @@ export async function cleanTimelineDatastore(_context: JobContext, cache: CacheF
 
 	const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
 
+	// find all references currently on the timeline
 	const timelineRefs = timelineObjs
-		.filter((o) => o.content.$references) // todo - update timeline types package
-		.flatMap((o) => Object.keys(o.content.$references))
-	const inactiveKeys = datastore.map((o) => o.key).filter((k) => !!timelineRefs.find((r) => r === k)) // todo - protect some values from being deleted?
+		.filter((o) => o.content.$references)
+		.flatMap((o) => Object.values(o.content.$references || {}).map((r) => r.datastoreKey)) // todo - this seems like it would be quite slow
 
-	cache.TimelineDatastore.remove({ key: { $in: inactiveKeys } })
+	await context.directCollections.TimelineDatastores.remove({
+		_id: {
+			$nin: timelineRefs.map((r) => getDatastoreId(context.studioId, r)),
+		},
+		mode: DatastorePersistenceMode.Temporary,
+	})
 }

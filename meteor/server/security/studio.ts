@@ -83,7 +83,7 @@ export namespace StudioContentWriteAccess {
 		return anyContent(cred0, studioId)
 	}
 
-	export function timelineDatastore(cred0: Credentials, studioId: StudioId) {
+	export async function timelineDatastore(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
 	/** Check for permission to update the studio baseline */

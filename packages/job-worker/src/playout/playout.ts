@@ -58,8 +58,14 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
-import { ExpectedPackageDBBase, ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { applyToArray, assertNever, getRandomId, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import {
+	applyToArray,
+	assertNever,
+	getRandomId,
+	stringifyError,
+	normalizeArrayToMap,
+} from '@sofie-automation/corelib/dist/lib'
 import {
 	ActionExecutionContext,
 	ActionPartChange,
@@ -86,11 +92,10 @@ import { shouldUpdateStudioBaselineInner as libShouldUpdateStudioBaselineInner }
 import { CacheForStudio } from '../studio/cache'
 import { DbCacheWriteCollection } from '../cache/CacheCollection'
 import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
-import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { INCORRECT_PLAYING_PART_DEBOUNCE, RESET_IGNORE_ERRORS } from './constants'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number): void {
@@ -616,7 +621,10 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 			if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)
 			const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
 
-			const allowedSourceLayers = showStyleBase.sourceLayers
+			// logger.info(o)
+			// logger.info(JSON.stringify(o, '', 2))
+
+			const allowedSourceLayers = normalizeArrayToMap(showStyleBase.sourceLayers, '_id')
 
 			const getNextPiece = (partInstance: DBPartInstance, ignoreStartedPlayback: boolean) => {
 				// Find next piece to disable
@@ -629,7 +637,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 				const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
 
 				const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
-					const sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
+					const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
 					if (
 						sourceLayer &&
 						sourceLayer.allowDisable &&
@@ -642,7 +650,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 
 				const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(
 					_.sortBy(filteredPieces, (piece: PieceInstance) => {
-						const sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
+						const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
 						return sourceLayer?._rank || -9999
 					}),
 					nowInPart
@@ -1074,6 +1082,7 @@ export async function executeAction(context: JobContext, data: ExecuteActionProp
 		// 'executeActionInner',
 		data,
 		async (playlist, lock) => {
+			// First load the minimum amount of data required to run the executeDataStoreAction handler
 			if (!playlist) throw new Error(`Job playlist "${data.playlistId}" not found `)
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
@@ -1098,20 +1107,15 @@ export async function executeAction(context: JobContext, data: ExecuteActionProp
 				throw UserError.create(UserErrorMessage.ActionsNotSupported)
 			}
 
-			const watchedPackagesFilter = {
+			const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, {
 				pieceId: data.actionDocId,
 				fromPieceType: {
 					$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
 				},
-			}
+			})
 
 			if (blueprint.blueprint.executeDataStoreAction) {
-				const watchedPackages = await WatchedPackagesHelper.create(
-					context,
-					context.studio._id,
-					watchedPackagesFilter
-				)
-
+				// now we can execute any datastore actions
 				const actionContext = new DatastoreActionExecutionContext(
 					{
 						name: `${rundown.name}(${playlist.name})`,
@@ -1122,11 +1126,10 @@ export async function executeAction(context: JobContext, data: ExecuteActionProp
 					},
 					context,
 					showStyle,
-					context.getShowStyleBlueprintConfig(showStyle),
 					watchedPackages
 				)
 
-				logger.info(`Executing AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)}`)
+				logger.info(`Executing Datastore AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)}`)
 
 				try {
 					await blueprint.blueprint.executeDataStoreAction(
@@ -1136,12 +1139,13 @@ export async function executeAction(context: JobContext, data: ExecuteActionProp
 						data.triggerMode
 					)
 				} catch (err) {
-					logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
+					logger.error(`Error in showStyleBlueprint.executeDatastoreAction: ${stringifyError(err)}`)
 					throw err
 				}
 			}
 
 			if (blueprint.blueprint.executeAction) {
+				// load a full cache for the regular actions & executet the handler
 				const fullCache: CacheForPlayout = await CacheForPlayout.fromInit(context, initCache)
 				try {
 					const res: ExecuteActionResult = await executeActionInner(
@@ -1151,7 +1155,7 @@ export async function executeAction(context: JobContext, data: ExecuteActionProp
 						showStyle,
 						blueprint,
 						currentPartInstance,
-						watchedPackagesFilter,
+						watchedPackages,
 						async (actionContext, _rundown, _currentPartInstance, _blueprint) => {
 							if (!blueprint.blueprint.executeAction) {
 								throw new Error('Blueprint exports no executeAction function')
@@ -1183,6 +1187,7 @@ export async function executeAction(context: JobContext, data: ExecuteActionProp
 				}
 			}
 
+			// if we haven't returned yet, these defaults should be correct
 			return {
 				queuedPartInstanceId: undefined,
 				taken: false,
@@ -1195,10 +1200,10 @@ export async function executeActionInner(
 	context: JobContext,
 	cache: CacheForPlayout,
 	rundown: DBRundown,
-	showStyle: ShowStyleCompound,
+	showStyle: ReadonlyDeep<ShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	currentPartInstance: DBPartInstance,
-	watchedPackagesFilter: MongoQuery<Omit<ExpectedPackageDBBase, 'studioId'>> | null,
+	watchedPackages: WatchedPackagesHelper,
 	func: (
 		context: ActionExecutionContext,
 		rundown: DBRundown,
@@ -1209,8 +1214,6 @@ export async function executeActionInner(
 	const now = getCurrentTime()
 
 	const playlist = cache.Playlist.doc
-
-	const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, watchedPackagesFilter)
 
 	const actionContext = new ActionExecutionContext(
 		{
@@ -1298,7 +1301,7 @@ export async function stopPiecesOnSourceLayers(
 			const changedIds = innerStopPieces(
 				context,
 				cache,
-				showStyleBase.sourceLayers,
+				showStyleBase,
 				partInstance,
 				(pieceInstance) => sourceLayerIds.has(pieceInstance.piece.sourceLayerId),
 				undefined

@@ -7,6 +7,7 @@ import {
 	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { Meteor } from 'meteor/meteor'
 import { AdLibAction } from '../collections/AdLibActions'
 import { AdLibPiece } from '../collections/AdLibPieces'
@@ -185,6 +186,7 @@ export interface PubSubTypes {
 	[PubSub.studios]: (selector: MongoQuery<DBStudio>, token?: string) => DBStudio
 	[PubSub.studioOfDevice]: (deviceId: PeripheralDeviceId, token?: string) => DBStudio
 	[PubSub.timeline]: (selector: MongoQuery<TimelineComplete>, token?: string) => TimelineComplete
+	[PubSub.timelineDatastore]: (studioId: StudioId, token?: string) => DBTimelineDatastoreEntry
 	[PubSub.userActionsLog]: (selector: MongoQuery<UserActionsLogItem>, token?: string) => UserActionsLogItem
 	/** @deprecated */
 	[PubSub.mediaWorkFlows]: (selector: MongoQuery<MediaWorkFlow>, token?: string) => MediaWorkFlow
@@ -220,6 +222,7 @@ export interface PubSubTypes {
 	// custom publications:
 	[PubSub.mappingsForDevice]: (deviceId: PeripheralDeviceId, token?: string) => RoutedMappings
 	[PubSub.timelineForDevice]: (deviceId: PeripheralDeviceId, token?: string) => RoutedTimeline
+	[PubSub.timelineDatastoreForDevice]: (deviceId: PeripheralDeviceId, token?: string) => DBTimelineDatastoreEntry
 	[PubSub.mappingsForStudio]: (studioId: StudioId, token?: string) => RoutedMappings
 	[PubSub.timelineForStudio]: (studioId: StudioId, token?: string) => RoutedTimeline
 	[PubSub.expectedPackagesForDevice]: (
