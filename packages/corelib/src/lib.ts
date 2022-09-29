@@ -9,7 +9,12 @@ import { IStudioSettings } from './dataModel/Studio'
 import { UserError } from './error'
 import { customAlphabet as createNanoid } from 'nanoid'
 
-/** Limited characterset to use for id generation */
+/**
+ * Limited characterset to use for id generation
+ * Generating id's using these characters has 2 reasons:
+ * 1. By omitting 0, O, I, 1 it makes it easier to read for humans
+ * 2. The Timeline only supports A-Za-z0-9 in id's and classnames
+ */
 const UNMISTAKABLE_CHARS = '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghijkmnopqrstuvwxyz'
 const nanoid = createNanoid(UNMISTAKABLE_CHARS, 17)
 
