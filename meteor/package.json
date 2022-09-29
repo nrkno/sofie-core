@@ -8,8 +8,8 @@
 	"scripts": {
 		"preinstall": "node -v",
 		"debug": "meteor run",
-		"libs:syncVersions": "cd ../packages && yarn sync-version",
-		"libs:syncVersionsAndChangelogs": "cd ../packages && yarn sync-version-and-changelog",
+		"libs:syncVersions": "node scripts/libs-sync-version.js",
+		"libs:syncVersionsAndChangelogs": "node scripts/libs-sync-version-and-changelog.js",
 		"postinstall": "meteor yarn prepareForTest",
 		"prepareForTest": "node ../scripts/fixTestFibers.js",
 		"inject-git-hash": "node ./scripts/generate-version-file.js",
