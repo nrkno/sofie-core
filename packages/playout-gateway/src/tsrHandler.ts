@@ -637,6 +637,9 @@ export class TSRHandler {
 					}
 
 					Promise.all(
+						// At this point in time, promiseOperations contains the promises that have timed out.
+						// If we tried to add or re-add a device, that apparently failed so we should remove the device in order to
+						// give it another chance next time _updateDevices() is called.
 						Object.values(promiseOperations)
 							.filter((op) => op.operation === 'add' || op.operation === 're-add')
 							.map(async (op) =>
@@ -644,13 +647,6 @@ export class TSRHandler {
 								this._removeDevice(op.deviceId)
 							)
 					)
-						.then(() => {
-							resolve({
-								success: false,
-								reason: 'timeout',
-								details: keys,
-							})
-						})
 						.catch((e) => {
 							this.logger.error(
 								`Error when trying to remove unsuccessfully initialized devices: ${stringifyIds(
@@ -658,6 +654,8 @@ export class TSRHandler {
 								)}`,
 								e
 							)
+						})
+						.finally(() => {
 							resolve({
 								success: false,
 								reason: 'error',
