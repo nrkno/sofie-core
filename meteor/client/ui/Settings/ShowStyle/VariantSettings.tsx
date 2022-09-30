@@ -133,6 +133,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 												manifest={this.props.blueprintConfigManifest}
 												collection={ShowStyleVariants}
 												configPath={'blueprintConfig'}
+												alternateObject={this.props.showStyleBase}
 												object={showStyleVariant}
 												layerMappings={this.props.layerMappings}
 												sourceLayers={this.props.sourceLayers}
