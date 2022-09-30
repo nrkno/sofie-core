@@ -411,7 +411,7 @@ export async function handleUpdatedSegmentRanks(
 					return s
 				})
 
-				if (changed.length === 0) {
+				if (!changed) {
 					logger.warn(`Failed to update rank of segment "${externalId}" (${data.rundownExternalId})`)
 				} else {
 					changedSegmentIds.push(segmentId)
