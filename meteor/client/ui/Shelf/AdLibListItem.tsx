@@ -8,7 +8,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { unprotectString } from '../../../lib/lib'
 import renderItem from './Renderers/ItemRendererFactory'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { Studio } from '../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime, ensureHasTrailingSlash } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
@@ -29,6 +29,7 @@ export interface IAdLibListItem extends AdLibPieceUi {
 interface IListViewItemProps {
 	piece: IAdLibListItem
 	studio: Studio
+	routedMappings: RoutedMappings
 	layer: ISourceLayer | undefined
 	selected: boolean
 	disabled?: boolean

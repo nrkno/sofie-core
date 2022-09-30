@@ -541,6 +541,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 										<DashboardPieceButton
 											piece={adLibPiece}
 											studio={this.props.studio}
+											routedMappings={this.props.routedMappings}
 											layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
 											outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
 											onToggleAdLib={this.onToggleOrSelectAdLib}

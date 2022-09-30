@@ -7,7 +7,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownHoldState } from '../../../lib/collections/Rundowns'
-import { Studio } from '../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelinePart } from './Parts/SegmentTimelinePart'
@@ -51,6 +51,7 @@ interface IProps {
 	playlist: RundownPlaylist
 	followLiveSegments: boolean
 	studio: Studio
+	routedMappings: RoutedMappings
 	parts: Array<PartUi>
 	segmentNotes: Array<SegmentNote>
 	timeScale: number
@@ -717,6 +718,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							collapsedOutputs={this.props.collapsedOutputs}
 							playlist={this.props.playlist}
 							studio={this.props.studio}
+							routedMappings={this.props.routedMappings}
 							segment={this.props.segment}
 							liveLineHistorySize={this.props.liveLineHistorySize}
 							isLastSegment={this.props.isLastSegment}
@@ -729,6 +731,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						segment={this.props.segment}
 						playlist={this.props.playlist}
 						studio={this.props.studio}
+						routedMappings={this.props.routedMappings}
 						collapsedOutputs={this.props.collapsedOutputs}
 						scrollLeft={this.props.scrollLeft}
 						timeScale={this.props.timeScale}
@@ -768,6 +771,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							collapsedOutputs={this.props.collapsedOutputs}
 							playlist={this.props.playlist}
 							studio={this.props.studio}
+							routedMappings={this.props.routedMappings}
 							segment={this.props.segment}
 							liveLineHistorySize={this.props.liveLineHistorySize}
 							isLastSegment={this.props.isLastSegment}
@@ -789,6 +793,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				segment={this.props.segment}
 				playlist={this.props.playlist}
 				studio={this.props.studio}
+				routedMappings={this.props.routedMappings}
 				collapsedOutputs={this.props.collapsedOutputs}
 				scrollLeft={this.props.scrollLeft}
 				timeScale={this.props.timeScale}

@@ -10,7 +10,7 @@ import { RoutedMappings, StudioId } from '../../../lib/collections/Studios'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { createCustomMongoCollection } from '../../lib/lib'
 
-const StudioMappings = createCustomMongoCollection(CustomCollectionName.StudioMappings)
+export const StudioMappings = createCustomMongoCollection(CustomCollectionName.StudioMappings)
 
 interface IMappingsViewProps {
 	match?: {

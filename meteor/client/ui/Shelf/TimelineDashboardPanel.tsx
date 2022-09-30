@@ -161,6 +161,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 														key={unprotectString(adLibListItem._id)}
 														piece={adLibListItem}
 														studio={this.props.studio}
+														routedMappings={this.props.routedMappings}
 														layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
 														outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
 														onToggleAdLib={this.onToggleOrSelectAdLib}
@@ -265,6 +266,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 															}
 															playlist={this.props.playlist}
 															studio={this.props.studio}
+															routedMappings={this.props.routedMappings}
 															isOnAir={this.isAdLibOnAir(adLibListItem)}
 															mediaPreviewUrl={
 																this.props.studio

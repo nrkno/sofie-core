@@ -4,7 +4,7 @@ import renderItem from './ItemRenderers/ItemRendererFactory'
 import { PieceUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
-import { Studio } from '../../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../../lib/collections/Studios'
 import { BucketAdLibItem } from '../RundownViewBuckets'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { IAdLibListItem } from '../AdLibListItem'
@@ -16,6 +16,7 @@ interface IShelfInspectorProps {
 	selected: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
 	showStyleBase: UIShowStyleBase
 	studio: Studio
+	routedMappings: RoutedMappings
 	rundownPlaylist: RundownPlaylist
 	onSelectPiece: (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => void
 }
@@ -31,8 +32,9 @@ class ShelfInspector extends React.Component<IShelfInspectorProps> {
 	}
 
 	render() {
-		const { selected, showStyleBase, studio, rundownPlaylist, onSelectPiece } = this.props
-		const content = selected && renderItem(selected, showStyleBase, studio, rundownPlaylist, onSelectPiece)
+		const { selected, showStyleBase, studio, routedMappings, rundownPlaylist, onSelectPiece } = this.props
+		const content =
+			selected && renderItem(selected, showStyleBase, studio, routedMappings, rundownPlaylist, onSelectPiece)
 
 		return (
 			<ContextMenuTrigger

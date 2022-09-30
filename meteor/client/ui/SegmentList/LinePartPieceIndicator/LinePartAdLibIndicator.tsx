@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import StudioContext from '../../RundownView/StudioContext'
 import RundownViewEventBus, { RundownViewEvents } from '../../RundownView/RundownViewEventBus'
+import RoutedMappingsContext from '../../RundownView/RoutedMappingsContext'
 
 interface IProps {
 	sourceLayers: ISourceLayerExtended[]
@@ -78,23 +79,28 @@ export const LinePartAdLibIndicator: React.FC<IProps> = function LinePartAdLibIn
 	}, [adLibPieces, adLibActions])
 
 	return (
-		<StudioContext.Consumer>
-			{(studio) => {
-				if (!studio) return null
+		<RoutedMappingsContext.Consumer>
+			{(routedMappings) => (
+				<StudioContext.Consumer>
+					{(studio) => {
+						if (!studio || !routedMappings) return null
 
-				return (
-					<LinePartIndicator
-						allSourceLayers={sourceLayers}
-						count={allAdLibLabels.length}
-						label={label.substring(0, 1)}
-						thisSourceLayer={sourceLayers[0]}
-						hasOriginInPreceedingPart={false}
-						studio={studio}
-						piece={adLibPieces[0]}
-						onDoubleClick={onDoubleClick}
-					/>
-				)
-			}}
-		</StudioContext.Consumer>
+						return (
+							<LinePartIndicator
+								allSourceLayers={sourceLayers}
+								count={allAdLibLabels.length}
+								label={label.substring(0, 1)}
+								thisSourceLayer={sourceLayers[0]}
+								hasOriginInPreceedingPart={false}
+								studio={studio}
+								routedMappings={routedMappings}
+								piece={adLibPieces[0]}
+								onDoubleClick={onDoubleClick}
+							/>
+						)
+					}}
+				</StudioContext.Consumer>
+			)}
+		</RoutedMappingsContext.Consumer>
 	)
 }

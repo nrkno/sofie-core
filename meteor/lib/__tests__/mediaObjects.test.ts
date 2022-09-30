@@ -8,7 +8,7 @@ import {
 	checkPieceContentStatus,
 } from '../mediaObjects'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream, MediaStreamType } from './../collections/MediaObjects'
-import { literal, protectString } from '../lib'
+import { getRandomId, literal, protectString } from '../lib'
 import {
 	ISourceLayer,
 	SourceLayerType,
@@ -16,7 +16,7 @@ import {
 	PieceLifespan,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
-import { IStudioSettings, Studio } from '../collections/Studios'
+import { IStudioSettings, RoutedMappings, Studio } from '../collections/Studios'
 import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
 import { EmptyPieceTimelineObjectsBlob, PieceGeneric, PieceStatusCode } from '../collections/Pieces'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
@@ -171,7 +171,11 @@ describe('lib/mediaObjects', () => {
 			settings: mockStudioSettings,
 		}
 
-		const mockStudioMappings = applyAndValidateOverrides(mockStudio.mappingsWithOverrides).obj
+		const mockStudioMappings: RoutedMappings = {
+			_id: mockStudio._id,
+			mappingsHash: getRandomId(),
+			mappings: applyAndValidateOverrides(mockStudio.mappingsWithOverrides).obj,
+		}
 
 		MediaObjects.insert(
 			literal<MediaObject>({

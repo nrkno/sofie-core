@@ -1,7 +1,7 @@
 import _ from 'underscore'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React, { useMemo, useState, useRef } from 'react'
-import { DBStudio } from '../../../../lib/collections/Studios'
+import { DBStudio, RoutedMappings } from '../../../../lib/collections/Studios'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { MediaObject } from '../../../../lib/collections/MediaObjects'
 import { PackageInfo, VTContent } from '@sofie-automation/blueprints-integration'
@@ -23,6 +23,7 @@ interface IProps {
 	partInstanceId: PartInstanceId
 	piece: PieceExtended
 	studio: DBStudio | undefined
+	routedMappings: RoutedMappings | undefined
 	timelineBase: number
 	partDuration: number
 	capToPartDuration: boolean

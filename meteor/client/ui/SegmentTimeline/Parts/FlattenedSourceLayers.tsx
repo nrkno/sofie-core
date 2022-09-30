@@ -45,6 +45,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps) {
 								<SourceLayerItemContainer
 									key={unprotectString(piece.instance._id)}
 									studio={props.studio}
+									routedMappings={props.routedMappings}
 									playlist={props.playlist}
 									followLiveLine={props.followLiveLine}
 									isLiveLine={props.isLiveLine}

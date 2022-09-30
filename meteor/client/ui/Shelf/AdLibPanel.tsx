@@ -47,7 +47,7 @@ import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { Studio } from '../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -59,12 +59,14 @@ import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { AdLibListView } from './AdLibListView'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { StudioMappings } from '../TestTools/Mappings'
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
 	playlist: RundownPlaylist
 	studio: Studio
+	routedMappings: RoutedMappings
 	showStyleBase: UIShowStyleBase
 	studioMode: boolean
 	filter?: RundownLayoutFilterBase
@@ -543,6 +545,8 @@ export function AdLibPanel({
 		undefined
 	)
 
+	const routedMappings = useTracker(() => StudioMappings.findOne(playlist.studioId), [playlist.studioId])
+
 	const [searchFilter, setSearchFilter] = useState<string | undefined>(undefined)
 	const [selectedSegment, setSelectedSegment] = useState<AdlibSegmentUi | undefined>(undefined)
 	const shelfFollowsOnAir = getShelfFollowsOnAir()
@@ -740,7 +744,7 @@ export function AdLibPanel({
 	if (!visible) {
 		return null
 	}
-	if (!uiSegments || !playlist || !studio) {
+	if (!uiSegments || !playlist || !studio || !routedMappings) {
 		return <Spinner />
 	}
 
@@ -765,6 +769,7 @@ export function AdLibPanel({
 				filter={filter as RundownLayoutFilter}
 				playlist={playlist}
 				studio={studio}
+				routedMappings={routedMappings}
 				noSegments={!withSegments}
 			/>
 		</div>

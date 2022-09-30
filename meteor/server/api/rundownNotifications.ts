@@ -18,7 +18,7 @@ import { Parts } from '../../lib/collections/Parts'
 import { Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
 import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { getActiveRoutes, getRoutedMappings, Studios } from '../../lib/collections/Studios'
+import { getActiveRoutes, getRoutedMappings, RoutedMappings, Studios } from '../../lib/collections/Studios'
 import { checkPieceContentStatus } from '../../lib/mediaObjects'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
@@ -69,6 +69,11 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 				const studioMappings = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
 				const routes = getActiveRoutes(studio)
 				const routedMappings = getRoutedMappings(studioMappings, routes)
+				const routedMappings2: RoutedMappings = {
+					_id: studio._id,
+					mappings: routedMappings,
+					mappingsHash: studio.mappingsHash,
+				}
 
 				const pieceStatus = pieces.map(async (piece) =>
 					makePromise(() => {
@@ -82,7 +87,7 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 								piece,
 								sourceLayer,
 								studio,
-								routedMappings
+								routedMappings2
 							)
 							if (
 								status !== PieceStatusCode.OK &&

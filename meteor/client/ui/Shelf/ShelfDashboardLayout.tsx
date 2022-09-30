@@ -7,7 +7,7 @@ import { ExternalFramePanel } from './ExternalFramePanel'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
-import { Studio } from '../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { PieceCountdownPanel } from './PieceCountdownPanel'
 import { BucketAdLibItem } from './RundownViewBuckets'
 import { IAdLibListItem } from './AdLibListItem'
@@ -41,6 +41,7 @@ export interface IShelfDashboardLayoutProps {
 	studioMode: boolean
 	shouldQueue: boolean
 	studio: Studio
+	routedMappings: RoutedMappings
 	onChangeQueueAdLib?: (isQueue: boolean, e: any) => void
 
 	selectedPiece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
@@ -67,6 +68,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 									studioMode={props.studioMode}
 									shouldQueue={props.shouldQueue}
 									studio={props.studio}
+									routedMappings={props.routedMappings}
 									selectedPiece={props.selectedPiece}
 									onSelectPiece={props.onSelectPiece}
 								/>
@@ -81,6 +83,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 									studioMode={props.studioMode}
 									shouldQueue={props.shouldQueue}
 									studio={props.studio}
+									routedMappings={props.routedMappings}
 									selectedPiece={props.selectedPiece}
 									onSelectPiece={props.onSelectPiece}
 								/>
@@ -111,6 +114,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 									selectedPiece={props.selectedPiece}
 									onSelectPiece={props.onSelectPiece}
 									studio={props.studio}
+									routedMappings={props.routedMappings}
 								/>
 							)
 						} else if (RundownLayoutsAPI.isPieceCountdown(panel)) {

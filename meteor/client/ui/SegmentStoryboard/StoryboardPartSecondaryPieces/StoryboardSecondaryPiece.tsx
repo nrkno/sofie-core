@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { Studio } from '../../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../../lib/collections/Studios'
 import { RundownUtils } from '../../../lib/rundown'
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
@@ -20,6 +20,7 @@ interface IProps {
 	partId: PartId
 	isLiveLine: boolean
 	studio: Studio | undefined
+	routedMappings: RoutedMappings | undefined
 	className?: string
 	style?: React.CSSProperties
 	onPointerEnter?: React.EventHandler<React.PointerEvent<HTMLDivElement>>

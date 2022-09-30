@@ -5,7 +5,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
 import { RundownLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
-import { Studio } from '../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
@@ -26,6 +26,7 @@ interface IListViewPropsHeader {
 	rundownAdLibs?: Array<AdLibPieceUi>
 	playlist: RundownPlaylist
 	studio: Studio
+	routedMappings: RoutedMappings
 }
 
 /**
@@ -199,6 +200,7 @@ export function AdLibListView(props: IListViewPropsHeader) {
 				piece={adLibPiece}
 				layer={adLibPiece.sourceLayer}
 				studio={props.studio}
+				routedMappings={props.routedMappings}
 				selected={
 					(props.selectedPiece &&
 						RundownUtils.isAdLibPiece(props.selectedPiece) &&

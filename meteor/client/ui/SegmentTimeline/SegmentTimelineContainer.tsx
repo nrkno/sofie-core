@@ -701,6 +701,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 							key={unprotectString(this.props.segmentui._id)}
 							segment={this.props.segmentui}
 							studio={this.props.studio}
+							routedMappings={this.props.routedMappings}
 							parts={this.props.parts}
 							segmentNotes={this.props.segmentNotes}
 							timeScale={this.state.timeScale}
@@ -743,6 +744,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					{this.props.segmentui.showShelf && this.props.adLibSegmentUi && (
 						<RundownViewShelf
 							studio={this.props.studio}
+							routedMappings={this.props.routedMappings}
 							segment={this.props.segmentui}
 							playlist={this.props.playlist}
 							showStyleBase={this.props.showStyleBase}

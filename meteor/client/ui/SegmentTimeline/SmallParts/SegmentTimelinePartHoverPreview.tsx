@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useState } from 'react'
 import { TFunction } from 'i18next'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../../lib/collections/Studios'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
@@ -16,6 +16,7 @@ export const SegmentTimelinePartHoverPreview = ({
 	segment,
 	playlist,
 	studio,
+	routedMappings,
 	collapsedOutputs,
 	autoNextPart,
 	liveLineHistorySize,
@@ -33,6 +34,7 @@ export const SegmentTimelinePartHoverPreview = ({
 	segment: SegmentUi
 	playlist: RundownPlaylist
 	studio: Studio
+	routedMappings: RoutedMappings
 	collapsedOutputs: {
 		[key: string]: boolean
 	}
@@ -82,6 +84,7 @@ export const SegmentTimelinePartHoverPreview = ({
 							segment={segment}
 							playlist={playlist}
 							studio={studio}
+							routedMappings={routedMappings}
 							collapsedOutputs={collapsedOutputs}
 							scrollLeft={0}
 							timeScale={0}
@@ -109,6 +112,7 @@ export const SegmentTimelinePartHoverPreview = ({
 						segment={segment}
 						playlist={playlist}
 						studio={studio}
+						routedMappings={routedMappings}
 						collapsedOutputs={collapsedOutputs}
 						scrollLeft={0}
 						timeScale={0}

@@ -5,6 +5,7 @@ import StudioContext from '../../RundownView/StudioContext'
 import { LinePartIndicator } from './LinePartIndicator'
 import { PieceIndicatorMenu } from './PieceIndicatorMenu'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
+import RoutedMappingsContext from '../../RundownView/RoutedMappingsContext'
 
 interface IProps {
 	partId: PartId
@@ -42,33 +43,36 @@ export const LinePartPieceIndicator: React.FC<IProps> = function LinePartPieceIn
 	const hasOriginInPreceedingPart = topPiece?.hasOriginInPreceedingPart || false
 
 	return (
-		<StudioContext.Consumer>
-			{(studio) => {
-				if (!studio) return null
-				return (
-					<>
-						<LinePartIndicator
-							allSourceLayers={sourceLayers}
-							count={thisPieces.length}
-							label={label.substring(0, 1)}
-							thisSourceLayer={topPiece?.sourceLayer}
-							hasOriginInPreceedingPart={hasOriginInPreceedingPart}
-							piece={topPiece}
-							studio={studio}
-							overlay={(ref, setIsOver) => (
-								<PieceIndicatorMenu
-									pieces={thisPieces}
-									parentEl={ref}
-									partId={partId}
-									setIsOver={setIsOver}
-									onPieceClick={onPieceClick}
-									onPieceDoubleClick={onPieceDoubleClick}
-								/>
-							)}
-						/>
-					</>
-				)
-			}}
-		</StudioContext.Consumer>
+		<RoutedMappingsContext.Consumer>
+			{(routedMappings) => (
+				<StudioContext.Consumer>
+					{(studio) => {
+						if (!studio || !routedMappings) return null
+						return (
+							<LinePartIndicator
+								allSourceLayers={sourceLayers}
+								count={thisPieces.length}
+								label={label.substring(0, 1)}
+								thisSourceLayer={topPiece?.sourceLayer}
+								hasOriginInPreceedingPart={hasOriginInPreceedingPart}
+								piece={topPiece}
+								studio={studio}
+								routedMappings={routedMappings}
+								overlay={(ref, setIsOver) => (
+									<PieceIndicatorMenu
+										pieces={thisPieces}
+										parentEl={ref}
+										partId={partId}
+										setIsOver={setIsOver}
+										onPieceClick={onPieceClick}
+										onPieceDoubleClick={onPieceDoubleClick}
+									/>
+								)}
+							/>
+						)
+					}}
+				</StudioContext.Consumer>
+			)}
+		</RoutedMappingsContext.Consumer>
 	)
 }

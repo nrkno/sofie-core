@@ -4,7 +4,7 @@ import NoraItemRenderer, { isNoraItem } from './NoraItemRenderer'
 import ActionItemRenderer, { isActionItem } from './ActionItemRenderer'
 
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
-import { Studio } from '../../../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../../../lib/collections/Studios'
 import { BucketAdLibItem } from '../../RundownViewBuckets'
 import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
 import { IAdLibListItem } from '../../AdLibListItem'
@@ -15,21 +15,23 @@ export default function renderItem(
 	piece: BucketAdLibItem | IAdLibListItem | PieceUi,
 	showStyleBase: UIShowStyleBase,
 	studio: Studio,
+	routedMappings: RoutedMappings,
 	rundownPlaylist: RundownPlaylist,
 	onSelectPiece: (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => void
 ): JSX.Element {
 	if (!piece['isAction'] && isNoraItem(piece as AdLibPieceUi | PieceUi)) {
 		const noraPiece = piece as AdLibPieceUi | PieceUi
-		return React.createElement(NoraItemRenderer, { piece: noraPiece, showStyleBase, studio })
+		return React.createElement(NoraItemRenderer, { piece: noraPiece, showStyleBase, studio, routedMappings })
 	} else if (isActionItem(piece)) {
 		return React.createElement(ActionItemRenderer, {
 			piece,
 			showStyleBase,
 			studio,
+			routedMappings,
 			rundownPlaylist,
 			onSelectPiece,
 		})
 	}
 
-	return React.createElement(DefaultItemRenderer, { piece, showStyleBase, studio })
+	return React.createElement(DefaultItemRenderer, { piece, showStyleBase, studio, routedMappings })
 }

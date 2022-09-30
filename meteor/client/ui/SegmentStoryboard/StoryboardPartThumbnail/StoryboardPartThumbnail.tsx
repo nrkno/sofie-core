@@ -3,6 +3,7 @@ import classNames from 'classnames'
 import React, { useEffect, useState } from 'react'
 import { PartExtended, PieceExtended } from '../../../../lib/Rundown'
 import { findPieceExtendedToShowFromOrderedResolvedInstances } from '../../PieceIcons/utils'
+import RoutedMappingsContext from '../../RundownView/RoutedMappingsContext'
 import StudioContext from '../../RundownView/StudioContext'
 import { StoryboardPartThumbnailInner } from './StoryboardPartThumbnailInner'
 
@@ -42,22 +43,27 @@ export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbna
 	}, [part.pieces])
 
 	return mainPiece ? (
-		<StudioContext.Consumer>
-			{(studio) => (
-				<StoryboardPartThumbnailInner
-					piece={mainPiece}
-					isLive={isLive}
-					isNext={isNext}
-					isFinished={isFinished}
-					layer={mainPiece?.sourceLayer}
-					studio={studio}
-					partId={part.partId}
-					partInstanceId={part.instance._id}
-					highlight={highlight}
-					partAutoNext={part.instance.part.autoNext || false}
-				/>
+		<RoutedMappingsContext.Consumer>
+			{(routedMappings) => (
+				<StudioContext.Consumer>
+					{(studio) => (
+						<StoryboardPartThumbnailInner
+							piece={mainPiece}
+							isLive={isLive}
+							isNext={isNext}
+							isFinished={isFinished}
+							layer={mainPiece?.sourceLayer}
+							studio={studio}
+							routedMappings={routedMappings}
+							partId={part.partId}
+							partInstanceId={part.instance._id}
+							highlight={highlight}
+							partAutoNext={part.instance.part.autoNext || false}
+						/>
+					)}
+				</StudioContext.Consumer>
 			)}
-		</StudioContext.Consumer>
+		</RoutedMappingsContext.Consumer>
 	) : (
 		<div
 			className={classNames('segment-storyboard__part__thumbnail segment-storyboard__part__thumbnail--placeholder', {

@@ -3,7 +3,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IAdLibListItem } from './AdLibListItem'
 import { AdLibPanel } from './AdLibPanel'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { Studio } from '../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import { literal } from '../../../lib/lib'
 import {
@@ -20,6 +20,7 @@ interface IProps {
 	playlist: RundownPlaylist
 	showStyleBase: UIShowStyleBase
 	studio: Studio
+	routedMappings: RoutedMappings
 	visible: boolean
 	studioMode: boolean
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
@@ -30,6 +31,7 @@ interface IProps {
 export function GlobalAdLibPanel({
 	playlist,
 	studio,
+	routedMappings,
 	showStyleBase,
 	selectedPiece,
 	studioMode,
@@ -67,6 +69,7 @@ export function GlobalAdLibPanel({
 		<AdLibPanel
 			playlist={playlist}
 			studio={studio}
+			routedMappings={routedMappings}
 			showStyleBase={showStyleBase}
 			selectedPiece={selectedPiece}
 			onSelectPiece={onSelectPiece}

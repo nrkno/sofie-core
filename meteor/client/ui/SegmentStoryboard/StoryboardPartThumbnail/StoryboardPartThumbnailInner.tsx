@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { Studio } from '../../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../../lib/collections/Studios'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PartId } from '../../../../lib/collections/Parts'
@@ -17,6 +17,7 @@ interface IProps {
 	layer: ISourceLayer | undefined
 	piece: PieceExtended
 	studio: Studio | undefined
+	routedMappings: RoutedMappings | undefined
 	isLive: boolean
 	isNext: boolean
 	isFinished: boolean

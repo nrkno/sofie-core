@@ -8,7 +8,7 @@ import {
 } from '../../../lib/collections/RundownPlaylists'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
-import { Studio } from '../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import {
 	IOutputLayerExtended,
 	ISourceLayerExtended,
@@ -73,6 +73,7 @@ export interface IProps {
 	rundownIdsBefore: RundownId[]
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio: Studio
+	routedMappings: RoutedMappings
 	showStyleBase: UIShowStyleBase
 	playlist: RundownPlaylist
 	rundown: MinimalRundown
@@ -244,7 +245,12 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			)
 			o.parts.forEach((part) => {
 				notes.push(
-					...getMinimumReactivePieceNotesForPart(props.studio, props.showStyleBase, part.instance.part).map(
+					...getMinimumReactivePieceNotesForPart(
+						props.studio,
+						props.showStyleBase,
+						props.routedMappings,
+						part.instance.part
+					).map(
 						(note): TrackedNote => ({
 							...note,
 							rank: segment._rank,

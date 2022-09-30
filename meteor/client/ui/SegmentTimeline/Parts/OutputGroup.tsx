@@ -1,6 +1,6 @@
 import React from 'react'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../../lib/collections/Studios'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
 import { IContextMenuContext } from '../../RundownView'
 import { IOutputLayerUi, PartUi, PieceUi, SegmentUi } from '../SegmentTimelineContainer'
@@ -16,6 +16,7 @@ interface IOutputGroupProps {
 	sourceLayers: ISourceLayerExtended[]
 	playlist: RundownPlaylist
 	studio: Studio
+	routedMappings: RoutedMappings
 	segment: SegmentUi
 	part: PartUi
 	mediaPreviewUrl: string
@@ -64,6 +65,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 						<SourceLayer
 							key={sourceLayer._id}
 							studio={props.studio}
+							routedMappings={props.routedMappings}
 							layer={sourceLayer}
 							playlist={props.playlist}
 							outputLayer={props.layer}
@@ -101,6 +103,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 					<FlattenedSourceLayers
 						key={props.layer._id + '_flattened'}
 						studio={props.studio}
+						routedMappings={props.routedMappings}
 						layers={props.sourceLayers}
 						playlist={props.playlist}
 						outputLayer={props.layer}

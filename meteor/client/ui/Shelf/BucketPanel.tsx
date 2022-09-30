@@ -35,7 +35,7 @@ import {
 	USER_AGENT_POINTER_PROPERTY,
 	getEventTimestamp,
 } from '../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { IDashboardPanelTrackedProps } from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
@@ -68,6 +68,7 @@ import {
 } from '../../lib/shelf'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { StudioMappings } from '../TestTools/Mappings'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, _monitor: DragSourceMonitor, component: any) {
@@ -233,6 +234,7 @@ export interface IBucketPanelProps {
 export interface IBucketPanelTrackedProps extends IDashboardPanelTrackedProps {
 	adLibPieces: BucketAdLibItem[]
 	studio: Studio
+	routedMappings: RoutedMappings | undefined
 	showStyleBaseId: ShowStyleBaseId
 	showStyleVariantId: ShowStyleVariantId
 	outputLayers: OutputLayers
@@ -315,9 +317,13 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		const allBucketItems = (bucketAdLibPieces as BucketAdLibItem[])
 			.concat(bucketActions)
 			.sort((a, b) => a._rank - b._rank || a.name.localeCompare(b.name))
+
+		const routedMappings = StudioMappings.findOne(props.playlist.studioId)
+
 		return literal<IBucketPanelTrackedProps>({
 			adLibPieces: allBucketItems,
 			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
+			routedMappings,
 			unfinishedAdLibIds,
 			unfinishedTags,
 			showStyleBaseId,
@@ -771,9 +777,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 
 				render() {
-					const { connectDragSource, connectDragPreview, connectDropTarget } = this.props
+					const { connectDragSource, connectDragPreview, connectDropTarget, routedMappings } = this.props
 
-					if (this.props.showStyleBase) {
+					if (this.props.showStyleBase && routedMappings) {
 						// Hide duplicates;
 						// Step 1: Only the first adLib found with a given externalId will be displayed,
 						// adlibs with the same externalId are considered to be cariants of the same adlibs.
@@ -861,6 +867,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 												<BucketPieceButton
 													piece={adlib as any as IAdLibListItem}
 													studio={this.props.studio}
+													routedMappings={routedMappings}
 													bucketId={adlib.bucketId}
 													layer={this.props.sourceLayers[adlib.sourceLayerId]}
 													outputLayer={this.props.outputLayers[adlib.outputLayerId]}

@@ -10,7 +10,7 @@ import { AdLibPieceUi } from '../../lib/shelf'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { useTranslation } from 'react-i18next'
 import { BucketAdLibItem } from './RundownViewBuckets'
@@ -23,6 +23,7 @@ export interface IShelfRundownLayoutProps {
 	showStyleBase: UIShowStyleBase
 	studioMode: boolean
 	studio: Studio
+	routedMappings: RoutedMappings
 	selectedTab: string | undefined
 	selectedPiece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
 
@@ -106,6 +107,7 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps) {
 							showStyleBase={props.showStyleBase}
 							studioMode={props.studioMode}
 							studio={props.studio}
+							routedMappings={props.routedMappings}
 						></AdLibPanel>
 						<GlobalAdLibPanel
 							visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB}
@@ -115,6 +117,7 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps) {
 							showStyleBase={props.showStyleBase}
 							studioMode={props.studioMode}
 							studio={props.studio}
+							routedMappings={props.routedMappings}
 						></GlobalAdLibPanel>
 					</>
 				) : (
@@ -131,6 +134,7 @@ export function ShelfRundownLayout(props: IShelfRundownLayoutProps) {
 								showStyleBase={props.showStyleBase}
 								studioMode={props.studioMode}
 								studio={props.studio}
+								routedMappings={props.routedMappings}
 							/>
 						) : RundownLayoutsAPI.isExternalFrame(panel) ? (
 							<ExternalFramePanel

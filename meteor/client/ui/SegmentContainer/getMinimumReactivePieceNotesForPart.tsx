@@ -3,13 +3,14 @@ import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
-import { Studio } from '../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { checkPieceContentStatus, getNoteSeverityForPieceStatus } from '../../../lib/mediaObjects'
 import { getIgnorePieceContentStatus } from '../../lib/localStorage'
 
 export function getMinimumReactivePieceNotesForPart(
 	studio: Studio,
 	showStyleBase: UIShowStyleBase,
+	routedMappings: RoutedMappings,
 	part: Part
 ): PartNote[] {
 	const notes: Array<PartNote> = []
@@ -36,7 +37,7 @@ export function getMinimumReactivePieceNotesForPart(
 
 		if (sourceLayerMap && piece.sourceLayerId && sourceLayerMap[piece.sourceLayerId]) {
 			const sourceLayer = sourceLayerMap[piece.sourceLayerId]
-			const st = checkPieceContentStatus(piece, sourceLayer, studio, studio.mappingsWithOverrides.defaults)
+			const st = checkPieceContentStatus(piece, sourceLayer, studio, routedMappings)
 			if (st.status !== PieceStatusCode.OK && st.status !== PieceStatusCode.UNKNOWN && !getIgnorePieceContentStatus()) {
 				notes.push({
 					type: getNoteSeverityForPieceStatus(st.status) || NoteSeverity.WARNING,

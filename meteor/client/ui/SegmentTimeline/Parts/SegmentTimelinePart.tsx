@@ -5,7 +5,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../../lib/collections/Studios'
+import { RoutedMappings, Studio } from '../../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi, LIVE_LINE_TIME_PADDING } from '../SegmentTimelineContainer'
 import {
 	TimingDataResolution,
@@ -47,6 +47,7 @@ interface IProps {
 	segment: SegmentUi
 	playlist: RundownPlaylist
 	studio: Studio
+	routedMappings: RoutedMappings
 	part: PartUi
 	timeScale: number
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
@@ -435,6 +436,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								part={part}
 								playlist={this.props.playlist}
 								studio={this.props.studio}
+								routedMappings={this.props.routedMappings}
 								startsAt={SegmentTimelinePartClass.getPartStartsAt(this.props) || this.props.part.startsAt || 0}
 								duration={
 									this.props.cropDuration

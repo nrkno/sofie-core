@@ -11,7 +11,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
 import * as i18next from 'i18next'
-import { IStudioSettings, MappingsExt, MappingsExtWithPackage, Studio } from './collections/Studios'
+import { IStudioSettings, MappingsExtWithPackage, RoutedMappings, Studio } from './collections/Studios'
 import { PackageInfos } from './collections/PackageInfos'
 import { assertNever, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
@@ -173,7 +173,7 @@ export function checkPieceContentStatus(
 	piece: Pick<PieceGeneric, '_id' | 'name' | 'content' | 'expectedPackages'>,
 	sourceLayer: ISourceLayer | undefined,
 	studio: Pick<Studio, '_id' | 'settings' | 'packageContainers'> | undefined,
-	_routedMappings: ReadonlyDeep<MappingsExt>,
+	_routedMappings: ReadonlyDeep<RoutedMappings>,
 	t?: i18next.TFunction
 ): {
 	status: PieceStatusCode.OK | PieceStatusCode.UNKNOWN

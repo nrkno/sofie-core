@@ -34,7 +34,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { RoutedMappings, Studio, Studios } from '../../../lib/collections/Studios'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
 import { parse as queryStringParse } from 'query-string'
@@ -42,6 +42,7 @@ import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automat
 import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIShowStyleBases } from '../Collections'
+import { StudioMappings } from '../TestTools/Mappings'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -61,6 +62,7 @@ interface RundownOverviewState {
 }
 export interface RundownOverviewTrackedProps {
 	studio: Studio | undefined
+	routedMappings: RoutedMappings | undefined
 	playlist?: RundownPlaylist
 	rundowns: Rundown[]
 	segments: Array<SegmentUi>
@@ -162,6 +164,8 @@ function getShowStyleBaseIdSegmentPartUi(
 
 export const getPresenterScreenReactive = (props: RundownOverviewProps): RundownOverviewTrackedProps => {
 	const studio = Studios.findOne(props.studioId)
+	const routedMappings = StudioMappings.findOne(props.studioId)
+
 	let playlist: RundownPlaylist | undefined
 
 	if (props.playlistId)
@@ -258,6 +262,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 	}
 	return {
 		studio,
+		routedMappings,
 		segments,
 		playlist,
 		rundowns,
@@ -301,6 +306,8 @@ export class PresenterScreenBase extends MeteorReactComponent<
 			this.subscribe(PubSub.studios, {
 				_id: this.props.studioId,
 			})
+			this.subscribe(PubSub.mappingsForStudio, this.props.studioId)
+
 			const playlist = RundownPlaylists.findOne(this.props.playlistId, {
 				fields: {
 					_id: 1,
@@ -548,9 +555,9 @@ export class PresenterScreenBase extends MeteorReactComponent<
 	}
 
 	renderDashboardLayout(layout: DashboardLayout) {
-		const { studio, playlist, currentShowStyleBase, currentShowStyleVariant } = this.props
+		const { studio, playlist, currentShowStyleBase, currentShowStyleVariant, routedMappings } = this.props
 
-		if (studio && playlist && currentShowStyleBase && currentShowStyleVariant) {
+		if (studio && playlist && currentShowStyleBase && currentShowStyleVariant && routedMappings) {
 			return (
 				<div className="presenter-screen">
 					<ShelfDashboardLayout
@@ -559,6 +566,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 						showStyleBase={currentShowStyleBase}
 						showStyleVariant={currentShowStyleVariant}
 						studio={studio}
+						routedMappings={routedMappings}
 						studioMode={false}
 						shouldQueue={false}
 						selectedPiece={undefined}
