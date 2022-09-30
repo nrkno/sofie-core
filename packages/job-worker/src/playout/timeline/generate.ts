@@ -98,7 +98,6 @@ export async function updateStudioTimeline(
 				new StudioBaselineContext(
 					{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
 					context,
-					studio,
 					watchedPackages
 				)
 			)

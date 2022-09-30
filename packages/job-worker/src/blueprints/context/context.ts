@@ -174,10 +174,9 @@ export class StudioBaselineContext extends StudioContext implements IStudioBasel
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
-		studio: ReadonlyDeep<DBStudioHack>,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, studio, context.getStudioBlueprintConfig())
+		super(contextInfo, context.studio, context.getStudioBlueprintConfig())
 		this.jobContext = context
 	}
 

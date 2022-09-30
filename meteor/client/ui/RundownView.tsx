@@ -123,7 +123,7 @@ import { SegmentStoryboardContainer } from './SegmentStoryboard/SegmentStoryboar
 import { SegmentViewMode } from './SegmentContainer/SegmentViewModes'
 import { UIStateStorage } from '../lib/UIStateStorage'
 import { AdLibPieceUi, AdlibSegmentUi, ShelfDisplayOptions } from '../lib/shelf'
-import { SourceLayerLookup, fetchAndFilter } from './Shelf/AdLibPanel'
+import { fetchAndFilter } from './Shelf/AdLibPanel'
 import { matchFilter } from './Shelf/AdLibListView'
 import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { SegmentListContainer } from './SegmentList/SegmentListContainer'
