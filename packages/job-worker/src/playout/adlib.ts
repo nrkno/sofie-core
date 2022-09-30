@@ -198,11 +198,10 @@ async function pieceTakeNowAsAdlib(
 			}
 		}
 
-		cache.PieceInstances.update(pieceInstanceToCopy._id, {
-			$set: {
-				disabled: true,
-				hidden: true,
-			},
+		cache.PieceInstances.updateOne(pieceInstanceToCopy._id, (p) => {
+			p.disabled = true
+			p.hidden = true
+			return p
 		})
 	}
 
@@ -235,9 +234,8 @@ export async function adLibPieceStart(context: JobContext, data: AdlibPieceStart
 			if (!rundown) throw new Error(`Rundown "${partInstance.rundownId}" not found!`)
 
 			// Rundows that share the same showstyle variant as the current rundown, so adlibs from these rundowns are safe to play
-			const safeRundownIds = cache.Rundowns.findFetch(
-				{ showStyleVariantId: rundown.showStyleVariantId },
-				{ fields: { _id: 1 } }
+			const safeRundownIds = cache.Rundowns.findAll(
+				(rd) => rd.showStyleVariantId === rundown.showStyleVariantId
 			).map((r) => r._id)
 
 			let adLibPiece: AdLibPiece | BucketAdLib | undefined
@@ -321,11 +319,6 @@ export async function innerStartOrQueueAdLibPiece(
 				title: adLibPiece.name,
 				expectedDuration: adLibPiece.expectedDuration,
 				expectedDurationWithPreroll: adLibPiece.expectedDuration, // Filled in later
-				// TODOSYNC: do tv2 use these?
-				// autoNext: adLibPiece.adlibAutoNext,
-				// autoNextOverlap: adLibPiece.adlibAutoNextOverlap,
-				// disableOutTransition: adLibPiece.adlibDisableOutTransition,
-				// transitionKeepaliveDuration: adLibPiece.adlibTransitionKeepAlive,
 			},
 		}
 		const newPieceInstance = convertAdLibToPieceInstance(
@@ -488,10 +481,10 @@ export async function innerFindLastScriptedPieceOnLayer(
 			projection: { _id: 1, startPartId: 1, enable: 1 },
 		})
 
-	const part = cache.Parts.findOne(
-		{ _id: { $in: pieces.map((p) => p.startPartId) }, _rank: { $lte: currentPartInstance.part._rank } },
-		{ sort: { _rank: -1 } }
-	)
+	const pieceIdSet = new Set(pieces.map((p) => p.startPartId))
+	const part = cache.Parts.findOne((p) => pieceIdSet.has(p._id) && p._rank <= currentPartInstance.part._rank, {
+		sort: { _rank: -1 },
+	})
 
 	if (!part) {
 		return
@@ -641,20 +634,13 @@ export function innerStopPieces(
 				case PieceLifespan.OutOnSegmentChange:
 				case PieceLifespan.OutOnRundownChange: {
 					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
-					const up: Partial<PieceInstance> = {
-						userDuration: {
-							end: relativeStopAt,
-						},
-					}
 
-					cache.PieceInstances.update(
-						{
-							_id: pieceInstance._id,
-						},
-						{
-							$set: up,
+					cache.PieceInstances.updateOne(pieceInstance._id, (p) => {
+						p.userDuration = {
+							end: relativeStopAt,
 						}
-					)
+						return p
+					})
 
 					stoppedInstances.push(pieceInstance._id)
 					break

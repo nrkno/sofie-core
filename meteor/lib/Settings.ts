@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { KeyboardLayouts } from './KeyboardLayout'
 
 /**
  * This is an object specifying installation-wide, User Interface settings.
@@ -14,8 +15,6 @@ export interface ISettings {
 	autoRewindLeavingSegment: boolean
 	/** Disable blur border in RundownView */
 	disableBlurBorder: boolean
-	/** Disable blur border in the standalone Shelf */
-	disableBlurBorderInShelf: boolean // TODOSYNC: TV2 check: Is this not used by anyone? to be removed?
 	/** Default time scale zooming for the UI. Default: 1  */
 	defaultTimeScale: number
 	// Allow grabbing the entire timeline
@@ -38,9 +37,30 @@ export interface ISettings {
 		port?: number
 		maxAllowedDiff: number
 	}
+	/** Default value used to toggle Shelf options when the 'display' URL argument is not provided. */
+	defaultShelfDisplayOptions: string
 
 	/** The KeyboardPreview is a feature that is not implemented in the main Fork, and is kept here for compatibility */
 	enableKeyboardPreview: boolean
+
+	/** Keyboard map layout (what physical layout to use for the keyboard) */
+	keyboardMapLayout: KeyboardLayouts.Names
+
+	/**
+	 * CSS class applied to the body of the page. Used to include custom implementations that differ from the main Fork.
+	 * I.e. custom CSS etc. Leave undefined if no custom implementation is needed
+	 * */
+	customizationClassName?: string
+
+	/** If true, countdowns of videos will count down to the last freeze-frame of the video instead of to the end of the video */
+	useCountdownToFreezeFrame: boolean
+
+	/**
+	 * Which keyboard key is used as "Confirm" in modal dialogs etc.
+	 * In some installations, the rightmost Enter key (on the numpad) is dedicated for playout,
+	 * in such cases this must be set to 'Enter' to exclude it.
+	 */
+	confirmKeyCode: 'Enter' | 'AnyEnter'
 }
 
 /**
@@ -50,7 +70,6 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	// frameRate: 25,
 	autoRewindLeavingSegment: true,
 	disableBlurBorder: false,
-	disableBlurBorderInShelf: true,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
 	enableUserAccounts: false,
@@ -62,7 +81,11 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	followOnAirSegmentsHistory: 0,
 	maximumDataAge: 1000 * 60 * 60 * 24 * 100, // 100 days
 	enableNTPTimeChecker: null,
+	defaultShelfDisplayOptions: 'buckets,layout,shelfLayout,inspector',
 	enableKeyboardPreview: false,
+	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
+	useCountdownToFreezeFrame: true,
+	confirmKeyCode: 'Enter',
 })
 
 /**

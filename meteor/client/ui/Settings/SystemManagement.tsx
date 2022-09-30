@@ -93,7 +93,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									attribute="logLevel"
 									obj={this.props.coreSystem}
 									type="dropdown"
-									options={LogLevel}
+									options={{ ...LogLevel, 'Use fallback': undefined }}
 									collection={CoreSystem}
 									className="mdinput"
 								/>

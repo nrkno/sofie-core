@@ -46,11 +46,11 @@ import {
 	defaultPiece,
 	defaultAdLibPiece,
 } from '../../__mocks__/defaultCollectionObjects'
-import { PieceLifespan } from '../../../../blueprints-integration/dist'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
 import { adjustFakeTime, getCurrentTime, useFakeCurrentTime } from '../../__mocks__/time'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 // const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')

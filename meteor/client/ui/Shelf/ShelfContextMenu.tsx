@@ -9,7 +9,7 @@ import { BucketAdLibItem, BucketAdLibActionUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents } from '../RundownView/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import { isActionItem } from './Inspector/ItemRenderers/ActionItemRenderer'
-import { AdLibPieceUi } from '../../lib/shelf'
+import { AdLibPieceUi, ShelfDisplayOptions } from '../../lib/shelf'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
@@ -17,6 +17,11 @@ export enum ContextType {
 	BUCKET = 'bucket',
 	BUCKET_ADLIB = 'bucket_adlib',
 	ADLIB = 'adlib',
+}
+
+interface ShelfContextMenuProps {
+	shelfDisplayOptions: ShelfDisplayOptions
+	hideDefaultStartExecute: boolean
 }
 
 interface ShelfContextMenuContextBase {
@@ -63,7 +68,7 @@ export function setShelfContextMenuContext(context: ShelfContextMenuContext | un
 	shelfContextMenuContext.set(context)
 }
 
-export default function ShelfContextMenu() {
+export default function ShelfContextMenu(props: ShelfContextMenuProps) {
 	const { t } = useTranslation()
 
 	const context = useTracker(() => {
@@ -82,7 +87,7 @@ export default function ShelfContextMenu() {
 		adLib: T
 		onToggle?: (adLib: T, queue: boolean, e: any, mode?: IBlueprintActionTriggerMode) => void
 		disabled?: boolean
-	}) {
+	}): JSX.Element | JSX.Element[] | null {
 		if (isActionItem(item.adLib)) {
 			const adLibAction = getActionItem(item.adLib)
 			const triggerModes = adLibAction?.triggerModes
@@ -104,7 +109,8 @@ export default function ShelfContextMenu() {
 					</MenuItem>
 				))
 			return (
-				(triggerModes !== undefined && triggerModes.length > 0 && triggerModes) || (
+				(triggerModes !== undefined && triggerModes.length > 0 && triggerModes) ||
+				(!props.hideDefaultStartExecute ? (
 					<MenuItem
 						onClick={(e) => {
 							e.persist()
@@ -115,10 +121,10 @@ export default function ShelfContextMenu() {
 						{(adLibAction?.display.triggerLabel && translateMessage(adLibAction?.display.triggerLabel, t)) ??
 							t('Execute')}
 					</MenuItem>
-				)
+				) : null)
 			)
 		} else {
-			return (
+			return !props.hideDefaultStartExecute ? (
 				<>
 					<MenuItem
 						onClick={(e) => {
@@ -141,9 +147,16 @@ export default function ShelfContextMenu() {
 						</MenuItem>
 					)}
 				</>
-			)
+			) : null
 		}
 	}
+
+	const startExecuteMenuItems =
+		context?.type === ContextType.ADLIB
+			? renderStartExecuteAdLib(context.details)
+			: context?.type === ContextType.BUCKET_ADLIB
+			? renderStartExecuteAdLib(context.details)
+			: null
 
 	return (
 		<Escape to="viewport">
@@ -153,24 +166,28 @@ export default function ShelfContextMenu() {
 				)}
 				{context && (context.type === ContextType.BUCKET_ADLIB || context.type === ContextType.ADLIB) && (
 					<>
-						<div className="react-contextmenu-label">{context.details.adLib.name}</div>
-						{context.type === ContextType.ADLIB
-							? renderStartExecuteAdLib(context.details)
-							: context.type === ContextType.BUCKET_ADLIB
-							? renderStartExecuteAdLib(context.details)
-							: null}
-						<hr />
-						<MenuItem
-							onClick={(e) => {
-								e.persist()
-								RundownViewEventBus.emit(RundownViewEvents.SELECT_PIECE, {
-									piece: context.details.adLib,
-									context: e,
-								})
-							}}
-						>
-							{t('Inspect this AdLib')}
-						</MenuItem>
+						{(startExecuteMenuItems !== null ||
+							props.shelfDisplayOptions.enableInspector ||
+							context.type === ContextType.BUCKET_ADLIB) && (
+							<>
+								<div className="react-contextmenu-label">{context.details.adLib.name}</div>
+								{startExecuteMenuItems}
+								<hr />
+							</>
+						)}
+						{props.shelfDisplayOptions.enableInspector && (
+							<MenuItem
+								onClick={(e) => {
+									e.persist()
+									RundownViewEventBus.emit(RundownViewEvents.SELECT_PIECE, {
+										piece: context.details.adLib,
+										context: e,
+									})
+								}}
+							>
+								{t('Inspect this AdLib')}
+							</MenuItem>
+						)}
 					</>
 				)}
 				{context && context.type === ContextType.BUCKET_ADLIB && (
@@ -240,16 +257,18 @@ export default function ShelfContextMenu() {
 						<hr />
 					</>
 				)}
-				<MenuItem
-					onClick={(e) => {
-						e.persist()
-						RundownViewEventBus.emit(RundownViewEvents.CREATE_BUCKET, {
-							context: e,
-						})
-					}}
-				>
-					{t('Create new Bucket')}
-				</MenuItem>
+				{props.shelfDisplayOptions.enableBuckets && (
+					<MenuItem
+						onClick={(e) => {
+							e.persist()
+							RundownViewEventBus.emit(RundownViewEvents.CREATE_BUCKET, {
+								context: e,
+							})
+						}}
+					>
+						{t('Create new Bucket')}
+					</MenuItem>
+				)}
 			</ContextMenu>
 		</Escape>
 	)

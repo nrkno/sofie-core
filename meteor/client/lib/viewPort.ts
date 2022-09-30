@@ -6,7 +6,7 @@ import { isProtectedString } from '../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents } from '../ui/RundownView/RundownViewEventBus'
 import { Settings } from '../../lib/Settings'
 
-const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. Could this use a css variable and getComputedStyle(document.documentElement).getPropertyValue('--my-variable-name'); ?
+const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. If it's needed to be different, it needs to be made generic somehow..
 const FALLBACK_HEADER_HEIGHT = 65
 
 let focusInterval: NodeJS.Timer | undefined

@@ -48,6 +48,11 @@ addSteps1_43_0()
 import { addSteps as addSteps1_44_0 } from './1_44_0'
 addSteps1_44_0()
 
+// Note: There where no migrations for Release 45
+
+import { addSteps as addSteps1_46_0 } from './1_46_0'
+addSteps1_46_0()
+
 // Migrations for the in-development release:
 import { addSteps as addStepsX_X_X } from './X_X_X'
 addStepsX_X_X()

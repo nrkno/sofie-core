@@ -13,6 +13,12 @@ import { ScanInfoForPackages } from '../../lib/mediaObjects'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
 
+export interface ShelfDisplayOptions {
+	enableBuckets: boolean
+	enableLayout: boolean
+	enableInspector: boolean
+}
+
 export interface AdLibPieceUi extends Omit<AdLibPiece, 'timelineObjectsString'> {
 	hotkey?: string
 	sourceLayer?: ISourceLayer

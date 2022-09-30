@@ -98,8 +98,8 @@ export async function updateStudioTimeline(
 			studioBaseline = blueprint.getBaseline(
 				new StudioBaselineContext(
 					{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
+					context,
 					studio,
-					context.getStudioBlueprintConfig(),
 					watchedPackages
 				)
 			)
@@ -267,7 +267,7 @@ function getPartInstanceTimelineInfo(
 	if (partInstance) {
 		const partStarted = partInstance.timings?.plannedStartedPlayback
 		const nowInPart = partStarted === undefined ? 0 : currentTime - partStarted
-		const currentPieces = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
+		const currentPieces = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
 		const pieceInstances = processAndPrunePieceInstanceTimings(showStyle, currentPieces, nowInPart)
 
 		return {
@@ -322,7 +322,7 @@ async function getTimelineRundown(
 
 			// next (on pvw (or on pgm if first))
 			const pLookaheadObjs = getLookeaheadObjects(context, cache, partInstancesInfo)
-			const rawBaselineItems = cache.BaselineObjects.findFetch((o) => o.rundownId === activeRundown._id)
+			const rawBaselineItems = cache.BaselineObjects.findAll((o) => o.rundownId === activeRundown._id)
 			if (rawBaselineItems.length > 0) {
 				timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(rawBaselineItems))
 			} else {
@@ -373,11 +373,10 @@ async function getTimelineRundown(
 							objectType: TimelineObjType.RUNDOWN,
 						})
 					})
-					cache.Playlist.update({
-						$set: {
-							previousPersistentState: tlGenRes.persistentState,
-							trackedAbSessions: context2.knownSessions,
-						},
+					cache.Playlist.update((p) => {
+						p.previousPersistentState = tlGenRes.persistentState
+						p.trackedAbSessions = context2.knownSessions
+						return p
 					})
 				} catch (err) {
 					logger.error(`Error in showStyleBlueprint.onTimelineGenerate: ${stringifyError(err)}`)

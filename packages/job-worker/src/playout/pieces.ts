@@ -168,7 +168,7 @@ export function getResolvedPieces(
 	partInstance: DBPartInstance
 ): ResolvedPieceInstance[] {
 	const span = context.startSpan('getResolvedPieces')
-	const pieceInstances = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
+	const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
 
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 
@@ -224,12 +224,12 @@ export function getResolvedPiecesFromFullTimeline(
 
 	const playlist = cache.Playlist.doc
 	const partInstanceIds = new Set(_.compact([playlist.previousPartInstanceId, playlist.currentPartInstanceId]))
-	const pieceInstances: PieceInstance[] = cache.PieceInstances.findFetch((p) => partInstanceIds.has(p.partInstanceId))
+	const pieceInstances: PieceInstance[] = cache.PieceInstances.findAll((p) => partInstanceIds.has(p.partInstanceId))
 
 	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache) // todo: should these be passed as a parameter from getTimelineRundown?
 
 	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInstanceId) {
-		pieceInstances.push(...cache.PieceInstances.findFetch((p) => p.partInstanceId === playlist.nextPartInstanceId))
+		pieceInstances.push(...cache.PieceInstances.findAll((p) => p.partInstanceId === playlist.nextPartInstanceId))
 	}
 
 	const transformedObjs = transformTimeline(objs)

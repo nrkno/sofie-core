@@ -60,7 +60,7 @@ export function reportPartInstanceHasStarted(
 ): void {
 	if (partInstance) {
 		let timestampUpdated = false
-		cache.PartInstances.update(partInstance._id, (instance) => {
+		cache.PartInstances.updateOne(partInstance._id, (instance) => {
 			if (!instance.timings) instance.timings = {}
 
 			// If timings.startedPlayback has already been set, we shouldn't set it to another value:
@@ -89,7 +89,7 @@ export function reportPartInstanceHasStarted(
 
 		if (timestampUpdated && !cache.isMultiGatewayMode && cache.Playlist.doc.previousPartInstanceId) {
 			// Ensure the plannedStoppedPlayback is set for the previous partinstance too
-			cache.PartInstances.update(cache.Playlist.doc.previousPartInstanceId, (instance) => {
+			cache.PartInstances.updateOne(cache.Playlist.doc.previousPartInstanceId, (instance) => {
 				if (instance.timings && !instance.timings.plannedStoppedPlayback) {
 					instance.timings.plannedStoppedPlayback = timestamp
 					return instance
@@ -136,7 +136,7 @@ export function reportPartInstanceHasStopped(
 ): void {
 	let timestampUpdated = false
 	if (!partInstance.timings?.reportedStoppedPlayback) {
-		cache.PartInstances.update(partInstance._id, (instance) => {
+		cache.PartInstances.updateOne(partInstance._id, (instance) => {
 			if (!instance.timings) instance.timings = {}
 			instance.timings.reportedStoppedPlayback = timestamp
 
@@ -164,7 +164,7 @@ export function reportPieceHasStarted(
 	timestamp: Time
 ): void {
 	if (pieceInstance.reportedStartedPlayback !== timestamp) {
-		cache.PieceInstances.update(pieceInstance._id, (piece) => {
+		cache.PieceInstances.updateOne(pieceInstance._id, (piece) => {
 			piece.reportedStartedPlayback = timestamp
 			delete piece.reportedStoppedPlayback
 
@@ -179,12 +179,13 @@ export function reportPieceHasStarted(
 		// Update the copy in the next-part if there is one, so that the infinite has the same start after a take
 		const playlist = cache.Playlist.doc
 		if (pieceInstance.infinite && playlist.nextPartInstanceId) {
-			cache.PieceInstances.update(
-				{
-					partInstanceId: playlist.nextPartInstanceId,
-					'infinite.infiniteInstanceId': pieceInstance.infinite.infiniteInstanceId,
-				},
-				(piece) => {
+			const infiniteInstanceId = pieceInstance.infinite.infiniteInstanceId
+			cache.PieceInstances.updateAll((piece) => {
+				if (
+					piece.partInstanceId === playlist.nextPartInstanceId &&
+					!!piece.infinite &&
+					piece.infinite.infiniteInstanceId === infiniteInstanceId
+				) {
 					piece.reportedStartedPlayback = timestamp
 					delete piece.reportedStoppedPlayback
 
@@ -194,8 +195,10 @@ export function reportPieceHasStarted(
 					}
 
 					return piece
+				} else {
+					return false
 				}
-			)
+			})
 		}
 
 		cache.deferAfterSave(() => {
@@ -210,7 +213,7 @@ export function reportPieceHasStopped(
 	timestamp: Time
 ): void {
 	if (pieceInstance.reportedStoppedPlayback !== timestamp) {
-		cache.PieceInstances.update(pieceInstance._id, (piece) => {
+		cache.PieceInstances.updateOne(pieceInstance._id, (piece) => {
 			piece.reportedStoppedPlayback = timestamp
 
 			if (!cache.isMultiGatewayMode) {

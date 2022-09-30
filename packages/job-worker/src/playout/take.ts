@@ -80,10 +80,9 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	}
 
 	if (cache.Playlist.doc.holdState === RundownHoldState.COMPLETE) {
-		cache.Playlist.update((playlist) => {
-			playlist.holdState = RundownHoldState.NONE
-
-			return playlist
+		cache.Playlist.update((p) => {
+			p.holdState = RundownHoldState.NONE
+			return p
 		})
 		// If hold is active, then this take is to clear it
 	} else if (cache.Playlist.doc.holdState === RundownHoldState.ACTIVE) {
@@ -100,7 +99,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	if (!takeRundown) throw new Error(`takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 
 	// Autonext may have setup the plannedStartedPlayback. Clear it so that a new value is generated
-	cache.PartInstances.update(takePartInstance._id, (p) => {
+	cache.PartInstances.updateOne(takePartInstance._id, (p) => {
 		if (p.timings && p.timings.plannedStartedPlayback) {
 			delete p.timings.plannedStartedPlayback
 			delete p.timings.plannedStoppedPlayback
@@ -148,19 +147,19 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 
 	updatePartInstanceOnTake(context, cache, showStyle, blueprint, takeRundown, takePartInstance, currentPartInstance)
 
-	cache.Playlist.update((playlist) => {
-		playlist.previousPartInstanceId = playlist.currentPartInstanceId
-		playlist.currentPartInstanceId = takePartInstance._id
+	cache.Playlist.update((p) => {
+		p.previousPartInstanceId = p.currentPartInstanceId
+		p.currentPartInstanceId = takePartInstance._id
 
-		playlist.holdState =
-			!playlist.holdState || playlist.holdState === RundownHoldState.COMPLETE
-				? RundownHoldState.NONE
-				: playlist.holdState + 1
-
-		return playlist
+		if (!p.holdState || p.holdState === RundownHoldState.COMPLETE) {
+			p.holdState = RundownHoldState.NONE
+		} else {
+			p.holdState = p.holdState + 1
+		}
+		return p
 	})
 
-	cache.PartInstances.update(takePartInstance._id, (instance) => {
+	cache.PartInstances.updateOne(takePartInstance._id, (instance) => {
 		instance.isTaken = true
 
 		if (!instance.timings) instance.timings = {}
@@ -199,10 +198,9 @@ export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInst
 		cache.Playlist.doc.nextSegmentId === takeOrCurrentPartInstance.segmentId
 	) {
 		// clear the nextSegmentId if the newly taken partInstance says it was selected because of it
-		cache.Playlist.update((playlist) => {
-			delete playlist.nextSegmentId
-
-			return playlist
+		cache.Playlist.update((p) => {
+			delete p.nextSegmentId
+			return p
 		})
 	}
 }
@@ -220,21 +218,23 @@ export function resetPreviousSegment(cache: CacheForPlayout): void {
 		// Reset the old segment
 		const segmentId = previousPartInstance.segmentId
 		const resetIds = new Set(
-			cache.PartInstances.update(
-				(p) => !p.reset && p.segmentId === segmentId,
-				(p) => {
+			cache.PartInstances.updateAll((p) => {
+				if (!p.reset && p.segmentId === segmentId) {
 					p.reset = true
 					return p
+				} else {
+					return false
 				}
-			)
+			})
 		)
-		cache.PieceInstances.update(
-			(p) => resetIds.has(p.partInstanceId),
-			(p) => {
+		cache.PieceInstances.updateAll((p) => {
+			if (resetIds.has(p.partInstanceId)) {
 				p.reset = true
 				return p
+			} else {
+				return false
 			}
-		)
+		})
 	}
 }
 
@@ -250,7 +250,7 @@ async function afterTakeUpdateTimingsAndEvents(
 
 	if (takePartInstance) {
 		// Simulate playout, if no gateway
-		const playoutDevices = cache.PeripheralDevices.findFetch((d) => d.type === PeripheralDeviceType.PLAYOUT)
+		const playoutDevices = cache.PeripheralDevices.findAll((d) => d.type === PeripheralDeviceType.PLAYOUT)
 		if (playoutDevices.length === 0) {
 			logger.info(
 				`No Playout gateway attached to studio, reporting PartInstance "${
@@ -367,26 +367,26 @@ export function updatePartInstanceOnTake(
 	// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
 	const tmpTakePieces = processAndPrunePieceInstanceTimings(
 		showStyle,
-		cache.PieceInstances.findFetch((p) => p.partInstanceId === takePartInstance._id),
+		cache.PieceInstances.findAll((p) => p.partInstanceId === takePartInstance._id),
 		0
 	)
 	const partPlayoutTimings = calculatePartTimings(
 		cache.Playlist.doc.holdState,
 		currentPartInstance?.part,
-		cache.PieceInstances.findFetch((p) => p.partInstanceId === currentPartInstance?._id).map((p) => p.piece),
+		cache.PieceInstances.findAll((p) => p.partInstanceId === currentPartInstance?._id).map((p) => p.piece),
 		takePartInstance.part,
 		tmpTakePieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
 	)
 
-	cache.PartInstances.update(takePartInstance._id, (instance) => {
-		instance.isTaken = true
-		instance.partPlayoutTimings = partPlayoutTimings
+	cache.PartInstances.updateOne(takePartInstance._id, (p) => {
+		p.isTaken = true
+		p.partPlayoutTimings = partPlayoutTimings
 
 		if (previousPartEndState) {
-			instance.previousPartEndState = previousPartEndState
+			p.previousPartEndState = previousPartEndState
 		}
 
-		return instance
+		return p
 	})
 }
 
@@ -436,22 +436,21 @@ function startHold(
 	const span = context.startSpan('startHold')
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
-	const itemsToCopy = cache.PieceInstances.findFetch(
+	const itemsToCopy = cache.PieceInstances.findAll(
 		(p) => p.partInstanceId === holdFromPartInstance._id && !!p.piece.extendOnHold
 	)
 	itemsToCopy.forEach((instance) => {
 		if (!instance.infinite) {
 			const infiniteInstanceId: PieceInstanceInfiniteId = getRandomId()
 			// mark current one as infinite
-			cache.PieceInstances.update(instance._id, (instance) => {
-				instance.infinite = {
+			cache.PieceInstances.updateOne(instance._id, (p) => {
+				p.infinite = {
 					infiniteInstanceId: infiniteInstanceId,
 					infiniteInstanceIndex: 0,
 					infinitePieceId: instance.piece._id,
 					fromPreviousPart: false,
 				}
-
-				return instance
+				return p
 			})
 
 			// make the extension
@@ -495,9 +494,9 @@ async function completeHold(
 	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
 	currentPartInstance: DBPartInstance | undefined
 ): Promise<void> {
-	cache.Playlist.update((playlist) => {
-		playlist.holdState = RundownHoldState.COMPLETE
-		return playlist
+	cache.Playlist.update((p) => {
+		p.holdState = RundownHoldState.COMPLETE
+		return p
 	})
 
 	if (cache.Playlist.doc.currentPartInstanceId) {

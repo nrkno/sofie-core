@@ -43,22 +43,22 @@ export async function activateRundownPlaylist(
 		await resetRundownPlaylist(context, cache)
 	}
 
-	const activationId: RundownPlaylistActivationId = getRandomId()
-	cache.Playlist.update((playlist) => {
-		playlist.activationId = activationId
-		playlist.rehearsal = rehearsal
-		return playlist
+	const newActivationId: RundownPlaylistActivationId = getRandomId()
+	cache.Playlist.update((p) => {
+		p.activationId = newActivationId
+		p.rehearsal = rehearsal
+		return p
 	})
 
 	let rundown: DBRundown | undefined
 
 	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 	if (!currentPartInstance || currentPartInstance.reset) {
-		cache.Playlist.update((playlist) => {
-			playlist.currentPartInstanceId = null
-			playlist.nextPartInstanceId = null
-			playlist.previousPartInstanceId = null
-			return playlist
+		cache.Playlist.update((p) => {
+			p.currentPartInstanceId = null
+			p.nextPartInstanceId = null
+			p.previousPartInstanceId = null
+			return p
 		})
 
 		// If we are not playing anything, then regenerate the next part
@@ -79,20 +79,22 @@ export async function activateRundownPlaylist(
 				cache.Playlist.doc.previousPartInstanceId,
 			])
 		)
-		cache.PartInstances.update(
-			(p) => partInstancesToPreserve.has(p._id),
-			(p) => {
-				p.playlistActivationId = activationId
+		cache.PartInstances.updateAll((p) => {
+			if (partInstancesToPreserve.has(p._id)) {
+				p.playlistActivationId = newActivationId
 				return p
+			} else {
+				return false
 			}
-		)
-		cache.PieceInstances.update(
-			(p) => partInstancesToPreserve.has(p.partInstanceId),
-			(p) => {
-				p.playlistActivationId = activationId
+		})
+		cache.PieceInstances.updateAll((p) => {
+			if (partInstancesToPreserve.has(p.partInstanceId)) {
+				p.playlistActivationId = newActivationId
 				return p
+			} else {
+				return false
 			}
-		)
+		})
 
 		if (cache.Playlist.doc.nextPartInstanceId) {
 			const nextPartInstance = cache.PartInstances.findOne(cache.Playlist.doc.nextPartInstanceId)
@@ -182,21 +184,21 @@ export async function deactivateRundownPlaylistInner(
 		rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
 	}
 
-	cache.Playlist.update((playlist) => {
-		playlist.previousPartInstanceId = null
-		playlist.currentPartInstanceId = null
-		playlist.holdState = RundownHoldState.NONE
+	cache.Playlist.update((p) => {
+		p.previousPartInstanceId = null
+		p.currentPartInstanceId = null
+		p.holdState = RundownHoldState.NONE
 
-		delete playlist.activationId
-		delete playlist.nextSegmentId
+		delete p.activationId
+		delete p.nextSegmentId
 
-		return playlist
+		return p
 	})
 	await setNextPart(context, cache, null)
 
 	if (currentPartInstance) {
 		// Set the current PartInstance as stopped
-		cache.PartInstances.update(currentPartInstance._id, (instance) => {
+		cache.PartInstances.updateOne(currentPartInstance._id, (instance) => {
 			if (
 				instance.timings &&
 				instance.timings.plannedStartedPlayback &&
@@ -226,7 +228,7 @@ export async function prepareStudioForBroadcast(
 	const rundownPlaylistToBeActivated = cache.Playlist.doc
 	logger.info('prepareStudioForBroadcast ' + context.studio._id)
 
-	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
+	const playoutDevices = cache.PeripheralDevices.findAll((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
 	for (const device of playoutDevices) {
 		// Fire the command and don't wait for the result
@@ -258,7 +260,7 @@ export async function standDownStudio(
 ): Promise<void> {
 	logger.info('standDownStudio ' + context.studio._id)
 
-	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
+	const playoutDevices = cache.PeripheralDevices.findAll((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
 	for (const device of playoutDevices) {
 		// Fire the command and don't wait for the result

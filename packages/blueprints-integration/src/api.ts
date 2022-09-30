@@ -141,7 +141,10 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	) => BlueprintResultRundown | null | Promise<BlueprintResultRundown | null>
 
 	/** Generate segment from ingest data */
-	getSegment: (context: ISegmentUserContext, ingestSegment: IngestSegment) => BlueprintResultSegment
+	getSegment: (
+		context: ISegmentUserContext,
+		ingestSegment: IngestSegment
+	) => BlueprintResultSegment | Promise<BlueprintResultSegment>
 
 	/**
 	 * Allows the blueprint to custom-modify the PartInstance, on ingest data update (this is run after getSegment())
