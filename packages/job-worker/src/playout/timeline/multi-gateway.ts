@@ -67,9 +67,7 @@ function calculateNowOffsetLatency(
 	let nowOffsetLatency: Time | undefined
 
 	if (cache.isMultiGatewayMode) {
-		const playoutDevices = cache.PeripheralDevices.findFetch(
-			(device) => device.type === PeripheralDeviceType.PLAYOUT
-		)
+		const playoutDevices = cache.PeripheralDevices.findAll((device) => device.type === PeripheralDeviceType.PLAYOUT)
 		const worstLatency = Math.max(0, ...playoutDevices.map((device) => getExpectedLatency(device).safe))
 		/** Add a little more latency, to account for network latency variability */
 		const ADD_SAFE_LATENCY = context.studio.settings.nowSafeLatency || 30
@@ -100,7 +98,7 @@ function updatePartInstancePlannedTimes(
 	let currentPartGroupStartTime: number
 	if (!currentPartInstance.timings?.plannedStartedPlayback) {
 		// Looks like the part is just being taken
-		cache.PartInstances.update(
+		cache.PartInstances.updateOne(
 			currentPartInstance._id,
 			(instance) => {
 				if (instance.timings?.plannedStartedPlayback !== targetNowTime) {
@@ -124,7 +122,7 @@ function updatePartInstancePlannedTimes(
 	// Also mark the previous as ended
 	if (cache.Playlist.doc.previousPartInstanceId) {
 		const previousPartEndTime = currentPartGroupStartTime + (timingInfo.previousPartOverlap ?? 0)
-		cache.PartInstances.update(
+		cache.PartInstances.updateOne(
 			cache.Playlist.doc.previousPartInstanceId,
 			(instance) => {
 				if (
@@ -155,7 +153,7 @@ function updatePartInstancePlannedTimes(
 
 		timingInfo.nextPartGroup.enable.start = nextPartGroupStartTime
 
-		cache.PartInstances.update(
+		cache.PartInstances.updateOne(
 			nextPartInstance._id,
 			(instance) => {
 				if (instance.timings?.plannedStartedPlayback !== nextPartGroupStartTime) {
@@ -171,7 +169,7 @@ function updatePartInstancePlannedTimes(
 		)
 	} else if (nextPartInstance) {
 		// Make sure the next partInstance doesnt have a start time
-		cache.PartInstances.update(
+		cache.PartInstances.updateOne(
 			nextPartInstance._id,
 			(instance) => {
 				if (instance.timings?.plannedStartedPlayback) {
@@ -236,7 +234,7 @@ function updatePlannedTimingsForPieceInstances(
 	const existingInfiniteTimings = new Map<PieceInstanceInfiniteId, Time>()
 	if (cache.Playlist.doc.previousPartInstanceId) {
 		const previousPartInstanceId = cache.Playlist.doc.previousPartInstanceId
-		const pieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === previousPartInstanceId)
+		const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === previousPartInstanceId)
 		for (const pieceInstance of pieceInstances) {
 			// Track the timings for the infinites
 			const plannedStartedPlayback = pieceInstance.plannedStartedPlayback

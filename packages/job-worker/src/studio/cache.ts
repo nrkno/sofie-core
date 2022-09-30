@@ -76,7 +76,7 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 			if (this.context.studio.settings.forceSettingNowTime) {
 				this.#isMultiGatewayMode = true
 			} else {
-				const playoutDevices = this.PeripheralDevices.findFetch(
+				const playoutDevices = this.PeripheralDevices.findAll(
 					(device) => device.type === PeripheralDeviceType.PLAYOUT
 				)
 				this.#isMultiGatewayMode = playoutDevices.length > 1
