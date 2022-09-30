@@ -35,7 +35,11 @@ import { getPieceEnableInsidePart, transformPieceGroupAndObjects } from './piece
 import { logger } from '../../logging'
 import { ReadOnlyCache } from '../../cache/CacheBase'
 
-export interface RundownTimelineTimingInfo {
+/**
+ * Some additional data used by the timeline generation process
+ * Fields are populated as it progresses through generation, and consumed during the finalisation
+ */
+export interface RundownTimelineTimingContext {
 	currentPartGroup: TimelineObjGroupPart
 	currentPartDuration: number | undefined
 
@@ -47,7 +51,7 @@ export interface RundownTimelineTimingInfo {
 
 export interface RundownTimelineResult {
 	timeline: (TimelineObjRundown & OnGenerateTimelineObjExt)[]
-	timingInfo: RundownTimelineTimingInfo | undefined
+	timingInfo: RundownTimelineTimingContext | undefined
 }
 
 export function buildTimelineObjsForRundown(
@@ -104,7 +108,7 @@ export function buildTimelineObjsForRundown(
 		logger.info(`No next part and no current part set on RundownPlaylist "${activePlaylist._id}".`)
 	}
 
-	let timingInfo: RundownTimelineTimingInfo | undefined
+	let timingInfo: RundownTimelineTimingContext | undefined
 
 	// Currently playing:
 	if (partInstancesInfo.current) {
@@ -360,7 +364,7 @@ function generatePreviousPartInstanceObjects(
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	previousPartInfo: SelectedPartInstanceTimelineInfo,
 	currentInfinitePieceIds: Set<PieceInstanceInfinite['infinitePieceId']>,
-	timingInfo: RundownTimelineTimingInfo,
+	timingInfo: RundownTimelineTimingContext,
 	currentPartInstanceTimings: PartCalculatedTimings
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const partStartedPlayback = previousPartInfo.partInstance.timings?.plannedStartedPlayback
@@ -406,7 +410,7 @@ function generateNextPartInstanceObjects(
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	currentPartInfo: SelectedPartInstanceTimelineInfo,
 	nextPartInfo: SelectedPartInstanceTimelineInfo,
-	timingInfo: RundownTimelineTimingInfo
+	timingInfo: RundownTimelineTimingContext
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	const currentToNextTimings = calculatePartTimings(
 		activePlaylist.holdState,

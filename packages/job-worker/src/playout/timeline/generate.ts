@@ -44,7 +44,7 @@ import { endTrace, sendTrace, startTrace } from '@sofie-automation/corelib/dist/
 import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/context/lib'
-import { buildTimelineObjsForRundown, RundownTimelineTimingInfo } from './rundown'
+import { buildTimelineObjsForRundown, RundownTimelineTimingContext } from './rundown'
 import { deNowifyMultiGatewayTimeline } from './multi-gateway'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
@@ -289,7 +289,7 @@ async function getTimelineRundown(
 ): Promise<{
 	objs: Array<TimelineObjRundown>
 	versions: TimelineCompleteGenerationVersions
-	timingInfo: RundownTimelineTimingInfo | undefined
+	timingInfo: RundownTimelineTimingContext | undefined
 }> {
 	const span = context.startSpan('getTimelineRundown')
 	try {

@@ -400,7 +400,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	#isMultiGatewayMode: boolean | undefined = undefined
 	public get isMultiGatewayMode(): boolean {
 		if (this.#isMultiGatewayMode === undefined) {
-			if (this.context.studio.settings.forceSettingNowTime) {
+			if (this.context.studio.settings.forceMultiGatewayMode) {
 				this.#isMultiGatewayMode = true
 			} else {
 				const playoutDevices = this.PeripheralDevices.findAll(

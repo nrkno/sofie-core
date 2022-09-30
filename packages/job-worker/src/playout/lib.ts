@@ -1,6 +1,6 @@
 import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { applyToArray, assertNever, clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
-import { Time, TSR } from '@sofie-automation/blueprints-integration'
+import { TSR } from '@sofie-automation/blueprints-integration'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
@@ -661,21 +661,6 @@ function resetPartInstancesWithPieceInstances(
 				  )
 				: undefined,
 		])
-	})
-}
-
-export function onPartHasStoppedPlaying(
-	cache: CacheForPlayout,
-	partInstanceId: PartInstanceId,
-	stoppedPlayingTime: Time
-): void {
-	cache.PartInstances.updateOne(partInstanceId, (instance) => {
-		if (instance.timings && instance.timings.plannedStartedPlayback && !instance.timings.plannedStoppedPlayback) {
-			instance.timings.plannedStoppedPlayback = stoppedPlayingTime
-			instance.timings.duration = stoppedPlayingTime - instance.timings.plannedStartedPlayback
-			return instance
-		}
-		return false
 	})
 }
 

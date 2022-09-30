@@ -442,13 +442,6 @@ describe('Timeline', () => {
 
 		expect(fixSnapshot(await context.directCollections.Timelines.findFetch())).toMatchSnapshot()
 
-		// await runJobWithPlayoutCache(context, { playlistId: playlistId0 }, null, async (cache) => {
-		// 	const offset = 100 * 1000
-		// 	await updateTimeline(context, cache, offset)
-		// })
-
-		// expect(fixSnapshot(await context.directCollections.Timelines.findFetch())).toMatchSnapshot()
-
 		{
 			// Deactivate rundown:
 			await deactivateRundownPlaylist(context, { playlistId: playlistId0 })

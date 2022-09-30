@@ -9,7 +9,7 @@ import { CacheForStudioBase } from '../../studio/cache'
 import { JobContext } from '../../jobs'
 import { getCurrentTime } from '../../lib'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../cache'
-import { RundownTimelineTimingInfo, getInfinitePartGroupId } from './rundown'
+import { RundownTimelineTimingContext, getInfinitePartGroupId } from './rundown'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 
@@ -25,7 +25,7 @@ export function deNowifyMultiGatewayTimeline(
 	cache: CacheForPlayout,
 	timelineObjs: TimelineObjRundown[],
 	timeOffsetIntoPart: Time | undefined,
-	timingInfo: RundownTimelineTimingInfo | undefined
+	timingInfo: RundownTimelineTimingContext | undefined
 ): void {
 	if (!timingInfo) return
 
@@ -70,7 +70,7 @@ function calculateNowOffsetLatency(
 		const playoutDevices = cache.PeripheralDevices.findAll((device) => device.type === PeripheralDeviceType.PLAYOUT)
 		const worstLatency = Math.max(0, ...playoutDevices.map((device) => getExpectedLatency(device).safe))
 		/** Add a little more latency, to account for network latency variability */
-		const ADD_SAFE_LATENCY = context.studio.settings.nowSafeLatency || 30
+		const ADD_SAFE_LATENCY = context.studio.settings.multiGatewayNowSafeLatency || 30
 		nowOffsetLatency = worstLatency + ADD_SAFE_LATENCY
 	}
 
@@ -91,7 +91,7 @@ interface PartGroupTimings {
 function updatePartInstancePlannedTimes(
 	cache: CacheForPlayout,
 	targetNowTime: number,
-	timingInfo: RundownTimelineTimingInfo,
+	timingInfo: RundownTimelineTimingContext,
 	currentPartInstance: DBPartInstance,
 	nextPartInstance: DBPartInstance | undefined
 ): PartGroupTimings {
@@ -193,7 +193,7 @@ function updatePartInstancePlannedTimes(
 function deNowifyCurrentPieces(
 	cache: CacheForPlayout,
 	targetNowTime: number,
-	timingInfo: RundownTimelineTimingInfo,
+	timingInfo: RundownTimelineTimingContext,
 	currentPartInstance: DBPartInstance,
 	currentPartGroupStartTime: number,
 	timelineObjs: TimelineObjRundown[]
