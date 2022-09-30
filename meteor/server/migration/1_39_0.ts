@@ -17,6 +17,9 @@ export const addSteps = addMigrationSteps('1.39.0', [
 		canBeRunAutomatically: true,
 		validate: () => {
 			const objects = Parts.find({
+				expectedDuration: {
+					$exists: true,
+				},
 				expectedDurationWithPreroll: {
 					$exists: false,
 				},
@@ -28,6 +31,9 @@ export const addSteps = addMigrationSteps('1.39.0', [
 		},
 		migrate: () => {
 			const objects = Parts.find({
+				expectedDuration: {
+					$exists: true,
+				},
 				expectedDurationWithPreroll: {
 					$exists: false,
 				},
