@@ -7,7 +7,7 @@ import { getAllowStudio } from '../../lib/localStorage'
 import { RundownUtils } from '../../lib/rundown'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
 import { DisplayFormattedTime } from './DisplayFormattedTime'
-import { EyeIcon } from '../../lib/ui/icons/rundownList'
+import { PathIcon } from '../../lib/ui/icons/rundownList'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
@@ -92,7 +92,7 @@ export default function RundownListItemView(props: IRundownListItemViewProps) {
 				{props.rundown.description ? (
 					<Tooltip overlay={props.rundown.description} trigger={['hover']} placement="right">
 						<span className="rundown-list-description__icon">
-							<EyeIcon />
+							<PathIcon />
 						</span>
 					</Tooltip>
 				) : null}

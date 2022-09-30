@@ -23,6 +23,7 @@ import {
 	setShelfFollowsOnAir,
 	setReportNotifications,
 	unsetReportNotifications,
+	setUseOnePartPerLine,
 } from '../lib/localStorage'
 import Status from './Status'
 import { Settings as SettingsView } from './Settings'
@@ -113,6 +114,9 @@ export const App = translateWithTracker(() => {
 			}
 			if (params['ignore_piece_content_status']) {
 				setIgnorePieceContentStatus(params['ignore_piece_content_status'] === '1')
+			}
+			if (params['useOnePartPerLine']) {
+				setUseOnePartPerLine(params['useOnePartPerLine'] === '1')
 			}
 			if (params['reportNotificationsId'] && params['reportNotificationsId'] === '0') {
 				setReportNotifications(params['reportNotificationsId'])

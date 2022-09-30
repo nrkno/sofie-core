@@ -24,7 +24,7 @@ export namespace SystemReadAccess {
 		return true
 	}
 	/** Check permissions to get the system status */
-	export async function systemStatus(cred0: Credentials) {
+	export async function systemStatus(cred0: Credentials): Promise<boolean> {
 		// For reading only
 		triggerWriteAccess()
 		const access = await allowAccessToSystemStatus(cred0)
@@ -36,7 +36,7 @@ export namespace SystemReadAccess {
 export namespace SystemWriteAccess {
 	// These functions throws if access is not allowed.
 
-	export async function coreSystem(cred0: Credentials) {
+	export async function coreSystem(cred0: Credentials): Promise<boolean> {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) return true
 		const cred = await resolveAuthenticatedUser(cred0)
@@ -55,11 +55,11 @@ export namespace SystemWriteAccess {
 		return true
 	}
 	/** Check permissions to run migrations of all types */
-	export async function migrations(cred0: Credentials) {
+	export async function migrations(cred0: Credentials): Promise<boolean> {
 		return coreSystem(cred0)
 	}
 	/** Check permissions to perform a system-level action */
-	export async function systemActions(cred0: Credentials) {
+	export async function systemActions(cred0: Credentials): Promise<boolean> {
 		return coreSystem(cred0)
 	}
 }

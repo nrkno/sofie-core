@@ -21,6 +21,12 @@ import {
 
 export type BasicAccessContext = { organizationId: OrganizationId | null; userId: UserId | null }
 
+export interface OrganizationContentAccess {
+	userId: UserId | null
+	organizationId: OrganizationId | null
+	cred: ResolvedCredentials | Credentials
+}
+
 export namespace OrganizationReadAccess {
 	export async function organization(
 		organizationId: MongoQueryKey<OrganizationId>,
@@ -53,11 +59,17 @@ export namespace OrganizationReadAccess {
 export namespace OrganizationContentWriteAccess {
 	// These functions throws if access is not allowed.
 
-	export async function organization(cred0: Credentials, organizationId: OrganizationId) {
+	export async function organization(
+		cred0: Credentials,
+		organizationId: OrganizationId
+	): Promise<OrganizationContentAccess> {
 		return anyContent(cred0, { organizationId })
 	}
 
-	export async function studio(cred0: Credentials, existingStudio?: StudioLight | StudioId) {
+	export async function studio(
+		cred0: Credentials,
+		existingStudio?: StudioLight | StudioId
+	): Promise<OrganizationContentAccess & { studio: StudioLight | undefined }> {
 		triggerWriteAccess()
 		if (existingStudio && isProtectedString(existingStudio)) {
 			const studioId = existingStudio
@@ -66,10 +78,10 @@ export namespace OrganizationContentWriteAccess {
 		}
 		return { ...(await anyContent(cred0, existingStudio)), studio: existingStudio }
 	}
-	export async function evaluation(cred0: Credentials) {
+	export async function evaluation(cred0: Credentials): Promise<OrganizationContentAccess> {
 		return anyContent(cred0)
 	}
-	export async function mediaWorkFlows(cred0: Credentials) {
+	export async function mediaWorkFlows(cred0: Credentials): Promise<OrganizationContentAccess> {
 		// "All mediaWOrkflows in all devices of an organization"
 		return anyContent(cred0)
 	}
@@ -77,7 +89,7 @@ export namespace OrganizationContentWriteAccess {
 		cred0: Credentials,
 		existingBlueprint?: Blueprint | BlueprintId,
 		allowMissing?: boolean
-	) {
+	): Promise<OrganizationContentAccess & { blueprint: Blueprint | undefined }> {
 		triggerWriteAccess()
 		if (existingBlueprint && isProtectedString(existingBlueprint)) {
 			const blueprintId = existingBlueprint
@@ -87,7 +99,10 @@ export namespace OrganizationContentWriteAccess {
 		}
 		return { ...(await anyContent(cred0, existingBlueprint)), blueprint: existingBlueprint }
 	}
-	export async function snapshot(cred0: Credentials, existingSnapshot?: SnapshotItem | SnapshotId) {
+	export async function snapshot(
+		cred0: Credentials,
+		existingSnapshot?: SnapshotItem | SnapshotId
+	): Promise<OrganizationContentAccess & { snapshot: SnapshotItem | undefined }> {
 		triggerWriteAccess()
 		if (existingSnapshot && isProtectedString(existingSnapshot)) {
 			const snapshotId = existingSnapshot
@@ -96,19 +111,22 @@ export namespace OrganizationContentWriteAccess {
 		}
 		return { ...(await anyContent(cred0, existingSnapshot)), snapshot: existingSnapshot }
 	}
-	export async function dataFromSnapshot(cred0: Credentials, organizationId: OrganizationId) {
+	export async function dataFromSnapshot(
+		cred0: Credentials,
+		organizationId: OrganizationId
+	): Promise<OrganizationContentAccess> {
 		return anyContent(cred0, { organizationId: organizationId })
 	}
 	export async function translationBundle(
 		cred0: Credentials,
 		existingObj?: { organizationId: OrganizationId | null }
-	) {
+	): Promise<OrganizationContentAccess> {
 		return anyContent(cred0, existingObj)
 	}
 	export async function showStyleBase(
 		cred0: Credentials,
 		existingShowStyleBase?: ShowStyleBaseLight | ShowStyleBaseId
-	) {
+	): Promise<OrganizationContentAccess & { showStyleBase: ShowStyleBaseLight | undefined }> {
 		triggerWriteAccess()
 		if (existingShowStyleBase && isProtectedString(existingShowStyleBase)) {
 			const showStyleBaseId = existingShowStyleBase
@@ -121,11 +139,7 @@ export namespace OrganizationContentWriteAccess {
 	async function anyContent(
 		cred0: Credentials | MethodContext,
 		existingObj?: { organizationId: OrganizationId | null }
-	): Promise<{
-		userId: UserId | null
-		organizationId: OrganizationId | null
-		cred: ResolvedCredentials | Credentials
-	}> {
+	): Promise<OrganizationContentAccess> {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) {
 			return { userId: null, organizationId: null, cred: cred0 }

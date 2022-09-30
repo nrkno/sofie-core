@@ -58,7 +58,10 @@ export interface ExternalMessageContentAccess extends StudioContentAccess {
 export namespace StudioContentWriteAccess {
 	// These functions throws if access is not allowed.
 
-	export async function rundownPlaylist(cred0: Credentials, existingPlaylist: RundownPlaylist | RundownPlaylistId) {
+	export async function rundownPlaylist(
+		cred0: Credentials,
+		existingPlaylist: RundownPlaylist | RundownPlaylistId
+	): Promise<StudioContentAccess & { playlist: RundownPlaylist }> {
 		triggerWriteAccess()
 		if (existingPlaylist && isProtectedString(existingPlaylist)) {
 			const playlistId = existingPlaylist
@@ -70,27 +73,27 @@ export namespace StudioContentWriteAccess {
 	}
 
 	/** Check for permission to restore snapshots into the studio */
-	export async function dataFromSnapshot(cred0: Credentials, studioId: StudioId) {
+	export async function dataFromSnapshot(cred0: Credentials, studioId: StudioId): Promise<StudioContentAccess> {
 		return anyContent(cred0, studioId)
 	}
 
 	/** Check for permission to select active routesets in the studio */
-	export async function routeSet(cred0: Credentials, studioId: StudioId) {
+	export async function routeSet(cred0: Credentials, studioId: StudioId): Promise<StudioContentAccess> {
 		return anyContent(cred0, studioId)
 	}
 
 	/** Check for permission to update the studio baseline */
-	export async function baseline(cred0: Credentials, studioId: StudioId) {
+	export async function baseline(cred0: Credentials, studioId: StudioId): Promise<StudioContentAccess> {
 		return anyContent(cred0, studioId)
 	}
 
 	/** Check for permission to modify a bucket or its contents belonging to the studio */
-	export async function bucket(cred0: Credentials, studioId: StudioId) {
+	export async function bucket(cred0: Credentials, studioId: StudioId): Promise<StudioContentAccess> {
 		return anyContent(cred0, studioId)
 	}
 
 	/** Check for permission to execute a function on a PeripheralDevice in the studio */
-	export async function executeFunction(cred0: Credentials, studioId: StudioId) {
+	export async function executeFunction(cred0: Credentials, studioId: StudioId): Promise<StudioContentAccess> {
 		return anyContent(cred0, studioId)
 	}
 

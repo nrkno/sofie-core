@@ -163,7 +163,7 @@ export function getPieceInstancesForPartInstance(
 	allPiecesCache?: Map<PartId, Piece[]>,
 	options?: FindOptions<PieceInstance>,
 	pieceInstanceSimulation?: boolean
-) {
+): PieceInstance[] {
 	if (partInstance.isTemporary) {
 		return getPieceInstancesForPart(
 			playlistActivationId || protectString(''),
@@ -358,7 +358,7 @@ export function sortAdlibs<T>(
 		segmentRank: number | null
 		rundownRank: number | null
 	}[]
-) {
+): T[] {
 	adlibs = adlibs.sort((a, b) => {
 		// Sort by rundown rank, where applicable:
 		a.rundownRank = a.rundownRank ?? Number.POSITIVE_INFINITY

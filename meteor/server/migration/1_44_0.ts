@@ -2,16 +2,6 @@ import { addMigrationSteps } from './databaseMigration'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundowns } from '../../lib/collections/Rundowns'
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
-
 export const addSteps = addMigrationSteps('1.44.0', [
 	{
 		id: 'Add new rundownIdsInOrder property to playlists where missing',

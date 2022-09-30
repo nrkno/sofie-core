@@ -113,14 +113,14 @@ export interface NewUserActionAPI extends MethodContext {
 		userData: ActionUserData,
 		triggerMode?: string
 	): Promise<ClientAPI.ClientResponse<ExecuteActionResult>>
-	segmentAdLibPieceStart<T>(
+	segmentAdLibPieceStart(
 		userEvent: string,
 		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adLibPieceId: PieceId,
 		queue: boolean
-	): Promise<ClientAPI.ClientResponse<T>>
+	): Promise<ClientAPI.ClientResponse<void>>
 	sourceLayerOnPartStop(
 		userEvent: string,
 		eventTime: Time,
@@ -128,14 +128,14 @@ export interface NewUserActionAPI extends MethodContext {
 		partInstanceId: PartInstanceId,
 		sourceLayerIds: string[]
 	): Promise<ClientAPI.ClientResponse<void>>
-	baselineAdLibPieceStart<T>(
+	baselineAdLibPieceStart(
 		userEvent: string,
 		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adlibPieceId: PieceId,
 		queue: boolean
-	): Promise<ClientAPI.ClientResponse<T>>
+	): Promise<ClientAPI.ClientResponse<void>>
 	sourceLayerStickyPieceStart(
 		userEvent: string,
 		eventTime: Time,

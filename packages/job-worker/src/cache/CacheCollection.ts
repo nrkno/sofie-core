@@ -307,6 +307,55 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		return changedIds
 	}
 
+	/**
+	 * Update documents
+	 * @param modifier
+	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed
+	 * @returns All the ids that were changed
+	 */
+	updateAll(modifier: (doc: TDoc) => TDoc | false, forceUpdate?: boolean): Array<TDoc['_id']> {
+		this.assertNotToBeRemoved('updateAll')
+
+		const span = this.context.startSpan(`DBCache.updateAll.${this.name}`)
+
+		const changedIds: Array<TDoc['_id']> = []
+		this.documents.forEach((doc, _id) => {
+			if (doc === null) return
+			const newDoc: TDoc | false = modifier(clone(doc.document))
+			if (newDoc === false) {
+				// Function reports no change
+				return
+			}
+
+			if (newDoc._id !== _id) {
+				throw new Error(
+					`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`
+				)
+			}
+
+			// ensure no properties are 'undefined'
+			deleteAllUndefinedProperties(newDoc)
+
+			const docEntry = this.documents.get(_id)
+			if (!docEntry) {
+				throw new Error(
+					`Error: Trying to update a document "${newDoc._id}", that went missing half-way through!`
+				)
+			}
+
+			const hasPendingChanges = docEntry.inserted || docEntry.updated // If the doc is already dirty, then there is no point trying to diff it
+			if (forceUpdate || hasPendingChanges || !_.isEqual(doc, newDoc)) {
+				docEntry.document = newDoc
+				docEntry.updated = true
+
+				changedIds.push(_id)
+			}
+		})
+
+		if (span) span.end()
+		return changedIds
+	}
+
 	/** Returns true if a doc was replace, false if inserted */
 	replace(doc: TDoc | ReadonlyDeep<TDoc>): boolean {
 		this.assertNotToBeRemoved('replace')

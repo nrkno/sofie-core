@@ -22,7 +22,7 @@ export async function generateExpectedPackagesForPartInstance(
 	studioId: StudioId,
 	rundownId: RundownId,
 	partInstance: PartInstance
-) {
+): Promise<ExpectedPackageDBFromPiece[]> {
 	const packages: ExpectedPackageDBFromPiece[] = []
 
 	const pieceInstances = (await PieceInstances.findFetchAsync(

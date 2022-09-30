@@ -15,7 +15,7 @@ import { DiffTimeResult } from '../../../lib/api/peripheralDevice'
  * })
  */
 
-export async function determineDiffTime(config?: Partial<Config>) {
+export async function determineDiffTime(config?: Partial<Config>): Promise<DiffTimeResult> {
 	return determineDiffTimeInner({
 		maxSampleCount: 20,
 		minSampleCount: 10,

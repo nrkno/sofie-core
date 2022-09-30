@@ -59,7 +59,7 @@ export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 	private _docs: { [id: string]: DBObj } = {}
 	private _firstRun: boolean = true
 	constructor(private _publication: CustomPublish) {}
-	onStop(callback: () => void) {
+	onStop(callback: () => void): void {
 		this._publication.onStop(callback)
 	}
 
@@ -67,7 +67,7 @@ export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 		return this._firstRun
 	}
 
-	updatedDocs(newDocs: DBObj[]) {
+	updatedDocs(newDocs: DBObj[]): void {
 		const newIds: { [id: string]: true } = {}
 		// figure out which documents have changed
 

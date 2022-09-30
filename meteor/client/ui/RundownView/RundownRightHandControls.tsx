@@ -18,6 +18,7 @@ import { NoticeLevel } from '../../lib/notifications/notifications'
 import { SwitchboardIcon, RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard'
 import { SwitchboardPopUp } from './SwitchboardPopUp'
 import { useTranslation } from 'react-i18next'
+import { SegmentViewMode } from '../../lib/ui/icons/listView'
 
 interface IProps {
 	studioRouteSets: {
@@ -41,6 +42,7 @@ interface IProps {
 		routeSet: StudioRouteSet,
 		state: boolean
 	) => void
+	onSegmentViewMode?: (e: React.MouseEvent<HTMLButtonElement>) => void
 }
 
 const ANIMATION_TEMPLATE = {
@@ -66,17 +68,18 @@ export function RundownRightHandControls(props: IProps) {
 	const [onAirHover, setOnAirHover] = useState(false)
 	const [switchboardOpen, setSwitchboardOpen] = useState(false)
 
+	const {
+		onFollowOnAir: onOnAirClick,
+		onRewindSegments: onRewindClick,
+		onTake: onTakeClick,
+		onSegmentViewMode: onSegmentViewModeClick,
+	} = props
+
 	useEffect(() => {
 		if (onAirHover && props.isFollowingOnAir) {
 			setOnAirHover(false)
 		}
 	}, [props.isFollowingOnAir, onAirHover])
-
-	const onOnAirClick = () => {
-		if (typeof props.onFollowOnAir === 'function') {
-			props.onFollowOnAir()
-		}
-	}
 
 	const onOnAirMouseEnter = () => {
 		setOnAirHover(true)
@@ -84,18 +87,6 @@ export function RundownRightHandControls(props: IProps) {
 
 	const onOnAirMouseLeave = () => {
 		setOnAirHover(false)
-	}
-
-	const onRewindClick = () => {
-		if (typeof props.onRewindSegments === 'function') {
-			props.onRewindSegments()
-		}
-	}
-
-	const onTakeClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-		if (typeof props.onTake === 'function') {
-			props.onTake(e)
-		}
 	}
 
 	const onRouteSetsToggle = (_e: React.MouseEvent<HTMLButtonElement>) => {
@@ -122,6 +113,7 @@ export function RundownRightHandControls(props: IProps) {
 			<VelocityReact.VelocityTransitionGroup
 				enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
 				leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}
+				className="status-bar__cell status-bar__cell--align-start"
 			>
 				<NotificationCenterPanelToggle
 					onClick={(e) => props.onToggleNotifications && props.onToggleNotifications(e, NoticeLevel.CRITICAL)}
@@ -169,14 +161,10 @@ export function RundownRightHandControls(props: IProps) {
 					</button>
 				)}
 			</VelocityReact.VelocityTransitionGroup>
-			<div className="status-bar__controls__label status-bar__controls__label--fullscreen">
-				<div className="status-bar__controls__button__label">
-					<span className="keyboard_key">F11</span> Fullscreen
-				</div>
-			</div>
 			<VelocityReact.VelocityTransitionGroup
 				enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
 				leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}
+				className="status-bar__cell status-bar__cell--align-end"
 			>
 				{props.isStudioMode && (
 					<button
@@ -189,6 +177,15 @@ export function RundownRightHandControls(props: IProps) {
 						Take
 					</button>
 				)}
+				<button
+					className="status-bar__controls__button status-bar__controls__button--segment-view-mode"
+					role="button"
+					onClick={onSegmentViewModeClick}
+					tabIndex={0}
+					aria-label={t('Switch Segment View Mode')}
+				>
+					<SegmentViewMode />
+				</button>
 				{props.isStudioMode && props.studioRouteSets && props.onStudioRouteSetSwitch && availableRouteSets.length > 0 && (
 					<>
 						<button

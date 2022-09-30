@@ -6,7 +6,7 @@ import { logger } from '../../logging'
 import { runIngestOperation } from './lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
-export function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: PackageInfoDB | null) {
+export function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: PackageInfoDB | null): void {
 	logger.info(`PackageInfo updated "${packageId}"`)
 
 	const pkg = ExpectedPackages.findOne(packageId)

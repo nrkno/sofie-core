@@ -27,7 +27,7 @@ export async function createRundownLayout(
 	regionId: CustomizableRegions,
 	blueprintId: BlueprintId | undefined,
 	userId?: UserId | undefined
-) {
+): Promise<RundownLayoutId> {
 	const id: RundownLayoutId = getRandomId()
 	await RundownLayouts.insertAsync(
 		literal<RundownLayoutBase>({
@@ -45,7 +45,7 @@ export async function createRundownLayout(
 	return id
 }
 
-export async function removeRundownLayout(layoutId: RundownLayoutId) {
+export async function removeRundownLayout(layoutId: RundownLayoutId): Promise<void> {
 	await RundownLayouts.removeAsync(layoutId)
 }
 

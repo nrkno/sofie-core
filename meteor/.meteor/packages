@@ -32,4 +32,5 @@ dynamic-import@0.7.2
 meteorhacks:picker
 ostrio:meteor-root
 accounts-password@2.3.1
-kschingiz:meteor-elastic-apm
+
+# kschingiz:meteor-elastic-apm

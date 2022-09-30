@@ -56,13 +56,13 @@ export interface DBObj {
 export type Partial<T> = {
 	[P in keyof T]?: T[P]
 }
-export function partial<T>(o: Partial<T>) {
+export function partial<T>(o: Partial<T>): Partial<T> {
 	return o
 }
 export interface IDObj {
 	_id: ProtectedString<any>
 }
-export function partialExceptId<T>(o: Partial<T> & IDObj) {
+export function partialExceptId<T>(o: Partial<T> & IDObj): Partial<T> & IDObj {
 	return o
 }
 export interface ObjId {
@@ -73,7 +73,7 @@ export interface ObjId {
  * Formats the time as human-readable time "YYYY-MM-DD hh:ii:ss"
  * @param time
  */
-export function formatDateTime(time: Time) {
+export function formatDateTime(time: Time): string {
 	const d = new Date(time)
 
 	const yyyy: any = d.getFullYear()
@@ -96,7 +96,7 @@ export function formatDateTime(time: Time) {
  * Returns a string that can be used to compare objects for equality
  * @param objs
  */
-export function stringifyObjects(objs: any): string {
+export function stringifyObjects(objs: unknown): string {
 	if (_.isArray(objs)) {
 		return _.map(objs, (obj) => {
 			if (obj !== undefined) {
@@ -106,12 +106,13 @@ export function stringifyObjects(objs: any): string {
 	} else if (_.isFunction(objs)) {
 		return ''
 	} else if (_.isObject(objs)) {
+		const objs0 = objs as object
 		const keys = _.sortBy(_.keys(objs), (k) => k)
 
 		return _.compact(
 			_.map(keys, (key) => {
-				if (objs[key] !== undefined) {
-					return key + '=' + stringifyObjects(objs[key])
+				if (objs0[key] !== undefined) {
+					return key + '=' + stringifyObjects(objs0[key])
 				} else {
 					return null
 				}
@@ -122,7 +123,7 @@ export function stringifyObjects(objs: any): string {
 	}
 }
 export const Collections = new Map<CollectionName, AsyncMongoCollection<any>>()
-export function registerCollection(name: CollectionName, collection: AsyncMongoCollection<any>) {
+export function registerCollection(name: CollectionName, collection: AsyncMongoCollection<any>): void {
 	if (Collections.has(name)) throw new Meteor.Error(`Cannot re-register collection "${name}"`)
 	Collections.set(name, collection)
 }
@@ -183,7 +184,7 @@ export async function cacheResultAsync<T>(name: string, fcn: () => Promise<T>, l
 		return cache.value
 	}
 }
-export function clearCacheResult(name: string) {
+export function clearCacheResult(name: string): void {
 	delete cacheResultCache[name]
 }
 function cleanOldCacheResult() {
@@ -210,10 +211,10 @@ const ticCache = {}
  * Performance debugging. tic() starts a timer, toc() traces the time since tic()
  * @param name
  */
-export function tic(name: string = 'default') {
+export function tic(name: string = 'default'): void {
 	ticCache[name] = Date.now()
 }
-export function toc(name: string = 'default', logStr?: string | Promise<any>[]) {
+export function toc(name: string = 'default', logStr?: string | Promise<any>[]): number | undefined {
 	if (_.isArray(logStr)) {
 		_.each(logStr, (promise, i) => {
 			promise
@@ -339,7 +340,7 @@ export function deferAsync(fcn: () => Promise<void>): void {
  * Replaces all invalid characters in order to make the path a valid one
  * @param path
  */
-export function fixValidPath(path) {
+export function fixValidPath(path: string): string {
 	return path.replace(/([^a-z0-9_.@()-])/gi, '_')
 }
 
@@ -385,7 +386,7 @@ export function firstIfArray<T>(value: T | T[] | null | undefined): T | null | u
 export function firstIfArray<T>(value: T | T[] | null): T | null
 export function firstIfArray<T>(value: T | T[] | undefined): T | undefined
 export function firstIfArray<T>(value: T | T[]): T
-export function firstIfArray<T>(value: any): T {
+export function firstIfArray<T>(value: unknown): T {
 	return _.isArray(value) ? _.first(value) : value
 }
 
@@ -393,15 +394,16 @@ export function firstIfArray<T>(value: any): T {
  * Wait for specified time
  * @param time
  */
-export function waitTime(time: number) {
+export function waitTime(time: number): void {
 	waitForPromise(sleep(time))
 }
 export async function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => Meteor.setTimeout(resolve, ms))
 }
 
-export function isPromise<T>(val: any): val is Promise<T> {
-	return _.isObject(val) && typeof val.then === 'function' && typeof val.catch === 'function'
+export function isPromise<T>(val: unknown): val is Promise<T> {
+	const val0 = val as any
+	return _.isObject(val0) && typeof val0.then === 'function' && typeof val0.catch === 'function'
 }
 
 /**

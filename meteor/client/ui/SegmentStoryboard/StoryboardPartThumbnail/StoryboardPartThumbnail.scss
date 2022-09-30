@@ -45,6 +45,7 @@
 	}
 
 	> .segment-storyboard__thumbnail__label {
+		position: relative;
 		text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 		font-weight: 400;
 		margin: 1.5em 0.4em 0.2em;
@@ -61,7 +62,7 @@
 			font-weight: 500;
 			font-size: 1.2em;
 			text-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
-			bottom: 0.1rem;
+			bottom: 0;
 			left: 0;
 			right: 0;
 			margin: 0;
@@ -123,7 +124,7 @@
 					}
 				}
 				/* @keyframes duration | easing-function | delay | iteration-count | direction | fill-mode | play-state | name */
-				animation: 1s linear 0s infinite normal forwards segment-storyboard__thumbnail__countdown-icon--flash;
+				animation: 0.3s linear 0s infinite normal forwards segment-storyboard__thumbnail__countdown-icon--flash;
 			}
 
 			&:last-child {

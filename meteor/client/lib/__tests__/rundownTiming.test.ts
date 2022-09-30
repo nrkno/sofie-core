@@ -101,7 +101,8 @@ describe('rundown Timing Calculator', () => {
 			parts,
 			partInstancesMap,
 			segments,
-			DEFAULT_DURATION
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -161,7 +162,8 @@ describe('rundown Timing Calculator', () => {
 			parts,
 			partInstancesMap,
 			segments,
-			DEFAULT_DURATION
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -260,7 +262,8 @@ describe('rundown Timing Calculator', () => {
 			parts,
 			partInstancesMap,
 			segments,
-			DEFAULT_DURATION
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -361,7 +364,8 @@ describe('rundown Timing Calculator', () => {
 			parts,
 			partInstancesMap,
 			segments,
-			DEFAULT_DURATION
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -486,7 +490,8 @@ describe('rundown Timing Calculator', () => {
 			parts,
 			partInstancesMap,
 			segments,
-			DEFAULT_DURATION
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -600,7 +605,8 @@ describe('rundown Timing Calculator', () => {
 			parts,
 			partInstancesMap,
 			segments,
-			DEFAULT_DURATION
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({

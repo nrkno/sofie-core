@@ -30,7 +30,7 @@ export class KeyboardController extends ControllerAbstract {
 	private _updateSpeedHandle: number | null = null
 
 	constructor(view: PrompterViewInner) {
-		super(view)
+		super()
 
 		this._prompterView = view
 

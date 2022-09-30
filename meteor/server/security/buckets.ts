@@ -21,7 +21,10 @@ export namespace BucketSecurity {
 	}
 
 	// Sometimes a studio ID is passed, others the peice / bucket id
-	export async function allowReadAccess(cred: Credentials | ResolvedCredentials, bucketId: BucketId) {
+	export async function allowReadAccess(
+		cred: Credentials | ResolvedCredentials,
+		bucketId: BucketId
+	): Promise<boolean> {
 		check(bucketId, String)
 
 		const bucket = await Buckets.findOneAsync(bucketId)
