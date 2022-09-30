@@ -44,7 +44,6 @@ import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
 import { UIShowStyleBase } from './showStyles'
-import { DBDeviceMapping } from './studios'
 
 export enum PubSub {
 	blueprints = 'blueprints',
@@ -108,19 +107,13 @@ export enum PubSub {
 	timelineForStudio = 'timelineForStudio',
 	expectedPackagesForDevice = 'expectedPackagesForDevice',
 	uiShowStyleBase = 'uiShowStyleBase',
-	// sourceLayersForShowStyleBase = 'sourceLayersForShowStyleBase',
-	// outputLayersForShowStyleBase = 'outputLayersForShowStyleBase',
-	deviceMappingsForStudio = 'deviceMappingsForStudio',
 }
 
 export enum CustomCollectionName {
 	StudioMappings = 'studioMappings',
 	StudioTimeline = 'studioTimeline',
 	ExpectedPackagesForDevice = 'deviceExpectedPackages',
-	// SourceLayersForShowStyleBase = 'sourceLayersForShowStyleBase',
 	UIShowStyleBase = 'uiShowStyleBase',
-	// OutputLayersForShowStyleBase = 'outputLayersForShowStyleBase',
-	DeviceMappingsForStudio = 'deviceMappingsForStudio',
 }
 
 export interface PubSubTypes {
@@ -220,20 +213,14 @@ export interface PubSubTypes {
 		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 		token?: string
 	) => DBObj
-	// [PubSub.sourceLayersForShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => DBSourceLayer
-	// [PubSub.outputLayersForShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => DBOutputLayer
 	[PubSub.uiShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => UIShowStyleBase
-	[PubSub.deviceMappingsForStudio]: (studioId: StudioId) => DBDeviceMapping
 }
 
 export type CustomCollectionType = {
 	[CustomCollectionName.StudioMappings]: RoutedMappings
 	[CustomCollectionName.StudioTimeline]: RoutedTimeline
 	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj
-	// [CustomCollectionName.SourceLayersForShowStyleBase]: DBSourceLayer
-	// [CustomCollectionName.OutputLayersForShowStyleBase]: DBOutputLayer
 	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
-	[CustomCollectionName.DeviceMappingsForStudio]: DBDeviceMapping
 }
 
 export function meteorSubscribe<K extends keyof PubSubTypes>(
