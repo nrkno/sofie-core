@@ -345,6 +345,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							></EditAttribute>
 						</label>
 					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Use as default')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'isDefaultLayout'}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							></EditAttribute>
+						</label>
+					</div>
 					{isShelfLayout && <ShelfLayoutSettings item={item} />}
 					{isRundownHeaderLayout && <RundownHeaderLayoutSettings item={item} />}
 					{isRundownViewLayout && (

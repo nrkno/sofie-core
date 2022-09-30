@@ -1420,21 +1420,23 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					selectedShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForShelf(i))
 				}
 
-				// TODOSYNC: This was added by TV2, but this is a backwards-incompatible change
-				//						-- Jan Starzak, 2022/04/08
-				// if (!selectedViewLayout) {
-				// 	selectedViewLayout = props.rundownLayouts.find((i) =>
-				// 		RundownLayoutsAPI.isLayoutForRundownView(i)
-				// 	) as RundownViewLayout
-				// }
+				if (!selectedViewLayout) {
+					selectedViewLayout = props.rundownLayouts.find(
+						(layout) => RundownLayoutsAPI.isLayoutForRundownView(layout) && RundownLayoutsAPI.isDefaultLayout(layout)
+					) as RundownViewLayout
+				}
 
-				// if (!selectedHeaderLayout) {
-				// 	selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownHeader(i))
-				// }
+				if (!selectedHeaderLayout) {
+					selectedHeaderLayout = props.rundownLayouts.find(
+						(layout) => RundownLayoutsAPI.isLayoutForRundownHeader(layout) && RundownLayoutsAPI.isDefaultLayout(layout)
+					)
+				}
 
-				// if (!selectedMiniShelfLayout) {
-				// 	selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForMiniShelf(i))
-				// }
+				if (!selectedMiniShelfLayout) {
+					selectedMiniShelfLayout = props.rundownLayouts.find(
+						(layout) => RundownLayoutsAPI.isLayoutForMiniShelf(layout) && RundownLayoutsAPI.isDefaultLayout(layout)
+					)
+				}
 			}
 
 			let currentRundown: Rundown | undefined = undefined

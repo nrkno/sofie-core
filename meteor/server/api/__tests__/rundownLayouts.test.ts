@@ -66,6 +66,7 @@ describe('Rundown Layouts', () => {
 				disableContextMenu: true,
 				hideDefaultStartExecute: false,
 				regionId: CustomizableRegions.Shelf,
+				isDefaultLayout: false,
 			})
 			return { rundownLayout: mockLayout, rundownLayoutId }
 		}
