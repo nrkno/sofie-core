@@ -530,6 +530,18 @@ const EditAttributeSwitch = wrapEditAttribute(
 		}
 	}
 )
+
+interface EditAttributeDropdownOption {
+	value: any
+	name: string
+	i?: number
+}
+
+interface EditAttributeDropdownOptionsResult {
+	options: EditAttributeDropdownOption[]
+	currentOptionMissing: boolean
+}
+
 const EditAttributeDropdown = wrapEditAttribute(
 	class EditAttributeDropdown extends EditAttributeBase {
 		constructor(props) {
@@ -547,11 +559,8 @@ const EditAttributeDropdown = wrapEditAttribute(
 
 			this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
 		}
-		getOptions(addOptionForCurrentValue?: boolean): {
-			options: Array<{ value: any; name: string; i?: number }>
-			currentOptionMissing: boolean
-		} {
-			const options: Array<{ value: any; name: string; i?: number }> = []
+		getOptions(addOptionForCurrentValue?: boolean): EditAttributeDropdownOptionsResult {
+			const options: EditAttributeDropdownOption[] = []
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
@@ -604,12 +613,9 @@ const EditAttributeDropdown = wrapEditAttribute(
 			}
 
 			const currentValue = this.getAttribute()
-			const currentOption = _.find(options, (o) => {
-				if (Array.isArray(o.value)) {
-					return _.contains(o.value, currentValue)
-				}
-				return o.value === currentValue
-			})
+			const currentOption = options.find((o) =>
+				Array.isArray(o.value) ? o.value.includes(currentValue) : o.value === currentValue
+			)
 
 			if (addOptionForCurrentValue) {
 				if (!currentOption) {
@@ -752,12 +758,9 @@ const EditAttributeDropdownText = wrapEditAttribute(
 
 			if (addOptionForCurrentValue) {
 				const currentValue = this.getAttribute()
-				const currentOption = _.find(options, (o) => {
-					if (Array.isArray(o.value)) {
-						return _.contains(o.value, currentValue)
-					}
-					return o.value === currentValue
-				})
+				const currentOption = options.find((o) =>
+					Array.isArray(o.value) ? o.value.includes(currentValue) : o.value === currentValue
+				)
 				if (!currentOption) {
 					// if currentOption not found, then add it to the list:
 					options.push({
@@ -816,6 +819,12 @@ const EditAttributeDropdownText = wrapEditAttribute(
 		}
 	}
 )
+
+interface EditAttributeMultiSelectOptionsResult {
+	options: MultiSelectOptions
+	currentOptionMissing: boolean
+}
+
 const EditAttributeMultiSelect = wrapEditAttribute(
 	class EditAttributeMultiSelect extends EditAttributeBase {
 		constructor(props) {
@@ -826,10 +835,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 		handleChange(event: MultiSelectEvent) {
 			this.handleUpdate(event.selectedValues)
 		}
-		getOptions(addOptionsForCurrentValue?: boolean): {
-			options: MultiSelectOptions
-			currentOptionMissing: boolean
-		} {
+		getOptions(addOptionsForCurrentValue?: boolean): EditAttributeMultiSelectOptionsResult {
 			const options: MultiSelectOptions = {}
 
 			if (Array.isArray(this.props.options)) {
