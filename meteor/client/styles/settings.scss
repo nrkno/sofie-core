@@ -209,6 +209,14 @@
 			color: $color-status-warning;
 		}
 	}
+
+	.option-missing {
+		text-decoration: line-through;
+	}
+
+	select.option-missing {
+		border-color: $color-status-fatal;
+	}
 }
 
 .btn-add-new {
