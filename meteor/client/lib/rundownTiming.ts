@@ -166,9 +166,9 @@ export class RundownTimingCalculator {
 			})
 
 			segmentEntryPartInstances.forEach((partInstance) => {
-				if (partInstance.timings?.startedPlayback !== undefined)
+				if (partInstance.timings?.reportedStartedPlayback !== undefined)
 					this.segmentStartedPlayback[unprotectString(partInstance.segmentId)] =
-						partInstance.timings?.startedPlayback
+						partInstance.timings?.reportedStartedPlayback
 			})
 
 			parts.forEach((origPart, itIndex) => {
@@ -371,8 +371,10 @@ export class RundownTimingCalculator {
 							valToAddToAsPlayedDuration = partInstance.timings?.duration
 						} else if (lastStartedPlayback && !partInstance.timings?.duration) {
 							valToAddToAsPlayedDuration =
-								Math.min(partInstance.timings?.takeOut || Number.POSITIVE_INFINITY, now) -
-								lastStartedPlayback
+								Math.min(
+									partInstance.timings?.reportedStoppedPlayback || Number.POSITIVE_INFINITY,
+									now
+								) - lastStartedPlayback
 						}
 						this.segmentAsPlayedDurations[unprotectString(partInstance.segmentId)] =
 							(this.segmentAsPlayedDurations[unprotectString(partInstance.segmentId)] || 0) +
