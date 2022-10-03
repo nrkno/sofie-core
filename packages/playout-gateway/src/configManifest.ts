@@ -442,7 +442,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 			type: ConfigManifestEntryType.STRING,
 		},
 	],
-	[TSRDeviceType.TELEMETRICS]: [...PLAYOUT_SUBDEVICE_HOST]
+	[TSRDeviceType.TELEMETRICS]: [...PLAYOUT_SUBDEVICE_HOST],
 }
 
 // TODO: should come from types
@@ -656,7 +656,7 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 			optional: true,
 		},
 	],
-	[TSRDeviceType.TELEMETRICS]: []
+	[TSRDeviceType.TELEMETRICS]: [],
 }
 
 export const PLAYOUT_DEVICE_CONFIG: DeviceConfigManifest = {
