@@ -125,6 +125,7 @@ import { UIStateStorage } from '../lib/UIStateStorage'
 import { AdLibPieceUi, AdlibSegmentUi, ShelfDisplayOptions } from '../lib/shelf'
 import { SourceLayerLookup, fetchAndFilter } from './Shelf/AdLibPanel'
 import { matchFilter } from './Shelf/AdLibListView'
+import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -2143,7 +2144,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			)
 		}
 
-		onPieceQueued = (err: any, res: { queuedPartInstanceId?: PartInstanceId; taken?: boolean } | undefined) => {
+		onPieceQueued = (err: any, res: ExecuteActionResult | undefined) => {
 			if (!err && res) {
 				if (res.taken) {
 					this.keyboardQueuedPartInstanceId = undefined

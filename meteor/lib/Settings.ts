@@ -48,8 +48,8 @@ export interface ISettings {
 	// Keyboard map layout (what physical layout to use for the keyboard)
 	keyboardMapLayout: KeyboardLayouts.Names
 
-	// Name of the installation. Used to include custom implementations that differ from the main Fork. I.e. custom CSS etc. Leave undefined if no custom implementation is needed
-	installationName?: string
+	// CSS class applied to the body of the page. Used to include custom implementations that differ from the main Fork. I.e. custom CSS etc. Leave undefined if no custom implementation is needed
+	customizationClassName?: string
 
 	// If true, countdowns of videos will count down to the last freeze-frame of the video instead of to the end of the video
 	useCountdownToFreezeFrame: boolean
@@ -76,7 +76,6 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	enableKeyboardPreview: true,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 	poisonKey: 'Escape',
-	installationName: 'tv2',
 	useCountdownToFreezeFrame: true,
 })
 

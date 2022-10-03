@@ -71,6 +71,21 @@ export default withTranslation()(
 							></EditAttribute>
 						</label>
 					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide default AdLib Start/Execute options')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'hideDefaultStartExecute'}
+								obj={this.props.item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							></EditAttribute>
+							<span className="text-s dimmed">{t('Only custom trigger modes will be shown')}</span>
+						</label>
+					</div>
 				</React.Fragment>
 			)
 		}

@@ -380,6 +380,7 @@ export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {
 	openByDefault: boolean
 	startingHeight?: number
 	disableContextMenu: boolean
+	hideDefaultStartExecute: boolean
 	/* Customizable region that the layout modifies. */
 	regionId: CustomizableRegions
 }
@@ -417,7 +418,7 @@ export enum ActionButtonType {
 	// RESET_RUNDOWN = 'reset_rundown',
 	QUEUE_ADLIB = 'queue_adlib', // The idea for it is that you would be able to press and hold this button
 	// and then click on whatever adlib you would like
-	KLAR_ON_AIR = 'klar_on_air',
+	READY_ON_AIR = 'ready_on_air',
 	STORE_SNAPSHOT = 'store_snapshot',
 }
 
