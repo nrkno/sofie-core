@@ -14,6 +14,24 @@ export type DBBlueprintTrigger = SomeBlueprintTrigger & {
 	deviceId?: PeripheralDeviceId
 }
 
+export interface UITriggeredActionsObj {
+	_id: TriggeredActionId
+	/** Rank number for visually ordering the hotkeys */
+	_rank: number
+
+	/** Optional label to specify what this triggered action is supposed to do, a comment basically */
+	name?: ITranslatableMessage | string
+
+	/** Id of parent ShowStyleBase. If null, this is a system-wide triggered action */
+	showStyleBaseId: ShowStyleBaseId | null
+
+	/** Triggers, with attached device info alongside */
+	triggers: Record<string, DBBlueprintTrigger>
+
+	/** A list of actions to execute */
+	actions: Record<string, SomeAction>
+}
+
 export interface DBTriggeredActions {
 	_id: TriggeredActionId
 	/** Rank number for visually ordering the hotkeys */

@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { clone, createManualPromise, lazyIgnore } from '../../lib/lib'
 import { logger } from '../logging'
+import deepmerge from 'deepmerge'
 
 interface OptimizedObserver<TData, TArgs, TContext, UpdateProps> {
 	args: ReadonlyDeep<TArgs>
@@ -75,10 +76,7 @@ export async function setUpOptimizedObserver<
 		let pendingUpdate: Record<string, any> = {}
 		const triggerUpdate: TriggerUpdate<UpdateProps> = (updateProps) => {
 			// Combine the pending updates
-			pendingUpdate = {
-				...pendingUpdate,
-				...updateProps,
-			}
+			pendingUpdate = deepmerge(pendingUpdate, updateProps)
 
 			// If already running, set it as pending to be done afterwards
 			if (updateIsRunning) {

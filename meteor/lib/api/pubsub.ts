@@ -38,7 +38,7 @@ import { SnapshotItem } from '../collections/Snapshots'
 import { DBStudio, RoutedMappings, StudioId } from '../collections/Studios'
 import { RoutedTimeline, TimelineComplete } from '../collections/Timeline'
 import { TranslationsBundle } from '../collections/TranslationsBundles'
-import { DBTriggeredActions } from '../collections/TriggeredActions'
+import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions'
 import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
@@ -107,6 +107,7 @@ export enum PubSub {
 	timelineForStudio = 'timelineForStudio',
 	expectedPackagesForDevice = 'expectedPackagesForDevice',
 	uiShowStyleBase = 'uiShowStyleBase',
+	uiTriggeredActions = 'uiTriggeredActions',
 }
 
 export enum CustomCollectionName {
@@ -114,6 +115,7 @@ export enum CustomCollectionName {
 	StudioTimeline = 'studioTimeline',
 	ExpectedPackagesForDevice = 'deviceExpectedPackages',
 	UIShowStyleBase = 'uiShowStyleBase',
+	UITriggeredActions = 'uiTriggeredActions',
 }
 
 export interface PubSubTypes {
@@ -214,6 +216,7 @@ export interface PubSubTypes {
 		token?: string
 	) => DBObj
 	[PubSub.uiShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => UIShowStyleBase
+	[PubSub.uiTriggeredActions]: (showStyleBaseId: ShowStyleBaseId | null) => UITriggeredActionsObj
 }
 
 export type CustomCollectionType = {
@@ -221,6 +224,7 @@ export type CustomCollectionType = {
 	[CustomCollectionName.StudioTimeline]: RoutedTimeline
 	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj
 	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
+	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
 }
 
 export function meteorSubscribe<K extends keyof PubSubTypes>(

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import Sorensen from '@sofie-automation/sorensen'
 import { PubSub } from '../../../lib/api/pubsub'
 import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { TriggeredActionId, TriggeredActions } from '../../../lib/collections/TriggeredActions'
+import { TriggeredActionId } from '../../../lib/collections/TriggeredActions'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
 import {
 	RundownPlaylist,
@@ -39,7 +39,7 @@ import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../.
 import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../../lib/Settings'
 import { createInMemoryMongoCollection } from '../../../lib/collections/lib'
-import { UIShowStyleBases } from '../../ui/Collections'
+import { UIShowStyleBases, UITriggeredActions } from '../../ui/Collections'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
@@ -410,11 +410,12 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		JSON.stringify(props.nextSegmentPartIds),
 	])
 
-	const triggerSubReady = useSubscription(PubSub.triggeredActions, {
-		showStyleBase: {
-			$in: [null, props.showStyleBaseId],
-		},
-	})
+	const triggerSubReady = useSubscription(PubSub.uiTriggeredActions, props.showStyleBaseId)
+	// 	 {
+	// 	showStyleBase: {
+	// 		$in: [null, props.showStyleBaseId],
+	// 	},
+	// })
 
 	const rundownIds =
 		useTracker(() => {
@@ -434,7 +435,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	useSubscriptions(props.rundownPlaylistId, rundownIds, props.showStyleBaseId)
 
 	const triggeredActions = useTracker(() => {
-		return TriggeredActions.find(
+		return UITriggeredActions.find(
 			{
 				showStyleBaseId: {
 					$in: [null, props.showStyleBaseId],
@@ -458,16 +459,10 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		const previewAutoruns: Tracker.Computation[] = []
 
 		triggeredActions.forEach((pair) => {
-			const action = createAction(
-				pair._id,
-				Object.values(pair.actionsWithOverrides.defaults),
-				showStyleBase,
-				t,
-				getCurrentContext
-			)
+			const action = createAction(pair._id, Object.values(pair.actions), showStyleBase, t, getCurrentContext)
 			if (!props.simulateTriggerBinding) {
 				createdActions.current.set(pair._id, action.listener)
-				Object.values(pair.triggersWithOverrides.defaults).forEach((trigger) => {
+				Object.values(pair.triggers).forEach((trigger) => {
 					if (trigger.type === TriggerType.hotkey) {
 						bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
 					}
@@ -475,13 +470,11 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			}
 
 			if (pair.name) {
-				const triggers = Object.values(pair.triggersWithOverrides.defaults).filter(
-					(trigger) => trigger.type === TriggerType.hotkey
-				)
+				const triggers = Object.values(pair.triggers).filter((trigger) => trigger.type === TriggerType.hotkey)
 				const genericTriggerId = protectString(`${pair._id}`)
 				const keys = triggers.map((trigger) => trigger.keys)
 				const finalKeys = keys.map((key) => getFinalKey(key))
-				const adLibOnly = Object.values(pair.actionsWithOverrides.defaults).every(
+				const adLibOnly = Object.values(pair.actions).every(
 					(actionDescriptor) => actionDescriptor.action === PlayoutActions.adlib
 				)
 				MountedGenericTriggers.upsert(genericTriggerId, {
@@ -497,7 +490,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				})
 			}
 
-			const hotkeyTriggers = Object.values(pair.triggersWithOverrides.defaults)
+			const hotkeyTriggers = Object.values(pair.triggers)
 				.filter((trigger) => trigger.type === TriggerType.hotkey)
 				.map((trigger) => trigger.keys)
 
@@ -544,7 +537,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				triggeredActions.forEach((pair) => {
 					const actionListener = createdActions.current.get(pair._id)
 					if (actionListener) {
-						Object.values(pair.triggersWithOverrides.defaults).forEach((trigger) => {
+						Object.values(pair.triggers).forEach((trigger) => {
 							if (trigger.type === TriggerType.hotkey) {
 								unbindHotkey(trigger.keys, actionListener)
 							}
