@@ -57,14 +57,14 @@ async function retrieveBlueprintConfigRef(
 ): Promise<ConfigItemValue | undefined> {
 	if (!reference) return undefined
 
-	const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
+	const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^}]+)\}/)
 	if (m) {
 		if (m[1] === 'studio' && _.isString(m[2]) && _.isString(m[3])) {
 			const studioId: StudioId = protectString(m[2])
 			if (studioId === context.studioId) {
 				const configId = m[3]
 				const studioConfig = context.getStudioBlueprintConfig()
-				return objectPathGet(studioConfig, configId)
+				return objectPathGet(studioConfig, configId, '')
 			} else if (bailOnError) throw new Error(`Ref "${reference}": Studio "${studioId}" not valid`)
 		} else if (m[1] === 'showStyle' && _.isString(m[2]) && _.isString(m[3])) {
 			const showStyleVariantId = protectString<ShowStyleVariantId>(m[2])
@@ -73,7 +73,7 @@ async function retrieveBlueprintConfigRef(
 			const showStyleCompound = await context.getShowStyleCompound(showStyleVariantId).catch(() => undefined)
 			if (showStyleCompound) {
 				const showStyleConfig = context.getShowStyleBlueprintConfig(showStyleCompound)
-				return objectPathGet(showStyleConfig, configId)
+				return objectPathGet(showStyleConfig, configId, '')
 			} else if (bailOnError) {
 				throw new Error(`Ref "${reference}": Showstyle variant "${showStyleVariantId}" not found`)
 			}
