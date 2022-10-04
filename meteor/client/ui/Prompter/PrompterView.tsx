@@ -290,13 +290,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	componentDidUpdate(prevProps) {
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
-
-		console.log(
-			'c:',
-			this.props.rundownPlaylist?.currentPartInstanceId,
-			prevProps.rundownPlaylist?.currentPartInstanceId
-		)
-		console.log('n:', this.props.rundownPlaylist?.nextPartInstanceId, prevProps.rundownPlaylist?.nextPartInstanceId)
 	}
 
 	private setDocumentTitle() {
@@ -341,7 +334,6 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	scrollToPartInstance(partInstanceId: PartInstanceId) {
 		const scrollMargin = this.calculateScrollPosition()
 		const target = document.querySelector(`#partInstance_${partInstanceId}`)
-		console.log(target)
 
 		if (target) {
 			Velocity(document.body, 'finish')
