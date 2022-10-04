@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { FindOptions } from '../../lib/typings/meteor'
+import { FindOptions } from '../../lib/collections/lib'
 import { BucketSecurity } from '../security/buckets'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'

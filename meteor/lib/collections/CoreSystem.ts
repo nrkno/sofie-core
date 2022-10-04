@@ -1,4 +1,4 @@
-import { FindOptions } from '../typings/meteor'
+import { FindOptions } from '../collections/lib'
 import { LogLevel, protectString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'

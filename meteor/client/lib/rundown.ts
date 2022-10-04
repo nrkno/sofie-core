@@ -32,7 +32,7 @@ import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
-import { FindOptions } from '../../lib/typings/meteor'
+import { FindOptions } from '../../lib/collections/lib'
 import { getShowHiddenSourceLayers } from './localStorage'
 import { Rundown, RundownId } from '../../lib/collections/Rundowns'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'

@@ -7,7 +7,7 @@ import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/Pe
 import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
 import { getCurrentTime } from '../../../lib/lib'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { FindOptions } from '../../../lib/typings/meteor'
+import { FindOptions } from '../../../lib/collections/lib'
 
 export namespace reactiveData {
 	// export function getRRundownId (rundownId: RundownId): ReactiveVar<RundownId | undefined> {

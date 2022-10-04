@@ -16,7 +16,7 @@ import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collect
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
-import { FindOptions, MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
@@ -34,6 +34,7 @@ import { PackageInfos } from '../../lib/collections/PackageInfos'
 import { PackageContainerStatuses } from '../../lib/collections/PackageContainerStatus'
 import { literal } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
+import { FindOptions } from '../../lib/collections/lib'
 
 meteorPublish(PubSub.studios, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)

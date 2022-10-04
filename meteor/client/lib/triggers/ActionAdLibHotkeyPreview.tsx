@@ -5,7 +5,7 @@ import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { assertNever } from '../../../lib/lib'
-import { MongoSelector } from '../../../lib/typings/meteor'
+import { MongoQuery } from '../../../lib/typings/meteor'
 import { useTracker } from '../ReactMeteorData/ReactMeteorData'
 import { SorensenContext } from '../SorensenContext'
 import { MountedAdLibTrigger, MountedAdLibTriggers } from './TriggersHandler'
@@ -64,7 +64,7 @@ export const ActionAdLibHotkeyPreview: React.FC<IProps> = function AdLibActionHo
 	}
 
 	const allKeys = useTracker(() => {
-		let selector: MongoSelector<MountedAdLibTrigger>
+		let selector: MongoQuery<MountedAdLibTrigger>
 		switch (props.type) {
 			case 'adLibAction':
 				selector = {

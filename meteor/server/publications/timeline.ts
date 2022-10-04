@@ -11,7 +11,7 @@ import {
 } from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { FindOptions } from '../../lib/typings/meteor'
+import { FindOptions } from '../../lib/collections/lib'
 import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
