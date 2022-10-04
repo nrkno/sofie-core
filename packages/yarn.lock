@@ -3092,10 +3092,10 @@
     webpack-sources "^3.2.2"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "42.0.0"
+  version "42.0.1"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.1.7"
+    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.2.1"
     tslib "^2.4.0"
     type-fest "^2.19.0"
 
@@ -8313,14 +8313,12 @@ husky@^7.0.4:
   resolved "https://registry.yarnpkg.com/husky/-/husky-7.0.4.tgz#242048245dc49c8fb1bf0cc7cfb98dd722531535"
   integrity sha512-vbaCKN2QLtP/vD4yvs6iz6hBEo6wkSzs8HpRah1Z6aGmF2KW5PdYuAd7uX5a+OyBZHBhd+TFLqgjUgytQr4RvQ==
 
-hyperdeck-connection@^0.4.3:
-  version "0.4.4"
-  resolved "https://registry.yarnpkg.com/hyperdeck-connection/-/hyperdeck-connection-0.4.4.tgz#ed569d1a6002311a27f9e8fbccc2c443acd61416"
-  integrity sha512-2+ezP4Gz5CvF/cdyAlU0coN4aRU/wesjUHjeJMN6Yex9jDrqvYmnOuB1soWY5LaetYShTO34MK2wPyYF50YOvg==
+hyperdeck-connection@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/hyperdeck-connection/-/hyperdeck-connection-0.5.0.tgz#3bfb7956b61c8cbfa948ac33125fd80dcf91aa77"
+  integrity sha512-+gw+TX0Flhzlq3Tr+CK2BVAwaDEL5WYcH+tdENViln2Go3blNm7LDb2BXJHJpMy6p0jX5IrTQP+shYHkcHPArg==
   dependencies:
-    tslib "^1.9.0"
-    underscore "^1.9.1"
-    underscore-deep-extend "^1.1.5"
+    tslib "^2.3.1"
 
 i18next@^21.9.1:
   version "21.9.2"
@@ -13930,7 +13928,7 @@ threadedclass@^0.8.0:
     is-running "^2.1.0"
     tslib "^1.13.0"
 
-threadedclass@^1.1.0:
+threadedclass@^1.1.0, threadedclass@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.1.1.tgz#6813b3c401b3d55264f6225c9d2c15516d7efa97"
   integrity sha512-HffBjerRZGOlhUBt9Ue8nYCuV6khK9er86w4svTvf1Xn6ibAyJok290o2MJ/qJ1vy0A4UphEo3DSsxFN5g+TBQ==
@@ -13975,17 +13973,17 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-2.1.7.tgz#878b8848b7f80897142b2ca39fa835224465ad49"
-  integrity sha512-G/VoKrVoQruMhnaUn42BsDuX+4tG0L1I/C0cELHoBZFXPmAoZB1dlc/qTSgiFf8Sdm0fWjkaHeEeyTEJ9uaQEg==
+"timeline-state-resolver-types@npm:@tv2media/timeline-state-resolver-types@2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver-types/-/timeline-state-resolver-types-2.2.1.tgz#7fba806683d4498f91d61f225cd0909f6ee1fa50"
+  integrity sha512-lfLId/hxp0+LjOsYi5vhnBc92N7nXwzjCgax/ASYm6U1lVivX+ymmgwqNJ/0OXgYRqnf7hoTMk3PxCw1jl2ejw==
   dependencies:
     tslib "^2.3.1"
 
-"timeline-state-resolver@npm:@tv2media/timeline-state-resolver@2.1.7":
-  version "2.1.7"
-  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver/-/timeline-state-resolver-2.1.7.tgz#1ac68fecefabe2aa7ba193c9178e53238afd99a9"
-  integrity sha512-OXsxaf/rK2CEFGJKNknz6FtLHXwd4Cs73tuE+2TV0Cg62iGbWIATcIU/DPIgr2nCTXo2Jz+f/iBSSWiqiy6+cw==
+"timeline-state-resolver@npm:@tv2media/timeline-state-resolver@2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@tv2media/timeline-state-resolver/-/timeline-state-resolver-2.2.1.tgz#66dd21de0deeeba21301c37e9f2880c3748915bb"
+  integrity sha512-/zp9vmtyX1MlHOpsQWkcI6Le1+GIH2W3U+gEgMsluL6YRdv5m/q38eT1p/cU/ORdokD5eWdQJGm3MPpKcOGC8Q==
   dependencies:
     "@tv2media/v-connection" "^6.0.2"
     atem-connection "2.4.0"
@@ -13997,7 +13995,7 @@ timecode@0.0.4:
     emberplus-connection "^0.1.2"
     eventemitter3 "^4.0.7"
     got "^11.8.5"
-    hyperdeck-connection "^0.4.3"
+    hyperdeck-connection "^0.5.0"
     obs-websocket-js "^4.0.3"
     osc "^2.4.2"
     p-all "^3.0.0"
@@ -14005,15 +14003,15 @@ timecode@0.0.4:
     p-timeout "^3.2.0"
     request "^2.88.0"
     sprintf-js "^1.1.2"
-    superfly-timeline "8.2.1"
-    threadedclass "^1.1.0"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.1.7"
+    superfly-timeline "^8.2.8"
+    threadedclass "^1.1.1"
+    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.2.1"
     tslib "^2.3.1"
-    tv-automation-quantel-gateway-client "^2.0.4"
-    underscore "^1.12.0"
+    tv-automation-quantel-gateway-client "^2.0.5"
+    underscore "^1.13.4"
     underscore-deep-extend "^1.1.5"
-    utf-8-validate "^5.0.8"
-    ws "^7.5.5"
+    utf-8-validate "^5.0.9"
+    ws "^7.5.7"
     xml-js "^1.6.11"
 
 tiny-invariant@^1.0.2:
@@ -14227,7 +14225,7 @@ tsconfig-paths@^3.9.0:
     minimist "^1.2.6"
     strip-bom "^3.0.0"
 
-tslib@^1.13.0, tslib@^1.8.1, tslib@^1.9.0:
+tslib@^1.13.0, tslib@^1.8.1:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
   integrity sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==
@@ -14410,7 +14408,7 @@ underscore-deep-extend@^1.1.5:
   resolved "https://registry.yarnpkg.com/underscore-deep-extend/-/underscore-deep-extend-1.1.5.tgz#962ba1f8b3bb2e2afd182ed86f2e5275543c52bd"
   integrity sha512-Snk/OnraiskaFowKhKrxbE/UzYvYmsE3gHNrGWKCb7gceuz3ebFRwxw9X9wgklrIUt6xDxR5TcE1yj0LneOmnQ==
 
-underscore@^1.12.0, underscore@^1.13.2, underscore@^1.13.4, underscore@^1.9.1:
+underscore@^1.13.2, underscore@^1.13.4:
   version "1.13.6"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.13.6.tgz#04786a1f589dc6c09f761fc5f45b89e935136441"
   integrity sha512-+A5Sja4HP1M08MaXya7p5LvjuM7K6q/2EaC0+iovj/wOcMsTzMvDFbasi/oSapiwOlt252IqsKqPjCl7huKS0A==
@@ -14691,7 +14689,7 @@ use-latest@^1.2.1:
   dependencies:
     use-isomorphic-layout-effect "^1.1.1"
 
-utf-8-validate@^5.0.8:
+utf-8-validate@^5.0.9:
   version "5.0.9"
   resolved "https://registry.yarnpkg.com/utf-8-validate/-/utf-8-validate-5.0.9.tgz#ba16a822fbeedff1a58918f2a6a6b36387493ea3"
   integrity sha512-Yek7dAy0v3Kl0orwMlvi7TPtiCNrdfHNd7Gcc/pLq4BLXqfAmd0J7OWMizUQnTTJsyjKn02mU7anqwfmUP4J8Q==
@@ -15307,7 +15305,7 @@ ws@8.5.0:
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.5.0.tgz#bfb4be96600757fe5382de12c670dab984a1ed4f"
   integrity sha512-BWX0SWVgLPzYwF8lTzEy1egjhS4S4OEAHfsO8o65WOVsrnSRGaSiUaa9e0ggGlkMTtBlmOpEXiie9RUcBO86qg==
 
-ws@^7.2.0, ws@^7.3.1, ws@^7.4.6, ws@^7.5.5:
+ws@^7.2.0, ws@^7.3.1, ws@^7.4.6, ws@^7.5.7:
   version "7.5.9"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.5.9.tgz#54fa7db29f4c7cec68b1ddd3a89de099942bb591"
   integrity sha512-F+P9Jil7UiSKSkppIiD94dN07AwvFixvLIj1Og1Rl9GGMuNipJnV9JzjD6XuqmAeiswGvUmNLjr5cFuXwNS77Q==
