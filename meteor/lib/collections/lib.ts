@@ -83,12 +83,12 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
  */
 export function createMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	name: CollectionName,
-	options?: {
-		connection?: Object | null
-		idGeneration?: string
-	}
+	// options?: {
+	// 	connection?: Object | null
+	// 	idGeneration?: string
+	// }
 ): AsyncMongoCollection<DBInterface> {
-	const collection = new Mongo.Collection<DBInterface>(name, options)
+	const collection = getOrCreateMongoCollection(name)
 
 	let collection2: AsyncMongoCollection<DBInterface>
 	if ((collection as any)._isMock) {
@@ -103,6 +103,22 @@ export function createMongoCollection<DBInterface extends { _id: ProtectedString
 	return collection2
 }
 
+/** 
+ * Map of current collection objects.
+ * Future: Could this weakly hold the collections?
+ */
+const collectionsCache = new Map<string, Mongo.Collection>()
+function getOrCreateMongoCollection(name: string): Mongo.Collection<any> {
+	const collection = collectionsCache.get(name)
+	if (collection) {
+		return collection
+	}
+
+	const newCollection = new Mongo.Collection(name)
+	collectionsCache.set(name, newCollection)
+	return newCollection
+}
+
 /**
  * Wrap an existing Mongo.Collection to have async methods. Primarily to convert the built-in Users collection
  * @param collection Collection to wrap
@@ -112,6 +128,9 @@ export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<a
 	collection: Mongo.Collection<DBInterface>,
 	name: CollectionName
 ): AsyncMongoCollection<DBInterface> {
+	if (collectionsCache.has(name)) throw new Meteor.Error(500, `Collection "${name}" has already been created`)
+	collectionsCache.set(name, collection)
+
 	return new WrappedAsyncMongoCollection<DBInterface>(collection, name)
 }
 
@@ -122,7 +141,7 @@ export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<a
 export function createInMemoryMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	name: string
 ): MongoCollection<DBInterface> {
-	const collection = new Mongo.Collection<DBInterface>(null)
+	const collection = getOrCreateMongoCollection(null)
 	return new WrappedMongoCollection<DBInterface>(collection, name)
 }
 
@@ -133,7 +152,7 @@ export function createInMemoryMongoCollection<DBInterface extends { _id: Protect
 export function createClientMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	name: CollectionName
 ): AsyncMongoCollection<DBInterface> {
-	const collection = new Mongo.Collection<DBInterface>(name)
+	const collection = getOrCreateMongoCollection(name)
 	return new WrappedAsyncMongoCollection<DBInterface>(collection, name)
 }
 
