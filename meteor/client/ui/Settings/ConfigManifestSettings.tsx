@@ -312,7 +312,7 @@ interface IConfigManifestTableState {
 	uploadFileKey: number // Used to force clear the input after use
 	sortColumn: number
 	sortOrder: 'asc' | 'desc'
-	resolvedColumns: ResolvedBasicConfigManifestEntry[]
+	resolvedColumns: (ResolvedBasicConfigManifestEntry & { rank: number })[]
 }
 
 export class ConfigManifestTable<
@@ -446,29 +446,31 @@ export class ConfigManifestTable<
 		props: Translated<IConfigManifestTableProps<any, any>>
 	): Partial<IConfigManifestTableState> {
 		return {
-			resolvedColumns: props.item.columns.map((column): ResolvedBasicConfigManifestEntry => {
-				switch (column.type) {
-					case ConfigManifestEntryType.SOURCE_LAYERS:
-						return {
-							...column,
-							options: props.sourceLayers ? filterSourceLayers(column, props.sourceLayers) : [],
-						}
-					case ConfigManifestEntryType.LAYER_MAPPINGS:
-						return {
-							...column,
-							options: props.layerMappings ? filterLayerMappings(column, props.layerMappings) : [],
-						}
-					case ConfigManifestEntryType.SELECT_FROM_COLUMN:
-						return {
-							...column,
-							options: props.layerMappings
-								? getTableColumnValues(column, props.configPath, props.object, props.alternateObject)
-								: [],
-						}
-					default:
-						return column
-				}
-			}),
+			resolvedColumns: props.item.columns
+				.sort((a, b) => a.rank - b.rank)
+				.map((column) => {
+					switch (column.type) {
+						case ConfigManifestEntryType.SOURCE_LAYERS:
+							return {
+								...column,
+								options: props.sourceLayers ? filterSourceLayers(column, props.sourceLayers) : [],
+							}
+						case ConfigManifestEntryType.LAYER_MAPPINGS:
+							return {
+								...column,
+								options: props.layerMappings ? filterLayerMappings(column, props.layerMappings) : [],
+							}
+						case ConfigManifestEntryType.SELECT_FROM_COLUMN:
+							return {
+								...column,
+								options: props.layerMappings
+									? getTableColumnValues(column, props.configPath, props.object, props.alternateObject)
+									: [],
+							}
+						default:
+							return column
+					}
+				}),
 		}
 	}
 
@@ -515,40 +517,32 @@ export class ConfigManifestTable<
 					<table className="table">
 						<thead>
 							<tr>
-								{_.map(
-									configEntry.columns.sort((a, b) => {
-										if (a.rank > b.rank) return 1
-										if (a.rank < b.rank) return -1
-
-										return 0
-									}),
-									(col, i) => (
-										<th key={col.id}>
-											<span title={col.description}>{col.name} </span>
-											{(col.type === ConfigManifestEntryType.STRING ||
-												col.type === ConfigManifestEntryType.NUMBER ||
-												col.type === ConfigManifestEntryType.INT ||
-												col.type === ConfigManifestEntryType.FLOAT) && (
-												<button
-													className={ClassNames('action-btn', {
-														disabled: this.state.sortColumn !== i,
-													})}
-													onClick={() => this.sort(i)}
-												>
-													<FontAwesomeIcon
-														icon={
-															this.state.sortColumn === i
-																? this.state.sortOrder === 'asc'
-																	? faSortUp
-																	: faSortDown
-																: faSort
-														}
-													/>
-												</button>
-											)}
-										</th>
-									)
-								)}
+								{_.map(this.state.resolvedColumns, (col, i) => (
+									<th key={col.id}>
+										<span title={col.description}>{col.name} </span>
+										{(col.type === ConfigManifestEntryType.STRING ||
+											col.type === ConfigManifestEntryType.NUMBER ||
+											col.type === ConfigManifestEntryType.INT ||
+											col.type === ConfigManifestEntryType.FLOAT) && (
+											<button
+												className={ClassNames('action-btn', {
+													disabled: this.state.sortColumn !== i,
+												})}
+												onClick={() => this.sort(i)}
+											>
+												<FontAwesomeIcon
+													icon={
+														this.state.sortColumn === i
+															? this.state.sortOrder === 'asc'
+																? faSortUp
+																: faSortDown
+															: faSort
+													}
+												/>
+											</button>
+										)}
+									</th>
+								))}
 								<th>&nbsp;</th>
 							</tr>
 						</thead>
