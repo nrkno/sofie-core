@@ -287,7 +287,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		window.removeEventListener('scroll', this.onWindowScroll)
 	}
 
-	componentDidUpdate(prevProps) {
+	componentDidUpdate() {
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}
