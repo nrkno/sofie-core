@@ -8,7 +8,6 @@ import {
 } from '../../../lib/collections/RundownPlaylists'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
-import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import {
 	IOutputLayerExtended,
 	ISourceLayerExtended,
@@ -35,6 +34,7 @@ import { SegmentNote, TrackedNote } from '@sofie-automation/corelib/dist/dataMod
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { AdlibSegmentUi } from '../../lib/shelf'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -72,8 +72,7 @@ export interface IProps {
 	segmentsIdsBefore: Set<SegmentId>
 	rundownIdsBefore: RundownId[]
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 	showStyleBase: UIShowStyleBase
 	playlist: RundownPlaylist
 	rundown: MinimalRundown
@@ -245,12 +244,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			)
 			o.parts.forEach((part) => {
 				notes.push(
-					...getMinimumReactivePieceNotesForPart(
-						props.studio,
-						props.showStyleBase,
-						props.routedMappings,
-						part.instance.part
-					).map(
+					...getMinimumReactivePieceNotesForPart(props.studio, props.showStyleBase, part.instance.part).map(
 						(note): TrackedNote => ({
 							...note,
 							rank: segment._rank,

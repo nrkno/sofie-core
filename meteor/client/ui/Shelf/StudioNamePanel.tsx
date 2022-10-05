@@ -8,15 +8,15 @@ import {
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { Studio } from '../../../lib/collections/Studios'
 import { useTranslation } from 'react-i18next'
+import { UIStudio } from '../../../lib/api/studios'
 
 interface IStudioNamePanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutStudioName
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 }
 
 export function StudioNamePanel({ layout, panel, studio }: IStudioNamePanelProps) {

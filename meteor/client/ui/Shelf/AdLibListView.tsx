@@ -5,13 +5,13 @@ import { RundownUtils } from '../../lib/rundown'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
 import { RundownLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
-import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -25,8 +25,7 @@ interface IListViewPropsHeader {
 	filter: RundownLayoutFilter | undefined
 	rundownAdLibs?: Array<AdLibPieceUi>
 	playlist: RundownPlaylist
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 }
 
 /**
@@ -200,7 +199,6 @@ export function AdLibListView(props: IListViewPropsHeader) {
 				piece={adLibPiece}
 				layer={adLibPiece.sourceLayer}
 				studio={props.studio}
-				routedMappings={props.routedMappings}
 				selected={
 					(props.selectedPiece &&
 						RundownUtils.isAdLibPiece(props.selectedPiece) &&

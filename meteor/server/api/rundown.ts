@@ -140,7 +140,9 @@ export namespace ClientRundownAPI {
 		const access = await StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const rundownPlaylist = access.playlist
 
-		const studio = RundownPlaylistCollectionUtil.getStudio(rundownPlaylist)
+		const studio = Studios.findOne(rundownPlaylist.studioId)
+		if (!studio) throw new Meteor.Error(404, 'Studio "' + rundownPlaylist.studioId + '" not found!')
+
 		const studioBlueprint = studio.blueprintId
 			? ((await Blueprints.findOneAsync(studio.blueprintId, {
 					fields: {

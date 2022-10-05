@@ -17,7 +17,6 @@ import { Spinner } from '../../../../lib/Spinner'
 import InspectorTitle from './InspectorTitle'
 import { ProtectedString } from '../../../../../lib/lib'
 import { PartId } from '../../../../../lib/collections/Parts'
-import { RoutedMappings, Studio } from '../../../../../lib/collections/Studios'
 import { doUserAction, UserAction } from '../../../../lib/userAction'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { BucketId, Buckets } from '../../../../../lib/collections/Buckets'
@@ -29,14 +28,14 @@ import { IAdLibListItem } from '../../AdLibListItem'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
+import { UIStudio } from '../../../../../lib/api/studios'
 
 export { isActionItem }
 
 export interface IProps {
 	piece: PieceUi | IAdLibListItem | BucketAdLibActionUi
 	showStyleBase: UIShowStyleBase
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 	rundownPlaylist: RundownPlaylist
 	onSelectPiece: (piece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined) => void
 }
@@ -261,7 +260,6 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 						piece={this.props.piece}
 						showStyleBase={this.props.showStyleBase}
 						studio={this.props.studio}
-						routedMappings={this.props.routedMappings}
 					/>
 					<div className="shelf-inspector__action-editor">
 						<div className="shelf-inspector__action-editor__panel">

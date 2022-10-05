@@ -7,7 +7,6 @@ import { ExternalFramePanel } from './ExternalFramePanel'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
-import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { PieceCountdownPanel } from './PieceCountdownPanel'
 import { BucketAdLibItem } from './RundownViewBuckets'
 import { IAdLibListItem } from './AdLibListItem'
@@ -31,6 +30,7 @@ import { SegmentNamePanel } from './SegmentNamePanel'
 import { PartNamePanel } from './PartNamePanel'
 import { ColoredBoxPanel } from './ColoredBoxPanel'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -40,8 +40,7 @@ export interface IShelfDashboardLayoutProps {
 	showStyleVariant: ShowStyleVariant
 	studioMode: boolean
 	shouldQueue: boolean
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 	onChangeQueueAdLib?: (isQueue: boolean, e: any) => void
 
 	selectedPiece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
@@ -68,7 +67,6 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 									studioMode={props.studioMode}
 									shouldQueue={props.shouldQueue}
 									studio={props.studio}
-									routedMappings={props.routedMappings}
 									selectedPiece={props.selectedPiece}
 									onSelectPiece={props.onSelectPiece}
 								/>
@@ -83,7 +81,6 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 									studioMode={props.studioMode}
 									shouldQueue={props.shouldQueue}
 									studio={props.studio}
-									routedMappings={props.routedMappings}
 									selectedPiece={props.selectedPiece}
 									onSelectPiece={props.onSelectPiece}
 								/>
@@ -114,7 +111,6 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 									selectedPiece={props.selectedPiece}
 									onSelectPiece={props.onSelectPiece}
 									studio={props.studio}
-									routedMappings={props.routedMappings}
 								/>
 							)
 						} else if (RundownLayoutsAPI.isPieceCountdown(panel)) {

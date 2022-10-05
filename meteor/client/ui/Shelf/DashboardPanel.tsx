@@ -21,7 +21,6 @@ import {
 	UserAgentPointer,
 	USER_AGENT_POINTER_PROPERTY,
 } from '../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { MeteorCall } from '../../../lib/api/methods'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
@@ -37,6 +36,9 @@ import {
 	isAdLibOnAir,
 } from '../../lib/shelf'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { UIStudio } from '../../../lib/api/studios'
+import { UIStudios } from '../Collections'
+import { Meteor } from 'meteor/meteor'
 
 interface IState {
 	outputLayers: OutputLayers
@@ -53,7 +55,7 @@ export interface IDashboardPanelProps {
 }
 
 export interface IDashboardPanelTrackedProps {
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 	unfinishedAdLibIds: PieceId[]
 	unfinishedTags: string[]
 	nextAdLibIds: PieceId[]
@@ -541,7 +543,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 										<DashboardPieceButton
 											piece={adLibPiece}
 											studio={this.props.studio}
-											routedMappings={this.props.routedMappings}
 											layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
 											outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
 											onToggleAdLib={this.onToggleOrSelectAdLib}
@@ -643,6 +644,9 @@ export const DashboardPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps>) => {
+		const studio = UIStudios.findOne(props.playlist.studioId)
+		if (!studio) throw new Meteor.Error(404, 'Studio "' + props.playlist.studioId + '" not found!')
+
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist,
 			props.showStyleBase
@@ -650,7 +654,7 @@ export const DashboardPanel = translateWithTracker<
 		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
 		return {
 			...fetchAndFilter(props),
-			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
+			studio,
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,

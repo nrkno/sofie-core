@@ -8,7 +8,6 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { OutputLayers, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
 import { IBlueprintActionTriggerMode, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import {
 	contextMenuHoldToDisplayTime,
 	ensureHasTrailingSlash,
@@ -37,10 +36,10 @@ import {
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ContextType, setShelfContextMenuContext } from '../Shelf/ShelfContextMenu'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 
 interface IRundownViewShelfProps {
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 	segment: SegmentUi
 	playlist: RundownPlaylist
 	showStyleBase: UIShowStyleBase
@@ -239,7 +238,6 @@ class RundownViewShelfInner extends MeteorReactComponent<
 									key={unprotectString(adLibPiece._id)}
 									piece={adLibPiece}
 									studio={this.props.studio}
-									routedMappings={this.props.routedMappings}
 									layer={this.props.sourceLayers[adLibPiece.sourceLayerId]}
 									outputLayer={this.props.outputLayers[adLibPiece.outputLayerId]}
 									onToggleAdLib={this.onToggleAdLib}

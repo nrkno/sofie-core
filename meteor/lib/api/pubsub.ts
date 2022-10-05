@@ -44,6 +44,7 @@ import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
 import { UIShowStyleBase } from './showStyles'
+import { UIStudio } from './studios'
 
 export enum PubSub {
 	blueprints = 'blueprints',
@@ -107,6 +108,7 @@ export enum PubSub {
 	timelineForStudio = 'timelineForStudio',
 	expectedPackagesForDevice = 'expectedPackagesForDevice',
 	uiShowStyleBase = 'uiShowStyleBase',
+	uiStudio = 'uiStudio',
 	uiTriggeredActions = 'uiTriggeredActions',
 }
 
@@ -115,6 +117,7 @@ export enum CustomCollectionName {
 	StudioTimeline = 'studioTimeline',
 	ExpectedPackagesForDevice = 'deviceExpectedPackages',
 	UIShowStyleBase = 'uiShowStyleBase',
+	UIStudio = 'uiStudio',
 	UITriggeredActions = 'uiTriggeredActions',
 }
 
@@ -216,6 +219,7 @@ export interface PubSubTypes {
 		token?: string
 	) => DBObj
 	[PubSub.uiShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => UIShowStyleBase
+	[PubSub.uiStudio]: (studioId: StudioId) => UIStudio
 	[PubSub.uiTriggeredActions]: (showStyleBaseId: ShowStyleBaseId | null) => UITriggeredActionsObj
 }
 
@@ -224,6 +228,7 @@ export type CustomCollectionType = {
 	[CustomCollectionName.StudioTimeline]: RoutedTimeline
 	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj
 	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
+	[CustomCollectionName.UIStudio]: UIStudio
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
 }
 

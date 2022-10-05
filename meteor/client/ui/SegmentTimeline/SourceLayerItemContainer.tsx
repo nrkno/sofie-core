@@ -2,12 +2,11 @@ import * as React from 'react'
 import { ISourceLayerItemProps, SourceLayerItem } from './SourceLayerItem'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withMediaObjectStatus } from './withMediaObjectStatus'
-import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
+import { UIStudio } from '../../../lib/api/studios'
 
 interface IPropsHeader extends ISourceLayerItemProps {
 	playlist: RundownPlaylist
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 }
 
 export const SourceLayerItemContainer = withMediaObjectStatus<IPropsHeader, {}>()((props: IPropsHeader) => (

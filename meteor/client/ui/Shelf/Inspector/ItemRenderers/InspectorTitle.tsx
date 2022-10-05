@@ -4,17 +4,16 @@ import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../../RundownViewBuckets'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece, PieceStatusCode } from '../../../../../lib/collections/Pieces'
-import { RoutedMappings, Studio } from '../../../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../../../SegmentTimeline/withMediaObjectStatus'
 import { IAdLibListItem } from '../../AdLibListItem'
 import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
+import { UIStudio } from '../../../../../lib/api/studios'
 
 interface IProps {
 	piece: PieceUi | IAdLibListItem | BucketAdLibUi | BucketAdLibActionUi
 	showStyleBase: UIShowStyleBase
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 }
 
 const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTitle(props: IProps) {

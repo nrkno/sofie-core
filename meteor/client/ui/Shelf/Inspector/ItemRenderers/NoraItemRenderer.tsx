@@ -7,17 +7,16 @@ import { RundownUtils } from '../../../../lib/rundown'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import InspectorTitle from './InspectorTitle'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
-import { RoutedMappings, Studio } from '../../../../../lib/collections/Studios'
 import { IAdLibListItem } from '../../AdLibListItem'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
+import { UIStudio } from '../../../../../lib/api/studios'
 
 export { isNoraItem }
 
 interface INoraSuperRendererProps {
 	piece: IAdLibListItem | PieceUi
 	showStyleBase: UIShowStyleBase
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 }
 
 interface INoraSuperRendererState {
@@ -57,7 +56,6 @@ export default withTranslation()(
 						piece={this.props.piece}
 						showStyleBase={this.props.showStyleBase}
 						studio={this.props.studio}
-						routedMappings={this.props.routedMappings}
 					/>
 					<div className="shelf-inspector__content">
 						<h2 className="mod mas">{actualPiece.name}</h2>

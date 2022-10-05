@@ -5,7 +5,6 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { RoutedMappings, Studio } from '../../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi, LIVE_LINE_TIME_PADDING } from '../SegmentTimelineContainer'
 import {
 	TimingDataResolution,
@@ -33,6 +32,7 @@ import { RundownTimingContext } from '../../../lib/rundownTiming'
 import { OutputGroup } from './OutputGroup'
 import { InvalidPartCover } from './InvalidPartCover'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { UIStudio } from '../../../../lib/api/studios'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -46,8 +46,7 @@ export const BREAKPOINT_TOO_SMALL_FOR_DISPLAY = 6
 interface IProps {
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 	part: PartUi
 	timeScale: number
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
@@ -436,7 +435,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								part={part}
 								playlist={this.props.playlist}
 								studio={this.props.studio}
-								routedMappings={this.props.routedMappings}
 								startsAt={SegmentTimelinePartClass.getPartStartsAt(this.props) || this.props.part.startsAt || 0}
 								duration={
 									this.props.cropDuration

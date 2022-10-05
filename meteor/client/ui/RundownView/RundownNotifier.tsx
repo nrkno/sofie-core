@@ -20,7 +20,6 @@ import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Segments, SegmentId, Segment } from '../../../lib/collections/Segments'
-import { RoutedMappings, Studio, StudioId } from '../../../lib/collections/Studios'
 import { RundownId, Rundown } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -42,6 +41,8 @@ import { isTranslatableMessage, translateMessage } from '@sofie-automation/corel
 import { NoteSeverity, StatusCode } from '@sofie-automation/blueprints-integration'
 import { getAllowStudio, getIgnorePieceContentStatus } from '../../lib/localStorage'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -99,12 +100,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	private mediaObjectsPollInterval = 0
 	private allNotesPollInterval = 0
 
-	constructor(
-		playlistId: RundownPlaylistId | undefined,
-		showStyleBase: UIShowStyleBase,
-		studio: Studio,
-		routedMappings: RoutedMappings
-	) {
+	constructor(playlistId: RundownPlaylistId | undefined, showStyleBase: UIShowStyleBase, studio: UIStudio) {
 		super()
 		this._notificationList = new NotificationList([])
 		this._mediaStatusDep = new Tracker.Dependency()
@@ -125,7 +121,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 				this.autorun(() => {
 					if (showStyleBase && studio) {
-						this.reactiveMediaStatus(playlistId, showStyleBase, studio, routedMappings)
+						this.reactiveMediaStatus(playlistId, showStyleBase, studio)
 						this.reactivePartNotes(playlistId)
 						this.reactivePeripheralDeviceStatus(studio._id)
 						this.reactiveQueueStatus(studio._id, playlistId)
@@ -500,12 +496,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveMediaStatus(
-		playlistId: RundownPlaylistId,
-		showStyleBase: UIShowStyleBase,
-		studio: Studio,
-		routedMappings: RoutedMappings
-	) {
+	private reactiveMediaStatus(playlistId: RundownPlaylistId, showStyleBase: UIShowStyleBase, studio: UIStudio) {
 		let mediaObjectsPollLock: boolean = false
 		const MEDIAOBJECTS_POLL_INTERVAL = MEDIASTATUS_POLL_INTERVAL
 
@@ -585,7 +576,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 							if (!this.subscriptionsReady()) return
 
-							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio, routedMappings)
+							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
 							if (status !== PieceStatusCode.UNKNOWN || message) {
 								localStatus.push({
 									name: piece.name,
@@ -934,9 +925,8 @@ interface IProps {
 	// 	}
 	// }
 	playlistId: RundownPlaylistId
-	studio: Studio
+	studio: UIStudio
 	showStyleBase: UIShowStyleBase
-	routedMappings: RoutedMappings
 }
 
 export const RundownNotifier = class RundownNotifier extends React.Component<IProps> {
@@ -944,12 +934,7 @@ export const RundownNotifier = class RundownNotifier extends React.Component<IPr
 
 	constructor(props: IProps) {
 		super(props)
-		this.notifier = new RundownViewNotifier(
-			props.playlistId,
-			props.showStyleBase,
-			props.studio,
-			this.props.routedMappings
-		)
+		this.notifier = new RundownViewNotifier(props.playlistId, props.showStyleBase, props.studio)
 	}
 
 	shouldComponentUpdate(nextProps: IProps): boolean {
@@ -965,12 +950,7 @@ export const RundownNotifier = class RundownNotifier extends React.Component<IPr
 
 	componentDidUpdate() {
 		this.notifier.stop()
-		this.notifier = new RundownViewNotifier(
-			this.props.playlistId,
-			this.props.showStyleBase,
-			this.props.studio,
-			this.props.routedMappings
-		)
+		this.notifier = new RundownViewNotifier(this.props.playlistId, this.props.showStyleBase, this.props.studio)
 	}
 
 	componentWillUnmount() {

@@ -18,12 +18,13 @@ import { Parts } from '../../lib/collections/Parts'
 import { Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
 import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { getActiveRoutes, getRoutedMappings, RoutedMappings, Studios } from '../../lib/collections/Studios'
+import { Studios } from '../../lib/collections/Studios'
 import { checkPieceContentStatus } from '../../lib/mediaObjects'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { UIStudio } from '../../lib/api/studios'
 
 async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 	const rundowns = await Rundowns.findFetchAsync({
@@ -66,13 +67,12 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 				const partMap = normalizeArrayToMap(parts, '_id')
 				const segmentsMap = normalizeArrayToMap(await pSegments, '_id')
 
-				const studioMappings = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
-				const routes = getActiveRoutes(studio)
-				const routedMappings = getRoutedMappings(studioMappings, routes)
-				const routedMappings2: RoutedMappings = {
+				const uiStudio: Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'> = {
 					_id: studio._id,
-					mappings: routedMappings,
-					mappingsHash: studio.mappingsHash,
+					settings: studio.settings,
+					packageContainers: studio.packageContainers,
+					mappings: applyAndValidateOverrides(studio.mappingsWithOverrides).obj,
+					routeSets: studio.routeSets,
 				}
 
 				const pieceStatus = pieces.map(async (piece) =>
@@ -83,12 +83,7 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 						const segment = part ? segmentsMap.get(part.segmentId) : undefined
 						if (segment && sourceLayer && part) {
 							// we don't want this to be in a non-reactive context, so we manage this computation manually
-							const { status, message } = checkPieceContentStatus(
-								piece,
-								sourceLayer,
-								studio,
-								routedMappings2
-							)
+							const { status, message } = checkPieceContentStatus(piece, sourceLayer, uiStudio)
 							if (
 								status !== PieceStatusCode.OK &&
 								status !== PieceStatusCode.UNKNOWN &&

@@ -4,17 +4,16 @@ import { IAdLibListItem } from '../../AdLibListItem'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
 import InspectorTitle from './InspectorTitle'
-import { RoutedMappings, Studio } from '../../../../../lib/collections/Studios'
 import { MediaObject } from '../../../../../lib/collections/MediaObjects'
 import { BucketAdLibUi } from '../../RundownViewBuckets'
 import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
+import { UIStudio } from '../../../../../lib/api/studios'
 
 export default function DefaultItemRenderer(props: {
 	piece: PieceUi | IAdLibListItem | BucketAdLibUi
 	showStyleBase: UIShowStyleBase
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 }): JSX.Element {
 	if (RundownUtils.isAdLibPiece(props.piece)) {
 		const piece = props.piece as IAdLibListItem
@@ -30,12 +29,7 @@ export default function DefaultItemRenderer(props: {
 
 		return (
 			<>
-				<InspectorTitle
-					piece={props.piece}
-					showStyleBase={props.showStyleBase}
-					studio={props.studio}
-					routedMappings={props.routedMappings}
-				/>
+				<InspectorTitle piece={props.piece} showStyleBase={props.showStyleBase} studio={props.studio} />
 				{packageName}
 				<dl>
 					<dd>name</dd>
@@ -71,12 +65,7 @@ export default function DefaultItemRenderer(props: {
 
 		return (
 			<>
-				<InspectorTitle
-					piece={props.piece}
-					showStyleBase={props.showStyleBase}
-					studio={props.studio}
-					routedMappings={props.routedMappings}
-				/>
+				<InspectorTitle piece={props.piece} showStyleBase={props.showStyleBase} studio={props.studio} />
 				{packageName}
 				<dl>
 					<dd>name</dd>

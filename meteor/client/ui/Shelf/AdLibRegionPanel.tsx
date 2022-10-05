@@ -16,7 +16,6 @@ import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/Reac
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import {
 	AdLibPieceUi,
 	getNextPieceInstancesGrouped,
@@ -30,6 +29,8 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { UIStudios } from '../Collections'
+import { Meteor } from 'meteor/meteor'
 
 interface IState {
 	objId?: string
@@ -241,7 +242,9 @@ export const AdLibRegionPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
-		const studio = RundownPlaylistCollectionUtil.getStudio(props.playlist)
+		const studio = UIStudios.findOne(props.playlist.studioId)
+		if (!studio) throw new Meteor.Error(404, 'Studio "' + props.playlist.studioId + '" not found!')
+
 		const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
 			props.playlist,
 			props.showStyleBase

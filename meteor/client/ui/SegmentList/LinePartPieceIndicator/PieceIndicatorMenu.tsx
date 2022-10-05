@@ -7,7 +7,6 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { StoryboardSecondaryPiece } from '../../SegmentStoryboard/StoryboardPartSecondaryPieces/StoryboardSecondaryPiece'
 import StudioContext from '../../RundownView/StudioContext'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
-import RoutedMappingsContext from '../../RundownView/RoutedMappingsContext'
 
 const AUTO_HIDE_TIMEOUT = 7000
 
@@ -85,41 +84,36 @@ export function PieceIndicatorMenu({
 	if (pieces.length === 0) return null
 
 	return (
-		<RoutedMappingsContext.Consumer>
-			{(routedMappings) => (
-				<StudioContext.Consumer>
-					{(studio) =>
-						studio && (
-							<Escape to="document">
-								<div
-									className="segment-opl__piece-indicator-menu"
-									/** This is so that we avoid updating the state once the component has been unmounted */
-									ref={(el) => el !== null && setIndicatorMenuEl(el)}
-									style={styles.popper}
-									{...attributes.popper}
-								>
-									{pieces.map(
-										(piece) =>
-											!!piece.sourceLayer && (
-												<StoryboardSecondaryPiece
-													key={unprotectString(piece.instance._id)}
-													layer={piece.sourceLayer}
-													piece={piece}
-													partId={partId}
-													studio={studio}
-													routedMappings={routedMappings}
-													isLiveLine={false}
-													onClick={(e) => onPieceClick && onPieceClick(piece, e)}
-													onDoubleClick={(e) => onPieceDoubleClick && onPieceDoubleClick(piece, e)}
-												/>
-											)
-									)}
-								</div>
-							</Escape>
-						)
-					}
-				</StudioContext.Consumer>
-			)}
-		</RoutedMappingsContext.Consumer>
+		<StudioContext.Consumer>
+			{(studio) =>
+				studio && (
+					<Escape to="document">
+						<div
+							className="segment-opl__piece-indicator-menu"
+							/** This is so that we avoid updating the state once the component has been unmounted */
+							ref={(el) => el !== null && setIndicatorMenuEl(el)}
+							style={styles.popper}
+							{...attributes.popper}
+						>
+							{pieces.map(
+								(piece) =>
+									!!piece.sourceLayer && (
+										<StoryboardSecondaryPiece
+											key={unprotectString(piece.instance._id)}
+											layer={piece.sourceLayer}
+											piece={piece}
+											partId={partId}
+											studio={studio}
+											isLiveLine={false}
+											onClick={(e) => onPieceClick && onPieceClick(piece, e)}
+											onDoubleClick={(e) => onPieceDoubleClick && onPieceDoubleClick(piece, e)}
+										/>
+									)
+							)}
+						</div>
+					</Escape>
+				)
+			}
+		</StudioContext.Consumer>
 	)
 }

@@ -11,13 +11,13 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
 import * as i18next from 'i18next'
-import { IStudioSettings, MappingsExtWithPackage, RoutedMappings, Studio } from './collections/Studios'
+import { IStudioSettings, routeExpectedPackages } from './collections/Studios'
 import { PackageInfos } from './collections/PackageInfos'
 import { assertNever, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
 import { getExpectedPackageId } from './collections/ExpectedPackages'
 import { PieceGeneric, PieceStatusCode } from './collections/Pieces'
-import { ReadonlyDeep } from 'type-fest'
+import { UIStudio } from './api/studios'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -172,8 +172,7 @@ export interface ScanInfoForPackage {
 export function checkPieceContentStatus(
 	piece: Pick<PieceGeneric, '_id' | 'name' | 'content' | 'expectedPackages'>,
 	sourceLayer: ISourceLayer | undefined,
-	studio: Pick<Studio, '_id' | 'settings' | 'packageContainers'> | undefined,
-	_routedMappings: ReadonlyDeep<RoutedMappings>,
+	studio: Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'> | undefined,
 	t?: i18next.TFunction
 ): {
 	status: PieceStatusCode.OK | PieceStatusCode.UNKNOWN
@@ -208,9 +207,11 @@ export function checkPieceContentStatus(
 
 			if (piece.expectedPackages.length) {
 				// Route the mappings
-				// TODO-SETTINGS this wants the unrouted mappings, which are not exposed to the ui... rewrite it to work with what it has..
-				// const routedMappingsWithPackages = routeExpectedPackages(studio, studioMappings, piece.expectedPackages)
-				const routedMappingsWithPackages: MappingsExtWithPackage = {}
+				const routedMappingsWithPackages = routeExpectedPackages(
+					studio,
+					studio.mappings,
+					piece.expectedPackages
+				)
 
 				const checkedPackageContainers: { [containerId: string]: true } = {}
 

@@ -7,7 +7,6 @@ import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { RundownUtils } from '../../lib/rundown'
 import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
-import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
 import { literal } from '../../../lib/lib'
@@ -16,13 +15,13 @@ import * as _ from 'underscore'
 import { MongoSelector } from '../../../lib/typings/meteor'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { AdLibPieceUi } from '../../lib/shelf'
+import { UIStudio } from '../../../lib/api/studios'
 
 type AnyPiece = {
 	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
 	layer?: ISourceLayer | undefined
 	isLiveLine?: boolean
-	studio: Studio | undefined
-	routedMappings: RoutedMappings | undefined
+	studio: UIStudio | undefined
 }
 
 type IWrappedComponent<IProps extends AnyPiece, IState> = new (props: IProps, state: IState) => React.Component<
@@ -120,17 +119,16 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 				if (this.destroyed) return
 
 				this.statusComp = this.autorun(() => {
-					const { piece, studio, layer, routedMappings } = this.props
+					const { piece, studio, layer } = this.props
 					this.overrides = {}
 					const overrides = this.overrides
 
 					// Check item status
-					if (piece && (piece.sourceLayer || layer) && studio && routedMappings) {
+					if (piece && (piece.sourceLayer || layer) && studio) {
 						const { metadata, packageInfos, status, contentDuration, message } = checkPieceContentStatus(
 							WithMediaObjectStatusHOCComponent.unwrapPieceInstance(piece!),
 							piece.sourceLayer || layer,
-							studio,
-							routedMappings
+							studio
 						)
 						if (RundownUtils.isAdLibPieceOrAdLibListItem(piece!)) {
 							if (status !== piece.status || metadata || packageInfos) {

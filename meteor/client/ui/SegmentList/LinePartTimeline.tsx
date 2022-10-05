@@ -12,7 +12,6 @@ import { OvertimeShadow } from './OvertimeShadow'
 import { PartAutoNextMarker } from './PartAutoNextMarker'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import StudioContext from '../RundownView/StudioContext'
-import RoutedMappingsContext from '../RundownView/RoutedMappingsContext'
 
 const TIMELINE_DEFAULT_BASE = 30 * 1000
 
@@ -118,25 +117,20 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 				/>
 			))}
 			{mainPiece && (
-				<RoutedMappingsContext.Consumer>
-					{(routedMappings) => (
-						<StudioContext.Consumer>
-							{(studio) => (
-								<LinePartMainPiece
-									piece={mainPiece}
-									partId={part.partId}
-									partInstanceId={part.instance._id}
-									studio={studio}
-									routedMappings={routedMappings}
-									timelineBase={timelineBase}
-									partDuration={partDuration}
-									capToPartDuration={part.instance.part.autoNext ?? false}
-									isLive={isLive}
-								/>
-							)}
-						</StudioContext.Consumer>
+				<StudioContext.Consumer>
+					{(studio) => (
+						<LinePartMainPiece
+							piece={mainPiece}
+							partId={part.partId}
+							partInstanceId={part.instance._id}
+							studio={studio}
+							timelineBase={timelineBase}
+							partDuration={partDuration}
+							capToPartDuration={part.instance.part.autoNext ?? false}
+							isLive={isLive}
+						/>
 					)}
-				</RoutedMappingsContext.Consumer>
+				</StudioContext.Consumer>
 			)}
 			{part.instance.part.invalid && !part.instance.part.gap && <div className="segment-opl__main-piece invalid"></div>}
 			{!isLive && !isInvalid && <TakeLine isNext={isNext} autoNext={willAutoNextIntoThisPart} />}

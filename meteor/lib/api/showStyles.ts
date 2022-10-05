@@ -15,6 +15,9 @@ export enum ShowStylesAPIMethods {
 	'removeShowStyleVariant' = 'showstyles.removeShowStyleVariant',
 }
 
+/**
+ * INTENDED FOR PLAYOUT YO, not for settings
+ */
 export interface UIShowStyleBase {
 	_id: ShowStyleBaseId
 

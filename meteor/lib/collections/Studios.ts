@@ -142,7 +142,7 @@ export function routeExpectedPackages(
 export interface RoutedMappings {
 	_id: StudioId
 	mappingsHash: MappingsHash | undefined
-	mappings: { [layerName: string]: MappingExt }
+	mappings: MappingsExt
 }
 
 export type Studio = DBStudio

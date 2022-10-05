@@ -5,10 +5,10 @@ import { SegmentTimelineSmallPartFlagIcon } from './SegmentTimelineSmallPartFlag
 import { protectString, unprotectString } from '../../../../lib/lib'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { RoutedMappings, Studio } from '../../../../lib/collections/Studios'
 import { SegmentTimelinePartHoverPreview } from './SegmentTimelinePartHoverPreview'
 import { TFunction } from 'i18next'
 import RundownViewEventBus, { RundownViewEvents } from '../../RundownView/RundownViewEventBus'
+import { UIStudio } from '../../../../lib/api/studios'
 
 export const SegmentTimelineSmallPartFlag = ({
 	t,
@@ -20,7 +20,6 @@ export const SegmentTimelineSmallPartFlag = ({
 	segment,
 	playlist,
 	studio,
-	routedMappings,
 	collapsedOutputs,
 	autoNextPart,
 	liveLineHistorySize,
@@ -38,8 +37,7 @@ export const SegmentTimelineSmallPartFlag = ({
 
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 	collapsedOutputs: {
 		[key: string]: boolean
 	}
@@ -108,7 +106,6 @@ export const SegmentTimelineSmallPartFlag = ({
 				autoNextPart={autoNextPart}
 				collapsedOutputs={collapsedOutputs}
 				studio={studio}
-				routedMappings={routedMappings}
 				showMiniInspector={isHover}
 				followingPart={followingPart}
 				parts={parts.map(([part]) => part)}

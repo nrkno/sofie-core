@@ -21,7 +21,6 @@ import { Bucket } from '../../../lib/collections/Buckets'
 import { RundownViewBuckets, BucketAdLibItem } from './RundownViewBuckets'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ShelfInspector } from './Inspector/ShelfInspector'
-import { RoutedMappings, Studio } from '../../../lib/collections/Studios'
 import RundownViewEventBus, {
 	IEventContext,
 	RundownViewEvents,
@@ -37,6 +36,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { ShelfDisplayOptions } from '../../lib/shelf'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -49,8 +49,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	buckets: Array<Bucket>
 	playlist: RundownPlaylist
 	currentRundown: Rundown
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 	showStyleBase: UIShowStyleBase
 	showStyleVariant: ShowStyleVariant
 	studioMode: boolean
@@ -436,7 +435,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 										onSelectPiece={this.selectPiece}
 										onSwitchTab={this.switchTab}
 										studio={this.props.studio}
-										routedMappings={this.props.routedMappings}
 									/>
 								) : this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout) ? (
 									<ShelfDashboardLayout
@@ -451,7 +449,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 										onSelectPiece={this.selectPiece}
 										onChangeQueueAdLib={this.changeQueueAdLib}
 										studio={this.props.studio}
-										routedMappings={this.props.routedMappings}
 									/>
 								) : (
 									// ultimate fallback if not found
@@ -466,7 +463,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 										onSelectPiece={this.selectPiece}
 										onSwitchTab={this.switchTab}
 										studio={this.props.studio}
-										routedMappings={this.props.routedMappings}
 									/>
 								)}
 							</ErrorBoundary>
@@ -497,7 +493,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 								selected={this.state.selectedPiece}
 								showStyleBase={this.props.showStyleBase}
 								studio={this.props.studio}
-								routedMappings={this.props.routedMappings}
 								rundownPlaylist={this.props.playlist}
 								onSelectPiece={this.selectPiece}
 							/>

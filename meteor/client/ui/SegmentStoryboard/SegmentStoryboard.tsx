@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { Studio } from '../../../lib/collections/Studios'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
@@ -35,13 +34,14 @@ import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
+import { UIStudio } from '../../../lib/api/studios'
 
 interface IProps {
 	id: string
 	key: string
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	parts: Array<PartUi>
 	segmentNotes: Array<SegmentNote>
 	// timeScale: number

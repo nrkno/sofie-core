@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import _ from 'underscore'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { RoutedMappings, Studio } from '../../../../lib/collections/Studios'
 import { literal, unprotectString } from '../../../../lib/lib'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { IContextMenuContext } from '../../RundownView'
@@ -10,13 +9,13 @@ import { SegmentTimelinePartElementId } from './SegmentTimelinePart'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
+import { UIStudio } from '../../../../lib/api/studios'
 
 export interface ISourceLayerPropsBase {
 	key: string
 	outputLayer: IOutputLayerUi
 	playlist: RundownPlaylist
-	studio: Studio
-	routedMappings: RoutedMappings
+	studio: UIStudio
 	segment: SegmentUi
 	part: PartUi
 	mediaPreviewUrl: string
@@ -129,7 +128,6 @@ export function SourceLayer(props: ISourceLayerProps) {
 									scrollWidth={props.scrollWidth}
 									playlist={props.playlist}
 									studio={props.studio}
-									routedMappings={props.routedMappings}
 									followLiveLine={props.followLiveLine}
 									isLiveLine={props.isLiveLine}
 									isNextLine={props.isNextLine}

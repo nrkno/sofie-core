@@ -10,13 +10,13 @@ import {
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
-import { Studio } from '../../../lib/collections/Studios'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PubSub } from '../../../lib/api/pubsub'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
+import { UIStudio } from '../../../lib/api/studios'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -61,7 +61,7 @@ export const MOSLastUpdateStatus = withTranslation()(
 )
 
 interface IProps {
-	studio: Studio
+	studio: UIStudio
 	playlist: RundownPlaylist
 	rundownIds: RundownId[]
 	firstRundown: Rundown | undefined

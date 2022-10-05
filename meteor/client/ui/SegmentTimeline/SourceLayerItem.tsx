@@ -16,10 +16,10 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
-import { Studio } from '../../../lib/collections/Studios'
 import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
 import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
+import { UIStudio } from '../../../lib/api/studios'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 
@@ -77,7 +77,7 @@ export interface ISourceLayerItemProps {
 	/** Index of this source layer in an array of sorted sourcelayers (generally sorted by rank) */
 	layerIndex: number
 	/** The studio this content belongs to */
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 	/** If source duration of piece's content should be displayed next to any labels */
 	showDuration?: boolean
 }

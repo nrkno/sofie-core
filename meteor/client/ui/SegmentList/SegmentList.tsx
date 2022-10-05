@@ -2,7 +2,6 @@ import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 're
 import classNames from 'classnames'
 import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { RundownHoldState, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../lib/collections/Studios'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { PartUi, PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { IContextMenuContext } from '../RundownView'
@@ -18,6 +17,7 @@ import { useInView } from 'react-intersection-observer'
 import { getHeaderHeight } from '../../lib/viewPort'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { UIStudio } from '../../../lib/api/studios'
 
 interface IProps {
 	id: string
@@ -31,7 +31,7 @@ interface IProps {
 	key: string
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	parts: Array<PartUi>
 	segmentNotes: Array<SegmentNote>
 
