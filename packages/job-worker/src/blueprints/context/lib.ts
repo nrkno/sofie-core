@@ -10,14 +10,13 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { clone, Complete, literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	IBlueprintActionManifest,
 	IBlueprintAdLibPieceDB,
+	IBlueprintConfig,
 	IBlueprintMutatablePart,
 	IBlueprintPartDB,
 	IBlueprintPartInstance,
@@ -34,7 +33,7 @@ import {
 	ISourceLayer,
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
-import { DBShowStyleBaseWithProcessedLayers } from '../../jobs'
+import { DBShowStyleBaseWithProcessedLayers, DBShowStyleVariantWithProcessedLayers } from '../../jobs'
 
 /**
  * Convert an object to have all the values of all keys (including optionals) be 'true'
@@ -349,7 +348,7 @@ export function convertShowStyleBaseToBlueprints(
 		blueprintId: unprotectString(showStyleBase.blueprintId),
 		outputLayers: clone(Object.values(showStyleBase.outputLayers).filter((l): l is IOutputLayer => !!l)),
 		sourceLayers: clone(Object.values(showStyleBase.sourceLayers).filter((l): l is ISourceLayer => !!l)),
-		blueprintConfig: applyAndValidateOverrides(showStyleBase.blueprintConfigWithOverrides).obj,
+		blueprintConfig: clone<IBlueprintConfig>(showStyleBase.blueprintConfig),
 	}
 
 	return obj
@@ -361,12 +360,12 @@ export function convertShowStyleBaseToBlueprints(
  * @returns a cloned complete and clean IBlueprintShowStyleVariant
  */
 export function convertShowStyleVariantToBlueprints(
-	showStyleVariant: ReadonlyDeep<DBShowStyleVariant>
+	showStyleVariant: ReadonlyDeep<DBShowStyleVariantWithProcessedLayers>
 ): IBlueprintShowStyleVariant {
 	const obj: Complete<IBlueprintShowStyleVariant> = {
 		_id: unprotectString(showStyleVariant._id),
 		name: showStyleVariant.name,
-		blueprintConfig: applyAndValidateOverrides(showStyleVariant.blueprintConfigWithOverrides).obj,
+		blueprintConfig: clone<IBlueprintConfig>(showStyleVariant.blueprintConfig),
 	}
 
 	return obj

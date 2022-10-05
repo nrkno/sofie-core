@@ -8,7 +8,6 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
 import { DefaultStudioBlueprint } from '../blueprints/defaults/studio'
@@ -16,7 +15,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { clone, deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import deepmerge = require('deepmerge')
-import { DBShowStyleBaseWithProcessedLayers, StudioCacheContext } from '../jobs'
+import { DBShowStyleBaseWithProcessedLayers, DBShowStyleVariantWithProcessedLayers, StudioCacheContext } from '../jobs'
 import { StudioCacheContextImpl } from './context'
 
 /**
@@ -105,7 +104,7 @@ export interface WorkerDataCache {
 	studioBlueprintConfig: ProcessedStudioConfig | undefined
 
 	showStyleBases: Map<ShowStyleBaseId, ReadonlyDeep<DBShowStyleBaseWithProcessedLayers> | null> // null when not found
-	showStyleVariants: Map<ShowStyleVariantId, ReadonlyDeep<DBShowStyleVariant> | null> // null when not found
+	showStyleVariants: Map<ShowStyleVariantId, ReadonlyDeep<DBShowStyleVariantWithProcessedLayers> | null> // null when not found
 	showStyleBlueprints: Map<BlueprintId, ReadonlyDeep<WrappedShowStyleBlueprint> | null> // null when not found
 	showStyleBlueprintConfig: Map<ShowStyleVariantId, ProcessedShowStyleConfig>
 }
@@ -199,7 +198,9 @@ export async function invalidateWorkerDataCache(
 		cache.studioBlueprintConfig = undefined
 	}
 
-	const purgeShowStyleVariants = (keep: (variant: ReadonlyDeep<DBShowStyleVariant>) => boolean) => {
+	const purgeShowStyleVariants = (
+		keep: (variant: ReadonlyDeep<DBShowStyleVariantWithProcessedLayers>) => boolean
+	) => {
 		for (const [id, v] of Array.from(cache.showStyleVariants.entries())) {
 			if (v === null || !keep(v)) {
 				logger.debug(`WorkerDataCache: Discarding ShowStyleVariant "${id}"`)

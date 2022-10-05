@@ -1,26 +1,29 @@
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { deepFreeze, omit } from '@sofie-automation/corelib/dist/lib'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import * as deepmerge from 'deepmerge'
 import { ReadonlyDeep } from 'type-fest'
-import { DBShowStyleBaseWithProcessedLayers, ShowStyleCompoundWithProcessedLayers } from './jobs'
+import {
+	DBShowStyleBaseWithProcessedLayers,
+	DBShowStyleVariantWithProcessedLayers,
+	ShowStyleCompoundWithProcessedLayers,
+} from './jobs'
 
 export function createShowStyleCompound(
 	showStyleBase: ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>,
-	showStyleVariant: ReadonlyDeep<DBShowStyleVariant>
+	showStyleVariant: ReadonlyDeep<DBShowStyleVariantWithProcessedLayers>
 ): ReadonlyDeep<ShowStyleCompoundWithProcessedLayers> | undefined {
 	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
 
-	const baseConfig = applyAndValidateOverrides(showStyleBase.blueprintConfigWithOverrides).obj
-	const variantConfig = applyAndValidateOverrides(showStyleVariant.blueprintConfigWithOverrides).obj
-
-	const configs = deepmerge<IBlueprintConfig>(baseConfig, variantConfig, {
-		arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
-	})
+	const configs = deepmerge<IBlueprintConfig>(
+		showStyleBase.blueprintConfig as IBlueprintConfig,
+		showStyleVariant.blueprintConfig as IBlueprintConfig,
+		{
+			arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
+		}
+	)
 
 	return deepFreeze({
-		...omit(showStyleBase, 'blueprintConfigWithOverrides'),
+		...showStyleBase,
 		showStyleVariantId: showStyleVariant._id,
 		name: `${showStyleBase.name}-${showStyleVariant.name}`,
 		combinedBlueprintConfig: configs,

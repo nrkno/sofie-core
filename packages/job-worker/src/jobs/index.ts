@@ -20,6 +20,7 @@ import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { PlaylistLock, RundownLock } from './lock'
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 
 export { ApmSpan }
 
@@ -48,13 +49,25 @@ export interface JobContext extends StudioCacheContext {
 	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void
 }
 
+export interface DBShowStyleVariantWithProcessedLayers
+	extends Omit<DBShowStyleVariant, 'blueprintConfigWithOverrides'> {
+	blueprintConfig: IBlueprintConfig
+}
+
 export interface DBShowStyleBaseWithProcessedLayers
-	extends Omit<DBShowStyleBase, 'sourceLayersWithOverrides' | 'outputLayersWithOverrides'> {
+	extends Omit<
+		DBShowStyleBase,
+		'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'blueprintConfigWithOverrides'
+	> {
 	sourceLayers: SourceLayers
 	outputLayers: OutputLayers
+	blueprintConfig: IBlueprintConfig
 }
 export interface ShowStyleCompoundWithProcessedLayers
-	extends Omit<ShowStyleCompound, 'sourceLayersWithOverrides' | 'outputLayersWithOverrides'> {
+	extends Omit<
+		ShowStyleCompound,
+		'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'blueprintConfigWithOverrides'
+	> {
 	sourceLayers: SourceLayers
 	outputLayers: OutputLayers
 }
@@ -71,8 +84,8 @@ export interface StudioCacheContext {
 
 	getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBaseWithProcessedLayers>>>
 	getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>>
-	getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<DBShowStyleVariant>>>
-	getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<DBShowStyleVariant>>
+	getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<DBShowStyleVariantWithProcessedLayers>>>
+	getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<DBShowStyleVariantWithProcessedLayers>>
 	getShowStyleCompound(
 		variantId: ShowStyleVariantId,
 		baseId?: ShowStyleBaseId
