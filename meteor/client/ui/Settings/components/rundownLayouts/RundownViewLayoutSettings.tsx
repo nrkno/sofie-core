@@ -1,4 +1,5 @@
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../../../lib/api/rundownLayouts'
@@ -25,7 +26,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 
 	const sourceLayerOptions = useMemo(
 		() =>
-			Object.values(showStyleBase.sourceLayersWithOverrides.defaults)
+			Object.values(applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj)
 				.filter((s): s is ISourceLayer => !!s)
 				.sort((a, b) => a._rank - b._rank)
 				.map((sourceLayer) => ({ name: sourceLayer.name, value: sourceLayer._id })),

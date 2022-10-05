@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { faCopy, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PlayoutActions, SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
@@ -22,6 +22,7 @@ import { EditAttribute } from '../../../../lib/EditAttribute'
 import { iconDragHandle } from '../../../RundownList/icons'
 import { useDrag, useDrop } from 'react-dnd'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 interface IProps {
 	showStyleBase: ShowStyleBase | undefined
@@ -126,12 +127,20 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		},
 	})
 
+	const triggeredActionActions = useMemo(() => {
+		return triggeredAction ? applyAndValidateOverrides(triggeredAction.actionsWithOverrides).obj : undefined
+	}, [triggeredAction?.actionsWithOverrides])
+
+	const sourceLayers = useMemo(() => {
+		return showStyleBase ? applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj : {}
+	}, [showStyleBase])
+
 	const previewItems = useTracker(
 		() => {
 			try {
-				if (triggeredAction && selected && showStyleBase) {
-					const executableActions = Object.values(triggeredAction.actionsWithOverrides.defaults).map((value) =>
-						createAction(value, showStyleBase.sourceLayersWithOverrides.defaults)
+				if (triggeredActionActions && selected && sourceLayers) {
+					const executableActions = Object.values(triggeredActionActions).map((value) =>
+						createAction(value, sourceLayers)
 					)
 					const ctx = previewContext
 					if (ctx && ctx.rundownPlaylist) {
@@ -145,18 +154,18 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 			}
 			return [] as IWrappedAdLib[]
 		},
-		[selected, triggeredAction],
+		[selected, triggeredActionActions, sourceLayers],
 		[] as IWrappedAdLib[]
 	)
 
-	const sourceLayers = showStyleBase ? showStyleBase.sourceLayersWithOverrides.defaults : {}
-
 	function getType(sourceLayerId: string | undefined): SourceLayerType {
-		return sourceLayerId ? sourceLayers[sourceLayerId]?.type ?? SourceLayerType.UNKNOWN : SourceLayerType.UNKNOWN
+		return sourceLayerId && sourceLayers
+			? sourceLayers[sourceLayerId]?.type ?? SourceLayerType.UNKNOWN
+			: SourceLayerType.UNKNOWN
 	}
 
 	function getShortName(sourceLayerId: string | undefined) {
-		return sourceLayerId
+		return sourceLayerId && sourceLayers
 			? sourceLayers[sourceLayerId]?.abbreviation ?? sourceLayers[sourceLayerId]?.name ?? t('Unknown')
 			: t('Unknown')
 	}
