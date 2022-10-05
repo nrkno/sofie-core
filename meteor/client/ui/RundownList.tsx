@@ -22,7 +22,6 @@ import {
 import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
-import { Studios } from '../../lib/collections/Studios'
 import { ShowStyleVariantId, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { extendMandadory, unprotectString } from '../../lib/lib'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
@@ -38,7 +37,7 @@ import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
 import { doUserAction, UserAction } from '../lib/userAction'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { UIShowStyleBases } from './Collections'
+import { UIShowStyleBases, UIStudios } from './Collections'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -99,7 +98,7 @@ const dropTargetCollector: DropTargetCollector<IRundownsListDropTargetProps, IRu
 }
 
 export const RundownList = translateWithTracker((): IRundownsListProps => {
-	const studios = Studios.find().fetch()
+	const studios = UIStudios.find().fetch()
 	const showStyleBases = UIShowStyleBases.find().fetch()
 	const showStyleVariants = ShowStyleVariants.find().fetch()
 	const rundownLayouts = RundownLayouts.find({
@@ -190,7 +189,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 
 				// Subscribe to data:
 				this.subscribe(PubSub.rundownPlaylists, {})
-				this.subscribe(PubSub.studios, {})
+				this.subscribe(PubSub.uiStudio, null)
 				this.subscribe(PubSub.rundownLayouts, {})
 
 				this.autorun(() => {

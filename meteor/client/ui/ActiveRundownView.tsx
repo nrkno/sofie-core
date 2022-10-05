@@ -71,9 +71,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			)
 
 			if (this.props.studioId) {
-				this.subscribe(PubSub.studios, {
-					_id: this.props.studioId,
-				})
+				this.subscribe(PubSub.uiStudio, this.props.studioId)
 			}
 
 			this.autorun(() => {

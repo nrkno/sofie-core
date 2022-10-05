@@ -1541,16 +1541,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}) as Pick<RundownPlaylist, '_id' | 'studioId'> | undefined
 				if (!playlist) return
 
-				this.subscribe(PubSub.studios, {
-					_id: playlist.studioId,
-				})
+				this.subscribe(PubSub.uiStudio, playlist.studioId)
 				this.subscribe(PubSub.buckets, {
 					studioId: playlist.studioId,
 				})
 				// TODO: This is a hack, which should be replaced by something more clever, like in withMediaObjectStatus()
 				this.subscribe(PubSub.packageContainerPackageStatuses, playlist.studioId)
-
-				this.subscribe(PubSub.mappingsForStudio, playlist.studioId)
 			})
 
 			this.autorun(() => {

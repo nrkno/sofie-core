@@ -299,10 +299,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 
 	protected subscribeToData() {
 		this.autorun(() => {
-			this.subscribe(PubSub.studios, {
-				_id: this.props.studioId,
-			})
-			this.subscribe(PubSub.mappingsForStudio, this.props.studioId)
+			this.subscribe(PubSub.uiStudio, this.props.studioId)
 
 			const playlist = RundownPlaylists.findOne(this.props.playlistId, {
 				fields: {

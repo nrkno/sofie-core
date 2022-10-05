@@ -219,7 +219,8 @@ export interface PubSubTypes {
 		token?: string
 	) => DBObj
 	[PubSub.uiShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => UIShowStyleBase
-	[PubSub.uiStudio]: (studioId: StudioId) => UIStudio
+	/** Subscribe to one or all studios */
+	[PubSub.uiStudio]: (studioId: StudioId | null) => UIStudio
 	[PubSub.uiTriggeredActions]: (showStyleBaseId: ShowStyleBaseId | null) => UITriggeredActionsObj
 }
 

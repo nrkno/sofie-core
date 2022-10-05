@@ -79,7 +79,7 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 		// Subscribe to data:
 
 		this.subscribe(PubSub.peripheralDevices, {})
-		this.subscribe(PubSub.studios, {})
+		this.subscribe(PubSub.uiStudio, null)
 		this.subscribe(PubSub.showStyleBases, {})
 		this.subscribe(PubSub.showStyleVariants, {})
 	}
