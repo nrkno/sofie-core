@@ -18,7 +18,9 @@ export enum StudiosAPIMethods {
 }
 
 /**
- * INTENDED FOR PLAYOUT YO, not for settings
+ * A minimal version of DBStudio, intended for the playout portions of the UI.
+ * Note: The settings ui uses the raw types
+ * This intentionally does not extend Studio, so that we have fine-grained control over the properties exposed
  */
 export interface UIStudio {
 	_id: StudioId

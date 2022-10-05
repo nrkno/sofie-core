@@ -16,7 +16,9 @@ export enum ShowStylesAPIMethods {
 }
 
 /**
- * INTENDED FOR PLAYOUT YO, not for settings
+ * A minimal version of DBShowStyleBase, intended for the playout portions of the UI.
+ * Note: The settings ui uses the raw types
+ * This intentionally does not extend ShowStyleBase, so that we have fine-grained control over the properties exposed
  */
 export interface UIShowStyleBase {
 	_id: ShowStyleBaseId
