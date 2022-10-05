@@ -12,9 +12,12 @@ export enum TimelineObjClassesCore {
 }
 
 export enum TimelineObjHoldMode {
+	/** Default: The object is played as usual (behaviour is not affected by Hold)  */
 	NORMAL = 0,
-	ONLY = 1, // Only use when in HOLD
-	EXCEPT = 2, // Only use when not in HOLD
+	/** The object is played ONLY when doing a Hold */
+	ONLY = 1,
+	/** The object is played when NOT doing a Hold */
+	EXCEPT = 2,
 }
 
 export interface TimelineObjectCoreExt<TMetadata = unknown, TKeyframeMetadata = unknown>

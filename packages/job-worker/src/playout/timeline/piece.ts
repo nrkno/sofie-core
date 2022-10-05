@@ -22,8 +22,10 @@ export function transformPieceGroupAndObjects(
 	nowInPart: number,
 	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	pieceEnable: TSR.Timeline.TimelineEnable,
-	pieceStartOffset: number, // If the start of the piece has been offset inside the partgroup
+	/** If the start of the piece has been offset inside the partgroup  */
+	pieceStartOffset: number,
 	controlObjClasses: string[],
+	/** If true, we're playing in a HOLD situation */
 	isInHold: boolean,
 	includeHoldExceptObjects: boolean
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
