@@ -61,7 +61,7 @@ import { getShowStyleConfigRef, getStudioConfigRef, ProcessedStudioConfig, Proce
 import _ = require('underscore')
 import { WatchedPackagesHelper } from './watchedPackages'
 import { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { JobContext, ShowStyleCompoundWithProcessedLayers } from '../../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { MongoQuery } from '../../db'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints, convertSegmentToBlueprints } from './lib'
@@ -253,7 +253,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
-		public readonly showStyleCompound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+		public readonly showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		public readonly showStyleBlueprintConfig: ProcessedShowStyleConfig
 	) {
 		super(contextInfo, studio, studioBlueprintConfig)
@@ -276,7 +276,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
 		super(
@@ -345,7 +345,7 @@ export class GetRundownContext extends ShowStyleUserContext implements IGetRundo
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		watchedPackages: WatchedPackagesHelper,
 		private getPlaylistsInStudio: () => Promise<DBRundownPlaylist[]>,
 		private getRundownsInStudio: () => Promise<Pick<Rundown, '_id' | 'playlistId'>[]>,
@@ -420,7 +420,7 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: ReadonlyDeep<DBRundown>
 	) {
@@ -460,7 +460,7 @@ export class RundownEventContext extends RundownContext implements IEventContext
 	constructor(
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: ReadonlyDeep<DBRundown>
 	) {
@@ -494,7 +494,7 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 	constructor(
 		contextInfo: ContextInfo,
 		context: JobContext,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
@@ -567,7 +567,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 		eventName: string,
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: ReadonlyDeep<DBRundown>,
 		partInstance: DBPartInstance
@@ -620,7 +620,7 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 	constructor(
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		playlist: ReadonlyDeep<DBRundownPlaylist>,
 		rundown: ReadonlyDeep<DBRundown>,
@@ -795,7 +795,7 @@ export class RundownDataChangedEventContext extends RundownContext implements IR
 	constructor(
 		protected readonly context: JobContext,
 		contextInfo: ContextInfo,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>
 	) {
 		super(
@@ -853,7 +853,7 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 	constructor(
 		context: JobContext,
 		contextInfo: ContextInfo,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		previousPartInstance: DBPartInstance | undefined,
 		partInstance: DBPartInstance,

@@ -30,7 +30,7 @@ import _ = require('underscore')
 import { CacheForIngest } from './cache'
 import { LocalIngestSegment, LocalIngestRundown } from './ingestCache'
 import { getSegmentId, getPartId, getRundown, canSegmentBeUpdated, extendIngestRundownCore } from './lib'
-import { JobContext, ShowStyleCompoundWithProcessedLayers } from '../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { CommitIngestData } from './lock'
 import { SelectedShowStyleVariant, selectShowStyleVariant } from './rundown'
 import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
@@ -47,7 +47,7 @@ export interface UpdateSegmentsResult {
 	adlibActions: AdLibAction[]
 
 	/** ShowStyle, if loaded to reuse */
-	showStyle: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers> | undefined
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound> | undefined
 	/** Blueprint, if loaded to reuse */
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint> | undefined
 }

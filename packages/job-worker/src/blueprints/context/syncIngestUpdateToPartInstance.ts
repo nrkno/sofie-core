@@ -28,7 +28,7 @@ import {
 } from './lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { JobContext, ShowStyleCompoundWithProcessedLayers } from '../../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { logChanges } from '../../cache/lib'
 import {
 	PieceTimelineObjectsBlob,
@@ -50,7 +50,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		contextInfo: ContextInfo,
 		private readonly playlistActivationId: RundownPlaylistActivationId,
 		studio: ReadonlyDeep<DBStudio>,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		partInstance: DBPartInstance,
 		pieceInstances: PieceInstance[],

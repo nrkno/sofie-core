@@ -5,20 +5,15 @@ import { logger } from '../logging'
 import { createShowStyleCompound } from '../showStyles'
 import _ = require('underscore')
 import { StudioUserContext } from '../blueprints/context'
-import {
-	DBShowStyleBaseWithProcessedLayers,
-	DBShowStyleVariantWithProcessedLayers,
-	JobContext,
-	ShowStyleCompoundWithProcessedLayers,
-} from '../jobs'
+import { ProcessedShowStyleBase, ProcessedShowStyleVariant, JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { convertShowStyleBaseToBlueprints, convertShowStyleVariantToBlueprints } from '../blueprints/context/lib'
 
 export interface SelectedShowStyleVariant {
-	variant: ReadonlyDeep<DBShowStyleVariantWithProcessedLayers>
-	base: ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>
-	compound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>
+	variant: ReadonlyDeep<ProcessedShowStyleVariant>
+	base: ReadonlyDeep<ProcessedShowStyleBase>
+	compound: ReadonlyDeep<ProcessedShowStyleCompound>
 }
 
 export async function selectShowStyleVariant(

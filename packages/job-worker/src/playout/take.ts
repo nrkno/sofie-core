@@ -3,7 +3,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { logger } from '../logging'
-import { JobContext, ShowStyleCompoundWithProcessedLayers } from '../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { isTooCloseToAutonext, selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
@@ -234,7 +234,7 @@ export function resetPreviousSegment(cache: CacheForPlayout): void {
 async function afterTakeUpdateTimingsAndEvents(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyle: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	isFirstTake: boolean,
 	takeDoneTime: number
@@ -318,7 +318,7 @@ async function afterTakeUpdateTimingsAndEvents(
 export function updatePartInstanceOnTake(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyle: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	takeRundown: DBRundown,
 	takePartInstance: DBPartInstance,
@@ -494,7 +494,7 @@ function startHold(
 async function completeHold(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleCompound: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 	currentPartInstance: DBPartInstance | undefined
 ): Promise<void> {
 	cache.Playlist.update((p) => {

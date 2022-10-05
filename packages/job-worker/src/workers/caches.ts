@@ -15,7 +15,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { clone, deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import deepmerge = require('deepmerge')
-import { DBShowStyleBaseWithProcessedLayers, DBShowStyleVariantWithProcessedLayers, StudioCacheContext } from '../jobs'
+import { ProcessedShowStyleBase, ProcessedShowStyleVariant, StudioCacheContext } from '../jobs'
 import { StudioCacheContextImpl } from './context'
 
 /**
@@ -103,8 +103,8 @@ export interface WorkerDataCache {
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
 	studioBlueprintConfig: ProcessedStudioConfig | undefined
 
-	showStyleBases: Map<ShowStyleBaseId, ReadonlyDeep<DBShowStyleBaseWithProcessedLayers> | null> // null when not found
-	showStyleVariants: Map<ShowStyleVariantId, ReadonlyDeep<DBShowStyleVariantWithProcessedLayers> | null> // null when not found
+	showStyleBases: Map<ShowStyleBaseId, ReadonlyDeep<ProcessedShowStyleBase> | null> // null when not found
+	showStyleVariants: Map<ShowStyleVariantId, ReadonlyDeep<ProcessedShowStyleVariant> | null> // null when not found
 	showStyleBlueprints: Map<BlueprintId, ReadonlyDeep<WrappedShowStyleBlueprint> | null> // null when not found
 	showStyleBlueprintConfig: Map<ShowStyleVariantId, ProcessedShowStyleConfig>
 }
@@ -198,9 +198,7 @@ export async function invalidateWorkerDataCache(
 		cache.studioBlueprintConfig = undefined
 	}
 
-	const purgeShowStyleVariants = (
-		keep: (variant: ReadonlyDeep<DBShowStyleVariantWithProcessedLayers>) => boolean
-	) => {
+	const purgeShowStyleVariants = (keep: (variant: ReadonlyDeep<ProcessedShowStyleVariant>) => boolean) => {
 		for (const [id, v] of Array.from(cache.showStyleVariants.entries())) {
 			if (v === null || !keep(v)) {
 				logger.debug(`WorkerDataCache: Discarding ShowStyleVariant "${id}"`)

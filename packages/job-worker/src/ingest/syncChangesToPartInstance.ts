@@ -1,6 +1,6 @@
 import { BlueprintSyncIngestNewData, BlueprintSyncIngestPartInstance } from '@sofie-automation/blueprints-integration'
 import { ReadOnlyCache } from '../cache/CacheBase'
-import { JobContext, ShowStyleCompoundWithProcessedLayers } from '../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
 import { CacheForIngest } from './cache'
 import { ReadonlyDeep } from 'type-fest'
@@ -42,7 +42,7 @@ export async function syncChangesToPartInstances(
 	context: JobContext,
 	cache: CacheForPlayout,
 	ingestCache: ReadOnlyIngestCacheWithoutRundown,
-	showStyle: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	rundown: ReadonlyDeep<DBRundown>
 ): Promise<void> {

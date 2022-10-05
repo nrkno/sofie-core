@@ -1,9 +1,9 @@
 import { IDirectCollections } from '../db'
 import {
-	DBShowStyleBaseWithProcessedLayers,
-	DBShowStyleVariantWithProcessedLayers,
+	ProcessedShowStyleBase,
+	ProcessedShowStyleVariant,
 	JobContext,
-	ShowStyleCompoundWithProcessedLayers,
+	ProcessedShowStyleCompound,
 	StudioCacheContext,
 } from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
@@ -74,9 +74,9 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		return this.cacheData.studioBlueprintConfig
 	}
 
-	async getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBaseWithProcessedLayers>>> {
+	async getShowStyleBases(): Promise<ReadonlyDeep<Array<ProcessedShowStyleBase>>> {
 		const docsToLoad: ShowStyleBaseId[] = []
-		const loadedDocs: Array<ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>> = []
+		const loadedDocs: Array<ReadonlyDeep<ProcessedShowStyleBase>> = []
 
 		// Figure out what is already cached, and what needs loading
 		for (const id of this.cacheData.studio.supportedShowStyleBase) {
@@ -102,7 +102,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 			// Now fill it in with the loaded docs
 			for (const doc0 of newDocs) {
 				// Freeze and cache it
-				const doc = deepFreeze<DBShowStyleBaseWithProcessedLayers>({
+				const doc = deepFreeze<ProcessedShowStyleBase>({
 					...omit(
 						doc0,
 						'sourceLayersWithOverrides',
@@ -123,7 +123,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		return loadedDocs
 	}
 
-	async getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>> {
+	async getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<ProcessedShowStyleBase>> {
 		// Check if allowed
 		if (!this.cacheData.studio.supportedShowStyleBase.includes(id)) {
 			throw new Error(`ShowStyleBase "${id}" is not allowed in studio`)
@@ -136,7 +136,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 			// Freeze and cache it
 			if (doc0) {
-				doc = deepFreeze<DBShowStyleBaseWithProcessedLayers>({
+				doc = deepFreeze<ProcessedShowStyleBase>({
 					...omit(
 						doc0,
 						'sourceLayersWithOverrides',
@@ -161,9 +161,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		throw new Error(`ShowStyleBase "${id}" does not exist`)
 	}
 
-	async getShowStyleVariants(
-		id: ShowStyleBaseId
-	): Promise<ReadonlyDeep<Array<DBShowStyleVariantWithProcessedLayers>>> {
+	async getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<ProcessedShowStyleVariant>>> {
 		// Check if allowed
 		if (!this.cacheData.studio.supportedShowStyleBase.includes(id)) {
 			throw new Error(`ShowStyleBase "${id}" is not allowed in studio`)
@@ -171,7 +169,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 		// This is a weirder one, as we can't efficiently know if we have them all loaded, due to needing to lookup docs that contain the id, with no master list of ids to check
 
-		const loadedDocs: Array<ReadonlyDeep<DBShowStyleVariantWithProcessedLayers>> = []
+		const loadedDocs: Array<ReadonlyDeep<ProcessedShowStyleVariant>> = []
 
 		// Find all the ones already cached
 		for (const doc of this.cacheData.showStyleVariants.values()) {
@@ -189,7 +187,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		// Cache the freshly loaded docs,
 		for (const doc0 of uncachedDocs) {
 			// Freeze and cache it
-			const doc = deepFreeze<DBShowStyleVariantWithProcessedLayers>({
+			const doc = deepFreeze<ProcessedShowStyleVariant>({
 				...omit(doc0, 'blueprintConfigWithOverrides'),
 				blueprintConfig: applyAndValidateOverrides(doc0.blueprintConfigWithOverrides).obj,
 			})
@@ -208,7 +206,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 		return loadedDocs
 	}
-	async getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<DBShowStyleVariantWithProcessedLayers>> {
+	async getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<ProcessedShowStyleVariant>> {
 		let doc = this.cacheData.showStyleVariants.get(id)
 		if (doc === undefined) {
 			// Load the document
@@ -221,7 +219,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 			// Freeze and cache it
 			if (doc0) {
-				doc = deepFreeze<DBShowStyleVariantWithProcessedLayers>({
+				doc = deepFreeze<ProcessedShowStyleVariant>({
 					...omit(doc0, 'blueprintConfigWithOverrides'),
 					blueprintConfig: applyAndValidateOverrides(doc0.blueprintConfigWithOverrides).obj,
 				})
@@ -246,7 +244,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 	async getShowStyleCompound(
 		variantId: ShowStyleVariantId,
 		baseId?: ShowStyleBaseId
-	): Promise<ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>> {
+	): Promise<ReadonlyDeep<ProcessedShowStyleCompound>> {
 		const [variant, base0] = await Promise.all([
 			this.getShowStyleVariant(variantId),
 			baseId ? this.getShowStyleBase(baseId) : null,
@@ -286,7 +284,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 		throw new Error(`Blueprint for ShowStyleBase "${id}" does not exist`)
 	}
-	getShowStyleBlueprintConfig(showStyle: ShowStyleCompoundWithProcessedLayers): ProcessedShowStyleConfig {
+	getShowStyleBlueprintConfig(showStyle: ProcessedShowStyleCompound): ProcessedShowStyleConfig {
 		const existing = this.cacheData.showStyleBlueprintConfig.get(showStyle.showStyleVariantId)
 		if (existing) {
 			return existing

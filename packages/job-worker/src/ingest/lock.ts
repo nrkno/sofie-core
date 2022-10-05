@@ -9,7 +9,7 @@ import { CacheForIngest } from './cache'
 import { BeforePartMap, CommitIngestOperation } from './commit'
 import { LocalIngestRundown, RundownIngestDataCache } from './ingestCache'
 import { getRundownId } from './lib'
-import { JobContext, ShowStyleCompoundWithProcessedLayers } from '../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { IngestPropsBase } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
@@ -31,7 +31,7 @@ export interface CommitIngestData {
 	removeRundown: boolean
 
 	/** ShowStyle, if loaded to reuse */
-	showStyle: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers> | undefined
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound> | undefined
 	/** Blueprint, if loaded to reuse */
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint> | undefined
 }

@@ -10,7 +10,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { assertNever, getRandomId, getRank, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
-import { DBShowStyleBaseWithProcessedLayers, JobContext } from '../jobs'
+import { ProcessedShowStyleBase, JobContext } from '../jobs'
 import {
 	AdlibPieceStartProps,
 	StartStickyPieceOnSourceLayerProps,
@@ -155,7 +155,7 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 async function pieceTakeNowAsAdlib(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>,
+	showStyleBase: ReadonlyDeep<ProcessedShowStyleBase>,
 	partInstance: DBPartInstance,
 	pieceToCopy: PieceInstancePiece,
 	pieceInstanceToCopy: PieceInstance | undefined

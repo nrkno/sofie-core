@@ -21,7 +21,7 @@ import {
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
 import { PlaylistLock, RundownLock } from '../jobs/lock'
 import { ReadonlyDeep } from 'type-fest'
-import { ApmSpan, DBShowStyleBaseWithProcessedLayers, JobContext, ShowStyleCompoundWithProcessedLayers } from '../jobs'
+import { ApmSpan, ProcessedShowStyleBase, JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { createShowStyleCompound } from '../showStyles'
 import { getMockCollections } from './collection'
 import { clone } from '@sofie-automation/corelib/dist/lib'
@@ -135,10 +135,10 @@ export class MockJobContext implements JobContext {
 	getStudioBlueprintConfig(): ProcessedStudioConfig {
 		return preprocessStudioConfig(this.studio, this.#studioBlueprint)
 	}
-	async getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBaseWithProcessedLayers>>> {
+	async getShowStyleBases(): Promise<ReadonlyDeep<Array<ProcessedShowStyleBase>>> {
 		return this.directCollections.ShowStyleBases.findFetch()
 	}
-	async getShowStyleBase(id: ShowStyleBaseId): Promise<DBShowStyleBaseWithProcessedLayers> {
+	async getShowStyleBase(id: ShowStyleBaseId): Promise<ProcessedShowStyleBase> {
 		const style = await this.directCollections.ShowStyleBases.findOne(id)
 		if (!style) throw new Error(`ShowStyleBase "${id}" Not found!`)
 		return style
@@ -156,7 +156,7 @@ export class MockJobContext implements JobContext {
 	async getShowStyleCompound(
 		variantId: ShowStyleVariantId,
 		baseId?: ShowStyleBaseId
-	): Promise<ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>> {
+	): Promise<ReadonlyDeep<ProcessedShowStyleCompound>> {
 		const [variant, base0] = await Promise.all([
 			this.getShowStyleVariant(variantId),
 			baseId ? this.getShowStyleBase(baseId) : null,

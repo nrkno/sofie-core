@@ -33,7 +33,7 @@ import {
 	ISourceLayer,
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
-import { DBShowStyleBaseWithProcessedLayers, DBShowStyleVariantWithProcessedLayers } from '../../jobs'
+import { ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs'
 
 /**
  * Convert an object to have all the values of all keys (including optionals) be 'true'
@@ -341,7 +341,7 @@ export function convertRundownToBlueprints(rundown: ReadonlyDeep<DBRundown>): IB
  * @returns a cloned complete and clean IBlueprintShowStyleBase
  */
 export function convertShowStyleBaseToBlueprints(
-	showStyleBase: ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>
+	showStyleBase: ReadonlyDeep<ProcessedShowStyleBase>
 ): IBlueprintShowStyleBase {
 	const obj: Complete<IBlueprintShowStyleBase> = {
 		_id: unprotectString(showStyleBase._id),
@@ -360,7 +360,7 @@ export function convertShowStyleBaseToBlueprints(
  * @returns a cloned complete and clean IBlueprintShowStyleVariant
  */
 export function convertShowStyleVariantToBlueprints(
-	showStyleVariant: ReadonlyDeep<DBShowStyleVariantWithProcessedLayers>
+	showStyleVariant: ReadonlyDeep<ProcessedShowStyleVariant>
 ): IBlueprintShowStyleVariant {
 	const obj: Complete<IBlueprintShowStyleVariant> = {
 		_id: unprotectString(showStyleVariant._id),

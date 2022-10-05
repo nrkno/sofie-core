@@ -30,7 +30,7 @@ import {
 	unprotectStringArray,
 } from '@sofie-automation/corelib/dist/protectedString'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
-import { JobContext, ShowStyleCompoundWithProcessedLayers } from '../../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
@@ -71,7 +71,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	private readonly _context: JobContext
 	private readonly _cache: CacheForPlayout
 	private readonly rundown: DBRundown
-	private readonly showStyleCompound2: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>
+	private readonly showStyleCompound2: ReadonlyDeep<ProcessedShowStyleCompound>
 	private readonly playlistActivationId: RundownPlaylistActivationId
 
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
@@ -85,7 +85,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		contextInfo: UserContextInfo,
 		context: JobContext,
 		cache: CacheForPlayout,
-		showStyle: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>,
+		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 		_showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: DBRundown,
 		watchedPackages: WatchedPackagesHelper

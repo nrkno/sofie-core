@@ -49,12 +49,11 @@ export interface JobContext extends StudioCacheContext {
 	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void
 }
 
-export interface DBShowStyleVariantWithProcessedLayers
-	extends Omit<DBShowStyleVariant, 'blueprintConfigWithOverrides'> {
+export interface ProcessedShowStyleVariant extends Omit<DBShowStyleVariant, 'blueprintConfigWithOverrides'> {
 	blueprintConfig: IBlueprintConfig
 }
 
-export interface DBShowStyleBaseWithProcessedLayers
+export interface ProcessedShowStyleBase
 	extends Omit<
 		DBShowStyleBase,
 		'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'blueprintConfigWithOverrides'
@@ -63,7 +62,7 @@ export interface DBShowStyleBaseWithProcessedLayers
 	outputLayers: OutputLayers
 	blueprintConfig: IBlueprintConfig
 }
-export interface ShowStyleCompoundWithProcessedLayers
+export interface ProcessedShowStyleCompound
 	extends Omit<
 		ShowStyleCompound,
 		'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'blueprintConfigWithOverrides'
@@ -82,15 +81,15 @@ export interface StudioCacheContext {
 
 	getStudioBlueprintConfig(): ProcessedStudioConfig
 
-	getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBaseWithProcessedLayers>>>
-	getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>>
-	getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<DBShowStyleVariantWithProcessedLayers>>>
-	getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<DBShowStyleVariantWithProcessedLayers>>
+	getShowStyleBases(): Promise<ReadonlyDeep<Array<ProcessedShowStyleBase>>>
+	getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<ProcessedShowStyleBase>>
+	getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<ProcessedShowStyleVariant>>>
+	getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<ProcessedShowStyleVariant>>
 	getShowStyleCompound(
 		variantId: ShowStyleVariantId,
 		baseId?: ShowStyleBaseId
-	): Promise<ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>>
+	): Promise<ReadonlyDeep<ProcessedShowStyleCompound>>
 
 	getShowStyleBlueprint(id: ShowStyleBaseId): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>>
-	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>): ProcessedShowStyleConfig
+	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ProcessedShowStyleCompound>): ProcessedShowStyleConfig
 }
