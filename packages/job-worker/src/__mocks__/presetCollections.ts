@@ -19,9 +19,8 @@ import {
 	SourceLayerType,
 	StatusCode,
 } from '@sofie-automation/blueprints-integration'
-import { JobContext } from '../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
@@ -35,10 +34,8 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { createShowStyleCompound } from '../showStyles'
 import { ReadonlyDeep } from 'type-fest'
-import {
-	applyAndValidateOverrides,
-	wrapDefaultObject,
-} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { processShowStyleBase, processShowStyleVariant } from '../jobs/showStyle'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -53,10 +50,10 @@ export async function setupMockShowStyleCompound(
 	blueprintId?: BlueprintId,
 	doc?: Partial<DBShowStyleBase>,
 	doc2?: Partial<DBShowStyleVariant>
-): Promise<ReadonlyDeep<ShowStyleCompound>> {
+): Promise<ReadonlyDeep<ProcessedShowStyleCompound>> {
 	const base = await setupMockShowStyleBase(context, blueprintId, doc)
 	const variant = await setupMockShowStyleVariant(context, base._id, doc2)
-	const compound = createShowStyleCompound(base, variant)
+	const compound = createShowStyleCompound(processShowStyleBase(base), processShowStyleVariant(variant))
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	return compound!
 }
@@ -143,7 +140,7 @@ export async function setupMockShowStyleVariant(
 
 export async function setupDefaultRundownPlaylist(
 	context: JobContext,
-	showStyleCompound0?: ReadonlyDeep<ShowStyleCompound>,
+	showStyleCompound0?: ReadonlyDeep<ProcessedShowStyleCompound>,
 	rundownId0?: RundownId
 ): Promise<{ rundownId: RundownId; playlistId: RundownPlaylistId }> {
 	const rundownId: RundownId = rundownId0 ?? getRandomId()
@@ -168,12 +165,12 @@ export async function setupDefaultRundownPlaylist(
 
 export async function setupDefaultRundown(
 	context: JobContext,
-	showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): Promise<void> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyleCompound.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyleCompound.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyleCompound.outputLayers)
+	const sourceLayerIds = Object.keys(showStyleCompound.sourceLayers)
 
 	await context.directCollections.Rundowns.insertOne({
 		peripheralDeviceId: undefined,

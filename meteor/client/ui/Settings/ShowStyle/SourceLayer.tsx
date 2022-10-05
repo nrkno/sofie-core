@@ -6,7 +6,6 @@ import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-inte
 import { assertNever, literal, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import Tooltip from 'rc-tooltip'
 import { withTranslation } from 'react-i18next'
-import _ from 'underscore'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { getHelpMode } from '../../../lib/localStorage'

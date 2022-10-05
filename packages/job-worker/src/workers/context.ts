@@ -21,7 +21,7 @@ import { loadBlueprintById, WrappedShowStyleBlueprint, WrappedStudioBlueprint } 
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { ApmSpan, ApmTransaction } from '../profiler'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { clone, deepFreeze, getRandomString, omit, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { clone, deepFreeze, getRandomString, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { createShowStyleCompound } from '../showStyles'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import {
@@ -40,7 +40,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { EventsJobFunc, getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 import { FastTrackTimelineFunc } from '../main'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { processShowStyleBase, processShowStyleVariant } from '../jobs/showStyle'
 
 export type QueueJobFunc = (queueName: string, jobName: string, jobData: unknown) => Promise<void>
 
@@ -102,17 +102,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 			// Now fill it in with the loaded docs
 			for (const doc0 of newDocs) {
 				// Freeze and cache it
-				const doc = deepFreeze<ProcessedShowStyleBase>({
-					...omit(
-						doc0,
-						'sourceLayersWithOverrides',
-						'outputLayersWithOverrides',
-						'blueprintConfigWithOverrides'
-					),
-					sourceLayers: applyAndValidateOverrides(doc0.sourceLayersWithOverrides).obj,
-					outputLayers: applyAndValidateOverrides(doc0.outputLayersWithOverrides).obj,
-					blueprintConfig: applyAndValidateOverrides(doc0.blueprintConfigWithOverrides).obj,
-				})
+				const doc = processShowStyleBase(doc0)
 				this.cacheData.showStyleBases.set(doc._id, doc ?? null)
 
 				// Add it to the result
@@ -136,17 +126,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 			// Freeze and cache it
 			if (doc0) {
-				doc = deepFreeze<ProcessedShowStyleBase>({
-					...omit(
-						doc0,
-						'sourceLayersWithOverrides',
-						'outputLayersWithOverrides',
-						'blueprintConfigWithOverrides'
-					),
-					sourceLayers: applyAndValidateOverrides(doc0.sourceLayersWithOverrides).obj,
-					outputLayers: applyAndValidateOverrides(doc0.outputLayersWithOverrides).obj,
-					blueprintConfig: applyAndValidateOverrides(doc0.blueprintConfigWithOverrides).obj,
-				})
+				doc = processShowStyleBase(doc0)
 				this.cacheData.showStyleBases.set(id, doc)
 			} else {
 				this.cacheData.showStyleBases.set(id, null)
@@ -187,10 +167,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		// Cache the freshly loaded docs,
 		for (const doc0 of uncachedDocs) {
 			// Freeze and cache it
-			const doc = deepFreeze<ProcessedShowStyleVariant>({
-				...omit(doc0, 'blueprintConfigWithOverrides'),
-				blueprintConfig: applyAndValidateOverrides(doc0.blueprintConfigWithOverrides).obj,
-			})
+			const doc = processShowStyleVariant(doc0)
 			this.cacheData.showStyleVariants.set(doc._id, doc)
 
 			loadedDocs.push(doc)
@@ -219,10 +196,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 			// Freeze and cache it
 			if (doc0) {
-				doc = deepFreeze<ProcessedShowStyleVariant>({
-					...omit(doc0, 'blueprintConfigWithOverrides'),
-					blueprintConfig: applyAndValidateOverrides(doc0.blueprintConfigWithOverrides).obj,
-				})
+				doc = processShowStyleVariant(doc0)
 				this.cacheData.showStyleVariants.set(id, doc)
 			} else {
 				this.cacheData.showStyleVariants.set(id, null)

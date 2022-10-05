@@ -4,23 +4,21 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
-import { JobContext } from '../../../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../../../jobs'
 import { getCurrentTime } from '../../../lib'
 
 export async function setupRundownBase(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	partPropsOverride: Partial<DBPart> = {},
 	piecePropsOverride: { piece0: Partial<Piece>; piece1: Partial<Piece> } = { piece0: {}, piece1: {} }
 ): Promise<{ rundown: DBRundown; segment0: DBSegment; part00: DBPart }> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const rundown: DBRundown = {
 		peripheralDeviceId: undefined,
@@ -126,14 +124,14 @@ export async function setupRundownBase(
 export async function setupPart2(
 	context: JobContext,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	rundown: DBRundown,
 	segment0: DBSegment,
 	partPropsOverride: Partial<DBPart> = {},
 	piece0PropsOverride: Partial<Piece> = {}
 ): Promise<{ part01: DBPart }> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -178,7 +176,7 @@ export async function setupRundownWithPreroll(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle)
 
@@ -191,7 +189,7 @@ export async function setupRundownWithInTransition(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle)
 
@@ -210,10 +208,10 @@ export async function setupRundownWithInTransitionPlannedPiece(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle)
 
@@ -276,10 +274,10 @@ export async function setupRundownWithInTransitionContentDelay(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle)
 
@@ -319,10 +317,10 @@ export async function setupRundownWithInTransitionContentDelayAndPreroll(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle)
 
@@ -372,10 +370,10 @@ export async function setupRundownWithInTransitionExistingInfinite(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const { rundown, segment0, part00 } = await setupRundownBase(context, playlistId, rundownId, showStyle)
 
@@ -436,10 +434,10 @@ export async function setupRundownWithInTransitionNewInfinite(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const { rundown, segment0, part00 } = await setupRundownBase(context, playlistId, rundownId, showStyle)
 
@@ -500,10 +498,10 @@ export async function setupRundownWithInTransitionEnableHold(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		holdMode: PartHoldMode.FROM,
@@ -547,10 +545,10 @@ export async function setupRundownWithInTransitionDisabled(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		disableNextInTransition: true,
@@ -592,10 +590,10 @@ export async function setupRundownWithOutTransition(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const { rundown, segment0, part00 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		outTransition: { duration: 1000 },
@@ -632,10 +630,10 @@ export async function setupRundownWithOutTransitionAndPreroll(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const { rundown, segment0, part00 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		outTransition: { duration: 1000 },
@@ -672,10 +670,10 @@ export async function setupRundownWithOutTransitionAndPreroll2(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const { rundown, segment0, part00 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		outTransition: { duration: 250 },
@@ -712,10 +710,10 @@ export async function setupRundownWithOutTransitionAndInTransition(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const { rundown, segment0, part00 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		outTransition: { duration: 600 },
@@ -780,7 +778,7 @@ export async function setupRundownWithOutTransitionEnableHold(
 	context: JobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<RundownId> {
 	const { rundown, segment0 } = await setupRundownBase(context, playlistId, rundownId, showStyle, {
 		holdMode: PartHoldMode.FROM,

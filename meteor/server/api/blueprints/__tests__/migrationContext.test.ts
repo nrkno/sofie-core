@@ -20,6 +20,7 @@ import {
 	TriggerType,
 	ClientActions,
 	PlayoutActions,
+	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
@@ -29,7 +30,10 @@ import { ShowStyleBase, ShowStyleBases, SourceLayers } from '../../../../lib/col
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 import { CoreSystem } from '../../../../lib/collections/CoreSystem'
 import { TriggeredActions } from '../../../../lib/collections/TriggeredActions'
-import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	applyAndValidateOverrides,
+	wrapDefaultObject,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(async () => {
@@ -1517,12 +1521,20 @@ describe('Test blueprint migrationContext', () => {
 			expect(coreSystem).toBeTruthy()
 			return new MigrationContextSystem()
 		}
-		function getSystemTriggeredActions() {
+		function getSystemTriggeredActions(): IBlueprintTriggeredActions[] {
 			const systemTriggeredActions = TriggeredActions.find({
 				showStyleBaseId: null,
 			}).fetch()
 			expect(systemTriggeredActions).toHaveLength(3)
-			return systemTriggeredActions
+			return systemTriggeredActions.map((doc) =>
+				literal<IBlueprintTriggeredActions>({
+					_id: unprotectString(doc._id),
+					_rank: doc._rank,
+					name: doc.name,
+					triggers: applyAndValidateOverrides(doc.triggersWithOverrides).obj,
+					actions: applyAndValidateOverrides(doc.actionsWithOverrides).obj,
+				})
+			)
 		}
 		describe('triggeredActions', () => {
 			testInFiber('getAllTriggeredActions: return all triggeredActions', () => {
@@ -1546,9 +1558,7 @@ describe('Test blueprint migrationContext', () => {
 
 				const existingTriggeredActions = getSystemTriggeredActions()[0]
 				expect(existingTriggeredActions).toBeTruthy()
-				expect(ctx.getTriggeredAction(unprotectString(existingTriggeredActions._id))).toMatchObject(
-					existingTriggeredActions
-				)
+				expect(ctx.getTriggeredAction(existingTriggeredActions._id)).toMatchObject(existingTriggeredActions)
 			})
 			testInFiber('setTriggeredAction: set undefined', () => {
 				const ctx = getContext()

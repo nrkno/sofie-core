@@ -12,17 +12,15 @@ import { ApmSpan } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { DBShowStyleBase, OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { PlaylistLock, RundownLock } from './lock'
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
+import { ProcessedShowStyleBase, ProcessedShowStyleVariant, ProcessedShowStyleCompound } from './showStyle'
 
 export { ApmSpan }
+export { ProcessedShowStyleVariant, ProcessedShowStyleBase, ProcessedShowStyleCompound }
 
 export interface WorkerJob<TRes> {
 	/** Promise returning the result. Resolved upon completion of the job */
@@ -47,28 +45,6 @@ export interface JobContext extends StudioCacheContext {
 
 	/** Hack: fast-track the timeline out to the playout-gateway. */
 	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void
-}
-
-export interface ProcessedShowStyleVariant extends Omit<DBShowStyleVariant, 'blueprintConfigWithOverrides'> {
-	blueprintConfig: IBlueprintConfig
-}
-
-export interface ProcessedShowStyleBase
-	extends Omit<
-		DBShowStyleBase,
-		'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'blueprintConfigWithOverrides'
-	> {
-	sourceLayers: SourceLayers
-	outputLayers: OutputLayers
-	blueprintConfig: IBlueprintConfig
-}
-export interface ProcessedShowStyleCompound
-	extends Omit<
-		ShowStyleCompound,
-		'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'blueprintConfigWithOverrides'
-	> {
-	sourceLayers: SourceLayers
-	outputLayers: OutputLayers
 }
 
 export interface StudioCacheContext {

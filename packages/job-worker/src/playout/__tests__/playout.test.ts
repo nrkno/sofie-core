@@ -46,13 +46,12 @@ import {
 	defaultPiece,
 	defaultAdLibPiece,
 } from '../../__mocks__/defaultCollectionObjects'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
 import { adjustFakeTime, getCurrentTime, useFakeCurrentTime } from '../../__mocks__/time'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ProcessedShowStyleCompound } from '../../jobs'
 
 // const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
 const mockExecutePeripheralDeviceFunction = jest
@@ -61,7 +60,7 @@ const mockExecutePeripheralDeviceFunction = jest
 
 describe('Playout API', () => {
 	let context: MockJobContext
-	let showStyle: ReadonlyDeep<ShowStyleCompound>
+	let showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 	let playoutDevice: PeripheralDevice
 	// const origGetCurrentTime = lib.getCurrentTime
 
@@ -826,10 +825,10 @@ describe('Playout API', () => {
 async function setupRundownWithAutoplayPart0(
 	context: MockJobContext,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<{ playlistId: RundownPlaylistId; rundownId: RundownId }> {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj)
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 	const playlistId = await context.directCollections.RundownPlaylists.insertOne(
 		defaultRundownPlaylist(protectString(`playlist_${rundownId}`), context.studioId)

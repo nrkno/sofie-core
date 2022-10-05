@@ -55,13 +55,12 @@ import {
 	setupRundownBase,
 } from './helpers/rundowns'
 import { defaultRundownPlaylist } from '../../__mocks__/defaultCollectionObjects'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { ReadonlyDeep } from 'type-fest'
 import { innerStartOrQueueAdLibPiece } from '../adlib'
 import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { adjustFakeTime, useFakeCurrentTime, useRealCurrentTime } from '../../__mocks__/time'
 import { restartRandomId } from '../../__mocks__/nanoid'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ProcessedShowStyleCompound } from '../../jobs'
 
 interface PartTimelineTimings {
 	previousPart: TimelineEnableExt | null
@@ -354,7 +353,7 @@ interface SelectedPartInstances {
 
 describe('Timeline', () => {
 	let context: MockJobContext
-	let showStyle: ReadonlyDeep<ShowStyleCompound>
+	let showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 	beforeEach(async () => {
 		restartRandomId()
 
@@ -470,7 +469,7 @@ describe('Timeline', () => {
 			context: MockJobContext,
 			playlistId: RundownPlaylistId,
 			rundownId: RundownId,
-			showStyle: ReadonlyDeep<ShowStyleCompound>
+			showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 		) => Promise<RundownId>,
 		checkFcn: (
 			rundownId: RundownId,
@@ -514,7 +513,7 @@ describe('Timeline', () => {
 			context: MockJobContext,
 			playlistId: RundownPlaylistId,
 			rundownId: RundownId,
-			showStyle: ReadonlyDeep<ShowStyleCompound>
+			showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 		) => Promise<RundownId>,
 		fcn: (
 			playlistId: RundownPlaylistId,
@@ -1016,11 +1015,9 @@ describe('Timeline', () => {
 					context: MockJobContext,
 					playlistId: RundownPlaylistId,
 					rundownId: RundownId,
-					showStyle: ReadonlyDeep<ShowStyleCompound>
+					showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 				): Promise<RundownId> => {
-					const sourceLayerIds = Object.keys(
-						applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj
-					)
+					const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 					await setupRundownBase(
 						context,
@@ -1037,12 +1034,8 @@ describe('Timeline', () => {
 					return rundownId
 				},
 				async (playlistId, _rundownId, parts, getPartInstances, checkTimings) => {
-					const outputLayerIds = Object.keys(
-						applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj
-					)
-					const sourceLayerIds = Object.keys(
-						applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj
-					)
+					const outputLayerIds = Object.keys(showStyle.outputLayers)
+					const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 					// Take the only Part:
 					await doTakePart(context, playlistId, null, parts[0]._id, null)
@@ -1176,11 +1169,9 @@ describe('Timeline', () => {
 					context: MockJobContext,
 					playlistId: RundownPlaylistId,
 					rundownId: RundownId,
-					showStyle: ReadonlyDeep<ShowStyleCompound>
+					showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 				): Promise<RundownId> => {
-					const sourceLayerIds = Object.keys(
-						applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj
-					)
+					const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 					await setupRundownBase(
 						context,
@@ -1197,12 +1188,8 @@ describe('Timeline', () => {
 					return rundownId
 				},
 				async (playlistId, _rundownId, parts, getPartInstances, checkTimings) => {
-					const outputLayerIds = Object.keys(
-						applyAndValidateOverrides(showStyle.outputLayersWithOverrides).obj
-					)
-					const sourceLayerIds = Object.keys(
-						applyAndValidateOverrides(showStyle.sourceLayersWithOverrides).obj
-					)
+					const outputLayerIds = Object.keys(showStyle.outputLayers)
+					const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
 					// Take the only Part:
 					await doTakePart(context, playlistId, null, parts[0]._id, null)
