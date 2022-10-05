@@ -20,9 +20,8 @@ import { loadBlueprintById, WrappedShowStyleBlueprint, WrappedStudioBlueprint } 
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { ApmSpan, ApmTransaction } from '../profiler'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { clone, deepFreeze, getRandomString, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { clone, deepFreeze, getRandomString, omit, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { createShowStyleCompound } from '../showStyles'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import {
@@ -104,7 +103,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 			for (const doc0 of newDocs) {
 				// Freeze and cache it
 				const doc = deepFreeze<DBShowStyleBaseWithProcessedLayers>({
-					...doc0,
+					...omit(doc0, 'sourceLayersWithOverrides', 'outputLayersWithOverrides'),
 					sourceLayers: applyAndValidateOverrides(doc0.sourceLayersWithOverrides).obj,
 					outputLayers: applyAndValidateOverrides(doc0.outputLayersWithOverrides).obj,
 				})
@@ -132,7 +131,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 			// Freeze and cache it
 			if (doc0) {
 				doc = deepFreeze<DBShowStyleBaseWithProcessedLayers>({
-					...doc0,
+					...omit(doc0, 'sourceLayersWithOverrides', 'outputLayersWithOverrides'),
 					sourceLayers: applyAndValidateOverrides(doc0.sourceLayersWithOverrides).obj,
 					outputLayers: applyAndValidateOverrides(doc0.outputLayersWithOverrides).obj,
 				})
@@ -263,7 +262,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 		throw new Error(`Blueprint for ShowStyleBase "${id}" does not exist`)
 	}
-	getShowStyleBlueprintConfig(showStyle: ShowStyleCompound): ProcessedShowStyleConfig {
+	getShowStyleBlueprintConfig(showStyle: ShowStyleCompoundWithProcessedLayers): ProcessedShowStyleConfig {
 		const existing = this.cacheData.showStyleBlueprintConfig.get(showStyle.showStyleVariantId)
 		if (existing) {
 			return existing
@@ -404,7 +403,7 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 
 async function loadShowStyleBlueprint(
 	context: IDirectCollections,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>
+	showStyleBase: Pick<ReadonlyDeep<DBShowStyleBase>, '_id' | 'blueprintId'>
 ): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>> {
 	if (!showStyleBase.blueprintId) {
 		throw new Error(`ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)

@@ -48,11 +48,13 @@ export interface JobContext extends StudioCacheContext {
 	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void
 }
 
-export interface DBShowStyleBaseWithProcessedLayers extends DBShowStyleBase {
+export interface DBShowStyleBaseWithProcessedLayers
+	extends Omit<DBShowStyleBase, 'sourceLayersWithOverrides' | 'outputLayersWithOverrides'> {
 	sourceLayers: SourceLayers
 	outputLayers: OutputLayers
 }
-export interface ShowStyleCompoundWithProcessedLayers extends ShowStyleCompound {
+export interface ShowStyleCompoundWithProcessedLayers
+	extends Omit<ShowStyleCompound, 'sourceLayersWithOverrides' | 'outputLayersWithOverrides'> {
 	sourceLayers: SourceLayers
 	outputLayers: OutputLayers
 }
@@ -77,5 +79,5 @@ export interface StudioCacheContext {
 	): Promise<ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>>
 
 	getShowStyleBlueprint(id: ShowStyleBaseId): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>>
-	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ShowStyleCompound>): ProcessedShowStyleConfig
+	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>): ProcessedShowStyleConfig
 }

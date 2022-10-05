@@ -1,16 +1,15 @@
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { deepFreeze, omit } from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import * as deepmerge from 'deepmerge'
 import { ReadonlyDeep } from 'type-fest'
+import { DBShowStyleBaseWithProcessedLayers, ShowStyleCompoundWithProcessedLayers } from './jobs'
 
 export function createShowStyleCompound(
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	showStyleBase: ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>,
 	showStyleVariant: ReadonlyDeep<DBShowStyleVariant>
-): ReadonlyDeep<ShowStyleCompound> | undefined {
+): ReadonlyDeep<ShowStyleCompoundWithProcessedLayers> | undefined {
 	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
 
 	const baseConfig = applyAndValidateOverrides(showStyleBase.blueprintConfigWithOverrides).obj

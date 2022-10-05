@@ -5,7 +5,6 @@ import {
 	ShowStyleVariantId,
 	RundownId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -22,7 +21,7 @@ import {
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
 import { PlaylistLock, RundownLock } from '../jobs/lock'
 import { ReadonlyDeep } from 'type-fest'
-import { ApmSpan, JobContext } from '../jobs'
+import { ApmSpan, DBShowStyleBaseWithProcessedLayers, JobContext, ShowStyleCompoundWithProcessedLayers } from '../jobs'
 import { createShowStyleCompound } from '../showStyles'
 import { getMockCollections } from './collection'
 import { clone } from '@sofie-automation/corelib/dist/lib'
@@ -136,10 +135,10 @@ export class MockJobContext implements JobContext {
 	getStudioBlueprintConfig(): ProcessedStudioConfig {
 		return preprocessStudioConfig(this.studio, this.#studioBlueprint)
 	}
-	async getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBase>>> {
+	async getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBaseWithProcessedLayers>>> {
 		return this.directCollections.ShowStyleBases.findFetch()
 	}
-	async getShowStyleBase(id: ShowStyleBaseId): Promise<DBShowStyleBase> {
+	async getShowStyleBase(id: ShowStyleBaseId): Promise<DBShowStyleBaseWithProcessedLayers> {
 		const style = await this.directCollections.ShowStyleBases.findOne(id)
 		if (!style) throw new Error(`ShowStyleBase "${id}" Not found!`)
 		return style
@@ -157,7 +156,7 @@ export class MockJobContext implements JobContext {
 	async getShowStyleCompound(
 		variantId: ShowStyleVariantId,
 		baseId?: ShowStyleBaseId
-	): Promise<ReadonlyDeep<ShowStyleCompound>> {
+	): Promise<ReadonlyDeep<ShowStyleCompoundWithProcessedLayers>> {
 		const [variant, base0] = await Promise.all([
 			this.getShowStyleVariant(variantId),
 			baseId ? this.getShowStyleBase(baseId) : null,

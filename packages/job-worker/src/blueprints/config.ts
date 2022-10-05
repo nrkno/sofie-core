@@ -123,7 +123,7 @@ export function preprocessStudioConfig(
 }
 
 export function preprocessShowStyleConfig(
-	showStyle: ReadonlyDeep<ShowStyleCompound>,
+	showStyle: Pick<ReadonlyDeep<ShowStyleCompound>, '_id' | 'combinedBlueprintConfig' | 'showStyleVariantId'>,
 	blueprint: ReadonlyDeep<ShowStyleBlueprintManifest>
 ): ProcessedShowStyleConfig {
 	let res: any = {}

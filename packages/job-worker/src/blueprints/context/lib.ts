@@ -10,7 +10,6 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { clone, Complete, literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -31,8 +30,11 @@ import {
 	IBlueprintSegmentDB,
 	IBlueprintShowStyleBase,
 	IBlueprintShowStyleVariant,
+	IOutputLayer,
+	ISourceLayer,
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
+import { DBShowStyleBaseWithProcessedLayers } from '../../jobs'
 
 /**
  * Convert an object to have all the values of all keys (including optionals) be 'true'
@@ -340,13 +342,13 @@ export function convertRundownToBlueprints(rundown: ReadonlyDeep<DBRundown>): IB
  * @returns a cloned complete and clean IBlueprintShowStyleBase
  */
 export function convertShowStyleBaseToBlueprints(
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>
+	showStyleBase: ReadonlyDeep<DBShowStyleBaseWithProcessedLayers>
 ): IBlueprintShowStyleBase {
 	const obj: Complete<IBlueprintShowStyleBase> = {
 		_id: unprotectString(showStyleBase._id),
 		blueprintId: unprotectString(showStyleBase.blueprintId),
-		outputLayers: Object.values(applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides)),
-		sourceLayers: Object.values(applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides)),
+		outputLayers: clone(Object.values(showStyleBase.outputLayers).filter((l): l is IOutputLayer => !!l)),
+		sourceLayers: clone(Object.values(showStyleBase.sourceLayers).filter((l): l is ISourceLayer => !!l)),
 		blueprintConfig: applyAndValidateOverrides(showStyleBase.blueprintConfigWithOverrides).obj,
 	}
 
