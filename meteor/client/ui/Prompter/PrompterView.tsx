@@ -303,15 +303,13 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
 		const playlist = RundownPlaylists.findOne(playlistId)
 
-		if (this.configOptions.followTake) {
-			if (playlist) {
-				if (playlist.currentPartInstanceId !== this.autoScrollPreviousPartInstanceId) {
-					this.autoScrollPreviousPartInstanceId = playlist.currentPartInstanceId
+		if (!this.configOptions.followTake) return
+		if (!playlist) return
+		if (playlist.currentPartInstanceId === this.autoScrollPreviousPartInstanceId) return
+		this.autoScrollPreviousPartInstanceId = playlist.currentPartInstanceId
+		if (playlist.currentPartInstanceId === null) return
 
-					this.scrollToLive()
-				}
-			}
-		}
+		this.scrollToPartInstance(playlist.currentPartInstanceId)
 	}
 	calculateScrollPosition() {
 		let pixelMargin = this.calculateMarginPosition()
@@ -332,6 +330,15 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	calculateMarginPosition() {
 		// margin in pixels
 		return ((this.configOptions.margin || 0) * window.innerHeight) / 100
+	}
+	scrollToPartInstance(partInstanceId: PartInstanceId) {
+		const scrollMargin = this.calculateScrollPosition()
+		const target = document.querySelector(`#partInstance_${partInstanceId}`)
+
+		if (target) {
+			Velocity(document.body, 'finish')
+			Velocity(target, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
+		}
 	}
 	scrollToLive() {
 		const scrollMargin = this.calculateScrollPosition()
@@ -553,10 +560,18 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	const studioId = objectPathGet(props, 'match.params.studioId')
 	const studio = studioId ? Studios.findOne(studioId) : undefined
 
-	const rundownPlaylist = RundownPlaylists.findOne({
-		activationId: { $exists: true },
-		studioId: studioId,
-	})
+	const rundownPlaylist = RundownPlaylists.findOne(
+		{
+			activationId: { $exists: true },
+			studioId: studioId,
+		},
+		{
+			projection: {
+				trackedAbSessions: 0,
+				lastIncorrectPartPlaybackReported: 0,
+			},
+		}
+	) as Omit<RundownPlaylist, 'trackedAbSessions'> | undefined
 
 	return literal<ITrackedProps>({
 		rundownPlaylist,
@@ -777,13 +792,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						id={`segment_${segment.id}`}
 						data-obj-id={segment.id}
 						key={'segment_' + segment.id}
-						className={ClassNames(
-							'prompter-segment',
-							'scroll-anchor',
-							'segment-' + segment.id,
-							'part-' + firstPart.id,
-							firstPartStatus
-						)}
+						className={ClassNames('prompter-segment', 'scroll-anchor', firstPartStatus)}
 					>
 						{segment.title || 'N/A'}
 					</div>
@@ -792,15 +801,10 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 				segment.parts.forEach((part) => {
 					lines.push(
 						<div
-							id={`part_${part.id}`}
+							id={`partInstance_${part.id}`}
 							data-obj-id={segment.id + '_' + part.id}
-							key={'part_' + part.id}
-							className={ClassNames(
-								'prompter-part',
-								'scroll-anchor',
-								'part-' + part.id,
-								this.getPartStatus(prompterData, part)
-							)}
+							key={'partInstance_' + part.id}
+							className={ClassNames('prompter-part', 'scroll-anchor', this.getPartStatus(prompterData, part))}
 						>
 							{part.title || 'N/A'}
 						</div>
