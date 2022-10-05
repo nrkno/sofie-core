@@ -45,6 +45,7 @@ import {
 } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
 import { logger } from '../logging'
+import { validateTimeline } from 'superfly-timeline'
 
 function getIdHash(docType: string, usedIds: Map<string, number>, uniqueId: string): string {
 	const count = usedIds.get(uniqueId)
@@ -153,7 +154,7 @@ export function postProcessTimelineObjects(
 	timelineObjects: TSR.TSRTimelineObjBase[],
 	timelineUniqueIds: Set<string> = new Set<string>()
 ): TimelineObjRundown[] {
-	return timelineObjects.map((o: TimelineObjectCoreExt, i) => {
+	const postProcessedTimeline = timelineObjects.map((o: TimelineObjectCoreExt, i) => {
 		const obj: TimelineObjRundown = {
 			...o,
 			id: o.id,
@@ -172,6 +173,16 @@ export function postProcessTimelineObjects(
 
 		return obj
 	})
+
+	try {
+		// Do a validation of the timeline, to ensure that it doesn't contain any nastiness that can crash the Timeline-resolving later.
+		// We're using the "strict" mode here, to ensure blueprints are forward compatible with future versions of Timeline.
+		validateTimeline(postProcessedTimeline, true)
+	} catch (err) {
+		throw new Error(`Error in blueprint "${blueprintId}": Validation of timelineObjs failed: ${err}`)
+	}
+
+	return postProcessedTimeline
 }
 
 export function postProcessAdLibPieces(
