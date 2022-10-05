@@ -45,6 +45,7 @@ import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/context/lib'
 import { buildTimelineObjsForRundown } from './rundown'
+import { validateTimeline } from 'superfly-timeline'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -430,6 +431,13 @@ function processTimelineObjects(context: JobContext, timelineObjs: Array<Timelin
 
 	for (const obj of timelineObjs) {
 		fixObjectChildren(obj)
+	}
+
+	try {
+		// Do a validation of the timeline, to ensure that it doesn't contain any nastiness that can crash the Timeline-resolving later.
+		validateTimeline(timelineObjs, true)
+	} catch (err) {
+		throw new Error(`Error in generated timeline: Validation failed: ${err}`)
 	}
 
 	if (span) span.end()
