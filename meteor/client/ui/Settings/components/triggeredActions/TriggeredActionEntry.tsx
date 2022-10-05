@@ -11,7 +11,7 @@ import {
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
 import { ShowStyleBase, ShowStyleBaseId } from '../../../../../lib/collections/ShowStyleBases'
-import { flatten, last } from '../../../../../lib/lib'
+import { flatten, getRandomString, last } from '../../../../../lib/lib'
 import { createAction, isPreviewableAction } from '../../../../../lib/api/triggers/actionFactory'
 import { PreviewContext } from './TriggeredActionsEditor'
 import { IWrappedAdLib } from '../../../../../lib/api/triggers/actionFilterChainCompilers'
@@ -22,7 +22,6 @@ import { EditAttribute } from '../../../../lib/EditAttribute'
 import { iconDragHandle } from '../../../RundownList/icons'
 import { useDrag, useDrop } from 'react-dnd'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { nanoid } from 'nanoid'
 
 interface IProps {
 	showStyleBase: ShowStyleBase | undefined
@@ -209,7 +208,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 	function addTrigger() {
 		if (!triggeredAction) return
 
-		const id = nanoid()
+		const id = getRandomString()
 		triggeredAction.triggersWithOverrides[id] = {
 			type: TriggerType.hotkey,
 			keys: '',
@@ -229,7 +228,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 	function addAction() {
 		if (!triggeredAction) return
 
-		const id = nanoid()
+		const id = getRandomString()
 		triggeredAction.actionsWithOverrides.defaults[id] = {
 			action: PlayoutActions.adlib,
 			filterChain: [],
