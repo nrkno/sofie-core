@@ -1,7 +1,7 @@
 import { Meteor, Subscription } from 'meteor/meteor'
-import { CustomCollectionName, PubSubTypes } from '../../lib/api/pubsub'
-import { ProtectedString, protectStringObject, unprotectString, waitForPromise } from '../../lib/lib'
-import { SubscriptionContext } from '../publications/lib'
+import { CustomCollectionName, PubSubTypes } from '../../../lib/api/pubsub'
+import { ProtectedString, protectStringObject, unprotectString, waitForPromise } from '../../../lib/lib'
+import { SubscriptionContext } from '../../publications/lib'
 
 export interface CustomPublishChanges<T extends { _id: ProtectedString<any> }> {
 	added: T[]
