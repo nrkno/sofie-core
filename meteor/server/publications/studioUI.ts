@@ -1,4 +1,5 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
@@ -31,7 +32,7 @@ function trackChange(id: StudioId): Partial<UIStudioUpdateProps> {
 	}
 }
 
-function convertDocument(studio: DBStudio): UIStudio {
+function convertDocument(studio: Pick<DBStudio, StudioFields>): UIStudio {
 	return literal<Complete<UIStudio>>({
 		_id: studio._id,
 		name: studio.name,
@@ -46,13 +47,36 @@ function convertDocument(studio: DBStudio): UIStudio {
 		thumbnailContainerIds: studio.thumbnailContainerIds,
 	})
 }
+
+type StudioFields =
+	| '_id'
+	| 'name'
+	| 'mappingsWithOverrides'
+	| 'settings'
+	| 'routeSets'
+	| 'routeSetExclusivityGroups'
+	| 'packageContainers'
+	| 'previewContainerIds'
+	| 'thumbnailContainerIds'
+const fieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
+	_id: 1,
+	name: 1,
+	mappingsWithOverrides: 1,
+	settings: 1,
+	routeSets: 1,
+	routeSetExclusivityGroups: 1,
+	packageContainers: 1,
+	previewContainerIds: 1,
+	thumbnailContainerIds: 1,
+})
+
 async function setupUIStudioPublicationObservers(
 	args: ReadonlyDeep<UIStudioArgs>,
 	triggerUpdate: TriggerUpdate<UIStudioUpdateProps>
 ): Promise<Meteor.LiveQueryHandle[]> {
 	// Set up observers:
 	return [
-		Studios.find(args.studioId ? args.studioId : {}).observe({
+		Studios.find(args.studioId ? args.studioId : {}, { fields: fieldSpecifier }).observe({
 			added: (e) => triggerUpdate(trackChange(e._id)),
 			changed: (e) => triggerUpdate(trackChange(e._id)),
 			removed: (e) => triggerUpdate(trackChange(e._id)),
@@ -70,7 +94,9 @@ async function manipulateUIStudioPublicationData(
 
 	if (args.studioId) {
 		// Operate on a single studio
-		const studio = await Studios.findOneAsync(args.studioId, {})
+		const studio = (await Studios.findOneAsync(args.studioId, { projection: fieldSpecifier })) as
+			| Pick<DBStudio, StudioFields>
+			| undefined
 		if (!studio) return []
 
 		return [convertDocument(studio)]
@@ -79,7 +105,9 @@ async function manipulateUIStudioPublicationData(
 
 		if (!updateProps) {
 			// First run
-			const docs = await Studios.findFetchAsync({})
+			const docs = (await Studios.findFetchAsync({}, { projection: fieldSpecifier })) as Array<
+				Pick<DBStudio, StudioFields>
+			>
 
 			for (const doc of docs) {
 				state.cachedStudios.set(doc._id, convertDocument(doc))

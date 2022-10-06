@@ -1,4 +1,5 @@
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
@@ -24,13 +25,24 @@ interface UIShowStyleBaseUpdateProps {
 	invalidateShowStyle: boolean
 }
 
+type ShowStyleBaseFields = '_id' | 'name' | 'outputLayersWithOverrides' | 'sourceLayersWithOverrides' | 'hotkeyLegend'
+const fieldSpecifier = literal<IncludeAllMongoFieldSpecifier<ShowStyleBaseFields>>({
+	_id: 1,
+	name: 1,
+	outputLayersWithOverrides: 1,
+	sourceLayersWithOverrides: 1,
+	hotkeyLegend: 1,
+})
+
 async function setupUIShowStyleBasePublicationObservers(
 	args: ReadonlyDeep<UIShowStyleBaseArgs>,
 	triggerUpdate: TriggerUpdate<UIShowStyleBaseUpdateProps>
 ): Promise<Meteor.LiveQueryHandle[]> {
 	// Set up observers:
 	return [
-		ShowStyleBases.find(args.showStyleBaseId).observe({
+		ShowStyleBases.find(args.showStyleBaseId, {
+			fields: fieldSpecifier,
+		}).observe({
 			added: () => triggerUpdate({ invalidateShowStyle: true }),
 			changed: () => triggerUpdate({ invalidateShowStyle: true }),
 			removed: () => triggerUpdate({ invalidateShowStyle: true }),
@@ -46,7 +58,9 @@ async function manipulateUIShowStyleBasePublicationData(
 
 	// Ignore _updateProps, as we arent caching anything so we have to rerun from scratch no matter what
 
-	const showStyleBase = await ShowStyleBases.findOneAsync(args.showStyleBaseId, {})
+	const showStyleBase = (await ShowStyleBases.findOneAsync(args.showStyleBaseId, { projection: fieldSpecifier })) as
+		| Pick<ShowStyleBase, ShowStyleBaseFields>
+		| undefined
 	if (!showStyleBase) return []
 
 	const resolvedOutputLayers = applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj
