@@ -8,8 +8,6 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 export * from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 
-export { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
-
 export type ShowStyleVariant = DBShowStyleVariant
 export const ShowStyleVariants = createMongoCollection<ShowStyleVariant>(CollectionName.ShowStyleVariants)
 

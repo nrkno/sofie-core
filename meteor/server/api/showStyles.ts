@@ -2,13 +2,8 @@ import { check } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
 import { Meteor } from 'meteor/meteor'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import {
-	ShowStyleVariants,
-	ShowStyleVariantId,
-	ShowStyleCompound,
-	ShowStyleVariant,
-} from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariants, ShowStyleVariantId, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { protectString, getRandomId, omit } from '../../lib/lib'
 import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
@@ -23,6 +18,12 @@ import {
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
+
+export interface ShowStyleCompound extends Omit<DBShowStyleBase, 'blueprintConfigWithOverrides'> {
+	showStyleVariantId: ShowStyleVariantId
+	_rundownVersionHashVariant: string
+	combinedBlueprintConfig: IBlueprintConfig
+}
 
 export async function getShowStyleCompound(
 	showStyleVariantId: ShowStyleVariantId

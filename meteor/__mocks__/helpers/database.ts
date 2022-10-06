@@ -52,6 +52,7 @@ import {
 	getRandomId,
 	getRandomString,
 	Complete,
+	normalizeArray,
 } from '../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
@@ -236,42 +237,52 @@ export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<S
 		_id: protectString('mockShowStyleBase' + dbI++),
 		name: 'mockShowStyleBase',
 		organizationId: null,
-		outputLayersWithOverrides: wrapDefaultObject({
-			[LAYER_IDS.OUTPUT_PGM]: literal<IOutputLayer>({
-				_id: LAYER_IDS.OUTPUT_PGM,
-				_rank: 0,
-				isPGM: true,
-				name: 'PGM',
-			}),
-		}),
-		sourceLayersWithOverrides: wrapDefaultObject({
-			[LAYER_IDS.SOURCE_CAM0]: literal<ISourceLayer>({
-				_id: LAYER_IDS.SOURCE_CAM0,
-				_rank: 0,
-				name: 'Camera',
-				type: SourceLayerType.CAMERA,
-				exclusiveGroup: 'main',
-			}),
-			[LAYER_IDS.SOURCE_VT0]: literal<ISourceLayer>({
-				_id: LAYER_IDS.SOURCE_VT0,
-				_rank: 1,
-				name: 'VT',
-				type: SourceLayerType.VT,
-				exclusiveGroup: 'main',
-			}),
-			[LAYER_IDS.SOURCE_TRANSITION0]: literal<ISourceLayer>({
-				_id: LAYER_IDS.SOURCE_TRANSITION0,
-				_rank: 2,
-				name: 'Transition',
-				type: SourceLayerType.TRANSITION,
-			}),
-			[LAYER_IDS.SOURCE_GRAPHICS0]: literal<ISourceLayer>({
-				_id: LAYER_IDS.SOURCE_GRAPHICS0,
-				_rank: 3,
-				name: 'Graphic',
-				type: SourceLayerType.GRAPHICS,
-			}),
-		}),
+		outputLayersWithOverrides: wrapDefaultObject(
+			normalizeArray(
+				[
+					literal<IOutputLayer>({
+						_id: LAYER_IDS.OUTPUT_PGM,
+						_rank: 0,
+						isPGM: true,
+						name: 'PGM',
+					}),
+				],
+				'_id'
+			)
+		),
+		sourceLayersWithOverrides: wrapDefaultObject(
+			normalizeArray(
+				[
+					literal<ISourceLayer>({
+						_id: LAYER_IDS.SOURCE_CAM0,
+						_rank: 0,
+						name: 'Camera',
+						type: SourceLayerType.CAMERA,
+						exclusiveGroup: 'main',
+					}),
+					literal<ISourceLayer>({
+						_id: LAYER_IDS.SOURCE_VT0,
+						_rank: 1,
+						name: 'VT',
+						type: SourceLayerType.VT,
+						exclusiveGroup: 'main',
+					}),
+					literal<ISourceLayer>({
+						_id: LAYER_IDS.SOURCE_TRANSITION0,
+						_rank: 2,
+						name: 'Transition',
+						type: SourceLayerType.TRANSITION,
+					}),
+					literal<ISourceLayer>({
+						_id: LAYER_IDS.SOURCE_GRAPHICS0,
+						_rank: 3,
+						name: 'Graphic',
+						type: SourceLayerType.GRAPHICS,
+					}),
+				],
+				'_id'
+			)
+		),
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		blueprintId: blueprintId,
 		// hotkeyLegend?: Array<HotkeyDefinition>

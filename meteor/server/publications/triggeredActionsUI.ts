@@ -25,7 +25,7 @@ interface UITriggeredActionsUpdateProps {
 	invalidateTriggeredActions: TriggeredActionId[]
 }
 
-function getMongoSelector(
+function compileMongoSelector(
 	showStyleBaseId: ShowStyleBaseId | null,
 	docIds?: readonly TriggeredActionId[]
 ): Mongo.Selector<DBTriggeredActions> {
@@ -37,12 +37,6 @@ function getMongoSelector(
 		selector._id = { $in: docIds as TriggeredActionId[] }
 	}
 	return selector
-}
-
-function trackChange(id: TriggeredActionId): Partial<UITriggeredActionsUpdateProps> {
-	return {
-		invalidateTriggeredActions: [id],
-	}
 }
 
 function convertDocument(doc: DBTriggeredActions): UITriggeredActionsObj {
@@ -62,9 +56,13 @@ async function setupUITriggeredActionsPublicationObservers(
 	args: ReadonlyDeep<UITriggeredActionsArgs>,
 	triggerUpdate: TriggerUpdate<UITriggeredActionsUpdateProps>
 ): Promise<Meteor.LiveQueryHandle[]> {
+	const trackChange = (id: TriggeredActionId): Partial<UITriggeredActionsUpdateProps> => ({
+		invalidateTriggeredActions: [id],
+	})
+
 	// Set up observers:
 	return [
-		TriggeredActions.find(getMongoSelector(args.showStyleBaseId)).observe({
+		TriggeredActions.find(compileMongoSelector(args.showStyleBaseId)).observe({
 			added: (obj) => triggerUpdate(trackChange(obj._id)),
 			changed: (obj) => triggerUpdate(trackChange(obj._id)),
 			removed: (obj) => triggerUpdate(trackChange(obj._id)),
@@ -82,7 +80,7 @@ async function manipulateUITriggeredActionsPublicationData(
 
 	if (!updateProps) {
 		// First run
-		const docs = await TriggeredActions.findFetchAsync(getMongoSelector(args.showStyleBaseId))
+		const docs = await TriggeredActions.findFetchAsync(compileMongoSelector(args.showStyleBaseId))
 
 		for (const doc of docs) {
 			state.cachedTriggeredActions.set(doc._id, convertDocument(doc))
@@ -95,7 +93,7 @@ async function manipulateUITriggeredActionsPublicationData(
 			state.cachedTriggeredActions.delete(id)
 		}
 
-		const docs = await TriggeredActions.findFetchAsync(getMongoSelector(args.showStyleBaseId, changedIds))
+		const docs = await TriggeredActions.findFetchAsync(compileMongoSelector(args.showStyleBaseId, changedIds))
 		for (const doc of docs) {
 			state.cachedTriggeredActions.set(doc._id, convertDocument(doc))
 		}

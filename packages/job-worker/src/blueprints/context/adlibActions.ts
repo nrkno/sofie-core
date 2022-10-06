@@ -71,7 +71,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	private readonly _context: JobContext
 	private readonly _cache: CacheForPlayout
 	private readonly rundown: DBRundown
-	private readonly showStyleCompound2: ReadonlyDeep<ProcessedShowStyleCompound>
 	private readonly playlistActivationId: RundownPlaylistActivationId
 
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
@@ -94,7 +93,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		this._context = context
 		this._cache = cache
 		this.rundown = rundown
-		this.showStyleCompound2 = showStyle
 		this.takeAfterExecute = false
 
 		if (!this._cache.Playlist.doc.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
@@ -150,7 +148,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const resolvedInstances = getResolvedPieces(
 			this._context,
 			this._cache,
-			this.showStyleCompound2.sourceLayers,
+			this.showStyleCompound.sourceLayers,
 			partInstance
 		)
 		return resolvedInstances.map(convertResolvedPieceInstanceToBlueprints)
@@ -574,7 +572,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const stoppedIds = innerStopPieces(
 			this._context,
 			this._cache,
-			this.showStyleCompound2.sourceLayers,
+			this.showStyleCompound.sourceLayers,
 			partInstance,
 			filter,
 			timeOffset

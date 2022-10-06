@@ -1,5 +1,4 @@
 import { ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	BasicConfigItemValue,
@@ -16,7 +15,7 @@ import { logger } from '../logging'
 import { CommonContext } from './context'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { StudioCacheContext } from '../jobs'
+import { ProcessedShowStyleCompound, StudioCacheContext } from '../jobs'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 /**
@@ -123,7 +122,7 @@ export function preprocessStudioConfig(
 }
 
 export function preprocessShowStyleConfig(
-	showStyle: Pick<ReadonlyDeep<ShowStyleCompound>, '_id' | 'combinedBlueprintConfig' | 'showStyleVariantId'>,
+	showStyle: Pick<ReadonlyDeep<ProcessedShowStyleCompound>, '_id' | 'combinedBlueprintConfig' | 'showStyleVariantId'>,
 	blueprint: ReadonlyDeep<ShowStyleBlueprintManifest>
 ): ProcessedShowStyleConfig {
 	let res: any = {}

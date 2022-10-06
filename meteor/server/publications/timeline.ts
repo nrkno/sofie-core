@@ -12,7 +12,7 @@ import {
 import { meteorPublish } from './lib'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/collections/lib'
-import { CustomPublish, CustomPublishArray, meteorCustomPublish } from '../lib/customPublication'
+import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Studios, getActiveRoutes, StudioId, ResultingMappingRoutes } from '../../lib/collections/Studios'
@@ -36,7 +36,7 @@ meteorPublish(PubSub.timeline, async function (selector, token) {
 	return null
 })
 
-meteorCustomPublish(
+meteorCustomPublishArray(
 	PubSub.timelineForDevice,
 	CustomCollectionName.StudioTimeline,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
@@ -53,7 +53,7 @@ meteorCustomPublish(
 	}
 )
 
-meteorCustomPublish(
+meteorCustomPublishArray(
 	PubSub.timelineForStudio,
 	CustomCollectionName.StudioTimeline,
 	async function (pub, studioId: StudioId, token) {
@@ -199,12 +199,10 @@ async function manipulateTimelinePublicationData(
 
 /** Create an observer for each publication, to simplify the stop conditions */
 async function createObserverForTimelinePublication(
-	pub0: CustomPublish<RoutedTimeline>,
+	pub: CustomPublishArray<RoutedTimeline>,
 	observerId: PubSub,
 	studioId: StudioId
 ) {
-	const pub = new CustomPublishArray(pub0)
-
 	const observer = await setUpOptimizedObserver<
 		RoutedTimeline,
 		RoutedTimelineArgs,

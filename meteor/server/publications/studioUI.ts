@@ -26,12 +26,6 @@ interface UIStudioUpdateProps {
 	invalidateStudioIds: StudioId[]
 }
 
-function trackChange(id: StudioId): Partial<UIStudioUpdateProps> {
-	return {
-		invalidateStudioIds: [id],
-	}
-}
-
 function convertDocument(studio: Pick<DBStudio, StudioFields>): UIStudio {
 	return literal<Complete<UIStudio>>({
 		_id: studio._id,
@@ -74,6 +68,10 @@ async function setupUIStudioPublicationObservers(
 	args: ReadonlyDeep<UIStudioArgs>,
 	triggerUpdate: TriggerUpdate<UIStudioUpdateProps>
 ): Promise<Meteor.LiveQueryHandle[]> {
+	const trackChange = (id: StudioId): Partial<UIStudioUpdateProps> => ({
+		invalidateStudioIds: [id],
+	})
+
 	// Set up observers:
 	return [
 		Studios.find(args.studioId ? args.studioId : {}, { fields: fieldSpecifier }).observe({

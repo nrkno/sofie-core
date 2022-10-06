@@ -232,11 +232,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 			throw new Error(`Failed to compile ShowStyleCompound for base "${base._id}" and variant  "${variant._id}"`)
 		}
 
-		return {
-			...compound,
-			sourceLayers: base.sourceLayers,
-			outputLayers: base.outputLayers,
-		}
+		return compound
 	}
 
 	async getShowStyleBlueprint(id: ShowStyleBaseId): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>> {
