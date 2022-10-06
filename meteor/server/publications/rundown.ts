@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { MongoQuery, FindOptions } from '../../lib/typings/meteor'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { RundownReadAccess } from '../security/rundown'
 import { Rundowns, DBRundown } from '../../lib/collections/Rundowns'
@@ -24,6 +24,7 @@ import {
 	RundownBaselineAdLibActions,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { check, Match } from 'meteor/check'
+import { FindOptions } from '../../lib/collections/lib'
 
 meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
 	check(deviceId, String)

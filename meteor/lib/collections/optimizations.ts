@@ -1,4 +1,4 @@
-import { MongoSelector } from '../typings/meteor'
+import { MongoQuery } from '../typings/meteor'
 import { BlueprintId, Blueprints, Blueprint } from './Blueprints'
 import { DBShowStyleBase, ShowStyleBaseId, ShowStyleBases } from './ShowStyleBases'
 import { DBStudio, StudioId, Studios, StudioLight } from './Studios'
@@ -32,7 +32,7 @@ export async function fetchStudioLight(studioId: StudioId): Promise<StudioLight 
 	})
 }
 
-export async function fetchStudioIds(selector: MongoSelector<DBStudio>): Promise<StudioId[]> {
+export async function fetchStudioIds(selector: MongoQuery<DBStudio>): Promise<StudioId[]> {
 	const studios = await Studios.findFetchAsync(selector, {
 		fields: {
 			_id: 1,
@@ -65,9 +65,7 @@ export async function fetchShowStyleBaseLight(showStyleId: ShowStyleBaseId): Pro
 		},
 	})
 }
-export async function fetchShowStyleBasesLight(
-	selector: MongoSelector<DBShowStyleBase>
-): Promise<ShowStyleBaseLight[]> {
+export async function fetchShowStyleBasesLight(selector: MongoQuery<DBShowStyleBase>): Promise<ShowStyleBaseLight[]> {
 	return ShowStyleBases.findFetchAsync(selector, {
 		fields: {
 			blueprintConfigWithOverrides: 0,

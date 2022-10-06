@@ -17,18 +17,19 @@ import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../coll
 import { SourceLayers } from '../../collections/ShowStyleBases'
 import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
-import { FindOptions, MongoSelector } from '../../typings/meteor'
+import { MongoQuery } from '../../typings/meteor'
 import { DBRundown, RundownId, Rundowns } from '../../collections/Rundowns'
 import { memoizedIsolatedAutorun } from '../../../client/lib/reactiveData/reactiveDataHelper'
 import { DBSegment, Segments, SegmentId } from '../../collections/Segments'
 import { sortAdlibs } from '../../Rundown'
 import { ReactivePlaylistActionContext } from './actionFactory'
+import { FindOptions } from '../../collections/lib'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
 /** This is a compiled Filter type, targetting a particular MongoCollection */
 type CompiledFilter<T> = {
-	selector: MongoSelector<T>
+	selector: MongoQuery<T>
 	options: FindOptions<T>
 	pick: number | undefined
 	limit: number | undefined
@@ -137,7 +138,7 @@ export type IWrappedAdLib =
 			item: ISourceLayer
 	  }
 
-/** What follows are methods to compile a filterChain to a CompiledFilter (a MongoSelector with options and some
+/** What follows are methods to compile a filterChain to a CompiledFilter (a MongoQuery with options and some
  * additional flags, used for performance optimization ) */
 
 function sharedSourceLayerFilterCompiler(
@@ -291,7 +292,7 @@ function compileAdLibActionFilter(
 	filterChain: IAdLibFilterLink[],
 	sourceLayers: SourceLayers
 ): CompiledFilter<AdLibActionType> {
-	const selector: MongoSelector<AdLibActionType> = {}
+	const selector: MongoQuery<AdLibActionType> = {}
 	const options: FindOptions<AdLibActionType> = {}
 	let pick: number | undefined = undefined
 	let limit: number | undefined = undefined
@@ -387,7 +388,7 @@ function compileAdLibPieceFilter(
 	filterChain: IAdLibFilterLink[],
 	sourceLayers: SourceLayers
 ): CompiledFilter<AdLibPieceType> {
-	const selector: MongoSelector<AdLibPieceType> = {}
+	const selector: MongoQuery<AdLibPieceType> = {}
 	const options: FindOptions<AdLibPieceType> = {}
 	let pick: number | undefined = undefined
 	let limit: number | undefined = undefined
@@ -538,7 +539,7 @@ export function compileAdLibFilter(
 
 		{
 			let skip = adLibPieceTypeFilter.skip
-			const currentNextOverride: MongoSelector<AdLibPieceType> = {}
+			const currentNextOverride: MongoQuery<AdLibPieceType> = {}
 
 			if (partFilter) {
 				if (partFilter.length === 0) {
@@ -558,7 +559,7 @@ export function compileAdLibFilter(
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
 							rundownId: currentRundownId,
-						} as MongoSelector<RundownBaselineAdLibItem>,
+						} as MongoQuery<RundownBaselineAdLibItem>,
 						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, 'rundownBaselineAdLibItem'))
 				if (adLibPieceTypeFilter.global === undefined || adLibPieceTypeFilter.global === false)
@@ -567,7 +568,7 @@ export function compileAdLibFilter(
 							...adLibPieceTypeFilter.selector,
 							...currentNextOverride,
 							rundownId: currentRundownId,
-						} as MongoSelector<AdLibPiece>,
+						} as MongoQuery<AdLibPiece>,
 						adLibPieceTypeFilter.options
 					).map((item) => wrapAdLibPiece(item, 'adLibPiece'))
 			}
@@ -575,7 +576,7 @@ export function compileAdLibFilter(
 
 		{
 			let skip = adLibActionTypeFilter.skip
-			const currentNextOverride: MongoSelector<AdLibActionType> = {}
+			const currentNextOverride: MongoQuery<AdLibActionType> = {}
 
 			if (partFilter) {
 				if (partFilter.length === 0) {
@@ -595,7 +596,7 @@ export function compileAdLibFilter(
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
 							rundownId: currentRundownId,
-						} as MongoSelector<RundownBaselineAdLibAction>,
+						} as MongoQuery<RundownBaselineAdLibAction>,
 						adLibActionTypeFilter.options
 					).map((item) => wrapRundownBaselineAdLibAction(item, 'rundownBaselineAdLibAction'))
 				if (adLibActionTypeFilter.global === undefined || adLibActionTypeFilter.global === false)
@@ -604,7 +605,7 @@ export function compileAdLibFilter(
 							...adLibActionTypeFilter.selector,
 							...currentNextOverride,
 							rundownId: currentRundownId,
-						} as MongoSelector<AdLibAction>,
+						} as MongoQuery<AdLibAction>,
 						adLibActionTypeFilter.options
 					).map((item) => wrapAdLibAction(item, 'adLibAction'))
 			}
@@ -753,7 +754,7 @@ export function rundownPlaylistFilter(
 	studioId: StudioId,
 	filterChain: IRundownPlaylistFilterLink[]
 ): RundownPlaylist | undefined {
-	const selector: MongoSelector<DBRundownPlaylist> = {
+	const selector: MongoQuery<DBRundownPlaylist> = {
 		$and: [
 			{
 				studioId,

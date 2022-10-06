@@ -1,6 +1,6 @@
 import { Segments, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
-import { FindOptions, MongoQuery } from '../typings/meteor'
+import { MongoQuery } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleVariant, ShowStyleVariants } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
@@ -9,6 +9,7 @@ import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
+import { FindOptions } from './lib'
 
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { RundownId }

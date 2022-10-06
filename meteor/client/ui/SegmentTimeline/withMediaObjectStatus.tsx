@@ -12,7 +12,7 @@ import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
 import { literal } from '../../../lib/lib'
 import { ExpectedPackageId, getExpectedPackageId } from '../../../lib/collections/ExpectedPackages'
 import * as _ from 'underscore'
-import { MongoSelector } from '../../../lib/typings/meteor'
+import { MongoQuery } from '../../../lib/typings/meteor'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { UIStudio } from '../../../lib/api/studios'
@@ -87,7 +87,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 							if (this.expectedPackageIds.length) {
 								this.subPackageInfos = this.subscribe(
 									PubSub.packageInfos,
-									literal<MongoSelector<PackageInfoDB>>({
+									literal<MongoQuery<PackageInfoDB>>({
 										studioId: this.props.studio._id,
 										packageId: { $in: this.expectedPackageIds },
 									})
