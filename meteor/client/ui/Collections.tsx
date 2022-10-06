@@ -1,8 +1,8 @@
 import { CustomCollectionName } from '../../lib/api/pubsub'
-import { createCustomMongoCollection } from '../lib/lib'
+import { createCustomPublicationMongoCollection } from '../../lib/collections/lib'
 
-export const UIShowStyleBases = createCustomMongoCollection(CustomCollectionName.UIShowStyleBase)
+export const UIShowStyleBases = createCustomPublicationMongoCollection(CustomCollectionName.UIShowStyleBase)
 
-export const UIStudios = createCustomMongoCollection(CustomCollectionName.UIStudio)
+export const UIStudios = createCustomPublicationMongoCollection(CustomCollectionName.UIStudio)
 
-export const UITriggeredActions = createCustomMongoCollection(CustomCollectionName.UITriggeredActions)
+export const UITriggeredActions = createCustomPublicationMongoCollection(CustomCollectionName.UITriggeredActions)

@@ -20,9 +20,9 @@ import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Classnames from 'classnames'
-import { createCustomMongoCollection } from '../../lib/lib'
+import { createCustomPublicationMongoCollection } from '../../../lib/collections/lib'
 
-export const StudioTimeline = createCustomMongoCollection(CustomCollectionName.StudioTimeline)
+export const StudioTimeline = createCustomPublicationMongoCollection(CustomCollectionName.StudioTimeline)
 
 interface TimelineViewRouteParams {
 	studioId: string | undefined

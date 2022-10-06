@@ -151,9 +151,3 @@ export function getEventTimestamp(e: any): Time {
 }
 
 export const TOOLTIP_DEFAULT_DELAY = 0.5
-
-export function createCustomMongoCollection<K extends keyof CustomCollectionType>(
-	name: K
-): Mongo.Collection<CustomCollectionType[K]> {
-	return new Mongo.Collection<CustomCollectionType[K]>(name)
-}
