@@ -46,25 +46,27 @@ export const LinePartPieceIndicator: React.FC<IProps> = function LinePartPieceIn
 			{(studio) => {
 				if (!studio) return null
 				return (
-					<LinePartIndicator
-						allSourceLayers={sourceLayers}
-						count={thisPieces.length}
-						label={label.substring(0, 1)}
-						thisSourceLayer={topPiece?.sourceLayer}
-						hasOriginInPreceedingPart={hasOriginInPreceedingPart}
-						piece={topPiece}
-						studio={studio}
-						overlay={(ref, setIsOver) => (
-							<PieceIndicatorMenu
-								pieces={thisPieces}
-								parentEl={ref}
-								partId={partId}
-								setIsOver={setIsOver}
-								onPieceClick={onPieceClick}
-								onPieceDoubleClick={onPieceDoubleClick}
-							/>
-						)}
-					/>
+					<>
+						<LinePartIndicator
+							allSourceLayers={sourceLayers}
+							count={thisPieces.length}
+							label={label.substring(0, 1)}
+							thisSourceLayer={topPiece?.sourceLayer}
+							hasOriginInPreceedingPart={hasOriginInPreceedingPart}
+							piece={topPiece}
+							studio={studio}
+							overlay={(ref, setIsOver) => (
+								<PieceIndicatorMenu
+									pieces={thisPieces}
+									parentEl={ref}
+									partId={partId}
+									setIsOver={setIsOver}
+									onPieceClick={onPieceClick}
+									onPieceDoubleClick={onPieceDoubleClick}
+								/>
+							)}
+						/>
+					</>
 				)
 			}}
 		</StudioContext.Consumer>

@@ -2,8 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { getCurrentTime, systemTime, Time } from '../../lib/lib'
-import { CustomCollectionType } from '../../lib/api/pubsub'
-import { Mongo } from 'meteor/mongo'
 
 export { multilineText, isEventInInputField }
 

@@ -21,8 +21,8 @@ interface IProps {
 }
 
 interface ITrackedProps {
-	studio: UIStudio | undefined
-	rundownPlaylist: RundownPlaylist | undefined
+	studio: Pick<UIStudio, 'name'> | undefined
+	rundownPlaylist: Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
 }
 
 interface IState {
@@ -48,20 +48,21 @@ export const findNextPlaylist = (props: IProps) => {
 			fields: {
 				name: 1,
 			},
-		}),
-		rundownPlaylist: RundownPlaylists.find(
-			{
-				studioId: props.studioId,
-			},
-			{
-				fields: {
-					name: 1,
-					timing: 1,
-					studioId: 1,
+		}) as Pick<UIStudio, 'name'> | undefined,
+		rundownPlaylist: (
+			RundownPlaylists.find(
+				{
+					studioId: props.studioId,
 				},
-			}
+				{
+					fields: {
+						name: 1,
+						timing: 1,
+						studioId: 1,
+					},
+				}
+			).fetch() as Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'>[]
 		)
-			.fetch()
 			.sort(PlaylistTiming.sortTiminings)
 			.find((rundownPlaylist) => {
 				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)

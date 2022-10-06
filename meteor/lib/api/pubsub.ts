@@ -115,15 +115,6 @@ export enum PubSub {
 	uiTriggeredActions = 'uiTriggeredActions',
 }
 
-export enum CustomCollectionName {
-	StudioMappings = 'studioMappings',
-	StudioTimeline = 'studioTimeline',
-	ExpectedPackagesForDevice = 'deviceExpectedPackages',
-	UIShowStyleBase = 'uiShowStyleBase',
-	UIStudio = 'uiStudio',
-	UITriggeredActions = 'uiTriggeredActions',
-}
-
 /**
  * Type definitions for all DDP subscriptions.
  * All the PubSub ids must be present here, or they will produce type errors when used
@@ -231,15 +222,6 @@ export interface PubSubTypes {
 	[PubSub.uiTriggeredActions]: (showStyleBaseId: ShowStyleBaseId | null) => UITriggeredActionsObj
 }
 
-export type CustomCollectionType = {
-	[CustomCollectionName.StudioMappings]: RoutedMappings
-	[CustomCollectionName.StudioTimeline]: RoutedTimeline
-	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj
-	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
-	[CustomCollectionName.UIStudio]: UIStudio
-	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
-}
-
 /**
  * Ids of possible Custom collections, populated by DDP subscriptions
  */
@@ -247,6 +229,9 @@ export enum CustomCollectionName {
 	StudioMappings = 'studioMappings',
 	StudioTimeline = 'studioTimeline',
 	ExpectedPackagesForDevice = 'deviceExpectedPackages',
+	UIShowStyleBase = 'uiShowStyleBase',
+	UIStudio = 'uiStudio',
+	UITriggeredActions = 'uiTriggeredActions',
 }
 
 /**
@@ -257,6 +242,9 @@ export type CustomCollectionType = {
 	[CustomCollectionName.StudioMappings]: RoutedMappings
 	[CustomCollectionName.StudioTimeline]: RoutedTimeline
 	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj
+	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
+	[CustomCollectionName.UIStudio]: UIStudio
+	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
 }
 
 /**

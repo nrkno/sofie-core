@@ -411,11 +411,6 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	])
 
 	const triggerSubReady = useSubscription(PubSub.uiTriggeredActions, props.showStyleBaseId)
-	// 	 {
-	// 	showStyleBase: {
-	// 		$in: [null, props.showStyleBaseId],
-	// 	},
-	// })
 
 	const rundownIds =
 		useTracker(() => {
