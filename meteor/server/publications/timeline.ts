@@ -12,7 +12,7 @@ import {
 import { meteorPublish } from './lib'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/collections/lib'
-import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
+import { CustomPublish, meteorCustomPublish } from '../lib/customPublication'
 import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Studios, getActiveRoutes, StudioId, ResultingMappingRoutes } from '../../lib/collections/Studios'
@@ -36,7 +36,7 @@ meteorPublish(PubSub.timeline, async function (selector, token) {
 	return null
 })
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.timelineForDevice,
 	CustomCollectionName.StudioTimeline,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
@@ -53,7 +53,7 @@ meteorCustomPublishArray(
 	}
 )
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.timelineForStudio,
 	CustomCollectionName.StudioTimeline,
 	async function (pub, studioId: StudioId, token) {
@@ -199,27 +199,16 @@ async function manipulateTimelinePublicationData(
 
 /** Create an observer for each publication, to simplify the stop conditions */
 async function createObserverForTimelinePublication(
-	pub: CustomPublishArray<RoutedTimeline>,
+	pub: CustomPublish<RoutedTimeline>,
 	observerId: PubSub,
 	studioId: StudioId
 ) {
-	const observer = await setUpOptimizedObserver<
-		RoutedTimeline,
-		RoutedTimelineArgs,
-		RoutedTimelineState,
-		RoutedTimelineUpdateProps
-	>(
+	await setUpOptimizedObserver<RoutedTimeline, RoutedTimelineArgs, RoutedTimelineState, RoutedTimelineUpdateProps>(
 		`pub_${observerId}_${studioId}`,
 		{ studioId },
 		setupTimelinePublicationObservers,
 		manipulateTimelinePublicationData,
-		(_args, data) => {
-			// Don't need to perform any deep diffing, that's being done by CustomPublishArray
-			pub.updatedDocs(data)
-		},
+		pub,
 		0 // ms
 	)
-	pub.onStop(() => {
-		observer.stop()
-	})
 }

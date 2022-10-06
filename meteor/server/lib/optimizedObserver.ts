@@ -1,26 +1,28 @@
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { clone, createManualPromise, lazyIgnore } from '../../lib/lib'
+import _ from 'underscore'
+import { clone, createManualPromise, lazyIgnore, ProtectedString } from '../../lib/lib'
 import { logger } from '../logging'
+import { CustomPublish } from './customPublication'
 
-interface OptimizedObserver<TData, TArgs, TContext, UpdateProps> {
+interface OptimizedObserver<TData extends { _id: ProtectedString<any> }, TArgs, TContext, UpdateProps> {
 	args: ReadonlyDeep<TArgs>
 	context: Partial<TContext>
 	lastData: TData[]
 	triggerUpdate: TriggerUpdate<UpdateProps>
 	stop: () => void
-	dataReceivers: Array<(args: ReadonlyDeep<TArgs>, newData: TData[], previousData: TData[]) => void>
-	newDataReceivers: Array<(args: ReadonlyDeep<TArgs>, newData: TData[], previousData: TData[]) => void>
+	dataReceivers: Array<CustomPublish<TData>>
+	newDataReceivers: Array<CustomPublish<TData>>
 }
 
 /** Current fully setup optimized observers */
-const optimizedObservers: Record<string, OptimizedObserver<unknown, unknown, unknown, unknown>> = {}
+const optimizedObservers: Record<string, OptimizedObserver<any, unknown, unknown, unknown>> = {}
 /** Setup in progress optimized observers */
-const pendingObservers: Record<string, Promise<OptimizedObserver<unknown, unknown, unknown, unknown>>> = {}
+const pendingObservers: Record<string, Promise<OptimizedObserver<any, unknown, unknown, unknown>>> = {}
 
-export interface OptimizedObserverHandle {
-	stop: () => void
-}
+// export interface OptimizedObserverHandle {
+// 	stop: () => void
+// }
 
 export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProps: Partial<UpdateProps>) => void
 
@@ -36,7 +38,7 @@ export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProp
 
  */
 export async function setUpOptimizedObserver<
-	PublicationDoc,
+	PublicationDoc extends { _id: ProtectedString<any> },
 	Args,
 	State extends Record<string, any>,
 	UpdateProps extends Record<string, any>
@@ -53,9 +55,9 @@ export async function setUpOptimizedObserver<
 		state: Partial<State>,
 		newProps: ReadonlyDeep<Partial<UpdateProps> | undefined>
 	) => Promise<PublicationDoc[] | null>,
-	receiveData: (args: ReadonlyDeep<Args>, newData: PublicationDoc[], previousData: PublicationDoc[]) => void,
+	receiver: CustomPublish<PublicationDoc>,
 	lazynessDuration: number = 3 // ms
-): Promise<OptimizedObserverHandle> {
+): Promise<void> {
 	const existingObserver = (optimizedObservers[identifier] || (await pendingObservers[identifier])) as
 		| OptimizedObserver<PublicationDoc, Args, State, UpdateProps>
 		| undefined
@@ -64,7 +66,7 @@ export async function setUpOptimizedObserver<
 		// There is an existing preparedObserver
 
 		// Mark the received as new
-		existingObserver.newDataReceivers.push(receiveData)
+		existingObserver.newDataReceivers.push(receiver)
 
 		// Force an update to ensure the new receiver gets data soon
 		existingObserver.triggerUpdate({})
@@ -73,6 +75,7 @@ export async function setUpOptimizedObserver<
 
 		let hasPendingUpdate = false
 		let pendingUpdate: Record<string, any> = {}
+		const converter = new OptimisedObserverGenericArray<PublicationDoc>()
 		const triggerUpdate: TriggerUpdate<UpdateProps> = (updateProps) => {
 			// Combine the pending updates
 			pendingUpdate = {
@@ -113,10 +116,11 @@ export async function setUpOptimizedObserver<
 							const manipulateTime = Date.now()
 							const manipulateDuration = manipulateTime - start
 
-							// If result === false, that means no changes were made
+							// If result === null, that means no changes were made
 							if (result !== null) {
+								const changes = converter.updatedDocs(result)
 								for (const dataReceiver of o.dataReceivers) {
-									dataReceiver(o.args, result, o.lastData)
+									dataReceiver.changed(changes)
 								}
 								o.lastData = result
 							}
@@ -127,7 +131,7 @@ export async function setUpOptimizedObserver<
 								o.newDataReceivers = []
 								// send initial data
 								for (const dataReceiver of newDataReceivers) {
-									dataReceiver(o.args, o.lastData, [])
+									dataReceiver.init(o.lastData)
 								}
 							}
 
@@ -160,7 +164,7 @@ export async function setUpOptimizedObserver<
 		}
 
 		// use pendingObservers, to ensure a second doesnt get created in parallel
-		const manualPromise = createManualPromise<OptimizedObserver<unknown, unknown, unknown, unknown>>()
+		const manualPromise = createManualPromise<OptimizedObserver<any, unknown, unknown, unknown>>()
 		pendingObservers[identifier] = manualPromise
 		manualPromise.catch(() => {
 			// Ensure it doesn't go uncaught
@@ -178,14 +182,14 @@ export async function setUpOptimizedObserver<
 				stop: () => {
 					observers.forEach((observer) => observer.stop())
 				},
-				dataReceivers: [receiveData],
+				dataReceivers: [receiver],
 				newDataReceivers: [],
 			}
 
 			// Do the intial data load and emit
 			const result = await manipulateData(args, newObserver.context, undefined)
 			newObserver.lastData = result === null ? [] : result
-			receiveData(args, newObserver.lastData, [])
+			receiver.init(newObserver.lastData)
 			updateIsRunning = false
 
 			if (hasPendingUpdate) {
@@ -196,7 +200,7 @@ export async function setUpOptimizedObserver<
 			}
 
 			// Observer is now ready for all to use
-			const newObserver2 = newObserver as OptimizedObserver<unknown, unknown, unknown, unknown>
+			const newObserver2 = newObserver as OptimizedObserver<any, unknown, unknown, unknown>
 			optimizedObservers[identifier] = newObserver2
 			manualPromise.manualResolve(newObserver2)
 		} catch (e: any) {
@@ -207,20 +211,83 @@ export async function setUpOptimizedObserver<
 		}
 	}
 
-	return {
-		stop: () => {
-			const o = optimizedObservers[identifier] as OptimizedObserver<PublicationDoc, Args, State, UpdateProps>
-			if (o) {
-				const i = o.dataReceivers.indexOf(receiveData)
-				if (i != -1) {
-					o.dataReceivers.splice(i, 1)
-				}
-				// clean up if empty:
-				if (!o.dataReceivers.length) {
-					delete optimizedObservers[identifier]
-					o.stop()
-				}
+	receiver.onStop(() => {
+		const o = optimizedObservers[identifier] as OptimizedObserver<PublicationDoc, Args, State, UpdateProps>
+		if (o) {
+			const i = o.dataReceivers.indexOf(receiver)
+			if (i != -1) {
+				o.dataReceivers.splice(i, 1)
 			}
-		},
+			// clean up if empty:
+			if (!o.dataReceivers.length) {
+				delete optimizedObservers[identifier]
+				o.stop()
+			}
+		}
+	})
+}
+
+export interface PreparedPublicationChanges<T extends { _id: ProtectedString<any> }> {
+	added: T[]
+	changed: T[]
+	removed: T['_id'][]
+}
+
+export class OptimisedObserverGenericArray<DBObj extends { _id: ProtectedString<any> }> {
+	#docs = new Map<DBObj['_id'], DBObj>()
+	#firstRun: boolean = true
+
+	public get isFirstRun(): boolean {
+		return this.#firstRun
+	}
+
+	updatedDocs(newDocs: DBObj[]): PreparedPublicationChanges<DBObj> {
+		const changes: PreparedPublicationChanges<DBObj> = {
+			added: [],
+			changed: [],
+			removed: [],
+		}
+
+		const newIds = new Set<DBObj['_id']>()
+		// figure out which documents have changed
+
+		const oldIds = Array.from(this.#docs.keys())
+
+		for (const newDoc0 of newDocs) {
+			const id = newDoc0._id
+			if (newIds.has(id)) {
+				throw new Meteor.Error(`Error in custom publication: _id "${id}" is not unique!`)
+			}
+			newIds.add(id)
+
+			const oldDoc = this.#docs.get(id)
+			if (!oldDoc) {
+				const newDoc = clone(newDoc0)
+
+				// added
+				this.#docs.set(id, newDoc)
+				changes.added.push(newDoc)
+			} else if (!_.isEqual(oldDoc, newDoc0)) {
+				const newDoc = clone(newDoc0)
+
+				// changed
+				changes.changed.push(newDoc)
+				this.#docs.set(id, newDoc)
+			}
+		}
+
+		for (const id of oldIds) {
+			if (!newIds.has(id)) {
+				// Removed
+				this.#docs.delete(id)
+				changes.removed.push(id)
+			}
+		}
+
+		if (this.#firstRun) {
+			this.#firstRun = false
+		}
+
+		return changes
 	}
 }

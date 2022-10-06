@@ -18,7 +18,7 @@ import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
-import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
+import { CustomPublish, meteorCustomPublish } from '../lib/customPublication'
 import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
 import { ExpectedPackageDBBase, ExpectedPackageId, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import {
@@ -160,7 +160,7 @@ meteorPublish(
 	}
 )
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.mappingsForDevice,
 	CustomCollectionName.StudioMappings,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
@@ -177,7 +177,7 @@ meteorCustomPublishArray(
 	}
 )
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.mappingsForStudio,
 	CustomCollectionName.StudioMappings,
 	async function (pub, studioId: StudioId, token) {
@@ -242,25 +242,15 @@ async function manipulateMappingsPublicationData(
 
 /** Create an observer for each publication, to simplify the stop conditions */
 async function createObserverForMappingsPublication(
-	pub: CustomPublishArray<RoutedMappings>,
+	pub: CustomPublish<RoutedMappings>,
 	observerId: PubSub,
 	studioId: StudioId
 ) {
-	const observer = await setUpOptimizedObserver<
-		RoutedMappings,
-		RoutedMappingsArgs,
-		RoutedMappingsState,
-		RoutedMappingsUpdateProps
-	>(
+	await setUpOptimizedObserver<RoutedMappings, RoutedMappingsArgs, RoutedMappingsState, RoutedMappingsUpdateProps>(
 		`pub_${observerId}_${studioId}`,
 		{ studioId },
 		setupMappingsPublicationObservers,
 		manipulateMappingsPublicationData,
-		(_args, newData) => {
-			pub.updatedDocs(newData)
-		}
+		pub
 	)
-	pub.onStop(() => {
-		observer.stop()
-	})
 }

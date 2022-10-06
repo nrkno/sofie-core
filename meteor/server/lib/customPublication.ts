@@ -4,32 +4,68 @@ import { clone, ProtectedString, protectStringObject, unprotectString, waitForPr
 import _ from 'underscore'
 import { SubscriptionContext } from '../publications/lib'
 
+export interface CustomPublishChanges<T extends { _id: ProtectedString<any> }> {
+	added: T[]
+	changed: T[]
+	removed: T['_id'][]
+}
+
 export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
-	private _onStop: () => void
+	#onStop: (() => void) | undefined
+	#isReady = false
+
 	constructor(private _meteorPublication: Subscription, private _collectionName: CustomCollectionName) {
 		this._meteorPublication.onStop(() => {
-			if (this._onStop) this._onStop()
+			if (this.#onStop) this.#onStop()
 		})
 	}
+
+	get isReady(): boolean {
+		return this.#isReady
+	}
+
 	onStop(callback: () => void) {
-		this._onStop = callback
+		this.#onStop = callback
 	}
 	/** Indicate to the client that the initial document(s) have been sent */
-	ready() {
+	init(docs: DBObj[]) {
+		if (!this.#isReady) throw new Meteor.Error(500, 'CustomPublish has already been initialised')
+
+		for (const doc of docs) {
+			this._meteorPublication.added(this._collectionName, unprotectString(doc._id), doc)
+		}
+
 		this._meteorPublication.ready()
+		this.#isReady = true
 	}
-	/** Added document */
-	added(id: DBObj['_id'], doc: DBObj) {
-		this._meteorPublication.added(this._collectionName, unprotectString(id), doc)
+	changed(changes: CustomPublishChanges<DBObj>): void {
+		if (this.#isReady) throw new Meteor.Error(500, 'CustomPublish has not been initialised')
+
+		for (const doc of changes.added) {
+			this._meteorPublication.added(this._collectionName, unprotectString(doc._id), doc)
+		}
+
+		for (const doc of changes.changed) {
+			this._meteorPublication.changed(this._collectionName, unprotectString(doc._id), doc)
+		}
+
+		for (const id of changes.removed) {
+			this._meteorPublication.removed(this._collectionName, unprotectString(id))
+		}
 	}
-	/** Changed document */
-	changed(id: DBObj['_id'], doc: DBObj) {
-		this._meteorPublication.changed(this._collectionName, unprotectString(id), doc)
-	}
-	/** Removed document */
-	removed(id: DBObj['_id']) {
-		this._meteorPublication.removed(this._collectionName, unprotectString(id))
-	}
+
+	// /** Added document */
+	// added(id: DBObj['_id'], doc: DBObj) {
+	// 	this._meteorPublication.added(this._collectionName, unprotectString(id), doc)
+	// }
+	// /** Changed document */
+	// changed(id: DBObj['_id'], doc: DBObj) {
+	// 	this._meteorPublication.changed(this._collectionName, unprotectString(id), doc)
+	// }
+	// /** Removed document */
+	// removed(id: DBObj['_id']) {
+	// 	this._meteorPublication.removed(this._collectionName, unprotectString(id))
+	// }
 }
 
 function genericMeteorCustomPublish<K extends keyof PubSubTypes>(
@@ -78,47 +114,63 @@ export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 	}
 
 	updatedDocs(newDocs: DBObj[]): void {
-		const newIds = new Set<DBObj['_id']>()
-		// figure out which documents have changed
-
-		const oldIds = Array.from(this._docs.keys())
-
-		for (const newDoc of newDocs) {
-			const id = newDoc._id
-			if (newIds.has(id)) {
-				throw new Meteor.Error(`Error in custom publication: _id "${id}" is not unique!`)
-			}
-			newIds.add(id)
-
-			const oldDoc = this._docs.get(id)
-			if (!oldDoc) {
-				// added
-				this._docs.set(id, clone(newDoc))
-
-				this._publication.added(id, newDoc)
-			} else if (
-				oldDoc['mappingsHash'] !== newDoc['mappingsHash'] || // Fast-track for the timeline publications
-				oldDoc['timelineHash'] !== newDoc['timelineHash'] ||
-				!_.isEqual(oldDoc, newDoc)
-			) {
-				// changed
-
-				this._publication.changed(id, newDoc)
-				this._docs.set(id, clone(newDoc))
-			}
-		}
-
-		for (const id of oldIds) {
-			if (!newIds.has(id)) {
-				// Removed
-				this._docs.delete(id)
-				this._publication.removed(id)
-			}
-		}
-
 		if (this._firstRun) {
-			this._publication.ready()
+			const newIds = new Set<DBObj['_id']>()
+			for (const newDoc of newDocs) {
+				const id = newDoc._id
+				if (newIds.has(id)) {
+					throw new Meteor.Error(`Error in custom publication: _id "${id}" is not unique!`)
+				}
+			}
+
+			this._publication.init(newDocs)
 			this._firstRun = false
+		} else {
+			const changes: CustomPublishChanges<DBObj> = {
+				added: [],
+				changed: [],
+				removed: [],
+			}
+
+			const newIds = new Set<DBObj['_id']>()
+			// figure out which documents have changed
+
+			const oldIds = Array.from(this._docs.keys())
+
+			for (const newDoc of newDocs) {
+				const id = newDoc._id
+				if (newIds.has(id)) {
+					throw new Meteor.Error(`Error in custom publication: _id "${id}" is not unique!`)
+				}
+				newIds.add(id)
+
+				const oldDoc = this._docs.get(id)
+				if (!oldDoc) {
+					// added
+					this._docs.set(id, clone(newDoc))
+
+					changes.added.push(newDoc)
+				} else if (
+					oldDoc['mappingsHash'] !== newDoc['mappingsHash'] || // Fast-track for the timeline publications
+					oldDoc['timelineHash'] !== newDoc['timelineHash'] ||
+					!_.isEqual(oldDoc, newDoc)
+				) {
+					// changed
+
+					changes.changed.push(newDoc)
+					this._docs.set(id, clone(newDoc))
+				}
+			}
+
+			for (const id of oldIds) {
+				if (!newIds.has(id)) {
+					// Removed
+					this._docs.delete(id)
+					changes.removed.push(id)
+				}
+			}
+
+			this._publication.changed(changes)
 		}
 	}
 }
