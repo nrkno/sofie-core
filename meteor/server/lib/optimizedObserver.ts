@@ -162,6 +162,9 @@ export async function setUpOptimizedObserver<
 		// use pendingObservers, to ensure a second doesnt get created in parallel
 		const manualPromise = createManualPromise<OptimizedObserver<unknown, unknown, unknown, unknown>>()
 		pendingObservers[identifier] = manualPromise
+		manualPromise.catch(() => {
+			// Ensure it doesn't go uncaught
+		})
 
 		try {
 			const args = clone<ReadonlyDeep<Args>>(args0)

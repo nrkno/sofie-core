@@ -25,17 +25,17 @@ type Timeout = number
 
 export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: AsyncMongoCollection<DBInterface>,
-	hashName: string,
-	hashFields: string[],
+	hashName: keyof DBInterface,
+	hashFields: (keyof DBInterface)[],
 	skipEnsureUpdatedOnStart?: boolean
 ): void {
 	const doUpdate = (id: DBInterface['_id'], obj: any) => {
-		const newHash = getHash(stringifyObjects(_.pick(obj, ...hashFields)))
+		const newHash = getHash(stringifyObjects(_.pick(obj, ...(hashFields as string[]))))
 
 		if (newHash !== obj[hashName]) {
-			logger.debug('Updating hash:', id, hashName + ':', newHash)
+			logger.debug('Updating hash:', id, `${String(hashName)}:${newHash}`)
 			const update: Partial<DBInterface> = {}
-			update[hashName] = newHash
+			update[String(hashName)] = newHash
 			collection.update(id, { $set: update })
 		}
 	}
@@ -45,7 +45,7 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
 	collection.find().observeChanges({
 		changed: (id: DBInterface['_id'], changedFields) => {
 			// Ignore the hash field, to stop an infinite loop
-			delete changedFields[hashName]
+			delete changedFields[String(hashName)]
 
 			if (_.keys(changedFields).length > 0) {
 				const data: Timeout | undefined = observedChangesTimeouts.get(id)
