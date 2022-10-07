@@ -193,7 +193,7 @@ export abstract class WorkerParentBase {
 											data: error,
 										})
 										this.#threadStatus = ThreadStatus.Closed
-										break
+										continue
 									}
 
 									logger.info(`Worker ${this.#prettyName} ready`)
