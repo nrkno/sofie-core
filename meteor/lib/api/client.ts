@@ -51,10 +51,12 @@ export namespace ClientAPI {
 		}
 	}
 	export type ClientResponse<Result> = ClientResponseError | ClientResponseSuccess<Result>
-	export function isClientResponseError(res: any): res is ClientResponseError {
-		return res && typeof res === 'object' && 'error' in res && UserError.isUserError(res.error)
+	export function isClientResponseError(res: unknown): res is ClientResponseError {
+		const res0 = res as Partial<ClientResponseError>
+		return !!res0 && typeof res0 === 'object' && 'error' in res0 && UserError.isUserError(res0.error)
 	}
-	export function isClientResponseSuccess(res: any): res is ClientResponseSuccess<any> {
-		return !!(_.isObject(res) && !_.isArray(res) && res.error === undefined && res.success)
+	export function isClientResponseSuccess(res: unknown): res is ClientResponseSuccess<any> {
+		const res0 = res as any
+		return !!(_.isObject(res0) && !_.isArray(res0) && res0.error === undefined && res0.success)
 	}
 }

@@ -105,7 +105,6 @@ function getShowStyleBaseIdSegmentPartUi(
 	const currentRundown = Rundowns.findOne(partInstance.rundownId, {
 		fields: {
 			_id: 1,
-			_rank: 1,
 			showStyleBaseId: 1,
 			showStyleVariantId: 1,
 			name: 1,
@@ -117,7 +116,7 @@ function getShowStyleBaseIdSegmentPartUi(
 
 	const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === partInstance.segmentId)
 	if (currentRundown && segmentIndex >= 0) {
-		const rundownOrder = RundownPlaylistCollectionUtil.getRundownIDs(playlist)
+		const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(playlist)
 		const rundownIndex = rundownOrder.indexOf(partInstance.rundownId)
 		showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 		showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
@@ -195,7 +194,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 	const presenterLayoutId = protectString((params['presenterLayout'] as string) || '')
 
 	if (playlist) {
-		rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist)
+		rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 		const orderedSegmentsAndParts = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(playlist)
 		rundownIds = rundowns.map((rundown) => rundown._id)
 		const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
@@ -307,12 +306,10 @@ export class PresenterScreenBase extends MeteorReactComponent<
 				},
 			}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
 			if (playlist) {
-				this.subscribe(PubSub.rundowns, {
-					playlistId: playlist._id,
-				})
+				this.subscribe(PubSub.rundowns, [playlist._id], null)
 
 				this.autorun(() => {
-					const rundowns = RundownPlaylistCollectionUtil.getRundowns(playlist, undefined, {
+					const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
 						fields: {
 							_id: 1,
 							showStyleBaseId: 1,
@@ -326,14 +323,8 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					this.subscribe(PubSub.segments, {
 						rundownId: { $in: rundownIds },
 					})
-					this.subscribe(PubSub.parts, {
-						rundownId: { $in: rundownIds },
-					})
-					this.subscribe(PubSub.partInstances, {
-						rundownId: { $in: rundownIds },
-						playlistActivationId: playlist.activationId,
-						reset: { $ne: true },
-					})
+					this.subscribe(PubSub.parts, rundownIds)
+					this.subscribe(PubSub.partInstances, rundownIds, playlist.activationId)
 					this.subscribe(PubSub.showStyleBases, {
 						_id: {
 							$in: showStyleBaseIds,

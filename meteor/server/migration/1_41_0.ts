@@ -8,16 +8,6 @@ import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
-
 // Release 41
 export const addSteps = addMigrationSteps('1.41.0', [
 	{

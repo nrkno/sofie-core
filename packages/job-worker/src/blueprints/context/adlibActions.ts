@@ -15,11 +15,11 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../../logging'
-import { ReadonlyDeep, SetRequired } from 'type-fest'
+import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
 import { getMediaObjectDuration, ShowStyleUserContext, UserContextInfo } from './context'
 import { WatchedPackagesHelper } from './watchedPackages'
@@ -27,13 +27,12 @@ import { getCurrentTime } from '../../lib'
 import {
 	protectString,
 	protectStringArray,
-	UnprotectedStringProperties,
 	unprotectString,
 	unprotectStringArray,
 } from '@sofie-automation/corelib/dist/protectedString'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { JobContext } from '../../jobs'
-import { MongoQuery, MongoModifier } from '../../db'
+import { EditableMongoModifier, MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	innerFindLastPieceOnLayer,
@@ -241,9 +240,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 	}
 
-	async getPartForPreviousPiece(
-		piece: UnprotectedStringProperties<Pick<Piece, '_id'>>
-	): Promise<IBlueprintPart | undefined> {
+	async getPartForPreviousPiece(piece: Partial<Pick<IBlueprintPieceDB, '_id'>>): Promise<IBlueprintPart | undefined> {
 		if (!piece?._id) {
 			throw new Error('Cannot find Part from invalid Piece')
 		}
@@ -329,7 +326,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Can only update piece instances in current or next part instance')
 		}
 
-		const update: SetRequired<MongoModifier<PieceInstance>, '$set' | '$unset'> = {
+		const update: EditableMongoModifier<PieceInstance> = {
 			$set: {},
 			$unset: {},
 		}
@@ -350,6 +347,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			if (val === undefined) {
 				update.$unset[`piece.${k}`] = 1
 			} else {
+				// @ts-expect-error This can't key correctly because of the loosely typed `k`
 				update.$set[`piece.${k}`] = val
 			}
 		}

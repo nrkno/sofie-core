@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Tracker } from 'meteor/tracker'
-import { PubSub } from '../../../lib/api/pubsub'
+import { meteorSubscribe, PubSubTypes } from '../../../lib/api/pubsub'
 import { Meteor } from 'meteor/meteor'
 
 export namespace ReactiveDataHelper {
@@ -82,7 +82,7 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 
 	let result: ReturnType<T>
 	const fId = hashFncAndParams(functionName, params)
-	const _parentComputation = Tracker.currentComputation
+	// const _parentComputation = Tracker.currentComputation
 	if (isolatedAutorunsMem[fId] === undefined) {
 		const dep = new Tracker.Dependency()
 		dep.depend()
@@ -118,7 +118,7 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 		result = isolatedAutorunsMem[fId].value
 		isolatedAutorunsMem[fId].dependancy.depend()
 	}
-	// @ts-ignore
+	// @ts-expect-error it is assigned by the tracker
 	return result
 }
 
@@ -171,7 +171,7 @@ export function slowDownReactivity<T extends (...args: any) => any>(fnc: T, dela
 		if (invalidationTimeout) Meteor.clearTimeout(invalidationTimeout)
 	})
 
-	// @ts-ignore
+	// @ts-expect-error it is assigned by the tracker
 	return result
 }
 
@@ -190,8 +190,8 @@ export abstract class WithManagedTracker {
 		return this._subs.every((e) => e.ready())
 	}
 
-	protected subscribe(sub: PubSub, ...args: any[]) {
-		this._subs.push(Meteor.subscribe(sub, ...args))
+	protected subscribe<K extends keyof PubSubTypes>(sub: K, ...args: Parameters<PubSubTypes[K]>) {
+		this._subs.push(meteorSubscribe(sub, ...args))
 	}
 
 	protected autorun(

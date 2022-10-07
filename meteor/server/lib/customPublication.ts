@@ -1,7 +1,8 @@
-import { Meteor } from 'meteor/meteor'
-import { PubSub } from '../../lib/api/pubsub'
-import { ProtectedString, unprotectString } from '../../lib/lib'
+import { Meteor, Subscription } from 'meteor/meteor'
+import { PubSub, PubSubTypes } from '../../lib/api/pubsub'
+import { ProtectedString, protectStringObject, unprotectString, waitForPromise } from '../../lib/lib'
 import _ from 'underscore'
+import { SubscriptionContext } from '../publications/lib'
 
 class CustomPublish {
 	private _onStop: () => void
@@ -31,13 +32,17 @@ class CustomPublish {
 	}
 }
 
-function genericMeteorCustomPublish(
-	publicationName: string,
+function genericMeteorCustomPublish<K extends keyof PubSubTypes>(
+	publicationName: K,
 	customCollectionName: string,
-	cb: (publication: CustomPublish, ...args: any[]) => void
+	cb: (this: SubscriptionContext, publication: CustomPublish, ...args: Parameters<PubSubTypes[K]>) => void
 ) {
 	Meteor.publish(publicationName, function (...args: any[]) {
-		cb(new CustomPublish(this, customCollectionName), ...args)
+		cb.call(
+			protectStringObject<Subscription, 'userId'>(this),
+			new CustomPublish(this, customCollectionName),
+			...(args as any)
+		)
 	})
 }
 
@@ -54,7 +59,7 @@ export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 	private _docs: { [id: string]: DBObj } = {}
 	private _firstRun: boolean = true
 	constructor(private _publication: CustomPublish) {}
-	onStop(callback: () => void) {
+	onStop(callback: () => void): void {
 		this._publication.onStop(callback)
 	}
 
@@ -62,7 +67,7 @@ export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 		return this._firstRun
 	}
 
-	updatedDocs(newDocs: DBObj[]) {
+	updatedDocs(newDocs: DBObj[]): void {
 		const newIds: { [id: string]: true } = {}
 		// figure out which documents have changed
 
@@ -81,6 +86,7 @@ export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 				this._publication.added(id, newDoc)
 			} else if (
 				this._docs[id]['mappingsHash'] !== newDoc['mappingsHash'] || // Fast-track for the timeline publications
+				this._docs[id]['timelineHash'] !== newDoc['timelineHash'] ||
 				!_.isEqual(this._docs[id], newDoc)
 			) {
 				// changed
@@ -106,12 +112,16 @@ export class CustomPublishArray<DBObj extends { _id: ProtectedString<any> }> {
 }
 
 /** Convenience function for making custom publications of array-data */
-export function meteorCustomPublishArray<DBObj extends { _id: ProtectedString<any> }>(
-	publicationName: PubSub,
+export function meteorCustomPublishArray<K extends keyof PubSubTypes>(
+	publicationName: K,
 	customCollectionName: string,
-	cb: (publication: CustomPublishArray<DBObj>, ...args: any[]) => void
+	cb: (
+		this: SubscriptionContext,
+		publication: CustomPublishArray<ReturnType<PubSubTypes[K]>>,
+		...args: Parameters<PubSubTypes[K]>
+	) => Promise<void>
 ): void {
-	genericMeteorCustomPublish(publicationName, customCollectionName, (pub, ...args) => {
-		cb(new CustomPublishArray(pub), ...args)
+	genericMeteorCustomPublish(publicationName, customCollectionName, function (pub, ...args) {
+		waitForPromise(cb.call(this, new CustomPublishArray(pub), ...args))
 	})
 }

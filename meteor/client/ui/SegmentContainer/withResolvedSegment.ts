@@ -62,6 +62,8 @@ export interface PieceUi extends PieceExtended {
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
 
+export const FREEZE_FRAME_FLASH = 5000
+
 export interface IProps {
 	// id: string
 	rundownId: RundownId
@@ -200,7 +202,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 					: Math.random() * 2000 + 500
 			)
 
-			const rundownOrder = RundownPlaylistCollectionUtil.getRundownIDs(props.playlist)
+			const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)
 			const rundownIndex = rundownOrder.indexOf(segment.rundownId)
 
 			const o = RundownUtils.getResolvedSegment(

@@ -35,13 +35,13 @@ export const PackageWorkStatus = withTranslation()(
 			})
 		}
 		restartExpectation(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, status: ExpectedPackageWorkStatus): void {
-			doUserAction(this.props.t, e, UserAction.PACKAGE_MANAGER_RESTART_WORK, (e) =>
-				MeteorCall.userAction.packageManagerRestartExpectation(e, status.deviceId, unprotectString(status._id))
+			doUserAction(this.props.t, e, UserAction.PACKAGE_MANAGER_RESTART_WORK, (e, ts) =>
+				MeteorCall.userAction.packageManagerRestartExpectation(e, ts, status.deviceId, unprotectString(status._id))
 			)
 		}
 		abortExpectation(e: React.MouseEvent<HTMLButtonElement, MouseEvent>, status: ExpectedPackageWorkStatus): void {
-			doUserAction(this.props.t, e, UserAction.PACKAGE_MANAGER_RESTART_WORK, (e) =>
-				MeteorCall.userAction.packageManagerAbortExpectation(e, status.deviceId, unprotectString(status._id))
+			doUserAction(this.props.t, e, UserAction.PACKAGE_MANAGER_RESTART_WORK, (e, ts) =>
+				MeteorCall.userAction.packageManagerAbortExpectation(e, ts, status.deviceId, unprotectString(status._id))
 			)
 		}
 		render() {

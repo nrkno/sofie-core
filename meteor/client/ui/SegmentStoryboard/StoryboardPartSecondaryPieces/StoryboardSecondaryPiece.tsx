@@ -24,6 +24,8 @@ interface IProps {
 	style?: React.CSSProperties
 	onPointerEnter?: React.EventHandler<React.PointerEvent<HTMLDivElement>>
 	onPointerLeave?: React.EventHandler<React.PointerEvent<HTMLDivElement>>
+	onClick?: React.EventHandler<React.MouseEvent<HTMLDivElement>>
+	onDoubleClick?: React.EventHandler<React.MouseEvent<HTMLDivElement>>
 }
 
 function renderPieceInside(
@@ -48,7 +50,6 @@ function renderPieceInside(
 		case SourceLayerType.LOCAL:
 		case SourceLayerType.REMOTE:
 		case SourceLayerType.TRANSITION:
-		case SourceLayerType.METADATA:
 		case SourceLayerType.UNKNOWN:
 		case undefined:
 			return DefaultRenderer({ ...props, elementOffset, hovering, typeClass })
@@ -70,6 +71,8 @@ export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(func
 		className,
 		onPointerEnter: onPointerEnterCallback,
 		onPointerLeave: onPointerLeaveCallback,
+		onClick,
+		onDoubleClick,
 	} = props
 	const [highlight] = useState(false)
 	const element = useRef<HTMLDivElement>(null)
@@ -114,6 +117,8 @@ export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(func
 			highlight={highlight}
 			onPointerEnter={onPointerEnter}
 			onPointerLeave={onPointerLeave}
+			onClick={onClick}
+			onDoubleClick={onDoubleClick}
 			ref={element}
 			style={style}
 		>

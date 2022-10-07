@@ -3,6 +3,13 @@ import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout
 import { ReadonlyDeep } from 'type-fest'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from '../infinites'
 
+/**
+ * Check if a PieceInstance has 'definitely ended'.
+ * In other words, check if a PieceInstance has finished playback long enough ago that it can be excluded from the timeline
+ * @param pieceInstance PieceInstnace to check if it has definitely ended
+ * @param nowInPart Time to use as 'now', relative to the start of the part
+ * @returns Whether the PieceInstance has definitely ended
+ */
 export function hasPieceInstanceDefinitelyEnded(
 	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	nowInPart: number

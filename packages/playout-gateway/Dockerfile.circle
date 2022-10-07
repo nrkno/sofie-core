@@ -1,4 +1,4 @@
-FROM node:16.14-alpine
+FROM node:16.16-alpine
 RUN apk add --no-cache tzdata
 
 COPY package.json /opt/
@@ -6,6 +6,7 @@ COPY node_modules /opt/node_modules
 COPY playout-gateway /opt/playout-gateway
 COPY blueprints-integration /opt/blueprints-integration
 COPY server-core-integration /opt/server-core-integration
+COPY shared-lib /opt/shared-lib
 
 WORKDIR /opt/playout-gateway
 CMD ["yarn", "start"]

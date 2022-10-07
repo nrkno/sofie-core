@@ -253,6 +253,7 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	 * 'only': show only Rundown Baseline AdLib Pieces matching this filter
 	 */
 	rundownBaseline: boolean | 'only'
+	disableHoverInspector: boolean
 }
 
 export interface RundownLayoutFilter extends RundownLayoutFilterBase {
@@ -345,6 +346,7 @@ export interface RundownLayoutBase {
 	iconColor: string
 	/* Customizable region that the layout modifies. */
 	regionId: CustomizableRegions
+	isDefaultLayout: boolean
 }
 
 export interface RundownLayoutWithFilters extends RundownLayoutBase {
@@ -379,6 +381,7 @@ export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {
 	exposeAsStandalone: boolean
 	openByDefault: boolean
 	startingHeight?: number
+	showInspector: boolean
 	disableContextMenu: boolean
 	hideDefaultStartExecute: boolean
 	/* Customizable region that the layout modifies. */

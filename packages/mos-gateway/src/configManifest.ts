@@ -2,20 +2,24 @@
  * This file contains the manifest for the config as displayed in the server-core
  * UI.
  */
-import { DeviceConfigManifest,ConfigManifestEntryType } from '@sofie-automation/server-core-integration'
+import { DeviceConfigManifest, ConfigManifestEntryType } from '@sofie-automation/server-core-integration'
+import {
+	DEFAULT_MOS_TIMEOUT_TIME,
+	DEFAULT_MOS_HEARTBEAT_INTERVAL,
+} from '@sofie-automation/shared-lib/dist/core/constants'
 
 export const MOS_DEVICE_CONFIG_MANIFEST: DeviceConfigManifest = {
 	deviceConfig: [
 		{
 			id: 'mosId',
-			name: 'MOS ID of Gateway (Sofie MOS ID)',
-			type: ConfigManifestEntryType.STRING
-
+			name: 'MOS ID of Mos-Gateway (Sofie MOS ID)',
+			type: ConfigManifestEntryType.STRING,
+			hint: 'MOS ID of the Sofie MOS device (ie our ID). Example: sofie.mos',
 		},
 		{
 			id: 'debugLogging',
 			name: 'Activate Debug Logging',
-			type: ConfigManifestEntryType.BOOLEAN
+			type: ConfigManifestEntryType.BOOLEAN,
 		},
 		{
 			id: 'devices',
@@ -24,57 +28,77 @@ export const MOS_DEVICE_CONFIG_MANIFEST: DeviceConfigManifest = {
 			isSubDevices: true,
 			defaultType: 'default',
 			config: {
-				'default': [
+				default: [
 					{
 						id: 'primary.id',
-						name: 'Primary ID (Newsroom System MOS ID)',
+						name: 'Primary ID',
 						columnName: 'Primary ID',
-						type: ConfigManifestEntryType.STRING
+						type: ConfigManifestEntryType.STRING,
+						hint: 'MOS ID of the Newsroom System (NRCS) we connect to',
 					},
 					{
 						id: 'primary.host',
-						name: 'Primary Host (IP or Hostname)',
-						columnName: 'Primary Host',
-						type: ConfigManifestEntryType.STRING
+						name: 'Primary Host',
+						columnName: 'Host',
+						type: ConfigManifestEntryType.STRING,
+						hint: 'IP or Hostname',
 					},
 					{
 						id: 'primary.dontUseQueryPort',
 						name: `Don't use the Query port`,
 						columnName: 'No query',
-						type: ConfigManifestEntryType.BOOLEAN
+						type: ConfigManifestEntryType.BOOLEAN,
 					},
 					{
 						id: 'primary.timeout',
 						name: '(Optional) Timeout (ms)',
 						columnName: 'Timeout',
-						type: ConfigManifestEntryType.INT
+						type: ConfigManifestEntryType.INT,
+						hint: `Timeout for sent messages, default is ${DEFAULT_MOS_TIMEOUT_TIME}`,
+					},
+					{
+						id: 'primary.heartbeatInterval',
+						name: '(Optional) Heartbeat interval (ms)',
+						columnName: 'Heartbeat',
+						type: ConfigManifestEntryType.INT,
+						hint: `How often to ping NRCS to determine connection status, default is ${DEFAULT_MOS_HEARTBEAT_INTERVAL}`,
 					},
 					{
 						id: 'secondary.id',
-						name: 'Secondary ID (Newsroom System MOS ID)',
+						name: 'Secondary ID',
 						columnName: 'Secondary ID',
-						type: ConfigManifestEntryType.STRING
+						type: ConfigManifestEntryType.STRING,
+						hint: 'MOS ID of the Newsroom System (NRCS) we connect to',
 					},
 					{
 						id: 'secondary.host',
-						name: 'Secondary Host (IP or Hostname)',
-						columnName: 'Secondary Host',
-						type: ConfigManifestEntryType.STRING
+						name: 'Secondary Host',
+						columnName: 'Host',
+						type: ConfigManifestEntryType.STRING,
+						hint: 'IP or Hostname',
 					},
 					{
 						id: 'secondary.dontUseQueryPort',
-						name: `Don't use the Query port`,
+						name: `Secondary: Don't use the Query port`,
 						columnName: 'No query',
-						type: ConfigManifestEntryType.BOOLEAN
+						type: ConfigManifestEntryType.BOOLEAN,
 					},
 					{
 						id: 'secondary.timeout',
-						name: '(Optional) Timeout (ms)',
+						name: 'Secondary: (Optional) Timeout (ms)',
 						columnName: 'Timeout',
-						type: ConfigManifestEntryType.INT
-					}
-				]
-			}
-		}
-	]
+						type: ConfigManifestEntryType.INT,
+						hint: `Timeout for sent messages, default is ${DEFAULT_MOS_TIMEOUT_TIME}`,
+					},
+					{
+						id: 'secondary.heartbeatInterval',
+						name: 'Secondary: (Optional) Heartbeat interval (ms)',
+						columnName: 'Heartbeat',
+						type: ConfigManifestEntryType.INT,
+						hint: `How often to ping NRCS to determine connection status, default is ${DEFAULT_MOS_HEARTBEAT_INTERVAL}`,
+					},
+				],
+			},
+		},
+	],
 }

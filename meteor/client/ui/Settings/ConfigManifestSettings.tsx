@@ -25,13 +25,12 @@ import {
 	ConfigManifestEntryFloat,
 	ConfigManifestEntryInt,
 	ConfigManifestEntryMultilineString,
-	ConfigManifestEntryNumber,
 	ConfigManifestEntrySelectFromOptions,
 	ConfigManifestEntryString,
 	ConfigManifestEntryJson,
 } from '@sofie-automation/blueprints-integration'
 import { DBObj, ProtectedString, objectPathGet, getRandomString } from '../../../lib/lib'
-import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
+import { MongoModifier } from '../../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { getHelpMode } from '../../lib/localStorage'
 import {
@@ -47,6 +46,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { MongoCollection } from '../../../lib/collections/lib'
 
 function filterSourceLayers(
 	select: ConfigManifestEntrySourceLayers<true | false>,
@@ -101,7 +101,7 @@ function getTableColumnValues<DBInterface extends { _id: ProtectedString<any> }>
 }
 
 function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
-	collection: TransformedCollection<DBInterface, DBInterface>,
+	collection: MongoCollection<DBInterface>,
 	configPath: string,
 	object: DBInterface,
 	item: BasicConfigManifestEntry | ResolvedBasicConfigManifestEntry,
@@ -137,7 +137,6 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 					}
 				/>
 			)
-		case ConfigManifestEntryType.NUMBER:
 		case ConfigManifestEntryType.INT:
 			return (
 				<EditAttribute
@@ -253,7 +252,6 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 type ResolvedBasicConfigManifestEntry =
 	| ConfigManifestEntryString
 	| ConfigManifestEntryMultilineString
-	| ConfigManifestEntryNumber
 	| ConfigManifestEntryInt
 	| ConfigManifestEntryFloat
 	| ConfigManifestEntryBoolean
@@ -265,7 +263,7 @@ type ResolvedBasicConfigManifestEntry =
 	| ConfigManifestEntryJson
 
 interface IConfigManifestSettingsProps<
-	TCol extends TransformedCollection<DBInterface, DBInterface>,
+	TCol extends MongoCollection<DBInterface>,
 	DBInterface extends { _id: ProtectedString<any> }
 > {
 	manifest: ConfigManifestEntry[]
@@ -291,7 +289,7 @@ interface IConfigManifestSettingsState {
 }
 
 interface IConfigManifestTableProps<
-	TCol extends TransformedCollection<DBInterface, DBInterface>,
+	TCol extends MongoCollection<DBInterface>,
 	DBInterface extends { _id: ProtectedString<any> }
 > {
 	item: ConfigManifestEntryTable
@@ -316,7 +314,7 @@ interface IConfigManifestTableState {
 }
 
 export class ConfigManifestTable<
-	TCol extends TransformedCollection<DBInterface, DBInterface>,
+	TCol extends MongoCollection<DBInterface>,
 	DBInterface extends DBObj
 > extends React.Component<Translated<IConfigManifestTableProps<TCol, DBInterface>>, IConfigManifestTableState> {
 	constructor(props: Translated<IConfigManifestTableProps<TCol, DBInterface>>) {
@@ -500,7 +498,6 @@ export class ConfigManifestTable<
 						} else {
 							return (a as string).localeCompare(b as string)
 						}
-					case ConfigManifestEntryType.NUMBER:
 					case ConfigManifestEntryType.INT:
 					case ConfigManifestEntryType.FLOAT:
 						return (a as number) - (b as number)
@@ -526,7 +523,6 @@ export class ConfigManifestTable<
 										<th key={col.id}>
 											<span title={col.description}>{col.name} </span>
 											{(col.type === ConfigManifestEntryType.STRING ||
-												col.type === ConfigManifestEntryType.NUMBER ||
 												col.type === ConfigManifestEntryType.INT ||
 												col.type === ConfigManifestEntryType.FLOAT) && (
 												<button
@@ -615,7 +611,7 @@ export class ConfigManifestTable<
 }
 
 export class ConfigManifestSettings<
-	TCol extends TransformedCollection<DBInterface, DBInterface>,
+	TCol extends MongoCollection<DBInterface>,
 	DBInterface extends DBObj
 > extends React.Component<Translated<IConfigManifestSettingsProps<TCol, DBInterface>>, IConfigManifestSettingsState> {
 	constructor(props: Translated<IConfigManifestSettingsProps<TCol, DBInterface>>) {
@@ -769,7 +765,6 @@ export class ConfigManifestSettings<
 				) : (
 					value.toString()
 				)
-			case ConfigManifestEntryType.NUMBER:
 			case ConfigManifestEntryType.INT:
 				return _.isNumber(value) && item.zeroBased ? (value + 1).toString() : value.toString()
 			default:
@@ -928,7 +923,7 @@ export class ConfigManifestSettings<
 									modifiedClassName="bghl"
 									type="dropdown"
 									options={this.getAddOptions()}
-									updateFunction={(e, v) => this.setState({ addItemId: v })}
+									updateFunction={(_e, v) => this.setState({ addItemId: v })}
 									overrideDisplayValue={this.state.addItemId}
 								/>
 							</div>

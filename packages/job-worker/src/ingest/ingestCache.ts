@@ -63,9 +63,7 @@ export class RundownIngestDataCache {
 			{ rundownId }
 		)
 
-		const ingestObjCache = new RundownIngestDataCache(context, rundownId, col)
-
-		return ingestObjCache
+		return new RundownIngestDataCache(context, rundownId, col)
 	}
 
 	fetchRundown(): LocalIngestRundown | undefined {
@@ -93,14 +91,14 @@ export class RundownIngestDataCache {
 				const ingestSegment = segmentEntry.data as LocalIngestSegment
 				ingestSegment.modified = segmentEntry.modified
 
-				_.each(objs, (entry) => {
+				for (const entry of objs) {
 					if (entry.type === IngestCacheType.PART) {
 						const ingestPart = entry.data as LocalIngestPart
 						ingestPart.modified = entry.modified
 
 						ingestSegment.parts.push(ingestPart)
 					}
-				})
+				}
 
 				ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 				ingestRundown.segments.push(ingestSegment)
@@ -129,14 +127,14 @@ export class RundownIngestDataCache {
 		const ingestSegment = segmentEntry.data as LocalIngestSegment
 		ingestSegment.modified = segmentEntry.modified
 
-		_.each(cacheEntries, (entry) => {
+		for (const entry of cacheEntries) {
 			if (entry.type === IngestCacheType.PART) {
 				const ingestPart = entry.data as LocalIngestPart
 				ingestPart.modified = entry.modified
 
 				ingestSegment.parts.push(ingestPart)
 			}
-		})
+		}
 
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 

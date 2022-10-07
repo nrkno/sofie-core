@@ -73,8 +73,8 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
 			const { t } = this.props
-			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
-				MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
+			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e, ts) =>
+				MeteorCall.userAction.sourceLayerStickyPieceStart(e, ts, this.props.playlist._id, sourceLayerId)
 			)
 		}
 	}
@@ -102,13 +102,21 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		if ((!this.isAdLibOnAir(piece) || queueWhenOnAir) && this.props.playlist && currentPartInstanceId) {
 			if (piece.isAction && piece.adlibAction) {
 				const action = piece.adlibAction
-				doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-					MeteorCall.userAction.executeAction(e, this.props.playlist._id, action._id, action.actionId, action.userData)
+				doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e, ts) =>
+					MeteorCall.userAction.executeAction(
+						e,
+						ts,
+						this.props.playlist._id,
+						action._id,
+						action.actionId,
+						action.userData
+					)
 				)
 			} else if (!piece.isGlobal && !piece.isAction) {
-				doUserAction(t, e, UserAction.START_ADLIB, (e) =>
+				doUserAction(t, e, UserAction.START_ADLIB, (e, ts) =>
 					MeteorCall.userAction.segmentAdLibPieceStart(
 						e,
+						ts,
 						this.props.playlist._id,
 						currentPartInstanceId,
 						piece._id,
@@ -116,9 +124,10 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 					)
 				)
 			} else if (piece.isGlobal && !piece.isSticky) {
-				doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+				doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e, ts) =>
 					MeteorCall.userAction.baselineAdLibPieceStart(
 						e,
+						ts,
 						this.props.playlist._id,
 						currentPartInstanceId,
 						piece._id,
@@ -134,8 +143,8 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 	take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserAction.TAKE, (e) =>
-				MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+			doUserAction(t, e, UserAction.TAKE, (e, ts) =>
+				MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
 			)
 		}
 	}
@@ -276,7 +285,7 @@ export const AdLibRegionPanel = translateWithTracker<
 			isLiveLine: false,
 		})
 	},
-	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	(_data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
 )(AdLibRegionPanelWithStatus)

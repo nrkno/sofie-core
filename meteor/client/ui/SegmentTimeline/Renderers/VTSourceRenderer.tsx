@@ -10,7 +10,7 @@ import { MediaObject } from '../../../../lib/collections/MediaObjects'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 
 import { Lottie } from '@crello/react-lottie'
-// @ts-ignore Not recognized by Typescript
+// @ts-expect-error Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { VTContent } from '@sofie-automation/blueprints-integration'
@@ -402,21 +402,26 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
 
+		const duration = this.renderDuration()
+
 		return !this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 			<span className="segment-timeline__piece__label" ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
 				<span
-					className={ClassNames(
-						'segment-timeline__piece__label',
-						'with-duration',
-						`with-duration--${this.getSourceDurationLabelAlignment()}`,
-						{
-							'overflow-label': end !== '',
-						}
-					)}
+					className={ClassNames('segment-timeline__piece__label', {
+						'with-duration': !!duration,
+						[`with-duration--${this.getSourceDurationLabelAlignment()}`]: !!duration,
+						'overflow-label': end !== '',
+					})}
 				>
-					<span>{begin}</span>
-					{this.renderDuration()}
+					{duration ? (
+						<>
+							<span>{begin}</span>
+							{duration}
+						</>
+					) : (
+						begin
+					)}
 				</span>
 				{begin && end === '' && vtContent && vtContent.loop && (
 					<div className="segment-timeline__piece__label label-icon label-loop-icon">

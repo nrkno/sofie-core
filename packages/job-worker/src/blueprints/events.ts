@@ -2,8 +2,6 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { CacheForPlayout } from '../playout/cache'
 import { Time } from '@sofie-automation/blueprints-integration'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { ReadonlyDeep } from 'type-fest'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { JobContext } from '../jobs'
 import { PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -130,50 +128,54 @@ export function reportPartInstanceHasStopped(
 	}
 }
 
-export async function reportPieceHasStarted(
+export function reportPieceHasStarted(
 	context: JobContext,
-	playlist: ReadonlyDeep<DBRundownPlaylist>,
+	cache: CacheForPlayout,
 	pieceInstance: PieceInstance,
 	timestamp: Time
-): Promise<void> {
-	await Promise.all([
-		context.directCollections.PieceInstances.update(pieceInstance._id, {
+): void {
+	if (pieceInstance.startedPlayback !== timestamp) {
+		cache.PieceInstances.update(pieceInstance._id, {
 			$set: {
 				startedPlayback: timestamp,
 				stoppedPlayback: 0,
 			},
-		}),
-
+		})
 		// Update the copy in the next-part if there is one, so that the infinite has the same start after a take
-		pieceInstance.infinite && playlist?.nextPartInstanceId
-			? context.directCollections.PieceInstances.update(
-					{
-						partInstanceId: playlist.nextPartInstanceId,
-						'infinite.infiniteInstanceId': pieceInstance.infinite.infiniteInstanceId,
+		const playlist = cache.Playlist.doc
+		if (pieceInstance.infinite && playlist.nextPartInstanceId) {
+			cache.PieceInstances.update(
+				{
+					partInstanceId: playlist.nextPartInstanceId,
+					'infinite.infiniteInstanceId': pieceInstance.infinite.infiniteInstanceId,
+				},
+				{
+					$set: {
+						startedPlayback: timestamp,
+						stoppedPlayback: 0,
 					},
-					{
-						$set: {
-							startedPlayback: timestamp,
-							stoppedPlayback: 0,
-						},
-					}
-			  )
-			: null,
-	])
-
-	handlePartInstanceTimingEvent(context, playlist._id, pieceInstance.partInstanceId)
+				}
+			)
+		}
+		cache.deferAfterSave(() => {
+			handlePartInstanceTimingEvent(context, playlist._id, pieceInstance.partInstanceId)
+		})
+	}
 }
-export async function reportPieceHasStopped(
+export function reportPieceHasStopped(
 	context: JobContext,
-	playlist: ReadonlyDeep<DBRundownPlaylist>,
+	cache: CacheForPlayout,
 	pieceInstance: PieceInstance,
 	timestamp: Time
-): Promise<void> {
-	await context.directCollections.PieceInstances.update(pieceInstance._id, {
-		$set: {
-			stoppedPlayback: timestamp,
-		},
-	})
-
-	handlePartInstanceTimingEvent(context, playlist._id, pieceInstance.partInstanceId)
+): void {
+	if (pieceInstance.stoppedPlayback !== timestamp) {
+		cache.PieceInstances.update(pieceInstance._id, {
+			$set: {
+				stoppedPlayback: timestamp,
+			},
+		})
+		cache.deferAfterSave(() => {
+			handlePartInstanceTimingEvent(context, cache.PlaylistId, pieceInstance.partInstanceId)
+		})
+	}
 }

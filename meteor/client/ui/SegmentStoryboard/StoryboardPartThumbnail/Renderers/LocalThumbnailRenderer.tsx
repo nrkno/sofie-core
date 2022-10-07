@@ -1,8 +1,6 @@
 import React from 'react'
 import { EvsContent } from '@sofie-automation/blueprints-integration'
 import { IProps } from './ThumbnailRendererFactory'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPhotoVideo } from '@fortawesome/free-solid-svg-icons'
 
 export function LocalThumbnailRenderer({ pieceInstance }: IProps) {
 	const localContent = pieceInstance.instance.piece.content as EvsContent
@@ -11,9 +9,6 @@ export function LocalThumbnailRenderer({ pieceInstance }: IProps) {
 
 	return (
 		<>
-			<div className="segment-storyboard__thumbnail__icon">
-				<FontAwesomeIcon icon={faPhotoVideo} />
-			</div>
 			<div className="segment-storyboard__thumbnail__label segment-storyboard__thumbnail__label--lg">
 				{color && (
 					<span

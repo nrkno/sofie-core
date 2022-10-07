@@ -8,7 +8,7 @@ import * as _ from 'underscore'
 export function getLogLevel(): LogLevel {
 	return logger.level as LogLevel
 }
-export function setLogLevel(level: LogLevel, startup = false) {
+export function setLogLevel(level: LogLevel, startup = false): void {
 	if (logger.level !== level || startup) {
 		logger.level = level
 		if (transports.console) {
@@ -102,7 +102,6 @@ if (logToFile || logPath !== '') {
 			leadingZeros(time.getSeconds(), 2)
 		const logDirectory = getAbsolutePath() + '/.meteor/local/log'
 		logPath = logDirectory + '/log_' + startDate + '.log'
-		// let logPath = './log/'
 
 		if (!fs.existsSync(logDirectory)) {
 			fs.mkdirSync(logDirectory)

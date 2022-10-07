@@ -12,6 +12,7 @@ import * as _ from 'underscore'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { runIngestOperation } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { DEFAULT_MOS_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 
 export namespace MOSDeviceActions {
 	export async function reloadRundown(
@@ -23,7 +24,7 @@ export namespace MOSDeviceActions {
 		try {
 			const mosRunningOrder: MOS.IMOSRunningOrder = await PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 				peripheralDevice._id,
-				10 * 1000, // 10 seconds, sometimes the NRCS is pretty slow in returning a response
+				DEFAULT_MOS_TIMEOUT_TIME + 1000,
 				'triggerGetRunningOrder',
 				rundown.externalId
 			)

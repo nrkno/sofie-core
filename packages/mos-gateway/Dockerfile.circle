@@ -1,10 +1,11 @@
-FROM node:16.14-alpine
+FROM node:16.16-alpine
 RUN apk add --no-cache tzdata
 
 COPY package.json /opt/
 COPY node_modules /opt/node_modules
 COPY mos-gateway /opt/mos-gateway
 COPY server-core-integration /opt/server-core-integration
+COPY shared-lib /opt/shared-lib
 
 WORKDIR /opt/mos-gateway
 CMD ["yarn", "start"]

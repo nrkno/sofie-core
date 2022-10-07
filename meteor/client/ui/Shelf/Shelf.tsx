@@ -61,6 +61,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	fullViewport?: boolean
 	shelfDisplayOptions: ShelfDisplayOptions
 	bucketDisplayFilter: number[] | undefined
+	showInspector: boolean
 
 	onChangeExpanded: (value: boolean) => void
 	onChangeBottomMargin?: (newBottomMargin: string) => void
@@ -81,7 +82,6 @@ const MAX_HEIGHT = 95
 export const DEFAULT_TAB = ShelfTabs.ADLIB
 
 export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> {
-	private element: HTMLDivElement | null = null
 	private _mouseStart: {
 		x: number
 		y: number
@@ -127,8 +127,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, UserAction.TAKE, (e) =>
-				MeteorCall.userAction.take(e, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+			doUserAction(t, e, UserAction.TAKE, (e, ts) =>
+				MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
 			)
 		}
 	}
@@ -178,8 +178,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 				this.setState({
 					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${defaultTab._id}`,
 				})
-			} else if (this.props.rundownLayout.filters.length >= 0) {
-				// there is no AdLib dab so some default needs to be selected
+			} else if (this.props.rundownLayout.filters.length > 0) {
+				// there is no AdLib tab so some default needs to be selected
 				this.setState({
 					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${this.props.rundownLayout.filters[0]._id}`,
 				})
@@ -217,7 +217,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 	blurActiveElement = () => {
 		try {
-			// @ts-ignore
+			// @ts-expect-error blur isnt always valid
 			document.activeElement.blur()
 		} catch (e) {
 			// do nothing
@@ -374,10 +374,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.selectPiece(e.piece)
 	}
 
-	private setRef = (element: HTMLDivElement | null) => {
-		this.element = element
-	}
-
 	selectPiece = (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => {
 		this.setState({
 			selectedPiece: piece,
@@ -400,7 +396,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					moving: this.state.moving,
 				})}
 				style={fullViewport ? undefined : this.getStyle()}
-				ref={this.setRef}
 			>
 				{!this.props.rundownLayout?.disableContextMenu && (
 					<ShelfContextMenu
@@ -492,7 +487,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							/>
 						</ErrorBoundary>
 					) : null}
-					{shelfDisplayOptions.enableInspector ? (
+					{this.props.rundownLayout?.showInspector ? (
 						<ErrorBoundary>
 							<ShelfInspector
 								selected={this.state.selectedPiece}

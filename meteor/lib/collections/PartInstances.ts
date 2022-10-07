@@ -70,7 +70,7 @@ registerIndex(PartInstances, {
 })
 registerIndex(PartInstances, {
 	rundownId: 1,
-	// @ts-ignore deep property
+	// @ts-expect-error deep property
 	'part._id': 1,
 	takeCount: 1,
 	reset: 1,

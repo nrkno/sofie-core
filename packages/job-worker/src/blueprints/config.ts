@@ -1,8 +1,9 @@
 import { ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	BasicConfigItemValue,
+	ConfigItemValue,
 	ConfigManifestEntry,
 	IBlueprintConfig,
 	ShowStyleBlueprintManifest,
@@ -14,6 +15,8 @@ import _ = require('underscore')
 import { logger } from '../logging'
 import { CommonContext } from './context'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { StudioCacheContext } from '../jobs'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
@@ -26,49 +29,58 @@ export function getStudioConfigRef(studioId: StudioId, configKey: string): strin
 export function getShowStyleConfigRef(showStyleVariantId: ShowStyleVariantId, configKey: string): string {
 	return '${showStyle.' + showStyleVariantId + '.' + configKey + '}'
 }
-// export async function retrieveRefs(
-// 	stringWithReferences: string,
-// 	modifier?: (str: string) => string,
-// 	bailOnError?: boolean
-// ): Promise<string> {
-// 	if (!stringWithReferences) return stringWithReferences
 
-// 	const refs = stringWithReferences.match(/\$\{[^}]+\}/g) || []
-// 	for (const ref of refs) {
-// 		if (ref) {
-// 			let value = (await retrieveRef(ref, bailOnError)) + ''
-// 			if (value) {
-// 				if (modifier) value = modifier(value)
-// 				stringWithReferences = stringWithReferences.replace(ref, value)
-// 			}
-// 		}
-// 	}
-// 	return stringWithReferences
-// }
-// async function retrieveRef(reference: string, bailOnError?: boolean): Promise<ConfigItemValue | string | undefined> {
-// 	if (!reference) return undefined
-// 	const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
-// 	if (m) {
-// 		if (m[1] === 'studio' && _.isString(m[2]) && _.isString(m[3])) {
-// 			const studioId: StudioId = protectString(m[2])
-// 			const configId = m[3]
-// 			const studio = await Studios.findOneAsync(studioId)
-// 			if (studio) {
-// 				return objectPathGet(studio.blueprintConfig, configId)
-// 			} else if (bailOnError) throw new Error(`Ref "${reference}": Studio "${studioId}" not found`)
-// 		} else if (m[1] === 'showStyle' && _.isString(m[2]) && _.isString(m[3])) {
-// 			const showStyleVariantId = protectString<ShowStyleVariantId>(m[2])
-// 			const configId = m[3]
-// 			const showStyleCompound = await getShowStyleCompound(showStyleVariantId)
-// 			if (showStyleCompound) {
-// 				return objectPathGet(showStyleCompound.blueprintConfig, configId)
-// 			} else if (bailOnError)
-// 				throw new Error(`Ref "${reference}": Showstyle variant "${showStyleVariantId}" not found`)
-// 		}
-// 	}
-// 	return undefined
-// }
-// }
+export async function retrieveBlueprintConfigRefs(
+	context: StudioCacheContext,
+	stringWithReferences: string,
+	modifier?: (str: string) => string,
+	bailOnError?: boolean
+): Promise<string> {
+	if (!stringWithReferences) return stringWithReferences
+
+	const refs = stringWithReferences.match(/\$\{[^}]+\}/g) || []
+	for (const ref of refs) {
+		if (ref) {
+			let value = (await retrieveBlueprintConfigRef(context, ref, bailOnError)) + ''
+			if (value) {
+				if (modifier) value = modifier(value)
+				stringWithReferences = stringWithReferences.replace(ref, value)
+			}
+		}
+	}
+	return stringWithReferences
+}
+async function retrieveBlueprintConfigRef(
+	context: StudioCacheContext,
+	reference: string,
+	bailOnError?: boolean
+): Promise<ConfigItemValue | undefined> {
+	if (!reference) return undefined
+
+	const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
+	if (m) {
+		if (m[1] === 'studio' && _.isString(m[2]) && _.isString(m[3])) {
+			const studioId: StudioId = protectString(m[2])
+			if (studioId === context.studioId) {
+				const configId = m[3]
+				const studioConfig = context.getStudioBlueprintConfig()
+				return objectPathGet(studioConfig, configId)
+			} else if (bailOnError) throw new Error(`Ref "${reference}": Studio "${studioId}" not valid`)
+		} else if (m[1] === 'showStyle' && _.isString(m[2]) && _.isString(m[3])) {
+			const showStyleVariantId = protectString<ShowStyleVariantId>(m[2])
+			const configId = m[3]
+
+			const showStyleCompound = await context.getShowStyleCompound(showStyleVariantId).catch(() => undefined)
+			if (showStyleCompound) {
+				const showStyleConfig = context.getShowStyleBlueprintConfig(showStyleCompound)
+				return objectPathGet(showStyleConfig, configId)
+			} else if (bailOnError) {
+				throw new Error(`Ref "${reference}": Showstyle variant "${showStyleVariantId}" not found`)
+			}
+		}
+	}
+	return undefined
+}
 
 export interface ProcessedShowStyleConfig {
 	_showStyleConfig: never

@@ -29,7 +29,8 @@ export interface ISettings {
 	followOnAirSegmentsHistory: number
 	/** Clean up stuff that are older than this [ms] */
 	maximumDataAge: number
-
+	/** Enable the use of poison key if present and use the key specified. **/
+	poisonKey: string | null
 	/** If set, enables a check to ensure that the system time doesn't differ too much from the speficied NTP server time. */
 	enableNTPTimeChecker: null | {
 		host: string
@@ -39,20 +40,27 @@ export interface ISettings {
 	/** Default value used to toggle Shelf options when the 'display' URL argument is not provided. */
 	defaultShelfDisplayOptions: string
 
-	/** Enable the use of poison key if present and use the key specified. **/
-	poisonKey: string | null
-
-	/** The KeyboardPreview is a feature that is not implemented in the main Fork */
+	/** The KeyboardPreview is a feature that is not implemented in the main Fork, and is kept here for compatibility */
 	enableKeyboardPreview: boolean
 
-	// Keyboard map layout (what physical layout to use for the keyboard)
+	/** Keyboard map layout (what physical layout to use for the keyboard) */
 	keyboardMapLayout: KeyboardLayouts.Names
 
-	// CSS class applied to the body of the page. Used to include custom implementations that differ from the main Fork. I.e. custom CSS etc. Leave undefined if no custom implementation is needed
+	/**
+	 * CSS class applied to the body of the page. Used to include custom implementations that differ from the main Fork.
+	 * I.e. custom CSS etc. Leave undefined if no custom implementation is needed
+	 * */
 	customizationClassName?: string
 
-	// If true, countdowns of videos will count down to the last freeze-frame of the video instead of to the end of the video
+	/** If true, countdowns of videos will count down to the last freeze-frame of the video instead of to the end of the video */
 	useCountdownToFreezeFrame: boolean
+
+	/**
+	 * Which keyboard key is used as "Confirm" in modal dialogs etc.
+	 * In some installations, the rightmost Enter key (on the numpad) is dedicated for playout,
+	 * in such cases this must be set to 'Enter' to exclude it.
+	 */
+	confirmKeyCode: 'Enter' | 'AnyEnter'
 }
 
 /**
@@ -69,14 +77,15 @@ const DEFAULT_SETTINGS = Object.freeze<ISettings>({
 	// allowRundownResetOnAir: false,
 	defaultDisplayDuration: 3000,
 	allowMultiplePlaylistsInGUI: false,
+	poisonKey: 'Escape',
 	followOnAirSegmentsHistory: 0,
 	maximumDataAge: 1000 * 60 * 60 * 24 * 100, // 100 days
 	enableNTPTimeChecker: null,
 	defaultShelfDisplayOptions: 'buckets,layout,shelfLayout,inspector',
-	enableKeyboardPreview: true,
+	enableKeyboardPreview: false,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
-	poisonKey: 'Escape',
 	useCountdownToFreezeFrame: true,
+	confirmKeyCode: 'Enter',
 })
 
 /**

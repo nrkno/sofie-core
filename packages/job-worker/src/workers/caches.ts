@@ -14,9 +14,92 @@ import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
 import { DefaultStudioBlueprint } from '../blueprints/defaults/studio'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
+import { clone, deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
+import deepmerge = require('deepmerge')
+import { StudioCacheContext } from '../jobs'
+import { StudioCacheContextImpl } from './context'
 
+/**
+ * A Wrapper to maintain a cache and provide a context using the cache when appropriate
+ */
+export interface WorkerDataCacheWrapper {
+	get studioId(): StudioId
+
+	invalidateCaches(data: ReadonlyDeep<InvalidateWorkerDataCache>): void
+
+	processInvalidations(): Promise<void>
+
+	createStudioCacheContext(): StudioCacheContext
+}
+
+/**
+ * A Wrapper class to maintain a cache and provide a context using the cache when appropriate
+ */
+export class WorkerDataCacheWrapperImpl implements WorkerDataCacheWrapper {
+	readonly #collections: IDirectCollections
+	readonly #dataCache: WorkerDataCache
+	#pendingCacheInvalidations: InvalidateWorkerDataCache | undefined
+
+	/**
+	 * The StudioId the cache is maintained for
+	 */
+	get studioId(): StudioId {
+		return this.#dataCache.studio._id
+	}
+
+	constructor(collections: IDirectCollections, dataCache: WorkerDataCache) {
+		this.#collections = collections
+		this.#dataCache = dataCache
+	}
+
+	static async create(collections: IDirectCollections, studioId: StudioId): Promise<WorkerDataCacheWrapper> {
+		const dataCache = await loadWorkerDataCache(collections, studioId)
+
+		return new WorkerDataCacheWrapperImpl(collections, dataCache)
+	}
+
+	/**
+	 * Queue an invalidation of a portion of the cache. This will be processed when requested
+	 * @param data The Invalidation fragment
+	 */
+	invalidateCaches(data: ReadonlyDeep<InvalidateWorkerDataCache>): void {
+		// Store the invalidation for later
+		if (!this.#pendingCacheInvalidations) {
+			this.#pendingCacheInvalidations = clone<InvalidateWorkerDataCache>(data)
+		} else {
+			this.#pendingCacheInvalidations = deepmerge<InvalidateWorkerDataCache>(
+				this.#pendingCacheInvalidations,
+				data as InvalidateWorkerDataCache
+			)
+		}
+	}
+
+	/**
+	 * Process a pending invalidation of the cache
+	 */
+	async processInvalidations(): Promise<void> {
+		if (this.#pendingCacheInvalidations) {
+			// Move the invalidations off of the class before running the async method, to avoid race conditions
+			const invalidations = this.#pendingCacheInvalidations
+			this.#pendingCacheInvalidations = undefined
+
+			await invalidateWorkerDataCache(this.#collections, this.#dataCache, invalidations)
+		}
+	}
+
+	/**
+	 * Create a StudioCacheContext based on this cache
+	 */
+	createStudioCacheContext(): StudioCacheContext {
+		return new StudioCacheContextImpl(this.#collections, this.#dataCache)
+	}
+}
+
+/**
+ * A collection of properties that form the basis of the JobContext.
+ * This is a reusable cache of these properties
+ */
 export interface WorkerDataCache {
 	studio: ReadonlyDeep<DBStudio>
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
@@ -71,7 +154,7 @@ export async function loadWorkerDataCache(
 export async function invalidateWorkerDataCache(
 	collections: Readonly<IDirectCollections>,
 	cache: WorkerDataCache,
-	data: InvalidateWorkerDataCache
+	data: ReadonlyDeep<InvalidateWorkerDataCache>
 ): Promise<void> {
 	if (data.forceAll) {
 		// Clear everything!

@@ -12,7 +12,7 @@ import { MAGIC_TIME_SCALE_FACTOR } from '../RundownView'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
-import { PubSub } from '../../../lib/api/pubsub'
+import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
@@ -83,7 +83,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 	class SegmentTimelineContainer extends MeteorReactComponent<IProps & ITrackedProps, IState> {
 		static contextTypes = {
 			durations: PropTypes.object.isRequired,
-			lowResDurations: PropTypes.object.isRequired,
+			syncedDurations: PropTypes.object.isRequired,
 		}
 
 		isVisible: boolean
@@ -108,8 +108,8 @@ export const SegmentTimelineContainer = withResolvedSegment(
 				followLiveLine: false,
 				livePosition: 0,
 				displayTimecode: 0,
-				isLiveSegment: false,
-				isNextSegment: false,
+				isLiveSegment: !!props.ownCurrentPartInstance,
+				isNextSegment: !!props.ownNextPartInstance,
 				autoNextPart: false,
 				currentLivePart: undefined,
 				currentNextPart: undefined,
@@ -413,7 +413,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 					this.partInstanceSub.stop()
 				}
 				// we handle this subscription manually
-				this.partInstanceSub = Meteor.subscribe(PubSub.pieceInstances, {
+				this.partInstanceSub = meteorSubscribe(PubSub.pieceInstances, {
 					rundownId: this.props.rundownId,
 					partInstanceId: {
 						$in: partInstanceIds,
@@ -502,7 +502,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			}
 		}
 
-		onGoToPartInner = (part: PartUi, timingDurations: RundownTimingContext, zoomInToFit?: boolean) => {
+		onGoToPartInner = (part: PartUi, _timingDurations: RundownTimingContext, zoomInToFit?: boolean) => {
 			this.setState((state) => {
 				let newScale: number | undefined
 

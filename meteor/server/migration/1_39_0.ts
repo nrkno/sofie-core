@@ -1,15 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { Parts } from '../../lib/collections/Parts'
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
 // Release 39
 export const addSteps = addMigrationSteps('1.39.0', [
 	{

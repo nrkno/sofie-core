@@ -18,13 +18,11 @@ export enum SourceLayerType {
 	SPLITS = 6,
 	/** Audio-only sources */
 	AUDIO = 7,
-	// CAMERA_MOVEMENT = 8,
-	METADATA = 9,
 	/** Graphical overlays on top of other video */
 	LOWER_THIRD = 10,
 	/** Video-only clips or clips with only environment audio */
 	LIVE_SPEAK = 11,
-	/** Transition effects */
+	/** Transition effects, content object can use VTContent or TransitionContent */
 	TRANSITION = 13,
 	// LIGHTS = 14,
 	/** Uncontrolled local sources, such as PowerPoint presentation inputs, Weather systems, EVS replay machines, etc. */
@@ -193,3 +191,5 @@ export interface TransitionContent extends BaseContent {
 	icon?: string
 	preview?: string
 }
+
+export type SomeTransitionContent = VTContent | TransitionContent

@@ -1,25 +1,26 @@
 import { TSR, OnGenerateTimelineObj, TimelineObjectCoreExt, Time } from '@sofie-automation/blueprints-integration'
+import { SetRequired } from 'type-fest'
 import { ProtectedString, protectString, unprotectString } from '../protectedString'
-import {
-	PartInstanceId,
-	PieceInstanceInfiniteId,
-	BlueprintId,
-	RundownPlaylistId,
-	PieceInstanceId,
-	StudioId,
-} from './Ids'
+import { PartInstanceId, PieceInstanceInfiniteId, BlueprintId, StudioId } from './Ids'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
 	GROUP = 'group',
 }
 
-export type TimelineHash = ProtectedString<'TimelineHash'>
+import { TimelineHash } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+export { TimelineHash }
+import {
+	PartPlaybackCallbackData,
+	PiecePlaybackCallbackData,
+	PlayoutChangedType,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+export { PartPlaybackCallbackData, PiecePlaybackCallbackData }
 
 export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
 
 export interface OnGenerateTimelineObjExt<TMetadata = unknown, TKeyframeMetadata = unknown>
-	extends OnGenerateTimelineObj<TMetadata, TKeyframeMetadata> {
+	extends SetRequired<OnGenerateTimelineObj<TMetadata, TKeyframeMetadata>, 'metaData'> {
 	/** The id of the partInstance this object belongs to */
 	partInstanceId: PartInstanceId | null
 	/** If this is from an infinite piece, the id of the infinite instance */
@@ -57,34 +58,28 @@ export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
 }
 export type TimelineObjGroupRundown = TimelineObjGroup & Omit<TimelineObjRundown, 'enable'>
 
-export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
-	isPartGroup: true
-}
+export type TimelineObjGroupPart = TimelineObjGroupRundown
+
 export interface TimelineObjPartAbstract extends TimelineObjRundown {
 	// used for sending callbacks
 	content: {
 		deviceType: TSR.DeviceType.ABSTRACT
 		type: 'callback'
-		callBack: 'partPlaybackStarted'
-		callBackStopped: 'partPlaybackStopped'
-		callBackData: {
-			rundownPlaylistId: RundownPlaylistId
-			partInstanceId: PartInstanceId
-		}
+		callBack: PlayoutChangedType.PART_PLAYBACK_STARTED
+		callBackStopped: PlayoutChangedType.PART_PLAYBACK_STOPPED
+		callBackData: PartPlaybackCallbackData
 	}
 }
-export interface TimelineObjPieceAbstract extends TimelineObjRundown {
+export interface TimelineObjPieceAbstract extends Omit<TimelineObjRundown, 'enable'> {
+	enable: TimelineEnableExt
+
 	// used for sending callbacks
 	content: {
 		deviceType: TSR.DeviceType.ABSTRACT
 		type: 'callback'
-		callBack: 'piecePlaybackStarted'
-		callBackStopped: 'piecePlaybackStopped'
-		callBackData: {
-			rundownPlaylistId: RundownPlaylistId
-			pieceInstanceId: PieceInstanceId
-			dynamicallyInserted?: boolean
-		}
+		callBack: PlayoutChangedType.PIECE_PLAYBACK_STARTED
+		callBackStopped: PlayoutChangedType.PIECE_PLAYBACK_STOPPED
+		callBackData: PiecePlaybackCallbackData
 	}
 }
 

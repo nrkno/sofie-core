@@ -19,7 +19,10 @@ import { BlueprintId } from '../../lib/collections/Blueprints'
  * @param bundles the bundles to insert or update
  * @param originBlueprintId id of the blueprint the translation bundles belongs to
  */
-export function upsertBundles(bundles: BlueprintTranslationsbundle[], originBlueprintId: BlueprintId) {
+export async function upsertBundles(
+	bundles: BlueprintTranslationsbundle[],
+	originBlueprintId: BlueprintId
+): Promise<void> {
 	for (const bundle of bundles) {
 		const { type, language, data } = bundle
 
@@ -31,7 +34,7 @@ export function upsertBundles(bundles: BlueprintTranslationsbundle[], originBlue
 		// originating blueprint and language
 		const _id = createBundleId(originBlueprintId, language)
 
-		TranslationsBundleCollection.upsert(
+		await TranslationsBundleCollection.upsertAsync(
 			_id,
 			{
 				_id,
@@ -67,8 +70,8 @@ function createBundleId(blueprintId: BlueprintId, language: string): Translation
  * @returns the bundle with the given id
  * @throws if there is no bundle with the given id
  */
-export function getBundle(bundleId: TranslationsBundleId): DBTranslationsBundle {
-	const bundle = TranslationsBundleCollection.findOne(bundleId)
+export async function getBundle(bundleId: TranslationsBundleId): Promise<DBTranslationsBundle> {
+	const bundle = await TranslationsBundleCollection.findOneAsync(bundleId)
 	if (!bundle) {
 		throw new Meteor.Error(404, `Bundle "${bundleId}" not found`)
 	}
