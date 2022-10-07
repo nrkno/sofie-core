@@ -442,6 +442,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 			type: ConfigManifestEntryType.STRING,
 		},
 	],
+	[TSRDeviceType.TELEMETRICS]: [], // TODO: Remove when merging with next release. Added due to TSR upgrade needed for threadedClass issues.
 }
 
 // TODO: should come from types
@@ -655,6 +656,7 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 			optional: true,
 		},
 	],
+	[TSRDeviceType.TELEMETRICS]: [], // TODO: Remove when merging with next release. Added due to TSR upgrade needed for threadedClass issues.
 }
 
 export const PLAYOUT_DEVICE_CONFIG: DeviceConfigManifest = {
