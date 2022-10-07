@@ -24,8 +24,8 @@ class IpcJobManager implements JobManager {
 		return {
 			next: async () => this.getNextJob(queueName),
 			interrupt: () => {
-				this.interruptJobStream(queueName).catch((e) =>
-					logger.error(`Failed to interupt job queue ${queueName}: ${e}`)
+				this.interruptJobStream(queueName).catch((error) =>
+					logger.error(`Failed to interrupt job queue ${queueName}.`, { data: error })
 				)
 			},
 			close: async () => Promise.resolve(),
