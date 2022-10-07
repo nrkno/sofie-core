@@ -1,6 +1,6 @@
 import { DBStudio, StudioId } from '../lib/collections/Studios'
-import { getCurrentTime, unprotectString } from '../lib/lib'
-import { DBRundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
+import { clone, getCurrentTime, unprotectString } from '../lib/lib'
+import { DBRundownPlaylist, RundownPlaylistActivationId, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
 import { PeripheralDeviceId } from '../lib/collections/PeripheralDevices'
 import { ShowStyleBaseId } from '../lib/collections/ShowStyleBases'
 import { ShowStyleVariantId } from '../lib/collections/ShowStyleVariants'
@@ -11,6 +11,8 @@ import { IBlueprintPieceType, PieceLifespan } from '@sofie-automation/blueprints
 import { PieceId, Piece, PieceStatusCode, EmptyPieceTimelineObjectsBlob } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
 import { getRundownId } from '../server/api/ingest/lib'
+import { PartInstance, PartInstanceId, SegmentPlayoutId } from '../lib/collections/PartInstances'
+import { PieceInstance, PieceInstanceId } from '../lib/collections/PieceInstances'
 
 export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): DBRundownPlaylist {
 	return {
@@ -154,5 +156,39 @@ export function defaultAdLibPiece(_id: PieceId, rundownId: RundownId, partId: Pa
 		outputLayerId: '',
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+	}
+}
+export function defaultPartInstance(
+	_id: PartInstanceId,
+	playlistActivationId: RundownPlaylistActivationId,
+	segmentPlayoutId: SegmentPlayoutId,
+	part: DBPart
+): PartInstance {
+	return {
+		_id,
+		isTemporary: false,
+		part: clone(part),
+		playlistActivationId,
+		rehearsal: false,
+		rundownId: part.rundownId,
+		segmentId: part.segmentId,
+		takeCount: 0,
+		segmentPlayoutId,
+	}
+}
+export function defaultPieceInstance(
+	_id: PieceInstanceId,
+	playlistActivationId: RundownPlaylistActivationId,
+	rundownId: RundownId,
+	partInstanceId: PartInstanceId,
+	piece: Piece
+): PieceInstance {
+	return {
+		_id,
+		partInstanceId,
+		piece: clone(piece),
+		playlistActivationId,
+		rundownId,
+		isTemporary: false,
 	}
 }
