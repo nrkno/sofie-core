@@ -82,8 +82,18 @@ export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, s
 						let end: number | undefined
 						if (pieceInstance.plannedStoppedPlayback) {
 							end = pieceInstance.plannedStoppedPlayback
-						} else if (pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number') {
+						} else if (
+							pieceInstance.userDuration &&
+							'end' in pieceInstance.userDuration &&
+							typeof pieceInstance.userDuration.end === 'number'
+						) {
 							end = pieceInstance.userDuration.end
+						} else if (
+							pieceInstance.userDuration &&
+							'endRelativeToNow' in pieceInstance.userDuration &&
+							typeof pieceInstance.userDuration.endRelativeToNow === 'number'
+						) {
+							end = pieceInstance.userDuration.endRelativeToNow + now
 						} else if (typeof piece.enable.duration === 'number' && pieceInstance.plannedStartedPlayback) {
 							end = piece.enable.duration + pieceInstance.plannedStartedPlayback
 						}

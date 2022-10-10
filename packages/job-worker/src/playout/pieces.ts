@@ -7,7 +7,7 @@ import {
 import { TimelineObjGeneric, TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration/dist'
+import { PieceLifespan, IBlueprintPieceType, TSR } from '@sofie-automation/blueprints-integration/dist'
 import { clone, getRandomId, literal, normalizeArray, applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import { logger } from '../logging'
@@ -196,7 +196,20 @@ export function getResolvedPieces(
 
 	const objs: TimelineObjGeneric[] = []
 	for (const piece of preprocessedPieces) {
-		const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(cache.PlaylistId, piece)
+		let controlObjEnable: TSR.Timeline.TimelineEnable = piece.piece.enable
+		if (piece.userDuration) {
+			controlObjEnable = {
+				start: piece.piece.enable.start,
+			}
+
+			if ('end' in piece.userDuration) {
+				controlObjEnable.end = piece.userDuration.end
+			} else {
+				controlObjEnable.end = nowInPart + piece.userDuration.endRelativeToNow
+			}
+		}
+
+		const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(cache.PlaylistId, piece, controlObjEnable)
 		objs.push(deNowify(controlObj), ...capObjs.map(deNowify), deNowify(childGroup))
 	}
 

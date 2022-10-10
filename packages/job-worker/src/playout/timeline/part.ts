@@ -71,11 +71,6 @@ export function transformPartIntoTimeline(
 		// Not able to enable this piece
 		if (!pieceEnable) continue
 
-		if (pieceInstance.userDuration) {
-			pieceEnable.end = pieceInstance.userDuration.end
-			delete pieceEnable.duration
-		}
-
 		timelineObjs.push(
 			...transformPieceGroupAndObjects(
 				playlistId,

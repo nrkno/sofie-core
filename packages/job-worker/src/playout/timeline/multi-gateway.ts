@@ -12,6 +12,7 @@ import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../cache'
 import { RundownTimelineTimingContext, getInfinitePartGroupId } from './rundown'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { getPieceControlObjectId } from '@sofie-automation/corelib/dist/playout/ids'
 
 /**
  * We want it to be possible to generate a timeline without it containing any `start: 'now'`.
@@ -25,9 +26,9 @@ export function deNowifyMultiGatewayTimeline(
 	cache: CacheForPlayout,
 	timelineObjs: TimelineObjRundown[],
 	timeOffsetIntoPart: Time | undefined,
-	timingInfo: RundownTimelineTimingContext | undefined
+	timingContext: RundownTimelineTimingContext | undefined
 ): void {
-	if (!timingInfo) return
+	if (!timingContext) return
 
 	const timelineObjsMap = normalizeArray(timelineObjs, 'id')
 
@@ -41,7 +42,7 @@ export function deNowifyMultiGatewayTimeline(
 	const partGroupTimings = updatePartInstancePlannedTimes(
 		cache,
 		targetNowTime,
-		timingInfo,
+		timingContext,
 		currentPartInstance,
 		nextPartInstance
 	)
@@ -49,16 +50,16 @@ export function deNowifyMultiGatewayTimeline(
 	deNowifyCurrentPieces(
 		cache,
 		targetNowTime,
-		timingInfo,
+		timingContext,
 		currentPartInstance,
 		partGroupTimings.currentStartTime,
-		timelineObjs
+		timelineObjsMap
 	)
 
 	updatePlannedTimingsForPieceInstances(cache, currentPartInstance, partGroupTimings, timelineObjsMap)
 }
 
-function calculateNowOffsetLatency(
+export function calculateNowOffsetLatency(
 	context: JobContext,
 	cache: CacheForStudioBase,
 	timeOffsetIntoPart: Time | undefined
@@ -91,7 +92,7 @@ interface PartGroupTimings {
 function updatePartInstancePlannedTimes(
 	cache: CacheForPlayout,
 	targetNowTime: number,
-	timingInfo: RundownTimelineTimingContext,
+	timingContext: RundownTimelineTimingContext,
 	currentPartInstance: DBPartInstance,
 	nextPartInstance: DBPartInstance | undefined
 ): PartGroupTimings {
@@ -113,7 +114,7 @@ function updatePartInstancePlannedTimes(
 		)
 
 		// Reflect this in the timeline
-		timingInfo.currentPartGroup.enable.start = targetNowTime
+		timingContext.currentPartGroup.enable.start = targetNowTime
 		currentPartGroupStartTime = targetNowTime
 	} else {
 		currentPartGroupStartTime = currentPartInstance.timings.plannedStartedPlayback
@@ -121,7 +122,7 @@ function updatePartInstancePlannedTimes(
 
 	// Also mark the previous as ended
 	if (cache.Playlist.doc.previousPartInstanceId) {
-		const previousPartEndTime = currentPartGroupStartTime + (timingInfo.previousPartOverlap ?? 0)
+		const previousPartEndTime = currentPartGroupStartTime + (timingContext.previousPartOverlap ?? 0)
 		cache.PartInstances.updateOne(
 			cache.Playlist.doc.previousPartInstanceId,
 			(instance) => {
@@ -140,18 +141,18 @@ function updatePartInstancePlannedTimes(
 		)
 	}
 
-	const currentPartGroupEndTime = timingInfo.currentPartDuration
-		? currentPartGroupStartTime + timingInfo.currentPartDuration
+	const currentPartGroupEndTime = timingContext.currentPartDuration
+		? currentPartGroupStartTime + timingContext.currentPartDuration
 		: undefined
 
 	let nextPartGroupStartTime: number | undefined
-	if (nextPartInstance && timingInfo.nextPartGroup && currentPartGroupEndTime) {
+	if (nextPartInstance && timingContext.nextPartGroup && currentPartGroupEndTime) {
 		// Auto-next has been setup, make sure the start of the nexted group is planned and correct
 
 		// Calculate the new start time for the auto-nexted group
-		nextPartGroupStartTime = currentPartGroupEndTime - (timingInfo.nextPartOverlap ?? 0)
+		nextPartGroupStartTime = currentPartGroupEndTime - (timingContext.nextPartOverlap ?? 0)
 
-		timingInfo.nextPartGroup.enable.start = nextPartGroupStartTime
+		timingContext.nextPartGroup.enable.start = nextPartGroupStartTime
 
 		cache.PartInstances.updateOne(
 			nextPartInstance._id,
@@ -193,10 +194,10 @@ function updatePartInstancePlannedTimes(
 function deNowifyCurrentPieces(
 	cache: CacheForPlayout,
 	targetNowTime: number,
-	timingInfo: RundownTimelineTimingContext,
+	timingContext: RundownTimelineTimingContext,
 	currentPartInstance: DBPartInstance,
 	currentPartGroupStartTime: number,
-	timelineObjs: TimelineObjRundown[]
+	timelineObjsMap: Record<string, TimelineObjRundown>
 ) {
 	// The relative time for 'now' to be resolved to, inside of the part group
 	const nowInPart = targetNowTime - currentPartGroupStartTime
@@ -213,16 +214,42 @@ function deNowifyCurrentPieces(
 
 	// Pieces without concrete times will add some special 'now' objects to the timeline that they can reference
 	// Make sure that the all have concrete times attached
-	for (const obj of timelineObjs) {
+	for (const obj of Object.values(timelineObjsMap)) {
 		const objMetadata = obj.metaData as Partial<PieceTimelineMetadata> | undefined
 		if (objMetadata?.isPieceTimeline && !Array.isArray(obj.enable) && obj.enable.start === 'now') {
-			if (obj.inGroup === timingInfo.currentPartGroup.id) {
+			if (obj.inGroup === timingContext.currentPartGroup.id) {
 				obj.enable = { start: nowInPart }
 			} else if (!obj.inGroup) {
 				obj.enable = { start: targetNowTime }
 			}
 		}
 	}
+
+	// Ensure any pieces with an unconfirmed userDuration is confirmed
+	cache.PieceInstances.updateAll((p) => {
+		if (p.partInstanceId === currentPartInstance._id && p.userDuration && 'endRelativeToNow' in p.userDuration) {
+			const relativeToNow = p.userDuration.endRelativeToNow
+			p.userDuration = {
+				end: relativeToNow + nowInPart,
+			}
+
+			// Update the piece control obj
+			const controlObj = timelineObjsMap[getPieceControlObjectId(p)]
+			if (controlObj && !Array.isArray(controlObj.enable) && controlObj.enable.end === 'now') {
+				controlObj.enable.end = p.userDuration.end
+			}
+
+			// If the piece is an infinite, there may be a now in the parent group
+			const infiniteGroup = timelineObjsMap[getInfinitePartGroupId(p._id)]
+			if (infiniteGroup && !Array.isArray(infiniteGroup.enable) && infiniteGroup.enable.end === 'now') {
+				infiniteGroup.enable.end = targetNowTime + relativeToNow
+			}
+
+			return p
+		}
+
+		return false
+	})
 }
 
 function updatePlannedTimingsForPieceInstances(
@@ -297,9 +324,13 @@ function setPlannedTimingsOnPieceInstance(
 			pieceInstance.plannedStartedPlayback = plannedStart
 			changed = true
 		}
+
+		const userDurationEnd =
+			pieceInstance.userDuration && 'end' in pieceInstance.userDuration ? pieceInstance.userDuration.end : null
 		const plannedEnd =
-			pieceInstance.userDuration?.end ??
+			userDurationEnd ??
 			(pieceInstance.piece.enable.duration ? plannedStart + pieceInstance.piece.enable.duration : partPlannedEnd)
+
 		if (pieceInstance.plannedStoppedPlayback !== plannedEnd) {
 			pieceInstance.plannedStoppedPlayback = plannedEnd
 			changed = true

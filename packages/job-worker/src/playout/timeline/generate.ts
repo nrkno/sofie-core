@@ -149,7 +149,7 @@ export async function updateTimeline(
 		throw new Error(`RundownPlaylist ("${cache.Playlist.doc._id}") is not active")`)
 	}
 
-	const { versions, objs: timelineObjs, timingInfo } = await getTimelineRundown(context, cache)
+	const { versions, objs: timelineObjs, timingContext: timingInfo } = await getTimelineRundown(context, cache)
 
 	flattenAndProcessTimelineObjects(context, timelineObjs)
 
@@ -204,7 +204,7 @@ function logAnyRemainingNowTimes(_context: JobContext, timelineObjs: Array<Timel
 	const hasNow = (obj: TimelineEnableExt | TimelineEnableExt[]) => {
 		let res = false
 		applyToArray(obj, (enable) => {
-			if (enable.start === 'now') res = true
+			if (enable.start === 'now' || enable.end === 'now') res = true
 		})
 		return res
 	}
@@ -289,7 +289,7 @@ async function getTimelineRundown(
 ): Promise<{
 	objs: Array<TimelineObjRundown>
 	versions: TimelineCompleteGenerationVersions
-	timingInfo: RundownTimelineTimingContext | undefined
+	timingContext: RundownTimelineTimingContext | undefined
 }> {
 	const span = context.startSpan('getTimelineRundown')
 	try {
@@ -392,7 +392,7 @@ async function getTimelineRundown(
 					}
 				}),
 				versions: timelineVersions ?? generateTimelineVersions(context.studio, undefined, '-'),
-				timingInfo: rundownTimelineResult.timingInfo,
+				timingContext: rundownTimelineResult.timingContext,
 			}
 		} else {
 			if (span) span.end()
@@ -400,7 +400,7 @@ async function getTimelineRundown(
 			return {
 				objs: [],
 				versions: generateTimelineVersions(context.studio, undefined, '-'),
-				timingInfo: undefined,
+				timingContext: undefined,
 			}
 		}
 	} catch (e) {
@@ -409,7 +409,7 @@ async function getTimelineRundown(
 		return {
 			objs: [],
 			versions: generateTimelineVersions(context.studio, undefined, '-'),
-			timingInfo: undefined,
+			timingContext: undefined,
 		}
 	}
 }

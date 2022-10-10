@@ -47,6 +47,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { executeActionInner } from './playout'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculateNowOffsetLatency } from './timeline/multi-gateway'
 
 export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAsAdlibNowProps): Promise<void> {
 	return runJobWithPlayoutCache(
@@ -617,7 +618,8 @@ export function innerStopPieces(
 	}
 
 	const resolvedPieces = getResolvedPieces(context, cache, showStyleBase, currentPartInstance)
-	const stopAt = getCurrentTime() + (timeOffset || 0) // TODO-GATEWAY - should this be doing the latency compensation too?
+	const offsetRelativeToNow = (timeOffset || 0) + (calculateNowOffsetLatency(context, cache, undefined) || 0)
+	const stopAt = getCurrentTime() + offsetRelativeToNow
 	const relativeStopAt = stopAt - lastStartedPlayback
 
 	for (const pieceInstance of resolvedPieces) {
@@ -636,8 +638,14 @@ export function innerStopPieces(
 					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
 
 					cache.PieceInstances.updateOne(pieceInstance._id, (p) => {
-						p.userDuration = {
-							end: relativeStopAt,
+						if (cache.isMultiGatewayMode) {
+							p.userDuration = {
+								endRelativeToNow: offsetRelativeToNow,
+							}
+						} else {
+							p.userDuration = {
+								end: relativeStopAt,
+							}
 						}
 						return p
 					})

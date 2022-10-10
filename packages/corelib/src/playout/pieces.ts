@@ -38,27 +38,27 @@ export function createPieceGroupAndCap(
 		| 'userDuration'
 		| 'dynamicallyInserted'
 	>,
+	controlObjEnable: TSR.Timeline.TimelineEnable,
 	controlObjClasses?: string[],
 	partGroup?: TimelineObjRundown,
-	pieceEnable?: TSR.Timeline.TimelineEnable,
 	pieceStartOffset?: number
 ): {
 	controlObj: TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceTimelineMetadata>
 	childGroup: TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>
 	capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>
 } {
-	if (pieceEnable) {
-		pieceEnable = clone(pieceEnable)
-	} else {
-		if (pieceInstance.userDuration) {
-			pieceEnable = {
-				start: pieceInstance.piece.enable.start,
-				end: pieceInstance.userDuration.end,
-			}
-		} else {
-			pieceEnable = clone(pieceInstance.piece.enable)
-		}
-	}
+	// if (pieceEnable) {
+	// 	pieceEnable = clone(pieceEnable)
+	// } else {
+	// 	if (pieceInstance.userDuration) {
+	// 		pieceEnable = {
+	// 			start: pieceInstance.piece.enable.start,
+	// 			end: pieceInstance.userDuration.end,
+	// 		}
+	// 	} else {
+	// 		pieceEnable = clone(pieceInstance.piece.enable)
+	// 	}
+	// }
 
 	const controlObj = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
 		id: getPieceControlObjectId(pieceInstance),
@@ -66,7 +66,7 @@ export function createPieceGroupAndCap(
 		infinitePieceInstanceId: pieceInstance.infinite?.infiniteInstanceId,
 		partInstanceId: pieceInstance.partInstanceId,
 		objectType: TimelineObjType.RUNDOWN,
-		enable: pieceEnable,
+		enable: clone(controlObjEnable),
 		layer: pieceInstance.piece.sourceLayerId,
 		priority: pieceInstance.priority,
 		content: {

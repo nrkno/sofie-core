@@ -23,10 +23,12 @@ export function hasPieceInstanceDefinitelyEnded(
 		relativeEnd = pieceInstance.resolvedEndCap
 	}
 	if (pieceInstance.userDuration) {
-		relativeEnd =
-			relativeEnd === undefined
+		const userDurationEnd =
+			'end' in pieceInstance.userDuration
 				? pieceInstance.userDuration.end
-				: Math.min(relativeEnd, pieceInstance.userDuration.end)
+				: pieceInstance.userDuration.endRelativeToNow + nowInPart
+
+		relativeEnd = relativeEnd === undefined ? userDurationEnd : Math.min(relativeEnd, userDurationEnd)
 	}
 	if (typeof pieceInstance.piece.enable.start === 'number' && pieceInstance.piece.enable.duration !== undefined) {
 		const candidateEnd = pieceInstance.piece.enable.start + pieceInstance.piece.enable.duration

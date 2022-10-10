@@ -9,6 +9,7 @@ import {
 	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
 	TimelineObjectCoreExt,
+	TSR,
 } from '@sofie-automation/blueprints-integration'
 import {
 	SegmentExtended,
@@ -473,7 +474,21 @@ export namespace RundownUtils {
 						renderedInPoint: 0,
 					}
 
-					const { controlObj, capObjs } = createPieceGroupAndCap(playlist._id, piece)
+					let controlObjEnable: TSR.Timeline.TimelineEnable = piece.piece.enable
+					// if there is an userDuration override, override it for the timeline
+					if (piece.userDuration) {
+						controlObjEnable = {
+							start: piece.piece.enable.start,
+						}
+
+						if ('end' in piece.userDuration) {
+							controlObjEnable.end = piece.userDuration.end
+						} else {
+							controlObjEnable.end = nowInPart + piece.userDuration.endRelativeToNow
+						}
+					}
+
+					const { controlObj, capObjs } = createPieceGroupAndCap(playlist._id, piece, controlObjEnable)
 					controlObj.metaData = literal<PieceTimelineMetadataExt>({
 						id: piece.piece._id,
 						pieceInstanceGroupId: piece._id,
@@ -481,12 +496,6 @@ export namespace RundownUtils {
 					})
 					partTimeline.push(controlObj)
 					partTimeline.push(...capObjs)
-
-					// if there is an userDuration override, override it for the timeline
-					if (piece.userDuration) {
-						delete controlObj.enable.duration
-						controlObj.enable.end = piece.userDuration.end
-					}
 
 					// find the target output layer
 					const outputLayer = outputLayers[piece.piece.outputLayerId] as IOutputLayerExtended | undefined
@@ -628,18 +637,22 @@ export namespace RundownUtils {
 			})
 
 			// resolve the duration of a Piece to be used for display
-			const resolveDuration = (item: PieceExtended): number => {
+			const resolveDuration = (item: PieceExtended, nowInPart: number): number => {
+				if (item.instance.userDuration && item.instance.plannedStartedPlayback) {
+					const end =
+						'end' in item.instance.userDuration
+							? item.instance.userDuration.end
+							: item.instance.userDuration.endRelativeToNow + nowInPart
+
+					const duration = end - item.instance.plannedStartedPlayback
+					if (duration) return duration
+				}
+
 				const expectedDurationNumber =
 					typeof item.instance.piece.enable.duration === 'number'
 						? item.instance.piece.enable.duration || 0
 						: 0
-				const userDurationNumber =
-					item.instance.userDuration &&
-					typeof item.instance.userDuration.end === 'number' &&
-					item.instance.plannedStartedPlayback
-						? item.instance.userDuration.end - item.instance.plannedStartedPlayback
-						: 0
-				return userDurationNumber || item.renderedDuration || expectedDurationNumber
+				return item.renderedDuration || expectedDurationNumber
 			}
 
 			// let lastPartPiecesBySourceLayer: Record<string, PieceExtended> = {}
@@ -647,10 +660,13 @@ export namespace RundownUtils {
 			partsE.forEach((part) => {
 				// const thisLastPartPiecesBySourceLayer: Record<string, PieceExtended> = {}
 				if (part.pieces) {
+					const partStarted = part.instance.timings?.plannedStartedPlayback
+					const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
+
 					// if an item is continued by another item, rendered duration may need additional resolution
 					part.pieces.forEach((item) => {
 						if (item.continuedByRef) {
-							item.renderedDuration = resolveDuration(item)
+							item.renderedDuration = resolveDuration(item, nowInPart)
 						}
 					})
 
