@@ -305,7 +305,7 @@ describe('client/lib/rundown', () => {
 						infinitePiece
 					),
 					userDuration: {
-						end: 2000,
+						endRelativeToPart: 2000,
 					},
 				}
 

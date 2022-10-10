@@ -65,8 +65,8 @@ export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, s
 						playlistActivationId: playlistActivationId,
 					}).fetch()
 
-					const nowInPart = partInstance.timings?.startedPlayback
-						? now - partInstance.timings.startedPlayback
+					const nowInPart = partInstance.timings?.plannedStartedPlayback
+						? now - partInstance.timings.plannedStartedPlayback
 						: 0
 					prospectivePieces = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieces, nowInPart)
 
@@ -80,12 +80,22 @@ export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, s
 						}
 
 						let end: number | undefined
-						if (pieceInstance.stoppedPlayback) {
-							end = pieceInstance.stoppedPlayback
-						} else if (pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number') {
-							end = pieceInstance.userDuration.end
-						} else if (typeof piece.enable.duration === 'number' && pieceInstance.startedPlayback) {
-							end = piece.enable.duration + pieceInstance.startedPlayback
+						if (pieceInstance.plannedStoppedPlayback) {
+							end = pieceInstance.plannedStoppedPlayback
+						} else if (
+							pieceInstance.userDuration &&
+							'endRelativeToPart' in pieceInstance.userDuration &&
+							typeof pieceInstance.userDuration.endRelativeToPart === 'number'
+						) {
+							end = pieceInstance.userDuration.endRelativeToPart
+						} else if (
+							pieceInstance.userDuration &&
+							'endRelativeToNow' in pieceInstance.userDuration &&
+							typeof pieceInstance.userDuration.endRelativeToNow === 'number'
+						) {
+							end = pieceInstance.userDuration.endRelativeToNow + now
+						} else if (typeof piece.enable.duration === 'number' && pieceInstance.plannedStartedPlayback) {
+							end = piece.enable.duration + pieceInstance.plannedStartedPlayback
 						}
 
 						if (end !== undefined) {

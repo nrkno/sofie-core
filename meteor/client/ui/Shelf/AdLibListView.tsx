@@ -237,7 +237,7 @@ export function AdLibListView(props: IListViewPropsHeader) {
 							next: segment.isNext && !segment.isLive,
 							past:
 								segment.parts.reduce((memo, item) => {
-									return item.timings?.startedPlayback && item.timings?.duration ? memo : false
+									return item.timings?.plannedStartedPlayback && item.timings?.duration ? memo : false
 								}, true) === true,
 						}
 					)}

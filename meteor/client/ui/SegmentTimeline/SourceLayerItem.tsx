@@ -342,7 +342,7 @@ export const SourceLayerItem = withTranslation()(
 				(innerPiece.lifespan !== PieceLifespan.WithinPart ||
 					(innerPiece.enable.start !== undefined &&
 						innerPiece.enable.duration === undefined &&
-						piece.instance.userDuration?.end === undefined)) &&
+						piece.instance.userDuration === undefined)) &&
 				!piece.cropped &&
 				piece.renderedDuration === null &&
 				piece.instance.userDuration === undefined

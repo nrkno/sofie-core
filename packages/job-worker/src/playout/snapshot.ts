@@ -66,7 +66,10 @@ export async function handleGeneratePlaylistSnapshot(
 				? { rundownId: { $in: rundownIds } }
 				: {
 						rundownId: { $in: rundownIds },
-						$or: [{ 'timings.takeOut': { $gte: validTime }, reset: true }, { reset: { $ne: true } }],
+						$or: [
+							{ 'timings.plannedStoppedPlayback': { $gte: validTime }, reset: true },
+							{ reset: { $ne: true } },
+						],
 				  }
 		)
 		const pieces = await context.directCollections.Pieces.findFetch({ startRundownId: { $in: rundownIds } })

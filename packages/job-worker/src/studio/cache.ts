@@ -1,5 +1,5 @@
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { JobContext } from '../jobs'
@@ -11,6 +11,8 @@ export interface CacheForStudioBase {
 	readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
 
 	readonly Timeline: DbCacheWriteOptionalObject<TimelineComplete>
+
+	readonly isMultiGatewayMode: boolean
 }
 
 /**
@@ -66,5 +68,20 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 
 	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): DBRundownPlaylist[] {
 		return this.RundownPlaylists.findAll((p) => !!p.activationId && p._id !== excludeRundownPlaylistId)
+	}
+
+	#isMultiGatewayMode: boolean | undefined = undefined
+	public get isMultiGatewayMode(): boolean {
+		if (this.#isMultiGatewayMode === undefined) {
+			if (this.context.studio.settings.forceMultiGatewayMode) {
+				this.#isMultiGatewayMode = true
+			} else {
+				const playoutDevices = this.PeripheralDevices.findAll(
+					(device) => device.type === PeripheralDeviceType.PLAYOUT
+				)
+				this.#isMultiGatewayMode = playoutDevices.length > 1
+			}
+		}
+		return this.#isMultiGatewayMode
 	}
 }

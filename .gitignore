@@ -3,6 +3,7 @@ settings.json
 meteor/.coverage/
 node_modules
 **/yarn-error.log
+scratch/
 
 # Exclude JetBrains IDE specific files
 .idea

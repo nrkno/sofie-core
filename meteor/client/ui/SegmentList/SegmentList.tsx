@@ -145,7 +145,9 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				isNextPart={isNextPart}
 				isSinglePartInSegment={isSinglePartInSegment}
 				isPreceededByTimingGroupSibling={part.instance.part.displayDurationGroup === lastTimingGroup}
-				hasAlreadyPlayed={!!part.instance.timings?.stoppedPlayback || !!part.instance.timings?.takeOut}
+				hasAlreadyPlayed={
+					!!part.instance.timings?.reportedStoppedPlayback || !!part.instance.timings?.plannedStoppedPlayback
+				}
 				displayLiveLineCounter={false}
 				inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
 				currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}

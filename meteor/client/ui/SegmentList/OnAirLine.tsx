@@ -46,9 +46,9 @@ export const OnAirLine = withTiming<IProps, {}>({
 	useEffect(() => {
 		if (!timingDurations || !timingDurations.currentTime) return
 
-		let isExpectedToPlay = !!partInstance.timings?.startedPlayback
 		const lastTake = partInstance.timings?.take
-		const lastStartedPlayback = partInstance.timings?.startedPlayback
+		const lastStartedPlayback =
+			partInstance.timings?.reportedStartedPlayback ?? partInstance.timings?.plannedStartedPlayback
 		const lastTakeOffset = partInstance.timings?.playOffset || 0
 		const virtualStartedPlayback =
 			(lastTake || 0) > (lastStartedPlayback || -1)
@@ -57,6 +57,7 @@ export const OnAirLine = withTiming<IProps, {}>({
 				? lastStartedPlayback - lastTakeOffset
 				: undefined
 
+		let isExpectedToPlay = !!lastStartedPlayback
 		if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > timingDurations.currentTime) {
 			isExpectedToPlay = true
 		}

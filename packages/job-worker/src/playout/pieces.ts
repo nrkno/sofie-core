@@ -7,7 +7,7 @@ import {
 import { TimelineObjGeneric, TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration/dist'
+import { PieceLifespan, IBlueprintPieceType, TSR } from '@sofie-automation/blueprints-integration/dist'
 import { clone, getRandomId, literal, normalizeArray, applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import { logger } from '../logging'
@@ -173,7 +173,7 @@ export function getResolvedPieces(
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 
 	const now = getCurrentTime()
-	const partStarted = partInstance.timings?.startedPlayback
+	const partStarted = partInstance.timings?.plannedStartedPlayback
 	const nowInPart = now - (partStarted ?? 0)
 
 	const preprocessedPieces: ReadonlyDeep<PieceInstanceWithTimings[]> = processAndPrunePieceInstanceTimings(
@@ -196,7 +196,20 @@ export function getResolvedPieces(
 
 	const objs: TimelineObjGeneric[] = []
 	for (const piece of preprocessedPieces) {
-		const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(cache.PlaylistId, piece)
+		let controlObjEnable: TSR.Timeline.TimelineEnable = piece.piece.enable
+		if (piece.userDuration) {
+			controlObjEnable = {
+				start: piece.piece.enable.start,
+			}
+
+			if ('endRelativeToPart' in piece.userDuration) {
+				controlObjEnable.end = piece.userDuration.endRelativeToPart
+			} else {
+				controlObjEnable.end = nowInPart + piece.userDuration.endRelativeToNow
+			}
+		}
+
+		const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(cache.PlaylistId, piece, controlObjEnable)
 		objs.push(deNowify(controlObj), ...capObjs.map(deNowify), deNowify(childGroup))
 	}
 
@@ -250,9 +263,12 @@ export function getResolvedPiecesFromFullTimeline(
  * This assumes that the structure is of a typical timeline, with 'now' being present at the root level, and one level deep.
  * If the parent group of a 'now' is not using a numeric start value, it will not be fixed
  */
-export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: number): void {
+function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: number): void {
 	for (const obj of transformedObjs) {
 		let groupAbsoluteStart: number | null = null
+
+		const obj2 = obj as TimelineContentObject & { partInstanceId?: PartInstanceId }
+		const partInstanceId = 'partInstanceId' in obj2 ? obj2.partInstanceId : undefined
 
 		// Anything at this level can use nowTime directly
 		let count = 0
@@ -272,12 +288,7 @@ export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTi
 
 		// We know the time of the parent, or there are too many enable times for it
 		if (groupAbsoluteStart !== null || count !== 1) {
-			if (
-				'partInstanceId' in (obj as TimelineContentObject & { partInstanceId?: PartInstanceId }) &&
-				obj.isGroup &&
-				obj.children &&
-				obj.children.length
-			) {
+			if (partInstanceId && obj.isGroup && obj.children && obj.children.length) {
 				// This should be piece groups, which are allowed to use 'now'
 				for (const childObj of obj.children) {
 					applyToArray(childObj.enable, (enable: TimelineEnable) => {
