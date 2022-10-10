@@ -57,7 +57,7 @@ async function retrieveBlueprintConfigRef(
 ): Promise<ConfigItemValue | undefined> {
 	if (!reference) return undefined
 
-	const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
+	const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^}]+)\}/)
 	if (m) {
 		if (m[1] === 'studio' && _.isString(m[2]) && _.isString(m[3])) {
 			const studioId: StudioId = protectString(m[2])

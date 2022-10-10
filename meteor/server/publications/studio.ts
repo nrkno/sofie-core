@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
-import { PubSub } from '../../lib/api/pubsub'
+import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import {
 	Studios,
 	DBStudio,
@@ -16,7 +16,7 @@ import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collect
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
-import { FindOptions, MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
@@ -34,6 +34,7 @@ import { PackageInfos } from '../../lib/collections/PackageInfos'
 import { PackageContainerStatuses } from '../../lib/collections/PackageContainerStatus'
 import { literal } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
+import { FindOptions } from '../../lib/collections/lib'
 
 meteorPublish(PubSub.studios, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)
@@ -161,7 +162,7 @@ meteorPublish(
 
 meteorCustomPublishArray(
 	PubSub.mappingsForDevice,
-	'studioMappings',
+	CustomCollectionName.StudioMappings,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = PeripheralDevices.findOne(deviceId)
@@ -176,11 +177,15 @@ meteorCustomPublishArray(
 	}
 )
 
-meteorCustomPublishArray(PubSub.mappingsForStudio, 'studioMappings', async function (pub, studioId: StudioId, token) {
-	if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
-		await createObserverForMappingsPublication(pub, PubSub.mappingsForStudio, studioId)
+meteorCustomPublishArray(
+	PubSub.mappingsForStudio,
+	CustomCollectionName.StudioMappings,
+	async function (pub, studioId: StudioId, token) {
+		if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
+			await createObserverForMappingsPublication(pub, PubSub.mappingsForStudio, studioId)
+		}
 	}
-})
+)
 
 interface RoutedMappingsArgs {
 	readonly studioId: StudioId

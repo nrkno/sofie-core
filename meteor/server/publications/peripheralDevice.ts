@@ -9,9 +9,10 @@ import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
 import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
 import { OrganizationReadAccess } from '../security/organization'
 import { StudioReadAccess } from '../security/studio'
-import { FindOptions, MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
+import { FindOptions } from '../../lib/collections/lib'
 
 /*
  * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager

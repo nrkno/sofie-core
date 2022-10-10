@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { PubSub } from '../../lib/api/pubsub'
+import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { meteorCustomPublishArray } from '../lib/customPublication'
@@ -296,7 +296,7 @@ async function manipulateExpectedPackagesPublicationData(
 
 meteorCustomPublishArray(
 	PubSub.expectedPackagesForDevice,
-	'deviceExpectedPackages',
+	CustomCollectionName.ExpectedPackagesForDevice,
 	async function (
 		pub,
 		deviceId: PeripheralDeviceId,

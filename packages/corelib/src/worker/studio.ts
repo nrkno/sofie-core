@@ -11,6 +11,8 @@ import {
 	SegmentId,
 	StudioId,
 } from '../dataModel/Ids'
+import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { CoreRundownPlaylistSnapshot } from '../snapshots'
 
 /** List of all Jobs performed by the Worker related to a certain Studio */
 export enum StudioJobs {
@@ -147,14 +149,14 @@ export interface GeneratePlaylistSnapshotResult {
 	 * Stringified JSON of the snapshot
 	 * Note: it is kept as a string to avoid needing to parse the very large blob unnecesarily
 	 */
-	snapshotJson: string
+	snapshotJson: JSONBlob<CoreRundownPlaylistSnapshot>
 }
 export interface RestorePlaylistSnapshotProps {
 	/**
 	 * Stringified JSON of the snapshot
 	 * Note: it is kept as a string to avoid needing to parse the very large blob unnecesarily
 	 */
-	snapshotJson: string
+	snapshotJson: JSONBlob<CoreRundownPlaylistSnapshot>
 }
 export interface RestorePlaylistSnapshotResult {
 	playlistId: RundownPlaylistId

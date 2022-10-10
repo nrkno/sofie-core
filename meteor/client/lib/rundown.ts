@@ -32,7 +32,7 @@ import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
-import { FindOptions } from '../../lib/typings/meteor'
+import { FindOptions } from '../../lib/collections/lib'
 import { getShowHiddenSourceLayers } from './localStorage'
 import { Rundown, RundownId } from '../../lib/collections/Rundowns'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -708,19 +708,23 @@ export namespace RundownUtils {
 								previousItem.renderedDuration !== undefined &&
 								currentItem.renderedDuration !== undefined
 							) {
+								// if previousItem is infinite, currentItem caps it within the current part
+								if (previousItem.instance.infinite) {
+									previousItem.instance.piece.lifespan = PieceLifespan.WithinPart
+									delete previousItem.instance.infinite
+								}
+
 								if (
-									previousItem.instance.infinite ||
+									// previousItem spans beyond the currentItem renderedInPoint
 									(previousItem.renderedDuration !== null &&
 										previousItem.renderedInPoint + previousItem.renderedDuration >
-											currentItem.renderedInPoint)
+											currentItem.renderedInPoint) ||
+									// previousItem is infinite
+									previousItem.renderedDuration === null
 								) {
 									previousItem.renderedDuration =
 										currentItem.renderedInPoint - previousItem.renderedInPoint
 									previousItem.cropped = true
-									if (previousItem.instance.infinite) {
-										previousItem.instance.piece.lifespan = PieceLifespan.WithinPart
-										delete previousItem.instance.infinite
-									}
 								}
 
 								previousItem.maxLabelWidth = currentItem.renderedInPoint - previousItem.renderedInPoint

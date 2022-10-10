@@ -5,7 +5,7 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowS
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { ShowStyleReadAccess } from '../security/showStyle'
 import { OrganizationReadAccess } from '../security/organization'
-import { FindOptions } from '../../lib/typings/meteor'
+import { FindOptions } from '../../lib/collections/lib'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 

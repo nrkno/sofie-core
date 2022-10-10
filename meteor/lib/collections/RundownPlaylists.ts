@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { MongoQuery, FindOptions } from '../typings/meteor'
+import { MongoQuery } from '../typings/meteor'
 import * as _ from 'underscore'
 import { normalizeArrayFunc, normalizeArrayToMap, unprotectString } from '../lib'
 import { Studio, Studios } from './Studios'
@@ -13,7 +13,7 @@ import { Rundowns, Rundown, DBRundown } from './Rundowns'
 import { Segments, Segment, DBSegment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { PartInstance, PartInstances } from './PartInstances'
-import { createMongoCollection } from './lib'
+import { createMongoCollection, FindOptions } from './lib'
 import { registerIndex } from '../database'
 import {
 	RundownPlaylistId,
