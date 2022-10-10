@@ -2,6 +2,1412 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
+
+
+### Bug Fixes
+
+* include shared-lib in ci workflows ([b2c69f0](https://github.com/nrkno/tv-automation-server-core/commit/b2c69f02d5f12627fa1f2fc2ee2b85c651a0be45))
+
+## [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
+
+
+### Features
+
+* **Action Triggers:** Select AdLib Action Trigger Modes ([#740](https://github.com/nrkno/tv-automation-server-core/issues/740)) ([311b9e4](https://github.com/nrkno/tv-automation-server-core/commit/311b9e41b46025bdf759fccc1c97d94318661c83))
+* implement playoutPlaybackChanged, to send callbacks in batches to Core ([a8927de](https://github.com/nrkno/tv-automation-server-core/commit/a8927de72a2bf70fe38d38b045e377e7eea16550))
+* Improve visibility and clarity of Rundown View ([#726](https://github.com/nrkno/tv-automation-server-core/issues/726)) ([1177ae9](https://github.com/nrkno/tv-automation-server-core/commit/1177ae94db1c4f1b7208cb2942347da318690b2e))
+* inspector is now opt-in in the Shelf ([e65b073](https://github.com/nrkno/tv-automation-server-core/commit/e65b073d35996a608a41ca0f7bfa9e31df56e394))
+* **Playout Gateway:** Report invalid configuration as state ([#739](https://github.com/nrkno/tv-automation-server-core/issues/739)) ([fc9ffde](https://github.com/nrkno/tv-automation-server-core/commit/fc9ffdea293c514771bdfd34bb5272bfa4215379))
+* **Storyboard:** remove thumbnails ([#725](https://github.com/nrkno/tv-automation-server-core/issues/725)) ([ab60931](https://github.com/nrkno/tv-automation-server-core/commit/ab6093155672f61be88cb4da9d888e17719b962b))
+
+
+### Bug Fixes
+
+* add shared-lib package to the mono-repo ([5002a66](https://github.com/nrkno/tv-automation-server-core/commit/5002a66b1c952123dba17ca4d80857a15603abc2))
+* configManifest GUI: expanded / edited content where limited in width if number of columns exceeded 6 ([2ee120f](https://github.com/nrkno/tv-automation-server-core/commit/2ee120f5602d7dbe01d75f5fdf7f9c5255e4565e))
+* issue in mos-gw where errors where logged like {0: 'T',1: 'h',2: 'i',3: 's'} ([3920637](https://github.com/nrkno/tv-automation-server-core/commit/39206375e791f3d03d6a1580e4dfe1d0d1d895ac))
+* limit debounces ([5028281](https://github.com/nrkno/tv-automation-server-core/commit/50282810b72a39671688b55de25fdb9ea5046421))
+* maybe ([387e072](https://github.com/nrkno/tv-automation-server-core/commit/387e072b574ba31ead158bdaa98c3fdcec46cd1d))
+* MOS-Gateway: add support for heartbeatInterval ([7a48fd0](https://github.com/nrkno/tv-automation-server-core/commit/7a48fd0dd08153d0b4673583d5b8a71b1f8e85b7))
+* **Playout:** don't destroy stuff going from rehearsal to broadcast ([#743](https://github.com/nrkno/tv-automation-server-core/issues/743)) ([1ec075b](https://github.com/nrkno/tv-automation-server-core/commit/1ec075be0ccfbdb4d7f7efaf754fb6259a8ebc89))
+* race condition on manual rundown move ([#728](https://github.com/nrkno/tv-automation-server-core/issues/728)) ([a12f7d8](https://github.com/nrkno/tv-automation-server-core/commit/a12f7d8082fe1c08b5c68d6d536cbc5b32c1aebf))
+* remove deprecated ConfigManifestEntryType.Number ([cb777aa](https://github.com/nrkno/tv-automation-server-core/commit/cb777aa1d7738a8b72da8aa21943c58bc9b5df9c))
+* remove deprecated methods: OnPartPlaybackStarted, OnPartPlaybackStopped, OnPiecePlaybackStarted, OnPiecePlaybackStopped ([7fa3f13](https://github.com/nrkno/tv-automation-server-core/commit/7fa3f131a97a91056f3565bc84f3b2ae3a176224))
+* **Shelf:** correct default tab in rundownLayout selection ([2c4321b](https://github.com/nrkno/tv-automation-server-core/commit/2c4321b042773b248bffd00ec3b5cdd36a986800))
+* update tsr dep ([73b9192](https://github.com/nrkno/tv-automation-server-core/commit/73b9192f509f7569e023b9e6552b7be06d370ddf))
+
+## [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0...v1.43.0-in-testing.0) (2022-05-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* clean up deprecated Databases and DataTypes (#713)
+
+### Features
+
+* clean up deprecated Databases and DataTypes ([#713](https://github.com/nrkno/tv-automation-server-core/issues/713)) ([c6eb7fa](https://github.com/nrkno/tv-automation-server-core/commit/c6eb7fa98003bae79b4b9311c135e33638a017fc))
+* **docs:** add Ctrl+K hotkey for jumping to search text box ([1d16c1e](https://github.com/nrkno/tv-automation-server-core/commit/1d16c1e3d57a0cebfd10c962b3816ba558bb9976))
+* move more logic into workers ([#718](https://github.com/nrkno/tv-automation-server-core/issues/718)) ([3376826](https://github.com/nrkno/tv-automation-server-core/commit/3376826e4029985e3975d6d5a85f9ab1f06a9dd4))
+* use Sorensen prevent default down option and configurable poison key ([1311e3e](https://github.com/nrkno/tv-automation-server-core/commit/1311e3e4a15c955293123da758492d594960e159))
+
+
+### Bug Fixes
+
+* avoid logging errors from onPartStoppedPlayback or onPieceStoppedPlayback when a rundown is reset ([b54c44b](https://github.com/nrkno/tv-automation-server-core/commit/b54c44b52ac9350cae920a9e92a3f91adaf4e10f))
+* avoid logging errors from onPartStoppedPlayback or onPieceStoppedPlayback when a rundown is reset ([ac21a3b](https://github.com/nrkno/tv-automation-server-core/commit/ac21a3befb5cda2964cc824c2cbdd0bb8bcf65c9))
+* BTS countdonw position can be misaligned if it's on a layer in a group that is preceeded by another group that is default-collapsed but have not been manipulated by the user ([4dc470b](https://github.com/nrkno/tv-automation-server-core/commit/4dc470bc0953faabf9b567f303995f8b73cad29b))
+* dashboard panel scale affecting position ([c339929](https://github.com/nrkno/tv-automation-server-core/commit/c339929b6f02d5b25e3597b92b1fa8360d01d190))
+* OAuth code returned via redirect_uri ([#719](https://github.com/nrkno/tv-automation-server-core/issues/719)) ([9789585](https://github.com/nrkno/tv-automation-server-core/commit/9789585d2ae552ec555191cd1fbf76e7880cae2b))
+* **RundownView:** use TriggersHandler with detached Shelfs ([5e330e4](https://github.com/nrkno/tv-automation-server-core/commit/5e330e4773392bb936736a7831a39c391eccf102)), closes [#714](https://github.com/nrkno/tv-automation-server-core/issues/714)
+* set timeout times explicitly for MOS commands ([1cf5a4e](https://github.com/nrkno/tv-automation-server-core/commit/1cf5a4ed3e6e2786c9ad83df303b992e35c86a51))
+* **sonar:** install dependencies before sonar scan ([33c7274](https://github.com/nrkno/tv-automation-server-core/commit/33c72748d9a38802c43324dedbefce5ee83e0890))
+* **Storyboard:** Piece status icon is misaligned ([be2edae](https://github.com/nrkno/tv-automation-server-core/commit/be2edae3de6db8f839185b9a98cf85844f182167))
+* type errors ([bbc0945](https://github.com/nrkno/tv-automation-server-core/commit/bbc0945de4d24d21ef657c8631545d11873ada3d))
+
+## [1.39.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.39.0) (2022-04-29)
+
+## [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.42.0-in-testing.0) (2022-04-29)
+
+
+### Features
+
+* add url parameter for date and selflinks for log lines in user log view ([24c2de2](https://github.com/nrkno/tv-automation-server-core/commit/24c2de26f4f3472287add086d6a966d5e907f7cc))
+* meteor 2.7. reenable meteor apm ([e989244](https://github.com/nrkno/tv-automation-server-core/commit/e98924407a3f0b791f48b852b9ef09902a90280d))
+* piece postroll ([674d7c5](https://github.com/nrkno/tv-automation-server-core/commit/674d7c588998e59a794b1da64276f73637ae8556))
+* store user event timestamps ([#716](https://github.com/nrkno/tv-automation-server-core/issues/716)) ([8a45898](https://github.com/nrkno/tv-automation-server-core/commit/8a45898b1f5a666128e0b8ca516524d818de3a1d))
+* **UserActivity:** scroll the url hash selected element into view on mount ([96bfb63](https://github.com/nrkno/tv-automation-server-core/commit/96bfb63a617d23ded4554488cb14ace9e5ef2cfd))
+* **UserLog:** highlight linked log entry ([4e9407d](https://github.com/nrkno/tv-automation-server-core/commit/4e9407d4ec840f2a4ece43fa6063a4ff38b98bd0))
+
+
+### Bug Fixes
+
+* auto update lobby errors ([#709](https://github.com/nrkno/tv-automation-server-core/issues/709)) ([264b536](https://github.com/nrkno/tv-automation-server-core/commit/264b536ccd53441cc0b89990fac1eaa4f323bcf4))
+* **BigSync:** revert autoselection of RundownViewLayouts when none selected ([1ab498d](https://github.com/nrkno/tv-automation-server-core/commit/1ab498d12293656c28c99485729c0446af5fc3bc))
+* change how we parameters are fed into function, in order to avoid garbage collection ([df89ecc](https://github.com/nrkno/tv-automation-server-core/commit/df89eccdd364cf48b5fe39d8d436354a4cca7c25))
+* Cherry-picked configurable poisonkey. ([ec60933](https://github.com/nrkno/tv-automation-server-core/commit/ec60933c91ecd0ae23fc27331c990423dc6c65d1))
+* Cherry-picked Sorensen preventDefaultDown option. ([b90f1b3](https://github.com/nrkno/tv-automation-server-core/commit/b90f1b3fa168b6d9ee72eac4a947fa5dc79fbbf3))
+* clarify featching of PartInstances ([89cabed](https://github.com/nrkno/tv-automation-server-core/commit/89cabed7c0a4ca52fe13064025bd614c84370f0a))
+* convert Timeline collection on cache to be a single object, as it uses StudioId as id ([4931046](https://github.com/nrkno/tv-automation-server-core/commit/49310467580c62d9663eea5e7d1234b4fc873e8c))
+* expose versionExtended (git hash) in package.json on CI build ([#711](https://github.com/nrkno/tv-automation-server-core/issues/711)) ([ee12285](https://github.com/nrkno/tv-automation-server-core/commit/ee12285e0fad7103b51cfabc7015f35829509009))
+* hide keyboardPreview settings behind a feature flag. ([a48ad31](https://github.com/nrkno/tv-automation-server-core/commit/a48ad3109566f25f161be5ad3195ce039fa1a589))
+* hideOnZero after discussion with product owners ([35b51f6](https://github.com/nrkno/tv-automation-server-core/commit/35b51f61946df3a5fb6b13f28a41a3e7b8a4c98f))
+* Jenkins doesn't persist git hash in package.json ([26f1ea3](https://github.com/nrkno/tv-automation-server-core/commit/26f1ea35d36f89c0e0183b7a7b75f686b8693aff))
+* log the event when queueing minishelf adlibs ([d930520](https://github.com/nrkno/tv-automation-server-core/commit/d9305207b2b65caadddbe4294d70f3f842f06000))
+* meteor not restarting on worker code changes ([8ff3474](https://github.com/nrkno/tv-automation-server-core/commit/8ff347429b2328ac561a42055b99694238746d22))
+* mongo queries with an undefined selector were returning nothing ([a5cc184](https://github.com/nrkno/tv-automation-server-core/commit/a5cc1847f1b3de5a1fa0a88619cbec32ddb88704))
+* move git hash persisting to Jenkinsfile ([ed3628f](https://github.com/nrkno/tv-automation-server-core/commit/ed3628f16703c9bd9de799d5acc91c34f74ceb7b))
+* move TransformedCollection into MongoCollection with other collection types ([343a7b2](https://github.com/nrkno/tv-automation-server-core/commit/343a7b2ffabc99ba95c016933f132efd083976ac))
+* optimization of VTFloatingInspector broke it when no hoverscrub preview was shown ([6d45957](https://github.com/nrkno/tv-automation-server-core/commit/6d459573acdcb34aeaebdfc2c870e7f61603ce6e))
+* postroll with piece control objects ([73c6836](https://github.com/nrkno/tv-automation-server-core/commit/73c6836d2a59283066354405116d5217f75551a3))
+* put preserveOrphanedSegmentPositionInRundown behaviour behind studio setting ([f40cbec](https://github.com/nrkno/tv-automation-server-core/commit/f40cbec752b7d7a6ddbfe8b08156443e9da3deea))
+* regression in Piece label display ([d5e6b89](https://github.com/nrkno/tv-automation-server-core/commit/d5e6b89ec324afbef22c7d9ca37bbcd121a544f7))
+* reset playlist order button ([#715](https://github.com/nrkno/tv-automation-server-core/issues/715)) ([40c2419](https://github.com/nrkno/tv-automation-server-core/commit/40c24191da3da290f0268f405f1c325acf7380a3))
+* RundownView now use TriggersHandler with shelfOnly. ([f963b2f](https://github.com/nrkno/tv-automation-server-core/commit/f963b2f1ae230070402524c152c524ad0c074c5c))
+* SOF-834 UI slow due to segments re-rendering too often ([2962ffe](https://github.com/nrkno/tv-automation-server-core/commit/2962ffe8a27dbf2c5e60cbd160911a83f621abab))
+* tidy up some meteor mongo typings ([6af703b](https://github.com/nrkno/tv-automation-server-core/commit/6af703bb7406d686a7f76db754c104e58d6a2e06))
+* update playout-gateway copied typings, avoid unnecessary clones ([fa58130](https://github.com/nrkno/tv-automation-server-core/commit/fa58130593097aca2a5991aaf9deb13dc7b2192e))
+* update some overridden mongo typings ([f7fa755](https://github.com/nrkno/tv-automation-server-core/commit/f7fa75572a91bffc4f89d211877e7afbc4ffe26e))
+* update supertimeline ([#703](https://github.com/nrkno/tv-automation-server-core/issues/703)) ([897d81e](https://github.com/nrkno/tv-automation-server-core/commit/897d81ef2648947cd23caee6edf80d26e5a05de0))
+* use KeyboardEvent's code instead of key ([b5e208a](https://github.com/nrkno/tv-automation-server-core/commit/b5e208adc193720d86a846a54de6e63fd638e6aa))
+* **UserActivity:** datePicker follows props changing ([ec02941](https://github.com/nrkno/tv-automation-server-core/commit/ec02941411c053ca6b9407e42043155a5271d20f))
+* **UserActivity:** use correct format for timespan links ([266a925](https://github.com/nrkno/tv-automation-server-core/commit/266a925c3096dd6241ed92d3dd40e6a37f50b396))
+* Using Settings with defaults included for poisonKey. ([c7fbffd](https://github.com/nrkno/tv-automation-server-core/commit/c7fbffde903622c1cd6b73c1815de422060114b1))
+
+### [37.1.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.5...v37.1.1) (2022-03-11)
+
+
+### Bug Fixes
+
+* Rundown View Layouts could not be edited because this.props did not exist ([8fa6d22](https://github.com/nrkno/tv-automation-server-core/commit/8fa6d2247160fa99795af1c1f0f3db1727c6b86e))
+* scroll next segment to second position ([7beeaba](https://github.com/nrkno/tv-automation-server-core/commit/7beeababbe5fa54c168e1a26be2d1192b35bf8a7))
+* SOF-820 strict select of pieceinstances in timelineTriggerTime ([63a454b](https://github.com/nrkno/tv-automation-server-core/commit/63a454b4d5b624beeb5c288479f7b142f9385a08))
+
+## [37.1.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.3...v37.1.0) (2022-03-07)
+
+
+### Features
+
+* mini rundown view for the commentator screen ([6ceaa87](https://github.com/nrkno/tv-automation-server-core/commit/6ceaa87bcf542182a0f7c8a70cc8f80dec5381df))
+* SOF-774 users can now add a mini rundown view showing the current and next 3 parts to their dashboard ([bcf005f](https://github.com/nrkno/tv-automation-server-core/commit/bcf005f2a53a493d67c2acf544b25f40e84acd54))
+* the mini rundown now shows all parts in the rundown and scrolls to the current part on take ([534ada6](https://github.com/nrkno/tv-automation-server-core/commit/534ada68bb7b0a509e37812e79c18edc9290d067))
+* The miniRundown will now only show segments and mark the red when a part in the segment playing and green when a part in the segment is set as next ([4df11be](https://github.com/nrkno/tv-automation-server-core/commit/4df11bedc8ce9f0c5e4470d938de30a2907f1299))
+
+
+### Bug Fixes
+
+* changed color of missing clip to red to make it easier to tell them apart from broken clips ([714bb67](https://github.com/nrkno/tv-automation-server-core/commit/714bb67631d64fa16060ab913c673bbcb4c73966))
+* changed it so the rundown header is not included in the scroll ([420f68b](https://github.com/nrkno/tv-automation-server-core/commit/420f68bc5f1c641c066cf49d20e4ae392da31a0b))
+* invalid cron syntax ([310af45](https://github.com/nrkno/tv-automation-server-core/commit/310af45d165a2f6722cb74e3c383ee307b9e0769))
+* invalid cron syntax ([87e0f43](https://github.com/nrkno/tv-automation-server-core/commit/87e0f43d6f8c416d447ef15455113078f49565cd))
+* moved styling to tv2 custom css ([77766b3](https://github.com/nrkno/tv-automation-server-core/commit/77766b3f331775e7fc7abf5f8686a243a088acc6))
+* selector preventing layout dropdown to show ([9082576](https://github.com/nrkno/tv-automation-server-core/commit/9082576d114cc425ad1130fb6b394d9c2b4e0e3b))
+* use general live and next colors ([fd2e9b8](https://github.com/nrkno/tv-automation-server-core/commit/fd2e9b817ea1dc2407320a801034bf92d31976c3))
+* version checks for patch release broken ([ad6b47a](https://github.com/nrkno/tv-automation-server-core/commit/ad6b47a27aa38d3e52f1d066a69f820555a4aba1))
+
+### [1.37.1-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0-in-testing.2...v1.37.1-in-testing.1) (2022-01-03)
+
+
+### Bug Fixes
+
+* changed text color in system status from grey to white ([5fc084d](https://github.com/nrkno/tv-automation-server-core/commit/5fc084d5adc18ce3759d817c35dcc018503914e4))
+* Clear nextSegmentid on deactivate ([08896ee](https://github.com/nrkno/tv-automation-server-core/commit/08896ee7f891e80c05a09f311702590e295c69a9))
+* Clear nextSegmentId when coming from autoNext ([8acbde9](https://github.com/nrkno/tv-automation-server-core/commit/8acbde982ae9ce931b904eaceb33d0e6ad89de4a))
+* Clear queued segment if it's set as next ([08c56cf](https://github.com/nrkno/tv-automation-server-core/commit/08c56cfa402be4d472e6ebe8096ef26cfd8ddc39))
+* Don't mark invalid parts as next ([f7c2bea](https://github.com/nrkno/tv-automation-server-core/commit/f7c2bea630e3a77a2198aa154a29a7c7296ab9b3))
+* Include transition pieces in primary piece lookup ([87a967a](https://github.com/nrkno/tv-automation-server-core/commit/87a967aee9d122f25bc029a0aec09bcb1b2f5928))
+* Revert set-as-next instead of queue behaviour ([89d44a7](https://github.com/nrkno/tv-automation-server-core/commit/89d44a784eaad5449b2c76b83c7c2cafb8e1dedd))
+
+## [1.37.0-in-testing.30](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0...v1.37.0-in-testing.30) (2021-12-13)
+
+
+### Features
+
+* Add minishelf trigger action ([ba73ff6](https://github.com/nrkno/tv-automation-server-core/commit/ba73ff67ecedb9bf624ca76578e034a8c681ac76))
+* improve TriggersHandler ([8183f8c](https://github.com/nrkno/tv-automation-server-core/commit/8183f8cbf9cfbd6eb14ea5890ae2f956a0868a42))
+* make keyboard preview use action triggers ([777c0f8](https://github.com/nrkno/tv-automation-server-core/commit/777c0f88e7ab1ddb20f3c54ef2e896b7fcbae481))
+
+
+### Bug Fixes
+
+* bump version in playoutgateway to avoid error messages in core ([d72180a](https://github.com/nrkno/tv-automation-server-core/commit/d72180a963bcce702569874c2e2ce45fc0779415))
+* check if livePart exists when using getActivePartInstances as it sometimes returns an empty array ([60fa212](https://github.com/nrkno/tv-automation-server-core/commit/60fa212b5c0de0f8aa062865229bf2eb4c9e39c8))
+* Don't allow live segment to be hidden ([4171e9c](https://github.com/nrkno/tv-automation-server-core/commit/4171e9c53b604212b7339dcbc46f4ed0fced0426))
+* Force node 12 for all actions steps ([c8e46dc](https://github.com/nrkno/tv-automation-server-core/commit/c8e46dcf9ca1c808bb008cdd5158428f726d8fb0))
+* Hash triggers for core migrations ([d808294](https://github.com/nrkno/tv-automation-server-core/commit/d808294f70994052a97b32186754df41128834e0))
+* meteor using wrong version of node ([b4a42aa](https://github.com/nrkno/tv-automation-server-core/commit/b4a42aa6c0a62b7019a90ad9f99ed53700f9ad9f))
+* Minishelf not queuing next adLib ([e3ac591](https://github.com/nrkno/tv-automation-server-core/commit/e3ac591a00ee54f2896aeb6dd4a5f4097d3e3c0f))
+* Move resync rundown on take into take function ([1634eac](https://github.com/nrkno/tv-automation-server-core/commit/1634eaca6c2b924228f33bf3f42255e58e3f1a29))
+* Populate segment map with all segments, even if empty ([47e89d5](https://github.com/nrkno/tv-automation-server-core/commit/47e89d58257263b07b5ea49facb5ce39671d208d))
+* Preserve data without needing blueprints to provide it ([1bfc983](https://github.com/nrkno/tv-automation-server-core/commit/1bfc9836e4f1a4f219d5aa18653508533ffe60ea))
+
+## [1.37.0-in-testing.29](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.28...v1.37.0-in-testing.29) (2021-11-24)
+
+
+### Features
+
+* add client-side time jump detection ([61376af](https://github.com/nrkno/tv-automation-server-core/commit/61376af1b7ad8b72e01e6a79357e3f3db6c6ce62))
+* make time-jump detection work server-side ([a93b019](https://github.com/nrkno/tv-automation-server-core/commit/a93b019e91783d57fb5b61f72753f80f5a5a6d9a))
+
+
+### Bug Fixes
+
+* keyboard preview missing from the filter list ([92ddb14](https://github.com/nrkno/tv-automation-server-core/commit/92ddb14467d1623924ad7260360beadd8586105c))
+* post-merge errors due to components being refactored to functional ([1d35e45](https://github.com/nrkno/tv-automation-server-core/commit/1d35e45cd98fd5f219c3b051e705132ecf1a8981))
+* reset instances from previous activation or not in cache ([543e32c](https://github.com/nrkno/tv-automation-server-core/commit/543e32cb29f0a127efb06e93b7810ae1dc944c6d))
+* resetting old partInstances and pieceInstances ([c7f4fd1](https://github.com/nrkno/tv-automation-server-core/commit/c7f4fd1010eff1e1026e62664d7d4b5f77c5b24a))
+* Restore actions lost to merge ([794fbb6](https://github.com/nrkno/tv-automation-server-core/commit/794fbb6aa26116da75bc838adf0ba482c4624288))
+
+## [1.37.0-in-testing.28](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.27...v1.37.0-in-testing.28) (2021-11-18)
+
+
+### Bug Fixes
+
+* florr diff counter when below 0 and ceil if over ([83dbf25](https://github.com/nrkno/tv-automation-server-core/commit/83dbf2503ee802edecacc4143011ee0213d8c7ec))
+* Rework the client time sync procedure ([f95f980](https://github.com/nrkno/tv-automation-server-core/commit/f95f980f84031a63c10e572bd60360aeec6d3037))
+
+## [1.37.0-in-testing.27](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.26...v1.37.0-in-testing.27) (2021-11-17)
+
+
+### Bug Fixes
+
+* Added filter support for TEXT_LABEL to panel-based dashboard_layouts. ([39a4551](https://github.com/nrkno/tv-automation-server-core/commit/39a45512303205b9ac7c6f338346523ca5958a44))
+
+## [1.37.0-in-testing.26](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.25...v1.37.0-in-testing.26) (2021-11-12)
+
+
+### Bug Fixes
+
+* bump blueprints-integration and server-core-integration ([d671626](https://github.com/nrkno/tv-automation-server-core/commit/d67162668ea4d89e28ab027a48626056fd5dbfa2))
+
+## [1.37.0-in-testing.25](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.24...v1.37.0-in-testing.25) (2021-11-12)
+
+
+### Features
+
+* shouldRemoveOrphanedPartInstance ([adf6116](https://github.com/nrkno/tv-automation-server-core/commit/adf6116c24d8602ca2c791e672ca51696ece4d6b))
+
+
+### Bug Fixes
+
+* Check if we are too close to autonext ([b653b64](https://github.com/nrkno/tv-automation-server-core/commit/b653b647c9aed0767fe200f8d17a9090dbf266d2))
+* consuming and clearing nextSegmentId ([a4e8de6](https://github.com/nrkno/tv-automation-server-core/commit/a4e8de62e51d2b76ebdd8126e775836059d5fee4))
+* minishelf not accepting filters ([b18f39c](https://github.com/nrkno/tv-automation-server-core/commit/b18f39c21e9e88ae6c3a02c5081093880b0be21a))
+* minishelf reactivity issues ([d3caec4](https://github.com/nrkno/tv-automation-server-core/commit/d3caec44d893abf7ed63df5f1c6463cdffe41ce7))
+* unable to select child layouts for Rundown View Layout ([da508e6](https://github.com/nrkno/tv-automation-server-core/commit/da508e67668caa27e8f03510fa11776518b21806))
+
+## [1.37.0-in-testing.24](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.23...v1.37.0-in-testing.24) (2021-11-09)
+
+
+### Features
+
+* tickResolution / dataResolution ([7a9417f](https://github.com/nrkno/tv-automation-server-core/commit/7a9417f1a1ef7f35100d757d1bd1417220cf7caa))
+
+
+### Bug Fixes
+
+* Implement subscriptionsReady on WithManagedTracker ([a385907](https://github.com/nrkno/tv-automation-server-core/commit/a3859077bacee156470abf801efd1f58b9181be6))
+* Missing media notifications shown while media subscription is not yet ready ([a44cefe](https://github.com/nrkno/tv-automation-server-core/commit/a44cefea63155be9e9a4c76b5a51842b8b414353))
+
+## [1.37.0-in-testing.23](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.22...v1.37.0-in-testing.23) (2021-11-08)
+
+
+### Bug Fixes
+
+* Updated statusbar+notification-center+notification-pop-up to have 80px top position. ([7541fe6](https://github.com/nrkno/tv-automation-server-core/commit/7541fe6720ce39ac7a832091c5b5d5c5c9557e40))
+
+## [1.37.0-in-testing.22](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.13...v1.37.0-in-testing.22) (2021-11-05)
+
+
+### Features
+
+* changed storeSnapshot action to take a rundown snapshot instead of debug snapshot ([7469d80](https://github.com/nrkno/tv-automation-server-core/commit/7469d805b1bf9837e19adc9f8c4fc271ed414802))
+
+
+### Bug Fixes
+
+* avoid possible exception id array is empty ([b88d224](https://github.com/nrkno/tv-automation-server-core/commit/b88d22405c649ea284def067978f33c08911b574))
+* Failing rundownPlaylist test ([70b20da](https://github.com/nrkno/tv-automation-server-core/commit/70b20da27c9f59ea5fd5c65715a0937ad29570cf))
+* timing issue when refreshing page where livePosition was not yet set when calculating the scale for the timeline ([da2753a](https://github.com/nrkno/tv-automation-server-core/commit/da2753a5f5086870c4e046e126c675e159add216))
+
+## [1.37.0-tv2-hoverscrub2](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-testing.12...v1.37.0-tv2-hoverscrub2) (2021-10-25)
+
+
+### Features
+
+* add percentage unit option in dashboard elements positioning ([e349d09](https://github.com/nrkno/tv-automation-server-core/commit/e349d096ac6876a133f70127542e617fc0a6ca9c))
+* enable percentage unit in shelf layouts ([3339ff2](https://github.com/nrkno/tv-automation-server-core/commit/3339ff292a11f6399b12a2b6748e8bb4f318bae1))
+
+
+### Bug Fixes
+
+* Disagreement between mouse move time and component update time ([8125b4e](https://github.com/nrkno/tv-automation-server-core/commit/8125b4eef4f0a9d8460c287889b87cc35d1f8dde))
+* make diff work with PlaylistTimingType.None ([d477771](https://github.com/nrkno/tv-automation-server-core/commit/d477771b2bd5e6a1305e3841a19f3e8cf9138b3f))
+* missing filter and layout types ([d923a44](https://github.com/nrkno/tv-automation-server-core/commit/d923a44e0d8856710df6a279ac1fa8eff75a8280))
+* Re-evaluate cursor position as next part moves relative to cursor ([6d39b1f](https://github.com/nrkno/tv-automation-server-core/commit/6d39b1fdfce9ca75de8a168d0863769804e4c35f))
+* Use element position from state ([31da178](https://github.com/nrkno/tv-automation-server-core/commit/31da178ac20527734f2ce21a805dcd5ef9e0edb5))
+
+## [1.37.0-in-testing.21](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.20...v1.37.0-in-testing.21) (2021-10-20)
+
+
+### Features
+
+* make the freeze countdown count to last freeze ([59c36e0](https://github.com/nrkno/tv-automation-server-core/commit/59c36e08fa3a90187c8d20df4e043a652ee88b6f))
+
+
+### Bug Fixes
+
+* Only reset parts from outside of the current activation Id ([7e94cb9](https://github.com/nrkno/tv-automation-server-core/commit/7e94cb939918e989f52756b10aa2563266d1330d))
+* remove invalid filtering based on piece duration ([b09931a](https://github.com/nrkno/tv-automation-server-core/commit/b09931a4f7966a8ddeb8c4393f3fd87b41e92759))
+* Rerun getSegment when media object updates ([0adc580](https://github.com/nrkno/tv-automation-server-core/commit/0adc5806dd3c82211b0e9e85146ab00781ff2239))
+
+## [1.37.0-in-testing.20](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.19...v1.37.0-in-testing.20) (2021-10-18)
+
+
+### Bug Fixes
+
+* diff briefly showing incorrect values; counting segments with untimed parts ([74d3ccc](https://github.com/nrkno/tv-automation-server-core/commit/74d3ccc5f065d4d47c482db2877cfd063fe74068))
+* hiding overflow labels on mic source ([059b311](https://github.com/nrkno/tv-automation-server-core/commit/059b311e9bac167145f89f7e791fe207fee0e32d))
+
+## [1.37.0-in-testing.19](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-rc18...v1.37.0-in-testing.19) (2021-10-14)
+
+
+### Features
+
+* Don't notify freezes that are beyond the end of the source duration ([6ce9e31](https://github.com/nrkno/tv-automation-server-core/commit/6ce9e313e249ef4bd9f9a131e6062c69d0501890))
+
+
+### Bug Fixes
+
+* Config manifest for caspar retry interval ([b66605c](https://github.com/nrkno/tv-automation-server-core/commit/b66605c1ea9d43c91b6ed80bb4515c85caf2de3f))
+* count the right anchored width ([cf713ef](https://github.com/nrkno/tv-automation-server-core/commit/cf713efecf7c650d0028ddfe272977424c626f73))
+* Invalid piece instance query ([57a8f68](https://github.com/nrkno/tv-automation-server-core/commit/57a8f68c7ff208be7004b9bb9c85d196c4972b76))
+* Reduce db calls ([1fe0266](https://github.com/nrkno/tv-automation-server-core/commit/1fe026607ffa3202c69aed576fab0a378b551737))
+* use existing segments without cloning ([e27eabe](https://github.com/nrkno/tv-automation-server-core/commit/e27eabea163cedb7146ed96082fa02dbd4948909))
+
+## [1.37.0-rc18](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.18...v1.37.0-rc18) (2021-10-13)
+
+
+### Bug Fixes
+
+* duration alignment on live speak ([e3ed2d1](https://github.com/nrkno/tv-automation-server-core/commit/e3ed2d1e554029130ce2a297155a12721fd1b86c))
+* label measurements ([e16e62c](https://github.com/nrkno/tv-automation-server-core/commit/e16e62c219d1f08e33bed8f3fd366234e36e20b7))
+
+## [1.37.0-tv2-clockview-crashes](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.17...v1.37.0-tv2-clockview-crashes) (2021-10-13)
+
+
+### Features
+
+* add postrollDuration to VTContent ([33bb2c7](https://github.com/nrkno/tv-automation-server-core/commit/33bb2c7ad6cbfffb90ee44403b08a4031a919216))
+
+
+### Bug Fixes
+
+* Added guard for accessing selectedPartIntance in PartNamePanel ([9ba62f4](https://github.com/nrkno/tv-automation-server-core/commit/9ba62f4e4b877583c3e46390dae9ccfa6fbce8fe))
+
+## [1.37.0-in-testing.17](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-diff-with-budget...v1.37.0-in-testing.17) (2021-10-11)
+
+
+### Bug Fixes
+
+* Failing playout tests ([d54cf3d](https://github.com/nrkno/tv-automation-server-core/commit/d54cf3d8c0b3143bcf2f2f754b68de609e8663ca))
+* Failing type checks ([333c93f](https://github.com/nrkno/tv-automation-server-core/commit/333c93f0021d74e622c066ce29e796cc2aa68db0))
+
+## [1.37.0-diff-with-budget](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.15...v1.37.0-diff-with-budget) (2021-10-08)
+
+
+### Features
+
+* diff with back-timing and budget duration ([e07b8b5](https://github.com/nrkno/tv-automation-server-core/commit/e07b8b526ac2d1f4826e215864e16af38e7bf747))
+
+
+### Bug Fixes
+
+* Missing cronjob ([87d7e17](https://github.com/nrkno/tv-automation-server-core/commit/87d7e1739d2e3c219a8c036255c4bc047e92c049))
+
+## [1.37.0-in-testing.15](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.14...v1.37.0-in-testing.15) (2021-10-08)
+
+
+### Bug Fixes
+
+* filtersTitle swapped for dashboard and rundown layouts ([17fbe58](https://github.com/nrkno/tv-automation-server-core/commit/17fbe5800e44cd496d97e384f82eff9cee13186e))
+
+## [1.37.0-in-testing.14](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-rc14...v1.37.0-in-testing.14) (2021-10-07)
+
+
+### Bug Fixes
+
+* Close button in rundown moved to front ([49f3671](https://github.com/nrkno/tv-automation-server-core/commit/49f36710fa005e3f4b89a7c1c0e56d0251bc39f8))
+
+## [1.37.0-rc14](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.12...v1.37.0-rc14) (2021-10-07)
+
+
+### Bug Fixes
+
+* Compare segment rundowns instead of metadata ([28be2cf](https://github.com/nrkno/tv-automation-server-core/commit/28be2cf8c969323433ea1276c0ebf381be1e2d5f))
+* Failing lists / tests ([a31147c](https://github.com/nrkno/tv-automation-server-core/commit/a31147cb793f3adb9a3ff835c1fe950f6f952db8))
+* Lint error ([f863d68](https://github.com/nrkno/tv-automation-server-core/commit/f863d68d780a66989d84e739c26a26407a46d720))
+
+## [1.37.0-rc13](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-tv2-rewind-bug...v1.37.0-rc13) (2021-10-05)
+
+
+### Bug Fixes
+
+* PQueue not waiting for promise to resolve ([2979922](https://github.com/nrkno/tv-automation-server-core/commit/29799224749769dedf9bf8370f72bced1d5ec8c5))
+
+## [1.37.0-tv2-rewind-bug](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-rc12...v1.37.0-tv2-rewind-bug) (2021-10-04)
+
+
+### Bug Fixes
+
+* Scroll part into view on set as next and independent zoom scales ([79e8e11](https://github.com/nrkno/tv-automation-server-core/commit/79e8e116bcec3825514cb40a5735a4ad3090828a))
+
+## [1.37.0-rc12](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-development-rc11...v1.37.0-rc12) (2021-10-01)
+
+## [1.37.0-in-development-rc11](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.10...v1.37.0-in-development-rc11) (2021-09-29)
+
+
+### Features
+
+* add piece duration label ([368025d](https://github.com/nrkno/tv-automation-server-core/commit/368025d0e99bec963688c05dfad03e5b742582ae))
+* Next break timing ([4c49ede](https://github.com/nrkno/tv-automation-server-core/commit/4c49ede1739ba59c6296146405ad710ed88298b0))
+* Regenerate segment data if rundown metadata changes ([b7d2230](https://github.com/nrkno/tv-automation-server-core/commit/b7d2230edbc44ba45590cff2e354ea2f5bd063f8))
+
+
+### Bug Fixes
+
+* Added guard for empty parts list. ([3512ed8](https://github.com/nrkno/tv-automation-server-core/commit/3512ed81ccf8658829ba3d1d2faba0556501cbda))
+* Don't erase segment data in rundownMetaDataUpdate ([dd651cf](https://github.com/nrkno/tv-automation-server-core/commit/dd651cf820a0da83c7350f83c1e106dbe10086c9))
+* piece label layout ([8659de3](https://github.com/nrkno/tv-automation-server-core/commit/8659de37ff51646ddff2cedc364dd85c329cccbd))
+* Remove unused imports ([f3eea78](https://github.com/nrkno/tv-automation-server-core/commit/f3eea78e7d4cf0f16f1452eb30f6551eec30f5f0))
+* some pieces not displaying duration label ([6d234c4](https://github.com/nrkno/tv-automation-server-core/commit/6d234c4c4f3ab814679fb397d87bf7a90a703a74))
+
+## [1.37.0-in-testing.10](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.9...v1.37.0-in-testing.10) (2021-09-24)
+
+
+### Bug Fixes
+
+* segment count up/down with budget duration ([232b173](https://github.com/nrkno/tv-automation-server-core/commit/232b1733e3af16290c6b148930f796df5a7a6c21))
+
+## [1.37.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-4...v1.37.0-in-testing.9) (2021-09-16)
+
+
+### Bug Fixes
+
+* use rundown.externalId instead of _id, to align better with what comes from blueprints ([975384b](https://github.com/nrkno/tv-automation-server-core/commit/975384b197061a40981e741769c025839e1f3aa5))
+* vertical space under the header bar ([bd92bed](https://github.com/nrkno/tv-automation-server-core/commit/bd92bed5ddd1b515f73e7f41ff79cad91c63361b))
+
+## [1.37.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.7...v1.37.0-in-testing.8) (2021-09-10)
+
+
+### Bug Fixes
+
+* segment countdown to use budget duration ([312c42f](https://github.com/nrkno/tv-automation-server-core/commit/312c42f13002b5f4e1c9ce83d58f8fd3160a29e2))
+* segment countdown to use budget duration ([7339fbd](https://github.com/nrkno/tv-automation-server-core/commit/7339fbd32725a60ad79d5f857696d10261b3936e))
+
+## [1.37.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.6...v1.37.0-in-testing.7) (2021-09-08)
+
+
+### Bug Fixes
+
+* use rundown.externalId instead of _id, to align better with what comes from blueprints ([53dab94](https://github.com/nrkno/tv-automation-server-core/commit/53dab9465244a9f858cd09376712e2863c70fea7))
+
+## [1.37.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.5...v1.37.0-in-testing.6) (2021-09-07)
+
+## [1.37.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-3...v1.37.0-in-testing.5) (2021-09-07)
+
+
+### Features
+
+* Add colored box dashboard component to header ([0716a92](https://github.com/nrkno/tv-automation-server-core/commit/0716a9209c558936a7958fe464dcec9f52928864))
+* Allow hiding end words label ([b4afbfe](https://github.com/nrkno/tv-automation-server-core/commit/b4afbfe05585213dae9054b320652cbb0642b79f))
+
+
+### Bug Fixes
+
+* Assign ranks according to playlist order by rundownExternalId ([1056242](https://github.com/nrkno/tv-automation-server-core/commit/105624245639ec5bc2047b97a90b1a11c6c1e0c7))
+* Navigation links in layout editors ([2bc9841](https://github.com/nrkno/tv-automation-server-core/commit/2bc984175aaefd176d7f28906f8d2f8dba0af2f0))
+* show correct budget duration when segment duration set to fixed ([68da071](https://github.com/nrkno/tv-automation-server-core/commit/68da07106940c1bf73a2572b3b4bb26a091afaf3))
+* Timing displays ([d724be2](https://github.com/nrkno/tv-automation-server-core/commit/d724be2b8dded59bc1b10b680e40898b7e0cdffd))
+
+## [1.37.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.3...v1.37.0-in-testing.4) (2021-09-06)
+
+
+### Features
+
+* Add colored box dashboard component to header ([70559e7](https://github.com/nrkno/tv-automation-server-core/commit/70559e7fa4370e1c5797ade41e820a62a0f806ff))
+* Allow hiding end words label ([adb6fd4](https://github.com/nrkno/tv-automation-server-core/commit/adb6fd4480d031dff0986818926cfcaa6bf93a0a))
+
+
+### Bug Fixes
+
+* Missing custom classes on panels ([255a71e](https://github.com/nrkno/tv-automation-server-core/commit/255a71e3e20cb523e571a3bd115e97cd4b175a13))
+* Missing custom classes on panels ([ada5c4f](https://github.com/nrkno/tv-automation-server-core/commit/ada5c4f40c0b49a961d2a085e6eeb9b1f7fecfdf))
+* Show expected end timer ([fda8a54](https://github.com/nrkno/tv-automation-server-core/commit/fda8a544246c9198d2aa0b95a29a86ccca2e2f38))
+* Show expected end timer ([92a343c](https://github.com/nrkno/tv-automation-server-core/commit/92a343c201218d72a57da3af40c8c72a6a64102e))
+* Timing displays ([0804e2c](https://github.com/nrkno/tv-automation-server-core/commit/0804e2c603d947e746ee10f9b7de4cf37b3a5781))
+
+## [1.37.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.2...v1.37.0-in-testing.3) (2021-09-01)
+
+## [1.37.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0-in-testing.1...v1.37.0-in-testing.2) (2021-09-01)
+
+## [1.37.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.9...v1.37.0-in-testing.1) (2021-09-01)
+
+
+### Features
+
+* action buttons in dashboard ([3e1e8a4](https://github.com/nrkno/tv-automation-server-core/commit/3e1e8a49a0a1ddeb382b91dd053b43d2a5438017))
+* Actions tally using piece tags ([e6f1486](https://github.com/nrkno/tv-automation-server-core/commit/e6f148669aae97213c07156891e723894a67e9cb))
+* Actions tally using piece tags ([d3ff701](https://github.com/nrkno/tv-automation-server-core/commit/d3ff701761ab7631413918d1ad734b9a5978bdaa))
+* Add background to AdLibRegions displaying thumbnails ([938ff10](https://github.com/nrkno/tv-automation-server-core/commit/938ff105b85094cb640884b605f3de02d691c49a))
+* Add basic dropdown ([8883baf](https://github.com/nrkno/tv-automation-server-core/commit/8883baff4360c7af7a289c32d7b483221ccf907c))
+* add blur border option to the standalone shelf ([621b3ac](https://github.com/nrkno/tv-automation-server-core/commit/621b3accbef85d6032010bc963875b3b4358f337))
+* Add border around queued adlibs ([8a7da29](https://github.com/nrkno/tv-automation-server-core/commit/8a7da29e822dffa3d8e74a28ae47f45227feca73))
+* Add CasparCG cron job system setting ([aad2d39](https://github.com/nrkno/tv-automation-server-core/commit/aad2d3912e7cbca179099e0fd48952d456407064))
+* add cron job routines to clean up part- and piece instances ([dfcb394](https://github.com/nrkno/tv-automation-server-core/commit/dfcb39432a6f257718a48ce9cb59cd674ded3983))
+* Add cron job storing rundown snapshots ([9dbf57e](https://github.com/nrkno/tv-automation-server-core/commit/9dbf57e196d39f833d609168f3878440cfd5c0c6))
+* add dashboard panel options for next tally ([6e1ca90](https://github.com/nrkno/tv-automation-server-core/commit/6e1ca90453ff9ad219f18494bcf966c5664b3b15))
+* Add Display rank to ExternalFramePanel ([42f65b6](https://github.com/nrkno/tv-automation-server-core/commit/42f65b642877966382e43d19be6189659a78f33f))
+* Add duplicate AdLibs filtering ([77b4c5c](https://github.com/nrkno/tv-automation-server-core/commit/77b4c5c62f6aee58a0a30ee2632ce43285627b85))
+* Add field for CasparCG mappings previewWhenNotOnAir property ([6daee94](https://github.com/nrkno/tv-automation-server-core/commit/6daee942df770d03610635df8af3547ea79672d1))
+* add function: isUpdateAllowed, to harmonize how update-checks are handled, and add check in more places. ([98323b5](https://github.com/nrkno/tv-automation-server-core/commit/98323b5100e35c8c988bd9680d5f8662dab15351))
+* Add icons to shelf links ([07f6276](https://github.com/nrkno/tv-automation-server-core/commit/07f6276f34bce3b058889a0b6f24c79c2c093301))
+* Add iNews gateway settings ([dbec07b](https://github.com/nrkno/tv-automation-server-core/commit/dbec07b133345534d361170e8981f40cb60136f0))
+* add invertOnAirState adlib piece property ([56efffb](https://github.com/nrkno/tv-automation-server-core/commit/56efffb72ed24bcb5ad55524df1d97dccd698717))
+* Add JSON config manifest entry with simple validation ([2bee933](https://github.com/nrkno/tv-automation-server-core/commit/2bee933e8bcf40d5ae10a0d8a7f83937cad493fd))
+* Add line breaking in the button labels ([567c4cc](https://github.com/nrkno/tv-automation-server-core/commit/567c4cc0e832e6a56e8e67815836abc70a54933e))
+* Add Minishelf ([82c7a6e](https://github.com/nrkno/tv-automation-server-core/commit/82c7a6e59b15ea36c4c943b44fdd2a30c665936e))
+* add minishelf filter shortcuts setting ([bc272b0](https://github.com/nrkno/tv-automation-server-core/commit/bc272b0b15d33f84788f2ed12b7b778b519448d4))
+* add minishelf live segment hotkeys ([7662fa8](https://github.com/nrkno/tv-automation-server-core/commit/7662fa865d6c177c2a1121b879399b1cd6019e31))
+* add NextInfo dashboard panel ([d9a6acf](https://github.com/nrkno/tv-automation-server-core/commit/d9a6acfc94589694b21cbc5e2baf116449b6c1ca))
+* Add option to disable the context menu in the shelf ([d5ea999](https://github.com/nrkno/tv-automation-server-core/commit/d5ea99943b93c8f06e0f86be96d67397205a3417))
+* Add PartCountdownPanel ([561b186](https://github.com/nrkno/tv-automation-server-core/commit/561b186ea869a894814da281c8d6e778cd844bf8))
+* add peripheralDevice methods to list and get known rundowns ([f31c1f4](https://github.com/nrkno/tv-automation-server-core/commit/f31c1f4fa08bc8a18e20e84b076657e16772552b))
+* add peripheralDevice methods to list and get known rundowns ([#1](https://github.com/nrkno/tv-automation-server-core/issues/1)) ([5ce9cd6](https://github.com/nrkno/tv-automation-server-core/commit/5ce9cd65be5a4672fd87b7a60c27de182e45bd24))
+* Add PieceCountdownPanel ([e80725e](https://github.com/nrkno/tv-automation-server-core/commit/e80725ef5cf8666af4f8a267f3b22da8ca68436d))
+* Add PieceCountdownPanel ([be17eb8](https://github.com/nrkno/tv-automation-server-core/commit/be17eb844af369a1338a9b07048430f9cf201d41))
+* Add PieceCountdownPanel ([0908c81](https://github.com/nrkno/tv-automation-server-core/commit/0908c8172b2f36af9e8cc96f4a003dd74601aadc))
+* Add PieceCountdownPanel ([aaedc0a](https://github.com/nrkno/tv-automation-server-core/commit/aaedc0a42fe47ea90bc290ebff232bb06e1fe063))
+* Add second label for Action Buttons that can be toggled on/off ([7f3f16f](https://github.com/nrkno/tv-automation-server-core/commit/7f3f16f7565cabe406ba4b93d74effbd58a97fd5))
+* add setting for changing default timeScale ([097ced9](https://github.com/nrkno/tv-automation-server-core/commit/097ced9ef1881dbeeeaec9bca0a2555033f24caf))
+* Add shelf links to the rundown list ([be4dcf0](https://github.com/nrkno/tv-automation-server-core/commit/be4dcf0d0c46b0e2f0d392e8609775a899a438e9))
+* Add Source Layers and Layer Mappings selects ([0244da1](https://github.com/nrkno/tv-automation-server-core/commit/0244da1fc5d121fcc92d8896776be2c972c61d79))
+* Add SourceLayerType.LOCAL ([efa3761](https://github.com/nrkno/tv-automation-server-core/commit/efa3761a1f81603ad37edd559dfb66a92185d580))
+* add static segment duration option ([ad44fd2](https://github.com/nrkno/tv-automation-server-core/commit/ad44fd274625dc42e2ee5ae6e9b31c3b1736369e))
+* add styling capability to StyledTimecode ([cb39214](https://github.com/nrkno/tv-automation-server-core/commit/cb39214132d52af64d2f8676038f0348236989f4))
+* add support for rundown identifier ([05345bc](https://github.com/nrkno/tv-automation-server-core/commit/05345bc93746cb0991942bdcd99aba3758d70e52))
+* Add thumbnail preview/program priority options ([ae434c9](https://github.com/nrkno/tv-automation-server-core/commit/ae434c989e5efbb2f9cefcf52d42e71370792a9f))
+* Add thumbnail preview/program priority options ([b8e8dcd](https://github.com/nrkno/tv-automation-server-core/commit/b8e8dcd6710188cd747792616132806efd14975e))
+* Add VizMSE Clear-all commands settings ([9278444](https://github.com/nrkno/tv-automation-server-core/commit/9278444b4a90e73b3927c4f2c239a155577b6d3a))
+* Add VizMSE settings ([97026fe](https://github.com/nrkno/tv-automation-server-core/commit/97026fe2f98a7974a593f541667d03cff0d44df5))
+* adlibTransitionKeepAlive ([325a84c](https://github.com/nrkno/tv-automation-server-core/commit/325a84caaab1855d62f1af9acb4853593aa3b88d))
+* Allow adlib actions to call take ([c1417bc](https://github.com/nrkno/tv-automation-server-core/commit/c1417bc6627e351846a523a33c486428df5705cd))
+* allow adlib to request to always be queued ([7c34422](https://github.com/nrkno/tv-automation-server-core/commit/7c344222f99016dd1d79f664c742547cc7bc6b8c))
+* allow entire Keyboard Preview panel in dashboard to be freely scaled using scale parameter ([55414a9](https://github.com/nrkno/tv-automation-server-core/commit/55414a9c9abac0e730e859a0a2f840c7e6ef6be7))
+* allow flattening output layers ([e8516fb](https://github.com/nrkno/tv-automation-server-core/commit/e8516fb7487b9d3978dc5d6885e9aaaca6c73ae5))
+* allow grabbing the timeline to scroll ([18c25e4](https://github.com/nrkno/tv-automation-server-core/commit/18c25e418de41a433d7bbf68c09b62d3d5fc3b5e))
+* Allow rundown reset while on-air ([b6c4387](https://github.com/nrkno/tv-automation-server-core/commit/b6c43870622f30759884175873e977a6970715b4))
+* allow scaling the UI with zoom parameter ([cb14415](https://github.com/nrkno/tv-automation-server-core/commit/cb1441543c514dd34730b61cc8edf31dda8d3172))
+* Allow selecting keyboard preview as dashboard panel ([6cabb84](https://github.com/nrkno/tv-automation-server-core/commit/6cabb846d602d76512cd3fc949eab0f84bca4201))
+* allow tag filtering in RundownLayouts ([2327075](https://github.com/nrkno/tv-automation-server-core/commit/2327075d3024866fb6fde2b2c201b05ed573f36e))
+* allow Take from the standalone shelf ([30b6736](https://github.com/nrkno/tv-automation-server-core/commit/30b673672fa94a422b715df260a92b39a665f4bd))
+* Always queue adlibs in Off-tubes ([f481f7c](https://github.com/nrkno/tv-automation-server-core/commit/f481f7cdf05fd068497707f7bdbb9b596aea596a))
+* always restore snapshots to a new rundownId ([89ec83b](https://github.com/nrkno/tv-automation-server-core/commit/89ec83bef602e25680c0bb6a9205de9d26c2e8b6))
+* always run devicesMakeReady when activating the rundown ([d7bdfb7](https://github.com/nrkno/tv-automation-server-core/commit/d7bdfb78d96c2630ce9ec4743600b7f5a5f86819))
+* an attempt at fixing the part jumping back-forth issue ([8170f71](https://github.com/nrkno/tv-automation-server-core/commit/8170f71d8b057f2b3d882e4549baf5bf5a019bd6))
+* an attempt at fixing the part jumping back-forth issue ([261df1a](https://github.com/nrkno/tv-automation-server-core/commit/261df1a05b6730303b5419ffe9e5c311dfc73170))
+* append piece tags as CSS classes to piece buttons ([5fd352d](https://github.com/nrkno/tv-automation-server-core/commit/5fd352dba0f60023e0cd6927be83719de4d6662f))
+* Apply rundown header / view layouts to rundown ([5f9261a](https://github.com/nrkno/tv-automation-server-core/commit/5f9261af6a07a39bbeb92844d87d081fca432daf))
+* Apply rundown header / view layouts to rundown ([8ec6f9a](https://github.com/nrkno/tv-automation-server-core/commit/8ec6f9a7c52588b59cae55dbf79f32264ca37b69))
+* auto-expanding/collapsing segments ([331a280](https://github.com/nrkno/tv-automation-server-core/commit/331a28020cb4c3526a9ea449ecb5472c17ede45f))
+* **autorewind:** auto rewind leaving segment ([a6765b2](https://github.com/nrkno/tv-automation-server-core/commit/a6765b24cf33968ae7005be9f282320e900904d8))
+* Better touch support for shelf hoverscrub ([7b62cbf](https://github.com/nrkno/tv-automation-server-core/commit/7b62cbf1cda8a631c2e5725e64b5442525a944df))
+* Break marker segment + hide rundown divider ([949fe11](https://github.com/nrkno/tv-automation-server-core/commit/949fe112b93b4b417303173efa4d906a8f666035))
+* Break marker segment + hide rundown divider ([b1d3d06](https://github.com/nrkno/tv-automation-server-core/commit/b1d3d062ba3c4557be67501be4391ea89e665fe4))
+* Budget duration ([053de3c](https://github.com/nrkno/tv-automation-server-core/commit/053de3c66ef2dbb3eea63c82b6711e71ea31ee87))
+* clean up old database entries in AsRunLog, UserActions and Snapshots ([b1581ab](https://github.com/nrkno/tv-automation-server-core/commit/b1581aba90c7af96e14cba544e67f1facc999db1))
+* Clock panels ([33bea59](https://github.com/nrkno/tv-automation-server-core/commit/33bea59c534edb3483460fd360b512e578e722ae))
+* Combine queues (potentially naïve implementation) ([8325e5f](https://github.com/nrkno/tv-automation-server-core/commit/8325e5f8d5575b0d132837beca7a19279f114e5b))
+* Compress gap ([db604a9](https://github.com/nrkno/tv-automation-server-core/commit/db604a9e58d122445fc2f80df90233c9fbe9a879))
+* Confirm deactivate rundown on klar-on-air button ([9ecca37](https://github.com/nrkno/tv-automation-server-core/commit/9ecca37bcfb98a8dbaa4be56a2032ff1ccaaeda2))
+* Copy while for lookaheads ([67853e2](https://github.com/nrkno/tv-automation-server-core/commit/67853e2ac2edb396c3c64a8d2e9fac8aacc3860b))
+* Custom classes for dashboard panels ([1436cd0](https://github.com/nrkno/tv-automation-server-core/commit/1436cd0200cd047b22cdac8f93ac3e1512ba9747))
+* Dashboard in clock view ([f65cb0c](https://github.com/nrkno/tv-automation-server-core/commit/f65cb0cb6715c341ff9d3a602616af39cf99b076))
+* **dashboard:** allow hiding utility panels ([4015220](https://github.com/nrkno/tv-automation-server-core/commit/40152207104583ead4dc2a505eff5a50aed0be3f))
+* dataSegmentGet ([405b149](https://github.com/nrkno/tv-automation-server-core/commit/405b149cd1a7c9516a2b216916483e264af94ed3))
+* dataSegmentRanksUpdate method ([e77faa3](https://github.com/nrkno/tv-automation-server-core/commit/e77faa329d3171b4438053d9cc00d8176f0768a4))
+* Default display duration setting ([cb455ae](https://github.com/nrkno/tv-automation-server-core/commit/cb455ae0d8b83d869ad253dd40e8d823f9402955))
+* Describe rundown view and shelf layouts through manifests ([72295d1](https://github.com/nrkno/tv-automation-server-core/commit/72295d16c1de7ee49ce560509a3db26809463d7c))
+* Describe rundown view and shelf layouts through manifests ([5dc0d4b](https://github.com/nrkno/tv-automation-server-core/commit/5dc0d4bf694124d5066f912059bca22fe2de9b68))
+* device config manifests ([#145](https://github.com/nrkno/tv-automation-server-core/issues/145)) ([8e8e2c9](https://github.com/nrkno/tv-automation-server-core/commit/8e8e2c948f5be85d0630db1ff9de07f3ac43b05c))
+* disable esc key as get out of jail ([324e12b](https://github.com/nrkno/tv-automation-server-core/commit/324e12b3f445fac4dce4f709c97830ba58b895fd))
+* Display online/offline status of jingles ([2433fae](https://github.com/nrkno/tv-automation-server-core/commit/2433fae359ad47bc98f04aebea604b365765c825))
+* Display rundown name ([4f39a85](https://github.com/nrkno/tv-automation-server-core/commit/4f39a852421de3aec075ef7643424305ac72c876))
+* DVE splits as consistent colour ([b8645b7](https://github.com/nrkno/tv-automation-server-core/commit/b8645b79d0667548189d779a78156e61982551c8))
+* DVE, Jingle and VO thumbnails ([187b4c7](https://github.com/nrkno/tv-automation-server-core/commit/187b4c7e31684f950fe0bab97c27404ab4c2bb4b))
+* End time diff ([f8cc7b7](https://github.com/nrkno/tv-automation-server-core/commit/f8cc7b7908b02340d3971a799359e761d5b666b6))
+* End time diff ([55cec52](https://github.com/nrkno/tv-automation-server-core/commit/55cec52eb8e2bb6a09b4f9d4b1f988d4df32d8e3))
+* Endwords, Playlist start / end timer panels ([f4fd866](https://github.com/nrkno/tv-automation-server-core/commit/f4fd866524d65c822b2fc0518346873100a7e6e1))
+* **Evaluation:** Stores snapshot for each evaluation, also positive ones. ([7850074](https://github.com/nrkno/tv-automation-server-core/commit/78500749b0cc3080b76a766c1ef66a2e5ef85855))
+* **Evaluation:** Take snapshots for positive evaluations only if there's a comment ([b1e9b87](https://github.com/nrkno/tv-automation-server-core/commit/b1e9b87a0dc4d90bb1387eff052aabff6d28d4ad))
+* expectedPlayoutItems: implement fetching of items from pieces, using temporary typings ([5722aae](https://github.com/nrkno/tv-automation-server-core/commit/5722aaeb7ed38526d9453c194d182d919e1fb622))
+* ExternalFramePanel in both Dashboard and AdLib list ([9fd51a7](https://github.com/nrkno/tv-automation-server-core/commit/9fd51a7571c7c371a193923c019c1223534e775a))
+* **ExternalFramePanel:** focus_in message for taking back focus from iframe ([85902e3](https://github.com/nrkno/tv-automation-server-core/commit/85902e3432f34a9a1bf265784d6211a964b3deac))
+* Find part for piece in adlib action ([44cd120](https://github.com/nrkno/tv-automation-server-core/commit/44cd12047612a39a71287955e2c69b1ae2b6c580))
+* findLastScriptedPieceOnLayer ([0d54a55](https://github.com/nrkno/tv-automation-server-core/commit/0d54a55ac4a0382ba2f2416633feae60ac5bc4f6))
+* **gap part:** don't show the end of a segment ending with a gap as a "take line" ([e4c31f3](https://github.com/nrkno/tv-automation-server-core/commit/e4c31f317535091181f6799a74ee10ea9eef1894))
+* gap parts ([1a9228d](https://github.com/nrkno/tv-automation-server-core/commit/1a9228d4ebd5005367e3cdfd280591415e814e2d))
+* Hide pieces in gap using css ([3051a9a](https://github.com/nrkno/tv-automation-server-core/commit/3051a9a22a3dcdb5d25e64f8f617831fd5c89f62))
+* if retain lookahead mode has a max-search-distance, then prioritise looking forward over backwards. It will only look backwards if no future objects were found in the forward direction ([58e721e](https://github.com/nrkno/tv-automation-server-core/commit/58e721e0eb0b4b07bbfe0c0bef8fb77d10361058))
+* Ignore black / freeze frames ([5497683](https://github.com/nrkno/tv-automation-server-core/commit/54976830d130c3ec484502318cf78a92bce78550))
+* ignore piece media status ([0a78284](https://github.com/nrkno/tv-automation-server-core/commit/0a782843cc9e0307382a5aea33efab9f8c0ffd7f))
+* implement setNextSegment feature ([5044453](https://github.com/nrkno/tv-automation-server-core/commit/50444531ceae6b062eb9e4e882ee0701cc5dc661))
+* Import / Export buttons for hotkeys ([de3e2a2](https://github.com/nrkno/tv-automation-server-core/commit/de3e2a25fb09cdf97245dcd96d9e0afe4e6418b5))
+* Initial implementation of expectedPlayoutItems feature ([2b6a83e](https://github.com/nrkno/tv-automation-server-core/commit/2b6a83ecfd27bafee94a5495006a288857239af1))
+* **keyboard preview + tv2:** export AHK scripts from Hotkey Legend ([063d241](https://github.com/nrkno/tv-automation-server-core/commit/063d2418fa312e52bd294391c30cc0aad873ab3d))
+* keyboard preview for adLibs ([ad36436](https://github.com/nrkno/tv-automation-server-core/commit/ad364368b06b54d2c8ab0945e976a58ee75315bc))
+* keyboard preview in RundownView, show currently attached AdLibs & Global AdLibs ([a5119c3](https://github.com/nrkno/tv-automation-server-core/commit/a5119c34e4196b71cfe8ac504fcd63ec576a9a2d))
+* **keyboard preview:** Keyboard preview, hotkeyRegistry (WIP) ([25e642f](https://github.com/nrkno/tv-automation-server-core/commit/25e642f6709c9d483e2803aca5ea1600947c6294))
+* **keyboard preview:** keyboard redirection settings ([54e850c](https://github.com/nrkno/tv-automation-server-core/commit/54e850c51aecf3605b10c401c6d6208825bcd42a))
+* **keyboard preview:** Settings flag for showKeyboardMap ([ca68c74](https://github.com/nrkno/tv-automation-server-core/commit/ca68c74a070a5a6e12f51fb5f15734a131790455))
+* **keyboard preview:** show custom labels and runtime arguments ([6a520d1](https://github.com/nrkno/tv-automation-server-core/commit/6a520d19df539fb4c54cc77ca887ee13980a0a7c))
+* **keyboard preview:** show source layer override in list ([ef12b44](https://github.com/nrkno/tv-automation-server-core/commit/ef12b44b47eef753a80768c9de07c2a21d15ede9))
+* keyboard shortcuts ([91816ca](https://github.com/nrkno/tv-automation-server-core/commit/91816ca05ed3b0cb596a7c3cb46d623f0bf034d5))
+* keyboard shortcuts ([ae82033](https://github.com/nrkno/tv-automation-server-core/commit/ae8203392a2b1cb0c0e48c5495d040d95f577e9f))
+* keyboard shortcuts ([47683e3](https://github.com/nrkno/tv-automation-server-core/commit/47683e330b9bbd934198dfe69438427798d6e94f))
+* Klar on air action button ([c6de0d0](https://github.com/nrkno/tv-automation-server-core/commit/c6de0d02fb5d1ca62a558ffc5964a9d8356da86a))
+* Klar on air action button ([9f4671f](https://github.com/nrkno/tv-automation-server-core/commit/9f4671f05629e7f1fa6c461f0d6769b8a3214811))
+* Klar on air button color ([dc931a0](https://github.com/nrkno/tv-automation-server-core/commit/dc931a0c5f8c8125140f72b5d5d7ff6916e29a73))
+* Klar on air button color ([10ae4e7](https://github.com/nrkno/tv-automation-server-core/commit/10ae4e7b5b42af007d23272b8c5e1e4e3b62e375))
+* List type dashboard panels ([10797e4](https://github.com/nrkno/tv-automation-server-core/commit/10797e417187d6b99627980f78273d551007e8c9))
+* Look ahead to find rundown marked as next break ([b6b0e87](https://github.com/nrkno/tv-automation-server-core/commit/b6b0e876e0f52ba408bfdc686c801708facb6cda))
+* Look ahead to find rundown marked as next break ([44328e4](https://github.com/nrkno/tv-automation-server-core/commit/44328e4685b06159ea808f7be4d6e2b9f665e0c6))
+* lookahead maxSearchDistance ([b34ab74](https://github.com/nrkno/tv-automation-server-core/commit/b34ab74cab1be931244245ab9d4c4e8cdd86ee0d))
+* loop UI & lobby improvements ([#498](https://github.com/nrkno/tv-automation-server-core/issues/498)) ([9a885b7](https://github.com/nrkno/tv-automation-server-core/commit/9a885b75fc09434445ae0243aa057c9c13430042))
+* Make an unsynced-removed segment stick to the previous one ([1077132](https://github.com/nrkno/tv-automation-server-core/commit/107713204979936593928747ec1410361e48ed93))
+* make difference between first and second source more prominent ([7ec71b3](https://github.com/nrkno/tv-automation-server-core/commit/7ec71b372cc04e47e2a7a31caabc04bd96969273))
+* make PieceCountdown scalable ([00c30b8](https://github.com/nrkno/tv-automation-server-core/commit/00c30b80365fece971a94d3343e71771576b4273))
+* mark "queued" segments ([89cf8cf](https://github.com/nrkno/tv-automation-server-core/commit/89cf8cfe5859486cf2c3a17f43ff392cc28b0f83))
+* media retry config field ([3c2e4cd](https://github.com/nrkno/tv-automation-server-core/commit/3c2e4cd3e3b0b14ab121322248a22d2fb869078d))
+* memoize getSelectedPartInstances ([1280443](https://github.com/nrkno/tv-automation-server-core/commit/128044361c6692cb060a8b7bd3ff62fad5f84b47))
+* merge in placeholder property display ready for testing ([a260d24](https://github.com/nrkno/tv-automation-server-core/commit/a260d246d7a20374a2332630ea27a4c94f2bd9b7))
+* Modifier keys on touchscreen in keyboard preview ([465b16f](https://github.com/nrkno/tv-automation-server-core/commit/465b16f1820a6684863d481975f386057efb8a8c))
+* more adlib-action functions ([337f47e](https://github.com/nrkno/tv-automation-server-core/commit/337f47ebef48adff1c78d38171f34b7571b06dc7))
+* more adlib-action functions ([a8f2679](https://github.com/nrkno/tv-automation-server-core/commit/a8f2679a3896352d4ace02d42483eda3454ccb13))
+* more styling work ([ce3cc4f](https://github.com/nrkno/tv-automation-server-core/commit/ce3cc4fd0b0a0e7d9ed73262b7bb4bb74f65e4aa))
+* move color scheme to CSS variables ([9dc1838](https://github.com/nrkno/tv-automation-server-core/commit/9dc1838a448a2262e014a6da0b5a5b6d9deaf308))
+* Move next break props calculation to tracker ([1b83c81](https://github.com/nrkno/tv-automation-server-core/commit/1b83c81ebf313b01ff542ede19dabee562f01627))
+* move to em-based sizes ([d3a8a12](https://github.com/nrkno/tv-automation-server-core/commit/d3a8a12ee57cccd124c1bf99094f973816c1f548))
+* MultiView as buttons ([47815cd](https://github.com/nrkno/tv-automation-server-core/commit/47815cdbcb789f1715eb6281a619bee5649a13a3))
+* MultiView panels ([c7d6daa](https://github.com/nrkno/tv-automation-server-core/commit/c7d6daab911a103a25f2de33a3f28d0b6df623b8))
+* New feature: unsynced Segments (wip) ([a3afad9](https://github.com/nrkno/tv-automation-server-core/commit/a3afad97f3aff11e13c4641c833e98de8fa27a7d))
+* noHotkey ([d5dde97](https://github.com/nrkno/tv-automation-server-core/commit/d5dde97aa0276f8c7344e78e5d48d9857c267dd5))
+* On air segment history ([5af83f6](https://github.com/nrkno/tv-automation-server-core/commit/5af83f6802d9f5558d2540bc8f511f5f6a0dd16a))
+* Only countdown to segment if certain sourcelayers are present ([e13a14c](https://github.com/nrkno/tv-automation-server-core/commit/e13a14cbbb14f89b416f7f2b29ed2e220b288771))
+* only push docker image if platform credentials are defined ([798653e](https://github.com/nrkno/tv-automation-server-core/commit/798653e5672d92531136d4211b6518af75b019b8))
+* Only show key label/colour if adlib is mapped to it ([d348885](https://github.com/nrkno/tv-automation-server-core/commit/d348885b404388f8320c7ab351178eeb0b9288c9))
+* Open shelf by default and shelf height setting ([5aca5c9](https://github.com/nrkno/tv-automation-server-core/commit/5aca5c94814f72cdd9c1c7ef85102d6656a2c410))
+* option for sticky items to only make 'original' pieces sticky ([68799cf](https://github.com/nrkno/tv-automation-server-core/commit/68799cfcbb4f9584f907489fbbc1bd6d7f5dd973))
+* Pad piece start when inserted into current part ([dec24a7](https://github.com/nrkno/tv-automation-server-core/commit/dec24a7eeaf70875acfeb3b69acbc7ecdbaf592c))
+* Part count down panel ([a986063](https://github.com/nrkno/tv-automation-server-core/commit/a9860632334f5148ead99a3de4e98ce8d58adf45))
+* Part name panel, colored box elements ([d423eb0](https://github.com/nrkno/tv-automation-server-core/commit/d423eb0f264f726f6c79ac87b67643c91952e863))
+* placeholder option for config manifests ([dffc0ac](https://github.com/nrkno/tv-automation-server-core/commit/dffc0acb741f23dbbd5a976ee4bd970fc2ee800e))
+* Playlist/Rundown expectedEnd display in lobby / header ([1e9324a](https://github.com/nrkno/tv-automation-server-core/commit/1e9324a1ba4845733b89e5683c4869f255f5a5e6))
+* Playlist/Rundown expectedEnd display in lobby / header ([f9427d0](https://github.com/nrkno/tv-automation-server-core/commit/f9427d075be7a8f56257366f548b8d2546213619))
+* Preview of FULL in the multiview ([9395ef4](https://github.com/nrkno/tv-automation-server-core/commit/9395ef49b2c4a6042d33d4fb34a16e1ff24d2185))
+* Preview of FULL in the multiview ([6fbb94b](https://github.com/nrkno/tv-automation-server-core/commit/6fbb94bb9a9512bf2370210fc72cc1cbe6eef012))
+* Preview of FULL in the multiview ([fcaf737](https://github.com/nrkno/tv-automation-server-core/commit/fcaf737e4cddc726e563def267098978879802e0))
+* Preview specific frame for expected media items ([778b5b7](https://github.com/nrkno/tv-automation-server-core/commit/778b5b77467ea6afcede985c746856a0b9a864ce))
+* Profile things if APM is active ([ed99652](https://github.com/nrkno/tv-automation-server-core/commit/ed996528e200d279a57751f4737bd110bfdf5335))
+* Queue adlibs with transitions ([285d6a4](https://github.com/nrkno/tv-automation-server-core/commit/285d6a44248a749061cece5bcb074e121324d6a3))
+* Queue adlibs with transitions ([c68c6a1](https://github.com/nrkno/tv-automation-server-core/commit/c68c6a149ff7d2e951505cf86f6ba37f896e90db))
+* read METEOR_SETTINGS from /opt/core-settings.json at startup ([ea57762](https://github.com/nrkno/tv-automation-server-core/commit/ea57762fcee1c92f202ce6b188ed77903d16e341))
+* Reduce data stored in RAM ([ae9d0aa](https://github.com/nrkno/tv-automation-server-core/commit/ae9d0aa7326b1f9b5f46ed83e339aecbca741889))
+* Reduce data stored in RAM ([0610dd6](https://github.com/nrkno/tv-automation-server-core/commit/0610dd65b6aefeaa5dc7376bb66e0fc515a7f7ce))
+* refactor customLabels integration ([3d77955](https://github.com/nrkno/tv-automation-server-core/commit/3d779554e186faa562a6ca4a8184a96549a4c3bf))
+* rem-based sizing of UI ([9dcddc6](https://github.com/nrkno/tv-automation-server-core/commit/9dcddc6314cc993ef5cf0b0549bddc27524211a2))
+* Remap route set type ([a005269](https://github.com/nrkno/tv-automation-server-core/commit/a005269f8f3b1154959f15cc0939a68551ace11f))
+* removes un-used properties from the source layers to clean up the UI and avoid confusions this introduce ([2ce28d2](https://github.com/nrkno/tv-automation-server-core/commit/2ce28d276e1bd938227fa8d7503839f3b8ce6ab8))
+* replace a dictionary with a Map in getResolvedSegment ([bd46382](https://github.com/nrkno/tv-automation-server-core/commit/bd46382903f2aff13eea178d6e9e5fa7f26cad22))
+* Request gateway reload iNews data ([af58d32](https://github.com/nrkno/tv-automation-server-core/commit/af58d320ec0a24d2d915c9963cadbab069a0ebca))
+* Request gateway reload iNews data ([2e70dac](https://github.com/nrkno/tv-automation-server-core/commit/2e70dac0d711ea27be1cd5259cbaf36613d44e72))
+* Require layers to have active pieces for live line counter ([738ef26](https://github.com/nrkno/tv-automation-server-core/commit/738ef269368f7c917e4822537a736b9798766873))
+* Resync segments ([4c356e2](https://github.com/nrkno/tv-automation-server-core/commit/4c356e2de2265d4352b9b90ee7a70f77d9b5900a))
+* reverse live/next and guest/remote color markers in TV2 custom stylesheet ([ad688f5](https://github.com/nrkno/tv-automation-server-core/commit/ad688f5713ab3eafeb2deeb989a7c022f545063f))
+* run devicesStandDown when deactivating the rundown ([bb3f729](https://github.com/nrkno/tv-automation-server-core/commit/bb3f72996fd701275ae38210febfc6d14a56a37f))
+* Runs on R37 ([0276392](https://github.com/nrkno/tv-automation-server-core/commit/0276392b5f096142ce5aaec6691997bb08defa98))
+* Scaling of ExternalFramePanels ([acd3b06](https://github.com/nrkno/tv-automation-server-core/commit/acd3b06318e4369fd5fa909a359e597af354be8f))
+* Scope layouts to their settings section ([437a730](https://github.com/nrkno/tv-automation-server-core/commit/437a730fc365258dc3160ab52bb19c694fc104a4))
+* Scope layouts to their settings section ([dd1939c](https://github.com/nrkno/tv-automation-server-core/commit/dd1939cb4740f4cf2a2bae53ccd98d132d30bba6))
+* **scroll grab:** implement grab to scroll on timeline ([88adbd5](https://github.com/nrkno/tv-automation-server-core/commit/88adbd53cf77f1089f2e64a0ca77ce21a6d95f6e))
+* Segment count up and down panels ([24ce5ed](https://github.com/nrkno/tv-automation-server-core/commit/24ce5ed34f227faf42f3f19e4474ba6ff94522c9))
+* Select colour for keyboard buttons ([7b70815](https://github.com/nrkno/tv-automation-server-core/commit/7b708152e05789927c65205299a5a6a69f135fac))
+* Select global adlib by rank ([1ca802d](https://github.com/nrkno/tv-automation-server-core/commit/1ca802d8a5d174e604c76da26f75b5b1bb27d12f))
+* Select mini shelf layout in rundown view ([3c9aef2](https://github.com/nrkno/tv-automation-server-core/commit/3c9aef28e6613c414cc3beca8857fe8004597d4b))
+* Select mini shelf layout in rundown view ([f8acbf3](https://github.com/nrkno/tv-automation-server-core/commit/f8acbf3ff938382caed00eb5b872b73771cd9f9c))
+* Select rundown layout from lobby and use selected layouts as defaults ([4d615f2](https://github.com/nrkno/tv-automation-server-core/commit/4d615f211f71c950a7f1cb96410af5a8f0664fd8))
+* Selects as top level config entries ([105d62c](https://github.com/nrkno/tv-automation-server-core/commit/105d62cd3308fbe2c72cc4ccc001a3e4e65cab1c))
+* setNextSegment: if user is playing the last part in a segment and tries to setNextSegment, change that to a setNextPart ([2e0437f](https://github.com/nrkno/tv-automation-server-core/commit/2e0437f6dcde72d8efe1cbebf93b2c8c87c4af6a))
+* Setting to change default display duration ([0f8baed](https://github.com/nrkno/tv-automation-server-core/commit/0f8baed292648f443fdb64baea70ac8ac1fce0b0))
+* Setting to show black if no thumbnail is found ([04e47d8](https://github.com/nrkno/tv-automation-server-core/commit/04e47d85ad8dd7090e5943ad5f04cb0f35cc8077))
+* Setting to show black if no thumbnail is found ([504682c](https://github.com/nrkno/tv-automation-server-core/commit/504682caa8cbb88f34b032bf03e44c558e8fa40f))
+* Settings for header customisations ([7b4a178](https://github.com/nrkno/tv-automation-server-core/commit/7b4a17866389396aa1a28ce7ed32c1f3cdfb85d9))
+* Settings for header customisations ([79bd189](https://github.com/nrkno/tv-automation-server-core/commit/79bd1895b3dfa56c55ace3e124915ad3b2d5bee2))
+* Show bucket setting ([8d6fc3c](https://github.com/nrkno/tv-automation-server-core/commit/8d6fc3c96c641bc01cf1578005a8c05f789882b1))
+* Show bucket setting ([478d7f9](https://github.com/nrkno/tv-automation-server-core/commit/478d7f909ff6e15129068a1d587a81c772838a0d))
+* show message after manual snapshot ([#350](https://github.com/nrkno/tv-automation-server-core/issues/350)) ([b02f54c](https://github.com/nrkno/tv-automation-server-core/commit/b02f54c0dbdb9e849100ddd026b07ed16ffdde1e))
+* simulate take timing before startedPlayback flows back from playout ([b2a8fa9](https://github.com/nrkno/tv-automation-server-core/commit/b2a8fa9d590385016f609fe6fcd6aa53a6306e0b))
+* Skeleton of rundown layout registry ([162384e](https://github.com/nrkno/tv-automation-server-core/commit/162384e4c44d0a8fa108a5becd299f82b544db0c))
+* Skeleton of rundown layout registry ([86e30aa](https://github.com/nrkno/tv-automation-server-core/commit/86e30aa63f538ce3b8698d84181e987a6462a44d))
+* some more work on the ExternalFrame API ([d533430](https://github.com/nrkno/tv-automation-server-core/commit/d5334308101ef09fe016730855cb1b4ebeba5fe4))
+* some more work on TV2 stylesheet ([c814658](https://github.com/nrkno/tv-automation-server-core/commit/c814658d185743d04f079cd220ae604dd5f00572))
+* Sort columns by rank ([178cd34](https://github.com/nrkno/tv-automation-server-core/commit/178cd349e3115db2178ca59a45be3c9ce023e658))
+* Sorting tables by columns ([84a8917](https://github.com/nrkno/tv-automation-server-core/commit/84a891794c4a665b15373f765d4db9c12c6be098))
+* Sorting tables by columns ([1e703bc](https://github.com/nrkno/tv-automation-server-core/commit/1e703bc7b00144d74d9393f288fa876c18e440aa))
+* **sourceDuration:** override piece sourceDuration to MediaObject contentDuration, if sourceDuration is not set ([c3fc43a](https://github.com/nrkno/tv-automation-server-core/commit/c3fc43a28281571f8b37115beefb8621b1d6be6b))
+* Split DashboardPieceButton label into multiple lines ([847430f](https://github.com/nrkno/tv-automation-server-core/commit/847430fdf223b1ddb9c887365973bdd04c042a4f))
+* Sticky headers and better scrolling ([b785d12](https://github.com/nrkno/tv-automation-server-core/commit/b785d12fa2f317156397503c29446a04a8fcab85))
+* Sticky headers and better scrolling ([a29a3b2](https://github.com/nrkno/tv-automation-server-core/commit/a29a3b2fda4f758adf6a94d04211b9cf461dd4eb))
+* Store shelf height on a per-layout basis ([6c60e3f](https://github.com/nrkno/tv-automation-server-core/commit/6c60e3f9d3c56285f3f3fdec624577acccab53ea))
+* Studio settings for layerName ([cd0b43e](https://github.com/nrkno/tv-automation-server-core/commit/cd0b43e1282ec334a8b014ccc97df79f88416341))
+* Styling of header components ([9e716cc](https://github.com/nrkno/tv-automation-server-core/commit/9e716cc6466762afd6d0d8c3888200336862ce09))
+* support for activeRundown in makeReady call ([2ddf91d](https://github.com/nrkno/tv-automation-server-core/commit/2ddf91d16b1f2965740efa1a02c9c5c30cc0997f))
+* support hidden segments. Will not be shown in the RundownView, but will be shown in the Shelf ([907850d](https://github.com/nrkno/tv-automation-server-core/commit/907850d6673022554c74a83e4c5b8b0306d283ea))
+* support hotkey redirection through hotkeyLegend ([c01e2cd](https://github.com/nrkno/tv-automation-server-core/commit/c01e2cd8719eec3e3749b3ca8a74c994d21100bf))
+* support vizMSE option onlyPreloadActiveRundown ([8cd95df](https://github.com/nrkno/tv-automation-server-core/commit/8cd95df7bab2ec4099b8a898644f28be59e12700))
+* swap shortcuts ([b2ba336](https://github.com/nrkno/tv-automation-server-core/commit/b2ba336583fbd04082058f97cb25d20387b633fb))
+* Take buttons ([3fe996e](https://github.com/nrkno/tv-automation-server-core/commit/3fe996e1599f0c1754051eb0c355e4d9255efd0b))
+* Take with a MultiView window ([9a5cd45](https://github.com/nrkno/tv-automation-server-core/commit/9a5cd453abb6ed1649f4c4a9151c27a47b0d313c))
+* Tally borders ([51ca745](https://github.com/nrkno/tv-automation-server-core/commit/51ca745148d834b928ad20409c330769b8128f0e))
+* Thumbnail previews in adlib regions ([ee75b69](https://github.com/nrkno/tv-automation-server-core/commit/ee75b699fe60e4c3e7800936942e5e6bdf202f11))
+* Thumbnails next to graphics in list ([03445ad](https://github.com/nrkno/tv-automation-server-core/commit/03445ad63370376ca10f65d0e638c98f44149d11))
+* **timeline grab:** remove leftover console ([b2b1a47](https://github.com/nrkno/tv-automation-server-core/commit/b2b1a4761558644331f3d93a7a1e9cf557951cac))
+* **timeline grid:** allow customizing timeline grid from CSS ([032cd2c](https://github.com/nrkno/tv-automation-server-core/commit/032cd2c71dfc22f5556607cfb843c8eaadadb5e5))
+* TimelineDashboardPanel ([80ef233](https://github.com/nrkno/tv-automation-server-core/commit/80ef233c66a767a5f4eca84bbb4ee2213c67a800))
+* **TimelineDashboard:** show "next" line if no "live" line present ([932cf36](https://github.com/nrkno/tv-automation-server-core/commit/932cf366d3ba6240bd4a7a2de2fe2fc9507c212f))
+* **TimelineDashboard:** support overflowHorizontally ([00dadc6](https://github.com/nrkno/tv-automation-server-core/commit/00dadc6375c47a4e80040c453ce58fc3ce113a8b))
+* **trimming:** remove a lot of margins ([ff1e908](https://github.com/nrkno/tv-automation-server-core/commit/ff1e9081431065a997439b42d43e09984fae37fa))
+* trying to add support for nun-numeric pluss, code 187/"Minus" ([3d13226](https://github.com/nrkno/tv-automation-server-core/commit/3d13226764684a5a46dc2ad6d4252e7c286d9c5b))
+* tv 2 shortcuts ([b673e62](https://github.com/nrkno/tv-automation-server-core/commit/b673e623bf27b6b0de38099457fdd1674a3554b8))
+* TV2-style zebra stripes ([34b5584](https://github.com/nrkno/tv-automation-server-core/commit/34b55841532d4fb198bc97438f52753fd9da2940))
+* two types of RundownPlaylist snapshots ([d7440d1](https://github.com/nrkno/tv-automation-server-core/commit/d7440d18547b1d68f059ca9c7cabaae5cb1d9377))
+* UI components for timing to next break ([f1ddbe5](https://github.com/nrkno/tv-automation-server-core/commit/f1ddbe5a6514b6a18b3dc028f08ad11d3f5dbb55))
+* UI components for timing to next break ([eedf521](https://github.com/nrkno/tv-automation-server-core/commit/eedf5211fec8d47c70e4627ee2a2cce1e4a9be9b))
+* **ui:** add segment numbers ([f58ecc4](https://github.com/nrkno/tv-automation-server-core/commit/f58ecc46241215311b3ab5de86b45a25dfb7d38c))
+* **UI:** hide zoom area, hide show overview, some color tweaks ([6a0765a](https://github.com/nrkno/tv-automation-server-core/commit/6a0765ae7bcdc77e3101217c8f07931bf9a53d2a))
+* **ui:** more customizations of the UI ([1855df0](https://github.com/nrkno/tv-automation-server-core/commit/1855df0b52a29f3a4443e8b1960c109ab6857967))
+* **ui:** more UI customization ([dab68dc](https://github.com/nrkno/tv-automation-server-core/commit/dab68dc2d73fa932c934436daab078c462d94a23))
+* **UI:** some more updates to the coloring and layout ([4de0c14](https://github.com/nrkno/tv-automation-server-core/commit/4de0c14adfa9b59fcf99c3cb20f53a748bce1f27))
+* **ui:** some more work on custom styling ([ed7fb1c](https://github.com/nrkno/tv-automation-server-core/commit/ed7fb1cf53741604396b73378f5192923a2924ae))
+* Unsync segment on updateRundownFromIngestData ([cb4775c](https://github.com/nrkno/tv-automation-server-core/commit/cb4775c112a01c37af4aefba88375610b5618d2a))
+* use both numpad enter and normal enter to accept ModalDialogs ([9b76779](https://github.com/nrkno/tv-automation-server-core/commit/9b76779507bb985e5a65041deee243e1de72e3e3))
+* use final version of sinewave image ([d251581](https://github.com/nrkno/tv-automation-server-core/commit/d251581c10b98c7dbbf61acee4d2285daefd9c71))
+* Use layer names in layer mapping dropdown / mapping settings ([48fa2dd](https://github.com/nrkno/tv-automation-server-core/commit/48fa2dd40e940a397ea0d51290ad74de855428c5))
+* use staggered updates for non-current segments ([2a3ba91](https://github.com/nrkno/tv-automation-server-core/commit/2a3ba91ca9db02a9689ae1c453bbd06b658eb24b))
+* use stateful simulation fade ([99f9f95](https://github.com/nrkno/tv-automation-server-core/commit/99f9f95e3b0f2ce6ef06ab5f0b85a1a2956ed488))
+* use TV2 color scheme as presented in the design document ([1e3f9af](https://github.com/nrkno/tv-automation-server-core/commit/1e3f9af81b49d27ee930b006543339ef91c55542))
+* Use VTContent.postrollDuration ([50a16b8](https://github.com/nrkno/tv-automation-server-core/commit/50a16b815ac941c78c2aea3cfa61381a0324e5e2))
+* Use warning colour on action buttons when studio is not active ([ba9c48f](https://github.com/nrkno/tv-automation-server-core/commit/ba9c48f0199279fd1a6201e7423691b3c15b0a66))
+* Viewing shelfs of inactive rundowns ([7ca1647](https://github.com/nrkno/tv-automation-server-core/commit/7ca1647bd2988752e4d1c096bcf725dc979d5d30))
+* Viewing shelfs of inactive rundowns ([3d3ef2c](https://github.com/nrkno/tv-automation-server-core/commit/3d3ef2c558523eb74e0ea00ef3ea4002a6c6e75d))
+* zero-based config values ([ca2dba5](https://github.com/nrkno/tv-automation-server-core/commit/ca2dba54255d2b48b307fe84fd64f383183aa756))
+* zoom in/out latch ([ada78c8](https://github.com/nrkno/tv-automation-server-core/commit/ada78c8e356e51820e277d75c8c879b5037c0ce3))
+* **Zoom:** Allow to zoom out to see the entire segment by holding z ([6eb09ab](https://github.com/nrkno/tv-automation-server-core/commit/6eb09ab722a235f32d98eb5e48a7f62334c5a41a))
+
+
+### Bug Fixes
+
+* [object Object] in UI ([0325426](https://github.com/nrkno/tv-automation-server-core/commit/032542604794351b35c7e312302bf274a7470a49))
+* 0 freeze frame detected within the clip ([2bac941](https://github.com/nrkno/tv-automation-server-core/commit/2bac941051ccd6e1e210335db3ca3dde1fe95fab))
+* a problem with double scrolling after a take ([7d8f856](https://github.com/nrkno/tv-automation-server-core/commit/7d8f85633fff341ab89667de3446536e6d643a6c))
+* a problem with double scrolling after a take ([c95a624](https://github.com/nrkno/tv-automation-server-core/commit/c95a624993f89620a4919452284804fccbf3469d))
+* Action buttons sizing ([bfb3448](https://github.com/nrkno/tv-automation-server-core/commit/bfb3448ee7d28dd83a6d303c6cff021484e055cb))
+* Actions API ([40caa48](https://github.com/nrkno/tv-automation-server-core/commit/40caa48efa6b0c98670e617916bf47656c95dd68))
+* activation resetting current pieceInstances ([69598e3](https://github.com/nrkno/tv-automation-server-core/commit/69598e3890c7930637736bd959c27204a0172b83))
+* Add adlib region to dashboard panel ([f09b597](https://github.com/nrkno/tv-automation-server-core/commit/f09b5975882e1211cf8fb11fb3122b79e676c446))
+* add adlibPreroll to definitelyEnded, to account for any long long pre-rolls ([2d9a43d](https://github.com/nrkno/tv-automation-server-core/commit/2d9a43d6c6025c8cf8501d262ec382c0ffa68ee5))
+* Add adlibTransitionKeepAlive property ([a8942d8](https://github.com/nrkno/tv-automation-server-core/commit/a8942d8b6a2dfca3aa5ef62ba932d2baa6b42be0))
+* Add baseline adlibs to expected media items ([cc1d4d9](https://github.com/nrkno/tv-automation-server-core/commit/cc1d4d9b03b3af3ba0615c5abceac545ebab3a8c))
+* add check if rundown is already unsynced, so that Rundown.unsyncedTime stays original ([eb97e13](https://github.com/nrkno/tv-automation-server-core/commit/eb97e1384ecdac89bbeaddcf3afb41c1ef6a8194))
+* Add default setting value ([d9eae1b](https://github.com/nrkno/tv-automation-server-core/commit/d9eae1bee54120479e392b5b6b5e4adfad6c331c))
+* add definitelyEnded to properties that is to be reset on Pieces ([71287f2](https://github.com/nrkno/tv-automation-server-core/commit/71287f22f3c952f5e348984f619689320a316e16))
+* Add missing export ([2d1321d](https://github.com/nrkno/tv-automation-server-core/commit/2d1321dee0c6d19b095ea4e2e0dc85e932c9e4aa))
+* add missing filter options ([8d70596](https://github.com/nrkno/tv-automation-server-core/commit/8d70596b44161b0f1301a48859276757341abe82))
+* Add missing import ([e74afca](https://github.com/nrkno/tv-automation-server-core/commit/e74afcad8b88cea2ab396f647a93aed5851f5efd))
+* add missing layout options ([6dedc90](https://github.com/nrkno/tv-automation-server-core/commit/6dedc90c953448d8f45d06691f0aa0ac14d75636))
+* add missing properties ([6f379b5](https://github.com/nrkno/tv-automation-server-core/commit/6f379b522c23c4fb6dddf72a1294776a5563339c))
+* Add missing settings ([99296e4](https://github.com/nrkno/tv-automation-server-core/commit/99296e403bffe29ac0c7c9a9d2f6b24807ee96d3))
+* Add Numpad keyboard layout ([43d5e4f](https://github.com/nrkno/tv-automation-server-core/commit/43d5e4f9485332ba02f4f9e3c7ecf0f7357b37c0))
+* add options for TSR-vizMSE device ([61220ba](https://github.com/nrkno/tv-automation-server-core/commit/61220bab39b5874b71a0a6e28c5363f2227f04a7))
+* Add property Piece.definitelyEnded to be used to easilly filter out old and cropped pieces. ([a695d71](https://github.com/nrkno/tv-automation-server-core/commit/a695d71b824894ba9621e7b97a2eca176b51cdad))
+* Add spacing to Rundown List table header ([8b11d6c](https://github.com/nrkno/tv-automation-server-core/commit/8b11d6cb95472895c1914e08a7dc32c0f6bfd41d))
+* Add startedPlayback to dashboard status query ([37335e4](https://github.com/nrkno/tv-automation-server-core/commit/37335e4257b81a0c38169702773857f07a69719c))
+* Add uniquenessId to adlib piece ([50f30a8](https://github.com/nrkno/tv-automation-server-core/commit/50f30a841dfca6211771de2e9b0895b0f62761cc))
+* add viz autoLoadInternalElements option ([d610bf9](https://github.com/nrkno/tv-automation-server-core/commit/d610bf9ce6c5d821ffca0903e468b317554efa38))
+* add vizMSE device setting ([c57f6a7](https://github.com/nrkno/tv-automation-server-core/commit/c57f6a74e0b59ad1129272e857af8c9732fd348b))
+* add vizMSE options ([29913ed](https://github.com/nrkno/tv-automation-server-core/commit/29913ed3586e303365a135a9e8914be414bb5063))
+* adds comma mapping for mousetrap ([afa3cd0](https://github.com/nrkno/tv-automation-server-core/commit/afa3cd0e0cd806a3fbcfdbe2a6f60a093a3f59b5))
+* Adlib on-air highlight colour ([e8c3634](https://github.com/nrkno/tv-automation-server-core/commit/e8c363431c767463a075d3030c6e2a1e4e0e961e))
+* Adlibs on interactive keyboard ([3bdb1d5](https://github.com/nrkno/tv-automation-server-core/commit/3bdb1d59c45bea0deb223fb8dcb8356258e3d539))
+* afterRemoveAll never called by savePreparedChanges ([46b05c8](https://github.com/nrkno/tv-automation-server-core/commit/46b05c88bef30a2f6950b6cf759522dd66e7741a))
+* AHK export producing an invalid script ([f98f550](https://github.com/nrkno/tv-automation-server-core/commit/f98f5502f6f0934e1e8b204cdb650a32227b2a34))
+* alignment and part title display ([b497ff0](https://github.com/nrkno/tv-automation-server-core/commit/b497ff0661d37e0454316e401f4036a368e2b7f9))
+* All types of fields ([4bf3496](https://github.com/nrkno/tv-automation-server-core/commit/4bf349606829402d43520d024b38842ddd38d568))
+* All types of fields ([ef57a18](https://github.com/nrkno/tv-automation-server-core/commit/ef57a18f9e676912061d405903731e9c07e178ff))
+* Allow adlib actions to happen close to autonext ([21c5a84](https://github.com/nrkno/tv-automation-server-core/commit/21c5a8405aa8ab41af522f67f97cc150075eb369))
+* Allow adlib actions to happen close to autonext ([fef2431](https://github.com/nrkno/tv-automation-server-core/commit/fef24318b4ea034443e977d18faf4b7239e73035))
+* Allow lookahead calculation to continue regardless of parts found ([b94996d](https://github.com/nrkno/tv-automation-server-core/commit/b94996d77916f48b04a6ab248baa3e4ace701e24))
+* allow Next:ing past an empty segment. ([68cfa5f](https://github.com/nrkno/tv-automation-server-core/commit/68cfa5f7bc6fb43c74c5ea87e6c707d1d299aacd))
+* allow no piece in withMediaObjectStatus ([e01b492](https://github.com/nrkno/tv-automation-server-core/commit/e01b492e3c3b3c58dd0a427b739fab3d1aad2d9e))
+* Allow same origin in iframe ([638a109](https://github.com/nrkno/tv-automation-server-core/commit/638a10966f80e2087d8e86edfe9c058b20b1d41b))
+* Allow taking with non-numeric Enter key ([f386d08](https://github.com/nrkno/tv-automation-server-core/commit/f386d084aa56451bdcdafc0e8344ee459362953b))
+* Allow unsafe resets ([33adda6](https://github.com/nrkno/tv-automation-server-core/commit/33adda61cad3977b76d9ccac0e3871e66e9b74c7))
+* Allow user to queue source while still on air (for b-t-b servers) ([12bc160](https://github.com/nrkno/tv-automation-server-core/commit/12bc160b35120e7858f2a0961747227cbe24a5c9))
+* Always queue adlibs in Off-tubes ([2528780](https://github.com/nrkno/tv-automation-server-core/commit/2528780e61488f6c93fe1c38bc60781a88493f4f))
+* another typo ([85fbc0b](https://github.com/nrkno/tv-automation-server-core/commit/85fbc0bc11119c70022706a46de64bdd7d77b864))
+* Apply tags to adlib actions ([55ebe03](https://github.com/nrkno/tv-automation-server-core/commit/55ebe035126ec6159ff869cd97185ddd2e5c2772))
+* Arrow key mismatch between mousetrap and keyboard API ([867fb8b](https://github.com/nrkno/tv-automation-server-core/commit/867fb8bc10ea72c66ab339dedbf252f9b74a9abb))
+* Arrow key mismatch between mousetrap and keyboard API ([7cecf57](https://github.com/nrkno/tv-automation-server-core/commit/7cecf576f8e125ad8def523d6c50c49d70658b42))
+* arrow overlapping with extra time label ([380efa7](https://github.com/nrkno/tv-automation-server-core/commit/380efa787b1c3fa521dd52a862784caf75717810))
+* attempt of fixing bug with double takes ([cdb5d0a](https://github.com/nrkno/tv-automation-server-core/commit/cdb5d0ad1b32d8b83c21abafb6236e12fbc14eb5))
+* Audio beds ([8cf262e](https://github.com/nrkno/tv-automation-server-core/commit/8cf262e394a3cc56da27ce8362c386726f5eaa18))
+* Audio beds ([606c1d0](https://github.com/nrkno/tv-automation-server-core/commit/606c1d09d548399ac4299c92dd5f5237e0f938c7))
+* Bad import ([c82bca2](https://github.com/nrkno/tv-automation-server-core/commit/c82bca28ce272c336b734dea457d82be177eb364))
+* Baseline adlibs ([a75b519](https://github.com/nrkno/tv-automation-server-core/commit/a75b519e969c7c7dd7bf5e6d254290ca10469e18))
+* be able to stop multiple sourceLayers in one call ([63aa81d](https://github.com/nrkno/tv-automation-server-core/commit/63aa81d86fd49f8919221629eac852f949fed4b5))
+* Better names for the required layer options ([bd6b1cf](https://github.com/nrkno/tv-automation-server-core/commit/bd6b1cf13a4705a4eb14165a35a855a8cda96221))
+* bind to 0.0.0.0 ([70db903](https://github.com/nrkno/tv-automation-server-core/commit/70db903e9cf0c7c4c1bfa31bfcf189d40423ab02))
+* Blank out preview only if thumbnail is found ([5137a99](https://github.com/nrkno/tv-automation-server-core/commit/5137a99c7296cb818001504bb7f900a22bb3859a))
+* Blank out preview only if thumbnail is found ([f5b4191](https://github.com/nrkno/tv-automation-server-core/commit/f5b419110f92448a5e1664645e5770750a2ecf4b))
+* Blank timer labels ([3374fd3](https://github.com/nrkno/tv-automation-server-core/commit/3374fd3aa795358d15c0c4d400b5e3867a9aeff0))
+* Blank timer labels ([8b537b3](https://github.com/nrkno/tv-automation-server-core/commit/8b537b38c6a2eb69cef91fe776f6fe8906657d04))
+* block alt key default action ([7626b2a](https://github.com/nrkno/tv-automation-server-core/commit/7626b2a1e2e3b34de903cb370de559a0de491d6c))
+* blueprint-integration dep update ([0ee9b97](https://github.com/nrkno/tv-automation-server-core/commit/0ee9b9784ce9f150a010560ea3a763fc848379ef))
+* blueprintConfig dropped when restoring a snapshot ([8fdbc7c](https://github.com/nrkno/tv-automation-server-core/commit/8fdbc7cdfa43e89ff7156d40e28b3f2a4f3a28ae))
+* blueprintConfig dropped when restoring a snapshot ([f752ac1](https://github.com/nrkno/tv-automation-server-core/commit/f752ac17b3df41244971f1cc2ffbf3a73420d2c4))
+* bring back original isAdLibNext behavior ([7b67b88](https://github.com/nrkno/tv-automation-server-core/commit/7b67b8870e786b078270f47b5d9eaebe5a0a25af))
+* bug fix: databaseCaches ran deferred functions multiple times if saveAllToDatabase() is called multiple times. ([5e54ae1](https://github.com/nrkno/tv-automation-server-core/commit/5e54ae10573a6de09b8f72d67b06932e6e95588e))
+* bug fix: making queued adlibs only queue one ([059eb70](https://github.com/nrkno/tv-automation-server-core/commit/059eb70bd9ebcf9209633193d3fdef35d525f146))
+* bug fix: set next segment ([c08c227](https://github.com/nrkno/tv-automation-server-core/commit/c08c22774a7744a619f1fb4fe859b8e89a5fdac8))
+* bugfix: don't die if the previous part doesn't exist anymore ([506f9bf](https://github.com/nrkno/tv-automation-server-core/commit/506f9bfc2de763202003e0da0482515bced83124))
+* bugfix: not able to reset rundown when first part was playing ([25b6187](https://github.com/nrkno/tv-automation-server-core/commit/25b6187f5d38acd05ce16e2539f3e6b338383748))
+* bugfix: protect currently playing "queued-adlib-part" from being removed if parent Part is reset or removed ([1b5e1d4](https://github.com/nrkno/tv-automation-server-core/commit/1b5e1d493425bf70ddf207b7d52bf46aed44604f))
+* bugfix: when an update to a segment is rejected (unsynced), updates to the segment could still come through. ([5b016e5](https://github.com/nrkno/tv-automation-server-core/commit/5b016e583bfcfa0fab0bda987f28bf8a1839e2c1))
+* Bugs after cherry picking f05b6e ([de8e2b4](https://github.com/nrkno/tv-automation-server-core/commit/de8e2b48ba3a17cd61d31da765048498e819bda7))
+* Build errors ([30675a6](https://github.com/nrkno/tv-automation-server-core/commit/30675a6dde7cb567be925f0515a4656c165b8ad4))
+* Call afterInsertParts only when parts were inserted ([8d2c826](https://github.com/nrkno/tv-automation-server-core/commit/8d2c826ea303d5883d343d31f3a7a28ffe531c34))
+* Call only ensureNextPartIsValid in handleRemovedSegment ([2a8a7ae](https://github.com/nrkno/tv-automation-server-core/commit/2a8a7ae84abe2cc3e03a78d5f106e2f32574dcdc))
+* call onRundownActivate and wipe blueprint config cache on activation ([0edcb3f](https://github.com/nrkno/tv-automation-server-core/commit/0edcb3f0c2a3d651789ff9b623e8230a5d102980))
+* Call renderPreview in adLib region panel ([712b079](https://github.com/nrkno/tv-automation-server-core/commit/712b0793591493d468ec8a656716d69eff7e06c5))
+* Call renderPreview in adLib region panel ([d621629](https://github.com/nrkno/tv-automation-server-core/commit/d62162903dca00f215b12ed65cb9ab8abf43c8bf))
+* Case sensitivity in keyboard layout ([e342a45](https://github.com/nrkno/tv-automation-server-core/commit/e342a45b0420a6ec50ca0f95fa8d0a08121d67f3))
+* Case sensitivity of keyboard preview mappings ([04b3d8f](https://github.com/nrkno/tv-automation-server-core/commit/04b3d8f633f9e50460dbbe0b58585835b567579c))
+* change a secondary filter to an extended query ([d659b49](https://github.com/nrkno/tv-automation-server-core/commit/d659b495bc02e5f65e727ec1dddd7e36ed6a167a))
+* Change call to UserActionAPI to ServerPlayoutAPI ([8c1655e](https://github.com/nrkno/tv-automation-server-core/commit/8c1655eca8fc8999e762a44a5758915c030554f9))
+* change how we use the pointer lock in SegmentTimeline ([8eb22bc](https://github.com/nrkno/tv-automation-server-core/commit/8eb22bc38ac7b4ab72bf96c529c5cfe82d7a9c2d))
+* change lifecycle hooks for Prompter, debounce collection updates ([154cf9c](https://github.com/nrkno/tv-automation-server-core/commit/154cf9ca364d5601e9c722cfb22987a9ff8f4b84))
+* change UI settings to a Meteor-standard ([1b82f31](https://github.com/nrkno/tv-automation-server-core/commit/1b82f314b77da33552567c70f58f6417fb995b67))
+* changed where exectedPlayoutItems is updated ([4b76cc8](https://github.com/nrkno/tv-automation-server-core/commit/4b76cc86fe58f332edb69e8d19d85f419170aae0))
+* Check content exists ([84d94c9](https://github.com/nrkno/tv-automation-server-core/commit/84d94c92d79359f4ec380f01cf9c9d6ce7df53e1))
+* Check content exists ([bf3c5e6](https://github.com/nrkno/tv-automation-server-core/commit/bf3c5e67dc8b5de1a194171b680cb85be3fe3dcd))
+* Check for last break ([f42235e](https://github.com/nrkno/tv-automation-server-core/commit/f42235e340b7e2474bb1aef91f14fc44c9467139))
+* Check for last break ([ffd1257](https://github.com/nrkno/tv-automation-server-core/commit/ffd1257346b3d783c58944895e2c4c8bbf0db51d))
+* Check for presence of filename ([d69024e](https://github.com/nrkno/tv-automation-server-core/commit/d69024e41e55663530711c3ffb8b4b0d4ddcc301))
+* Check for undefined ([c385f48](https://github.com/nrkno/tv-automation-server-core/commit/c385f484720839e98e7c2381c87035ac4f287a38))
+* Check for userDuration.end ([569e97a](https://github.com/nrkno/tv-automation-server-core/commit/569e97a131a2896591c9f9b9ffc3cd7528d573b0))
+* Check if infinite has stopped before creating continuation ([249f39c](https://github.com/nrkno/tv-automation-server-core/commit/249f39ce5ba4459643bf1c96ff18bf3cb69129d2))
+* check if loaded over https before trying to register service worker ([c4b9803](https://github.com/nrkno/tv-automation-server-core/commit/c4b980373d724b3e2b6e1639dcf9de999e646f89))
+* Check rundown and current part presence ([dd4bc51](https://github.com/nrkno/tv-automation-server-core/commit/dd4bc51574398aae74d549bf0af7db44b2932157))
+* Check segmentId is string after handling undefined ([8b2f554](https://github.com/nrkno/tv-automation-server-core/commit/8b2f554b6540325ba0e3cc600961c44aea702366))
+* Check settings before showing unsynced messages ([5bea51c](https://github.com/nrkno/tv-automation-server-core/commit/5bea51c72415b69df245aae8382277693cfbc647))
+* chopped pieces because of a hidden disabled one ([4afcab3](https://github.com/nrkno/tv-automation-server-core/commit/4afcab3c8476f08c9aad6eb274d08e497c22085b))
+* CircleCI config ([2ee69ef](https://github.com/nrkno/tv-automation-server-core/commit/2ee69ef326495f2b3a927b547b8c4399d329d762))
+* CircleCI config ([c32091a](https://github.com/nrkno/tv-automation-server-core/commit/c32091a45156f50a2534fda48c0a863ef577aaf8))
+* CircleCI config ([65393aa](https://github.com/nrkno/tv-automation-server-core/commit/65393aacd05bb8eac09f2b194074932b8429cee7))
+* Circular import ([7a35261](https://github.com/nrkno/tv-automation-server-core/commit/7a35261a7aee162abd1b8ac1a5e2ceade0f44b00))
+* clarify some property naming inside PieceInstance.infinite ([0745975](https://github.com/nrkno/tv-automation-server-core/commit/0745975f1cfc772b6d072f9a814f4821e3f5c4bf))
+* Clean up logic for finding next break ([24393e8](https://github.com/nrkno/tv-automation-server-core/commit/24393e8baae9cbf20cc2ce5d8b2420b15c6b1cc7))
+* cleanup backing pieces too ([3f6a656](https://github.com/nrkno/tv-automation-server-core/commit/3f6a656344f4799eb3db700a08ae8e6decbc632a))
+* cleanup backing pieces too ([c495964](https://github.com/nrkno/tv-automation-server-core/commit/c4959644d917a97ee951750f9166966074455e1a))
+* Cleanup timing properties moved to instances ([a2361f8](https://github.com/nrkno/tv-automation-server-core/commit/a2361f855fd37f29cc13c4c944bb8ded1ecd84ba))
+* Clear blueprint cache on deactivate ([808f834](https://github.com/nrkno/tv-automation-server-core/commit/808f834c9dc0be0d75aaf856ba2c8c9f4d7086b8))
+* Colspan of the progress bar ([ee2416e](https://github.com/nrkno/tv-automation-server-core/commit/ee2416e02743d7dd87dad817a2e547893703f231))
+* **config manifest:** GenericDeviceSettingsComponent crashes ([b2c3c24](https://github.com/nrkno/tv-automation-server-core/commit/b2c3c24dc577b4631f1661ea4220b009260b92d4))
+* Consistent label behavior between planned start/end ([c0c4720](https://github.com/nrkno/tv-automation-server-core/commit/c0c4720e7e11366c91825e100a790b11a1cb08d8))
+* Containers for button styling ([ffad3ca](https://github.com/nrkno/tv-automation-server-core/commit/ffad3caa88729f963c7ebef383101d7146c5ab19))
+* Continue adlib action OnEnd infinites into queued parts ([a592371](https://github.com/nrkno/tv-automation-server-core/commit/a592371788603009cbe53e83fcf93de07517e3b1))
+* Continuing infinites into queued parts ([f193c91](https://github.com/nrkno/tv-automation-server-core/commit/f193c91366cd3e40ce465b9b9499d60f7bf04543))
+* Copy adLibSourceId to continuation pieces for an infinite ([d5cf46f](https://github.com/nrkno/tv-automation-server-core/commit/d5cf46f6bdec1304b7566b0f08cb66be68a9e11f))
+* Copy expectedDuration to inserted adlibs ([af77b53](https://github.com/nrkno/tv-automation-server-core/commit/af77b53c7f50f440972ac2ff4e5a2218f792b966))
+* correct shortcuts ([0243e5f](https://github.com/nrkno/tv-automation-server-core/commit/0243e5f2a930502c095b31c8a1cde5edc3e72562))
+* correct shortcuts ([11cb74b](https://github.com/nrkno/tv-automation-server-core/commit/11cb74bb7a9da863bed726ac247911fe72cd030c))
+* correct shortcuts ([b6a7e19](https://github.com/nrkno/tv-automation-server-core/commit/b6a7e1900eaa75855a64e1e588a75326da0315ca))
+* crash when displaying unsynced heading ([1cf2cd8](https://github.com/nrkno/tv-automation-server-core/commit/1cf2cd8b6880267182eb739ba430b2fbfc41633e))
+* Crop infinites when queuing adlibs ([fe7bbb3](https://github.com/nrkno/tv-automation-server-core/commit/fe7bbb39e1bf6ca6bcc0ea59ca7d5a61e3aeb69e))
+* Crop pieces with WithinPart lifespan in UI ([82aca66](https://github.com/nrkno/tv-automation-server-core/commit/82aca661e36f6275643ca652722079b71f37c858))
+* Crop WithinPart piece instances ([43ef90e](https://github.com/nrkno/tv-automation-server-core/commit/43ef90ec2d08834269ffaa34c77f2a67939baf16))
+* Crop WithinPart piece instances ([66647ac](https://github.com/nrkno/tv-automation-server-core/commit/66647ac63b934e9286e6a6d9815dce3ea18bd0f9))
+* CSS property typings ([01d87ec](https://github.com/nrkno/tv-automation-server-core/commit/01d87eca73c6d08ab256b7c443b3965e5af3f89d))
+* Custom label case sensitivity ([cfbf7e6](https://github.com/nrkno/tv-automation-server-core/commit/cfbf7e6bb668fa4e9188728ed39e1c9dc4d34c13))
+* Dashboard adlibs ([386fc50](https://github.com/nrkno/tv-automation-server-core/commit/386fc50e418b00013c694006bc40b12b6432376c))
+* Dashboard crash ([e74a133](https://github.com/nrkno/tv-automation-server-core/commit/e74a1335b8dae28ea2ca7662091ca50ef6ef3a33))
+* Dashboard crash ([4074b20](https://github.com/nrkno/tv-automation-server-core/commit/4074b2071f2c4a96d6fb0bcb64f3b1085d4eca02))
+* **dashboard status:** use playoutDuration & userDuration.duration for fallback ([32ba2be](https://github.com/nrkno/tv-automation-server-core/commit/32ba2be993c9ac8df0a3edae023f409bf81e81de))
+* **dashboard status:** use userDuration.end for infinites fallback ([cbddb04](https://github.com/nrkno/tv-automation-server-core/commit/cbddb04e302dc18dbf5105c115ceb5a43ca9eb7e))
+* **dashboard:** always trigger adlib if clearKeyaboardHotkey is not set ([b8fd6fb](https://github.com/nrkno/tv-automation-server-core/commit/b8fd6fbba63161e51e127ed2470623f89a8ccbf0))
+* DashboardPieceButton label in offtubes ([3727186](https://github.com/nrkno/tv-automation-server-core/commit/37271867f75fb34605373664796a76272290a3c5))
+* Defualt -> Default ([1eea3ea](https://github.com/nrkno/tv-automation-server-core/commit/1eea3eaed0fe40548324826435550d49eaaa9604))
+* delay scroll to part after take so that we don't lose follow live line ([865139c](https://github.com/nrkno/tv-automation-server-core/commit/865139c2f816e7bf4e5ed5a425692b5c35d6ac00))
+* Dependency versions ([ff1920d](https://github.com/nrkno/tv-automation-server-core/commit/ff1920d67bf35012fab19676a7faa30dceb0e162))
+* disable browser context menu in standalone shelf ([75a8b14](https://github.com/nrkno/tv-automation-server-core/commit/75a8b140f5fb5c7df58de7179ca957f3d7ec97d3))
+* disable circleci docker layer caching ([150d1da](https://github.com/nrkno/tv-automation-server-core/commit/150d1da02f4e9893fc90a276c4efe17b0d8a54c9))
+* disable syncIngestUpdateToPartInstance on dynamically inserted parts ([098445c](https://github.com/nrkno/tv-automation-server-core/commit/098445c6e4025ce667c3256bbd2d2469b292c9cc))
+* Disable user-select ([79c91b4](https://github.com/nrkno/tv-automation-server-core/commit/79c91b4057609a78b43340ad52a67dc79e8c07bf))
+* Display budget duration in SegmentDuration component ([7326cc9](https://github.com/nrkno/tv-automation-server-core/commit/7326cc9c431633ba3a4c6b6a3f0ab18645a3f0ca))
+* display piece name on buttons in list panels ([76884e4](https://github.com/nrkno/tv-automation-server-core/commit/76884e4c13585ccb0935eb3493a9d306928ad623))
+* display piece name on buttons in list panels ([8d8360c](https://github.com/nrkno/tv-automation-server-core/commit/8d8360c6eac19a0eddd337021a65afc23202cfce))
+* don't block active rundown updates ([32fe0bb](https://github.com/nrkno/tv-automation-server-core/commit/32fe0bbae99aa09a9d09a592b2232fafa2706663))
+* don't call updateSourceLayerInfinitesAfterPart if there where no changes in stopInfinitesRunningOnLayer ([211f044](https://github.com/nrkno/tv-automation-server-core/commit/211f044e5576392c85ac9b7ff77ff8bbf55c5733))
+* Don't clear all caches ([d61e61f](https://github.com/nrkno/tv-automation-server-core/commit/d61e61f17a37ac7fcabdd2db9d2824d79bde94c8))
+* Don't copy infinites to gap pieces ([522c395](https://github.com/nrkno/tv-automation-server-core/commit/522c395d662225bb079f3a7084f656d23e5c135e))
+* Don't emulate start time again ([b679be2](https://github.com/nrkno/tv-automation-server-core/commit/b679be251b01678e5fdda4821c353ad2ba6dd2d0))
+* Don't enforce part externalIds to be from ingestParts ([998d23e](https://github.com/nrkno/tv-automation-server-core/commit/998d23e1f60addfd6b7f3bf50f9526004bf8907c))
+* Don't push group name to used hotkeys ([456eccd](https://github.com/nrkno/tv-automation-server-core/commit/456eccd347bc7607c0770b3a71d6602ae70bd152))
+* Don't push group name to used hotkeys ([9ff151e](https://github.com/nrkno/tv-automation-server-core/commit/9ff151e39f4c9a6713e02dc2b6a4b4e6fc77b125))
+* Don't queue Pieces on sourceLayers with isQueueable set to false ([1aa8610](https://github.com/nrkno/tv-automation-server-core/commit/1aa8610c90a46071725987ea1655506f3ade5580))
+* Don't register sticky piece hotkeys twice in dashboard ([f8dc7ce](https://github.com/nrkno/tv-automation-server-core/commit/f8dc7ce1074ba2250f2ac8374485a363067c5fa1))
+* don't run afterRemoveParts after queue ([f6c7f01](https://github.com/nrkno/tv-automation-server-core/commit/f6c7f01029e7766cfc71ed2b09446ea5540b205e))
+* Don't set adlib piece duration if queued or infinite ([5a4813e](https://github.com/nrkno/tv-automation-server-core/commit/5a4813e97b703a293c8d4c53e96f6540d774ad61))
+* Don't set adlib piece duration if queued or infinite ([1f8f22c](https://github.com/nrkno/tv-automation-server-core/commit/1f8f22c51fc18f80a817650fe689f93876b8cf5e))
+* Don't throw error using github branches as packages ([2526a0d](https://github.com/nrkno/tv-automation-server-core/commit/2526a0d1832be2006a9c42d9916c0a0b7c947ae6))
+* Don't translate user defined strings ([0d9b956](https://github.com/nrkno/tv-automation-server-core/commit/0d9b95698b9e6c5b9242bf22ba6a589a8c6635da))
+* Don't use NTP servers in tests ([9eed114](https://github.com/nrkno/tv-automation-server-core/commit/9eed114f3b9553bcc86d205a332d2267f9b23768))
+* Download AHK script ([3f8048b](https://github.com/nrkno/tv-automation-server-core/commit/3f8048b08ce7d771e5c0b7419d7ed97bfa2d2ada))
+* Duplicate fields ([1bc4c2b](https://github.com/nrkno/tv-automation-server-core/commit/1bc4c2b2c6b17cc8e0716c9d1a6df39607450a76))
+* End time diff ([4b37435](https://github.com/nrkno/tv-automation-server-core/commit/4b3743542cd977e37e32af526dea7daf047739ac))
+* End time diff ([f1a8f10](https://github.com/nrkno/tv-automation-server-core/commit/f1a8f103fd5c7247a027ca5230e715a1e1a64c7c))
+* Ended infinites filter ([873a2fd](https://github.com/nrkno/tv-automation-server-core/commit/873a2fd1a3aff24de44e6813f59d6df2c4be579b))
+* ensure older adlibs that never started dont play again later ([d11afa8](https://github.com/nrkno/tv-automation-server-core/commit/d11afa8cba6a0b69d889125fc5be1b670b3cde3e))
+* ensure that userDuration.end is taken into account when client-side resolving PieceInstances ([3001a04](https://github.com/nrkno/tv-automation-server-core/commit/3001a044271ae10141bb68d854ea5ef0296276bf))
+* Ensure trailing slash on mediaPreviewsUrl ([d257af4](https://github.com/nrkno/tv-automation-server-core/commit/d257af4aeb43b4bbb82bc20bcea52964eb57ff35))
+* Ensure trailing slash on mediaPreviewsUrl ([6d59a82](https://github.com/nrkno/tv-automation-server-core/commit/6d59a82e3b1daa27256d884ce6ba9ab457e07aaf))
+* ensure visible overflow time label on Pieces ([#367](https://github.com/nrkno/tv-automation-server-core/issues/367)) ([d40a3b9](https://github.com/nrkno/tv-automation-server-core/commit/d40a3b94b4e9a38d31afe205f77d8becc59f3f92))
+* Enter on modal dialog ([8895fb5](https://github.com/nrkno/tv-automation-server-core/commit/8895fb57e777dd3e0475e4e3c096690a2926765e))
+* Event handlers ([ce89aa8](https://github.com/nrkno/tv-automation-server-core/commit/ce89aa817e174be216beef7ea1bfb0f3eec980cb))
+* exception when converting adlib to part if preroll not defined ([130256f](https://github.com/nrkno/tv-automation-server-core/commit/130256f03cf90afc6ce24b2cc0d38e1a3f8765fc))
+* Execute adlib action correctly in dashboard panel ([3cb6eb5](https://github.com/nrkno/tv-automation-server-core/commit/3cb6eb52de4fa6efbefa121b081881849b809e40))
+* Execute adlib action in adlib region panel ([1d18f4e](https://github.com/nrkno/tv-automation-server-core/commit/1d18f4ed5fb2852166af0dfae919d6be5d7c1502))
+* Expected end where start is defined ([b9e4a07](https://github.com/nrkno/tv-automation-server-core/commit/b9e4a078d01c5f1e063fe449bbc54cba39600417))
+* Expected playout items for adlib actions ([71f2088](https://github.com/nrkno/tv-automation-server-core/commit/71f208892a56946c71aeb93d4b40ed91ddd7a7b9))
+* Expected playout items for adlib actions ([b818a37](https://github.com/nrkno/tv-automation-server-core/commit/b818a374995191e514204dd2d62e43f177749744))
+* ExternalFrame three-way handshake ([014b616](https://github.com/nrkno/tv-automation-server-core/commit/014b6168517ab8414421bbd7adfb18a17f0a728b))
+* ExternalFramePanel more assertions ([1eb5e2b](https://github.com/nrkno/tv-automation-server-core/commit/1eb5e2be7ba6213a636c8dc0b8fb36ff53b0356b))
+* Failing tests ([8ce6d92](https://github.com/nrkno/tv-automation-server-core/commit/8ce6d928cc919a972e6d10b306358b59310757d5))
+* Failing tests ([24ae74d](https://github.com/nrkno/tv-automation-server-core/commit/24ae74dd2ffd1e4f0d7170855b1bc61b0409e563))
+* Fetch reset parts into cache ([538a976](https://github.com/nrkno/tv-automation-server-core/commit/538a97679a400162d98379fe605d1e4ad2e50e19))
+* File undefined check ([5cf2935](https://github.com/nrkno/tv-automation-server-core/commit/5cf29358db2be18461f9dcc40661357a25331bc1))
+* Filter supported elements ([68156cf](https://github.com/nrkno/tv-automation-server-core/commit/68156cf91ede5de4af4a662766477d82ee9dc449))
+* Find lookaheads from next point ([1ef124e](https://github.com/nrkno/tv-automation-server-core/commit/1ef124ec09da876673157f4a9990a9b8b3558e54))
+* fix an issue with presenter countdown icon colors in LiveSpeak ([3381755](https://github.com/nrkno/tv-automation-server-core/commit/338175505c2f978ae2fe5c0413a1fe791292ba84))
+* Fixes after rebase ([2b504af](https://github.com/nrkno/tv-automation-server-core/commit/2b504af29a984640b14e34494a41c59604b099c4))
+* Force out button to clear sourcelayer  ([15175ea](https://github.com/nrkno/tv-automation-server-core/commit/15175eadfb705367f97d2d05af2cd831cfc20faf))
+* Freeze/black frame ignore flags ([a98928c](https://github.com/nrkno/tv-automation-server-core/commit/a98928cc8146e72b2609e0cbf5e7aa891fe81617))
+* Generate AHK config only for combos that have a difference ([ba5c8be](https://github.com/nrkno/tv-automation-server-core/commit/ba5c8beb681e09052eb256b6b7b44225b10060f3))
+* Get only latest instance of infinite in part ([3177b4d](https://github.com/nrkno/tv-automation-server-core/commit/3177b4d8f310a379d85b42a57e2011d76e20811b))
+* Give next highlight higher priority over on-air ([ccd87c7](https://github.com/nrkno/tv-automation-server-core/commit/ccd87c75ccb6119744c63840034845c0812410c1))
+* graphic buttons with thumbnails ([1eb075d](https://github.com/nrkno/tv-automation-server-core/commit/1eb075dcd42791e8edc3d67ac81b8ef855824100))
+* Graphics label position ([c856bae](https://github.com/nrkno/tv-automation-server-core/commit/c856bae9d3ecf0b1729f7357f655134d9c2d2aa6))
+* Greater contrast on dashboard buttons highlight ([b2a49c9](https://github.com/nrkno/tv-automation-server-core/commit/b2a49c9950775278c06100d1c560375984ce9387))
+* guard against negative width of liveline shade ([0bf16a4](https://github.com/nrkno/tv-automation-server-core/commit/0bf16a4086f89d767c6bd6bde2928dd601c9e40b))
+* Guard against undefined file name ([1df0418](https://github.com/nrkno/tv-automation-server-core/commit/1df0418872e4f974d9e41e81035364a09f2aa83f))
+* Guard warning ([f0dfe8f](https://github.com/nrkno/tv-automation-server-core/commit/f0dfe8f2acf5fd33799326231f7ba82f9ef8c028))
+* **GUI:** avoid an update loop in SourceLayerItem ([f36b9bb](https://github.com/nrkno/tv-automation-server-core/commit/f36b9bbb85a991adff57dbb9d8559e97dfb96ec1))
+* hackGetMediaObjectDuration ([778703c](https://github.com/nrkno/tv-automation-server-core/commit/778703c60aada4b4acbfce07cb684908056c852e))
+* handling of creation of parts in handleUpdatedPartInner ([e5ae0c0](https://github.com/nrkno/tv-automation-server-core/commit/e5ae0c0288bfbc94b663c8677e7249faa96ba293))
+* Hide buckets context menu when disabled in the layout ([7ea9bcf](https://github.com/nrkno/tv-automation-server-core/commit/7ea9bcf76b4312ca8f0ce6533f73a20fa9a4ed20))
+* hide hotkey everywere except minishelf ([014b42b](https://github.com/nrkno/tv-automation-server-core/commit/014b42bbb4584cf0adea9f0e42454146fbe7f38f))
+* Hide identifier ([184c696](https://github.com/nrkno/tv-automation-server-core/commit/184c696e3daef35b956065254c1e57863372df14))
+* Hide script line when source duration is undefined ([f63a0ff](https://github.com/nrkno/tv-automation-server-core/commit/f63a0ff9a3bf6fff5327df818236c13f56e28d90))
+* Hide script-line when it is at the end of the part ([20ae2bf](https://github.com/nrkno/tv-automation-server-core/commit/20ae2bfbc228e926fd8fcabf875f58024aa45518))
+* Hide shelf inspector ([5ca9397](https://github.com/nrkno/tv-automation-server-core/commit/5ca9397b0766cd1857550eb83e94f0accdac91c7))
+* Hide the hoverscrub preview on tap ([90ef097](https://github.com/nrkno/tv-automation-server-core/commit/90ef097181bc51b596b21ae5c46e0d0c6d82473c))
+* Hide unnecessary fields ([8b09680](https://github.com/nrkno/tv-automation-server-core/commit/8b09680edc5e80f890b2e216659beea340f66b6b))
+* Highlight on air pieces ([24beab0](https://github.com/nrkno/tv-automation-server-core/commit/24beab01ee29a4e6478e4ff910c045a556cc01bf))
+* hotkey crash in Shelf panels ([8e7ae0e](https://github.com/nrkno/tv-automation-server-core/commit/8e7ae0efade8e04fc7555ec04481d4bf8f20e5e8))
+* hotkey overlap crash ([#135](https://github.com/nrkno/tv-automation-server-core/issues/135)) ([b9399bf](https://github.com/nrkno/tv-automation-server-core/commit/b9399bf13117c0afe698a2e01c9c85fe8a639143))
+* HOTKEY_GROUP ([de3934c](https://github.com/nrkno/tv-automation-server-core/commit/de3934c956b3401ef67a84bbbe1b2a37933df729))
+* hotkeyGroup ([86db41c](https://github.com/nrkno/tv-automation-server-core/commit/86db41c34103328e1dfe1ce7387688e1183e864a))
+* hotkeys for segment adlibs wouldn't work in adlib parts ([bff8d77](https://github.com/nrkno/tv-automation-server-core/commit/bff8d77e13ce3c3b9cebe18b18408de1c4fa79b5))
+* Hotkeys without custom labels ([57a60cb](https://github.com/nrkno/tv-automation-server-core/commit/57a60cbeff37b29896e8a1459fd04abe344ab872))
+* Identifier line height ([1a2091e](https://github.com/nrkno/tv-automation-server-core/commit/1a2091eb87647d8dc71c39a27823d90b3371bb94))
+* Ignore branches ([d253e73](https://github.com/nrkno/tv-automation-server-core/commit/d253e7376cec910321395b10c56dc66401acc102))
+* Ignore freeze/black frames in VTSourceRenderer ([e4f34d8](https://github.com/nrkno/tv-automation-server-core/commit/e4f34d8cd0aa58d670a2720571a7de177433a3b0))
+* ignore lookahead for pieces which have definitelyEnded ([786d478](https://github.com/nrkno/tv-automation-server-core/commit/786d478ac96a49cba22673853430d45d2a0e2c14))
+* Ignore lookaheads for infinites that end at the start of the next part ([96bc7a2](https://github.com/nrkno/tv-automation-server-core/commit/96bc7a2c55deb3e97a28462df9d6dddf7cb0e272))
+* Ignore piece start when numeric  ([c1e09cd](https://github.com/nrkno/tv-automation-server-core/commit/c1e09cd276212b21413578b2ef98e71ffb847aff))
+* Import ([b64f2e2](https://github.com/nrkno/tv-automation-server-core/commit/b64f2e247aea290e36b54a64724cf3a575802ce4))
+* Import ([bd762b5](https://github.com/nrkno/tv-automation-server-core/commit/bd762b50e549af766fe50722f94d159973f2d168))
+* Import ([88001ee](https://github.com/nrkno/tv-automation-server-core/commit/88001ee6488f19aa153f54550925b58929126f5a))
+* Import issues in tests ([918e72a](https://github.com/nrkno/tv-automation-server-core/commit/918e72ab57a7b34ea3a254f97e0e0377be4204e3))
+* Improve dashboard panel button state ([069b34f](https://github.com/nrkno/tv-automation-server-core/commit/069b34f507a378de096a1bac4b380148308ced0a))
+* improve ExternalFramePanel API handling ([f2e23a1](https://github.com/nrkno/tv-automation-server-core/commit/f2e23a13ec211660622ffcf8c9203959e093ada9))
+* in-viewport detection and scrolling ([e7d9ec7](https://github.com/nrkno/tv-automation-server-core/commit/e7d9ec7b9e3c6e727962c91faa31af71adef799f))
+* In/Out buttons ([1342cc0](https://github.com/nrkno/tv-automation-server-core/commit/1342cc0a240d834a293baebbf670b225870c9b94))
+* include adlib-actions in snapshots ([904ccfc](https://github.com/nrkno/tv-automation-server-core/commit/904ccfc4a7a82dbe07d8b0d5c0638bf4fb963d40))
+* Include baseline adlibs in multiview panel ([636568b](https://github.com/nrkno/tv-automation-server-core/commit/636568b42ecedc40cffa8592c917e6fe55eab57a))
+* incorrect segment ranks after mediaObject changes ([8d31d89](https://github.com/nrkno/tv-automation-server-core/commit/8d31d89e653d2d4ca08223596b00facdc1a7f885))
+* incorrectly filtered actions ([73d2aeb](https://github.com/nrkno/tv-automation-server-core/commit/73d2aeb949f15ea6ea6eac8b187a06004818d37c))
+* incorrectly using CIRCLE_TAG instead of CIRCLE_BRANCH ([abb076f](https://github.com/nrkno/tv-automation-server-core/commit/abb076f67a9464ef220fe099d806a079b7317b04))
+* iNews reload error message ([b78079f](https://github.com/nrkno/tv-automation-server-core/commit/b78079fe8a1eb5f68159eb0326dbe4937bca0fb3))
+* iNews settings names ([8f5119d](https://github.com/nrkno/tv-automation-server-core/commit/8f5119d516591ac6bd7c80287fcdfd87acad7dc6))
+* infinite logic needs to know about pieces that have definitelyEnded ([a377230](https://github.com/nrkno/tv-automation-server-core/commit/a37723039f567c2fee7c17074e217e7a5bc23804))
+* infinite pieces not ending at the correct time ([c423b82](https://github.com/nrkno/tv-automation-server-core/commit/c423b82de133137c95d1e4edcd69383e8d8bbcd1))
+* infinite pieces started in an autonext part would disappear briefly between the take and the new timeline resolving ([9057429](https://github.com/nrkno/tv-automation-server-core/commit/9057429cf7d145ff7f7f69d42a14f7eca665ecc4))
+* Infinites in queued parts ([0e0190a](https://github.com/nrkno/tv-automation-server-core/commit/0e0190a5816b32a4ac2355bc7c021785dc10132f))
+* infinites pruning prioritizing the wrong pieces ([3d61fe4](https://github.com/nrkno/tv-automation-server-core/commit/3d61fe4484e989f732bc3c480c279aa6f3818cbe))
+* ingest inserting a new next part would result in an empty part-instance ([889893d](https://github.com/nrkno/tv-automation-server-core/commit/889893d1b5955fbedb4b689876d147b6c1aff287))
+* ingesting rundowns from snapshots ([0e62c80](https://github.com/nrkno/tv-automation-server-core/commit/0e62c80069bf54c56cf55017cf3b1162c441c9ae))
+* innerFindLastScriptedPieceOnLayer ([1a8022b](https://github.com/nrkno/tv-automation-server-core/commit/1a8022b752296a305ec1acc9d1dd668d9f235ccc))
+* Interactivity of mapped keys ([47f0b6a](https://github.com/nrkno/tv-automation-server-core/commit/47f0b6a6ffb877e822c100714cf5b10b60d6c40e))
+* inverted if statement ([3f4eff4](https://github.com/nrkno/tv-automation-server-core/commit/3f4eff4be7fe501cadcf91e1047113d208b452ce))
+* Issues after rebase ([b26d2d6](https://github.com/nrkno/tv-automation-server-core/commit/b26d2d6e1dcc6465d8ecf4a7d6b3d1e223e56cc7))
+* JSON EditAttribute styling ([b1a2fde](https://github.com/nrkno/tv-automation-server-core/commit/b1a2fde332914badc2ef43c3f1edd851cc6290bd))
+* Key bindings ([fe727d3](https://github.com/nrkno/tv-automation-server-core/commit/fe727d3f6111dd3b4aa2dc545a4f564b28cc0231))
+* Keyboard layout map calling function with wrong arguments ([9e51498](https://github.com/nrkno/tv-automation-server-core/commit/9e514985e02463d1eecd680caeb25b9c5cb60164))
+* Keyboard preview in dashboard panel ([fc8116c](https://github.com/nrkno/tv-automation-server-core/commit/fc8116c02bddbfa8c361d59f46e889b26d57156d))
+* Keyboard preview text max height ([74e22b9](https://github.com/nrkno/tv-automation-server-core/commit/74e22b9e4ae564be08bfb2b2715dcc0f6c1856db))
+* Klar on air button ([150fbf4](https://github.com/nrkno/tv-automation-server-core/commit/150fbf49c760db867c794207cb63e6a9dd0d05dc))
+* Klar on-air button ([9a32c86](https://github.com/nrkno/tv-automation-server-core/commit/9a32c86f3026ffe176fe1c6688ecacbd6c9a43ce))
+* Klar on-air button for part instances ([ad00068](https://github.com/nrkno/tv-automation-server-core/commit/ad000682ecdd23547f75f787c0d234bede19a764))
+* Klar on-air button status ([7890e27](https://github.com/nrkno/tv-automation-server-core/commit/7890e271b0daa208c9815b045b15f2f4bf8d104c))
+* Klar on-air button status ([3ba049a](https://github.com/nrkno/tv-automation-server-core/commit/3ba049ad6993325aa01e10a6c9bd0c55d8be8115))
+* Label positioning for AHK download button ([4677be3](https://github.com/nrkno/tv-automation-server-core/commit/4677be3d9c6c680d1ccecce6125b83064b2ea1ad))
+* Lint and failing tests ([2656bf6](https://github.com/nrkno/tv-automation-server-core/commit/2656bf69e2c4136a4751a36d585b298c0f9f1696))
+* Lint errors ([8e14b26](https://github.com/nrkno/tv-automation-server-core/commit/8e14b2620839d633d5895f1a40b14f62ae435fc8))
+* Live / next highlight ([1613c9c](https://github.com/nrkno/tv-automation-server-core/commit/1613c9c0d8ea9e65d9dff23e14eec2b34ec85a6f))
+* Live colour always takes over next colour ([fa350bb](https://github.com/nrkno/tv-automation-server-core/commit/fa350bbc081f2999e2c768d133f2ceb31182865e))
+* Live colour always takes over next colour ([23c64b0](https://github.com/nrkno/tv-automation-server-core/commit/23c64b0f25982bd8d1d19b47bb1f78c3fc114cea))
+* Look for adLibSourceId on piece instance ([290baf7](https://github.com/nrkno/tv-automation-server-core/commit/290baf7cca17c0296dcbdf6a9d91cd45053f1ec7))
+* Look for adLibSourceId on piece instance ([8a32e79](https://github.com/nrkno/tv-automation-server-core/commit/8a32e79aa5ad4d8a84f2cfc27dbf3634202fa8eb))
+* lookahead considering parts in the wrong order ([ca0aaad](https://github.com/nrkno/tv-automation-server-core/commit/ca0aaadcb0a3c5a8afdcbe107dfd444e94b9ad82))
+* Lookahead in last part ([0ab6e30](https://github.com/nrkno/tv-automation-server-core/commit/0ab6e301fadb35ad0cd5c359be069632edb50c15))
+* Lookahead mode comparison ([2643581](https://github.com/nrkno/tv-automation-server-core/commit/264358140703be75a7b50ea903df6a0958e970b9))
+* lookahead not loading caspar clips with the in-transitions. definitelyEnded requires the parts to have an absolute time, otherwise the pruning is done off of estimates which can cause glitching ([ce922ef](https://github.com/nrkno/tv-automation-server-core/commit/ce922efbffd313bedc1d6c76a3790b809623ff85))
+* lookahead not running processAndPrunePieceInstanceTimings before using the pieceInstances ([34e30da](https://github.com/nrkno/tv-automation-server-core/commit/34e30da09aaf6b420fdc9b2e509cc6cda467a0f4))
+* Lookahead retain mode ([0cc2e1e](https://github.com/nrkno/tv-automation-server-core/commit/0cc2e1e10a0deba302d39a874411700624a34d37))
+* Lookaheads with no nextNextPart ([77da2d0](https://github.com/nrkno/tv-automation-server-core/commit/77da2d080c1365fa8b5ed83290ad9c752a940dfc))
+* Lookup label using key code ([9898246](https://github.com/nrkno/tv-automation-server-core/commit/98982461a6451d0db50e1200af10085f6ee830e4))
+* make getResolvedSegment get executed even less often ([92f86e8](https://github.com/nrkno/tv-automation-server-core/commit/92f86e817c377c62a02e4fdf36f065ffa2a5cdfd))
+* make getResolvedSegment get executed even less often ([c932b43](https://github.com/nrkno/tv-automation-server-core/commit/c932b43cc1188627bdfc226620047bb35fbd74b7))
+* make getResolvedSegment get executed even less often ([fcffe72](https://github.com/nrkno/tv-automation-server-core/commit/fcffe728854f66bf5dca6d3d1b4c9c2e32b37890))
+* make getResolvedSegment get executed less often ([9537331](https://github.com/nrkno/tv-automation-server-core/commit/9537331a7247333040aae911903865901c1748ed))
+* make getResolvedSegment get executed less often ([1eef612](https://github.com/nrkno/tv-automation-server-core/commit/1eef612bc55ce5c60569c6eeb21647a8811aa34e))
+* Make MultiView labels visible in user log ([d1493f5](https://github.com/nrkno/tv-automation-server-core/commit/d1493f52618372a819daae6eb5a93f50ff319ebb))
+* Make non-mos ingest trigger UpdateNext functions ([4eafa0c](https://github.com/nrkno/tv-automation-server-core/commit/4eafa0c33af16fd66d1cb866d53cb47825ed911a))
+* Make numeric inputs shorter ([af24ab4](https://github.com/nrkno/tv-automation-server-core/commit/af24ab4a6e4830ab6e07009117c2825cf67ea421))
+* Make numeric inputs shorter ([7d61718](https://github.com/nrkno/tv-automation-server-core/commit/7d61718d44bef4b31ebc9a6ac86b90ac6cc40cb4))
+* make sure we don't treat scroll promise rejections as errors to be printed to console wholesale ([900190b](https://github.com/nrkno/tv-automation-server-core/commit/900190b55b1dc1500e3a03846e4bcc4d34b6c91f))
+* make the shortcut field larger ([88c63da](https://github.com/nrkno/tv-automation-server-core/commit/88c63da73f7b577d3281277ed311be68a5ce3d38))
+* Make the thumbnail display at the bottom of the button ([2994230](https://github.com/nrkno/tv-automation-server-core/commit/2994230dc08c42e4d7dedbae09a6a38a50512beb))
+* Make thumbnails work in TimelineDashboardPanel ([c352cca](https://github.com/nrkno/tv-automation-server-core/commit/c352cca83a1e8f4dd948833d2c468491edf343a0))
+* matchFilter ([2f166d3](https://github.com/nrkno/tv-automation-server-core/commit/2f166d37c380b04376636249ce4865144c489354))
+* measure HEADER_HEIGHT value for viewPort intersection and scrollTo ([4fc2e22](https://github.com/nrkno/tv-automation-server-core/commit/4fc2e22a3c4e62fca3e2b38db7bc2c0fef01695e))
+* Media object metadata ([45f8d5b](https://github.com/nrkno/tv-automation-server-core/commit/45f8d5bd62d83765e3cdf08d83e80fdd480b2101))
+* memoized autorun would not rerun when (current|next)partInstanceId would change on the playlist ([62c90df](https://github.com/nrkno/tv-automation-server-core/commit/62c90df6523120a85f67c61c68ed83f85b370a01))
+* merge and lint errors ([e886cf0](https://github.com/nrkno/tv-automation-server-core/commit/e886cf0f262f410da0ffca21a9d7e047a829a972))
+* Merge error ([0aae572](https://github.com/nrkno/tv-automation-server-core/commit/0aae572a4db5669b05eea2f702a7547358ce0efe))
+* Merge errors ([ea48ea0](https://github.com/nrkno/tv-automation-server-core/commit/ea48ea05d15db93b9c642e1c39ff2d5d78d9f380))
+* Merge errors ([dd6c369](https://github.com/nrkno/tv-automation-server-core/commit/dd6c369e989fb1c112b05660d4d6b64cdd5809da))
+* Merge errors and failing tests ([5eda300](https://github.com/nrkno/tv-automation-server-core/commit/5eda300565ea7890e55d5a08a5a5db7ed179a163))
+* Merge fixes ([dc47f82](https://github.com/nrkno/tv-automation-server-core/commit/dc47f82cb592496f0c94945d23c2c4b80ae2b838))
+* minishelf filter ([806d4a3](https://github.com/nrkno/tv-automation-server-core/commit/806d4a3b9fde7f21133879256ad6f1090a5d8f52))
+* minishelf filter reactivity ([04c86e6](https://github.com/nrkno/tv-automation-server-core/commit/04c86e6528401417aa5e5194935bedbd51c300e4))
+* minishelf keyboard navigation broken ([0de44cf](https://github.com/nrkno/tv-automation-server-core/commit/0de44cfbd9253ebd7751cd5bca0c9faf84ee5803))
+* misc fixes for APM wrapper ([e804b2c](https://github.com/nrkno/tv-automation-server-core/commit/e804b2c021ea6a758dd59797dd0acff4f51bbb6f))
+* Missing '}' ([435b809](https://github.com/nrkno/tv-automation-server-core/commit/435b809c864195ebd9a932b6016b314eef048a98))
+* Missing context ([097da56](https://github.com/nrkno/tv-automation-server-core/commit/097da569d102f87b4ac279cbaf208be7d19787aa))
+* Missing ExtendedKeyboardEvent imports ([5c21577](https://github.com/nrkno/tv-automation-server-core/commit/5c2157775b43ffa6c30610d29c270113b384fd8d))
+* Missing import ([0548ddd](https://github.com/nrkno/tv-automation-server-core/commit/0548ddd1c9edcfb75a136fda7a184b26ca5afbf9))
+* Missing import ([000dcf5](https://github.com/nrkno/tv-automation-server-core/commit/000dcf5a3727e7c60fe96511e159e78c75c5440d))
+* Missing imports ([81c7b28](https://github.com/nrkno/tv-automation-server-core/commit/81c7b28de9a2d48c8e80e0960d641774a7af9283))
+* missing live segment optimization ([fd18142](https://github.com/nrkno/tv-automation-server-core/commit/fd18142b6a2d7e63aadfa36de877d4e83546021a))
+* Missing shortcut columns ([38c7069](https://github.com/nrkno/tv-automation-server-core/commit/38c7069fcbdd95291bfd169c227520a365eb787b))
+* More explicit relationship between timing props ([69effd6](https://github.com/nrkno/tv-automation-server-core/commit/69effd6f973c84d288d0a02fa8e1ca0eb3d81f51))
+* More merge errors ([7d0e3a2](https://github.com/nrkno/tv-automation-server-core/commit/7d0e3a2a6b4abd6fecb115ae8b811b2fd6985b19))
+* More test snapshots ([8840e9f](https://github.com/nrkno/tv-automation-server-core/commit/8840e9f7497b68c3f8fdda9e3dbea67c165a5248))
+* move instance.userDuration override from lib/rundown/pieces to client/lib/rundown ([26977e6](https://github.com/nrkno/tv-automation-server-core/commit/26977e6a3133b1a8164c8041391ffb4355e10402))
+* Move media object durations to package info interface ([f73d2e5](https://github.com/nrkno/tv-automation-server-core/commit/f73d2e596b7b03e7152afebc051d0485e1df44ff))
+* moveNextPart not ignoring empty/hidden segments or unplayable parts properly ([5cc9053](https://github.com/nrkno/tv-automation-server-core/commit/5cc905303f9230243dba4439d1395c077dc4fe13))
+* Multiple dashboard panels unregistering each others hotkeys ([295ce28](https://github.com/nrkno/tv-automation-server-core/commit/295ce28b5c6e83b6d2427066f233b235427fc677))
+* multiple next tally in mini shelf ([dc4d9a4](https://github.com/nrkno/tv-automation-server-core/commit/dc4d9a44c9382ef1ce2189b36826ca3392903a6d))
+* New typings for currentPieceTags / nextPieceTags ([96d196c](https://github.com/nrkno/tv-automation-server-core/commit/96d196c8dcc2a1b5f28334c3b0e7433dce9705f0))
+* Next tally ([16189c4](https://github.com/nrkno/tv-automation-server-core/commit/16189c4beecce7c8ac6c5d2538bd9631c5e12fa9))
+* Next tally ([fc0d1fd](https://github.com/nrkno/tv-automation-server-core/commit/fc0d1fd3109ed7868ccbbe04a1d417c550588b57))
+* Next tally in current part ([06cc5dc](https://github.com/nrkno/tv-automation-server-core/commit/06cc5dc4acd0f79deecc359f53a56d7b2727bac2))
+* Next tally in current part ([174ce9e](https://github.com/nrkno/tv-automation-server-core/commit/174ce9e5e3cde4377f2561ee025e003109d78b4b))
+* not generating lookahead for current part before it has started playback ([6b6c2b5](https://github.com/nrkno/tv-automation-server-core/commit/6b6c2b54deff96502bb4893a300ef22d74c9871f))
+* not scrolling to a manually set segment on take ([36fa45f](https://github.com/nrkno/tv-automation-server-core/commit/36fa45f9fba86ae19945a1fb93227427a46bd5b4))
+* not scrolling to a manually set segment on take ([cf90643](https://github.com/nrkno/tv-automation-server-core/commit/cf90643b752176b257fb1470529131087558d9d6))
+* not scrolling to a manually set segment on take ([b28e5a7](https://github.com/nrkno/tv-automation-server-core/commit/b28e5a772c291bce4eadcde888f18e0d0035fa66))
+* Numeric fields ([1e55845](https://github.com/nrkno/tv-automation-server-core/commit/1e55845a61e62339743a02d8a4e883d99b3926b4))
+* Numeric fields ([91e37bd](https://github.com/nrkno/tv-automation-server-core/commit/91e37bdd856b284630ebff93ca0db6c0a67e11de))
+* Only build notification if there are messages to display ([9131bf5](https://github.com/nrkno/tv-automation-server-core/commit/9131bf5e9604e35ed6f964a08376a70e217c5740))
+* only change simulationPercentage if lastStartedPlayback ([77f7c32](https://github.com/nrkno/tv-automation-server-core/commit/77f7c325bb36e1e67cef9c64d4a6383dbc59580a))
+* Only clear pieces we are currently playing ([284b59e](https://github.com/nrkno/tv-automation-server-core/commit/284b59ea67657911d5322008837dc189024d86a8))
+* Only fetch piece instances for current, next, and previous part ([7521fe8](https://github.com/nrkno/tv-automation-server-core/commit/7521fe854041189cd7cd27decaac0409388911fa))
+* Only fetch piece instances for current, next, and previous part ([08fc64f](https://github.com/nrkno/tv-automation-server-core/commit/08fc64f0728acba7ac80e75fc5bacc2e13243851))
+* Only fetch piece instances for current, next, and previous part ([668ab14](https://github.com/nrkno/tv-automation-server-core/commit/668ab1452d89f008b7cc4d352e0728ec2dfc74f1))
+* Only test libs on current target node version ([9e202df](https://github.com/nrkno/tv-automation-server-core/commit/9e202dffcf96211216a2aad67ac0f81241798a4a))
+* Open shelf when layout is not manually selected ([3fbda9c](https://github.com/nrkno/tv-automation-server-core/commit/3fbda9cd95a9dd08bf62ac0a0ca2a44078c7652a))
+* optimization: afterTimelineUpdate: by preparing the object hashes _during_ saving into DB the post-process time is greatly reduced ([a5eea5f](https://github.com/nrkno/tv-automation-server-core/commit/a5eea5f125116c6533767557d78ea6b7969423a9))
+* optimization: updateTimeline: don't have to remove timelineObjects not in current active rundown, since saveIntoDB should handle that just fine on its own ([48241a4](https://github.com/nrkno/tv-automation-server-core/commit/48241a4cfa65c409a831a845cc85315cea95c6c7))
+* optimizations in pieceTakeNow ([6cef7f5](https://github.com/nrkno/tv-automation-server-core/commit/6cef7f519b96c6695a84a701b9462b626e5c1151))
+* optimizations in updateSourceLayerInfinitesAfterPart ([4377040](https://github.com/nrkno/tv-automation-server-core/commit/4377040cdaa128d7b71c219bc2903af861674812))
+* optimize DatabaseCache for when doing single-document lookups ([1115886](https://github.com/nrkno/tv-automation-server-core/commit/1115886134ca585b2899756edbfeff280f86b323))
+* optimize getSelectedPartInstancesFromCache ([4f5290b](https://github.com/nrkno/tv-automation-server-core/commit/4f5290ba7e422f3bcd718690ca84d95a4d3bbede))
+* Over/under timer with only expected end ([07659bf](https://github.com/nrkno/tv-automation-server-core/commit/07659bf5e093e89bc469ac854f6d442bbaf7cd31))
+* parsing versions ([cdbbff3](https://github.com/nrkno/tv-automation-server-core/commit/cdbbff31b8442d5a873b216424e234a9d643ffc6))
+* Part / Segment navigation shortcuts ([5b6d721](https://github.com/nrkno/tv-automation-server-core/commit/5b6d721c36cf059e0ea42972eccadd56389edb07))
+* Part countdown use memoized function ([240a8f0](https://github.com/nrkno/tv-automation-server-core/commit/240a8f0a653ef46aff300ba409c98c293af10f0c))
+* PartCountdownPanel ([82c80fe](https://github.com/nrkno/tv-automation-server-core/commit/82c80fe3fdc8efe0a23b535126eb462d74d1e1a8))
+* Pass an empty array instead of undefined ([1e78af0](https://github.com/nrkno/tv-automation-server-core/commit/1e78af0ad7214efedd50d237e22f273b300c8fe4))
+* Pass infinites to OnTimelineGenerate ([60759c8](https://github.com/nrkno/tv-automation-server-core/commit/60759c8bc5a02dbec99a0d55039675528b6d8754))
+* Pass only one instance of infinite to OnTimelineGenerate ([36527ca](https://github.com/nrkno/tv-automation-server-core/commit/36527ca639c01d11f9008a749a921bf6fa17edb2))
+* Peripheral device access method ([127e264](https://github.com/nrkno/tv-automation-server-core/commit/127e264d2ef9004faa42f2855e4507568458f50b))
+* Piece end cap ([1e1880e](https://github.com/nrkno/tv-automation-server-core/commit/1e1880e43af2ce1a44634a9e30a4c671862c6198))
+* Piece end cap tests ([4e07045](https://github.com/nrkno/tv-automation-server-core/commit/4e07045e434e1094a866da3b0a311ffa9091166f))
+* Piece end cap tests ([3faf73b](https://github.com/nrkno/tv-automation-server-core/commit/3faf73b197d102a77d1dc6bee47910e105bd04d2))
+* piece.adlibPreroll not being considered in the exclusivity logic ([de503ee](https://github.com/nrkno/tv-automation-server-core/commit/de503eec21599c8d7cb8c00fe7fd5552a0c9507d))
+* Pieces with start: 0 wouldn't be stopped by innerStopPieces ([da0b290](https://github.com/nrkno/tv-automation-server-core/commit/da0b290434e7479645f54904a6cf7991b31a6b4b))
+* Place new dynamically inserted part after current dynamically inserted part ([2006b36](https://github.com/nrkno/tv-automation-server-core/commit/2006b36522df98026a757083b7338e0d59835c69))
+* placement of items in the header ([cbeba27](https://github.com/nrkno/tv-automation-server-core/commit/cbeba27e9f3ba089dddbc5deb77878765b4d175c))
+* Playlist looping in lookahead calculation ([c92da92](https://github.com/nrkno/tv-automation-server-core/commit/c92da92d8aaa88aa08efe6623d008e903f67232f))
+* Playout test snapshots ([1d55846](https://github.com/nrkno/tv-automation-server-core/commit/1d558465eb6114517952ac80290705fd79104a58))
+* Post-rebase ([4ca9592](https://github.com/nrkno/tv-automation-server-core/commit/4ca95926c91441d12aa42f85380484f917acb20b))
+* potentially stuck next segment ([d9593ea](https://github.com/nrkno/tv-automation-server-core/commit/d9593ea2c42933ec064764272f2a90de65076eca))
+* Preserve slash in preview URL ([043138f](https://github.com/nrkno/tv-automation-server-core/commit/043138f82538a3a9fd3342152a23af64cf195a5d))
+* prevent a crash in getTimelineRundown by onTimelineGenerate ([0ae9bf8](https://github.com/nrkno/tv-automation-server-core/commit/0ae9bf87dc313886aafc1a4c1ecc3e7363be6c71))
+* Prevent active / unsynced rundowns from being updated ([329a48b](https://github.com/nrkno/tv-automation-server-core/commit/329a48b0e554b02c39f19bb195012c9835a8931c))
+* Prevent closing the shelf on fast dragging up ([3bd3d95](https://github.com/nrkno/tv-automation-server-core/commit/3bd3d953b936fec87ca5204fee35b18f83f8ba5e))
+* prevent error when there's no piece ([bc7b848](https://github.com/nrkno/tv-automation-server-core/commit/bc7b8488cecc775dd7034729259c13dcc5cdd303))
+* Prevent label and duration overlap in list ([d1be983](https://github.com/nrkno/tv-automation-server-core/commit/d1be98346c05be22243d92118f60235dd8d3de99))
+* Prevent label overlap on Piece Buttons ([552c72d](https://github.com/nrkno/tv-automation-server-core/commit/552c72d16c68b23956fa783cfb99f2f2d0203dc3))
+* prevent removing part that is followed by multiple dynamically inserted parts and the last one is on air ([76021f9](https://github.com/nrkno/tv-automation-server-core/commit/76021f9b5d1e3b37b3d54bc71f25db975d25865e))
+* Prevent segment updates where part updates have been rejected ([a2922d1](https://github.com/nrkno/tv-automation-server-core/commit/a2922d13824a2b1f4ef5f4284935ed1494029164))
+* Prevent setting dynamically inserted parts as next ([1d75737](https://github.com/nrkno/tv-automation-server-core/commit/1d75737af82852c4d692871cdf5ac30bf3961a4e))
+* Prevent setting dynamically inserted parts as next (in the backend) ([f1678f1](https://github.com/nrkno/tv-automation-server-core/commit/f1678f15069a7ad666aa58cf4f8e69310b0fb4d9))
+* prevent viewport jumping on takes ([dc5d94b](https://github.com/nrkno/tv-automation-server-core/commit/dc5d94b0f55710f37f2ad5d3dd27a4b1a49fd67f))
+* prevent viewport jumping on takes ([e50e207](https://github.com/nrkno/tv-automation-server-core/commit/e50e2074ce15b6ebd2b0ed08b9a1940edd509e7f))
+* Process and prune next pieceInstances in shelf panels ([2031f65](https://github.com/nrkno/tv-automation-server-core/commit/2031f657ae896a33103d6a838663e5de9d35e89f))
+* Process and prune next pieceInstances in shelf panels ([b762300](https://github.com/nrkno/tv-automation-server-core/commit/b762300ed7ff63f08a3be35fd6125e6e0ea1ae48))
+* profiler defaults to inactive ([2652dcc](https://github.com/nrkno/tv-automation-server-core/commit/2652dcc8aaee32d979655b72c8a5b56ec807eecb))
+* **prompter:** only use new lifecycle methods ([9b183a4](https://github.com/nrkno/tv-automation-server-core/commit/9b183a42a056fc967267e7eaa9e63bc1437f094d))
+* **prompter:** resolve issue with updates messing up prompter ([d3bbbd9](https://github.com/nrkno/tv-automation-server-core/commit/d3bbbd9e06dff4f0c5f6ff58c37fd6de39957d5b))
+* **prompter:** track timeout in _debounceUpdate ([6c5c5f4](https://github.com/nrkno/tv-automation-server-core/commit/6c5c5f4a86bd0c3b52b63be47c5cfb55c11df212))
+* proper handling of setting the first valid part on activation ([6cfac1a](https://github.com/nrkno/tv-automation-server-core/commit/6cfac1a2bcca514f334dfd8dfee15f96e7312497))
+* properly handle setting a part as next ([a703acf](https://github.com/nrkno/tv-automation-server-core/commit/a703acf61ac1001b1c44cd12604b0a77714ffff8))
+* properly handle setting a part as next ([e66f970](https://github.com/nrkno/tv-automation-server-core/commit/e66f970dec1ab10b386eff75fb95e247def24dbb))
+* properly handle setting a part as next ([1f45c77](https://github.com/nrkno/tv-automation-server-core/commit/1f45c7732475ac0e143d9e0395c6677eb02072ca))
+* protect current Part when updating whole rundown ([290edaa](https://github.com/nrkno/tv-automation-server-core/commit/290edaa500c623376f0d298de667ff906930d0d2))
+* Prune lookaheads for pieces that have definitely ended ([6420543](https://github.com/nrkno/tv-automation-server-core/commit/6420543a3d0966cde93f9bd6e2df0f1f55fae2ee))
+* queue only allowed adlibs ([32f011e](https://github.com/nrkno/tv-automation-server-core/commit/32f011e1c0fa952754407c66ff3f87c272488376))
+* Queuing multiple parts ([b5cafa4](https://github.com/nrkno/tv-automation-server-core/commit/b5cafa4e3e58c1be58935b9245954e14b0ef22b5))
+* Rebase errors ([1a260a2](https://github.com/nrkno/tv-automation-server-core/commit/1a260a265d7410e2029fca97b14465a4f69a13fc))
+* Rebase fixes ([074f07a](https://github.com/nrkno/tv-automation-server-core/commit/074f07a1cff2016fb398d5940b6f1b4b88a39f41))
+* Rebase fixes ([e094c56](https://github.com/nrkno/tv-automation-server-core/commit/e094c56d60c6eb9b043919e7c97547d2af44da56))
+* Rebase fixes ([d6262b1](https://github.com/nrkno/tv-automation-server-core/commit/d6262b103d17f9f7dc6ddd6874d5140ed25b1987))
+* Recalculate props for adlib button ([2a2ce45](https://github.com/nrkno/tv-automation-server-core/commit/2a2ce452bda22cb7b2dc4f6438b08c28e647611a))
+* Recursively find next safe part ([9a6e114](https://github.com/nrkno/tv-automation-server-core/commit/9a6e1147194961549ed596f98fd89c919be34184))
+* Reduce complexity of updateExpectedPlayoutItemsOnRundown ([7e8abcd](https://github.com/nrkno/tv-automation-server-core/commit/7e8abcd959332776e99a08ecfced82f1be0c42dd))
+* reduce data fetching complexity for a lot of objects and components ([b959889](https://github.com/nrkno/tv-automation-server-core/commit/b959889b1fbe13ad561f45a326d6e1dbb7f49265))
+* refactor ConfigManifestSettings ([8afb53e](https://github.com/nrkno/tv-automation-server-core/commit/8afb53e6bbcb6e380312920b79cd7d60d0139ed6))
+* Register hotkeys in dashboard ([a476f74](https://github.com/nrkno/tv-automation-server-core/commit/a476f74e67533b7088de8b3316a35cb99a182d4e))
+* Register shortcuts according to rank in adlib panels ([cef7684](https://github.com/nrkno/tv-automation-server-core/commit/cef7684a53abefc60e1bb98264045616ce36b71b))
+* Remove a segment when device can't find it ([4f9c560](https://github.com/nrkno/tv-automation-server-core/commit/4f9c5601d19c070c39858cc065c5257fa695aebc))
+* Remove AsRunLog tests ([4a67f7c](https://github.com/nrkno/tv-automation-server-core/commit/4a67f7c999b438882ad1782961d1e8a0ae0c7c01))
+* Remove binding from Ø/ø to activate ([ae5e660](https://github.com/nrkno/tv-automation-server-core/commit/ae5e66065a4b1938831eaad8e87e4ffa124d53fc))
+* Remove binding to keycode 190 ([3934e4c](https://github.com/nrkno/tv-automation-server-core/commit/3934e4cf30f68a8415e8b4c40ea9665c7aa209b1))
+* remove by _id, not whole object ([ba0ed08](https://github.com/nrkno/tv-automation-server-core/commit/ba0ed08ca2900251354fbea156f7bf0696170775))
+* Remove cache reload hack ([c0df1d5](https://github.com/nrkno/tv-automation-server-core/commit/c0df1d5918b8a6e97ad12be41b9983b5da033713))
+* Remove deleted segments from ingestDataCache ([00991a6](https://github.com/nrkno/tv-automation-server-core/commit/00991a60668d5c65575c9e0fd54c873affa09392))
+* Remove expectedPlayoutItems from continued infinites ([a07600b](https://github.com/nrkno/tv-automation-server-core/commit/a07600b1d9ea3187a8251c35e1fe9a2a700b7886))
+* Remove externalModified property from mock snapshot ([9f932e4](https://github.com/nrkno/tv-automation-server-core/commit/9f932e43324d5ebc61ccd612a39c3a658f6c568b))
+* Remove externalModified property from mock snapshot ([9b1e4ee](https://github.com/nrkno/tv-automation-server-core/commit/9b1e4ee92f0eee37e0033459dda2dda894690510))
+* remove extra formatting from hotkey legend ([9de1435](https://github.com/nrkno/tv-automation-server-core/commit/9de14357a93e1c1f957a1423b29a92f3e315b771))
+* Remove filtering that is no longer valid ([c19da04](https://github.com/nrkno/tv-automation-server-core/commit/c19da042a94d04f7bf58b247ce2af36cfb975eea))
+* Remove image from MultiView panel ([33a3472](https://github.com/nrkno/tv-automation-server-core/commit/33a3472d8963ff1de4a0dac493b0b85f15ea4494))
+* remove leftovers from R30 ([5eddd72](https://github.com/nrkno/tv-automation-server-core/commit/5eddd7291c23dbb7eb74beb813dff4cfd5712348))
+* Remove mediaInfo requirement for transitions ([ea6f4a9](https://github.com/nrkno/tv-automation-server-core/commit/ea6f4a9250c394896243d133a2d8dfdf1faf7ac5))
+* remove minishelf background ([76965f2](https://github.com/nrkno/tv-automation-server-core/commit/76965f2a99b615f5a4e0441208f04f27273f9494))
+* Remove more asRunLog calls ([d87f176](https://github.com/nrkno/tv-automation-server-core/commit/d87f1762510cc0d2d3f3f70ae5dea4bb05e68904))
+* remove option for setting initializeRundownOnLoadAll ([3d590b1](https://github.com/nrkno/tv-automation-server-core/commit/3d590b1110b4749464f9185a288af28733e59efd))
+* Remove space ([3f03f1b](https://github.com/nrkno/tv-automation-server-core/commit/3f03f1b7c05215dd0fbc173496fa005fe07c5ef8))
+* Remove stoppedPlayback on reset ([7040906](https://github.com/nrkno/tv-automation-server-core/commit/7040906492307492082245a02f5c5b6581f4008c))
+* Remove uncached collection access ([bc4eede](https://github.com/nrkno/tv-automation-server-core/commit/bc4eedef325aa5e077600a92cb09ccbd878e34f7))
+* Remove url from MultiView panel ([55acf3a](https://github.com/nrkno/tv-automation-server-core/commit/55acf3a8452ab6f8e716095bdc33f553f657ccdd))
+* removeRundownFromCache forgetting some bits ([ace0edc](https://github.com/nrkno/tv-automation-server-core/commit/ace0edc884081853313c43166556176cf057d5c0))
+* removes migration step that needs bo be more dynamic for this application ([757f304](https://github.com/nrkno/tv-automation-server-core/commit/757f304fbfff6b17130358364add8a223c686fd3))
+* Renamed properties ([ad3672d](https://github.com/nrkno/tv-automation-server-core/commit/ad3672d55d0b5368e710ed487fc646f9bffcf4ed))
+* Renamed property ([f3feef5](https://github.com/nrkno/tv-automation-server-core/commit/f3feef5e1cf0e51b77efe022828e92a53dc00b8e))
+* requeue discarded minishelf adlib ([89f8510](https://github.com/nrkno/tv-automation-server-core/commit/89f85105ff7da57652c92eede2edc2cad5cc8aed))
+* Reset Part ([56e6dc2](https://github.com/nrkno/tv-automation-server-core/commit/56e6dc24393224ca5e8a43f9bd4175e84f58ba25))
+* reset partInstances for removed parts ([3b39d1a](https://github.com/nrkno/tv-automation-server-core/commit/3b39d1a21c7542bda25b6bd57f5b34dacebdcdb4))
+* reset PieceInstances when PartInstance is reset ([465359c](https://github.com/nrkno/tv-automation-server-core/commit/465359c0bb602376f81cc33822d33b345c97ba5e))
+* Reset studio config cache on deactivate ([b6db489](https://github.com/nrkno/tv-automation-server-core/commit/b6db489ecc1f5a046536229da6e3dfead94fa25f))
+* resetting partInstances and pieceInstances ([9363050](https://github.com/nrkno/tv-automation-server-core/commit/936305095b4dc21a79f24e5d2415f553feeaa735))
+* Resolve correct package versions ([cc0455c](https://github.com/nrkno/tv-automation-server-core/commit/cc0455c14e437a1a17841beeac2711f2b4cdb067))
+* resolve issues with hotkeys in ModialDialogs ([b3fd84c](https://github.com/nrkno/tv-automation-server-core/commit/b3fd84c0e0cc9887466f62ac11dc3ef0aca9088b))
+* resolve mousetrapHelper hotkeys issue ([2f1c73a](https://github.com/nrkno/tv-automation-server-core/commit/2f1c73a705b747367cdd10c26feb1101c96492d6))
+* restore a flush of temporaryPartInstances in RundownTiming ([69c268a](https://github.com/nrkno/tv-automation-server-core/commit/69c268a4c8f8cd1436febd2353001b578349d2b1))
+* Restore shelf layout selection to lobby ([1f25868](https://github.com/nrkno/tv-automation-server-core/commit/1f2586826e81a2536afff53a5b3b555dcda9949e))
+* Restore shelf layout selection to lobby ([#447](https://github.com/nrkno/tv-automation-server-core/issues/447)) ([0907e17](https://github.com/nrkno/tv-automation-server-core/commit/0907e17087a1b6e751f82cf6226c3b9b1468241e))
+* restore snapshot missed id fields ([4edd3af](https://github.com/nrkno/tv-automation-server-core/commit/4edd3affdd5efa943cee64af630722e1d3806389))
+* restore sourceDuration display on all Pieces ([cbc2746](https://github.com/nrkno/tv-automation-server-core/commit/cbc274631ee931d76083b87a0f0fa68af1b04848))
+* Resync segment function ([24008a4](https://github.com/nrkno/tv-automation-server-core/commit/24008a4f00b76adc4943c59a6c53047be513feb7))
+* resyncSegment checks and logs ([59c5477](https://github.com/nrkno/tv-automation-server-core/commit/59c54774d480fd5ce8c74bfe7a9ba09fc1ab5b6d))
+* retain lookahead getting wrong start sometimes ([1b8cf91](https://github.com/nrkno/tv-automation-server-core/commit/1b8cf9174b9c23f22262c7689d3a37af870594e4))
+* revert correct thumbnail ([ae3e1b7](https://github.com/nrkno/tv-automation-server-core/commit/ae3e1b7ae8eca017221cceb5968c1d0469411499))
+* Revert the correct behaviour of PartCountdown ([4d4a3dd](https://github.com/nrkno/tv-automation-server-core/commit/4d4a3dd1ef21b36eac6780568d767fb193a69fc3))
+* Run run process and prune before getting infinites for part ([68e4e26](https://github.com/nrkno/tv-automation-server-core/commit/68e4e26836811ee82c9c87853e4830758fbaf174))
+* rundown baseline adlibs empty array ([a526a77](https://github.com/nrkno/tv-automation-server-core/commit/a526a77107d0eae7739f04bd074e6963363ea532))
+* rundown layout editor rendering ([b956f89](https://github.com/nrkno/tv-automation-server-core/commit/b956f89341b03312db7dac075fd9cac3385b9933))
+* Rundown notifier crash when removing segments  ([4a74e1b](https://github.com/nrkno/tv-automation-server-core/commit/4a74e1b6aab8b582a3f19559421703c6fce50628))
+* Rundown timing crash ([ead54b1](https://github.com/nrkno/tv-automation-server-core/commit/ead54b1b0608f35c298be1ca8317fd247283ddca))
+* Rundown timing prop ([9a11f18](https://github.com/nrkno/tv-automation-server-core/commit/9a11f18a2ccf5a27fad65da20dc0abbd3e492dc5))
+* Rundown View Shelf single click toggle ([b68d8ef](https://github.com/nrkno/tv-automation-server-core/commit/b68d8efbe9a115b02ebf31a41dc04fce7a711eb1))
+* safeguard for first part(s) being invalid on reset and activate user action ([cc74402](https://github.com/nrkno/tv-automation-server-core/commit/cc74402b57ffb9e43f5c127fdf98d401ffb3e8eb))
+* Scale background in list buttons ([161af0b](https://github.com/nrkno/tv-automation-server-core/commit/161af0bdc2df791f0b5f2e78b10c02bc97d302cc))
+* Scale External Frame also in rundown layouts ([5592e24](https://github.com/nrkno/tv-automation-server-core/commit/5592e2436d8d59ad374df04352114eed98c8bb75))
+* Scale External Frame also in rundown layouts ([8b4a4af](https://github.com/nrkno/tv-automation-server-core/commit/8b4a4aff0d40844d3d5ea5c4b2190580726d6fca))
+* Segment name panel next segment behaviour ([8f1093c](https://github.com/nrkno/tv-automation-server-core/commit/8f1093cdc68f40c978c2ad234e03d8d968da30b7))
+* **segment notes:** don't take up space if not present ([be78315](https://github.com/nrkno/tv-automation-server-core/commit/be78315f7d2139ab541dc99b12d7d44922b3be2d))
+* Segment order in findLastScriptedPiece ([007bf75](https://github.com/nrkno/tv-automation-server-core/commit/007bf7597da85781ba3231450edd5d7393cc0177))
+* segment viewport manipulation using scroll wheel ([2760997](https://github.com/nrkno/tv-automation-server-core/commit/2760997dcd15ed8c2eb5d17e0044b1cd35aa8781))
+* segments not autorewinding when leaving ([52bf453](https://github.com/nrkno/tv-automation-server-core/commit/52bf4537dca9d1de351667532eff0ee3f69ea465))
+* segments not autorewinding when leaving ([887e515](https://github.com/nrkno/tv-automation-server-core/commit/887e5156778c57a8618ee2a593d145715cddc8fe))
+* segments not rewound when resetting the rundown ([b42da5f](https://github.com/nrkno/tv-automation-server-core/commit/b42da5ff83d17224f173a002eb6c2877be675d7c))
+* segments not rewound when resetting the rundown ([1dd2d17](https://github.com/nrkno/tv-automation-server-core/commit/1dd2d17cc58f5f16addbf56c05e93d30b6844770))
+* Set externalModified on new segments ([3ea0010](https://github.com/nrkno/tv-automation-server-core/commit/3ea0010edc73460b031af6efdd9bd3da48c5fb83))
+* Set z-index on dashboard button label container ([f967523](https://github.com/nrkno/tv-automation-server-core/commit/f9675231abcebe8ec0015fb7f84a2177bcea2c12))
+* shelf drag to resize ([a9cff5f](https://github.com/nrkno/tv-automation-server-core/commit/a9cff5f980b5de1f1cb539354a6c7ee0a4e15444))
+* Shelf hiding ([d23586f](https://github.com/nrkno/tv-automation-server-core/commit/d23586f0de2b7dc44086f0e6db6ca0685ab8a007))
+* Shelf layout selection dropdown overlap with trash icon ([4ece49f](https://github.com/nrkno/tv-automation-server-core/commit/4ece49fbee479e8d89628a4d6ac52f020fae7a6b))
+* Shelf layout selection styles ([3109a5c](https://github.com/nrkno/tv-automation-server-core/commit/3109a5c5b0108758c3cdf83965d9e13f8451534d))
+* Shelf links headers and separator ([aaeeb2f](https://github.com/nrkno/tv-automation-server-core/commit/aaeeb2f598bdb8f252c7843f8d71f9f77a79e34c))
+* Shelf performance improvements ([f6a696b](https://github.com/nrkno/tv-automation-server-core/commit/f6a696bcdedabc5f3f3613eff5e5cf78590dd4b5))
+* shortcut in DatabaseCache for finding by id error if document doesnt exist ([d832ddb](https://github.com/nrkno/tv-automation-server-core/commit/d832ddb15e2377462040d307b0d37ee370717cb1))
+* shortcuts ([d65e126](https://github.com/nrkno/tv-automation-server-core/commit/d65e126563a0853603617a7062287934b1f10732))
+* should be a not-match ([0cb867b](https://github.com/nrkno/tv-automation-server-core/commit/0cb867b98684659e93e05773cf0e247fb986432d))
+* Show duration of gap part before activation ([c7716cc](https://github.com/nrkno/tv-automation-server-core/commit/c7716ccc5fefb7f8607add3b914260143aa02008))
+* Show graphic thumbnails ([99e6368](https://github.com/nrkno/tv-automation-server-core/commit/99e6368e7edc1c350924490a8d0ec89531957989))
+* Show keyboard panel in dashboard layouts ([2046da5](https://github.com/nrkno/tv-automation-server-core/commit/2046da5392a2b243d531e806776bd5a491fa7332))
+* show label when there's no right side ([5a811d6](https://github.com/nrkno/tv-automation-server-core/commit/5a811d6868984175ff1de2e82d44d097ca195909))
+* Show piece duration in inspector ([b03087a](https://github.com/nrkno/tv-automation-server-core/commit/b03087a3a8552f17cdc8b50444cacab7ce13e2c1))
+* Show restart button only for device notifications >= WARNING_MAJOR ([aef59e5](https://github.com/nrkno/tv-automation-server-core/commit/aef59e5c119dd32b3ddcf6366c459239f40143e3))
+* Show restart button only for device notifications >= WARNING_MAJOR ([e8dd98a](https://github.com/nrkno/tv-automation-server-core/commit/e8dd98a6a309a431d83f9df3a2548c0252d5c12d))
+* Show rundown name ([071ed61](https://github.com/nrkno/tv-automation-server-core/commit/071ed61634c3875b263b9efc58057139c71f52e4))
+* show Split preview in dashboard button ([8fc3fcc](https://github.com/nrkno/tv-automation-server-core/commit/8fc3fcc91072a01a84b981d8d04629d90b41438b))
+* Single click to toggle adlibs ([2525607](https://github.com/nrkno/tv-automation-server-core/commit/2525607fcebd49edd4270e7ce400c4b468513a4b))
+* Single parameter for segments and ranks, warn if segment fails to be updated ([4b71c2b](https://github.com/nrkno/tv-automation-server-core/commit/4b71c2bf40f31bf5cc2d226dc05be2469236719e))
+* Sisyfos mapping types ([23fca29](https://github.com/nrkno/tv-automation-server-core/commit/23fca29b7c27c0f746252636e3a4fbb8ffdbb745))
+* snapshot import failing if collection was missing ([721134c](https://github.com/nrkno/tv-automation-server-core/commit/721134c1cfafd1698befaa02115bc36e776e68de))
+* some keys in the AHK Keyboard Map ([31e2f23](https://github.com/nrkno/tv-automation-server-core/commit/31e2f2393f29cf80f5c543bdb42fb240817b4bc9))
+* some virtual infinites would not propogate properly. onRundownEnd infinites from the same segment would not propogate. ui resolving future parts incorrectly ([58f3b38](https://github.com/nrkno/tv-automation-server-core/commit/58f3b384152f44f61021554a7d0ed3e8a614db4b))
+* Sort adlibs and actions by rank for display ([f2f5be3](https://github.com/nrkno/tv-automation-server-core/commit/f2f5be328c36c9618ed7dc8dde4c42ea4903ca18))
+* Sort adlibs as last step ([2192224](https://github.com/nrkno/tv-automation-server-core/commit/21922243c6715e9fc681854bf5f7214a2fe95978))
+* Split DashboardPieceButton label into multiple lines ([1630fe4](https://github.com/nrkno/tv-automation-server-core/commit/1630fe45bde36df6d5950f74adf12fea4fc895f9))
+* split saveIntoDb into two functions, so that all before-methods are run before any inserts are done. ([1a87557](https://github.com/nrkno/tv-automation-server-core/commit/1a8755772b014ebeff89c544a845719ad279236d))
+* Standalone shelf route ([69f9dc8](https://github.com/nrkno/tv-automation-server-core/commit/69f9dc8062283d65d3ac34f07835e1eb28f2bcd6))
+* starting playbackSimulationPercentage should be 0 ([9c11dc1](https://github.com/nrkno/tv-automation-server-core/commit/9c11dc163ed038c032839f950262839ba06b46a2))
+* Static button colour ([74a1ec3](https://github.com/nrkno/tv-automation-server-core/commit/74a1ec30dca32922526a5b2d1ab6df3ecfba32e5))
+* Sticky Adlib hotkey ([9a0a73e](https://github.com/nrkno/tv-automation-server-core/commit/9a0a73e7cf6e951ff481a0944e05a321b7edc75f))
+* sticky adlibs will follow toBeQueued property of pieces ([a65d875](https://github.com/nrkno/tv-automation-server-core/commit/a65d875c19d589fc73c3f36f5238fb3010fe4640))
+* Stop OnRundownEnd infinites from continuing into next part when stopped ([71c0f20](https://github.com/nrkno/tv-automation-server-core/commit/71c0f20029a95ee63c1a30109f478ef513ec62ad))
+* Stop storing AsRunLog ([f19dfb2](https://github.com/nrkno/tv-automation-server-core/commit/f19dfb2e6aae4f6a8f46b229e10a0048397b5015))
+* store playlist id in expected playout items ([559fac0](https://github.com/nrkno/tv-automation-server-core/commit/559fac03d5a08682839bf11734ed3e9dfa553986))
+* store playlist id in expected playout items ([39bbf1d](https://github.com/nrkno/tv-automation-server-core/commit/39bbf1d0ef5baf7b5458e820258bc5a48315d1ea))
+* Studio name panel title ([2d26694](https://github.com/nrkno/tv-automation-server-core/commit/2d266944062984f762356e82094f2fb5491841b3))
+* styling fix for streamdeck dashboard ([da7a667](https://github.com/nrkno/tv-automation-server-core/commit/da7a6679baadc5d3a68fa91f568f3d7dca644e2b))
+* Subscribe to all parts, pieces, and instances if in standalone shelf ([b941193](https://github.com/nrkno/tv-automation-server-core/commit/b941193aca522a42210ef652700413925e9cf1c4))
+* Subscribe to all parts, pieces, and instances if in standalone shelf ([779ff84](https://github.com/nrkno/tv-automation-server-core/commit/779ff84007d08dd7eb0de8e5da422e78e46d966e))
+* Subscribe to all parts, pieces, and instances if in standalone shelf ([7a8c133](https://github.com/nrkno/tv-automation-server-core/commit/7a8c13375a72dd3b3b6beb7f7bef9ac7fd40bfda))
+* Subscribe to jingle MediaObjects ([db7908f](https://github.com/nrkno/tv-automation-server-core/commit/db7908f920ecb555d97bb6239d9d478b1237800d))
+* support parts falling back onto DEFAULT_DISPLAY_DURATION ([af85a95](https://github.com/nrkno/tv-automation-server-core/commit/af85a95e370fb5f90c95afdcf93913af454bdbae))
+* System status for packages fetched from git ([b5c7ed8](https://github.com/nrkno/tv-automation-server-core/commit/b5c7ed8325bb8c2eecebca2beba69466a9f06a08))
+* tag filtering ([d96be79](https://github.com/nrkno/tv-automation-server-core/commit/d96be79e402c747ce3f460b7daa129e7de7c6d47))
+* Take hotkey not working after closing a modal ([c7214b4](https://github.com/nrkno/tv-automation-server-core/commit/c7214b4c652b189c5803f974f0fc0b7c6b327428))
+* Take on interactive keyboard ([001a9f7](https://github.com/nrkno/tv-automation-server-core/commit/001a9f7822633b018abf4d4056138dfcc8c7ee9c))
+* Tally both on dashboard panels and adlib region panels ([7cf0f67](https://github.com/nrkno/tv-automation-server-core/commit/7cf0f67e9613c96735744857b9ddec697b57466c))
+* Tally both on dashboard panels and adlib region panels ([da018b0](https://github.com/nrkno/tv-automation-server-core/commit/da018b04ea0ada5f9c2e4fa53815d256feeae003))
+* Tally both on dashboard panels and adlib region panels ([67c6626](https://github.com/nrkno/tv-automation-server-core/commit/67c6626cf997cc450696016ede3c88f5436674e1))
+* temporary disable un-used global hotkeys for now ([fc8fe46](https://github.com/nrkno/tv-automation-server-core/commit/fc8fe46fecc32d85ff59155b82a5beab40d8dca0))
+* Thumbnail covering clip time in dashboard panel button ([ee0b071](https://github.com/nrkno/tv-automation-server-core/commit/ee0b071dc0734454c34299077a1c4ac5a4611104))
+* Thumbnail height in shelf dashboard ([d4b17f7](https://github.com/nrkno/tv-automation-server-core/commit/d4b17f7d21b7ed2cfd41da02ac562d1f746980fa))
+* thumbnail incorrectly sized ([5ad27c6](https://github.com/nrkno/tv-automation-server-core/commit/5ad27c69f3ed8e908765dbc791a2c1ea9ba18069))
+* Thumbnail piece typings ([dfe2dd4](https://github.com/nrkno/tv-automation-server-core/commit/dfe2dd4ca0dce3a9e04531d426e9b4f2234ba30c))
+* Thumbnail URL ([cc04e25](https://github.com/nrkno/tv-automation-server-core/commit/cc04e258c8c7293d5b611380236fae7fd2205b28))
+* thumbnails not appearing in AdlibRegionPanel ([af99d99](https://github.com/nrkno/tv-automation-server-core/commit/af99d99d96f287dcacac54bc8331bea35a615545))
+* timed pieces showing outside of their part ([e3e9105](https://github.com/nrkno/tv-automation-server-core/commit/e3e91059455ef1fb5ef3f28b2513c11d441b5f34))
+* timed pieces showing outside of their part ([eced12b](https://github.com/nrkno/tv-automation-server-core/commit/eced12b61a0431c979fb00a66638ffe2f9bb5e23))
+* Timeline dashboard panel crashing due to missing props ([a16cc77](https://github.com/nrkno/tv-automation-server-core/commit/a16cc77bed70eb7c6ab0814e37c2e25b7dc959bf))
+* **timeline grab:** avoid triggering on context menu clicks ([5f7aa4c](https://github.com/nrkno/tv-automation-server-core/commit/5f7aa4cb80f26a75331bfd010fd57675116d2229))
+* timesource crossfade ([e1f3fcb](https://github.com/nrkno/tv-automation-server-core/commit/e1f3fcb99806d81f79862224c75a9991071273e5))
+* Toggling infinites ([d09d1ad](https://github.com/nrkno/tv-automation-server-core/commit/d09d1ad715670c0dd97293bfc8d8b0035375603e))
+* Too many arguments to function ([a70aaaf](https://github.com/nrkno/tv-automation-server-core/commit/a70aaafa66b34d2922f0277243e33f6f4b6bd47b))
+* Touch device handling ([6d4bde1](https://github.com/nrkno/tv-automation-server-core/commit/6d4bde19edef868dd3e42fb6fbdc6b2ab6236caf))
+* touchscreen adlib moving ([55f5901](https://github.com/nrkno/tv-automation-server-core/commit/55f5901f786e9ad43b9a60f9810859259523b43e))
+* Transition layer media status + ignore black/freeze frames ([e09a5b8](https://github.com/nrkno/tv-automation-server-core/commit/e09a5b844792484c60c70f679721aa2608f11031))
+* Transitions dashboard button ([35130ce](https://github.com/nrkno/tv-automation-server-core/commit/35130ce4bbb11a60764d453518e4432cd1074870))
+* Translate in getSettingsManifest ([ea9cb26](https://github.com/nrkno/tv-automation-server-core/commit/ea9cb269889d1276fd14cc6221ba6734d70e7f65))
+* Translation injection ([63124e8](https://github.com/nrkno/tv-automation-server-core/commit/63124e82992c73624bd3a8165b6c5873f106e103))
+* TSR in package-lock ([80ace29](https://github.com/nrkno/tv-automation-server-core/commit/80ace29eb3dbc67cb9cc5e1c10cdd56dfdd8b5cd))
+* TSR version ([df4edfc](https://github.com/nrkno/tv-automation-server-core/commit/df4edfc83202e3d73e3b1f900fce3c9acd958204))
+* TV2 only: Only allow one part to be queued, replacing the existing one if needed ([16893dc](https://github.com/nrkno/tv-automation-server-core/commit/16893dc1e251d33952f5f1b67bec023ce6d9b155))
+* typings ([ca702a2](https://github.com/nrkno/tv-automation-server-core/commit/ca702a2079f56ea92f1e144eefb3068c6c241c57))
+* Typo in CSS classname ([bc7f959](https://github.com/nrkno/tv-automation-server-core/commit/bc7f959ef7ba19fbb950745091fac47084c5ce5e))
+* typo in entrypoint script ([1048baf](https://github.com/nrkno/tv-automation-server-core/commit/1048baf19dd8ec15f7e4de3ff1ef68480fe8b945))
+* ui not showing start:'now' pieces correctly ([578b8e8](https://github.com/nrkno/tv-automation-server-core/commit/578b8e8dfef92804f2b07b8756fca28037df2241))
+* UI slowness on takes ([9dfff04](https://github.com/nrkno/tv-automation-server-core/commit/9dfff043ec8d62bda1345dc91b1551f5b7f021be))
+* unable to toggle minishelf adlib ([369b1b6](https://github.com/nrkno/tv-automation-server-core/commit/369b1b646fef56945979b7604bfaac74144223e5))
+* Undefined property causing reactivity to be broken ([68db8db](https://github.com/nrkno/tv-automation-server-core/commit/68db8dbfa559c1a6a5f7a8fa19e1f7a4dd4e46d6))
+* Unfinished merge ([7995065](https://github.com/nrkno/tv-automation-server-core/commit/799506538be6d12af1a2fcbfe9ae2fe09c587244))
+* Unique hotkey group names ([3a9c4c9](https://github.com/nrkno/tv-automation-server-core/commit/3a9c4c90c68f3f34011b6a0f8b911e5857c3d90d))
+* Unique name for global adlib actions fetch function ([40e8630](https://github.com/nrkno/tv-automation-server-core/commit/40e8630beeb744da9babed23b5114ed6ff8fc8e5))
+* unsync rundown if currently playing segment or part is removed ([0576bf2](https://github.com/nrkno/tv-automation-server-core/commit/0576bf217e1494b8ee27d1dc38e6a1f4a205446b))
+* Unsync segments instead of the rundown when allowed ([1edbd59](https://github.com/nrkno/tv-automation-server-core/commit/1edbd594eb327924a6588d8cc15a7b933ebaa4a4))
+* update mediaObject subscriptions for AdLibListItems and DashboardPieceButtons ([2e69fe8](https://github.com/nrkno/tv-automation-server-core/commit/2e69fe8d88e54fb2b901789f255143b98c1aceb8))
+* Update popper whenever component updates ([c291091](https://github.com/nrkno/tv-automation-server-core/commit/c2910910f4d05a70c14621407576a13e92c14168))
+* Update segments collection ([68f1c32](https://github.com/nrkno/tv-automation-server-core/commit/68f1c325809be37943229635fb0f87c2e2c567bb))
+* update typings ([437e351](https://github.com/nrkno/tv-automation-server-core/commit/437e351790f938881d8a19429c9d1023e7976562))
+* Update typings for expectedPlayoutItems ([a9c4259](https://github.com/nrkno/tv-automation-server-core/commit/a9c4259a36dca6d9974f70fcc2bdb0c38f0d9686))
+* upgrade blueprint-integration ([abd4089](https://github.com/nrkno/tv-automation-server-core/commit/abd4089ef7205bafc88ac9c077bbc6aaebbc9864))
+* Upload snapshots where part externalId is missing ([18f34a0](https://github.com/nrkno/tv-automation-server-core/commit/18f34a051530700355ea21100f025719ed320c80))
+* use adlibPrerollDuration when converting adlib to a part ([b18e05c](https://github.com/nrkno/tv-automation-server-core/commit/b18e05c4706df8986c26ca67962b67f9dc8ed4fe))
+* Use correct event for Icon Picker ([1605e6a](https://github.com/nrkno/tv-automation-server-core/commit/1605e6afe09bf3673279e5e463a4d3fc253b2082))
+* Use different PieceDisplayStyle ([270e3b0](https://github.com/nrkno/tv-automation-server-core/commit/270e3b0002accb5cd8089bceb30b5c6d4095f1b5))
+* use enable.duration as a fallback for Dashboard button status ([bd6cdb0](https://github.com/nrkno/tv-automation-server-core/commit/bd6cdb097ee01f5b36729c17408aa29b76a575e7))
+* Use existing cache when performing error checks ([8f80737](https://github.com/nrkno/tv-automation-server-core/commit/8f80737e8e3dd48cf01b4cbe8f94dbb86c71aac9))
+* Use getMediaObjectMediaId in withMediaObjectStatus ([60400f7](https://github.com/nrkno/tv-automation-server-core/commit/60400f7b7cd6e354372a1cf4072f193e1cb43860))
+* Use layerName instead of Id where specified ([1886228](https://github.com/nrkno/tv-automation-server-core/commit/188622847493546373be83d75f932e1440ce6efd))
+* Use media contentDuration if available in dashboard ([382bcd2](https://github.com/nrkno/tv-automation-server-core/commit/382bcd2822090efe21406a6e32dfab1d396e340a))
+* Use ordered parts for lookaheads ([b00492e](https://github.com/nrkno/tv-automation-server-core/commit/b00492ebae81688d7fad7be163f3534eddce7295))
+* use shallow compare in SegmentTimelinePart ([f2b03c6](https://github.com/nrkno/tv-automation-server-core/commit/f2b03c6c68b9ab9359e1bf58b222a9263fe10fcc))
+* use shalow comparison on SegmentTimelineContainer ([f9de464](https://github.com/nrkno/tv-automation-server-core/commit/f9de464fc8a11303baebc45d68a2c57ec31b793d))
+* Use vtContent?.seek when calculating time left ([61e1d37](https://github.com/nrkno/tv-automation-server-core/commit/61e1d374df335c6910dffc86cfca44bd3414e532))
+* use why-did-you-render & try to improve performance ([ec7c466](https://github.com/nrkno/tv-automation-server-core/commit/ec7c46682d003214a0d2162a16be571d1bcdb21a))
+* Various lint errors ([305d0d2](https://github.com/nrkno/tv-automation-server-core/commit/305d0d223ef66b7ccb77d3775daea2d74fb471c0))
+* Viewing shelfs of inactive rundowns ([7405892](https://github.com/nrkno/tv-automation-server-core/commit/7405892ce5291b7202cc6ece865d528b4f4f277a))
+* Viewing shelfs of inactive rundowns ([3b24c6d](https://github.com/nrkno/tv-automation-server-core/commit/3b24c6d3fe29fcaad9e9834c5d63347a9a5ffd76))
+* VizMSE settings ([9fb97e2](https://github.com/nrkno/tv-automation-server-core/commit/9fb97e2ff9e739564b83a0018b22975086fd5d85))
+* VO renderer ([3fa3c9c](https://github.com/nrkno/tv-automation-server-core/commit/3fa3c9c64310120ea93c3fd896cd71dfa664ef2b))
+* Vulnerable deps ([8a1c191](https://github.com/nrkno/tv-automation-server-core/commit/8a1c191532bcf9a41f641aa0b80019bde3b1202b))
+* Vulnerable dev dependency ([4d351d7](https://github.com/nrkno/tv-automation-server-core/commit/4d351d718a347273cd644dfc62cb8d280a21ba69))
+* warn if blueprints try to create non-invalid parts in hidden segment ([fb7966a](https://github.com/nrkno/tv-automation-server-core/commit/fb7966a24df04721d070d2a00e0704645f3c40a7))
+* Wrap standalone shelf in RundownTimingProvider ([efe5f1f](https://github.com/nrkno/tv-automation-server-core/commit/efe5f1f538a9aa3a0d9d4f31bb829a4bbbd31a02))
+* Wrong property name in mongo query ([523025c](https://github.com/nrkno/tv-automation-server-core/commit/523025cbf4587f91dc4c72de5dc114e2e282e24f))
+* zero-based values in summary ([cde955e](https://github.com/nrkno/tv-automation-server-core/commit/cde955e186860c2306e19a8b1f4db39084f976d8))
+* zoom change in segment zoom area ([3023f8e](https://github.com/nrkno/tv-automation-server-core/commit/3023f8e4c82533bf1a8eb8310ddf32683ff67c07))
+* **zoom out latch:** rename functionality ([0223217](https://github.com/nrkno/tv-automation-server-core/commit/022321798f9d87942c99f1eb266cb1afb3441dda))
+
+## [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.43.0-in-testing.0) (2022-05-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* clean up deprecated Databases and DataTypes (#713)
+
+### Features
+
+* clean up deprecated Databases and DataTypes ([#713](https://github.com/nrkno/tv-automation-server-core/issues/713)) ([c6eb7fa](https://github.com/nrkno/tv-automation-server-core/commit/c6eb7fa98003bae79b4b9311c135e33638a017fc))
+* **docs:** add Ctrl+K hotkey for jumping to search text box ([1d16c1e](https://github.com/nrkno/tv-automation-server-core/commit/1d16c1e3d57a0cebfd10c962b3816ba558bb9976))
+* meteor 2.7. reenable meteor apm ([e989244](https://github.com/nrkno/tv-automation-server-core/commit/e98924407a3f0b791f48b852b9ef09902a90280d))
+* move more logic into workers ([#718](https://github.com/nrkno/tv-automation-server-core/issues/718)) ([3376826](https://github.com/nrkno/tv-automation-server-core/commit/3376826e4029985e3975d6d5a85f9ab1f06a9dd4))
+* **Prompter:** Suppoert for multiple Joycon controller for prompter ([f915320](https://github.com/nrkno/tv-automation-server-core/commit/f915320d1c7f78dd4692140dbcf46fb5a289d16b))
+* use Sorensen prevent default down option and configurable poison key ([1311e3e](https://github.com/nrkno/tv-automation-server-core/commit/1311e3e4a15c955293123da758492d594960e159))
+
+
+### Bug Fixes
+
+* avoid logging errors from onPartStoppedPlayback or onPieceStoppedPlayback when a rundown is reset ([b54c44b](https://github.com/nrkno/tv-automation-server-core/commit/b54c44b52ac9350cae920a9e92a3f91adaf4e10f))
+* avoid logging errors from onPartStoppedPlayback or onPieceStoppedPlayback when a rundown is reset ([ac21a3b](https://github.com/nrkno/tv-automation-server-core/commit/ac21a3befb5cda2964cc824c2cbdd0bb8bcf65c9))
+* BTS countdonw position can be misaligned if it's on a layer in a group that is preceeded by another group that is default-collapsed but have not been manipulated by the user ([4dc470b](https://github.com/nrkno/tv-automation-server-core/commit/4dc470bc0953faabf9b567f303995f8b73cad29b))
+* change reportPartInstanceHasStopped to use the cache instead of accessing collections directly ([85f94c6](https://github.com/nrkno/tv-automation-server-core/commit/85f94c60ddb37352cc05101de28d0775c08f219b))
+* Cherry-picked configurable poisonkey. ([ec60933](https://github.com/nrkno/tv-automation-server-core/commit/ec60933c91ecd0ae23fc27331c990423dc6c65d1))
+* Cherry-picked Sorensen preventDefaultDown option. ([b90f1b3](https://github.com/nrkno/tv-automation-server-core/commit/b90f1b3fa168b6d9ee72eac4a947fa5dc79fbbf3))
+* cleans up PR after review ([bdbc105](https://github.com/nrkno/tv-automation-server-core/commit/bdbc105ae32d15a61d93120b0de384c36143cd44))
+* dashboard panel scale affecting position ([c339929](https://github.com/nrkno/tv-automation-server-core/commit/c339929b6f02d5b25e3597b92b1fa8360d01d190))
+* dont use versionExtended when checking db docs against current version ([1839d8b](https://github.com/nrkno/tv-automation-server-core/commit/1839d8b11dfafab550f8fecb28e6b2c211f737ea))
+* force target to be es2019 for corelib, because it is used client-side and Chrome (v71) in CasparCG2.1 does not support any newer targets. ([39d11ba](https://github.com/nrkno/tv-automation-server-core/commit/39d11ba1337e471dd95d776d6bd3a4a8cd938e1a))
+* job-worker got empty string when searching for version number ([562083d](https://github.com/nrkno/tv-automation-server-core/commit/562083dba9259d72704eff21230cb4cdf7a9ce6c))
+* job-worker returning UserError got lost, causing 'Internal error' to be reported to the user. Reduce amount of logging from failed UserActions ([fd32c45](https://github.com/nrkno/tv-automation-server-core/commit/fd32c45e2f01c9482a5e19aecdc5ed41ccd6627c))
+* mongo changestream watching broken. some logging not being routed correctly ([2e4b4e3](https://github.com/nrkno/tv-automation-server-core/commit/2e4b4e377eb7356dfcb21bdbe5f96182d8293192))
+* mongo queries with an undefined selector were returning nothing ([a5cc184](https://github.com/nrkno/tv-automation-server-core/commit/a5cc1847f1b3de5a1fa0a88619cbec32ddb88704))
+* mongodb shouldnt convert undefined properties to null ([ed96de5](https://github.com/nrkno/tv-automation-server-core/commit/ed96de585a6e8155b513318c9882a58fa405dd81))
+* move TransformedCollection into MongoCollection with other collection types ([343a7b2](https://github.com/nrkno/tv-automation-server-core/commit/343a7b2ffabc99ba95c016933f132efd083976ac))
+* OAuth code returned via redirect_uri ([#719](https://github.com/nrkno/tv-automation-server-core/issues/719)) ([9789585](https://github.com/nrkno/tv-automation-server-core/commit/9789585d2ae552ec555191cd1fbf76e7880cae2b))
+* **Prompter:** If collection changes are slow, Prompter may receive incomplete updates, and render some Script missing ([#720](https://github.com/nrkno/tv-automation-server-core/issues/720)) ([e9465eb](https://github.com/nrkno/tv-automation-server-core/commit/e9465eb0bbbc99fea5cc883d121e53b49c6517cc))
+* RundownView now use TriggersHandler with shelfOnly. ([f963b2f](https://github.com/nrkno/tv-automation-server-core/commit/f963b2f1ae230070402524c152c524ad0c074c5c))
+* **RundownView:** use TriggersHandler with detached Shelfs ([5e330e4](https://github.com/nrkno/tv-automation-server-core/commit/5e330e4773392bb936736a7831a39c391eccf102)), closes [#714](https://github.com/nrkno/tv-automation-server-core/issues/714)
+* set timeout times explicitly for MOS commands ([1cf5a4e](https://github.com/nrkno/tv-automation-server-core/commit/1cf5a4ed3e6e2786c9ad83df303b992e35c86a51))
+* **sonar:** install dependencies before sonar scan ([a004c36](https://github.com/nrkno/tv-automation-server-core/commit/a004c36e3564de8930202bb8e9ae116f3e9cd45d))
+* **sonar:** install dependencies before sonar scan ([33c7274](https://github.com/nrkno/tv-automation-server-core/commit/33c72748d9a38802c43324dedbefce5ee83e0890))
+* **Storyboard:** Piece status icon is misaligned ([be2edae](https://github.com/nrkno/tv-automation-server-core/commit/be2edae3de6db8f839185b9a98cf85844f182167))
+* tidy up some meteor mongo typings ([6af703b](https://github.com/nrkno/tv-automation-server-core/commit/6af703bb7406d686a7f76db754c104e58d6a2e06))
+* type errors ([bbc0945](https://github.com/nrkno/tv-automation-server-core/commit/bbc0945de4d24d21ef657c8631545d11873ada3d))
+* update some overridden mongo typings ([f7fa755](https://github.com/nrkno/tv-automation-server-core/commit/f7fa75572a91bffc4f89d211877e7afbc4ffe26e))
+* Using Settings with defaults included for poisonKey. ([c7fbffd](https://github.com/nrkno/tv-automation-server-core/commit/c7fbffde903622c1cd6b73c1815de422060114b1))
+
+## [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.42.0-in-testing.0) (2022-04-29)
+
+### Features
+
+- add machine id to notifcations report ([f47f0ca](https://github.com/nrkno/tv-automation-server-core/commit/f47f0cadc487a8f64107a6eee9ffa3c7f9e613e7))
+- option to log user notifcations in core ([46a14a4](https://github.com/nrkno/tv-automation-server-core/commit/46a14a4508b5f98274c08ebf2face9356173b662))
+- piece postroll ([674d7c5](https://github.com/nrkno/tv-automation-server-core/commit/674d7c588998e59a794b1da64276f73637ae8556))
+- store user event timestamps ([#716](https://github.com/nrkno/tv-automation-server-core/issues/716)) ([8a45898](https://github.com/nrkno/tv-automation-server-core/commit/8a45898b1f5a666128e0b8ca516524d818de3a1d))
+- **UserLog:** highlight linked log entry ([4e9407d](https://github.com/nrkno/tv-automation-server-core/commit/4e9407d4ec840f2a4ece43fa6063a4ff38b98bd0))
+
+
 ### [1.41.4](https://github.com/nrkno/sofie-core/compare/v1.41.4-0...v1.41.4) (2022-08-18)
 
 ### [1.41.4-0](https://github.com/nrkno/sofie-core/compare/v1.41.3...v1.41.4-0) (2022-08-17)
@@ -16,775 +1422,766 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
-* Typo ([a55b963](https://github.com/nrkno/tv-automation-server-core/commit/a55b963382cb96624f423600aae41d3bea3edddb))
+- auto update lobby errors ([#709](https://github.com/nrkno/tv-automation-server-core/issues/709)) ([264b536](https://github.com/nrkno/tv-automation-server-core/commit/264b536ccd53441cc0b89990fac1eaa4f323bcf4))
+- **BigSync:** revert autoselection of RundownViewLayouts when none selected ([1ab498d](https://github.com/nrkno/tv-automation-server-core/commit/1ab498d12293656c28c99485729c0446af5fc3bc))
+- bug when grouping bucket items for remove/modifying ([0d5dd0a](https://github.com/nrkno/tv-automation-server-core/commit/0d5dd0af1c77cb8aed73adcc302a568ebb60855e))
+- change how we parameters are fed into function, in order to avoid garbage collection ([df89ecc](https://github.com/nrkno/tv-automation-server-core/commit/df89eccdd364cf48b5fe39d8d436354a4cca7c25))
+- expose versionExtended (git hash) in package.json on CI build ([#711](https://github.com/nrkno/tv-automation-server-core/issues/711)) ([ee12285](https://github.com/nrkno/tv-automation-server-core/commit/ee12285e0fad7103b51cfabc7015f35829509009))
+- hide keyboardPreview settings behind a feature flag. ([a48ad31](https://github.com/nrkno/tv-automation-server-core/commit/a48ad3109566f25f161be5ad3195ce039fa1a589))
+- interpollate action label in postProcessGlobalAdLibActions ([7a314d3](https://github.com/nrkno/tv-automation-server-core/commit/7a314d3262c71d6596e8c1739a5757958afa9d78))
+- Jenkins doesn't persist git hash in package.json ([26f1ea3](https://github.com/nrkno/tv-automation-server-core/commit/26f1ea35d36f89c0e0183b7a7b75f686b8693aff))
+- log the event when queueing minishelf adlibs ([d930520](https://github.com/nrkno/tv-automation-server-core/commit/d9305207b2b65caadddbe4294d70f3f842f06000))
+- meteor not restarting on worker code changes ([8ff3474](https://github.com/nrkno/tv-automation-server-core/commit/8ff347429b2328ac561a42055b99694238746d22))
+- missing/broken device debug logging in playout-gateway ([#702](https://github.com/nrkno/tv-automation-server-core/issues/702)) ([be3abb5](https://github.com/nrkno/tv-automation-server-core/commit/be3abb5b429ec60531a1dd115d526b8004f42642))
+- move git hash persisting to Jenkinsfile ([ed3628f](https://github.com/nrkno/tv-automation-server-core/commit/ed3628f16703c9bd9de799d5acc91c34f74ceb7b))
+- optimization of VTFloatingInspector broke it when no hoverscrub preview was shown ([6d45957](https://github.com/nrkno/tv-automation-server-core/commit/6d459573acdcb34aeaebdfc2c870e7f61603ce6e))
+- PGW: change the default logLevel, from "verbose" which excluded debug-messages. "silly" means "everything" ([304241b](https://github.com/nrkno/tv-automation-server-core/commit/304241b3ffe7b0186500fb91e74ca2581c6e0883))
+- PGW: don't return the logger in event-listeners on threaded device ([207bcef](https://github.com/nrkno/tv-automation-server-core/commit/207bcefcbe66b29767b3bbe7e17e8f662f94cde2))
+- PGW: type issues in tsrHandler ([7c39f04](https://github.com/nrkno/tv-automation-server-core/commit/7c39f0430e2c65c34dd050c6046be9319161f69e))
+- postroll with piece control objects ([73c6836](https://github.com/nrkno/tv-automation-server-core/commit/73c6836d2a59283066354405116d5217f75551a3))
+- regression in Piece label display ([d5e6b89](https://github.com/nrkno/tv-automation-server-core/commit/d5e6b89ec324afbef22c7d9ca37bbcd121a544f7))
+- reset playlist order button ([#715](https://github.com/nrkno/tv-automation-server-core/issues/715)) ([40c2419](https://github.com/nrkno/tv-automation-server-core/commit/40c24191da3da290f0268f405f1c325acf7380a3))
+- support NOT filters in Shelf layouts ([be3aac0](https://github.com/nrkno/tv-automation-server-core/commit/be3aac0d7b4b31fd4a8fdaa2702221fcbd9b07b6))
+- update playout-gateway copied typings, avoid unnecessary clones ([fa58130](https://github.com/nrkno/tv-automation-server-core/commit/fa58130593097aca2a5991aaf9deb13dc7b2192e))
+- update supertimeline ([#703](https://github.com/nrkno/tv-automation-server-core/issues/703)) ([897d81e](https://github.com/nrkno/tv-automation-server-core/commit/897d81ef2648947cd23caee6edf80d26e5a05de0))
+- update TSR dep (threadedclass update) ([1c38752](https://github.com/nrkno/tv-automation-server-core/commit/1c387528682368dbc49ee81aca0570cf642d41e5))
+- upgrade tsr ([32105d6](https://github.com/nrkno/tv-automation-server-core/commit/32105d623685f6feaa0ee30c723fcd494376fb11))
+- When removing or modifying a bucket adlib, the grouped adlibs ("behind it" in the GUI) should also be updated ([8a8c39d](https://github.com/nrkno/tv-automation-server-core/commit/8a8c39d26ead6f573c5fcad5075b0890e5bc17c9))
+
+### [1.41.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.2...v1.41.3) (2022-08-10)
+
+### Bug Fixes
+
+- Typo ([a55b963](https://github.com/nrkno/tv-automation-server-core/commit/a55b963382cb96624f423600aae41d3bea3edddb))
 
 ### [1.41.2](https://github.com/nrkno/sofie-core/compare/v1.41.2-0...v1.41.2) (2022-08-09)
 
 ### [1.41.2-0](https://github.com/nrkno/sofie-core/compare/v1.41.1...v1.41.2-0) (2022-08-08)
 
-
 ### Bug Fixes
 
-* update mos-connection ([7ead7f0](https://github.com/nrkno/sofie-core/commit/7ead7f04a063cb381f323329b13378840b6ba115))
+- update mos-connection ([7ead7f0](https://github.com/nrkno/sofie-core/commit/7ead7f04a063cb381f323329b13378840b6ba115))
 
 ### [1.41.1](https://github.com/nrkno/sofie-core/compare/v1.41.0...v1.41.1) (2022-07-05)
 
-
 ### Bug Fixes
 
-* transpile mos-connection for compatibility with CasparCG ([#744](https://github.com/nrkno/sofie-core/issues/744)) ([5250e02](https://github.com/nrkno/sofie-core/commit/5250e023d808c6a977429fbf4e4d7b9da3368831))
+- transpile mos-connection for compatibility with CasparCG ([#744](https://github.com/nrkno/sofie-core/issues/744)) ([5250e02](https://github.com/nrkno/sofie-core/commit/5250e023d808c6a977429fbf4e4d7b9da3368831))
 
 ## [1.41.0](https://github.com/nrkno/sofie-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
 
-
 ### Features
 
-* **Prompter:** Suppoert for multiple Joycon controller for prompter ([f915320](https://github.com/nrkno/sofie-core/commit/f915320d1c7f78dd4692140dbcf46fb5a289d16b))
-
+- **Prompter:** Suppoert for multiple Joycon controller for prompter ([f915320](https://github.com/nrkno/sofie-core/commit/f915320d1c7f78dd4692140dbcf46fb5a289d16b))
 
 ### Bug Fixes
 
-* add migration step for RundowmBaselineObjects.objects -> .timeli… ([#736](https://github.com/nrkno/sofie-core/issues/736)) ([71b34b3](https://github.com/nrkno/sofie-core/commit/71b34b3f04729007e4924eefb4093856cec46347))
-* add timeout for commands sent to Core from gateways ([caed8c7](https://github.com/nrkno/sofie-core/commit/caed8c708387457fbd89a40bc3fa96209a48c555))
-* allow take out of hold in list part ([fed7b9f](https://github.com/nrkno/sofie-core/commit/fed7b9ff1aeabd1d48e641b1b8ab5f080cb7b95d))
-* APM is always enabled in Workers if the APM_HOST and APM_SECRET env variables are defined ([5415c1f](https://github.com/nrkno/sofie-core/commit/5415c1f37f2b7a7c8232cb0c51d6417c84a72f0d))
-* autonext out of hold missing transition ([bfae30c](https://github.com/nrkno/sofie-core/commit/bfae30ca80391d0c7031dc159c1ce451f973871a))
-* change reportPartInstanceHasStopped to use the cache instead of accessing collections directly ([85f94c6](https://github.com/nrkno/sofie-core/commit/85f94c60ddb37352cc05101de28d0775c08f219b))
-* cleans up PR after review ([bdbc105](https://github.com/nrkno/sofie-core/commit/bdbc105ae32d15a61d93120b0de384c36143cd44))
-* dashboard crash with `setRef is not a function` ([45ce84b](https://github.com/nrkno/sofie-core/commit/45ce84b91d5f57ba494dcd27fd25c0ed440a661b))
-* dont use versionExtended when checking db docs against current version ([1839d8b](https://github.com/nrkno/sofie-core/commit/1839d8b11dfafab550f8fecb28e6b2c211f737ea))
-* force target to be es2019 for corelib, because it is used client-side and Chrome (v71) in CasparCG2.1 does not support any newer targets. ([39d11ba](https://github.com/nrkno/sofie-core/commit/39d11ba1337e471dd95d776d6bd3a4a8cd938e1a))
-* guard against sending multiple timelines to PoGw ([#732](https://github.com/nrkno/sofie-core/issues/732)) ([645b5c6](https://github.com/nrkno/sofie-core/commit/645b5c6ace37fb894207700044686ceac9b3b023))
-* initial empty timeline could prevent Timeline publication ([79a6b7e](https://github.com/nrkno/sofie-core/commit/79a6b7e48e9d356d0b389fc3fcac2042520766d2))
-* job-worker got empty string when searching for version number ([562083d](https://github.com/nrkno/sofie-core/commit/562083dba9259d72704eff21230cb4cdf7a9ce6c))
-* job-worker returning UserError got lost, causing 'Internal error' to be reported to the user. Reduce amount of logging from failed UserActions ([fd32c45](https://github.com/nrkno/sofie-core/commit/fd32c45e2f01c9482a5e19aecdc5ed41ccd6627c))
-* mongo changestream watching broken. some logging not being routed correctly ([2e4b4e3](https://github.com/nrkno/sofie-core/commit/2e4b4e377eb7356dfcb21bdbe5f96182d8293192))
-* mongodb shouldnt convert undefined properties to null ([ed96de5](https://github.com/nrkno/sofie-core/commit/ed96de585a6e8155b513318c9882a58fa405dd81))
-* nextPartInstance can be undefined, move isFirstTake to after checking that there is a takePartInstance ([d3f7c8a](https://github.com/nrkno/sofie-core/commit/d3f7c8a46c0c5f68ded68a99d58ebe69683aec79))
-* part preroll too long when infinite continuation has preroll ([de35719](https://github.com/nrkno/sofie-core/commit/de357192da841307748bc5193076d48863955390))
-* **Prompter:** If collection changes are slow, Prompter may receive incomplete updates, and render some Script missing ([#720](https://github.com/nrkno/sofie-core/issues/720)) ([e9465eb](https://github.com/nrkno/sofie-core/commit/e9465eb0bbbc99fea5cc883d121e53b49c6517cc))
-* send setStoryStatus PLAY before STOP ([3bd46c8](https://github.com/nrkno/sofie-core/commit/3bd46c8ddb7966fb37010ea5b82005a677aa5452))
-* set worker-threads to auto-restart. Verify they do restart successfully ([b3be39b](https://github.com/nrkno/sofie-core/commit/b3be39b34238083a62ad290c7855f570a97e13ce))
-* some playout-gateway logging ([9ae203a](https://github.com/nrkno/sofie-core/commit/9ae203afd987f2572f096ac77e9abfc0747322c3))
-* **sonar:** install dependencies before sonar scan ([a004c36](https://github.com/nrkno/sofie-core/commit/a004c36e3564de8930202bb8e9ae116f3e9cd45d))
-* stopping an adlib-infinite stopped the piece too far in the future ([3fdedc9](https://github.com/nrkno/sofie-core/commit/3fdedc9fce31b80d76fd81463b56377949a2cf2c))
-* taken part could end up with a too high preroll, taken from some infinites which were never to be played ([15f08bd](https://github.com/nrkno/sofie-core/commit/15f08bd51776c566fbb46faca66aab16048afd53))
-* test ([fdce263](https://github.com/nrkno/sofie-core/commit/fdce263acd6df8c979f06cb9a4c238cf8e29f02e))
-* typo ([09b26ed](https://github.com/nrkno/sofie-core/commit/09b26edd9be411d279b1673b21eac773eac2906c))
-* update mos-connection ([8f4efdc](https://github.com/nrkno/sofie-core/commit/8f4efdcdc89d754685636f07ab5a2950bbb431bf))
-* update mos-connection to 2.0.0 ([583a6ea](https://github.com/nrkno/sofie-core/commit/583a6ea0186d515b3d0435e1ea1487182ef0f4ef))
+- add migration step for RundowmBaselineObjects.objects -> .timeli… ([#736](https://github.com/nrkno/sofie-core/issues/736)) ([71b34b3](https://github.com/nrkno/sofie-core/commit/71b34b3f04729007e4924eefb4093856cec46347))
+- add timeout for commands sent to Core from gateways ([caed8c7](https://github.com/nrkno/sofie-core/commit/caed8c708387457fbd89a40bc3fa96209a48c555))
+- allow take out of hold in list part ([fed7b9f](https://github.com/nrkno/sofie-core/commit/fed7b9ff1aeabd1d48e641b1b8ab5f080cb7b95d))
+- APM is always enabled in Workers if the APM_HOST and APM_SECRET env variables are defined ([5415c1f](https://github.com/nrkno/sofie-core/commit/5415c1f37f2b7a7c8232cb0c51d6417c84a72f0d))
+- autonext out of hold missing transition ([bfae30c](https://github.com/nrkno/sofie-core/commit/bfae30ca80391d0c7031dc159c1ce451f973871a))
+- change reportPartInstanceHasStopped to use the cache instead of accessing collections directly ([85f94c6](https://github.com/nrkno/sofie-core/commit/85f94c60ddb37352cc05101de28d0775c08f219b))
+- cleans up PR after review ([bdbc105](https://github.com/nrkno/sofie-core/commit/bdbc105ae32d15a61d93120b0de384c36143cd44))
+- dashboard crash with `setRef is not a function` ([45ce84b](https://github.com/nrkno/sofie-core/commit/45ce84b91d5f57ba494dcd27fd25c0ed440a661b))
+- dont use versionExtended when checking db docs against current version ([1839d8b](https://github.com/nrkno/sofie-core/commit/1839d8b11dfafab550f8fecb28e6b2c211f737ea))
+- force target to be es2019 for corelib, because it is used client-side and Chrome (v71) in CasparCG2.1 does not support any newer targets. ([39d11ba](https://github.com/nrkno/sofie-core/commit/39d11ba1337e471dd95d776d6bd3a4a8cd938e1a))
+- guard against sending multiple timelines to PoGw ([#732](https://github.com/nrkno/sofie-core/issues/732)) ([645b5c6](https://github.com/nrkno/sofie-core/commit/645b5c6ace37fb894207700044686ceac9b3b023))
+- initial empty timeline could prevent Timeline publication ([79a6b7e](https://github.com/nrkno/sofie-core/commit/79a6b7e48e9d356d0b389fc3fcac2042520766d2))
+- job-worker got empty string when searching for version number ([562083d](https://github.com/nrkno/sofie-core/commit/562083dba9259d72704eff21230cb4cdf7a9ce6c))
+- job-worker returning UserError got lost, causing 'Internal error' to be reported to the user. Reduce amount of logging from failed UserActions ([fd32c45](https://github.com/nrkno/sofie-core/commit/fd32c45e2f01c9482a5e19aecdc5ed41ccd6627c))
+- mongo changestream watching broken. some logging not being routed correctly ([2e4b4e3](https://github.com/nrkno/sofie-core/commit/2e4b4e377eb7356dfcb21bdbe5f96182d8293192))
+- mongodb shouldnt convert undefined properties to null ([ed96de5](https://github.com/nrkno/sofie-core/commit/ed96de585a6e8155b513318c9882a58fa405dd81))
+- nextPartInstance can be undefined, move isFirstTake to after checking that there is a takePartInstance ([d3f7c8a](https://github.com/nrkno/sofie-core/commit/d3f7c8a46c0c5f68ded68a99d58ebe69683aec79))
+- part preroll too long when infinite continuation has preroll ([de35719](https://github.com/nrkno/sofie-core/commit/de357192da841307748bc5193076d48863955390))
+- **Prompter:** If collection changes are slow, Prompter may receive incomplete updates, and render some Script missing ([#720](https://github.com/nrkno/sofie-core/issues/720)) ([e9465eb](https://github.com/nrkno/sofie-core/commit/e9465eb0bbbc99fea5cc883d121e53b49c6517cc))
+- send setStoryStatus PLAY before STOP ([3bd46c8](https://github.com/nrkno/sofie-core/commit/3bd46c8ddb7966fb37010ea5b82005a677aa5452))
+- set worker-threads to auto-restart. Verify they do restart successfully ([b3be39b](https://github.com/nrkno/sofie-core/commit/b3be39b34238083a62ad290c7855f570a97e13ce))
+- some playout-gateway logging ([9ae203a](https://github.com/nrkno/sofie-core/commit/9ae203afd987f2572f096ac77e9abfc0747322c3))
+- **sonar:** install dependencies before sonar scan ([a004c36](https://github.com/nrkno/sofie-core/commit/a004c36e3564de8930202bb8e9ae116f3e9cd45d))
+- stopping an adlib-infinite stopped the piece too far in the future ([3fdedc9](https://github.com/nrkno/sofie-core/commit/3fdedc9fce31b80d76fd81463b56377949a2cf2c))
+- taken part could end up with a too high preroll, taken from some infinites which were never to be played ([15f08bd](https://github.com/nrkno/sofie-core/commit/15f08bd51776c566fbb46faca66aab16048afd53))
+- test ([fdce263](https://github.com/nrkno/sofie-core/commit/fdce263acd6df8c979f06cb9a4c238cf8e29f02e))
+- typo ([09b26ed](https://github.com/nrkno/sofie-core/commit/09b26edd9be411d279b1673b21eac773eac2906c))
+- update mos-connection ([8f4efdc](https://github.com/nrkno/sofie-core/commit/8f4efdcdc89d754685636f07ab5a2950bbb431bf))
+- update mos-connection to 2.0.0 ([583a6ea](https://github.com/nrkno/sofie-core/commit/583a6ea0186d515b3d0435e1ea1487182ef0f4ef))
 
 ## [1.41.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.38.4...v1.41.0-in-testing.1) (2022-04-28)
 
-
 ### Features
 
-* add machine id to notifcations report ([f47f0ca](https://github.com/nrkno/sofie-core/commit/f47f0cadc487a8f64107a6eee9ffa3c7f9e613e7))
-* option to log user notifcations in core ([46a14a4](https://github.com/nrkno/sofie-core/commit/46a14a4508b5f98274c08ebf2face9356173b662))
-
+- add machine id to notifcations report ([f47f0ca](https://github.com/nrkno/sofie-core/commit/f47f0cadc487a8f64107a6eee9ffa3c7f9e613e7))
+- option to log user notifcations in core ([46a14a4](https://github.com/nrkno/sofie-core/commit/46a14a4508b5f98274c08ebf2face9356173b662))
 
 ### Bug Fixes
 
-* bug when grouping bucket items for remove/modifying ([0d5dd0a](https://github.com/nrkno/sofie-core/commit/0d5dd0af1c77cb8aed73adcc302a568ebb60855e))
-* interpollate action label in postProcessGlobalAdLibActions ([7a314d3](https://github.com/nrkno/sofie-core/commit/7a314d3262c71d6596e8c1739a5757958afa9d78))
-* missing/broken device debug logging in playout-gateway ([#702](https://github.com/nrkno/sofie-core/issues/702)) ([be3abb5](https://github.com/nrkno/sofie-core/commit/be3abb5b429ec60531a1dd115d526b8004f42642))
-* PGW: change the default logLevel, from "verbose" which excluded debug-messages. "silly" means "everything" ([304241b](https://github.com/nrkno/sofie-core/commit/304241b3ffe7b0186500fb91e74ca2581c6e0883))
-* PGW: don't return the logger in event-listeners on threaded device ([207bcef](https://github.com/nrkno/sofie-core/commit/207bcefcbe66b29767b3bbe7e17e8f662f94cde2))
-* PGW: type issues in tsrHandler ([7c39f04](https://github.com/nrkno/sofie-core/commit/7c39f0430e2c65c34dd050c6046be9319161f69e))
-* support NOT filters in Shelf layouts ([be3aac0](https://github.com/nrkno/sofie-core/commit/be3aac0d7b4b31fd4a8fdaa2702221fcbd9b07b6))
-* update TSR dep (threadedclass update) ([1c38752](https://github.com/nrkno/sofie-core/commit/1c387528682368dbc49ee81aca0570cf642d41e5))
-* upgrade tsr ([32105d6](https://github.com/nrkno/sofie-core/commit/32105d623685f6feaa0ee30c723fcd494376fb11))
-* When removing or modifying a bucket adlib, the grouped adlibs ("behind it" in the GUI) should also be updated ([8a8c39d](https://github.com/nrkno/sofie-core/commit/8a8c39d26ead6f573c5fcad5075b0890e5bc17c9))
+- bug when grouping bucket items for remove/modifying ([0d5dd0a](https://github.com/nrkno/sofie-core/commit/0d5dd0af1c77cb8aed73adcc302a568ebb60855e))
+- interpollate action label in postProcessGlobalAdLibActions ([7a314d3](https://github.com/nrkno/sofie-core/commit/7a314d3262c71d6596e8c1739a5757958afa9d78))
+- missing/broken device debug logging in playout-gateway ([#702](https://github.com/nrkno/sofie-core/issues/702)) ([be3abb5](https://github.com/nrkno/sofie-core/commit/be3abb5b429ec60531a1dd115d526b8004f42642))
+- PGW: change the default logLevel, from "verbose" which excluded debug-messages. "silly" means "everything" ([304241b](https://github.com/nrkno/sofie-core/commit/304241b3ffe7b0186500fb91e74ca2581c6e0883))
+- PGW: don't return the logger in event-listeners on threaded device ([207bcef](https://github.com/nrkno/sofie-core/commit/207bcefcbe66b29767b3bbe7e17e8f662f94cde2))
+- PGW: type issues in tsrHandler ([7c39f04](https://github.com/nrkno/sofie-core/commit/7c39f0430e2c65c34dd050c6046be9319161f69e))
+- support NOT filters in Shelf layouts ([be3aac0](https://github.com/nrkno/sofie-core/commit/be3aac0d7b4b31fd4a8fdaa2702221fcbd9b07b6))
+- update TSR dep (threadedclass update) ([1c38752](https://github.com/nrkno/sofie-core/commit/1c387528682368dbc49ee81aca0570cf642d41e5))
+- upgrade tsr ([32105d6](https://github.com/nrkno/sofie-core/commit/32105d623685f6feaa0ee30c723fcd494376fb11))
+- When removing or modifying a bucket adlib, the grouped adlibs ("behind it" in the GUI) should also be updated ([8a8c39d](https://github.com/nrkno/sofie-core/commit/8a8c39d26ead6f573c5fcad5075b0890e5bc17c9))
 
 ## [1.41.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.38.2...v1.41.0-in-testing.0) (2022-03-28)
 
-
 ### Features
 
-* Basic A11Y of the RundownView ([#683](https://github.com/nrkno/sofie-core/issues/683)) ([654ab4a](https://github.com/nrkno/sofie-core/commit/654ab4a67fa318e8ef194afa707d6d9126cb8bff))
-* reduce number of loaded PartInstances ([#698](https://github.com/nrkno/sofie-core/issues/698)) ([ec32ff8](https://github.com/nrkno/sofie-core/commit/ec32ff8e0988f4e1dd28f2dc367d0a72fd4f2e5d))
-* store `KeyboardEvent.code` instead of `key` in UserLog ([03345f8](https://github.com/nrkno/sofie-core/commit/03345f8cbc37e949936d4dfc4ee1b6d15b7bf71d))
-
+- Basic A11Y of the RundownView ([#683](https://github.com/nrkno/sofie-core/issues/683)) ([654ab4a](https://github.com/nrkno/sofie-core/commit/654ab4a67fa318e8ef194afa707d6d9126cb8bff))
+- reduce number of loaded PartInstances ([#698](https://github.com/nrkno/sofie-core/issues/698)) ([ec32ff8](https://github.com/nrkno/sofie-core/commit/ec32ff8e0988f4e1dd28f2dc367d0a72fd4f2e5d))
+- store `KeyboardEvent.code` instead of `key` in UserLog ([03345f8](https://github.com/nrkno/sofie-core/commit/03345f8cbc37e949936d4dfc4ee1b6d15b7bf71d))
 
 ### Bug Fixes
 
-* batch promises, to improve performance ([1a93c7f](https://github.com/nrkno/sofie-core/commit/1a93c7f28df5989050e4c01f5be7701aa825b45f))
-* fix client-side handling of bucket items, uniquenessId and the new null-value of showStyleVariantId ([05de9a6](https://github.com/nrkno/sofie-core/commit/05de9a680b2111d2026ad5476f0d7500e69d2894))
-* fix potential edge-case where blueprints would set allVariants for only SOME variants (they shouldn't really, but still) ([a5db882](https://github.com/nrkno/sofie-core/commit/a5db8823983eda8fe5b3d8afa8ca5ee82b9db935))
-* make bucket publication great again ([ba69f85](https://github.com/nrkno/sofie-core/commit/ba69f85b44321fa0d2425b9c234935bcd56f115c))
-* make bucket publication great again ([caa7aee](https://github.com/nrkno/sofie-core/commit/caa7aee6d66a70ee6c68c10d75c377caf9f9604a))
-* make sure to use Pick typings whenever projection is used in mongo query ([1d14f51](https://github.com/nrkno/sofie-core/commit/1d14f511245f6100a979a77d6099fc69fc213791))
-* **NoraFloatingInspector:** use absolute URL for Nora preview background image ([d2f9a2f](https://github.com/nrkno/sofie-core/commit/d2f9a2f15399b361760f6f3b84eeb91af386a75a))
-* pass better thread names into interceptLogging ([f9f03f5](https://github.com/nrkno/sofie-core/commit/f9f03f5d4a186015e29c87fe5b59d9d4d0f3696a))
-* reduce the amount of data fetched ([e486bd7](https://github.com/nrkno/sofie-core/commit/e486bd729f1f38afa444d7e5c28f9c8e4e9f6c01))
-* reworked how uniquenessId is set and used ([24f6210](https://github.com/nrkno/sofie-core/commit/24f621099d06790d5c6b6892467e971bdd496c63))
-* **Shelf:** automatically select first Shelf Tab, if nothing else matches ([d0bb3f3](https://github.com/nrkno/sofie-core/commit/d0bb3f3054c0010b138912e299802a0ee9303954))
-* show label instead of icon for Auto ([f361cc1](https://github.com/nrkno/sofie-core/commit/f361cc1f24c90a4793ae2beca1561ff9ad5ce209))
+- batch promises, to improve performance ([1a93c7f](https://github.com/nrkno/sofie-core/commit/1a93c7f28df5989050e4c01f5be7701aa825b45f))
+- fix client-side handling of bucket items, uniquenessId and the new null-value of showStyleVariantId ([05de9a6](https://github.com/nrkno/sofie-core/commit/05de9a680b2111d2026ad5476f0d7500e69d2894))
+- fix potential edge-case where blueprints would set allVariants for only SOME variants (they shouldn't really, but still) ([a5db882](https://github.com/nrkno/sofie-core/commit/a5db8823983eda8fe5b3d8afa8ca5ee82b9db935))
+- make bucket publication great again ([ba69f85](https://github.com/nrkno/sofie-core/commit/ba69f85b44321fa0d2425b9c234935bcd56f115c))
+- make bucket publication great again ([caa7aee](https://github.com/nrkno/sofie-core/commit/caa7aee6d66a70ee6c68c10d75c377caf9f9604a))
+- make sure to use Pick typings whenever projection is used in mongo query ([1d14f51](https://github.com/nrkno/sofie-core/commit/1d14f511245f6100a979a77d6099fc69fc213791))
+- **NoraFloatingInspector:** use absolute URL for Nora preview background image ([d2f9a2f](https://github.com/nrkno/sofie-core/commit/d2f9a2f15399b361760f6f3b84eeb91af386a75a))
+- pass better thread names into interceptLogging ([f9f03f5](https://github.com/nrkno/sofie-core/commit/f9f03f5d4a186015e29c87fe5b59d9d4d0f3696a))
+- reduce the amount of data fetched ([e486bd7](https://github.com/nrkno/sofie-core/commit/e486bd729f1f38afa444d7e5c28f9c8e4e9f6c01))
+- reworked how uniquenessId is set and used ([24f6210](https://github.com/nrkno/sofie-core/commit/24f621099d06790d5c6b6892467e971bdd496c63))
+- **Shelf:** automatically select first Shelf Tab, if nothing else matches ([d0bb3f3](https://github.com/nrkno/sofie-core/commit/d0bb3f3054c0010b138912e299802a0ee9303954))
+- show label instead of icon for Auto ([f361cc1](https://github.com/nrkno/sofie-core/commit/f361cc1f24c90a4793ae2beca1561ff9ad5ce209))
+
+## [1.39.0](https://github.com/nrkno/sofie-core/compare/v1.38.4...v1.39.0) (2022-04-29)
+
+## [1.39.0-in-testing.7](https://github.com/nrkno/sofie-core/compare/v1.38.3...v1.39.0-in-testing.7) (2022-03-30)
 
 ## [1.39.0-in-testing.5](https://github.com/nrkno/sofie-core/compare/v1.40.0-in-testing.1...v1.39.0-in-testing.5) (2022-03-11)
 
-## [1.40.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
-
 ## [1.39.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.38.2-1...v1.39.0-in-testing.4) (2022-03-10)
-
 
 ### Features
 
-* add "allVariants" property to IBlueprintActionManifest and showStyleBaseId to AdlibActions/AdlibPiece ([2a8db5a](https://github.com/nrkno/sofie-core/commit/2a8db5a83c6a8c3a21c8a0935092e67135caae12))
-* add and use uniquenessId for bucket adlibs ([ff04c1b](https://github.com/nrkno/sofie-core/commit/ff04c1b07c3f9ec7e118fdd9e1f4ca6c25a61594))
-* better handling of non-unqiue externalId for pieces and other types ([#685](https://github.com/nrkno/sofie-core/issues/685)) ([02a891e](https://github.com/nrkno/sofie-core/commit/02a891e66dd8c9aa01b2ceb1634ac425ab18217d))
-* MigrationContextWithTriggeredActions exposes getTriggeredActionsId ([7bba681](https://github.com/nrkno/sofie-core/commit/7bba681a7eb628a8d476f6802e79c77153d69239))
-* no default tabs when using Shelf Layout ([#684](https://github.com/nrkno/sofie-core/issues/684)) ([ba3a75f](https://github.com/nrkno/sofie-core/commit/ba3a75f55254e9f2df6732e0820eccdd78fb7164))
-
+- add "allVariants" property to IBlueprintActionManifest and showStyleBaseId to AdlibActions/AdlibPiece ([2a8db5a](https://github.com/nrkno/sofie-core/commit/2a8db5a83c6a8c3a21c8a0935092e67135caae12))
+- add and use uniquenessId for bucket adlibs ([ff04c1b](https://github.com/nrkno/sofie-core/commit/ff04c1b07c3f9ec7e118fdd9e1f4ca6c25a61594))
+- better handling of non-unqiue externalId for pieces and other types ([#685](https://github.com/nrkno/sofie-core/issues/685)) ([02a891e](https://github.com/nrkno/sofie-core/commit/02a891e66dd8c9aa01b2ceb1634ac425ab18217d))
+- MigrationContextWithTriggeredActions exposes getTriggeredActionsId ([7bba681](https://github.com/nrkno/sofie-core/commit/7bba681a7eb628a8d476f6802e79c77153d69239))
+- no default tabs when using Shelf Layout ([#684](https://github.com/nrkno/sofie-core/issues/684)) ([ba3a75f](https://github.com/nrkno/sofie-core/commit/ba3a75f55254e9f2df6732e0820eccdd78fb7164))
 
 ### Bug Fixes
 
-* actually support attributes in client/lib/data/objectToXml ([a287acd](https://github.com/nrkno/sofie-core/commit/a287acdd0b0488bc70212d6ded51d8b4d229e19b))
-* add getRandomId() to context ([7990014](https://github.com/nrkno/sofie-core/commit/79900144636a34f40c465c4501ef0bdcad6f116e))
-* allow take without next during hold ([735cac7](https://github.com/nrkno/sofie-core/commit/735cac7747bb69bd6b77b8bf3426b0ef44d50725))
-* hide "Show End" label when there's a next set ([a2f526b](https://github.com/nrkno/sofie-core/commit/a2f526b11919cb42ff871941d99acf3ff1b41dc0))
-* migrationContext removeTriggeredAction missing showStyleBaseId ([d17e6d3](https://github.com/nrkno/sofie-core/commit/d17e6d3ebaf1998b93885701329e377a6bea7566))
-* mongo client 4.2 typings break on timelineObjects ([#671](https://github.com/nrkno/sofie-core/issues/671)) ([ce9d4b3](https://github.com/nrkno/sofie-core/commit/ce9d4b3a862d93f61e895c27e65f25609679a4ff))
-* part identifier colours ([ede62d2](https://github.com/nrkno/sofie-core/commit/ede62d2eed0209a348e468507438972501faec86))
-* **Storyboard:** add Auto/Next label on end of Segment ([7ff9979](https://github.com/nrkno/sofie-core/commit/7ff9979dd04c45f619450a64af6120d7bbe3d942))
-* **Storyboard:** End of Show/End of Segment marker is missing ([5870f7f](https://github.com/nrkno/sofie-core/commit/5870f7fa13691952357326ee30bc42f73ca9acaa))
-* **Storyboard:** show full label on KAM pieces ([a16009c](https://github.com/nrkno/sofie-core/commit/a16009c1db1dbc27085c81a723d85c84d228f43b))
-* **Timeline:** end of segment take-line, when auto, displayed with arrows ([b73d4ac](https://github.com/nrkno/sofie-core/commit/b73d4ac12cb63e7048302c02675dbcd3f0d59945))
-* visual hover indication for segment header part numbers ([5f19433](https://github.com/nrkno/sofie-core/commit/5f194335b10e2f2f214dd53075f6dbbdf822d582))
+- actually support attributes in client/lib/data/objectToXml ([a287acd](https://github.com/nrkno/sofie-core/commit/a287acdd0b0488bc70212d6ded51d8b4d229e19b))
+- add getRandomId() to context ([7990014](https://github.com/nrkno/sofie-core/commit/79900144636a34f40c465c4501ef0bdcad6f116e))
+- allow take without next during hold ([735cac7](https://github.com/nrkno/sofie-core/commit/735cac7747bb69bd6b77b8bf3426b0ef44d50725))
+- hide "Show End" label when there's a next set ([a2f526b](https://github.com/nrkno/sofie-core/commit/a2f526b11919cb42ff871941d99acf3ff1b41dc0))
+- migrationContext removeTriggeredAction missing showStyleBaseId ([d17e6d3](https://github.com/nrkno/sofie-core/commit/d17e6d3ebaf1998b93885701329e377a6bea7566))
+- mongo client 4.2 typings break on timelineObjects ([#671](https://github.com/nrkno/sofie-core/issues/671)) ([ce9d4b3](https://github.com/nrkno/sofie-core/commit/ce9d4b3a862d93f61e895c27e65f25609679a4ff))
+- part identifier colours ([ede62d2](https://github.com/nrkno/sofie-core/commit/ede62d2eed0209a348e468507438972501faec86))
+- **Storyboard:** add Auto/Next label on end of Segment ([7ff9979](https://github.com/nrkno/sofie-core/commit/7ff9979dd04c45f619450a64af6120d7bbe3d942))
+- **Storyboard:** End of Show/End of Segment marker is missing ([5870f7f](https://github.com/nrkno/sofie-core/commit/5870f7fa13691952357326ee30bc42f73ca9acaa))
+- **Storyboard:** show full label on KAM pieces ([a16009c](https://github.com/nrkno/sofie-core/commit/a16009c1db1dbc27085c81a723d85c84d228f43b))
+- **Timeline:** end of segment take-line, when auto, displayed with arrows ([b73d4ac](https://github.com/nrkno/sofie-core/commit/b73d4ac12cb63e7048302c02675dbcd3f0d59945))
+- visual hover indication for segment header part numbers ([5f19433](https://github.com/nrkno/sofie-core/commit/5f194335b10e2f2f214dd53075f6dbbdf822d582))
 
 ## [1.39.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
 
-
 ### Features
 
-* First-class Sofie PWA ([#670](https://github.com/nrkno/sofie-core/issues/670)) ([c413d8a](https://github.com/nrkno/sofie-core/commit/c413d8ae8a5e70a4c5b0cd4fd6924900b69f6f4c))
-* **Timeline+Storyboard:** Invalid Parts show hover inspector with invalidReason ([#679](https://github.com/nrkno/sofie-core/issues/679)) ([43ba126](https://github.com/nrkno/sofie-core/commit/43ba126b986d3c185212d49433739804350cc084))
-
+- First-class Sofie PWA ([#670](https://github.com/nrkno/sofie-core/issues/670)) ([c413d8a](https://github.com/nrkno/sofie-core/commit/c413d8ae8a5e70a4c5b0cd4fd6924900b69f6f4c))
+- **Timeline+Storyboard:** Invalid Parts show hover inspector with invalidReason ([#679](https://github.com/nrkno/sofie-core/issues/679)) ([43ba126](https://github.com/nrkno/sofie-core/commit/43ba126b986d3c185212d49433739804350cc084))
 
 ### Bug Fixes
 
-* 'startup' log line being done too late ([808d6c7](https://github.com/nrkno/sofie-core/commit/808d6c7d883d2ee14f810997e8991f0ae4974ea7))
-* **Action Triggers, Shelf:** Collection fetch optimizations and new AdLib sorting can cause a Pick[1] & Pick[2] to match the same AdLib ([905510c](https://github.com/nrkno/sofie-core/commit/905510cad05c48dcb17908822e9c1757576a42f7))
-* add getCurrentPlaylist to blueprint getRundown-context ([4a43e14](https://github.com/nrkno/sofie-core/commit/4a43e14287d41ae7775a7301b5be1ab7bd227e96))
-* add Tab key to be default-disabled when keyboard Triggers are registered ([f5d61b2](https://github.com/nrkno/sofie-core/commit/f5d61b29f33ac19e3ba13e3e931c29bca78ac726))
-* don't modify playlist externalId ([458a50b](https://github.com/nrkno/sofie-core/commit/458a50b5ca9e5ac07519c9e4456ee7abc55b87f5))
-* ensure timelinediv is an HtmlElement before trying to calculate its width ([57e36d2](https://github.com/nrkno/sofie-core/commit/57e36d28ba1fe8d879bc4cb4d307d87d3f4e11eb))
-* **Storyboard:** LiveSpeak Storyboard thumbnail looks like a Camera with a Thumbnail ([f68c9d4](https://github.com/nrkno/sofie-core/commit/f68c9d40f7b529ae9617392642cea4d6d237c102))
+- 'startup' log line being done too late ([808d6c7](https://github.com/nrkno/sofie-core/commit/808d6c7d883d2ee14f810997e8991f0ae4974ea7))
+- **Action Triggers, Shelf:** Collection fetch optimizations and new AdLib sorting can cause a Pick[1] & Pick[2] to match the same AdLib ([905510c](https://github.com/nrkno/sofie-core/commit/905510cad05c48dcb17908822e9c1757576a42f7))
+- add getCurrentPlaylist to blueprint getRundown-context ([4a43e14](https://github.com/nrkno/sofie-core/commit/4a43e14287d41ae7775a7301b5be1ab7bd227e96))
+- add Tab key to be default-disabled when keyboard Triggers are registered ([f5d61b2](https://github.com/nrkno/sofie-core/commit/f5d61b29f33ac19e3ba13e3e931c29bca78ac726))
+- don't modify playlist externalId ([458a50b](https://github.com/nrkno/sofie-core/commit/458a50b5ca9e5ac07519c9e4456ee7abc55b87f5))
+- ensure timelinediv is an HtmlElement before trying to calculate its width ([57e36d2](https://github.com/nrkno/sofie-core/commit/57e36d28ba1fe8d879bc4cb4d307d87d3f4e11eb))
+- **Storyboard:** LiveSpeak Storyboard thumbnail looks like a Camera with a Thumbnail ([f68c9d4](https://github.com/nrkno/sofie-core/commit/f68c9d40f7b529ae9617392642cea4d6d237c102))
 
 ## [1.40.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
 
-
 ### Bug Fixes
 
-* blueprints-integration: allow getRundown to be async, to be able to call async functions therein ([b166cca](https://github.com/nrkno/sofie-core/commit/b166cca3376ee4d3ae747dac9a8268ea9131898a))
-* change context type of getRundown ([52f981a](https://github.com/nrkno/sofie-core/commit/52f981ab485cfcf06fa4a01ed1feeac1ef2d0742))
-* **Prompter:** Diff in Prompter is inaccurate because data isn't subscribed to ([0cf9641](https://github.com/nrkno/sofie-core/commit/0cf9641b29db00884eb7e60e4702801350546c25))
-* **Source Layers:** LiveSpeak dual-tone background not shown in Presenter's screen ([a75ef38](https://github.com/nrkno/sofie-core/commit/a75ef38cf435ca710c3a40d9fab6ffa85beefc57))
-* support context.getPlaylists() in getRundown() ([3a023cd](https://github.com/nrkno/sofie-core/commit/3a023cd188b0698fac17be8168b1a755e9e21c73))
+- blueprints-integration: allow getRundown to be async, to be able to call async functions therein ([b166cca](https://github.com/nrkno/sofie-core/commit/b166cca3376ee4d3ae747dac9a8268ea9131898a))
+- change context type of getRundown ([52f981a](https://github.com/nrkno/sofie-core/commit/52f981ab485cfcf06fa4a01ed1feeac1ef2d0742))
+- **Prompter:** Diff in Prompter is inaccurate because data isn't subscribed to ([0cf9641](https://github.com/nrkno/sofie-core/commit/0cf9641b29db00884eb7e60e4702801350546c25))
+- **Source Layers:** LiveSpeak dual-tone background not shown in Presenter's screen ([a75ef38](https://github.com/nrkno/sofie-core/commit/a75ef38cf435ca710c3a40d9fab6ffa85beefc57))
+- support context.getPlaylists() in getRundown() ([3a023cd](https://github.com/nrkno/sofie-core/commit/3a023cd188b0698fac17be8168b1a755e9e21c73))
 
 ## [1.39.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
 
-
 ### Features
 
-* allow sync of previous Part Instances ([#674](https://github.com/nrkno/sofie-core/issues/674)) ([04d0142](https://github.com/nrkno/sofie-core/commit/04d01427e85e6df99400387bec71b1b2b7fa4a3e))
-* update blueprint interface to support a new way of assigning rundowns to playlists ([3bf092e](https://github.com/nrkno/sofie-core/commit/3bf092e2f56a1e448d0909430f155d6e7c48ac9a))
-
+- allow sync of previous Part Instances ([#674](https://github.com/nrkno/sofie-core/issues/674)) ([04d0142](https://github.com/nrkno/sofie-core/commit/04d01427e85e6df99400387bec71b1b2b7fa4a3e))
+- update blueprint interface to support a new way of assigning rundowns to playlists ([3bf092e](https://github.com/nrkno/sofie-core/commit/3bf092e2f56a1e448d0909430f155d6e7c48ac9a))
 
 ### Bug Fixes
 
-* better handling of errors from Core ([3ae8152](https://github.com/nrkno/sofie-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
-* GUI issue where a long, unbroken word pushed the dismiss-button too far to the right ([5ebf747](https://github.com/nrkno/sofie-core/commit/5ebf74765efa5f060b477c8b7b0bb7f987cd8fc7))
-* **Notifications:** use overflow-wrap instead of overflow for breaking unbreakable strings ([3bad846](https://github.com/nrkno/sofie-core/commit/3bad8460fa64fb1656860d0576125783c0a4e075))
-* pre-commit hook ([621c184](https://github.com/nrkno/sofie-core/commit/621c184a28472cd5c0a50d65fa1e6a73faac296a))
+- better handling of errors from Core ([3ae8152](https://github.com/nrkno/sofie-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
+- GUI issue where a long, unbroken word pushed the dismiss-button too far to the right ([5ebf747](https://github.com/nrkno/sofie-core/commit/5ebf74765efa5f060b477c8b7b0bb7f987cd8fc7))
+- **Notifications:** use overflow-wrap instead of overflow for breaking unbreakable strings ([3bad846](https://github.com/nrkno/sofie-core/commit/3bad8460fa64fb1656860d0576125783c0a4e075))
+- pre-commit hook ([621c184](https://github.com/nrkno/sofie-core/commit/621c184a28472cd5c0a50d65fa1e6a73faac296a))
 
 ## [1.39.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
 
-
 ### Features
 
-* 'freeze' some objects instead of cloning them, to minimise overhead ([2ea6bce](https://github.com/nrkno/sofie-core/commit/2ea6bcec599ccfee4f301f875c9a72cbf46dfd6c))
-* add Workers collection, used to track the status of the Workers ([46366db](https://github.com/nrkno/sofie-core/commit/46366dbd4519b91317de0a55b322abed35bad331))
-* adlib-actions can block a take from happening until a certain time ([588f4d9](https://github.com/nrkno/sofie-core/commit/588f4d9f071530b59fb400e7a3e1d3ad43e5090f))
-* calculate and cache the 'old style' expectedDuration under a new property name on Parts ([7b531dc](https://github.com/nrkno/sofie-core/commit/7b531dc47da3036d918f2e49a5282dc2bea8c011))
-* kill worker threads if jobs exceed a generous timeout ([4f9b90e](https://github.com/nrkno/sofie-core/commit/4f9b90e61a8b1059acfbd7eccdccb93f0cad533f))
-* lock rundowns in the worker threads. When deleting a playlist, delete the rundowns inside their locks to avoid race conditions ([73f90f0](https://github.com/nrkno/sofie-core/commit/73f90f04392c3b2ff1c722f09d56545130ff2b20))
-* make PeripheralDeviceApi.executeFunction and friends return a p… ([#632](https://github.com/nrkno/sofie-core/issues/632)) ([5f9a3a2](https://github.com/nrkno/sofie-core/commit/5f9a3a29acb61e8ea896b7b5a125ef3a3fc75e26))
-* make PeripheralDeviceApi.executeFunction and friends return a promise instead of take a callback ([59ac5ff](https://github.com/nrkno/sofie-core/commit/59ac5ff04a55500ea79523f6ea0dfbc14ea3d100))
-* monitor status of workerThreads (children of Workers) ([73179e0](https://github.com/nrkno/sofie-core/commit/73179e03444c2da798f265b3ba66a316b00e7a96))
-* monitor the status of the Worker ([746ba96](https://github.com/nrkno/sofie-core/commit/746ba96293f519192a9172cb9180969b0ccf6474))
-* move some properties onto the studio from the meteor Settings object. ([6ed8593](https://github.com/nrkno/sofie-core/commit/6ed859362430c01d498a415e86faab364a7362f6))
-* out transitions ([03101a5](https://github.com/nrkno/sofie-core/commit/03101a503a82254baeaa279c4131cdad308c5344))
-* parse meteor mongo url to generate worker mongo url ([0eb44a6](https://github.com/nrkno/sofie-core/commit/0eb44a6909109da35bec57b318bf6eac1731116f))
-* refactor userActions api implementation, and track worker execution times ([1cfe05f](https://github.com/nrkno/sofie-core/commit/1cfe05fc71b743fe919e1829f43ee725462266a3))
-* render out transition pieces at the end of the timeline ([c8e28df](https://github.com/nrkno/sofie-core/commit/c8e28dfe079af84626cd9cc03684e717a28b7d07))
-* replace threads with threadedclass ([a3773ed](https://github.com/nrkno/sofie-core/commit/a3773edcf77c28868bff9feabecc41a731fa4daf))
-* REST method for disabling subdevice ([#649](https://github.com/nrkno/sofie-core/issues/649)) ([930e27f](https://github.com/nrkno/sofie-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
-
+- 'freeze' some objects instead of cloning them, to minimise overhead ([2ea6bce](https://github.com/nrkno/sofie-core/commit/2ea6bcec599ccfee4f301f875c9a72cbf46dfd6c))
+- add Workers collection, used to track the status of the Workers ([46366db](https://github.com/nrkno/sofie-core/commit/46366dbd4519b91317de0a55b322abed35bad331))
+- adlib-actions can block a take from happening until a certain time ([588f4d9](https://github.com/nrkno/sofie-core/commit/588f4d9f071530b59fb400e7a3e1d3ad43e5090f))
+- calculate and cache the 'old style' expectedDuration under a new property name on Parts ([7b531dc](https://github.com/nrkno/sofie-core/commit/7b531dc47da3036d918f2e49a5282dc2bea8c011))
+- kill worker threads if jobs exceed a generous timeout ([4f9b90e](https://github.com/nrkno/sofie-core/commit/4f9b90e61a8b1059acfbd7eccdccb93f0cad533f))
+- lock rundowns in the worker threads. When deleting a playlist, delete the rundowns inside their locks to avoid race conditions ([73f90f0](https://github.com/nrkno/sofie-core/commit/73f90f04392c3b2ff1c722f09d56545130ff2b20))
+- make PeripheralDeviceApi.executeFunction and friends return a p… ([#632](https://github.com/nrkno/sofie-core/issues/632)) ([5f9a3a2](https://github.com/nrkno/sofie-core/commit/5f9a3a29acb61e8ea896b7b5a125ef3a3fc75e26))
+- make PeripheralDeviceApi.executeFunction and friends return a promise instead of take a callback ([59ac5ff](https://github.com/nrkno/sofie-core/commit/59ac5ff04a55500ea79523f6ea0dfbc14ea3d100))
+- monitor status of workerThreads (children of Workers) ([73179e0](https://github.com/nrkno/sofie-core/commit/73179e03444c2da798f265b3ba66a316b00e7a96))
+- monitor the status of the Worker ([746ba96](https://github.com/nrkno/sofie-core/commit/746ba96293f519192a9172cb9180969b0ccf6474))
+- move some properties onto the studio from the meteor Settings object. ([6ed8593](https://github.com/nrkno/sofie-core/commit/6ed859362430c01d498a415e86faab364a7362f6))
+- out transitions ([03101a5](https://github.com/nrkno/sofie-core/commit/03101a503a82254baeaa279c4131cdad308c5344))
+- parse meteor mongo url to generate worker mongo url ([0eb44a6](https://github.com/nrkno/sofie-core/commit/0eb44a6909109da35bec57b318bf6eac1731116f))
+- refactor userActions api implementation, and track worker execution times ([1cfe05f](https://github.com/nrkno/sofie-core/commit/1cfe05fc71b743fe919e1829f43ee725462266a3))
+- render out transition pieces at the end of the timeline ([c8e28df](https://github.com/nrkno/sofie-core/commit/c8e28dfe079af84626cd9cc03684e717a28b7d07))
+- replace threads with threadedclass ([a3773ed](https://github.com/nrkno/sofie-core/commit/a3773edcf77c28868bff9feabecc41a731fa4daf))
+- REST method for disabling subdevice ([#649](https://github.com/nrkno/sofie-core/issues/649)) ([930e27f](https://github.com/nrkno/sofie-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
 
 ### Bug Fixes
 
-* 0 length parts disappearing ([c1800af](https://github.com/nrkno/sofie-core/commit/c1800af10b1d74e293d7711dc6b769af83d07906))
-* add ccg retry interval to config manifest ([524cb15](https://github.com/nrkno/sofie-core/commit/524cb15dc09afd67b0228eb3dee40d259cc4df14))
-* add PieceStatusCode.SOURCE_HAS_ISSUES, used to indicate non-technical issues. ([213904c](https://github.com/nrkno/sofie-core/commit/213904cccdba4d45c219cbd855526118653fa133))
-* add retryInterval to ccg playout-gw manifest ([d1da299](https://github.com/nrkno/sofie-core/commit/d1da29992c7f905ba332078536bafcf46c946cae))
-* ask confirmation before restarting playout gateway ([#666](https://github.com/nrkno/sofie-core/issues/666)) ([ca9dba1](https://github.com/nrkno/sofie-core/commit/ca9dba1a979c2a63aa6559776e88c3c7bb9182b2))
-* blueprints-integration typing issue ([7c3a93a](https://github.com/nrkno/sofie-core/commit/7c3a93af23f08a7c4b6b41ce28e6b2624fb135a7))
-* bubble UserError type into the ui ([7fdb860](https://github.com/nrkno/sofie-core/commit/7fdb860fbe13fea3577b179b1bff62e4ec1d2a73))
-* bug found by sonar ([65337e8](https://github.com/nrkno/sofie-core/commit/65337e8e325c69e388ed4a4ac96b5746891eee5e))
-* change how the userAction.gatewayDuration is calculated, to make it more robust. ([098a04b](https://github.com/nrkno/sofie-core/commit/098a04b1f2cde962b73b84d949aebe36e99f43aa))
-* clone blueprint config before freezing. some worker cache invalidation issues ([4432fc6](https://github.com/nrkno/sofie-core/commit/4432fc67f64a7a6fa16289c8bed83701cd7ee060))
-* collection.replace not trying to upsert ([471ebed](https://github.com/nrkno/sofie-core/commit/471ebedb47694fead72bc33316cacaf91fb69968))
-* **Context Menus:** don't limit the width that much ([5640f9d](https://github.com/nrkno/sofie-core/commit/5640f9d14ec8dfa4ffdb79a6a727aeb23b44005c))
-* correctly show timecode values ([4eb3c0d](https://github.com/nrkno/sofie-core/commit/4eb3c0d9fc15c0edacc1cf6cdd0d3d49a6150d13))
-* defer UserActionsLog update ([c80d148](https://github.com/nrkno/sofie-core/commit/c80d148d0f21166641cf682859db1e0f6fbc009f))
-* disable jest coverage requirements ([7fc7ed4](https://github.com/nrkno/sofie-core/commit/7fc7ed4d2654d358ea95851668bd2fe8ecd76dab))
-* disable meteor-elastic-apm package, as it is incompatible with Meteor >2.3 at the moment ([547674e](https://github.com/nrkno/sofie-core/commit/547674e8799217e290df4a57a12787d975ff5025))
-* don't overwrite the timelineHash ([1f96a96](https://github.com/nrkno/sofie-core/commit/1f96a966430fb211a7196458bc40661e70250395))
-* don't treat "no workers" as a bad status. ([1ebb66c](https://github.com/nrkno/sofie-core/commit/1ebb66c982230948c1862f7299fa7b906ee13058))
-* downgrade mongodb lib in job-worker to resolve type issues ([32dd334](https://github.com/nrkno/sofie-core/commit/32dd3340f0308d82c4ebc9031350e6bd24a1f230))
-* failing tests ([84f2063](https://github.com/nrkno/sofie-core/commit/84f206337048441216b6e3589db753aba17d14e9))
-* handle lock timeouts in workers ([783a214](https://github.com/nrkno/sofie-core/commit/783a21446c66979e9f235f79b3aaa45465c825b1))
-* hook up broken debug method ([341cd6c](https://github.com/nrkno/sofie-core/commit/341cd6c0cd9926c2d2a0c7d1e8e4076226d9e32d))
-* **hoverscrub miniInspector:** STK borders wrong color ([825a54a](https://github.com/nrkno/sofie-core/commit/825a54ae1a4b932d87cb887858005697c8e0a272))
-* Ignore unassigned devices in installations with multiple studios ([dd08120](https://github.com/nrkno/sofie-core/commit/dd0812093643ebc9f0bb1d0b4c2c299a99256364))
-* import error ([391b334](https://github.com/nrkno/sofie-core/commit/391b3345234e6bc94bc11f3ec471de20cc963115))
-* improve accuracy of package framerate detection ([#653](https://github.com/nrkno/sofie-core/issues/653)) ([ad7926c](https://github.com/nrkno/sofie-core/commit/ad7926cad64be1ab55725caadc9dff63865bccfa))
-* improve client-side uncaughtErrorHandler ([218fa12](https://github.com/nrkno/sofie-core/commit/218fa127a8453c927e5dfb93626502b7bbf5b8ce))
-* improve meteor method signatures ([#669](https://github.com/nrkno/sofie-core/issues/669)) ([5fd4839](https://github.com/nrkno/sofie-core/commit/5fd4839b894260c384077df3d01d9cc55093e06e))
-* improve stringifyError slightly ([ac36c94](https://github.com/nrkno/sofie-core/commit/ac36c94b4305bfbf23a13c83bd19c4673d02d307))
-* infinites capped by virtuals ([#662](https://github.com/nrkno/sofie-core/issues/662)) ([e75d394](https://github.com/nrkno/sofie-core/commit/e75d394f9faef5b4f157c4dd537fc2551ca01e95))
-* influxdb for worker ([ee747b7](https://github.com/nrkno/sofie-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
-* issues when logging errors or multiple arguments ([eec57b9](https://github.com/nrkno/sofie-core/commit/eec57b945e6535338a4ec44f3c3252bf130df04d))
-* job timings being calculated incorrectly ([d15bfc5](https://github.com/nrkno/sofie-core/commit/d15bfc58db678dba0415e706a0c570bbe04efbd3))
-* launching of worker ([4adf500](https://github.com/nrkno/sofie-core/commit/4adf500231f2003ae368acf891b1b244fba1b506))
-* look at the parent PeripheralDevice to check the studioId ([8308595](https://github.com/nrkno/sofie-core/commit/8308595d16bf8fc460638d8b20a6a61fdee9a70a))
-* make logging work in worker threads ([c079357](https://github.com/nrkno/sofie-core/commit/c079357c0908ff28b3bacd726bb09449a682b29f))
-* meteor not restarting when worker code changes ([b56c639](https://github.com/nrkno/sofie-core/commit/b56c639efbecb1d32033c8b64108dbb5433ae246))
-* **MicFloatingInspector:** do not show Script is empty, if there is a content.comment ([4a5605e](https://github.com/nrkno/sofie-core/commit/4a5605ef74d9aac3ec0628db5efeefb1c8ed9d3e))
-* move meteor restart on worker code changes to separate process. ([f439c0f](https://github.com/nrkno/sofie-core/commit/f439c0fda67b1371b1b386a0891ca98603aa1a93))
-* multiple versions of some core libs ([fbe2dd2](https://github.com/nrkno/sofie-core/commit/fbe2dd2e43d6be65e2dec888df3c8644e90d2078))
-* package-lock ([55ee0ba](https://github.com/nrkno/sofie-core/commit/55ee0ba6e5fa7033fb7441adaa3c9c5fce25410a))
-* parse REDIS_URL variable ([12e9f3a](https://github.com/nrkno/sofie-core/commit/12e9f3addf92b531e4680d42ab877a7c9045db8e))
-* playback issues ([4d8a24c](https://github.com/nrkno/sofie-core/commit/4d8a24c94d679a305323e0281e49d3ab84a37380))
-* plumb in fast-track for timeline updates, and useractionlog timeline hashes ([0d9be53](https://github.com/nrkno/sofie-core/commit/0d9be536822372411c407aad7afa7bc63aed7504))
-* port some more code ([4b742f5](https://github.com/nrkno/sofie-core/commit/4b742f5de638c8402ababcc8bc64fd2a3245a59b))
-* **Presenter screen:** show channel color on Local sources ([#676](https://github.com/nrkno/sofie-core/issues/676)) ([7ad427e](https://github.com/nrkno/sofie-core/commit/7ad427e9264db99dd2a9ec13aa31aeab3be480fc))
-* **Prompter:** Over/Under uses inconsistent color coding ([80edc24](https://github.com/nrkno/sofie-core/commit/80edc24c293eaf45157952ae4de8dd3ac02c0cd1))
-* remaining meteor tests ([2f6a7e4](https://github.com/nrkno/sofie-core/commit/2f6a7e4cd31f9c6fa67672923e72261ec3c26401))
-* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/sofie-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
-* replace old implementation with queue based prototypes ([4688e04](https://github.com/nrkno/sofie-core/commit/4688e04be3a4bb07fd3015659da53bbcb0681c6b))
-* restore expectedPackages when restoring snapshots ([082d8c0](https://github.com/nrkno/sofie-core/commit/082d8c03840f83f2f574b56316f6d90028d70f9a))
-* route worker-thread logging through meteor winston instance, labeled with a 'threadName' property ([94162ef](https://github.com/nrkno/sofie-core/commit/94162eff223f9ad658255a0597b0fb742d4091c7))
-* show adLibs from different show-styles as disabled ([#665](https://github.com/nrkno/sofie-core/issues/665)) ([6c88614](https://github.com/nrkno/sofie-core/commit/6c88614f9db2527cb5b1a1072d25c8172f3901b2))
-* some ci issues ([790fa30](https://github.com/nrkno/sofie-core/commit/790fa303acc2ae271523b07f952837d517f07bf1))
-* some meteor tests ([bcd016e](https://github.com/nrkno/sofie-core/commit/bcd016ebf6dc53d8cb238aac00bd299d2c20e848))
-* some more cache invalidation ([26b1461](https://github.com/nrkno/sofie-core/commit/26b1461729a8afe1706250495dec1af9452415fe))
-* some type errors ([872504a](https://github.com/nrkno/sofie-core/commit/872504ae0606c71e3dad9bcc1eeff731f36a343c))
-* some work queue management bits ([ce4d019](https://github.com/nrkno/sofie-core/commit/ce4d0193a16317b9d6bdf9da8dd6efbf86f4b9dd))
-* **Storyboard:** respect show_hidden_source_layers=1 ([87eb7a3](https://github.com/nrkno/sofie-core/commit/87eb7a3f0a13cd14d330973b5a3dd40c8a86b85d))
-* **Storyboard:** touch interaction sometimes doesn't work ([29c439b](https://github.com/nrkno/sofie-core/commit/29c439bca67a374555f9700ffcd491483be0f614))
-* strict select of pieceinstances in timelineTriggerTime ([bbd4381](https://github.com/nrkno/sofie-core/commit/bbd4381167ded3f95a4247e6a27bf7146a7800cc))
-* tests ([91823ba](https://github.com/nrkno/sofie-core/commit/91823ba3641d160b218f9d9dff479f5607331a60))
-* TS: support estimateResolveTimeMultiplier option ([5b07c06](https://github.com/nrkno/sofie-core/commit/5b07c06371b4bb6d16dcba4ec5744f21fa0fa619))
-* TSR dep ([8b506fa](https://github.com/nrkno/sofie-core/commit/8b506fa72fd368902f369e173502a19bac4bf7da))
-* type errors ([c67bd0e](https://github.com/nrkno/sofie-core/commit/c67bd0e08be51621e378a7d34ec6f3212665ee9e))
-* type errors ([5f807ee](https://github.com/nrkno/sofie-core/commit/5f807ee60e61bfdf0d49d177fd69124c51ed069d))
-* typings ([91bbae2](https://github.com/nrkno/sofie-core/commit/91bbae210b51ae04893b8956917e2f1213d5e23e))
-* typings errors ([56ddd0e](https://github.com/nrkno/sofie-core/commit/56ddd0e9759eee1d86b29e613eebe50694c76059))
-* update docker image node version ([8f0f92b](https://github.com/nrkno/sofie-core/commit/8f0f92be2e2f501202255a01deb55d8ff6c90524))
-* update Meteor to 2.5.3 ([0d2eb37](https://github.com/nrkno/sofie-core/commit/0d2eb3709f8dc3b715376850de0baeb6390ca39a))
-* update Meteor to 2.5.5 ([e4cdb9d](https://github.com/nrkno/sofie-core/commit/e4cdb9dbc1ac86478e191a25157956127e8c376d))
-* update timeline item colors for local and live speak pieces ([257e8be](https://github.com/nrkno/sofie-core/commit/257e8be7baa52cff8a1598f2eda4c375d743f872))
-* use global Diff calculation in Prompter ([85cec3b](https://github.com/nrkno/sofie-core/commit/85cec3b7494b146c6892fe03b5a5bb0c67b8cf4d))
-* use MeteorCall instead of Meteor.call for better type safety ([#647](https://github.com/nrkno/sofie-core/issues/647)) ([6b01a83](https://github.com/nrkno/sofie-core/commit/6b01a83ad8f92f91a597ffb7809d7b9009d4142a))
-* worker threads in docker build (still failing because of incorrect mongo url) ([e6a9bbe](https://github.com/nrkno/sofie-core/commit/e6a9bbe7b439864a6a3bccc637a5d411c4bf1849))
-* worker unit tests ([d5d3f10](https://github.com/nrkno/sofie-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
-* workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/sofie-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
-* yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/sofie-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
+- 0 length parts disappearing ([c1800af](https://github.com/nrkno/sofie-core/commit/c1800af10b1d74e293d7711dc6b769af83d07906))
+- add ccg retry interval to config manifest ([524cb15](https://github.com/nrkno/sofie-core/commit/524cb15dc09afd67b0228eb3dee40d259cc4df14))
+- add PieceStatusCode.SOURCE_HAS_ISSUES, used to indicate non-technical issues. ([213904c](https://github.com/nrkno/sofie-core/commit/213904cccdba4d45c219cbd855526118653fa133))
+- add retryInterval to ccg playout-gw manifest ([d1da299](https://github.com/nrkno/sofie-core/commit/d1da29992c7f905ba332078536bafcf46c946cae))
+- ask confirmation before restarting playout gateway ([#666](https://github.com/nrkno/sofie-core/issues/666)) ([ca9dba1](https://github.com/nrkno/sofie-core/commit/ca9dba1a979c2a63aa6559776e88c3c7bb9182b2))
+- blueprints-integration typing issue ([7c3a93a](https://github.com/nrkno/sofie-core/commit/7c3a93af23f08a7c4b6b41ce28e6b2624fb135a7))
+- bubble UserError type into the ui ([7fdb860](https://github.com/nrkno/sofie-core/commit/7fdb860fbe13fea3577b179b1bff62e4ec1d2a73))
+- bug found by sonar ([65337e8](https://github.com/nrkno/sofie-core/commit/65337e8e325c69e388ed4a4ac96b5746891eee5e))
+- change how the userAction.gatewayDuration is calculated, to make it more robust. ([098a04b](https://github.com/nrkno/sofie-core/commit/098a04b1f2cde962b73b84d949aebe36e99f43aa))
+- clone blueprint config before freezing. some worker cache invalidation issues ([4432fc6](https://github.com/nrkno/sofie-core/commit/4432fc67f64a7a6fa16289c8bed83701cd7ee060))
+- collection.replace not trying to upsert ([471ebed](https://github.com/nrkno/sofie-core/commit/471ebedb47694fead72bc33316cacaf91fb69968))
+- **Context Menus:** don't limit the width that much ([5640f9d](https://github.com/nrkno/sofie-core/commit/5640f9d14ec8dfa4ffdb79a6a727aeb23b44005c))
+- correctly show timecode values ([4eb3c0d](https://github.com/nrkno/sofie-core/commit/4eb3c0d9fc15c0edacc1cf6cdd0d3d49a6150d13))
+- defer UserActionsLog update ([c80d148](https://github.com/nrkno/sofie-core/commit/c80d148d0f21166641cf682859db1e0f6fbc009f))
+- disable jest coverage requirements ([7fc7ed4](https://github.com/nrkno/sofie-core/commit/7fc7ed4d2654d358ea95851668bd2fe8ecd76dab))
+- disable meteor-elastic-apm package, as it is incompatible with Meteor >2.3 at the moment ([547674e](https://github.com/nrkno/sofie-core/commit/547674e8799217e290df4a57a12787d975ff5025))
+- don't overwrite the timelineHash ([1f96a96](https://github.com/nrkno/sofie-core/commit/1f96a966430fb211a7196458bc40661e70250395))
+- don't treat "no workers" as a bad status. ([1ebb66c](https://github.com/nrkno/sofie-core/commit/1ebb66c982230948c1862f7299fa7b906ee13058))
+- downgrade mongodb lib in job-worker to resolve type issues ([32dd334](https://github.com/nrkno/sofie-core/commit/32dd3340f0308d82c4ebc9031350e6bd24a1f230))
+- failing tests ([84f2063](https://github.com/nrkno/sofie-core/commit/84f206337048441216b6e3589db753aba17d14e9))
+- handle lock timeouts in workers ([783a214](https://github.com/nrkno/sofie-core/commit/783a21446c66979e9f235f79b3aaa45465c825b1))
+- hook up broken debug method ([341cd6c](https://github.com/nrkno/sofie-core/commit/341cd6c0cd9926c2d2a0c7d1e8e4076226d9e32d))
+- **hoverscrub miniInspector:** STK borders wrong color ([825a54a](https://github.com/nrkno/sofie-core/commit/825a54ae1a4b932d87cb887858005697c8e0a272))
+- Ignore unassigned devices in installations with multiple studios ([dd08120](https://github.com/nrkno/sofie-core/commit/dd0812093643ebc9f0bb1d0b4c2c299a99256364))
+- import error ([391b334](https://github.com/nrkno/sofie-core/commit/391b3345234e6bc94bc11f3ec471de20cc963115))
+- improve accuracy of package framerate detection ([#653](https://github.com/nrkno/sofie-core/issues/653)) ([ad7926c](https://github.com/nrkno/sofie-core/commit/ad7926cad64be1ab55725caadc9dff63865bccfa))
+- improve client-side uncaughtErrorHandler ([218fa12](https://github.com/nrkno/sofie-core/commit/218fa127a8453c927e5dfb93626502b7bbf5b8ce))
+- improve meteor method signatures ([#669](https://github.com/nrkno/sofie-core/issues/669)) ([5fd4839](https://github.com/nrkno/sofie-core/commit/5fd4839b894260c384077df3d01d9cc55093e06e))
+- improve stringifyError slightly ([ac36c94](https://github.com/nrkno/sofie-core/commit/ac36c94b4305bfbf23a13c83bd19c4673d02d307))
+- infinites capped by virtuals ([#662](https://github.com/nrkno/sofie-core/issues/662)) ([e75d394](https://github.com/nrkno/sofie-core/commit/e75d394f9faef5b4f157c4dd537fc2551ca01e95))
+- influxdb for worker ([ee747b7](https://github.com/nrkno/sofie-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
+- issues when logging errors or multiple arguments ([eec57b9](https://github.com/nrkno/sofie-core/commit/eec57b945e6535338a4ec44f3c3252bf130df04d))
+- job timings being calculated incorrectly ([d15bfc5](https://github.com/nrkno/sofie-core/commit/d15bfc58db678dba0415e706a0c570bbe04efbd3))
+- launching of worker ([4adf500](https://github.com/nrkno/sofie-core/commit/4adf500231f2003ae368acf891b1b244fba1b506))
+- look at the parent PeripheralDevice to check the studioId ([8308595](https://github.com/nrkno/sofie-core/commit/8308595d16bf8fc460638d8b20a6a61fdee9a70a))
+- make logging work in worker threads ([c079357](https://github.com/nrkno/sofie-core/commit/c079357c0908ff28b3bacd726bb09449a682b29f))
+- meteor not restarting when worker code changes ([b56c639](https://github.com/nrkno/sofie-core/commit/b56c639efbecb1d32033c8b64108dbb5433ae246))
+- **MicFloatingInspector:** do not show Script is empty, if there is a content.comment ([4a5605e](https://github.com/nrkno/sofie-core/commit/4a5605ef74d9aac3ec0628db5efeefb1c8ed9d3e))
+- move meteor restart on worker code changes to separate process. ([f439c0f](https://github.com/nrkno/sofie-core/commit/f439c0fda67b1371b1b386a0891ca98603aa1a93))
+- multiple versions of some core libs ([fbe2dd2](https://github.com/nrkno/sofie-core/commit/fbe2dd2e43d6be65e2dec888df3c8644e90d2078))
+- package-lock ([55ee0ba](https://github.com/nrkno/sofie-core/commit/55ee0ba6e5fa7033fb7441adaa3c9c5fce25410a))
+- parse REDIS_URL variable ([12e9f3a](https://github.com/nrkno/sofie-core/commit/12e9f3addf92b531e4680d42ab877a7c9045db8e))
+- playback issues ([4d8a24c](https://github.com/nrkno/sofie-core/commit/4d8a24c94d679a305323e0281e49d3ab84a37380))
+- plumb in fast-track for timeline updates, and useractionlog timeline hashes ([0d9be53](https://github.com/nrkno/sofie-core/commit/0d9be536822372411c407aad7afa7bc63aed7504))
+- port some more code ([4b742f5](https://github.com/nrkno/sofie-core/commit/4b742f5de638c8402ababcc8bc64fd2a3245a59b))
+- **Presenter screen:** show channel color on Local sources ([#676](https://github.com/nrkno/sofie-core/issues/676)) ([7ad427e](https://github.com/nrkno/sofie-core/commit/7ad427e9264db99dd2a9ec13aa31aeab3be480fc))
+- **Prompter:** Over/Under uses inconsistent color coding ([80edc24](https://github.com/nrkno/sofie-core/commit/80edc24c293eaf45157952ae4de8dd3ac02c0cd1))
+- remaining meteor tests ([2f6a7e4](https://github.com/nrkno/sofie-core/commit/2f6a7e4cd31f9c6fa67672923e72261ec3c26401))
+- replace codecov from npm with github action ([f390abb](https://github.com/nrkno/sofie-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+- replace old implementation with queue based prototypes ([4688e04](https://github.com/nrkno/sofie-core/commit/4688e04be3a4bb07fd3015659da53bbcb0681c6b))
+- restore expectedPackages when restoring snapshots ([082d8c0](https://github.com/nrkno/sofie-core/commit/082d8c03840f83f2f574b56316f6d90028d70f9a))
+- route worker-thread logging through meteor winston instance, labeled with a 'threadName' property ([94162ef](https://github.com/nrkno/sofie-core/commit/94162eff223f9ad658255a0597b0fb742d4091c7))
+- show adLibs from different show-styles as disabled ([#665](https://github.com/nrkno/sofie-core/issues/665)) ([6c88614](https://github.com/nrkno/sofie-core/commit/6c88614f9db2527cb5b1a1072d25c8172f3901b2))
+- some ci issues ([790fa30](https://github.com/nrkno/sofie-core/commit/790fa303acc2ae271523b07f952837d517f07bf1))
+- some meteor tests ([bcd016e](https://github.com/nrkno/sofie-core/commit/bcd016ebf6dc53d8cb238aac00bd299d2c20e848))
+- some more cache invalidation ([26b1461](https://github.com/nrkno/sofie-core/commit/26b1461729a8afe1706250495dec1af9452415fe))
+- some type errors ([872504a](https://github.com/nrkno/sofie-core/commit/872504ae0606c71e3dad9bcc1eeff731f36a343c))
+- some work queue management bits ([ce4d019](https://github.com/nrkno/sofie-core/commit/ce4d0193a16317b9d6bdf9da8dd6efbf86f4b9dd))
+- **Storyboard:** respect show_hidden_source_layers=1 ([87eb7a3](https://github.com/nrkno/sofie-core/commit/87eb7a3f0a13cd14d330973b5a3dd40c8a86b85d))
+- **Storyboard:** touch interaction sometimes doesn't work ([29c439b](https://github.com/nrkno/sofie-core/commit/29c439bca67a374555f9700ffcd491483be0f614))
+- strict select of pieceinstances in timelineTriggerTime ([bbd4381](https://github.com/nrkno/sofie-core/commit/bbd4381167ded3f95a4247e6a27bf7146a7800cc))
+- tests ([91823ba](https://github.com/nrkno/sofie-core/commit/91823ba3641d160b218f9d9dff479f5607331a60))
+- TS: support estimateResolveTimeMultiplier option ([5b07c06](https://github.com/nrkno/sofie-core/commit/5b07c06371b4bb6d16dcba4ec5744f21fa0fa619))
+- TSR dep ([8b506fa](https://github.com/nrkno/sofie-core/commit/8b506fa72fd368902f369e173502a19bac4bf7da))
+- type errors ([c67bd0e](https://github.com/nrkno/sofie-core/commit/c67bd0e08be51621e378a7d34ec6f3212665ee9e))
+- type errors ([5f807ee](https://github.com/nrkno/sofie-core/commit/5f807ee60e61bfdf0d49d177fd69124c51ed069d))
+- typings ([91bbae2](https://github.com/nrkno/sofie-core/commit/91bbae210b51ae04893b8956917e2f1213d5e23e))
+- typings errors ([56ddd0e](https://github.com/nrkno/sofie-core/commit/56ddd0e9759eee1d86b29e613eebe50694c76059))
+- update docker image node version ([8f0f92b](https://github.com/nrkno/sofie-core/commit/8f0f92be2e2f501202255a01deb55d8ff6c90524))
+- update Meteor to 2.5.3 ([0d2eb37](https://github.com/nrkno/sofie-core/commit/0d2eb3709f8dc3b715376850de0baeb6390ca39a))
+- update Meteor to 2.5.5 ([e4cdb9d](https://github.com/nrkno/sofie-core/commit/e4cdb9dbc1ac86478e191a25157956127e8c376d))
+- update timeline item colors for local and live speak pieces ([257e8be](https://github.com/nrkno/sofie-core/commit/257e8be7baa52cff8a1598f2eda4c375d743f872))
+- use global Diff calculation in Prompter ([85cec3b](https://github.com/nrkno/sofie-core/commit/85cec3b7494b146c6892fe03b5a5bb0c67b8cf4d))
+- use MeteorCall instead of Meteor.call for better type safety ([#647](https://github.com/nrkno/sofie-core/issues/647)) ([6b01a83](https://github.com/nrkno/sofie-core/commit/6b01a83ad8f92f91a597ffb7809d7b9009d4142a))
+- worker threads in docker build (still failing because of incorrect mongo url) ([e6a9bbe](https://github.com/nrkno/sofie-core/commit/e6a9bbe7b439864a6a3bccc637a5d411c4bf1849))
+- worker unit tests ([d5d3f10](https://github.com/nrkno/sofie-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
+- workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/sofie-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
+- yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/sofie-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
 
 ## [1.41.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.5...v1.41.0-in-testing.0) (2022-03-28)
 
-
 ### Features
 
-* Basic A11Y of the RundownView ([#683](https://github.com/nrkno/sofie-core/issues/683)) ([654ab4a](https://github.com/nrkno/sofie-core/commit/654ab4a67fa318e8ef194afa707d6d9126cb8bff))
-* reduce number of loaded PartInstances ([#698](https://github.com/nrkno/sofie-core/issues/698)) ([ec32ff8](https://github.com/nrkno/sofie-core/commit/ec32ff8e0988f4e1dd28f2dc367d0a72fd4f2e5d))
-* store `KeyboardEvent.code` instead of `key` in UserLog ([03345f8](https://github.com/nrkno/sofie-core/commit/03345f8cbc37e949936d4dfc4ee1b6d15b7bf71d))
-
+- Basic A11Y of the RundownView ([#683](https://github.com/nrkno/sofie-core/issues/683)) ([654ab4a](https://github.com/nrkno/sofie-core/commit/654ab4a67fa318e8ef194afa707d6d9126cb8bff))
+- reduce number of loaded PartInstances ([#698](https://github.com/nrkno/sofie-core/issues/698)) ([ec32ff8](https://github.com/nrkno/sofie-core/commit/ec32ff8e0988f4e1dd28f2dc367d0a72fd4f2e5d))
+- store `KeyboardEvent.code` instead of `key` in UserLog ([03345f8](https://github.com/nrkno/sofie-core/commit/03345f8cbc37e949936d4dfc4ee1b6d15b7bf71d))
 
 ### Bug Fixes
 
-* make bucket publication great again ([ba69f85](https://github.com/nrkno/sofie-core/commit/ba69f85b44321fa0d2425b9c234935bcd56f115c))
-* make sure to use Pick typings whenever projection is used in mongo query ([1d14f51](https://github.com/nrkno/sofie-core/commit/1d14f511245f6100a979a77d6099fc69fc213791))
-* **NoraFloatingInspector:** use absolute URL for Nora preview background image ([d2f9a2f](https://github.com/nrkno/sofie-core/commit/d2f9a2f15399b361760f6f3b84eeb91af386a75a))
-* pass better thread names into interceptLogging ([f9f03f5](https://github.com/nrkno/sofie-core/commit/f9f03f5d4a186015e29c87fe5b59d9d4d0f3696a))
-* reduce the amount of data fetched ([e486bd7](https://github.com/nrkno/sofie-core/commit/e486bd729f1f38afa444d7e5c28f9c8e4e9f6c01))
-* **Shelf:** automatically select first Shelf Tab, if nothing else matches ([d0bb3f3](https://github.com/nrkno/sofie-core/commit/d0bb3f3054c0010b138912e299802a0ee9303954))
-* show label instead of icon for Auto ([f361cc1](https://github.com/nrkno/sofie-core/commit/f361cc1f24c90a4793ae2beca1561ff9ad5ce209))
+- make bucket publication great again ([ba69f85](https://github.com/nrkno/sofie-core/commit/ba69f85b44321fa0d2425b9c234935bcd56f115c))
+- make sure to use Pick typings whenever projection is used in mongo query ([1d14f51](https://github.com/nrkno/sofie-core/commit/1d14f511245f6100a979a77d6099fc69fc213791))
+- **NoraFloatingInspector:** use absolute URL for Nora preview background image ([d2f9a2f](https://github.com/nrkno/sofie-core/commit/d2f9a2f15399b361760f6f3b84eeb91af386a75a))
+- pass better thread names into interceptLogging ([f9f03f5](https://github.com/nrkno/sofie-core/commit/f9f03f5d4a186015e29c87fe5b59d9d4d0f3696a))
+- reduce the amount of data fetched ([e486bd7](https://github.com/nrkno/sofie-core/commit/e486bd729f1f38afa444d7e5c28f9c8e4e9f6c01))
+- **Shelf:** automatically select first Shelf Tab, if nothing else matches ([d0bb3f3](https://github.com/nrkno/sofie-core/commit/d0bb3f3054c0010b138912e299802a0ee9303954))
+- show label instead of icon for Auto ([f361cc1](https://github.com/nrkno/sofie-core/commit/f361cc1f24c90a4793ae2beca1561ff9ad5ce209))
 
 ## [1.40.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
 
-
 ### Features
 
-* better handling of non-unqiue externalId for pieces and other types ([#685](https://github.com/nrkno/sofie-core/issues/685)) ([02a891e](https://github.com/nrkno/sofie-core/commit/02a891e66dd8c9aa01b2ceb1634ac425ab18217d))
-* First-class Sofie PWA ([#670](https://github.com/nrkno/sofie-core/issues/670)) ([c413d8a](https://github.com/nrkno/sofie-core/commit/c413d8ae8a5e70a4c5b0cd4fd6924900b69f6f4c))
-* no default tabs when using Shelf Layout ([#684](https://github.com/nrkno/sofie-core/issues/684)) ([ba3a75f](https://github.com/nrkno/sofie-core/commit/ba3a75f55254e9f2df6732e0820eccdd78fb7164))
-* **Timeline+Storyboard:** Invalid Parts show hover inspector with invalidReason ([#679](https://github.com/nrkno/sofie-core/issues/679)) ([43ba126](https://github.com/nrkno/sofie-core/commit/43ba126b986d3c185212d49433739804350cc084))
-
+- better handling of non-unqiue externalId for pieces and other types ([#685](https://github.com/nrkno/sofie-core/issues/685)) ([02a891e](https://github.com/nrkno/sofie-core/commit/02a891e66dd8c9aa01b2ceb1634ac425ab18217d))
+- First-class Sofie PWA ([#670](https://github.com/nrkno/sofie-core/issues/670)) ([c413d8a](https://github.com/nrkno/sofie-core/commit/c413d8ae8a5e70a4c5b0cd4fd6924900b69f6f4c))
+- no default tabs when using Shelf Layout ([#684](https://github.com/nrkno/sofie-core/issues/684)) ([ba3a75f](https://github.com/nrkno/sofie-core/commit/ba3a75f55254e9f2df6732e0820eccdd78fb7164))
+- **Timeline+Storyboard:** Invalid Parts show hover inspector with invalidReason ([#679](https://github.com/nrkno/sofie-core/issues/679)) ([43ba126](https://github.com/nrkno/sofie-core/commit/43ba126b986d3c185212d49433739804350cc084))
 
 ### Bug Fixes
 
-* 'startup' log line being done too late ([808d6c7](https://github.com/nrkno/sofie-core/commit/808d6c7d883d2ee14f810997e8991f0ae4974ea7))
-* actually support attributes in client/lib/data/objectToXml ([a287acd](https://github.com/nrkno/sofie-core/commit/a287acdd0b0488bc70212d6ded51d8b4d229e19b))
-* add getCurrentPlaylist to blueprint getRundown-context ([4a43e14](https://github.com/nrkno/sofie-core/commit/4a43e14287d41ae7775a7301b5be1ab7bd227e96))
-* add getRandomId() to context ([7990014](https://github.com/nrkno/sofie-core/commit/79900144636a34f40c465c4501ef0bdcad6f116e))
-* allow take without next during hold ([735cac7](https://github.com/nrkno/sofie-core/commit/735cac7747bb69bd6b77b8bf3426b0ef44d50725))
-* don't modify playlist externalId ([458a50b](https://github.com/nrkno/sofie-core/commit/458a50b5ca9e5ac07519c9e4456ee7abc55b87f5))
-* ensure timelinediv is an HtmlElement before trying to calculate its width ([57e36d2](https://github.com/nrkno/sofie-core/commit/57e36d28ba1fe8d879bc4cb4d307d87d3f4e11eb))
-* hide "Show End" label when there's a next set ([a2f526b](https://github.com/nrkno/sofie-core/commit/a2f526b11919cb42ff871941d99acf3ff1b41dc0))
-* mongo client 4.2 typings break on timelineObjects ([#671](https://github.com/nrkno/sofie-core/issues/671)) ([ce9d4b3](https://github.com/nrkno/sofie-core/commit/ce9d4b3a862d93f61e895c27e65f25609679a4ff))
-* part identifier colours ([ede62d2](https://github.com/nrkno/sofie-core/commit/ede62d2eed0209a348e468507438972501faec86))
-* **Storyboard:** add Auto/Next label on end of Segment ([7ff9979](https://github.com/nrkno/sofie-core/commit/7ff9979dd04c45f619450a64af6120d7bbe3d942))
-* **Storyboard:** End of Show/End of Segment marker is missing ([5870f7f](https://github.com/nrkno/sofie-core/commit/5870f7fa13691952357326ee30bc42f73ca9acaa))
-* **Storyboard:** show full label on KAM pieces ([a16009c](https://github.com/nrkno/sofie-core/commit/a16009c1db1dbc27085c81a723d85c84d228f43b))
-* **Timeline:** end of segment take-line, when auto, displayed with arrows ([b73d4ac](https://github.com/nrkno/sofie-core/commit/b73d4ac12cb63e7048302c02675dbcd3f0d59945))
-* visual hover indication for segment header part numbers ([5f19433](https://github.com/nrkno/sofie-core/commit/5f194335b10e2f2f214dd53075f6dbbdf822d582))
+- 'startup' log line being done too late ([808d6c7](https://github.com/nrkno/sofie-core/commit/808d6c7d883d2ee14f810997e8991f0ae4974ea7))
+- actually support attributes in client/lib/data/objectToXml ([a287acd](https://github.com/nrkno/sofie-core/commit/a287acdd0b0488bc70212d6ded51d8b4d229e19b))
+- add getCurrentPlaylist to blueprint getRundown-context ([4a43e14](https://github.com/nrkno/sofie-core/commit/4a43e14287d41ae7775a7301b5be1ab7bd227e96))
+- add getRandomId() to context ([7990014](https://github.com/nrkno/sofie-core/commit/79900144636a34f40c465c4501ef0bdcad6f116e))
+- allow take without next during hold ([735cac7](https://github.com/nrkno/sofie-core/commit/735cac7747bb69bd6b77b8bf3426b0ef44d50725))
+- don't modify playlist externalId ([458a50b](https://github.com/nrkno/sofie-core/commit/458a50b5ca9e5ac07519c9e4456ee7abc55b87f5))
+- ensure timelinediv is an HtmlElement before trying to calculate its width ([57e36d2](https://github.com/nrkno/sofie-core/commit/57e36d28ba1fe8d879bc4cb4d307d87d3f4e11eb))
+- hide "Show End" label when there's a next set ([a2f526b](https://github.com/nrkno/sofie-core/commit/a2f526b11919cb42ff871941d99acf3ff1b41dc0))
+- mongo client 4.2 typings break on timelineObjects ([#671](https://github.com/nrkno/sofie-core/issues/671)) ([ce9d4b3](https://github.com/nrkno/sofie-core/commit/ce9d4b3a862d93f61e895c27e65f25609679a4ff))
+- part identifier colours ([ede62d2](https://github.com/nrkno/sofie-core/commit/ede62d2eed0209a348e468507438972501faec86))
+- **Storyboard:** add Auto/Next label on end of Segment ([7ff9979](https://github.com/nrkno/sofie-core/commit/7ff9979dd04c45f619450a64af6120d7bbe3d942))
+- **Storyboard:** End of Show/End of Segment marker is missing ([5870f7f](https://github.com/nrkno/sofie-core/commit/5870f7fa13691952357326ee30bc42f73ca9acaa))
+- **Storyboard:** show full label on KAM pieces ([a16009c](https://github.com/nrkno/sofie-core/commit/a16009c1db1dbc27085c81a723d85c84d228f43b))
+- **Timeline:** end of segment take-line, when auto, displayed with arrows ([b73d4ac](https://github.com/nrkno/sofie-core/commit/b73d4ac12cb63e7048302c02675dbcd3f0d59945))
+- visual hover indication for segment header part numbers ([5f19433](https://github.com/nrkno/sofie-core/commit/5f194335b10e2f2f214dd53075f6dbbdf822d582))
 
 ## [1.40.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
 
-
 ### Features
 
-* 'freeze' some objects instead of cloning them, to minimise overhead ([2ea6bce](https://github.com/nrkno/sofie-core/commit/2ea6bcec599ccfee4f301f875c9a72cbf46dfd6c))
-* add Workers collection, used to track the status of the Workers ([46366db](https://github.com/nrkno/sofie-core/commit/46366dbd4519b91317de0a55b322abed35bad331))
-* kill worker threads if jobs exceed a generous timeout ([4f9b90e](https://github.com/nrkno/sofie-core/commit/4f9b90e61a8b1059acfbd7eccdccb93f0cad533f))
-* lock rundowns in the worker threads. When deleting a playlist, delete the rundowns inside their locks to avoid race conditions ([73f90f0](https://github.com/nrkno/sofie-core/commit/73f90f04392c3b2ff1c722f09d56545130ff2b20))
-* make PeripheralDeviceApi.executeFunction and friends return a promise instead of take a callback ([59ac5ff](https://github.com/nrkno/sofie-core/commit/59ac5ff04a55500ea79523f6ea0dfbc14ea3d100))
-* monitor status of workerThreads (children of Workers) ([73179e0](https://github.com/nrkno/sofie-core/commit/73179e03444c2da798f265b3ba66a316b00e7a96))
-* monitor the status of the Worker ([746ba96](https://github.com/nrkno/sofie-core/commit/746ba96293f519192a9172cb9180969b0ccf6474))
-* move some properties onto the studio from the meteor Settings object. ([6ed8593](https://github.com/nrkno/sofie-core/commit/6ed859362430c01d498a415e86faab364a7362f6))
-* parse meteor mongo url to generate worker mongo url ([0eb44a6](https://github.com/nrkno/sofie-core/commit/0eb44a6909109da35bec57b318bf6eac1731116f))
-* refactor userActions api implementation, and track worker execution times ([1cfe05f](https://github.com/nrkno/sofie-core/commit/1cfe05fc71b743fe919e1829f43ee725462266a3))
-* replace threads with threadedclass ([a3773ed](https://github.com/nrkno/sofie-core/commit/a3773edcf77c28868bff9feabecc41a731fa4daf))
-* update blueprint interface to support a new way of assigning rundowns to playlists ([3bf092e](https://github.com/nrkno/sofie-core/commit/3bf092e2f56a1e448d0909430f155d6e7c48ac9a))
-
+- 'freeze' some objects instead of cloning them, to minimise overhead ([2ea6bce](https://github.com/nrkno/sofie-core/commit/2ea6bcec599ccfee4f301f875c9a72cbf46dfd6c))
+- add Workers collection, used to track the status of the Workers ([46366db](https://github.com/nrkno/sofie-core/commit/46366dbd4519b91317de0a55b322abed35bad331))
+- kill worker threads if jobs exceed a generous timeout ([4f9b90e](https://github.com/nrkno/sofie-core/commit/4f9b90e61a8b1059acfbd7eccdccb93f0cad533f))
+- lock rundowns in the worker threads. When deleting a playlist, delete the rundowns inside their locks to avoid race conditions ([73f90f0](https://github.com/nrkno/sofie-core/commit/73f90f04392c3b2ff1c722f09d56545130ff2b20))
+- make PeripheralDeviceApi.executeFunction and friends return a promise instead of take a callback ([59ac5ff](https://github.com/nrkno/sofie-core/commit/59ac5ff04a55500ea79523f6ea0dfbc14ea3d100))
+- monitor status of workerThreads (children of Workers) ([73179e0](https://github.com/nrkno/sofie-core/commit/73179e03444c2da798f265b3ba66a316b00e7a96))
+- monitor the status of the Worker ([746ba96](https://github.com/nrkno/sofie-core/commit/746ba96293f519192a9172cb9180969b0ccf6474))
+- move some properties onto the studio from the meteor Settings object. ([6ed8593](https://github.com/nrkno/sofie-core/commit/6ed859362430c01d498a415e86faab364a7362f6))
+- parse meteor mongo url to generate worker mongo url ([0eb44a6](https://github.com/nrkno/sofie-core/commit/0eb44a6909109da35bec57b318bf6eac1731116f))
+- refactor userActions api implementation, and track worker execution times ([1cfe05f](https://github.com/nrkno/sofie-core/commit/1cfe05fc71b743fe919e1829f43ee725462266a3))
+- replace threads with threadedclass ([a3773ed](https://github.com/nrkno/sofie-core/commit/a3773edcf77c28868bff9feabecc41a731fa4daf))
+- update blueprint interface to support a new way of assigning rundowns to playlists ([3bf092e](https://github.com/nrkno/sofie-core/commit/3bf092e2f56a1e448d0909430f155d6e7c48ac9a))
 
 ### Bug Fixes
 
-* add PieceStatusCode.SOURCE_HAS_ISSUES, used to indicate non-technical issues. ([213904c](https://github.com/nrkno/sofie-core/commit/213904cccdba4d45c219cbd855526118653fa133))
-* ask confirmation before restarting playout gateway ([#666](https://github.com/nrkno/sofie-core/issues/666)) ([ca9dba1](https://github.com/nrkno/sofie-core/commit/ca9dba1a979c2a63aa6559776e88c3c7bb9182b2))
-* better handling of errors from Core ([3ae8152](https://github.com/nrkno/sofie-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
-* blueprints-integration typing issue ([7c3a93a](https://github.com/nrkno/sofie-core/commit/7c3a93af23f08a7c4b6b41ce28e6b2624fb135a7))
-* blueprints-integration: allow getRundown to be async, to be able to call async functions therein ([b166cca](https://github.com/nrkno/sofie-core/commit/b166cca3376ee4d3ae747dac9a8268ea9131898a))
-* bubble UserError type into the ui ([7fdb860](https://github.com/nrkno/sofie-core/commit/7fdb860fbe13fea3577b179b1bff62e4ec1d2a73))
-* bug found by sonar ([65337e8](https://github.com/nrkno/sofie-core/commit/65337e8e325c69e388ed4a4ac96b5746891eee5e))
-* change context type of getRundown ([52f981a](https://github.com/nrkno/sofie-core/commit/52f981ab485cfcf06fa4a01ed1feeac1ef2d0742))
-* clone blueprint config before freezing. some worker cache invalidation issues ([4432fc6](https://github.com/nrkno/sofie-core/commit/4432fc67f64a7a6fa16289c8bed83701cd7ee060))
-* collection.replace not trying to upsert ([471ebed](https://github.com/nrkno/sofie-core/commit/471ebedb47694fead72bc33316cacaf91fb69968))
-* **Context Menus:** don't limit the width that much ([5640f9d](https://github.com/nrkno/sofie-core/commit/5640f9d14ec8dfa4ffdb79a6a727aeb23b44005c))
-* correctly show timecode values ([4eb3c0d](https://github.com/nrkno/sofie-core/commit/4eb3c0d9fc15c0edacc1cf6cdd0d3d49a6150d13))
-* disable jest coverage requirements ([7fc7ed4](https://github.com/nrkno/sofie-core/commit/7fc7ed4d2654d358ea95851668bd2fe8ecd76dab))
-* disable meteor-elastic-apm package, as it is incompatible with Meteor >2.3 at the moment ([547674e](https://github.com/nrkno/sofie-core/commit/547674e8799217e290df4a57a12787d975ff5025))
-* don't treat "no workers" as a bad status. ([1ebb66c](https://github.com/nrkno/sofie-core/commit/1ebb66c982230948c1862f7299fa7b906ee13058))
-* downgrade mongodb lib in job-worker to resolve type issues ([32dd334](https://github.com/nrkno/sofie-core/commit/32dd3340f0308d82c4ebc9031350e6bd24a1f230))
-* failing tests ([84f2063](https://github.com/nrkno/sofie-core/commit/84f206337048441216b6e3589db753aba17d14e9))
-* GUI issue where a long, unbroken word pushed the dismiss-button too far to the right ([5ebf747](https://github.com/nrkno/sofie-core/commit/5ebf74765efa5f060b477c8b7b0bb7f987cd8fc7))
-* handle lock timeouts in workers ([783a214](https://github.com/nrkno/sofie-core/commit/783a21446c66979e9f235f79b3aaa45465c825b1))
-* hook up broken debug method ([341cd6c](https://github.com/nrkno/sofie-core/commit/341cd6c0cd9926c2d2a0c7d1e8e4076226d9e32d))
-* Ignore unassigned devices in installations with multiple studios ([dd08120](https://github.com/nrkno/sofie-core/commit/dd0812093643ebc9f0bb1d0b4c2c299a99256364))
-* import error ([391b334](https://github.com/nrkno/sofie-core/commit/391b3345234e6bc94bc11f3ec471de20cc963115))
-* improve accuracy of package framerate detection ([#653](https://github.com/nrkno/sofie-core/issues/653)) ([ad7926c](https://github.com/nrkno/sofie-core/commit/ad7926cad64be1ab55725caadc9dff63865bccfa))
-* improve client-side uncaughtErrorHandler ([218fa12](https://github.com/nrkno/sofie-core/commit/218fa127a8453c927e5dfb93626502b7bbf5b8ce))
-* improve meteor method signatures ([#669](https://github.com/nrkno/sofie-core/issues/669)) ([5fd4839](https://github.com/nrkno/sofie-core/commit/5fd4839b894260c384077df3d01d9cc55093e06e))
-* improve stringifyError slightly ([ac36c94](https://github.com/nrkno/sofie-core/commit/ac36c94b4305bfbf23a13c83bd19c4673d02d307))
-* influxdb for worker ([ee747b7](https://github.com/nrkno/sofie-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
-* issues when logging errors or multiple arguments ([eec57b9](https://github.com/nrkno/sofie-core/commit/eec57b945e6535338a4ec44f3c3252bf130df04d))
-* job timings being calculated incorrectly ([d15bfc5](https://github.com/nrkno/sofie-core/commit/d15bfc58db678dba0415e706a0c570bbe04efbd3))
-* launching of worker ([4adf500](https://github.com/nrkno/sofie-core/commit/4adf500231f2003ae368acf891b1b244fba1b506))
-* look at the parent PeripheralDevice to check the studioId ([8308595](https://github.com/nrkno/sofie-core/commit/8308595d16bf8fc460638d8b20a6a61fdee9a70a))
-* make logging work in worker threads ([c079357](https://github.com/nrkno/sofie-core/commit/c079357c0908ff28b3bacd726bb09449a682b29f))
-* meteor not restarting when worker code changes ([b56c639](https://github.com/nrkno/sofie-core/commit/b56c639efbecb1d32033c8b64108dbb5433ae246))
-* move meteor restart on worker code changes to separate process. ([f439c0f](https://github.com/nrkno/sofie-core/commit/f439c0fda67b1371b1b386a0891ca98603aa1a93))
-* multiple versions of some core libs ([fbe2dd2](https://github.com/nrkno/sofie-core/commit/fbe2dd2e43d6be65e2dec888df3c8644e90d2078))
-* **Notifications:** use overflow-wrap instead of overflow for breaking unbreakable strings ([3bad846](https://github.com/nrkno/sofie-core/commit/3bad8460fa64fb1656860d0576125783c0a4e075))
-* package-lock ([55ee0ba](https://github.com/nrkno/sofie-core/commit/55ee0ba6e5fa7033fb7441adaa3c9c5fce25410a))
-* parse REDIS_URL variable ([12e9f3a](https://github.com/nrkno/sofie-core/commit/12e9f3addf92b531e4680d42ab877a7c9045db8e))
-* plumb in fast-track for timeline updates, and useractionlog timeline hashes ([0d9be53](https://github.com/nrkno/sofie-core/commit/0d9be536822372411c407aad7afa7bc63aed7504))
-* port some more code ([4b742f5](https://github.com/nrkno/sofie-core/commit/4b742f5de638c8402ababcc8bc64fd2a3245a59b))
-* pre-commit hook ([621c184](https://github.com/nrkno/sofie-core/commit/621c184a28472cd5c0a50d65fa1e6a73faac296a))
-* remaining meteor tests ([2f6a7e4](https://github.com/nrkno/sofie-core/commit/2f6a7e4cd31f9c6fa67672923e72261ec3c26401))
-* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/sofie-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
-* replace old implementation with queue based prototypes ([4688e04](https://github.com/nrkno/sofie-core/commit/4688e04be3a4bb07fd3015659da53bbcb0681c6b))
-* route worker-thread logging through meteor winston instance, labeled with a 'threadName' property ([94162ef](https://github.com/nrkno/sofie-core/commit/94162eff223f9ad658255a0597b0fb742d4091c7))
-* show adLibs from different show-styles as disabled ([#665](https://github.com/nrkno/sofie-core/issues/665)) ([6c88614](https://github.com/nrkno/sofie-core/commit/6c88614f9db2527cb5b1a1072d25c8172f3901b2))
-* some ci issues ([790fa30](https://github.com/nrkno/sofie-core/commit/790fa303acc2ae271523b07f952837d517f07bf1))
-* some meteor tests ([bcd016e](https://github.com/nrkno/sofie-core/commit/bcd016ebf6dc53d8cb238aac00bd299d2c20e848))
-* some more cache invalidation ([26b1461](https://github.com/nrkno/sofie-core/commit/26b1461729a8afe1706250495dec1af9452415fe))
-* some type errors ([872504a](https://github.com/nrkno/sofie-core/commit/872504ae0606c71e3dad9bcc1eeff731f36a343c))
-* some work queue management bits ([ce4d019](https://github.com/nrkno/sofie-core/commit/ce4d0193a16317b9d6bdf9da8dd6efbf86f4b9dd))
-* **Storyboard:** touch interaction sometimes doesn't work ([29c439b](https://github.com/nrkno/sofie-core/commit/29c439bca67a374555f9700ffcd491483be0f614))
-* support context.getPlaylists() in getRundown() ([3a023cd](https://github.com/nrkno/sofie-core/commit/3a023cd188b0698fac17be8168b1a755e9e21c73))
-* tests ([91823ba](https://github.com/nrkno/sofie-core/commit/91823ba3641d160b218f9d9dff479f5607331a60))
-* type errors ([c67bd0e](https://github.com/nrkno/sofie-core/commit/c67bd0e08be51621e378a7d34ec6f3212665ee9e))
-* type errors ([5f807ee](https://github.com/nrkno/sofie-core/commit/5f807ee60e61bfdf0d49d177fd69124c51ed069d))
-* typings ([91bbae2](https://github.com/nrkno/sofie-core/commit/91bbae210b51ae04893b8956917e2f1213d5e23e))
-* typings errors ([56ddd0e](https://github.com/nrkno/sofie-core/commit/56ddd0e9759eee1d86b29e613eebe50694c76059))
-* update docker image node version ([8f0f92b](https://github.com/nrkno/sofie-core/commit/8f0f92be2e2f501202255a01deb55d8ff6c90524))
-* update Meteor to 2.5.3 ([0d2eb37](https://github.com/nrkno/sofie-core/commit/0d2eb3709f8dc3b715376850de0baeb6390ca39a))
-* update Meteor to 2.5.5 ([e4cdb9d](https://github.com/nrkno/sofie-core/commit/e4cdb9dbc1ac86478e191a25157956127e8c376d))
-* worker threads in docker build (still failing because of incorrect mongo url) ([e6a9bbe](https://github.com/nrkno/sofie-core/commit/e6a9bbe7b439864a6a3bccc637a5d411c4bf1849))
-* worker unit tests ([d5d3f10](https://github.com/nrkno/sofie-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
-* workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/sofie-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
-* yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/sofie-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
+- add PieceStatusCode.SOURCE_HAS_ISSUES, used to indicate non-technical issues. ([213904c](https://github.com/nrkno/sofie-core/commit/213904cccdba4d45c219cbd855526118653fa133))
+- ask confirmation before restarting playout gateway ([#666](https://github.com/nrkno/sofie-core/issues/666)) ([ca9dba1](https://github.com/nrkno/sofie-core/commit/ca9dba1a979c2a63aa6559776e88c3c7bb9182b2))
+- better handling of errors from Core ([3ae8152](https://github.com/nrkno/sofie-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
+- blueprints-integration typing issue ([7c3a93a](https://github.com/nrkno/sofie-core/commit/7c3a93af23f08a7c4b6b41ce28e6b2624fb135a7))
+- blueprints-integration: allow getRundown to be async, to be able to call async functions therein ([b166cca](https://github.com/nrkno/sofie-core/commit/b166cca3376ee4d3ae747dac9a8268ea9131898a))
+- bubble UserError type into the ui ([7fdb860](https://github.com/nrkno/sofie-core/commit/7fdb860fbe13fea3577b179b1bff62e4ec1d2a73))
+- bug found by sonar ([65337e8](https://github.com/nrkno/sofie-core/commit/65337e8e325c69e388ed4a4ac96b5746891eee5e))
+- change context type of getRundown ([52f981a](https://github.com/nrkno/sofie-core/commit/52f981ab485cfcf06fa4a01ed1feeac1ef2d0742))
+- clone blueprint config before freezing. some worker cache invalidation issues ([4432fc6](https://github.com/nrkno/sofie-core/commit/4432fc67f64a7a6fa16289c8bed83701cd7ee060))
+- collection.replace not trying to upsert ([471ebed](https://github.com/nrkno/sofie-core/commit/471ebedb47694fead72bc33316cacaf91fb69968))
+- **Context Menus:** don't limit the width that much ([5640f9d](https://github.com/nrkno/sofie-core/commit/5640f9d14ec8dfa4ffdb79a6a727aeb23b44005c))
+- correctly show timecode values ([4eb3c0d](https://github.com/nrkno/sofie-core/commit/4eb3c0d9fc15c0edacc1cf6cdd0d3d49a6150d13))
+- disable jest coverage requirements ([7fc7ed4](https://github.com/nrkno/sofie-core/commit/7fc7ed4d2654d358ea95851668bd2fe8ecd76dab))
+- disable meteor-elastic-apm package, as it is incompatible with Meteor >2.3 at the moment ([547674e](https://github.com/nrkno/sofie-core/commit/547674e8799217e290df4a57a12787d975ff5025))
+- don't treat "no workers" as a bad status. ([1ebb66c](https://github.com/nrkno/sofie-core/commit/1ebb66c982230948c1862f7299fa7b906ee13058))
+- downgrade mongodb lib in job-worker to resolve type issues ([32dd334](https://github.com/nrkno/sofie-core/commit/32dd3340f0308d82c4ebc9031350e6bd24a1f230))
+- failing tests ([84f2063](https://github.com/nrkno/sofie-core/commit/84f206337048441216b6e3589db753aba17d14e9))
+- GUI issue where a long, unbroken word pushed the dismiss-button too far to the right ([5ebf747](https://github.com/nrkno/sofie-core/commit/5ebf74765efa5f060b477c8b7b0bb7f987cd8fc7))
+- handle lock timeouts in workers ([783a214](https://github.com/nrkno/sofie-core/commit/783a21446c66979e9f235f79b3aaa45465c825b1))
+- hook up broken debug method ([341cd6c](https://github.com/nrkno/sofie-core/commit/341cd6c0cd9926c2d2a0c7d1e8e4076226d9e32d))
+- Ignore unassigned devices in installations with multiple studios ([dd08120](https://github.com/nrkno/sofie-core/commit/dd0812093643ebc9f0bb1d0b4c2c299a99256364))
+- import error ([391b334](https://github.com/nrkno/sofie-core/commit/391b3345234e6bc94bc11f3ec471de20cc963115))
+- improve accuracy of package framerate detection ([#653](https://github.com/nrkno/sofie-core/issues/653)) ([ad7926c](https://github.com/nrkno/sofie-core/commit/ad7926cad64be1ab55725caadc9dff63865bccfa))
+- improve client-side uncaughtErrorHandler ([218fa12](https://github.com/nrkno/sofie-core/commit/218fa127a8453c927e5dfb93626502b7bbf5b8ce))
+- improve meteor method signatures ([#669](https://github.com/nrkno/sofie-core/issues/669)) ([5fd4839](https://github.com/nrkno/sofie-core/commit/5fd4839b894260c384077df3d01d9cc55093e06e))
+- improve stringifyError slightly ([ac36c94](https://github.com/nrkno/sofie-core/commit/ac36c94b4305bfbf23a13c83bd19c4673d02d307))
+- influxdb for worker ([ee747b7](https://github.com/nrkno/sofie-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
+- issues when logging errors or multiple arguments ([eec57b9](https://github.com/nrkno/sofie-core/commit/eec57b945e6535338a4ec44f3c3252bf130df04d))
+- job timings being calculated incorrectly ([d15bfc5](https://github.com/nrkno/sofie-core/commit/d15bfc58db678dba0415e706a0c570bbe04efbd3))
+- launching of worker ([4adf500](https://github.com/nrkno/sofie-core/commit/4adf500231f2003ae368acf891b1b244fba1b506))
+- look at the parent PeripheralDevice to check the studioId ([8308595](https://github.com/nrkno/sofie-core/commit/8308595d16bf8fc460638d8b20a6a61fdee9a70a))
+- make logging work in worker threads ([c079357](https://github.com/nrkno/sofie-core/commit/c079357c0908ff28b3bacd726bb09449a682b29f))
+- meteor not restarting when worker code changes ([b56c639](https://github.com/nrkno/sofie-core/commit/b56c639efbecb1d32033c8b64108dbb5433ae246))
+- move meteor restart on worker code changes to separate process. ([f439c0f](https://github.com/nrkno/sofie-core/commit/f439c0fda67b1371b1b386a0891ca98603aa1a93))
+- multiple versions of some core libs ([fbe2dd2](https://github.com/nrkno/sofie-core/commit/fbe2dd2e43d6be65e2dec888df3c8644e90d2078))
+- **Notifications:** use overflow-wrap instead of overflow for breaking unbreakable strings ([3bad846](https://github.com/nrkno/sofie-core/commit/3bad8460fa64fb1656860d0576125783c0a4e075))
+- package-lock ([55ee0ba](https://github.com/nrkno/sofie-core/commit/55ee0ba6e5fa7033fb7441adaa3c9c5fce25410a))
+- parse REDIS_URL variable ([12e9f3a](https://github.com/nrkno/sofie-core/commit/12e9f3addf92b531e4680d42ab877a7c9045db8e))
+- plumb in fast-track for timeline updates, and useractionlog timeline hashes ([0d9be53](https://github.com/nrkno/sofie-core/commit/0d9be536822372411c407aad7afa7bc63aed7504))
+- port some more code ([4b742f5](https://github.com/nrkno/sofie-core/commit/4b742f5de638c8402ababcc8bc64fd2a3245a59b))
+- pre-commit hook ([621c184](https://github.com/nrkno/sofie-core/commit/621c184a28472cd5c0a50d65fa1e6a73faac296a))
+- remaining meteor tests ([2f6a7e4](https://github.com/nrkno/sofie-core/commit/2f6a7e4cd31f9c6fa67672923e72261ec3c26401))
+- replace codecov from npm with github action ([f390abb](https://github.com/nrkno/sofie-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+- replace old implementation with queue based prototypes ([4688e04](https://github.com/nrkno/sofie-core/commit/4688e04be3a4bb07fd3015659da53bbcb0681c6b))
+- route worker-thread logging through meteor winston instance, labeled with a 'threadName' property ([94162ef](https://github.com/nrkno/sofie-core/commit/94162eff223f9ad658255a0597b0fb742d4091c7))
+- show adLibs from different show-styles as disabled ([#665](https://github.com/nrkno/sofie-core/issues/665)) ([6c88614](https://github.com/nrkno/sofie-core/commit/6c88614f9db2527cb5b1a1072d25c8172f3901b2))
+- some ci issues ([790fa30](https://github.com/nrkno/sofie-core/commit/790fa303acc2ae271523b07f952837d517f07bf1))
+- some meteor tests ([bcd016e](https://github.com/nrkno/sofie-core/commit/bcd016ebf6dc53d8cb238aac00bd299d2c20e848))
+- some more cache invalidation ([26b1461](https://github.com/nrkno/sofie-core/commit/26b1461729a8afe1706250495dec1af9452415fe))
+- some type errors ([872504a](https://github.com/nrkno/sofie-core/commit/872504ae0606c71e3dad9bcc1eeff731f36a343c))
+- some work queue management bits ([ce4d019](https://github.com/nrkno/sofie-core/commit/ce4d0193a16317b9d6bdf9da8dd6efbf86f4b9dd))
+- **Storyboard:** touch interaction sometimes doesn't work ([29c439b](https://github.com/nrkno/sofie-core/commit/29c439bca67a374555f9700ffcd491483be0f614))
+- support context.getPlaylists() in getRundown() ([3a023cd](https://github.com/nrkno/sofie-core/commit/3a023cd188b0698fac17be8168b1a755e9e21c73))
+- tests ([91823ba](https://github.com/nrkno/sofie-core/commit/91823ba3641d160b218f9d9dff479f5607331a60))
+- type errors ([c67bd0e](https://github.com/nrkno/sofie-core/commit/c67bd0e08be51621e378a7d34ec6f3212665ee9e))
+- type errors ([5f807ee](https://github.com/nrkno/sofie-core/commit/5f807ee60e61bfdf0d49d177fd69124c51ed069d))
+- typings ([91bbae2](https://github.com/nrkno/sofie-core/commit/91bbae210b51ae04893b8956917e2f1213d5e23e))
+- typings errors ([56ddd0e](https://github.com/nrkno/sofie-core/commit/56ddd0e9759eee1d86b29e613eebe50694c76059))
+- update docker image node version ([8f0f92b](https://github.com/nrkno/sofie-core/commit/8f0f92be2e2f501202255a01deb55d8ff6c90524))
+- update Meteor to 2.5.3 ([0d2eb37](https://github.com/nrkno/sofie-core/commit/0d2eb3709f8dc3b715376850de0baeb6390ca39a))
+- update Meteor to 2.5.5 ([e4cdb9d](https://github.com/nrkno/sofie-core/commit/e4cdb9dbc1ac86478e191a25157956127e8c376d))
+- worker threads in docker build (still failing because of incorrect mongo url) ([e6a9bbe](https://github.com/nrkno/sofie-core/commit/e6a9bbe7b439864a6a3bccc637a5d411c4bf1849))
+- worker unit tests ([d5d3f10](https://github.com/nrkno/sofie-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
+- workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/sofie-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
+- yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/sofie-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
 
 ## [1.40.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
 
-
 ### Features
 
-* First-class Sofie PWA ([#670](https://github.com/nrkno/sofie-core/issues/670)) ([c413d8a](https://github.com/nrkno/sofie-core/commit/c413d8ae8a5e70a4c5b0cd4fd6924900b69f6f4c))
-* **Timeline+Storyboard:** Invalid Parts show hover inspector with invalidReason ([#679](https://github.com/nrkno/sofie-core/issues/679)) ([43ba126](https://github.com/nrkno/sofie-core/commit/43ba126b986d3c185212d49433739804350cc084))
-
+- First-class Sofie PWA ([#670](https://github.com/nrkno/sofie-core/issues/670)) ([c413d8a](https://github.com/nrkno/sofie-core/commit/c413d8ae8a5e70a4c5b0cd4fd6924900b69f6f4c))
+- **Timeline+Storyboard:** Invalid Parts show hover inspector with invalidReason ([#679](https://github.com/nrkno/sofie-core/issues/679)) ([43ba126](https://github.com/nrkno/sofie-core/commit/43ba126b986d3c185212d49433739804350cc084))
 
 ### Bug Fixes
 
-* 'startup' log line being done too late ([808d6c7](https://github.com/nrkno/sofie-core/commit/808d6c7d883d2ee14f810997e8991f0ae4974ea7))
-* **Storyboard:** add Auto/Next label on end of Segment ([7ff9979](https://github.com/nrkno/sofie-core/commit/7ff9979dd04c45f619450a64af6120d7bbe3d942))
-* **Storyboard:** End of Show/End of Segment marker is missing ([5870f7f](https://github.com/nrkno/sofie-core/commit/5870f7fa13691952357326ee30bc42f73ca9acaa))
-* **Timeline:** end of segment take-line, when auto, displayed with arrows ([b73d4ac](https://github.com/nrkno/sofie-core/commit/b73d4ac12cb63e7048302c02675dbcd3f0d59945))
+- 'startup' log line being done too late ([808d6c7](https://github.com/nrkno/sofie-core/commit/808d6c7d883d2ee14f810997e8991f0ae4974ea7))
+- **Storyboard:** add Auto/Next label on end of Segment ([7ff9979](https://github.com/nrkno/sofie-core/commit/7ff9979dd04c45f619450a64af6120d7bbe3d942))
+- **Storyboard:** End of Show/End of Segment marker is missing ([5870f7f](https://github.com/nrkno/sofie-core/commit/5870f7fa13691952357326ee30bc42f73ca9acaa))
+- **Timeline:** end of segment take-line, when auto, displayed with arrows ([b73d4ac](https://github.com/nrkno/sofie-core/commit/b73d4ac12cb63e7048302c02675dbcd3f0d59945))
 
 ## [1.40.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
 
-
 ### Features
 
-* 'freeze' some objects instead of cloning them, to minimise overhead ([2ea6bce](https://github.com/nrkno/sofie-core/commit/2ea6bcec599ccfee4f301f875c9a72cbf46dfd6c))
-* add Workers collection, used to track the status of the Workers ([46366db](https://github.com/nrkno/sofie-core/commit/46366dbd4519b91317de0a55b322abed35bad331))
-* kill worker threads if jobs exceed a generous timeout ([4f9b90e](https://github.com/nrkno/sofie-core/commit/4f9b90e61a8b1059acfbd7eccdccb93f0cad533f))
-* lock rundowns in the worker threads. When deleting a playlist, delete the rundowns inside their locks to avoid race conditions ([73f90f0](https://github.com/nrkno/sofie-core/commit/73f90f04392c3b2ff1c722f09d56545130ff2b20))
-* make PeripheralDeviceApi.executeFunction and friends return a promise instead of take a callback ([59ac5ff](https://github.com/nrkno/sofie-core/commit/59ac5ff04a55500ea79523f6ea0dfbc14ea3d100))
-* monitor status of workerThreads (children of Workers) ([73179e0](https://github.com/nrkno/sofie-core/commit/73179e03444c2da798f265b3ba66a316b00e7a96))
-* monitor the status of the Worker ([746ba96](https://github.com/nrkno/sofie-core/commit/746ba96293f519192a9172cb9180969b0ccf6474))
-* move some properties onto the studio from the meteor Settings object. ([6ed8593](https://github.com/nrkno/sofie-core/commit/6ed859362430c01d498a415e86faab364a7362f6))
-* parse meteor mongo url to generate worker mongo url ([0eb44a6](https://github.com/nrkno/sofie-core/commit/0eb44a6909109da35bec57b318bf6eac1731116f))
-* refactor userActions api implementation, and track worker execution times ([1cfe05f](https://github.com/nrkno/sofie-core/commit/1cfe05fc71b743fe919e1829f43ee725462266a3))
-* replace threads with threadedclass ([a3773ed](https://github.com/nrkno/sofie-core/commit/a3773edcf77c28868bff9feabecc41a731fa4daf))
-
+- 'freeze' some objects instead of cloning them, to minimise overhead ([2ea6bce](https://github.com/nrkno/sofie-core/commit/2ea6bcec599ccfee4f301f875c9a72cbf46dfd6c))
+- add Workers collection, used to track the status of the Workers ([46366db](https://github.com/nrkno/sofie-core/commit/46366dbd4519b91317de0a55b322abed35bad331))
+- kill worker threads if jobs exceed a generous timeout ([4f9b90e](https://github.com/nrkno/sofie-core/commit/4f9b90e61a8b1059acfbd7eccdccb93f0cad533f))
+- lock rundowns in the worker threads. When deleting a playlist, delete the rundowns inside their locks to avoid race conditions ([73f90f0](https://github.com/nrkno/sofie-core/commit/73f90f04392c3b2ff1c722f09d56545130ff2b20))
+- make PeripheralDeviceApi.executeFunction and friends return a promise instead of take a callback ([59ac5ff](https://github.com/nrkno/sofie-core/commit/59ac5ff04a55500ea79523f6ea0dfbc14ea3d100))
+- monitor status of workerThreads (children of Workers) ([73179e0](https://github.com/nrkno/sofie-core/commit/73179e03444c2da798f265b3ba66a316b00e7a96))
+- monitor the status of the Worker ([746ba96](https://github.com/nrkno/sofie-core/commit/746ba96293f519192a9172cb9180969b0ccf6474))
+- move some properties onto the studio from the meteor Settings object. ([6ed8593](https://github.com/nrkno/sofie-core/commit/6ed859362430c01d498a415e86faab364a7362f6))
+- parse meteor mongo url to generate worker mongo url ([0eb44a6](https://github.com/nrkno/sofie-core/commit/0eb44a6909109da35bec57b318bf6eac1731116f))
+- refactor userActions api implementation, and track worker execution times ([1cfe05f](https://github.com/nrkno/sofie-core/commit/1cfe05fc71b743fe919e1829f43ee725462266a3))
+- replace threads with threadedclass ([a3773ed](https://github.com/nrkno/sofie-core/commit/a3773edcf77c28868bff9feabecc41a731fa4daf))
 
 ### Bug Fixes
 
-* add PieceStatusCode.SOURCE_HAS_ISSUES, used to indicate non-technical issues. ([213904c](https://github.com/nrkno/sofie-core/commit/213904cccdba4d45c219cbd855526118653fa133))
-* ask confirmation before restarting playout gateway ([#666](https://github.com/nrkno/sofie-core/issues/666)) ([ca9dba1](https://github.com/nrkno/sofie-core/commit/ca9dba1a979c2a63aa6559776e88c3c7bb9182b2))
-* better handling of errors from Core ([3ae8152](https://github.com/nrkno/sofie-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
-* blueprints-integration typing issue ([7c3a93a](https://github.com/nrkno/sofie-core/commit/7c3a93af23f08a7c4b6b41ce28e6b2624fb135a7))
-* bubble UserError type into the ui ([7fdb860](https://github.com/nrkno/sofie-core/commit/7fdb860fbe13fea3577b179b1bff62e4ec1d2a73))
-* bug found by sonar ([65337e8](https://github.com/nrkno/sofie-core/commit/65337e8e325c69e388ed4a4ac96b5746891eee5e))
-* clone blueprint config before freezing. some worker cache invalidation issues ([4432fc6](https://github.com/nrkno/sofie-core/commit/4432fc67f64a7a6fa16289c8bed83701cd7ee060))
-* collection.replace not trying to upsert ([471ebed](https://github.com/nrkno/sofie-core/commit/471ebedb47694fead72bc33316cacaf91fb69968))
-* **Context Menus:** don't limit the width that much ([5640f9d](https://github.com/nrkno/sofie-core/commit/5640f9d14ec8dfa4ffdb79a6a727aeb23b44005c))
-* correctly show timecode values ([4eb3c0d](https://github.com/nrkno/sofie-core/commit/4eb3c0d9fc15c0edacc1cf6cdd0d3d49a6150d13))
-* disable jest coverage requirements ([7fc7ed4](https://github.com/nrkno/sofie-core/commit/7fc7ed4d2654d358ea95851668bd2fe8ecd76dab))
-* disable meteor-elastic-apm package, as it is incompatible with Meteor >2.3 at the moment ([547674e](https://github.com/nrkno/sofie-core/commit/547674e8799217e290df4a57a12787d975ff5025))
-* don't treat "no workers" as a bad status. ([1ebb66c](https://github.com/nrkno/sofie-core/commit/1ebb66c982230948c1862f7299fa7b906ee13058))
-* downgrade mongodb lib in job-worker to resolve type issues ([32dd334](https://github.com/nrkno/sofie-core/commit/32dd3340f0308d82c4ebc9031350e6bd24a1f230))
-* failing tests ([84f2063](https://github.com/nrkno/sofie-core/commit/84f206337048441216b6e3589db753aba17d14e9))
-* GUI issue where a long, unbroken word pushed the dismiss-button too far to the right ([5ebf747](https://github.com/nrkno/sofie-core/commit/5ebf74765efa5f060b477c8b7b0bb7f987cd8fc7))
-* handle lock timeouts in workers ([783a214](https://github.com/nrkno/sofie-core/commit/783a21446c66979e9f235f79b3aaa45465c825b1))
-* hook up broken debug method ([341cd6c](https://github.com/nrkno/sofie-core/commit/341cd6c0cd9926c2d2a0c7d1e8e4076226d9e32d))
-* Ignore unassigned devices in installations with multiple studios ([dd08120](https://github.com/nrkno/sofie-core/commit/dd0812093643ebc9f0bb1d0b4c2c299a99256364))
-* import error ([391b334](https://github.com/nrkno/sofie-core/commit/391b3345234e6bc94bc11f3ec471de20cc963115))
-* improve accuracy of package framerate detection ([#653](https://github.com/nrkno/sofie-core/issues/653)) ([ad7926c](https://github.com/nrkno/sofie-core/commit/ad7926cad64be1ab55725caadc9dff63865bccfa))
-* improve meteor method signatures ([#669](https://github.com/nrkno/sofie-core/issues/669)) ([5fd4839](https://github.com/nrkno/sofie-core/commit/5fd4839b894260c384077df3d01d9cc55093e06e))
-* influxdb for worker ([ee747b7](https://github.com/nrkno/sofie-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
-* job timings being calculated incorrectly ([d15bfc5](https://github.com/nrkno/sofie-core/commit/d15bfc58db678dba0415e706a0c570bbe04efbd3))
-* launching of worker ([4adf500](https://github.com/nrkno/sofie-core/commit/4adf500231f2003ae368acf891b1b244fba1b506))
-* look at the parent PeripheralDevice to check the studioId ([8308595](https://github.com/nrkno/sofie-core/commit/8308595d16bf8fc460638d8b20a6a61fdee9a70a))
-* meteor not restarting when worker code changes ([b56c639](https://github.com/nrkno/sofie-core/commit/b56c639efbecb1d32033c8b64108dbb5433ae246))
-* move meteor restart on worker code changes to separate process. ([f439c0f](https://github.com/nrkno/sofie-core/commit/f439c0fda67b1371b1b386a0891ca98603aa1a93))
-* multiple versions of some core libs ([fbe2dd2](https://github.com/nrkno/sofie-core/commit/fbe2dd2e43d6be65e2dec888df3c8644e90d2078))
-* **Notifications:** use overflow-wrap instead of overflow for breaking unbreakable strings ([3bad846](https://github.com/nrkno/sofie-core/commit/3bad8460fa64fb1656860d0576125783c0a4e075))
-* package-lock ([55ee0ba](https://github.com/nrkno/sofie-core/commit/55ee0ba6e5fa7033fb7441adaa3c9c5fce25410a))
-* parse REDIS_URL variable ([12e9f3a](https://github.com/nrkno/sofie-core/commit/12e9f3addf92b531e4680d42ab877a7c9045db8e))
-* plumb in fast-track for timeline updates, and useractionlog timeline hashes ([0d9be53](https://github.com/nrkno/sofie-core/commit/0d9be536822372411c407aad7afa7bc63aed7504))
-* port some more code ([4b742f5](https://github.com/nrkno/sofie-core/commit/4b742f5de638c8402ababcc8bc64fd2a3245a59b))
-* pre-commit hook ([621c184](https://github.com/nrkno/sofie-core/commit/621c184a28472cd5c0a50d65fa1e6a73faac296a))
-* remaining meteor tests ([2f6a7e4](https://github.com/nrkno/sofie-core/commit/2f6a7e4cd31f9c6fa67672923e72261ec3c26401))
-* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/sofie-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
-* replace old implementation with queue based prototypes ([4688e04](https://github.com/nrkno/sofie-core/commit/4688e04be3a4bb07fd3015659da53bbcb0681c6b))
-* route worker-thread logging through meteor winston instance, labeled with a 'threadName' property ([94162ef](https://github.com/nrkno/sofie-core/commit/94162eff223f9ad658255a0597b0fb742d4091c7))
-* show adLibs from different show-styles as disabled ([#665](https://github.com/nrkno/sofie-core/issues/665)) ([6c88614](https://github.com/nrkno/sofie-core/commit/6c88614f9db2527cb5b1a1072d25c8172f3901b2))
-* some ci issues ([790fa30](https://github.com/nrkno/sofie-core/commit/790fa303acc2ae271523b07f952837d517f07bf1))
-* some meteor tests ([bcd016e](https://github.com/nrkno/sofie-core/commit/bcd016ebf6dc53d8cb238aac00bd299d2c20e848))
-* some more cache invalidation ([26b1461](https://github.com/nrkno/sofie-core/commit/26b1461729a8afe1706250495dec1af9452415fe))
-* some type errors ([872504a](https://github.com/nrkno/sofie-core/commit/872504ae0606c71e3dad9bcc1eeff731f36a343c))
-* some work queue management bits ([ce4d019](https://github.com/nrkno/sofie-core/commit/ce4d0193a16317b9d6bdf9da8dd6efbf86f4b9dd))
-* **Storyboard:** touch interaction sometimes doesn't work ([29c439b](https://github.com/nrkno/sofie-core/commit/29c439bca67a374555f9700ffcd491483be0f614))
-* tests ([91823ba](https://github.com/nrkno/sofie-core/commit/91823ba3641d160b218f9d9dff479f5607331a60))
-* type errors ([c67bd0e](https://github.com/nrkno/sofie-core/commit/c67bd0e08be51621e378a7d34ec6f3212665ee9e))
-* type errors ([5f807ee](https://github.com/nrkno/sofie-core/commit/5f807ee60e61bfdf0d49d177fd69124c51ed069d))
-* typings ([91bbae2](https://github.com/nrkno/sofie-core/commit/91bbae210b51ae04893b8956917e2f1213d5e23e))
-* typings errors ([56ddd0e](https://github.com/nrkno/sofie-core/commit/56ddd0e9759eee1d86b29e613eebe50694c76059))
-* update docker image node version ([8f0f92b](https://github.com/nrkno/sofie-core/commit/8f0f92be2e2f501202255a01deb55d8ff6c90524))
-* update Meteor to 2.5.3 ([0d2eb37](https://github.com/nrkno/sofie-core/commit/0d2eb3709f8dc3b715376850de0baeb6390ca39a))
-* update Meteor to 2.5.5 ([e4cdb9d](https://github.com/nrkno/sofie-core/commit/e4cdb9dbc1ac86478e191a25157956127e8c376d))
-* worker threads in docker build (still failing because of incorrect mongo url) ([e6a9bbe](https://github.com/nrkno/sofie-core/commit/e6a9bbe7b439864a6a3bccc637a5d411c4bf1849))
-* worker unit tests ([d5d3f10](https://github.com/nrkno/sofie-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
-* workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/sofie-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
-* yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/sofie-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
+- add PieceStatusCode.SOURCE_HAS_ISSUES, used to indicate non-technical issues. ([213904c](https://github.com/nrkno/sofie-core/commit/213904cccdba4d45c219cbd855526118653fa133))
+- ask confirmation before restarting playout gateway ([#666](https://github.com/nrkno/sofie-core/issues/666)) ([ca9dba1](https://github.com/nrkno/sofie-core/commit/ca9dba1a979c2a63aa6559776e88c3c7bb9182b2))
+- better handling of errors from Core ([3ae8152](https://github.com/nrkno/sofie-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
+- blueprints-integration typing issue ([7c3a93a](https://github.com/nrkno/sofie-core/commit/7c3a93af23f08a7c4b6b41ce28e6b2624fb135a7))
+- bubble UserError type into the ui ([7fdb860](https://github.com/nrkno/sofie-core/commit/7fdb860fbe13fea3577b179b1bff62e4ec1d2a73))
+- bug found by sonar ([65337e8](https://github.com/nrkno/sofie-core/commit/65337e8e325c69e388ed4a4ac96b5746891eee5e))
+- clone blueprint config before freezing. some worker cache invalidation issues ([4432fc6](https://github.com/nrkno/sofie-core/commit/4432fc67f64a7a6fa16289c8bed83701cd7ee060))
+- collection.replace not trying to upsert ([471ebed](https://github.com/nrkno/sofie-core/commit/471ebedb47694fead72bc33316cacaf91fb69968))
+- **Context Menus:** don't limit the width that much ([5640f9d](https://github.com/nrkno/sofie-core/commit/5640f9d14ec8dfa4ffdb79a6a727aeb23b44005c))
+- correctly show timecode values ([4eb3c0d](https://github.com/nrkno/sofie-core/commit/4eb3c0d9fc15c0edacc1cf6cdd0d3d49a6150d13))
+- disable jest coverage requirements ([7fc7ed4](https://github.com/nrkno/sofie-core/commit/7fc7ed4d2654d358ea95851668bd2fe8ecd76dab))
+- disable meteor-elastic-apm package, as it is incompatible with Meteor >2.3 at the moment ([547674e](https://github.com/nrkno/sofie-core/commit/547674e8799217e290df4a57a12787d975ff5025))
+- don't treat "no workers" as a bad status. ([1ebb66c](https://github.com/nrkno/sofie-core/commit/1ebb66c982230948c1862f7299fa7b906ee13058))
+- downgrade mongodb lib in job-worker to resolve type issues ([32dd334](https://github.com/nrkno/sofie-core/commit/32dd3340f0308d82c4ebc9031350e6bd24a1f230))
+- failing tests ([84f2063](https://github.com/nrkno/sofie-core/commit/84f206337048441216b6e3589db753aba17d14e9))
+- GUI issue where a long, unbroken word pushed the dismiss-button too far to the right ([5ebf747](https://github.com/nrkno/sofie-core/commit/5ebf74765efa5f060b477c8b7b0bb7f987cd8fc7))
+- handle lock timeouts in workers ([783a214](https://github.com/nrkno/sofie-core/commit/783a21446c66979e9f235f79b3aaa45465c825b1))
+- hook up broken debug method ([341cd6c](https://github.com/nrkno/sofie-core/commit/341cd6c0cd9926c2d2a0c7d1e8e4076226d9e32d))
+- Ignore unassigned devices in installations with multiple studios ([dd08120](https://github.com/nrkno/sofie-core/commit/dd0812093643ebc9f0bb1d0b4c2c299a99256364))
+- import error ([391b334](https://github.com/nrkno/sofie-core/commit/391b3345234e6bc94bc11f3ec471de20cc963115))
+- improve accuracy of package framerate detection ([#653](https://github.com/nrkno/sofie-core/issues/653)) ([ad7926c](https://github.com/nrkno/sofie-core/commit/ad7926cad64be1ab55725caadc9dff63865bccfa))
+- improve meteor method signatures ([#669](https://github.com/nrkno/sofie-core/issues/669)) ([5fd4839](https://github.com/nrkno/sofie-core/commit/5fd4839b894260c384077df3d01d9cc55093e06e))
+- influxdb for worker ([ee747b7](https://github.com/nrkno/sofie-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
+- job timings being calculated incorrectly ([d15bfc5](https://github.com/nrkno/sofie-core/commit/d15bfc58db678dba0415e706a0c570bbe04efbd3))
+- launching of worker ([4adf500](https://github.com/nrkno/sofie-core/commit/4adf500231f2003ae368acf891b1b244fba1b506))
+- look at the parent PeripheralDevice to check the studioId ([8308595](https://github.com/nrkno/sofie-core/commit/8308595d16bf8fc460638d8b20a6a61fdee9a70a))
+- meteor not restarting when worker code changes ([b56c639](https://github.com/nrkno/sofie-core/commit/b56c639efbecb1d32033c8b64108dbb5433ae246))
+- move meteor restart on worker code changes to separate process. ([f439c0f](https://github.com/nrkno/sofie-core/commit/f439c0fda67b1371b1b386a0891ca98603aa1a93))
+- multiple versions of some core libs ([fbe2dd2](https://github.com/nrkno/sofie-core/commit/fbe2dd2e43d6be65e2dec888df3c8644e90d2078))
+- **Notifications:** use overflow-wrap instead of overflow for breaking unbreakable strings ([3bad846](https://github.com/nrkno/sofie-core/commit/3bad8460fa64fb1656860d0576125783c0a4e075))
+- package-lock ([55ee0ba](https://github.com/nrkno/sofie-core/commit/55ee0ba6e5fa7033fb7441adaa3c9c5fce25410a))
+- parse REDIS_URL variable ([12e9f3a](https://github.com/nrkno/sofie-core/commit/12e9f3addf92b531e4680d42ab877a7c9045db8e))
+- plumb in fast-track for timeline updates, and useractionlog timeline hashes ([0d9be53](https://github.com/nrkno/sofie-core/commit/0d9be536822372411c407aad7afa7bc63aed7504))
+- port some more code ([4b742f5](https://github.com/nrkno/sofie-core/commit/4b742f5de638c8402ababcc8bc64fd2a3245a59b))
+- pre-commit hook ([621c184](https://github.com/nrkno/sofie-core/commit/621c184a28472cd5c0a50d65fa1e6a73faac296a))
+- remaining meteor tests ([2f6a7e4](https://github.com/nrkno/sofie-core/commit/2f6a7e4cd31f9c6fa67672923e72261ec3c26401))
+- replace codecov from npm with github action ([f390abb](https://github.com/nrkno/sofie-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+- replace old implementation with queue based prototypes ([4688e04](https://github.com/nrkno/sofie-core/commit/4688e04be3a4bb07fd3015659da53bbcb0681c6b))
+- route worker-thread logging through meteor winston instance, labeled with a 'threadName' property ([94162ef](https://github.com/nrkno/sofie-core/commit/94162eff223f9ad658255a0597b0fb742d4091c7))
+- show adLibs from different show-styles as disabled ([#665](https://github.com/nrkno/sofie-core/issues/665)) ([6c88614](https://github.com/nrkno/sofie-core/commit/6c88614f9db2527cb5b1a1072d25c8172f3901b2))
+- some ci issues ([790fa30](https://github.com/nrkno/sofie-core/commit/790fa303acc2ae271523b07f952837d517f07bf1))
+- some meteor tests ([bcd016e](https://github.com/nrkno/sofie-core/commit/bcd016ebf6dc53d8cb238aac00bd299d2c20e848))
+- some more cache invalidation ([26b1461](https://github.com/nrkno/sofie-core/commit/26b1461729a8afe1706250495dec1af9452415fe))
+- some type errors ([872504a](https://github.com/nrkno/sofie-core/commit/872504ae0606c71e3dad9bcc1eeff731f36a343c))
+- some work queue management bits ([ce4d019](https://github.com/nrkno/sofie-core/commit/ce4d0193a16317b9d6bdf9da8dd6efbf86f4b9dd))
+- **Storyboard:** touch interaction sometimes doesn't work ([29c439b](https://github.com/nrkno/sofie-core/commit/29c439bca67a374555f9700ffcd491483be0f614))
+- tests ([91823ba](https://github.com/nrkno/sofie-core/commit/91823ba3641d160b218f9d9dff479f5607331a60))
+- type errors ([c67bd0e](https://github.com/nrkno/sofie-core/commit/c67bd0e08be51621e378a7d34ec6f3212665ee9e))
+- type errors ([5f807ee](https://github.com/nrkno/sofie-core/commit/5f807ee60e61bfdf0d49d177fd69124c51ed069d))
+- typings ([91bbae2](https://github.com/nrkno/sofie-core/commit/91bbae210b51ae04893b8956917e2f1213d5e23e))
+- typings errors ([56ddd0e](https://github.com/nrkno/sofie-core/commit/56ddd0e9759eee1d86b29e613eebe50694c76059))
+- update docker image node version ([8f0f92b](https://github.com/nrkno/sofie-core/commit/8f0f92be2e2f501202255a01deb55d8ff6c90524))
+- update Meteor to 2.5.3 ([0d2eb37](https://github.com/nrkno/sofie-core/commit/0d2eb3709f8dc3b715376850de0baeb6390ca39a))
+- update Meteor to 2.5.5 ([e4cdb9d](https://github.com/nrkno/sofie-core/commit/e4cdb9dbc1ac86478e191a25157956127e8c376d))
+- worker threads in docker build (still failing because of incorrect mongo url) ([e6a9bbe](https://github.com/nrkno/sofie-core/commit/e6a9bbe7b439864a6a3bccc637a5d411c4bf1849))
+- worker unit tests ([d5d3f10](https://github.com/nrkno/sofie-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
+- workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/sofie-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
+- yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/sofie-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
 
 ## [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
 
 ### Features
 
-* 'freeze' some objects instead of cloning them, to minimise overhead ([2ea6bce](https://github.com/nrkno/tv-automation-server-core/commit/2ea6bcec599ccfee4f301f875c9a72cbf46dfd6c))
-* add Workers collection, used to track the status of the Workers ([46366db](https://github.com/nrkno/tv-automation-server-core/commit/46366dbd4519b91317de0a55b322abed35bad331))
-* kill worker threads if jobs exceed a generous timeout ([4f9b90e](https://github.com/nrkno/tv-automation-server-core/commit/4f9b90e61a8b1059acfbd7eccdccb93f0cad533f))
-* lock rundowns in the worker threads. When deleting a playlist, delete the rundowns inside their locks to avoid race conditions ([73f90f0](https://github.com/nrkno/tv-automation-server-core/commit/73f90f04392c3b2ff1c722f09d56545130ff2b20))
-* make PeripheralDeviceApi.executeFunction and friends return a promise instead of take a callback ([59ac5ff](https://github.com/nrkno/tv-automation-server-core/commit/59ac5ff04a55500ea79523f6ea0dfbc14ea3d100))
-* monitor status of workerThreads (children of Workers) ([73179e0](https://github.com/nrkno/tv-automation-server-core/commit/73179e03444c2da798f265b3ba66a316b00e7a96))
-* monitor the status of the Worker ([746ba96](https://github.com/nrkno/tv-automation-server-core/commit/746ba96293f519192a9172cb9180969b0ccf6474))
-* move some properties onto the studio from the meteor Settings object. ([6ed8593](https://github.com/nrkno/tv-automation-server-core/commit/6ed859362430c01d498a415e86faab364a7362f6))
-* parse meteor mongo url to generate worker mongo url ([0eb44a6](https://github.com/nrkno/tv-automation-server-core/commit/0eb44a6909109da35bec57b318bf6eac1731116f))
-* refactor userActions api implementation, and track worker execution times ([1cfe05f](https://github.com/nrkno/tv-automation-server-core/commit/1cfe05fc71b743fe919e1829f43ee725462266a3))
-* replace threads with threadedclass ([a3773ed](https://github.com/nrkno/tv-automation-server-core/commit/a3773edcf77c28868bff9feabecc41a731fa4daf))
+- 'freeze' some objects instead of cloning them, to minimise overhead ([2ea6bce](https://github.com/nrkno/tv-automation-server-core/commit/2ea6bcec599ccfee4f301f875c9a72cbf46dfd6c))
+- add Workers collection, used to track the status of the Workers ([46366db](https://github.com/nrkno/tv-automation-server-core/commit/46366dbd4519b91317de0a55b322abed35bad331))
+- kill worker threads if jobs exceed a generous timeout ([4f9b90e](https://github.com/nrkno/tv-automation-server-core/commit/4f9b90e61a8b1059acfbd7eccdccb93f0cad533f))
+- lock rundowns in the worker threads. When deleting a playlist, delete the rundowns inside their locks to avoid race conditions ([73f90f0](https://github.com/nrkno/tv-automation-server-core/commit/73f90f04392c3b2ff1c722f09d56545130ff2b20))
+- make PeripheralDeviceApi.executeFunction and friends return a promise instead of take a callback ([59ac5ff](https://github.com/nrkno/tv-automation-server-core/commit/59ac5ff04a55500ea79523f6ea0dfbc14ea3d100))
+- monitor status of workerThreads (children of Workers) ([73179e0](https://github.com/nrkno/tv-automation-server-core/commit/73179e03444c2da798f265b3ba66a316b00e7a96))
+- monitor the status of the Worker ([746ba96](https://github.com/nrkno/tv-automation-server-core/commit/746ba96293f519192a9172cb9180969b0ccf6474))
+- move some properties onto the studio from the meteor Settings object. ([6ed8593](https://github.com/nrkno/tv-automation-server-core/commit/6ed859362430c01d498a415e86faab364a7362f6))
+- parse meteor mongo url to generate worker mongo url ([0eb44a6](https://github.com/nrkno/tv-automation-server-core/commit/0eb44a6909109da35bec57b318bf6eac1731116f))
+- refactor userActions api implementation, and track worker execution times ([1cfe05f](https://github.com/nrkno/tv-automation-server-core/commit/1cfe05fc71b743fe919e1829f43ee725462266a3))
+- replace threads with threadedclass ([a3773ed](https://github.com/nrkno/tv-automation-server-core/commit/a3773edcf77c28868bff9feabecc41a731fa4daf))
 
 ## [1.39.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.38.2-1...v1.39.0-in-testing.4) (2022-03-10)
 
-
 ### Features
 
-* MigrationContextWithTriggeredActions exposes getTriggeredActionsId ([7bba681](https://github.com/nrkno/sofie-core/commit/7bba681a7eb628a8d476f6802e79c77153d69239))
-
+- MigrationContextWithTriggeredActions exposes getTriggeredActionsId ([7bba681](https://github.com/nrkno/sofie-core/commit/7bba681a7eb628a8d476f6802e79c77153d69239))
 
 ### Bug Fixes
 
-* migrationContext removeTriggeredAction missing showStyleBaseId ([d17e6d3](https://github.com/nrkno/sofie-core/commit/d17e6d3ebaf1998b93885701329e377a6bea7566))
+- migrationContext removeTriggeredAction missing showStyleBaseId ([d17e6d3](https://github.com/nrkno/sofie-core/commit/d17e6d3ebaf1998b93885701329e377a6bea7566))
 
 ## [1.39.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
 
-
 ### Bug Fixes
 
-* **Action Triggers, Shelf:** Collection fetch optimizations and new AdLib sorting can cause a Pick[1] & Pick[2] to match the same AdLib ([905510c](https://github.com/nrkno/sofie-core/commit/905510cad05c48dcb17908822e9c1757576a42f7))
-* add Tab key to be default-disabled when keyboard Triggers are registered ([f5d61b2](https://github.com/nrkno/sofie-core/commit/f5d61b29f33ac19e3ba13e3e931c29bca78ac726))
-* **Prompter:** Diff in Prompter is inaccurate because data isn't subscribed to ([0cf9641](https://github.com/nrkno/sofie-core/commit/0cf9641b29db00884eb7e60e4702801350546c25))
-* **Source Layers:** LiveSpeak dual-tone background not shown in Presenter's screen ([a75ef38](https://github.com/nrkno/sofie-core/commit/a75ef38cf435ca710c3a40d9fab6ffa85beefc57))
-* **Storyboard:** LiveSpeak Storyboard thumbnail looks like a Camera with a Thumbnail ([f68c9d4](https://github.com/nrkno/sofie-core/commit/f68c9d40f7b529ae9617392642cea4d6d237c102))
+- **Action Triggers, Shelf:** Collection fetch optimizations and new AdLib sorting can cause a Pick[1] & Pick[2] to match the same AdLib ([905510c](https://github.com/nrkno/sofie-core/commit/905510cad05c48dcb17908822e9c1757576a42f7))
+- add Tab key to be default-disabled when keyboard Triggers are registered ([f5d61b2](https://github.com/nrkno/sofie-core/commit/f5d61b29f33ac19e3ba13e3e931c29bca78ac726))
+- **Prompter:** Diff in Prompter is inaccurate because data isn't subscribed to ([0cf9641](https://github.com/nrkno/sofie-core/commit/0cf9641b29db00884eb7e60e4702801350546c25))
+- **Source Layers:** LiveSpeak dual-tone background not shown in Presenter's screen ([a75ef38](https://github.com/nrkno/sofie-core/commit/a75ef38cf435ca710c3a40d9fab6ffa85beefc57))
+- **Storyboard:** LiveSpeak Storyboard thumbnail looks like a Camera with a Thumbnail ([f68c9d4](https://github.com/nrkno/sofie-core/commit/f68c9d40f7b529ae9617392642cea4d6d237c102))
 
 ## [1.39.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
 
-
 ### Features
 
-* allow sync of previous Part Instances ([#674](https://github.com/nrkno/sofie-core/issues/674)) ([04d0142](https://github.com/nrkno/sofie-core/commit/04d01427e85e6df99400387bec71b1b2b7fa4a3e))
+- allow sync of previous Part Instances ([#674](https://github.com/nrkno/sofie-core/issues/674)) ([04d0142](https://github.com/nrkno/sofie-core/commit/04d01427e85e6df99400387bec71b1b2b7fa4a3e))
 
 ## [1.39.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
 
-
 ### Features
 
-* adlib-actions can block a take from happening until a certain time ([588f4d9](https://github.com/nrkno/sofie-core/commit/588f4d9f071530b59fb400e7a3e1d3ad43e5090f))
-* calculate and cache the 'old style' expectedDuration under a new property name on Parts ([7b531dc](https://github.com/nrkno/sofie-core/commit/7b531dc47da3036d918f2e49a5282dc2bea8c011))
-* make PeripheralDeviceApi.executeFunction and friends return a p… ([#632](https://github.com/nrkno/sofie-core/issues/632)) ([5f9a3a2](https://github.com/nrkno/sofie-core/commit/5f9a3a29acb61e8ea896b7b5a125ef3a3fc75e26))
-* out transitions ([03101a5](https://github.com/nrkno/sofie-core/commit/03101a503a82254baeaa279c4131cdad308c5344))
-* render out transition pieces at the end of the timeline ([c8e28df](https://github.com/nrkno/sofie-core/commit/c8e28dfe079af84626cd9cc03684e717a28b7d07))
-* REST method for disabling subdevice ([#649](https://github.com/nrkno/sofie-core/issues/649)) ([930e27f](https://github.com/nrkno/sofie-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
-
+- adlib-actions can block a take from happening until a certain time ([588f4d9](https://github.com/nrkno/sofie-core/commit/588f4d9f071530b59fb400e7a3e1d3ad43e5090f))
+- calculate and cache the 'old style' expectedDuration under a new property name on Parts ([7b531dc](https://github.com/nrkno/sofie-core/commit/7b531dc47da3036d918f2e49a5282dc2bea8c011))
+- make PeripheralDeviceApi.executeFunction and friends return a p… ([#632](https://github.com/nrkno/sofie-core/issues/632)) ([5f9a3a2](https://github.com/nrkno/sofie-core/commit/5f9a3a29acb61e8ea896b7b5a125ef3a3fc75e26))
+- out transitions ([03101a5](https://github.com/nrkno/sofie-core/commit/03101a503a82254baeaa279c4131cdad308c5344))
+- render out transition pieces at the end of the timeline ([c8e28df](https://github.com/nrkno/sofie-core/commit/c8e28dfe079af84626cd9cc03684e717a28b7d07))
+- REST method for disabling subdevice ([#649](https://github.com/nrkno/sofie-core/issues/649)) ([930e27f](https://github.com/nrkno/sofie-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
 
 ### Bug Fixes
 
-* add PieceStatusCode.SOURCE_HAS_ISSUES, used to indicate non-technical issues. ([213904c](https://github.com/nrkno/tv-automation-server-core/commit/213904cccdba4d45c219cbd855526118653fa133))
-* ask confirmation before restarting playout gateway ([#666](https://github.com/nrkno/tv-automation-server-core/issues/666)) ([ca9dba1](https://github.com/nrkno/tv-automation-server-core/commit/ca9dba1a979c2a63aa6559776e88c3c7bb9182b2))
-* better handling of errors from Core ([3ae8152](https://github.com/nrkno/tv-automation-server-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
-* blueprints-integration typing issue ([7c3a93a](https://github.com/nrkno/tv-automation-server-core/commit/7c3a93af23f08a7c4b6b41ce28e6b2624fb135a7))
-* bubble UserError type into the ui ([7fdb860](https://github.com/nrkno/tv-automation-server-core/commit/7fdb860fbe13fea3577b179b1bff62e4ec1d2a73))
-* bug found by sonar ([65337e8](https://github.com/nrkno/tv-automation-server-core/commit/65337e8e325c69e388ed4a4ac96b5746891eee5e))
-* clone blueprint config before freezing. some worker cache invalidation issues ([4432fc6](https://github.com/nrkno/tv-automation-server-core/commit/4432fc67f64a7a6fa16289c8bed83701cd7ee060))
-* collection.replace not trying to upsert ([471ebed](https://github.com/nrkno/tv-automation-server-core/commit/471ebedb47694fead72bc33316cacaf91fb69968))
-* **Context Menus:** don't limit the width that much ([5640f9d](https://github.com/nrkno/tv-automation-server-core/commit/5640f9d14ec8dfa4ffdb79a6a727aeb23b44005c))
-* correctly show timecode values ([4eb3c0d](https://github.com/nrkno/tv-automation-server-core/commit/4eb3c0d9fc15c0edacc1cf6cdd0d3d49a6150d13))
-* disable jest coverage requirements ([7fc7ed4](https://github.com/nrkno/tv-automation-server-core/commit/7fc7ed4d2654d358ea95851668bd2fe8ecd76dab))
-* disable meteor-elastic-apm package, as it is incompatible with Meteor >2.3 at the moment ([547674e](https://github.com/nrkno/tv-automation-server-core/commit/547674e8799217e290df4a57a12787d975ff5025))
-* don't treat "no workers" as a bad status. ([1ebb66c](https://github.com/nrkno/tv-automation-server-core/commit/1ebb66c982230948c1862f7299fa7b906ee13058))
-* downgrade mongodb lib in job-worker to resolve type issues ([32dd334](https://github.com/nrkno/tv-automation-server-core/commit/32dd3340f0308d82c4ebc9031350e6bd24a1f230))
-* failing tests ([84f2063](https://github.com/nrkno/tv-automation-server-core/commit/84f206337048441216b6e3589db753aba17d14e9))
-* GUI issue where a long, unbroken word pushed the dismiss-button too far to the right ([5ebf747](https://github.com/nrkno/tv-automation-server-core/commit/5ebf74765efa5f060b477c8b7b0bb7f987cd8fc7))
-* handle lock timeouts in workers ([783a214](https://github.com/nrkno/tv-automation-server-core/commit/783a21446c66979e9f235f79b3aaa45465c825b1))
-* hook up broken debug method ([341cd6c](https://github.com/nrkno/tv-automation-server-core/commit/341cd6c0cd9926c2d2a0c7d1e8e4076226d9e32d))
-* Ignore unassigned devices in installations with multiple studios ([dd08120](https://github.com/nrkno/tv-automation-server-core/commit/dd0812093643ebc9f0bb1d0b4c2c299a99256364))
-* import error ([391b334](https://github.com/nrkno/tv-automation-server-core/commit/391b3345234e6bc94bc11f3ec471de20cc963115))
-* improve accuracy of package framerate detection ([#653](https://github.com/nrkno/tv-automation-server-core/issues/653)) ([ad7926c](https://github.com/nrkno/tv-automation-server-core/commit/ad7926cad64be1ab55725caadc9dff63865bccfa))
-* improve meteor method signatures ([#669](https://github.com/nrkno/tv-automation-server-core/issues/669)) ([5fd4839](https://github.com/nrkno/tv-automation-server-core/commit/5fd4839b894260c384077df3d01d9cc55093e06e))
-* influxdb for worker ([ee747b7](https://github.com/nrkno/tv-automation-server-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
-* job timings being calculated incorrectly ([d15bfc5](https://github.com/nrkno/tv-automation-server-core/commit/d15bfc58db678dba0415e706a0c570bbe04efbd3))
-* launching of worker ([4adf500](https://github.com/nrkno/tv-automation-server-core/commit/4adf500231f2003ae368acf891b1b244fba1b506))
-* look at the parent PeripheralDevice to check the studioId ([8308595](https://github.com/nrkno/tv-automation-server-core/commit/8308595d16bf8fc460638d8b20a6a61fdee9a70a))
-* meteor not restarting when worker code changes ([b56c639](https://github.com/nrkno/tv-automation-server-core/commit/b56c639efbecb1d32033c8b64108dbb5433ae246))
-* move meteor restart on worker code changes to separate process. ([f439c0f](https://github.com/nrkno/tv-automation-server-core/commit/f439c0fda67b1371b1b386a0891ca98603aa1a93))
-* multiple versions of some core libs ([fbe2dd2](https://github.com/nrkno/tv-automation-server-core/commit/fbe2dd2e43d6be65e2dec888df3c8644e90d2078))
-* **Notifications:** use overflow-wrap instead of overflow for breaking unbreakable strings ([3bad846](https://github.com/nrkno/tv-automation-server-core/commit/3bad8460fa64fb1656860d0576125783c0a4e075))
-* package-lock ([55ee0ba](https://github.com/nrkno/tv-automation-server-core/commit/55ee0ba6e5fa7033fb7441adaa3c9c5fce25410a))
-* parse REDIS_URL variable ([12e9f3a](https://github.com/nrkno/tv-automation-server-core/commit/12e9f3addf92b531e4680d42ab877a7c9045db8e))
-* plumb in fast-track for timeline updates, and useractionlog timeline hashes ([0d9be53](https://github.com/nrkno/tv-automation-server-core/commit/0d9be536822372411c407aad7afa7bc63aed7504))
-* port some more code ([4b742f5](https://github.com/nrkno/tv-automation-server-core/commit/4b742f5de638c8402ababcc8bc64fd2a3245a59b))
-* pre-commit hook ([621c184](https://github.com/nrkno/tv-automation-server-core/commit/621c184a28472cd5c0a50d65fa1e6a73faac296a))
-* **Prompter:** Diff in Prompter is inaccurate because data isn't subscribed to ([0cf9641](https://github.com/nrkno/tv-automation-server-core/commit/0cf9641b29db00884eb7e60e4702801350546c25))
-* remaining meteor tests ([2f6a7e4](https://github.com/nrkno/tv-automation-server-core/commit/2f6a7e4cd31f9c6fa67672923e72261ec3c26401))
-* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
-* replace old implementation with queue based prototypes ([4688e04](https://github.com/nrkno/tv-automation-server-core/commit/4688e04be3a4bb07fd3015659da53bbcb0681c6b))
-* route worker-thread logging through meteor winston instance, labeled with a 'threadName' property ([94162ef](https://github.com/nrkno/tv-automation-server-core/commit/94162eff223f9ad658255a0597b0fb742d4091c7))
-* show adLibs from different show-styles as disabled ([#665](https://github.com/nrkno/tv-automation-server-core/issues/665)) ([6c88614](https://github.com/nrkno/tv-automation-server-core/commit/6c88614f9db2527cb5b1a1072d25c8172f3901b2))
-* some ci issues ([790fa30](https://github.com/nrkno/tv-automation-server-core/commit/790fa303acc2ae271523b07f952837d517f07bf1))
-* some meteor tests ([bcd016e](https://github.com/nrkno/tv-automation-server-core/commit/bcd016ebf6dc53d8cb238aac00bd299d2c20e848))
-* some more cache invalidation ([26b1461](https://github.com/nrkno/tv-automation-server-core/commit/26b1461729a8afe1706250495dec1af9452415fe))
-* some type errors ([872504a](https://github.com/nrkno/tv-automation-server-core/commit/872504ae0606c71e3dad9bcc1eeff731f36a343c))
-* some work queue management bits ([ce4d019](https://github.com/nrkno/tv-automation-server-core/commit/ce4d0193a16317b9d6bdf9da8dd6efbf86f4b9dd))
-* **Source Layers:** LiveSpeak dual-tone background not shown in Presenter's screen ([a75ef38](https://github.com/nrkno/tv-automation-server-core/commit/a75ef38cf435ca710c3a40d9fab6ffa85beefc57))
-* **Storyboard:** touch interaction sometimes doesn't work ([29c439b](https://github.com/nrkno/tv-automation-server-core/commit/29c439bca67a374555f9700ffcd491483be0f614))
-* tests ([91823ba](https://github.com/nrkno/tv-automation-server-core/commit/91823ba3641d160b218f9d9dff479f5607331a60))
-* type errors ([c67bd0e](https://github.com/nrkno/tv-automation-server-core/commit/c67bd0e08be51621e378a7d34ec6f3212665ee9e))
-* type errors ([5f807ee](https://github.com/nrkno/tv-automation-server-core/commit/5f807ee60e61bfdf0d49d177fd69124c51ed069d))
-* typings ([91bbae2](https://github.com/nrkno/tv-automation-server-core/commit/91bbae210b51ae04893b8956917e2f1213d5e23e))
-* typings errors ([56ddd0e](https://github.com/nrkno/tv-automation-server-core/commit/56ddd0e9759eee1d86b29e613eebe50694c76059))
-* update docker image node version ([8f0f92b](https://github.com/nrkno/tv-automation-server-core/commit/8f0f92be2e2f501202255a01deb55d8ff6c90524))
-* update Meteor to 2.5.3 ([0d2eb37](https://github.com/nrkno/tv-automation-server-core/commit/0d2eb3709f8dc3b715376850de0baeb6390ca39a))
-* update Meteor to 2.5.5 ([e4cdb9d](https://github.com/nrkno/tv-automation-server-core/commit/e4cdb9dbc1ac86478e191a25157956127e8c376d))
-* worker threads in docker build (still failing because of incorrect mongo url) ([e6a9bbe](https://github.com/nrkno/tv-automation-server-core/commit/e6a9bbe7b439864a6a3bccc637a5d411c4bf1849))
-* worker unit tests ([d5d3f10](https://github.com/nrkno/tv-automation-server-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
-* workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/tv-automation-server-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
-* yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/tv-automation-server-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
-* 0 length parts disappearing ([c1800af](https://github.com/nrkno/sofie-core/commit/c1800af10b1d74e293d7711dc6b769af83d07906))
-* add ccg retry interval to config manifest ([524cb15](https://github.com/nrkno/sofie-core/commit/524cb15dc09afd67b0228eb3dee40d259cc4df14))
-* add retryInterval to ccg playout-gw manifest ([d1da299](https://github.com/nrkno/sofie-core/commit/d1da29992c7f905ba332078536bafcf46c946cae))
-* change how the userAction.gatewayDuration is calculated, to make it more robust. ([098a04b](https://github.com/nrkno/sofie-core/commit/098a04b1f2cde962b73b84d949aebe36e99f43aa))
-* defer UserActionsLog update ([c80d148](https://github.com/nrkno/sofie-core/commit/c80d148d0f21166641cf682859db1e0f6fbc009f))
-* don't overwrite the timelineHash ([1f96a96](https://github.com/nrkno/sofie-core/commit/1f96a966430fb211a7196458bc40661e70250395))
-* **hoverscrub miniInspector:** STK borders wrong color ([825a54a](https://github.com/nrkno/sofie-core/commit/825a54ae1a4b932d87cb887858005697c8e0a272))
-* infinites capped by virtuals ([#662](https://github.com/nrkno/sofie-core/issues/662)) ([e75d394](https://github.com/nrkno/sofie-core/commit/e75d394f9faef5b4f157c4dd537fc2551ca01e95))
-* **MicFloatingInspector:** do not show Script is empty, if there is a content.comment ([4a5605e](https://github.com/nrkno/sofie-core/commit/4a5605ef74d9aac3ec0628db5efeefb1c8ed9d3e))
-* playback issues ([4d8a24c](https://github.com/nrkno/sofie-core/commit/4d8a24c94d679a305323e0281e49d3ab84a37380))
-* **Presenter screen:** show channel color on Local sources ([#676](https://github.com/nrkno/sofie-core/issues/676)) ([7ad427e](https://github.com/nrkno/sofie-core/commit/7ad427e9264db99dd2a9ec13aa31aeab3be480fc))
-* **Prompter:** Over/Under uses inconsistent color coding ([80edc24](https://github.com/nrkno/sofie-core/commit/80edc24c293eaf45157952ae4de8dd3ac02c0cd1))
-* restore expectedPackages when restoring snapshots ([082d8c0](https://github.com/nrkno/sofie-core/commit/082d8c03840f83f2f574b56316f6d90028d70f9a))
-* **Storyboard:** respect show_hidden_source_layers=1 ([87eb7a3](https://github.com/nrkno/sofie-core/commit/87eb7a3f0a13cd14d330973b5a3dd40c8a86b85d))
-* strict select of pieceinstances in timelineTriggerTime ([bbd4381](https://github.com/nrkno/sofie-core/commit/bbd4381167ded3f95a4247e6a27bf7146a7800cc))
-* TS: support estimateResolveTimeMultiplier option ([5b07c06](https://github.com/nrkno/sofie-core/commit/5b07c06371b4bb6d16dcba4ec5744f21fa0fa619))
-* TSR dep ([8b506fa](https://github.com/nrkno/sofie-core/commit/8b506fa72fd368902f369e173502a19bac4bf7da))
-* update timeline item colors for local and live speak pieces ([257e8be](https://github.com/nrkno/sofie-core/commit/257e8be7baa52cff8a1598f2eda4c375d743f872))
-* use global Diff calculation in Prompter ([85cec3b](https://github.com/nrkno/sofie-core/commit/85cec3b7494b146c6892fe03b5a5bb0c67b8cf4d))
-* use MeteorCall instead of Meteor.call for better type safety ([#647](https://github.com/nrkno/sofie-core/issues/647)) ([6b01a83](https://github.com/nrkno/sofie-core/commit/6b01a83ad8f92f91a597ffb7809d7b9009d4142a))
+- add PieceStatusCode.SOURCE_HAS_ISSUES, used to indicate non-technical issues. ([213904c](https://github.com/nrkno/tv-automation-server-core/commit/213904cccdba4d45c219cbd855526118653fa133))
+- ask confirmation before restarting playout gateway ([#666](https://github.com/nrkno/tv-automation-server-core/issues/666)) ([ca9dba1](https://github.com/nrkno/tv-automation-server-core/commit/ca9dba1a979c2a63aa6559776e88c3c7bb9182b2))
+- better handling of errors from Core ([3ae8152](https://github.com/nrkno/tv-automation-server-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
+- blueprints-integration typing issue ([7c3a93a](https://github.com/nrkno/tv-automation-server-core/commit/7c3a93af23f08a7c4b6b41ce28e6b2624fb135a7))
+- bubble UserError type into the ui ([7fdb860](https://github.com/nrkno/tv-automation-server-core/commit/7fdb860fbe13fea3577b179b1bff62e4ec1d2a73))
+- bug found by sonar ([65337e8](https://github.com/nrkno/tv-automation-server-core/commit/65337e8e325c69e388ed4a4ac96b5746891eee5e))
+- clone blueprint config before freezing. some worker cache invalidation issues ([4432fc6](https://github.com/nrkno/tv-automation-server-core/commit/4432fc67f64a7a6fa16289c8bed83701cd7ee060))
+- collection.replace not trying to upsert ([471ebed](https://github.com/nrkno/tv-automation-server-core/commit/471ebedb47694fead72bc33316cacaf91fb69968))
+- **Context Menus:** don't limit the width that much ([5640f9d](https://github.com/nrkno/tv-automation-server-core/commit/5640f9d14ec8dfa4ffdb79a6a727aeb23b44005c))
+- correctly show timecode values ([4eb3c0d](https://github.com/nrkno/tv-automation-server-core/commit/4eb3c0d9fc15c0edacc1cf6cdd0d3d49a6150d13))
+- disable jest coverage requirements ([7fc7ed4](https://github.com/nrkno/tv-automation-server-core/commit/7fc7ed4d2654d358ea95851668bd2fe8ecd76dab))
+- disable meteor-elastic-apm package, as it is incompatible with Meteor >2.3 at the moment ([547674e](https://github.com/nrkno/tv-automation-server-core/commit/547674e8799217e290df4a57a12787d975ff5025))
+- don't treat "no workers" as a bad status. ([1ebb66c](https://github.com/nrkno/tv-automation-server-core/commit/1ebb66c982230948c1862f7299fa7b906ee13058))
+- downgrade mongodb lib in job-worker to resolve type issues ([32dd334](https://github.com/nrkno/tv-automation-server-core/commit/32dd3340f0308d82c4ebc9031350e6bd24a1f230))
+- failing tests ([84f2063](https://github.com/nrkno/tv-automation-server-core/commit/84f206337048441216b6e3589db753aba17d14e9))
+- GUI issue where a long, unbroken word pushed the dismiss-button too far to the right ([5ebf747](https://github.com/nrkno/tv-automation-server-core/commit/5ebf74765efa5f060b477c8b7b0bb7f987cd8fc7))
+- handle lock timeouts in workers ([783a214](https://github.com/nrkno/tv-automation-server-core/commit/783a21446c66979e9f235f79b3aaa45465c825b1))
+- hook up broken debug method ([341cd6c](https://github.com/nrkno/tv-automation-server-core/commit/341cd6c0cd9926c2d2a0c7d1e8e4076226d9e32d))
+- Ignore unassigned devices in installations with multiple studios ([dd08120](https://github.com/nrkno/tv-automation-server-core/commit/dd0812093643ebc9f0bb1d0b4c2c299a99256364))
+- import error ([391b334](https://github.com/nrkno/tv-automation-server-core/commit/391b3345234e6bc94bc11f3ec471de20cc963115))
+- improve accuracy of package framerate detection ([#653](https://github.com/nrkno/tv-automation-server-core/issues/653)) ([ad7926c](https://github.com/nrkno/tv-automation-server-core/commit/ad7926cad64be1ab55725caadc9dff63865bccfa))
+- improve meteor method signatures ([#669](https://github.com/nrkno/tv-automation-server-core/issues/669)) ([5fd4839](https://github.com/nrkno/tv-automation-server-core/commit/5fd4839b894260c384077df3d01d9cc55093e06e))
+- influxdb for worker ([ee747b7](https://github.com/nrkno/tv-automation-server-core/commit/ee747b7ecb069d75a4cee7b69603abf85914a62d))
+- job timings being calculated incorrectly ([d15bfc5](https://github.com/nrkno/tv-automation-server-core/commit/d15bfc58db678dba0415e706a0c570bbe04efbd3))
+- launching of worker ([4adf500](https://github.com/nrkno/tv-automation-server-core/commit/4adf500231f2003ae368acf891b1b244fba1b506))
+- look at the parent PeripheralDevice to check the studioId ([8308595](https://github.com/nrkno/tv-automation-server-core/commit/8308595d16bf8fc460638d8b20a6a61fdee9a70a))
+- meteor not restarting when worker code changes ([b56c639](https://github.com/nrkno/tv-automation-server-core/commit/b56c639efbecb1d32033c8b64108dbb5433ae246))
+- move meteor restart on worker code changes to separate process. ([f439c0f](https://github.com/nrkno/tv-automation-server-core/commit/f439c0fda67b1371b1b386a0891ca98603aa1a93))
+- multiple versions of some core libs ([fbe2dd2](https://github.com/nrkno/tv-automation-server-core/commit/fbe2dd2e43d6be65e2dec888df3c8644e90d2078))
+- **Notifications:** use overflow-wrap instead of overflow for breaking unbreakable strings ([3bad846](https://github.com/nrkno/tv-automation-server-core/commit/3bad8460fa64fb1656860d0576125783c0a4e075))
+- package-lock ([55ee0ba](https://github.com/nrkno/tv-automation-server-core/commit/55ee0ba6e5fa7033fb7441adaa3c9c5fce25410a))
+- parse REDIS_URL variable ([12e9f3a](https://github.com/nrkno/tv-automation-server-core/commit/12e9f3addf92b531e4680d42ab877a7c9045db8e))
+- plumb in fast-track for timeline updates, and useractionlog timeline hashes ([0d9be53](https://github.com/nrkno/tv-automation-server-core/commit/0d9be536822372411c407aad7afa7bc63aed7504))
+- port some more code ([4b742f5](https://github.com/nrkno/tv-automation-server-core/commit/4b742f5de638c8402ababcc8bc64fd2a3245a59b))
+- pre-commit hook ([621c184](https://github.com/nrkno/tv-automation-server-core/commit/621c184a28472cd5c0a50d65fa1e6a73faac296a))
+- **Prompter:** Diff in Prompter is inaccurate because data isn't subscribed to ([0cf9641](https://github.com/nrkno/tv-automation-server-core/commit/0cf9641b29db00884eb7e60e4702801350546c25))
+- remaining meteor tests ([2f6a7e4](https://github.com/nrkno/tv-automation-server-core/commit/2f6a7e4cd31f9c6fa67672923e72261ec3c26401))
+- replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+- replace old implementation with queue based prototypes ([4688e04](https://github.com/nrkno/tv-automation-server-core/commit/4688e04be3a4bb07fd3015659da53bbcb0681c6b))
+- route worker-thread logging through meteor winston instance, labeled with a 'threadName' property ([94162ef](https://github.com/nrkno/tv-automation-server-core/commit/94162eff223f9ad658255a0597b0fb742d4091c7))
+- show adLibs from different show-styles as disabled ([#665](https://github.com/nrkno/tv-automation-server-core/issues/665)) ([6c88614](https://github.com/nrkno/tv-automation-server-core/commit/6c88614f9db2527cb5b1a1072d25c8172f3901b2))
+- some ci issues ([790fa30](https://github.com/nrkno/tv-automation-server-core/commit/790fa303acc2ae271523b07f952837d517f07bf1))
+- some meteor tests ([bcd016e](https://github.com/nrkno/tv-automation-server-core/commit/bcd016ebf6dc53d8cb238aac00bd299d2c20e848))
+- some more cache invalidation ([26b1461](https://github.com/nrkno/tv-automation-server-core/commit/26b1461729a8afe1706250495dec1af9452415fe))
+- some type errors ([872504a](https://github.com/nrkno/tv-automation-server-core/commit/872504ae0606c71e3dad9bcc1eeff731f36a343c))
+- some work queue management bits ([ce4d019](https://github.com/nrkno/tv-automation-server-core/commit/ce4d0193a16317b9d6bdf9da8dd6efbf86f4b9dd))
+- **Source Layers:** LiveSpeak dual-tone background not shown in Presenter's screen ([a75ef38](https://github.com/nrkno/tv-automation-server-core/commit/a75ef38cf435ca710c3a40d9fab6ffa85beefc57))
+- **Storyboard:** touch interaction sometimes doesn't work ([29c439b](https://github.com/nrkno/tv-automation-server-core/commit/29c439bca67a374555f9700ffcd491483be0f614))
+- tests ([91823ba](https://github.com/nrkno/tv-automation-server-core/commit/91823ba3641d160b218f9d9dff479f5607331a60))
+- type errors ([c67bd0e](https://github.com/nrkno/tv-automation-server-core/commit/c67bd0e08be51621e378a7d34ec6f3212665ee9e))
+- type errors ([5f807ee](https://github.com/nrkno/tv-automation-server-core/commit/5f807ee60e61bfdf0d49d177fd69124c51ed069d))
+- typings ([91bbae2](https://github.com/nrkno/tv-automation-server-core/commit/91bbae210b51ae04893b8956917e2f1213d5e23e))
+- typings errors ([56ddd0e](https://github.com/nrkno/tv-automation-server-core/commit/56ddd0e9759eee1d86b29e613eebe50694c76059))
+- update docker image node version ([8f0f92b](https://github.com/nrkno/tv-automation-server-core/commit/8f0f92be2e2f501202255a01deb55d8ff6c90524))
+- update Meteor to 2.5.3 ([0d2eb37](https://github.com/nrkno/tv-automation-server-core/commit/0d2eb3709f8dc3b715376850de0baeb6390ca39a))
+- update Meteor to 2.5.5 ([e4cdb9d](https://github.com/nrkno/tv-automation-server-core/commit/e4cdb9dbc1ac86478e191a25157956127e8c376d))
+- worker threads in docker build (still failing because of incorrect mongo url) ([e6a9bbe](https://github.com/nrkno/tv-automation-server-core/commit/e6a9bbe7b439864a6a3bccc637a5d411c4bf1849))
+- worker unit tests ([d5d3f10](https://github.com/nrkno/tv-automation-server-core/commit/d5d3f10607f3e03411d90efe6d52019d906df62b))
+- workers not starting and meteor not auto-restarting ([0facaf0](https://github.com/nrkno/tv-automation-server-core/commit/0facaf004a3379435658b128b3d55181aa786ef6))
+- yarn in meteor on win32 ([f11ccf0](https://github.com/nrkno/tv-automation-server-core/commit/f11ccf01875b132e7f19cdfd40d3d188c8daa7b1))
+- 0 length parts disappearing ([c1800af](https://github.com/nrkno/sofie-core/commit/c1800af10b1d74e293d7711dc6b769af83d07906))
+- add ccg retry interval to config manifest ([524cb15](https://github.com/nrkno/sofie-core/commit/524cb15dc09afd67b0228eb3dee40d259cc4df14))
+- add retryInterval to ccg playout-gw manifest ([d1da299](https://github.com/nrkno/sofie-core/commit/d1da29992c7f905ba332078536bafcf46c946cae))
+- change how the userAction.gatewayDuration is calculated, to make it more robust. ([098a04b](https://github.com/nrkno/sofie-core/commit/098a04b1f2cde962b73b84d949aebe36e99f43aa))
+- defer UserActionsLog update ([c80d148](https://github.com/nrkno/sofie-core/commit/c80d148d0f21166641cf682859db1e0f6fbc009f))
+- don't overwrite the timelineHash ([1f96a96](https://github.com/nrkno/sofie-core/commit/1f96a966430fb211a7196458bc40661e70250395))
+- **hoverscrub miniInspector:** STK borders wrong color ([825a54a](https://github.com/nrkno/sofie-core/commit/825a54ae1a4b932d87cb887858005697c8e0a272))
+- infinites capped by virtuals ([#662](https://github.com/nrkno/sofie-core/issues/662)) ([e75d394](https://github.com/nrkno/sofie-core/commit/e75d394f9faef5b4f157c4dd537fc2551ca01e95))
+- **MicFloatingInspector:** do not show Script is empty, if there is a content.comment ([4a5605e](https://github.com/nrkno/sofie-core/commit/4a5605ef74d9aac3ec0628db5efeefb1c8ed9d3e))
+- playback issues ([4d8a24c](https://github.com/nrkno/sofie-core/commit/4d8a24c94d679a305323e0281e49d3ab84a37380))
+- **Presenter screen:** show channel color on Local sources ([#676](https://github.com/nrkno/sofie-core/issues/676)) ([7ad427e](https://github.com/nrkno/sofie-core/commit/7ad427e9264db99dd2a9ec13aa31aeab3be480fc))
+- **Prompter:** Over/Under uses inconsistent color coding ([80edc24](https://github.com/nrkno/sofie-core/commit/80edc24c293eaf45157952ae4de8dd3ac02c0cd1))
+- restore expectedPackages when restoring snapshots ([082d8c0](https://github.com/nrkno/sofie-core/commit/082d8c03840f83f2f574b56316f6d90028d70f9a))
+- **Storyboard:** respect show_hidden_source_layers=1 ([87eb7a3](https://github.com/nrkno/sofie-core/commit/87eb7a3f0a13cd14d330973b5a3dd40c8a86b85d))
+- strict select of pieceinstances in timelineTriggerTime ([bbd4381](https://github.com/nrkno/sofie-core/commit/bbd4381167ded3f95a4247e6a27bf7146a7800cc))
+- TS: support estimateResolveTimeMultiplier option ([5b07c06](https://github.com/nrkno/sofie-core/commit/5b07c06371b4bb6d16dcba4ec5744f21fa0fa619))
+- TSR dep ([8b506fa](https://github.com/nrkno/sofie-core/commit/8b506fa72fd368902f369e173502a19bac4bf7da))
+- update timeline item colors for local and live speak pieces ([257e8be](https://github.com/nrkno/sofie-core/commit/257e8be7baa52cff8a1598f2eda4c375d743f872))
+- use global Diff calculation in Prompter ([85cec3b](https://github.com/nrkno/sofie-core/commit/85cec3b7494b146c6892fe03b5a5bb0c67b8cf4d))
+- use MeteorCall instead of Meteor.call for better type safety ([#647](https://github.com/nrkno/sofie-core/issues/647)) ([6b01a83](https://github.com/nrkno/sofie-core/commit/6b01a83ad8f92f91a597ffb7809d7b9009d4142a))
 
 ## [1.39.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
 
-
 ### Bug Fixes
 
-* **Action Triggers, Shelf:** Collection fetch optimizations and new AdLib sorting can cause a Pick[1] & Pick[2] to match the same AdLib ([905510c](https://github.com/nrkno/sofie-core/commit/905510cad05c48dcb17908822e9c1757576a42f7))
-* add Tab key to be default-disabled when keyboard Triggers are registered ([f5d61b2](https://github.com/nrkno/sofie-core/commit/f5d61b29f33ac19e3ba13e3e931c29bca78ac726))
-* add Tab key to be default-disabled when keyboard Triggers are registered ([d8efbb1](https://github.com/nrkno/sofie-core/commit/d8efbb1d775069f51ac0a5484cc033b832b467fa))
-* ignore infinite continuations when checking if hold is allowed ([dffb2af](https://github.com/nrkno/sofie-core/commit/dffb2aff83deb7c061b2006f3a082c09ef5ea95c))
-* **Prompter:** Diff in Prompter is inaccurate because data isn't subscribed to ([0cf9641](https://github.com/nrkno/sofie-core/commit/0cf9641b29db00884eb7e60e4702801350546c25))
-* **Source Layers:** LiveSpeak dual-tone background not shown in Presenter's screen ([a75ef38](https://github.com/nrkno/sofie-core/commit/a75ef38cf435ca710c3a40d9fab6ffa85beefc57))
-* **Storyboard:** LiveSpeak Storyboard thumbnail looks like a Camera with a Thumbnail ([f68c9d4](https://github.com/nrkno/sofie-core/commit/f68c9d40f7b529ae9617392642cea4d6d237c102))
-
+- **Action Triggers, Shelf:** Collection fetch optimizations and new AdLib sorting can cause a Pick[1] & Pick[2] to match the same AdLib ([905510c](https://github.com/nrkno/sofie-core/commit/905510cad05c48dcb17908822e9c1757576a42f7))
+- add Tab key to be default-disabled when keyboard Triggers are registered ([f5d61b2](https://github.com/nrkno/sofie-core/commit/f5d61b29f33ac19e3ba13e3e931c29bca78ac726))
+- add Tab key to be default-disabled when keyboard Triggers are registered ([d8efbb1](https://github.com/nrkno/sofie-core/commit/d8efbb1d775069f51ac0a5484cc033b832b467fa))
+- ignore infinite continuations when checking if hold is allowed ([dffb2af](https://github.com/nrkno/sofie-core/commit/dffb2aff83deb7c061b2006f3a082c09ef5ea95c))
+- **Prompter:** Diff in Prompter is inaccurate because data isn't subscribed to ([0cf9641](https://github.com/nrkno/sofie-core/commit/0cf9641b29db00884eb7e60e4702801350546c25))
+- **Source Layers:** LiveSpeak dual-tone background not shown in Presenter's screen ([a75ef38](https://github.com/nrkno/sofie-core/commit/a75ef38cf435ca710c3a40d9fab6ffa85beefc57))
+- **Storyboard:** LiveSpeak Storyboard thumbnail looks like a Camera with a Thumbnail ([f68c9d4](https://github.com/nrkno/sofie-core/commit/f68c9d40f7b529ae9617392642cea4d6d237c102))
 
 ## [1.39.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
 
-
 ### Features
 
-* allow sync of previous Part Instances ([#674](https://github.com/nrkno/sofie-core/issues/674)) ([04d0142](https://github.com/nrkno/sofie-core/commit/04d01427e85e6df99400387bec71b1b2b7fa4a3e))
+- allow sync of previous Part Instances ([#674](https://github.com/nrkno/sofie-core/issues/674)) ([04d0142](https://github.com/nrkno/sofie-core/commit/04d01427e85e6df99400387bec71b1b2b7fa4a3e))
 
 ## [1.39.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
 
-
 ### Features
 
-* adlib-actions can block a take from happening until a certain time ([588f4d9](https://github.com/nrkno/sofie-core/commit/588f4d9f071530b59fb400e7a3e1d3ad43e5090f))
-* calculate and cache the 'old style' expectedDuration under a new property name on Parts ([7b531dc](https://github.com/nrkno/sofie-core/commit/7b531dc47da3036d918f2e49a5282dc2bea8c011))
-* make PeripheralDeviceApi.executeFunction and friends return a p… ([#632](https://github.com/nrkno/sofie-core/issues/632)) ([5f9a3a2](https://github.com/nrkno/sofie-core/commit/5f9a3a29acb61e8ea896b7b5a125ef3a3fc75e26))
-* out transitions ([03101a5](https://github.com/nrkno/sofie-core/commit/03101a503a82254baeaa279c4131cdad308c5344))
-* render out transition pieces at the end of the timeline ([c8e28df](https://github.com/nrkno/sofie-core/commit/c8e28dfe079af84626cd9cc03684e717a28b7d07))
-* REST method for disabling subdevice ([#649](https://github.com/nrkno/sofie-core/issues/649)) ([930e27f](https://github.com/nrkno/sofie-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
-
+- adlib-actions can block a take from happening until a certain time ([588f4d9](https://github.com/nrkno/sofie-core/commit/588f4d9f071530b59fb400e7a3e1d3ad43e5090f))
+- calculate and cache the 'old style' expectedDuration under a new property name on Parts ([7b531dc](https://github.com/nrkno/sofie-core/commit/7b531dc47da3036d918f2e49a5282dc2bea8c011))
+- make PeripheralDeviceApi.executeFunction and friends return a p… ([#632](https://github.com/nrkno/sofie-core/issues/632)) ([5f9a3a2](https://github.com/nrkno/sofie-core/commit/5f9a3a29acb61e8ea896b7b5a125ef3a3fc75e26))
+- out transitions ([03101a5](https://github.com/nrkno/sofie-core/commit/03101a503a82254baeaa279c4131cdad308c5344))
+- render out transition pieces at the end of the timeline ([c8e28df](https://github.com/nrkno/sofie-core/commit/c8e28dfe079af84626cd9cc03684e717a28b7d07))
+- REST method for disabling subdevice ([#649](https://github.com/nrkno/sofie-core/issues/649)) ([930e27f](https://github.com/nrkno/sofie-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
 
 ### Bug Fixes
 
-* 0 length parts disappearing ([c1800af](https://github.com/nrkno/sofie-core/commit/c1800af10b1d74e293d7711dc6b769af83d07906))
-* add ccg retry interval to config manifest ([524cb15](https://github.com/nrkno/sofie-core/commit/524cb15dc09afd67b0228eb3dee40d259cc4df14))
-* add more variance to piece ids, to avoid the same id being used on different sourceLayers for different part types ([91d802c](https://github.com/nrkno/sofie-core/commit/91d802c450f94c7a329ade3c31975346a12b017b))
-* add retryInterval to ccg playout-gw manifest ([d1da299](https://github.com/nrkno/sofie-core/commit/d1da29992c7f905ba332078536bafcf46c946cae))
-* change how the userAction.gatewayDuration is calculated, to make it more robust. ([098a04b](https://github.com/nrkno/sofie-core/commit/098a04b1f2cde962b73b84d949aebe36e99f43aa))
-* defer UserActionsLog update ([c80d148](https://github.com/nrkno/sofie-core/commit/c80d148d0f21166641cf682859db1e0f6fbc009f))
-* don't overwrite the timelineHash ([1f96a96](https://github.com/nrkno/sofie-core/commit/1f96a966430fb211a7196458bc40661e70250395))
-* **hoverscrub miniInspector:** STK borders wrong color ([825a54a](https://github.com/nrkno/sofie-core/commit/825a54ae1a4b932d87cb887858005697c8e0a272))
-* infinites capped by virtuals ([#662](https://github.com/nrkno/sofie-core/issues/662)) ([e75d394](https://github.com/nrkno/sofie-core/commit/e75d394f9faef5b4f157c4dd537fc2551ca01e95))
-* **MicFloatingInspector:** do not show Script is empty, if there is a content.comment ([4a5605e](https://github.com/nrkno/sofie-core/commit/4a5605ef74d9aac3ec0628db5efeefb1c8ed9d3e))
-* playback issues ([4d8a24c](https://github.com/nrkno/sofie-core/commit/4d8a24c94d679a305323e0281e49d3ab84a37380))
-* **Presenter screen:** show channel color on Local sources ([#676](https://github.com/nrkno/sofie-core/issues/676)) ([7ad427e](https://github.com/nrkno/sofie-core/commit/7ad427e9264db99dd2a9ec13aa31aeab3be480fc))
-* **Prompter:** Over/Under uses inconsistent color coding ([80edc24](https://github.com/nrkno/sofie-core/commit/80edc24c293eaf45157952ae4de8dd3ac02c0cd1))
-* restore expectedPackages when restoring snapshots ([082d8c0](https://github.com/nrkno/sofie-core/commit/082d8c03840f83f2f574b56316f6d90028d70f9a))
-* **Storyboard:** respect show_hidden_source_layers=1 ([87eb7a3](https://github.com/nrkno/sofie-core/commit/87eb7a3f0a13cd14d330973b5a3dd40c8a86b85d))
-* strict select of pieceinstances in timelineTriggerTime ([bbd4381](https://github.com/nrkno/sofie-core/commit/bbd4381167ded3f95a4247e6a27bf7146a7800cc))
-* TS: support estimateResolveTimeMultiplier option ([5b07c06](https://github.com/nrkno/sofie-core/commit/5b07c06371b4bb6d16dcba4ec5744f21fa0fa619))
-* TSR dep ([8b506fa](https://github.com/nrkno/sofie-core/commit/8b506fa72fd368902f369e173502a19bac4bf7da))
-* update timeline item colors for local and live speak pieces ([257e8be](https://github.com/nrkno/sofie-core/commit/257e8be7baa52cff8a1598f2eda4c375d743f872))
-* use global Diff calculation in Prompter ([85cec3b](https://github.com/nrkno/sofie-core/commit/85cec3b7494b146c6892fe03b5a5bb0c67b8cf4d))
-* use MeteorCall instead of Meteor.call for better type safety ([#647](https://github.com/nrkno/sofie-core/issues/647)) ([6b01a83](https://github.com/nrkno/sofie-core/commit/6b01a83ad8f92f91a597ffb7809d7b9009d4142a))
-* when nexted-part is invalid, but the instance still exists then it is still valid ([22d7da1](https://github.com/nrkno/sofie-core/commit/22d7da1b189b33c98673cf0bef3ef066ff0afb11))
+- 0 length parts disappearing ([c1800af](https://github.com/nrkno/sofie-core/commit/c1800af10b1d74e293d7711dc6b769af83d07906))
+- add ccg retry interval to config manifest ([524cb15](https://github.com/nrkno/sofie-core/commit/524cb15dc09afd67b0228eb3dee40d259cc4df14))
+- add more variance to piece ids, to avoid the same id being used on different sourceLayers for different part types ([91d802c](https://github.com/nrkno/sofie-core/commit/91d802c450f94c7a329ade3c31975346a12b017b))
+- add retryInterval to ccg playout-gw manifest ([d1da299](https://github.com/nrkno/sofie-core/commit/d1da29992c7f905ba332078536bafcf46c946cae))
+- change how the userAction.gatewayDuration is calculated, to make it more robust. ([098a04b](https://github.com/nrkno/sofie-core/commit/098a04b1f2cde962b73b84d949aebe36e99f43aa))
+- defer UserActionsLog update ([c80d148](https://github.com/nrkno/sofie-core/commit/c80d148d0f21166641cf682859db1e0f6fbc009f))
+- don't overwrite the timelineHash ([1f96a96](https://github.com/nrkno/sofie-core/commit/1f96a966430fb211a7196458bc40661e70250395))
+- **hoverscrub miniInspector:** STK borders wrong color ([825a54a](https://github.com/nrkno/sofie-core/commit/825a54ae1a4b932d87cb887858005697c8e0a272))
+- infinites capped by virtuals ([#662](https://github.com/nrkno/sofie-core/issues/662)) ([e75d394](https://github.com/nrkno/sofie-core/commit/e75d394f9faef5b4f157c4dd537fc2551ca01e95))
+- **MicFloatingInspector:** do not show Script is empty, if there is a content.comment ([4a5605e](https://github.com/nrkno/sofie-core/commit/4a5605ef74d9aac3ec0628db5efeefb1c8ed9d3e))
+- playback issues ([4d8a24c](https://github.com/nrkno/sofie-core/commit/4d8a24c94d679a305323e0281e49d3ab84a37380))
+- **Presenter screen:** show channel color on Local sources ([#676](https://github.com/nrkno/sofie-core/issues/676)) ([7ad427e](https://github.com/nrkno/sofie-core/commit/7ad427e9264db99dd2a9ec13aa31aeab3be480fc))
+- **Prompter:** Over/Under uses inconsistent color coding ([80edc24](https://github.com/nrkno/sofie-core/commit/80edc24c293eaf45157952ae4de8dd3ac02c0cd1))
+- restore expectedPackages when restoring snapshots ([082d8c0](https://github.com/nrkno/sofie-core/commit/082d8c03840f83f2f574b56316f6d90028d70f9a))
+- **Storyboard:** respect show_hidden_source_layers=1 ([87eb7a3](https://github.com/nrkno/sofie-core/commit/87eb7a3f0a13cd14d330973b5a3dd40c8a86b85d))
+- strict select of pieceinstances in timelineTriggerTime ([bbd4381](https://github.com/nrkno/sofie-core/commit/bbd4381167ded3f95a4247e6a27bf7146a7800cc))
+- TS: support estimateResolveTimeMultiplier option ([5b07c06](https://github.com/nrkno/sofie-core/commit/5b07c06371b4bb6d16dcba4ec5744f21fa0fa619))
+- TSR dep ([8b506fa](https://github.com/nrkno/sofie-core/commit/8b506fa72fd368902f369e173502a19bac4bf7da))
+- update timeline item colors for local and live speak pieces ([257e8be](https://github.com/nrkno/sofie-core/commit/257e8be7baa52cff8a1598f2eda4c375d743f872))
+- use global Diff calculation in Prompter ([85cec3b](https://github.com/nrkno/sofie-core/commit/85cec3b7494b146c6892fe03b5a5bb0c67b8cf4d))
+- use MeteorCall instead of Meteor.call for better type safety ([#647](https://github.com/nrkno/sofie-core/issues/647)) ([6b01a83](https://github.com/nrkno/sofie-core/commit/6b01a83ad8f92f91a597ffb7809d7b9009d4142a))
+- when nexted-part is invalid, but the instance still exists then it is still valid ([22d7da1](https://github.com/nrkno/sofie-core/commit/22d7da1b189b33c98673cf0bef3ef066ff0afb11))
 
 ### [1.38.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-1...v1.38.2) (2022-03-22)
 
-
 ### Bug Fixes
 
-* add debug tracing of slow observers ([099ad98](https://github.com/nrkno/tv-automation-server-core/commit/099ad983f93135fdac67c389a2d2279224187c14))
-* avoid regenerating segments when only the rank changes ([#688](https://github.com/nrkno/tv-automation-server-core/issues/688)) ([5256ccf](https://github.com/nrkno/tv-automation-server-core/commit/5256ccf38ce698f4c3cf1fc59f111693afeebbc4))
-* defer cleanupOrphanedItems until after the playout-cache has been saved ([688e274](https://github.com/nrkno/tv-automation-server-core/commit/688e274f3b0aa4fa891fc59680e5bbb39723e7e1))
-* if the next partinstance is manually chosen and deleted, then it is no longer valid ([40f8c9a](https://github.com/nrkno/tv-automation-server-core/commit/40f8c9a5fd135d5ab431f6978f5eec829f2b497a))
-* monitor, log and report the number of connections to Core. ([b6fe040](https://github.com/nrkno/tv-automation-server-core/commit/b6fe04078637793f2ffc9bd14ecb23b2ee0d99f2))
-* segments getting stuck as 'orphaned: hidden' and 'isHidden: true' ([ef4fc6f](https://github.com/nrkno/tv-automation-server-core/commit/ef4fc6f1d5d43c2c94cf6e7a77f0476f07ba8f1d))
+- add debug tracing of slow observers ([099ad98](https://github.com/nrkno/tv-automation-server-core/commit/099ad983f93135fdac67c389a2d2279224187c14))
+- avoid regenerating segments when only the rank changes ([#688](https://github.com/nrkno/tv-automation-server-core/issues/688)) ([5256ccf](https://github.com/nrkno/tv-automation-server-core/commit/5256ccf38ce698f4c3cf1fc59f111693afeebbc4))
+- defer cleanupOrphanedItems until after the playout-cache has been saved ([688e274](https://github.com/nrkno/tv-automation-server-core/commit/688e274f3b0aa4fa891fc59680e5bbb39723e7e1))
+- if the next partinstance is manually chosen and deleted, then it is no longer valid ([40f8c9a](https://github.com/nrkno/tv-automation-server-core/commit/40f8c9a5fd135d5ab431f6978f5eec829f2b497a))
+- monitor, log and report the number of connections to Core. ([b6fe040](https://github.com/nrkno/tv-automation-server-core/commit/b6fe04078637793f2ffc9bd14ecb23b2ee0d99f2))
+- segments getting stuck as 'orphaned: hidden' and 'isHidden: true' ([ef4fc6f](https://github.com/nrkno/tv-automation-server-core/commit/ef4fc6f1d5d43c2c94cf6e7a77f0476f07ba8f1d))
 
 ### [1.38.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0...v1.38.1) (2022-01-27)
 
 ## [1.38.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.2...v1.38.0) (2022-01-26)
 
-
 ### Features
 
-* check currentPartInstanceId is from the expected partInstance during takes ([f61eee5](https://github.com/nrkno/tv-automation-server-core/commit/f61eee5d9baafac26f244c4200f5d3cda7273e1e))
-* pass currentPartInstanceId into UserActions.take call, to ensure double takes dont happen ([41360a6](https://github.com/nrkno/tv-automation-server-core/commit/41360a6e5e7c6eb2a5dc8f3f59d11b04cc6e2116))
-* Segment Storyboard ([#625](https://github.com/nrkno/tv-automation-server-core/issues/625)) ([c862d7b](https://github.com/nrkno/tv-automation-server-core/commit/c862d7b11b565ddace36bcd758df9f441fa5ece0))
-
+- check currentPartInstanceId is from the expected partInstance during takes ([f61eee5](https://github.com/nrkno/tv-automation-server-core/commit/f61eee5d9baafac26f244c4200f5d3cda7273e1e))
+- pass currentPartInstanceId into UserActions.take call, to ensure double takes dont happen ([41360a6](https://github.com/nrkno/tv-automation-server-core/commit/41360a6e5e7c6eb2a5dc8f3f59d11b04cc6e2116))
+- Segment Storyboard ([#625](https://github.com/nrkno/tv-automation-server-core/issues/625)) ([c862d7b](https://github.com/nrkno/tv-automation-server-core/commit/c862d7b11b565ddace36bcd758df9f441fa5ece0))
 
 ### Bug Fixes
 
-* AdLib sorting doesn't take AdLib _rank into account ([e47b79c](https://github.com/nrkno/tv-automation-server-core/commit/e47b79c58c8387833d3c6edd4c76f3109829ef09))
-* Broken image links and most broken navigation links ([6540805](https://github.com/nrkno/tv-automation-server-core/commit/65408050578a40516c66fb5d6f32e57aed61c633))
-* Broken links in old_releases ([87bb48a](https://github.com/nrkno/tv-automation-server-core/commit/87bb48a138c21ccbd43348b265b06aa223a29449))
-* bug in PGW: When errors where logged, the deviceName logged was old ("uninitialized") ([5187b9a](https://github.com/nrkno/tv-automation-server-core/commit/5187b9a07a0d4643dea504897d74a97da201b698))
-* dashboard panel scaling ([3a07214](https://github.com/nrkno/tv-automation-server-core/commit/3a072140b3e745a6f113e24b5665a9e1c9bb2d08))
-* Fetch old data in parallel ([bd0d368](https://github.com/nrkno/tv-automation-server-core/commit/bd0d3682e1f3695caf978570594ac12699498468))
-* hidden segments disappearing forever ([0030d0b](https://github.com/nrkno/tv-automation-server-core/commit/0030d0b3e31a54daec184a02015082c4608fd585))
-* Make shouldRemoveOrphanedPartInstance return a bool ([584e649](https://github.com/nrkno/tv-automation-server-core/commit/584e649d856b353a1e63dd305b852bbe6b14b702))
-* markdown links ([eacca72](https://github.com/nrkno/tv-automation-server-core/commit/eacca72e2603e06015e75138e6d9dd8a219608b9))
-* minor tweaks from merging ([ee159b9](https://github.com/nrkno/tv-automation-server-core/commit/ee159b9654e9960d9c9a23b54667f9f4b4463b5a))
-* More broken documentation links, replace last of the jekyll-style syntax ([7662bb6](https://github.com/nrkno/tv-automation-server-core/commit/7662bb63b2c13a781ac7111fd06ed7eb766998c3))
-* Move nextSegmentId to unset block ([49ffd5d](https://github.com/nrkno/tv-automation-server-core/commit/49ffd5df5f235b0269bc2d960da7721aab45e699))
-* orphaned segment notes translation ([262352e](https://github.com/nrkno/tv-automation-server-core/commit/262352ec5b67fb7c266dc71eed048939392949ea))
-* performance in CommitIngest ([0e2e28e](https://github.com/nrkno/tv-automation-server-core/commit/0e2e28e3ee05f91510f8565bd488ed96b739c918))
-* performance is degraded in Blink >= 96 (CompositeAfterPaint) ([#635](https://github.com/nrkno/tv-automation-server-core/issues/635)) ([a07fea2](https://github.com/nrkno/tv-automation-server-core/commit/a07fea26f86a4bf03ed445a52165ca7ae418cfd2))
-* Replace jekyll-style info boxes with docusaurus-style ([db44980](https://github.com/nrkno/tv-automation-server-core/commit/db449808bc371400d93a07ca403bbe6b62f17bb2))
-* reset instances from previous activation or not present in cache ([#627](https://github.com/nrkno/tv-automation-server-core/issues/627)) ([868ff5c](https://github.com/nrkno/tv-automation-server-core/commit/868ff5c54d8a6bc22ccc6bb6bef0103c6b4e5f95))
-* Storyboard labels on Local SourceTypes do not match look with Timeline ([d123687](https://github.com/nrkno/tv-automation-server-core/commit/d1236873bab078de7763a4747341eeec85d5f2bd))
-* **Storyboard:** countdown to freeze sometimes shows late ([6313e24](https://github.com/nrkno/tv-automation-server-core/commit/6313e24adbd6e89099b62d1b550a7d103896ff7b))
-* **Storyboard:** touch scroll doesn't work ([7efbc2c](https://github.com/nrkno/tv-automation-server-core/commit/7efbc2c4d2d354928edcc5b881367b35403f09bd))
-* studioTimeline collection not publishing to playout-gateway upon first connection ([3e62a22](https://github.com/nrkno/tv-automation-server-core/commit/3e62a2285231a140c136be7c3b0090114a095a34))
-* Updated headline ([61fac2b](https://github.com/nrkno/tv-automation-server-core/commit/61fac2b1976c5138e3e43db9c1a03b0d9b5bcd74))
-* use a unified diff calculation ([#607](https://github.com/nrkno/tv-automation-server-core/issues/607)) ([ccf0218](https://github.com/nrkno/tv-automation-server-core/commit/ccf021828bf08abb22f8191f04098a468d39bb1c))
-* various contributed bugfixes release38 ([#638](https://github.com/nrkno/tv-automation-server-core/issues/638)) ([a5d3a3e](https://github.com/nrkno/tv-automation-server-core/commit/a5d3a3e3425af2593dbb7659db038378776c803a))
+- AdLib sorting doesn't take AdLib \_rank into account ([e47b79c](https://github.com/nrkno/tv-automation-server-core/commit/e47b79c58c8387833d3c6edd4c76f3109829ef09))
+- Broken image links and most broken navigation links ([6540805](https://github.com/nrkno/tv-automation-server-core/commit/65408050578a40516c66fb5d6f32e57aed61c633))
+- Broken links in old_releases ([87bb48a](https://github.com/nrkno/tv-automation-server-core/commit/87bb48a138c21ccbd43348b265b06aa223a29449))
+- bug in PGW: When errors where logged, the deviceName logged was old ("uninitialized") ([5187b9a](https://github.com/nrkno/tv-automation-server-core/commit/5187b9a07a0d4643dea504897d74a97da201b698))
+- dashboard panel scaling ([3a07214](https://github.com/nrkno/tv-automation-server-core/commit/3a072140b3e745a6f113e24b5665a9e1c9bb2d08))
+- Fetch old data in parallel ([bd0d368](https://github.com/nrkno/tv-automation-server-core/commit/bd0d3682e1f3695caf978570594ac12699498468))
+- hidden segments disappearing forever ([0030d0b](https://github.com/nrkno/tv-automation-server-core/commit/0030d0b3e31a54daec184a02015082c4608fd585))
+- Make shouldRemoveOrphanedPartInstance return a bool ([584e649](https://github.com/nrkno/tv-automation-server-core/commit/584e649d856b353a1e63dd305b852bbe6b14b702))
+- markdown links ([eacca72](https://github.com/nrkno/tv-automation-server-core/commit/eacca72e2603e06015e75138e6d9dd8a219608b9))
+- minor tweaks from merging ([ee159b9](https://github.com/nrkno/tv-automation-server-core/commit/ee159b9654e9960d9c9a23b54667f9f4b4463b5a))
+- More broken documentation links, replace last of the jekyll-style syntax ([7662bb6](https://github.com/nrkno/tv-automation-server-core/commit/7662bb63b2c13a781ac7111fd06ed7eb766998c3))
+- Move nextSegmentId to unset block ([49ffd5d](https://github.com/nrkno/tv-automation-server-core/commit/49ffd5df5f235b0269bc2d960da7721aab45e699))
+- orphaned segment notes translation ([262352e](https://github.com/nrkno/tv-automation-server-core/commit/262352ec5b67fb7c266dc71eed048939392949ea))
+- performance in CommitIngest ([0e2e28e](https://github.com/nrkno/tv-automation-server-core/commit/0e2e28e3ee05f91510f8565bd488ed96b739c918))
+- performance is degraded in Blink >= 96 (CompositeAfterPaint) ([#635](https://github.com/nrkno/tv-automation-server-core/issues/635)) ([a07fea2](https://github.com/nrkno/tv-automation-server-core/commit/a07fea26f86a4bf03ed445a52165ca7ae418cfd2))
+- Replace jekyll-style info boxes with docusaurus-style ([db44980](https://github.com/nrkno/tv-automation-server-core/commit/db449808bc371400d93a07ca403bbe6b62f17bb2))
+- reset instances from previous activation or not present in cache ([#627](https://github.com/nrkno/tv-automation-server-core/issues/627)) ([868ff5c](https://github.com/nrkno/tv-automation-server-core/commit/868ff5c54d8a6bc22ccc6bb6bef0103c6b4e5f95))
+- Storyboard labels on Local SourceTypes do not match look with Timeline ([d123687](https://github.com/nrkno/tv-automation-server-core/commit/d1236873bab078de7763a4747341eeec85d5f2bd))
+- **Storyboard:** countdown to freeze sometimes shows late ([6313e24](https://github.com/nrkno/tv-automation-server-core/commit/6313e24adbd6e89099b62d1b550a7d103896ff7b))
+- **Storyboard:** touch scroll doesn't work ([7efbc2c](https://github.com/nrkno/tv-automation-server-core/commit/7efbc2c4d2d354928edcc5b881367b35403f09bd))
+- studioTimeline collection not publishing to playout-gateway upon first connection ([3e62a22](https://github.com/nrkno/tv-automation-server-core/commit/3e62a2285231a140c136be7c3b0090114a095a34))
+- Updated headline ([61fac2b](https://github.com/nrkno/tv-automation-server-core/commit/61fac2b1976c5138e3e43db9c1a03b0d9b5bcd74))
+- use a unified diff calculation ([#607](https://github.com/nrkno/tv-automation-server-core/issues/607)) ([ccf0218](https://github.com/nrkno/tv-automation-server-core/commit/ccf021828bf08abb22f8191f04098a468d39bb1c))
+- various contributed bugfixes release38 ([#638](https://github.com/nrkno/tv-automation-server-core/issues/638)) ([a5d3a3e](https://github.com/nrkno/tv-automation-server-core/commit/a5d3a3e3425af2593dbb7659db038378776c803a))
 
 ## [1.38.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0-in-testing.1...v1.38.0-in-testing.2) (2021-12-17)
 
@@ -792,84 +2189,82 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.38.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0...v1.38.0-in-testing.0) (2021-12-17)
 
-
 ### Features
 
-* add comment field for script content ([#600](https://github.com/nrkno/tv-automation-server-core/issues/600)) ([cf6332f](https://github.com/nrkno/tv-automation-server-core/commit/cf6332fe777147ebd7aee386a743ee2675211f07))
-* add info level user notifications for blueprint contexts ([29d3068](https://github.com/nrkno/tv-automation-server-core/commit/29d306845c496013c394e3d940fa845d0d66f3db))
-* add level property to Part invalidReason ([#582](https://github.com/nrkno/tv-automation-server-core/issues/582)) [publish] ([52205fc](https://github.com/nrkno/tv-automation-server-core/commit/52205fc4f315515bc92037e3f67ab04c77415b93))
-* add NextInfo panel ([a5b583a](https://github.com/nrkno/tv-automation-server-core/commit/a5b583ad04121adee960927aae00372728072b27))
-* Add NTPTiumeChecker, used to verify that the system time is correct ([83017b6](https://github.com/nrkno/tv-automation-server-core/commit/83017b69984054677579b1480334e70ba42e78e9))
-* Budget Duration ([#556](https://github.com/nrkno/tv-automation-server-core/issues/556)) ([4b7627d](https://github.com/nrkno/tv-automation-server-core/commit/4b7627dda1ed914f5fc949e548181f8e38f65d02))
-* influxdb measurements for server-core ([0c3b320](https://github.com/nrkno/tv-automation-server-core/commit/0c3b320e1f81c344b1768183050b62f909f92315))
-* mos rundown metadata updates should trigger a light regeneratio… ([#603](https://github.com/nrkno/tv-automation-server-core/issues/603)) ([a47d2a4](https://github.com/nrkno/tv-automation-server-core/commit/a47d2a4aa666eb7923d25346df5050138fbf6b90))
-* remove legacy LOWER_THIRD piece directPlay ([5b910fa](https://github.com/nrkno/tv-automation-server-core/commit/5b910fa1ce06e9459437080eee6cada951679938))
-* remove the NTP syncing from server ([f4d0cc0](https://github.com/nrkno/tv-automation-server-core/commit/f4d0cc075786607c2f1a6b2eac6237d55e707710))
-* rundown metadata update ([#591](https://github.com/nrkno/tv-automation-server-core/issues/591)) ([8da7eda](https://github.com/nrkno/tv-automation-server-core/commit/8da7eda76f1eb8f5ab0e84ac75326317f69823de))
-* Rundown view, rundown header, and presenter view customization ([#551](https://github.com/nrkno/tv-automation-server-core/issues/551)) ([f945594](https://github.com/nrkno/tv-automation-server-core/commit/f945594ff7983618c79d66023e8628eeaa93f898)), closes [#554](https://github.com/nrkno/tv-automation-server-core/issues/554)
-* shouldRemoveOrphanedPartInstance ([25321b2](https://github.com/nrkno/tv-automation-server-core/commit/25321b28ffbc53c8d4771c3d6e91063d9e3bc68a))
-* Store timeline objects as a data blob ([#617](https://github.com/nrkno/tv-automation-server-core/issues/617)) ([d36872d](https://github.com/nrkno/tv-automation-server-core/commit/d36872d1d94365199f5f3944964125fd003592cb))
-* timeline and mappings test tools to view routed timeline and mappings ([#602](https://github.com/nrkno/tv-automation-server-core/issues/602)) ([c30ade3](https://github.com/nrkno/tv-automation-server-core/commit/c30ade3862497f570a24c1111917a336b4128928))
-* wheel detach follow on air ([#604](https://github.com/nrkno/tv-automation-server-core/issues/604)) ([612dc0f](https://github.com/nrkno/tv-automation-server-core/commit/612dc0fd15f96e6a0013d85e31b3ec0135b45a3f))
-
+- add comment field for script content ([#600](https://github.com/nrkno/tv-automation-server-core/issues/600)) ([cf6332f](https://github.com/nrkno/tv-automation-server-core/commit/cf6332fe777147ebd7aee386a743ee2675211f07))
+- add info level user notifications for blueprint contexts ([29d3068](https://github.com/nrkno/tv-automation-server-core/commit/29d306845c496013c394e3d940fa845d0d66f3db))
+- add level property to Part invalidReason ([#582](https://github.com/nrkno/tv-automation-server-core/issues/582)) [publish] ([52205fc](https://github.com/nrkno/tv-automation-server-core/commit/52205fc4f315515bc92037e3f67ab04c77415b93))
+- add NextInfo panel ([a5b583a](https://github.com/nrkno/tv-automation-server-core/commit/a5b583ad04121adee960927aae00372728072b27))
+- Add NTPTiumeChecker, used to verify that the system time is correct ([83017b6](https://github.com/nrkno/tv-automation-server-core/commit/83017b69984054677579b1480334e70ba42e78e9))
+- Budget Duration ([#556](https://github.com/nrkno/tv-automation-server-core/issues/556)) ([4b7627d](https://github.com/nrkno/tv-automation-server-core/commit/4b7627dda1ed914f5fc949e548181f8e38f65d02))
+- influxdb measurements for server-core ([0c3b320](https://github.com/nrkno/tv-automation-server-core/commit/0c3b320e1f81c344b1768183050b62f909f92315))
+- mos rundown metadata updates should trigger a light regeneratio… ([#603](https://github.com/nrkno/tv-automation-server-core/issues/603)) ([a47d2a4](https://github.com/nrkno/tv-automation-server-core/commit/a47d2a4aa666eb7923d25346df5050138fbf6b90))
+- remove legacy LOWER_THIRD piece directPlay ([5b910fa](https://github.com/nrkno/tv-automation-server-core/commit/5b910fa1ce06e9459437080eee6cada951679938))
+- remove the NTP syncing from server ([f4d0cc0](https://github.com/nrkno/tv-automation-server-core/commit/f4d0cc075786607c2f1a6b2eac6237d55e707710))
+- rundown metadata update ([#591](https://github.com/nrkno/tv-automation-server-core/issues/591)) ([8da7eda](https://github.com/nrkno/tv-automation-server-core/commit/8da7eda76f1eb8f5ab0e84ac75326317f69823de))
+- Rundown view, rundown header, and presenter view customization ([#551](https://github.com/nrkno/tv-automation-server-core/issues/551)) ([f945594](https://github.com/nrkno/tv-automation-server-core/commit/f945594ff7983618c79d66023e8628eeaa93f898)), closes [#554](https://github.com/nrkno/tv-automation-server-core/issues/554)
+- shouldRemoveOrphanedPartInstance ([25321b2](https://github.com/nrkno/tv-automation-server-core/commit/25321b28ffbc53c8d4771c3d6e91063d9e3bc68a))
+- Store timeline objects as a data blob ([#617](https://github.com/nrkno/tv-automation-server-core/issues/617)) ([d36872d](https://github.com/nrkno/tv-automation-server-core/commit/d36872d1d94365199f5f3944964125fd003592cb))
+- timeline and mappings test tools to view routed timeline and mappings ([#602](https://github.com/nrkno/tv-automation-server-core/issues/602)) ([c30ade3](https://github.com/nrkno/tv-automation-server-core/commit/c30ade3862497f570a24c1111917a336b4128928))
+- wheel detach follow on air ([#604](https://github.com/nrkno/tv-automation-server-core/issues/604)) ([612dc0f](https://github.com/nrkno/tv-automation-server-core/commit/612dc0fd15f96e6a0013d85e31b3ec0135b45a3f))
 
 ### Bug Fixes
 
-* Action Triggers refreshed too often ([c28b490](https://github.com/nrkno/tv-automation-server-core/commit/c28b490b21ef163c17302c328d9c00890bed9ce8))
-* add a parallel (fast-track) data  flow of the timeline, to allow for faster triggering of the timeline publication ([79ec085](https://github.com/nrkno/tv-automation-server-core/commit/79ec08593efea8e5d980a84b9135262ea6f05e66))
-* add maximumDataAge into Settings ([c15dec5](https://github.com/nrkno/tv-automation-server-core/commit/c15dec50dba24a7f91368e8d74ff9b91ad804324))
-* add missing collections to cleanup ([a1d942d](https://github.com/nrkno/tv-automation-server-core/commit/a1d942dc5c53e7d2727ac5e25c10168ba0451eb7))
-* add property .hasCode to Blueprints, to be used instead of .code, so that we don't have to retrieve it (reducing bandwidth) ([4436eb2](https://github.com/nrkno/tv-automation-server-core/commit/4436eb25fe7a99f91bf0358b7335b99f4419ec24))
-* allow for retry if cleanup of data fails ([e6dc4be](https://github.com/nrkno/tv-automation-server-core/commit/e6dc4be7fd86778df24b3a9b02af358007a35bca))
-* avoid critical bug in activating playlists that are imported-from-snapshot ([d9f8f78](https://github.com/nrkno/tv-automation-server-core/commit/d9f8f78dd718b026301d3df11ca499f887838b37))
-* bug: The log level might not be properly set upon startup ([237d442](https://github.com/nrkno/tv-automation-server-core/commit/237d44223a404534783731b832fb145a46746b89))
-* Clear nextSegmentid on deactivate ([5cfb7c0](https://github.com/nrkno/tv-automation-server-core/commit/5cfb7c0d8527b225178eca359ceefdc52f2d2f30))
-* Clear nextSegmentId when coming from autoNext ([4fa9cc1](https://github.com/nrkno/tv-automation-server-core/commit/4fa9cc1cebc8fe896f3b8dbcfbc27414060e779b))
-* Clear queued segment if it's set as next ([1f4087c](https://github.com/nrkno/tv-automation-server-core/commit/1f4087c7744da776373b1887f01794a6c139d6f2))
-* consuming and clearing nextSegmentId ([36a6c21](https://github.com/nrkno/tv-automation-server-core/commit/36a6c21d3391f402d7e28a554d67ea40645191bd))
-* cronjob för cleaning out empty playlists should only run night-time ([6ac4f3a](https://github.com/nrkno/tv-automation-server-core/commit/6ac4f3a28ae066839938f2b599906118c3cf9aab))
-* custom eslint rules ([b24b403](https://github.com/nrkno/tv-automation-server-core/commit/b24b403e0cb6e53734f1e490d6ce7f7264dc83aa))
-* Don't allow live segment to be hidden ([3d99b05](https://github.com/nrkno/tv-automation-server-core/commit/3d99b05887af4ac2c3c640b238986c991fb5026b))
-* Ensure that adlibs sorting are taking into account the Part, Segment and Rundown ranks. ([7795497](https://github.com/nrkno/tv-automation-server-core/commit/779549762542f350b0a92f069950a48f7eda1c8f))
-* errors from executeAction should be thrown ([c6f6ba8](https://github.com/nrkno/tv-automation-server-core/commit/c6f6ba8c5cdc19e101e2b82e5de657504ca73243))
-* fast path for timeline publication ([e172105](https://github.com/nrkno/tv-automation-server-core/commit/e17210530d14cba7bac27930986c76d8e6f6c289))
-* handle all NoteTypes when setting rundown notification levels ([28a034f](https://github.com/nrkno/tv-automation-server-core/commit/28a034f38d7c2a50e1f673a19933ad15e75ea3c5))
-* Hash triggers for core migrations ([#631](https://github.com/nrkno/tv-automation-server-core/issues/631)) ([d395d04](https://github.com/nrkno/tv-automation-server-core/commit/d395d04367c7d3976abbc560c0af5edc4352397a))
-* if there is an error in the lockFfunctions, make a call to discardChanges() ([bcf6737](https://github.com/nrkno/tv-automation-server-core/commit/bcf67379d6b70d6967d74829aa8aafc92a82bcee))
-* Improve FastTrackObserver, allowing for multiple onData functions. ([533e9b9](https://github.com/nrkno/tv-automation-server-core/commit/533e9b99fbddc0e2fbad611a671ec350a00fb426))
-* improve timeline publication, minimizing the amount of (re-)calculations needed upon data change ([84d9469](https://github.com/nrkno/tv-automation-server-core/commit/84d94698eeb801c6eeb06c3eb2376d67c6b5bef4))
-* Lint errors ([e9236a3](https://github.com/nrkno/tv-automation-server-core/commit/e9236a3da3266a16713bf16e51f74b2a87f9af0f))
-* Lint errors ([dda1b82](https://github.com/nrkno/tv-automation-server-core/commit/dda1b82731ca0128bb099907fbb642ad9ff7622f))
-* make pieceIds generate without relying on the segmentId, so that they are stable when parts are moved between segments ([#626](https://github.com/nrkno/tv-automation-server-core/issues/626)) ([1a36ec5](https://github.com/nrkno/tv-automation-server-core/commit/1a36ec5672ccb7a04ed05434f6f00c363e3fd214))
-* make some types stricter ([0b53dea](https://github.com/nrkno/tv-automation-server-core/commit/0b53deab879f70dcecf1d2cfd260a8b3b6907d5a))
-* migration collection cleanup removing all system TriggeredActions ([d304490](https://github.com/nrkno/tv-automation-server-core/commit/d3044907f1c3d4e351fe58308c785a6679393b80))
-* minor fix inoptimizedObserver, for direct execution when lazynessDuration is 0 ([757aef6](https://github.com/nrkno/tv-automation-server-core/commit/757aef6e1679e9370229850d53966bc837509255))
-* minor fixes after feedback in PR ([386b8a7](https://github.com/nrkno/tv-automation-server-core/commit/386b8a75ee1ffe041919e1a952779cd5e68ff004))
-* Missing media notifications shown while media subscription is not yet ready ([d290727](https://github.com/nrkno/tv-automation-server-core/commit/d290727f641e71a39f071e79be0af9aa5ac0a259))
-* more usable results from cleanupOldDataInner() and add this check as a last step when doing migrations ([bb9cbca](https://github.com/nrkno/tv-automation-server-core/commit/bb9cbcad90567ce80b6ce934a9bcf843faa1c18a))
-* omit Blueprint .code in various calls. ([12a0672](https://github.com/nrkno/tv-automation-server-core/commit/12a06726201329bd00bc1377ea09534b298f9b00))
-* Only live segments can be marked as queued if their first part is next ([066f84d](https://github.com/nrkno/tv-automation-server-core/commit/066f84d19e5b945634027cb6c7357e39576e9644))
-* Part.invalidReason property naming ([1aa8e99](https://github.com/nrkno/tv-automation-server-core/commit/1aa8e99c31aee72751722c055a23610616a6da91))
-* PGW: only react on when the settings have changed on the PeripheralDevice ([0c4a3ea](https://github.com/nrkno/tv-automation-server-core/commit/0c4a3ea1e940193ad195f2a48b880c2f028fcf6a))
-* potentially stuck next segment ([28ddf56](https://github.com/nrkno/tv-automation-server-core/commit/28ddf563b5b92af1aaaaac022a506f50bc19e46f))
-* **Presenters Screen:** apply seek to Piece countdown for clip-like content ([390fb92](https://github.com/nrkno/tv-automation-server-core/commit/390fb92ef04464756ed63dbee9327c33b393d869))
-* Preserve data without needing blueprints to provide it ([4ef2ad5](https://github.com/nrkno/tv-automation-server-core/commit/4ef2ad5120f1042e474f1d09bddb2e9112a56ca4))
-* provide playlistExternalId to blueprints getRundownPlaylistInfo ([c71146f](https://github.com/nrkno/tv-automation-server-core/commit/c71146fcae7aded1e7691a2b241c0465c0ad30a3))
-* Queued segment bugs ([6cf065e](https://github.com/nrkno/tv-automation-server-core/commit/6cf065e222e6a44177de02e5897d9343b9976488))
-* Replace ShowStyleBase with ShowStyleBaseLight where possible. ([680d46f](https://github.com/nrkno/tv-automation-server-core/commit/680d46f3a9fc643b9baecd1cfa45d7910f88bb7a))
-* Replace usage of Studio with new type StudioLight where possible ([459803b](https://github.com/nrkno/tv-automation-server-core/commit/459803b7a6d069eccab0c43f8fb8c4722ee359ac))
-* Revert set-as-next instead of queue behaviour ([0618263](https://github.com/nrkno/tv-automation-server-core/commit/0618263842191821d66b9cc36f06b0167099fb4e))
-* rewinding and scrolling next part ([#581](https://github.com/nrkno/tv-automation-server-core/issues/581)) ([2656fcd](https://github.com/nrkno/tv-automation-server-core/commit/2656fcdad53894816f1c0ad8d40822cc6cf94a66))
-* Rework the client time sync procedure ([6b1d389](https://github.com/nrkno/tv-automation-server-core/commit/6b1d389cfd7b750f24143a9acd56ae04a4ebaa79))
-* show set segment as next in Part context as well ([#608](https://github.com/nrkno/tv-automation-server-core/issues/608)) ([957b243](https://github.com/nrkno/tv-automation-server-core/commit/957b243aa4613a1b13bb89ec021c6311a8c80a62))
-* sort Adlibs on part._rank, then on piece._rank ([22eb916](https://github.com/nrkno/tv-automation-server-core/commit/22eb9162e9a76f2f73a817a4a136947f385bb4c4))
-* trigger fast-track observer inside timelineTriggerTimeInner ([1f8f821](https://github.com/nrkno/tv-automation-server-core/commit/1f8f82185db3afa99bb13a761d83960200bc847f))
-* update code-preset, lints only changed files ([10fb7dc](https://github.com/nrkno/tv-automation-server-core/commit/10fb7dc9e024ffebd67c4accdf82d6bb0369893e))
-* Updated documenation link. ([7034ed7](https://github.com/nrkno/tv-automation-server-core/commit/7034ed7a2fcf9c1b131d4f4588a4af4416902e6f))
-* use correct filter when fetching data ([0bc1686](https://github.com/nrkno/tv-automation-server-core/commit/0bc1686cc51fb25f44f80120a0083ac64c9ae248))
-* use StudioId instead of StudioLight where possible ([46ae1fe](https://github.com/nrkno/tv-automation-server-core/commit/46ae1fe758dc98d9b9f0cef2aed2ce77c9637064))
-* wrap all calls to blueprints in try/catch-blocks ([82dc985](https://github.com/nrkno/tv-automation-server-core/commit/82dc985863baeb82f67ec683aecd2a6dcf72490f))
-* wrap parts fetch in a memoizedIsolatedAutorun to reduce reactivity ([ccb440e](https://github.com/nrkno/tv-automation-server-core/commit/ccb440ef53c498171dffe50fe87a9186c60e97fc))
+- Action Triggers refreshed too often ([c28b490](https://github.com/nrkno/tv-automation-server-core/commit/c28b490b21ef163c17302c328d9c00890bed9ce8))
+- add a parallel (fast-track) data flow of the timeline, to allow for faster triggering of the timeline publication ([79ec085](https://github.com/nrkno/tv-automation-server-core/commit/79ec08593efea8e5d980a84b9135262ea6f05e66))
+- add maximumDataAge into Settings ([c15dec5](https://github.com/nrkno/tv-automation-server-core/commit/c15dec50dba24a7f91368e8d74ff9b91ad804324))
+- add missing collections to cleanup ([a1d942d](https://github.com/nrkno/tv-automation-server-core/commit/a1d942dc5c53e7d2727ac5e25c10168ba0451eb7))
+- add property .hasCode to Blueprints, to be used instead of .code, so that we don't have to retrieve it (reducing bandwidth) ([4436eb2](https://github.com/nrkno/tv-automation-server-core/commit/4436eb25fe7a99f91bf0358b7335b99f4419ec24))
+- allow for retry if cleanup of data fails ([e6dc4be](https://github.com/nrkno/tv-automation-server-core/commit/e6dc4be7fd86778df24b3a9b02af358007a35bca))
+- avoid critical bug in activating playlists that are imported-from-snapshot ([d9f8f78](https://github.com/nrkno/tv-automation-server-core/commit/d9f8f78dd718b026301d3df11ca499f887838b37))
+- bug: The log level might not be properly set upon startup ([237d442](https://github.com/nrkno/tv-automation-server-core/commit/237d44223a404534783731b832fb145a46746b89))
+- Clear nextSegmentid on deactivate ([5cfb7c0](https://github.com/nrkno/tv-automation-server-core/commit/5cfb7c0d8527b225178eca359ceefdc52f2d2f30))
+- Clear nextSegmentId when coming from autoNext ([4fa9cc1](https://github.com/nrkno/tv-automation-server-core/commit/4fa9cc1cebc8fe896f3b8dbcfbc27414060e779b))
+- Clear queued segment if it's set as next ([1f4087c](https://github.com/nrkno/tv-automation-server-core/commit/1f4087c7744da776373b1887f01794a6c139d6f2))
+- consuming and clearing nextSegmentId ([36a6c21](https://github.com/nrkno/tv-automation-server-core/commit/36a6c21d3391f402d7e28a554d67ea40645191bd))
+- cronjob för cleaning out empty playlists should only run night-time ([6ac4f3a](https://github.com/nrkno/tv-automation-server-core/commit/6ac4f3a28ae066839938f2b599906118c3cf9aab))
+- custom eslint rules ([b24b403](https://github.com/nrkno/tv-automation-server-core/commit/b24b403e0cb6e53734f1e490d6ce7f7264dc83aa))
+- Don't allow live segment to be hidden ([3d99b05](https://github.com/nrkno/tv-automation-server-core/commit/3d99b05887af4ac2c3c640b238986c991fb5026b))
+- Ensure that adlibs sorting are taking into account the Part, Segment and Rundown ranks. ([7795497](https://github.com/nrkno/tv-automation-server-core/commit/779549762542f350b0a92f069950a48f7eda1c8f))
+- errors from executeAction should be thrown ([c6f6ba8](https://github.com/nrkno/tv-automation-server-core/commit/c6f6ba8c5cdc19e101e2b82e5de657504ca73243))
+- fast path for timeline publication ([e172105](https://github.com/nrkno/tv-automation-server-core/commit/e17210530d14cba7bac27930986c76d8e6f6c289))
+- handle all NoteTypes when setting rundown notification levels ([28a034f](https://github.com/nrkno/tv-automation-server-core/commit/28a034f38d7c2a50e1f673a19933ad15e75ea3c5))
+- Hash triggers for core migrations ([#631](https://github.com/nrkno/tv-automation-server-core/issues/631)) ([d395d04](https://github.com/nrkno/tv-automation-server-core/commit/d395d04367c7d3976abbc560c0af5edc4352397a))
+- if there is an error in the lockFfunctions, make a call to discardChanges() ([bcf6737](https://github.com/nrkno/tv-automation-server-core/commit/bcf67379d6b70d6967d74829aa8aafc92a82bcee))
+- Improve FastTrackObserver, allowing for multiple onData functions. ([533e9b9](https://github.com/nrkno/tv-automation-server-core/commit/533e9b99fbddc0e2fbad611a671ec350a00fb426))
+- improve timeline publication, minimizing the amount of (re-)calculations needed upon data change ([84d9469](https://github.com/nrkno/tv-automation-server-core/commit/84d94698eeb801c6eeb06c3eb2376d67c6b5bef4))
+- Lint errors ([e9236a3](https://github.com/nrkno/tv-automation-server-core/commit/e9236a3da3266a16713bf16e51f74b2a87f9af0f))
+- Lint errors ([dda1b82](https://github.com/nrkno/tv-automation-server-core/commit/dda1b82731ca0128bb099907fbb642ad9ff7622f))
+- make pieceIds generate without relying on the segmentId, so that they are stable when parts are moved between segments ([#626](https://github.com/nrkno/tv-automation-server-core/issues/626)) ([1a36ec5](https://github.com/nrkno/tv-automation-server-core/commit/1a36ec5672ccb7a04ed05434f6f00c363e3fd214))
+- make some types stricter ([0b53dea](https://github.com/nrkno/tv-automation-server-core/commit/0b53deab879f70dcecf1d2cfd260a8b3b6907d5a))
+- migration collection cleanup removing all system TriggeredActions ([d304490](https://github.com/nrkno/tv-automation-server-core/commit/d3044907f1c3d4e351fe58308c785a6679393b80))
+- minor fix inoptimizedObserver, for direct execution when lazynessDuration is 0 ([757aef6](https://github.com/nrkno/tv-automation-server-core/commit/757aef6e1679e9370229850d53966bc837509255))
+- minor fixes after feedback in PR ([386b8a7](https://github.com/nrkno/tv-automation-server-core/commit/386b8a75ee1ffe041919e1a952779cd5e68ff004))
+- Missing media notifications shown while media subscription is not yet ready ([d290727](https://github.com/nrkno/tv-automation-server-core/commit/d290727f641e71a39f071e79be0af9aa5ac0a259))
+- more usable results from cleanupOldDataInner() and add this check as a last step when doing migrations ([bb9cbca](https://github.com/nrkno/tv-automation-server-core/commit/bb9cbcad90567ce80b6ce934a9bcf843faa1c18a))
+- omit Blueprint .code in various calls. ([12a0672](https://github.com/nrkno/tv-automation-server-core/commit/12a06726201329bd00bc1377ea09534b298f9b00))
+- Only live segments can be marked as queued if their first part is next ([066f84d](https://github.com/nrkno/tv-automation-server-core/commit/066f84d19e5b945634027cb6c7357e39576e9644))
+- Part.invalidReason property naming ([1aa8e99](https://github.com/nrkno/tv-automation-server-core/commit/1aa8e99c31aee72751722c055a23610616a6da91))
+- PGW: only react on when the settings have changed on the PeripheralDevice ([0c4a3ea](https://github.com/nrkno/tv-automation-server-core/commit/0c4a3ea1e940193ad195f2a48b880c2f028fcf6a))
+- potentially stuck next segment ([28ddf56](https://github.com/nrkno/tv-automation-server-core/commit/28ddf563b5b92af1aaaaac022a506f50bc19e46f))
+- **Presenters Screen:** apply seek to Piece countdown for clip-like content ([390fb92](https://github.com/nrkno/tv-automation-server-core/commit/390fb92ef04464756ed63dbee9327c33b393d869))
+- Preserve data without needing blueprints to provide it ([4ef2ad5](https://github.com/nrkno/tv-automation-server-core/commit/4ef2ad5120f1042e474f1d09bddb2e9112a56ca4))
+- provide playlistExternalId to blueprints getRundownPlaylistInfo ([c71146f](https://github.com/nrkno/tv-automation-server-core/commit/c71146fcae7aded1e7691a2b241c0465c0ad30a3))
+- Queued segment bugs ([6cf065e](https://github.com/nrkno/tv-automation-server-core/commit/6cf065e222e6a44177de02e5897d9343b9976488))
+- Replace ShowStyleBase with ShowStyleBaseLight where possible. ([680d46f](https://github.com/nrkno/tv-automation-server-core/commit/680d46f3a9fc643b9baecd1cfa45d7910f88bb7a))
+- Replace usage of Studio with new type StudioLight where possible ([459803b](https://github.com/nrkno/tv-automation-server-core/commit/459803b7a6d069eccab0c43f8fb8c4722ee359ac))
+- Revert set-as-next instead of queue behaviour ([0618263](https://github.com/nrkno/tv-automation-server-core/commit/0618263842191821d66b9cc36f06b0167099fb4e))
+- rewinding and scrolling next part ([#581](https://github.com/nrkno/tv-automation-server-core/issues/581)) ([2656fcd](https://github.com/nrkno/tv-automation-server-core/commit/2656fcdad53894816f1c0ad8d40822cc6cf94a66))
+- Rework the client time sync procedure ([6b1d389](https://github.com/nrkno/tv-automation-server-core/commit/6b1d389cfd7b750f24143a9acd56ae04a4ebaa79))
+- show set segment as next in Part context as well ([#608](https://github.com/nrkno/tv-automation-server-core/issues/608)) ([957b243](https://github.com/nrkno/tv-automation-server-core/commit/957b243aa4613a1b13bb89ec021c6311a8c80a62))
+- sort Adlibs on part.\_rank, then on piece.\_rank ([22eb916](https://github.com/nrkno/tv-automation-server-core/commit/22eb9162e9a76f2f73a817a4a136947f385bb4c4))
+- trigger fast-track observer inside timelineTriggerTimeInner ([1f8f821](https://github.com/nrkno/tv-automation-server-core/commit/1f8f82185db3afa99bb13a761d83960200bc847f))
+- update code-preset, lints only changed files ([10fb7dc](https://github.com/nrkno/tv-automation-server-core/commit/10fb7dc9e024ffebd67c4accdf82d6bb0369893e))
+- Updated documenation link. ([7034ed7](https://github.com/nrkno/tv-automation-server-core/commit/7034ed7a2fcf9c1b131d4f4588a4af4416902e6f))
+- use correct filter when fetching data ([0bc1686](https://github.com/nrkno/tv-automation-server-core/commit/0bc1686cc51fb25f44f80120a0083ac64c9ae248))
+- use StudioId instead of StudioLight where possible ([46ae1fe](https://github.com/nrkno/tv-automation-server-core/commit/46ae1fe758dc98d9b9f0cef2aed2ce77c9637064))
+- wrap all calls to blueprints in try/catch-blocks ([82dc985](https://github.com/nrkno/tv-automation-server-core/commit/82dc985863baeb82f67ec683aecd2a6dcf72490f))
+- wrap parts fetch in a memoizedIsolatedAutorun to reduce reactivity ([ccb440e](https://github.com/nrkno/tv-automation-server-core/commit/ccb440ef53c498171dffe50fe87a9186c60e97fc))
 
 ## [1.38.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0-in-testing.1...v1.38.0-in-testing.2) (2021-12-17)
 
@@ -877,287 +2272,274 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.38.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0...v1.38.0-in-testing.0) (2021-12-17)
 
-
 ### Features
 
-* add comment field for script content ([#600](https://github.com/nrkno/tv-automation-server-core/issues/600)) ([cf6332f](https://github.com/nrkno/tv-automation-server-core/commit/cf6332fe777147ebd7aee386a743ee2675211f07))
-* add info level user notifications for blueprint contexts ([29d3068](https://github.com/nrkno/tv-automation-server-core/commit/29d306845c496013c394e3d940fa845d0d66f3db))
-* add level property to Part invalidReason ([#582](https://github.com/nrkno/tv-automation-server-core/issues/582)) [publish] ([52205fc](https://github.com/nrkno/tv-automation-server-core/commit/52205fc4f315515bc92037e3f67ab04c77415b93))
-* add NextInfo panel ([a5b583a](https://github.com/nrkno/tv-automation-server-core/commit/a5b583ad04121adee960927aae00372728072b27))
-* Add NTPTiumeChecker, used to verify that the system time is correct ([83017b6](https://github.com/nrkno/tv-automation-server-core/commit/83017b69984054677579b1480334e70ba42e78e9))
-* Budget Duration ([#556](https://github.com/nrkno/tv-automation-server-core/issues/556)) ([4b7627d](https://github.com/nrkno/tv-automation-server-core/commit/4b7627dda1ed914f5fc949e548181f8e38f65d02))
-* influxdb measurements for server-core ([0c3b320](https://github.com/nrkno/tv-automation-server-core/commit/0c3b320e1f81c344b1768183050b62f909f92315))
-* mos rundown metadata updates should trigger a light regeneratio… ([#603](https://github.com/nrkno/tv-automation-server-core/issues/603)) ([a47d2a4](https://github.com/nrkno/tv-automation-server-core/commit/a47d2a4aa666eb7923d25346df5050138fbf6b90))
-* remove legacy LOWER_THIRD piece directPlay ([5b910fa](https://github.com/nrkno/tv-automation-server-core/commit/5b910fa1ce06e9459437080eee6cada951679938))
-* remove the NTP syncing from server ([f4d0cc0](https://github.com/nrkno/tv-automation-server-core/commit/f4d0cc075786607c2f1a6b2eac6237d55e707710))
-* rundown metadata update ([#591](https://github.com/nrkno/tv-automation-server-core/issues/591)) ([8da7eda](https://github.com/nrkno/tv-automation-server-core/commit/8da7eda76f1eb8f5ab0e84ac75326317f69823de))
-* Rundown view, rundown header, and presenter view customization ([#551](https://github.com/nrkno/tv-automation-server-core/issues/551)) ([f945594](https://github.com/nrkno/tv-automation-server-core/commit/f945594ff7983618c79d66023e8628eeaa93f898)), closes [#554](https://github.com/nrkno/tv-automation-server-core/issues/554)
-* Store timeline objects as a data blob ([#617](https://github.com/nrkno/tv-automation-server-core/issues/617)) ([d36872d](https://github.com/nrkno/tv-automation-server-core/commit/d36872d1d94365199f5f3944964125fd003592cb))
-* timeline and mappings test tools to view routed timeline and mappings ([#602](https://github.com/nrkno/tv-automation-server-core/issues/602)) ([c30ade3](https://github.com/nrkno/tv-automation-server-core/commit/c30ade3862497f570a24c1111917a336b4128928))
-* wheel detach follow on air ([#604](https://github.com/nrkno/tv-automation-server-core/issues/604)) ([612dc0f](https://github.com/nrkno/tv-automation-server-core/commit/612dc0fd15f96e6a0013d85e31b3ec0135b45a3f))
-
+- add comment field for script content ([#600](https://github.com/nrkno/tv-automation-server-core/issues/600)) ([cf6332f](https://github.com/nrkno/tv-automation-server-core/commit/cf6332fe777147ebd7aee386a743ee2675211f07))
+- add info level user notifications for blueprint contexts ([29d3068](https://github.com/nrkno/tv-automation-server-core/commit/29d306845c496013c394e3d940fa845d0d66f3db))
+- add level property to Part invalidReason ([#582](https://github.com/nrkno/tv-automation-server-core/issues/582)) [publish] ([52205fc](https://github.com/nrkno/tv-automation-server-core/commit/52205fc4f315515bc92037e3f67ab04c77415b93))
+- add NextInfo panel ([a5b583a](https://github.com/nrkno/tv-automation-server-core/commit/a5b583ad04121adee960927aae00372728072b27))
+- Add NTPTiumeChecker, used to verify that the system time is correct ([83017b6](https://github.com/nrkno/tv-automation-server-core/commit/83017b69984054677579b1480334e70ba42e78e9))
+- Budget Duration ([#556](https://github.com/nrkno/tv-automation-server-core/issues/556)) ([4b7627d](https://github.com/nrkno/tv-automation-server-core/commit/4b7627dda1ed914f5fc949e548181f8e38f65d02))
+- influxdb measurements for server-core ([0c3b320](https://github.com/nrkno/tv-automation-server-core/commit/0c3b320e1f81c344b1768183050b62f909f92315))
+- mos rundown metadata updates should trigger a light regeneratio… ([#603](https://github.com/nrkno/tv-automation-server-core/issues/603)) ([a47d2a4](https://github.com/nrkno/tv-automation-server-core/commit/a47d2a4aa666eb7923d25346df5050138fbf6b90))
+- remove legacy LOWER_THIRD piece directPlay ([5b910fa](https://github.com/nrkno/tv-automation-server-core/commit/5b910fa1ce06e9459437080eee6cada951679938))
+- remove the NTP syncing from server ([f4d0cc0](https://github.com/nrkno/tv-automation-server-core/commit/f4d0cc075786607c2f1a6b2eac6237d55e707710))
+- rundown metadata update ([#591](https://github.com/nrkno/tv-automation-server-core/issues/591)) ([8da7eda](https://github.com/nrkno/tv-automation-server-core/commit/8da7eda76f1eb8f5ab0e84ac75326317f69823de))
+- Rundown view, rundown header, and presenter view customization ([#551](https://github.com/nrkno/tv-automation-server-core/issues/551)) ([f945594](https://github.com/nrkno/tv-automation-server-core/commit/f945594ff7983618c79d66023e8628eeaa93f898)), closes [#554](https://github.com/nrkno/tv-automation-server-core/issues/554)
+- Store timeline objects as a data blob ([#617](https://github.com/nrkno/tv-automation-server-core/issues/617)) ([d36872d](https://github.com/nrkno/tv-automation-server-core/commit/d36872d1d94365199f5f3944964125fd003592cb))
+- timeline and mappings test tools to view routed timeline and mappings ([#602](https://github.com/nrkno/tv-automation-server-core/issues/602)) ([c30ade3](https://github.com/nrkno/tv-automation-server-core/commit/c30ade3862497f570a24c1111917a336b4128928))
+- wheel detach follow on air ([#604](https://github.com/nrkno/tv-automation-server-core/issues/604)) ([612dc0f](https://github.com/nrkno/tv-automation-server-core/commit/612dc0fd15f96e6a0013d85e31b3ec0135b45a3f))
 
 ### Bug Fixes
 
-* Action Triggers refreshed too often ([c28b490](https://github.com/nrkno/tv-automation-server-core/commit/c28b490b21ef163c17302c328d9c00890bed9ce8))
-* add a parallel (fast-track) data  flow of the timeline, to allow for faster triggering of the timeline publication ([79ec085](https://github.com/nrkno/tv-automation-server-core/commit/79ec08593efea8e5d980a84b9135262ea6f05e66))
-* add maximumDataAge into Settings ([c15dec5](https://github.com/nrkno/tv-automation-server-core/commit/c15dec50dba24a7f91368e8d74ff9b91ad804324))
-* add missing collections to cleanup ([a1d942d](https://github.com/nrkno/tv-automation-server-core/commit/a1d942dc5c53e7d2727ac5e25c10168ba0451eb7))
-* add property .hasCode to Blueprints, to be used instead of .code, so that we don't have to retrieve it (reducing bandwidth) ([4436eb2](https://github.com/nrkno/tv-automation-server-core/commit/4436eb25fe7a99f91bf0358b7335b99f4419ec24))
-* allow for retry if cleanup of data fails ([e6dc4be](https://github.com/nrkno/tv-automation-server-core/commit/e6dc4be7fd86778df24b3a9b02af358007a35bca))
-* avoid critical bug in activating playlists that are imported-from-snapshot ([d9f8f78](https://github.com/nrkno/tv-automation-server-core/commit/d9f8f78dd718b026301d3df11ca499f887838b37))
-* bug: The log level might not be properly set upon startup ([237d442](https://github.com/nrkno/tv-automation-server-core/commit/237d44223a404534783731b832fb145a46746b89))
-* consuming and clearing nextSegmentId ([36a6c21](https://github.com/nrkno/tv-automation-server-core/commit/36a6c21d3391f402d7e28a554d67ea40645191bd))
-* cronjob för cleaning out empty playlists should only run night-time ([6ac4f3a](https://github.com/nrkno/tv-automation-server-core/commit/6ac4f3a28ae066839938f2b599906118c3cf9aab))
-* custom eslint rules ([b24b403](https://github.com/nrkno/tv-automation-server-core/commit/b24b403e0cb6e53734f1e490d6ce7f7264dc83aa))
-* errors from executeAction should be thrown ([c6f6ba8](https://github.com/nrkno/tv-automation-server-core/commit/c6f6ba8c5cdc19e101e2b82e5de657504ca73243))
-* fast path for timeline publication ([e172105](https://github.com/nrkno/tv-automation-server-core/commit/e17210530d14cba7bac27930986c76d8e6f6c289))
-* handle all NoteTypes when setting rundown notification levels ([28a034f](https://github.com/nrkno/tv-automation-server-core/commit/28a034f38d7c2a50e1f673a19933ad15e75ea3c5))
-* Hash triggers for core migrations ([#631](https://github.com/nrkno/tv-automation-server-core/issues/631)) ([d395d04](https://github.com/nrkno/tv-automation-server-core/commit/d395d04367c7d3976abbc560c0af5edc4352397a))
-* if there is an error in the lockFfunctions, make a call to discardChanges() ([bcf6737](https://github.com/nrkno/tv-automation-server-core/commit/bcf67379d6b70d6967d74829aa8aafc92a82bcee))
-* Improve FastTrackObserver, allowing for multiple onData functions. ([533e9b9](https://github.com/nrkno/tv-automation-server-core/commit/533e9b99fbddc0e2fbad611a671ec350a00fb426))
-* improve timeline publication, minimizing the amount of (re-)calculations needed upon data change ([84d9469](https://github.com/nrkno/tv-automation-server-core/commit/84d94698eeb801c6eeb06c3eb2376d67c6b5bef4))
-* make pieceIds generate without relying on the segmentId, so that they are stable when parts are moved between segments ([#626](https://github.com/nrkno/tv-automation-server-core/issues/626)) ([1a36ec5](https://github.com/nrkno/tv-automation-server-core/commit/1a36ec5672ccb7a04ed05434f6f00c363e3fd214))
-* make some types stricter ([0b53dea](https://github.com/nrkno/tv-automation-server-core/commit/0b53deab879f70dcecf1d2cfd260a8b3b6907d5a))
-* migration collection cleanup removing all system TriggeredActions ([d304490](https://github.com/nrkno/tv-automation-server-core/commit/d3044907f1c3d4e351fe58308c785a6679393b80))
-* minor fix inoptimizedObserver, for direct execution when lazynessDuration is 0 ([757aef6](https://github.com/nrkno/tv-automation-server-core/commit/757aef6e1679e9370229850d53966bc837509255))
-* minor fixes after feedback in PR ([386b8a7](https://github.com/nrkno/tv-automation-server-core/commit/386b8a75ee1ffe041919e1a952779cd5e68ff004))
-* more usable results from cleanupOldDataInner() and add this check as a last step when doing migrations ([bb9cbca](https://github.com/nrkno/tv-automation-server-core/commit/bb9cbcad90567ce80b6ce934a9bcf843faa1c18a))
-* npm publish tag for prerelease git tags ([94e132d](https://github.com/nrkno/tv-automation-server-core/commit/94e132d2b56b14ac6c3874a7f6f6b7ccb7542f36))
-* omit Blueprint .code in various calls. ([12a0672](https://github.com/nrkno/tv-automation-server-core/commit/12a06726201329bd00bc1377ea09534b298f9b00))
-* Part.invalidReason property naming ([1aa8e99](https://github.com/nrkno/tv-automation-server-core/commit/1aa8e99c31aee72751722c055a23610616a6da91))
-* PGW: only react on when the settings have changed on the PeripheralDevice ([0c4a3ea](https://github.com/nrkno/tv-automation-server-core/commit/0c4a3ea1e940193ad195f2a48b880c2f028fcf6a))
-* **Presenters Screen:** apply seek to Piece countdown for clip-like content ([390fb92](https://github.com/nrkno/tv-automation-server-core/commit/390fb92ef04464756ed63dbee9327c33b393d869))
-* provide playlistExternalId to blueprints getRundownPlaylistInfo ([c71146f](https://github.com/nrkno/tv-automation-server-core/commit/c71146fcae7aded1e7691a2b241c0465c0ad30a3))
-* Replace ShowStyleBase with ShowStyleBaseLight where possible. ([680d46f](https://github.com/nrkno/tv-automation-server-core/commit/680d46f3a9fc643b9baecd1cfa45d7910f88bb7a))
-* Replace usage of Studio with new type StudioLight where possible ([459803b](https://github.com/nrkno/tv-automation-server-core/commit/459803b7a6d069eccab0c43f8fb8c4722ee359ac))
-* rewinding and scrolling next part ([#581](https://github.com/nrkno/tv-automation-server-core/issues/581)) ([2656fcd](https://github.com/nrkno/tv-automation-server-core/commit/2656fcdad53894816f1c0ad8d40822cc6cf94a66))
-* Rework the client time sync procedure ([6b1d389](https://github.com/nrkno/tv-automation-server-core/commit/6b1d389cfd7b750f24143a9acd56ae04a4ebaa79))
-* show set segment as next in Part context as well ([#608](https://github.com/nrkno/tv-automation-server-core/issues/608)) ([957b243](https://github.com/nrkno/tv-automation-server-core/commit/957b243aa4613a1b13bb89ec021c6311a8c80a62))
-* trigger fast-track observer inside timelineTriggerTimeInner ([1f8f821](https://github.com/nrkno/tv-automation-server-core/commit/1f8f82185db3afa99bb13a761d83960200bc847f))
-* update code-preset, lints only changed files ([10fb7dc](https://github.com/nrkno/tv-automation-server-core/commit/10fb7dc9e024ffebd67c4accdf82d6bb0369893e))
-* use StudioId instead of StudioLight where possible ([46ae1fe](https://github.com/nrkno/tv-automation-server-core/commit/46ae1fe758dc98d9b9f0cef2aed2ce77c9637064))
-* wrap all calls to blueprints in try/catch-blocks ([82dc985](https://github.com/nrkno/tv-automation-server-core/commit/82dc985863baeb82f67ec683aecd2a6dcf72490f))
+- Action Triggers refreshed too often ([c28b490](https://github.com/nrkno/tv-automation-server-core/commit/c28b490b21ef163c17302c328d9c00890bed9ce8))
+- add a parallel (fast-track) data flow of the timeline, to allow for faster triggering of the timeline publication ([79ec085](https://github.com/nrkno/tv-automation-server-core/commit/79ec08593efea8e5d980a84b9135262ea6f05e66))
+- add maximumDataAge into Settings ([c15dec5](https://github.com/nrkno/tv-automation-server-core/commit/c15dec50dba24a7f91368e8d74ff9b91ad804324))
+- add missing collections to cleanup ([a1d942d](https://github.com/nrkno/tv-automation-server-core/commit/a1d942dc5c53e7d2727ac5e25c10168ba0451eb7))
+- add property .hasCode to Blueprints, to be used instead of .code, so that we don't have to retrieve it (reducing bandwidth) ([4436eb2](https://github.com/nrkno/tv-automation-server-core/commit/4436eb25fe7a99f91bf0358b7335b99f4419ec24))
+- allow for retry if cleanup of data fails ([e6dc4be](https://github.com/nrkno/tv-automation-server-core/commit/e6dc4be7fd86778df24b3a9b02af358007a35bca))
+- avoid critical bug in activating playlists that are imported-from-snapshot ([d9f8f78](https://github.com/nrkno/tv-automation-server-core/commit/d9f8f78dd718b026301d3df11ca499f887838b37))
+- bug: The log level might not be properly set upon startup ([237d442](https://github.com/nrkno/tv-automation-server-core/commit/237d44223a404534783731b832fb145a46746b89))
+- consuming and clearing nextSegmentId ([36a6c21](https://github.com/nrkno/tv-automation-server-core/commit/36a6c21d3391f402d7e28a554d67ea40645191bd))
+- cronjob för cleaning out empty playlists should only run night-time ([6ac4f3a](https://github.com/nrkno/tv-automation-server-core/commit/6ac4f3a28ae066839938f2b599906118c3cf9aab))
+- custom eslint rules ([b24b403](https://github.com/nrkno/tv-automation-server-core/commit/b24b403e0cb6e53734f1e490d6ce7f7264dc83aa))
+- errors from executeAction should be thrown ([c6f6ba8](https://github.com/nrkno/tv-automation-server-core/commit/c6f6ba8c5cdc19e101e2b82e5de657504ca73243))
+- fast path for timeline publication ([e172105](https://github.com/nrkno/tv-automation-server-core/commit/e17210530d14cba7bac27930986c76d8e6f6c289))
+- handle all NoteTypes when setting rundown notification levels ([28a034f](https://github.com/nrkno/tv-automation-server-core/commit/28a034f38d7c2a50e1f673a19933ad15e75ea3c5))
+- Hash triggers for core migrations ([#631](https://github.com/nrkno/tv-automation-server-core/issues/631)) ([d395d04](https://github.com/nrkno/tv-automation-server-core/commit/d395d04367c7d3976abbc560c0af5edc4352397a))
+- if there is an error in the lockFfunctions, make a call to discardChanges() ([bcf6737](https://github.com/nrkno/tv-automation-server-core/commit/bcf67379d6b70d6967d74829aa8aafc92a82bcee))
+- Improve FastTrackObserver, allowing for multiple onData functions. ([533e9b9](https://github.com/nrkno/tv-automation-server-core/commit/533e9b99fbddc0e2fbad611a671ec350a00fb426))
+- improve timeline publication, minimizing the amount of (re-)calculations needed upon data change ([84d9469](https://github.com/nrkno/tv-automation-server-core/commit/84d94698eeb801c6eeb06c3eb2376d67c6b5bef4))
+- make pieceIds generate without relying on the segmentId, so that they are stable when parts are moved between segments ([#626](https://github.com/nrkno/tv-automation-server-core/issues/626)) ([1a36ec5](https://github.com/nrkno/tv-automation-server-core/commit/1a36ec5672ccb7a04ed05434f6f00c363e3fd214))
+- make some types stricter ([0b53dea](https://github.com/nrkno/tv-automation-server-core/commit/0b53deab879f70dcecf1d2cfd260a8b3b6907d5a))
+- migration collection cleanup removing all system TriggeredActions ([d304490](https://github.com/nrkno/tv-automation-server-core/commit/d3044907f1c3d4e351fe58308c785a6679393b80))
+- minor fix inoptimizedObserver, for direct execution when lazynessDuration is 0 ([757aef6](https://github.com/nrkno/tv-automation-server-core/commit/757aef6e1679e9370229850d53966bc837509255))
+- minor fixes after feedback in PR ([386b8a7](https://github.com/nrkno/tv-automation-server-core/commit/386b8a75ee1ffe041919e1a952779cd5e68ff004))
+- more usable results from cleanupOldDataInner() and add this check as a last step when doing migrations ([bb9cbca](https://github.com/nrkno/tv-automation-server-core/commit/bb9cbcad90567ce80b6ce934a9bcf843faa1c18a))
+- npm publish tag for prerelease git tags ([94e132d](https://github.com/nrkno/tv-automation-server-core/commit/94e132d2b56b14ac6c3874a7f6f6b7ccb7542f36))
+- omit Blueprint .code in various calls. ([12a0672](https://github.com/nrkno/tv-automation-server-core/commit/12a06726201329bd00bc1377ea09534b298f9b00))
+- Part.invalidReason property naming ([1aa8e99](https://github.com/nrkno/tv-automation-server-core/commit/1aa8e99c31aee72751722c055a23610616a6da91))
+- PGW: only react on when the settings have changed on the PeripheralDevice ([0c4a3ea](https://github.com/nrkno/tv-automation-server-core/commit/0c4a3ea1e940193ad195f2a48b880c2f028fcf6a))
+- **Presenters Screen:** apply seek to Piece countdown for clip-like content ([390fb92](https://github.com/nrkno/tv-automation-server-core/commit/390fb92ef04464756ed63dbee9327c33b393d869))
+- provide playlistExternalId to blueprints getRundownPlaylistInfo ([c71146f](https://github.com/nrkno/tv-automation-server-core/commit/c71146fcae7aded1e7691a2b241c0465c0ad30a3))
+- Replace ShowStyleBase with ShowStyleBaseLight where possible. ([680d46f](https://github.com/nrkno/tv-automation-server-core/commit/680d46f3a9fc643b9baecd1cfa45d7910f88bb7a))
+- Replace usage of Studio with new type StudioLight where possible ([459803b](https://github.com/nrkno/tv-automation-server-core/commit/459803b7a6d069eccab0c43f8fb8c4722ee359ac))
+- rewinding and scrolling next part ([#581](https://github.com/nrkno/tv-automation-server-core/issues/581)) ([2656fcd](https://github.com/nrkno/tv-automation-server-core/commit/2656fcdad53894816f1c0ad8d40822cc6cf94a66))
+- Rework the client time sync procedure ([6b1d389](https://github.com/nrkno/tv-automation-server-core/commit/6b1d389cfd7b750f24143a9acd56ae04a4ebaa79))
+- show set segment as next in Part context as well ([#608](https://github.com/nrkno/tv-automation-server-core/issues/608)) ([957b243](https://github.com/nrkno/tv-automation-server-core/commit/957b243aa4613a1b13bb89ec021c6311a8c80a62))
+- trigger fast-track observer inside timelineTriggerTimeInner ([1f8f821](https://github.com/nrkno/tv-automation-server-core/commit/1f8f82185db3afa99bb13a761d83960200bc847f))
+- update code-preset, lints only changed files ([10fb7dc](https://github.com/nrkno/tv-automation-server-core/commit/10fb7dc9e024ffebd67c4accdf82d6bb0369893e))
+- use StudioId instead of StudioLight where possible ([46ae1fe](https://github.com/nrkno/tv-automation-server-core/commit/46ae1fe758dc98d9b9f0cef2aed2ce77c9637064))
+- wrap all calls to blueprints in try/catch-blocks ([82dc985](https://github.com/nrkno/tv-automation-server-core/commit/82dc985863baeb82f67ec683aecd2a6dcf72490f))
 
 ## [1.37.0](///compare/v1.37.0-in-testing.13...v1.37.0) (2021-12-08)
 
-
 ### Features
 
-* Action Triggers tag filter suggestions ([#612](undefined/undefined/undefined/issues/612)) ea82cc5
-* import docs to repo from gitbook ([#547](undefined/undefined/undefined/issues/547)) 152f988
-
+- Action Triggers tag filter suggestions ([#612](undefined/undefined/undefined/issues/612)) ea82cc5
+- import docs to repo from gitbook ([#547](undefined/undefined/undefined/issues/547)) 152f988
 
 ### Bug Fixes
 
-* add missing expectedPackages piping d5d93d2
-* Add support for some more Package Manager statuses ada6e17
-* add warning to evaluation form about commands not being sent to Sofie while typing b0f8df4
-* bug fix: Package status in rundownView didn't work 918b882
-* bug fix: some notifications didn't get any messages, resulting in  "There is an unspecified problem" messages 4743b77
-* bug that prevented freezes, blacks and scenes to show for packages 2b31232
-* ci using wrong version of node 6500243
-* don't display freeze/black frames with 0 duration cd03b64
-* explicit handling of the media situations "not checked yet" vs "checked and not found" 3348026
-* IRundownTimingEventContext.getFirstPartInstanceInRundown ignored untimed parts unless asked to include them 00a109f
-* meteor using wrong version of node d8b519d
-* minor fixes to Package Manager status GUI 9626c3f
-* only use public accessors for previews and thumbnails 08130eb
-* preventDefault on down Control+DigitX 116eb36
-* resolvedPieces feeding incorrect piece times into blueprints for adlib infinites 0386af2
-* retry ingest triggered timeline updates if they are skipped from no part timing being received fc52a6f
-* treat "no package" and "package not found" the same da93ee0
-* typo in selector f49132e
-* update keyframe ids when routing objects with routesets ebe461d
+- add missing expectedPackages piping d5d93d2
+- Add support for some more Package Manager statuses ada6e17
+- add warning to evaluation form about commands not being sent to Sofie while typing b0f8df4
+- bug fix: Package status in rundownView didn't work 918b882
+- bug fix: some notifications didn't get any messages, resulting in "There is an unspecified problem" messages 4743b77
+- bug that prevented freezes, blacks and scenes to show for packages 2b31232
+- ci using wrong version of node 6500243
+- don't display freeze/black frames with 0 duration cd03b64
+- explicit handling of the media situations "not checked yet" vs "checked and not found" 3348026
+- IRundownTimingEventContext.getFirstPartInstanceInRundown ignored untimed parts unless asked to include them 00a109f
+- meteor using wrong version of node d8b519d
+- minor fixes to Package Manager status GUI 9626c3f
+- only use public accessors for previews and thumbnails 08130eb
+- preventDefault on down Control+DigitX 116eb36
+- resolvedPieces feeding incorrect piece times into blueprints for adlib infinites 0386af2
+- retry ingest triggered timeline updates if they are skipped from no part timing being received fc52a6f
+- treat "no package" and "package not found" the same da93ee0
+- typo in selector f49132e
+- update keyframe ids when routing objects with routesets ebe461d
 
 ## [1.37.0-in-testing.13](///compare/v1.37.0-testing.12...v1.37.0-in-testing.13) (2021-11-02)
 
-
 ### Bug Fixes
 
-* Added text outline + subtle shadow to the live segment name at top of the presenter/clock screen, as the white text didn't show up too weel on the red background when viewed on the actual screens in the actual studios. 1a2a731
-* **Dashboard:** do not show hoverscrub when operating using touch and timeout when using a mouse ([#611](undefined/undefined/undefined/issues/611)) d5e7ad3
-* disabled Pieces don't look disabled anymore bdf9c94
-* dont generate lookahead objects for infinite piece continuations bdd5291
-* Implemented the  live segment header contrast improvements from the clock/presenter screen. b860cbd
-* Improved visibility of the freeze frame indicator on the clock/presenter screen. d6944ad
-* infinite continuation of onEnd pieceinstance not preserving startedPlayback time 92deed2
-* Removed awkward left indent of the icon on the clock/presenter screen, and in the process made the icon more visible while taking up the same amount of space. 57032d8
-* restore the red border around a live AdLib in the Dashboard b41b17d
-* **Shelf:** zebra stripes going all the way through a list item 4f6c770
+- Added text outline + subtle shadow to the live segment name at top of the presenter/clock screen, as the white text didn't show up too weel on the red background when viewed on the actual screens in the actual studios. 1a2a731
+- **Dashboard:** do not show hoverscrub when operating using touch and timeout when using a mouse ([#611](undefined/undefined/undefined/issues/611)) d5e7ad3
+- disabled Pieces don't look disabled anymore bdf9c94
+- dont generate lookahead objects for infinite piece continuations bdd5291
+- Implemented the live segment header contrast improvements from the clock/presenter screen. b860cbd
+- Improved visibility of the freeze frame indicator on the clock/presenter screen. d6944ad
+- infinite continuation of onEnd pieceinstance not preserving startedPlayback time 92deed2
+- Removed awkward left indent of the icon on the clock/presenter screen, and in the process made the icon more visible while taking up the same amount of space. 57032d8
+- restore the red border around a live AdLib in the Dashboard b41b17d
+- **Shelf:** zebra stripes going all the way through a list item 4f6c770
 
 ## [1.37.0-in-testing.11](///compare/v1.35.1-4...v1.37.0-in-testing.11) (2021-10-22)
 
-
 ### Features
 
-* add CoreSystem option set log-level at runtime. 8aa2e7e
-* add fileflowProfile to Quantel accessor properties [publish] 5f72ed0
-* add GUI to set the fileflowURL in Package containers 2faea86
-* Add PackageContainerStatuses, used by Package Manager to report on statuses of the PackageContainers and Monitors. [publish] dac1cdb
-* add sisyfos channel by label mapping 6e6d997
-* allow setting a fileflow URL for Quantel Accessors 22c6af5
-* cache local storage UI flags ([#587](undefined/undefined/undefined/issues/587)) df4edae
-* don't track preceeding Parts for labels, just skip labels if not statring in a given Part 5b8da8f
-* ignore media statuses 76f8f01
-* implement notInVision 3d30dba
-* improve hoverscrub inspector for Pilot items e22da7d
-* improve update times on segment following current one 37a89d4
-* improve update times on segment following current one ([#573](undefined/undefined/undefined/issues/573)) c8335c4
-* initial implementation of new infinite styling c206349
-* new infinites styling only for super-infinites (rundown/showstyle-length) ba49436
-* pieces can specify how to be direct-played ([#574](undefined/undefined/undefined/issues/574)) a61a22b
-* prevent all F-keys by default 2585d1f
-* Rundown View Layouts with options to change the visibility state of source layers/output groups ([#592](undefined/undefined/undefined/issues/592)) c18a234
-* shelffollowsonair=0 can disable automatic scrolling in Shelf 96a3b99
-* use sourcelayer LOCAL for EVS content 3b87a90
-
+- add CoreSystem option set log-level at runtime. 8aa2e7e
+- add fileflowProfile to Quantel accessor properties [publish] 5f72ed0
+- add GUI to set the fileflowURL in Package containers 2faea86
+- Add PackageContainerStatuses, used by Package Manager to report on statuses of the PackageContainers and Monitors. [publish] dac1cdb
+- add sisyfos channel by label mapping 6e6d997
+- allow setting a fileflow URL for Quantel Accessors 22c6af5
+- cache local storage UI flags ([#587](undefined/undefined/undefined/issues/587)) df4edae
+- don't track preceeding Parts for labels, just skip labels if not statring in a given Part 5b8da8f
+- ignore media statuses 76f8f01
+- implement notInVision 3d30dba
+- improve hoverscrub inspector for Pilot items e22da7d
+- improve update times on segment following current one 37a89d4
+- improve update times on segment following current one ([#573](undefined/undefined/undefined/issues/573)) c8335c4
+- initial implementation of new infinite styling c206349
+- new infinites styling only for super-infinites (rundown/showstyle-length) ba49436
+- pieces can specify how to be direct-played ([#574](undefined/undefined/undefined/issues/574)) a61a22b
+- prevent all F-keys by default 2585d1f
+- Rundown View Layouts with options to change the visibility state of source layers/output groups ([#592](undefined/undefined/undefined/issues/592)) c18a234
+- shelffollowsonair=0 can disable automatic scrolling in Shelf 96a3b99
+- use sourcelayer LOCAL for EVS content 3b87a90
 
 ### Bug Fixes
 
-* "reset rundown" Triggered Action doesn't cause the Rundown View to scroll to top, like it used to with hotkeys c417989
-* 0 freeze frame detected within the clip (apply 75c042705454c850605c28cc3cffd64a53cac884 for package-manager 6aea2fc
-* add bucketId property to ExpectedPackages, so that they are easilly removed when removing a Bucket ad9f948
-* add option on each device to debug-log that separately bc113b6
-* add priority & prevStatusReasons into package workStatuses de73fd1
-* add studioId to MediaObjects queries to ensure that db-indexes are used in MongoDB c6080f6
-* add try-catch blacks to catch possible GUI erros ab7536a
-* adlibs with `currentPieceTags` being an empty array always shown as on-air 91bac55
-* allways show left label on live parts of super-infinite pieces d90511d
-* bug in snapshot restore f646ce3
-* clean out bucket-adlib-actions upon emptying of bucket 428b1fc
-* don't emit slowFullfilledCommands as errors 7b9b2ef
-* double-click to take adlib not detecting pieces having stopped properly ab53cfa
-* enable scrolling of panels in standalone shelf views f99c88e
-* filtersTitle swapped for dashboard and rundown layouts ([#595](undefined/undefined/undefined/issues/595)) 13885d2
-* getUnfinishedPieceInstancesReactive not considering interactions between infinite pieces ([#580](undefined/undefined/undefined/issues/580)) 2f0d8a5
-* has-remote-items and has-guest-items title styling causes a 1px shift when segment becomes next/onAir 5040123
-* hidden segments shown in shelf lists even if containing 0 adlibs ([#596](undefined/undefined/undefined/issues/596)) 61a156b
-* improve infinite styling 9fd2629
-* increase upload file limit 5ab3f9e
-* inspector and buckets show up on "standalone shelf" views 5718876
-* isRundownLayout & isDashboardLayout are too lenient 18ab862
-* issue with script green line 53ef623
-* it's not possible to select bucket adlibs and rename them ([#576](undefined/undefined/undefined/issues/576)) 9d7c1e9
-* KeyF doesn't type out characters in text fields 31e4e20
-* maxWidth on labels cd088a1
-* migrations for ActionTriggers used the wrong key for activate/deactivate 8af440c
-* minor adjustments in reportPartInstanceHasStarted to account for edge-cases 2d1ea6c
-* missing sourcelayers in action triggers list 5a92f23
-* mos-gw: filter out heartbeat log-lines 20b1e94
-* move Control+KeyF to only happen when simulateTriggerBinding is falsy a1ef238
-* naming changes after QA ddd20c9
-* one touch in dashboard on a touchscreen triggers action twice (once as pointerup once as click) a836f2d
-* PGW update TSR dep 264b136
-* pieces that weren't infinite would show up as infinite a5caf4b
-* Playout-gateway: Improved debug-logging of devices a18dc70
-* Playout-gateway: update TSR dep (possible fix for quantel-rename port issue) 7be8b3c
-* **playout-gateway:** add option purgeUnknownElements, introduced in TSR 9cd9e7c
-* potential fix for crazy timeline 59fd6c0
-* PQueue not waiting for promise to resolve 4f680f2
-* prevent default F10 behavior 31658e0
-* prevent default on F12 and Control+KeyF dcf734a
-* prevent default on F5 & Control+F5 05a9eb2
-* prevent tsr going into init loop cca5b48
-* preventDefault on Enter and NumpadEnter (non-globally) e37cb6d
-* Prompter does not update when script is edited ([#554](undefined/undefined/undefined/issues/554)) 0b08858
-* PubSub.packageContainerPackageStatuses and PubSub.packageContainerStatuses have the same value causing weird bugs c725143
-* refactor subscriptions so that queries use mongodb indexes 71d3025
-* single setTimeout for triggerUpdateDevice 1031cbd
-* source layer rank should be used when flattening output groups 75c6116
-* Timeline can sometimes crash when displaying a Transition Piece 0143680
-* touch-interface "TAKE" button not behaving the same way as other "TAKE" buttons 8880e5e
-* **TriggersHandler:** individual keys may be blocked by Combos set up (f.g. Home blocked by Control+Home) 346cd48
-* update atem-connection - allow upload to atem clips 3 & 4 5f9e014
-* update node version in docker to 12.22.6 4c0fe5e
-* update sorensen to fix a bug when window loses focus with keys pressed 8bceaa1
-* update tsr for atem-state 94d2482
-* update version numbers for r35 and r36 migrations 7566e68
-* useMouseContext getPartContext callback didn't include all dependencies b9a95be
-* when showing ViewLayout the header is displayed broken into two lines 7c41bef
+- "reset rundown" Triggered Action doesn't cause the Rundown View to scroll to top, like it used to with hotkeys c417989
+- 0 freeze frame detected within the clip (apply 75c042705454c850605c28cc3cffd64a53cac884 for package-manager 6aea2fc
+- add bucketId property to ExpectedPackages, so that they are easilly removed when removing a Bucket ad9f948
+- add option on each device to debug-log that separately bc113b6
+- add priority & prevStatusReasons into package workStatuses de73fd1
+- add studioId to MediaObjects queries to ensure that db-indexes are used in MongoDB c6080f6
+- add try-catch blacks to catch possible GUI erros ab7536a
+- adlibs with `currentPieceTags` being an empty array always shown as on-air 91bac55
+- allways show left label on live parts of super-infinite pieces d90511d
+- bug in snapshot restore f646ce3
+- clean out bucket-adlib-actions upon emptying of bucket 428b1fc
+- don't emit slowFullfilledCommands as errors 7b9b2ef
+- double-click to take adlib not detecting pieces having stopped properly ab53cfa
+- enable scrolling of panels in standalone shelf views f99c88e
+- filtersTitle swapped for dashboard and rundown layouts ([#595](undefined/undefined/undefined/issues/595)) 13885d2
+- getUnfinishedPieceInstancesReactive not considering interactions between infinite pieces ([#580](undefined/undefined/undefined/issues/580)) 2f0d8a5
+- has-remote-items and has-guest-items title styling causes a 1px shift when segment becomes next/onAir 5040123
+- hidden segments shown in shelf lists even if containing 0 adlibs ([#596](undefined/undefined/undefined/issues/596)) 61a156b
+- improve infinite styling 9fd2629
+- increase upload file limit 5ab3f9e
+- inspector and buckets show up on "standalone shelf" views 5718876
+- isRundownLayout & isDashboardLayout are too lenient 18ab862
+- issue with script green line 53ef623
+- it's not possible to select bucket adlibs and rename them ([#576](undefined/undefined/undefined/issues/576)) 9d7c1e9
+- KeyF doesn't type out characters in text fields 31e4e20
+- maxWidth on labels cd088a1
+- migrations for ActionTriggers used the wrong key for activate/deactivate 8af440c
+- minor adjustments in reportPartInstanceHasStarted to account for edge-cases 2d1ea6c
+- missing sourcelayers in action triggers list 5a92f23
+- mos-gw: filter out heartbeat log-lines 20b1e94
+- move Control+KeyF to only happen when simulateTriggerBinding is falsy a1ef238
+- naming changes after QA ddd20c9
+- one touch in dashboard on a touchscreen triggers action twice (once as pointerup once as click) a836f2d
+- PGW update TSR dep 264b136
+- pieces that weren't infinite would show up as infinite a5caf4b
+- Playout-gateway: Improved debug-logging of devices a18dc70
+- Playout-gateway: update TSR dep (possible fix for quantel-rename port issue) 7be8b3c
+- **playout-gateway:** add option purgeUnknownElements, introduced in TSR 9cd9e7c
+- potential fix for crazy timeline 59fd6c0
+- PQueue not waiting for promise to resolve 4f680f2
+- prevent default F10 behavior 31658e0
+- prevent default on F12 and Control+KeyF dcf734a
+- prevent default on F5 & Control+F5 05a9eb2
+- prevent tsr going into init loop cca5b48
+- preventDefault on Enter and NumpadEnter (non-globally) e37cb6d
+- Prompter does not update when script is edited ([#554](undefined/undefined/undefined/issues/554)) 0b08858
+- PubSub.packageContainerPackageStatuses and PubSub.packageContainerStatuses have the same value causing weird bugs c725143
+- refactor subscriptions so that queries use mongodb indexes 71d3025
+- single setTimeout for triggerUpdateDevice 1031cbd
+- source layer rank should be used when flattening output groups 75c6116
+- Timeline can sometimes crash when displaying a Transition Piece 0143680
+- touch-interface "TAKE" button not behaving the same way as other "TAKE" buttons 8880e5e
+- **TriggersHandler:** individual keys may be blocked by Combos set up (f.g. Home blocked by Control+Home) 346cd48
+- update atem-connection - allow upload to atem clips 3 & 4 5f9e014
+- update node version in docker to 12.22.6 4c0fe5e
+- update sorensen to fix a bug when window loses focus with keys pressed 8bceaa1
+- update tsr for atem-state 94d2482
+- update version numbers for r35 and r36 migrations 7566e68
+- useMouseContext getPartContext callback didn't include all dependencies b9a95be
+- when showing ViewLayout the header is displayed broken into two lines 7c41bef
 
 ## [1.37.0-in-testing.0](///compare/v1.35.1-3...v1.37.0-in-testing.0) (2021-09-13)
 
-
 ### Features
 
-* Action Triggers ([#553](undefined/undefined/undefined/issues/553)) 35e2b1a
-* add content and source layer types for EVS ff86d17
-* add custom timeline rendering for EVS items 1efdd6a
-* add evs type to source layer settings list 300c1ba
-
+- Action Triggers ([#553](undefined/undefined/undefined/issues/553)) 35e2b1a
+- add content and source layer types for EVS ff86d17
+- add custom timeline rendering for EVS items 1efdd6a
+- add evs type to source layer settings list 300c1ba
 
 ### Bug Fixes
 
-* add color code property to EvsContent c9d34db
-* add missing settings attribute quantel transformerURL 3e8e6d3
-* add missing subscription for graphics f6a67bb
-* add missing support for HTTP_PROXY e52a8b8
-* add missing TSR device options and layer mapping options ([#552](undefined/undefined/undefined/issues/552)) 3632509
-* Add package data into RundownPlaylist-snapshot 0787e41
-* add publication for PackageInfos 59dee32
-* add temporary package manager status page 43eabb2
-* add temporary package manager status page c423d3c
-* add upsertMany method to collections c3b6f45
-* AdLibs from other Rundowns in a Playlist can't be started, even uf they use the same ShowStyleVariant ([#555](undefined/undefined/undefined/issues/555)) 54801c4
-* after refreshing a rundown, the timeline can scroll out of viewport d62efa3
-* Assign ranks according to playlist order by rundownExternalId 28143e5
-* better logging of client-side errors feef0d6
-* bug fix: Can't perform a React state update on an unmounted component 673e760
-* cache the result of the method getMediaObjectIssues 935faab
-* change so that expectations that are not matched with any source/target are still published. b292b94
-* clean up the setIntervals upon unmounting of the component 960e007
-* DRY:ed the expectedPackage.sideEffect generation. Also changed StudioPackageContainerContext into a StudioContext in order to provide the data needed. ba488eb
-* evs channel color code dd20f55
-* fill in ids of unnamed expectedPackages. This is so that the GUI can easily map expectedPackages to PackageInfos. 78a27a9
-* filter the UnfinishedPieceInstances and NextPieces on playlist.activationId becd2c9
-* fix ids of docs when importing snapshot 2ee9e3b
-* fix issue with local vs global expectedPackage._id 10a9166
-* hardcoded ENPS in "Use ENPS order" label 3449651
-* issues in notifyCurrentPlayingPart 64f7432
-* MOS-Gateway: update mos-connection version (to fix whitespace-issue when messages are being split in several packages) c949f9f
-* moveNext when using segmentDelta 038d58c
-* ordering of Package statuses 7f1c177
-* PM: use PackageContainerPackage status to determine if the preview is available. fb1abac
-* potential fix for "blinking yellow line" in enps 00a69cc
-* prompter infinites ([#549](undefined/undefined/undefined/issues/549)) 0c88272
-* rename registered name of collection PackageContainerPackageStatuses 6c5a701
-* send PLAY before STOP story status 39e7e84
-* set PackageContainerPackageStatus.packageId to ExpectedPackageId 723ea78
-* thumbnail for expectedPackage 6a23499
-* tie PackageContainerPackageStatus to the device it came from. And add method for clearing that out upon device connect. [publish] 6a3c4c5
-* use rundown.externalId instead of _id, to align better with what comes from blueprints 07a2e83
+- add color code property to EvsContent c9d34db
+- add missing settings attribute quantel transformerURL 3e8e6d3
+- add missing subscription for graphics f6a67bb
+- add missing support for HTTP_PROXY e52a8b8
+- add missing TSR device options and layer mapping options ([#552](undefined/undefined/undefined/issues/552)) 3632509
+- Add package data into RundownPlaylist-snapshot 0787e41
+- add publication for PackageInfos 59dee32
+- add temporary package manager status page 43eabb2
+- add temporary package manager status page c423d3c
+- add upsertMany method to collections c3b6f45
+- AdLibs from other Rundowns in a Playlist can't be started, even uf they use the same ShowStyleVariant ([#555](undefined/undefined/undefined/issues/555)) 54801c4
+- after refreshing a rundown, the timeline can scroll out of viewport d62efa3
+- Assign ranks according to playlist order by rundownExternalId 28143e5
+- better logging of client-side errors feef0d6
+- bug fix: Can't perform a React state update on an unmounted component 673e760
+- cache the result of the method getMediaObjectIssues 935faab
+- change so that expectations that are not matched with any source/target are still published. b292b94
+- clean up the setIntervals upon unmounting of the component 960e007
+- DRY:ed the expectedPackage.sideEffect generation. Also changed StudioPackageContainerContext into a StudioContext in order to provide the data needed. ba488eb
+- evs channel color code dd20f55
+- fill in ids of unnamed expectedPackages. This is so that the GUI can easily map expectedPackages to PackageInfos. 78a27a9
+- filter the UnfinishedPieceInstances and NextPieces on playlist.activationId becd2c9
+- fix ids of docs when importing snapshot 2ee9e3b
+- fix issue with local vs global expectedPackage.\_id 10a9166
+- hardcoded ENPS in "Use ENPS order" label 3449651
+- issues in notifyCurrentPlayingPart 64f7432
+- MOS-Gateway: update mos-connection version (to fix whitespace-issue when messages are being split in several packages) c949f9f
+- moveNext when using segmentDelta 038d58c
+- ordering of Package statuses 7f1c177
+- PM: use PackageContainerPackage status to determine if the preview is available. fb1abac
+- potential fix for "blinking yellow line" in enps 00a69cc
+- prompter infinites ([#549](undefined/undefined/undefined/issues/549)) 0c88272
+- rename registered name of collection PackageContainerPackageStatuses 6c5a701
+- send PLAY before STOP story status 39e7e84
+- set PackageContainerPackageStatus.packageId to ExpectedPackageId 723ea78
+- thumbnail for expectedPackage 6a23499
+- tie PackageContainerPackageStatus to the device it came from. And add method for clearing that out upon device connect. [publish] 6a3c4c5
+- use rundown.externalId instead of \_id, to align better with what comes from blueprints 07a2e83
 
 ## [1.36.0-in-testing.9](///compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
 
-
 ### Bug Fixes
 
-* **Presenter screen:** getSelectedPartInstances on undefined crashes view d050844
-* **Presenter screen:** getSelectedPartInstances on undefined crashes view 654f36a
+- **Presenter screen:** getSelectedPartInstances on undefined crashes view d050844
+- **Presenter screen:** getSelectedPartInstances on undefined crashes view 654f36a
 
 ## [1.36.0-in-testing.8](///compare/v1.35.1-2...v1.36.0-in-testing.8) (2021-08-10)
 
-
 ### Features
 
-* expected end time / back time ([#540](undefined/undefined/undefined/issues/540)) 84e1092
+- expected end time / back time ([#540](undefined/undefined/undefined/issues/540)) 84e1092
 
 ## [1.36.0-in-testing.7](///compare/v1.35.1-1...v1.36.0-in-testing.7) (2021-07-20)
 
 ## [1.36.0-in-testing.6](///compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
 
-
 ### Features
 
-* rewrite syncFunction to be promise and p-queue based ([#543](undefined/undefined/undefined/issues/543)) 0de96b0
-
+- rewrite syncFunction to be promise and p-queue based ([#543](undefined/undefined/undefined/issues/543)) 0de96b0
 
 ### Bug Fixes
 
-* repeating script can occur in prompter in some situations 8b192d3
-* repeating script can occur in prompter in some situations 4f2b850
-* repeating script can occur in prompter in some situations 3b73994
+- repeating script can occur in prompter in some situations 8b192d3
+- repeating script can occur in prompter in some situations 4f2b850
+- repeating script can occur in prompter in some situations 3b73994
 
 ## [1.36.0-in-testing.4](///compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
 
@@ -1169,152 +2551,144 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.36.0-in-testing.0](///compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
 
-
 ### Features
 
-* add "Troubleshoot" button for Package Manager in GUI, used to data-dump and troubleshoot things in Package Manager 76919ff
-* add checkbox to blueprints and peripheral devices to disable version checks. The flag gets unset whenever the blueprint/device changes its version e2ffccb
-* add FTP package accessors type to blueprint-integrations 412d2f1
-* Apply rundown header / view layouts to rundown d1f2838
-* blueprint getPackageInfo implementation based on cache 74b40ad
-* Describe rundown view and shelf layouts through manifests 3773b1e
-* expand FTP accessor with options for explicit login and encrypted connections [publish] a4e77bd
-* implement async wrapper to TransformedCollection ([#528](undefined/undefined/undefined/issues/528)) 301d306
-* initial implementation of new Package Manager GUI 93f2b8c
-* package manager API: add a generic JSONData package, add a generit HTTP accessor and rename the old HTTP into HTTPProxy 52592b6
-* package-manager API: change statusReason into a Reason with user-readable and technical status descriptions (wip) 191fcde
-* refactor lookahead logic to remove amount of loop iterations 6648ff6
-* Remove delayed initialisation from DbCacheReadObject b15f306
-* Remove lazy initialisation from DbCacheReadCollection, making the class be fully synchronous 209c36b
-* remove old expectedVersion migrations c664433
-* rework gateway version check to looser, and not check process version 1a01393
-* rework the blueprint version checks to be looser around ^1.32.1 vs 1.32.0 1375437
-* Scope layouts to their settings section 9bbcc22
-* Select mini shelf layout in rundown view f0c602f
-* Select rundown layout from lobby and use selected layouts as defaults 63b8764
-* show Viz loading status in MSE on the Piece ([#538](undefined/undefined/undefined/issues/538)) 2c1d3a3
-* Skeleton of rundown layout registry 9680210
-* speed and re-rendering optimisations 89a93a1
-* speed and re-rendering optimisations a0a0d6c
-* speedoptimize - added CURRENT_TIME_GRANULARITY const 4edd282
-* update typescript to 4.2 to match meteor-babel 94788fb
-* when showing *On Air On* in Segment header, and not active, use expectedStart and not current time as base 6d6cf38
-
+- add "Troubleshoot" button for Package Manager in GUI, used to data-dump and troubleshoot things in Package Manager 76919ff
+- add checkbox to blueprints and peripheral devices to disable version checks. The flag gets unset whenever the blueprint/device changes its version e2ffccb
+- add FTP package accessors type to blueprint-integrations 412d2f1
+- Apply rundown header / view layouts to rundown d1f2838
+- blueprint getPackageInfo implementation based on cache 74b40ad
+- Describe rundown view and shelf layouts through manifests 3773b1e
+- expand FTP accessor with options for explicit login and encrypted connections [publish] a4e77bd
+- implement async wrapper to TransformedCollection ([#528](undefined/undefined/undefined/issues/528)) 301d306
+- initial implementation of new Package Manager GUI 93f2b8c
+- package manager API: add a generic JSONData package, add a generit HTTP accessor and rename the old HTTP into HTTPProxy 52592b6
+- package-manager API: change statusReason into a Reason with user-readable and technical status descriptions (wip) 191fcde
+- refactor lookahead logic to remove amount of loop iterations 6648ff6
+- Remove delayed initialisation from DbCacheReadObject b15f306
+- Remove lazy initialisation from DbCacheReadCollection, making the class be fully synchronous 209c36b
+- remove old expectedVersion migrations c664433
+- rework gateway version check to looser, and not check process version 1a01393
+- rework the blueprint version checks to be looser around ^1.32.1 vs 1.32.0 1375437
+- Scope layouts to their settings section 9bbcc22
+- Select mini shelf layout in rundown view f0c602f
+- Select rundown layout from lobby and use selected layouts as defaults 63b8764
+- show Viz loading status in MSE on the Piece ([#538](undefined/undefined/undefined/issues/538)) 2c1d3a3
+- Skeleton of rundown layout registry 9680210
+- speed and re-rendering optimisations 89a93a1
+- speed and re-rendering optimisations a0a0d6c
+- speedoptimize - added CURRENT_TIME_GRANULARITY const 4edd282
+- update typescript to 4.2 to match meteor-babel 94788fb
+- when showing _On Air On_ in Segment header, and not active, use expectedStart and not current time as base 6d6cf38
 
 ### Bug Fixes
 
-* add created property to expectedPackages 5f05199
-* AfterBroadcastForm crashes when sending evaluations 2dddb22
-* CacheObject missing transforms 02207f1
-* Cannot use 'in' operator to search for 'getIfLoaded' ac0038c
-* catch/ignore async logged errors when running tests 4b51ab9
-* Filter supported elements ff82d13
-* fix bug in displayFormattedTime ea4a666
-* Fixes after rebase 08aa9b6
-* improve Package statuses GUI page [publish] 4985606
-* infinite pieces losing their startedPlayback time on their second take 4fbde9d
-* invalid notifications ([#545](undefined/undefined/undefined/issues/545)) f414831
-* iterateDeeply for arrays [publish] 9a64fd3
-* Lint errors 1b67f7f
-* orphaned parts cause the Segment Timeline component to scroll beyond the timeline 3113937
-* package manager: add statusChanged type, to use for determining that a status has changed (used in GUI) [publish] 22b29d9
-* Package status GUI updates cdcafde
-* pixelPosition should be a const cc9a0cf
-* plumb in pieceId when executing an action a8ccdea
-* PM add WorkStatusState, for stronger typings [publish] 51788bc
-* Post-rebase 52ec5d8
-* prevPartId was initialized with = '' instead of null 3cbb8ee
-* prioritize showing end of script Piece right-hand label 8ea0f4f
-* reinsert isExpectedToPlay in SegmentTimelineContainer and raised SIMULATED_PLAYBACK_HARD_MARGIN to 3500 2b0861d
-* remove duplicate migration 8ad5512
-* rundown baseline objects should trigger listenToPackageInfoUpdates 84ea181
-* scrollLeft gave flickering when pressing take. 14b05c3
-* scrollLeft gave flickering when pressing take. 644dc17
-* search bar cleared when switching tabs in shelf ([#544](undefined/undefined/undefined/issues/544)) f7a4ee0
-* sending an evaluation on a looping rundown deactivates it c88b9c0
-* setState missing 1be49cd
-* setState missing 2482600
-* show adlibs for hidden layers when dev flags makes the layers visible 587c17b
-* solid background behind right-hand-side Piece labels to cover any stray left-hand-side labels 68d3acb
-* state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props b52ebf3
-* state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props 16487c6
-* timeline not considering userDuration for pieces properly 9afa233
-* update data-store dep (fixing a bug where device-apps/gateways wouldn't work when started from a different drive than C (on windows) 9a9846b
-* Update Package Manager GUI, add "working state" to the icons 5dcedea
-* various typescript errors 0d08d87
+- add created property to expectedPackages 5f05199
+- AfterBroadcastForm crashes when sending evaluations 2dddb22
+- CacheObject missing transforms 02207f1
+- Cannot use 'in' operator to search for 'getIfLoaded' ac0038c
+- catch/ignore async logged errors when running tests 4b51ab9
+- Filter supported elements ff82d13
+- fix bug in displayFormattedTime ea4a666
+- Fixes after rebase 08aa9b6
+- improve Package statuses GUI page [publish] 4985606
+- infinite pieces losing their startedPlayback time on their second take 4fbde9d
+- invalid notifications ([#545](undefined/undefined/undefined/issues/545)) f414831
+- iterateDeeply for arrays [publish] 9a64fd3
+- Lint errors 1b67f7f
+- orphaned parts cause the Segment Timeline component to scroll beyond the timeline 3113937
+- package manager: add statusChanged type, to use for determining that a status has changed (used in GUI) [publish] 22b29d9
+- Package status GUI updates cdcafde
+- pixelPosition should be a const cc9a0cf
+- plumb in pieceId when executing an action a8ccdea
+- PM add WorkStatusState, for stronger typings [publish] 51788bc
+- Post-rebase 52ec5d8
+- prevPartId was initialized with = '' instead of null 3cbb8ee
+- prioritize showing end of script Piece right-hand label 8ea0f4f
+- reinsert isExpectedToPlay in SegmentTimelineContainer and raised SIMULATED_PLAYBACK_HARD_MARGIN to 3500 2b0861d
+- remove duplicate migration 8ad5512
+- rundown baseline objects should trigger listenToPackageInfoUpdates 84ea181
+- scrollLeft gave flickering when pressing take. 14b05c3
+- scrollLeft gave flickering when pressing take. 644dc17
+- search bar cleared when switching tabs in shelf ([#544](undefined/undefined/undefined/issues/544)) f7a4ee0
+- sending an evaluation on a looping rundown deactivates it c88b9c0
+- setState missing 1be49cd
+- setState missing 2482600
+- show adlibs for hidden layers when dev flags makes the layers visible 587c17b
+- solid background behind right-hand-side Piece labels to cover any stray left-hand-side labels 68d3acb
+- state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props b52ebf3
+- state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props 16487c6
+- timeline not considering userDuration for pieces properly 9afa233
+- update data-store dep (fixing a bug where device-apps/gateways wouldn't work when started from a different drive than C (on windows) 9a9846b
+- Update Package Manager GUI, add "working state" to the icons 5dcedea
+- various typescript errors 0d08d87
 
 ## [1.37.0-in-testing.0](///compare/v1.35.1-3...v1.37.0-in-testing.0) (2021-09-13)
 
-
 ### Features
 
-* Action Triggers ([#553](undefined/undefined/undefined/issues/553)) 35e2b1a
-
+- Action Triggers ([#553](undefined/undefined/undefined/issues/553)) 35e2b1a
 
 ### Bug Fixes
 
-* add missing settings attribute quantel transformerURL 3e8e6d3
-* add missing subscription for graphics f6a67bb
-* add missing support for HTTP_PROXY e52a8b8
-* add missing TSR device options and layer mapping options ([#552](undefined/undefined/undefined/issues/552)) 3632509
-* add publication for PackageInfos 59dee32
-* add temporary package manager status page 43eabb2
-* add temporary package manager status page c423d3c
-* AdLibs from other Rundowns in a Playlist can't be started, even uf they use the same ShowStyleVariant ([#555](undefined/undefined/undefined/issues/555)) 54801c4
-* after refreshing a rundown, the timeline can scroll out of viewport d62efa3
-* Assign ranks according to playlist order by rundownExternalId 28143e5
-* better logging of client-side errors feef0d6
-* bug fix: Can't perform a React state update on an unmounted component 673e760
-* change so that expectations that are not matched with any source/target are still published. b292b94
-* DRY:ed the expectedPackage.sideEffect generation. Also changed StudioPackageContainerContext into a StudioContext in order to provide the data needed. ba488eb
-* fill in ids of unnamed expectedPackages. This is so that the GUI can easily map expectedPackages to PackageInfos. 78a27a9
-* filter the UnfinishedPieceInstances and NextPieces on playlist.activationId becd2c9
-* fix issue with local vs global expectedPackage._id 10a9166
-* hardcoded ENPS in "Use ENPS order" label 3449651
-* issues in notifyCurrentPlayingPart 64f7432
-* MOS-Gateway: update mos-connection version (to fix whitespace-issue when messages are being split in several packages) c949f9f
-* moveNext when using segmentDelta 52f5ffb
-* moveNext when using segmentDelta 038d58c
-* ordering of Package statuses 7f1c177
-* PM: use PackageContainerPackage status to determine if the preview is available. fb1abac
-* potential fix for "blinking yellow line" in enps 00a69cc
-* prompter infinites ([#549](undefined/undefined/undefined/issues/549)) 0c88272
-* rename registered name of collection PackageContainerPackageStatuses 6c5a701
-* send PLAY before STOP story status 39e7e84
-* thumbnail for expectedPackage 6a23499
-* tie PackageContainerPackageStatus to the device it came from. And add method for clearing that out upon device connect. [publish] 6a3c4c5
-* use rundown.externalId instead of _id, to align better with what comes from blueprints 07a2e83
+- add missing settings attribute quantel transformerURL 3e8e6d3
+- add missing subscription for graphics f6a67bb
+- add missing support for HTTP_PROXY e52a8b8
+- add missing TSR device options and layer mapping options ([#552](undefined/undefined/undefined/issues/552)) 3632509
+- add publication for PackageInfos 59dee32
+- add temporary package manager status page 43eabb2
+- add temporary package manager status page c423d3c
+- AdLibs from other Rundowns in a Playlist can't be started, even uf they use the same ShowStyleVariant ([#555](undefined/undefined/undefined/issues/555)) 54801c4
+- after refreshing a rundown, the timeline can scroll out of viewport d62efa3
+- Assign ranks according to playlist order by rundownExternalId 28143e5
+- better logging of client-side errors feef0d6
+- bug fix: Can't perform a React state update on an unmounted component 673e760
+- change so that expectations that are not matched with any source/target are still published. b292b94
+- DRY:ed the expectedPackage.sideEffect generation. Also changed StudioPackageContainerContext into a StudioContext in order to provide the data needed. ba488eb
+- fill in ids of unnamed expectedPackages. This is so that the GUI can easily map expectedPackages to PackageInfos. 78a27a9
+- filter the UnfinishedPieceInstances and NextPieces on playlist.activationId becd2c9
+- fix issue with local vs global expectedPackage.\_id 10a9166
+- hardcoded ENPS in "Use ENPS order" label 3449651
+- issues in notifyCurrentPlayingPart 64f7432
+- MOS-Gateway: update mos-connection version (to fix whitespace-issue when messages are being split in several packages) c949f9f
+- moveNext when using segmentDelta 52f5ffb
+- moveNext when using segmentDelta 038d58c
+- ordering of Package statuses 7f1c177
+- PM: use PackageContainerPackage status to determine if the preview is available. fb1abac
+- potential fix for "blinking yellow line" in enps 00a69cc
+- prompter infinites ([#549](undefined/undefined/undefined/issues/549)) 0c88272
+- rename registered name of collection PackageContainerPackageStatuses 6c5a701
+- send PLAY before STOP story status 39e7e84
+- thumbnail for expectedPackage 6a23499
+- tie PackageContainerPackageStatus to the device it came from. And add method for clearing that out upon device connect. [publish] 6a3c4c5
+- use rundown.externalId instead of \_id, to align better with what comes from blueprints 07a2e83
 
 ## [1.36.0-in-testing.9](///compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
 
-
 ### Bug Fixes
 
-* **Presenter screen:** getSelectedPartInstances on undefined crashes view d050844
-* **Presenter screen:** getSelectedPartInstances on undefined crashes view 654f36a
+- **Presenter screen:** getSelectedPartInstances on undefined crashes view d050844
+- **Presenter screen:** getSelectedPartInstances on undefined crashes view 654f36a
 
 ## [1.36.0-in-testing.8](///compare/v1.35.1-2...v1.36.0-in-testing.8) (2021-08-10)
 
-
 ### Features
 
-* expected end time / back time ([#540](undefined/undefined/undefined/issues/540)) 84e1092
+- expected end time / back time ([#540](undefined/undefined/undefined/issues/540)) 84e1092
 
 ## [1.36.0-in-testing.7](///compare/v1.35.1-1...v1.36.0-in-testing.7) (2021-07-20)
 
 ## [1.36.0-in-testing.6](///compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
 
-
 ### Features
 
-* rewrite syncFunction to be promise and p-queue based ([#543](undefined/undefined/undefined/issues/543)) 0de96b0
-
+- rewrite syncFunction to be promise and p-queue based ([#543](undefined/undefined/undefined/issues/543)) 0de96b0
 
 ### Bug Fixes
 
-* repeating script can occur in prompter in some situations 8b192d3
-* repeating script can occur in prompter in some situations 4f2b850
-* repeating script can occur in prompter in some situations 3b73994
+- repeating script can occur in prompter in some situations 8b192d3
+- repeating script can occur in prompter in some situations 4f2b850
+- repeating script can occur in prompter in some situations 3b73994
 
 ## [1.36.0-in-testing.4](///compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
 
@@ -1326,130 +2700,123 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.36.0-in-testing.0](///compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
 
-
 ### Features
 
-* add "Troubleshoot" button for Package Manager in GUI, used to data-dump and troubleshoot things in Package Manager 76919ff
-* add checkbox to blueprints and peripheral devices to disable version checks. The flag gets unset whenever the blueprint/device changes its version e2ffccb
-* add FTP package accessors type to blueprint-integrations 412d2f1
-* Apply rundown header / view layouts to rundown d1f2838
-* blueprint getPackageInfo implementation based on cache 74b40ad
-* Describe rundown view and shelf layouts through manifests 3773b1e
-* expand FTP accessor with options for explicit login and encrypted connections [publish] a4e77bd
-* implement async wrapper to TransformedCollection ([#528](undefined/undefined/undefined/issues/528)) 301d306
-* initial implementation of new Package Manager GUI 93f2b8c
-* package manager API: add a generic JSONData package, add a generit HTTP accessor and rename the old HTTP into HTTPProxy 52592b6
-* package-manager API: change statusReason into a Reason with user-readable and technical status descriptions (wip) 191fcde
-* refactor lookahead logic to remove amount of loop iterations 6648ff6
-* Remove delayed initialisation from DbCacheReadObject b15f306
-* Remove lazy initialisation from DbCacheReadCollection, making the class be fully synchronous 209c36b
-* remove old expectedVersion migrations c664433
-* rework gateway version check to looser, and not check process version 1a01393
-* rework the blueprint version checks to be looser around ^1.32.1 vs 1.32.0 1375437
-* Scope layouts to their settings section 9bbcc22
-* Select mini shelf layout in rundown view f0c602f
-* Select rundown layout from lobby and use selected layouts as defaults 63b8764
-* show Viz loading status in MSE on the Piece ([#538](undefined/undefined/undefined/issues/538)) 2c1d3a3
-* Skeleton of rundown layout registry 9680210
-* speed and re-rendering optimisations 89a93a1
-* speed and re-rendering optimisations a0a0d6c
-* speedoptimize - added CURRENT_TIME_GRANULARITY const 4edd282
-* update typescript to 4.2 to match meteor-babel 94788fb
-* when showing *On Air On* in Segment header, and not active, use expectedStart and not current time as base 6d6cf38
-
+- add "Troubleshoot" button for Package Manager in GUI, used to data-dump and troubleshoot things in Package Manager 76919ff
+- add checkbox to blueprints and peripheral devices to disable version checks. The flag gets unset whenever the blueprint/device changes its version e2ffccb
+- add FTP package accessors type to blueprint-integrations 412d2f1
+- Apply rundown header / view layouts to rundown d1f2838
+- blueprint getPackageInfo implementation based on cache 74b40ad
+- Describe rundown view and shelf layouts through manifests 3773b1e
+- expand FTP accessor with options for explicit login and encrypted connections [publish] a4e77bd
+- implement async wrapper to TransformedCollection ([#528](undefined/undefined/undefined/issues/528)) 301d306
+- initial implementation of new Package Manager GUI 93f2b8c
+- package manager API: add a generic JSONData package, add a generit HTTP accessor and rename the old HTTP into HTTPProxy 52592b6
+- package-manager API: change statusReason into a Reason with user-readable and technical status descriptions (wip) 191fcde
+- refactor lookahead logic to remove amount of loop iterations 6648ff6
+- Remove delayed initialisation from DbCacheReadObject b15f306
+- Remove lazy initialisation from DbCacheReadCollection, making the class be fully synchronous 209c36b
+- remove old expectedVersion migrations c664433
+- rework gateway version check to looser, and not check process version 1a01393
+- rework the blueprint version checks to be looser around ^1.32.1 vs 1.32.0 1375437
+- Scope layouts to their settings section 9bbcc22
+- Select mini shelf layout in rundown view f0c602f
+- Select rundown layout from lobby and use selected layouts as defaults 63b8764
+- show Viz loading status in MSE on the Piece ([#538](undefined/undefined/undefined/issues/538)) 2c1d3a3
+- Skeleton of rundown layout registry 9680210
+- speed and re-rendering optimisations 89a93a1
+- speed and re-rendering optimisations a0a0d6c
+- speedoptimize - added CURRENT_TIME_GRANULARITY const 4edd282
+- update typescript to 4.2 to match meteor-babel 94788fb
+- when showing _On Air On_ in Segment header, and not active, use expectedStart and not current time as base 6d6cf38
 
 ### Bug Fixes
 
-* add created property to expectedPackages 5f05199
-* AfterBroadcastForm crashes when sending evaluations 2dddb22
-* CacheObject missing transforms 02207f1
-* Cannot use 'in' operator to search for 'getIfLoaded' ac0038c
-* catch/ignore async logged errors when running tests 4b51ab9
-* Filter supported elements ff82d13
-* fix bug in displayFormattedTime ea4a666
-* Fixes after rebase 08aa9b6
-* improve Package statuses GUI page [publish] 4985606
-* infinite pieces losing their startedPlayback time on their second take 4fbde9d
-* invalid notifications ([#545](undefined/undefined/undefined/issues/545)) f414831
-* iterateDeeply for arrays [publish] 9a64fd3
-* Lint errors 1b67f7f
-* orphaned parts cause the Segment Timeline component to scroll beyond the timeline 3113937
-* package manager: add statusChanged type, to use for determining that a status has changed (used in GUI) [publish] 22b29d9
-* Package status GUI updates cdcafde
-* pixelPosition should be a const cc9a0cf
-* plumb in pieceId when executing an action a8ccdea
-* PM add WorkStatusState, for stronger typings [publish] 51788bc
-* Post-rebase 52ec5d8
-* prevPartId was initialized with = '' instead of null 3cbb8ee
-* prioritize showing end of script Piece right-hand label 8ea0f4f
-* reinsert isExpectedToPlay in SegmentTimelineContainer and raised SIMULATED_PLAYBACK_HARD_MARGIN to 3500 2b0861d
-* remove duplicate migration 8ad5512
-* rundown baseline objects should trigger listenToPackageInfoUpdates 84ea181
-* scrollLeft gave flickering when pressing take. 14b05c3
-* scrollLeft gave flickering when pressing take. 644dc17
-* search bar cleared when switching tabs in shelf ([#544](undefined/undefined/undefined/issues/544)) f7a4ee0
-* sending an evaluation on a looping rundown deactivates it c88b9c0
-* setState missing 1be49cd
-* setState missing 2482600
-* show adlibs for hidden layers when dev flags makes the layers visible 587c17b
-* solid background behind right-hand-side Piece labels to cover any stray left-hand-side labels 68d3acb
-* state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props b52ebf3
-* state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props 16487c6
-* timeline not considering userDuration for pieces properly 9afa233
-* update data-store dep (fixing a bug where device-apps/gateways wouldn't work when started from a different drive than C (on windows) 9a9846b
-* Update Package Manager GUI, add "working state" to the icons 5dcedea
-* various typescript errors 0d08d87
+- add created property to expectedPackages 5f05199
+- AfterBroadcastForm crashes when sending evaluations 2dddb22
+- CacheObject missing transforms 02207f1
+- Cannot use 'in' operator to search for 'getIfLoaded' ac0038c
+- catch/ignore async logged errors when running tests 4b51ab9
+- Filter supported elements ff82d13
+- fix bug in displayFormattedTime ea4a666
+- Fixes after rebase 08aa9b6
+- improve Package statuses GUI page [publish] 4985606
+- infinite pieces losing their startedPlayback time on their second take 4fbde9d
+- invalid notifications ([#545](undefined/undefined/undefined/issues/545)) f414831
+- iterateDeeply for arrays [publish] 9a64fd3
+- Lint errors 1b67f7f
+- orphaned parts cause the Segment Timeline component to scroll beyond the timeline 3113937
+- package manager: add statusChanged type, to use for determining that a status has changed (used in GUI) [publish] 22b29d9
+- Package status GUI updates cdcafde
+- pixelPosition should be a const cc9a0cf
+- plumb in pieceId when executing an action a8ccdea
+- PM add WorkStatusState, for stronger typings [publish] 51788bc
+- Post-rebase 52ec5d8
+- prevPartId was initialized with = '' instead of null 3cbb8ee
+- prioritize showing end of script Piece right-hand label 8ea0f4f
+- reinsert isExpectedToPlay in SegmentTimelineContainer and raised SIMULATED_PLAYBACK_HARD_MARGIN to 3500 2b0861d
+- remove duplicate migration 8ad5512
+- rundown baseline objects should trigger listenToPackageInfoUpdates 84ea181
+- scrollLeft gave flickering when pressing take. 14b05c3
+- scrollLeft gave flickering when pressing take. 644dc17
+- search bar cleared when switching tabs in shelf ([#544](undefined/undefined/undefined/issues/544)) f7a4ee0
+- sending an evaluation on a looping rundown deactivates it c88b9c0
+- setState missing 1be49cd
+- setState missing 2482600
+- show adlibs for hidden layers when dev flags makes the layers visible 587c17b
+- solid background behind right-hand-side Piece labels to cover any stray left-hand-side labels 68d3acb
+- state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props b52ebf3
+- state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props 16487c6
+- timeline not considering userDuration for pieces properly 9afa233
+- update data-store dep (fixing a bug where device-apps/gateways wouldn't work when started from a different drive than C (on windows) 9a9846b
+- Update Package Manager GUI, add "working state" to the icons 5dcedea
+- various typescript errors 0d08d87
 
 ## [1.36.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.8...v1.36.0-in-testing.9) (2021-08-10)
-### [1.35.1-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.35.1-3) (2021-09-07)
 
+### [1.35.1-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-2...v1.35.1-3) (2021-09-07)
 
 ### Bug Fixes
 
-* orphaned parts unable to continue adlib onEnd infinites ([c38a3a1](https://github.com/nrkno/tv-automation-server-core/commit/c38a3a12c98019baf79ec4167e34b29b66bf6dfb))
+- orphaned parts unable to continue adlib onEnd infinites ([c38a3a1](https://github.com/nrkno/tv-automation-server-core/commit/c38a3a12c98019baf79ec4167e34b29b66bf6dfb))
 
 ### [1.35.1-2](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-1...v1.35.1-2) (2021-08-10)
 
-
 ### Bug Fixes
 
-* **Presenter screen:** getSelectedPartInstances on undefined crashes view ([d050844](https://github.com/nrkno/tv-automation-server-core/commit/d0508440e5ed805100780980e958b97d02356116))
+- **Presenter screen:** getSelectedPartInstances on undefined crashes view ([d050844](https://github.com/nrkno/tv-automation-server-core/commit/d0508440e5ed805100780980e958b97d02356116))
 
 ## [1.36.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.7...v1.36.0-in-testing.8) (2021-08-10)
 
 ## [1.36.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.6...v1.36.0-in-testing.7) (2021-07-20)
 
-
 ### Features
 
-* Apply rundown header / view layouts to rundown ([d1f2838](https://github.com/nrkno/tv-automation-server-core/commit/d1f2838c6c8a963554ddfd9eba787ea653c3d722))
-* Describe rundown view and shelf layouts through manifests ([3773b1e](https://github.com/nrkno/tv-automation-server-core/commit/3773b1eb93151c98902a12edc8a75c71933d6f80))
-* Scope layouts to their settings section ([9bbcc22](https://github.com/nrkno/tv-automation-server-core/commit/9bbcc2212c29805f4f4df68805bccb57170e8334))
-* Select mini shelf layout in rundown view ([f0c602f](https://github.com/nrkno/tv-automation-server-core/commit/f0c602f1e7c9256dac318371c38177ed117ae7d0))
-* Select rundown layout from lobby and use selected layouts as defaults ([63b8764](https://github.com/nrkno/tv-automation-server-core/commit/63b8764d27547a844dcd4a0c78132cb1c0ae0dcc))
-* Skeleton of rundown layout registry ([9680210](https://github.com/nrkno/tv-automation-server-core/commit/96802109e7caca14a3f1fc01d1b97cd37a56a150))
-
+- Apply rundown header / view layouts to rundown ([d1f2838](https://github.com/nrkno/tv-automation-server-core/commit/d1f2838c6c8a963554ddfd9eba787ea653c3d722))
+- Describe rundown view and shelf layouts through manifests ([3773b1e](https://github.com/nrkno/tv-automation-server-core/commit/3773b1eb93151c98902a12edc8a75c71933d6f80))
+- Scope layouts to their settings section ([9bbcc22](https://github.com/nrkno/tv-automation-server-core/commit/9bbcc2212c29805f4f4df68805bccb57170e8334))
+- Select mini shelf layout in rundown view ([f0c602f](https://github.com/nrkno/tv-automation-server-core/commit/f0c602f1e7c9256dac318371c38177ed117ae7d0))
+- Select rundown layout from lobby and use selected layouts as defaults ([63b8764](https://github.com/nrkno/tv-automation-server-core/commit/63b8764d27547a844dcd4a0c78132cb1c0ae0dcc))
+- Skeleton of rundown layout registry ([9680210](https://github.com/nrkno/tv-automation-server-core/commit/96802109e7caca14a3f1fc01d1b97cd37a56a150))
 
 ### Bug Fixes
 
-* Filter supported elements ([ff82d13](https://github.com/nrkno/tv-automation-server-core/commit/ff82d13cd03344c4e04b2dc215d97871f4a89e07))
-* Fixes after rebase ([08aa9b6](https://github.com/nrkno/tv-automation-server-core/commit/08aa9b67070e8d22ff867f784ca8d162eb198a8a))
-* Lint errors ([1b67f7f](https://github.com/nrkno/tv-automation-server-core/commit/1b67f7f814a9994e98a86aa693fe2bd1889a3284))
-* Post-rebase ([52ec5d8](https://github.com/nrkno/tv-automation-server-core/commit/52ec5d878712bde7ee98c0f44ad904ef39bd1e29))
+- Filter supported elements ([ff82d13](https://github.com/nrkno/tv-automation-server-core/commit/ff82d13cd03344c4e04b2dc215d97871f4a89e07))
+- Fixes after rebase ([08aa9b6](https://github.com/nrkno/tv-automation-server-core/commit/08aa9b67070e8d22ff867f784ca8d162eb198a8a))
+- Lint errors ([1b67f7f](https://github.com/nrkno/tv-automation-server-core/commit/1b67f7f814a9994e98a86aa693fe2bd1889a3284))
+- Post-rebase ([52ec5d8](https://github.com/nrkno/tv-automation-server-core/commit/52ec5d878712bde7ee98c0f44ad904ef39bd1e29))
 
 ## [1.36.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.6) (2021-07-14)
 
-
 ### Bug Fixes
 
-* repeating script can occur in prompter in some situations ([3b73994](https://github.com/nrkno/tv-automation-server-core/commit/3b7399492892c642a2bbb0eb56665f0e0f202c31))
+- repeating script can occur in prompter in some situations ([3b73994](https://github.com/nrkno/tv-automation-server-core/commit/3b7399492892c642a2bbb0eb56665f0e0f202c31))
 
 ## [1.36.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.4...v1.36.0-in-testing.5) (2021-07-14)
 
-
 ### Bug Fixes
 
-* repeating script can occur in prompter in some situations ([3b73994](https://github.com/nrkno/tv-automation-server-core/commit/3b7399492892c642a2bbb0eb56665f0e0f202c31))
+- repeating script can occur in prompter in some situations ([3b73994](https://github.com/nrkno/tv-automation-server-core/commit/3b7399492892c642a2bbb0eb56665f0e0f202c31))
 
 ## [1.36.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.36.0-in-testing.3...v1.36.0-in-testing.4) (2021-07-12)
 
@@ -1461,77 +2828,74 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.36.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.1-0...v1.36.0-in-testing.0) (2021-07-12)
 
-
 ### Features
 
-* add "Troubleshoot" button for Package Manager in GUI, used to data-dump and troubleshoot things in Package Manager ([76919ff](https://github.com/nrkno/tv-automation-server-core/commit/76919ffe413dba65388db6a47ed4ad4fb079ef96))
-* add checkbox to blueprints and peripheral devices to disable version checks. The flag gets unset whenever the blueprint/device changes its version ([e2ffccb](https://github.com/nrkno/tv-automation-server-core/commit/e2ffccbf95f84e1f10f5fa697a880f35b231a0d2))
-* add FTP package accessors type to blueprint-integrations ([412d2f1](https://github.com/nrkno/tv-automation-server-core/commit/412d2f1ec86586860d56e07f311668332c7117e8))
-* blueprint getPackageInfo implementation based on cache ([74b40ad](https://github.com/nrkno/tv-automation-server-core/commit/74b40ad7925f97041697d6c5b9c91c7af3ff0f68))
-* expand FTP accessor with options for explicit login and encrypted connections [publish] ([a4e77bd](https://github.com/nrkno/tv-automation-server-core/commit/a4e77bd78b2184e335fb0e2762dbf5cfef1f1ad4))
-* implement async wrapper to TransformedCollection ([#528](https://github.com/nrkno/tv-automation-server-core/issues/528)) ([301d306](https://github.com/nrkno/tv-automation-server-core/commit/301d30686ff4611ff4a5922f49541bf6db2ab6fe))
-* initial implementation of new Package Manager GUI ([93f2b8c](https://github.com/nrkno/tv-automation-server-core/commit/93f2b8c2590e7add973ad36476b5dcc3eef32dfa))
-* package manager API: add a generic JSONData package, add a generit HTTP accessor and rename the old HTTP into HTTPProxy ([52592b6](https://github.com/nrkno/tv-automation-server-core/commit/52592b68b3bd6cb5fd49fb7803057d29e0c7d3f4))
-* package-manager API: change statusReason into a Reason with user-readable and technical status descriptions (wip) ([191fcde](https://github.com/nrkno/tv-automation-server-core/commit/191fcde244589859c248de8b3db6fe169d01a17b))
-* refactor lookahead logic to remove amount of loop iterations ([6648ff6](https://github.com/nrkno/tv-automation-server-core/commit/6648ff6a8081e7a88440791ab5601afcb80d079e))
-* Remove delayed initialisation from DbCacheReadObject ([b15f306](https://github.com/nrkno/tv-automation-server-core/commit/b15f306dd620e92cab0cd43ae394abd57302a3ec))
-* Remove lazy initialisation from DbCacheReadCollection, making the class be fully synchronous ([209c36b](https://github.com/nrkno/tv-automation-server-core/commit/209c36b4f2af48058640b801f0862be81ca7b2a2))
-* remove old expectedVersion migrations ([c664433](https://github.com/nrkno/tv-automation-server-core/commit/c664433acd65243300dfbdaed2a7f71f57391b4b))
-* rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
-* rework the blueprint version checks to be looser around ^1.32.1 vs 1.32.0 ([1375437](https://github.com/nrkno/tv-automation-server-core/commit/13754376e4cc1899bfd76fd5edbd573342e662df))
-* show Viz loading status in MSE on the Piece ([#538](https://github.com/nrkno/tv-automation-server-core/issues/538)) ([2c1d3a3](https://github.com/nrkno/tv-automation-server-core/commit/2c1d3a3e1fc86c8224aba0c05ce857e33cb6c9fc))
-* speed and re-rendering optimisations ([89a93a1](https://github.com/nrkno/tv-automation-server-core/commit/89a93a1c79be707b88ea264457ae20366d8cbb34))
-* speed and re-rendering optimisations ([a0a0d6c](https://github.com/nrkno/tv-automation-server-core/commit/a0a0d6cfb2686ae353463b2d7bbf3773280cd8a4))
-* speedoptimize - added CURRENT_TIME_GRANULARITY const ([4edd282](https://github.com/nrkno/tv-automation-server-core/commit/4edd2829dd01f291916ba84ea43b26423bc27937))
-* update typescript to 4.2 to match meteor-babel ([94788fb](https://github.com/nrkno/tv-automation-server-core/commit/94788fb1855fa6ee6e25d8dc66b330d8a308c9b7))
-* when showing *On Air On* in Segment header, and not active, use expectedStart and not current time as base ([6d6cf38](https://github.com/nrkno/tv-automation-server-core/commit/6d6cf38f27669a27aef3c80b0fb4f7bb489d1bba))
-
+- add "Troubleshoot" button for Package Manager in GUI, used to data-dump and troubleshoot things in Package Manager ([76919ff](https://github.com/nrkno/tv-automation-server-core/commit/76919ffe413dba65388db6a47ed4ad4fb079ef96))
+- add checkbox to blueprints and peripheral devices to disable version checks. The flag gets unset whenever the blueprint/device changes its version ([e2ffccb](https://github.com/nrkno/tv-automation-server-core/commit/e2ffccbf95f84e1f10f5fa697a880f35b231a0d2))
+- add FTP package accessors type to blueprint-integrations ([412d2f1](https://github.com/nrkno/tv-automation-server-core/commit/412d2f1ec86586860d56e07f311668332c7117e8))
+- blueprint getPackageInfo implementation based on cache ([74b40ad](https://github.com/nrkno/tv-automation-server-core/commit/74b40ad7925f97041697d6c5b9c91c7af3ff0f68))
+- expand FTP accessor with options for explicit login and encrypted connections [publish] ([a4e77bd](https://github.com/nrkno/tv-automation-server-core/commit/a4e77bd78b2184e335fb0e2762dbf5cfef1f1ad4))
+- implement async wrapper to TransformedCollection ([#528](https://github.com/nrkno/tv-automation-server-core/issues/528)) ([301d306](https://github.com/nrkno/tv-automation-server-core/commit/301d30686ff4611ff4a5922f49541bf6db2ab6fe))
+- initial implementation of new Package Manager GUI ([93f2b8c](https://github.com/nrkno/tv-automation-server-core/commit/93f2b8c2590e7add973ad36476b5dcc3eef32dfa))
+- package manager API: add a generic JSONData package, add a generit HTTP accessor and rename the old HTTP into HTTPProxy ([52592b6](https://github.com/nrkno/tv-automation-server-core/commit/52592b68b3bd6cb5fd49fb7803057d29e0c7d3f4))
+- package-manager API: change statusReason into a Reason with user-readable and technical status descriptions (wip) ([191fcde](https://github.com/nrkno/tv-automation-server-core/commit/191fcde244589859c248de8b3db6fe169d01a17b))
+- refactor lookahead logic to remove amount of loop iterations ([6648ff6](https://github.com/nrkno/tv-automation-server-core/commit/6648ff6a8081e7a88440791ab5601afcb80d079e))
+- Remove delayed initialisation from DbCacheReadObject ([b15f306](https://github.com/nrkno/tv-automation-server-core/commit/b15f306dd620e92cab0cd43ae394abd57302a3ec))
+- Remove lazy initialisation from DbCacheReadCollection, making the class be fully synchronous ([209c36b](https://github.com/nrkno/tv-automation-server-core/commit/209c36b4f2af48058640b801f0862be81ca7b2a2))
+- remove old expectedVersion migrations ([c664433](https://github.com/nrkno/tv-automation-server-core/commit/c664433acd65243300dfbdaed2a7f71f57391b4b))
+- rework gateway version check to looser, and not check process version ([1a01393](https://github.com/nrkno/tv-automation-server-core/commit/1a01393c40983ec4e45f66ab875d706301a7ea41))
+- rework the blueprint version checks to be looser around ^1.32.1 vs 1.32.0 ([1375437](https://github.com/nrkno/tv-automation-server-core/commit/13754376e4cc1899bfd76fd5edbd573342e662df))
+- show Viz loading status in MSE on the Piece ([#538](https://github.com/nrkno/tv-automation-server-core/issues/538)) ([2c1d3a3](https://github.com/nrkno/tv-automation-server-core/commit/2c1d3a3e1fc86c8224aba0c05ce857e33cb6c9fc))
+- speed and re-rendering optimisations ([89a93a1](https://github.com/nrkno/tv-automation-server-core/commit/89a93a1c79be707b88ea264457ae20366d8cbb34))
+- speed and re-rendering optimisations ([a0a0d6c](https://github.com/nrkno/tv-automation-server-core/commit/a0a0d6cfb2686ae353463b2d7bbf3773280cd8a4))
+- speedoptimize - added CURRENT_TIME_GRANULARITY const ([4edd282](https://github.com/nrkno/tv-automation-server-core/commit/4edd2829dd01f291916ba84ea43b26423bc27937))
+- update typescript to 4.2 to match meteor-babel ([94788fb](https://github.com/nrkno/tv-automation-server-core/commit/94788fb1855fa6ee6e25d8dc66b330d8a308c9b7))
+- when showing _On Air On_ in Segment header, and not active, use expectedStart and not current time as base ([6d6cf38](https://github.com/nrkno/tv-automation-server-core/commit/6d6cf38f27669a27aef3c80b0fb4f7bb489d1bba))
 
 ### Bug Fixes
 
-* add created property to expectedPackages ([5f05199](https://github.com/nrkno/tv-automation-server-core/commit/5f05199829149569cfb5e74cfbfe3feefe368b7f))
-* AfterBroadcastForm crashes when sending evaluations ([2dddb22](https://github.com/nrkno/tv-automation-server-core/commit/2dddb22925ac951e068d5a561589904e960a3af6))
-* CacheObject missing transforms ([02207f1](https://github.com/nrkno/tv-automation-server-core/commit/02207f114c82a4d5e7fbcf9208a95a73f8efdc86))
-* Cannot use 'in' operator to search for 'getIfLoaded' ([ac0038c](https://github.com/nrkno/tv-automation-server-core/commit/ac0038cabe6ba5c317a7a934cbb04015b50fb25c))
-* catch/ignore async logged errors when running tests ([4b51ab9](https://github.com/nrkno/tv-automation-server-core/commit/4b51ab96588ef2288cbb7fcfda60c55951275e07))
-* fix bug in displayFormattedTime ([ea4a666](https://github.com/nrkno/tv-automation-server-core/commit/ea4a666f2f569e4cdcde178348ddff5c524213ea))
-* improve Package statuses GUI page [publish] ([4985606](https://github.com/nrkno/tv-automation-server-core/commit/4985606cfa56cc549348f3a8cf54eb42aa9ba7d3))
-* infinite pieces losing their startedPlayback time on their second take ([4fbde9d](https://github.com/nrkno/tv-automation-server-core/commit/4fbde9dfba3fcb5416707b24187b1b295825354c))
-* invalid notifications ([#545](https://github.com/nrkno/tv-automation-server-core/issues/545)) ([f414831](https://github.com/nrkno/tv-automation-server-core/commit/f4148317d3c8350c805ff3257173cac2e60dfa43))
-* iterateDeeply for arrays [publish] ([9a64fd3](https://github.com/nrkno/tv-automation-server-core/commit/9a64fd347d715ca41b5b703415663fa02996fd5c))
-* orphaned parts cause the Segment Timeline component to scroll beyond the timeline ([3113937](https://github.com/nrkno/tv-automation-server-core/commit/31139376d2bf2c9a105f0c3bc502f00111317a9e))
-* package manager: add statusChanged type, to use for determining that a status has changed (used in GUI) [publish] ([22b29d9](https://github.com/nrkno/tv-automation-server-core/commit/22b29d9ebe58e88db6438ad084d1f12182f6a4e5))
-* Package status GUI updates ([cdcafde](https://github.com/nrkno/tv-automation-server-core/commit/cdcafde9acb09df64b65f9c87fd3319b3d131cb4))
-* pixelPosition should be a const ([cc9a0cf](https://github.com/nrkno/tv-automation-server-core/commit/cc9a0cf05f0b1f9eaa56a3526ab51c1185628612))
-* plumb in pieceId when executing an action ([a8ccdea](https://github.com/nrkno/tv-automation-server-core/commit/a8ccdead3eaadd5e43ca0c468bdfd270836324a7))
-* PM add WorkStatusState, for stronger typings [publish] ([51788bc](https://github.com/nrkno/tv-automation-server-core/commit/51788bc31a26ce720b829508399a4a20737f2b66))
-* prevPartId was initialized with = '' instead of null ([3cbb8ee](https://github.com/nrkno/tv-automation-server-core/commit/3cbb8ee53335b1331863615b7244e48f4b53f05c))
-* prioritize showing end of script Piece right-hand label ([8ea0f4f](https://github.com/nrkno/tv-automation-server-core/commit/8ea0f4f4a2ca9548d53ffdb633a5b8b32c2a90a9))
-* reinsert isExpectedToPlay in SegmentTimelineContainer and raised SIMULATED_PLAYBACK_HARD_MARGIN to 3500 ([2b0861d](https://github.com/nrkno/tv-automation-server-core/commit/2b0861d06ce3a6a3bc926b7256eb744c59c8b49d))
-* remove duplicate migration ([8ad5512](https://github.com/nrkno/tv-automation-server-core/commit/8ad5512cff52000ff6ebb6d41d600582e49b02bd))
-* rundown baseline objects should trigger listenToPackageInfoUpdates ([84ea181](https://github.com/nrkno/tv-automation-server-core/commit/84ea181578cd425ac789beacc237403afe3c5180))
-* scrollLeft gave flickering when pressing take. ([14b05c3](https://github.com/nrkno/tv-automation-server-core/commit/14b05c320b68a401023137cf0db5e79c8feb082f))
-* scrollLeft gave flickering when pressing take. ([644dc17](https://github.com/nrkno/tv-automation-server-core/commit/644dc17c4991d937404b89bbd6fa539b4444498e))
-* search bar cleared when switching tabs in shelf ([#544](https://github.com/nrkno/tv-automation-server-core/issues/544)) ([f7a4ee0](https://github.com/nrkno/tv-automation-server-core/commit/f7a4ee07455dc81f90a4812239447a98674190a3))
-* sending an evaluation on a looping rundown deactivates it ([c88b9c0](https://github.com/nrkno/tv-automation-server-core/commit/c88b9c0e173efe3522120bfd1f2863009f03c11c))
-* setState missing ([1be49cd](https://github.com/nrkno/tv-automation-server-core/commit/1be49cdc2bc83ca275dab296f2bb11faa48a6b3e))
-* setState missing ([2482600](https://github.com/nrkno/tv-automation-server-core/commit/2482600d2358c26424a0c027052eac5d5a427fcf))
-* show adlibs for hidden layers when dev flags makes the layers visible ([587c17b](https://github.com/nrkno/tv-automation-server-core/commit/587c17b6cf411ebdddd36bb74f17d8e9853de2c6))
-* solid background behind right-hand-side Piece labels to cover any stray left-hand-side labels ([68d3acb](https://github.com/nrkno/tv-automation-server-core/commit/68d3acb7ac60175c9f33b592838f85c93fd3a0fc))
-* state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props ([b52ebf3](https://github.com/nrkno/tv-automation-server-core/commit/b52ebf3372c75fa2ada77d10dabb136aa1d8cbc2))
-* state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props ([16487c6](https://github.com/nrkno/tv-automation-server-core/commit/16487c69a033b2e5a0d6d8304051babbfbeb0b03))
-* timeline not considering userDuration for pieces properly ([9afa233](https://github.com/nrkno/tv-automation-server-core/commit/9afa233720ab814f8e4558e68e7fee493be70d78))
-* update data-store dep (fixing a bug where device-apps/gateways wouldn't work when started from a different drive than C (on windows) ([9a9846b](https://github.com/nrkno/tv-automation-server-core/commit/9a9846b8b73a0fb75ba3cf03764f280d633d38b2))
-* Update Package Manager GUI, add "working state" to the icons ([5dcedea](https://github.com/nrkno/tv-automation-server-core/commit/5dcedea75f26e23e7ef5a8542634fcd7c35deebb))
-* various typescript errors ([0d08d87](https://github.com/nrkno/tv-automation-server-core/commit/0d08d8737088c74d7207466cac3963e34f391dd2))
+- add created property to expectedPackages ([5f05199](https://github.com/nrkno/tv-automation-server-core/commit/5f05199829149569cfb5e74cfbfe3feefe368b7f))
+- AfterBroadcastForm crashes when sending evaluations ([2dddb22](https://github.com/nrkno/tv-automation-server-core/commit/2dddb22925ac951e068d5a561589904e960a3af6))
+- CacheObject missing transforms ([02207f1](https://github.com/nrkno/tv-automation-server-core/commit/02207f114c82a4d5e7fbcf9208a95a73f8efdc86))
+- Cannot use 'in' operator to search for 'getIfLoaded' ([ac0038c](https://github.com/nrkno/tv-automation-server-core/commit/ac0038cabe6ba5c317a7a934cbb04015b50fb25c))
+- catch/ignore async logged errors when running tests ([4b51ab9](https://github.com/nrkno/tv-automation-server-core/commit/4b51ab96588ef2288cbb7fcfda60c55951275e07))
+- fix bug in displayFormattedTime ([ea4a666](https://github.com/nrkno/tv-automation-server-core/commit/ea4a666f2f569e4cdcde178348ddff5c524213ea))
+- improve Package statuses GUI page [publish] ([4985606](https://github.com/nrkno/tv-automation-server-core/commit/4985606cfa56cc549348f3a8cf54eb42aa9ba7d3))
+- infinite pieces losing their startedPlayback time on their second take ([4fbde9d](https://github.com/nrkno/tv-automation-server-core/commit/4fbde9dfba3fcb5416707b24187b1b295825354c))
+- invalid notifications ([#545](https://github.com/nrkno/tv-automation-server-core/issues/545)) ([f414831](https://github.com/nrkno/tv-automation-server-core/commit/f4148317d3c8350c805ff3257173cac2e60dfa43))
+- iterateDeeply for arrays [publish] ([9a64fd3](https://github.com/nrkno/tv-automation-server-core/commit/9a64fd347d715ca41b5b703415663fa02996fd5c))
+- orphaned parts cause the Segment Timeline component to scroll beyond the timeline ([3113937](https://github.com/nrkno/tv-automation-server-core/commit/31139376d2bf2c9a105f0c3bc502f00111317a9e))
+- package manager: add statusChanged type, to use for determining that a status has changed (used in GUI) [publish] ([22b29d9](https://github.com/nrkno/tv-automation-server-core/commit/22b29d9ebe58e88db6438ad084d1f12182f6a4e5))
+- Package status GUI updates ([cdcafde](https://github.com/nrkno/tv-automation-server-core/commit/cdcafde9acb09df64b65f9c87fd3319b3d131cb4))
+- pixelPosition should be a const ([cc9a0cf](https://github.com/nrkno/tv-automation-server-core/commit/cc9a0cf05f0b1f9eaa56a3526ab51c1185628612))
+- plumb in pieceId when executing an action ([a8ccdea](https://github.com/nrkno/tv-automation-server-core/commit/a8ccdead3eaadd5e43ca0c468bdfd270836324a7))
+- PM add WorkStatusState, for stronger typings [publish] ([51788bc](https://github.com/nrkno/tv-automation-server-core/commit/51788bc31a26ce720b829508399a4a20737f2b66))
+- prevPartId was initialized with = '' instead of null ([3cbb8ee](https://github.com/nrkno/tv-automation-server-core/commit/3cbb8ee53335b1331863615b7244e48f4b53f05c))
+- prioritize showing end of script Piece right-hand label ([8ea0f4f](https://github.com/nrkno/tv-automation-server-core/commit/8ea0f4f4a2ca9548d53ffdb633a5b8b32c2a90a9))
+- reinsert isExpectedToPlay in SegmentTimelineContainer and raised SIMULATED_PLAYBACK_HARD_MARGIN to 3500 ([2b0861d](https://github.com/nrkno/tv-automation-server-core/commit/2b0861d06ce3a6a3bc926b7256eb744c59c8b49d))
+- remove duplicate migration ([8ad5512](https://github.com/nrkno/tv-automation-server-core/commit/8ad5512cff52000ff6ebb6d41d600582e49b02bd))
+- rundown baseline objects should trigger listenToPackageInfoUpdates ([84ea181](https://github.com/nrkno/tv-automation-server-core/commit/84ea181578cd425ac789beacc237403afe3c5180))
+- scrollLeft gave flickering when pressing take. ([14b05c3](https://github.com/nrkno/tv-automation-server-core/commit/14b05c320b68a401023137cf0db5e79c8feb082f))
+- scrollLeft gave flickering when pressing take. ([644dc17](https://github.com/nrkno/tv-automation-server-core/commit/644dc17c4991d937404b89bbd6fa539b4444498e))
+- search bar cleared when switching tabs in shelf ([#544](https://github.com/nrkno/tv-automation-server-core/issues/544)) ([f7a4ee0](https://github.com/nrkno/tv-automation-server-core/commit/f7a4ee07455dc81f90a4812239447a98674190a3))
+- sending an evaluation on a looping rundown deactivates it ([c88b9c0](https://github.com/nrkno/tv-automation-server-core/commit/c88b9c0e173efe3522120bfd1f2863009f03c11c))
+- setState missing ([1be49cd](https://github.com/nrkno/tv-automation-server-core/commit/1be49cdc2bc83ca275dab296f2bb11faa48a6b3e))
+- setState missing ([2482600](https://github.com/nrkno/tv-automation-server-core/commit/2482600d2358c26424a0c027052eac5d5a427fcf))
+- show adlibs for hidden layers when dev flags makes the layers visible ([587c17b](https://github.com/nrkno/tv-automation-server-core/commit/587c17b6cf411ebdddd36bb74f17d8e9853de2c6))
+- solid background behind right-hand-side Piece labels to cover any stray left-hand-side labels ([68d3acb](https://github.com/nrkno/tv-automation-server-core/commit/68d3acb7ac60175c9f33b592838f85c93fd3a0fc))
+- state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props ([b52ebf3](https://github.com/nrkno/tv-automation-server-core/commit/b52ebf3372c75fa2ada77d10dabb136aa1d8cbc2))
+- state of isLiveSegment was not set, instead a this.isLiveSegment was used but the state was used for props ([16487c6](https://github.com/nrkno/tv-automation-server-core/commit/16487c69a033b2e5a0d6d8304051babbfbeb0b03))
+- timeline not considering userDuration for pieces properly ([9afa233](https://github.com/nrkno/tv-automation-server-core/commit/9afa233720ab814f8e4558e68e7fee493be70d78))
+- update data-store dep (fixing a bug where device-apps/gateways wouldn't work when started from a different drive than C (on windows) ([9a9846b](https://github.com/nrkno/tv-automation-server-core/commit/9a9846b8b73a0fb75ba3cf03764f280d633d38b2))
+- Update Package Manager GUI, add "working state" to the icons ([5dcedea](https://github.com/nrkno/tv-automation-server-core/commit/5dcedea75f26e23e7ef5a8542634fcd7c35deebb))
+- various typescript errors ([0d08d87](https://github.com/nrkno/tv-automation-server-core/commit/0d08d8737088c74d7207466cac3963e34f391dd2))
 
 ### [1.35.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.0...v1.35.1-0) (2021-07-12)
 
-
 ### Bug Fixes
 
-* always run typedoc, but skip publish if not a tag ([f92251d](https://github.com/nrkno/tv-automation-server-core/commit/f92251de8eafd138a10b4a0530ed5ee09e134617))
-* LOWER_THIRD pieces can use takeNow not GRAPHICS pieces ([d702336](https://github.com/nrkno/tv-automation-server-core/commit/d702336a25a471fad6eb4b4a80e87bdb9c66b2c5))
+- always run typedoc, but skip publish if not a tag ([f92251d](https://github.com/nrkno/tv-automation-server-core/commit/f92251de8eafd138a10b4a0530ed5ee09e134617))
+- LOWER_THIRD pieces can use takeNow not GRAPHICS pieces ([d702336](https://github.com/nrkno/tv-automation-server-core/commit/d702336a25a471fad6eb4b4a80e87bdb9c66b2c5))
 
 ## [1.35.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.34.0...v1.35.0) (2021-07-07)
 
@@ -1539,50 +2903,48 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.35.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.32.3-0...v1.35.0-in-testing.0) (2021-06-09)
 
-
 ### Features
 
-* add baseline expectedPlayoutItems support ([#520](https://github.com/nrkno/tv-automation-server-core/issues/520)) [publish] ([6865b7e](https://github.com/nrkno/tv-automation-server-core/commit/6865b7ec2be8ca57b70d25ac6db41669fc686c97))
-* add baseline expectedPlayoutItems support to Playout Gateway ([#521](https://github.com/nrkno/tv-automation-server-core/issues/521)) ([a2b7fa8](https://github.com/nrkno/tv-automation-server-core/commit/a2b7fa82d680df77774f5514f498d9906a90aa16))
-* add dashboard panel options for next tally ([edf9607](https://github.com/nrkno/tv-automation-server-core/commit/edf96070b629b7e3e8b9627892461f0d3ce5e7cf))
-* dataPlaylistGet ([7cbdfb4](https://github.com/nrkno/tv-automation-server-core/commit/7cbdfb4dc5ff8a693cfd49825d03777f31416dce))
-* expose PartEndState to the adlib actions ([#518](https://github.com/nrkno/tv-automation-server-core/issues/518)) [publish] ([813cb03](https://github.com/nrkno/tv-automation-server-core/commit/813cb03369792fa095cbeca8a9ce4f1835fce376))
-* expose studioId to blueprints on IStudioContext [publish] ([0f30520](https://github.com/nrkno/tv-automation-server-core/commit/0f305207c41e618411161db2fc105936b699534f))
-* Improve performance of OnShowStyleEnd infinites ([dcf30c6](https://github.com/nrkno/tv-automation-server-core/commit/dcf30c6e71fb13e4bd3a654f48885e2825092e5c))
-* multistep graphics UI inn the timeline ([#523](https://github.com/nrkno/tv-automation-server-core/issues/523)) ([c1608f1](https://github.com/nrkno/tv-automation-server-core/commit/c1608f15a816ff46d0990adbb6e80805a2189119))
-* OnShowStyleEnd infinites ([d22c592](https://github.com/nrkno/tv-automation-server-core/commit/d22c5922c752e75495ada1127b515d9fb1c4fad4))
-* require node 12.20 for all packages ([776e0d5](https://github.com/nrkno/tv-automation-server-core/commit/776e0d5c3e402b394990aafea8e7be4f44f8753f))
-* scroll & zoomInToFit when clicking on a Part Ident ([e04316c](https://github.com/nrkno/tv-automation-server-core/commit/e04316c9c12d8e389c01e06deec4c85134bfd6d3))
-
+- add baseline expectedPlayoutItems support ([#520](https://github.com/nrkno/tv-automation-server-core/issues/520)) [publish] ([6865b7e](https://github.com/nrkno/tv-automation-server-core/commit/6865b7ec2be8ca57b70d25ac6db41669fc686c97))
+- add baseline expectedPlayoutItems support to Playout Gateway ([#521](https://github.com/nrkno/tv-automation-server-core/issues/521)) ([a2b7fa8](https://github.com/nrkno/tv-automation-server-core/commit/a2b7fa82d680df77774f5514f498d9906a90aa16))
+- add dashboard panel options for next tally ([edf9607](https://github.com/nrkno/tv-automation-server-core/commit/edf96070b629b7e3e8b9627892461f0d3ce5e7cf))
+- dataPlaylistGet ([7cbdfb4](https://github.com/nrkno/tv-automation-server-core/commit/7cbdfb4dc5ff8a693cfd49825d03777f31416dce))
+- expose PartEndState to the adlib actions ([#518](https://github.com/nrkno/tv-automation-server-core/issues/518)) [publish] ([813cb03](https://github.com/nrkno/tv-automation-server-core/commit/813cb03369792fa095cbeca8a9ce4f1835fce376))
+- expose studioId to blueprints on IStudioContext [publish] ([0f30520](https://github.com/nrkno/tv-automation-server-core/commit/0f305207c41e618411161db2fc105936b699534f))
+- Improve performance of OnShowStyleEnd infinites ([dcf30c6](https://github.com/nrkno/tv-automation-server-core/commit/dcf30c6e71fb13e4bd3a654f48885e2825092e5c))
+- multistep graphics UI inn the timeline ([#523](https://github.com/nrkno/tv-automation-server-core/issues/523)) ([c1608f1](https://github.com/nrkno/tv-automation-server-core/commit/c1608f15a816ff46d0990adbb6e80805a2189119))
+- OnShowStyleEnd infinites ([d22c592](https://github.com/nrkno/tv-automation-server-core/commit/d22c5922c752e75495ada1127b515d9fb1c4fad4))
+- require node 12.20 for all packages ([776e0d5](https://github.com/nrkno/tv-automation-server-core/commit/776e0d5c3e402b394990aafea8e7be4f44f8753f))
+- scroll & zoomInToFit when clicking on a Part Ident ([e04316c](https://github.com/nrkno/tv-automation-server-core/commit/e04316c9c12d8e389c01e06deec4c85134bfd6d3))
 
 ### Bug Fixes
 
-* Add missing API entry ([52a23dc](https://github.com/nrkno/tv-automation-server-core/commit/52a23dc779734e5605e0dcc5b468044d0ff55e37))
-* Adjusted the text center-justification of the notification number in the segment header. ([9e40aac](https://github.com/nrkno/tv-automation-server-core/commit/9e40aacd46f8266d6360174d3f1ff2a985da2733))
-* Another set -> array ([b464c10](https://github.com/nrkno/tv-automation-server-core/commit/b464c10e51b3bb4b178e7642c2f7c287486464d2))
-* bring back original isAdLibNext behavior ([d3254a8](https://github.com/nrkno/tv-automation-server-core/commit/d3254a880aadfd8caff2a9a031d4ce9fb7dd9e84))
-* change the package-manager status-reporting methods, so that they can handle updates in bulk (for performance reasons) [publish] ([31727c2](https://github.com/nrkno/tv-automation-server-core/commit/31727c2ba07b9682109c4cc068eaf70420ba4c13))
-* Checking all rundown match showstyle in order and performance ([7dbd712](https://github.com/nrkno/tv-automation-server-core/commit/7dbd71282967d4c29d3a7710b83b7115d17d27fb))
-* Couple of fixes from review ([b914740](https://github.com/nrkno/tv-automation-server-core/commit/b914740c217976c2653892250c50fa8fb20942f0))
-* expectedPackages priorities ([738578b](https://github.com/nrkno/tv-automation-server-core/commit/738578b21ccad6ebb87d231193229bbbc035a9c2))
-* Failing test ([f8e5b55](https://github.com/nrkno/tv-automation-server-core/commit/f8e5b55bc67b1473b5c2b42c5a742a9fa4f061a8))
-* Failing tests ([45fc607](https://github.com/nrkno/tv-automation-server-core/commit/45fc6074e2c7394aa14e64d255efc1060bd1c537))
-* fallback to last words in script hoverscrub if fullScript is empty ([18d16e6](https://github.com/nrkno/tv-automation-server-core/commit/18d16e669b8933f5d170578df7c8644f20c1e4f2))
-* hoverscrub doesn't always work on selected items in Shelf ([4b0d5fc](https://github.com/nrkno/tv-automation-server-core/commit/4b0d5fcbfc87afc016280653cc2007a9c4cd045a))
-* improve separate zoom ([#517](https://github.com/nrkno/tv-automation-server-core/issues/517)) ([44d8b7b](https://github.com/nrkno/tv-automation-server-core/commit/44d8b7be7394be93aa154d0465afbe3f6568d632))
-* increase contrast on zebra lines on VT Pieces ([005a13c](https://github.com/nrkno/tv-automation-server-core/commit/005a13cb9e0f0435e93828817264ceeaf206aa63))
-* invalid cover occludes take line ([680dc2e](https://github.com/nrkno/tv-automation-server-core/commit/680dc2e8912fa7b9ac89a0b982519e06171918dd))
-* L3rdSourceRenderer crashing when missing payload ([ef879ab](https://github.com/nrkno/tv-automation-server-core/commit/ef879ab5b24ae8ee8ac1d026088992333507791b))
-* last words are not used as fallback when no fullScript is present in script Piece ([eb6c95a](https://github.com/nrkno/tv-automation-server-core/commit/eb6c95a240c4805deef98f6b9ab65441308ca867))
-* Make change of showstyle end OnShowStyleEnd infinite ([ad4649b](https://github.com/nrkno/tv-automation-server-core/commit/ad4649b02bc9d9f30f3f0db1a76ae132a1eae7c4))
-* notifications in segment header don't match Notification Center ([#519](https://github.com/nrkno/tv-automation-server-core/issues/519)) ([cfa0ff4](https://github.com/nrkno/tv-automation-server-core/commit/cfa0ff4b2aaad1e208236a4b80d79bdb883ccf5e))
-* onAir line wiggle during playback when follow on air line is true ([5cba041](https://github.com/nrkno/tv-automation-server-core/commit/5cba041f7e7210a8bb3377788aba08659e5b1fe3))
-* opening multi-select dropdowns in studio settings toggles options on and off ([e7b0e05](https://github.com/nrkno/tv-automation-server-core/commit/e7b0e05a1a2c003c03fb26dae8d5375131eb5492))
-* orphaned parts cause the Segment Timeline component to scroll beyond the timeline ([278aaf3](https://github.com/nrkno/tv-automation-server-core/commit/278aaf3fdb32202803ef19d4e9dc4e5bb109091f))
-* rename collection "packageContainerStatuses" -> "packageContainerPackageStatuses" ([5d2ca4f](https://github.com/nrkno/tv-automation-server-core/commit/5d2ca4fd03c286ac07bc96905c3df3e652a091a6))
-* showstyle variant config not being able to use sourcelayer or mapping controls ([31f0912](https://github.com/nrkno/tv-automation-server-core/commit/31f091282668e22dd3085e19e8212d088541c89f))
-* **Package manager:** remove unused fields from HTTP accessor settings ([20331c8](https://github.com/nrkno/tv-automation-server-core/commit/20331c8dd544568a1a962f746f86b520c7f001d4))
-* upd package-manager publication ([82d6587](https://github.com/nrkno/tv-automation-server-core/commit/82d6587ee3da6a6556b81455aaf2025107bf4a62))
+- Add missing API entry ([52a23dc](https://github.com/nrkno/tv-automation-server-core/commit/52a23dc779734e5605e0dcc5b468044d0ff55e37))
+- Adjusted the text center-justification of the notification number in the segment header. ([9e40aac](https://github.com/nrkno/tv-automation-server-core/commit/9e40aacd46f8266d6360174d3f1ff2a985da2733))
+- Another set -> array ([b464c10](https://github.com/nrkno/tv-automation-server-core/commit/b464c10e51b3bb4b178e7642c2f7c287486464d2))
+- bring back original isAdLibNext behavior ([d3254a8](https://github.com/nrkno/tv-automation-server-core/commit/d3254a880aadfd8caff2a9a031d4ce9fb7dd9e84))
+- change the package-manager status-reporting methods, so that they can handle updates in bulk (for performance reasons) [publish] ([31727c2](https://github.com/nrkno/tv-automation-server-core/commit/31727c2ba07b9682109c4cc068eaf70420ba4c13))
+- Checking all rundown match showstyle in order and performance ([7dbd712](https://github.com/nrkno/tv-automation-server-core/commit/7dbd71282967d4c29d3a7710b83b7115d17d27fb))
+- Couple of fixes from review ([b914740](https://github.com/nrkno/tv-automation-server-core/commit/b914740c217976c2653892250c50fa8fb20942f0))
+- expectedPackages priorities ([738578b](https://github.com/nrkno/tv-automation-server-core/commit/738578b21ccad6ebb87d231193229bbbc035a9c2))
+- Failing test ([f8e5b55](https://github.com/nrkno/tv-automation-server-core/commit/f8e5b55bc67b1473b5c2b42c5a742a9fa4f061a8))
+- Failing tests ([45fc607](https://github.com/nrkno/tv-automation-server-core/commit/45fc6074e2c7394aa14e64d255efc1060bd1c537))
+- fallback to last words in script hoverscrub if fullScript is empty ([18d16e6](https://github.com/nrkno/tv-automation-server-core/commit/18d16e669b8933f5d170578df7c8644f20c1e4f2))
+- hoverscrub doesn't always work on selected items in Shelf ([4b0d5fc](https://github.com/nrkno/tv-automation-server-core/commit/4b0d5fcbfc87afc016280653cc2007a9c4cd045a))
+- improve separate zoom ([#517](https://github.com/nrkno/tv-automation-server-core/issues/517)) ([44d8b7b](https://github.com/nrkno/tv-automation-server-core/commit/44d8b7be7394be93aa154d0465afbe3f6568d632))
+- increase contrast on zebra lines on VT Pieces ([005a13c](https://github.com/nrkno/tv-automation-server-core/commit/005a13cb9e0f0435e93828817264ceeaf206aa63))
+- invalid cover occludes take line ([680dc2e](https://github.com/nrkno/tv-automation-server-core/commit/680dc2e8912fa7b9ac89a0b982519e06171918dd))
+- L3rdSourceRenderer crashing when missing payload ([ef879ab](https://github.com/nrkno/tv-automation-server-core/commit/ef879ab5b24ae8ee8ac1d026088992333507791b))
+- last words are not used as fallback when no fullScript is present in script Piece ([eb6c95a](https://github.com/nrkno/tv-automation-server-core/commit/eb6c95a240c4805deef98f6b9ab65441308ca867))
+- Make change of showstyle end OnShowStyleEnd infinite ([ad4649b](https://github.com/nrkno/tv-automation-server-core/commit/ad4649b02bc9d9f30f3f0db1a76ae132a1eae7c4))
+- notifications in segment header don't match Notification Center ([#519](https://github.com/nrkno/tv-automation-server-core/issues/519)) ([cfa0ff4](https://github.com/nrkno/tv-automation-server-core/commit/cfa0ff4b2aaad1e208236a4b80d79bdb883ccf5e))
+- onAir line wiggle during playback when follow on air line is true ([5cba041](https://github.com/nrkno/tv-automation-server-core/commit/5cba041f7e7210a8bb3377788aba08659e5b1fe3))
+- opening multi-select dropdowns in studio settings toggles options on and off ([e7b0e05](https://github.com/nrkno/tv-automation-server-core/commit/e7b0e05a1a2c003c03fb26dae8d5375131eb5492))
+- orphaned parts cause the Segment Timeline component to scroll beyond the timeline ([278aaf3](https://github.com/nrkno/tv-automation-server-core/commit/278aaf3fdb32202803ef19d4e9dc4e5bb109091f))
+- rename collection "packageContainerStatuses" -> "packageContainerPackageStatuses" ([5d2ca4f](https://github.com/nrkno/tv-automation-server-core/commit/5d2ca4fd03c286ac07bc96905c3df3e652a091a6))
+- showstyle variant config not being able to use sourcelayer or mapping controls ([31f0912](https://github.com/nrkno/tv-automation-server-core/commit/31f091282668e22dd3085e19e8212d088541c89f))
+- **Package manager:** remove unused fields from HTTP accessor settings ([20331c8](https://github.com/nrkno/tv-automation-server-core/commit/20331c8dd544568a1a962f746f86b520c7f001d4))
+- upd package-manager publication ([82d6587](https://github.com/nrkno/tv-automation-server-core/commit/82d6587ee3da6a6556b81455aaf2025107bf4a62))
 
 ## [1.35.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.35.0-in-testing.0...v1.35.0-in-testing.1) (2021-06-10)
 

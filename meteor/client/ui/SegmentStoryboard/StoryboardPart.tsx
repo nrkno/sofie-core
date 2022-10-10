@@ -84,7 +84,7 @@ export function StoryboardPart({
 		}
 
 		return ctx
-	}, [segment, part])
+	}, [segment, part, onContextMenu])
 
 	const highlightTimeout = useRef<number | null>(null)
 	const onHighlight = useCallback(
@@ -129,7 +129,7 @@ export function StoryboardPart({
 					},
 					className
 				),
-				//@ts-ignore A Data attribue is perfectly fine
+				//@ts-expect-error A Data attribue is perfectly fine
 				'data-layer-id': part.instance._id,
 				id: SegmentTimelinePartElementId + part.instance._id,
 				style: style,

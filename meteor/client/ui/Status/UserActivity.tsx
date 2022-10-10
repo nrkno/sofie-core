@@ -7,7 +7,9 @@ import moment from 'moment'
 import { PubSub } from '../../../lib/api/pubsub'
 import { useTranslation } from 'react-i18next'
 import { parse as queryStringParse } from 'query-string'
-import { Link } from 'react-router-dom'
+import { Link, useHistory, useLocation } from 'react-router-dom'
+import classNames from 'classnames'
+import Tooltip from 'rc-tooltip'
 
 const PARAM_DATE_FORMAT = 'YYYY-MM-DD'
 const PARAM_NAME_FROM_DATE = 'fromDate'
@@ -15,6 +17,7 @@ const PARAM_NAME_FROM_DATE = 'fromDate'
 interface IUserActionsListProps {
 	logItems: UserActionsLogItem[]
 	startDate?: number
+	highlighted?: string
 	onItemClick?: (item: UserActionsLogItem) => void
 	renderButtons?: (item: UserActionsLogItem) => React.ReactElement
 }
@@ -60,7 +63,10 @@ export function UserActionsList(props: IUserActionsListProps) {
 					)}#${anchorId}`
 					return (
 						<tr
-							className={props.onItemClick ? 'clickable' : undefined}
+							className={classNames({
+								clickable: props.onItemClick,
+								hl: props.highlighted === anchorId,
+							})}
 							key={unprotectString(msg._id)}
 							onClick={() => props.onItemClick && props.onItemClick(msg)}
 						>
@@ -72,9 +78,27 @@ export function UserActionsList(props: IUserActionsListProps) {
 							<td className="user-action-log__executionTime">
 								<table>
 									<tbody>
+										{msg.clientTime ? (
+											<tr>
+												<td>
+													<Tooltip
+														overlay={t('Time from platform user event to Action received by Core')}
+														placement="top"
+														align="left"
+													>
+														<span>{t('GUI')}:</span>
+													</Tooltip>
+												</td>
+												<td>{Math.round((msg.timestamp - msg.clientTime) * 100) / 100} ms</td>
+											</tr>
+										) : null}
 										{msg.executionTime ? (
 											<tr>
-												<td>{t('Core')}:</td>
+												<td>
+													<Tooltip overlay={t('Core + Worker processing time')} placement="top" align="left">
+														<span>{t('Core')}:</span>
+													</Tooltip>
+												</td>
 												<td>{msg.executionTime} ms</td>
 											</tr>
 										) : null}
@@ -143,6 +167,9 @@ function UserActivity() {
 		[]
 	)
 
+	const location = useLocation()
+	const history = useHistory()
+
 	useEffect(() => {
 		const queryParams = queryStringParse(location.search, {
 			arrayFormat: 'comma',
@@ -154,14 +181,18 @@ function UserActivity() {
 			setDateFrom(qsStartDate.startOf('day').valueOf())
 			setDateTo(qsStartDate.add(1, 'days').startOf('day').valueOf())
 		}
-	}, [])
+	}, [location])
 
 	function onDateChange(from: Time, to: Time) {
 		setDateFrom(from)
 		setDateTo(to)
+		location.search = `?${PARAM_NAME_FROM_DATE}=` + moment(from).format(PARAM_DATE_FORMAT)
+		history.replace(location)
 	}
 
 	const logItems = log.filter(({ timestamp }) => timestamp >= dateFrom && timestamp < dateTo)
+
+	const [highlighted, setHighlighted] = useState<string | undefined>(undefined)
 
 	function renderUserActivity() {
 		return (
@@ -169,22 +200,20 @@ function UserActivity() {
 				<div className="paging">
 					<DatePickerFromTo from={dateFrom} to={dateTo} onChange={onDateChange} />
 				</div>
-				<UserActionsList logItems={logItems} startDate={dateFrom} />
+				<UserActionsList logItems={logItems} startDate={dateFrom} highlighted={highlighted} />
 			</div>
 		)
 	}
 
-	const [found, setFound] = useState(false)
-
 	useLayoutEffect(() => {
-		if (!found && logItems.length && location.hash) {
-			const targetId = location.hash.substring(1)
+		const targetId = location.hash ? location.hash.substring(1) : undefined
+		if (highlighted !== targetId && logItems.length && targetId) {
 			const targetElement = document.getElementById(targetId)
 			if (!targetElement) return
 			targetElement.scrollIntoView()
-			setFound(true)
+			setHighlighted(targetId)
 		}
-	}, [found, logItems.length])
+	}, [location, location.hash, highlighted, logItems.length])
 
 	return (
 		<div className="mhl gutter external-message-status">

@@ -392,7 +392,7 @@ export abstract class WorkerParentBase {
 		// stop the thread
 		await this.terminateWorkerThread()
 
-		await Promise.all(this.#streams.map((s) => s.close()))
+		await Promise.all(this.#streams.map(async (s) => s.close()))
 
 		await this.#jobStream.close()
 	}

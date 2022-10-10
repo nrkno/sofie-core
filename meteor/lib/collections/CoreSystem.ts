@@ -3,7 +3,7 @@ import { LogLevel, protectString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import * as semver from 'semver'
-import { createMongoCollection } from './lib'
+import { createMongoCollection, MongoCursor } from './lib'
 import _ from 'underscore'
 import { CoreSystemId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
@@ -121,7 +121,7 @@ export function getCoreSystem(): ICoreSystem | undefined {
 export async function getCoreSystemAsync(): Promise<ICoreSystem | undefined> {
 	return CoreSystem.findOneAsync(SYSTEM_ID)
 }
-export function getCoreSystemCursor(options?: FindOptions<ICoreSystem>) {
+export function getCoreSystemCursor(options?: FindOptions<ICoreSystem>): MongoCursor<ICoreSystem> {
 	return CoreSystem.find(SYSTEM_ID, options)
 }
 export function setCoreSystemVersion(versionStr: string): string {

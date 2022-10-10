@@ -9,7 +9,6 @@ import { literal, protectString } from '../../../lib/lib'
 import {
 	MigrationStepInputResult,
 	BlueprintManifestType,
-	MigrationStep,
 	MigrationContextStudio,
 	MigrationContextShowStyle,
 	PlaylistTimingType,
@@ -54,7 +53,7 @@ describe('Migrations', () => {
 	}
 	function userInput(
 		migrationStatus: GetMigrationStatusResult,
-		userInput?: { [key: string]: any }
+		userValues?: { [key: string]: any }
 	): MigrationStepInputResult[] {
 		return _.compact(
 			_.map(migrationStatus.migration.manualInputs, (manualInput) => {
@@ -62,7 +61,7 @@ describe('Migrations', () => {
 					return literal<MigrationStepInputResult>({
 						stepId: manualInput.stepId,
 						attribute: manualInput.attribute,
-						value: userInput && userInput[manualInput.stepId],
+						value: userValues && userValues[manualInput.stepId],
 					})
 				}
 			})
@@ -79,11 +78,11 @@ describe('Migrations', () => {
 			migrationNeeded: true,
 
 			migration: {
-				canDoAutomaticMigration: true,
+				canDoAutomaticMigration: false, // Some "base" migrations require manual data entry
 				// manualInputs: [],
 				hash: expect.stringContaining(''),
 				automaticStepCount: expect.any(Number),
-				manualStepCount: 0,
+				manualStepCount: expect.any(Number),
 				ignoredStepCount: expect.any(Number),
 				partialMigration: true,
 				// chunks: expect.any(Array)
@@ -237,9 +236,9 @@ describe('Migrations', () => {
 		expect(migration.migrationNeeded).toEqual(true)
 		expect(migration.automaticStepCount).toEqual(3)
 
-		expect(_.find(migration.steps, (s) => s.id.match(/myCoreMockStep1/))).toBeTruthy()
-		expect(_.find(migration.steps, (s) => s.id.match(/myCoreMockStep2/))).toBeTruthy()
-		expect(_.find(migration.steps, (s) => s.id.match(/myCoreMockStep3/))).toBeTruthy()
+		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep1/))).toBeTruthy()
+		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep2/))).toBeTruthy()
+		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep3/))).toBeTruthy()
 
 		const studio = Studios.findOne() as Studio
 		expect(studio).toBeTruthy()
@@ -409,7 +408,7 @@ describe('Migrations', () => {
 
 		expect(migration.migrationNeeded).toEqual(true)
 
-		const _steps = migration.steps as MigrationStep[]
+		// const _steps = migration.steps as MigrationStep[]
 
 		// Note: This test is temporarily disabled, pending discussion regarding migrations
 		// /@nytamin 2020-08-27
@@ -444,7 +443,7 @@ describe('Migrations', () => {
 		expect(steps.indexOf(myCoreMockStep2)).toEqual(1)
 		expect(steps.indexOf(myCoreMockStep3)).toEqual(2)
 		// Then, the System-blueprints migration steps:
-		// Todo: to-be-implemented..
+		to-be-implemented..
 
 		// Then, the Studio-blueprints migration steps:
 		expect(steps.indexOf(myStudioMockStep1)).toEqual(3)

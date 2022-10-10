@@ -12,7 +12,7 @@ import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { RundownSystemStatus } from '../RundownView/RundownSystemStatus'
 import { DBStudio } from '../../../lib/collections/Studios'
-import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 
 interface ISystemStatusPanelProps {
 	studio: DBStudio
@@ -65,10 +65,20 @@ class SystemStatusPanelInner extends MeteorReactComponent<
 
 export const SystemStatusPanel = translateWithTracker<ISystemStatusPanelProps, IState, ISystemStatusPanelTrackedProps>(
 	(props: ISystemStatusPanelProps) => {
-		const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(props.playlist)
-		const firstRundown = rundownIds.length
-			? Rundowns.findOne({ playlistId: props.playlist._id, _id: rundownIds[0] })
-			: undefined
+		const rundownIds = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)
+		let firstRundown: DBRundown | undefined
+
+		if (props.playlist.rundownIdsInOrder.length > 0) {
+			firstRundown = Rundowns.findOne({
+				playlistId: props.playlist._id,
+				_id: props.playlist.rundownIdsInOrder[0],
+			})
+		} else if (rundownIds.length > 0) {
+			firstRundown = Rundowns.findOne({
+				playlistId: props.playlist._id,
+				_id: rundownIds[0],
+			})
+		}
 		return {
 			rundownIds,
 			firstRundown,

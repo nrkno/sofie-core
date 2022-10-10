@@ -619,8 +619,6 @@ export function innerStopPieces(
 	const stopAt = getCurrentTime() + (timeOffset || 0)
 	const relativeStopAt = stopAt - lastStartedPlayback
 
-	const stoppedInfiniteIds = new Set<PieceId>()
-
 	for (const pieceInstance of resolvedPieces) {
 		if (
 			!pieceInstance.userDuration &&
@@ -639,9 +637,6 @@ export function innerStopPieces(
 						userDuration: {
 							end: relativeStopAt,
 						},
-					}
-					if (pieceInstance.infinite) {
-						stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
 					}
 
 					cache.PieceInstances.update(

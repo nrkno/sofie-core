@@ -3,7 +3,7 @@ import { CoreHandler, CoreConfig } from './coreHandler'
 import { Logger } from 'winston'
 import { Process } from './process'
 import { InfluxConfig } from './influxdb'
-// import {Conductor, DeviceType} from 'timeline-state-resolver'
+import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 
 export interface Config {
 	process: ProcessConfig
@@ -19,7 +19,7 @@ export interface ProcessConfig {
 	certificates: string[]
 }
 export interface DeviceConfig {
-	deviceId: string
+	deviceId: PeripheralDeviceId
 	deviceToken: string
 }
 export class Connector {
@@ -64,6 +64,7 @@ export class Connector {
 					this.tsrHandler.destroy().catch(this._logger.error)
 				}
 			} catch (e) {
+				// Handle the edge case where destroy() throws synchronously:
 				this._logger.error(e)
 			}
 

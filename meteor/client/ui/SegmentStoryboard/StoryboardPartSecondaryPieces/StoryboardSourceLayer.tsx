@@ -220,7 +220,7 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 										hover: index === hoverIndex,
 									})}
 									style={{
-										//@ts-ignore: CSS Variable
+										//@ts-expect-error: CSS Variable
 										'--piece-playback-duration': `${piece.renderedDuration}ms`,
 										zIndex:
 											hoverIndex !== null

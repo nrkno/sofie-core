@@ -15,6 +15,8 @@ export class RandomMock {
 export function setup() {
 	return {
 		Random: RandomMock,
+		nanoid: RandomMock.id.bind(RandomMock),
+		customAlphabet: () => RandomMock.id.bind(RandomMock),
 	}
 }
 

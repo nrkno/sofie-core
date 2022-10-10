@@ -65,7 +65,6 @@ import './Connections'
 import './coreSystem'
 import './cronjobs'
 import './email'
-// import './api/ExternalMessageQueue' // called above
 // import './performanceMonitor' // called above
 
 // Setup publications and security:

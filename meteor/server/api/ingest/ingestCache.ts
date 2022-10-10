@@ -6,6 +6,7 @@ import { logger } from '../../../lib/logging'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { profiler } from '../profiler'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 interface LocalIngestBase {
 	modified: number
@@ -39,21 +40,21 @@ export class RundownIngestDataCache {
 		const ingestRundown = cachedRundown.data as LocalIngestRundown
 		ingestRundown.modified = cachedRundown.modified
 
-		const segmentMap = _.groupBy(this.documents, (e) => e.segmentId)
+		const segmentMap = _.groupBy(this.documents, (e) => unprotectString(e.segmentId) as string)
 		_.each(segmentMap, (objs) => {
 			const segmentEntry = objs.find((e) => e.type === IngestCacheType.SEGMENT)
 			if (segmentEntry) {
 				const ingestSegment = segmentEntry.data as LocalIngestSegment
 				ingestSegment.modified = segmentEntry.modified
 
-				_.each(objs, (entry) => {
+				for (const entry of objs) {
 					if (entry.type === IngestCacheType.PART) {
 						const ingestPart = entry.data as LocalIngestPart
 						ingestPart.modified = entry.modified
 
 						ingestSegment.parts.push(ingestPart)
 					}
-				})
+				}
 
 				ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 				ingestRundown.segments.push(ingestSegment)
@@ -82,14 +83,14 @@ export class RundownIngestDataCache {
 		const ingestSegment = segmentEntry.data as LocalIngestSegment
 		ingestSegment.modified = segmentEntry.modified
 
-		_.each(cacheEntries, (entry) => {
+		for (const entry of cacheEntries) {
 			if (entry.type === IngestCacheType.PART) {
 				const ingestPart = entry.data as LocalIngestPart
 				ingestPart.modified = entry.modified
 
 				ingestSegment.parts.push(ingestPart)
 			}
-		})
+		}
 
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 

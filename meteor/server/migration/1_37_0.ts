@@ -18,6 +18,8 @@ import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { Blueprints } from '../../lib/collections/Blueprints'
 
+// Release 37 (2021-12-09)
+
 let j = 0
 
 const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
@@ -420,7 +422,6 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 	},
 ]
 
-// Release 37
 export const addSteps = addMigrationSteps('1.37.0', [
 	{
 		id: 'ShowStyleBase.sourceLayers.clearKeyboardHotkey',

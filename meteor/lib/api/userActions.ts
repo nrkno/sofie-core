@@ -19,68 +19,85 @@ import { BucketAdLibAction } from '../collections/BucketAdlibActions'
 import { PeripheralDeviceId } from '../collections/PeripheralDevices'
 import { RundownBaselineAdLibActionId } from '../collections/RundownBaselineAdLibActions'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
+import { Time } from '../lib'
 import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		fromPartInstanceId: PartInstanceId | null
 	): Promise<ClientAPI.ClientResponse<void>>
 	setNext(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partId: PartId,
 		timeOffset?: number
 	): Promise<ClientAPI.ClientResponse<void>>
 	setNextSegment(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		segmentId: SegmentId | null
 	): Promise<ClientAPI.ClientResponse<void>>
 	moveNext(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partDelta: number,
 		segmentDelta: number
 	): Promise<ClientAPI.ClientResponse<PartId | null>>
 	prepareForBroadcast(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>>
 	resetRundownPlaylist(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>>
 	resetAndActivate(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal?: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
 	activate(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
-	deactivate(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+	deactivate(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId
+	): Promise<ClientAPI.ClientResponse<void>>
 	forceResetAndActivate(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
 	disableNextPiece(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		undo?: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
 	pieceTakeNow(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
 	): Promise<ClientAPI.ClientResponse<void>>
 	setInOutPoints(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partId: PartId,
 		pieceId: PieceId,
@@ -89,45 +106,52 @@ export interface NewUserActionAPI extends MethodContext {
 	): Promise<ClientAPI.ClientResponse<void>>
 	executeAction(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		actionDocId: AdLibActionId | RundownBaselineAdLibActionId,
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
 	): Promise<ClientAPI.ClientResponse<ExecuteActionResult>>
-	segmentAdLibPieceStart<T>(
+	segmentAdLibPieceStart(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adLibPieceId: PieceId,
 		queue: boolean
-	): Promise<ClientAPI.ClientResponse<T>>
+	): Promise<ClientAPI.ClientResponse<void>>
 	sourceLayerOnPartStop(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		sourceLayerIds: string[]
 	): Promise<ClientAPI.ClientResponse<void>>
-	baselineAdLibPieceStart<T>(
+	baselineAdLibPieceStart(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		adlibPieceId: PieceId,
 		queue: boolean
-	): Promise<ClientAPI.ClientResponse<T>>
+	): Promise<ClientAPI.ClientResponse<void>>
 	sourceLayerStickyPieceStart(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		sourceLayerId: string
 	): Promise<ClientAPI.ClientResponse<void>>
 	bucketAdlibImport(
 		_userEvent: string,
+		eventTime: Time,
 		bucketId: BucketId,
 		showStyleBaseId: ShowStyleBaseId,
 		ingestItem: IngestAdlib
 	): Promise<ClientAPI.ClientResponse<void>>
 	bucketAdlibStart(
 		_userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
 		bucketAdlibId: PieceId,
@@ -135,96 +159,154 @@ export interface NewUserActionAPI extends MethodContext {
 	): Promise<ClientAPI.ClientResponse<void>>
 	activateHold(
 		userEvent: string,
+		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
 		undo?: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
-	saveEvaluation(userEvent: string, evaluation: EvaluationBase): Promise<ClientAPI.ClientResponse<void>>
+	saveEvaluation(
+		userEvent: string,
+		eventTime: Time,
+		evaluation: EvaluationBase
+	): Promise<ClientAPI.ClientResponse<void>>
 	storeRundownSnapshot(
 		userEvent: string,
+		eventTime: Time,
 		playlistId: RundownPlaylistId,
 		reason: string,
 		full: boolean
 	): Promise<ClientAPI.ClientResponse<SnapshotId>>
-	removeRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+	removeRundownPlaylist(
+		userEvent: string,
+		eventTime: Time,
+		playlistId: RundownPlaylistId
+	): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundownPlaylist(
 		userEvent: string,
+		eventTime: Time,
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
-	DEBUG_crashStudioWorker(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	removeRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
-	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
-	unsyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>> //
-	mediaRestartWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
-	mediaAbortWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
-	mediaPrioritizeWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
-	mediaRestartAllWorkflows(userEvent: string): Promise<ClientAPI.ClientResponse<void>>
-	mediaAbortAllWorkflows(userEvent: string): Promise<ClientAPI.ClientResponse<void>>
+	DEBUG_crashStudioWorker(
+		userEvent: string,
+		eventTime: Time,
+		playlistId: RundownPlaylistId
+	): Promise<ClientAPI.ClientResponse<void>>
+	removeRundown(userEvent: string, eventTime: Time, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
+	resyncRundown(
+		userEvent: string,
+		eventTime: Time,
+		rundownId: RundownId
+	): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
+	unsyncRundown(userEvent: string, eventTime: Time, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>> //
+	mediaRestartWorkflow(
+		userEvent: string,
+		eventTime: Time,
+		workflowId: MediaWorkFlowId
+	): Promise<ClientAPI.ClientResponse<void>>
+	mediaAbortWorkflow(
+		userEvent: string,
+		eventTime: Time,
+		workflowId: MediaWorkFlowId
+	): Promise<ClientAPI.ClientResponse<void>>
+	mediaPrioritizeWorkflow(
+		userEvent: string,
+		eventTime: Time,
+		workflowId: MediaWorkFlowId
+	): Promise<ClientAPI.ClientResponse<void>>
+	mediaRestartAllWorkflows(userEvent: string, eventTime: Time): Promise<ClientAPI.ClientResponse<void>>
+	mediaAbortAllWorkflows(userEvent: string, eventTime: Time): Promise<ClientAPI.ClientResponse<void>>
 	packageManagerRestartExpectation(
 		userEvent: string,
+		eventTime: Time,
 		deviceId: PeripheralDeviceId,
 		workId: string
 	): Promise<ClientAPI.ClientResponse<void>>
-	packageManagerRestartAllExpectations(userEvent: string, studioId: StudioId): Promise<ClientAPI.ClientResponse<void>>
+	packageManagerRestartAllExpectations(
+		userEvent: string,
+		eventTime: Time,
+		studioId: StudioId
+	): Promise<ClientAPI.ClientResponse<void>>
 	packageManagerAbortExpectation(
 		userEvent: string,
+		eventTime: Time,
 		deviceId: PeripheralDeviceId,
 		workId: string
 	): Promise<ClientAPI.ClientResponse<void>>
 	packageManagerRestartPackageContainer(
 		userEvent: string,
+		eventTime: Time,
 		deviceId: PeripheralDeviceId,
 		containerId: string
 	): Promise<ClientAPI.ClientResponse<void>>
-	regenerateRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	generateRestartToken(userEvent: string): Promise<ClientAPI.ClientResponse<string>>
-	restartCore(userEvent: string, token: string): Promise<ClientAPI.ClientResponse<string>>
-	guiFocused(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
-	guiBlurred(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
-	bucketsRemoveBucket(userEvent: string, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
+	regenerateRundownPlaylist(
+		userEvent: string,
+		eventTime: Time,
+		playlistId: RundownPlaylistId
+	): Promise<ClientAPI.ClientResponse<void>>
+	generateRestartToken(userEvent: string, eventTime: Time): Promise<ClientAPI.ClientResponse<string>>
+	restartCore(userEvent: string, eventTime: Time, token: string): Promise<ClientAPI.ClientResponse<string>>
+	guiFocused(userEvent: string, eventTime: Time, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
+	guiBlurred(userEvent: string, eventTime: Time, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
+	bucketsRemoveBucket(userEvent: string, eventTime: Time, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsModifyBucket(
 		userEvent: string,
+		eventTime: Time,
 		id: BucketId,
 		bucket: Partial<Omit<Bucket, '_id'>>
 	): Promise<ClientAPI.ClientResponse<void>>
-	bucketsEmptyBucket(userEvent: string, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
+	bucketsEmptyBucket(userEvent: string, eventTime: Time, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
 	bucketsCreateNewBucket(
 		userEvent: string,
+		eventTime: Time,
 		studioId: StudioId,
 		name: string
 	): Promise<ClientAPI.ClientResponse<Bucket>>
-	bucketsRemoveBucketAdLib(userEvent: string, id: PieceId): Promise<ClientAPI.ClientResponse<void>>
-	bucketsRemoveBucketAdLibAction(userEvent: string, id: AdLibActionId): Promise<ClientAPI.ClientResponse<void>>
+	bucketsRemoveBucketAdLib(userEvent: string, eventTime: Time, id: PieceId): Promise<ClientAPI.ClientResponse<void>>
+	bucketsRemoveBucketAdLibAction(
+		userEvent: string,
+		eventTime: Time,
+		id: AdLibActionId
+	): Promise<ClientAPI.ClientResponse<void>>
 	bucketsModifyBucketAdLib(
 		userEvent: string,
+		eventTime: Time,
 		id: PieceId,
 		bucket: Partial<Omit<BucketAdLib, '_id'>>
 	): Promise<ClientAPI.ClientResponse<void>>
 	bucketsModifyBucketAdLibAction(
 		userEvent: string,
+		eventTime: Time,
 		id: AdLibActionId,
 		action: Partial<Omit<BucketAdLibAction, '_id'>>
 	): Promise<ClientAPI.ClientResponse<void>>
 	bucketsSaveActionIntoBucket(
 		userEvent: string,
+		eventTime: Time,
 		studioId: StudioId,
 		bucketId: BucketId,
 		action: AdLibActionCommon | BucketAdLibAction
 	): Promise<ClientAPI.ClientResponse<BucketAdLibAction>>
 	switchRouteSet(
 		userEvent: string,
+		eventTime: Time,
 		studioId: StudioId,
 		routeSetId: string,
 		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
 	moveRundown(
 		userEvent: string,
+		eventTime: Time,
 		rundownId: RundownId,
 		intoPlaylistId: RundownPlaylistId | null,
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	): Promise<ClientAPI.ClientResponse<void>>
-	restoreRundownOrder(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
+	restoreRundownOrder(
+		userEvent: string,
+		eventTime: Time,
+		playlistId: RundownPlaylistId
+	): Promise<ClientAPI.ClientResponse<void>>
 	disablePeripheralSubDevice(
 		userEvent: string,
+		eventTime: Time,
 		peripheralDeviceId: PeripheralDeviceId,
 		subDeviceId: string,
 		disable: boolean

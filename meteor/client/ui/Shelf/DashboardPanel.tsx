@@ -132,9 +132,9 @@ export function dashboardElementStyle(el: DashboardPositionableElement): React.C
 					: `calc(${-1 * el.y - 1} * var(--dashboard-button-grid-height))`
 				: getVerticalOffsetFromHeight(el),
 
-		fontSize: el.scale ? el.scale * 1.5 + 'em' : undefined,
-		// @ts-ignore
-		'--dashboard-panel-scale': el.scale || undefined,
+		// @ts-expect-error css variables
+		'--dashboard-panel-scale': el.scale || 1,
+		'--dashboard-panel-scaled-font-size': (el.scale || 1) * 1.5 + 'em',
 	}
 }
 
@@ -181,11 +181,11 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	componentDidMount() {
 		this.autorun(() => {
-			const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(this.props.playlist)
-			if (rundownIds.length > 0) {
+			const unorderedRundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(this.props.playlist)
+			if (unorderedRundownIds.length > 0) {
 				this.subscribe(PubSub.pieceInstances, {
 					rundownId: {
-						$in: rundownIds,
+						$in: unorderedRundownIds,
 					},
 					startedPlayback: {
 						$exists: true,
@@ -350,9 +350,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.isClearable)) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
-					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
+					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e, ts) =>
 						MeteorCall.userAction.executeAction(
 							e,
+							ts,
 							this.props.playlist._id,
 							action._id,
 							action.actionId,
@@ -361,9 +362,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						)
 					)
 				} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
-					doUserAction(t, e, UserAction.START_ADLIB, (e) =>
+					doUserAction(t, e, UserAction.START_ADLIB, (e, ts) =>
 						MeteorCall.userAction.segmentAdLibPieceStart(
 							e,
+							ts,
 							this.props.playlist._id,
 							currentPartInstanceId,
 							adlibPiece._id,
@@ -371,9 +373,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						)
 					)
 				} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e, ts) =>
 						MeteorCall.userAction.baselineAdLibPieceStart(
 							e,
+							ts,
 							this.props.playlist._id,
 							currentPartInstanceId,
 							adlibPiece._id,
@@ -394,8 +397,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	protected onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
 			const { t } = this.props
-			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
-				MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
+			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e, ts) =>
+				MeteorCall.userAction.sourceLayerStickyPieceStart(e, ts, this.props.playlist._id, sourceLayerId)
 			)
 		}
 	}
@@ -405,9 +408,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const playlistId = this.props.playlist._id
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e) =>
+			doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e, ts) =>
 				MeteorCall.userAction.sourceLayerOnPartStop(
 					e,
+					ts,
 					playlistId,
 					currentPartInstanceId,
 					_.map(sourceLayers, (sl) => sl._id)
@@ -432,9 +436,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.isClearable)) {
 					if (piece.isAction && piece.adlibAction) {
 						const action = piece.adlibAction
-						doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
+						doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e, ts) =>
 							MeteorCall.userAction.executeAction(
 								e,
+								ts,
 								this.props.playlist._id,
 								action._id,
 								action.actionId,
@@ -442,9 +447,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							)
 						)
 					} else if (!piece.isGlobal) {
-						doUserAction(t, e, UserAction.START_ADLIB, (e) =>
+						doUserAction(t, e, UserAction.START_ADLIB, (e, ts) =>
 							MeteorCall.userAction.segmentAdLibPieceStart(
 								e,
+								ts,
 								this.props.playlist._id,
 								currentPartInstanceId,
 								piece._id,
@@ -452,9 +458,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							)
 						)
 					} else if (piece.isGlobal && !piece.isSticky) {
-						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e, ts) =>
 							MeteorCall.userAction.baselineAdLibPieceStart(
 								e,
+								ts,
 								this.props.playlist._id,
 								currentPartInstanceId,
 								piece._id,
@@ -564,6 +571,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											heightScale={filter.buttonHeightScale}
 											displayStyle={filter.displayStyle}
 											showThumbnailsInList={filter.showThumbnailsInList}
+											disableHoverInspector={filter.disableHoverInspector ?? false}
 											toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
 											isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}
 											disabled={adLibPiece.disabled}
@@ -662,7 +670,7 @@ export const DashboardPanel = translateWithTracker<
 			nextTags,
 		}
 	},
-	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	(_data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
 )(DashboardPanelInner)

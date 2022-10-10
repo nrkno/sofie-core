@@ -214,7 +214,7 @@ export const ExternalFramePanel = withTranslation()(
 
 				targetRundown = Rundowns.findOne(currentPart.rundownId)
 			} else {
-				targetRundown = RundownPlaylistCollectionUtil.getRundowns(playlist)[0]
+				targetRundown = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)[0]
 			}
 
 			if (!targetRundown) {
@@ -222,9 +222,10 @@ export const ExternalFramePanel = withTranslation()(
 			}
 			const showStyleBaseId = targetRundown.showStyleBaseId
 
-			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e) =>
+			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e, ts) =>
 				MeteorCall.userAction.bucketAdlibImport(
 					e,
+					ts,
 					targetBucket ? targetBucket._id : protectString(''),
 					showStyleBaseId,
 					literal<IngestAdlib>({

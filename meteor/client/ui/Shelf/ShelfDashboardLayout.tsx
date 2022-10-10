@@ -31,8 +31,8 @@ import { StudioNamePanel } from './StudioNamePanel'
 import { SegmentNamePanel } from './SegmentNamePanel'
 import { PartNamePanel } from './PartNamePanel'
 import { ColoredBoxPanel } from './ColoredBoxPanel'
-import { KeyboardPreviewPanel } from './Keyboard/KeyboardPreviewPanel'
 import { Settings } from '../../../lib/Settings'
+import { KeyboardPreviewPanel } from './Keyboard/KeyboardPreviewPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout

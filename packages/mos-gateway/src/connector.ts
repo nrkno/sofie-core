@@ -2,6 +2,7 @@ import { MosHandler, MosConfig } from './mosHandler'
 import { CoreHandler, CoreConfig } from './coreHandler'
 import * as Winston from 'winston'
 import { Process } from './process'
+import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 
 export interface Config {
 	process: ProcessConfig
@@ -16,21 +17,21 @@ export interface ProcessConfig {
 	certificates: string[]
 }
 export interface DeviceConfig {
-	deviceId: string
+	deviceId: PeripheralDeviceId
 	deviceToken: string
 }
 export class Connector {
-	private mosHandler: MosHandler
-	private coreHandler: CoreHandler
-	private _config: Config
+	private mosHandler: MosHandler | undefined
+	private coreHandler: CoreHandler | undefined
+	private _config: Config | undefined
 	private _logger: Winston.Logger
-	private _process: Process
+	private _process: Process | undefined
 
-	constructor (logger: Winston.Logger) {
+	constructor(logger: Winston.Logger) {
 		this._logger = logger
 	}
 
-	init (config: Config): Promise<void> {
+	async init(config: Config): Promise<void> {
 		this._config = config
 
 		return Promise.resolve()
@@ -38,12 +39,12 @@ export class Connector {
 				this._logger.info('Initializing Process...')
 				return this.initProcess()
 			})
-			.then(() => {
+			.then(async () => {
 				this._logger.info('Process initialized')
 				this._logger.info('Initializing Core...')
 				return this.initCore()
 			})
-			.then(() => {
+			.then(async () => {
 				this._logger.info('Initializing Mos...')
 				return this.initMos()
 			})
@@ -59,27 +60,55 @@ export class Connector {
 				this.dispose().catch((e2) => this._logger.error(e2))
 
 				setTimeout(() => {
+					// eslint-disable-next-line no-process-exit
 					process.exit(0)
 				}, 10 * 1000)
 
 				return
 			})
 	}
-	initProcess () {
+	initProcess(): void {
 		this._process = new Process(this._logger)
+
+		if (!this._config) {
+			throw Error('_config is undefined!')
+		}
+
 		this._process.init(this._config.process)
 	}
-	initCore () {
+	async initCore(): Promise<void> {
+		if (!this._config) {
+			throw Error('_config is undefined!')
+		}
+
 		this.coreHandler = new CoreHandler(this._logger, this._config.device)
+
+		if (!this.coreHandler) {
+			throw Error('coreHandler is undefined!')
+		}
+
+		if (!this._process) {
+			throw Error('_process is undefined!')
+		}
+
 		return this.coreHandler.init(this._config.core, this._process)
 	}
-	initMos (): Promise<void> {
+	async initMos(): Promise<void> {
 		this.mosHandler = new MosHandler(this._logger)
+
+		if (!this._config) {
+			throw Error('_config is undefined!')
+		}
+
+		if (!this.coreHandler) {
+			throw Error('coreHandler is undefined!')
+		}
+
 		return this.mosHandler.init(this._config.mos, this.coreHandler)
 	}
-	dispose (): Promise<void> {
+	async dispose(): Promise<void> {
 		return (this.mosHandler ? this.mosHandler.dispose() : Promise.resolve())
-			.then(() => {
+			.then(async () => {
 				return this.coreHandler ? this.coreHandler.dispose() : Promise.resolve()
 			})
 			.then(() => {

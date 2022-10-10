@@ -5,7 +5,7 @@ import path from 'path'
 import { logger } from './logging'
 
 export function getAbsolutePath(): string {
-	// @ts-ignore Meteor.absolutePath is injected by the package ostrio:meteor-root
+	// @ts-expect-error Meteor.absolutePath is injected by the package ostrio:meteor-root
 	return Meteor.absolutePath
 }
 export function extractFunctionSignature(f: Function): string[] | undefined {

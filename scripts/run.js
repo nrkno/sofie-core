@@ -1,10 +1,11 @@
-const process = require('process');
+const process = require("process");
 const concurrently = require("concurrently");
 const args = process.argv.slice(2);
 
 const config = {
-	uiOnly: (args.indexOf('--ui-only') >= 0) || false
-}
+	uiOnly: args.indexOf("--ui-only") >= 0 || false,
+	inspectMeteor: args.indexOf("--inspect-meteor") >= 0 || false,
+};
 
 function watchPackages() {
 	return [
@@ -12,9 +13,9 @@ function watchPackages() {
 			command: "yarn watch",
 			cwd: "packages",
 			name: "PACKAGES-TSC",
-			prefixColor: 'red',
-		}
-	]
+			prefixColor: "red",
+		},
+	];
 }
 
 function watchWorker() {
@@ -23,9 +24,9 @@ function watchWorker() {
 			command: "yarn watch-for-worker-changes",
 			cwd: "packages",
 			name: "WORKER-RESTART",
-			prefixColor: 'green',
-		}
-	]
+			prefixColor: "green",
+		},
+	];
 }
 
 function watchMeteor() {
@@ -34,15 +35,17 @@ function watchMeteor() {
 			command: "meteor yarn watch-types -- --preserveWatchOutput",
 			cwd: "meteor",
 			name: "METEOR-TSC",
-			prefixColor: 'blue',
+			prefixColor: "blue",
 		},
 		{
-			command: "meteor yarn debug",
+			command:
+				"meteor yarn debug" +
+				(config.inspectMeteor ? " --inspect" : ""),
 			cwd: "meteor",
 			name: "METEOR",
-			prefixColor: 'cyan',
-		}
-	]
+			prefixColor: "cyan",
+		},
+	];
 }
 
 (async () => {
@@ -53,7 +56,7 @@ function watchMeteor() {
 				command: "yarn build:try || true",
 				cwd: "packages",
 				name: "PACKAGES-BUILD",
-				prefixColor: 'yellow',
+				prefixColor: "yellow",
 			},
 		],
 		{
@@ -61,7 +64,7 @@ function watchMeteor() {
 			killOthers: ["failure", "success"],
 			restartTries: 1,
 		}
-	);
+	).result;
 
 	// The main watching execution
 	await concurrently(
@@ -75,5 +78,5 @@ function watchMeteor() {
 			killOthers: ["failure", "success"],
 			restartTries: 0,
 		}
-	);
+	).result;
 })();

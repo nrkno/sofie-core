@@ -218,7 +218,6 @@ function saveIntoBase<DBInterface extends DBObj>(
 	const objectsToRemove = normalizeArrayToMap(oldDocs, '_id')
 
 	for (const o of newData) {
-		// const span2 = profiler.startSpan(`DBCache.saveIntoBase.${collectionName}.do.${o._id}`)
 		const oldObj = objectsToRemove.get(o._id)
 
 		if (oldObj) {
@@ -242,8 +241,6 @@ function saveIntoBase<DBInterface extends DBObj>(
 			changes.added.push(oInsert._id)
 		}
 		objectsToRemove.delete(o._id)
-
-		// span2?.end()
 	}
 	for (const obj of objectsToRemove.values()) {
 		if (obj) {

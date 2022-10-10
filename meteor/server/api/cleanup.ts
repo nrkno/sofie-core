@@ -1,6 +1,6 @@
-import { ProtectedString, getCurrentTime, waitForPromise, getCollectionKey } from '../../lib/lib'
+import { ProtectedString, getCurrentTime, getCollectionKey } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
-import { TransformedCollection, MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { Blueprints } from '../../lib/collections/Blueprints'
@@ -45,9 +45,9 @@ import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { AsyncMongoCollection } from '../../lib/collections/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-export function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanupResult | string {
+export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Promise<CollectionCleanupResult | string> {
 	if (actuallyCleanup) {
-		const notAllowedReason = isAllowedToRunCleanup()
+		const notAllowedReason = await isAllowedToRunCleanup()
 		if (notAllowedReason) return `Could not run the cleanup function due to: ${notAllowedReason}`
 	}
 
@@ -64,7 +64,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 
 	// Preparations: ------------------------------------------------------------------------------
 	const getAllIdsInCollection = <DBInterface extends { _id: ProtectedString<any> }>(
-		collection: TransformedCollection<DBInterface, DBInterface>
+		collection: AsyncMongoCollection<DBInterface>
 	): DBInterface['_id'][] => {
 		return collection
 			.find(
@@ -98,21 +98,21 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	}
 
 	const ownedByRundownId = <DBInterface extends { _id: ProtectedString<any>; rundownId: RundownId }>(
-		collection: TransformedCollection<DBInterface, DBInterface>
+		collection: AsyncMongoCollection<DBInterface>
 	): void => {
 		removeByQuery(collection as AsyncMongoCollection<any>, {
 			rundownId: { $nin: rundownIds },
 		})
 	}
 	const ownedByRundownPlaylistId = <DBInterface extends { _id: ProtectedString<any>; playlistId: RundownPlaylistId }>(
-		collection: TransformedCollection<DBInterface, DBInterface>
+		collection: AsyncMongoCollection<DBInterface>
 	): void => {
 		removeByQuery(collection as AsyncMongoCollection<any>, {
 			playlistId: { $nin: playlistIds },
 		})
 	}
 	const ownedByStudioId = <DBInterface extends { _id: ProtectedString<any>; studioId: StudioId }>(
-		collection: TransformedCollection<DBInterface, DBInterface>
+		collection: AsyncMongoCollection<DBInterface>
 	): void => {
 		removeByQuery(collection as AsyncMongoCollection<any>, {
 			studioId: { $nin: studioIds },
@@ -121,7 +121,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	const ownedByRundownIdOrStudioId = <
 		DBInterface extends { _id: ProtectedString<any>; rundownId?: RundownId; studioId: StudioId }
 	>(
-		collection: TransformedCollection<DBInterface, DBInterface>
+		collection: AsyncMongoCollection<DBInterface>
 	): void => {
 		removeByQuery(collection as AsyncMongoCollection<any>, {
 			$or: [
@@ -138,7 +138,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 	const ownedByOrganizationId = <
 		DBInterface extends { _id: ProtectedString<any>; organizationId: OrganizationId | null | undefined }
 	>(
-		collection: TransformedCollection<DBInterface, DBInterface>
+		collection: AsyncMongoCollection<DBInterface>
 	): void => {
 		removeByQuery(collection as AsyncMongoCollection<any>, {
 			$and: [
@@ -155,7 +155,7 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 		})
 	}
 	const ownedByDeviceId = <DBInterface extends { _id: ProtectedString<any>; deviceId: PeripheralDeviceId }>(
-		collection: TransformedCollection<DBInterface, DBInterface>
+		collection: AsyncMongoCollection<DBInterface>
 	): void => {
 		removeByQuery(collection as AsyncMongoCollection<any>, {
 			deviceId: { $nin: deviceIds },
@@ -390,15 +390,13 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 
 	return result
 }
-function isAllowedToRunCleanup(): string | void {
+async function isAllowedToRunCleanup(): Promise<string | void> {
 	// HACK: TODO - should we check this?
 	// if (isAnyQueuedWorkRunning()) return `Another sync-function is running, try again later`
 
-	const studios = Studios.find({}, { fields: { _id: 1 } }).fetch()
+	const studios = await Studios.findFetchAsync({}, { fields: { _id: 1 } })
 	for (const studio of studios) {
-		const activePlaylist: RundownPlaylist | undefined = waitForPromise(
-			getActiveRundownPlaylistsInStudioFromDb(studio._id)
-		)[0]
+		const activePlaylist: RundownPlaylist | undefined = await getActiveRundownPlaylistsInStudioFromDb(studio._id)[0]
 		if (activePlaylist) {
 			return `There is an active RundownPlaylist: "${activePlaylist.name}" in studio "${studio.name}" (${activePlaylist._id}, ${studio._id})`
 		}

@@ -48,6 +48,7 @@ export interface IDashboardButtonProps {
 	isSelected?: boolean
 	queueAllAdlibs?: boolean
 	showThumbnailsInList?: boolean
+	disableHoverInspector?: boolean
 	editableName?: boolean
 	onNameChanged?: (e: any, value: string) => void
 	toggleOnSingleClick?: boolean
@@ -69,7 +70,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	Translated<IDashboardButtonProps> & T,
 	IState
 > {
-	private objId: string
 	private element: HTMLDivElement | null = null
 	private positionAndSize: {
 		top: number
@@ -248,28 +248,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	private handleOnTouchStart = (_e: React.TouchEvent<HTMLDivElement>) => {
-		if (this.element) {
-			const { top, left, width, height } = this.element.getBoundingClientRect()
-			this.positionAndSize = {
-				top,
-				left,
-				width,
-				height,
-			}
-		}
-	}
-
 	private handleOnPointerLeave = (_e: React.PointerEvent<HTMLDivElement>) => {
-		this.setState({ isHovered: false })
-		if (this.hoverTimeout) {
-			Meteor.clearTimeout(this.hoverTimeout)
-			this.hoverTimeout = null
-		}
-		this.positionAndSize = null
-	}
-
-	private handleOnTouchEnd = (_e: React.TouchEvent<HTMLDivElement>) => {
 		this.setState({ isHovered: false })
 		if (this.hoverTimeout) {
 			Meteor.clearTimeout(this.hoverTimeout)
@@ -461,14 +440,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					width: isList
 						? 'calc(100% - 8px)'
 						: this.props.widthScale
-						? //@ts-ignore: widthScale is in a weird state between a number and something else
-						  //		      because of the optional generic type argument
-						  (this.props.widthScale as number) * DEFAULT_BUTTON_WIDTH + 'em'
+						? (this.props.widthScale as number) * DEFAULT_BUTTON_WIDTH + 'em'
 						: undefined,
 					height:
 						!isList && !!this.props.heightScale
-							? //@ts-ignore
-							  (this.props.heightScale as number) * DEFAULT_BUTTON_HEIGHT + 'em'
+							? (this.props.heightScale as number) * DEFAULT_BUTTON_HEIGHT + 'em'
 							: undefined,
 				}}
 				onClick={this.handleClick}
@@ -487,7 +463,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				data-obj-id={this.props.piece._id}
 			>
 				<div className="dashboard-panel__panel__button__content">
-					{!this.props.layer
+					{this.props.disableHoverInspector || !this.props.layer
 						? null
 						: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
 						? // VT should have thumbnails in "Button" layout.

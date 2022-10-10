@@ -58,9 +58,6 @@ export class AccountsBaseMock {
 	static onEnrollmentLink?: () => void
 	static onEmailVerificationLink?: () => void
 	static emailTemplates?: () => void
-
-	// loginServicesConfigured()
-	// loginServiceConfiguration.find();
 }
 export function setup() {
 	return {

@@ -9,6 +9,7 @@ import * as _ from 'underscore'
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
 import { runIngestOperation } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
+import { DEFAULT_NRCS_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 
 export namespace GenericDeviceActions {
 	export async function reloadRundown(
@@ -20,7 +21,7 @@ export namespace GenericDeviceActions {
 		try {
 			const ingestRundown: IngestRundown | null = await PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 				peripheralDevice._id,
-				10 * 1000, // 10 seconds, sometimes the NRCS is pretty slow in returning a response
+				DEFAULT_NRCS_TIMEOUT_TIME + 1000,
 				'triggerReloadRundown',
 				rundown.externalId
 			)

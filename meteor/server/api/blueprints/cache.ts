@@ -10,7 +10,10 @@ export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
 		sandbox: {},
 	})
 
-	const entry = vm.run(blueprint.code, `db/blueprint/${blueprint.name || blueprint._id}.js`)
+	const entry = vm.run(
+		'__run_result = ' + blueprint.code + '; __run_result || blueprint',
+		`db/blueprint/${blueprint.name || blueprint._id}.js`
+	)
 	const manifest: SomeBlueprintManifest = entry.default
 
 	// Wrap the functions, to emit better errors

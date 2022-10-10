@@ -4,7 +4,7 @@
 	"license": "MIT",
 	"private": true,
 	"engines": {
-		"node": "^14.18 || ^16.14"
+		"node": "^14.19 || ^16.14"
 	},
 	"scripts": {
 		"postinstall": "yarn install:packages && yarn install:meteor",
@@ -12,6 +12,7 @@
 		"install:packages": "cd packages && yarn install",
 		"start": "yarn install && yarn dev",
 		"dev": "node ./scripts/run.js",
+		"restart:meteor": "node ./scripts/meteor-force-restart.js",
 		"build:packages": "cd packages && yarn build",
 		"test:packages": "cd packages && yarn test",
 		"lint:packages": "cd packages && yarn lint",
@@ -32,9 +33,9 @@
 		"test-all": "yarn install && yarn build:packages && yarn check-types:meteor && yarn lint:packages && yarn lint:meteor && yarn test:packages && yarn test:meteor"
 	},
 	"devDependencies": {
-		"concurrently": "^6.4.0",
+		"concurrently": "^7.4.0",
 		"rimraf": "^3.0.2",
-		"semver": "^7.3.5",
-		"snyk-nodejs-lockfile-parser": "^1.38.0"
+		"semver": "^7.3.7",
+		"snyk-nodejs-lockfile-parser": "^1.43.1"
 	}
 }

@@ -3,8 +3,14 @@
 	"exclude": [
 		"node_modules/**"
 	],
-	"include": ["examples/client.ts"],
+	"include": [
+		"src/**/*.ts",
+		"examples/*.ts"
+	],
 	"compilerOptions": {
-		"types": ["node", "jest"]
+		"types": [
+			"jest",
+			"node"
+		]
 	}
 }

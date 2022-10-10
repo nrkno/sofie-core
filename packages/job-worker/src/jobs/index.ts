@@ -12,7 +12,8 @@ import { ApmSpan } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { DBShowStyleBase, ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
@@ -27,14 +28,7 @@ export interface WorkerJob<TRes> {
 	complete: Promise<TRes>
 }
 
-export interface JobContext {
-	readonly directCollections: Readonly<IDirectCollections>
-
-	readonly studioId: StudioId
-	readonly studio: ReadonlyDeep<DBStudio>
-
-	readonly studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
-
+export interface JobContext extends StudioCacheContext {
 	/** Internal: Track a cache, to check it was saved at the end of the job */
 	trackCache(cache: ReadOnlyCacheBase<any>): void
 
@@ -50,6 +44,18 @@ export interface JobContext {
 	queueStudioJob<T extends keyof StudioJobFunc>(name: T, data: Parameters<StudioJobFunc[T]>[0]): Promise<void>
 	queueEventJob<T extends keyof EventsJobFunc>(name: T, data: Parameters<EventsJobFunc[T]>[0]): Promise<void>
 
+	/** Hack: fast-track the timeline out to the playout-gateway. */
+	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void
+}
+
+export interface StudioCacheContext {
+	readonly directCollections: Readonly<IDirectCollections>
+
+	readonly studioId: StudioId
+	readonly studio: ReadonlyDeep<DBStudio>
+
+	readonly studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
+
 	getStudioBlueprintConfig(): ProcessedStudioConfig
 
 	getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBase>>>
@@ -63,7 +69,4 @@ export interface JobContext {
 
 	getShowStyleBlueprint(id: ShowStyleBaseId): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>>
 	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ShowStyleCompound>): ProcessedShowStyleConfig
-
-	/** Hack: fast-track the timeline out to the playout-gateway. */
-	hackPublishTimelineToFastTrack(newTimeline: TimelineComplete): void
 }

@@ -84,9 +84,11 @@ function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VE
 
 	let TSR_VERSION = ''
 	try {
+		// eslint-disable-next-line node/no-missing-require
 		TSR_VERSION = require('../../node_modules/timeline-state-resolver-types/package.json').version
 	} catch (e) {
-		TSR_VERSION = require('../../../packages/node_modules/timeline-state-resolver-types/package.json').version
+		TSR_VERSION =
+			require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json').version
 	}
 
 	return {
@@ -110,6 +112,7 @@ export function setupMockPeripheralDevice(
 		name: 'mockDevice',
 		organizationId: null,
 		studioId: studio ? studio._id : undefined,
+		settings: {},
 
 		category: category,
 		type: type,
@@ -372,7 +375,7 @@ export async function setupMockShowStyleBlueprint(
 				getShowStyleVariantId: (): string | null => {
 					return SHOW_STYLE_VARIANT_ID
 				},
-				getRundown: (context: IShowStyleContext, ingestRundown: IngestRundown): BlueprintResultRundown => {
+				getRundown: (_context: IShowStyleContext, ingestRundown: IngestRundown): BlueprintResultRundown => {
 					const rundown: IBlueprintRundown = {
 						externalId: ingestRundown.externalId,
 						name: ingestRundown.name,
@@ -395,7 +398,7 @@ export async function setupMockShowStyleBlueprint(
 						baseline: { timelineObjects: [] },
 					}
 				},
-				getSegment: (context: unknown, ingestSegment: IngestSegment): BlueprintResultSegment => {
+				getSegment: (_context: unknown, ingestSegment: IngestSegment): BlueprintResultSegment => {
 					const segment: IBlueprintSegment = {
 						name: ingestSegment.name ? ingestSegment.name : ingestSegment.externalId,
 						metaData: ingestSegment.payload,
@@ -560,7 +563,6 @@ export function setupDefaultRundown(
 		},
 
 		playlistId: playlistId,
-		_rank: 0,
 
 		_id: rundownId,
 		externalId: 'MOCK_RUNDOWN_' + rundownId,
@@ -579,6 +581,12 @@ export function setupDefaultRundown(
 		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)
+
+	RundownPlaylists.update(playlistId, {
+		$push: {
+			rundownIdsInOrder: rundown._id,
+		},
+	})
 
 	const segment0: DBSegment = {
 		_id: protectString(rundownId + '_segment0'),

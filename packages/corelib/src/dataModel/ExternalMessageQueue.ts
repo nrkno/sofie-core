@@ -27,7 +27,7 @@ export interface ExternalMessageQueueObj extends ProtectedStringProperties<IBlue
 	/** Time of succeeded send: */
 	sent?: Time
 	/** Reply from receiver */
-	sentReply?: any
+	sentReply?: string
 	/** If true, wont retry any more */
 	errorFatal?: boolean
 	/** If true, wont retry (can be set from UI) */

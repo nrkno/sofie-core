@@ -18,13 +18,14 @@ export const MeteorMethodSignatures: { [key: string]: string[] } = {}
 /** All methods */
 export const AllMeteorMethods: string[] = []
 
-let runningMethods: {
+export interface RunningMethods {
 	[methodId: string]: {
 		method: string
 		startTime: number
 		i: number
 	}
-} = {}
+}
+let runningMethods: RunningMethods = {}
 let runningMethodsId: number = 0
 
 function getAllClassMethods(myClass: any): string[] {
@@ -52,6 +53,7 @@ export type ReplaceOptionalWithNullInMethodArguments<T> = {
 }
 
 export function registerClassToMeteorMethods(
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	methodEnum: any,
 	orgClass: typeof MethodContextAPI,
 	secret?: boolean,
@@ -135,16 +137,16 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 			AllMeteorMethods.push(methodName)
 		}
 	})
-	// @ts-ignore: incompatible due to userId
+	// @ts-expect-error: incompatible due to userId
 	Meteor.methods(methods)
 }
-export function getRunningMethods() {
+export function getRunningMethods(): RunningMethods {
 	return runningMethods
 }
-export function resetRunningMethods() {
+export function resetRunningMethods(): void {
 	runningMethods = {}
 }
 let _suppressExtraErrorLogging: boolean = false
-export function suppressExtraErrorLogging(value: boolean) {
+export function suppressExtraErrorLogging(value: boolean): void {
 	_suppressExtraErrorLogging = value
 }

@@ -44,6 +44,9 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 	}
 
 	render() {
+		const label = this.props.piece.instance.piece.name
+		const duration = this.renderDuration()
+
 		return (
 			!this.props.isTooSmallForText && (
 				<>
@@ -54,14 +57,19 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 							style={this.getItemLabelOffsetLeft()}
 						>
 							<span
-								className={ClassNames(
-									'segment-timeline__piece__label',
-									'with-duration',
-									`with-duration--${this.getSourceDurationLabelAlignment()}`
-								)}
+								className={ClassNames('segment-timeline__piece__label', {
+									'with-duration': !!duration,
+									[`with-duration--${this.getSourceDurationLabelAlignment()}`]: !!duration,
+								})}
 							>
-								<span>{this.props.piece.instance.piece.name}</span>
-								{this.renderDuration()}
+								{duration ? (
+									<>
+										<span>{label}</span>
+										{duration}
+									</>
+								) : (
+									label
+								)}
 							</span>
 						</span>
 					) : null}
