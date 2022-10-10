@@ -107,8 +107,8 @@ export function getPieceEnableInsidePart(
 	if (pieceInstance.userDuration) {
 		delete pieceEnable.duration
 
-		if ('end' in pieceInstance.userDuration) {
-			pieceEnable.end = pieceInstance.userDuration.end
+		if ('endRelativeToPart' in pieceInstance.userDuration) {
+			pieceEnable.end = pieceInstance.userDuration.endRelativeToPart
 		} else {
 			// This will be fixed later
 			pieceEnable.end = 'now'

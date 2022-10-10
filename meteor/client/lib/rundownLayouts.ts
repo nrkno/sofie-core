@@ -84,10 +84,10 @@ export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, s
 							end = pieceInstance.plannedStoppedPlayback
 						} else if (
 							pieceInstance.userDuration &&
-							'end' in pieceInstance.userDuration &&
-							typeof pieceInstance.userDuration.end === 'number'
+							'endRelativeToPart' in pieceInstance.userDuration &&
+							typeof pieceInstance.userDuration.endRelativeToPart === 'number'
 						) {
-							end = pieceInstance.userDuration.end
+							end = pieceInstance.userDuration.endRelativeToPart
 						} else if (
 							pieceInstance.userDuration &&
 							'endRelativeToNow' in pieceInstance.userDuration &&

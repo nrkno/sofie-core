@@ -644,7 +644,7 @@ export function innerStopPieces(
 							}
 						} else {
 							p.userDuration = {
-								end: relativeStopAt,
+								endRelativeToPart: relativeStopAt,
 							}
 						}
 						return p

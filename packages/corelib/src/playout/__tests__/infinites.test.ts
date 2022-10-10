@@ -623,7 +623,7 @@ describe('Infinites', () => {
 						PieceLifespan.OutOnRundownChange,
 						true
 					),
-					userDuration: { end: 5000 },
+					userDuration: { endRelativeToPart: 5000 },
 				},
 				{
 					...createPieceInstanceAsInfinite(

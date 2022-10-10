@@ -58,7 +58,7 @@ export interface PieceInstance
 	userDuration?:
 		| {
 				/** The time relative to the part (milliseconds since start of part) */
-				end: number
+				endRelativeToPart: number
 		  }
 		| {
 				/** The time relative to 'now' (ms since 'now') */

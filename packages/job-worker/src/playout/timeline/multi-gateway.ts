@@ -230,13 +230,13 @@ function deNowifyCurrentPieces(
 		if (p.partInstanceId === currentPartInstance._id && p.userDuration && 'endRelativeToNow' in p.userDuration) {
 			const relativeToNow = p.userDuration.endRelativeToNow
 			p.userDuration = {
-				end: relativeToNow + nowInPart,
+				endRelativeToPart: relativeToNow + nowInPart,
 			}
 
 			// Update the piece control obj
 			const controlObj = timelineObjsMap[getPieceControlObjectId(p)]
 			if (controlObj && !Array.isArray(controlObj.enable) && controlObj.enable.end === 'now') {
-				controlObj.enable.end = p.userDuration.end
+				controlObj.enable.end = p.userDuration.endRelativeToPart
 			}
 
 			// If the piece is an infinite, there may be a now in the parent group
@@ -326,7 +326,9 @@ function setPlannedTimingsOnPieceInstance(
 		}
 
 		const userDurationEnd =
-			pieceInstance.userDuration && 'end' in pieceInstance.userDuration ? pieceInstance.userDuration.end : null
+			pieceInstance.userDuration && 'endRelativeToPart' in pieceInstance.userDuration
+				? pieceInstance.userDuration.endRelativeToPart
+				: null
 		const plannedEnd =
 			userDurationEnd ??
 			(pieceInstance.piece.enable.duration ? plannedStart + pieceInstance.piece.enable.duration : partPlannedEnd)

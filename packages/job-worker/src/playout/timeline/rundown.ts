@@ -282,8 +282,9 @@ function generateCurrentInfinitePieceObjects(
 
 		// If an end time has been set by a hotkey, then update the duration to be correct
 		if (pieceInstance.userDuration && pieceInstance.piece.enable.start !== 'now') {
-			if ('end' in pieceInstance.userDuration) {
-				infiniteGroup.enable.duration = pieceInstance.userDuration.end - pieceInstance.piece.enable.start
+			if ('endRelativeToPart' in pieceInstance.userDuration) {
+				infiniteGroup.enable.duration =
+					pieceInstance.userDuration.endRelativeToPart - pieceInstance.piece.enable.start
 			} else {
 				infiniteGroup.enable.end = 'now'
 			}

@@ -202,8 +202,8 @@ export function getResolvedPieces(
 				start: piece.piece.enable.start,
 			}
 
-			if ('end' in piece.userDuration) {
-				controlObjEnable.end = piece.userDuration.end
+			if ('endRelativeToPart' in piece.userDuration) {
+				controlObjEnable.end = piece.userDuration.endRelativeToPart
 			} else {
 				controlObjEnable.end = nowInPart + piece.userDuration.endRelativeToNow
 			}

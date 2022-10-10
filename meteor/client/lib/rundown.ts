@@ -481,8 +481,8 @@ export namespace RundownUtils {
 							start: piece.piece.enable.start,
 						}
 
-						if ('end' in piece.userDuration) {
-							controlObjEnable.end = piece.userDuration.end
+						if ('endRelativeToPart' in piece.userDuration) {
+							controlObjEnable.end = piece.userDuration.endRelativeToPart
 						} else {
 							controlObjEnable.end = nowInPart + piece.userDuration.endRelativeToNow
 						}
@@ -640,8 +640,8 @@ export namespace RundownUtils {
 			const resolveDuration = (item: PieceExtended, nowInPart: number): number => {
 				if (item.instance.userDuration && item.instance.plannedStartedPlayback) {
 					const end =
-						'end' in item.instance.userDuration
-							? item.instance.userDuration.end
+						'endRelativeToPart' in item.instance.userDuration
+							? item.instance.userDuration.endRelativeToPart
 							: item.instance.userDuration.endRelativeToNow + nowInPart
 
 					const duration = end - item.instance.plannedStartedPlayback

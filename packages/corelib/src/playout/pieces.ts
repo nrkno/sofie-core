@@ -35,7 +35,6 @@ export function createPieceGroupAndCap(
 		| 'resolvedEndCap'
 		| 'priority'
 		| 'partInstanceId'
-		| 'userDuration'
 		| 'dynamicallyInserted'
 	>,
 	controlObjEnable: TSR.Timeline.TimelineEnable,
@@ -47,19 +46,6 @@ export function createPieceGroupAndCap(
 	childGroup: TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>
 	capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>
 } {
-	// if (pieceEnable) {
-	// 	pieceEnable = clone(pieceEnable)
-	// } else {
-	// 	if (pieceInstance.userDuration) {
-	// 		pieceEnable = {
-	// 			start: pieceInstance.piece.enable.start,
-	// 			end: pieceInstance.userDuration.end,
-	// 		}
-	// 	} else {
-	// 		pieceEnable = clone(pieceInstance.piece.enable)
-	// 	}
-	// }
-
 	const controlObj = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
 		id: getPieceControlObjectId(pieceInstance),
 		pieceInstanceId: unprotectString(pieceInstance._id),
