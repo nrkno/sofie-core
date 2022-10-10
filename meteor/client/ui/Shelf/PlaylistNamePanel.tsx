@@ -13,7 +13,7 @@ import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Rundowns } from '../../../lib/clientCollections'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { logger } from '@sofie-automation/job-worker/dist/logging'
+import { logger } from '../../../lib/logging'
 
 interface IPlaylistNamePanelProps {
 	visible?: boolean
