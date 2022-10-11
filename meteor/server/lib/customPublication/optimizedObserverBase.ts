@@ -4,20 +4,31 @@ import { clone, createManualPromise, lazyIgnore, ProtectedString } from '../../.
 import { logger } from '../../logging'
 import { CustomPublish, CustomPublishChanges } from './publish'
 
+interface OptimizedObserverWrapper<TData extends { _id: ProtectedString<any> }, TArgs, TContext, UpdateProps> {
+	/** Subscribers ready for data updates */
+	activeSubscribers: Array<CustomPublish<TData>>
+	/** New subscribers that are awaiting their initial data */
+	newSubscribers: Array<CustomPublish<TData>>
+
+	/** When set, the observer is initialised, and interested in being told when subscribers join or leave */
+	subscribersChanged?: () => void
+
+	/** The innards of the observer, this takes some time to initialize, but we can let subscribers join and leave while it runs */
+	observer: Promise<OptimizedObserver<TData, TArgs, TContext, UpdateProps>>
+}
+
 interface OptimizedObserver<TData extends { _id: ProtectedString<any> }, TArgs, TContext, UpdateProps> {
 	args: ReadonlyDeep<TArgs>
 	context: Partial<TContext>
 	lastData: TData[]
 	triggerUpdate: TriggerUpdate<UpdateProps>
 	stop: () => void
-	dataReceivers: Array<CustomPublish<TData>>
-	newDataReceivers: Array<CustomPublish<TData>>
 }
 
-/** Current fully setup optimized observers */
-const optimizedObservers: Record<string, OptimizedObserver<any, unknown, unknown, unknown>> = {}
-/** Setup in progress optimized observers */
-const pendingObservers: Record<string, Promise<OptimizedObserver<any, unknown, unknown, unknown>>> = {}
+type AnyOptimizedObserverWrapper = OptimizedObserverWrapper<any, unknown, unknown, unknown>
+
+/** Optimized observers */
+const optimizedObservers: Record<string, AnyOptimizedObserverWrapper> = {}
 
 export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProps: Partial<UpdateProps>) => void
 
@@ -54,20 +65,48 @@ export async function setUpOptimizedObserverInner<
 	receiver: CustomPublish<PublicationDoc>,
 	lazynessDuration: number = 3 // ms
 ): Promise<void> {
-	const existingObserver = (optimizedObservers[identifier] || (await pendingObservers[identifier])) as
-		| OptimizedObserver<PublicationDoc, Args, State, UpdateProps>
+	/**
+	 * Note: the contents of this function get referenced while the observer is running, even if the original subscriber has left.
+	 * So remember to think about this in the context of the observer
+	 */
+	let thisObserver = optimizedObservers[identifier] as
+		| OptimizedObserverWrapper<PublicationDoc, Args, State, UpdateProps>
 		| undefined
 
-	if (existingObserver) {
-		// There is an existing preparedObserver
+	// Once this receiver stops, this will be called to remove it from the subscriber lists
+	function removeReceiver() {
+		if (thisObserver) {
+			const i = thisObserver.activeSubscribers.indexOf(receiver)
+			if (i !== -1) thisObserver.activeSubscribers.splice(i, 1)
 
-		// Mark the received as new
-		existingObserver.newDataReceivers.push(receiver)
+			const i2 = thisObserver.newSubscribers.indexOf(receiver)
+			if (i2 !== -1) thisObserver.newSubscribers.splice(i2, 1)
 
-		// Force an update to ensure the new receiver gets data soon
-		existingObserver.triggerUpdate({})
+			// clean up if empty:
+			if (
+				!thisObserver.activeSubscribers.length &&
+				!thisObserver.newSubscribers.length &&
+				thisObserver.subscribersChanged
+			) {
+				thisObserver.subscribersChanged()
+			}
+		}
+	}
+
+	if (thisObserver) {
+		// There is an existing optimizedObserver
+
+		// Add the new subscriber
+		thisObserver.newSubscribers.push(receiver)
+		receiver.onStop(() => removeReceiver())
+
+		// If the optimizedObserver is setup, we can notify it that we need data
+		if (thisObserver.subscribersChanged) thisObserver.subscribersChanged()
+
+		// Wait for the observer to be ready
+		await thisObserver.observer
 	} else {
-		let thisObserver: OptimizedObserver<PublicationDoc, Args, State, UpdateProps> | undefined
+		let thisInner: OptimizedObserver<PublicationDoc, Args, State, UpdateProps> | undefined
 		let updateIsRunning = true
 
 		let hasPendingUpdate = false
@@ -96,17 +135,18 @@ export async function setUpOptimizedObserverInner<
 						// Mark the update as running
 						updateIsRunning = true
 
-						if (thisObserver) {
+						if (thisObserver && thisInner) {
+							if (!thisObserver.activeSubscribers.length && !thisObserver.newSubscribers.length) {
+								delete optimizedObservers[identifier]
+								thisInner.stop()
+							}
+
 							// Fetch and clear the pending updates
 							const newProps = pendingUpdate as ReadonlyDeep<Partial<UpdateProps>>
 							pendingUpdate = {}
 
 							const start = Date.now()
-							const [newDocs, changes] = await manipulateData(
-								thisObserver.args,
-								thisObserver.context,
-								newProps
-							)
+							const [newDocs, changes] = await manipulateData(thisInner.args, thisInner.context, newProps)
 							const manipulateTime = Date.now()
 							const manipulateDuration = manipulateTime - start
 
@@ -115,19 +155,19 @@ export async function setUpOptimizedObserverInner<
 
 							// If result === null, that means no changes were made
 							if (hasChanges) {
-								for (const dataReceiver of thisObserver.dataReceivers) {
+								for (const dataReceiver of thisObserver.activeSubscribers) {
 									dataReceiver.changed(changes)
 								}
-								thisObserver.lastData = newDocs
+								thisInner.lastData = newDocs
 							}
-							if (thisObserver.newDataReceivers.length) {
-								const newDataReceivers = thisObserver.newDataReceivers
+							if (thisObserver.newSubscribers.length) {
+								const newDataReceivers = thisObserver.newSubscribers
 								// Move to 'active' receivers
-								thisObserver.dataReceivers.push(...newDataReceivers)
-								thisObserver.newDataReceivers = []
+								thisObserver.activeSubscribers.push(...newDataReceivers)
+								thisObserver.newSubscribers = []
 								// send initial data
 								for (const dataReceiver of newDataReceivers) {
-									dataReceiver.init(thisObserver.lastData)
+									dataReceiver.init(thisInner.lastData)
 								}
 							}
 
@@ -139,7 +179,7 @@ export async function setUpOptimizedObserverInner<
 
 							if (totalTime > SLOW_OBSERVE_TIME) {
 								logger.debug(
-									`Slow optimized observer ${identifier}. Total: ${totalTime}, manipulate: ${manipulateDuration}, publish: ${publishTime} (receivers: ${thisObserver.dataReceivers.length})`
+									`Slow optimized observer ${identifier}. Total: ${totalTime}, manipulate: ${manipulateDuration}, publish: ${publishTime} (receivers: ${thisObserver.activeSubscribers.length})`
 								)
 							}
 						}
@@ -159,18 +199,26 @@ export async function setUpOptimizedObserverInner<
 			)
 		}
 
-		// use pendingObservers, to ensure a second doesnt get created in parallel
-		const manualPromise = createManualPromise<OptimizedObserver<any, unknown, unknown, unknown>>()
-		pendingObservers[identifier] = manualPromise
-		manualPromise.catch(() => {
-			// Ensure it doesn't go uncaught
-		})
+		const manualPromise = createManualPromise<OptimizedObserver<PublicationDoc, Args, State, UpdateProps>>()
+
+		// Store the optimizedObserver, so that other subscribers can join onto this without creating their own
+		thisObserver = optimizedObservers[identifier] = {
+			newSubscribers: [receiver],
+			activeSubscribers: [],
+			observer: manualPromise,
+		}
+		receiver.onStop(() => removeReceiver())
+
+		/**
+		 * We can now do async things
+		 */
 
 		try {
+			// Setup the mongo observers
 			const args = clone<ReadonlyDeep<Args>>(args0)
 			const observers = await setupObservers(args, triggerUpdate)
 
-			thisObserver = {
+			thisInner = {
 				args: args,
 				context: {},
 				lastData: [],
@@ -178,14 +226,31 @@ export async function setUpOptimizedObserverInner<
 				stop: () => {
 					observers.forEach((observer) => observer.stop())
 				},
-				dataReceivers: [receiver],
-				newDataReceivers: [],
 			}
 
-			// Do the intial data load and emit
-			const [result] = await manipulateData(args, thisObserver.context, undefined)
-			thisObserver.lastData = result
-			receiver.init(thisObserver.lastData)
+			// Do the intial data load
+			const [result] = await manipulateData(args, thisInner.context, undefined)
+			thisInner.lastData = result
+
+			const newDataReceivers = thisObserver.newSubscribers
+			if (newDataReceivers.length === 0) {
+				// There is no longer any subscriber to this
+				delete optimizedObservers[identifier]
+				thisInner.stop()
+
+				manualPromise.manualReject(new Meteor.Error(500, 'All subscribers disappeared!'))
+				return
+			}
+
+			// Let subscribers notify that they have unsubscribe
+			thisObserver.subscribersChanged = () => triggerUpdate({})
+
+			// Promote the initial new subscribers to active
+			thisObserver.newSubscribers = []
+			thisObserver.activeSubscribers = newDataReceivers
+			for (const receiver of newDataReceivers) {
+				receiver.init(result)
+			}
 			updateIsRunning = false
 
 			if (hasPendingUpdate) {
@@ -196,31 +261,16 @@ export async function setUpOptimizedObserverInner<
 			}
 
 			// Observer is now ready for all to use
-			const newObserver2 = thisObserver as OptimizedObserver<any, unknown, unknown, unknown>
-			optimizedObservers[identifier] = newObserver2
-			manualPromise.manualResolve(newObserver2)
+			manualPromise.manualResolve(thisInner)
 		} catch (e: any) {
+			// The setup failed, so delete and cleanup the in-progress observer
+			delete optimizedObservers[identifier]
+			if (thisInner) thisInner.stop()
+
 			manualPromise.manualReject(e)
-		} finally {
-			// Make sure to not leave it pending forever
-			delete pendingObservers[identifier]
+
+			// Propogate to the susbcriber that started this
+			throw e
 		}
 	}
-
-	receiver.onStop(() => {
-		const o = optimizedObservers[identifier] as OptimizedObserver<PublicationDoc, Args, State, UpdateProps>
-		if (o) {
-			const i = o.dataReceivers.indexOf(receiver)
-			if (i !== -1) o.dataReceivers.splice(i, 1)
-
-			const i2 = o.newDataReceivers.indexOf(receiver)
-			if (i2 !== -1) o.newDataReceivers.splice(i2, 1)
-
-			// clean up if empty:
-			if (!o.dataReceivers.length && !o.newDataReceivers.length) {
-				delete optimizedObservers[identifier]
-				o.stop()
-			}
-		}
-	})
 }
