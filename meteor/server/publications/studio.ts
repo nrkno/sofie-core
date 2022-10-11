@@ -18,7 +18,12 @@ import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
-import { CustomPublish, meteorCustomPublish, setUpOptimizedObserver, TriggerUpdate } from '../lib/customPublication'
+import {
+	CustomPublish,
+	meteorCustomPublish,
+	setUpOptimizedObserverArray,
+	TriggerUpdate,
+} from '../lib/customPublication'
 import { ExpectedPackageDBBase, ExpectedPackageId, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import {
 	ExpectedPackageWorkStatus,
@@ -245,8 +250,13 @@ async function createObserverForMappingsPublication(
 	observerId: PubSub,
 	studioId: StudioId
 ) {
-	await setUpOptimizedObserver<RoutedMappings, RoutedMappingsArgs, RoutedMappingsState, RoutedMappingsUpdateProps>(
-		`pub_${observerId}_${studioId}`,
+	await setUpOptimizedObserverArray<
+		RoutedMappings,
+		RoutedMappingsArgs,
+		RoutedMappingsState,
+		RoutedMappingsUpdateProps
+	>(
+		`${observerId}_${studioId}`,
 		{ studioId },
 		setupMappingsPublicationObservers,
 		manipulateMappingsPublicationData,

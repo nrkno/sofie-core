@@ -19,20 +19,18 @@ const optimizedObservers: Record<string, OptimizedObserver<any, unknown, unknown
 /** Setup in progress optimized observers */
 const pendingObservers: Record<string, Promise<OptimizedObserver<any, unknown, unknown, unknown>>> = {}
 
-// export interface OptimizedObserverHandle {
-// 	stop: () => void
-// }
-
 export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProps: Partial<UpdateProps>) => void
 
 /**
+ * This should not be used directly, and should be used through one of the setUpOptimizedObserverArray or setUpCollectionOptimizedObserver wrappers
+ *
  * This is an optimization to enable multiple listeners that observes (and manipulates) the same data, to only use one observer and manipulator,
  * then receive the result for each listener.
  *
  * @param identifier identifier, shared between the listeners that use the same observer.
  * @param setupObservers Set up the observers. This is run just 1 times for N listeners, on initialization.
- * @param manipulateData Manipulate the data. This is run 1 times for N listeners, per data update. (and on initialization). Return false if nothing has changed
- * @param receiveData Receive the manipulated data. This is run N times for N listeners, per data update (and on initialization).
+ * @param manipulateData Manipulate the data. This is run 1 times for N listeners, per data update. (and on initialization). Return an array of all the documents, and an object describing the changes
+ * @param receiver The CustomPublish for the subscriber that wants to create (or be added to) the observer
  * @param lazynessDuration (Optional) How long to wait after a change before issueing an update. Default to 3 ms
  */
 export async function setUpOptimizedObserverInner<

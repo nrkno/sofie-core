@@ -12,7 +12,12 @@ import {
 import { meteorPublish } from './lib'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/collections/lib'
-import { CustomPublish, meteorCustomPublish, setUpOptimizedObserver, TriggerUpdate } from '../lib/customPublication'
+import {
+	CustomPublish,
+	meteorCustomPublish,
+	setUpOptimizedObserverArray,
+	TriggerUpdate,
+} from '../lib/customPublication'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Studios, getActiveRoutes, StudioId, ResultingMappingRoutes } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
@@ -202,8 +207,13 @@ async function createObserverForTimelinePublication(
 	observerId: PubSub,
 	studioId: StudioId
 ) {
-	await setUpOptimizedObserver<RoutedTimeline, RoutedTimelineArgs, RoutedTimelineState, RoutedTimelineUpdateProps>(
-		`pub_${observerId}_${studioId}`,
+	await setUpOptimizedObserverArray<
+		RoutedTimeline,
+		RoutedTimelineArgs,
+		RoutedTimelineState,
+		RoutedTimelineUpdateProps
+	>(
+		`${observerId}_${studioId}`,
 		{ studioId },
 		setupTimelinePublicationObservers,
 		manipulateTimelinePublicationData,

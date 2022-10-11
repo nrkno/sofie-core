@@ -5,7 +5,18 @@ import { clone, ProtectedString } from '../../../lib/lib'
 import { TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase'
 import { CustomPublish, CustomPublishChanges } from './publish'
 
-export async function setUpOptimizedObserver<
+/**
+ * This is an optimization to enable multiple listeners that observes (and manipulates) the same data, to only use one observer and manipulator,
+ * then receive the result for each listener.
+ * This version allows the observer code to return an array of each call to manipulateData, and allow deep equality checking to be performed to check for changes.
+ *
+ * @param identifier identifier, shared between the listeners that use the same observer.
+ * @param setupObservers Set up the observers. This is run just 1 times for N listeners, on initialization.
+ * @param manipulateData Manipulate the data. This is run 1 times for N listeners, per data update. (and on initialization). Return null if nothing has changed
+ * @param receiver The CustomPublish for the subscriber that wants to create (or be added to) the observer
+ * @param lazynessDuration (Optional) How long to wait after a change before issueing an update. Default to 3 ms
+ */
+export async function setUpOptimizedObserverArray<
 	PublicationDoc extends { _id: ProtectedString<any> },
 	Args,
 	State extends Record<string, any>,
@@ -28,15 +39,17 @@ export async function setUpOptimizedObserver<
 ): Promise<void> {
 	const converter = new OptimisedObserverGenericArray<PublicationDoc>()
 	return setUpOptimizedObserverInner<PublicationDoc, Args, State, UpdateProps>(
-		identifier,
+		`pub_array_${identifier}`,
 		args0,
 		setupObservers,
 		async (args, state, newProps) => {
 			const newDocs = await manipulateData(args, state, newProps)
 			if (newDocs) {
+				// observer gave updated docs
 				const changes = converter.updatedDocs(newDocs)
 				return [newDocs, changes]
 			} else {
+				// observer reports that nothing changed
 				const changes: CustomPublishChanges<PublicationDoc> = {
 					added: [],
 					changed: [],
@@ -52,11 +65,6 @@ export async function setUpOptimizedObserver<
 
 class OptimisedObserverGenericArray<DBObj extends { _id: ProtectedString<any> }> {
 	#docs = new Map<DBObj['_id'], DBObj>()
-	// #firstRun: boolean = true
-
-	// public get isFirstRun(): boolean {
-	// 	return this.#firstRun
-	// }
 
 	getDocs(): DBObj[] {
 		return Array.from(this.#docs.values())
@@ -104,10 +112,6 @@ class OptimisedObserverGenericArray<DBObj extends { _id: ProtectedString<any> }>
 				changes.removed.push(id)
 			}
 		}
-
-		// if (this.#firstRun) {
-		// 	this.#firstRun = false
-		// }
 
 		return changes
 	}

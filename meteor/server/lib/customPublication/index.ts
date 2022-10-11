@@ -1,5 +1,5 @@
 export { CustomPublishCollection } from './customPublishCollection'
-export { setUpOptimizedObserver } from './optimizedObserverArray'
+export { setUpOptimizedObserverArray } from './optimizedObserverArray'
 export { TriggerUpdate } from './optimizedObserverBase'
 export { setUpCollectionOptimizedObserver } from './optimizedObserverCollection'
 export { meteorCustomPublish, CustomPublish, CustomPublishChanges } from './publish'

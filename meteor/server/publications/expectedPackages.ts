@@ -3,7 +3,7 @@ import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MappingsExtWithPackage, routeExpectedPackages, Studio, StudioId, Studios } from '../../lib/collections/Studios'
-import { setUpOptimizedObserver, TriggerUpdate, meteorCustomPublish } from '../lib/customPublication'
+import { setUpOptimizedObserverArray, TriggerUpdate, meteorCustomPublish } from '../lib/customPublication'
 import { ExpectedPackageDB, ExpectedPackages, getSideEffect } from '../../lib/collections/ExpectedPackages'
 import _ from 'underscore'
 import {
@@ -313,13 +313,13 @@ meteorCustomPublish(
 				return this.ready()
 			}
 
-			await setUpOptimizedObserver<
+			await setUpOptimizedObserverArray<
 				DBObj,
 				ExpectedPackagesPublicationArgs,
 				ExpectedPackagesPublicationState,
 				ExpectedPackagesPublicationUpdateProps
 			>(
-				`pub_${PubSub.expectedPackagesForDevice}_${studioId}_${deviceId}_${JSON.stringify(
+				`${PubSub.expectedPackagesForDevice}_${studioId}_${deviceId}_${JSON.stringify(
 					(filterPlayoutDeviceIds || []).sort()
 				)}`,
 				{ studioId, deviceId, filterPlayoutDeviceIds },

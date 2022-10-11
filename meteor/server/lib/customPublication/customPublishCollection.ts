@@ -12,6 +12,7 @@ type CustomPublishCollectionDocument<TDoc> = {
 
 	document: TDoc
 } | null // removed
+
 /** Caches data, allowing reads from cache, but not writes */
 export class CustomPublishCollection<TDoc extends { _id: ProtectedString<any> }> {
 	documents = new Map<TDoc['_id'], CustomPublishCollectionDocument<TDoc>>()
@@ -234,6 +235,7 @@ export class CustomPublishCollection<TDoc extends { _id: ProtectedString<any> }>
 		return !!oldDoc
 	}
 
+	/** Commit the changes, by computing and returning the changes that need to be sent to subscribers */
 	commitChanges(): [TDoc[], CustomPublishChanges<TDoc>] {
 		const span = profiler.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
 		const changes: CustomPublishChanges<TDoc> = {
