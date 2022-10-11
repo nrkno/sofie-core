@@ -6,7 +6,7 @@ import { SubscriptionContext } from '../../publications/lib'
 
 export interface CustomPublishChanges<T extends { _id: ProtectedString<any> }> {
 	added: T[]
-	changed: T[]
+	changed: Array<Pick<T, '_id'> & Partial<T>>
 	removed: T['_id'][]
 }
 
@@ -39,7 +39,7 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	 * Send the intial documents to the subscriber
 	 */
 	init(docs: DBObj[]) {
-		if (!this.#isReady) throw new Meteor.Error(500, 'CustomPublish has already been initialised')
+		if (this.#isReady) throw new Meteor.Error(500, 'CustomPublish has already been initialised')
 
 		for (const doc of docs) {
 			this._meteorSubscription.added(this._collectionName, unprotectString(doc._id), doc)
@@ -53,7 +53,7 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	 * Send a batch of changes to the subscriber
 	 */
 	changed(changes: CustomPublishChanges<DBObj>): void {
-		if (this.#isReady) throw new Meteor.Error(500, 'CustomPublish has not been initialised')
+		if (!this.#isReady) throw new Meteor.Error(500, 'CustomPublish has not been initialised')
 
 		for (const doc of changes.added) {
 			this._meteorSubscription.added(this._collectionName, unprotectString(doc._id), doc)

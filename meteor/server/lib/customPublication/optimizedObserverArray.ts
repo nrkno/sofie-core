@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import _ from 'underscore'
 import { clone, ProtectedString } from '../../../lib/lib'
 import { TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase'
 import { CustomPublish, CustomPublishChanges } from './publish'
+import { diffObject } from './lib'
 
 /**
  * This is an optimization to enable multiple listeners that observes (and manipulates) the same data, to only use one observer and manipulator,
@@ -64,7 +64,7 @@ export async function setUpOptimizedObserverArray<
 }
 
 class OptimisedObserverGenericArray<DBObj extends { _id: ProtectedString<any> }> {
-	#docs = new Map<DBObj['_id'], DBObj>()
+	readonly #docs = new Map<DBObj['_id'], DBObj>()
 
 	getDocs(): DBObj[] {
 		return Array.from(this.#docs.values())
@@ -96,12 +96,20 @@ class OptimisedObserverGenericArray<DBObj extends { _id: ProtectedString<any> }>
 				// added
 				this.#docs.set(id, newDoc)
 				changes.added.push(newDoc)
-			} else if (!_.isEqual(oldDoc, newDoc0)) {
-				const newDoc = clone(newDoc0)
+			} else {
+				// Do a shallow diff, to figure out the minimal change
+				const partial = diffObject(oldDoc, newDoc0)
 
-				// changed
-				changes.changed.push(newDoc)
-				this.#docs.set(id, newDoc)
+				if (partial) {
+					// changed
+
+					changes.changed.push({
+						...partial,
+						_id: id,
+					})
+
+					this.#docs.set(id, clone(newDoc0))
+				}
 			}
 		}
 
