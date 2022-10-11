@@ -52,7 +52,7 @@ meteorCustomPublish(
 			const studioId = peripheralDevice.studioId
 			if (!studioId) return
 
-			await createObserverForTimelinePublication(pub, PubSub.timelineForDevice, studioId)
+			await createObserverForTimelinePublication(pub, studioId)
 		}
 	}
 )
@@ -62,7 +62,7 @@ meteorCustomPublish(
 	CustomCollectionName.StudioTimeline,
 	async function (pub, studioId: StudioId, token) {
 		if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
-			await createObserverForTimelinePublication(pub, PubSub.timelineForStudio, studioId)
+			await createObserverForTimelinePublication(pub, studioId)
 		}
 	}
 )
@@ -202,18 +202,14 @@ async function manipulateTimelinePublicationData(
 }
 
 /** Create an observer for each publication, to simplify the stop conditions */
-async function createObserverForTimelinePublication(
-	pub: CustomPublish<RoutedTimeline>,
-	observerId: PubSub,
-	studioId: StudioId
-) {
+async function createObserverForTimelinePublication(pub: CustomPublish<RoutedTimeline>, studioId: StudioId) {
 	await setUpOptimizedObserverArray<
 		RoutedTimeline,
 		RoutedTimelineArgs,
 		RoutedTimelineState,
 		RoutedTimelineUpdateProps
 	>(
-		`${observerId}_${studioId}`,
+		`${CustomCollectionName.StudioTimeline}_${studioId}`,
 		{ studioId },
 		setupTimelinePublicationObservers,
 		manipulateTimelinePublicationData,

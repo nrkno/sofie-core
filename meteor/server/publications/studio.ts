@@ -176,7 +176,7 @@ meteorCustomPublish(
 			const studioId = peripheralDevice.studioId
 			if (!studioId) return
 
-			await createObserverForMappingsPublication(pub, PubSub.mappingsForDevice, studioId)
+			await createObserverForMappingsPublication(pub, studioId)
 		}
 	}
 )
@@ -186,7 +186,7 @@ meteorCustomPublish(
 	CustomCollectionName.StudioMappings,
 	async function (pub, studioId: StudioId, token) {
 		if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
-			await createObserverForMappingsPublication(pub, PubSub.mappingsForStudio, studioId)
+			await createObserverForMappingsPublication(pub, studioId)
 		}
 	}
 )
@@ -245,18 +245,14 @@ async function manipulateMappingsPublicationData(
 }
 
 /** Create an observer for each publication, to simplify the stop conditions */
-async function createObserverForMappingsPublication(
-	pub: CustomPublish<RoutedMappings>,
-	observerId: PubSub,
-	studioId: StudioId
-) {
+async function createObserverForMappingsPublication(pub: CustomPublish<RoutedMappings>, studioId: StudioId) {
 	await setUpOptimizedObserverArray<
 		RoutedMappings,
 		RoutedMappingsArgs,
 		RoutedMappingsState,
 		RoutedMappingsUpdateProps
 	>(
-		`${observerId}_${studioId}`,
+		`${CustomCollectionName.StudioMappings}_${studioId}`,
 		{ studioId },
 		setupMappingsPublicationObservers,
 		manipulateMappingsPublicationData,
