@@ -91,7 +91,6 @@ export class CoreHandler {
 	}
 
 	async init(config: CoreConfig, process: Process): Promise<void> {
-		// this.logger.info('========')
 		this._statusInitialized = false
 		this._coreConfig = config
 		this._process = process
@@ -102,9 +101,9 @@ export class CoreHandler {
 
 		this.core.onConnected(() => {
 			this.logger.info('Core Connected!')
-			this.setupObserversAndSubscriptions().catch((e) => {
-				this.logger.error('Core Error during setupObserversAndSubscriptions:', e)
-			})
+			this.setupObserversAndSubscriptions().catch((error) =>
+				this.logger.error('Core Error during setupObserversAndSubscriptions:', { data: error })
+			)
 			if (this._onConnected) this._onConnected()
 		})
 		this.core.onDisconnected(() => {
@@ -315,9 +314,7 @@ export class CoreHandler {
 					.then(() => {
 						// console.log('cb done')
 					})
-					.catch((e) => {
-						this.logger.error(e)
-					})
+					.catch((error) => this.logger.error(error))
 			}
 			// @ts-expect-error Untyped bunch of functions
 			// eslint-disable-next-line @typescript-eslint/ban-types
@@ -326,12 +323,8 @@ export class CoreHandler {
 				if (!fcn) throw Error(`Function "${cmd.functionName}" not found on device "${cmd.deviceId}"!`)
 
 				Promise.resolve(fcn.apply(fcnObject, cmd.args))
-					.then((result) => {
-						cb(null, result)
-					})
-					.catch((e) => {
-						cb(e.toString(), null)
-					})
+					.then((result) => cb(null, result))
+					.catch((error) => cb(error.toString(), null))
 			} catch (e: any) {
 				cb(e.toString(), null)
 			}
@@ -518,8 +511,8 @@ export class CoreHandler {
 					// eslint-disable-next-line @typescript-eslint/no-var-requires
 					const pkgInfo = require(`${pkgName}/package.json`)
 					versions[pkgName] = pkgInfo.version || 'N/A'
-				} catch (e) {
-					this.logger.error(`Failed to load package.json for lib "${pkgName}": ${e}`)
+				} catch (error) {
+					this.logger.error(`Failed to load package.json for lib "${pkgName}".`, { data: error })
 				}
 			}
 		} catch (e) {
@@ -629,7 +622,7 @@ export class CoreTSRDeviceHandler {
 
 		this.core
 			.setStatus(this._deviceStatus)
-			.catch((e) => this._coreParentHandler.logger.error('Error when setting status: ', e, e.stack))
+			.catch((error) => this._coreParentHandler.logger.error(`Error when setting status.`, { data: error }))
 	}
 	onCommandError(
 		errorMessage: string,
@@ -643,18 +636,20 @@ export class CoreTSRDeviceHandler {
 	): void {
 		this.core
 			.callMethodLowPrio(PeripheralDeviceAPIMethods.reportCommandError, [errorMessage, ref])
-			.catch((e) => this._coreParentHandler.logger.error('Error when callMethodLowPrio: ', e, e.stack))
+			.catch((error) => this._coreParentHandler.logger.error(`Error when callMethodLowPrio.`, { data: error }))
 	}
 	onUpdateMediaObject(collectionId: string, docId: string, doc: MediaObject | null): void {
 		this.core
 			.callMethodLowPrio(PeripheralDeviceAPIMethods.updateMediaObject, [collectionId, docId, doc])
-			.catch((e) => this._coreParentHandler.logger.error('Error when updating Media Object: ' + e, e.stack))
+			.catch((error) =>
+				this._coreParentHandler.logger.error(`Error when updating Media Object.`, { data: error })
+			)
 	}
 	onClearMediaObjectCollection(collectionId: string): void {
 		this.core
 			.callMethodLowPrio(PeripheralDeviceAPIMethods.clearMediaObjectCollection, [collectionId])
-			.catch((e) =>
-				this._coreParentHandler.logger.error('Error when clearing Media Objects collection: ' + e, e.stack)
+			.catch((error) =>
+				this._coreParentHandler.logger.error(`Error when clearing Media Objects collection:`, { data: error })
 			)
 	}
 

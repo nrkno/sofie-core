@@ -220,35 +220,17 @@ export class TSRHandler {
 			this.logger.warn(`TSR: ${msg + ''}`, args)
 		})
 		this.tsr.on('debug', (...args: any[]) => {
-			if (this._coreHandler.logDebug) {
-				const msg: any = {
-					message: 'TSR debug message (' + args.length + ')',
-					data: [],
-				}
-				if (args.length) {
-					if (typeof args === 'string') {
-						msg.data.push(args)
-					} else {
-						for (const arg of args) {
-							if (typeof arg === 'object') {
-								msg.data.push(JSON.stringify(arg))
-							} else {
-								msg.data.push(arg)
-							}
-						}
-					}
-				} else {
-					msg.data.push('>empty message<')
-				}
-
-				this.logger.debug(msg)
+			if (!this._coreHandler.logDebug) {
+				return
 			}
+			const data = args.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : arg))
+			this.logger.debug(`TSR debug message (${args.length})`, { data })
 		})
 
 		this.tsr.on('setTimelineTriggerTime', (r: TimelineTriggerTimeResult) => {
-			this._coreHandler.core.callMethod(PeripheralDeviceAPIMethods.timelineTriggerTime, [r]).catch((e) => {
-				this.logger.error('Error in setTimelineTriggerTime', e)
-			})
+			this._coreHandler.core
+				.callMethod(PeripheralDeviceAPIMethods.timelineTriggerTime, [r])
+				.catch((error) => this.logger.error('Error in setTimelineTriggerTime', { data: error }))
 		})
 
 		this.tsr.on('timelineCallback', (time, objId, callbackName, data) => {
@@ -265,9 +247,7 @@ export class TSRHandler {
 
 			this._coreHandler.core
 				.callMethod('peripheralDevice.reportResolveDone', [timelineHash, resolveDuration])
-				.catch((e) => {
-					this.logger.error('Error in reportResolveDone', e)
-				})
+				.catch((error) => this.logger.error('Error in reportResolveDone', { data: error }))
 
 			sendTrace({
 				measurement: 'playout-gateway.tlResolveDone',
@@ -800,7 +780,7 @@ export class TSRHandler {
 			}
 			const onSlowFulfilledCommand = (info: SlowFulfilledCommandInfo) => {
 				// Note: we don't emit slow fulfilled commands as error, since
-				// the fullfillement of them lies on the device being controlled, not on us.
+				// the fulfillment of them lies on the device being controlled, not on us.
 
 				this.logger.warn('slowFulfilledCommand', {
 					deviceName: device.deviceName,
@@ -882,29 +862,15 @@ export class TSRHandler {
 			}) as () => void)
 
 			await device.device.on('debug', (...args: any[]) => {
-				if (device.debugLogging || this._coreHandler.logDebug) {
-					const msg: any = {
-						message: `debug: Device "${device.deviceName || deviceId}" (${device.instanceId})`,
-						data: [],
-					}
-					if (args.length) {
-						if (typeof args === 'string') {
-							msg.data.push(args)
-						} else {
-							for (const arg of args) {
-								if (typeof arg === 'object') {
-									msg.data.push(JSON.stringify(arg))
-								} else {
-									msg.data.push(arg)
-								}
-							}
-						}
-					} else {
-						msg.data.push('>empty message<')
-					}
-
-					this.logger.debug(msg)
+				if (!device.debugLogging && !this._coreHandler.logDebug) {
+					return
 				}
+				if (args.length === 0) {
+					this.logger.debug('>empty message<')
+					return
+				}
+				const data = args.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : arg))
+				this.logger.debug(`Device "${device.deviceName || deviceId}" (${device.instanceId})`, { data })
 			})
 
 			await device.device.on('timeTrace', ((trace: FinishedTrace) => sendTrace(trace)) as () => void)
@@ -919,14 +885,14 @@ export class TSRHandler {
 				deviceId,
 				success: true,
 			}
-		} catch (e) {
+		} catch (error) {
 			// Initialization failed, clean up any artifacts and see if we can try again later:
-			this.logger.error(`Error when adding device "${deviceId}"`, e)
+			this.logger.error(`Error when adding device "${deviceId}"`, { data: error })
 			debug(`Error when adding device "${deviceId}"`)
 			try {
 				await this._removeDevice(deviceId)
-			} catch (e) {
-				this.logger.error(`Error when cleaning up after adding device "${deviceId}" error...`, e)
+			} catch (error) {
+				this.logger.error(`Error when cleaning up after adding device "${deviceId}" error...`, { data: error })
 			}
 
 			if (!this._triggerUpdateDevicesTimeout) {
@@ -951,22 +917,20 @@ export class TSRHandler {
 	 * /Balte - 22-08
 	 */
 	private uploadFilesToAtem(device: DeviceContainer<DeviceOptionsAny>, files: AtemMediaPoolAsset[]) {
-		if (device && device.deviceType === DeviceType.ATEM) {
-			this.logger.info('try to load ' + JSON.stringify(files.map((f) => f.path).join(', ')) + ' to atem')
-			const options = device.deviceOptions.options as { host: string }
-			this.logger.info('options ' + JSON.stringify(options))
-			if (options && options.host) {
-				this.logger.info('uploading files to ' + options.host)
-				const process = cp.spawn(`node`, [`./dist/atemUploader.js`, options.host, JSON.stringify(files)])
-				process.stdout.on('data', (data) => this.logger.info(data.toString()))
-				process.stderr.on('data', (data) => this.logger.info(data.toString()))
-				process.on('close', () => {
-					process.removeAllListeners()
-				})
-			} else {
-				throw Error('ATEM host option not set')
-			}
+		if (!device || device.deviceType !== DeviceType.ATEM) {
+			return
 		}
+		this.logger.info('try to load ' + JSON.stringify(files.map((f) => f.path).join(', ')) + ' to atem')
+		const options = device.deviceOptions.options as { host: string }
+		this.logger.info('options ' + JSON.stringify(options))
+		if (!options || !options.host) {
+			throw Error('ATEM host option not set')
+		}
+		this.logger.info('uploading files to ' + options.host)
+		const process = cp.spawn(`node`, [`./dist/atemUploader.js`, options.host, JSON.stringify(files)])
+		process.stdout.on('data', (data) => this.logger.info(data.toString()))
+		process.stderr.on('data', (data) => this.logger.info(data.toString()))
+		process.on('close', () => process.removeAllListeners())
 	}
 	private async _removeDevice(deviceId: string): Promise<DeviceActionResult> {
 		let success = false
@@ -975,8 +939,8 @@ export class TSRHandler {
 				await this._coreTsrHandlers[deviceId].dispose()
 				this.logger.debug('Disposed device ' + deviceId)
 				success = true
-			} catch (e) {
-				this.logger.error(`Error when removing device "${deviceId}"`, e)
+			} catch (error) {
+				this.logger.error(`Error when removing device "${deviceId}"`, { data: error })
 			}
 		}
 		delete this._coreTsrHandlers[deviceId]
@@ -993,8 +957,8 @@ export class TSRHandler {
 			clearTimeout(this._triggerupdateExpectedPlayoutItemsTimeout)
 		}
 		this._triggerupdateExpectedPlayoutItemsTimeout = setTimeout(() => {
-			this._updateExpectedPlayoutItems().catch((e) =>
-				this.logger.error('Error in _updateExpectedPlayoutItems', e)
+			this._updateExpectedPlayoutItems().catch((error) =>
+				this.logger.error('Error in _updateExpectedPlayoutItems', { data: error })
 			)
 		}, 200)
 	}
@@ -1014,28 +978,27 @@ export class TSRHandler {
 
 		await Promise.all(
 			_.map(this.tsr.getDevices(), async (container) => {
-				if (await container.device.supportsExpectedPlayoutItems) {
-					await container.device.handleExpectedPlayoutItems(
-						_.map(
-							_.filter(expectedItems, (item) => {
-								return (
-									item.deviceSubType === container.deviceType
-									// TODO: implement item.deviceId === container.deviceId
-								)
-							}),
-							(item) => {
-								const itemContent: ExpectedPlayoutItemContent = item.content
-								const newItem: ExpectedPlayoutItem = {
-									...itemContent,
-									rundownId: item.rundownId,
-									playlistId: item.rundownId && rundowns[item.rundownId]?.playlistId,
-									baseline: item.baseline,
-								}
-								return newItem
-							}
-						)
-					)
+				if (!(await container.device.supportsExpectedPlayoutItems)) {
+					return
 				}
+				await container.device.handleExpectedPlayoutItems(
+					_.map(
+						_.filter(
+							expectedItems,
+							(item) => item.deviceSubType === container.deviceType
+							// TODO: implement item.deviceId === container.deviceId
+						),
+						(item): ExpectedPlayoutItem => {
+							const itemContent: ExpectedPlayoutItemContent = item.content
+							return {
+								...itemContent,
+								rundownId: item.rundownId,
+								playlistId: item.rundownId && rundowns[item.rundownId]?.playlistId,
+								baseline: item.baseline,
+							}
+						}
+					)
+				)
 			})
 		)
 	}
@@ -1068,25 +1031,23 @@ export class TSRHandler {
 		// Go through all objects:
 		const transformedTimeline: Array<TSRTimelineObj> = []
 		_.each(objects, (obj: TimelineContentObjectTmp) => {
-			if (obj.inGroup) {
-				const groupObj = objects[obj.inGroup]
-				if (groupObj) {
-					// Add object into group:
-					if (!groupObj.children) groupObj.children = []
-					if (groupObj.children) {
-						delete obj.inGroup
-						groupObj.children.push(obj)
-					}
-				} else {
-					// referenced group not found
-					this.logger.error(
-						'Referenced group "' + obj.inGroup + '" not found! Referenced by "' + obj.id + '"'
-					)
-				}
-			} else {
+			if (!obj.inGroup) {
 				// Add object to timeline
 				delete obj.inGroup
 				transformedTimeline.push(obj as TSRTimelineObj)
+				return
+			}
+			const groupObj = objects[obj.inGroup]
+			if (!groupObj) {
+				// referenced group not found
+				this.logger.error(`Referenced group "${obj.inGroup}" not found! Referenced by "${obj.id}"`)
+				return
+			}
+			// Add object into group:
+			if (!groupObj.children) groupObj.children = []
+			if (groupObj.children) {
+				delete obj.inGroup
+				groupObj.children.push(obj)
 			}
 		})
 		return transformedTimeline
@@ -1099,8 +1060,8 @@ export class TSRHandler {
 		this.sendCallbacksTimeout = undefined
 		this._coreHandler.core
 			.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
-			.catch((e) => {
-				this.logger.error('Error in timelineCallback', e)
+			.catch((error) => {
+				this.logger.error('Error in timelineCallback', { data: error })
 			})
 		this.changedResults = undefined
 	}
@@ -1125,8 +1086,8 @@ export class TSRHandler {
 				// The playlistId changed. Send what we have right away and reset:
 				this._coreHandler.core
 					.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
-					.catch((e) => {
-						this.logger.error('Error in timelineCallback', e)
+					.catch((error) => {
+						this.logger.error('Error in timelineCallback', { data: error })
 					})
 				this.changedResults = undefined
 			}
@@ -1182,8 +1143,8 @@ export class TSRHandler {
 							time: time,
 						}),
 					])
-					.catch((e) => {
-						this.logger.error('Error in timelineCallback', e)
+					.catch((error) => {
+						this.logger.error('Error in timelineCallback', { data: error })
 					})
 			} else {
 				this.logger.error(`Unknown callback method "${callbackName0}"`)
