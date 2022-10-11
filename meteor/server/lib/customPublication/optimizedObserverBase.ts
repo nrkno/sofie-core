@@ -67,6 +67,7 @@ export async function setUpOptimizedObserverInner<
 		// Force an update to ensure the new receiver gets data soon
 		existingObserver.triggerUpdate({})
 	} else {
+		let thisObserver: OptimizedObserver<PublicationDoc, Args, State, UpdateProps> | undefined
 		let updateIsRunning = true
 
 		let hasPendingUpdate = false
@@ -95,19 +96,17 @@ export async function setUpOptimizedObserverInner<
 						// Mark the update as running
 						updateIsRunning = true
 
-						const o = optimizedObservers[identifier] as OptimizedObserver<
-							PublicationDoc,
-							Args,
-							State,
-							UpdateProps
-						>
-						if (o) {
+						if (thisObserver) {
 							// Fetch and clear the pending updates
 							const newProps = pendingUpdate as ReadonlyDeep<Partial<UpdateProps>>
 							pendingUpdate = {}
 
 							const start = Date.now()
-							const [newDocs, changes] = await manipulateData(o.args, o.context, newProps)
+							const [newDocs, changes] = await manipulateData(
+								thisObserver.args,
+								thisObserver.context,
+								newProps
+							)
 							const manipulateTime = Date.now()
 							const manipulateDuration = manipulateTime - start
 
@@ -116,19 +115,19 @@ export async function setUpOptimizedObserverInner<
 
 							// If result === null, that means no changes were made
 							if (hasChanges) {
-								for (const dataReceiver of o.dataReceivers) {
+								for (const dataReceiver of thisObserver.dataReceivers) {
 									dataReceiver.changed(changes)
 								}
-								o.lastData = newDocs
+								thisObserver.lastData = newDocs
 							}
-							if (o.newDataReceivers.length) {
-								const newDataReceivers = o.newDataReceivers
+							if (thisObserver.newDataReceivers.length) {
+								const newDataReceivers = thisObserver.newDataReceivers
 								// Move to 'active' receivers
-								o.dataReceivers.push(...newDataReceivers)
-								o.newDataReceivers = []
+								thisObserver.dataReceivers.push(...newDataReceivers)
+								thisObserver.newDataReceivers = []
 								// send initial data
 								for (const dataReceiver of newDataReceivers) {
-									dataReceiver.init(o.lastData)
+									dataReceiver.init(thisObserver.lastData)
 								}
 							}
 
@@ -140,7 +139,7 @@ export async function setUpOptimizedObserverInner<
 
 							if (totalTime > SLOW_OBSERVE_TIME) {
 								logger.debug(
-									`Slow optimized observer ${identifier}. Total: ${totalTime}, manipulate: ${manipulateDuration}, publish: ${publishTime} (receivers: ${o.dataReceivers.length})`
+									`Slow optimized observer ${identifier}. Total: ${totalTime}, manipulate: ${manipulateDuration}, publish: ${publishTime} (receivers: ${thisObserver.dataReceivers.length})`
 								)
 							}
 						}
@@ -171,7 +170,7 @@ export async function setUpOptimizedObserverInner<
 			const args = clone<ReadonlyDeep<Args>>(args0)
 			const observers = await setupObservers(args, triggerUpdate)
 
-			const newObserver: OptimizedObserver<PublicationDoc, Args, State, UpdateProps> = {
+			thisObserver = {
 				args: args,
 				context: {},
 				lastData: [],
@@ -184,9 +183,9 @@ export async function setUpOptimizedObserverInner<
 			}
 
 			// Do the intial data load and emit
-			const [result] = await manipulateData(args, newObserver.context, undefined)
-			newObserver.lastData = result
-			receiver.init(newObserver.lastData)
+			const [result] = await manipulateData(args, thisObserver.context, undefined)
+			thisObserver.lastData = result
+			receiver.init(thisObserver.lastData)
 			updateIsRunning = false
 
 			if (hasPendingUpdate) {
@@ -197,7 +196,7 @@ export async function setUpOptimizedObserverInner<
 			}
 
 			// Observer is now ready for all to use
-			const newObserver2 = newObserver as OptimizedObserver<any, unknown, unknown, unknown>
+			const newObserver2 = thisObserver as OptimizedObserver<any, unknown, unknown, unknown>
 			optimizedObservers[identifier] = newObserver2
 			manualPromise.manualResolve(newObserver2)
 		} catch (e: any) {
@@ -212,11 +211,13 @@ export async function setUpOptimizedObserverInner<
 		const o = optimizedObservers[identifier] as OptimizedObserver<PublicationDoc, Args, State, UpdateProps>
 		if (o) {
 			const i = o.dataReceivers.indexOf(receiver)
-			if (i != -1) {
-				o.dataReceivers.splice(i, 1)
-			}
+			if (i !== -1) o.dataReceivers.splice(i, 1)
+
+			const i2 = o.newDataReceivers.indexOf(receiver)
+			if (i2 !== -1) o.newDataReceivers.splice(i2, 1)
+
 			// clean up if empty:
-			if (!o.dataReceivers.length) {
+			if (!o.dataReceivers.length && !o.newDataReceivers.length) {
 				delete optimizedObservers[identifier]
 				o.stop()
 			}
