@@ -4,7 +4,7 @@ import { clone, createManualPromise, lazyIgnore, ProtectedString } from '../../.
 import { logger } from '../../logging'
 import { CustomPublish, CustomPublishChanges } from './publish'
 
-interface OptimizedObserverWrapper<TData extends { _id: ProtectedString<any> }, TArgs, TContext, UpdateProps> {
+interface OptimizedObserverWrapper<TData extends { _id: ProtectedString<any> }, TArgs, TContext> {
 	/** Subscribers ready for data updates */
 	activeSubscribers: Array<CustomPublish<TData>>
 	/** New subscribers that are awaiting their initial data */
@@ -14,18 +14,17 @@ interface OptimizedObserverWrapper<TData extends { _id: ProtectedString<any> }, 
 	subscribersChanged?: () => void
 
 	/** The innards of the observer, this takes some time to initialize, but we can let subscribers join and leave while it runs */
-	observer: Promise<OptimizedObserver<TData, TArgs, TContext, UpdateProps>>
+	observer: Promise<OptimizedObserver<TData, TArgs, TContext>>
 }
 
-interface OptimizedObserver<TData extends { _id: ProtectedString<any> }, TArgs, TContext, UpdateProps> {
+interface OptimizedObserver<TData extends { _id: ProtectedString<any> }, TArgs, TContext> {
 	args: ReadonlyDeep<TArgs>
 	context: Partial<TContext>
 	lastData: TData[]
-	triggerUpdate: TriggerUpdate<UpdateProps>
 	stop: () => void
 }
 
-type AnyOptimizedObserverWrapper = OptimizedObserverWrapper<any, unknown, unknown, unknown>
+type AnyOptimizedObserverWrapper = OptimizedObserverWrapper<any, unknown, unknown>
 
 /** Optimized observers */
 const optimizedObservers: Record<string, AnyOptimizedObserverWrapper> = {}
@@ -70,7 +69,7 @@ export async function setUpOptimizedObserverInner<
 	 * So remember to think about this in the context of the observer
 	 */
 	let thisObserver = optimizedObservers[identifier] as
-		| OptimizedObserverWrapper<PublicationDoc, Args, State, UpdateProps>
+		| OptimizedObserverWrapper<PublicationDoc, Args, State>
 		| undefined
 
 	// Once this receiver stops, this will be called to remove it from the subscriber lists
@@ -106,7 +105,7 @@ export async function setUpOptimizedObserverInner<
 		// Wait for the observer to be ready
 		await thisObserver.observer
 	} else {
-		let thisInner: OptimizedObserver<PublicationDoc, Args, State, UpdateProps> | undefined
+		let thisInner: OptimizedObserver<PublicationDoc, Args, State> | undefined
 		let updateIsRunning = true
 
 		let hasPendingUpdate = false
@@ -139,6 +138,7 @@ export async function setUpOptimizedObserverInner<
 							if (!thisObserver.activeSubscribers.length && !thisObserver.newSubscribers.length) {
 								delete optimizedObservers[identifier]
 								thisInner.stop()
+								return
 							}
 
 							// Fetch and clear the pending updates
@@ -199,7 +199,7 @@ export async function setUpOptimizedObserverInner<
 			)
 		}
 
-		const manualPromise = createManualPromise<OptimizedObserver<PublicationDoc, Args, State, UpdateProps>>()
+		const manualPromise = createManualPromise<OptimizedObserver<PublicationDoc, Args, State>>()
 
 		// Store the optimizedObserver, so that other subscribers can join onto this without creating their own
 		thisObserver = optimizedObservers[identifier] = {
@@ -222,7 +222,6 @@ export async function setUpOptimizedObserverInner<
 				args: args,
 				context: {},
 				lastData: [],
-				triggerUpdate: triggerUpdate,
 				stop: () => {
 					observers.forEach((observer) => observer.stop())
 				},
@@ -272,5 +271,16 @@ export async function setUpOptimizedObserverInner<
 			// Propogate to the susbcriber that started this
 			throw e
 		}
+	}
+}
+
+export function optimizedObserverCountSubscribers(identifier: string): number | null {
+	if (optimizedObservers[identifier]) {
+		return (
+			optimizedObservers[identifier].activeSubscribers.length +
+			optimizedObservers[identifier].newSubscribers.length
+		)
+	} else {
+		return null
 	}
 }
