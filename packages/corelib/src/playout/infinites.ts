@@ -140,7 +140,7 @@ export function getPlayheadTrackingInfinitesForPart(
 			}
 		}
 
-		if (lastPieceInstance && !lastPieceInstance.stoppedPlayback && !lastPieceInstance.userDuration) {
+		if (lastPieceInstance && !lastPieceInstance.plannedStoppedPlayback && !lastPieceInstance.userDuration) {
 			// If it is an onChange, then it may want to continue
 			let isUsed = false
 			switch (lastPieceInstance.piece.lifespan) {
@@ -187,7 +187,7 @@ export function getPlayheadTrackingInfinitesForPart(
 				// This is the piece we may copy across
 				const candidatePiece =
 					pieces.find((p) => p.piece.enable.start === 'now') ?? max(pieces, (p) => p.piece.enable.start)
-				if (candidatePiece && !candidatePiece.stoppedPlayback && !candidatePiece.userDuration) {
+				if (candidatePiece && !candidatePiece.plannedStoppedPlayback && !candidatePiece.userDuration) {
 					// Check this infinite is allowed to continue to this part
 					let isValid = false
 					switch (mode) {
@@ -259,7 +259,7 @@ function markPieceInstanceAsContinuation(previousInstance: PieceInstance, instan
 	instance._id = protectString(`${instance._id}_continue`)
 	instance.dynamicallyInserted = previousInstance.dynamicallyInserted
 	instance.adLibSourceId = previousInstance.adLibSourceId
-	instance.startedPlayback = previousInstance.startedPlayback
+	instance.reportedStartedPlayback = previousInstance.reportedStartedPlayback
 }
 
 export function isPiecePotentiallyActiveInPart(

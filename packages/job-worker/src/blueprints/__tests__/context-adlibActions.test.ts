@@ -488,7 +488,7 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						startedPlayback: 1000,
+						plannedStartedPlayback: 1000,
 					})
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
@@ -523,7 +523,7 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						startedPlayback: 2000,
+						plannedStartedPlayback: 2000,
 					})
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
@@ -582,7 +582,7 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						startedPlayback: 1000,
+						plannedStartedPlayback: 1000,
 					})
 					const pieceId1: PieceInstanceId = getRandomId()
 					cache.PieceInstances.insert({
@@ -606,7 +606,7 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						startedPlayback: 2000,
+						plannedStartedPlayback: 2000,
 					})
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
@@ -667,7 +667,7 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						startedPlayback: 1000,
+						plannedStartedPlayback: 1000,
 					})
 					const pieceId1: PieceInstanceId = getRandomId()
 					cache.PieceInstances.insert({
@@ -694,7 +694,7 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						startedPlayback: 2000,
+						plannedStartedPlayback: 2000,
 					})
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
@@ -1348,13 +1348,10 @@ describe('Test blueprint api context', () => {
 					partInstance.part.autoNext = true
 					partInstance.part.expectedDuration = 700
 					partInstance.timings = {
-						startedPlayback: getCurrentTime(),
-						stoppedPlayback: undefined,
+						plannedStartedPlayback: getCurrentTime(),
+						plannedStoppedPlayback: undefined,
 						playOffset: 0,
 						take: undefined,
-						takeDone: undefined,
-						takeOut: undefined,
-						next: undefined,
 					}
 					cache.PartInstances.replace(partInstance)
 

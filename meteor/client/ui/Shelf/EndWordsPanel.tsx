@@ -82,13 +82,13 @@ function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefi
 	)
 
 	const highestStartedPlayback = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.reduce(
-		(hsp, piece: PieceInstance) => Math.max(hsp, piece.startedPlayback ?? 0),
+		(hsp, piece: PieceInstance) => Math.max(hsp, piece.reportedStartedPlayback ?? 0),
 		0
 	)
 
 	const unfinishedPieces = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.filter(
 		(pieceInstance: PieceInstance) => {
-			return !pieceInstance.startedPlayback || pieceInstance.startedPlayback == highestStartedPlayback
+			return !pieceInstance.reportedStartedPlayback || pieceInstance.reportedStartedPlayback == highestStartedPlayback
 		}
 	)
 

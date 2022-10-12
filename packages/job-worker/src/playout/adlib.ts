@@ -47,6 +47,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { executeActionInner } from './playout'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculateNowOffsetLatency } from './timeline/multi-gateway'
 
 export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAsAdlibNowProps): Promise<void> {
 	return runJobWithPlayoutCache(
@@ -174,7 +175,10 @@ async function pieceTakeNowAsAdlib(
 	// Disable the original piece if from the same Part
 	if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
 		// Ensure the piece being copied isnt currently live
-		if (pieceInstanceToCopy.startedPlayback && pieceInstanceToCopy.startedPlayback <= getCurrentTime()) {
+		if (
+			pieceInstanceToCopy.plannedStartedPlayback &&
+			pieceInstanceToCopy.plannedStartedPlayback <= getCurrentTime()
+		) {
 			const resolvedPieces = getResolvedPieces(context, cache, showStyleBase.sourceLayers, partInstance)
 			const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
 
@@ -421,7 +425,7 @@ export async function innerFindLastPieceOnLayer(
 		playlistActivationId: cache.Playlist.doc.activationId,
 		rundownId: { $in: rundownIds },
 		'piece.sourceLayerId': { $in: sourceLayerId },
-		startedPlayback: {
+		plannedStartedPlayback: {
 			$exists: true,
 		},
 	}
@@ -439,7 +443,7 @@ export async function innerFindLastPieceOnLayer(
 	// TODO - will this cause problems?
 	return context.directCollections.PieceInstances.findOne(query, {
 		sort: {
-			startedPlayback: -1,
+			plannedStartedPlayback: -1,
 		},
 	})
 }
@@ -487,7 +491,7 @@ export async function innerFindLastScriptedPieceOnLayer(
 		return
 	}
 
-	const partStarted = currentPartInstance.timings?.startedPlayback
+	const partStarted = currentPartInstance.timings?.plannedStartedPlayback
 	const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
 	const piecesSortedAsc = pieces
@@ -608,13 +612,14 @@ export function innerStopPieces(
 	const span = context.startSpan('innerStopPieces')
 	const stoppedInstances: PieceInstanceId[] = []
 
-	const lastStartedPlayback = currentPartInstance.timings?.startedPlayback
+	const lastStartedPlayback = currentPartInstance.timings?.plannedStartedPlayback
 	if (lastStartedPlayback === undefined) {
 		throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
 	}
 
 	const resolvedPieces = getResolvedPieces(context, cache, sourceLayers, currentPartInstance)
-	const stopAt = getCurrentTime() + (timeOffset || 0)
+	const offsetRelativeToNow = (timeOffset || 0) + (calculateNowOffsetLatency(context, cache, undefined) || 0)
+	const stopAt = getCurrentTime() + offsetRelativeToNow
 	const relativeStopAt = stopAt - lastStartedPlayback
 
 	for (const pieceInstance of resolvedPieces) {
@@ -624,7 +629,7 @@ export function innerStopPieces(
 			filter(pieceInstance) &&
 			pieceInstance.resolvedStart !== undefined &&
 			pieceInstance.resolvedStart <= relativeStopAt &&
-			!pieceInstance.stoppedPlayback
+			!pieceInstance.plannedStoppedPlayback
 		) {
 			switch (pieceInstance.piece.lifespan) {
 				case PieceLifespan.WithinPart:
@@ -633,8 +638,14 @@ export function innerStopPieces(
 					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
 
 					cache.PieceInstances.updateOne(pieceInstance._id, (p) => {
-						p.userDuration = {
-							end: relativeStopAt,
+						if (cache.isMultiGatewayMode) {
+							p.userDuration = {
+								endRelativeToNow: offsetRelativeToNow,
+							}
+						} else {
+							p.userDuration = {
+								endRelativeToPart: relativeStopAt,
+							}
 						}
 						return p
 					})

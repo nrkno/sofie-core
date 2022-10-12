@@ -104,8 +104,8 @@ function convertPieceInstanceToBlueprintsInner(pieceInstance: PieceInstance): Co
 		partInstanceId: unprotectString(pieceInstance.partInstanceId),
 		adLibSourceId: unprotectString(pieceInstance.adLibSourceId),
 		dynamicallyInserted: pieceInstance.dynamicallyInserted,
-		startedPlayback: pieceInstance.startedPlayback,
-		stoppedPlayback: pieceInstance.stoppedPlayback,
+		reportedStartedPlayback: pieceInstance.reportedStartedPlayback,
+		reportedStoppedPlayback: pieceInstance.reportedStoppedPlayback,
 		infinite: pieceInstance.infinite
 			? literal<Complete<IBlueprintPieceInstance['infinite']>>({
 					infinitePieceId: unprotectString(pieceInstance.infinite.infinitePieceId),

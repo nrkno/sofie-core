@@ -244,7 +244,7 @@ export const StudioGenericProperties = withTranslation()(
 						<label className="field">
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute="settings.forceSettingNowTime"
+								attribute="settings.forceMultiGatewayMode"
 								obj={this.props.studio}
 								type="checkbox"
 								collection={Studios}
@@ -257,7 +257,7 @@ export const StudioGenericProperties = withTranslation()(
 						<label className="field">
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute="settings.nowSafeLatency"
+								attribute="settings.multiGatewayNowSafeLatency"
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}

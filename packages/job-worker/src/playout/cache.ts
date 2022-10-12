@@ -2,7 +2,7 @@ import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation
 import { DbCacheWriteObject, DbCacheWriteOptionalObject } from '../cache/CacheObject'
 import { CacheBase, ReadOnlyCache } from '../cache/CacheBase'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
-import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
@@ -395,6 +395,21 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		} else {
 			return super.saveAllToDatabase()
 		}
+	}
+
+	#isMultiGatewayMode: boolean | undefined = undefined
+	public get isMultiGatewayMode(): boolean {
+		if (this.#isMultiGatewayMode === undefined) {
+			if (this.context.studio.settings.forceMultiGatewayMode) {
+				this.#isMultiGatewayMode = true
+			} else {
+				const playoutDevices = this.PeripheralDevices.findAll(
+					(device) => device.type === PeripheralDeviceType.PLAYOUT
+				)
+				this.#isMultiGatewayMode = playoutDevices.length > 1
+			}
+		}
+		return this.#isMultiGatewayMode
 	}
 }
 

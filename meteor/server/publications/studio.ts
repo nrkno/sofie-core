@@ -18,8 +18,12 @@ import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
-import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
-import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
+import {
+	CustomPublish,
+	meteorCustomPublish,
+	setUpOptimizedObserverArray,
+	TriggerUpdate,
+} from '../lib/customPublication'
 import { ExpectedPackageDBBase, ExpectedPackageId, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import {
 	ExpectedPackageWorkStatus,
@@ -161,7 +165,7 @@ meteorPublish(
 	}
 )
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.mappingsForDevice,
 	CustomCollectionName.StudioMappings,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
@@ -173,17 +177,17 @@ meteorCustomPublishArray(
 			const studioId = peripheralDevice.studioId
 			if (!studioId) return
 
-			await createObserverForMappingsPublication(pub, PubSub.mappingsForDevice, studioId)
+			await createObserverForMappingsPublication(pub, studioId)
 		}
 	}
 )
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.mappingsForStudio,
 	CustomCollectionName.StudioMappings,
 	async function (pub, studioId: StudioId, token) {
 		if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
-			await createObserverForMappingsPublication(pub, PubSub.mappingsForStudio, studioId)
+			await createObserverForMappingsPublication(pub, studioId)
 		}
 	}
 )
@@ -243,26 +247,17 @@ async function manipulateMappingsPublicationData(
 }
 
 /** Create an observer for each publication, to simplify the stop conditions */
-async function createObserverForMappingsPublication(
-	pub: CustomPublishArray<RoutedMappings>,
-	observerId: PubSub,
-	studioId: StudioId
-) {
-	const observer = await setUpOptimizedObserver<
+async function createObserverForMappingsPublication(pub: CustomPublish<RoutedMappings>, studioId: StudioId) {
+	await setUpOptimizedObserverArray<
 		RoutedMappings,
 		RoutedMappingsArgs,
 		RoutedMappingsState,
 		RoutedMappingsUpdateProps
 	>(
-		`pub_${observerId}_${studioId}`,
+		`${CustomCollectionName.StudioMappings}_${studioId}`,
 		{ studioId },
 		setupMappingsPublicationObservers,
 		manipulateMappingsPublicationData,
-		(_args, newData) => {
-			pub.updatedDocs(newData)
-		}
+		pub
 	)
-	pub.onStop(() => {
-		observer.stop()
-	})
 }

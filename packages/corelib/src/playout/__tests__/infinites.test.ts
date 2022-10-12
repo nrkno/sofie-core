@@ -621,7 +621,7 @@ describe('Infinites', () => {
 						PieceLifespan.OutOnRundownChange,
 						true
 					),
-					userDuration: { end: 5000 },
+					userDuration: { endRelativeToPart: 5000 },
 				},
 				{
 					...createPieceInstanceAsInfinite(
@@ -632,7 +632,7 @@ describe('Infinites', () => {
 						'three',
 						PieceLifespan.OutOnRundownChange
 					),
-					stoppedPlayback: 5000,
+					plannedStoppedPlayback: 5000,
 				},
 			]
 			const part = { rundownId, segmentId }

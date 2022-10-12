@@ -32,13 +32,15 @@ export interface IStudioSettings {
 	/** Should the play from anywhere feature be enabled in this studio */
 	enablePlayFromAnywhere?: boolean
 
-	/** If set, forces the "now"-time to be set right away (aka the "multi-playout-gateway" feature).
-	 * even for single playout-gateways */
-	forceSettingNowTime?: boolean
+	/**
+	 * If set, forces the multi-playout-gateway mode (aka set "now"-time right away)
+	 * for single playout-gateways setups
+	 */
+	forceMultiGatewayMode?: boolean
 
 	/** How much extra delay to add to the Now-time (used for the "multi-playout-gateway" feature) .
 	 * A higher value adds delays in playout, but reduces the risk of missed frames. */
-	nowSafeLatency?: number
+	multiGatewayNowSafeLatency?: number
 
 	/** Preserve unsynced segment contents when the playing segment is removed, rather than removing all but the playing part */
 	preserveUnsyncedPlayingSegmentContents?: boolean

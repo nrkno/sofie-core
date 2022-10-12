@@ -3092,10 +3092,10 @@
     webpack-sources "^3.2.2"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.46.0-in-testing"
+  version "1.47.0-in-development"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "7.4.0-release46.1"
+    timeline-state-resolver-types "7.5.0-nightly-release47-20221005-091131-abc856b2a.0"
     tslib "^2.4.0"
     type-fest "^2.19.0"
 
@@ -3120,7 +3120,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.46.0-in-testing"
+  version "1.47.0-in-development"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     "@sofie-automation/shared-lib" "link:shared-lib"
@@ -3136,7 +3136,7 @@
     underscore "^1.13.4"
 
 "@sofie-automation/shared-lib@link:shared-lib":
-  version "1.46.0-in-testing"
+  version "1.47.0-in-development"
   dependencies:
     tslib "^2.4.0"
     type-fest "^2.19.0"
@@ -13711,10 +13711,10 @@ stylehacks@^5.1.0:
     browserslist "^4.16.6"
     postcss-selector-parser "^6.0.4"
 
-superfly-timeline@^8.2.8:
-  version "8.2.8"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.8.tgz#4f0df61494a0c5a7563c3745d066439d760f8a03"
-  integrity sha512-J9WXNHdyKGby1vp52Uv6BfEevXjBFPi01XyH6ts/mWcS56YdCftc1rmGoekLiIG5TBZ++XgtJdO1vwvCPfBaEQ==
+superfly-timeline@^8.3.0:
+  version "8.3.0"
+  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.3.0.tgz#9ee7b396fb918c6a9aaf90a7fda426ec40b103cf"
+  integrity sha512-HrGnrCBY8HF33xyKdJL28mvO301VtKcFZ2QyhF3p4d6Or4QzfDmOZ9t/8HXa4CLIZ0G5JtcPX/Cwq61X7NozJw==
   dependencies:
     tslib "^2.3.1"
     underscore "^1.13.2"
@@ -13917,7 +13917,7 @@ threadedclass@^0.8.0:
     is-running "^2.1.0"
     tslib "^1.13.0"
 
-threadedclass@^1.1.0:
+threadedclass@^1.1.0, threadedclass@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.1.1.tgz#6813b3c401b3d55264f6225c9d2c15516d7efa97"
   integrity sha512-HffBjerRZGOlhUBt9Ue8nYCuV6khK9er86w4svTvf1Xn6ibAyJok290o2MJ/qJ1vy0A4UphEo3DSsxFN5g+TBQ==
@@ -13962,17 +13962,17 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.4.0-release46.1:
-  version "7.4.0-release46.1"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.4.0-release46.1.tgz#e5c5e3959bc931d1b6adde72589b30e7c7681f20"
-  integrity sha512-PDzQdjiP6bSVm7O+QEqSZ7teYxU/1JfxkdLmvei+z23PldJ3yEBpG/uI/C+OfadeZMRQdKYErBRGQqn5VYSq0Q==
+timeline-state-resolver-types@7.5.0-nightly-release47-20221005-091131-abc856b2a.0:
+  version "7.5.0-nightly-release47-20221005-091131-abc856b2a.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0-nightly-release47-20221005-091131-abc856b2a.0.tgz#a32f2f1a99ff0646d2db0566e2a532ec13774107"
+  integrity sha512-F7VTv3D4WBN6EzEUM0VTAt4hZqwTuIrNGpnjx+pnW6jgueDRoHGuXqQwPG4nuNRUKgxNT92OgnqX58XiqNPG5A==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.4.0-release46.1:
-  version "7.4.0-release46.1"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.4.0-release46.1.tgz#2538cb4938e4519e79eb846b67792d9a2c76aa96"
-  integrity sha512-qjnAkW2eGb9mQMrTHzij4167iKHV7Nz/HpGjuSHr38wabKHw6Vf5oYeZeFyK9jlL2E+204/5mrXSBDwlm/pbSg==
+timeline-state-resolver@7.5.0-nightly-release47-20221005-091131-abc856b2a.0:
+  version "7.5.0-nightly-release47-20221005-091131-abc856b2a.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.5.0-nightly-release47-20221005-091131-abc856b2a.0.tgz#82152ef799893e0ad64371f2a8b9aadfcef2b195"
+  integrity sha512-lbUagFzHcrt9CxBYHsVhmvogjFg4YJk5m1UfzgOMP0EOgHd9DdTYiYZE/XBp9dRHDQ4PYaVvRyzG1/gX6HpJug==
   dependencies:
     "@tv2media/v-connection" "^6.0.2"
     atem-connection "2.4.0"
@@ -13992,9 +13992,9 @@ timeline-state-resolver@7.4.0-release46.1:
     p-timeout "^3.2.0"
     request "^2.88.0"
     sprintf-js "^1.1.2"
-    superfly-timeline "^8.2.8"
-    threadedclass "^1.1.0"
-    timeline-state-resolver-types "7.4.0-release46.1"
+    superfly-timeline "^8.3.0"
+    threadedclass "^1.1.1"
+    timeline-state-resolver-types "7.5.0-nightly-release47-20221005-091131-abc856b2a.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.5"
     underscore "^1.13.4"

@@ -8,6 +8,7 @@ import {
 	serializeTimelineBlob,
 	TimelineComplete,
 	TimelineCompleteGenerationVersions,
+	TimelineEnableExt,
 	TimelineObjGeneric,
 	TimelineObjRundown,
 	TimelineObjType,
@@ -25,7 +26,6 @@ import {
 } from '@sofie-automation/corelib/dist/lib'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../cache'
 import { logger } from '../../logging'
-import _ = require('underscore')
 import { getCurrentTime, getSystemVersion } from '../../lib'
 import { getResolvedPiecesFromFullTimeline } from '../pieces'
 import {
@@ -43,8 +43,10 @@ import { endTrace, sendTrace, startTrace } from '@sofie-automation/corelib/dist/
 import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/context/lib'
-import { buildTimelineObjsForRundown } from './rundown'
+import { buildTimelineObjsForRundown, RundownTimelineTimingContext } from './rundown'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { deNowifyMultiGatewayTimeline } from './multi-gateway'
+import { validateTimeline } from 'superfly-timeline'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -115,7 +117,17 @@ export async function updateStudioTimeline(
 		studio.blueprintId,
 		studioBlueprint?.blueprint?.blueprintVersion ?? '-'
 	)
-	processAndSaveTimelineObjects(context, cache, baselineObjects, versions, undefined)
+
+	flattenAndProcessTimelineObjects(context, baselineObjects)
+
+	// Future: We should handle any 'now' objects that are at the root of this timeline
+	preserveOrReplaceNowTimesInObjects(cache, baselineObjects)
+
+	if (cache.isMultiGatewayMode) {
+		logAnyRemainingNowTimes(context, baselineObjects)
+	}
+
+	saveTimeline(context, cache, baselineObjects, versions)
 
 	if (studioBaseline) {
 		updateBaselineExpectedPackagesOnStudio(context, cache, studioBaseline)
@@ -128,7 +140,7 @@ export async function updateStudioTimeline(
 export async function updateTimeline(
 	context: JobContext,
 	cache: CacheForPlayout,
-	forceNowToTime?: Time
+	timeOffsetIntoPart?: Time
 ): Promise<void> {
 	const span = context.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
@@ -137,47 +149,26 @@ export async function updateTimeline(
 		throw new Error(`RundownPlaylist ("${cache.Playlist.doc._id}") is not active")`)
 	}
 
-	const timeline = await getTimelineRundown(context, cache)
+	const { versions, objs: timelineObjs, timingContext: timingInfo } = await getTimelineRundown(context, cache)
 
-	processAndSaveTimelineObjects(context, cache, timeline.objs, timeline.versions, forceNowToTime)
+	flattenAndProcessTimelineObjects(context, timelineObjs)
+
+	preserveOrReplaceNowTimesInObjects(cache, timelineObjs)
+
+	if (cache.isMultiGatewayMode) {
+		deNowifyMultiGatewayTimeline(context, cache, timelineObjs, timeOffsetIntoPart, timingInfo)
+
+		logAnyRemainingNowTimes(context, timelineObjs)
+	}
+
+	saveTimeline(context, cache, timelineObjs, versions)
+
+	logger.debug('updateTimeline done!')
 
 	if (span) span.end()
 }
 
-function processAndSaveTimelineObjects(
-	context: JobContext,
-	cache: CacheForStudioBase,
-	timelineObjs: Array<TimelineObjGeneric>,
-	versions: TimelineCompleteGenerationVersions,
-	forceNowToTime: Time | undefined
-): void {
-	processTimelineObjects(context, timelineObjs)
-
-	/** The timestamp that "now" was set to */
-	let theNowTime = 0
-
-	if (forceNowToTime) {
-		// used when autoNexting
-		theNowTime = forceNowToTime
-	} else {
-		// HACK: TODO
-		// const playoutDevices = cache.PeripheralDevices.findFetch(
-		// 	(device) => device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
-		// )
-		// if (
-		// 	playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
-		// 	studio.settings.forceSettingNowTime
-		// ) {
-		// 	const worstLatency = Math.max(0, ...playoutDevices.map((device) => getExpectedLatency(device).safe))
-		// 	/** Add a little more latency, to account for network latency variability */
-		// 	const ADD_SAFE_LATENCY = studio.settings.nowSafeLatency || 30
-		// 	theNowTime = getCurrentTime() + worstLatency + ADD_SAFE_LATENCY
-		// }
-	}
-	if (theNowTime) {
-		setNowToTimeInObjects(timelineObjs, theNowTime)
-	}
-
+function preserveOrReplaceNowTimesInObjects(cache: CacheForStudioBase, timelineObjs: Array<TimelineObjGeneric>) {
 	const timeline = cache.Timeline.doc
 	const oldTimelineObjsMap = normalizeArray(
 		(timeline?.timelineBlob !== undefined && deserializeTimelineBlob(timeline.timelineBlob)) || [],
@@ -196,7 +187,7 @@ function processAndSaveTimelineObjects(
 			})
 		}
 
-		if (oldNow !== undefined && tlo) {
+		if (oldNow !== undefined) {
 			applyToArray(tlo.enable, (enable) => {
 				if (enable.start === 'now') {
 					enable.start = oldNow
@@ -205,10 +196,34 @@ function processAndSaveTimelineObjects(
 			})
 		}
 	})
+}
 
-	saveTimeline(context, cache, timelineObjs, versions)
+function logAnyRemainingNowTimes(_context: JobContext, timelineObjs: Array<TimelineObjGeneric>): void {
+	const ids: string[] = []
 
-	logger.debug('updateTimeline done!')
+	const hasNow = (obj: TimelineEnableExt | TimelineEnableExt[]) => {
+		let res = false
+		applyToArray(obj, (enable) => {
+			if (enable.start === 'now' || enable.end === 'now') res = true
+		})
+		return res
+	}
+
+	for (const obj of timelineObjs) {
+		if (hasNow(obj.enable)) {
+			ids.push(obj.id)
+		}
+
+		for (const kf of obj.keyframes || []) {
+			if (hasNow(kf.enable)) {
+				ids.push(kf.id)
+			}
+		}
+	}
+
+	if (ids.length) {
+		logger.error(`Some timeline objects have unexpected now times!: ${JSON.stringify(ids)}`)
+	}
 }
 
 /** Store the timelineobjects into the cache, and perform any post-save actions */
@@ -250,8 +265,8 @@ function getPartInstanceTimelineInfo(
 	partInstance: DBPartInstance | undefined
 ): SelectedPartInstanceTimelineInfo | undefined {
 	if (partInstance) {
-		const partLastStarted = partInstance.timings?.startedPlayback
-		const nowInPart = partLastStarted === undefined ? 0 : currentTime - partLastStarted
+		const partStarted = partInstance.timings?.plannedStartedPlayback
+		const nowInPart = partStarted === undefined ? 0 : currentTime - partStarted
 		const currentPieces = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
 		const pieceInstances = processAndPrunePieceInstanceTimings(sourceLayers, currentPieces, nowInPart)
 
@@ -271,7 +286,11 @@ function getPartInstanceTimelineInfo(
 async function getTimelineRundown(
 	context: JobContext,
 	cache: CacheForPlayout
-): Promise<{ objs: Array<TimelineObjRundown>; versions: TimelineCompleteGenerationVersions }> {
+): Promise<{
+	objs: Array<TimelineObjRundown>
+	versions: TimelineCompleteGenerationVersions
+	timingContext: RundownTimelineTimingContext | undefined
+}> {
 	const span = context.startSpan('getTimelineRundown')
 	try {
 		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObjExt> = []
@@ -310,9 +329,9 @@ async function getTimelineRundown(
 				logger.warn(`Missing Baseline objects for Rundown "${activeRundown._id}"`)
 			}
 
-			timelineObjs = timelineObjs.concat(
-				buildTimelineObjsForRundown(context, cache, activeRundown, partInstancesInfo)
-			)
+			const rundownTimelineResult = buildTimelineObjsForRundown(context, cache, activeRundown, partInstancesInfo)
+
+			timelineObjs = timelineObjs.concat(rundownTimelineResult.timeline)
 			timelineObjs = timelineObjs.concat(await pLookaheadObjs)
 
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
@@ -373,6 +392,7 @@ async function getTimelineRundown(
 					}
 				}),
 				versions: timelineVersions ?? generateTimelineVersions(context.studio, undefined, '-'),
+				timingContext: rundownTimelineResult.timingContext,
 			}
 		} else {
 			if (span) span.end()
@@ -380,6 +400,7 @@ async function getTimelineRundown(
 			return {
 				objs: [],
 				versions: generateTimelineVersions(context.studio, undefined, '-'),
+				timingContext: undefined,
 			}
 		}
 	} catch (e) {
@@ -388,6 +409,7 @@ async function getTimelineRundown(
 		return {
 			objs: [],
 			versions: generateTimelineVersions(context.studio, undefined, '-'),
+			timingContext: undefined,
 		}
 	}
 }
@@ -398,7 +420,7 @@ async function getTimelineRundown(
  * @param context
  * @param timelineObjs Array of timeline objects
  */
-function processTimelineObjects(context: JobContext, timelineObjs: Array<TimelineObjGeneric>): void {
+function flattenAndProcessTimelineObjects(context: JobContext, timelineObjs: Array<TimelineObjGeneric>): void {
 	const span = context.startSpan('processTimelineObjects')
 
 	// first, split out any grouped objects, to make the timeline shallow:
@@ -431,24 +453,14 @@ function processTimelineObjects(context: JobContext, timelineObjs: Array<Timelin
 		fixObjectChildren(obj)
 	}
 
-	if (span) span.end()
-}
+	try {
+		// Do a validation of the timeline, to ensure that it doesn't contain any nastiness that can crash the Timeline-resolving later.
+		validateTimeline(timelineObjs, true)
+	} catch (err) {
+		throw new Error(`Error in generated timeline: Validation failed: ${err}`)
+	}
 
-/**
- * goes through timelineObjs and forces the "now"-values to the absolute time specified
- * @param timelineObjs Array of (flat) timeline objects
- * @param now The time to set the "now":s to
- */
-function setNowToTimeInObjects(timelineObjs: Array<TimelineObjGeneric>, now: Time): void {
-	// TODO - this should use deNowifyTimeline from pieces.ts instead. This implementation is flawed in that pieceGroups using 'now' will end up being offset about 30 years into the future
-	_.each(timelineObjs, (o) => {
-		applyToArray(o.enable, (enable) => {
-			if (enable.start === 'now') {
-				enable.start = now
-				enable.setFromNow = true
-			}
-		})
-	})
+	if (span) span.end()
 }
 
 /**

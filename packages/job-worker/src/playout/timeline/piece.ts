@@ -37,9 +37,9 @@ export function transformPieceGroupAndObjects(
 	const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(
 		playlistId,
 		pieceInstance,
+		pieceEnable,
 		controlObjClasses,
 		partGroup,
-		pieceEnable,
 		pieceStartOffset
 	)
 	// We need all these objects so that we can resolve all the piece timings in this timeline
@@ -103,5 +103,17 @@ export function getPieceEnableInsidePart(
 			pieceEnable.duration = `#${partGroupId} - ${partTimings.toPartPostroll}`
 		}
 	}
+
+	if (pieceInstance.userDuration) {
+		delete pieceEnable.duration
+
+		if ('endRelativeToPart' in pieceInstance.userDuration) {
+			pieceEnable.end = pieceInstance.userDuration.endRelativeToPart
+		} else {
+			// This will be fixed later
+			pieceEnable.end = 'now'
+		}
+	}
+
 	return pieceEnable
 }

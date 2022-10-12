@@ -721,7 +721,7 @@ export function AdLibPanel({
 						next: segment.isNext && !segment.isLive,
 						past:
 							segment.parts.reduce((memo, part) => {
-								return part.timings?.startedPlayback && part.timings?.duration ? memo : false
+								return part.timings?.plannedStartedPlayback && part.timings?.duration ? memo : false
 							}, true) === true,
 					})}
 					onClick={() => setSelectedSegment(segment)}
