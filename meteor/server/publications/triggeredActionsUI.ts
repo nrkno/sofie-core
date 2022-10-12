@@ -6,7 +6,12 @@ import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { DBTriggeredActions, TriggeredActions, UITriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { Complete, literal } from '../../lib/lib'
-import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
+import {
+	CustomPublishCollection,
+	meteorCustomPublish,
+	setUpCollectionOptimizedObserver,
+	TriggerUpdate,
+} from '../lib/customPublication'
 import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
@@ -16,9 +21,7 @@ interface UITriggeredActionsArgs {
 	readonly showStyleBaseId: ShowStyleBaseId | null
 }
 
-interface UITriggeredActionsState {
-	cachedTriggeredActions: Map<TriggeredActionId, UITriggeredActionsObj>
-}
+type UITriggeredActionsState = Record<string, never>
 
 interface UITriggeredActionsUpdateProps {
 	invalidateTriggeredActions: TriggeredActionId[]
@@ -70,37 +73,32 @@ async function setupUITriggeredActionsPublicationObservers(
 }
 async function manipulateUITriggeredActionsPublicationData(
 	args: UITriggeredActionsArgs,
-	state: Partial<UITriggeredActionsState>,
+	_state: Partial<UITriggeredActionsState>,
+	collection: CustomPublishCollection<UITriggeredActionsObj>,
 	updateProps: Partial<ReadonlyDeep<UITriggeredActionsUpdateProps>> | undefined
-): Promise<UITriggeredActionsObj[] | null> {
+): Promise<void> {
 	// Prepare data for publication:
-
-	if (!state.cachedTriggeredActions) state.cachedTriggeredActions = new Map()
 
 	if (!updateProps) {
 		// First run
 		const docs = await TriggeredActions.findFetchAsync(compileMongoSelector(args.showStyleBaseId))
 
 		for (const doc of docs) {
-			state.cachedTriggeredActions.set(doc._id, convertDocument(doc))
+			collection.insert(convertDocument(doc))
 		}
 	} else if (updateProps.invalidateTriggeredActions && updateProps.invalidateTriggeredActions.length > 0) {
 		const changedIds = updateProps.invalidateTriggeredActions
 
 		// Remove them from the state, so that we detect deletions
 		for (const id of changedIds) {
-			state.cachedTriggeredActions.delete(id)
+			collection.remove(id)
 		}
 
 		const docs = await TriggeredActions.findFetchAsync(compileMongoSelector(args.showStyleBaseId, changedIds))
 		for (const doc of docs) {
-			state.cachedTriggeredActions.set(doc._id, convertDocument(doc))
+			collection.replace(convertDocument(doc))
 		}
 	}
-
-	// TODO - it would be nice to optimise this by telling the optimizedobserver which docs may have changed, rather than letting it diff them all
-
-	return Array.from(state.cachedTriggeredActions.values())
 }
 
 meteorCustomPublish(
@@ -114,7 +112,7 @@ meteorCustomPublish(
 			NoSecurityReadAccess.any() ||
 			(showStyleBaseId && (await ShowStyleReadAccess.showStyleBase({ _id: showStyleBaseId }, cred)))
 		) {
-			await setUpOptimizedObserverArray<
+			await setUpCollectionOptimizedObserver<
 				UITriggeredActionsObj,
 				UITriggeredActionsArgs,
 				UITriggeredActionsState,

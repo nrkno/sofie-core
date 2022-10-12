@@ -7,7 +7,12 @@ import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UIStudio } from '../../lib/api/studios'
 import { DBStudio, Studios } from '../../lib/collections/Studios'
 import { Complete, literal } from '../../lib/lib'
-import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
+import {
+	CustomPublishCollection,
+	meteorCustomPublish,
+	setUpCollectionOptimizedObserver,
+	TriggerUpdate,
+} from '../lib/customPublication'
 import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
@@ -17,9 +22,7 @@ interface UIStudioArgs {
 	readonly studioId: StudioId | null
 }
 
-interface UIStudioState {
-	cachedStudios: Map<StudioId, UIStudio>
-}
+type UIStudioState = Record<string, never>
 
 interface UIStudioUpdateProps {
 	invalidateStudioIds: StudioId[]
@@ -82,9 +85,10 @@ async function setupUIStudioPublicationObservers(
 }
 async function manipulateUIStudioPublicationData(
 	args: UIStudioArgs,
-	state: Partial<UIStudioState>,
+	_state: Partial<UIStudioState>,
+	collection: CustomPublishCollection<UIStudio>,
 	updateProps: ReadonlyDeep<Partial<UIStudioUpdateProps>> | undefined
-): Promise<UIStudio[] | null> {
+): Promise<void> {
 	// Prepare data for publication:
 
 	// Ignore _updateProps, as we arent caching anything so we have to rerun from scratch no matter what
@@ -94,12 +98,13 @@ async function manipulateUIStudioPublicationData(
 		const studio = (await Studios.findOneAsync(args.studioId, { projection: fieldSpecifier })) as
 			| Pick<DBStudio, StudioFields>
 			| undefined
-		if (!studio) return []
 
-		return [convertDocument(studio)]
+		if (studio) {
+			collection.replace(convertDocument(studio))
+		} else {
+			collection.remove(args.studioId)
+		}
 	} else {
-		if (!state.cachedStudios) state.cachedStudios = new Map()
-
 		if (!updateProps) {
 			// First run
 			const docs = (await Studios.findFetchAsync({}, { projection: fieldSpecifier })) as Array<
@@ -107,25 +112,21 @@ async function manipulateUIStudioPublicationData(
 			>
 
 			for (const doc of docs) {
-				state.cachedStudios.set(doc._id, convertDocument(doc))
+				collection.insert(convertDocument(doc))
 			}
 		} else if (updateProps.invalidateStudioIds && updateProps.invalidateStudioIds.length > 0) {
 			const changedIds = updateProps.invalidateStudioIds
 
 			// Remove them from the state, so that we detect deletions
 			for (const id of changedIds) {
-				state.cachedStudios.delete(id)
+				collection.remove(id)
 			}
 
 			const docs = await Studios.findFetchAsync({ _id: { $in: changedIds as StudioId[] } })
 			for (const doc of docs) {
-				state.cachedStudios.set(doc._id, convertDocument(doc))
+				collection.replace(convertDocument(doc))
 			}
 		}
-
-		// TODO - it would be nice to optimise this by telling the optimizedobserver which docs may have changed, rather than letting it diff them all
-
-		return Array.from(state.cachedStudios.values())
 	}
 }
 
@@ -133,7 +134,7 @@ meteorCustomPublish(PubSub.uiStudio, CustomCollectionName.UIStudio, async functi
 	const cred = await resolveCredentials({ userId: this.userId, token: undefined })
 
 	if (!cred || NoSecurityReadAccess.any() || (studioId && (await StudioReadAccess.studio(studioId, cred)))) {
-		await setUpOptimizedObserverArray<UIStudio, UIStudioArgs, UIStudioState, UIStudioUpdateProps>(
+		await setUpCollectionOptimizedObserver<UIStudio, UIStudioArgs, UIStudioState, UIStudioUpdateProps>(
 			`pub_${PubSub.uiStudio}_${studioId}`,
 			{ studioId },
 			setupUIStudioPublicationObservers,
