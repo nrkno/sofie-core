@@ -7,6 +7,7 @@ on:
     tags:
       - "v**"
   pull_request:
+  workflow_dispatch:
 
 jobs:
   lint-core:
@@ -381,7 +382,7 @@ jobs:
     timeout-minutes: 15
 
     # only run for tags
-    if: contains(github.ref, 'refs/tags/')
+    if: contains(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
 
     needs:
       - test-packages
