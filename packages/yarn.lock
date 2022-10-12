@@ -3092,12 +3092,8 @@
     webpack-sources "^3.2.2"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "42.0.1"
-  dependencies:
-    "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "npm:@tv2media/timeline-state-resolver-types@2.2.1"
-    tslib "^2.4.0"
-    type-fest "^2.19.0"
+  version "0.0.0"
+  uid ""
 
 "@sofie-automation/code-standard-preset@~2.0.2":
   version "2.0.2"
