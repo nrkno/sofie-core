@@ -12,7 +12,10 @@ type CustomPublishCollectionDocument<TDoc> = {
 	document: TDoc
 } | null // removed
 
-/** Caches data, allowing reads from cache, but not writes */
+/**
+ * Caches data for a publication
+ * Inspired by our CacheCollection used for mongodb, but simplified
+ */
 export class CustomPublishCollection<TDoc extends { _id: ProtectedString<any> }> {
 	readonly #name: string
 
@@ -26,7 +29,6 @@ export class CustomPublishCollection<TDoc extends { _id: ProtectedString<any> }>
 	/**
 	 * Find documents matching a criteria
 	 * @param selector selector function to match documents, or null to fetch all documents
-	 * @param options
 	 * @returns The matched documents
 	 */
 	findAll(selector: SelectorFunction<TDoc> | null): TDoc[] {
@@ -50,7 +52,6 @@ export class CustomPublishCollection<TDoc extends { _id: ProtectedString<any> }>
 	/**
 	 * Find a single document
 	 * @param selector Id or selector function
-	 * @param options
 	 * @returns The first matched document, if any
 	 */
 	findOne(selector: TDoc['_id'] | SelectorFunction<TDoc>): TDoc | undefined {
@@ -68,6 +69,11 @@ export class CustomPublishCollection<TDoc extends { _id: ProtectedString<any> }>
 		}
 	}
 
+	/**
+	 * Insert a single document
+	 * @param doc The document to insert
+	 * @returns The id of the inserted document
+	 */
 	insert(doc: TDoc): TDoc['_id'] {
 		const span = profiler.startSpan(`DBCache.insert.${this.#name}`)
 
@@ -88,6 +94,12 @@ export class CustomPublishCollection<TDoc extends { _id: ProtectedString<any> }>
 		if (span) span.end()
 		return doc._id
 	}
+
+	/**
+	 * Remove one or more documents
+	 * @param selector Id of the document to update, a function to check each document, or null to remove all
+	 * @returns The ids of the removed documents
+	 */
 	remove(selector: TDoc['_id'] | SelectorFunction<TDoc> | null): Array<TDoc['_id']> {
 		const span = profiler.startSpan(`DBCache.remove.${this.#name}`)
 
@@ -113,7 +125,6 @@ export class CustomPublishCollection<TDoc extends { _id: ProtectedString<any> }>
 	 * Update a single document
 	 * @param selector Id of the document to update
 	 * @param modifier The modifier to apply to the document. Return false to report the document as unchanged
-	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed if the modifer returned a doc
 	 * @returns The id of the updated document, if it was updated
 	 */
 	updateOne(selector: TDoc['_id'], modifier: (doc: TDoc) => TDoc | false): TDoc['_id'] | undefined {
@@ -159,7 +170,6 @@ export class CustomPublishCollection<TDoc extends { _id: ProtectedString<any> }>
 	/**
 	 * Update multiple documents
 	 * @param modifier The modifier to apply to all the documents. Return false to report a document as unchanged
-	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed
 	 * @returns All the ids that were changed
 	 */
 	updateAll(modifier: (doc: TDoc) => TDoc | false): Array<TDoc['_id']> {
@@ -200,7 +210,11 @@ export class CustomPublishCollection<TDoc extends { _id: ProtectedString<any> }>
 		return changedIds
 	}
 
-	/** Returns true if a doc was replace, false if inserted */
+	/**
+	 * Replace a single document
+	 * @param doc The document to insert
+	 * @returns True if the document was replaced, false if it was inserted
+	 */
 	replace(doc: TDoc | ReadonlyDeep<TDoc>): boolean {
 		const span = profiler.startSpan(`DBCache.replace.${this.#name}`)
 		span?.addLabels({ id: unprotectString(doc._id) })
