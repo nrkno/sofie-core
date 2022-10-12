@@ -24,10 +24,8 @@ interface OptimizedObserverWorker<TData extends { _id: ProtectedString<any> }, T
 	stop: () => void
 }
 
-type AnyOptimizedObserverWrapper = OptimizedObserverWrapper<any, unknown, unknown>
-
 /** Optimized observers */
-const optimizedObservers: Record<string, AnyOptimizedObserverWrapper> = {}
+const optimizedObservers: Record<string, OptimizedObserverWrapper<any, unknown, unknown>> = {}
 
 export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProps: Partial<UpdateProps>) => void
 
@@ -64,12 +62,6 @@ export async function setUpOptimizedObserverInner<
 	receiver: CustomPublish<PublicationDoc>,
 	lazynessDuration: number = 3 // ms
 ): Promise<void> {
-	/**
-	 * Note: the contents of this function get referenced while the observer is running, even if the original subscriber has left.
-	 * So remember to think about this in the context of the observer
-	 */
-
-	// The outer level of the observer
 	let thisObserverWrapper = optimizedObservers[identifier] as
 		| OptimizedObserverWrapper<PublicationDoc, Args, State>
 		| undefined
