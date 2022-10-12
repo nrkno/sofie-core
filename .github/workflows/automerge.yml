@@ -28,7 +28,7 @@ jobs:
         if: steps.merge.outcome == 'failure'
         run: |
           git merge --abort
-      - name: Create Pull Request on Merge failure
+      - name: Create Pull Request on merge failure
         if: steps.merge.outcome == 'failure'
         uses: repo-sync/pull-request@v2
         with:
@@ -59,10 +59,10 @@ jobs:
           git merge --no-ff origin/staging -m "Automerge 'staging' to 'develop'."
           git push
       - name: Abort merge
-        if: steps.Merge.outcome == 'failure'
+        if: steps.merge.outcome == 'failure'
         run: |
           git merge --abort
-      - name: Create Pull Request on Merge failure
+      - name: Create Pull Request on merge failure
         if: steps.merge.outcome == 'failure'
         uses: repo-sync/pull-request@v2
         with:
