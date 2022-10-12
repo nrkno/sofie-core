@@ -61,7 +61,7 @@ describe('Test blueprint post-process', () => {
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'one',
 					content: {
 						deviceType: TSR.DeviceType.ABSTRACT,
@@ -69,7 +69,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'two',
 					content: {
 						deviceType: TSR.DeviceType.CASPARCG,
@@ -77,7 +77,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: 'finalObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'three',
 					content: {
 						deviceType: TSR.DeviceType.ATEM,
@@ -85,7 +85,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'four',
 					content: {
 						deviceType: TSR.DeviceType.HYPERDECK,
@@ -119,7 +119,7 @@ describe('Test blueprint post-process', () => {
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'one',
 					content: {
 						deviceType: TSR.DeviceType.ABSTRACT,
@@ -127,7 +127,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'two',
 					content: {
 						deviceType: TSR.DeviceType.CASPARCG,
@@ -135,7 +135,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: 'testObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'three',
 					content: {
 						deviceType: TSR.DeviceType.ATEM,
@@ -143,7 +143,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'four',
 					content: {
 						deviceType: TSR.DeviceType.HYPERDECK,
@@ -168,7 +168,7 @@ describe('Test blueprint post-process', () => {
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'one',
 					content: {
 						deviceType: TSR.DeviceType.ABSTRACT,
@@ -176,7 +176,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'two',
 					content: {
 						deviceType: TSR.DeviceType.CASPARCG,
@@ -184,7 +184,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: 'finalObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'three',
 					content: {
 						deviceType: TSR.DeviceType.ATEM,
@@ -192,7 +192,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'four',
 					content: {
 						deviceType: TSR.DeviceType.HYPERDECK,
@@ -232,7 +232,7 @@ describe('Test blueprint post-process', () => {
 			const tmpObj = literal<TimelineObjGeneric>({
 				id: '',
 				layer: '',
-				enable: {},
+				enable: { while: 1 },
 				content: {} as any,
 				objectType: TimelineObjType.RUNDOWN,
 			})
@@ -243,7 +243,7 @@ describe('Test blueprint post-process', () => {
 			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'one',
 					content: {
 						deviceType: TSR.DeviceType.ABSTRACT,
@@ -251,7 +251,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'two',
 					content: {
 						deviceType: TSR.DeviceType.CASPARCG,
@@ -259,7 +259,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: 'testObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'three',
 					content: {
 						deviceType: TSR.DeviceType.ATEM,
@@ -267,7 +267,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'four',
 					content: {
 						deviceType: TSR.DeviceType.HYPERDECK,
@@ -395,7 +395,7 @@ describe('Test blueprint post-process', () => {
 					timelineObjects: [
 						literal<TimelineObjectCoreExt>({
 							id: '',
-							enable: {},
+							enable: { while: 1 },
 							layer: 'four',
 							content: {
 								deviceType: TSR.DeviceType.HYPERDECK,
@@ -531,7 +531,7 @@ describe('Test blueprint post-process', () => {
 					timelineObjects: [
 						literal<TimelineObjectCoreExt>({
 							id: '',
-							enable: {},
+							enable: { while: 1 },
 							layer: 'four',
 							content: {
 								deviceType: TSR.DeviceType.HYPERDECK,
@@ -561,6 +561,46 @@ describe('Test blueprint post-process', () => {
 
 			const resObjs = deserializePieceTimelineObjectsBlob(res[0].timelineObjectsString)
 			expect(resObjs[0].id).not.toEqual('')
+		})
+		test('piece with bad Timeline', () => {
+			const jobContext = setupDefaultJobEnvironment()
+
+			const piece = literal<IBlueprintPiece>({
+				name: 'test2',
+				externalId: 'eid2',
+				enable: { start: 0 },
+				sourceLayerId: 'sl0',
+				outputLayerId: 'ol0',
+				content: {
+					timelineObjects: [
+						literal<TimelineObjectCoreExt>({
+							id: '',
+							enable: { while: 1 },
+							layer: 'four',
+							classes: ['i-am-an-invalid-class'], // invalid since it contains "-"
+							content: {
+								deviceType: TSR.DeviceType.HYPERDECK,
+							},
+						}),
+					],
+				},
+				lifespan: PieceLifespan.OutOnRundownEnd,
+			})
+
+			expect(() => {
+				postProcessPieces(
+					jobContext,
+					[piece],
+					protectString('blueprint9'),
+					protectString('fakeRo'),
+					protectString('segment8'),
+					protectString('part6'),
+					false
+				)
+				// Error in blueprint "blueprint9": Validation of timelineObjs failed:
+				// Error: Object "IJ0Ud5lJhbIllA0_kWFIVz51eL4_": "classes[0]":
+				// Error: The string "i-am-an-invalid-class" contains a character ("-") which isn't allowed in Timeline (is an operator)
+			}).toThrowError(/error in blueprint.*contains a character/i)
 		})
 	})
 })
