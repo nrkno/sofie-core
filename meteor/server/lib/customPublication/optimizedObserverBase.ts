@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { clone, createManualPromise, lazyIgnore, ManualPromise, ProtectedString } from '../../../lib/lib'
+import { clone, createManualPromise, lazyIgnore, ProtectedString } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { CustomPublish, CustomPublishChanges } from './publish'
 
@@ -118,15 +118,31 @@ export async function setUpOptimizedObserverInner<
 		receiver.onStop(() => removeReceiver())
 
 		// Start the optimizedObserver
-		await createOptimizedObserverWorker(
-			identifier,
-			thisObserverWrapper,
-			resultingOptimizedObserver,
-			args0,
-			setupObservers,
-			manipulateData,
-			lazynessDuration
-		)
+		try {
+			const observerWorker = await createOptimizedObserverWorker(
+				identifier,
+				thisObserverWrapper,
+				args0,
+				setupObservers,
+				manipulateData,
+				lazynessDuration
+			)
+
+			Meteor.defer(() => {
+				resultingOptimizedObserver.manualResolve(observerWorker)
+			})
+		} catch (e: any) {
+			// The setup failed, so delete and cleanup the in-progress observer
+			delete optimizedObservers[identifier]
+
+			Meteor.defer(() => {
+				// Propogate to other susbcribers
+				resultingOptimizedObserver.manualReject(e)
+			})
+
+			// Propogate to the susbcriber that started this
+			throw e
+		}
 	}
 }
 
@@ -156,7 +172,6 @@ async function createOptimizedObserverWorker<
 >(
 	identifier: string,
 	thisObserverWrapper: OptimizedObserverWrapper<PublicationDoc, Args, State>,
-	resultingOptimizedObserver: ManualPromise<OptimizedObserverWorker<PublicationDoc, Args, State>>,
 	args0: ReadonlyDeep<Args>,
 	setupObservers: (
 		args: ReadonlyDeep<Args>,
@@ -169,7 +184,7 @@ async function createOptimizedObserverWorker<
 		newProps: ReadonlyDeep<Partial<UpdateProps> | undefined>
 	) => Promise<[PublicationDoc[], CustomPublishChanges<PublicationDoc>]>,
 	lazynessDuration: number // ms
-) {
+): Promise<OptimizedObserverWorker<PublicationDoc, Args, State>> {
 	let thisObserverWorker: OptimizedObserverWorker<PublicationDoc, Args, State> | undefined
 	let updateIsRunning = true
 
@@ -295,8 +310,7 @@ async function createOptimizedObserverWorker<
 			delete optimizedObservers[identifier]
 			thisObserverWorker.stop()
 
-			resultingOptimizedObserver.manualReject(new Meteor.Error(500, 'All subscribers disappeared!'))
-			return
+			throw new Meteor.Error(500, 'All subscribers disappeared!')
 		}
 
 		// Let subscribers notify that they have unsubscribe
@@ -318,15 +332,10 @@ async function createOptimizedObserverWorker<
 		}
 
 		// Observer is now ready for all to use
-		resultingOptimizedObserver.manualResolve(thisObserverWorker)
+		return thisObserverWorker
 	} catch (e: any) {
-		// The setup failed, so delete and cleanup the in-progress observer
-		delete optimizedObservers[identifier]
 		if (thisObserverWorker) thisObserverWorker.stop()
 
-		resultingOptimizedObserver.manualReject(e)
-
-		// Propogate to the susbcriber that started this
 		throw e
 	}
 }
