@@ -2,9 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
-import { meteorCustomPublishArray } from '../lib/customPublication'
 import { MappingsExtWithPackage, routeExpectedPackages, Studio, StudioId, Studios } from '../../lib/collections/Studios'
-import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
+import { setUpOptimizedObserverArray, TriggerUpdate, meteorCustomPublish } from '../lib/customPublication'
 import { ExpectedPackageDB, ExpectedPackages, getSideEffect } from '../../lib/collections/ExpectedPackages'
 import _ from 'underscore'
 import {
@@ -294,7 +293,7 @@ async function manipulateExpectedPackagesPublicationData(
 	])
 }
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.expectedPackagesForDevice,
 	CustomCollectionName.ExpectedPackagesForDevice,
 	async function (
@@ -314,26 +313,21 @@ meteorCustomPublishArray(
 				return this.ready()
 			}
 
-			const observer = await setUpOptimizedObserver<
+			await setUpOptimizedObserverArray<
 				DBObj,
 				ExpectedPackagesPublicationArgs,
 				ExpectedPackagesPublicationState,
 				ExpectedPackagesPublicationUpdateProps
 			>(
-				`pub_${PubSub.expectedPackagesForDevice}_${studioId}_${deviceId}_${JSON.stringify(
+				`${PubSub.expectedPackagesForDevice}_${studioId}_${deviceId}_${JSON.stringify(
 					(filterPlayoutDeviceIds || []).sort()
 				)}`,
 				{ studioId, deviceId, filterPlayoutDeviceIds },
 				setupExpectedPackagesPublicationObservers,
 				manipulateExpectedPackagesPublicationData,
-				(_args, newData) => {
-					pub.updatedDocs(newData)
-				},
+				pub,
 				500 // ms, wait this time before sending an update
 			)
-			pub.onStop(() => {
-				observer.stop()
-			})
 		} else {
 			logger.warn(`Pub.expectedPackagesForDevice: Not allowed: "${deviceId}"`)
 		}

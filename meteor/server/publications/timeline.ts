@@ -12,8 +12,12 @@ import {
 import { meteorPublish } from './lib'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/collections/lib'
-import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
-import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
+import {
+	CustomPublish,
+	meteorCustomPublish,
+	setUpOptimizedObserverArray,
+	TriggerUpdate,
+} from '../lib/customPublication'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Studios, getActiveRoutes, StudioId, ResultingMappingRoutes } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
@@ -36,7 +40,7 @@ meteorPublish(PubSub.timeline, async function (selector, token) {
 	return null
 })
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.timelineForDevice,
 	CustomCollectionName.StudioTimeline,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
@@ -48,17 +52,17 @@ meteorCustomPublishArray(
 			const studioId = peripheralDevice.studioId
 			if (!studioId) return
 
-			await createObserverForTimelinePublication(pub, PubSub.timelineForDevice, studioId)
+			await createObserverForTimelinePublication(pub, studioId)
 		}
 	}
 )
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.timelineForStudio,
 	CustomCollectionName.StudioTimeline,
 	async function (pub, studioId: StudioId, token) {
 		if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
-			await createObserverForTimelinePublication(pub, PubSub.timelineForStudio, studioId)
+			await createObserverForTimelinePublication(pub, studioId)
 		}
 	}
 )
@@ -198,28 +202,18 @@ async function manipulateTimelinePublicationData(
 }
 
 /** Create an observer for each publication, to simplify the stop conditions */
-async function createObserverForTimelinePublication(
-	pub: CustomPublishArray<RoutedTimeline>,
-	observerId: PubSub,
-	studioId: StudioId
-) {
-	const observer = await setUpOptimizedObserver<
+async function createObserverForTimelinePublication(pub: CustomPublish<RoutedTimeline>, studioId: StudioId) {
+	await setUpOptimizedObserverArray<
 		RoutedTimeline,
 		RoutedTimelineArgs,
 		RoutedTimelineState,
 		RoutedTimelineUpdateProps
 	>(
-		`pub_${observerId}_${studioId}`,
+		`${CustomCollectionName.StudioTimeline}_${studioId}`,
 		{ studioId },
 		setupTimelinePublicationObservers,
 		manipulateTimelinePublicationData,
-		(_args, data) => {
-			// Don't need to perform any deep diffing, that's being done by CustomPublishArray
-			pub.updatedDocs(data)
-		},
+		pub,
 		0 // ms
 	)
-	pub.onStop(() => {
-		observer.stop()
-	})
 }

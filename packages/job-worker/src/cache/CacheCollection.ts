@@ -192,6 +192,11 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		return res
 	}
 
+	/**
+	 * Insert a single document
+	 * @param doc The document to insert
+	 * @returns The id of the inserted document
+	 */
 	insert(doc: TDoc): TDoc['_id'] {
 		this.assertNotToBeRemoved('insert')
 
@@ -215,6 +220,12 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		if (span) span.end()
 		return doc._id
 	}
+
+	/**
+	 * Remove one or more documents
+	 * @param selector Id of the document to update, a function to check each document, or null to remove all
+	 * @returns The ids of the removed documents
+	 */
 	remove(selector: TDoc['_id'] | SelectorFunction<TDoc> | null): Array<TDoc['_id']> {
 		this.assertNotToBeRemoved('remove')
 
@@ -342,7 +353,11 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		return changedIds
 	}
 
-	/** Returns true if a doc was replace, false if inserted */
+	/**
+	 * Replace a single document
+	 * @param doc The document to insert
+	 * @returns True if the document was replaced, false if it was inserted
+	 */
 	replace(doc: TDoc | ReadonlyDeep<TDoc>): boolean {
 		this.assertNotToBeRemoved('replace')
 
