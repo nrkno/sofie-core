@@ -10,7 +10,7 @@ import {
 } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { startTransaction } from '../profiler'
-import { ChangeStream, MongoClient } from 'mongodb'
+import { MongoClient } from 'mongodb'
 import { createInvalidateWorkerDataCache, InvalidateWorkerDataCache } from './caches'
 import { logger } from '../logging'
 import { LocksManager } from '../locks'
@@ -72,8 +72,6 @@ export abstract class WorkerParentBase {
 	readonly #jobManager: JobManager
 	readonly #jobStream: JobStream
 
-	readonly #streams: Array<ChangeStream<any>> = []
-
 	#pendingInvalidations: InvalidateWorkerDataCache | null = null
 
 	#threadStatus = ThreadStatus.Closed
@@ -106,9 +104,9 @@ export abstract class WorkerParentBase {
 	}
 
 	protected registerStatusEvents(workerThread: Promisify<any>): void {
-		ThreadedClassManager.onEvent(workerThread, 'error', (e0: any) => {
-			logger.error(`Error in Worker ${this.#prettyName}: `, e0)
-		})
+		ThreadedClassManager.onEvent(workerThread, 'error', (error: any) =>
+			logger.error(`Error in Worker ${this.#prettyName}.`, { data: error })
+		)
 		ThreadedClassManager.onEvent(workerThread, 'restarted', () => {
 			logger.info(`Worker ${this.#prettyName} restarted`)
 			this.#threadStatus = ThreadStatus.PendingInit
@@ -145,7 +143,7 @@ export abstract class WorkerParentBase {
 	protected startWorkerLoop(mongoUri: string): void {
 		if (!this.#watchdog) {
 			// Start a watchdog, to detect if a job has been running for longer than a max threshold. If it has, then we forcefully kill it
-			// ThreadedClass will propogate the completion error through the usual route
+			// ThreadedClass will propagate the completion error through the usual route
 			this.#watchdog = setInterval(() => {
 				if (this.#watchdogJobStarted && this.#watchdogJobStarted + WATCHDOG_KILL_DURATION < Date.now()) {
 					// A job has been running for too long.
@@ -187,8 +185,16 @@ export abstract class WorkerParentBase {
 									continue
 								case ThreadStatus.PendingInit:
 									logger.debug(`Re-initialising worker thread: "${this.#queueName}"`)
-									// Reinit the worker
-									await this.initWorker(mongoUri, this.#mongoDbName)
+									// Reinitialize the worker
+									try {
+										await this.initWorker(mongoUri, this.#mongoDbName)
+									} catch (error) {
+										logger.error(`Worker ${this.#prettyName} could not be initialized:`, {
+											data: error,
+										})
+										this.#threadStatus = ThreadStatus.Closed
+										continue
+									}
 
 									logger.info(`Worker ${this.#prettyName} ready`)
 									this.#threadStatus = ThreadStatus.Ready
@@ -342,9 +348,9 @@ export abstract class WorkerParentBase {
 			this.#reportedStatusCode = statusCode
 			this.#reportedReason = reason
 
-			this.saveStatusCode(statusCode, reason).catch((e) => {
-				logger.error('Error updating thread status', e)
-			})
+			this.saveStatusCode(statusCode, reason).catch((error) =>
+				logger.error(`Error updating thread status.`, { data: error })
+			)
 		}
 	}
 
@@ -391,8 +397,6 @@ export abstract class WorkerParentBase {
 
 		// stop the thread
 		await this.terminateWorkerThread()
-
-		await Promise.all(this.#streams.map(async (s) => s.close()))
 
 		await this.#jobStream.close()
 	}
