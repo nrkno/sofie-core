@@ -130,6 +130,10 @@ export async function setUpOptimizedObserverInner<
 	}
 }
 
+/**
+ * Get the number of subscribers for an OptimizedObserver
+ * @param identifier identifier, shared between the listeners that use the same observer.
+ */
 export function optimizedObserverCountSubscribers(identifier: string): number | null {
 	if (optimizedObservers[identifier]) {
 		return (
@@ -141,6 +145,9 @@ export function optimizedObserverCountSubscribers(identifier: string): number | 
 	}
 }
 
+/**
+ * Create the worker component of the optimizedObserver, that handles the subscriptions and data processing
+ */
 async function createOptimizedObserverWorker<
 	PublicationDoc extends { _id: ProtectedString<any> },
 	Args,
@@ -263,10 +270,6 @@ async function createOptimizedObserverWorker<
 			lazynessDuration // ms
 		)
 	}
-
-	/**
-	 * We can now do async things
-	 */
 
 	try {
 		// Setup the mongo observers
