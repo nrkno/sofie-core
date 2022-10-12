@@ -1,5 +1,5 @@
 import _ from 'underscore'
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React, { useMemo, useState, useRef } from 'react'
 import { DBStudio } from '../../../../lib/collections/Studios'
 import { PieceExtended } from '../../../../lib/Rundown'
@@ -269,6 +269,9 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 			{anomalies}
 			<div className="segment-opl__main-piece__label">
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
+				{piece.sourceLayer?.type === SourceLayerType.LOCAL && (piece.instance.piece.content as EvsContent).color && (
+					<ColoredMark color={(piece.instance.piece.content as EvsContent).color} />
+				)}
 				{piece.instance.piece.name}
 			</div>
 			{studio && (
@@ -291,3 +294,14 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 		</PieceElement>
 	)
 })
+
+function ColoredMark({ color }: { color: string | undefined }) {
+	if (!color) return null
+
+	return (
+		<span
+			style={{ color: color.startsWith('#') ? color : `#${color}` }}
+			className="segment-opl__main-piece__label__colored-mark"
+		></span>
+	)
+}

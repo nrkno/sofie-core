@@ -2127,9 +2127,22 @@ svg.icon {
 					}
 				}
 				.segment-timeline__piece__label__colored-mark {
-					font-size: 600%;
 					line-height: 23px;
 					width: 25px;
+					margin: 0 3px 0 2px;
+
+					&::before {
+						content: ' ';
+						display: inline-block;
+						width: 12px;
+						height: 12px;
+						background-color: currentColor;
+						border: 1px solid rgba(255, 255, 255, 0.3);
+						border-radius: 100%;
+						box-shadow: 0 0 4px black;
+						vertical-align: top;
+						margin-top: 0.35em;
+					}
 				}
 			}
 

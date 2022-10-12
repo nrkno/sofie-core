@@ -32,6 +32,25 @@
 		margin-left: 0.85em;
 		text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 		z-index: 0;
+
+		> .segment-opl__main-piece__label__colored-mark {
+			line-height: 1em;
+			width: 25px;
+			margin: 0 6px 0 2px;
+
+			&::before {
+				content: ' ';
+				display: inline-block;
+				width: 12px;
+				height: 12px;
+				background-color: currentColor;
+				border: 1px solid rgba(255, 255, 255, 0.3);
+				border-radius: 100%;
+				box-shadow: 0 0 4px black;
+				vertical-align: top;
+				margin-top: 0.25em;
+			}
+		}
 	}
 
 	// TODO: Loan from rundownView.scss, convert to a shared mixin
