@@ -28,7 +28,6 @@ import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../cache'
 import { logger } from '../../logging'
 import { getCurrentTime, getSystemVersion } from '../../lib'
 import { getResolvedPiecesFromFullTimeline } from '../pieces'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import {
 	processAndPrunePieceInstanceTimings,
 	PieceInstanceWithTimings,
@@ -45,6 +44,7 @@ import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { deserializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { convertResolvedPieceInstanceToBlueprints } from '../../blueprints/context/lib'
 import { buildTimelineObjsForRundown, RundownTimelineTimingContext } from './rundown'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { deNowifyMultiGatewayTimeline } from './multi-gateway'
 import { validateTimeline } from 'superfly-timeline'
 
@@ -100,7 +100,6 @@ export async function updateStudioTimeline(
 				new StudioBaselineContext(
 					{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
 					context,
-					studio,
 					watchedPackages
 				)
 			)
@@ -262,14 +261,14 @@ export interface SelectedPartInstanceTimelineInfo {
 function getPartInstanceTimelineInfo(
 	cache: CacheForPlayout,
 	currentTime: Time,
-	showStyle: ReadonlyDeep<DBShowStyleBase>,
+	sourceLayers: SourceLayers,
 	partInstance: DBPartInstance | undefined
 ): SelectedPartInstanceTimelineInfo | undefined {
 	if (partInstance) {
 		const partStarted = partInstance.timings?.plannedStartedPlayback
 		const nowInPart = partStarted === undefined ? 0 : currentTime - partStarted
 		const currentPieces = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
-		const pieceInstances = processAndPrunePieceInstanceTimings(showStyle, currentPieces, nowInPart)
+		const pieceInstances = processAndPrunePieceInstanceTimings(sourceLayers, currentPieces, nowInPart)
 
 		return {
 			partInstance,
@@ -316,9 +315,9 @@ async function getTimelineRundown(
 
 			const currentTime = getCurrentTime()
 			const partInstancesInfo: SelectedPartInstancesTimelineInfo = {
-				current: getPartInstanceTimelineInfo(cache, currentTime, showStyle, currentPartInstance),
-				next: getPartInstanceTimelineInfo(cache, currentTime, showStyle, nextPartInstance),
-				previous: getPartInstanceTimelineInfo(cache, currentTime, showStyle, previousPartInstance),
+				current: getPartInstanceTimelineInfo(cache, currentTime, showStyle.sourceLayers, currentPartInstance),
+				next: getPartInstanceTimelineInfo(cache, currentTime, showStyle.sourceLayers, nextPartInstance),
+				previous: getPartInstanceTimelineInfo(cache, currentTime, showStyle.sourceLayers, previousPartInstance),
 			}
 
 			// next (on pvw (or on pgm if first))

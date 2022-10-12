@@ -14,7 +14,7 @@ import {
 	AccessorOnPackage,
 } from '@sofie-automation/blueprints-integration'
 import {
-	DBRundownPlaylist,
+	RundownPlaylist,
 	RundownPlaylistCollectionUtil,
 	RundownPlaylists,
 } from '../../lib/collections/RundownPlaylists'
@@ -26,6 +26,8 @@ import { generateExpectedPackagesForPartInstance } from '../api/ingest/expectedP
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { StudioLight } from '../../lib/collections/optimizations'
 import { ReadonlyDeep } from 'type-fest'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId
@@ -41,16 +43,50 @@ interface ExpectedPackagesPublicationUpdateProps {
 }
 
 interface ExpectedPackagesPublicationState {
-	studio: Studio | undefined
+	studio: Pick<Studio, StudioFields> | undefined
 	expectedPackages: ExpectedPackageDB[]
 	routedExpectedPackages: ResultingExpectedPackage[]
 	/** ExpectedPackages relevant for playout */
 	routedPlayoutExpectedPackages: ResultingExpectedPackage[]
-	activePlaylist: DBRundownPlaylist | undefined
+	activePlaylist: Pick<RundownPlaylist, RundownPlaylistFields> | undefined
 	activeRundowns: DBRundown[]
 	currentPartInstance: PartInstance | undefined
 	nextPartInstance: PartInstance | undefined
 }
+
+type StudioFields =
+	| '_id'
+	| 'routeSets'
+	| 'mappingsWithOverrides'
+	| 'packageContainers'
+	| 'previewContainerIds'
+	| 'thumbnailContainerIds'
+const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
+	_id: 1,
+	routeSets: 1,
+	mappingsWithOverrides: 1,
+	packageContainers: 1,
+	previewContainerIds: 1,
+	thumbnailContainerIds: 1,
+})
+type RundownPlaylistFields =
+	| '_id'
+	| 'activationId'
+	| 'rehearsal'
+	| 'currentPartInstanceId'
+	| 'nextPartInstanceId'
+	| 'previousPartInstanceId'
+	| 'rundownIdsInOrder'
+const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
+	// It should be enough to watch these fields for changes
+	_id: 1,
+	activationId: 1,
+	rehearsal: 1,
+	currentPartInstanceId: 1, // So that it invalidates when the current changes
+	nextPartInstanceId: 1, // So that it invalidates when the next changes
+	previousPartInstanceId: 1,
+	rundownIdsInOrder: 1,
+})
 
 async function setupExpectedPackagesPublicationObservers(
 	args: ReadonlyDeep<ExpectedPackagesPublicationArgs>,
@@ -60,8 +96,9 @@ async function setupExpectedPackagesPublicationObservers(
 	return [
 		Studios.find(args.studioId, {
 			fields: {
-				mappingsHash: 1, // is changed when routes are changed
-				packageContainers: 1,
+				// mappingsHash gets updated when either of these omitted fields changes
+				...omit(studioFieldSpecifier, 'mappingsWithOverrides', 'routeSets'),
+				mappingsHash: 1,
 			},
 		}).observe({
 			added: () => triggerUpdate({ invalidateStudio: true }),
@@ -93,14 +130,7 @@ async function setupExpectedPackagesPublicationObservers(
 				studioId: args.studioId,
 			},
 			{
-				fields: {
-					// It should be enough to watch these fields for changes
-					_id: 1,
-					activationId: 1,
-					rehearsal: 1,
-					currentPartInstanceId: 1, // So that it invalidates when the current changes
-					nextPartInstanceId: 1, // So that it invalidates when the next changes
-				},
+				fields: rundownPlaylistFieldSpecifier,
 			}
 		).observe({
 			added: () => triggerUpdate({ invalidateRundownPlaylist: true }),
@@ -134,7 +164,9 @@ async function manipulateExpectedPackagesPublicationData(
 		invalidateRoutedExpectedPackages = true
 		invalidateRoutedPlayoutExpectedPackages = true
 
-		state.studio = await Studios.findOneAsync(args.studioId)
+		state.studio = (await Studios.findOneAsync(args.studioId, { fields: studioFieldSpecifier })) as
+			| Pick<Studio, StudioFields>
+			| undefined
 		if (!state.studio) {
 			logger.warn(`Pub.expectedPackagesForDevice: studio "${args.studioId}" not found!`)
 		}
@@ -156,10 +188,13 @@ async function manipulateExpectedPackagesPublicationData(
 		}
 	}
 	if (updateProps.invalidateRundownPlaylist) {
-		const activePlaylist = await RundownPlaylists.findOneAsync({
-			studioId: args.studioId,
-			activationId: { $exists: true },
-		})
+		const activePlaylist = (await RundownPlaylists.findOneAsync(
+			{
+				studioId: args.studioId,
+				activationId: { $exists: true },
+			},
+			{ fields: rundownPlaylistFieldSpecifier }
+		)) as Pick<RundownPlaylist, RundownPlaylistFields> | undefined
 		state.activePlaylist = activePlaylist
 		delete state.activeRundowns
 
@@ -182,18 +217,20 @@ async function manipulateExpectedPackagesPublicationData(
 	if (!state.studio) {
 		return []
 	}
-	const studio: Studio = state.studio
+	const studio: Pick<Studio, StudioFields> = state.studio
+
+	const studioMappings = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
 
 	if (invalidateRoutedExpectedPackages) {
 		// Map the expectedPackages onto their specified layer:
-		const routedMappingsWithPackages = routeExpectedPackages(studio, state.expectedPackages)
+		const routedMappingsWithPackages = routeExpectedPackages(studio, studioMappings, state.expectedPackages)
 
 		if (state.expectedPackages.length && !Object.keys(routedMappingsWithPackages).length) {
 			logger.info(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
 		}
 
 		state.routedExpectedPackages = generateExpectedPackages(
-			state.studio,
+			studio,
 			args.filterPlayoutDeviceIds,
 			routedMappingsWithPackages,
 			Priorities.OTHER // low priority
@@ -218,8 +255,16 @@ async function manipulateExpectedPackagesPublicationData(
 			: []
 
 		// Map the expectedPackages onto their specified layer:
-		const currentRoutedMappingsWithPackages = routeExpectedPackages(studio, playoutCurrentExpectedPackages)
-		const nextRoutedMappingsWithPackages = routeExpectedPackages(studio, playoutNextExpectedPackages)
+		const currentRoutedMappingsWithPackages = routeExpectedPackages(
+			studio,
+			studioMappings,
+			playoutCurrentExpectedPackages
+		)
+		const nextRoutedMappingsWithPackages = routeExpectedPackages(
+			studio,
+			studioMappings,
+			playoutNextExpectedPackages
+		)
 
 		if (
 			state.currentPartInstance &&
@@ -354,7 +399,7 @@ enum Priorities {
 }
 
 function generateExpectedPackages(
-	studio: StudioLight,
+	studio: Pick<StudioLight, '_id' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds'>,
 	filterPlayoutDeviceIds: ReadonlyDeep<PeripheralDeviceId[] | undefined>,
 	routedMappingsWithPackages: MappingsExtWithPackage,
 	priority: Priorities

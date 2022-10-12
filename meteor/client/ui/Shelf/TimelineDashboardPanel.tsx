@@ -23,10 +23,11 @@ import {
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { AdLibPieceUi, getNextPieceInstancesGrouped, getUnfinishedPieceInstancesGrouped } from '../../lib/shelf'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ContextType, setShelfContextMenuContext } from './ShelfContextMenu'
+import { UIStudios } from '../Collections'
+import { Meteor } from 'meteor/meteor'
 
 export const TimelineDashboardPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IDashboardPanelProps>,
@@ -34,6 +35,9 @@ export const TimelineDashboardPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
+		const studio = UIStudios.findOne(props.playlist.studioId)
+		if (!studio) throw new Meteor.Error(404, 'Studio "' + props.playlist.studioId + '" not found!')
+
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist,
 			props.showStyleBase
@@ -41,7 +45,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
 		return {
 			...fetchAndFilter(props),
-			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
+			studio,
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,

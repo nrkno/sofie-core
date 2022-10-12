@@ -22,11 +22,11 @@ import { clone } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
 import StudioContext from '../../RundownView/StudioContext'
-import { Studio } from '../../../../lib/collections/Studios'
 import { Settings } from '../../../../lib/Settings'
+import { UIStudio } from '../../../../lib/api/studios'
 
 interface IProps extends ICustomLayerItemProps {
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 }
 interface IState {
 	scenes?: Array<number>

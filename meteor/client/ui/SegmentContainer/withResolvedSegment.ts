@@ -8,7 +8,6 @@ import {
 } from '../../../lib/collections/RundownPlaylists'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
-import { Studio } from '../../../lib/collections/Studios'
 import {
 	IOutputLayerExtended,
 	ISourceLayerExtended,
@@ -17,7 +16,7 @@ import {
 	SegmentExtended,
 } from '../../../lib/Rundown'
 import { IContextMenuContext } from '../RundownView'
-import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
@@ -34,6 +33,8 @@ import { SegmentViewMode } from './SegmentViewModes'
 import { SegmentNote, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { AdlibSegmentUi } from '../../lib/shelf'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -71,8 +72,8 @@ export interface IProps {
 	segmentsIdsBefore: Set<SegmentId>
 	rundownIdsBefore: RundownId[]
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
-	studio: Studio
-	showStyleBase: ShowStyleBase
+	studio: UIStudio
+	showStyleBase: UIShowStyleBase
 	playlist: RundownPlaylist
 	rundown: MinimalRundown
 	timeScale: number

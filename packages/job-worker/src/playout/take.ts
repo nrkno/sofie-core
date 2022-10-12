@@ -3,12 +3,10 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { logger } from '../logging'
-import { JobContext } from '../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { isTooCloseToAutonext, selectNextPart, setNextPart } from './lib'
 import { getCurrentTime } from '../lib'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { PartEndState, VTContent } from '@sofie-automation/blueprints-integration'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
@@ -241,7 +239,7 @@ export function resetPreviousSegment(cache: CacheForPlayout): void {
 async function afterTakeUpdateTimingsAndEvents(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyle: ReadonlyDeep<ShowStyleCompound>,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	isFirstTake: boolean,
 	takeDoneTime: number
@@ -320,7 +318,7 @@ async function afterTakeUpdateTimingsAndEvents(
 export function updatePartInstanceOnTake(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyle: ReadonlyDeep<ShowStyleCompound>,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	takeRundown: DBRundown,
 	takePartInstance: DBPartInstance,
@@ -333,7 +331,8 @@ export function updatePartInstanceOnTake(
 	if (blueprint.blueprint.getEndStateForPart && currentPartInstance) {
 		try {
 			const time = getCurrentTime()
-			const resolvedPieces = getResolvedPieces(context, cache, showStyle, currentPartInstance)
+
+			const resolvedPieces = getResolvedPieces(context, cache, showStyle.sourceLayers, currentPartInstance)
 
 			const span = context.startSpan('blueprint.getEndStateForPart')
 			const context2 = new RundownContext(
@@ -366,7 +365,7 @@ export function updatePartInstanceOnTake(
 
 	// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
 	const tmpTakePieces = processAndPrunePieceInstanceTimings(
-		showStyle,
+		showStyle.sourceLayers,
 		cache.PieceInstances.findAll((p) => p.partInstanceId === takePartInstance._id),
 		0
 	)
@@ -491,7 +490,7 @@ function startHold(
 async function completeHold(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 	currentPartInstance: DBPartInstance | undefined
 ): Promise<void> {
 	cache.Playlist.update((p) => {
@@ -503,7 +502,14 @@ async function completeHold(
 		if (!currentPartInstance) throw new Error('currentPart not found!')
 
 		// Clear the current extension line
-		innerStopPieces(context, cache, showStyleBase, currentPartInstance, (p) => !!p.infinite?.fromHold, undefined)
+		innerStopPieces(
+			context,
+			cache,
+			showStyleCompound.sourceLayers,
+			currentPartInstance,
+			(p) => !!p.infinite?.fromHold,
+			undefined
+		)
 	}
 
 	await updateTimeline(context, cache)

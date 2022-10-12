@@ -16,7 +16,7 @@ import { MeteorCall } from '../methods'
 import { PartInstance, PartInstanceId, PartInstances } from '../../collections/PartInstances'
 import { PartId, Parts } from '../../collections/Parts'
 import { RundownPlaylist, RundownPlaylistCollectionUtil, RundownPlaylistId } from '../../collections/RundownPlaylists'
-import { ShowStyleBase } from '../../collections/ShowStyleBases'
+import { ShowStyleBase, SourceLayers } from '../../collections/ShowStyleBases'
 import { Studio } from '../../collections/Studios'
 import { assertNever } from '../../lib'
 import { logger } from '../../logging'
@@ -193,15 +193,15 @@ function createRundownPlaylistContext(
  * particular AdLib type
  *
  * @param {AdLibFilterChainLink[]} filterChain
- * @param {ShowStyleBase} showStyleBase
+ * @param {SourceLayers} sourceLayers
  * @return {*}  {ExecutableAdLibAction}
  */
 function createAdLibAction(
 	filterChain: AdLibFilterChainLink[],
-	showStyleBase: ShowStyleBase,
+	sourceLayers: SourceLayers,
 	actionArguments: IAdlibPlayoutActionArguments | undefined
 ): ExecutableAdLibAction {
-	const compiledAdLibFilter = compileAdLibFilter(filterChain, showStyleBase)
+	const compiledAdLibFilter = compileAdLibFilter(filterChain, sourceLayers)
 
 	return {
 		action: PlayoutActions.adlib,
@@ -461,10 +461,10 @@ function createUserActionWithCtx(
 /**
  * This is a factory method to create the ExecutableAction from a SomeAction-type description
  * @param action
- * @param showStyleBase
+ * @param sourceLayers
  * @returns
  */
-export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): ExecutableAction {
+export function createAction(action: SomeAction, sourceLayers: SourceLayers): ExecutableAction {
 	switch (action.action) {
 		case ClientActions.shelf:
 			return createShelfAction(action.filterChain, action.state)
@@ -473,7 +473,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 		case ClientActions.rewindSegments:
 			return createRewindSegmentsAction(action.filterChain)
 		case PlayoutActions.adlib:
-			return createAdLibAction(action.filterChain, showStyleBase, action.arguments || undefined)
+			return createAdLibAction(action.filterChain, sourceLayers, action.arguments || undefined)
 		case PlayoutActions.activateRundownPlaylist:
 			if (action.force) {
 				return createUserActionWithCtx(

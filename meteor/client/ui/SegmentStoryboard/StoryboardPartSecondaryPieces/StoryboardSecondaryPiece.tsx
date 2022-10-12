@@ -1,5 +1,4 @@
 import React, { useRef, useState } from 'react'
-import { Studio } from '../../../../lib/collections/Studios'
 import { RundownUtils } from '../../../lib/rundown'
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
@@ -13,13 +12,14 @@ import { getElementWidth } from '../../../utils/dimensions'
 import { GraphicsRenderer } from './Renderers/GraphicsRenderer'
 import { SplitsRenderer } from './Renderers/SplitsRenderer'
 import { PieceElement } from '../utils/PieceElement'
+import { UIStudio } from '../../../../lib/api/studios'
 
 interface IProps {
 	layer: ISourceLayer
 	piece: PieceUi
 	partId: PartId
 	isLiveLine: boolean
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 	className?: string
 	style?: React.CSSProperties
 	onPointerEnter?: React.EventHandler<React.PointerEvent<HTMLDivElement>>

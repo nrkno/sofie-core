@@ -12,16 +12,15 @@ import { ApmSpan } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { PlaylistLock, RundownLock } from './lock'
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { ProcessedShowStyleBase, ProcessedShowStyleVariant, ProcessedShowStyleCompound } from './showStyle'
 
 export { ApmSpan }
+export { ProcessedShowStyleVariant, ProcessedShowStyleBase, ProcessedShowStyleCompound }
 
 export interface WorkerJob<TRes> {
 	/** Promise returning the result. Resolved upon completion of the job */
@@ -58,15 +57,15 @@ export interface StudioCacheContext {
 
 	getStudioBlueprintConfig(): ProcessedStudioConfig
 
-	getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBase>>>
-	getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBase>>
-	getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<DBShowStyleVariant>>>
-	getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<DBShowStyleVariant>>
+	getShowStyleBases(): Promise<ReadonlyDeep<Array<ProcessedShowStyleBase>>>
+	getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<ProcessedShowStyleBase>>
+	getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<ProcessedShowStyleVariant>>>
+	getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<ProcessedShowStyleVariant>>
 	getShowStyleCompound(
 		variantId: ShowStyleVariantId,
 		baseId?: ShowStyleBaseId
-	): Promise<ReadonlyDeep<ShowStyleCompound>>
+	): Promise<ReadonlyDeep<ProcessedShowStyleCompound>>
 
 	getShowStyleBlueprint(id: ShowStyleBaseId): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>>
-	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ShowStyleCompound>): ProcessedShowStyleConfig
+	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ProcessedShowStyleCompound>): ProcessedShowStyleConfig
 }

@@ -16,7 +16,7 @@ export function OverlayScreenSaver({ studioId }: { studioId: StudioId }): JSX.El
 		}
 	})
 
-	useSubscription(PubSub.studios, { _id: studioId })
+	useSubscription(PubSub.uiStudio, studioId)
 	useSubscription(PubSub.rundownPlaylists, { studioId: studioId, activationId: { $exists: false } })
 
 	const data = useTracker(() => findNextPlaylist({ studioId }), [studioId])

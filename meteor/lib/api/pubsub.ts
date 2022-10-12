@@ -38,11 +38,13 @@ import { SnapshotItem } from '../collections/Snapshots'
 import { DBStudio, RoutedMappings, StudioId } from '../collections/Studios'
 import { RoutedTimeline, TimelineComplete } from '../collections/Timeline'
 import { TranslationsBundle } from '../collections/TranslationsBundles'
-import { DBTriggeredActions } from '../collections/TriggeredActions'
+import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions'
 import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
+import { UIShowStyleBase } from './showStyles'
+import { UIStudio } from './studios'
 
 /**
  * Ids of possible DDP subscriptions
@@ -108,6 +110,9 @@ export enum PubSub {
 	mappingsForStudio = 'mappingsForStudio',
 	timelineForStudio = 'timelineForStudio',
 	expectedPackagesForDevice = 'expectedPackagesForDevice',
+	uiShowStyleBase = 'uiShowStyleBase',
+	uiStudio = 'uiStudio',
+	uiTriggeredActions = 'uiTriggeredActions',
 }
 
 /**
@@ -211,6 +216,10 @@ export interface PubSubTypes {
 		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 		token?: string
 	) => DBObj
+	[PubSub.uiShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => UIShowStyleBase
+	/** Subscribe to one or all studios */
+	[PubSub.uiStudio]: (studioId: StudioId | null) => UIStudio
+	[PubSub.uiTriggeredActions]: (showStyleBaseId: ShowStyleBaseId | null) => UITriggeredActionsObj
 }
 
 /**
@@ -220,6 +229,9 @@ export enum CustomCollectionName {
 	StudioMappings = 'studioMappings',
 	StudioTimeline = 'studioTimeline',
 	ExpectedPackagesForDevice = 'deviceExpectedPackages',
+	UIShowStyleBase = 'uiShowStyleBase',
+	UIStudio = 'uiStudio',
+	UITriggeredActions = 'uiTriggeredActions',
 }
 
 /**
@@ -230,6 +242,9 @@ export type CustomCollectionType = {
 	[CustomCollectionName.StudioMappings]: RoutedMappings
 	[CustomCollectionName.StudioTimeline]: RoutedTimeline
 	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj
+	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
+	[CustomCollectionName.UIStudio]: UIStudio
+	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
 }
 
 /**

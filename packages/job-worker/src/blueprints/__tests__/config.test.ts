@@ -7,6 +7,7 @@ import {
 	preprocessStudioConfig,
 	retrieveBlueprintConfigRefs,
 } from '../config'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 describe('Test blueprint config', () => {
 	test('compileStudioConfig', () => {
@@ -18,7 +19,7 @@ describe('Test blueprint config', () => {
 				mediaPreviewsUrl: '',
 				frameRate: 25,
 			},
-			blueprintConfig: { sdfsdf: 'one', another: 5 },
+			blueprintConfigWithOverrides: wrapDefaultObject({ sdfsdf: 'one', another: 5 }),
 		})
 		jobContext.updateStudioBlueprint({
 			studioConfigManifest: undefined,
@@ -104,7 +105,12 @@ describe('Test blueprint config', () => {
 			const studioId = jobContext.studioId
 			jobContext.setStudio({
 				...jobContext.studio,
-				blueprintConfig: { two: 'abc', number: 99, bool: true, obj: [{ _id: '0', a: 1 }] },
+				blueprintConfigWithOverrides: wrapDefaultObject({
+					two: 'abc',
+					number: 99,
+					bool: true,
+					obj: [{ _id: '0', a: 1 }],
+				}),
 			})
 			jobContext.updateStudioBlueprint({
 				// Bypass running through configManifest
@@ -132,12 +138,16 @@ describe('Test blueprint config', () => {
 
 			await jobContext.directCollections.ShowStyleBases.update(showStyle._id, {
 				$set: {
-					blueprintConfig: { number: 56, bool: true },
+					blueprintConfigWithOverrides: wrapDefaultObject({ number: 56, bool: true }),
 				},
 			})
 			await jobContext.directCollections.ShowStyleVariants.update(showStyle.showStyleVariantId, {
 				$set: {
-					blueprintConfig: { two: 'abc', number: 88, obj: [{ _id: '0', a: 1 }] },
+					blueprintConfigWithOverrides: wrapDefaultObject({
+						two: 'abc',
+						number: 88,
+						obj: [{ _id: '0', a: 1 }],
+					}),
 				},
 			})
 			jobContext.setStudio({

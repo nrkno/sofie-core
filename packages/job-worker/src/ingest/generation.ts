@@ -10,7 +10,6 @@ import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataM
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
@@ -31,7 +30,7 @@ import _ = require('underscore')
 import { CacheForIngest } from './cache'
 import { LocalIngestSegment, LocalIngestRundown } from './ingestCache'
 import { getSegmentId, getPartId, getRundown, canSegmentBeUpdated, extendIngestRundownCore } from './lib'
-import { JobContext } from '../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { CommitIngestData } from './lock'
 import { SelectedShowStyleVariant, selectShowStyleVariant } from './rundown'
 import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
@@ -48,7 +47,7 @@ export interface UpdateSegmentsResult {
 	adlibActions: AdLibAction[]
 
 	/** ShowStyle, if loaded to reuse */
-	showStyle: ReadonlyDeep<ShowStyleCompound> | undefined
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound> | undefined
 	/** Blueprint, if loaded to reuse */
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint> | undefined
 }

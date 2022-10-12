@@ -7,7 +7,6 @@ import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { RundownUtils } from '../../lib/rundown'
 import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
-import { Studio } from '../../../lib/collections/Studios'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
 import { literal } from '../../../lib/lib'
@@ -16,12 +15,13 @@ import * as _ from 'underscore'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { AdLibPieceUi } from '../../lib/shelf'
+import { UIStudio } from '../../../lib/api/studios'
 
 type AnyPiece = {
 	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
 	layer?: ISourceLayer | undefined
 	isLiveLine?: boolean
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 }
 
 type IWrappedComponent<IProps extends AnyPiece, IState> = new (props: IProps, state: IState) => React.Component<

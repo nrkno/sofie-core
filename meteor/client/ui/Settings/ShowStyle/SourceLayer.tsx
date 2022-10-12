@@ -6,7 +6,6 @@ import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-inte
 import { assertNever, literal, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import Tooltip from 'rc-tooltip'
 import { withTranslation } from 'react-i18next'
-import _ from 'underscore'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { getHelpMode } from '../../../lib/localStorage'
@@ -96,7 +95,7 @@ export const SourceLayerSettings = withTranslation()(
 			}
 		}
 		onAddSource = () => {
-			const maxRank = findHighestRank(this.props.showStyleBase.sourceLayers)
+			const maxRank = findHighestRank(Object.values(this.props.showStyleBase.sourceLayersWithOverrides.defaults))
 			const { t } = this.props
 
 			const newSource = literal<ISourceLayer>({
@@ -147,11 +146,8 @@ export const SourceLayerSettings = withTranslation()(
 		renderInputSources() {
 			const { t } = this.props
 
-			return _.map(this.props.showStyleBase.sourceLayers, (item, index) => {
-				const newItem = _.clone(item) as ISourceLayer & { index: number }
-				newItem.index = index
-				return newItem
-			})
+			return Object.values(this.props.showStyleBase.sourceLayersWithOverrides.defaults)
+				.filter((l): l is ISourceLayer => !!l)
 				.sort((a, b) => {
 					return a._rank - b._rank
 				})
@@ -186,7 +182,7 @@ export const SourceLayerSettings = withTranslation()(
 													{t('Source Name')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.name'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.name'}
 														obj={this.props.showStyleBase}
 														type="text"
 														collection={ShowStyleBases}
@@ -199,7 +195,7 @@ export const SourceLayerSettings = withTranslation()(
 													{t('Source Abbreviation')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.abbreviation'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.abbreviation'}
 														obj={this.props.showStyleBase}
 														type="text"
 														collection={ShowStyleBases}
@@ -212,7 +208,7 @@ export const SourceLayerSettings = withTranslation()(
 													{t('Internal ID')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '._id'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '._id'}
 														obj={this.props.showStyleBase}
 														type="text"
 														collection={ShowStyleBases}
@@ -226,7 +222,7 @@ export const SourceLayerSettings = withTranslation()(
 													<div className="select focusable">
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={'sourceLayers.' + item.index + '.type'}
+															attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.type'}
 															obj={this.props.showStyleBase}
 															type="dropdown"
 															options={SourceLayerType}
@@ -241,7 +237,7 @@ export const SourceLayerSettings = withTranslation()(
 												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.isRemoteInput'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.isRemoteInput'}
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
@@ -254,7 +250,7 @@ export const SourceLayerSettings = withTranslation()(
 												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.isGuestInput'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.isGuestInput'}
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
@@ -267,7 +263,7 @@ export const SourceLayerSettings = withTranslation()(
 												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.isHidden'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.isHidden'}
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
@@ -281,7 +277,7 @@ export const SourceLayerSettings = withTranslation()(
 													{t('Display Rank')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '._rank'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '._rank'}
 														obj={this.props.showStyleBase}
 														type="int"
 														collection={ShowStyleBases}
@@ -293,7 +289,7 @@ export const SourceLayerSettings = withTranslation()(
 												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.onPresenterScreen'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.onPresenterScreen'}
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
@@ -306,7 +302,7 @@ export const SourceLayerSettings = withTranslation()(
 												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.onListViewColumn'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.onListViewColumn'}
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
@@ -319,7 +315,7 @@ export const SourceLayerSettings = withTranslation()(
 												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.onListViewAdLibColumn'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.onListViewAdLibColumn'}
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
@@ -332,7 +328,7 @@ export const SourceLayerSettings = withTranslation()(
 												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.isClearable'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.isClearable'}
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
@@ -345,7 +341,7 @@ export const SourceLayerSettings = withTranslation()(
 												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.isSticky'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.isSticky'}
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
@@ -358,7 +354,7 @@ export const SourceLayerSettings = withTranslation()(
 												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.stickyOriginalOnly'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.stickyOriginalOnly'}
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
@@ -371,7 +367,7 @@ export const SourceLayerSettings = withTranslation()(
 												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.allowDisable'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.allowDisable'}
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
@@ -384,7 +380,7 @@ export const SourceLayerSettings = withTranslation()(
 												<label className="field">
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.isQueueable'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.isQueueable'}
 														obj={this.props.showStyleBase}
 														type="checkbox"
 														collection={ShowStyleBases}
@@ -398,7 +394,7 @@ export const SourceLayerSettings = withTranslation()(
 													{t('Exclusivity group')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'sourceLayers.' + item.index + '.exclusiveGroup'}
+														attribute={'sourceLayersWithOverrides.defaults.' + item._id + '.exclusiveGroup'}
 														obj={this.props.showStyleBase}
 														type="text"
 														collection={ShowStyleBases}
@@ -422,20 +418,21 @@ export const SourceLayerSettings = withTranslation()(
 
 		render() {
 			const { t } = this.props
+
+			const sourceLayerCount = Object.keys(this.props.showStyleBase.sourceLayersWithOverrides.defaults).length
+
 			return (
 				<div>
 					<h2 className="mhn">
 						<Tooltip
 							overlay={t('Add some source layers (e.g. Graphics) for your data to appear in rundowns')}
-							visible={getHelpMode() && !this.props.showStyleBase.sourceLayers.length}
+							visible={getHelpMode() && !sourceLayerCount}
 							placement="bottom"
 						>
 							<span>{t('Source Layers')}</span>
 						</Tooltip>
 					</h2>
-					{!this.props.showStyleBase ||
-					!this.props.showStyleBase.sourceLayers ||
-					!this.props.showStyleBase.sourceLayers.length ? (
+					{!sourceLayerCount ? (
 						<div className="error-notice">
 							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No source layers set')}
 						</div>

@@ -14,7 +14,7 @@ import { DBPart, PartId, Parts } from '../../collections/Parts'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../../collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../collections/RundownBaselineAdLibPieces'
 import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../collections/RundownPlaylists'
-import { ShowStyleBase } from '../../collections/ShowStyleBases'
+import { SourceLayers } from '../../collections/ShowStyleBases'
 import { StudioId } from '../../collections/Studios'
 import { assertNever, generateTranslation } from '../../lib'
 import { MongoQuery } from '../../typings/meteor'
@@ -143,7 +143,7 @@ export type IWrappedAdLib =
 
 function sharedSourceLayerFilterCompiler(
 	filterChain: IAdLibFilterLink[],
-	showStyleBase: ShowStyleBase,
+	sourceLayers: SourceLayers,
 	targetType: 'clear' | 'sticky'
 ): {
 	global: boolean | undefined
@@ -174,8 +174,10 @@ function sharedSourceLayerFilterCompiler(
 				sourceLayerIds = link.value
 				return
 			case 'sourceLayerType':
-				sourceLayerIds = showStyleBase.sourceLayers
-					.map((sourceLayer) => (link.value.includes(sourceLayer.type) ? sourceLayer._id : undefined))
+				sourceLayerIds = Object.values(sourceLayers)
+					.map((sourceLayer) =>
+						sourceLayer && link.value.includes(sourceLayer.type) ? sourceLayer._id : undefined
+					)
 					.filter(Boolean) as string[]
 				return
 			case 'segment':
@@ -218,16 +220,20 @@ function sharedSourceLayerFilterCompiler(
 	}
 }
 
-function compileAndRunClearFilter(filterChain: IAdLibFilterLink[], showStyleBase: ShowStyleBase): IWrappedAdLib[] {
-	const { skip, sourceLayerIds } = sharedSourceLayerFilterCompiler(filterChain, showStyleBase, 'clear')
+function compileAndRunClearFilter(filterChain: IAdLibFilterLink[], sourceLayers: SourceLayers): IWrappedAdLib[] {
+	const { skip, sourceLayerIds } = sharedSourceLayerFilterCompiler(filterChain, sourceLayers, 'clear')
 
 	let result: IWrappedAdLib[] = []
 
 	if (!skip) {
-		result = showStyleBase.sourceLayers
+		result = Object.values(sourceLayers)
 			.filter(
-				(sourceLayer) =>
-					(sourceLayerIds ? sourceLayerIds.includes(sourceLayer._id) : true) && sourceLayer.isClearable
+				(sourceLayer): sourceLayer is ISourceLayer =>
+					!!(
+						sourceLayer &&
+						(sourceLayerIds ? sourceLayerIds.includes(sourceLayer._id) : true) &&
+						sourceLayer.isClearable
+					)
 			)
 			.map((sourceLayer) => {
 				return {
@@ -247,16 +253,20 @@ function compileAndRunClearFilter(filterChain: IAdLibFilterLink[], showStyleBase
 	return result
 }
 
-function compileAndRunStickyFilter(filterChain: IAdLibFilterLink[], showStyleBase: ShowStyleBase): IWrappedAdLib[] {
-	const { skip, sourceLayerIds } = sharedSourceLayerFilterCompiler(filterChain, showStyleBase, 'sticky')
+function compileAndRunStickyFilter(filterChain: IAdLibFilterLink[], sourceLayers: SourceLayers): IWrappedAdLib[] {
+	const { skip, sourceLayerIds } = sharedSourceLayerFilterCompiler(filterChain, sourceLayers, 'sticky')
 
 	let result: IWrappedAdLib[] = []
 
 	if (!skip) {
-		result = showStyleBase.sourceLayers
+		result = Object.values(sourceLayers)
 			.filter(
-				(sourceLayer) =>
-					(sourceLayerIds ? sourceLayerIds.includes(sourceLayer._id) : true) && sourceLayer.isSticky === true
+				(sourceLayer): sourceLayer is ISourceLayer =>
+					!!(
+						sourceLayer &&
+						(sourceLayerIds ? sourceLayerIds.includes(sourceLayer._id) : true) &&
+						sourceLayer.isSticky === true
+					)
 			)
 			.map((sourceLayer) => {
 				return {
@@ -280,7 +290,7 @@ type AdLibActionType = RundownBaselineAdLibAction | AdLibAction
 
 function compileAdLibActionFilter(
 	filterChain: IAdLibFilterLink[],
-	showStyleBase: ShowStyleBase
+	sourceLayers: SourceLayers
 ): CompiledFilter<AdLibActionType> {
 	const selector: MongoQuery<AdLibActionType> = {}
 	const options: FindOptions<AdLibActionType> = {}
@@ -316,8 +326,10 @@ function compileAdLibActionFilter(
 				return
 			case 'sourceLayerType':
 				selector['display.sourceLayerId'] = {
-					$in: showStyleBase.sourceLayers
-						.map((sourceLayer) => (link.value.includes(sourceLayer.type) ? sourceLayer._id : undefined))
+					$in: Object.values(sourceLayers)
+						.map((sourceLayer) =>
+							sourceLayer && link.value.includes(sourceLayer.type) ? sourceLayer._id : undefined
+						)
 						.filter(Boolean) as string[],
 				}
 				return
@@ -374,7 +386,7 @@ type AdLibPieceType = RundownBaselineAdLibItem | AdLibPiece
 
 function compileAdLibPieceFilter(
 	filterChain: IAdLibFilterLink[],
-	showStyleBase: ShowStyleBase
+	sourceLayers: SourceLayers
 ): CompiledFilter<AdLibPieceType> {
 	const selector: MongoQuery<AdLibPieceType> = {}
 	const options: FindOptions<AdLibPieceType> = {}
@@ -410,8 +422,10 @@ function compileAdLibPieceFilter(
 				return
 			case 'sourceLayerType':
 				selector['sourceLayerId'] = {
-					$in: showStyleBase.sourceLayers
-						.map((sourceLayer) => (link.value.includes(sourceLayer.type) ? sourceLayer._id : undefined))
+					$in: Object.values(sourceLayers)
+						.map((sourceLayer) =>
+							sourceLayer && link.value.includes(sourceLayer.type) ? sourceLayer._id : undefined
+						)
 						.filter(Boolean) as string[],
 				}
 				return
@@ -467,19 +481,19 @@ function compileAdLibPieceFilter(
 /**
  * Compile the filter chain and return a reactive function that will return the result set for this adLib filter
  * @param filterChain
- * @param showStyleBase
+ * @param sourceLayers
  * @returns
  */
 export function compileAdLibFilter(
 	filterChain: AdLibFilterChainLink[],
-	showStyleBase: ShowStyleBase
+	sourceLayers: SourceLayers
 ): (context: ReactivePlaylistActionContext) => IWrappedAdLib[] {
 	const onlyAdLibLinks = filterChain.filter((link) => link.object === 'adLib') as IAdLibFilterLink[]
-	const adLibPieceTypeFilter = compileAdLibPieceFilter(onlyAdLibLinks, showStyleBase)
-	const adLibActionTypeFilter = compileAdLibActionFilter(onlyAdLibLinks, showStyleBase)
+	const adLibPieceTypeFilter = compileAdLibPieceFilter(onlyAdLibLinks, sourceLayers)
+	const adLibActionTypeFilter = compileAdLibActionFilter(onlyAdLibLinks, sourceLayers)
 
-	const clearAdLibs = compileAndRunClearFilter(onlyAdLibLinks, showStyleBase)
-	const stickyAdLibs = compileAndRunStickyFilter(onlyAdLibLinks, showStyleBase)
+	const clearAdLibs = compileAndRunClearFilter(onlyAdLibLinks, sourceLayers)
+	const stickyAdLibs = compileAndRunStickyFilter(onlyAdLibLinks, sourceLayers)
 
 	return (context: ReactivePlaylistActionContext) => {
 		let rundownBaselineAdLibItems: IWrappedAdLib[] = []

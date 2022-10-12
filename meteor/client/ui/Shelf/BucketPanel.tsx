@@ -17,9 +17,8 @@ import {
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, ShowStyleBaseId, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import {
-	IOutputLayer,
 	ISourceLayer,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
@@ -36,7 +35,6 @@ import {
 	USER_AGENT_POINTER_PROPERTY,
 	getEventTimestamp,
 } from '../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
 import { IDashboardPanelTrackedProps } from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
@@ -68,6 +66,9 @@ import {
 	isAdLibOnAir,
 } from '../../lib/shelf'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
+import { UIStudios } from '../Collections'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, _monitor: DragSourceMonitor, component: any) {
@@ -168,8 +169,8 @@ interface IState {
 
 export function actionToAdLibPieceUi(
 	action: BucketAdLibAction,
-	sourceLayers: _.Dictionary<ISourceLayer>,
-	outputLayers: _.Dictionary<IOutputLayer>
+	sourceLayers: SourceLayers,
+	outputLayers: OutputLayers
 ): BucketAdLibActionUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
@@ -216,7 +217,7 @@ export function actionToAdLibPieceUi(
 export interface IBucketPanelProps {
 	bucket: Bucket
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	shouldQueue: boolean
 	editableName?: boolean
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
@@ -232,11 +233,11 @@ export interface IBucketPanelProps {
 
 export interface IBucketPanelTrackedProps extends IDashboardPanelTrackedProps {
 	adLibPieces: BucketAdLibItem[]
-	studio: Studio
+	studio: UIStudio
 	showStyleBaseId: ShowStyleBaseId
 	showStyleVariantId: ShowStyleVariantId
-	outputLayers: Record<string, IOutputLayer>
-	sourceLayers: Record<string, ISourceLayer>
+	outputLayers: OutputLayers
+	sourceLayers: SourceLayers
 }
 
 interface BucketSourceCollectedProps {
@@ -296,21 +297,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		if (!showStyleVariantId)
 			throw new Meteor.Error(500, `No showStyleVariantId found for playlist ${props.playlist._id}`)
 
-		const tOLayers: {
-			[key: string]: IOutputLayer
-		} = {}
-		const tSLayers: {
-			[key: string]: ISourceLayer
-		} = {}
+		const studio = UIStudios.findOne(props.playlist.studioId)
+		if (!studio) throw new Meteor.Error(500, `No Studio found for playlist ${props.playlist._id}`)
 
-		if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
-			props.showStyleBase.outputLayers.forEach((item) => {
-				tOLayers[item._id] = item
-			})
-			props.showStyleBase.sourceLayers.forEach((item) => {
-				tSLayers[item._id] = item
-			})
-		}
+		const tOLayers = props.showStyleBase ? props.showStyleBase.outputLayers : {}
+		const tSLayers = props.showStyleBase ? props.showStyleBase.sourceLayers : {}
 
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist,
@@ -328,9 +319,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		const allBucketItems = (bucketAdLibPieces as BucketAdLibItem[])
 			.concat(bucketActions)
 			.sort((a, b) => a._rank - b._rank || a.name.localeCompare(b.name))
+
 		return literal<IBucketPanelTrackedProps>({
 			adLibPieces: allBucketItems,
-			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
+			studio,
 			unfinishedAdLibIds,
 			unfinishedTags,
 			showStyleBaseId,
@@ -377,9 +369,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					this.subscribe(PubSub.buckets, {
 						_id: this.props.bucket._id,
 					})
-					this.subscribe(PubSub.studios, {
-						_id: this.props.playlist.studioId,
-					})
+					this.subscribe(PubSub.uiStudio, this.props.playlist.studioId)
 					this.autorun(() => {
 						const showStyles: Array<[ShowStyleBaseId, ShowStyleVariantId]> =
 							RundownPlaylistCollectionUtil.getRundownsUnordered(this.props.playlist).map((rundown) => [
@@ -402,11 +392,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 								$in: [null, ...showStyleVariants], // null = valid for all variants
 							},
 						})
-						this.subscribe(PubSub.showStyleBases, {
-							_id: {
-								$in: showStyleBases,
-							},
-						})
+						for (const showStyleBaseId of _.uniq(showStyleBases)) {
+							this.subscribe(PubSub.uiShowStyleBase, showStyleBaseId)
+						}
 					})
 
 					window.addEventListener(MOSEvents.dragenter, this.onDragEnter)

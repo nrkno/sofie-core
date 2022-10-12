@@ -28,6 +28,7 @@ const PackageInfo = require('../package.json')
 import { TMP_TSR_VERSION, StatusCode } from '@sofie-automation/blueprints-integration'
 import { createShowStyleCompound } from './api/showStyles'
 import { fetchShowStyleBasesLight } from '../lib/collections/optimizations'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export { PackageInfo }
 
@@ -277,7 +278,8 @@ function checkBlueprintsConfig() {
 			const blueprint = Blueprints.findOne(studio.blueprintId)
 			if (!blueprint) return
 
-			const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.blueprintConfig)
+			const blueprintConfig = applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
+			const diff = findMissingConfigs(blueprint.studioConfigManifest, blueprintConfig)
 			const systemStatusId = `blueprintConfig_${blueprint._id}_studio_${studio._id}`
 			setBlueprintConfigStatus(systemStatusId, diff, studio._id)
 			blueprintIds[systemStatusId] = true
@@ -298,7 +300,7 @@ function checkBlueprintsConfig() {
 				const compound = createShowStyleCompound(showBase, variant)
 				if (!compound) return
 
-				const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
+				const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.combinedBlueprintConfig)
 				if (diff && diff.length) {
 					allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
 				}

@@ -1,19 +1,19 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../../RundownViewBuckets'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece, PieceStatusCode } from '../../../../../lib/collections/Pieces'
-import { Studio } from '../../../../../lib/collections/Studios'
 import { withMediaObjectStatus } from '../../../SegmentTimeline/withMediaObjectStatus'
 import { IAdLibListItem } from '../../AdLibListItem'
 import { AdLibPieceUi } from '../../../../lib/shelf'
+import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
+import { UIStudio } from '../../../../../lib/api/studios'
 
 interface IProps {
 	piece: PieceUi | IAdLibListItem | BucketAdLibUi | BucketAdLibActionUi
-	showStyleBase: ShowStyleBase
-	studio: Studio
+	showStyleBase: UIShowStyleBase
+	studio: UIStudio
 }
 
 const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTitle(props: IProps) {
@@ -21,7 +21,7 @@ const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTit
 		? (props.piece.instance.piece as Piece)
 		: (props.piece as AdLibPieceUi)
 
-	const layer = props.showStyleBase.sourceLayers.find((layer) => layer._id === piece.sourceLayerId)
+	const layer = props.showStyleBase.sourceLayers[piece.sourceLayerId]
 
 	return (
 		<h2 className="shelf-inspector__title">

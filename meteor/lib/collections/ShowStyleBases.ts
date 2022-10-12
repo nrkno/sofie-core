@@ -19,6 +19,6 @@ registerIndex(ShowStyleBases, {
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['blueprintConfig', 'blueprintId'])
+		ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['blueprintConfigWithOverrides', 'blueprintId'])
 	}
 })

@@ -27,6 +27,7 @@ import {
 } from './lib'
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { Studio, Studios } from '../../lib/collections/Studios'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */
@@ -139,7 +140,9 @@ export namespace ClientRundownAPI {
 		const access = await StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const rundownPlaylist = access.playlist
 
-		const studio = RundownPlaylistCollectionUtil.getStudio(rundownPlaylist)
+		const studio = Studios.findOne(rundownPlaylist.studioId)
+		if (!studio) throw new Meteor.Error(404, 'Studio "' + rundownPlaylist.studioId + '" not found!')
+
 		const studioBlueprint = studio.blueprintId
 			? ((await Blueprints.findOneAsync(studio.blueprintId, {
 					fields: {
@@ -223,13 +226,14 @@ export namespace ClientRundownAPI {
 						id: id,
 						name: compound.name,
 						checkFailed: false,
-						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig),
+						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.combinedBlueprintConfig),
 					}
 				}
 			})
 
+		const studioBlueprintConfig = applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
 		return {
-			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studio.blueprintConfig),
+			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studioBlueprintConfig),
 			showStyles: showStyleWarnings,
 		}
 	}

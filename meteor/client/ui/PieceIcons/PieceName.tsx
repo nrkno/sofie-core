@@ -58,9 +58,7 @@ export function PieceNameContainer(props: INamePropsHeader): JSX.Element | null 
 		playlistActivationId: props.playlistActivationId,
 	})
 
-	useSubscription(PubSub.showStyleBases, {
-		_id: props.showStyleBaseId,
-	})
+	useSubscription(PubSub.uiShowStyleBase, props.showStyleBaseId)
 
 	if (pieceInstance && sourceLayer && supportedLayers.has(sourceLayer.type)) {
 		return getPieceLabel(pieceInstance.piece, sourceLayer.type)

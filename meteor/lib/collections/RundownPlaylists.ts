@@ -1,8 +1,6 @@
-import { Meteor } from 'meteor/meteor'
 import { MongoQuery } from '../typings/meteor'
 import * as _ from 'underscore'
 import { normalizeArrayFunc, normalizeArrayToMap, unprotectString } from '../lib'
-import { Studio, Studios } from './Studios'
 import {
 	sortPartsInSegments,
 	sortPartsInSortedSegments,
@@ -90,14 +88,6 @@ export class RundownPlaylistCollectionUtil {
 		return rundowns.map((i) => i._id)
 	}
 
-	/** Return the studio for this RundownPlaylist */
-	static getStudio(playlist: Pick<RundownPlaylist, '_id' | 'studioId'>): Studio {
-		if (!playlist.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
-		const studio = Studios.findOne(playlist.studioId)
-		if (studio) {
-			return studio
-		} else throw new Meteor.Error(404, 'Studio "' + playlist.studioId + '" not found!')
-	}
 	/** Returns all segments joined with their rundowns in their correct oreder for this RundownPlaylist */
 	static getRundownsAndSegments(
 		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,

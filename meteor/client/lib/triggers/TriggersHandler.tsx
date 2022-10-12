@@ -4,8 +4,8 @@ import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import Sorensen from '@sofie-automation/sorensen'
 import { PubSub } from '../../../lib/api/pubsub'
-import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { TriggeredActionId, TriggeredActions } from '../../../lib/collections/TriggeredActions'
+import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { TriggeredActionId } from '../../../lib/collections/TriggeredActions'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
 import {
 	RundownPlaylist,
@@ -39,6 +39,8 @@ import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../.
 import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../../lib/Settings'
 import { createInMemoryMongoCollection } from '../../../lib/collections/lib'
+import { UIShowStyleBases, UITriggeredActions } from '../../ui/Collections'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -93,9 +95,7 @@ function useSubscriptions(
 				$in: rundownIds,
 			},
 		}),
-		useSubscription(PubSub.showStyleBases, {
-			_id: showStyleBaseId,
-		}),
+		useSubscription(PubSub.uiShowStyleBase, showStyleBaseId),
 	]
 
 	return !allReady.some((state) => state === false)
@@ -104,14 +104,14 @@ function useSubscriptions(
 function createAction(
 	_id: TriggeredActionId,
 	actions: SomeAction[],
-	showStyleBase: ShowStyleBase,
+	showStyleBase: UIShowStyleBase,
 	t: TFunction,
 	collectContext: () => ReactivePlaylistActionContext | null
 ): {
 	listener: HotkeyTriggerListener
 	preview: () => IWrappedAdLib[]
 } {
-	const executableActions = actions.map((value) => libCreateAction(value, showStyleBase))
+	const executableActions = actions.map((value) => libCreateAction(value, showStyleBase.sourceLayers))
 	return {
 		preview: () => {
 			const ctx = collectContext()
@@ -410,11 +410,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		JSON.stringify(props.nextSegmentPartIds),
 	])
 
-	const triggerSubReady = useSubscription(PubSub.triggeredActions, {
-		showStyleBase: {
-			$in: [null, props.showStyleBaseId],
-		},
-	})
+	const triggerSubReady = useSubscription(PubSub.uiTriggeredActions, props.showStyleBaseId)
 
 	const rundownIds =
 		useTracker(() => {
@@ -429,12 +425,12 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			return []
 		}, [props.rundownPlaylistId]) || []
 
-	const showStyleBase = useTracker(() => ShowStyleBases.findOne(props.showStyleBaseId), [props.showStyleBaseId])
+	const showStyleBase = useTracker(() => UIShowStyleBases.findOne(props.showStyleBaseId), [props.showStyleBaseId])
 
 	useSubscriptions(props.rundownPlaylistId, rundownIds, props.showStyleBaseId)
 
 	const triggeredActions = useTracker(() => {
-		return TriggeredActions.find(
+		return UITriggeredActions.find(
 			{
 				showStyleBaseId: {
 					$in: [null, props.showStyleBaseId],
@@ -458,10 +454,10 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		const previewAutoruns: Tracker.Computation[] = []
 
 		triggeredActions.forEach((pair) => {
-			const action = createAction(pair._id, pair.actions, showStyleBase, t, getCurrentContext)
+			const action = createAction(pair._id, Object.values(pair.actions), showStyleBase, t, getCurrentContext)
 			if (!props.simulateTriggerBinding) {
 				createdActions.current.set(pair._id, action.listener)
-				pair.triggers.forEach((trigger) => {
+				Object.values(pair.triggers).forEach((trigger) => {
 					if (trigger.type === TriggerType.hotkey) {
 						bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
 					}
@@ -469,11 +465,13 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			}
 
 			if (pair.name) {
-				const triggers = pair.triggers.filter((trigger) => trigger.type === TriggerType.hotkey)
+				const triggers = Object.values(pair.triggers).filter((trigger) => trigger.type === TriggerType.hotkey)
 				const genericTriggerId = protectString(`${pair._id}`)
 				const keys = triggers.map((trigger) => trigger.keys)
 				const finalKeys = keys.map((key) => getFinalKey(key))
-				const adLibOnly = pair.actions.every((actionDescriptor) => actionDescriptor.action === PlayoutActions.adlib)
+				const adLibOnly = Object.values(pair.actions).every(
+					(actionDescriptor) => actionDescriptor.action === PlayoutActions.adlib
+				)
 				MountedGenericTriggers.upsert(genericTriggerId, {
 					$set: {
 						_id: genericTriggerId,
@@ -487,7 +485,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				})
 			}
 
-			const hotkeyTriggers = pair.triggers
+			const hotkeyTriggers = Object.values(pair.triggers)
 				.filter((trigger) => trigger.type === TriggerType.hotkey)
 				.map((trigger) => trigger.keys)
 
@@ -534,7 +532,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				triggeredActions.forEach((pair) => {
 					const actionListener = createdActions.current.get(pair._id)
 					if (actionListener) {
-						pair.triggers.forEach((trigger) => {
+						Object.values(pair.triggers).forEach((trigger) => {
 							if (trigger.type === TriggerType.hotkey) {
 								unbindHotkey(trigger.keys, actionListener)
 							}

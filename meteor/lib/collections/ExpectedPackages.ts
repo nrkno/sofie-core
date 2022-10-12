@@ -70,7 +70,7 @@ export function getThumbnailPackageSettings(
 }
 export function getSideEffect(
 	expectedPackage: ExpectedPackage.Base,
-	studio: StudioLight
+	studio: Pick<StudioLight, 'previewContainerIds' | 'thumbnailContainerIds'>
 ): ExpectedPackage.Base['sideEffect'] {
 	return deepExtend(
 		{},

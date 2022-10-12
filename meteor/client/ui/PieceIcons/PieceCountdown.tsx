@@ -44,9 +44,7 @@ export function PieceCountdownContainer(props: IPropsHeader): JSX.Element | null
 		playlistActivationId: props.playlistActivationId,
 	})
 
-	useSubscription(PubSub.showStyleBases, {
-		_id: props.showStyleBaseId,
-	})
+	useSubscription(PubSub.uiShowStyleBase, props.showStyleBaseId)
 
 	const piece = pieceInstance ? pieceInstance.piece : undefined
 	const sourceDuration = (piece?.content as VTContent)?.sourceDuration

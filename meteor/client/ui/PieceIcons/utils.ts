@@ -1,9 +1,9 @@
 import { SourceLayerType, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { normalizeArray } from '../../../lib/lib'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { IPropsHeader } from './PieceIcon'
 import { PieceExtended } from '../../../lib/Rundown'
+import { UIShowStyleBases } from '../Collections'
 
 export interface IFoundPieceInstance {
 	sourceLayer: ISourceLayer | undefined
@@ -15,7 +15,7 @@ export function findPieceInstanceToShow(
 	selectedLayerTypes: Set<SourceLayerType>
 ): IFoundPieceInstance {
 	const pieceInstances = PieceInstances.find({ partInstanceId: props.partInstanceId }).fetch()
-	const showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
+	const showStyleBase = UIShowStyleBases.findOne(props.showStyleBaseId)
 
 	if (!showStyleBase) {
 		return {
@@ -24,19 +24,14 @@ export function findPieceInstanceToShow(
 		}
 	}
 
-	const sourceLayers = showStyleBase
-		? normalizeArray<ISourceLayer>(
-				showStyleBase.sourceLayers.map((layer) => ({ ...layer })),
-				'_id'
-		  )
-		: {}
+	const sourceLayers = showStyleBase ? showStyleBase.sourceLayers : {}
 
 	return findPieceInstanceToShowFromInstances(pieceInstances, sourceLayers, selectedLayerTypes)
 }
 
 export function findPieceInstanceToShowFromInstances(
 	pieceInstances: PieceInstance[],
-	sourceLayers: Record<string, ISourceLayer>,
+	sourceLayers: SourceLayers,
 	selectedLayerTypes: Set<SourceLayerType>
 ): IFoundPieceInstance {
 	let foundSourceLayer: ISourceLayer | undefined

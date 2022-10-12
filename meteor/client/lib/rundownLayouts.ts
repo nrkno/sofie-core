@@ -1,10 +1,10 @@
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import _ from 'underscore'
-import { PartInstances } from '../../lib/collections/PartInstances'
+import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { PartInstanceId, PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { RundownPlaylist, RundownPlaylistActivationId } from '../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../lib/lib'
 import { invalidateAt } from './invalidatingTime'
 import { memoizedIsolatedAutorun } from './reactiveData/reactiveDataHelper'
@@ -14,7 +14,7 @@ import { memoizedIsolatedAutorun } from './reactiveData/reactiveDataHelper'
  */
 export function getIsFilterActive(
 	playlist: RundownPlaylist,
-	showStyleBase: DBShowStyleBase,
+	showStyleBase: UIShowStyleBase,
 	panel: RequiresActiveLayers
 ): { active: boolean; activePieceInstance: PieceInstance | undefined } {
 	const unfinishedPieces = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
@@ -50,10 +50,14 @@ export function getIsFilterActive(
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, showStyleBase: DBShowStyleBase) {
+export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, showStyleBase: UIShowStyleBase) {
 	if (playlist.activationId && playlist.currentPartInstanceId) {
 		return memoizedIsolatedAutorun(
-			(playlistActivationId, currentPartInstanceId, showStyleBase) => {
+			(
+				playlistActivationId: RundownPlaylistActivationId,
+				currentPartInstanceId: PartInstanceId,
+				showStyleBase: UIShowStyleBase
+			) => {
 				const now = getCurrentTime()
 				let prospectivePieces: PieceInstance[] = []
 
@@ -68,7 +72,11 @@ export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, s
 					const nowInPart = partInstance.timings?.plannedStartedPlayback
 						? now - partInstance.timings.plannedStartedPlayback
 						: 0
-					prospectivePieces = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieces, nowInPart)
+					prospectivePieces = processAndPrunePieceInstanceTimings(
+						showStyleBase.sourceLayers,
+						prospectivePieces,
+						nowInPart
+					)
 
 					let nearestEnd = Number.POSITIVE_INFINITY
 					prospectivePieces = prospectivePieces.filter((pieceInstance) => {

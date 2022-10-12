@@ -1,7 +1,6 @@
 import { PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString, protectStringArray, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
@@ -29,7 +28,7 @@ import {
 } from './lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { JobContext } from '../../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { logChanges } from '../../cache/lib'
 import {
 	PieceTimelineObjectsBlob,
@@ -51,7 +50,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		contextInfo: ContextInfo,
 		private readonly playlistActivationId: RundownPlaylistActivationId,
 		studio: ReadonlyDeep<DBStudio>,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		partInstance: DBPartInstance,
 		pieceInstances: PieceInstance[],

@@ -1,8 +1,8 @@
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
-import { ISourceLayer, ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylists, RundownPlaylistId, RundownPlaylistCollectionUtil } from '../collections/RundownPlaylists'
-import { normalizeArray, normalizeArrayToMap, protectString } from '../lib'
+import { normalizeArrayToMap, protectString } from '../lib'
 import { SegmentId } from '../collections/Segments'
 import { Piece, PieceId, Pieces } from '../collections/Pieces'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../Rundown'
@@ -11,8 +11,9 @@ import { PartId } from '../collections/Parts'
 import { FindOptions } from '../collections/lib'
 import { PieceInstance, PieceInstances } from '../collections/PieceInstances'
 import { Rundown, RundownId } from '../collections/Rundowns'
-import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../collections/ShowStyleBases'
+import { ShowStyleBaseId, SourceLayers } from '../collections/ShowStyleBases'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
+import { UIShowStyleBases } from '../../client/ui/Collections'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
@@ -53,16 +54,13 @@ export namespace PrompterAPI {
 			return null
 		}
 		const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
-		const rundownIdsToShowStyleBaseIds: Map<RundownId, ShowStyleBaseId> = new Map()
-		const rundownIdsToShowStyleBase: Map<RundownId, [ShowStyleBase, Record<string, ISourceLayer>] | undefined> =
-			new Map()
+		const rundownIdsToSourceLayers: Map<RundownId, ShowStyleBaseId> = new Map()
+		const rundownIdsToShowStyleBase: Map<RundownId, SourceLayers | undefined> = new Map()
 		for (const rundown of rundowns) {
-			rundownIdsToShowStyleBaseIds.set(rundown._id, rundown.showStyleBaseId)
-			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
-			rundownIdsToShowStyleBase.set(
-				rundown._id,
-				showStyleBase ? [showStyleBase, normalizeArray(showStyleBase.sourceLayers, '_id')] : undefined
-			)
+			rundownIdsToSourceLayers.set(rundown._id, rundown.showStyleBaseId)
+			const showStyleBase = UIShowStyleBases.findOne(rundown.showStyleBaseId)
+			const sourceLayers = showStyleBase?.sourceLayers
+			rundownIdsToShowStyleBase.set(rundown._id, sourceLayers)
 		}
 		const rundownMap = normalizeArrayToMap(rundowns, '_id')
 
@@ -190,7 +188,7 @@ export namespace PrompterAPI {
 					new Set(partIds.slice(0, partIndex)),
 					new Set(segmentIds.slice(0, segmentIndex)),
 					rundownIds.slice(0, currentRundownIndex),
-					rundownIdsToShowStyleBaseIds,
+					rundownIdsToSourceLayers,
 					orderedAllPartIds,
 					nextPartIsAfterCurrentPart,
 					currentPartInstance,
@@ -200,10 +198,10 @@ export namespace PrompterAPI {
 					true
 				)
 
-				const showStyleBaseAndSLayers = rundownIdsToShowStyleBase.get(partInstance.rundownId)
-				if (showStyleBaseAndSLayers) {
+				const sourceLayers = rundownIdsToShowStyleBase.get(partInstance.rundownId)
+				if (sourceLayers) {
 					const preprocessedPieces = processAndPrunePieceInstanceTimings(
-						showStyleBaseAndSLayers[0],
+						sourceLayers,
 						rawPieceInstances,
 						0,
 						true
@@ -211,7 +209,7 @@ export namespace PrompterAPI {
 
 					for (const pieceInstance of preprocessedPieces) {
 						const piece = pieceInstance.piece
-						const sourceLayer = showStyleBaseAndSLayers[1][piece.sourceLayerId] as ISourceLayer | undefined
+						const sourceLayer = sourceLayers[piece.sourceLayerId]
 
 						if (piece.content && sourceLayer && sourceLayer.type === SourceLayerType.SCRIPT) {
 							const content = piece.content as ScriptContent

@@ -1,7 +1,7 @@
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import React from 'react'
+import { UIStudio } from '../../../../../lib/api/studios'
 import { PartId } from '../../../../../lib/collections/Parts'
-import { Studio } from '../../../../../lib/collections/Studios'
 import { PieceUi } from '../../../SegmentContainer/withResolvedSegment'
 
 export interface IDefaultRendererProps {
@@ -9,7 +9,7 @@ export interface IDefaultRendererProps {
 	piece: PieceUi
 	partId: PartId
 	isLiveLine: boolean
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 	typeClass: string
 	hovering: { pageX: number; pageY: number } | null
 	elementOffset:

@@ -10,7 +10,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { assertNever, getRandomId, getRank, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
-import { JobContext } from '../jobs'
+import { ProcessedShowStyleBase, JobContext } from '../jobs'
 import {
 	AdlibPieceStartProps,
 	StartStickyPieceOnSourceLayerProps,
@@ -44,7 +44,7 @@ import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-au
 import { PieceLifespan, IBlueprintDirectPlayType, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { executeActionInner } from './playout'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { calculateNowOffsetLatency } from './timeline/multi-gateway'
@@ -156,7 +156,7 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 async function pieceTakeNowAsAdlib(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	showStyleBase: ReadonlyDeep<ProcessedShowStyleBase>,
 	partInstance: DBPartInstance,
 	pieceToCopy: PieceInstancePiece,
 	pieceInstanceToCopy: PieceInstance | undefined
@@ -179,7 +179,7 @@ async function pieceTakeNowAsAdlib(
 			pieceInstanceToCopy.plannedStartedPlayback &&
 			pieceInstanceToCopy.plannedStartedPlayback <= getCurrentTime()
 		) {
-			const resolvedPieces = getResolvedPieces(context, cache, showStyleBase, partInstance)
+			const resolvedPieces = getResolvedPieces(context, cache, showStyleBase.sourceLayers, partInstance)
 			const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
 
 			if (
@@ -385,7 +385,7 @@ export async function startStickyPieceOnSourceLayer(
 			if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)
 
 			const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
-			const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === data.sourceLayerId)
+			const sourceLayer = showStyleBase.sourceLayers[data.sourceLayerId]
 			if (!sourceLayer) throw new Error(`Source layer "${data.sourceLayerId}" not found!`)
 
 			if (!sourceLayer.isSticky)
@@ -604,7 +604,7 @@ export function innerStartAdLibPiece(
 export function innerStopPieces(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	sourceLayers: SourceLayers,
 	currentPartInstance: DBPartInstance,
 	filter: (pieceInstance: PieceInstance) => boolean,
 	timeOffset: number | undefined
@@ -617,7 +617,7 @@ export function innerStopPieces(
 		throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
 	}
 
-	const resolvedPieces = getResolvedPieces(context, cache, showStyleBase, currentPartInstance)
+	const resolvedPieces = getResolvedPieces(context, cache, sourceLayers, currentPartInstance)
 	const offsetRelativeToNow = (timeOffset || 0) + (calculateNowOffsetLatency(context, cache, undefined) || 0)
 	const stopAt = getCurrentTime() + offsetRelativeToNow
 	const relativeStopAt = stopAt - lastStartedPlayback

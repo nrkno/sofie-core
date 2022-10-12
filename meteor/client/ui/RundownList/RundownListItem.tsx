@@ -1,7 +1,5 @@
 import React from 'react'
 import { Rundown, RundownCollectionUtil, RundownId } from '../../../lib/collections/Rundowns'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Studio, Studios } from '../../../lib/collections/Studios'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
@@ -38,6 +36,9 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
+import { UIShowStyleBases, UIStudios } from '../Collections'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 
 export const HTML_ID_PREFIX = 'rundown-'
 
@@ -53,8 +54,8 @@ export interface IRundownListItemProps {
 }
 
 interface IRundownListItemTrackedProps {
-	studio: Studio | undefined
-	showStyleBase: ShowStyleBase | undefined
+	studio: UIStudio | undefined
+	showStyleBase: UIShowStyleBase | undefined
 	showStyleVariant: ShowStyleVariant | undefined
 }
 
@@ -149,17 +150,17 @@ const dropCollect: DropTargetCollector<IRundownDropTargetProps, IRundownListItem
 
 export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, IRundownListItemTrackedProps>(
 	(props: Translated<IRundownListItemProps>) => {
-		let studio: Studio | undefined = undefined
-		let showStyle: ShowStyleBase | undefined = undefined
+		let studio: UIStudio | undefined = undefined
+		let showStyle: UIShowStyleBase | undefined = undefined
 		let showStyleVariant: ShowStyleVariant | undefined = undefined
 
 		try {
-			studio = Studios.findOne(props.rundown.studioId)
+			studio = UIStudios.findOne(props.rundown.studioId)
 		} catch (e) {
 			// this is fine, we'll probably have it eventually and the component can render without it
 		}
 		try {
-			showStyle = RundownCollectionUtil.getShowStyleBase(props.rundown)
+			showStyle = UIShowStyleBases.findOne(props.rundown.showStyleBaseId)
 		} catch (e) {
 			// this is fine, we'll probably have it eventually and the component can render without it
 		}

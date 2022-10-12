@@ -15,7 +15,6 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../../logging'
@@ -31,7 +30,7 @@ import {
 	unprotectStringArray,
 } from '@sofie-automation/corelib/dist/protectedString'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
-import { JobContext } from '../../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
@@ -85,7 +84,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		contextInfo: UserContextInfo,
 		context: JobContext,
 		cache: CacheForPlayout,
-		showStyle: ReadonlyDeep<ShowStyleCompound>,
+		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 		_showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: DBRundown,
 		watchedPackages: WatchedPackagesHelper
@@ -146,7 +145,12 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			return []
 		}
 
-		const resolvedInstances = getResolvedPieces(this._context, this._cache, this.showStyleCompound, partInstance)
+		const resolvedInstances = getResolvedPieces(
+			this._context,
+			this._cache,
+			this.showStyleCompound.sourceLayers,
+			partInstance
+		)
 		return resolvedInstances.map(convertResolvedPieceInstanceToBlueprints)
 	}
 
@@ -568,7 +572,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const stoppedIds = innerStopPieces(
 			this._context,
 			this._cache,
-			this.showStyleCompound,
+			this.showStyleCompound.sourceLayers,
 			partInstance,
 			filter,
 			timeOffset

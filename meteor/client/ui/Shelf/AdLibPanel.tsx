@@ -12,9 +12,8 @@ import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import {
-	IOutputLayer,
 	ISourceLayer,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
@@ -48,7 +47,6 @@ import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -59,13 +57,16 @@ import { sortAdlibs } from '../../../lib/Rundown'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { AdLibListView } from './AdLibListView'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
+import { UIStudios } from '../Collections'
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
 	playlist: RundownPlaylist
-	studio: Studio
-	showStyleBase: ShowStyleBase
+	studio: UIStudio
+	showStyleBase: UIShowStyleBase
 	studioMode: boolean
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
@@ -73,8 +74,6 @@ export interface IAdLibPanelProps {
 
 	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
 }
-
-export type SourceLayerLookup = Record<string, ISourceLayer>
 
 type MinimalRundown = Pick<
 	Rundown,
@@ -85,14 +84,14 @@ export interface AdLibFetchAndFilterProps {
 	uiSegments: Array<AdlibSegmentUi>
 	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
 	liveSegment: AdlibSegmentUi | undefined
-	sourceLayerLookup: SourceLayerLookup
+	sourceLayerLookup: SourceLayers
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
 }
 
 function actionToAdLibPieceUi(
 	action: AdLibAction | RundownBaselineAdLibAction,
-	sourceLayers: _.Dictionary<ISourceLayer>,
-	outputLayers: _.Dictionary<IOutputLayer>
+	sourceLayers: SourceLayers,
+	outputLayers: OutputLayers
 ): AdLibPieceUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
@@ -135,14 +134,14 @@ interface IFetchAndFilterProps {
 		RundownPlaylist,
 		'_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId' | 'rundownIdsInOrder'
 	>
-	showStyleBase: Pick<ShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>
+	showStyleBase: Pick<UIShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
 }
 
 export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilterProps {
-	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
-	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
+	const sourceLayerLookup = props.showStyleBase && props.showStyleBase.sourceLayers
+	const outputLayerLookup = props.showStyleBase && props.showStyleBase.outputLayers
 
 	if (!props.playlist || !props.showStyleBase) {
 		return {
@@ -401,7 +400,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			// memoizedIsolatedAutorun
 
 			rundownBaselineAdLibs = memoizedIsolatedAutorun(
-				(currentRundownId: RundownId, sourceLayerLookup: SourceLayerLookup) => {
+				(currentRundownId: RundownId, sourceLayerLookup: SourceLayers) => {
 					const rundownAdLibItems: Array<Omit<RundownBaselineAdLibItem, 'timelineObjectsString'>> =
 						RundownBaselineAdLibPieces.find(
 							{
@@ -412,8 +411,8 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 							}
 						).fetch()
 					rundownBaselineAdLibs = rundownAdLibItems.concat(
-						props.showStyleBase.sourceLayers
-							.filter((i) => i.isSticky)
+						Object.values(sourceLayerLookup)
+							.filter((i): i is ISourceLayer => !!(i && i.isSticky))
 							.sort((a, b) => a._rank - b._rank)
 							.map((layer) =>
 								literal<AdLibPieceUi>({
@@ -488,9 +487,9 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 
 		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
 			const rundownBaselineClearAdLibs = memoizedIsolatedAutorun(
-				(sourceLayers: ISourceLayer[]) => {
-					return sourceLayers
-						.filter((i) => !!i.isClearable)
+				(sourceLayers: SourceLayers) => {
+					return Object.values(sourceLayers)
+						.filter((i): i is ISourceLayer => !!i && !!i.isClearable)
 						.sort((a, b) => a._rank - b._rank)
 						.map((layer) =>
 							literal<AdLibPieceUi>({
@@ -539,11 +538,7 @@ export function AdLibPanel({
 	onSelectPiece,
 }: IAdLibPanelProps): JSX.Element | null {
 	const { t } = useTranslation()
-	const studio = useTracker(
-		() => RundownPlaylistCollectionUtil.getStudio(playlist as Pick<RundownPlaylist, '_id' | 'studioId'>),
-		[playlist._id, playlist.studioId],
-		undefined
-	)
+	const studio = useTracker(() => UIStudios.findOne(playlist.studioId), [playlist.studioId], undefined)
 
 	const [searchFilter, setSearchFilter] = useState<string | undefined>(undefined)
 	const [selectedSegment, setSelectedSegment] = useState<AdlibSegmentUi | undefined>(undefined)
@@ -561,7 +556,7 @@ export function AdLibPanel({
 					| 'previousPartInstanceId'
 					| 'rundownIdsInOrder'
 				>,
-				showStyleBase: showStyleBase as Pick<ShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>,
+				showStyleBase: showStyleBase as Pick<UIShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>,
 				filter,
 				includeGlobalAdLibs,
 			}),

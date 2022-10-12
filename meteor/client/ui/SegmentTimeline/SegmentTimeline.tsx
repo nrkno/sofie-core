@@ -7,7 +7,6 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownHoldState } from '../../../lib/collections/Rundowns'
-import { Studio } from '../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelinePart } from './Parts/SegmentTimelinePart'
@@ -43,6 +42,7 @@ import { IOutputLayer, ISourceLayer, NoteSeverity } from '@sofie-automation/blue
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
+import { UIStudio } from '../../../lib/api/studios'
 
 interface IProps {
 	id: string
@@ -50,7 +50,7 @@ interface IProps {
 	segment: SegmentUi
 	playlist: RundownPlaylist
 	followLiveSegments: boolean
-	studio: Studio
+	studio: UIStudio
 	parts: Array<PartUi>
 	segmentNotes: Array<SegmentNote>
 	timeScale: number

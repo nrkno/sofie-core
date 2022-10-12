@@ -12,6 +12,7 @@ import {
 	RouteMapping,
 	StudioRouteSetExclusivityGroup,
 	StudioRouteType,
+	MappingsExt,
 } from '../../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
@@ -25,9 +26,11 @@ import { MeteorCall } from '../../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../../lib/userAction'
 import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { DeviceMappingSettings } from './Mappings'
+import { ReadonlyDeep } from 'type-fest'
 
 interface IStudioRoutingsProps {
 	studio: Studio
+	studioMappings: ReadonlyDeep<MappingsExt>
 	manifest?: MappingsManifest
 }
 interface IStudioRoutingsState {
@@ -280,7 +283,7 @@ export const StudioRoutings = withTranslation()(
 					) : null}
 					{routeSet.routes.map((route, index) => {
 						const deviceTypeFromMappedLayer: TSR.DeviceType | undefined = route.mappedLayer
-							? this.props.studio.mappings[route.mappedLayer]?.device
+							? this.props.studioMappings[route.mappedLayer]?.device
 							: undefined
 						const routeDeviceType: TSR.DeviceType | undefined =
 							route.routeType === StudioRouteType.REMAP
@@ -305,7 +308,7 @@ export const StudioRoutings = withTranslation()(
 												attribute={`routeSets.${routeSetId}.routes.${index}.mappedLayer`}
 												obj={this.props.studio}
 												type="dropdowntext"
-												options={Object.keys(this.props.studio.mappings)}
+												options={Object.keys(this.props.studioMappings)}
 												label={t('None')}
 												collection={Studios}
 												className="input text-input input-l"

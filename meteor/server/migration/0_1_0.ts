@@ -9,6 +9,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariantId, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 /**
  * This file contains system specific migration steps.
@@ -63,8 +64,8 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					mediaPreviewsUrl: '',
 					sofieUrl: '',
 				},
-				mappings: {},
-				blueprintConfig: {},
+				mappingsWithOverrides: wrapDefaultObject({}),
+				blueprintConfigWithOverrides: wrapDefaultObject({}),
 				_rundownVersionHash: '',
 				routeSets: {},
 				routeSetExclusivityGroups: {},
@@ -163,10 +164,10 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					name: 'Default ShowStyle',
 					organizationId: null,
 					blueprintId: protectString(''),
-					outputLayers: [],
-					sourceLayers: [],
+					outputLayersWithOverrides: wrapDefaultObject({}),
+					sourceLayersWithOverrides: wrapDefaultObject({}),
 					hotkeyLegend: [],
-					blueprintConfig: {},
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
 				})
 
@@ -175,7 +176,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					_id: variantId,
 					name: 'Default Variant',
 					showStyleBaseId: id,
-					blueprintConfig: {},
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
 				})
 
@@ -196,9 +197,9 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					name: 'Default ShowStyle',
 					organizationId: null,
 					blueprintId: protectString(''),
-					outputLayers: [],
-					sourceLayers: [],
-					blueprintConfig: {},
+					outputLayersWithOverrides: wrapDefaultObject({}),
+					sourceLayersWithOverrides: wrapDefaultObject({}),
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
 				})
 
@@ -206,7 +207,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					_id: getRandomId(),
 					name: 'Default Variant',
 					showStyleBaseId: id,
-					blueprintConfig: {},
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
 				})
 			}

@@ -1,3 +1,4 @@
+import deepmerge from 'deepmerge'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { clone, createManualPromise, lazyIgnore, ProtectedString } from '../../../lib/lib'
@@ -184,10 +185,7 @@ async function createOptimizedObserverWorker<
 	let pendingUpdate: Record<string, any> = {}
 	const triggerUpdate: TriggerUpdate<UpdateProps> = (updateProps) => {
 		// Combine the pending updates
-		pendingUpdate = {
-			...pendingUpdate,
-			...updateProps,
-		}
+		pendingUpdate = deepmerge(pendingUpdate, updateProps)
 
 		// If already running, set it as pending to be done afterwards
 		if (updateIsRunning) {

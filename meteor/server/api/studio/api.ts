@@ -18,6 +18,7 @@ import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatuses } from '../../../lib/collections/ExpectedPackageWorkStatuses'
 import { PackageInfos } from '../../../lib/collections/PackageInfos'
 import { PackageContainerPackageStatuses } from '../../../lib/collections/PackageContainerPackageStatus'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 async function insertStudio(context: MethodContext | Credentials, newId?: StudioId): Promise<StudioId> {
 	if (newId) check(newId, String)
@@ -32,9 +33,9 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 			name: 'New Studio',
 			organizationId: organizationId,
 			// blueprintId?: BlueprintId
-			mappings: {},
+			mappingsWithOverrides: wrapDefaultObject({}),
 			supportedShowStyleBase: [],
-			blueprintConfig: {},
+			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			// testToolsConfig?: ITestToolsConfig
 			settings: {
 				frameRate: 25,
@@ -117,7 +118,7 @@ Studios.find(
 	{},
 	{
 		fields: {
-			mappings: 1,
+			mappingsWithOverrides: 1,
 			routeSets: 1,
 		},
 	}

@@ -131,9 +131,7 @@ export function PieceIconContainer(props: IPropsHeader): JSX.Element | null {
 		playlistActivationId: props.playlistActivationId,
 	})
 
-	useSubscription(PubSub.showStyleBases, {
-		_id: props.showStyleBaseId,
-	})
+	useSubscription(PubSub.uiShowStyleBase, props.showStyleBaseId)
 
 	return <PieceIcon pieceInstance={pieceInstance} sourceLayer={sourceLayer} />
 }
