@@ -6,8 +6,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { DBTriggeredActions, TriggeredActions, UITriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { Complete, literal } from '../../lib/lib'
-import { meteorCustomPublishArray } from '../lib/customPublication'
-import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
+import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
 import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
@@ -104,7 +103,7 @@ async function manipulateUITriggeredActionsPublicationData(
 	return Array.from(state.cachedTriggeredActions.values())
 }
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.uiTriggeredActions,
 	CustomCollectionName.UITriggeredActions,
 	async function (pub, showStyleBaseId: ShowStyleBaseId | null) {
@@ -115,7 +114,7 @@ meteorCustomPublishArray(
 			NoSecurityReadAccess.any() ||
 			(showStyleBaseId && (await ShowStyleReadAccess.showStyleBase({ _id: showStyleBaseId }, cred)))
 		) {
-			const observer = await setUpOptimizedObserver<
+			await setUpOptimizedObserverArray<
 				UITriggeredActionsObj,
 				UITriggeredActionsArgs,
 				UITriggeredActionsState,
@@ -125,13 +124,8 @@ meteorCustomPublishArray(
 				{ showStyleBaseId },
 				setupUITriggeredActionsPublicationObservers,
 				manipulateUITriggeredActionsPublicationData,
-				(_args, newData) => {
-					pub.updatedDocs(newData)
-				}
+				pub
 			)
-			pub.onStop(() => {
-				observer.stop()
-			})
 		} else {
 			logger.warn(`Pub.${CustomCollectionName.UITriggeredActions}: Not allowed: "${showStyleBaseId}"`)
 		}

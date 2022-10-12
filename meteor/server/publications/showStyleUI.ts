@@ -7,8 +7,7 @@ import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Complete, literal } from '../../lib/lib'
-import { meteorCustomPublishArray } from '../lib/customPublication'
-import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
+import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
 import { logger } from '../logging'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
@@ -77,7 +76,7 @@ async function manipulateUIShowStyleBasePublicationData(
 	]
 }
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.uiShowStyleBase,
 	CustomCollectionName.UIShowStyleBase,
 	async function (pub, showStyleBaseId: ShowStyleBaseId) {
@@ -94,7 +93,7 @@ meteorCustomPublishArray(
 				(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
 			(selector._id && (await ShowStyleReadAccess.showStyleBase(selector, cred)))
 		) {
-			const observer = await setUpOptimizedObserver<
+			await setUpOptimizedObserverArray<
 				UIShowStyleBase,
 				UIShowStyleBaseArgs,
 				UIShowStyleBaseState,
@@ -104,13 +103,8 @@ meteorCustomPublishArray(
 				{ showStyleBaseId },
 				setupUIShowStyleBasePublicationObservers,
 				manipulateUIShowStyleBasePublicationData,
-				(_args, newData) => {
-					pub.updatedDocs(newData)
-				}
+				pub
 			)
-			pub.onStop(() => {
-				observer.stop()
-			})
 		} else {
 			logger.warn(`Pub.${CustomCollectionName.UIShowStyleBase}: Not allowed: "${showStyleBaseId}"`)
 		}

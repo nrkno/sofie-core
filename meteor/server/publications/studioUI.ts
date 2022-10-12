@@ -7,8 +7,7 @@ import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UIStudio } from '../../lib/api/studios'
 import { DBStudio, Studios } from '../../lib/collections/Studios'
 import { Complete, literal } from '../../lib/lib'
-import { meteorCustomPublishArray } from '../lib/customPublication'
-import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
+import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
 import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
@@ -130,27 +129,18 @@ async function manipulateUIStudioPublicationData(
 	}
 }
 
-meteorCustomPublishArray(
-	PubSub.uiStudio,
-	CustomCollectionName.UIStudio,
-	async function (pub, studioId: StudioId | null) {
-		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
+meteorCustomPublish(PubSub.uiStudio, CustomCollectionName.UIStudio, async function (pub, studioId: StudioId | null) {
+	const cred = await resolveCredentials({ userId: this.userId, token: undefined })
 
-		if (!cred || NoSecurityReadAccess.any() || (studioId && (await StudioReadAccess.studio(studioId, cred)))) {
-			const observer = await setUpOptimizedObserver<UIStudio, UIStudioArgs, UIStudioState, UIStudioUpdateProps>(
-				`pub_${PubSub.uiStudio}_${studioId}`,
-				{ studioId },
-				setupUIStudioPublicationObservers,
-				manipulateUIStudioPublicationData,
-				(_args, newData) => {
-					pub.updatedDocs(newData)
-				}
-			)
-			pub.onStop(() => {
-				observer.stop()
-			})
-		} else {
-			logger.warn(`Pub.${CustomCollectionName.UIStudio}: Not allowed: "${studioId}"`)
-		}
+	if (!cred || NoSecurityReadAccess.any() || (studioId && (await StudioReadAccess.studio(studioId, cred)))) {
+		await setUpOptimizedObserverArray<UIStudio, UIStudioArgs, UIStudioState, UIStudioUpdateProps>(
+			`pub_${PubSub.uiStudio}_${studioId}`,
+			{ studioId },
+			setupUIStudioPublicationObservers,
+			manipulateUIStudioPublicationData,
+			pub
+		)
+	} else {
+		logger.warn(`Pub.${CustomCollectionName.UIStudio}: Not allowed: "${studioId}"`)
 	}
-)
+})
