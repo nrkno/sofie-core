@@ -1,5 +1,5 @@
 import React from 'react'
-import { Rundown, RundownCollectionUtil, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
@@ -33,7 +33,7 @@ import RundownListItemView from './RundownListItemView'
 import { Settings } from '../../../lib/Settings'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 import { UIShowStyleBases, UIStudios } from '../Collections'
@@ -150,25 +150,9 @@ const dropCollect: DropTargetCollector<IRundownDropTargetProps, IRundownListItem
 
 export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, IRundownListItemTrackedProps>(
 	(props: Translated<IRundownListItemProps>) => {
-		let studio: UIStudio | undefined = undefined
-		let showStyle: UIShowStyleBase | undefined = undefined
-		let showStyleVariant: ShowStyleVariant | undefined = undefined
-
-		try {
-			studio = UIStudios.findOne(props.rundown.studioId)
-		} catch (e) {
-			// this is fine, we'll probably have it eventually and the component can render without it
-		}
-		try {
-			showStyle = UIShowStyleBases.findOne(props.rundown.showStyleBaseId)
-		} catch (e) {
-			// this is fine, we'll probably have it eventually and the component can render without it
-		}
-		try {
-			showStyleVariant = RundownCollectionUtil.getShowStyleVariant(props.rundown)
-		} catch (e) {
-			// this is fine, we'll probably have it eventually and the component can render without it
-		}
+		const studio = UIStudios.findOne(props.rundown.studioId)
+		const showStyle = UIShowStyleBases.findOne(props.rundown.showStyleBaseId)
+		const showStyleVariant = ShowStyleVariants.findOne(props.rundown.showStyleVariantId)
 
 		return {
 			studio,

@@ -4,7 +4,7 @@ import { Settings } from '../../../lib/Settings'
 import { resolveCredentials, ResolvedCredentials, Credentials, isResolvedCredentials } from './credentials'
 import { allAccess, noAccess, combineAccess, Access } from './access'
 import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { RundownId, Rundowns, Rundown, RundownCollectionUtil } from '../../../lib/collections/Rundowns'
+import { RundownId, Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { StudioId } from '../../../lib/collections/Studios'
 import { isProtectedString } from '../../../lib/lib'
 import { OrganizationId, Organizations, DBOrganization } from '../../../lib/collections/Organization'
@@ -328,7 +328,7 @@ namespace AccessRules {
 		return { ...accessStudio(studio, cred), document: playlist }
 	}
 	export async function accessRundown(rundown: Rundown, cred: ResolvedCredentials): Promise<Access<Rundown>> {
-		const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
+		const playlist = await RundownPlaylists.findOneAsync(rundown.playlistId)
 		if (!playlist) return noAccess(`Rundown playlist of rundown "${rundown._id}" not found`)
 		return { ...(await accessRundownPlaylist(playlist, cred)), document: rundown }
 	}
