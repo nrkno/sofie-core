@@ -91,8 +91,6 @@ async function manipulateUIStudioPublicationData(
 ): Promise<void> {
 	// Prepare data for publication:
 
-	// Ignore _updateProps, as we arent caching anything so we have to rerun from scratch no matter what
-
 	if (args.studioId) {
 		// Operate on a single studio
 		const studio = (await Studios.findOneAsync(args.studioId, { projection: fieldSpecifier })) as
