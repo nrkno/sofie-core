@@ -532,18 +532,18 @@ export class TSRHandler {
 				return result
 			})
 		}
-		const devices = new Map<string, DeviceOptionsAny>()
+		const deviceOptions = new Map<string, DeviceOptionsAny>()
 
 		if (peripheralDevice) {
 			const settings: TSRSettings = peripheralDevice.settings || {}
 
 			for (const [deviceId, device] of Object.entries(settings.devices)) {
 				if (!device.disable) {
-					devices.set(deviceId, device)
+					deviceOptions.set(deviceId, device)
 				}
 			}
 
-			for (const [deviceId, orgDeviceOptions] of devices.entries()) {
+			for (const [deviceId, orgDeviceOptions] of deviceOptions.entries()) {
 				const oldDevice: DeviceContainer<DeviceOptionsAny> | undefined = this.tsr.getDevice(deviceId, true)
 
 				const deviceOptions = _.extend(
@@ -598,7 +598,7 @@ export class TSRHandler {
 
 			for (const oldDevice of this.tsr.getDevices()) {
 				const deviceId = oldDevice.deviceId
-				if (!devices.has(deviceId)) {
+				if (!deviceOptions.has(deviceId)) {
 					this.logger.info('Un-initializing device: ' + deviceId)
 					ps.push(keepTrack(this._removeDevice(deviceId), deviceId, DeviceAction.REMOVE))
 				}
@@ -656,13 +656,14 @@ export class TSRHandler {
 		const debugLoggingPs: Promise<any>[] = []
 		// Set logDebug on the devices:
 		for (const device of this.tsr.getDevices()) {
-			const deviceOptions = devices.get(device.deviceId)
-			if (deviceOptions) {
-				const debug: boolean = this.getDeviceDebug(deviceOptions)
-				if (device.debugLogging !== debug) {
-					this.logger.info(`Setting logDebug of device ${device.deviceId} to ${debug}`)
-					debugLoggingPs.push(device.setDebugLogging(debug))
-				}
+			const options: DeviceOptionsAny | undefined = deviceOptions.get(device.deviceId)
+			if (!options) {
+				continue
+			}
+			const debug: boolean = this.getDeviceDebug(options)
+			if (device.debugLogging !== debug) {
+				this.logger.info(`Setting logDebug of device ${device.deviceId} to ${debug}`)
+				debugLoggingPs.push(device.setDebugLogging(debug))
 			}
 		}
 		await Promise.all(debugLoggingPs)
