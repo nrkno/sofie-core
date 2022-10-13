@@ -544,6 +544,10 @@ $identifier-area-width: 3em;
 			color: #888;
 		}
 
+		> .segment-timeline__timeUntil__label {
+			text-align: right;
+		}
+
 		> .negative {
 			color: $general-late-color;
 			font-weight: 500;
