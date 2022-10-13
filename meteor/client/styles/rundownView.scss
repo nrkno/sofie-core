@@ -445,7 +445,7 @@ svg.icon {
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
-	grid-template-columns: [segment-name] $segment-header-width [segment-group-controls] $segment-group-controls-width [timeline] auto [end]; // 120px [future-timeline-end]
+	grid-template-columns: [segment-name] ($segment-header-width / 2) [duration-onAirIn-split] ($segment-header-width / 2) [segment-group-controls] $segment-group-controls-width [timeline] auto [end]; // 120px [future-timeline-end]
 	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
 	user-select: none;
@@ -654,7 +654,7 @@ svg.icon {
 		padding: 0;
 		text-align: right;
 
-		grid-column: segment-name / segment-group-controls;
+		grid-column: segment-name / duration-onAirIn-split;
 		grid-row: header / main-view;
 
 		padding-right: 0px;
@@ -664,7 +664,6 @@ svg.icon {
 		letter-spacing: 0;
 		font-weight: 400;
 
-		cursor: pointer;
 		transition: 0.3s color;
 
 		> span.negative {
@@ -696,14 +695,14 @@ svg.icon {
 			right: auto;
 		}
 	}
+
 	.segment-timeline__timeUntil {
+		grid-column: duration-onAirIn-split / segment-group-controls;
 		color: #888;
+		cursor: pointer;
 	}
 
 	&.time-of-day-countdowns {
-		.segment-timeline__duration {
-			color: #888;
-		}
 		.segment-timeline__timeUntil {
 			color: #fff;
 			font-weight: 500;
