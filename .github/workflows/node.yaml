@@ -7,6 +7,7 @@ on:
     tags:
       - "v**"
   pull_request:
+  workflow_dispatch:
 
 jobs:
   lint-core:
@@ -380,8 +381,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    # only run for tags
-    if: contains(github.ref, 'refs/tags/')
+    # only run for tags or manual triggers
+    if: contains(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
 
     needs:
       - test-packages
@@ -419,6 +420,7 @@ jobs:
 
             cd packages/${{ matrix.package-name }}
             PACKAGE_NAME=$(yarn info -s . name)
+            PACKAGE_NAME=${PACKAGE_NAME/@sofie-automation/@tv2media}
             PUBLISHED_VERSION=$(yarn info -s $PACKAGE_NAME version)
             THIS_VERSION=$(node -p "require('./package.json').version")
             NPM_TAG=$(node ../../scripts/determine-npm-tag.js $PUBLISHED_VERSION $THIS_VERSION)

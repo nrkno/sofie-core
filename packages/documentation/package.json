@@ -1,6 +1,6 @@
 {
 	"name": "sofie-documentation",
-	"version": "42.0.0",
+	"version": "46.0.0",
 	"private": true,
 	"scripts": {
 		"docusaurus": "docusaurus",
