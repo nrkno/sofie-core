@@ -531,7 +531,6 @@ $identifier-area-width: 3em;
 		padding: 0.45em $duration-area-margin 0 $duration-area-margin;
 		line-height: 1em;
 		font-weight: 400;
-		cursor: pointer;
 		transition: 0.3s color;
 		letter-spacing: 0;
 
@@ -560,6 +559,7 @@ $identifier-area-width: 3em;
 
 	.segment-opl__timeUntil {
 		color: #888;
+		cursor: pointer;
 
 		&--time-of-day {
 			color: #fff;

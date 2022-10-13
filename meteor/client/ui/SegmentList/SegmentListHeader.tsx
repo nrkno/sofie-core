@@ -103,7 +103,6 @@ export function SegmentListHeader({
 						hidden: hasAlreadyPlayed && !isLiveSegment && !isNextSegment,
 					})}
 					tabIndex={0}
-					onClick={onTimeUntilClick}
 				>
 					{playlist && parts && parts.length > 0 && (
 						<SegmentDuration
