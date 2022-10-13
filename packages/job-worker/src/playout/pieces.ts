@@ -307,7 +307,6 @@ function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: num
 
 export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstancePiece): AdLibPiece {
 	const span = context.startSpan('convertPieceToAdLibPiece')
-	// const oldId = piece._id
 	const newAdLibPiece = literal<AdLibPiece>({
 		...piece,
 		_id: getRandomId(),

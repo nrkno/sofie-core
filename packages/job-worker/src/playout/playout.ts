@@ -424,7 +424,6 @@ export async function moveNextPartInner(
 			segmentDelta > 0
 				? considerSegments.slice(targetSegmentIndex)
 				: considerSegments.slice(0, targetSegmentIndex + 1).reverse()
-		// const allowedSegmentIds = new Set(allowedSegments.map((s) => s._id))
 
 		const playablePartsBySegment = _.groupBy(
 			rawParts.filter((p) => isPartPlayable(p)),
@@ -607,13 +606,8 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 			if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)
 			const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
 
-			// logger.info(o)
-			// logger.info(JSON.stringify(o, '', 2))
-
 			const allowedSourceLayers = showStyleBase.sourceLayers
 
-			// logger.info('nowInPart', nowInPart)
-			// logger.info('filteredPieces', filteredPieces)
 			const getNextPiece = (partInstance: DBPartInstance, ignoreStartedPlayback: boolean) => {
 				// Find next piece to disable
 

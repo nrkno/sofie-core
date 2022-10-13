@@ -373,9 +373,6 @@ export async function startStickyPieceOnSourceLayer(
 				throw UserError.create(UserErrorMessage.DuringHold)
 			}
 			if (!playlist.currentPartInstanceId) throw UserError.create(UserErrorMessage.NoCurrentPart)
-
-			// if (!data.queue && playlist.currentPartInstanceId !== data.partInstanceId)
-			// 	throw UserError.create(UserErrorMessage.AdlibCurrentPart)
 		},
 		async (cache) => {
 			const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)

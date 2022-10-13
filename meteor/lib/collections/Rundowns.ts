@@ -11,7 +11,6 @@ export { RundownHoldState }
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 export * from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
-// export const Rundowns = createMongoCollection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
 export const Rundowns = createMongoCollection<DBRundown>(CollectionName.Rundowns)
 
 registerIndex(Rundowns, {
