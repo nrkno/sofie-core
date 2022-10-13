@@ -26,8 +26,7 @@ jobs:
           git push
       - name: Abort merge
         if: steps.merge.outcome == 'failure'
-        run: |
-          git merge --abort
+        run: git merge --abort
       - name: Create Pull Request on merge failure
         if: steps.merge.outcome == 'failure'
         uses: repo-sync/pull-request@v2
@@ -60,8 +59,7 @@ jobs:
           git push
       - name: Abort merge
         if: steps.merge.outcome == 'failure'
-        run: |
-          git merge --abort
+        run: git merge --abort
       - name: Create Pull Request on merge failure
         if: steps.merge.outcome == 'failure'
         uses: repo-sync/pull-request@v2
