@@ -1,6 +1,6 @@
 import React from 'react'
 import ClassNames from 'classnames'
-import { faPencilAlt, faTrash, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faPencilAlt, faTrash, faCheck, faPlus, faDownload, faUpload, faCopy } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ConfigManifestEntry, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -13,6 +13,7 @@ import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigManifestSettings } from '../ConfigManifestSettings'
+import { UploadButton } from '../../../lib/uploadButton'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
@@ -36,6 +37,28 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			this.state = {
 				editedMappings: [],
 			}
+		}
+		downloadVariant = (showstyleVariant: ShowStyleVariant) => {
+			const jsonStr = JSON.stringify(showstyleVariant)
+
+			const element = document.createElement('a')
+			element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
+			element.download = `${showstyleVariant.name}_showstyleVariant_${showstyleVariant._id}.json`
+
+			document.body.appendChild(element) // Required for this to work in FireFox
+			element.click()
+			document.body.removeChild(element) // Required for this to work in FireFox
+		}
+		downloadAllVariants = () => {
+			const jsonStr = JSON.stringify(this.props.showStyleVariants)
+
+			const element = document.createElement('a')
+			element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
+			element.download = `All variants_${this.props.showStyleBase._id}.json`
+
+			document.body.appendChild(element) // Required for this to work in FireFox
+			element.click()
+			document.body.removeChild(element) // Required for this to work in FireFox
 		}
 		isItemEdited = (layerId: ProtectedString<any>) => {
 			return this.state.editedMappings.indexOf(layerId) >= 0
@@ -94,10 +117,16 @@ export const ShowStyleVariantsSettings = withTranslation()(
 								hl: this.isItemEdited(showStyleVariant._id),
 							})}
 						>
-							<th className="settings-studio-showStyleVariant__name c3">
+							<th className="draghandle settings-studio-showStyleVariant__name c3">
 								{showStyleVariant.name || t('Unnamed variant')}
 							</th>
 							<td className="settings-studio-showStyleVariant__actions table-item-actions c3">
+								<button className="action-btn" onClick={() => this.downloadVariant(showStyleVariant)}>
+									<FontAwesomeIcon icon={faDownload} />
+								</button>
+								<button className="action-btn">
+									<FontAwesomeIcon icon={faCopy} />
+								</button>
 								<button className="action-btn" onClick={() => this.editItem(showStyleVariant._id)}>
 									<FontAwesomeIcon icon={faPencilAlt} />
 								</button>
@@ -159,12 +188,21 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			return (
 				<div>
 					<h2 className="mhn">{t('Variants')}</h2>
+					<div className="mod mhs"></div>
 					<table className="table expando settings-studio-showStyleVariants-table">
 						<tbody>{this.renderShowStyleVariants()}</tbody>
 					</table>
 					<div className="mod mhs">
 						<button className="btn btn-primary" onClick={this.onAddShowStyleVariant}>
 							<FontAwesomeIcon icon={faPlus} />
+						</button>
+						<UploadButton className="btn btn-secondary mls" accept="application/json,.json">
+							<FontAwesomeIcon icon={faUpload} />
+							&nbsp;{t('Import')}
+						</UploadButton>
+						<button className="btn btn-secondary mls" onClick={this.downloadAllVariants}>
+							<FontAwesomeIcon icon={faDownload} />
+							&nbsp;{t('Export')}
 						</button>
 					</div>
 				</div>
