@@ -33,10 +33,9 @@ jobs:
         with:
           source_branch: master
           destination_branch: staging
-          pr_title: Automerge Failed
+          pr_title: "Automerge Failed: master -> staging"
           pr_body: Failed to merge 'master' into 'staging'.
           github_token: ${{ secrets.GITHUB_TOKEN }}
-
 
   merge-staging-to-develop:
     name: Merge Staging to Develop
@@ -66,7 +65,7 @@ jobs:
         with:
           source_branch: staging
           destination_branch: develop
-          pr_title: Automerge Failed
+          pr_title: "Automerge Failed: staging -> develop"
           pr_body: Failed to merge 'staging' into 'develop'.
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
