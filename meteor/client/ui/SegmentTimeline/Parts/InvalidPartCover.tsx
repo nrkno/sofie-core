@@ -5,12 +5,13 @@ import { InvalidFloatingInspector } from '../../FloatingInspectors/InvalidFloati
 interface IProps {
 	className?: string
 	part: DBPart
+	align?: 'left' | 'center' | 'right'
 }
 
-export function InvalidPartCover({ className, part }: IProps) {
+export function InvalidPartCover({ className, part, align }: IProps) {
 	const element = React.createRef<HTMLDivElement>()
 	const [hover, setHover] = useState(false)
-	const [position, setPosition] = useState({ left: 0, top: 0, width: 0 })
+	const [position, setPosition] = useState({ left: 0, top: 0, width: 0, right: 0 })
 
 	function onMouseEnter() {
 		if (!element.current) {
@@ -22,6 +23,7 @@ export function InvalidPartCover({ className, part }: IProps) {
 		setPosition({
 			top: rect.top + window.scrollY,
 			left: rect.left + window.scrollX,
+			right: rect.right + window.scrollX,
 			width: rect.width,
 		})
 	}
@@ -30,16 +32,22 @@ export function InvalidPartCover({ className, part }: IProps) {
 		setHover(false)
 	}
 
+	function getInspectorStyle(): React.CSSProperties {
+		if (align === 'left') {
+			return { top: `${position.top}px`, left: `${position.left}px` }
+		} else if (align === 'right') {
+			return { top: `${position.top}px`, left: 'auto', right: `${position.right}px` }
+		}
+		return { top: `${position.top}px`, left: `${position.left + position.width / 2}px` }
+	}
+
 	return (
 		<div className={className} ref={element} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
 			<InvalidFloatingInspector
 				part={part}
 				showMiniInspector={hover}
 				itemElement={element.current}
-				floatingInspectorStyle={{
-					top: `${position.top}px`,
-					left: `${position.left + position.width / 2}px`,
-				}}
+				floatingInspectorStyle={getInspectorStyle()}
 			/>
 		</div>
 	)

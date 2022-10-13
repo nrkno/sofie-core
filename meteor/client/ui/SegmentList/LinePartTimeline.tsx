@@ -12,6 +12,7 @@ import { OvertimeShadow } from './OvertimeShadow'
 import { PartAutoNextMarker } from './PartAutoNextMarker'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import StudioContext from '../RundownView/StudioContext'
+import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
 
 const TIMELINE_DEFAULT_BASE = 30 * 1000
 
@@ -132,7 +133,9 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 					)}
 				</StudioContext.Consumer>
 			)}
-			{part.instance.part.invalid && !part.instance.part.gap && <div className="segment-opl__main-piece invalid"></div>}
+			{part.instance.part.invalid && !part.instance.part.gap && (
+				<InvalidPartCover className="segment-opl__main-piece invalid" part={part.instance.part} align="left" />
+			)}
 			{!isLive && !isInvalid && <TakeLine isNext={isNext} autoNext={willAutoNextIntoThisPart} />}
 			{transitionPiece && <LinePartTransitionPiece piece={transitionPiece} />}
 			{!willAutoNextOut && !isInvalid && (
