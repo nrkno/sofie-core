@@ -9,6 +9,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+env:
+  # set only if you want to override the @sofie-automation scope
+  PACKAGE_SCOPE_OVERRIDE: "@tv2media"
+
 jobs:
   lint-core:
     name: Typecheck and Lint Core
@@ -420,7 +424,7 @@ jobs:
 
             cd packages/${{ matrix.package-name }}
             PACKAGE_NAME=$(yarn info -s . name)
-            PACKAGE_NAME=${PACKAGE_NAME/@sofie-automation/@tv2media}
+            [[ -n "$PACKAGE_SCOPE_OVERRIDE" ]] && PACKAGE_NAME=${PACKAGE_NAME/@sofie-automation/"$PACKAGE_SCOPE_OVERRIDE"}
             PUBLISHED_VERSION=$(yarn info -s $PACKAGE_NAME version)
             THIS_VERSION=$(node -p "require('./package.json').version")
             NPM_TAG=$(node ../../scripts/determine-npm-tag.js $PUBLISHED_VERSION $THIS_VERSION)
@@ -437,14 +441,13 @@ jobs:
         env:
           CI: true
       - name: Modify dependencies to use npm packages
-        run: node scripts/prepublish.js
+        run: node scripts/prepublish.js $PACKAGE_SCOPE_OVERRIDE
       - name: Publish to NPM
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
-          echo "`jq '.name |= sub("@sofie-automation";"@tv2media")' package.json --tab`" > package.json
           yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag ${{ steps.do-publish.outputs.tag }}
         env:
           CI: true
