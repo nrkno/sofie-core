@@ -385,7 +385,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    # only run for tags
+    # only run for tags or manual triggers
     if: contains(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
 
     needs:
