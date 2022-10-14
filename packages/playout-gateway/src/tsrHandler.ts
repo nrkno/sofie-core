@@ -121,10 +121,16 @@ export interface TimelineContentObjectTmp extends TSRTimelineObjBase {
 /** Max time for initializing devices */
 const INIT_TIMEOUT = 10000
 
+enum DeviceAction {
+	ADD = 'add',
+	READD = 'readd',
+	REMOVE = 'remove',
+}
+
 type DeviceActionResult = {
 	success: boolean
 	deviceId: string
-	action: 'add' | 'remove'
+	action: DeviceAction
 }
 
 type UpdateDeviceOperationsResult =
@@ -134,7 +140,7 @@ type UpdateDeviceOperationsResult =
 	  }
 	| {
 			success: false
-			reason: 'timeout'
+			reason: 'timeout' | 'error'
 			details: string[]
 	  }
 
@@ -197,7 +203,6 @@ export class TSRHandler {
 		this.tsr.on('error', (e, ...args) => {
 			// CasparCG play and load 404 errors should be warnings:
 			const msg: string = e + ''
-			// let cmdInfo: string = args[0] + ''
 			const cmdReply = args[0]
 
 			if (
@@ -450,11 +455,11 @@ export class TSRHandler {
 	}
 	private _getStudio(): any | null {
 		const peripheralDevice = this._getPeripheralDevice()
-		if (peripheralDevice) {
-			const studios = this._coreHandler.core.getCollection('studios')
-			return studios.findOne(peripheralDevice.studioId)
+		if (!peripheralDevice) {
+			return null
 		}
-		return null
+		const studios = this._coreHandler.core.getCollection('studios')
+		return studios.findOne(peripheralDevice.studioId)
 	}
 	private _getStudioId(): string | null {
 		if (this._cachedStudioId) return this._cachedStudioId
@@ -469,42 +474,44 @@ export class TSRHandler {
 	private _triggerUpdateDevices() {
 		if (!this._initialized) return
 
-		if (this._triggerUpdateDevicesTimeout) clearTimeout(this._triggerUpdateDevicesTimeout)
+		if (this._triggerUpdateDevicesTimeout) {
+			clearTimeout(this._triggerUpdateDevicesTimeout)
+		}
 		this._triggerUpdateDevicesTimeout = undefined
 
-		if (!this._updateDevicesIsRunning) {
-			this._updateDevicesIsRunning = true
-			debug('triggerUpdateDevices now')
-
-			// Defer:
-			setTimeout(() => {
-				this._updateDevices().then(
-					() => {
-						this._updateDevicesIsRunning = false
-						if (this._triggerUpdateDevicesCheckAgain) {
-							debug('triggerUpdateDevices from updateDevices promise resolved')
-							if (this._triggerUpdateDevicesTimeout) clearTimeout(this._triggerUpdateDevicesTimeout)
-							this._triggerUpdateDevicesTimeout = setTimeout(() => this._triggerUpdateDevices(), 1000)
-						}
-						this._triggerUpdateDevicesCheckAgain = false
-					},
-					() => {
-						this._updateDevicesIsRunning = false
-						if (this._triggerUpdateDevicesCheckAgain) {
-							debug('triggerUpdateDevices from updateDevices promise rejected')
-							setTimeout(() => this._triggerUpdateDevices(), 1000)
-							if (this._triggerUpdateDevicesTimeout) clearTimeout(this._triggerUpdateDevicesTimeout)
-							this._triggerUpdateDevicesTimeout = setTimeout(() => this._triggerUpdateDevices(), 1000)
-						}
-						this._triggerUpdateDevicesCheckAgain = false
-					}
-				)
-			}, 10)
-		} else {
-			// oh, it's already running, cue a check again later:
+		if (this._updateDevicesIsRunning) {
 			debug('triggerUpdateDevices already running, cue a check again later')
 			this._triggerUpdateDevicesCheckAgain = true
+			return
 		}
+		this._updateDevicesIsRunning = true
+		debug('triggerUpdateDevices now')
+
+		// Defer:
+		setTimeout(() => {
+			this._updateDevices()
+				.then(
+					() =>
+						this._triggerUpdateDevicesCheckAgain &&
+						debug('triggerUpdateDevices from updateDevices promise resolved')
+				)
+				.catch(
+					() =>
+						this._triggerUpdateDevicesCheckAgain &&
+						debug('triggerUpdateDevices from updateDevices promise rejected')
+				)
+				.finally(() => {
+					this._updateDevicesIsRunning = false
+					if (!this._triggerUpdateDevicesCheckAgain) {
+						return
+					}
+					if (this._triggerUpdateDevicesTimeout) {
+						clearTimeout(this._triggerUpdateDevicesTimeout)
+					}
+					this._triggerUpdateDevicesTimeout = setTimeout(() => this._triggerUpdateDevices(), 1000)
+					this._triggerUpdateDevicesCheckAgain = false
+				})
+		}, 10)
 	}
 	private async _updateDevices(): Promise<void> {
 		this.logger.debug('updateDevices start')
@@ -513,26 +520,30 @@ export class TSRHandler {
 		const peripheralDevice = peripheralDevices.findOne(this._coreHandler.core.deviceId)
 
 		const ps: Promise<DeviceActionResult>[] = []
-		const promiseOperations: { [id: string]: true } = {}
-		const keepTrack = async <T>(p: Promise<T>, name: string) => {
-			promiseOperations[name] = true
+		const promiseOperations: { [id: string]: { deviceId: string; operation: DeviceAction } } = {}
+		const keepTrack = async <T>(p: Promise<T>, deviceId: string, operation: DeviceAction) => {
+			const name = `${operation}_${deviceId}`
+			promiseOperations[name] = {
+				deviceId,
+				operation,
+			}
 			return p.then((result) => {
 				delete promiseOperations[name]
 				return result
 			})
 		}
-		const devices = new Map<string, DeviceOptionsAny>()
+		const deviceOptions = new Map<string, DeviceOptionsAny>()
 
 		if (peripheralDevice) {
 			const settings: TSRSettings = peripheralDevice.settings || {}
 
 			for (const [deviceId, device] of Object.entries(settings.devices)) {
 				if (!device.disable) {
-					devices.set(deviceId, device)
+					deviceOptions.set(deviceId, device)
 				}
 			}
 
-			for (const [deviceId, orgDeviceOptions] of devices.entries()) {
+			for (const [deviceId, orgDeviceOptions] of deviceOptions.entries()) {
 				const oldDevice: DeviceContainer<DeviceOptionsAny> | undefined = this.tsr.getDevice(deviceId, true)
 
 				const deviceOptions = _.extend(
@@ -556,7 +567,7 @@ export class TSRHandler {
 					if (deviceOptions.options) {
 						this.logger.info('Initializing device: ' + deviceId)
 						this.logger.info('new', deviceOptions)
-						ps.push(keepTrack(this._addDevice(deviceId, deviceOptions), 'add_' + deviceId))
+						ps.push(keepTrack(this._addDevice(deviceId, deviceOptions), deviceId, DeviceAction.ADD))
 					}
 				} else {
 					if (deviceOptions.options) {
@@ -576,9 +587,9 @@ export class TSRHandler {
 							this.logger.info('old', oldDevice.deviceOptions)
 							this.logger.info('new', deviceOptions)
 							ps.push(
-								keepTrack(this._removeDevice(deviceId), 'remove_' + deviceId).then(async () => {
-									return keepTrack(this._addDevice(deviceId, deviceOptions), 're-add_' + deviceId)
-								})
+								keepTrack(this._removeDevice(deviceId), deviceId, DeviceAction.REMOVE).then(async () =>
+									keepTrack(this._addDevice(deviceId, deviceOptions), deviceId, DeviceAction.READD)
+								)
 							)
 						}
 					}
@@ -587,9 +598,9 @@ export class TSRHandler {
 
 			for (const oldDevice of this.tsr.getDevices()) {
 				const deviceId = oldDevice.deviceId
-				if (!devices.has(deviceId)) {
+				if (!deviceOptions.has(deviceId)) {
 					this.logger.info('Un-initializing device: ' + deviceId)
-					ps.push(keepTrack(this._removeDevice(deviceId), 'remove_' + deviceId))
+					ps.push(keepTrack(this._removeDevice(deviceId), deviceId, DeviceAction.REMOVE))
 				}
 			}
 		}
@@ -601,36 +612,61 @@ export class TSRHandler {
 			})),
 			new Promise<UpdateDeviceOperationsResult>((resolve) =>
 				setTimeout(() => {
-					const keys = _.keys(promiseOperations)
+					const keys = Object.keys(promiseOperations)
 					if (keys.length) {
-						this.logger.warn(`Timeout in _updateDevices: ${keys.join(',')}`)
+						this.logger.warn(
+							`Timeout in _updateDevices: ${Object.values(promiseOperations)
+								.map((op) => op.deviceId)
+								.join(',')}`
+						)
 					}
-					resolve({
-						success: false,
-						reason: 'timeout',
-						details: keys,
-					})
+
+					Promise.all(
+						// At this point in time, promiseOperations contains the promises that have timed out.
+						// If we tried to add or re-add a device, that apparently failed so we should remove the device in order to
+						// give it another chance next time _updateDevices() is called.
+						Object.values(promiseOperations)
+							.filter((op) => op.operation === DeviceAction.ADD || op.operation === DeviceAction.READD)
+							.map(async (op) =>
+								// the device was never added, should retry next round
+								this._removeDevice(op.deviceId)
+							)
+					)
+						.catch((e) => {
+							this.logger.error(
+								`Error when trying to remove unsuccessfully initialized devices: ${stringifyIds(
+									Object.values(promiseOperations).map((op) => op.deviceId)
+								)}`,
+								e
+							)
+						})
+						.finally(() => {
+							resolve({
+								success: false,
+								reason: 'error',
+								details: keys,
+							})
+						})
 				}, INIT_TIMEOUT)
 			), // Timeout if not all are resolved within INIT_TIMEOUT
 		])
 
 		await this._reportResult(resultsOrTimeout)
 
-		{
-			const ps: Promise<any>[] = []
-			// Set logDebug on the devices:
-			for (const device of this.tsr.getDevices()) {
-				const deviceOptions = devices.get(device.deviceId)
-				if (deviceOptions) {
-					const debug: boolean = this.getDeviceDebug(deviceOptions)
-					if (device.debugLogging !== debug) {
-						this.logger.info(`Setting logDebug of device ${device.deviceId} to ${debug}`)
-						ps.push(device.setDebugLogging(debug))
-					}
-				}
+		const debugLoggingPs: Promise<any>[] = []
+		// Set logDebug on the devices:
+		for (const device of this.tsr.getDevices()) {
+			const options: DeviceOptionsAny | undefined = deviceOptions.get(device.deviceId)
+			if (!options) {
+				continue
 			}
-			await Promise.all(ps)
+			const debug: boolean = this.getDeviceDebug(options)
+			if (device.debugLogging !== debug) {
+				this.logger.info(`Setting logDebug of device ${device.deviceId} to ${debug}`)
+				debugLoggingPs.push(device.setDebugLogging(debug))
+			}
 		}
+		await Promise.all(debugLoggingPs)
 
 		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
 		this.logger.debug('updateDevices end')
@@ -639,6 +675,7 @@ export class TSRHandler {
 		return deviceOptions.debug || this._coreHandler.logDebug || false
 	}
 	private async _reportResult(resultsOrTimeout: UpdateDeviceOperationsResult): Promise<void> {
+		this.logger.warn(JSON.stringify(resultsOrTimeout))
 		// Check if the updateDevice operation failed before completing
 		if (!resultsOrTimeout.success) {
 			// It failed because there was a global timeout (not a device-specific failure)
@@ -655,7 +692,11 @@ export class TSRHandler {
 			} else {
 				await this._coreHandler.core.setStatus({
 					statusCode: StatusCode.BAD,
-					messages: [`Unknown error during device update: ${resultsOrTimeout.reason}`],
+					messages: [
+						`Unknown error during device update: ${resultsOrTimeout.reason}. Devices: ${stringifyIds(
+							resultsOrTimeout.details
+						)}`,
+					],
 				})
 			}
 
@@ -666,10 +707,10 @@ export class TSRHandler {
 		const failures = resultsOrTimeout.results.filter((result) => !result.success)
 		// Group the failures according to what sort of an operation was executed
 		const addFailureDeviceIds = failures
-			.filter((failure) => failure.action === 'add')
+			.filter((failure) => failure.action === DeviceAction.ADD)
 			.map((failure) => failure.deviceId)
 		const removeFailureDeviceIds = failures
-			.filter((failure) => failure.action === 'remove')
+			.filter((failure) => failure.action === DeviceAction.REMOVE)
 			.map((failure) => failure.deviceId)
 
 		// There were no failures, good
@@ -693,6 +734,7 @@ export class TSRHandler {
 			].filter(Boolean) as string[],
 		})
 	}
+
 	private async _addDevice(deviceId: string, options: DeviceOptionsAny): Promise<DeviceActionResult> {
 		this.logger.debug('Adding device ' + deviceId)
 
@@ -881,7 +923,7 @@ export class TSRHandler {
 			// also ask for the status now, and update:
 			onDeviceStatusChanged(await device.device.getStatus())
 			return {
-				action: 'add',
+				action: DeviceAction.ADD,
 				deviceId,
 				success: true,
 			}
@@ -904,7 +946,7 @@ export class TSRHandler {
 			}
 
 			return {
-				action: 'add',
+				action: DeviceAction.ADD,
 				deviceId,
 				success: false,
 			}
@@ -947,7 +989,7 @@ export class TSRHandler {
 
 		return {
 			deviceId,
-			action: 'remove',
+			action: DeviceAction.REMOVE,
 			success,
 		}
 	}
@@ -1073,35 +1115,50 @@ export class TSRHandler {
 		data: PartPlaybackCallbackData | PiecePlaybackCallbackData
 	): void {
 		if (
-			[
+			![
 				PlayoutChangedType.PART_PLAYBACK_STARTED,
 				PlayoutChangedType.PART_PLAYBACK_STOPPED,
 				PlayoutChangedType.PIECE_PLAYBACK_STARTED,
 				PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
 			].includes(callbackName0 as PlayoutChangedType)
 		) {
-			const callbackName = callbackName0 as PlayoutChangedType
-			// debounce
-			if (this.changedResults && this.changedResults.rundownPlaylistId !== data.rundownPlaylistId) {
-				// The playlistId changed. Send what we have right away and reset:
-				this._coreHandler.core
-					.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
-					.catch((error) => {
-						this.logger.error('Error in timelineCallback', { data: error })
-					})
-				this.changedResults = undefined
+			// @ts-expect-error Untyped bunch of methods
+			const method = PeripheralDeviceAPIMethods[callbackName]
+			if (!method) {
+				this.logger.error(`Unknown callback method "${callbackName0}"`)
+				return
 			}
-			if (!this.changedResults) {
-				this.changedResults = {
-					rundownPlaylistId: data.rundownPlaylistId,
-					changes: [],
-				}
+			this._coreHandler.core
+				.callMethod(method, [
+					Object.assign({}, data, {
+						objId: objId,
+						time: time,
+					}),
+				])
+				.catch((error) => {
+					this.logger.error('Error in timelineCallback', { data: error })
+				})
+			return
+		}
+		const callbackName = callbackName0 as PlayoutChangedType
+		// debounce
+		if (this.changedResults && this.changedResults.rundownPlaylistId !== data.rundownPlaylistId) {
+			// The playlistId changed. Send what we have right away and reset:
+			this._coreHandler.core
+				.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
+				.catch((error) => this.logger.error('Error in timelineCallback', { data: error }))
+			this.changedResults = undefined
+		}
+		if (!this.changedResults) {
+			this.changedResults = {
+				rundownPlaylistId: data.rundownPlaylistId,
+				changes: [],
 			}
+		}
 
-			if (
-				callbackName === PlayoutChangedType.PART_PLAYBACK_STARTED ||
-				callbackName === PlayoutChangedType.PART_PLAYBACK_STOPPED
-			) {
+		switch (callbackName) {
+			case PlayoutChangedType.PART_PLAYBACK_STARTED:
+			case PlayoutChangedType.PART_PLAYBACK_STOPPED:
 				this.changedResults.changes.push({
 					type: callbackName,
 					objId,
@@ -1110,10 +1167,9 @@ export class TSRHandler {
 						partInstanceId: (data as PartPlaybackCallbackData).partInstanceId,
 					},
 				})
-			} else if (
-				callbackName === PlayoutChangedType.PIECE_PLAYBACK_STARTED ||
-				callbackName === PlayoutChangedType.PIECE_PLAYBACK_STOPPED
-			) {
+				break
+			case PlayoutChangedType.PIECE_PLAYBACK_STARTED:
+			case PlayoutChangedType.PIECE_PLAYBACK_STOPPED:
 				this.changedResults.changes.push({
 					type: callbackName,
 					objId,
@@ -1123,32 +1179,15 @@ export class TSRHandler {
 						pieceInstanceId: (data as PiecePlaybackCallbackData).pieceInstanceId,
 					},
 				})
-			} else {
+				break
+			default:
 				assertNever(callbackName)
-			}
+		}
 
-			// Based on the use-case, we generally expect the callbacks to come in batches, so it only makes sense
-			// to wait a little bit to collect the changed callbacks
-			if (!this.sendCallbacksTimeout) {
-				this.sendCallbacksTimeout = setTimeout(this.sendChangedResults, 20)
-			}
-		} else {
-			// @ts-expect-error Untyped bunch of methods
-			const method = PeripheralDeviceAPIMethods[callbackName]
-			if (method) {
-				this._coreHandler.core
-					.callMethod(method, [
-						Object.assign({}, data, {
-							objId: objId,
-							time: time,
-						}),
-					])
-					.catch((error) => {
-						this.logger.error('Error in timelineCallback', { data: error })
-					})
-			} else {
-				this.logger.error(`Unknown callback method "${callbackName0}"`)
-			}
+		// Based on the use-case, we generally expect the callbacks to come in batches, so it only makes sense
+		// to wait a little bit to collect the changed callbacks
+		if (!this.sendCallbacksTimeout) {
+			this.sendCallbacksTimeout = setTimeout(this.sendChangedResults, 20)
 		}
 	}
 }
