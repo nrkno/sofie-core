@@ -8,13 +8,13 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"url": "git+https://github.com/tv2/tv-automation-server-core.git",
 		"directory": "packages/sharelib"
 	},
 	"bugs": {
-		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+		"url": "https://github.com/tv2/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/sharelib#readme",
+	"homepage": "https://github.com/tv2/tv-automation-server-core/blob/master/packages/shared-lib#readme",
 	"scripts": {
 		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
