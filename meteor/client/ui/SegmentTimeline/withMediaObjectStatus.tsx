@@ -10,12 +10,13 @@ import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/med
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
 import { literal } from '../../../lib/lib'
-import { ExpectedPackageId, getExpectedPackageId } from '../../../lib/collections/ExpectedPackages'
+import { getExpectedPackageId } from '../../../lib/collections/ExpectedPackages'
 import * as _ from 'underscore'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { UIStudio } from '../../../lib/api/studios'
+import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 type AnyPiece = {
 	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined

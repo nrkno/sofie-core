@@ -2,12 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
-import {
-	PeripheralDevices,
-	PeripheralDeviceId,
-	PeripheralDeviceType,
-	PeripheralDevice,
-} from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, stringifyObjects, literal } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
@@ -29,8 +24,8 @@ import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
 import { MediaObject } from '../../lib/collections/MediaObjects'
 import { MediaManagerIntegration } from './integration/mediaWorkFlows'
-import { MediaWorkFlowId, MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
 import { MOS } from '@sofie-automation/corelib'
 import { determineDiffTime } from './systemTime/systemTime'
 import { getTimeDiff } from './systemTime/api'
@@ -41,8 +36,6 @@ import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerGET, PickerPOST } from './http'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
-import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
-import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
@@ -53,6 +46,13 @@ import {
 } from '@sofie-automation/corelib/dist/deviceConfig'
 import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { checkStudioExists } from '../../lib/collections/optimizations'
+import {
+	ExpectedPackageId,
+	ExpectedPackageWorkStatusId,
+	MediaWorkFlowId,
+	MediaWorkFlowStepId,
+	PeripheralDeviceId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {

@@ -3,9 +3,6 @@ import { assertNever, literal } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 
-import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { ExpectedPackageId }
-
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { StudioLight } from './Studios'

@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { ExternalMessageQueue, ExternalMessageQueueObjId } from '../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { getCurrentTime } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
@@ -8,6 +8,7 @@ import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../.
 import { StatusObject, setSystemStatus } from '../systemStatus/systemStatus'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
+import { ExternalMessageQueueObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 let updateExternalMessageQueueStatusTimeout: number = 0
 function updateExternalMessageQueueStatus(): void {
