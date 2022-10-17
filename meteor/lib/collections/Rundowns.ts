@@ -2,9 +2,6 @@ import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { RundownId }
-
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 export { RundownHoldState }
 

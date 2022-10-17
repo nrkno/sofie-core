@@ -4,20 +4,15 @@ import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments 
 import { literal, getRandomId, protectString, unprotectString } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
-import {
-	DBTriggeredActions,
-	TriggeredActionId,
-	TriggeredActions,
-	TriggeredActionsObj,
-} from '../../lib/collections/TriggeredActions'
+import { DBTriggeredActions, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from '../../lib/api/triggeredActions'
 import { SystemWriteAccess } from '../security/system'
 import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export async function createTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null,

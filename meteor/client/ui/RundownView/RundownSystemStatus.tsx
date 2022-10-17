@@ -9,7 +9,7 @@ import {
 	PeripheralDevices,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -17,6 +17,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PubSub } from '../../../lib/api/pubsub'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../lib/api/studios'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IMOSStatusProps {
 	lastUpdate: Time

@@ -3,14 +3,10 @@ import { faCopy, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-sv
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PlayoutActions, SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
-import {
-	DBBlueprintTrigger,
-	TriggeredActionId,
-	TriggeredActions,
-} from '../../../../../lib/collections/TriggeredActions'
+import { DBBlueprintTrigger, TriggeredActions } from '../../../../../lib/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
-import { ShowStyleBase, ShowStyleBaseId } from '../../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import { flatten, getRandomString, last } from '../../../../../lib/lib'
 import { createAction, isPreviewableAction } from '../../../../../lib/api/triggers/actionFactory'
 import { PreviewContext } from './TriggeredActionsEditor'
@@ -23,6 +19,7 @@ import { iconDragHandle } from '../../../RundownList/icons'
 import { useDrag, useDrop } from 'react-dnd'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	showStyleBase: ShowStyleBase | undefined

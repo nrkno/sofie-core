@@ -53,7 +53,7 @@ import {
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
-import { ShowStyleBaseId, SourceLayers } from '../../lib/collections/ShowStyleBases'
+import { SourceLayers } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import {
 	RONotificationEvent,
@@ -137,6 +137,7 @@ import {
 	RundownLayoutId,
 	RundownPlaylistId,
 	SegmentId,
+	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03

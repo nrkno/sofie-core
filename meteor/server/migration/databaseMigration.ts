@@ -35,7 +35,7 @@ import {
 } from '../../lib/api/migration'
 import { logger } from '../../lib/logging'
 import { internalStoreSystemSnapshot } from '../api/snapshot'
-import { ShowStyleBaseId, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import {
 	CoreSystem,
@@ -45,7 +45,6 @@ import {
 	setCoreSystemVersion,
 	Version,
 } from '../../lib/collections/CoreSystem'
-import { SnapshotId } from '../../lib/collections/Snapshots'
 import { StudioId, Studios } from '../../lib/collections/Studios'
 import { getHash, protectString, stringifyError, unprotectString, waitForPromise } from '../../lib/lib'
 import { evalBlueprint } from '../api/blueprints/cache'
@@ -55,6 +54,7 @@ import {
 	MigrationContextSystem,
 } from '../api/blueprints/migrationContext'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
+import { SnapshotId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)

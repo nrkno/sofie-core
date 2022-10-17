@@ -1,5 +1,5 @@
-import { HotkeyDefinition, OutputLayers, ShowStyleBaseId, SourceLayers } from '../collections/ShowStyleBases'
-import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
+import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { HotkeyDefinition, OutputLayers, SourceLayers } from '../collections/ShowStyleBases'
 
 export interface NewShowStylesAPI {
 	insertShowStyleBase(): Promise<ShowStyleBaseId>

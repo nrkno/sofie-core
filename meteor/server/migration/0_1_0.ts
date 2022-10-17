@@ -7,9 +7,10 @@ import { PeripheralDevices, PeripheralDeviceType } from '../../lib/collections/P
 import { getRandomId, protectString } from '../../lib/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariantId, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /**
  * This file contains system specific migration steps.
