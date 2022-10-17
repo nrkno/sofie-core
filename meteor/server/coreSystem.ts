@@ -32,6 +32,7 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getAbsolutePath } from './lib'
 import * as fs from 'fs/promises'
+import path from 'path'
 
 export { PackageInfo }
 
@@ -43,7 +44,7 @@ export function getSystemStorePath(): string {
 	}
 
 	const storePath = process.env.SOFIE_STORE_PATH
-	if (storePath) return storePath
+	if (storePath) return path.resolve(storePath)
 
 	if (Meteor.isDevelopment) {
 		// For development, fallback to inside the .meteor folder
@@ -477,6 +478,7 @@ Meteor.startup(() => {
 		if (!isRunningInJest()) {
 			// Ensure the storepath exists
 			const storePath = getSystemStorePath()
+			logger.info(`Using storePath: ${storePath}`)
 			waitForPromise(fs.mkdir(storePath, { recursive: true }))
 		}
 	}
