@@ -8,7 +8,6 @@ import { getRandomId, protectString } from '../../lib/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
@@ -19,32 +18,6 @@ import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids
 
 // 0.1.0: These are the "base" migration steps, setting up a default system
 export const addSteps = addMigrationSteps('0.1.0', [
-	{
-		id: 'CoreSystem.storePath',
-		canBeRunAutomatically: false,
-		validate: () => {
-			const system = getCoreSystem()
-			if (!system) return 'CoreSystem not found!'
-			if (!system.storePath) return 'CoreSystem.storePath not set!'
-			if (!_.isString(system.storePath)) return 'CoreSystem.storePath must be a string!'
-			if (system.storePath.slice(-1) === '/') return 'CoreSystem.storePath must not end with "/"!'
-			return false
-		},
-		migrate: (input) => {
-			if (input.storePath) {
-				setCoreSystemStorePath(input.storePath)
-			}
-		},
-		input: [
-			{
-				label: 'File path for persistant storage',
-				description: 'Enter the file path for the persistant storage (example "/opt/coredisk")',
-				inputType: 'text',
-				attribute: 'storePath',
-			},
-		],
-	},
-
 	{
 		id: 'studio exists',
 		canBeRunAutomatically: true,

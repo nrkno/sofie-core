@@ -119,7 +119,6 @@ describe('Migrations', () => {
 			migrationStatus1.migration.chunks,
 			migrationStatus1.migration.hash,
 			userInput(migrationStatus1, {
-				'CoreSystem.storePath': 'mock',
 				'studios.settings.mediaPreviewsUrl': 'mock',
 				'studios.settings.sofieUrl': 'http://localhost',
 				'studios.settings.slackEvaluationUrls': 'mock',

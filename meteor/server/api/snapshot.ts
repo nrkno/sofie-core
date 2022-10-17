@@ -74,7 +74,7 @@ import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { ReadonlyDeep } from 'type-fest'
 import { checkAccessToPlaylist, VerifiedRundownPlaylistContentAccess } from './lib'
-import { PackageInfo } from '../coreSystem'
+import { getSystemStorePath, PackageInfo } from '../coreSystem'
 import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import {
 	BlueprintId,
@@ -423,12 +423,9 @@ async function storeSnaphot(
 	organizationId: OrganizationId | null,
 	comment: string
 ): Promise<SnapshotId> {
-	const system = await getCoreSystemAsync()
-	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
-	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
-
+	const storePath = getSystemStorePath()
 	const fileName = fixValidPath(snapshot.snapshot.name) + '.json'
-	const filePath = Path.join(system.storePath, fileName)
+	const filePath = Path.join(storePath, fileName)
 
 	const str = JSON.stringify(snapshot)
 
@@ -471,11 +468,8 @@ async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Pro
 		}
 	}
 
-	const system = await getCoreSystemAsync()
-	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
-	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
-
-	const filePath = Path.join(system.storePath, snapshot.fileName)
+	const storePath = getSystemStorePath()
+	const filePath = Path.join(storePath, snapshot.fileName)
 
 	const dataStr = !Meteor.isTest // If we're running in a unit-test, don't access files
 		? await fs.promises.readFile(filePath, { encoding: 'utf8' })
@@ -662,11 +656,8 @@ export async function removeSnapshot(context: MethodContext, snapshotId: Snapsho
 
 	if (snapshot.fileName) {
 		// remove from disk
-		const system = await getCoreSystemAsync()
-		if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
-		if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
-
-		const filePath = Path.join(system.storePath, snapshot.fileName)
+		const storePath = getSystemStorePath()
+		const filePath = Path.join(storePath, snapshot.fileName)
 		try {
 			logger.info(`Removing snapshot file ${filePath}`)
 

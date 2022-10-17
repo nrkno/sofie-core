@@ -30,8 +30,28 @@ import { createShowStyleCompound } from './api/showStyles'
 import { fetchShowStyleBasesLight } from '../lib/collections/optimizations'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getAbsolutePath } from './lib'
+import * as fs from 'fs/promises'
 
 export { PackageInfo }
+
+/** Get the store path used to be used for storing snapshots  */
+export function getSystemStorePath(): string {
+	if (process.env.JEST_WORKER_ID) {
+		// Override the variable when invoked through Jest
+		return '/dev/null'
+	}
+
+	const storePath = process.env.SOFIE_STORE_PATH
+	if (storePath) return storePath
+
+	if (Meteor.isDevelopment) {
+		// For development, fallback to inside the .meteor folder
+		return getAbsolutePath() + '/.meteor/local/sofie-store'
+	}
+
+	throw new Meteor.Error(500, 'SOFIE_STORE_PATH must be defined to launch Sofie')
+}
 
 function initializeCoreSystem() {
 	const system = getCoreSystem()
@@ -45,7 +65,6 @@ function initializeCoreSystem() {
 			modified: getCurrentTime(),
 			version: version,
 			previousVersion: null,
-			storePath: '', // to be filled in later
 			serviceMessages: {},
 			apm: {
 				enabled: false,
@@ -448,5 +467,9 @@ Meteor.startup(() => {
 		updateLoggerLevel(true)
 		initializeCoreSystem()
 		startInstrumenting()
+
+		// Ensure the storepath exists
+		const storePath = getSystemStorePath()
+		waitForPromise(fs.mkdir(storePath, { recursive: true }))
 	}
 })
