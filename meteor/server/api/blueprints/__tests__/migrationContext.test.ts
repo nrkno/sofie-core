@@ -6,6 +6,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDevices,
 	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../../lib/collections/PeripheralDevices'
 import { literal, getRandomId, protectString, unprotectString } from '../../../../lib/lib'
 import {
@@ -24,7 +25,6 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, ShowStyleBases, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
@@ -412,7 +412,7 @@ describe('Test blueprint migrationContext', () => {
 					organizationId: null,
 					type: PeripheralDeviceType.PLAYOUT,
 					category: PeripheralDeviceCategory.PLAYOUT,
-					subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
+					subType: PERIPHERAL_SUBTYPE_PROCESS,
 					studioId: studio._id,
 					created: 0,
 					lastConnected: 0,
@@ -442,7 +442,7 @@ describe('Test blueprint migrationContext', () => {
 					studioId: studio._id,
 					type: PeripheralDeviceType.PLAYOUT,
 					category: PeripheralDeviceCategory.PLAYOUT,
-					subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
+					subType: PERIPHERAL_SUBTYPE_PROCESS,
 				})
 				expect(device).toBeTruthy()
 				return device as PeripheralDevice

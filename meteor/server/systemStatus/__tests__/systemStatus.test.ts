@@ -6,11 +6,11 @@ import { MeteorMock } from '../../../__mocks__/meteor'
 import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
 import { StatusResponse } from '../../../lib/api/systemStatus'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { stripVersion } from '../../../lib/collections/CoreSystem'
 import semver from 'semver'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
+import { PeripheralDeviceStatusObject } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 require('../api')
 const PackageInfo = require('../../../package.json')
@@ -70,7 +70,7 @@ describe('systemStatus', () => {
 		// simulate device failure
 		PeripheralDevices.update(env.ingestDevice._id, {
 			$set: {
-				status: literal<PeripheralDeviceAPI.StatusObject>({
+				status: literal<PeripheralDeviceStatusObject>({
 					statusCode: StatusCode.WARNING_MAJOR,
 					messages: [],
 				}),
@@ -96,7 +96,7 @@ describe('systemStatus', () => {
 		// simulate device failure
 		PeripheralDevices.update(env.ingestDevice._id, {
 			$set: {
-				status: literal<PeripheralDeviceAPI.StatusObject>({
+				status: literal<PeripheralDeviceStatusObject>({
 					statusCode: StatusCode.GOOD,
 					messages: [],
 				}),

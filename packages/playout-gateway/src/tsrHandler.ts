@@ -40,7 +40,7 @@ import {
 	PiecePlaybackCallbackData,
 	PlayoutChangedResults,
 	PlayoutChangedType,
-	StatusObject,
+	PeripheralDeviceStatusObject,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
 
@@ -776,7 +776,7 @@ export class TSRHandler {
 			const deviceType = device.deviceType
 
 			const onDeviceStatusChanged = (connectedOrStatus: Partial<DeviceStatus>) => {
-				let deviceStatus: Partial<StatusObject>
+				let deviceStatus: Partial<PeripheralDeviceStatusObject>
 				if (_.isBoolean(connectedOrStatus)) {
 					// for backwards compability, to be removed later
 					if (connectedOrStatus) {

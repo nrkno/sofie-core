@@ -11,7 +11,6 @@ import { Rundowns } from '../../../lib/collections/Rundowns'
 import { Segments } from '../../../lib/collections/Segments'
 import { Parts } from '../../../lib/collections/Parts'
 import { EmptyPieceTimelineObjectsBlob, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
-import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 import {
 	getCurrentTime,
 	literal,
@@ -47,8 +46,13 @@ import '../peripheralDevice'
 import { OnTimelineTriggerTimeProps, StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
-import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import {
+	PeripheralDeviceInitOptions,
+	PlayoutChangedType,
+	TimelineTriggerTimeResult,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 
 const DEBUG = false
 
@@ -177,7 +181,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 
-		const options: PeripheralDeviceAPI.InitOptions = {
+		const options: PeripheralDeviceInitOptions = {
 			category: PeripheralDeviceCategory.INGEST,
 			type: PeripheralDeviceType.MOS,
 			subType: 'mos_connection',
@@ -402,7 +406,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		QueueStudioJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve(null)))
 
-		const timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = []
+		const timelineTriggerTimeResult: TimelineTriggerTimeResult = []
 		for (let i = 0; i < 10; i++) {
 			timelineTriggerTimeResult.push({
 				id: getRandomString(),
@@ -508,7 +512,7 @@ describe('test peripheralDevice general API methods', () => {
 
 	// Note: this test fails, due to a backwards-compatibility hack in #c579c8f0
 	// testInFiber('initialize with bad arguments', () => {
-	// 	let options: PeripheralDeviceAPI.InitOptions = {
+	// 	let options: PeripheralDeviceInitOptions = {
 	// 		category: PeripheralDeviceCategory.INGEST,
 	// 		type: PeripheralDeviceType.MOS,
 	// 		subType: 'mos_connection',

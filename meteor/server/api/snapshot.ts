@@ -28,7 +28,11 @@ import {
 	unprotectString,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevices,
+	PeripheralDevice,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
@@ -264,7 +268,7 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 	const deviceSnaphots: Array<DeviceSnapshot> = _.compact(
 		await Promise.all(
 			systemSnapshot.devices.map(async (device) => {
-				if (device.connected && device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS) {
+				if (device.connected && device.subType === PERIPHERAL_SUBTYPE_PROCESS) {
 					const startTime = getCurrentTime()
 
 					// defer to another fiber

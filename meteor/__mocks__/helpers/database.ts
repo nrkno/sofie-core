@@ -5,8 +5,8 @@ import {
 	PeripheralDeviceType,
 	PeripheralDeviceCategory,
 	PERIPHERAL_SUBTYPE_PROCESS,
+	PeripheralDeviceSubType,
 } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
 import {
 	PieceLifespan,
@@ -117,7 +117,7 @@ let dbI: number = 0
 export function setupMockPeripheralDevice(
 	category: PeripheralDeviceCategory,
 	type: PeripheralDeviceType,
-	subType: PeripheralDeviceAPI.DeviceSubType,
+	subType: PeripheralDeviceSubType,
 	studio?: Pick<Studio, '_id'>,
 	doc?: Partial<PeripheralDevice>
 ) {

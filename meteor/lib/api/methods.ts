@@ -4,7 +4,6 @@ import { NewBlueprintAPI, BlueprintAPIMethods } from './blueprint'
 import { NewClientAPI, ClientAPIMethods } from './client'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from './ExternalMessageQueue'
 import { NewMigrationAPI, MigrationAPIMethods } from './migration'
-import { NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from './peripheralDevice'
 import { NewPlayoutAPI, PlayoutAPIMethods } from './playout'
 import { NewRundownAPI, RundownAPIMethods } from './rundown'
 import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from './rundownLayouts'
@@ -20,6 +19,10 @@ import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundo
 import { Meteor } from 'meteor/meteor'
 import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from './triggeredActions'
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	NewPeripheralDeviceAPI,
+	PeripheralDeviceAPIMethods,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {

@@ -1,7 +1,11 @@
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevices,
+	PeripheralDevice,
+	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '../../lib/collections/PeripheralDevices'
 import { getCurrentTime, Time, getRandomId, assertNever, literal } from '../../lib/lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	parseVersion,
 	parseCoreIntegrationCompatabilityRange,
@@ -87,7 +91,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 
 		// Check core-integration version is as expected
 		if (
-			device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS ||
+			device.subType === PERIPHERAL_SUBTYPE_PROCESS ||
 			deviceVersions['@sofie-automation/server-core-integration']
 		) {
 			const integrationVersion = parseVersion(deviceVersions['@sofie-automation/server-core-integration'])

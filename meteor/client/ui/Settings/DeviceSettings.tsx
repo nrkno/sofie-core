@@ -1,6 +1,10 @@
 import * as React from 'react'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevice, PeripheralDevices, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDevices,
+	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -41,7 +45,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 )(
 	class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProps & IDeviceSettingsTrackedProps>> {
 		renderSpecifics() {
-			if (this.props.device && this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS) {
+			if (this.props.device && this.props.device.subType === PERIPHERAL_SUBTYPE_PROCESS) {
 				if (this.props.device.configManifest) {
 					return <GenericDeviceSettingsComponent device={this.props.device} subDevices={this.props.subDevices} />
 				} else {
@@ -217,7 +221,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 
 					{this.props.device &&
 					this.props.device.type === PeripheralDeviceType.PACKAGE_MANAGER &&
-					this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
+					this.props.device.subType === PERIPHERAL_SUBTYPE_PROCESS
 						? this.renderPackageManagerSpecial()
 						: null}
 				</div>

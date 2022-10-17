@@ -2,11 +2,14 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { unprotectString } from '../../../lib/lib'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { NavLink, useLocation } from 'react-router-dom'
 
 import { DBStudio, Studio, Studios } from '../../../lib/collections/Studios'
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDevices,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '../../../lib/collections/PeripheralDevices'
 
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
@@ -121,7 +124,7 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 					<hr className="vsubtle man" />
 					{this.props.peripheralDevices
 						.filter((device) => {
-							return device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
+							return device.subType === PERIPHERAL_SUBTYPE_PROCESS
 						})
 						.map((device) => (
 							<SettingsMenuPeripheralDevice key={unprotectString(device._id)} device={device} />

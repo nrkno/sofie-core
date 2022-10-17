@@ -15,7 +15,6 @@ import {
 	PlaylistTimingNone,
 	ShowStyleBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
@@ -25,6 +24,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
@@ -107,7 +107,7 @@ describe('Migrations', () => {
 		setupMockPeripheralDevice(
 			PeripheralDeviceCategory.PLAYOUT,
 			PeripheralDeviceType.PLAYOUT,
-			PeripheralDeviceAPI.SUBTYPE_PROCESS
+			PERIPHERAL_SUBTYPE_PROCESS
 		)
 
 		// Continue with migration:
