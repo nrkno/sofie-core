@@ -1,12 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { ITranslatableMessage, SomeAction, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBaseId } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { PeripheralDeviceId } from './PeripheralDevices'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-import { TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDeviceId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ObjectWithOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 export { TriggeredActionId }
 

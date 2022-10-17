@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
-import { MappingsExtWithPackage, routeExpectedPackages, Studio, StudioId, Studios } from '../../lib/collections/Studios'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { MappingsExtWithPackage, routeExpectedPackages, Studio, Studios } from '../../lib/collections/Studios'
 import { setUpOptimizedObserverArray, TriggerUpdate, meteorCustomPublish } from '../lib/customPublication'
 import { ExpectedPackageDB, ExpectedPackages, getSideEffect } from '../../lib/collections/ExpectedPackages'
 import _ from 'underscore'
@@ -28,6 +28,7 @@ import { StudioLight } from '../../lib/collections/optimizations'
 import { ReadonlyDeep } from 'type-fest'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId

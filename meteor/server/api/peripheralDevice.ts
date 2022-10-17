@@ -5,7 +5,7 @@ import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods
 import { PeripheralDevices, PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, stringifyObjects, literal } from '../../lib/lib'
-import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
 import { registerClassToMeteorMethods } from '../methods'
@@ -51,6 +51,7 @@ import {
 	ExpectedPackageWorkStatusId,
 	MediaWorkFlowId,
 	MediaWorkFlowStepId,
+	PeripheralDeviceCommandId,
 	PeripheralDeviceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 

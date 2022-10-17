@@ -1,7 +1,6 @@
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { PeripheralDeviceId }
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'

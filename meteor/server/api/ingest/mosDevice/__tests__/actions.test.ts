@@ -9,11 +9,10 @@ import { MOSDeviceActions } from '../actions'
 import {
 	PeripheralDeviceCommands,
 	PeripheralDeviceCommand,
-	PeripheralDeviceCommandId,
 } from '../../../../../lib/collections/PeripheralDeviceCommands'
 import { TriggerReloadDataResponse } from '../../../../../lib/api/userActions'
 import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
-import { RundownId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDeviceCommandId, RundownId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CreateFakeResult, QueueIngestJobSpy } from '../../../../../__mocks__/worker'
 import { IngestJobs, MosRundownProps } from '@sofie-automation/corelib/dist/worker/ingest'
 

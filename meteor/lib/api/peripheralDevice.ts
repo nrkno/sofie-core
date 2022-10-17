@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { getCurrentTime, getRandomId } from '../lib'
-import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
+import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import * as OrgApi from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { PeripheralDeviceCommandId, PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 
 export { TimeDiff, DiffTimeResult } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 export * from '@sofie-automation/shared-lib/dist/peripheralDevice/mediaManager'

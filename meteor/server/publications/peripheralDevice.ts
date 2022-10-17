@@ -3,7 +3,7 @@ import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
 import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
@@ -13,6 +13,7 @@ import { MongoQuery } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { FindOptions } from '../../lib/collections/lib'
+import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /*
  * This file contains publications for the peripheralDevices, such as playout-gateway, mos-gateway and package-manager

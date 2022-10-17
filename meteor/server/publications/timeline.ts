@@ -18,8 +18,8 @@ import {
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
-import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { Studios, getActiveRoutes, StudioId, ResultingMappingRoutes } from '../../lib/collections/Studios'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { Studios, getActiveRoutes, ResultingMappingRoutes } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
 import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
@@ -28,6 +28,7 @@ import { logger } from '../logging'
 import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { Time } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
+import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 meteorPublish(PubSub.timeline, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')

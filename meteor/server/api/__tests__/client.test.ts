@@ -6,14 +6,11 @@ import { protectString, makePromise, LogLevel } from '../../../lib/lib'
 import { PeripheralDeviceCommand, PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { setLogLevel } from '../../logging'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
-import {
-	PeripheralDeviceCategory,
-	PeripheralDeviceId,
-	PeripheralDeviceType,
-} from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceCategory, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { setupMockPeripheralDevice, setupMockStudio } from '../../../__mocks__/helpers/database'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { MeteorCall } from '../../../lib/api/methods'
+import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 require('../client') // include in order to create the Meteor methods needed
 

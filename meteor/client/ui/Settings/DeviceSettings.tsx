@@ -1,11 +1,6 @@
 import * as React from 'react'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import {
-	PeripheralDevice,
-	PeripheralDevices,
-	PeripheralDeviceId,
-	PeripheralDeviceType,
-} from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -20,6 +15,7 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettingsComponent'
 import { DevicePackageManagerSettings } from './DevicePackageManagerSettings'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
+import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IDeviceSettingsProps {
 	match: {

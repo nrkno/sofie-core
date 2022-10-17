@@ -1,5 +1,6 @@
 import {
 	ExpectedPackageId,
+	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
@@ -31,7 +32,7 @@ import { PackageInfoDB } from '../collections/PackageInfos'
 import { PartInstance } from '../collections/PartInstances'
 import { DBPart } from '../collections/Parts'
 import { PeripheralDeviceCommand } from '../collections/PeripheralDeviceCommands'
-import { PeripheralDevice, PeripheralDeviceId } from '../collections/PeripheralDevices'
+import { PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstance } from '../collections/PieceInstances'
 import { Piece } from '../collections/Pieces'
 import { RundownBaselineAdLibAction } from '../collections/RundownBaselineAdLibActions'
