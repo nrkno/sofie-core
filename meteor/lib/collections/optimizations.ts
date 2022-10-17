@@ -1,7 +1,8 @@
+import { BlueprintId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoQuery } from '../typings/meteor'
-import { BlueprintId, Blueprints, Blueprint } from './Blueprints'
-import { DBShowStyleBase, ShowStyleBaseId, ShowStyleBases } from './ShowStyleBases'
-import { DBStudio, StudioId, Studios, StudioLight } from './Studios'
+import { Blueprints, Blueprint } from './Blueprints'
+import { DBShowStyleBase, ShowStyleBases } from './ShowStyleBases'
+import { DBStudio, Studios, StudioLight } from './Studios'
 
 export { StudioLight } from './Studios' // TODO: Legacy
 

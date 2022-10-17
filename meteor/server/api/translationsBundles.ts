@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import {
 	TranslationsBundles as TranslationsBundleCollection,
-	TranslationsBundleId,
 	Translation,
 	TranslationsBundle as DBTranslationsBundle,
 } from '../../lib/collections/TranslationsBundles'
@@ -11,7 +10,7 @@ import {
 	TranslationsBundleType,
 } from '@sofie-automation/blueprints-integration'
 import { getHash, protectString, unprotectString } from '../../lib/lib'
-import { BlueprintId } from '../../lib/collections/Blueprints'
+import { BlueprintId, TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /**
  * Insert or update translation bundles in the database.

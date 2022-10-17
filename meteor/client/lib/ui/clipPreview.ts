@@ -1,9 +1,4 @@
 import { Accessor, ExpectedPackage, ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
-import { AdLibActionId } from '../../../lib/collections/AdLibActions'
-import { PieceId } from '../../../lib/collections/Pieces'
-import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { RundownId } from '../../../lib/collections/Rundowns'
-import { StudioId } from '../../../lib/collections/Studios'
 import { getPackageContainerPackageStatus } from '../../../lib/globalStores'
 import { PieceUi } from '../../ui/SegmentContainer/withResolvedSegment'
 import { ensureHasTrailingSlash } from '../lib'
@@ -11,6 +6,13 @@ import { AdLibPieceUi } from '../shelf'
 import { getExpectedPackageId, getSideEffect } from '../../../lib/collections/ExpectedPackages'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { UIStudio } from '../../../lib/api/studios'
+import {
+	AdLibActionId,
+	PieceId,
+	RundownBaselineAdLibActionId,
+	RundownId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 type OwnerId = PieceId | AdLibActionId | RundownBaselineAdLibActionId | RundownId | StudioId
 

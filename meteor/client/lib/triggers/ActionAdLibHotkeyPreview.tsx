@@ -1,15 +1,13 @@
 import { Mongo } from 'meteor/mongo'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import React, { useContext, useState, useEffect } from 'react'
-import { AdLibActionId } from '../../../lib/collections/AdLibActions'
-import { PieceId } from '../../../lib/collections/Pieces'
-import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { assertNever } from '../../../lib/lib'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { useTracker } from '../ReactMeteorData/ReactMeteorData'
 import { SorensenContext } from '../SorensenContext'
 import { MountedAdLibTrigger, MountedAdLibTriggers } from './TriggersHandler'
 import { codesToKeyLabels } from './codesToKeyLabels'
+import { AdLibActionId, PieceId, RundownBaselineAdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 type IProps =
 	| {

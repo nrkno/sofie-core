@@ -16,10 +16,9 @@ import { ConfigManifestEntry, ConfigManifestEntryType } from '@sofie-automation/
 import { Spinner } from '../../../../lib/Spinner'
 import InspectorTitle from './InspectorTitle'
 import { ProtectedString } from '../../../../../lib/lib'
-import { PartId } from '../../../../../lib/collections/Parts'
 import { doUserAction, UserAction } from '../../../../lib/userAction'
 import { MeteorCall } from '../../../../../lib/api/methods'
-import { BucketId, Buckets } from '../../../../../lib/collections/Buckets'
+import { Buckets } from '../../../../../lib/collections/Buckets'
 import { BucketAdLibItem, BucketAdLibActionUi } from '../../RundownViewBuckets'
 import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
 import { actionToAdLibPieceUi } from '../../BucketPanel'
@@ -29,6 +28,7 @@ import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMes
 import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../../lib/api/studios'
+import { BucketId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export { isActionItem }
 

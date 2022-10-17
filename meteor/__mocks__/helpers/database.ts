@@ -35,13 +35,8 @@ import {
 	IBlueprintActionManifest,
 } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import {
-	ShowStyleVariant,
-	DBShowStyleVariant,
-	ShowStyleVariants,
-	ShowStyleVariantId,
-} from '../../lib/collections/ShowStyleVariants'
-import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
+import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { Blueprint } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import {
@@ -54,7 +49,7 @@ import {
 	Complete,
 	normalizeArray,
 } from '../../lib/lib'
-import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
+import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { EmptyPieceTimelineObjectsBlob, Piece, Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
@@ -72,7 +67,6 @@ import {
 	defaultAdLibPiece,
 	defaultStudio,
 } from '../defaultCollectionObjects'
-import { OrganizationId } from '../../lib/collections/Organization'
 import { PackageInfo } from '../../server/coreSystem'
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { Workers, WorkerStatus } from '../../lib/collections/Workers'
@@ -83,6 +77,12 @@ import {
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
+import {
+	BlueprintId,
+	OrganizationId,
+	RundownId,
+	ShowStyleVariantId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',

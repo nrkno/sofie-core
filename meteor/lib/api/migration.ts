@@ -1,8 +1,5 @@
 import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
-import { BlueprintId } from '../collections/Blueprints'
-import { ShowStyleBaseId } from '../collections/ShowStyleBases'
-import { StudioId } from '../collections/Studios'
-import { SnapshotId } from '../collections/Snapshots'
+import { BlueprintId, ShowStyleBaseId, SnapshotId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface NewMigrationAPI {
 	getMigrationStatus(): Promise<GetMigrationStatusResult>

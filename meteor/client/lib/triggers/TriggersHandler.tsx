@@ -4,13 +4,10 @@ import { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import Sorensen from '@sofie-automation/sorensen'
 import { PubSub } from '../../../lib/api/pubsub'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { TriggeredActionId } from '../../../lib/collections/TriggeredActions'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
 import {
 	RundownPlaylist,
 	RundownPlaylistCollectionUtil,
-	RundownPlaylistId,
 	RundownPlaylists,
 } from '../../../lib/collections/RundownPlaylists'
 import {
@@ -20,18 +17,13 @@ import {
 	SomeAction,
 	TriggerType,
 } from '@sofie-automation/blueprints-integration'
-import { RundownId } from '../../../lib/collections/Rundowns'
 import {
 	isPreviewableAction,
 	ReactivePlaylistActionContext,
 	createAction as libCreateAction,
 } from '../../../lib/api/triggers/actionFactory'
-import { PartId } from '../../../lib/collections/Parts'
 import { flatten, ProtectedString, protectString } from '../../../lib/lib'
 import { IWrappedAdLib } from '../../../lib/api/triggers/actionFilterChainCompilers'
-import { AdLibActionId } from '../../../lib/collections/AdLibActions'
-import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { PieceId } from '../../../lib/collections/Pieces'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { preventDefault } from '../SorensenContext'
 import { getFinalKey } from './codesToKeyLabels'
@@ -41,6 +33,16 @@ import { Settings } from '../../../lib/Settings'
 import { createInMemoryMongoCollection } from '../../../lib/collections/lib'
 import { UIShowStyleBases, UITriggeredActions } from '../../ui/Collections'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import {
+	AdLibActionId,
+	PartId,
+	PieceId,
+	RundownBaselineAdLibActionId,
+	RundownId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	TriggeredActionId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
