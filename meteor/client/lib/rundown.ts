@@ -22,12 +22,9 @@ import {
 	getSegmentsWithPartInstances,
 } from '../../lib/Rundown'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { Segment, SegmentId, Segments } from '../../lib/collections/Segments'
+import { Segment, Segments } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { literal, getCurrentTime, applyToArray } from '../../lib/lib'
-import { PieceId } from '../../lib/collections/Pieces'
-import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
@@ -35,11 +32,12 @@ import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { FindOptions } from '../../lib/collections/lib'
 import { getShowHiddenSourceLayers } from './localStorage'
-import { Rundown, RundownId } from '../../lib/collections/Rundowns'
+import { Rundown } from '../../lib/collections/Rundowns'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { AdLibPieceUi } from './shelf'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface PieceTimelineMetadataExt extends PieceTimelineMetadata {
 	id: PieceId

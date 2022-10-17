@@ -1,17 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import { getHash, getCurrentTime, protectString, stringifyError } from '../../../lib/lib'
-import { StudioId } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
 	PeripheralDevices,
 	getStudioIdFromDevice,
-	PeripheralDeviceId,
 	PeripheralDeviceCategory,
 } from '../../../lib/collections/PeripheralDevices'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
-import { SegmentId } from '../../../lib/collections/Segments'
-import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
 import { Credentials } from '../../security/lib/credentials'
@@ -19,6 +15,13 @@ import { profiler } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { QueueIngestJob } from '../../worker/worker'
 import { checkStudioExists } from '../../../lib/collections/optimizations'
+import {
+	PartId,
+	PeripheralDeviceId,
+	RundownId,
+	SegmentId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /**
  * Run an ingest operation via the worker.

@@ -2,12 +2,8 @@ import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { PubSub } from '../../../../../lib/api/pubsub'
-import { ShowStyleBaseId, ShowStyleBases } from '../../../../../lib/collections/ShowStyleBases'
-import {
-	TriggeredActionId,
-	TriggeredActions,
-	TriggeredActionsObj,
-} from '../../../../../lib/collections/TriggeredActions'
+import { ShowStyleBases } from '../../../../../lib/collections/ShowStyleBases'
+import { TriggeredActions, TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
 import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
@@ -18,9 +14,9 @@ import {
 	RundownPlaylistCollectionUtil,
 	RundownPlaylists,
 } from '../../../../../lib/collections/RundownPlaylists'
-import { Rundown, RundownId, Rundowns } from '../../../../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../../../../lib/collections/Rundowns'
 import { PartInstances } from '../../../../../lib/collections/PartInstances'
-import { Part, PartId, Parts } from '../../../../../lib/collections/Parts'
+import { Part, Parts } from '../../../../../lib/collections/Parts'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { UploadButton } from '../../../../lib/uploadButton'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
@@ -36,6 +32,7 @@ import { Meteor } from 'meteor/meteor'
 import { doModalDialog } from '../../../../lib/ModalDialog'
 import { MongoQuery } from '../../../../../lib/typings/meteor'
 import _ from 'underscore'
+import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface PreviewContext {
 	rundownPlaylist: RundownPlaylist | null

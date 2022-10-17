@@ -3,7 +3,6 @@ import { RundownUtils } from '../../../lib/rundown'
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
-import { PartId } from '../../../../lib/collections/Parts'
 import { DefaultRenderer } from './Renderers/DefaultRenderer'
 import { assertNever } from '../../../../lib/lib'
 import { ScriptRenderer } from './Renderers/ScriptRenderer'
@@ -13,6 +12,7 @@ import { GraphicsRenderer } from './Renderers/GraphicsRenderer'
 import { SplitsRenderer } from './Renderers/SplitsRenderer'
 import { PieceElement } from '../utils/PieceElement'
 import { UIStudio } from '../../../../lib/api/studios'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	layer: ISourceLayer

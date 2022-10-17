@@ -14,26 +14,22 @@ import { RundownPlaylistValidateBlueprintConfigResult } from '../../../lib/api/r
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
-import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
-import { Parts, PartId, Part } from '../../../lib/collections/Parts'
+import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { Parts, Part } from '../../../lib/collections/Parts'
 import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { Segments, SegmentId, Segment } from '../../../lib/collections/Segments'
-import { RundownId, Rundown } from '../../../lib/collections/Rundowns'
+import { Segments, Segment } from '../../../lib/collections/Segments'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator as t } from '../i18n'
 import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { PieceId, Piece, PieceStatusCode } from '../../../lib/collections/Pieces'
+import { Piece, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
-import {
-	RundownPlaylists,
-	RundownPlaylistId,
-	RundownPlaylistCollectionUtil,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue, MEDIASTATUS_POLL_INTERVAL } from '../../../lib/api/rundownNotifications'
@@ -42,7 +38,15 @@ import { NoteSeverity, StatusCode } from '@sofie-automation/blueprints-integrati
 import { getAllowStudio, getIgnorePieceContentStatus } from '../../lib/localStorage'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	PartId,
+	PeripheralDeviceId,
+	PieceId,
+	RundownId,
+	RundownPlaylistId,
+	SegmentId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)

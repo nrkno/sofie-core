@@ -1,13 +1,9 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import {
-	RundownPlaylist,
-	RundownPlaylistCollectionUtil,
-	RundownPlaylistId,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Segments, SegmentId } from '../../../lib/collections/Segments'
+import { Segments } from '../../../lib/collections/Segments'
 import {
 	IOutputLayerExtended,
 	ISourceLayerExtended,
@@ -16,13 +12,12 @@ import {
 	SegmentExtended,
 } from '../../../lib/Rundown'
 import { IContextMenuContext } from '../RundownView'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
-import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { PartId, Part } from '../../../lib/collections/Parts'
+import { Part } from '../../../lib/collections/Parts'
 import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
@@ -35,6 +30,13 @@ import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTi
 import { AdlibSegmentUi } from '../../lib/shelf'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
+import {
+	PartId,
+	RundownId,
+	RundownPlaylistId,
+	SegmentId,
+	ShowStyleBaseId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */

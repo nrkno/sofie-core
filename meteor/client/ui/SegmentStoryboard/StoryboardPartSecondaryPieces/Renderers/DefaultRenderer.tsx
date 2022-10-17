@@ -1,7 +1,7 @@
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import React from 'react'
 import { UIStudio } from '../../../../../lib/api/studios'
-import { PartId } from '../../../../../lib/collections/Parts'
 import { PieceUi } from '../../../SegmentContainer/withResolvedSegment'
 
 export interface IDefaultRendererProps {
