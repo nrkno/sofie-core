@@ -5,7 +5,6 @@ import { registerIndex } from '../database'
 import { UserId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { wrapMongoCollection } from './lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-export { UserId }
 
 export interface UserProfile {
 	name: string

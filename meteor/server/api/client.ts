@@ -2,7 +2,7 @@ import { check } from '../../lib/check'
 import { literal, getCurrentTime, Time, getRandomId, stringifyError } from '../../lib/lib'
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
-import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
+import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
@@ -22,6 +22,7 @@ import {
 	RundownId,
 	RundownPlaylistId,
 	StudioId,
+	UserActionsLogItemId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {

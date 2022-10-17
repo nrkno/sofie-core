@@ -16,12 +16,12 @@ import {
 import { TimelineContentObject, transformTimeline } from '@sofie-automation/corelib/dist/playout/timeline'
 import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { StudioSelect } from './StudioSelect'
-import { StudioId } from '../../../lib/collections/Studios'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Classnames from 'classnames'
 import { createCustomPublicationMongoCollection } from '../../../lib/collections/lib'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export const StudioTimeline = createCustomPublicationMongoCollection(CustomCollectionName.StudioTimeline)
 

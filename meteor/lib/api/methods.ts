@@ -16,10 +16,10 @@ import { StudiosAPIMethods, NewStudiosAPI } from './studios'
 import { NewOrganizationAPI, OrganizationAPIMethods } from './organization'
 import { NewUserAPI, UserAPIMethods } from './user'
 import { SystemAPIMethods, SystemAPI } from './system'
-import { UserId } from '../typings/meteor'
 import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
 import { Meteor } from 'meteor/meteor'
 import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from './triggeredActions'
+import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {

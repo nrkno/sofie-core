@@ -18,7 +18,7 @@ import { setSystemStatus, removeSystemStatus } from './systemStatus/systemStatus
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
-import { Studios, StudioId, Studio } from '../lib/collections/Studios'
+import { Studios, Studio } from '../lib/collections/Studios'
 import { getEnvLogLevel, logger, LogLevel, setLogLevel } from './logging'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
@@ -29,6 +29,7 @@ import { TMP_TSR_VERSION, StatusCode } from '@sofie-automation/blueprints-integr
 import { createShowStyleCompound } from './api/showStyles'
 import { fetchShowStyleBasesLight } from '../lib/collections/optimizations'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export { PackageInfo }
 

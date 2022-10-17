@@ -6,7 +6,6 @@ import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { ExpectedPackageDB } from './ExpectedPackages'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { StudioId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import {

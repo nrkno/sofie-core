@@ -1,7 +1,7 @@
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	IStudioSettings,
 	MappingsExt,
-	StudioId,
 	StudioPackageContainer,
 	StudioRouteSet,
 	StudioRouteSetExclusivityGroup,

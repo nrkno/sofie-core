@@ -10,7 +10,6 @@ import {
 	RundownPlaylists,
 	RundownPlaylistCollectionUtil,
 } from '../../../lib/collections/RundownPlaylists'
-import { StudioId } from '../../../lib/collections/Studios'
 import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
@@ -24,7 +23,7 @@ import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { PartInstanceId, PieceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, PieceId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 

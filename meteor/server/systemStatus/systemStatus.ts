@@ -18,7 +18,6 @@ import {
 	Component,
 } from '../../lib/api/systemStatus'
 import { getRelevantSystemVersions } from '../coreSystem'
-import { StudioId } from '../../lib/collections/Studios'
 import { Settings } from '../../lib/Settings'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
@@ -27,6 +26,7 @@ import { SystemReadAccess } from '../security/system'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { Workers } from '../../lib/collections/Workers'
 import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)

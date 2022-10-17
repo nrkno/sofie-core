@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { MongoModifier, MongoQuery, UserId } from '../typings/meteor'
+import { MongoModifier, MongoQuery } from '../typings/meteor'
 import {
 	stringifyObjects,
 	getHash,
@@ -18,6 +18,7 @@ import type { AnyBulkWriteOperation, Collection as RawCollection, Db as RawDb, C
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { MongoFieldSpecifier, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { CustomCollectionType } from '../api/pubsub'
+import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const ObserveChangeBufferTimeout = 2000
 

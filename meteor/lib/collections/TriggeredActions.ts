@@ -6,7 +6,6 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 
 import { PeripheralDeviceId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ObjectWithOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-export { TriggeredActionId }
 
 export type DBBlueprintTrigger = SomeBlueprintTrigger & {
 	deviceId?: PeripheralDeviceId

@@ -3,7 +3,6 @@ import * as _ from 'underscore'
 import { Route, Switch } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { StudioId } from '../../lib/collections/Studios'
 
 import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
@@ -12,6 +11,7 @@ import { objectPathGet } from '../../lib/lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { UIStudios } from './Collections'
 import { UIStudio } from '../../lib/api/studios'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	match: {

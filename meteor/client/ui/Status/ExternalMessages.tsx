@@ -12,12 +12,12 @@ import { makeTableOfObject } from '../../lib/utilComponents'
 import ClassNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
-import { StudioId } from '../../../lib/collections/Studios'
 import { faTrash, faPause, faPlay, faRedo } from '@fortawesome/free-solid-svg-icons'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IExternalMessagesProps {}
 interface IExternalMessagesState {

@@ -1,12 +1,6 @@
 import { Mongo } from 'meteor/mongo'
-import { ProtectedString } from '../lib'
 
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-
-// This is a copy of the type used in the Users collection,
-// to avoid nasty dependencies
-/** A string, identifying a User */
-export type UserId = ProtectedString<'UserId'>
 
 // Note: This file is temporary, we should replace these types with ones which are stronger, or move them to a better home if they are good
 
