@@ -18,7 +18,6 @@ import { findMissingConfigs } from './blueprints/config'
 import { runIngestOperation } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import {
 	checkAccessToPlaylist,
 	checkAccessToRundown,
@@ -241,11 +240,6 @@ export namespace ClientRundownAPI {
 }
 
 class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
-	async removeRundownPlaylist(_playlistId: RundownPlaylistId) {
-		triggerWriteAccessBecauseNoCheckNecessary()
-
-		throw new Error('Removed')
-	}
 	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
 		check(playlistId, String)
 		const access = await checkAccessToPlaylist(this, playlistId)
@@ -269,20 +263,6 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	async unsyncRundown(rundownId: RundownId) {
 		const access = await checkAccessToRundown(this, rundownId)
 		return ServerRundownAPI.unsyncRundown(access)
-	}
-	async moveRundown(
-		_rundownId: RundownId,
-		_intoPlaylistId: RundownPlaylistId | null,
-		_rundownsIdsInPlaylistInOrder: RundownId[]
-	) {
-		triggerWriteAccessBecauseNoCheckNecessary()
-
-		throw new Error('Removed')
-	}
-	async restoreRundownsInPlaylistToDefaultOrder(_playlistId: RundownPlaylistId) {
-		triggerWriteAccessBecauseNoCheckNecessary()
-
-		throw new Error('Removed')
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

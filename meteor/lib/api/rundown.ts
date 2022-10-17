@@ -12,7 +12,6 @@ export interface RundownPlaylistValidateBlueprintConfigResult {
 }
 
 export interface NewRundownAPI {
-	removeRundownPlaylist(playlistId: RundownPlaylistId): Promise<void>
 	resyncRundownPlaylist(playlistId: RundownPlaylistId): Promise<ReloadRundownPlaylistResponse>
 	rundownPlaylistNeedsResync(playlistId: RundownPlaylistId): Promise<string[]>
 	rundownPlaylistValidateBlueprintConfig(
@@ -21,12 +20,6 @@ export interface NewRundownAPI {
 	removeRundown(rundownId: RundownId): Promise<void>
 	resyncRundown(rundownId: RundownId): Promise<TriggerReloadDataResponse>
 	unsyncRundown(rundownId: RundownId): Promise<void>
-	moveRundown(
-		rundownId: RundownId,
-		intoPlaylistId: RundownPlaylistId | null,
-		rundownsIdsInPlaylistInOrder: RundownId[]
-	): Promise<void>
-	restoreRundownsInPlaylistToDefaultOrder(playlistId: RundownPlaylistId): Promise<void>
 }
 
 export enum RundownAPIMethods {
