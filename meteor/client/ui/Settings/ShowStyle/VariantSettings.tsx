@@ -38,6 +38,15 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				editedMappings: [],
 			}
 		}
+		copyVariant = (showStyleVariant: ShowStyleVariant) => {
+			MeteorCall.showstyles
+				.insertShowStyleVariantWithBlueprint(
+					showStyleVariant.showStyleBaseId,
+					showStyleVariant.blueprintConfig,
+					showStyleVariant.name
+				)
+				.catch(console.error)
+		}
 		downloadVariant = (showstyleVariant: ShowStyleVariant) => {
 			const jsonStr = JSON.stringify(showstyleVariant)
 
@@ -117,14 +126,14 @@ export const ShowStyleVariantsSettings = withTranslation()(
 								hl: this.isItemEdited(showStyleVariant._id),
 							})}
 						>
-							<th className="draghandle settings-studio-showStyleVariant__name c3">
+							<th className="settings-studio-showStyleVariant__name c3">
 								{showStyleVariant.name || t('Unnamed variant')}
 							</th>
 							<td className="settings-studio-showStyleVariant__actions table-item-actions c3">
 								<button className="action-btn" onClick={() => this.downloadVariant(showStyleVariant)}>
 									<FontAwesomeIcon icon={faDownload} />
 								</button>
-								<button className="action-btn">
+								<button className="action-btn" onClick={() => this.copyVariant(showStyleVariant)}>
 									<FontAwesomeIcon icon={faCopy} />
 								</button>
 								<button className="action-btn" onClick={() => this.editItem(showStyleVariant._id)}>

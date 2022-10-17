@@ -18,6 +18,7 @@ import { Credentials } from '../security/lib/credentials'
 import { OrganizationId } from '../../lib/collections/Organization'
 import deepmerge from 'deepmerge'
 import { ShowStyleBaseLight } from '../../lib/collections/optimizations'
+import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 
 export async function getShowStyleCompound(
 	showStyleVariantId: ShowStyleVariantId
@@ -94,6 +95,24 @@ export async function insertShowStyleVariantInner(
 		_rundownVersionHash: '',
 	})
 }
+export async function insertShowStyleVariantWithBlueprint(
+	context: MethodContext | Credentials,
+	showStyleBaseId: ShowStyleBaseId,
+	blueprintConfig: IBlueprintConfig,
+	name?: string
+): Promise<ShowStyleVariantId> {
+	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
+	const showStyleBase = access.showStyleBase
+	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
+
+	return ShowStyleVariants.insertAsync({
+		_id: getRandomId(),
+		showStyleBaseId: showStyleBaseId,
+		name: 'Copy of ' + name || 'Copied variant',
+		blueprintConfig: blueprintConfig,
+		_rundownVersionHash: '',
+	})
+}
 export async function removeShowStyleBase(context: MethodContext, showStyleBaseId: ShowStyleBaseId): Promise<void> {
 	check(showStyleBaseId, String)
 	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
@@ -129,6 +148,13 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	}
 	async insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
 		return insertShowStyleVariant(this, showStyleBaseId)
+	}
+	async insertShowStyleVariantWithBlueprint(
+		showStyleBaseId: ShowStyleBaseId,
+		blueprintConfig: IBlueprintConfig,
+		name: string
+	) {
+		return insertShowStyleVariantWithBlueprint(this, showStyleBaseId, blueprintConfig, name)
 	}
 	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 		return removeShowStyleBase(this, showStyleBaseId)
