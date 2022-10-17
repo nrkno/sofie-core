@@ -19,7 +19,7 @@ import {
 	RundownPlaylists,
 	RundownPlaylistCollectionUtil,
 } from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBSegment, Segment } from '../../lib/collections/Segments'
 import { StudioRouteSet } from '../../lib/collections/Studios'
 import { Part, Parts } from '../../lib/collections/Parts'
@@ -139,6 +139,7 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 

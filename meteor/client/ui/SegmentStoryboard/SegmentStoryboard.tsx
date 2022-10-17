@@ -14,7 +14,6 @@ import { UIStateStorage } from '../../lib/UIStateStorage'
 import { literal, unprotectString } from '../../../lib/lib'
 import { lockPointer, scrollToPart, unlockPointer } from '../../lib/viewPort'
 import { StoryboardPart } from './StoryboardPart'
-import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import classNames from 'classnames'
 import RundownViewEventBus, {
 	GoToPartEvent,
@@ -35,6 +34,7 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 import { UIStudio } from '../../../lib/api/studios'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 interface IProps {
 	id: string
