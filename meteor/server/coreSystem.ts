@@ -37,7 +37,7 @@ export { PackageInfo }
 
 /** Get the store path used to be used for storing snapshots  */
 export function getSystemStorePath(): string {
-	if (process.env.JEST_WORKER_ID) {
+	if (isRunningInJest()) {
 		// Override the variable when invoked through Jest
 		return '/dev/null'
 	}
@@ -51,6 +51,10 @@ export function getSystemStorePath(): string {
 	}
 
 	throw new Meteor.Error(500, 'SOFIE_STORE_PATH must be defined to launch Sofie')
+}
+
+export function isRunningInJest(): boolean {
+	return !!process.env.JEST_WORKER_ID
 }
 
 function initializeCoreSystem() {
@@ -77,11 +81,13 @@ function initializeCoreSystem() {
 			},
 		})
 
-		// Check what migration has to provide:
-		const migration = prepareMigration(true)
-		if (migration.migrationNeeded && migration.manualStepCount === 0 && migration.chunks.length <= 1) {
-			// Since we've determined that the migration can be done automatically, and we have a fresh system, just do the migration automatically:
-			runMigration(migration.chunks, migration.hash, [])
+		if (!isRunningInJest()) {
+			// Check what migration has to provide:
+			const migration = prepareMigration(true)
+			if (migration.migrationNeeded && migration.manualStepCount === 0 && migration.chunks.length <= 1) {
+				// Since we've determined that the migration can be done automatically, and we have a fresh system, just do the migration automatically:
+				runMigration(migration.chunks, migration.hash, [])
+			}
 		}
 	}
 
@@ -468,8 +474,10 @@ Meteor.startup(() => {
 		initializeCoreSystem()
 		startInstrumenting()
 
-		// Ensure the storepath exists
-		const storePath = getSystemStorePath()
-		waitForPromise(fs.mkdir(storePath, { recursive: true }))
+		if (!isRunningInJest()) {
+			// Ensure the storepath exists
+			const storePath = getSystemStorePath()
+			waitForPromise(fs.mkdir(storePath, { recursive: true }))
+		}
 	}
 })

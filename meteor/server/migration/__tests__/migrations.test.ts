@@ -79,7 +79,7 @@ describe('Migrations', () => {
 			migrationNeeded: true,
 
 			migration: {
-				canDoAutomaticMigration: false, // Some "base" migrations require manual data entry
+				canDoAutomaticMigration: true,
 				// manualInputs: [],
 				hash: expect.stringContaining(''),
 				automaticStepCount: expect.any(Number),
