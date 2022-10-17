@@ -1,6 +1,5 @@
-import { ExpectedPackageId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackageId, PackageContainerPackageId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
-	PackageContainerPackageId,
 	PackageContainerPackageStatusDB,
 	getPackageContainerPackageId,
 	PackageContainerPackageStatuses,

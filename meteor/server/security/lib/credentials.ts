@@ -1,9 +1,9 @@
-import { UserId, User, Users } from '../../../lib/collections/Users'
-import { OrganizationId } from '../../../lib/collections/Organization'
+import { User, Users } from '../../../lib/collections/Users'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { cacheResult, isProtectedString, clearCacheResult } from '../../../lib/lib'
 import { LIMIT_CACHE_TIME } from './security'
 import { profiler } from '../../api/profiler'
+import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface Credentials {
 	userId: UserId | null

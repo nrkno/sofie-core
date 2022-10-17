@@ -1,17 +1,22 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { PeripheralDeviceId, PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { isProtectedString } from '../../lib/lib'
 import { logNotAllowed } from './lib/lib'
-import { MediaWorkFlows, MediaWorkFlow, MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
-import { MongoQueryKey, UserId } from '../../lib/typings/meteor'
+import { MediaWorkFlows, MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
+import { MongoQueryKey } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { allowAccessToPeripheralDevice, allowAccessToPeripheralDeviceContent } from './lib/security'
-import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { profiler } from '../api/profiler'
 import { StudioContentWriteAccess } from './studio'
+import {
+	MediaWorkFlowId,
+	OrganizationId,
+	PeripheralDeviceId,
+	UserId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace PeripheralDeviceReadAccess {
 	/** Check for read access for a peripheral device */
