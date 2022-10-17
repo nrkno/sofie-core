@@ -4,14 +4,14 @@ import { AdLibAction } from '../../lib/collections/AdLibActions'
 import { AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
-import { PieceId } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { DBSegment, SegmentId } from '../../lib/collections/Segments'
+import { DBSegment } from '../../lib/collections/Segments'
 import { ScanInfoForPackages } from '../../lib/mediaObjects'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { PieceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface ShelfDisplayOptions {
 	enableBuckets: boolean

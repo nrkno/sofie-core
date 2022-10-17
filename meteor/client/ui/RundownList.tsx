@@ -16,13 +16,12 @@ import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/Rundown
 import {
 	RundownPlaylist,
 	RundownPlaylistCollectionUtil,
-	RundownPlaylistId,
 	RundownPlaylists,
 } from '../../lib/collections/RundownPlaylists'
-import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
-import { ShowStyleVariantId, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { extendMandadory, unprotectString } from '../../lib/lib'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
@@ -38,6 +37,7 @@ import { doUserAction, UserAction } from '../lib/userAction'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { UIShowStyleBases, UIStudios } from './Collections'
+import { RundownId, RundownPlaylistId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',

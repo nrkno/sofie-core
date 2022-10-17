@@ -29,12 +29,10 @@ import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { VerifiedRundownPlaylistContentAccess } from './lib'
 import { PackageManagerAPI } from './packageManager'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
-import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { StudioContentWriteAccess } from '../security/studio'
 import { BucketSecurity } from '../security/buckets'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
 	AdLibActionId,
 	BucketId,
@@ -44,9 +42,11 @@ import {
 	PeripheralDeviceId,
 	PieceId,
 	PieceInstanceId,
+	RundownBaselineAdLibActionId,
 	RundownId,
 	RundownPlaylistId,
 	SegmentId,
+	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 

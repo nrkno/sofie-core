@@ -3,13 +3,11 @@ import ClassNames from 'classnames'
 import { DBSegment, Segment } from '../../../lib/collections/Segments'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import {
-	RundownPlaylistId,
 	RundownPlaylist,
 	RundownPlaylists,
 	RundownPlaylistCollectionUtil,
 } from '../../../lib/collections/RundownPlaylists'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { Translated, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -32,7 +30,14 @@ import {
 	RundownLayoutPresenterView,
 	RundownLayouts,
 } from '../../../lib/collections/RundownLayouts'
-import { RundownLayoutId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	RundownId,
+	RundownLayoutId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	ShowStyleVariantId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'

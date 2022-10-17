@@ -8,11 +8,12 @@ import { ExpectedPackage, VTContent } from '@sofie-automation/blueprints-integra
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { IStudioSettings } from '../../../lib/collections/Studios'
-import { PieceId, PieceStatusCode } from '../../../lib/collections/Pieces'
+import { PieceStatusCode } from '../../../lib/collections/Pieces'
 import { getPreviewUrlForExpectedPackagesAndContentMetaData } from '../../lib/ui/clipPreview'
 import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer'
 import classNames from 'classnames'
 import { UIStudio } from '../../../lib/api/studios'
+import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	status: PieceStatusCode

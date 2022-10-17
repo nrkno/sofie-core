@@ -21,7 +21,6 @@ import {
 	UserAgentPointer,
 	USER_AGENT_POINTER_PROPERTY,
 } from '../../lib/lib'
-import { PieceId } from '../../../lib/collections/Pieces'
 import { MeteorCall } from '../../../lib/api/methods'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
@@ -39,6 +38,7 @@ import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataM
 import { UIStudio } from '../../../lib/api/studios'
 import { UIStudios } from '../Collections'
 import { Meteor } from 'meteor/meteor'
+import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IState {
 	outputLayers: OutputLayers

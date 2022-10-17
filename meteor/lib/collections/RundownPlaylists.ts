@@ -13,13 +13,7 @@ import { Parts, Part, DBPart } from './Parts'
 import { PartInstance, PartInstances } from './PartInstances'
 import { createMongoCollection, FindOptions } from './lib'
 import { registerIndex } from '../database'
-import {
-	RundownPlaylistId,
-	ActiveInstanceId,
-	RundownPlaylistActivationId,
-	RundownId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { RundownPlaylistId, ActiveInstanceId, RundownPlaylistActivationId }
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'

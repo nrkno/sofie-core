@@ -1,5 +1,4 @@
-import { RundownId } from '../collections/Rundowns'
-import { RundownPlaylistId } from '../collections/RundownPlaylists'
+import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from './userActions'
 
 export interface RundownPlaylistValidateBlueprintConfigResult {

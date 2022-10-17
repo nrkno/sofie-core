@@ -4,7 +4,6 @@ import { ClipTrimPanel } from './ClipTrimPanel'
 import { VTContent, VTEditableParameters } from '@sofie-automation/blueprints-integration'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { protectString, stringifyError } from '../../../lib/lib'
@@ -12,6 +11,7 @@ import { ClientAPI } from '../../../lib/api/client'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { UIStudio } from '../../../lib/api/studios'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface IProps {
 	playlistId: RundownPlaylistId

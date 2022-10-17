@@ -9,9 +9,9 @@ import {
 	RundownLayouts,
 	RundownLayout,
 	CustomizableRegions,
-	RundownLayoutId,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorCall } from '../../../lib/api/methods'
+import { RundownLayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 require('../client') // include in order to create the Meteor methods needed
 require('../rundownLayouts') // include in order to create the Meteor methods needed
