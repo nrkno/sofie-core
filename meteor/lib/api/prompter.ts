@@ -1,19 +1,25 @@
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
 import { ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylistCollectionUtil } from '../collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistCollectionUtil } from '../collections/RundownPlaylists'
 import { normalizeArrayToMap, protectString } from '../lib'
-import { SegmentId } from '../collections/Segments'
-import { Piece, PieceId, Pieces } from '../collections/Pieces'
+import { Piece, Pieces } from '../collections/Pieces'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../Rundown'
-import { PartInstanceId } from '../collections/PartInstances'
-import { PartId } from '../collections/Parts'
 import { FindOptions } from '../collections/lib'
 import { PieceInstance, PieceInstances } from '../collections/PieceInstances'
-import { Rundown, RundownId } from '../collections/Rundowns'
-import { ShowStyleBaseId, SourceLayers } from '../collections/ShowStyleBases'
+import { Rundown } from '../collections/Rundowns'
+import { SourceLayers } from '../collections/ShowStyleBases'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import { UIShowStyleBases } from '../../client/ui/Collections'
+import {
+	PartId,
+	PartInstanceId,
+	PieceId,
+	RundownId,
+	RundownPlaylistId,
+	SegmentId,
+	ShowStyleBaseId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>

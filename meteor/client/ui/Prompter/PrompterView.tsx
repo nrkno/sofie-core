@@ -8,7 +8,6 @@ import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/Reac
 import {
 	RundownPlaylist,
 	RundownPlaylists,
-	RundownPlaylistId,
 	RundownPlaylistCollectionUtil,
 } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '../../../lib/collections/Studios'
@@ -20,13 +19,12 @@ import { objectPathGet, firstIfArray, literal, protectString } from '../../../li
 import { PrompterData, PrompterAPI, PrompterDataPart } from '../../../lib/api/prompter'
 import { PrompterControlManager } from './controller/manager'
 import { PubSub } from '../../../lib/api/pubsub'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { documentTitle } from '../../lib/DocumentTitleProvider'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, PieceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 

@@ -3,10 +3,10 @@ import _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { useTranslation } from 'react-i18next'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
-import { DBSegment, Segment, SegmentId } from '../../../lib/collections/Segments'
-import { DBPart, PartId } from '../../../lib/collections/Parts'
+import { DBSegment, Segment } from '../../../lib/collections/Segments'
+import { DBPart } from '../../../lib/collections/Parts'
 import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
@@ -32,12 +32,7 @@ import {
 } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
-import {
-	PartInstances,
-	PartInstanceId,
-	findPartInstanceOrWrapToTemporary,
-	PartInstance,
-} from '../../../lib/collections/PartInstances'
+import { PartInstances, findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibActions, AdLibAction } from '../../../lib/collections/AdLibActions'
@@ -60,6 +55,7 @@ import { AdLibListView } from './AdLibListView'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
 import { UIStudios } from '../Collections'
+import { PartId, PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined

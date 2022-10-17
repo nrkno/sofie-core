@@ -21,8 +21,6 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceId } from '../../../lib/collections/Pieces'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import {
@@ -37,6 +35,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ContextType, setShelfContextMenuContext } from '../Shelf/ShelfContextMenu'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
+import { PartInstanceId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IRundownViewShelfProps {
 	studio: UIStudio

@@ -1,14 +1,16 @@
 import React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { SourceLayerType, VTContent } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { PubSub } from '../../../lib/api/pubsub'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { RundownId } from '../../../lib/collections/Rundowns'
 import { findPieceInstanceToShow } from './utils'
 import { Timediff } from '../ClockView/Timediff'
 import { getCurrentTime } from '../../../lib/lib'
-import { RundownPlaylistActivationId } from '../../../lib/collections/RundownPlaylists'
+import {
+	PartInstanceId,
+	RundownId,
+	RundownPlaylistActivationId,
+	ShowStyleBaseId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId

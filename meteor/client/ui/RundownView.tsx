@@ -17,13 +17,12 @@ import { NavLink, Route, Prompt } from 'react-router-dom'
 import {
 	RundownPlaylist,
 	RundownPlaylists,
-	RundownPlaylistId,
 	RundownPlaylistCollectionUtil,
 } from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
-import { DBSegment, Segment, SegmentId } from '../../lib/collections/Segments'
+import { Rundown, Rundowns, RundownHoldState } from '../../lib/collections/Rundowns'
+import { DBSegment, Segment } from '../../lib/collections/Segments'
 import { StudioRouteSet } from '../../lib/collections/Studios'
-import { Part, PartId, Parts } from '../../lib/collections/Parts'
+import { Part, Parts } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
@@ -75,7 +74,6 @@ import {
 	RundownLayouts,
 	RundownLayoutType,
 	RundownLayoutBase,
-	RundownLayoutId,
 	RundownViewLayout,
 	RundownLayoutShelfBase,
 	RundownLayoutRundownHeader,
@@ -91,7 +89,7 @@ import { MeteorCall } from '../../lib/api/methods'
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { documentTitle } from '../lib/DocumentTitleProvider'
-import { PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
+import { PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
@@ -132,6 +130,14 @@ import { IProps as IResolvedSegmentProps } from './SegmentContainer/withResolved
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { UIShowStyleBases, UIStudios } from './Collections'
 import { UIStudio } from '../../lib/api/studios'
+import {
+	PartId,
+	PartInstanceId,
+	RundownId,
+	RundownLayoutId,
+	RundownPlaylistId,
+	SegmentId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 

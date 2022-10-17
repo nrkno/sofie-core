@@ -1,15 +1,17 @@
-import { SegmentId } from '../../../lib/collections/Segments'
-import { PartId } from '../../../lib/collections/Parts'
 import EventEmitter from 'events'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceId } from '../../../lib/collections/Pieces'
 import { ShelfTabs } from '../Shelf/Shelf'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibItem } from '../Shelf/RundownViewBuckets'
-import { RundownId } from '../../../lib/collections/Rundowns'
 import { Bucket } from '../../../lib/collections/Buckets'
-import { TriggeredActionId } from '../../../lib/collections/TriggeredActions'
+import {
+	PartId,
+	PartInstanceId,
+	PieceId,
+	RundownId,
+	SegmentId,
+	TriggeredActionId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export enum RundownViewEvents {
 	ACTIVATE_RUNDOWN_PLAYLIST = 'activateRundownPlaylist',

@@ -1,7 +1,6 @@
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UIStudio } from '../../../../../lib/api/studios'
-import { PartInstanceId } from '../../../../../lib/collections/PartInstances'
-import { PartId } from '../../../../../lib/collections/Parts'
 import { assertNever } from '../../../../../lib/lib'
 import { OffsetPosition } from '../../../../utils/positions'
 import { PieceUi } from '../../../SegmentContainer/withResolvedSegment'
