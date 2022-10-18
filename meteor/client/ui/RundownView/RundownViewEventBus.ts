@@ -41,6 +41,8 @@ export enum RundownViewEvents {
 	RENAME_BUCKET = 'renameBucket',
 	DELETE_BUCKET = 'deleteBucket',
 	CREATE_BUCKET = 'createBucket',
+
+	CREATE_SNAPSHOT_FOR_DEBUG = 'createSnapshotForDebug',
 }
 
 export interface IEventContext {
@@ -133,6 +135,7 @@ class RundownViewEventBus0 extends EventEmitter {
 	emit(event: RundownViewEvents.CREATE_BUCKET, e: IEventContext): boolean
 	emit(event: RundownViewEvents.DELETE_BUCKET_ADLIB, e: BucketAdLibEvent): boolean
 	emit(event: RundownViewEvents.RENAME_BUCKET_ADLIB, e: BucketAdLibEvent): boolean
+	emit(event: RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, e: BaseEvent): boolean
 	emit(event: string, ...args: any[]) {
 		return super.emit(event, ...args)
 	}
@@ -165,6 +168,7 @@ class RundownViewEventBus0 extends EventEmitter {
 	on(event: RundownViewEvents.CREATE_BUCKET, listener: (e: IEventContext) => void): this
 	on(event: RundownViewEvents.DELETE_BUCKET_ADLIB, listener: (e: BucketAdLibEvent) => void): this
 	on(event: RundownViewEvents.RENAME_BUCKET_ADLIB, listener: (e: BucketAdLibEvent) => void): this
+	on(event: RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, listener: (e: BaseEvent) => void): this
 	on(event: string, listener: (...args: any[]) => void) {
 		return super.on(event, listener)
 	}

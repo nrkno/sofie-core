@@ -366,6 +366,7 @@ const RundownHeader = withTranslation()(
 			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.on(RundownViewEvents.TAKE, this.eventTake)
 			RundownViewEventBus.on(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, this.eventResetRundownPlaylist)
+			RundownViewEventBus.on(RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, this.eventCreateSnapshot)
 
 			reloadRundownPlaylistClick.set(this.reloadRundownPlaylist)
 		}
@@ -376,6 +377,7 @@ const RundownHeader = withTranslation()(
 			RundownViewEventBus.off(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.off(RundownViewEvents.TAKE, this.eventTake)
 			RundownViewEventBus.off(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, this.eventResetRundownPlaylist)
+			RundownViewEventBus.off(RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, this.eventCreateSnapshot)
 		}
 		eventActivate = (e: ActivateRundownPlaylistEvent) => {
 			if (e.rehearsal) {
@@ -395,6 +397,9 @@ const RundownHeader = withTranslation()(
 		}
 		eventResetRundownPlaylist = (e: IEventContext) => {
 			this.resetRundown(e.context)
+		}
+		eventCreateSnapshot = (e: IEventContext) => {
+			this.takeRundownSnapshot(e.context)
 		}
 
 		handleDisableNextPiece = (err: ClientAPI.ClientResponse<undefined>) => {

@@ -302,6 +302,14 @@ $dashboard-button-height: 5.625em;
 					var(--adlib-item-selected-color);
 		}
 
+		&.live-speak {
+			background: linear-gradient(
+				to top,
+				var(--segment-layer-background-live-speak-2) 1em,
+				var(--segment-layer-background-live-speak-1) 1em
+			);
+		}
+
 		&.live {
 			@keyframes button-flash {
 				0% {

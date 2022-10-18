@@ -433,6 +433,17 @@ function createRundownPlaylistSoftResetRundownAction(_filterChain: IGUIContextFi
 	}
 }
 
+function createTakeRundownSnapshotAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
+	return {
+		action: PlayoutActions.createSnapshotForDebug,
+		execute: (_t, e) => {
+			RundownViewEventBus.emit(RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, {
+				context: e,
+			})
+		},
+	}
+}
+
 /**
  * A utility method to create an ExecutableAction wrapping a simple UserAction call that takes some variables from
  * InternalActionContext as input
@@ -523,9 +534,13 @@ export function createAction(action: SomeAction, sourceLayers: SourceLayers): Ex
 				MeteorCall.userAction.disableNextPiece(e, ts, ctx.rundownPlaylistId.get(), !!action.undo)
 			)
 		case PlayoutActions.createSnapshotForDebug:
-			return createUserActionWithCtx(action, UserAction.CREATE_SNAPSHOT_FOR_DEBUG, async (e, ts, ctx) =>
-				MeteorCall.userAction.storeRundownSnapshot(e, ts, ctx.rundownPlaylistId.get(), `action`, false)
-			)
+			if (isActionTriggeredFromUiContext(action)) {
+				return createTakeRundownSnapshotAction(action.filterChain as IGUIContextFilterLink[])
+			} else {
+				return createUserActionWithCtx(action, UserAction.CREATE_SNAPSHOT_FOR_DEBUG, async (e, ts, ctx) =>
+					MeteorCall.userAction.storeRundownSnapshot(e, ts, ctx.rundownPlaylistId.get(), `action`, false)
+				)
+			}
 		case PlayoutActions.moveNext:
 			return createUserActionWithCtx(action, UserAction.MOVE_NEXT, async (e, ts, ctx) =>
 				MeteorCall.userAction.moveNext(

@@ -72,6 +72,9 @@ export const LinePartAdLibIndicator: React.FC<IProps> = function LinePartAdLibIn
 	const onDoubleClick = useCallback(() => {
 		const pieceId = adLibPieces[0]?._id || adLibActions[0]?._id
 		console.log(pieceId)
+		RundownViewEventBus.emit(RundownViewEvents.SHELF_STATE, {
+			state: true,
+		})
 		RundownViewEventBus.emit(RundownViewEvents.REVEAL_IN_SHELF, {
 			pieceId: pieceId,
 		})
