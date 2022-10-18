@@ -48,10 +48,11 @@ services:
       MONGO_URL: 'mongodb://db:27017/meteor'
       MONGO_OPLOG_URL: 'mongodb://db:27017/local'
       ROOT_URL: 'http://localhost:3000'
+      SOFIE_STORE_PATH: '/mnt/sofie-store'
     networks:
       - sofie
     volumes:
-      - snapshots:/mnt/snapshots
+      - sofie-store:/mnt/sofie-store
     depends_on:
       - db
 
@@ -107,7 +108,7 @@ networks:
 
 volumes:
   db-data:
-  snapshots:
+  sofie-store:
 ```
 
 Create a `Sofie` folder, copy the above content, and save it as `docker-compose.yaml` within the `Sofie` folder.
