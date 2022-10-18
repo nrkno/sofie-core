@@ -1,11 +1,8 @@
 import * as _ from 'underscore'
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
-import { Studios, Studio } from '../../lib/collections/Studios'
-import { ensureCollectionPropertyManual } from './lib'
-import { PeripheralDevices, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
+import { Studios } from '../../lib/collections/Studios'
 import { getRandomId, protectString } from '../../lib/lib'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
@@ -78,73 +75,6 @@ export const addSteps = addMigrationSteps('0.1.0', [
 	},
 
 	{
-		id: 'Assign devices to studio',
-		canBeRunAutomatically: true,
-		dependOnResultFrom: 'studio exists',
-		validate: () => {
-			const studios = Studios.find().fetch()
-			if (studios.length > 1) {
-				return false
-			}
-
-			let missing: string | boolean = false
-			PeripheralDevices.find({
-				parentDeviceId: { $exists: false },
-			}).forEach((device) => {
-				if (!device.studioId) missing = `Peripheral Device ${device._id} has no studio`
-			})
-			return missing
-		},
-		migrate: () => {
-			const studios = Studios.find().fetch()
-			if (studios.length === 1) {
-				const studio = studios[0]
-
-				PeripheralDevices.find({
-					parentDeviceId: { $exists: false },
-				}).forEach((device) => {
-					if (!device.studioId) PeripheralDevices.update(device._id, { $set: { studioId: studio._id } })
-				})
-			} else {
-				throw new Error(
-					`Unable to automatically assign Peripheral Devices to a studio, since there are ${studios.length} studios. Please assign them manually`
-				)
-			}
-		},
-	},
-
-	{
-		id: 'Playout-gateway exists',
-		canBeRunAutomatically: false,
-		dependOnResultFrom: 'studio exists',
-		validate: () => {
-			const studios = Studios.find().fetch()
-			let missing: string | boolean = false
-			_.each(studios, (studio: Studio) => {
-				const dev = PeripheralDevices.findOne({
-					type: PeripheralDeviceType.PLAYOUT,
-					studioId: studio._id,
-				})
-				if (!dev) {
-					missing = `Playout Gateway is missing on ${studio._id}`
-				}
-			})
-
-			return missing
-		},
-		// Note: No migrate() function, user must fix this him/herself
-		input: [
-			{
-				label: 'Playout Gateway not set up for all Studios',
-				description:
-					"Start up the Playout Gateway, make sure it's connected to Sofie and assigned to a Studio.",
-				inputType: null,
-				attribute: null,
-			},
-		],
-	},
-
-	{
 		// Create showStyleBase (migrate from studio)
 		id: 'showStyleBase exists',
 		canBeRunAutomatically: true,
@@ -214,48 +144,4 @@ export const addSteps = addMigrationSteps('0.1.0', [
 			}
 		},
 	},
-
-	ensureCollectionPropertyManual(
-		CollectionName.Studios,
-		{},
-		'settings.sofieUrl',
-		'text',
-		'Sofie URL',
-		"Enter the URL to the Sofie Core (that's what's in your browser URL,), example: https://xxsofie without trailing" +
-			' /; short form server name is OK.',
-		undefined
-	),
-
-	ensureCollectionPropertyManual(
-		CollectionName.Studios,
-		{},
-		'settings.mediaPreviewsUrl',
-		'text',
-		'Media Preview Service',
-		'Enter the URL to the Media Preview service, example: https://10.0.1.100:8000/. Note that Cross-Origin Resource' +
-			' Sharing needs to be enabled for this Sofie installation the Media Preview Service, or the Media Preview ' +
-			' Service needs to have the same Origin as Sofie. Read more: ' +
-			'https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy',
-		undefined
-	),
-
-	ensureCollectionPropertyManual(
-		CollectionName.Studios,
-		{},
-		'settings.slackEvaluationUrls',
-		'text',
-		'Evaluations Slack Integration',
-		'Enter the URL for the Slack WebHook (example: "https://hooks.slack.com/services/[WEBHOOKURL]") where Evaluations by Users will be sent',
-		undefined
-	),
-
-	ensureCollectionPropertyManual(
-		CollectionName.Studios,
-		{},
-		'settings.supportedMediaFormats',
-		'text',
-		'Media Quality Control',
-		'Provide a list of accepted media formats for playback (example: "1920x1080i5000tff,1280x720p5000")',
-		undefined
-	),
 ])
