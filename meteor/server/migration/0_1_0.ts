@@ -60,7 +60,6 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				settings: {
 					frameRate: 25,
 					mediaPreviewsUrl: '',
-					sofieUrl: '',
 				},
 				mappingsWithOverrides: wrapDefaultObject({}),
 				blueprintConfigWithOverrides: wrapDefaultObject({}),

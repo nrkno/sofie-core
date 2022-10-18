@@ -185,20 +185,6 @@ export const StudioGenericProperties = withTranslation()(
 						</div>
 					</label>
 					<label className="field">
-						{t('Sofie Host URL')}
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.sofieUrl"
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="mdinput"
-							/>
-							<span className="mdfx"></span>
-						</div>
-					</label>
-					<label className="field">
 						{t('Slack Webhook URLs')}
 						<div className="mdi">
 							<EditAttribute

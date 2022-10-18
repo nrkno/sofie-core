@@ -15,7 +15,6 @@ describe('Test blueprint config', () => {
 		jobContext.setStudio({
 			...jobContext.studio,
 			settings: {
-				sofieUrl: 'host url',
 				mediaPreviewsUrl: '',
 				frameRate: 25,
 			},
@@ -27,9 +26,41 @@ describe('Test blueprint config', () => {
 
 		const res = preprocessStudioConfig(jobContext.studio, jobContext.studioBlueprint.blueprint)
 		expect(res).toEqual({
-			SofieHostURL: 'host url',
+			// SofieHostURL: 'host url',
 			sdfsdf: 'one',
 			another: 5,
+		})
+	})
+
+	test('compileStudioConfig with function', () => {
+		const jobContext = setupDefaultJobEnvironment()
+		jobContext.setStudio({
+			...jobContext.studio,
+			settings: {
+				mediaPreviewsUrl: '',
+				frameRate: 25,
+			},
+			blueprintConfigWithOverrides: wrapDefaultObject({ sdfsdf: 'one', another: 5 }),
+		})
+		jobContext.updateStudioBlueprint({
+			studioConfigManifest: undefined,
+			preprocessConfig: (_context, config, coreConfig) => {
+				return {
+					studio: config,
+					core: coreConfig,
+				}
+			},
+		})
+
+		const res = preprocessStudioConfig(jobContext.studio, jobContext.studioBlueprint.blueprint)
+		expect(res).toEqual({
+			core: {
+				hostUrl: 'http://sofie-in-jest:3000',
+			},
+			studio: {
+				sdfsdf: 'one',
+				another: 5,
+			},
 		})
 	})
 
