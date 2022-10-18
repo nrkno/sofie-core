@@ -204,7 +204,12 @@ function mutateLookaheadObject(
 	obj.enable = enable
 	obj.isLookahead = true
 	if (obj.keyframes) {
-		obj.keyframes = obj.keyframes.filter((kf) => kf.preserveForLookahead)
+		obj.keyframes = obj.keyframes
+			.filter((kf) => kf.preserveForLookahead)
+			.map((kf, i) => ({
+				...kf,
+				id: `${obj.id}_keyframe_${i}`,
+			}))
 	}
 	delete obj.inGroup // force it to be cleared
 	obj.disabled = disabled
