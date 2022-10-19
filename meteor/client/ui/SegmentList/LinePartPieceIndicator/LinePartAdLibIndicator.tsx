@@ -69,9 +69,8 @@ export const LinePartAdLibIndicator: React.FC<IProps> = function LinePartAdLibIn
 		[adLibPieces, adLibActions]
 	)
 
-	const onDoubleClick = useCallback(() => {
+	const onClick = useCallback(() => {
 		const pieceId = adLibPieces[0]?._id || adLibActions[0]?._id
-		console.log(pieceId)
 		RundownViewEventBus.emit(RundownViewEvents.SHELF_STATE, {
 			state: true,
 		})
@@ -94,7 +93,7 @@ export const LinePartAdLibIndicator: React.FC<IProps> = function LinePartAdLibIn
 						hasOriginInPreceedingPart={false}
 						studio={studio}
 						piece={adLibPieces[0]}
-						onDoubleClick={onDoubleClick}
+						onClick={onClick}
 					/>
 				)
 			}}
