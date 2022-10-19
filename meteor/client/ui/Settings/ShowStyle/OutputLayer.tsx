@@ -10,7 +10,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IOutputLayer } from '@sofie-automation/blueprints-integration'
-import { clone, getRandomString, literal, objectPathSet } from '@sofie-automation/corelib/dist/lib'
+import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import Tooltip from 'rc-tooltip'
 import { useTranslation } from 'react-i18next'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
@@ -20,12 +20,12 @@ import { doModalDialog } from '../../../lib/ModalDialog'
 import { findHighestRank } from '../StudioSettings'
 import {
 	applyAndValidateOverrides,
-	ObjectOverrideDeleteOp,
 	ObjectOverrideSetOp,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SetNonNullable } from 'type-fest'
 import { CheckboxControlWithOverrideForObject } from '../../../lib/Components/Checkbox'
+import { useOverrideOpHelper, filterOpsForPrefix } from '../util/OverrideOpHelper'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -36,23 +36,6 @@ interface ComputedOutputLayer {
 	computed: IOutputLayer | undefined
 	defaults: IOutputLayer | undefined
 	overrideOps: SomeObjectOverrideOp[]
-}
-
-function filterOpsForPrefix(
-	allOps: SomeObjectOverrideOp[],
-	prefix: string
-): { opsForId: SomeObjectOverrideOp[]; otherOps: SomeObjectOverrideOp[] } {
-	const res: { opsForId: SomeObjectOverrideOp[]; otherOps: SomeObjectOverrideOp[] } = { opsForId: [], otherOps: [] }
-
-	for (const op of allOps) {
-		if (op.path === prefix || op.path.startsWith(`${prefix}.`)) {
-			res.opsForId.push(op)
-		} else {
-			res.otherOps.push(op)
-		}
-	}
-
-	return res
 }
 
 export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
@@ -135,142 +118,18 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 		return !!Object.values(resolvedOutputLayers).find((layer) => layer && layer.isPGM)
 	}, [resolvedOutputLayers])
 
-	const clearItemOverride = useCallback((itemId: string, subPath: string) => {
-		console.log(`reset ${itemId}.${subPath}`)
-
-		const opPath = `${itemId}.${subPath}`
-
-		const newOps = showStyleBase.outputLayersWithOverrides.overrides.filter((op) => op.path !== opPath)
-
-		ShowStyleBases.update(showStyleBase._id, {
-			$set: {
-				'outputLayersWithOverrides.overrides': newOps,
-			},
-		})
-	}, [])
-	const setItemValue = useCallback(
-		(itemId: string, subPath: string | null, value: any) => {
-			console.log(`set ${itemId}.${subPath} = ${value}`)
-
-			// Handle deletion
-			if (!subPath && value === undefined) {
-				const newOps = filterOpsForPrefix(showStyleBase.outputLayersWithOverrides.overrides, itemId).otherOps
-				if (showStyleBase.outputLayersWithOverrides.defaults[itemId]) {
-					// If it was from the defaults, we need to mark it deleted
-					newOps.push(
-						literal<ObjectOverrideDeleteOp>({
-							op: 'delete',
-							path: itemId,
-						})
-					)
-				}
-
-				ShowStyleBases.update(showStyleBase._id, {
-					$set: {
-						'outputLayersWithOverrides.overrides': newOps,
-					},
-				})
-			} else if (subPath === '_id') {
-				// Change id
-
-				const { otherOps: newOps, opsForId } = filterOpsForPrefix(
-					showStyleBase.outputLayersWithOverrides.overrides,
-					itemId
-				)
-
-				if (
-					!value ||
-					newOps.find((op) => op.path === value) ||
-					showStyleBase.outputLayersWithOverrides.defaults[value]
-				) {
-					throw new Error('Id is invalid or already in use')
-				}
-
-				if (showStyleBase.outputLayersWithOverrides.defaults[itemId]) {
-					// Future: should we be able to handle this?
-					throw new Error("Can't change id of object with defaults")
-				} else {
-					// Change the id prefix of the ops
-					for (const op of opsForId) {
-						const newPath = `${value}${op.path.substring(itemId.length)}`
-
-						const newOp = {
-							...op,
-							path: newPath,
-						}
-						newOps.push(newOp)
-
-						if (newOp.path === value && newOp.op === 'set') {
-							newOp.value._id = value
-						}
-					}
-
-					ShowStyleBases.update(showStyleBase._id, {
-						$set: {
-							'outputLayersWithOverrides.overrides': newOps,
-						},
-					})
-				}
-			} else if (subPath) {
-				// Set a property
-				const { otherOps: newOps, opsForId } = filterOpsForPrefix(
-					showStyleBase.outputLayersWithOverrides.overrides,
-					itemId
-				)
-
-				// Future: handle subPath being deeper
-				if (subPath.indexOf('.') !== -1) throw new Error('Deep subPath not yet implemented')
-
-				const setRootOp = opsForId.find((op) => op.path === itemId)
-				if (setRootOp && setRootOp.op === 'set') {
-					// This is as its base an override, so modify that instead
-					const newOp = clone(setRootOp)
-
-					objectPathSet(newOp.value, subPath, value)
-
-					newOps.push(newOp)
-				} else {
-					const newOp = literal<ObjectOverrideSetOp>({
-						op: 'set',
-						path: `${itemId}.${subPath}`,
-						value: value,
-					})
-
-					// Preserve any other overrides
-					for (const op of opsForId) {
-						if (op.path !== newOp.path) {
-							newOps.push(op)
-						}
-					}
-					// Add the new override
-					newOps.push(newOp)
-				}
-
-				ShowStyleBases.update(showStyleBase._id, {
-					$set: {
-						'outputLayersWithOverrides.overrides': newOps,
-					},
-				})
-			}
-		},
-		[showStyleBase.outputLayersWithOverrides, showStyleBase._id]
-	)
-
-	// Reset an item back to defaults
-	const resetItem = useCallback(
-		(itemId: string) => {
-			console.log('reset', itemId)
-
-			const newOps = filterOpsForPrefix(showStyleBase.outputLayersWithOverrides.overrides, itemId).otherOps
-
+	const saveOverrides = useCallback(
+		(newOps: SomeObjectOverrideOp[]) => {
 			ShowStyleBases.update(showStyleBase._id, {
 				$set: {
 					'outputLayersWithOverrides.overrides': newOps,
 				},
 			})
 		},
-		[showStyleBase.outputLayersWithOverrides.overrides, showStyleBase._id]
+		[showStyleBase._id]
 	)
+
+	const overrideHelper = useOverrideOpHelper(saveOverrides, showStyleBase.outputLayersWithOverrides)
 
 	return (
 		<div>
@@ -305,12 +164,14 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 								isExpanded={!!expandedItemIds[item.id]}
 								itemOps={item.overrideOps}
 								toggleExpanded={toggleExpanded}
-								setItemValue={setItemValue}
-								clearItemOverride={clearItemOverride}
-								resetItem={resetItem}
+								setItemValue={overrideHelper.setItemValue}
+								clearItemOverride={overrideHelper.clearItemOverrides}
+								resetItem={overrideHelper.resetItem}
 							/>
 						) : (
-							item.defaults && <OutputLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={resetItem} />
+							item.defaults && (
+								<OutputLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={overrideHelper.resetItem} />
+							)
 						)
 					)}
 				</tbody>
