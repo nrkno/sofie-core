@@ -101,7 +101,7 @@ export async function setUpOptimizedObserverInner<
 		await thisObserverWrapper.worker
 	} else {
 		const resultingOptimizedObserver = createManualPromise<OptimizedObserverWorker<PublicationDoc, Args, State>>()
-		resultingOptimizedObserver.catch(() => {})
+		resultingOptimizedObserver.catch(() => null) // ensure resultingOptimizedObserver doesn't go uncaught
 
 		// Store the optimizedObserver, so that other subscribers can join onto this without creating their own
 		thisObserverWrapper = optimizedObservers[identifier] = {
