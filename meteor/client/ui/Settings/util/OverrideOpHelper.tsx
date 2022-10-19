@@ -4,14 +4,19 @@ import {
 	ObjectWithOverrides,
 	ObjectOverrideDeleteOp,
 	ObjectOverrideSetOp,
+	applyAndValidateOverrides,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { useRef, useMemo, useEffect } from 'react'
+import { ReadonlyDeep, SetNonNullable } from 'type-fest'
 
 export function filterOpsForPrefix(
-	allOps: SomeObjectOverrideOp[],
+	allOps: ReadonlyDeep<SomeObjectOverrideOp[]>,
 	prefix: string
-): { opsForId: SomeObjectOverrideOp[]; otherOps: SomeObjectOverrideOp[] } {
-	const res: { opsForId: SomeObjectOverrideOp[]; otherOps: SomeObjectOverrideOp[] } = { opsForId: [], otherOps: [] }
+): { opsForId: ReadonlyDeep<SomeObjectOverrideOp>[]; otherOps: ReadonlyDeep<SomeObjectOverrideOp>[] } {
+	const res: { opsForId: ReadonlyDeep<SomeObjectOverrideOp>[]; otherOps: ReadonlyDeep<SomeObjectOverrideOp>[] } = {
+		opsForId: [],
+		otherOps: [],
+	}
 
 	for (const op of allOps) {
 		if (op.path === prefix || op.path.startsWith(`${prefix}.`)) {
@@ -22,6 +27,55 @@ export function filterOpsForPrefix(
 	}
 
 	return res
+}
+
+export interface WrappedItem<T extends object> {
+	id: string
+	computed: T | undefined
+	defaults: ReadonlyDeep<T> | undefined
+	overrideOps: ReadonlyDeep<SomeObjectOverrideOp[]>
+}
+export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
+	rawObject: ReadonlyDeep<ObjectWithOverrides<Record<string, T | undefined>>>,
+	comparitor: (a: T | ReadonlyDeep<T>, b: T | ReadonlyDeep<T>) => number
+) {
+	const resolvedObject = applyAndValidateOverrides(rawObject).obj
+
+	const validItems: Array<[id: string, obj: T]> = []
+	for (const [id, obj] of Object.entries(resolvedObject)) {
+		if (obj) validItems.push([id, obj])
+	}
+
+	const sortedItems = validItems
+		.sort((a, b) => comparitor(a[1], b[1]))
+		.map(([id, obj]) =>
+			literal<WrappedItem<T>>({
+				id: id,
+				computed: obj,
+				defaults: rawObject.defaults[id],
+				overrideOps: filterOpsForPrefix(rawObject.overrides, id).opsForId,
+			})
+		)
+
+	const removedOutputLayers: SetNonNullable<WrappedItem<T>, 'defaults'>[] = []
+
+	const computedOutputLayerIds = new Set(sortedItems.map((l) => l.id))
+	for (const [id, output] of Object.entries(rawObject.defaults)) {
+		if (!computedOutputLayerIds.has(id) && output) {
+			removedOutputLayers.push(
+				literal<SetNonNullable<WrappedItem<T>, 'defaults'>>({
+					id: id,
+					computed: undefined,
+					defaults: output,
+					overrideOps: filterOpsForPrefix(rawObject.overrides, id).opsForId,
+				})
+			)
+		}
+	}
+
+	removedOutputLayers.sort((a, b) => comparitor(a.defaults, b.defaults))
+
+	return [...sortedItems, ...removedOutputLayers]
 }
 
 export interface OverrideOpHelper {

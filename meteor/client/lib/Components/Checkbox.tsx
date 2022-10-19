@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ReadonlyDeep } from 'type-fest'
 
 interface ICheckboxControlProps {
 	classNames?: string
@@ -72,7 +73,7 @@ interface CheckboxControlWithOverrideForObjectProps<T> {
 	item: T
 	defaultItem: T | undefined
 	itemKey: keyof T
-	itemOps: SomeObjectOverrideOp[]
+	itemOps: ReadonlyDeep<SomeObjectOverrideOp[]>
 	opPrefix: string
 	setValue: (opPrefix: string, key: string, value: boolean) => void
 	clearOverride: (opPrefix: string, key: string) => void
@@ -118,7 +119,7 @@ export function CheckboxControlWithOverrideForObject<T>({
 	}
 }
 
-function hasOpWithPath(allOps: SomeObjectOverrideOp[], id: string, subpath: string): boolean {
+function hasOpWithPath(allOps: ReadonlyDeep<SomeObjectOverrideOp[]>, id: string, subpath: string): boolean {
 	const path = `${id}.${subpath}`
 	return !!allOps.find((op) => op.path === path)
 }

@@ -18,24 +18,13 @@ import { EditAttribute } from '../../../lib/EditAttribute'
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { findHighestRank } from '../StudioSettings'
-import {
-	applyAndValidateOverrides,
-	ObjectOverrideSetOp,
-	SomeObjectOverrideOp,
-} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { SetNonNullable } from 'type-fest'
+import { ObjectOverrideSetOp, SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { CheckboxControlWithOverrideForObject } from '../../../lib/Components/Checkbox'
-import { useOverrideOpHelper, filterOpsForPrefix } from '../util/OverrideOpHelper'
+import { useOverrideOpHelper, getAllCurrentAndDeletedItemsFromOverrides } from '../util/OverrideOpHelper'
+import { ReadonlyDeep } from 'type-fest'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
-}
-
-interface ComputedOutputLayer {
-	id: string
-	computed: IOutputLayer | undefined
-	defaults: IOutputLayer | undefined
-	overrideOps: SomeObjectOverrideOp[]
 }
 
 export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
@@ -75,48 +64,15 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 		})
 	}, [])
 
-	const resolvedOutputLayers = useMemo(
-		() => applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj,
+	const sortedOutputLayers = useMemo(
+		() =>
+			getAllCurrentAndDeletedItemsFromOverrides(showStyleBase.outputLayersWithOverrides, (a, b) => a._rank - b._rank),
 		[showStyleBase.outputLayersWithOverrides]
 	)
 
-	const sortedOutputLayers = useMemo(() => {
-		const sortedOutputLayers = Object.values(resolvedOutputLayers)
-			.filter((l): l is IOutputLayer => !!l)
-			.sort((a, b) => a._rank - b._rank)
-			.map((l) =>
-				literal<ComputedOutputLayer>({
-					id: l._id,
-					computed: l,
-					defaults: showStyleBase.outputLayersWithOverrides.defaults[l._id],
-					overrideOps: filterOpsForPrefix(showStyleBase.outputLayersWithOverrides.overrides, l._id).opsForId,
-				})
-			)
-
-		const removedOutputLayers: SetNonNullable<ComputedOutputLayer, 'defaults'>[] = []
-
-		const computedOutputLayerIds = new Set(sortedOutputLayers.map((l) => l.id))
-		for (const [id, output] of Object.entries(showStyleBase.outputLayersWithOverrides.defaults)) {
-			if (!computedOutputLayerIds.has(id) && output) {
-				removedOutputLayers.push(
-					literal<SetNonNullable<ComputedOutputLayer, 'defaults'>>({
-						id: id,
-						computed: undefined,
-						defaults: output,
-						overrideOps: filterOpsForPrefix(showStyleBase.outputLayersWithOverrides.overrides, id).opsForId,
-					})
-				)
-			}
-		}
-
-		removedOutputLayers.sort((a, b) => a.defaults._rank - b.defaults._rank)
-
-		return [...sortedOutputLayers, ...removedOutputLayers]
-	}, [resolvedOutputLayers, showStyleBase.outputLayersWithOverrides])
-
 	const isPGMChannelSet = useMemo(() => {
-		return !!Object.values(resolvedOutputLayers).find((layer) => layer && layer.isPGM)
-	}, [resolvedOutputLayers])
+		return !!sortedOutputLayers.find((layer) => layer.computed && layer.computed.isPGM)
+	}, [sortedOutputLayers])
 
 	const saveOverrides = useCallback(
 		(newOps: SomeObjectOverrideOp[]) => {
@@ -219,7 +175,7 @@ interface EntryProps {
 	showStyleBase: ShowStyleBase
 	item: IOutputLayer
 	defaultItem: IOutputLayer | undefined
-	itemOps: SomeObjectOverrideOp[]
+	itemOps: ReadonlyDeep<SomeObjectOverrideOp[]>
 	isExpanded: boolean
 	toggleExpanded: (itemId: string) => void
 	resetItem: (itemId: string) => void
