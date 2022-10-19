@@ -74,9 +74,11 @@ export const LinePartAdLibIndicator: React.FC<IProps> = function LinePartAdLibIn
 		RundownViewEventBus.emit(RundownViewEvents.SHELF_STATE, {
 			state: true,
 		})
-		RundownViewEventBus.emit(RundownViewEvents.REVEAL_IN_SHELF, {
-			pieceId: pieceId,
-		})
+		setTimeout(() => {
+			RundownViewEventBus.emit(RundownViewEvents.REVEAL_IN_SHELF, {
+				pieceId: pieceId,
+			})
+		}, 100)
 	}, [adLibPieces, adLibActions])
 
 	return (
