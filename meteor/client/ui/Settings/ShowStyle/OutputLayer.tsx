@@ -10,7 +10,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IOutputLayer } from '@sofie-automation/blueprints-integration'
-import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomString, literal, objectPathSet } from '@sofie-automation/corelib/dist/lib'
 import Tooltip from 'rc-tooltip'
 import { useTranslation } from 'react-i18next'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
@@ -25,6 +25,7 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SetNonNullable } from 'type-fest'
+import { CheckboxControlWithOverrideForObject } from '../../../lib/Components/Checkbox'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -134,6 +135,19 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 		return !!Object.values(resolvedOutputLayers).find((layer) => layer && layer.isPGM)
 	}, [resolvedOutputLayers])
 
+	const clearItemOverride = useCallback((itemId: string, subPath: string) => {
+		console.log(`reset ${itemId}.${subPath}`)
+
+		const opPath = `${itemId}.${subPath}`
+
+		const newOps = showStyleBase.outputLayersWithOverrides.overrides.filter((op) => op.path !== opPath)
+
+		ShowStyleBases.update(showStyleBase._id, {
+			$set: {
+				'outputLayersWithOverrides.overrides': newOps,
+			},
+		})
+	}, [])
 	const setItemValue = useCallback(
 		(itemId: string, subPath: string | null, value: any) => {
 			console.log(`set ${itemId}.${subPath} = ${value}`)
@@ -203,25 +217,34 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 					showStyleBase.outputLayersWithOverrides.overrides,
 					itemId
 				)
-				console.log(newOps, opsForId)
 
 				// Future: handle subPath being deeper
 				if (subPath.indexOf('.') !== -1) throw new Error('Deep subPath not yet implemented')
 
-				const newOp = literal<ObjectOverrideSetOp>({
-					op: 'set',
-					path: `${itemId}.${subPath}`,
-					value: value,
-				})
+				const setRootOp = opsForId.find((op) => op.path === itemId)
+				if (setRootOp && setRootOp.op === 'set') {
+					// This is as its base an override, so modify that instead
+					const newOp = clone(setRootOp)
 
-				// Preserve any other overrides
-				for (const op of opsForId) {
-					if (op.path !== newOp.path) {
-						newOps.push(op)
+					objectPathSet(newOp.value, subPath, value)
+
+					newOps.push(newOp)
+				} else {
+					const newOp = literal<ObjectOverrideSetOp>({
+						op: 'set',
+						path: `${itemId}.${subPath}`,
+						value: value,
+					})
+
+					// Preserve any other overrides
+					for (const op of opsForId) {
+						if (op.path !== newOp.path) {
+							newOps.push(op)
+						}
 					}
+					// Add the new override
+					newOps.push(newOp)
 				}
-				// Add the new override
-				newOps.push(newOp)
 
 				ShowStyleBases.update(showStyleBase._id, {
 					$set: {
@@ -283,6 +306,7 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 								itemOps={item.overrideOps}
 								toggleExpanded={toggleExpanded}
 								setItemValue={setItemValue}
+								clearItemOverride={clearItemOverride}
 								resetItem={resetItem}
 							/>
 						) : (
@@ -339,6 +363,7 @@ interface EntryProps {
 	toggleExpanded: (itemId: string) => void
 	resetItem: (itemId: string) => void
 	setItemValue: (itemId: string, subPath: string | null, value: any) => void
+	clearItemOverride: (itemId: string, subPath: string) => void
 }
 function OutputLayerEntry({
 	showStyleBase,
@@ -347,7 +372,9 @@ function OutputLayerEntry({
 	toggleExpanded,
 	resetItem,
 	setItemValue,
+	clearItemOverride,
 	defaultItem,
+	itemOps,
 }: EntryProps) {
 	const { t } = useTranslation()
 
@@ -413,7 +440,7 @@ function OutputLayerEntry({
 										collection={ShowStyleBases}
 										className="input text-input input-l"
 										overrideDisplayValue={item.name}
-										updateFunction={(edit, newValue) => {
+										updateFunction={(_edit, newValue) => {
 											setItemValue(item._id, 'name', newValue)
 										}}
 									></EditAttribute>
@@ -431,28 +458,23 @@ function OutputLayerEntry({
 										className="input text-input input-l"
 										disabled={!!defaultItem}
 										overrideDisplayValue={item._id}
-										updateFunction={(edit, newValue) => {
+										updateFunction={(_edit, newValue) => {
 											setItemValue(item._id, '_id', newValue)
 										}}
 									></EditAttribute>
 								</label>
 							</div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`outputLayersWithOverrides.defaults.${item._id}.isPGM`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-										overrideDisplayValue={item.isPGM}
-										updateFunction={(edit, newValue) => {
-											setItemValue(item._id, 'isPGM', newValue)
-										}}
-									></EditAttribute>
-									{t('Is PGM Output')}
-								</label>
+								<CheckboxControlWithOverrideForObject
+									label={t('Is PGM Output')}
+									item={item}
+									defaultItem={defaultItem}
+									itemKey={'isPGM'}
+									itemOps={itemOps}
+									opPrefix={item._id}
+									setValue={setItemValue}
+									clearOverride={clearItemOverride}
+								/>
 							</div>
 							<div className="mod mvs mhs">
 								<label className="field">
@@ -465,45 +487,35 @@ function OutputLayerEntry({
 										collection={ShowStyleBases}
 										className="input text-input input-l"
 										overrideDisplayValue={item._rank}
-										updateFunction={(edit, newValue) => {
+										updateFunction={(_edit, newValue) => {
 											setItemValue(item._id, '_rank', newValue)
 										}}
 									></EditAttribute>
 								</label>
 							</div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`outputLayersWithOverrides.defaults.${item._id}.isDefaultCollapsed`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-										overrideDisplayValue={item.isDefaultCollapsed}
-										updateFunction={(edit, newValue) => {
-											setItemValue(item._id, 'isDefaultCollapsed', newValue)
-										}}
-									></EditAttribute>
-									{t('Is collapsed by default')}
-								</label>
+								<CheckboxControlWithOverrideForObject
+									label={t('Is collapsed by default')}
+									item={item}
+									defaultItem={defaultItem}
+									itemKey={'isDefaultCollapsed'}
+									itemOps={itemOps}
+									opPrefix={item._id}
+									setValue={setItemValue}
+									clearOverride={clearItemOverride}
+								/>
 							</div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`outputLayersWithOverrides.defaults.${item._id}.isFlattened`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-										overrideDisplayValue={item.isFlattened}
-										updateFunction={(edit, newValue) => {
-											setItemValue(item._id, 'isFlattened', newValue)
-										}}
-									></EditAttribute>
-									{t('Is flattened')}
-								</label>
+								<CheckboxControlWithOverrideForObject
+									label={t('Is flattened')}
+									item={item}
+									defaultItem={defaultItem}
+									itemKey={'isFlattened'}
+									itemOps={itemOps}
+									opPrefix={item._id}
+									setValue={setItemValue}
+									clearOverride={clearItemOverride}
+								/>
 							</div>
 						</div>
 						<div className="mod alright">

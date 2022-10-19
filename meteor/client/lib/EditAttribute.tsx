@@ -1,8 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { withTracker } from './ReactMeteorData/react-meteor-data'
-import { faCheckSquare, faSquare } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import ClassNames from 'classnames'
@@ -10,6 +8,7 @@ import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { assertNever, getRandomString } from '../../lib/lib'
 import { MongoCollection } from '../../lib/collections/lib'
+import { CheckboxControl } from './Components/Checkbox'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -418,31 +417,19 @@ const EditAttributeCheckbox = wrapEditAttribute(
 			this.handleUpdate(!this.state.value)
 		}
 		render() {
+			const classNames = _.compact([
+				this.props.className,
+				this.state.editing ? this.props.modifiedClassName : undefined,
+			]).join(' ')
+
 			return (
 				<label>
-					<span
-						className={
-							'checkbox' +
-							' ' +
-							(this.props.className || '') +
-							' ' +
-							(this.state.editing ? this.props.modifiedClassName || '' : '')
-						}
-					>
-						<input
-							type="checkbox"
-							className="form-control"
-							checked={this.isChecked()}
-							onChange={this.handleChange}
-							disabled={this.props.disabled}
-						/>
-						<span className="checkbox-checked">
-							<FontAwesomeIcon icon={faCheckSquare} />
-						</span>
-						<span className="checkbox-unchecked">
-							<FontAwesomeIcon icon={faSquare} />
-						</span>
-					</span>
+					<CheckboxControl
+						classNames={classNames}
+						value={this.isChecked()}
+						handleUpdate={this.handleChange}
+						disabled={this.props.disabled}
+					/>
 				</label>
 			)
 		}
