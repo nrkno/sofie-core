@@ -1,6 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import ClassNames from 'classnames'
-import { faPencilAlt, faTrash, faCheck, faExclamationTriangle, faPlus } from '@fortawesome/free-solid-svg-icons'
+import {
+	faPencilAlt,
+	faTrash,
+	faCheck,
+	faExclamationTriangle,
+	faPlus,
+	faRefresh,
+} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IOutputLayer } from '@sofie-automation/blueprints-integration'
 import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
@@ -11,9 +18,40 @@ import { EditAttribute } from '../../../lib/EditAttribute'
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { findHighestRank } from '../StudioSettings'
+import {
+	applyAndValidateOverrides,
+	ObjectOverrideDeleteOp,
+	ObjectOverrideSetOp,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { SetNonNullable } from 'type-fest'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
+}
+
+interface ComputedOutputLayer {
+	id: string
+	computed: IOutputLayer | undefined
+	defaults: IOutputLayer | undefined
+	overrideOps: SomeObjectOverrideOp[]
+}
+
+function filterOpsForPrefix(
+	allOps: SomeObjectOverrideOp[],
+	prefix: string
+): { opsForId: SomeObjectOverrideOp[]; otherOps: SomeObjectOverrideOp[] } {
+	const res: { opsForId: SomeObjectOverrideOp[]; otherOps: SomeObjectOverrideOp[] } = { opsForId: [], otherOps: [] }
+
+	for (const op of allOps) {
+		if (op.path === prefix || op.path.startsWith(`${prefix}.`)) {
+			res.opsForId.push(op)
+		} else {
+			res.otherOps.push(op)
+		}
+	}
+
+	return res
 }
 
 export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
@@ -40,20 +78,176 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 			isPGM: false,
 		})
 
+		const addOp = literal<ObjectOverrideSetOp>({
+			op: 'set',
+			path: newOutput._id,
+			value: newOutput,
+		})
+
 		ShowStyleBases.update(showStyleBase._id, {
 			$push: {
-				outputLayers: newOutput,
+				'outputLayersWithOverrides.overrides': addOp,
 			},
 		})
 	}, [])
 
-	const sortedOutputLayers = Object.values(showStyleBase.outputLayersWithOverrides.defaults)
-		.filter((l): l is IOutputLayer => !!l)
-		.sort((a, b) => a._rank - b._rank)
+	const resolvedOutputLayers = useMemo(
+		() => applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj,
+		[showStyleBase.outputLayersWithOverrides]
+	)
+
+	const sortedOutputLayers = useMemo(() => {
+		const sortedOutputLayers = Object.values(resolvedOutputLayers)
+			.filter((l): l is IOutputLayer => !!l)
+			.sort((a, b) => a._rank - b._rank)
+			.map((l) =>
+				literal<ComputedOutputLayer>({
+					id: l._id,
+					computed: l,
+					defaults: showStyleBase.outputLayersWithOverrides.defaults[l._id],
+					overrideOps: filterOpsForPrefix(showStyleBase.outputLayersWithOverrides.overrides, l._id).opsForId,
+				})
+			)
+
+		const removedOutputLayers: SetNonNullable<ComputedOutputLayer, 'defaults'>[] = []
+
+		const computedOutputLayerIds = new Set(sortedOutputLayers.map((l) => l.id))
+		for (const [id, output] of Object.entries(showStyleBase.outputLayersWithOverrides.defaults)) {
+			if (!computedOutputLayerIds.has(id) && output) {
+				removedOutputLayers.push(
+					literal<SetNonNullable<ComputedOutputLayer, 'defaults'>>({
+						id: id,
+						computed: undefined,
+						defaults: output,
+						overrideOps: filterOpsForPrefix(showStyleBase.outputLayersWithOverrides.overrides, id).opsForId,
+					})
+				)
+			}
+		}
+
+		removedOutputLayers.sort((a, b) => a.defaults._rank - b.defaults._rank)
+
+		return [...sortedOutputLayers, ...removedOutputLayers]
+	}, [resolvedOutputLayers, showStyleBase.outputLayersWithOverrides])
 
 	const isPGMChannelSet = useMemo(() => {
-		return !!Object.values(showStyleBase.outputLayersWithOverrides.defaults).find((layer) => layer && layer.isPGM)
-	}, [showStyleBase.outputLayersWithOverrides])
+		return !!Object.values(resolvedOutputLayers).find((layer) => layer && layer.isPGM)
+	}, [resolvedOutputLayers])
+
+	const setItemValue = useCallback(
+		(itemId: string, subPath: string | null, value: any) => {
+			console.log(`set ${itemId}.${subPath} = ${value}`)
+
+			// Handle deletion
+			if (!subPath && value === undefined) {
+				const newOps = filterOpsForPrefix(showStyleBase.outputLayersWithOverrides.overrides, itemId).otherOps
+				if (showStyleBase.outputLayersWithOverrides.defaults[itemId]) {
+					// If it was from the defaults, we need to mark it deleted
+					newOps.push(
+						literal<ObjectOverrideDeleteOp>({
+							op: 'delete',
+							path: itemId,
+						})
+					)
+				}
+
+				ShowStyleBases.update(showStyleBase._id, {
+					$set: {
+						'outputLayersWithOverrides.overrides': newOps,
+					},
+				})
+			} else if (subPath === '_id') {
+				// Change id
+
+				const { otherOps: newOps, opsForId } = filterOpsForPrefix(
+					showStyleBase.outputLayersWithOverrides.overrides,
+					itemId
+				)
+
+				if (
+					!value ||
+					newOps.find((op) => op.path === value) ||
+					showStyleBase.outputLayersWithOverrides.defaults[value]
+				) {
+					throw new Error('Id is invalid or already in use')
+				}
+
+				if (showStyleBase.outputLayersWithOverrides.defaults[itemId]) {
+					// Future: should we be able to handle this?
+					throw new Error("Can't change id of object with defaults")
+				} else {
+					// Change the id prefix of the ops
+					for (const op of opsForId) {
+						const newPath = `${value}${op.path.substring(itemId.length)}`
+
+						const newOp = {
+							...op,
+							path: newPath,
+						}
+						newOps.push(newOp)
+
+						if (newOp.path === value && newOp.op === 'set') {
+							newOp.value._id = value
+						}
+					}
+
+					ShowStyleBases.update(showStyleBase._id, {
+						$set: {
+							'outputLayersWithOverrides.overrides': newOps,
+						},
+					})
+				}
+			} else if (subPath) {
+				// Set a property
+				const { otherOps: newOps, opsForId } = filterOpsForPrefix(
+					showStyleBase.outputLayersWithOverrides.overrides,
+					itemId
+				)
+				console.log(newOps, opsForId)
+
+				// Future: handle subPath being deeper
+				if (subPath.indexOf('.') !== -1) throw new Error('Deep subPath not yet implemented')
+
+				const newOp = literal<ObjectOverrideSetOp>({
+					op: 'set',
+					path: `${itemId}.${subPath}`,
+					value: value,
+				})
+
+				// Preserve any other overrides
+				for (const op of opsForId) {
+					if (op.path !== newOp.path) {
+						newOps.push(op)
+					}
+				}
+				// Add the new override
+				newOps.push(newOp)
+
+				ShowStyleBases.update(showStyleBase._id, {
+					$set: {
+						'outputLayersWithOverrides.overrides': newOps,
+					},
+				})
+			}
+		},
+		[showStyleBase.outputLayersWithOverrides, showStyleBase._id]
+	)
+
+	// Reset an item back to defaults
+	const resetItem = useCallback(
+		(itemId: string) => {
+			console.log('reset', itemId)
+
+			const newOps = filterOpsForPrefix(showStyleBase.outputLayersWithOverrides.overrides, itemId).otherOps
+
+			ShowStyleBases.update(showStyleBase._id, {
+				$set: {
+					'outputLayersWithOverrides.overrides': newOps,
+				},
+			})
+		},
+		[showStyleBase.outputLayersWithOverrides.overrides, showStyleBase._id]
+	)
 
 	return (
 		<div>
@@ -78,15 +272,23 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 			) : null}
 			<table className="expando settings-studio-output-table">
 				<tbody>
-					{sortedOutputLayers.map((item) => (
-						<OutputLayerEntry
-							key={item._id}
-							showStyleBase={showStyleBase}
-							item={item}
-							isExpanded={!!expandedItemIds[item._id]}
-							toggleExpanded={toggleExpanded}
-						/>
-					))}
+					{sortedOutputLayers.map((item) =>
+						item.computed ? (
+							<OutputLayerEntry
+								key={item.id}
+								showStyleBase={showStyleBase}
+								item={item.computed}
+								defaultItem={item.defaults}
+								isExpanded={!!expandedItemIds[item.id]}
+								itemOps={item.overrideOps}
+								toggleExpanded={toggleExpanded}
+								setItemValue={setItemValue}
+								resetItem={resetItem}
+							/>
+						) : (
+							item.defaults && <OutputLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={resetItem} />
+						)
+					)}
 				</tbody>
 			</table>
 			<div className="mod mhs">
@@ -98,16 +300,59 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 	)
 }
 
+interface DeletedEntryProps {
+	item: IOutputLayer
+	doUndelete: (itemId: string) => void
+}
+function OutputLayerDeletedEntry({ item, doUndelete }: DeletedEntryProps) {
+	const doUndeleteItem = useCallback(() => {
+		doUndelete(item._id)
+	}, [doUndelete, item._id])
+	return (
+		<tr>
+			<th className="settings-studio-output-table__name c2 deleted">{item.name}</th>
+			<td className="settings-studio-output-table__id c4 deleted">{item._id}</td>
+			<td className="settings-studio-output-table__isPGM c3">
+				<div
+					className={ClassNames('switch', 'switch-tight', {
+						'switch-active': item.isPGM,
+					})}
+				>
+					PGM
+				</div>
+			</td>
+			<td className="settings-studio-output-table__actions table-item-actions c3">
+				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
+					<FontAwesomeIcon icon={faRefresh} />
+				</button>
+			</td>
+		</tr>
+	)
+}
+
 interface EntryProps {
 	showStyleBase: ShowStyleBase
 	item: IOutputLayer
+	defaultItem: IOutputLayer | undefined
+	itemOps: SomeObjectOverrideOp[]
 	isExpanded: boolean
 	toggleExpanded: (itemId: string) => void
+	resetItem: (itemId: string) => void
+	setItemValue: (itemId: string, subPath: string | null, value: any) => void
 }
-function OutputLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: EntryProps) {
+function OutputLayerEntry({
+	showStyleBase,
+	item,
+	isExpanded,
+	toggleExpanded,
+	resetItem,
+	setItemValue,
+	defaultItem,
+}: EntryProps) {
 	const { t } = useTranslation()
 
 	const toggleEditItem = useCallback(() => toggleExpanded(item._id), [toggleExpanded, item._id])
+	const doResetItem = useCallback(() => resetItem(item._id), [resetItem, item._id])
 
 	const confirmDelete = useCallback(() => {
 		doModalDialog({
@@ -115,15 +360,7 @@ function OutputLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: E
 			no: t('Cancel'),
 			yes: t('Delete'),
 			onAccept: () => {
-				if (showStyleBase?._id) {
-					ShowStyleBases.update(showStyleBase._id, {
-						$pull: {
-							outputLayers: {
-								_id: item._id,
-							},
-						},
-					})
-				}
+				setItemValue(item._id, null, undefined)
 			},
 			message: (
 				<React.Fragment>
@@ -132,7 +369,7 @@ function OutputLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: E
 				</React.Fragment>
 			),
 		})
-	}, [t, item._id, item.name, showStyleBase?._id])
+	}, [t, item._id, item.name, showStyleBase?._id, setItemValue])
 
 	return (
 		<>
@@ -175,6 +412,10 @@ function OutputLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: E
 										type="text"
 										collection={ShowStyleBases}
 										className="input text-input input-l"
+										overrideDisplayValue={item.name}
+										updateFunction={(edit, newValue) => {
+											setItemValue(item._id, 'name', newValue)
+										}}
 									></EditAttribute>
 								</label>
 							</div>
@@ -188,6 +429,11 @@ function OutputLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: E
 										type="text"
 										collection={ShowStyleBases}
 										className="input text-input input-l"
+										disabled={!!defaultItem}
+										overrideDisplayValue={item._id}
+										updateFunction={(edit, newValue) => {
+											setItemValue(item._id, '_id', newValue)
+										}}
 									></EditAttribute>
 								</label>
 							</div>
@@ -200,6 +446,10 @@ function OutputLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: E
 										type="checkbox"
 										collection={ShowStyleBases}
 										className=""
+										overrideDisplayValue={item.isPGM}
+										updateFunction={(edit, newValue) => {
+											setItemValue(item._id, 'isPGM', newValue)
+										}}
 									></EditAttribute>
 									{t('Is PGM Output')}
 								</label>
@@ -214,6 +464,10 @@ function OutputLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: E
 										type="int"
 										collection={ShowStyleBases}
 										className="input text-input input-l"
+										overrideDisplayValue={item._rank}
+										updateFunction={(edit, newValue) => {
+											setItemValue(item._id, '_rank', newValue)
+										}}
 									></EditAttribute>
 								</label>
 							</div>
@@ -226,6 +480,10 @@ function OutputLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: E
 										type="checkbox"
 										collection={ShowStyleBases}
 										className=""
+										overrideDisplayValue={item.isDefaultCollapsed}
+										updateFunction={(edit, newValue) => {
+											setItemValue(item._id, 'isDefaultCollapsed', newValue)
+										}}
 									></EditAttribute>
 									{t('Is collapsed by default')}
 								</label>
@@ -239,12 +497,22 @@ function OutputLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: E
 										type="checkbox"
 										collection={ShowStyleBases}
 										className=""
+										overrideDisplayValue={item.isFlattened}
+										updateFunction={(edit, newValue) => {
+											setItemValue(item._id, 'isFlattened', newValue)
+										}}
 									></EditAttribute>
 									{t('Is flattened')}
 								</label>
 							</div>
 						</div>
 						<div className="mod alright">
+							{defaultItem && (
+								<button className="btn btn-primary" onClick={doResetItem} title="Reset to defaults">
+									<FontAwesomeIcon icon={faRefresh} />
+								</button>
+							)}
+							&nbsp;
 							<button className="btn btn-primary" onClick={toggleEditItem}>
 								<FontAwesomeIcon icon={faCheck} />
 							</button>

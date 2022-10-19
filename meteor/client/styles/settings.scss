@@ -101,6 +101,10 @@
 	.settings-studio-package-containers-table {
 		width: 100%;
 
+		.deleted {
+			text-decoration: line-through;
+		}
+
 		> thead > tr {
 			> .actions {
 				text-align: right;
