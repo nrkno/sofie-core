@@ -9,6 +9,8 @@ import { IconPicker, IconPickerEvent } from './iconPicker'
 import { assertNever, getRandomString } from '../../lib/lib'
 import { MongoCollection } from '../../lib/collections/lib'
 import { CheckboxControl } from './Components/Checkbox'
+import { TextInputControl } from './Components/TextInput'
+import { IntInputControl } from './Components/IntInput'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -106,6 +108,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		this.handleUpdate = this.handleUpdate.bind(this)
 		this.handleDiscard = this.handleDiscard.bind(this)
 	}
+	/** Update the temporary value of this field, optionally saving a value */
 	handleEdit(inputValue: any, storeValue?: any) {
 		this.setState({
 			value: inputValue,
@@ -115,20 +118,24 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 			this.updateValue(storeValue ?? inputValue)
 		}
 	}
+	/** Update and save the value of this field */
 	handleUpdate(inputValue: any, storeValue?: any) {
 		this.handleUpdateButDontSave(inputValue)
 		this.updateValue(storeValue ?? inputValue)
 	}
+	/** Update the temporary value of this field, and save it */
 	handleUpdateEditing(newValue) {
 		this.handleUpdateButDontSave(newValue, true)
 		this.updateValue(newValue)
 	}
+	/** Update the temporary value of this field, marking whether is being edited */
 	handleUpdateButDontSave(newValue, editing = false) {
 		this.setState({
 			value: newValue,
 			editing,
 		})
 	}
+	/** Discard the temporary value of this field */
 	handleDiscard() {
 		this.setState({
 			value: this.getAttribute(),
@@ -221,39 +228,20 @@ const EditAttributeText = wrapEditAttribute(
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
-			this.handleBlur = this.handleBlur.bind(this)
-			this.handleEscape = this.handleEscape.bind(this)
 		}
-		handleChange(event) {
-			this.handleEdit(event.target.value)
-		}
-		handleBlur(event) {
-			this.handleUpdate(event.target.value)
-		}
-		handleEscape(event) {
-			const e = event as KeyboardEvent
-			if (e.key === 'Escape') {
-				this.handleDiscard()
-			}
+		handleChange(value: string) {
+			this.handleUpdate(value)
 		}
 		render() {
 			return (
-				<input
-					type="text"
-					className={
-						'form-control' +
-						' ' +
-						(this.state.valueError ? 'error ' : '') +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					placeholder={this.props.label}
-					value={this.getEditAttribute() || ''}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-					onKeyUp={this.handleEscape}
+				<TextInputControl
+					classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
+					modifiedClassName={this.props.modifiedClassName}
 					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={this.getEditAttribute() || ''}
+					handleUpdate={this.handleChange}
 				/>
 			)
 		}
@@ -315,42 +303,20 @@ const EditAttributeInt = wrapEditAttribute(
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
-			this.handleBlur = this.handleBlur.bind(this)
 		}
-		getValue(event) {
-			return parseInt(event.target.value, 10)
-		}
-		handleChange(event) {
-			// this.handleEdit(this.getValue(event))
-			const v = this.getValue(event)
-			_.isNaN(v) ? this.handleUpdateButDontSave(v, true) : this.handleUpdateEditing(v)
-		}
-		handleBlur(event) {
-			const v = this.getValue(event)
-			_.isNaN(v) ? this.handleDiscard() : this.handleUpdate(v)
-		}
-		getEditAttributeNumber() {
-			let val = this.getEditAttribute()
-			if (_.isNaN(val)) val = ''
-			return val
+		handleChange(value: number) {
+			this.handleUpdate(value)
 		}
 		render() {
 			return (
-				<input
-					type="number"
-					step="1"
-					className={
-						'form-control' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					placeholder={this.props.label}
-					value={this.getEditAttributeNumber()}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
+				<IntInputControl
+					classNames={this.props.className || ''}
+					modifiedClassName={this.props.modifiedClassName}
 					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={this.getEditAttribute() || ''}
+					handleUpdate={this.handleChange}
 				/>
 			)
 		}
@@ -413,8 +379,8 @@ const EditAttributeCheckbox = wrapEditAttribute(
 		isChecked() {
 			return !!this.getEditAttribute()
 		}
-		handleChange() {
-			this.handleUpdate(!this.state.value)
+		handleChange(value: boolean) {
+			this.handleUpdate(value)
 		}
 		render() {
 			const classNames = _.compact([

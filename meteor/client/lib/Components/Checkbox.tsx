@@ -4,6 +4,7 @@ import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/ob
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ReadonlyDeep } from 'type-fest'
+import { hasOpWithPath } from './util'
 
 interface ICheckboxControlProps {
 	classNames?: string
@@ -117,9 +118,4 @@ export function CheckboxControlWithOverrideForObject<T>({
 			</label>
 		)
 	}
-}
-
-function hasOpWithPath(allOps: ReadonlyDeep<SomeObjectOverrideOp[]>, id: string, subpath: string): boolean {
-	const path = `${id}.${subpath}`
-	return !!allOps.find((op) => op.path === path)
 }

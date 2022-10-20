@@ -14,7 +14,6 @@ import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import Tooltip from 'rc-tooltip'
 import { useTranslation } from 'react-i18next'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { EditAttribute } from '../../../lib/EditAttribute'
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { findHighestRank } from '../StudioSettings'
@@ -22,6 +21,8 @@ import { ObjectOverrideSetOp, SomeObjectOverrideOp } from '@sofie-automation/cor
 import { CheckboxControlWithOverrideForObject } from '../../../lib/Components/Checkbox'
 import { useOverrideOpHelper, getAllCurrentAndDeletedItemsFromOverrides } from '../util/OverrideOpHelper'
 import { ReadonlyDeep } from 'type-fest'
+import { TextInputControlWithOverrideForObject } from '../../../lib/Components/TextInput'
+import { IntInputControlWithOverrideForObject } from '../../../lib/Components/IntInput'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -247,39 +248,34 @@ function OutputLayerEntry({
 					<td colSpan={4}>
 						<div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Channel Name')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`outputLayersWithOverrides.defaults.${item._id}.name`}
-										obj={showStyleBase}
-										type="text"
-										collection={ShowStyleBases}
-										className="input text-input input-l"
-										overrideDisplayValue={item.name}
-										updateFunction={(_edit, newValue) => {
-											setItemValue(item._id, 'name', newValue)
-										}}
-									></EditAttribute>
-								</label>
+								<TextInputControlWithOverrideForObject
+									modifiedClassName="bghl"
+									classNames="input text-input input-l"
+									label={t('Channel Name')}
+									item={item}
+									defaultItem={defaultItem}
+									itemKey={'name'}
+									itemOps={itemOps}
+									opPrefix={item._id}
+									setValue={setItemValue}
+									clearOverride={clearItemOverride}
+								/>
 							</div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Internal ID')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`outputLayersWithOverrides.defaults.${item._id}._id`}
-										obj={showStyleBase}
-										type="text"
-										collection={ShowStyleBases}
-										className="input text-input input-l"
-										disabled={!!defaultItem}
-										overrideDisplayValue={item._id}
-										updateFunction={(_edit, newValue) => {
-											setItemValue(item._id, '_id', newValue)
-										}}
-									></EditAttribute>
-								</label>
+								<TextInputControlWithOverrideForObject
+									modifiedClassName="bghl"
+									classNames="input text-input input-l"
+									label={t('Internal ID')}
+									item={item}
+									defaultItem={defaultItem}
+									itemKey={'_id'}
+									itemOps={itemOps}
+									opPrefix={item._id}
+									// TODO this should probably work differently
+									setValue={setItemValue}
+									clearOverride={clearItemOverride}
+									disabled={!!defaultItem}
+								/>
 							</div>
 							<div className="mod mvs mhs">
 								<CheckboxControlWithOverrideForObject
@@ -294,21 +290,18 @@ function OutputLayerEntry({
 								/>
 							</div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Display Rank')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`outputLayersWithOverrides.defaults.${item._id}._rank`}
-										obj={showStyleBase}
-										type="int"
-										collection={ShowStyleBases}
-										className="input text-input input-l"
-										overrideDisplayValue={item._rank}
-										updateFunction={(_edit, newValue) => {
-											setItemValue(item._id, '_rank', newValue)
-										}}
-									></EditAttribute>
-								</label>
+								<IntInputControlWithOverrideForObject
+									modifiedClassName="bghl"
+									classNames="input text-input input-l"
+									label={t('Display Rank')}
+									item={item}
+									defaultItem={defaultItem}
+									itemKey={'_rank'}
+									itemOps={itemOps}
+									opPrefix={item._id}
+									setValue={setItemValue}
+									clearOverride={clearItemOverride}
+								/>
 							</div>
 							<div className="mod mvs mhs">
 								<CheckboxControlWithOverrideForObject
