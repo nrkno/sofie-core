@@ -1,3 +1,4 @@
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
@@ -8,6 +9,12 @@ import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/Wor
 import { createAsyncOnlyMongoCollection, createAsyncMongoCollection } from '../lib/collections/lib'
 import { WorkerStatus } from '../lib/collections/Workers'
 import { registerIndex } from '../lib/database'
+
+export const AdLibActions = createAsyncMongoCollection<AdLibAction>(CollectionName.AdLibActions)
+registerIndex(AdLibActions, {
+	rundownId: 1,
+	partId: 1,
+})
 
 export const Blueprints = createAsyncMongoCollection<Blueprint>(CollectionName.Blueprints)
 registerIndex(Blueprints, {

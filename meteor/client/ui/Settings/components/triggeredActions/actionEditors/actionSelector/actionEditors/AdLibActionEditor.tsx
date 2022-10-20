@@ -5,7 +5,7 @@ import { PlayoutActions, SomeAction } from '@sofie-automation/blueprints-integra
 import { EditAttribute } from '../../../../../../../lib/EditAttribute'
 import { useTracker } from '../../../../../../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownBaselineAdLibActions } from '../../../../../../../../lib/collections/RundownBaselineAdLibActions'
-import { AdLibActions } from '../../../../../../../../lib/collections/AdLibActions'
+import { AdLibActions } from '../../../../../../../../lib/clientCollections'
 
 export function AdLibActionEditor({
 	action,

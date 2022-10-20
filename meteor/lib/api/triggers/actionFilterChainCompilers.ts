@@ -8,7 +8,7 @@ import {
 	ITranslatableMessage,
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
-import { AdLibAction, AdLibActions } from '../../collections/AdLibActions'
+import { AdLibAction } from '../../collections/AdLibActions'
 import { AdLibPiece, AdLibPieces } from '../../collections/AdLibPieces'
 import { DBPart, Parts } from '../../collections/Parts'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../../collections/RundownBaselineAdLibActions'
@@ -24,7 +24,7 @@ import { sortAdlibs } from '../../Rundown'
 import { ReactivePlaylistActionContext } from './actionFactory'
 import { FindOptions } from '../../collections/lib'
 import { PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists, Rundowns } from '../../clientCollections'
+import { AdLibActions, RundownPlaylists, Rundowns } from '../../clientCollections'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 

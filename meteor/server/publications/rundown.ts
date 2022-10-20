@@ -16,14 +16,14 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
 import { StudioReadAccess } from '../security/studio'
-import { AdLibAction, AdLibActions } from '../../lib/collections/AdLibActions'
+import { AdLibAction } from '../../lib/collections/AdLibActions'
 import {
 	RundownBaselineAdLibAction,
 	RundownBaselineAdLibActions,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { check, Match } from 'meteor/check'
 import { FindOptions } from '../../lib/collections/lib'
-import { IngestDataCache, Rundowns } from '../serverCollections'
+import { AdLibActions, IngestDataCache, Rundowns } from '../serverCollections'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
