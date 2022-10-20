@@ -35,7 +35,7 @@ import {
 	getEventTimestamp,
 } from '../../lib/lib'
 import { IDashboardPanelTrackedProps } from './DashboardPanel'
-import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
+import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
@@ -63,7 +63,7 @@ import {
 	isAdLibOnAir,
 } from '../../lib/shelf'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
-import { BucketAdLibActions, Rundowns } from '../../../lib/clientCollections'
+import { BucketAdLibActions, BucketAdLibs, Rundowns } from '../../../lib/clientCollections'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'

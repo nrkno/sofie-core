@@ -1,7 +1,6 @@
 import { ProtectedString, getCurrentTime, getCollectionKey } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
-import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { Buckets } from '../../lib/collections/Buckets'
 import { Evaluations } from '../../lib/collections/Evaluations'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
@@ -49,6 +48,7 @@ import {
 	AdLibPieces,
 	Blueprints,
 	BucketAdLibActions,
+	BucketAdLibs,
 	IngestDataCache,
 	RundownBaselineObjs,
 	RundownPlaylists,

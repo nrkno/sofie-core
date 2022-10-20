@@ -4,10 +4,10 @@ import { triggerWriteAccess } from './lib/securityVerify'
 import { check } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { StudioReadAccess, StudioContentWriteAccess, StudioContentAccess } from './studio'
-import { BucketAdLib, BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { AdLibActionId, BucketId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { BucketAdLibActions } from '../serverCollections'
+import { BucketAdLibActions, BucketAdLibs } from '../serverCollections'
 
 export namespace BucketSecurity {
 	export interface BucketContentAccess extends StudioContentAccess {
