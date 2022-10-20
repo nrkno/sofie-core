@@ -182,7 +182,7 @@ export function createClientMongoReadOnlyCollection<DBInterface extends { _id: P
 	name: CollectionName
 ): MongoReadOnlyCollection<DBInterface> {
 	const collection = getOrCreateMongoCollection(name)
-	return new WrappedAsyncMongoCollection<DBInterface>(collection, name)
+	return new WrappedMongoReadOnlyCollection<DBInterface>(collection, name)
 }
 
 /**
