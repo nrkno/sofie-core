@@ -7,7 +7,7 @@ import {
 	applyAndValidateOverrides,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { useRef, useMemo, useEffect } from 'react'
-import { ReadonlyDeep, SetNonNullable } from 'type-fest'
+import { ReadonlyDeep } from 'type-fest'
 
 export function filterOpsForPrefix(
 	allOps: ReadonlyDeep<SomeObjectOverrideOp[]>,
@@ -57,13 +57,15 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 			})
 		)
 
-	const removedOutputLayers: SetNonNullable<WrappedItem<T>, 'defaults'>[] = []
+	type WrappedItemWithDefaults = Omit<WrappedItem<T>, 'defaults'> & { defaults: ReadonlyDeep<T> }
+
+	const removedOutputLayers: WrappedItemWithDefaults[] = []
 
 	const computedOutputLayerIds = new Set(sortedItems.map((l) => l.id))
 	for (const [id, output] of Object.entries(rawObject.defaults)) {
 		if (!computedOutputLayerIds.has(id) && output) {
 			removedOutputLayers.push(
-				literal<SetNonNullable<WrappedItem<T>, 'defaults'>>({
+				literal<WrappedItemWithDefaults>({
 					id: id,
 					computed: undefined,
 					defaults: output,
