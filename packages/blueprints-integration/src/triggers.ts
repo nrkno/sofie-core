@@ -296,7 +296,7 @@ export interface IBlueprintTriggeredActions {
 	/** Optional label to specify what this triggered action is supposed to do, a comment basically */
 	name?: ITranslatableMessage | string
 	/** A list of triggers that will make the list of actions in `.actions` happen */
-	triggers: SomeBlueprintTrigger[]
+	triggers: Record<string, SomeBlueprintTrigger>
 	/** A list of actions to execute */
-	actions: SomeAction[]
+	actions: Record<string, SomeAction>
 }

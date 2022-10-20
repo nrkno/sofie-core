@@ -542,7 +542,7 @@ export class ConfigManifestSettings<
 	}
 
 	getObjectConfig(): IBlueprintConfig {
-		return this.props.object[this.props.configPath]
+		return objectPathGet(this.props.object, this.props.configPath)
 	}
 
 	updateObject(obj: DBInterface, updateObj: MongoModifier<DBInterface>) {
@@ -687,7 +687,7 @@ export class ConfigManifestSettings<
 	}
 
 	renderEditableArea(item: ConfigManifestEntry, valIndex: string) {
-		const baseAttribute = `blueprintConfig.${valIndex}`
+		const baseAttribute = `${this.props.configPath}.${valIndex}`
 		const { t, collection, object, i18n, tReady } = this.props
 		switch (item.type) {
 			case ConfigManifestEntryType.TABLE:

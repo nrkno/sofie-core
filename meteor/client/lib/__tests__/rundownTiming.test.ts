@@ -1,11 +1,12 @@
 import { RundownPlaylist, DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { DBPart, Part, PartId } from '../../../lib/collections/Parts'
+import { DBPart, Part } from '../../../lib/collections/Parts'
 import { DBSegment } from '../../../lib/collections/Segments'
 import { DBRundown } from '../../../lib/collections/Rundowns'
 import { literal, protectString } from '../../../lib/lib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
 import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const DEFAULT_DURATION = 4000
 

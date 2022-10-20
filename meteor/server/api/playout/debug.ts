@@ -1,17 +1,16 @@
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
 import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
+import { RundownPlaylists } from '../../serverCollections'
 import { Settings } from '../../../lib/Settings'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { check } from 'meteor/check'
-import { StudioId } from '../../../lib/collections/Studios'
 import { profiler } from '../profiler'
 import { QueueForceClearAllCaches, QueueStudioJob } from '../../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { fetchStudioIds } from '../../../lib/collections/optimizations'
-import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists } from '../../serverCollections'
+import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data

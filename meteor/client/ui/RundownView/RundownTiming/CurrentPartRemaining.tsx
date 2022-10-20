@@ -2,8 +2,8 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './withTiming'
 import { RundownUtils } from '../../../lib/rundown'
-import { PartInstanceId } from '../../../../lib/collections/PartInstances'
 import { SpeechSynthesiser } from '../../../lib/speechSynthesis'
+import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const SPEAK_ADVANCE = 500
 

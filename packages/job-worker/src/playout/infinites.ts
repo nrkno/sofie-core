@@ -191,9 +191,9 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 		)
 		const playingPieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === currentPartInstance._id)
 
-		const nowInPart = getCurrentTime() - (currentPartInstance.timings?.startedPlayback ?? 0)
+		const nowInPart = getCurrentTime() - (currentPartInstance.timings?.plannedStartedPlayback ?? 0)
 		const prunedPieceInstances = processAndPrunePieceInstanceTimings(
-			showStyleBase,
+			showStyleBase.sourceLayers,
 			playingPieceInstances,
 			nowInPart,
 			undefined,

@@ -1,6 +1,6 @@
 const ntpClient: NtpClient = require('ntp-client')
+import { DiffTimeResult } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { NtpClient } from '../../typings/ntp-client'
-import { DiffTimeResult } from '../../../lib/api/peripheralDevice'
 
 /**
  * Example usage:

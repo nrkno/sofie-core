@@ -3,8 +3,7 @@ import ClassNames from 'classnames'
 import { translateWithTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faQuestion } from '@fortawesome/free-solid-svg-icons'
+import { SupportIcon } from '../lib/ui/icons/supportIcon'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { getHelpMode } from '../lib/localStorage'
 
@@ -70,7 +69,7 @@ export function SupportPopUpToggle(props: IToggleProps) {
 			aria-haspopup="dialog"
 			aria-pressed={props.isOpen ? 'true' : 'false'}
 		>
-			<FontAwesomeIcon icon={faQuestion} />
+			<SupportIcon />
 		</button>
 	)
 }

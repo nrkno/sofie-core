@@ -3,15 +3,12 @@ import { MongoQueryKey } from '../../../lib/typings/meteor'
 import { Settings } from '../../../lib/Settings'
 import { resolveCredentials, ResolvedCredentials, Credentials, isResolvedCredentials } from './credentials'
 import { allAccess, noAccess, combineAccess, Access } from './access'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { Rundown, RundownCollectionUtil, RundownId } from '../../../lib/collections/Rundowns'
-import { StudioId } from '../../../lib/collections/Studios'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { isProtectedString } from '../../../lib/lib'
-import { OrganizationId, Organizations, DBOrganization } from '../../../lib/collections/Organization'
-import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
-import { UserId } from '../../../lib/collections/Users'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariantId, ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { Organizations, DBOrganization } from '../../../lib/collections/Organization'
+import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { profiler } from '../../api/profiler'
 import {
 	fetchShowStyleBasesLight,
@@ -20,6 +17,16 @@ import {
 	StudioLight,
 } from '../../../lib/collections/optimizations'
 import { RundownPlaylists, Rundowns } from '../../serverCollections'
+import {
+	OrganizationId,
+	PeripheralDeviceId,
+	RundownId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	ShowStyleVariantId,
+	StudioId,
+	UserId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export const LIMIT_CACHE_TIME = 1000 * 60 * 15 // 15 minutes
 
@@ -329,7 +336,7 @@ namespace AccessRules {
 		return { ...accessStudio(studio, cred), document: playlist }
 	}
 	export async function accessRundown(rundown: Rundown, cred: ResolvedCredentials): Promise<Access<Rundown>> {
-		const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
+		const playlist = await RundownPlaylists.findOneAsync(rundown.playlistId)
 		if (!playlist) return noAccess(`Rundown playlist of rundown "${rundown._id}" not found`)
 		return { ...(await accessRundownPlaylist(playlist, cred)), document: rundown }
 	}

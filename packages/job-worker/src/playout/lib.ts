@@ -1,6 +1,6 @@
 import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { applyToArray, assertNever, clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
-import { Time, TSR } from '@sofie-automation/blueprints-integration'
+import { TSR } from '@sofie-automation/blueprints-integration'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
@@ -309,6 +309,9 @@ export async function setNextPart(
 				part: nextPart,
 				rehearsal: !!cache.Playlist.doc.rehearsal,
 				consumesNextSegmentId: nextPartInfo.consumesNextSegmentId,
+				timings: {
+					setAsNext: getCurrentTime(),
+				},
 			})
 
 			const rundown = cache.Rundowns.findOne(nextPart.rundownId)
@@ -661,22 +664,6 @@ function resetPartInstancesWithPieceInstances(
 	})
 }
 
-export function onPartHasStoppedPlaying(
-	cache: CacheForPlayout,
-	partInstance: DBPartInstance,
-	stoppedPlayingTime: Time
-): void {
-	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
-		cache.PartInstances.updateOne(partInstance._id, (p) => {
-			if (!p.timings) p.timings = {}
-			p.timings.duration = stoppedPlayingTime - (p.timings.startedPlayback || 0)
-			return p
-		})
-	} else {
-		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)
-	}
-}
-
 export function substituteObjectIds(
 	rawEnable: TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[],
 	idMap: { [oldId: string]: string | undefined }
@@ -753,11 +740,10 @@ export function isTooCloseToAutonext(
 
 	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
 
-	const start = currentPartInstance.timings?.startedPlayback
-	const offset = currentPartInstance.timings?.playOffset
-	if (start !== undefined && offset !== undefined && currentPartInstance.part.expectedDuration) {
+	const start = currentPartInstance.timings?.plannedStartedPlayback
+	if (start !== undefined && currentPartInstance.part.expectedDuration) {
 		// date.now - start = playback duration, duration + offset gives position in part
-		const playbackDuration = getCurrentTime() - start + offset
+		const playbackDuration = getCurrentTime() - start
 
 		// If there is an auto next planned
 		if (Math.abs(currentPartInstance.part.expectedDuration - playbackDuration) < debounce) {

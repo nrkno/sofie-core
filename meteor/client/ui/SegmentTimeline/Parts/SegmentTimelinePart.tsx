@@ -5,7 +5,6 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi, LIVE_LINE_TIME_PADDING } from '../SegmentTimelineContainer'
 import {
 	TimingDataResolution,
@@ -33,6 +32,7 @@ import { RundownTimingContext } from '../../../lib/rundownTiming'
 import { OutputGroup } from './OutputGroup'
 import { InvalidPartCover } from './InvalidPartCover'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { UIStudio } from '../../../../lib/api/studios'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -46,7 +46,7 @@ export const BREAKPOINT_TOO_SMALL_FOR_DISPLAY = 6
 interface IProps {
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	part: PartUi
 	timeScale: number
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
@@ -100,7 +100,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 		const isLive = this.props.playlist.currentPartInstanceId === partInstance._id
 		const isNext = this.props.playlist.nextPartInstanceId === partInstance._id
-		const startedPlayback = partInstance.timings?.startedPlayback
+		const startedPlayback = partInstance.timings?.plannedStartedPlayback
 
 		this.state = {
 			isLive,
@@ -139,7 +139,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 		const nextPartInner = nextProps.part.instance.part
 
-		const startedPlayback = nextProps.part.instance.timings?.startedPlayback
+		const startedPlayback = nextProps.part.instance.timings?.plannedStartedPlayback
 
 		const isDurationSettling =
 			!!nextProps.playlist.activationId &&
@@ -224,11 +224,11 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	static getCurrentLiveLinePosition(part: Readonly<PartUi>, currentTime: number): number {
-		if (part.instance.timings?.startedPlayback) {
+		if (part.instance.timings?.plannedStartedPlayback) {
 			if (part.instance.timings?.duration) {
 				return part.instance.timings.duration
 			} else {
-				return currentTime - part.instance.timings.startedPlayback
+				return currentTime - part.instance.timings.plannedStartedPlayback
 			}
 		} else {
 			return 0

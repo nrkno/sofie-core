@@ -1,7 +1,5 @@
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { SegmentId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'

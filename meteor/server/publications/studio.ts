@@ -1,26 +1,23 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
-import { PubSub } from '../../lib/api/pubsub'
-import {
-	Studios,
-	DBStudio,
-	getActiveRoutes,
-	getRoutedMappings,
-	StudioId,
-	RoutedMappings,
-} from '../../lib/collections/Studios'
-import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
+import { Studios, DBStudio, getActiveRoutes, getRoutedMappings, RoutedMappings } from '../../lib/collections/Studios'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
-import { FindOptions, MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
-import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
-import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
-import { ExpectedPackageDBBase, ExpectedPackageId, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
+import {
+	CustomPublish,
+	meteorCustomPublish,
+	setUpOptimizedObserverArray,
+	TriggerUpdate,
+} from '../lib/customPublication'
+import { ExpectedPackageDBBase, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
@@ -34,6 +31,9 @@ import { PackageInfos } from '../../lib/collections/PackageInfos'
 import { PackageContainerStatuses } from '../../lib/collections/PackageContainerStatus'
 import { literal } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
+import { FindOptions } from '../../lib/collections/lib'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ExpectedPackageId, PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 meteorPublish(PubSub.studios, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)
@@ -159,9 +159,9 @@ meteorPublish(
 	}
 )
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.mappingsForDevice,
-	'studioMappings',
+	CustomCollectionName.StudioMappings,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = PeripheralDevices.findOne(deviceId)
@@ -171,16 +171,20 @@ meteorCustomPublishArray(
 			const studioId = peripheralDevice.studioId
 			if (!studioId) return
 
-			await createObserverForMappingsPublication(pub, PubSub.mappingsForDevice, studioId)
+			await createObserverForMappingsPublication(pub, studioId)
 		}
 	}
 )
 
-meteorCustomPublishArray(PubSub.mappingsForStudio, 'studioMappings', async function (pub, studioId: StudioId, token) {
-	if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
-		await createObserverForMappingsPublication(pub, PubSub.mappingsForStudio, studioId)
+meteorCustomPublish(
+	PubSub.mappingsForStudio,
+	CustomCollectionName.StudioMappings,
+	async function (pub, studioId: StudioId, token) {
+		if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
+			await createObserverForMappingsPublication(pub, studioId)
+		}
 	}
-})
+)
 
 interface RoutedMappingsArgs {
 	readonly studioId: StudioId
@@ -224,7 +228,8 @@ async function manipulateMappingsPublicationData(
 	if (!studio) return []
 
 	const routes = getActiveRoutes(studio)
-	const routedMappings = getRoutedMappings(studio.mappings, routes)
+	const rawMappings = applyAndValidateOverrides(studio.mappingsWithOverrides)
+	const routedMappings = getRoutedMappings(rawMappings.obj, routes)
 
 	return [
 		literal<RoutedMappings>({
@@ -236,26 +241,17 @@ async function manipulateMappingsPublicationData(
 }
 
 /** Create an observer for each publication, to simplify the stop conditions */
-async function createObserverForMappingsPublication(
-	pub: CustomPublishArray<RoutedMappings>,
-	observerId: PubSub,
-	studioId: StudioId
-) {
-	const observer = await setUpOptimizedObserver<
+async function createObserverForMappingsPublication(pub: CustomPublish<RoutedMappings>, studioId: StudioId) {
+	await setUpOptimizedObserverArray<
 		RoutedMappings,
 		RoutedMappingsArgs,
 		RoutedMappingsState,
 		RoutedMappingsUpdateProps
 	>(
-		`pub_${observerId}_${studioId}`,
+		`${CustomCollectionName.StudioMappings}_${studioId}`,
 		{ studioId },
 		setupMappingsPublicationObservers,
 		manipulateMappingsPublicationData,
-		(_args, newData) => {
-			pub.updatedDocs(newData)
-		}
+		pub
 	)
-	pub.onStop(() => {
-		observer.stop()
-	})
 }

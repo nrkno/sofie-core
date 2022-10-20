@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { MongoQuery, FindOptions } from '../../lib/typings/meteor'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { RundownReadAccess } from '../security/rundown'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
@@ -22,8 +22,9 @@ import {
 	RundownBaselineAdLibActions,
 } from '../../lib/collections/RundownBaselineAdLibActions'
 import { check, Match } from 'meteor/check'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { FindOptions } from '../../lib/collections/lib'
 import { IngestDataCache, Rundowns } from '../serverCollections'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
 meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {

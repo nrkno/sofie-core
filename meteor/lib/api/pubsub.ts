@@ -1,4 +1,13 @@
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+import {
+	ExpectedPackageId,
+	PeripheralDeviceId,
+	RundownId,
+	RundownPlaylistActivationId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Meteor } from 'meteor/meteor'
 import { AdLibAction } from '../collections/AdLibActions'
 import { AdLibPiece } from '../collections/AdLibPieces'
@@ -9,7 +18,7 @@ import { Bucket } from '../collections/Buckets'
 import { ICoreSystem } from '../collections/CoreSystem'
 import { Evaluation } from '../collections/Evaluations'
 import { ExpectedMediaItem } from '../collections/ExpectedMediaItems'
-import { ExpectedPackageDB, ExpectedPackageId } from '../collections/ExpectedPackages'
+import { ExpectedPackageDB } from '../collections/ExpectedPackages'
 import { ExpectedPackageWorkStatus } from '../collections/ExpectedPackageWorkStatuses'
 import { ExpectedPlayoutItem } from '../collections/ExpectedPlayoutItems'
 import { ExternalMessageQueueObj } from '../collections/ExternalMessageQueue'
@@ -23,27 +32,32 @@ import { PackageInfoDB } from '../collections/PackageInfos'
 import { PartInstance } from '../collections/PartInstances'
 import { DBPart } from '../collections/Parts'
 import { PeripheralDeviceCommand } from '../collections/PeripheralDeviceCommands'
-import { PeripheralDevice, PeripheralDeviceId } from '../collections/PeripheralDevices'
+import { PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstance } from '../collections/PieceInstances'
 import { Piece } from '../collections/Pieces'
 import { RundownBaselineAdLibAction } from '../collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibItem } from '../collections/RundownBaselineAdLibPieces'
 import { RundownLayoutBase } from '../collections/RundownLayouts'
-import { DBRundownPlaylist, RundownPlaylistActivationId, RundownPlaylistId } from '../collections/RundownPlaylists'
-import { DBRundown, RundownId } from '../collections/Rundowns'
+import { DBRundownPlaylist } from '../collections/RundownPlaylists'
+import { DBRundown } from '../collections/Rundowns'
 import { DBSegment } from '../collections/Segments'
-import { DBShowStyleBase, ShowStyleBaseId } from '../collections/ShowStyleBases'
+import { DBShowStyleBase } from '../collections/ShowStyleBases'
 import { DBShowStyleVariant } from '../collections/ShowStyleVariants'
 import { SnapshotItem } from '../collections/Snapshots'
-import { DBStudio, RoutedMappings, StudioId } from '../collections/Studios'
+import { DBStudio, RoutedMappings } from '../collections/Studios'
 import { RoutedTimeline, TimelineComplete } from '../collections/Timeline'
 import { TranslationsBundle } from '../collections/TranslationsBundles'
-import { DBTriggeredActions } from '../collections/TriggeredActions'
+import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions'
 import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
+import { UIShowStyleBase } from './showStyles'
+import { UIStudio } from './studios'
 
+/**
+ * Ids of possible DDP subscriptions
+ */
 export enum PubSub {
 	blueprints = 'blueprints',
 	coreSystem = 'coreSystem',
@@ -105,8 +119,15 @@ export enum PubSub {
 	mappingsForStudio = 'mappingsForStudio',
 	timelineForStudio = 'timelineForStudio',
 	expectedPackagesForDevice = 'expectedPackagesForDevice',
+	uiShowStyleBase = 'uiShowStyleBase',
+	uiStudio = 'uiStudio',
+	uiTriggeredActions = 'uiTriggeredActions',
 }
 
+/**
+ * Type definitions for all DDP subscriptions.
+ * All the PubSub ids must be present here, or they will produce type errors when used
+ */
 export interface PubSubTypes {
 	[PubSub.blueprints]: (selector: MongoQuery<Blueprint>, token?: string) => Blueprint
 	[PubSub.coreSystem]: (token?: string) => ICoreSystem
@@ -204,8 +225,43 @@ export interface PubSubTypes {
 		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 		token?: string
 	) => DBObj
+	[PubSub.uiShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => UIShowStyleBase
+	/** Subscribe to one or all studios */
+	[PubSub.uiStudio]: (studioId: StudioId | null) => UIStudio
+	[PubSub.uiTriggeredActions]: (showStyleBaseId: ShowStyleBaseId | null) => UITriggeredActionsObj
 }
 
+/**
+ * Ids of possible Custom collections, populated by DDP subscriptions
+ */
+export enum CustomCollectionName {
+	StudioMappings = 'studioMappings',
+	StudioTimeline = 'studioTimeline',
+	ExpectedPackagesForDevice = 'deviceExpectedPackages',
+	UIShowStyleBase = 'uiShowStyleBase',
+	UIStudio = 'uiStudio',
+	UITriggeredActions = 'uiTriggeredActions',
+}
+
+/**
+ * Type definitions for all custom collections.
+ * All the CustomCollectionName ids must be present here, or they will produce type errors when used
+ */
+export type CustomCollectionType = {
+	[CustomCollectionName.StudioMappings]: RoutedMappings
+	[CustomCollectionName.StudioTimeline]: RoutedTimeline
+	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj
+	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
+	[CustomCollectionName.UIStudio]: UIStudio
+	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
+}
+
+/**
+ * Type safe wrapper around Meteor.subscribe()
+ * @param name name of the subscription
+ * @param args arguments to the subscription
+ * @returns Meteor subscription handle
+ */
 export function meteorSubscribe<K extends keyof PubSubTypes>(
 	name: K,
 	...args: Parameters<PubSubTypes[K]>

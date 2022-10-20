@@ -69,10 +69,7 @@ jobs:
         env:
           CI: true
       - name: Send coverage
-        uses: codecov/codecov-action@v2
-        with:
-          fail_ci_if_error: true
-          # name: codecov-umbrella
+        uses: codecov/codecov-action@v3
 
   build-core:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
@@ -331,10 +328,7 @@ jobs:
           CI: true
       - name: Send coverage
         if: matrix.node-version == '16.x' || matrix.send-coverage == true
-        uses: codecov/codecov-action@v2
-        with:
-          fail_ci_if_error: true
-          # name: codecov-umbrella
+        uses: codecov/codecov-action@v3
 
   publish-docs:
     name: Publish Docs

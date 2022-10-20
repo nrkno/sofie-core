@@ -1,7 +1,5 @@
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { ExpectedMediaItemId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { ExpectedMediaItemId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { ExpectedMediaItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'

@@ -4,7 +4,6 @@ import { registerIndex } from '../database'
 import { UserActionsLogItemId, OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { TimelineHash } from './Timeline'
-export { UserActionsLogItemId }
 
 export interface UserActionsLogItem {
 	_id: UserActionsLogItemId

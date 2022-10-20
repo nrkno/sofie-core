@@ -87,11 +87,14 @@
 			display: inline-block;
 			height: 0.8em;
 			width: 0.8em;
-			border-radius: 100%;
-			margin-right: 0.5em;
+			margin-right: 0.3em;
+			margin-left: 0.1em;
 			vertical-align: middle;
-			box-shadow: 0 0 6px rgba(0, 0, 0, 1);
+			border: 1px solid rgba(255, 255, 255, 0.3);
+			border-radius: 100%;
+			box-shadow: 0 0 4px black;
 			margin-top: -0.1em;
+			background-color: currentColor;
 		}
 	}
 
@@ -141,8 +144,7 @@
 		opacity: 0.4;
 	}
 
-	&.vt,
-	&.live-speak {
+	&:not(.segment-storyboard__thumbnail__label--lg):not(.segment-storyboard__thumbnail__label--sm) {
 		> .segment-storyboard__thumbnail__label {
 			white-space: nowrap;
 			overflow: hidden;

@@ -1,19 +1,25 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { logNotAllowed } from './lib/lib'
-import { ShowStyleVariants, ShowStyleVariantId, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
-import { RundownLayouts, RundownLayoutId, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { MongoQuery, MongoQueryKey, UserId } from '../../lib/typings/meteor'
+import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { MongoQuery, MongoQueryKey } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { allowAccessToShowStyleBase, allowAccessToShowStyleVariant } from './lib/security'
-import { OrganizationId } from '../../lib/collections/Organization'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { Settings } from '../../lib/Settings'
 import { isProtectedString } from '../../lib/lib'
-import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import { TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { SystemWriteAccess } from './system'
 import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../../lib/collections/optimizations'
+import {
+	OrganizationId,
+	RundownLayoutId,
+	ShowStyleBaseId,
+	ShowStyleVariantId,
+	TriggeredActionId,
+	UserId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface ShowStyleContentAccess {
 	userId: UserId | null

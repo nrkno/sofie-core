@@ -6,7 +6,6 @@ import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
-import { Studio } from '../../../lib/collections/Studios'
 import { PartUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
@@ -17,6 +16,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IContextMenuContext } from '../RundownView'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
+import { UIStudio } from '../../../lib/api/studios'
 
 export function SegmentListHeader({
 	isDetached,
@@ -43,7 +43,7 @@ export function SegmentListHeader({
 	isDetachedStick: boolean
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	parts: Array<PartUi>
 	segmentNotes: Array<SegmentNote>
 	highlight: boolean
@@ -103,7 +103,6 @@ export function SegmentListHeader({
 						hidden: hasAlreadyPlayed && !isLiveSegment && !isNextSegment,
 					})}
 					tabIndex={0}
-					onClick={onTimeUntilClick}
 				>
 					{playlist && parts && parts.length > 0 && (
 						<SegmentDuration

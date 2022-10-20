@@ -9,7 +9,6 @@ import {
 	OrganizationId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-export { SnapshotId }
 
 export enum SnapshotType {
 	RUNDOWNPLAYLIST = 'rundownplaylist',

@@ -1,4 +1,5 @@
-import { TranslationsBundle, TranslationsBundleId } from '../collections/TranslationsBundles'
+import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { TranslationsBundle } from '../collections/TranslationsBundles'
 import { ClientAPI } from './client'
 
 export interface CollectionCleanupResult {

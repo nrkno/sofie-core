@@ -1,6 +1,5 @@
-import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { StudioId } from '../../../lib/collections/Studios'
 import { protectString } from '../../../lib/lib'
 import { RundownPlaylists } from '../../serverCollections'
 

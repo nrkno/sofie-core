@@ -1,4 +1,4 @@
-import { FindOptions } from '../typings/meteor'
+import { FindOptions } from '../collections/lib'
 import { LogLevel, protectString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
@@ -8,7 +8,6 @@ import _ from 'underscore'
 import { CoreSystemId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-export { CoreSystemId }
 
 export const SYSTEM_ID: CoreSystemId = protectString('core')
 

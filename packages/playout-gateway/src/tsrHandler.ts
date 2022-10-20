@@ -40,7 +40,7 @@ import {
 	PiecePlaybackCallbackData,
 	PlayoutChangedResults,
 	PlayoutChangedType,
-	StatusObject,
+	PeripheralDeviceStatusObject,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
 
@@ -121,10 +121,12 @@ export interface TimelineContentObjectTmp extends TSRTimelineObjBase {
 /** Max time for initializing devices */
 const INIT_TIMEOUT = 10000
 
+type DeviceAction = 'add' | 'remove' | 're-add'
+
 type DeviceActionResult = {
 	success: boolean
 	deviceId: string
-	action: 'add' | 'remove'
+	action: DeviceAction
 }
 
 type UpdateDeviceOperationsResult =
@@ -134,7 +136,7 @@ type UpdateDeviceOperationsResult =
 	  }
 	| {
 			success: false
-			reason: 'timeout'
+			reason: 'timeout' | 'error'
 			details: string[]
 	  }
 
@@ -533,9 +535,13 @@ export class TSRHandler {
 		const peripheralDevice = peripheralDevices.findOne(this._coreHandler.core.deviceId)
 
 		const ps: Promise<DeviceActionResult>[] = []
-		const promiseOperations: { [id: string]: true } = {}
-		const keepTrack = async <T>(p: Promise<T>, name: string) => {
-			promiseOperations[name] = true
+		const promiseOperations: { [id: string]: { deviceId: string; operation: DeviceAction } } = {}
+		const keepTrack = async <T>(p: Promise<T>, deviceId: string, operation: DeviceAction) => {
+			const name = `${operation}_${deviceId}`
+			promiseOperations[name] = {
+				deviceId,
+				operation,
+			}
 			return p.then((result) => {
 				delete promiseOperations[name]
 				return result
@@ -576,7 +582,7 @@ export class TSRHandler {
 					if (deviceOptions.options) {
 						this.logger.info('Initializing device: ' + deviceId)
 						this.logger.info('new', deviceOptions)
-						ps.push(keepTrack(this._addDevice(deviceId, deviceOptions), 'add_' + deviceId))
+						ps.push(keepTrack(this._addDevice(deviceId, deviceOptions), deviceId, 'add'))
 					}
 				} else {
 					if (deviceOptions.options) {
@@ -596,8 +602,8 @@ export class TSRHandler {
 							this.logger.info('old', oldDevice.deviceOptions)
 							this.logger.info('new', deviceOptions)
 							ps.push(
-								keepTrack(this._removeDevice(deviceId), 'remove_' + deviceId).then(async () => {
-									return keepTrack(this._addDevice(deviceId, deviceOptions), 're-add_' + deviceId)
+								keepTrack(this._removeDevice(deviceId), deviceId, 'remove').then(async () => {
+									return keepTrack(this._addDevice(deviceId, deviceOptions), deviceId, 're-add')
 								})
 							)
 						}
@@ -609,7 +615,7 @@ export class TSRHandler {
 				const deviceId = oldDevice.deviceId
 				if (!devices.has(deviceId)) {
 					this.logger.info('Un-initializing device: ' + deviceId)
-					ps.push(keepTrack(this._removeDevice(deviceId), 'remove_' + deviceId))
+					ps.push(keepTrack(this._removeDevice(deviceId), deviceId, 'remove'))
 				}
 			}
 		}
@@ -621,15 +627,41 @@ export class TSRHandler {
 			})),
 			new Promise<UpdateDeviceOperationsResult>((resolve) =>
 				setTimeout(() => {
-					const keys = _.keys(promiseOperations)
+					const keys = Object.keys(promiseOperations)
 					if (keys.length) {
-						this.logger.warn(`Timeout in _updateDevices: ${keys.join(',')}`)
+						this.logger.warn(
+							`Timeout in _updateDevices: ${Object.values(promiseOperations)
+								.map((op) => op.deviceId)
+								.join(',')}`
+						)
 					}
-					resolve({
-						success: false,
-						reason: 'timeout',
-						details: keys,
-					})
+
+					Promise.all(
+						// At this point in time, promiseOperations contains the promises that have timed out.
+						// If we tried to add or re-add a device, that apparently failed so we should remove the device in order to
+						// give it another chance next time _updateDevices() is called.
+						Object.values(promiseOperations)
+							.filter((op) => op.operation === 'add' || op.operation === 're-add')
+							.map(async (op) =>
+								// the device was never added, should retry next round
+								this._removeDevice(op.deviceId)
+							)
+					)
+						.catch((e) => {
+							this.logger.error(
+								`Error when trying to remove unsuccessfully initialized devices: ${stringifyIds(
+									Object.values(promiseOperations).map((op) => op.deviceId)
+								)}`,
+								e
+							)
+						})
+						.finally(() => {
+							resolve({
+								success: false,
+								reason: 'error',
+								details: keys,
+							})
+						})
 				}, INIT_TIMEOUT)
 			), // Timeout if not all are resolved within INIT_TIMEOUT
 		])
@@ -659,6 +691,7 @@ export class TSRHandler {
 		return deviceOptions.debug || this._coreHandler.logDebug || false
 	}
 	private async _reportResult(resultsOrTimeout: UpdateDeviceOperationsResult): Promise<void> {
+		this.logger.warn(JSON.stringify(resultsOrTimeout))
 		// Check if the updateDevice operation failed before completing
 		if (!resultsOrTimeout.success) {
 			// It failed because there was a global timeout (not a device-specific failure)
@@ -675,7 +708,11 @@ export class TSRHandler {
 			} else {
 				await this._coreHandler.core.setStatus({
 					statusCode: StatusCode.BAD,
-					messages: [`Unknown error during device update: ${resultsOrTimeout.reason}`],
+					messages: [
+						`Unknown error during device update: ${resultsOrTimeout.reason}. Devices: ${stringifyIds(
+							resultsOrTimeout.details
+						)}`,
+					],
 				})
 			}
 
@@ -739,7 +776,7 @@ export class TSRHandler {
 			const deviceType = device.deviceType
 
 			const onDeviceStatusChanged = (connectedOrStatus: Partial<DeviceStatus>) => {
-				let deviceStatus: Partial<StatusObject>
+				let deviceStatus: Partial<PeripheralDeviceStatusObject>
 				if (_.isBoolean(connectedOrStatus)) {
 					// for backwards compability, to be removed later
 					if (connectedOrStatus) {

@@ -2,12 +2,11 @@ import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { RundownId } from '../../../lib/collections/Rundowns'
-import { SegmentId } from '../../../lib/collections/Segments'
 import { profiler } from '../profiler'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { IngestDataCacheObj, IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestDataCache } from '../../serverCollections'
+import { IngestCacheType, IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
 interface LocalIngestBase {
 	modified: number

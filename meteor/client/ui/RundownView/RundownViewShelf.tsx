@@ -3,12 +3,11 @@ import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { normalizeArray, unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
-import { IBlueprintActionTriggerMode, IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { Studio } from '../../../lib/collections/Studios'
+import { IBlueprintActionTriggerMode, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import {
 	contextMenuHoldToDisplayTime,
 	ensureHasTrailingSlash,
@@ -22,8 +21,6 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceId } from '../../../lib/collections/Pieces'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import {
@@ -36,12 +33,15 @@ import {
 } from '../../lib/shelf'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ContextType, setShelfContextMenuContext } from '../Shelf/ShelfContextMenu'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
+import { PartInstanceId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IRundownViewShelfProps {
-	studio: Studio
+	studio: UIStudio
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	adLibSegmentUi: AdlibSegmentUi
 	hotkeyGroup: string
 	studioMode: boolean
@@ -49,12 +49,8 @@ interface IRundownViewShelfProps {
 }
 
 interface IRundownViewShelfTrackedProps {
-	outputLayers: {
-		[key: string]: IOutputLayer
-	}
-	sourceLayers: {
-		[key: string]: ISourceLayer
-	}
+	outputLayers: OutputLayers
+	sourceLayers: SourceLayers
 	unfinishedAdLibIds: PieceId[]
 	unfinishedTags: string[]
 	nextAdLibIds: PieceId[]
@@ -280,8 +276,8 @@ export const RundownViewShelf = translateWithTracker<
 	IRundownViewShelfTrackedProps
 >(
 	(props: IRundownViewShelfProps) => {
-		const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id') // @todo: optimize
-		const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
+		const sourceLayerLookup = props.showStyleBase.sourceLayers
+		const outputLayerLookup = props.showStyleBase.outputLayers
 
 		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
 			(_currentPartInstanceId: PartInstanceId | null, _nextPartInstanceId: PartInstanceId | null) => {

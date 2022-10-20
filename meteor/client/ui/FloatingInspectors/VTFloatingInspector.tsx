@@ -7,11 +7,13 @@ import { NoticeLevel } from '../../lib/notifications/notifications'
 import { ExpectedPackage, VTContent } from '@sofie-automation/blueprints-integration'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
-import { IStudioSettings, Studio } from '../../../lib/collections/Studios'
-import { PieceId, PieceStatusCode } from '../../../lib/collections/Pieces'
+import { IStudioSettings } from '../../../lib/collections/Studios'
+import { PieceStatusCode } from '../../../lib/collections/Pieces'
 import { getPreviewUrlForExpectedPackagesAndContentMetaData } from '../../lib/ui/clipPreview'
 import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer'
 import classNames from 'classnames'
+import { UIStudio } from '../../../lib/api/studios'
+import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	status: PieceStatusCode
@@ -30,7 +32,7 @@ interface IProps {
 	contentPackageInfos: ScanInfoForPackages | undefined
 	pieceId: PieceId
 	expectedPackages: ExpectedPackage.Any[] | undefined
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 	displayOn?: 'document' | 'viewport'
 
 	hideHoverscrubPreview?: boolean

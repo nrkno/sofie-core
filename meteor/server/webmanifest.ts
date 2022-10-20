@@ -8,7 +8,7 @@ import type {
 } from '../lib/typings/webmanifest'
 import { getCoreSystemAsync } from '../lib/collections/CoreSystem'
 import { logger } from '../lib/logging'
-import { MongoSelector } from '../lib/typings/meteor'
+import { MongoQuery } from '../lib/typings/meteor'
 import { DBStudio, Studios } from '../lib/collections/Studios'
 import { RundownPlaylists, Rundowns } from '../lib/clientCollections'
 import { getLocale, Translations } from './lib'
@@ -157,7 +157,7 @@ async function getWebManifest(languageCode: string): Promise<JSONSchemaForWebApp
 function getRundownPlaylistFromExternalId(externalId: string): DBRundownPlaylist | undefined {
 	const rundown = Rundowns.findOne({ externalId })
 
-	let rundownPlaylistSelector: MongoSelector<DBRundownPlaylist>
+	let rundownPlaylistSelector: MongoQuery<DBRundownPlaylist>
 	if (rundown) {
 		rundownPlaylistSelector = {
 			_id: rundown.playlistId,

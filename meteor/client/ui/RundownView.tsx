@@ -14,15 +14,11 @@ import Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
-import {
-	RundownPlaylist,
-	RundownPlaylistId,
-	RundownPlaylistCollectionUtil,
-	RundownHoldState,
-} from '../../lib/collections/RundownPlaylists'
-import { DBSegment, Segment, SegmentId } from '../../lib/collections/Segments'
-import { Studio, Studios, StudioRouteSet, DBStudio } from '../../lib/collections/Studios'
-import { Part, PartId, Parts } from '../../lib/collections/Parts'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../lib/collections/RundownPlaylists'
+import { Rundown } from '../../lib/collections/Rundowns'
+import { DBSegment, Segment } from '../../lib/collections/Segments'
+import { StudioRouteSet } from '../../lib/collections/Studios'
+import { Part, Parts } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
@@ -53,7 +49,7 @@ import {
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { SourceLayers } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import {
 	RONotificationEvent,
@@ -74,7 +70,6 @@ import {
 	RundownLayouts,
 	RundownLayoutType,
 	RundownLayoutBase,
-	RundownLayoutId,
 	RundownViewLayout,
 	RundownLayoutShelfBase,
 	RundownLayoutRundownHeader,
@@ -90,7 +85,7 @@ import { MeteorCall } from '../../lib/api/methods'
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { documentTitle } from '../lib/DocumentTitleProvider'
-import { PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
+import { PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
@@ -122,15 +117,26 @@ import { SegmentStoryboardContainer } from './SegmentStoryboard/SegmentStoryboar
 import { SegmentViewMode } from './SegmentContainer/SegmentViewModes'
 import { UIStateStorage } from '../lib/UIStateStorage'
 import { AdLibPieceUi, AdlibSegmentUi, ShelfDisplayOptions } from '../lib/shelf'
-import { SourceLayerLookup, fetchAndFilter } from './Shelf/AdLibPanel'
+import { fetchAndFilter } from './Shelf/AdLibPanel'
 import { matchFilter } from './Shelf/AdLibListView'
 import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { SegmentListContainer } from './SegmentList/SegmentListContainer'
 import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
 import { IProps as IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { UIShowStyleBases, UIStudios } from './Collections'
+import { UIStudio } from '../../lib/api/studios'
+import {
+	PartId,
+	PartInstanceId,
+	RundownId,
+	RundownLayoutId,
+	RundownPlaylistId,
+	SegmentId,
+	ShowStyleBaseId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownPlaylists, Rundowns } from '../../lib/clientCollections'
+import { UIShowStyleBase } from '../../lib/api/showStyles'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -313,10 +319,10 @@ const TimingDisplay = withTranslation()(
 
 interface IRundownHeaderProps {
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	showStyleVariant: ShowStyleVariant
 	currentRundown: Rundown | undefined
-	studio: Studio
+	studio: UIStudio
 	rundownIds: RundownId[]
 	firstRundown: Rundown | undefined
 	onActivate?: (isRehearsal: boolean) => void
@@ -357,6 +363,7 @@ const RundownHeader = withTranslation()(
 			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.on(RundownViewEvents.TAKE, this.eventTake)
 			RundownViewEventBus.on(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, this.eventResetRundownPlaylist)
+			RundownViewEventBus.on(RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, this.eventCreateSnapshot)
 
 			reloadRundownPlaylistClick.set(this.reloadRundownPlaylist)
 		}
@@ -367,6 +374,7 @@ const RundownHeader = withTranslation()(
 			RundownViewEventBus.off(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.off(RundownViewEvents.TAKE, this.eventTake)
 			RundownViewEventBus.off(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, this.eventResetRundownPlaylist)
+			RundownViewEventBus.off(RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, this.eventCreateSnapshot)
 		}
 		eventActivate = (e: ActivateRundownPlaylistEvent) => {
 			if (e.rehearsal) {
@@ -386,6 +394,9 @@ const RundownHeader = withTranslation()(
 		}
 		eventResetRundownPlaylist = (e: IEventContext) => {
 			this.resetRundown(e.context)
+		}
+		eventCreateSnapshot = (e: IEventContext) => {
+			this.takeRundownSnapshot(e.context)
 		}
 
 		handleDisableNextPiece = (err: ClientAPI.ClientResponse<undefined>) => {
@@ -1115,7 +1126,7 @@ interface IState {
 	/** MiniShelf data */
 	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
 	uiSegments: AdlibSegmentUi[]
-	sourceLayerLookup: SourceLayerLookup
+	sourceLayerLookup: SourceLayers
 	miniShelfFilter: RundownLayoutFilterBase | undefined
 }
 
@@ -1134,8 +1145,8 @@ interface ITrackedProps {
 	currentRundown?: Rundown
 	matchedSegments: MatchedSegment[]
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
-	studio?: Studio
-	showStyleBase?: ShowStyleBase
+	studio?: UIStudio
+	showStyleBase?: UIShowStyleBase
 	showStyleVariant?: ShowStyleVariant
 	rundownLayouts?: Array<RundownLayoutBase>
 	buckets: Bucket[]
@@ -1161,12 +1172,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	const playlist = RundownPlaylists.findOne(playlistId)
 	let rundowns: Rundown[] = []
-	let studio: Studio | undefined
+	let studio: UIStudio | undefined
 	let currentPartInstance: PartInstance | undefined
 	let nextPartInstance: PartInstance | undefined
 	let currentRundown: Rundown | undefined = undefined
 	if (playlist) {
-		studio = Studios.findOne({ _id: playlist.studioId })
+		studio = UIStudios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun(
 			(_playlistId) => RundownPlaylistCollectionUtil.getRundownsOrdered(playlist),
 			'playlist.getRundowns',
@@ -1187,7 +1198,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
 	const showStyleBaseId = currentRundown?.showStyleBaseId ?? rundowns[0]?.showStyleBaseId
-	const showStyleBase = showStyleBaseId ? ShowStyleBases.findOne(showStyleBaseId) : undefined
+	const showStyleBase = showStyleBaseId ? UIShowStyleBases.findOne(showStyleBaseId) : undefined
 	const showStyleVariantId = currentRundown?.showStyleVariantId ?? rundowns[0]?.showStyleVariantId
 	const showStyleVariant = showStyleVariantId ? ShowStyleVariants.findOne(showStyleVariantId) : undefined
 
@@ -1449,7 +1460,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			const filteredUiSegmentMap: Map<SegmentId, AdlibSegmentUi> = new Map()
 			const filteredUiSegments: AdlibSegmentUi[] = []
-			let resultSourceLayerLookup: SourceLayerLookup = {}
+			let resultSourceLayerLookup: SourceLayers = {}
 			let miniShelfFilter: RundownLayoutFilterBase | undefined
 			if (props.playlist && props.showStyleBase && props.studio) {
 				const possibleMiniShelfFilter =
@@ -1540,9 +1551,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}) as Pick<RundownPlaylist, '_id' | 'studioId'> | undefined
 				if (!playlist) return
 
-				this.subscribe(PubSub.studios, {
-					_id: playlist.studioId,
-				})
+				this.subscribe(PubSub.uiStudio, playlist.studioId)
 				this.subscribe(PubSub.buckets, {
 					studioId: playlist.studioId,
 				})
@@ -1567,11 +1576,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					},
 				}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
 
-				this.subscribe(PubSub.showStyleBases, {
-					_id: {
-						$in: rundowns.map((i) => i.showStyleBaseId),
-					},
-				})
+				for (const rundown of rundowns) {
+					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+				}
+
 				this.subscribe(PubSub.showStyleVariants, {
 					_id: {
 						$in: rundowns.map((i) => i.showStyleVariantId),
@@ -2456,8 +2464,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			_index: number,
 			rundownAndSegments: MatchedSegment,
 			rundownPlaylist: RundownPlaylist,
-			studio: DBStudio,
-			showStyleBase: DBShowStyleBase,
+			studio: UIStudio,
+			showStyleBase: UIShowStyleBase,
 			isLastSegment: boolean,
 			isFollowingOnAirSegment: boolean,
 			ownCurrentPartInstance: PartInstance | undefined,
@@ -2780,9 +2788,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		renderRundownView(
-			studio: DBStudio,
+			studio: UIStudio,
 			playlist: RundownPlaylist,
-			showStyleBase: ShowStyleBase,
+			showStyleBase: UIShowStyleBase,
 			showStyleVariant: ShowStyleVariant
 		) {
 			const { t } = this.props

@@ -10,7 +10,6 @@ import {
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-export { EvaluationId }
 
 export interface Evaluation extends EvaluationBase {
 	_id: EvaluationId

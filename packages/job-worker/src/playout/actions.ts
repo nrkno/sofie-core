@@ -5,7 +5,7 @@ import _ = require('underscore')
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
-import { onPartHasStoppedPlaying, resetRundownPlaylist, selectNextPart, setNextPart } from './lib'
+import { resetRundownPlaylist, selectNextPart, setNextPart } from './lib'
 import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { RundownEventContext } from '../blueprints/context'
 import { getCurrentTime } from '../lib'
@@ -184,8 +184,6 @@ export async function deactivateRundownPlaylistInner(
 		rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
 	}
 
-	if (currentPartInstance) onPartHasStoppedPlaying(cache, currentPartInstance, getCurrentTime())
-
 	cache.Playlist.update((p) => {
 		p.previousPartInstanceId = null
 		p.currentPartInstanceId = null
@@ -199,12 +197,21 @@ export async function deactivateRundownPlaylistInner(
 	await setNextPart(context, cache, null)
 
 	if (currentPartInstance) {
-		cache.PartInstances.updateOne(currentPartInstance._id, (p) => {
-			if (!p.timings) p.timings = {}
-			p.timings.takeOut = getCurrentTime()
-			return p
+		// Set the current PartInstance as stopped
+		cache.PartInstances.updateOne(currentPartInstance._id, (instance) => {
+			if (
+				instance.timings &&
+				instance.timings.plannedStartedPlayback &&
+				!instance.timings.plannedStoppedPlayback
+			) {
+				instance.timings.plannedStoppedPlayback = getCurrentTime()
+				instance.timings.duration = getCurrentTime() - instance.timings.plannedStartedPlayback
+				return instance
+			}
+			return false
 		})
 	}
+
 	if (span) span.end()
 	return rundown
 }

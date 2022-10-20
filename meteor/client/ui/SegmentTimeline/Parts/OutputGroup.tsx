@@ -1,6 +1,5 @@
 import React from 'react'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../../lib/collections/Studios'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
 import { IContextMenuContext } from '../../RundownView'
 import { IOutputLayerUi, PartUi, PieceUi, SegmentUi } from '../SegmentTimelineContainer'
@@ -10,12 +9,13 @@ import classNames from 'classnames'
 import { DEBUG_MODE } from '../SegmentTimelineDebugMode'
 import { RundownUtils } from '../../../lib/rundown'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { UIStudio } from '../../../../lib/api/studios'
 
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
 	sourceLayers: ISourceLayerExtended[]
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	segment: SegmentUi
 	part: PartUi
 	mediaPreviewUrl: string

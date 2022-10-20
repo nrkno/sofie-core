@@ -1,8 +1,8 @@
 import * as _ from 'underscore'
 import { Time } from '../lib'
-import { PeripheralDeviceId } from '../collections/PeripheralDevices'
 import { UserError } from '@sofie-automation/corelib/dist/error'
 import { NoticeLevel } from '../../client/lib/notifications/notifications'
+import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface NewClientAPI {
 	clientErrorReport(timestamp: Time, errorObject: any, errorString: string, location: string): Promise<void>

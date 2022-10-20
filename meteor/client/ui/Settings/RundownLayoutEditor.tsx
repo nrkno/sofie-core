@@ -16,7 +16,6 @@ import {
 	ActionButtonType,
 	DashboardLayoutActionButton,
 	RundownLayoutElementType,
-	RundownLayoutId,
 } from '../../../lib/collections/RundownLayouts'
 import {
 	CustomizableRegionLayout,
@@ -37,6 +36,7 @@ import FilterEditor from './components/FilterEditor'
 import ShelfLayoutSettings from './components/rundownLayouts/ShelfLayoutSettings'
 import RundownHeaderLayoutSettings from './components/rundownLayouts/RundownHeaderLayoutSettings'
 import RundownViewLayoutSettings from './components/rundownLayouts/RundownViewLayoutSettings'
+import { RundownLayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface IProps {
 	showStyleBase: ShowStyleBase

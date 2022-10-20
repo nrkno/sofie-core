@@ -1,8 +1,8 @@
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Meteor } from 'meteor/meteor'
 import { MethodContext } from '../../lib/api/methods'
-import { RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Rundown, RundownId } from '../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { Rundown } from '../../lib/collections/Rundowns'
 import {
 	RundownContentAccess,
 	RundownPlaylistContentAccess,

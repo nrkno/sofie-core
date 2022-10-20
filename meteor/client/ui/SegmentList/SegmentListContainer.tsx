@@ -220,40 +220,6 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 	// }, [subscriptionsReady, firstNonInvalidPart?.pieces.length])
 
 	return (
-		// <SegmentOnePartLine
-		// 	id={props.id}
-		// 	ref={segmentRef}
-		// 	key={unprotectString(props.segmentui._id)}
-		// 	segment={props.segmentui}
-		// 	studio={props.studio}
-		// 	parts={props.parts}
-		// 	segmentNotes={props.segmentNotes}
-		// 	onItemClick={props.onPieceClick}
-		// 	onItemDoubleClick={props.onPieceDoubleClick}
-		// 	playlist={props.playlist}
-		// 	isLiveSegment={isLiveSegment}
-		// 	isNextSegment={isNextSegment}
-		// 	isQueuedSegment={props.playlist.nextSegmentId === props.segmentui._id}
-		// 	hasRemoteItems={props.hasRemoteItems}
-		// 	hasGuestItems={props.hasGuestItems}
-		// 	currentPartWillAutoNext={currentPartWillAutoNext}
-		// 	hasAlreadyPlayed={props.hasAlreadyPlayed}
-		// 	followLiveLine={props.followLiveSegments}
-		// 	liveLineHistorySize={LIVELINE_HISTORY_SIZE}
-		// 	displayLiveLineCounter={props.displayLiveLineCounter}
-		// 	onContextMenu={props.onContextMenu}
-		// 	onFollowLiveLine={this.onFollowLiveLine}
-		// 	onShowEntireSegment={this.onShowEntireSegment}
-		// 	onScroll={onScroll}
-		// 	isLastSegment={props.isLastSegment}
-		// 	lastValidPartIndex={props.lastValidPartIndex}
-		// 	onHeaderNoteClick={props.onHeaderNoteClick}
-		// 	onSwitchViewMode={props.onSwitchViewMode}
-		// 	budgetDuration={props.budgetDuration}
-		// 	showCountdownToSegment={props.showCountdownToSegment}
-		// 	fixedSegmentDuration={props.fixedSegmentDuration}
-		// 	subscriptionsReady={initialSubscriptionsReady}
-		// />
 		<SegmentList
 			id={props.id}
 			ref={segmentRef}

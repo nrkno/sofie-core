@@ -5,10 +5,8 @@ import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { DashboardPanel } from './DashboardPanel'
 import { ExternalFramePanel } from './ExternalFramePanel'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
-import { Studio } from '../../../lib/collections/Studios'
 import { PieceCountdownPanel } from './PieceCountdownPanel'
 import { BucketAdLibItem } from './RundownViewBuckets'
 import { IAdLibListItem } from './AdLibListItem'
@@ -31,16 +29,18 @@ import { StudioNamePanel } from './StudioNamePanel'
 import { SegmentNamePanel } from './SegmentNamePanel'
 import { PartNamePanel } from './PartNamePanel'
 import { ColoredBoxPanel } from './ColoredBoxPanel'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
 	playlist: RundownPlaylist
 	// buckets: Bucket[] | undefined
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	showStyleVariant: ShowStyleVariant
 	studioMode: boolean
 	shouldQueue: boolean
-	studio: Studio
+	studio: UIStudio
 	onChangeQueueAdLib?: (isQueue: boolean, e: any) => void
 
 	selectedPiece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined

@@ -5,7 +5,7 @@ import { EditAttribute } from '../lib/EditAttribute'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { doUserAction, UserAction } from '../lib/userAction'
 import { MeteorCall } from '../../lib/api/methods'
-import { SnapshotId } from '../../lib/collections/Snapshots'
+import { SnapshotId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	playlist: RundownPlaylist

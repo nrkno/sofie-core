@@ -16,12 +16,13 @@ import { SystemWriteAccess } from '../security/system'
 import { check } from '../../lib/check'
 import { AsyncMongoCollection, createMongoCollection, IndexSpecifier } from '../../lib/collections/lib'
 import { getBundle as getTranslationBundleInner } from './translationsBundles'
-import { TranslationsBundle, TranslationsBundleId } from '../../lib/collections/TranslationsBundles'
+import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ClientAPI } from '../../lib/api/client'
 import { cleanupOldDataInner } from './cleanup'
 import { IndexSpecification } from 'mongodb'
 import { nightlyCronjobInner } from '../cronjobs'
+import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 async function setupIndexes(removeOldIndexes: boolean = false): Promise<Array<IndexSpecification>> {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.

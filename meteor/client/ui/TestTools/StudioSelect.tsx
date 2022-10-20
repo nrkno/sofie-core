@@ -2,9 +2,10 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Studio, Studios } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import { unprotectString } from '../../../lib/lib'
+import { UIStudio } from '../../../lib/api/studios'
+import { UIStudios } from '../Collections'
 
 interface IStudioSelectProps {
 	title: string
@@ -12,12 +13,12 @@ interface IStudioSelectProps {
 }
 interface IStudioSelectState {}
 interface IStudioSelectTrackedProps {
-	studios: Studio[]
+	studios: UIStudio[]
 }
 const StudioSelect = translateWithTracker<IStudioSelectProps, IStudioSelectState, IStudioSelectTrackedProps>(
 	(_props: IStudioSelectProps) => {
 		return {
-			studios: Studios.find(
+			studios: UIStudios.find(
 				{},
 				{
 					sort: {

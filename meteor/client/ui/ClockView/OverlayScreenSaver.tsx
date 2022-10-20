@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react'
 import { Clock } from '../StudioScreenSaver/Clock'
-import { StudioId } from '../../../lib/collections/Studios'
 import { useTracker, useSubscription } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PubSub } from '../../../lib/api/pubsub'
 import { findNextPlaylist } from '../StudioScreenSaver/StudioScreenSaver'
 import Velocity from 'velocity-animate'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export function OverlayScreenSaver({ studioId }: { studioId: StudioId }): JSX.Element {
 	const studioNameRef = useRef<HTMLDivElement>(null)
@@ -16,7 +16,7 @@ export function OverlayScreenSaver({ studioId }: { studioId: StudioId }): JSX.El
 		}
 	})
 
-	useSubscription(PubSub.studios, { _id: studioId })
+	useSubscription(PubSub.uiStudio, studioId)
 	useSubscription(PubSub.rundownPlaylists, { studioId: studioId, activationId: { $exists: false } })
 
 	const data = useTracker(() => findNextPlaylist({ studioId }), [studioId])

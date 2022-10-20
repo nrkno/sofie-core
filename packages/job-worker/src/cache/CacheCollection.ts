@@ -192,6 +192,11 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		return res
 	}
 
+	/**
+	 * Insert a single document
+	 * @param doc The document to insert
+	 * @returns The id of the inserted document
+	 */
 	insert(doc: TDoc): TDoc['_id'] {
 		this.assertNotToBeRemoved('insert')
 
@@ -215,6 +220,12 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		if (span) span.end()
 		return doc._id
 	}
+
+	/**
+	 * Remove one or more documents
+	 * @param selector Id of the document to update, a function to check each document, or null to remove all
+	 * @returns The ids of the removed documents
+	 */
 	remove(selector: TDoc['_id'] | SelectorFunction<TDoc> | null): Array<TDoc['_id']> {
 		this.assertNotToBeRemoved('remove')
 
@@ -243,9 +254,13 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * @param selector Id of the document to update
 	 * @param modifier The modifier to apply to the document. Return false to report the document as unchanged
 	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed if the modifer returned a doc
-	 * @returns All the ids that matched the selector
+	 * @returns The id of the updated document, if it was updated
 	 */
-	updateOne(selector: TDoc['_id'], modifier: (doc: TDoc) => TDoc | false, forceUpdate?: boolean): Array<TDoc['_id']> {
+	updateOne(
+		selector: TDoc['_id'],
+		modifier: (doc: TDoc) => TDoc | false,
+		forceUpdate?: boolean
+	): TDoc['_id'] | undefined {
 		this.assertNotToBeRemoved('updateOne')
 
 		const span = this.context.startSpan(`DBCache.update.${this.name}`)
@@ -254,7 +269,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 
 		const doc = this.documents.get(selector)
 
-		const changedIds: Array<TDoc['_id']> = []
+		let result: TDoc['_id'] | undefined
 		if (doc) {
 			const _id = doc.document._id
 
@@ -281,12 +296,12 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 					docEntry.document = newDoc
 					docEntry.updated = true
 				}
-				changedIds.push(_id)
+				result = _id
 			}
 		}
 
 		if (span) span.end()
-		return changedIds
+		return result
 	}
 
 	/**
@@ -338,7 +353,11 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		return changedIds
 	}
 
-	/** Returns true if a doc was replace, false if inserted */
+	/**
+	 * Replace a single document
+	 * @param doc The document to insert
+	 * @returns True if the document was replaced, false if it was inserted
+	 */
 	replace(doc: TDoc | ReadonlyDeep<TDoc>): boolean {
 		this.assertNotToBeRemoved('replace')
 

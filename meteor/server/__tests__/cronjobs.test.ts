@@ -3,8 +3,8 @@ import { testInFiber, runAllTimers, beforeAllInFiber } from '../../__mocks__/hel
 import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { getRandomId, getRandomString, protectString } from '../../lib/lib'
-import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
-import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
+import { UserActionsLog } from '../../lib/collections/UserActionsLog'
+import { Snapshots, SnapshotType } from '../../lib/collections/Snapshots'
 import {
 	IBlueprintPieceType,
 	PieceLifespan,
@@ -15,16 +15,25 @@ import {
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import {
 	PeripheralDevices,
-	PeripheralDeviceId,
 	PeripheralDeviceType,
 	PeripheralDeviceCategory,
 } from '../../lib/collections/PeripheralDevices'
 import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
-import { DBPart, PartId, Parts } from '../../lib/collections/Parts'
-import { SegmentId } from '../../lib/collections/Segments'
+import { DBPart, Parts } from '../../lib/collections/Parts'
 import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { Meteor } from 'meteor/meteor'
+import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import {
+	IngestDataCacheObjId,
+	PartId,
+	PeripheralDeviceId,
+	RundownId,
+	SegmentId,
+	SnapshotId,
+	UserActionsLogItemId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 // Set up mocks for tests in this suite
 let mockCurrentTime = 0
@@ -34,9 +43,6 @@ jest.mock('../logging')
 import '../cronjobs'
 
 import '../api/peripheralDevice'
-import { Meteor } from 'meteor/meteor'
-import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { IngestDataCacheObjId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestDataCache, Rundowns } from '../serverCollections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
@@ -225,7 +231,7 @@ describe('cronjobs', () => {
 				part: part0,
 				reset: true,
 				timings: {
-					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
+					plannedStoppedPlayback: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
 				},
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
@@ -251,7 +257,7 @@ describe('cronjobs', () => {
 				part: part1,
 				reset: true,
 				timings: {
-					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
+					plannedStoppedPlayback: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
 				},
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),

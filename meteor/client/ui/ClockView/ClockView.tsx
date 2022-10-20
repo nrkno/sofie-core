@@ -8,13 +8,13 @@ import { WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { objectPathGet } from '../../../lib/lib'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
-import { StudioId } from '../../../lib/collections/Studios'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { PresenterScreen } from './PresenterScreen'
 import { OverlayScreen } from './OverlayScreen'
 import { OverlayScreenSaver } from './OverlayScreenSaver'
 import { RundownPlaylists } from '../../../lib/clientCollections'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IPropsHeader {
 	key: string

@@ -7,10 +7,10 @@ import { withTranslation } from 'react-i18next'
 import { protectString, unprotectString } from '../../../../lib/lib'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { SettingsNavigation } from '../../../lib/SettingsNavigation'
-import { BlueprintId, Blueprints } from '../../../../lib/collections/Blueprints'
+import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { StudioBaselineStatus } from './Baseline'
-import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 
 interface IStudioGenericPropertiesProps {
@@ -244,7 +244,7 @@ export const StudioGenericProperties = withTranslation()(
 						<label className="field">
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute="settings.forceSettingNowTime"
+								attribute="settings.forceMultiGatewayMode"
 								obj={this.props.studio}
 								type="checkbox"
 								collection={Studios}
@@ -257,7 +257,7 @@ export const StudioGenericProperties = withTranslation()(
 						<label className="field">
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute="settings.nowSafeLatency"
+								attribute="settings.multiGatewayNowSafeLatency"
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}

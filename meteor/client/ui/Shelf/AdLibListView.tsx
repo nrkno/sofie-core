@@ -5,13 +5,13 @@ import { RundownUtils } from '../../lib/rundown'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
 import { RundownLayoutFilter, RundownLayoutFilterBase } from '../../../lib/collections/RundownLayouts'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Studio } from '../../../lib/collections/Studios'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -20,12 +20,12 @@ interface IListViewPropsHeader {
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 	selectedSegment: AdlibSegmentUi | undefined
 	searchFilter: string | undefined
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	noSegments: boolean
 	filter: RundownLayoutFilter | undefined
 	rundownAdLibs?: Array<AdLibPieceUi>
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 }
 
 /**
@@ -39,7 +39,7 @@ interface IListViewPropsHeader {
  */
 export function matchFilter(
 	item: AdLibPieceUi,
-	showStyleBase: ShowStyleBase,
+	showStyleBase: UIShowStyleBase,
 	liveSegment?: AdlibSegmentUi,
 	filter?: RundownLayoutFilterBase,
 	searchFilter?: string,
@@ -73,7 +73,7 @@ export function matchFilter(
 			return false
 		}
 		// Source layer types
-		const sourceLayerType = showStyleBase.sourceLayers.find((i) => i._id === item.sourceLayerId)
+		const sourceLayerType = showStyleBase.sourceLayers[item.sourceLayerId]
 		if (
 			sourceLayerType &&
 			filter.sourceLayerTypes !== undefined &&
@@ -237,7 +237,7 @@ export function AdLibListView(props: IListViewPropsHeader) {
 							next: segment.isNext && !segment.isLive,
 							past:
 								segment.parts.reduce((memo, item) => {
-									return item.timings?.startedPlayback && item.timings?.duration ? memo : false
+									return item.timings?.plannedStartedPlayback && item.timings?.duration ? memo : false
 								}, true) === true,
 						}
 					)}

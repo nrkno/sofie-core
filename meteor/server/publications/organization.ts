@@ -5,7 +5,7 @@ import { Evaluation, Evaluations } from '../../lib/collections/Evaluations'
 import { SnapshotItem, Snapshots } from '../../lib/collections/Snapshots'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { OrganizationReadAccess } from '../security/organization'
-import { FindOptions } from '../../lib/typings/meteor'
+import { FindOptions } from '../../lib/collections/lib'
 import { Organizations, DBOrganization } from '../../lib/collections/Organization'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 

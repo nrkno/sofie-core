@@ -28,11 +28,11 @@ import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { isTouchDevice } from '../../lib/lib'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { protectString } from '../../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
+import { UIStudio } from '../../../lib/api/studios'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
-	studio: Studio
+	studio: UIStudio
 	layer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void

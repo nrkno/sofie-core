@@ -1,8 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { ShowStyleBaseId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -19,6 +17,6 @@ registerIndex(ShowStyleBases, {
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['blueprintConfig', 'blueprintId'])
+		ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['blueprintConfigWithOverrides', 'blueprintId'])
 	}
 })

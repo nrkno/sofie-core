@@ -1,5 +1,4 @@
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import { PackageInfo, WithTimeline } from '@sofie-automation/blueprints-integration'
 import {
 	buildFormatString,
 	acceptFormat,
@@ -10,15 +9,19 @@ import {
 import { MediaObjects, MediaInfo, MediaObject, MediaStream, MediaStreamType } from './../collections/MediaObjects'
 import { literal, protectString } from '../lib'
 import {
+	PackageInfo,
+	WithTimeline,
 	ISourceLayer,
 	SourceLayerType,
 	IBlueprintPieceGeneric,
 	PieceLifespan,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
-import { IStudioSettings, Studio } from '../collections/Studios'
+import { IStudioSettings } from '../collections/Studios'
 import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
 import { EmptyPieceTimelineObjectsBlob, PieceGeneric, PieceStatusCode } from '../collections/Pieces'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { UIStudio } from '../api/studios'
 
 describe('lib/mediaObjects', () => {
 	testInFiber('buildFormatString', () => {
@@ -165,9 +168,12 @@ describe('lib/mediaObjects', () => {
 			sofieUrl: '',
 			frameRate: 25,
 		}
-		const mockStudio: Studio = {
-			...defaultStudio(protectString('studio0')),
+
+		const mockDefaultStudio = defaultStudio(protectString('studio0'))
+		const mockStudio: Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'> = {
+			...mockDefaultStudio,
 			settings: mockStudioSettings,
+			mappings: applyAndValidateOverrides(mockDefaultStudio.mappingsWithOverrides).obj,
 		}
 
 		MediaObjects.insert(

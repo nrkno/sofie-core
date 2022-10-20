@@ -9,7 +9,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { RundownLayoutFilter, RundownLayoutShelfBase } from '../../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -22,7 +21,6 @@ import { Bucket } from '../../../lib/collections/Buckets'
 import { RundownViewBuckets, BucketAdLibItem } from './RundownViewBuckets'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ShelfInspector } from './Inspector/ShelfInspector'
-import { Studio } from '../../../lib/collections/Studios'
 import RundownViewEventBus, {
 	IEventContext,
 	RundownViewEvents,
@@ -37,6 +35,8 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { ShelfDisplayOptions } from '../../lib/shelf'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -49,8 +49,8 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	buckets: Array<Bucket>
 	playlist: RundownPlaylist
 	currentRundown: Rundown
-	studio: Studio
-	showStyleBase: ShowStyleBase
+	studio: UIStudio
+	showStyleBase: UIShowStyleBase
 	showStyleVariant: ShowStyleVariant
 	studioMode: boolean
 	hotkeys: Array<{

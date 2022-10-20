@@ -10,7 +10,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { assertNever, getRandomId, getRank, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
-import { JobContext } from '../jobs'
+import { ProcessedShowStyleBase, JobContext } from '../jobs'
 import {
 	AdlibPieceStartProps,
 	StartStickyPieceOnSourceLayerProps,
@@ -44,9 +44,10 @@ import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-au
 import { PieceLifespan, IBlueprintDirectPlayType, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { executeActionInner } from './playout'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { calculateNowOffsetLatency } from './timeline/multi-gateway'
 
 export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAsAdlibNowProps): Promise<void> {
 	return runJobWithPlayoutCache(
@@ -155,7 +156,7 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 async function pieceTakeNowAsAdlib(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	showStyleBase: ReadonlyDeep<ProcessedShowStyleBase>,
 	partInstance: DBPartInstance,
 	pieceToCopy: PieceInstancePiece,
 	pieceInstanceToCopy: PieceInstance | undefined
@@ -174,8 +175,11 @@ async function pieceTakeNowAsAdlib(
 	// Disable the original piece if from the same Part
 	if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
 		// Ensure the piece being copied isnt currently live
-		if (pieceInstanceToCopy.startedPlayback && pieceInstanceToCopy.startedPlayback <= getCurrentTime()) {
-			const resolvedPieces = getResolvedPieces(context, cache, showStyleBase, partInstance)
+		if (
+			pieceInstanceToCopy.plannedStartedPlayback &&
+			pieceInstanceToCopy.plannedStartedPlayback <= getCurrentTime()
+		) {
+			const resolvedPieces = getResolvedPieces(context, cache, showStyleBase.sourceLayers, partInstance)
 			const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
 
 			if (
@@ -369,9 +373,6 @@ export async function startStickyPieceOnSourceLayer(
 				throw UserError.create(UserErrorMessage.DuringHold)
 			}
 			if (!playlist.currentPartInstanceId) throw UserError.create(UserErrorMessage.NoCurrentPart)
-
-			// if (!data.queue && playlist.currentPartInstanceId !== data.partInstanceId)
-			// 	throw UserError.create(UserErrorMessage.AdlibCurrentPart)
 		},
 		async (cache) => {
 			const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
@@ -381,7 +382,7 @@ export async function startStickyPieceOnSourceLayer(
 			if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)
 
 			const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
-			const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === data.sourceLayerId)
+			const sourceLayer = showStyleBase.sourceLayers[data.sourceLayerId]
 			if (!sourceLayer) throw new Error(`Source layer "${data.sourceLayerId}" not found!`)
 
 			if (!sourceLayer.isSticky)
@@ -421,7 +422,7 @@ export async function innerFindLastPieceOnLayer(
 		playlistActivationId: cache.Playlist.doc.activationId,
 		rundownId: { $in: rundownIds },
 		'piece.sourceLayerId': { $in: sourceLayerId },
-		startedPlayback: {
+		plannedStartedPlayback: {
 			$exists: true,
 		},
 	}
@@ -439,7 +440,7 @@ export async function innerFindLastPieceOnLayer(
 	// TODO - will this cause problems?
 	return context.directCollections.PieceInstances.findOne(query, {
 		sort: {
-			startedPlayback: -1,
+			plannedStartedPlayback: -1,
 		},
 	})
 }
@@ -487,7 +488,7 @@ export async function innerFindLastScriptedPieceOnLayer(
 		return
 	}
 
-	const partStarted = currentPartInstance.timings?.startedPlayback
+	const partStarted = currentPartInstance.timings?.plannedStartedPlayback
 	const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
 	const piecesSortedAsc = pieces
@@ -600,7 +601,7 @@ export function innerStartAdLibPiece(
 export function innerStopPieces(
 	context: JobContext,
 	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	sourceLayers: SourceLayers,
 	currentPartInstance: DBPartInstance,
 	filter: (pieceInstance: PieceInstance) => boolean,
 	timeOffset: number | undefined
@@ -608,13 +609,14 @@ export function innerStopPieces(
 	const span = context.startSpan('innerStopPieces')
 	const stoppedInstances: PieceInstanceId[] = []
 
-	const lastStartedPlayback = currentPartInstance.timings?.startedPlayback
+	const lastStartedPlayback = currentPartInstance.timings?.plannedStartedPlayback
 	if (lastStartedPlayback === undefined) {
 		throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
 	}
 
-	const resolvedPieces = getResolvedPieces(context, cache, showStyleBase, currentPartInstance)
-	const stopAt = getCurrentTime() + (timeOffset || 0)
+	const resolvedPieces = getResolvedPieces(context, cache, sourceLayers, currentPartInstance)
+	const offsetRelativeToNow = (timeOffset || 0) + (calculateNowOffsetLatency(context, cache, undefined) || 0)
+	const stopAt = getCurrentTime() + offsetRelativeToNow
 	const relativeStopAt = stopAt - lastStartedPlayback
 
 	for (const pieceInstance of resolvedPieces) {
@@ -624,7 +626,7 @@ export function innerStopPieces(
 			filter(pieceInstance) &&
 			pieceInstance.resolvedStart !== undefined &&
 			pieceInstance.resolvedStart <= relativeStopAt &&
-			!pieceInstance.stoppedPlayback
+			!pieceInstance.plannedStoppedPlayback
 		) {
 			switch (pieceInstance.piece.lifespan) {
 				case PieceLifespan.WithinPart:
@@ -633,8 +635,14 @@ export function innerStopPieces(
 					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
 
 					cache.PieceInstances.updateOne(pieceInstance._id, (p) => {
-						p.userDuration = {
-							end: relativeStopAt,
+						if (cache.isMultiGatewayMode) {
+							p.userDuration = {
+								endRelativeToNow: offsetRelativeToNow,
+							}
+						} else {
+							p.userDuration = {
+								endRelativeToPart: relativeStopAt,
+							}
 						}
 						return p
 					})
