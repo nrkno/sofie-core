@@ -78,7 +78,7 @@ import {
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './FloatingInspectors/NoraFloatingInspector'
-import { Buckets, Bucket } from '../../lib/collections/Buckets'
+import {  Bucket } from '../../lib/collections/Buckets'
 import { contextMenuHoldToDisplayTime, isEventInInputField } from '../lib/lib'
 import { OffsetPosition } from '../utils/positions'
 import { MeteorCall } from '../../lib/api/methods'
@@ -135,7 +135,7 @@ import {
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { RundownPlaylists, Rundowns } from '../../lib/clientCollections'
+import { Buckets, RundownPlaylists, Rundowns } from '../../lib/clientCollections'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03

@@ -6,6 +6,7 @@ import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLi
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { Bucket } from './collections/Buckets'
 import { createSyncMongoCollection, createSyncReadOnlyMongoCollection } from './collections/lib'
 
 export const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
@@ -19,6 +20,8 @@ export const BucketAdLibActions = createSyncReadOnlyMongoCollection<BucketAdLibA
 )
 
 export const BucketAdLibs = createSyncReadOnlyMongoCollection<BucketAdLib>(CollectionName.BucketAdLibPieces)
+
+export const Buckets = createSyncReadOnlyMongoCollection<Bucket>(CollectionName.Buckets)
 
 export const Rundowns = createSyncReadOnlyMongoCollection<DBRundown>(CollectionName.Rundowns)
 

@@ -1,4 +1,4 @@
-import { Buckets, Bucket } from '../../lib/collections/Buckets'
+import { Bucket } from '../../lib/collections/Buckets'
 import { Credentials, ResolvedCredentials } from './lib/credentials'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { check } from '../../lib/check'
@@ -7,7 +7,7 @@ import { StudioReadAccess, StudioContentWriteAccess, StudioContentAccess } from 
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { AdLibActionId, BucketId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { BucketAdLibActions, BucketAdLibs } from '../serverCollections'
+import { BucketAdLibActions, BucketAdLibs, Buckets } from '../serverCollections'
 
 export namespace BucketSecurity {
 	export interface BucketContentAccess extends StudioContentAccess {

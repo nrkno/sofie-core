@@ -9,6 +9,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
+import { Bucket } from '../lib/collections/Buckets'
 import { createAsyncOnlyMongoCollection, createAsyncMongoCollection } from '../lib/collections/lib'
 import { WorkerStatus } from '../lib/collections/Workers'
 import { registerIndex } from '../lib/database'
@@ -40,6 +41,11 @@ registerIndex(BucketAdLibActions, {
 export const BucketAdLibs = createAsyncMongoCollection<BucketAdLib>(CollectionName.BucketAdLibPieces)
 registerIndex(BucketAdLibs, {
 	bucketId: 1,
+	studioId: 1,
+})
+
+export const Buckets = createAsyncMongoCollection<Bucket>(CollectionName.Buckets)
+registerIndex(Buckets, {
 	studioId: 1,
 })
 
