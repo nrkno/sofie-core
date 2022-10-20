@@ -1,7 +1,6 @@
 import { ProtectedString, getCurrentTime, getCollectionKey } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
-import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
 import { Buckets } from '../../lib/collections/Buckets'
@@ -48,6 +47,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	AdLibActions,
+	AdLibPieces,
 	Blueprints,
 	IngestDataCache,
 	RundownBaselineObjs,

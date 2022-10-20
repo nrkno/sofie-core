@@ -55,7 +55,7 @@ import { DBPart, Parts } from '../../lib/collections/Parts'
 import { EmptyPieceTimelineObjectsBlob, Piece, Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { restartRandomId } from '../random'
 import { MongoMock } from '../mongo'
 import {
@@ -84,7 +84,7 @@ import {
 	ShowStyleBaseId,
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists, Rundowns, Workers, WorkerThreadStatuses } from '../../server/serverCollections'
+import { AdLibPieces, RundownPlaylists, Rundowns, Workers, WorkerThreadStatuses } from '../../server/serverCollections'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',

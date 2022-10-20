@@ -10,9 +10,8 @@ import { EditAttributeType } from '../../../../../../lib/EditAttribute'
 import { useTracker } from '../../../../../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownBaselineAdLibActions } from '../../../../../../../lib/collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibPieces } from '../../../../../../../lib/collections/RundownBaselineAdLibPieces'
-import { AdLibPieces } from '../../../../../../../lib/collections/AdLibPieces'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { AdLibActions } from '../../../../../../../lib/clientCollections'
+import { AdLibActions, AdLibPieces } from '../../../../../../../lib/clientCollections'
 
 interface IProps {
 	index: number

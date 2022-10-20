@@ -1,4 +1,5 @@
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
@@ -14,6 +15,13 @@ export const AdLibActions = createAsyncMongoCollection<AdLibAction>(CollectionNa
 registerIndex(AdLibActions, {
 	rundownId: 1,
 	partId: 1,
+})
+
+export const AdLibPieces = createAsyncMongoCollection<AdLibPiece>(CollectionName.AdLibPieces)
+registerIndex(AdLibPieces, {
+	rundownId: 1,
+	partId: 1,
+	_rank: 1,
 })
 
 export const Blueprints = createAsyncMongoCollection<Blueprint>(CollectionName.Blueprints)
