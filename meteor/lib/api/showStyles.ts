@@ -8,6 +8,8 @@ export interface NewShowStylesAPI {
 	insertShowStyleVariantWithBlueprint(
 		showStyleBaseId: ShowStyleBaseId,
 		blueprintConfig: IBlueprintConfig,
+		_id: ShowStyleVariantId,
+		rundownVersionHash: string,
 		name: string
 	): Promise<ShowStyleVariantId>
 	removeShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>

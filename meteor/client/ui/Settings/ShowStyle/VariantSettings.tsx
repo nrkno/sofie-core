@@ -14,6 +14,9 @@ import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigManifestSettings } from '../ConfigManifestSettings'
 import { UploadButton } from '../../../lib/uploadButton'
+import { getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
+import _ from 'underscore'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
@@ -23,9 +26,12 @@ interface IShowStyleVariantsProps {
 	layerMappings?: { [key: string]: MappingsExt }
 	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
 }
+
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
+	uploadFileKey: number
 }
+
 export const ShowStyleVariantsSettings = withTranslation()(
 	class ShowStyleVariantsSettings extends React.Component<
 		Translated<IShowStyleVariantsProps>,
@@ -36,19 +42,82 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 			this.state = {
 				editedMappings: [],
+				uploadFileKey: Date.now(),
 			}
+		}
+		importVariants(e: React.ChangeEvent<HTMLInputElement>) {
+			const { t } = this.props
+
+			const file = e.target.files ? e.target.files[0] : null
+			if (!file) {
+				return
+			}
+
+			const reader = new FileReader()
+			reader.onload = (e2) => {
+				this.setState({
+					uploadFileKey: Date.now(),
+				})
+
+				const uploadFileContents = (e2.target as any).result
+
+				let newVariants: Array<ShowStyleVariant> = []
+				try {
+					newVariants = JSON.parse(uploadFileContents)
+					if (!_.isArray(newVariants)) {
+						throw new Error('Imported file did not contain an array')
+					}
+				} catch (error) {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.WARNING,
+							t('Failed to import new showstyle variants: {{errorMessage}}', { errorMessage: error + '' }),
+							'VariantSettings'
+						)
+					)
+					return
+				}
+
+				_.forEach(newVariants, (entry) => {
+					MeteorCall.showstyles
+						.insertShowStyleVariantWithBlueprint(
+							entry.showStyleBaseId,
+							entry.blueprintConfig,
+							entry._id,
+							entry._rundownVersionHash,
+							entry.name
+						)
+						.catch((error) => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.WARNING,
+									t('Failed to import Variant ' + entry.name + '. Make sure it is not already imported.', {
+										errorMessage: error + '',
+									}),
+									'VariantSettings'
+								)
+							)
+						})
+				})
+			}
+			reader.readAsText(file)
 		}
 		copyVariant = (showStyleVariant: ShowStyleVariant) => {
 			MeteorCall.showstyles
 				.insertShowStyleVariantWithBlueprint(
 					showStyleVariant.showStyleBaseId,
 					showStyleVariant.blueprintConfig,
-					showStyleVariant.name
+					getRandomId(),
+					'',
+					'Copy of ' + showStyleVariant.name
 				)
 				.catch(console.error)
 		}
 		downloadVariant = (showstyleVariant: ShowStyleVariant) => {
-			const jsonStr = JSON.stringify(showstyleVariant)
+			const variantArray = [showstyleVariant]
+			const jsonStr = JSON.stringify(variantArray)
 
 			const element = document.createElement('a')
 			element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
@@ -205,7 +274,12 @@ export const ShowStyleVariantsSettings = withTranslation()(
 						<button className="btn btn-primary" onClick={this.onAddShowStyleVariant}>
 							<FontAwesomeIcon icon={faPlus} />
 						</button>
-						<UploadButton className="btn btn-secondary mls" accept="application/json,.json">
+						<UploadButton
+							className="btn btn-secondary mls"
+							accept="application/json,.json"
+							onChange={(e) => this.importVariants(e)}
+							key={this.state.uploadFileKey}
+						>
 							<FontAwesomeIcon icon={faUpload} />
 							&nbsp;{t('Import')}
 						</UploadButton>

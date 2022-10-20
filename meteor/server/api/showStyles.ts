@@ -99,6 +99,8 @@ export async function insertShowStyleVariantWithBlueprint(
 	context: MethodContext | Credentials,
 	showStyleBaseId: ShowStyleBaseId,
 	blueprintConfig: IBlueprintConfig,
+	_id: ShowStyleVariantId,
+	_rundownVersionHash: string,
 	name?: string
 ): Promise<ShowStyleVariantId> {
 	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
@@ -106,11 +108,11 @@ export async function insertShowStyleVariantWithBlueprint(
 	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
 
 	return ShowStyleVariants.insertAsync({
-		_id: getRandomId(),
+		_id: _id,
 		showStyleBaseId: showStyleBaseId,
-		name: 'Copy of ' + name || 'Copied variant',
+		name: name || 'Copied variant',
 		blueprintConfig: blueprintConfig,
-		_rundownVersionHash: '',
+		_rundownVersionHash: _rundownVersionHash,
 	})
 }
 export async function removeShowStyleBase(context: MethodContext, showStyleBaseId: ShowStyleBaseId): Promise<void> {
@@ -152,9 +154,18 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	async insertShowStyleVariantWithBlueprint(
 		showStyleBaseId: ShowStyleBaseId,
 		blueprintConfig: IBlueprintConfig,
+		_id: ShowStyleVariantId,
+		_rundownVersionHash: string,
 		name: string
 	) {
-		return insertShowStyleVariantWithBlueprint(this, showStyleBaseId, blueprintConfig, name)
+		return insertShowStyleVariantWithBlueprint(
+			this,
+			showStyleBaseId,
+			blueprintConfig,
+			_id,
+			_rundownVersionHash,
+			name
+		)
 	}
 	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 		return removeShowStyleBase(this, showStyleBaseId)
