@@ -533,7 +533,7 @@ export async function setupDefaultStudioEnvironment(
 		studio,
 		{ organizationId: organizationId }
 	)
-	const { worker, workerThreadStatuses } = setupMockWorker()
+	const { worker, workerThreadStatuses } = await setupMockWorker()
 
 	return {
 		showStyleBaseId,
@@ -978,10 +978,10 @@ export function setupRundownWithAutoplayPart0(
 	return rundownId
 }
 
-export function setupMockWorker(doc?: Partial<WorkerStatus>): {
+export async function setupMockWorker(doc?: Partial<WorkerStatus>): Promise<{
 	worker: WorkerStatus
 	workerThreadStatuses: WorkerThreadStatus[]
-} {
+}> {
 	doc = doc || {}
 
 	const worker: WorkerStatus = {
@@ -1006,7 +1006,7 @@ export function setupMockWorker(doc?: Partial<WorkerStatus>): {
 		statusCode: StatusCode.GOOD,
 		reason: 'OK',
 	}
-	WorkerThreadStatuses.insert(workerThreadStatus0)
+	await WorkerThreadStatuses.insertAsync(workerThreadStatus0)
 	const workerThreadStatus1: WorkerThreadStatus = {
 		_id: getRandomId(),
 		workerId: worker._id,
@@ -1015,7 +1015,7 @@ export function setupMockWorker(doc?: Partial<WorkerStatus>): {
 		statusCode: StatusCode.GOOD,
 		reason: 'OK',
 	}
-	WorkerThreadStatuses.insert(workerThreadStatus1)
+	await WorkerThreadStatuses.insertAsync(workerThreadStatus1)
 
 	return { worker, workerThreadStatuses: [workerThreadStatus0, workerThreadStatus1] }
 }

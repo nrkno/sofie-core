@@ -109,6 +109,22 @@ export function createServerMongoCollection<DBInterface extends { _id: Protected
  * Create a fully featured MongoCollection
  * @param name Name of the collection in mongodb
  * @param options Open options
+ */
+export function createServerAsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
+	name: CollectionName
+	// options?: {
+	// 	connection?: Object | null
+	// 	idGeneration?: string
+	// }
+): ServerAsyncOnlyMongoCollection<DBInterface> {
+	// TODO - this should be using a different class
+	return createServerMongoCollection(name)
+}
+
+/**
+ * Create a fully featured MongoCollection
+ * @param name Name of the collection in mongodb
+ * @param options Open options
  * @deprecated
  */
 export function createMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
@@ -622,7 +638,7 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 }
 
 export interface ServerAsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
-	extends AsyncMongoCollection<DBInterface> {
+	extends AsyncOnlyMongoCollection<DBInterface> {
 	/**
 	 * Allow users to write directly to this collection from client code, subject to limitations you define.
 	 */
@@ -664,7 +680,9 @@ export interface ServerMongoCollection<DBInterface extends { _id: ProtectedStrin
  * A minimal Async wrapping around the base Mongo.Collection type
  */
 export interface AsyncMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
-	extends MongoCollection<DBInterface> {
+	extends MongoCollection<DBInterface>,
+		AsyncOnlyMongoCollection<DBInterface> {}
+export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }> {
 	name: string | null
 
 	findFetchAsync(selector: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<Array<DBInterface>>

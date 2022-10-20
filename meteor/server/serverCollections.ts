@@ -3,7 +3,7 @@ import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/Ing
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
-import { createServerMongoCollection } from '../lib/collections/lib'
+import { createServerAsyncOnlyMongoCollection, createServerMongoCollection } from '../lib/collections/lib'
 import { DBRundownPlaylist } from '../lib/collections/RundownPlaylists'
 import { WorkerStatus } from '../lib/collections/Workers'
 import { registerIndex } from '../lib/database'
@@ -36,4 +36,6 @@ registerIndex(RundownPlaylists, {
 
 export const Workers = createServerMongoCollection<WorkerStatus>(CollectionName.Workers)
 
-export const WorkerThreadStatuses = createServerMongoCollection<WorkerThreadStatus>(CollectionName.WorkerThreads)
+export const WorkerThreadStatuses = createServerAsyncOnlyMongoCollection<WorkerThreadStatus>(
+	CollectionName.WorkerThreads
+)
