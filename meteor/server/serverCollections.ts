@@ -3,24 +3,22 @@ import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/Ing
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
-import { createServerAsyncOnlyMongoCollection, createServerMongoCollection } from '../lib/collections/lib'
+import { createAsyncOnlyMongoCollection, createAsyncMongoCollection } from '../lib/collections/lib'
 import { DBRundownPlaylist } from '../lib/collections/RundownPlaylists'
 import { WorkerStatus } from '../lib/collections/Workers'
 import { registerIndex } from '../lib/database'
 
-export const IngestDataCache = createServerMongoCollection<IngestDataCacheObj>(CollectionName.IngestDataCache)
+export const IngestDataCache = createAsyncMongoCollection<IngestDataCacheObj>(CollectionName.IngestDataCache)
 registerIndex(IngestDataCache, {
 	rundownId: 1,
 })
 
-export const RundownBaselineObjs = createServerMongoCollection<RundownBaselineObj>(
-	CollectionName.RundownBaselineObjects
-)
+export const RundownBaselineObjs = createAsyncMongoCollection<RundownBaselineObj>(CollectionName.RundownBaselineObjects)
 registerIndex(RundownBaselineObjs, {
 	rundownId: 1,
 })
 
-export const Rundowns = createServerMongoCollection<DBRundown>(CollectionName.Rundowns)
+export const Rundowns = createAsyncMongoCollection<DBRundown>(CollectionName.Rundowns)
 registerIndex(Rundowns, {
 	playlistId: 1,
 })
@@ -28,14 +26,12 @@ registerIndex(Rundowns, {
 	playlistExternalId: 1,
 })
 
-export const RundownPlaylists = createServerMongoCollection<DBRundownPlaylist>(CollectionName.RundownPlaylists)
+export const RundownPlaylists = createAsyncMongoCollection<DBRundownPlaylist>(CollectionName.RundownPlaylists)
 registerIndex(RundownPlaylists, {
 	studioId: 1,
 	activationId: 1,
 })
 
-export const Workers = createServerMongoCollection<WorkerStatus>(CollectionName.Workers)
+export const Workers = createAsyncMongoCollection<WorkerStatus>(CollectionName.Workers)
 
-export const WorkerThreadStatuses = createServerAsyncOnlyMongoCollection<WorkerThreadStatus>(
-	CollectionName.WorkerThreads
-)
+export const WorkerThreadStatuses = createAsyncOnlyMongoCollection<WorkerThreadStatus>(CollectionName.WorkerThreads)

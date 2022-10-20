@@ -8,10 +8,10 @@ import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
 import { RoutedMappings } from '../../../lib/collections/Studios'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
-import { createCustomPublicationMongoCollection } from '../../../lib/collections/lib'
+import { createSyncCustomPublicationMongoCollection } from '../../../lib/collections/lib'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-const StudioMappings = createCustomPublicationMongoCollection(CustomCollectionName.StudioMappings)
+const StudioMappings = createSyncCustomPublicationMongoCollection(CustomCollectionName.StudioMappings)
 
 interface IMappingsViewProps {
 	match?: {

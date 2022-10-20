@@ -83,7 +83,7 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
  * @param name Name of the collection in mongodb
  * @param options Open options
  */
-export function createServerMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
+export function createAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	name: CollectionName
 	// options?: {
 	// 	connection?: Object | null
@@ -110,7 +110,7 @@ export function createServerMongoCollection<DBInterface extends { _id: Protected
  * @param name Name of the collection in mongodb
  * @param options Open options
  */
-export function createServerAsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
+export function createAsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	name: CollectionName
 	// options?: {
 	// 	connection?: Object | null
@@ -118,14 +118,14 @@ export function createServerAsyncOnlyMongoCollection<DBInterface extends { _id: 
 	// }
 ): ServerAsyncOnlyMongoCollection<DBInterface> {
 	// TODO - this should be using a different class
-	return createServerMongoCollection(name)
+	return createAsyncMongoCollection(name)
 }
 
 /**
+ * @deprecated
  * Create a fully featured MongoCollection
  * @param name Name of the collection in mongodb
  * @param options Open options
- * @deprecated
  */
 export function createMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	name: CollectionName
@@ -134,7 +134,7 @@ export function createMongoCollection<DBInterface extends { _id: ProtectedString
 	// 	idGeneration?: string
 	// }
 ): ServerMongoCollection<DBInterface> {
-	return createServerMongoCollection(name)
+	return createAsyncMongoCollection(name)
 }
 
 /**
@@ -172,7 +172,7 @@ export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<a
  * Create a sync in-memory Mongo Collection (for ui temporary storage)
  * @param name Name of the collection (for logging)
  */
-export function createInMemoryMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
+export function createInMemorySyncMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	name: string
 ): MongoCollection<DBInterface> {
 	const collection = new Mongo.Collection<DBInterface>(null)
@@ -183,7 +183,7 @@ export function createInMemoryMongoCollection<DBInterface extends { _id: Protect
  * Create a Mongo Collection for use in the client (has sync apis)
  * @param name Name of the collection
  */
-export function createClientMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
+export function createSyncMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	name: CollectionName
 ): MongoCollection<DBInterface> {
 	const collection = getOrCreateMongoCollection(name)
@@ -194,7 +194,7 @@ export function createClientMongoCollection<DBInterface extends { _id: Protected
  * Create a Mongo Collection for use in the client (has sync apis)
  * @param name Name of the collection
  */
-export function createClientMongoReadOnlyCollection<DBInterface extends { _id: ProtectedString<any> }>(
+export function createSyncReadOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	name: CollectionName
 ): MongoReadOnlyCollection<DBInterface> {
 	const collection = getOrCreateMongoCollection(name)
@@ -205,7 +205,7 @@ export function createClientMongoReadOnlyCollection<DBInterface extends { _id: P
  * Create a Mongo Collection for a virtual collection populated by a custom-publication
  * @param name Name of the custom-collection
  */
-export function createCustomPublicationMongoCollection<K extends keyof CustomCollectionType>(
+export function createSyncCustomPublicationMongoCollection<K extends keyof CustomCollectionType>(
 	name: K
 ): MongoCollection<CustomCollectionType[K]> {
 	const collection = new Mongo.Collection<CustomCollectionType[K]>(name)

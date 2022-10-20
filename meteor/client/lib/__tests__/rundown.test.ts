@@ -16,7 +16,7 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists } from '../../../lib/clientCollections'
-import { createClientMongoCollection } from '../../../lib/collections/lib'
+import { createSyncMongoCollection } from '../../../lib/collections/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 describe('client/lib/rundown', () => {
@@ -234,7 +234,7 @@ describe('client/lib/rundown', () => {
 			"User-Stopped Infinite Piece starting in first Part maintains it's length when followed by another Piece",
 			() => {
 				// Create mutable versions of the collections
-				const RundownPlaylists2 = createClientMongoCollection(CollectionName.RundownPlaylists)
+				const RundownPlaylists2 = createSyncMongoCollection(CollectionName.RundownPlaylists)
 
 				const showStyleBase = convertToUIShowStyleBase(env.showStyleBase)
 				const sourceLayerIds = Object.keys(showStyleBase.sourceLayers)
