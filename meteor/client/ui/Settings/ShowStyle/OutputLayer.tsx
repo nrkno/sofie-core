@@ -21,7 +21,7 @@ import { ObjectOverrideSetOp, SomeObjectOverrideOp } from '@sofie-automation/cor
 import { CheckboxControlWithOverrideForObject } from '../../../lib/Components/Checkbox'
 import { useOverrideOpHelper, getAllCurrentAndDeletedItemsFromOverrides } from '../util/OverrideOpHelper'
 import { ReadonlyDeep } from 'type-fest'
-import { TextInputControlWithOverrideForObject } from '../../../lib/Components/TextInput'
+import { TextInputControl, TextInputControlWithOverrideForObject } from '../../../lib/Components/TextInput'
 import { IntInputControlWithOverrideForObject } from '../../../lib/Components/IntInput'
 
 interface IOutputSettingsProps {
@@ -32,12 +32,12 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 	const { t } = useTranslation()
 
 	const [expandedItemIds, setExpandedItemIds] = useState({})
-	const toggleExpanded = useCallback((itemId: string) => {
+	const toggleExpanded = useCallback((itemId: string, forceState?: boolean) => {
 		setExpandedItemIds((oldExpanded) => {
 			// This will leak entries as layers are added and removed, but not fast enough to be a problem
 			return {
 				...oldExpanded,
-				[itemId]: !oldExpanded[itemId],
+				[itemId]: forceState ?? !oldExpanded[itemId],
 			}
 		})
 	}, [])
@@ -124,6 +124,7 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 								setItemValue={overrideHelper.setItemValue}
 								clearItemOverride={overrideHelper.clearItemOverrides}
 								resetItem={overrideHelper.resetItem}
+								changeItemId={overrideHelper.changeItemId}
 							/>
 						) : (
 							item.defaults && (
@@ -178,10 +179,11 @@ interface EntryProps {
 	defaultItem: IOutputLayer | undefined
 	itemOps: ReadonlyDeep<SomeObjectOverrideOp[]>
 	isExpanded: boolean
-	toggleExpanded: (itemId: string) => void
+	toggleExpanded: (itemId: string, forceState?: boolean) => void
 	resetItem: (itemId: string) => void
 	setItemValue: (itemId: string, subPath: string | null, value: any) => void
 	clearItemOverride: (itemId: string, subPath: string) => void
+	changeItemId: (oldItemId: string, newItemId: string) => void
 }
 function OutputLayerEntry({
 	showStyleBase,
@@ -191,6 +193,7 @@ function OutputLayerEntry({
 	resetItem,
 	setItemValue,
 	clearItemOverride,
+	changeItemId,
 	defaultItem,
 	itemOps,
 }: EntryProps) {
@@ -198,6 +201,13 @@ function OutputLayerEntry({
 
 	const toggleEditItem = useCallback(() => toggleExpanded(item._id), [toggleExpanded, item._id])
 	const doResetItem = useCallback(() => resetItem(item._id), [resetItem, item._id])
+	const doChangeItemId = useCallback(
+		(newItemId: string) => {
+			changeItemId(item._id, newItemId)
+			toggleExpanded(newItemId, true)
+		},
+		[changeItemId, toggleExpanded, item._id]
+	)
 
 	const confirmDelete = useCallback(() => {
 		doModalDialog({
@@ -262,20 +272,16 @@ function OutputLayerEntry({
 								/>
 							</div>
 							<div className="mod mvs mhs">
-								<TextInputControlWithOverrideForObject
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
-									label={t('Internal ID')}
-									item={item}
-									defaultItem={defaultItem}
-									itemKey={'_id'}
-									itemOps={itemOps}
-									opPrefix={item._id}
-									// TODO this should probably work differently
-									setValue={setItemValue}
-									clearOverride={clearItemOverride}
-									disabled={!!defaultItem}
-								/>
+								<label className="field">
+									{t('Internal ID')}
+									<TextInputControl
+										modifiedClassName="bghl"
+										classNames="input text-input input-l"
+										value={item._id}
+										handleUpdate={doChangeItemId}
+										disabled={!!defaultItem}
+									/>
+								</label>
 							</div>
 							<div className="mod mvs mhs">
 								<CheckboxControlWithOverrideForObject

@@ -82,6 +82,7 @@ export interface OverrideOpHelper {
 	clearItemOverrides: (itemId: string, subPath: string) => void
 	resetItem: (itemId: string) => void
 	setItemValue: (itemId: string, subPath: string | null, value: any) => void
+	changeItemId: (oldItemId: string, newItemId: string) => void
 }
 
 export function useOverrideOpHelper<T extends object>(
@@ -115,6 +116,44 @@ export function useOverrideOpHelper<T extends object>(
 				saveOverrides(newOps)
 			},
 
+			changeItemId: (oldItemId: string, newItemId: string) => {
+				console.log('changeItemId', oldItemId, newItemId)
+
+				if (!objectWithOverridesRef.current) return
+
+				const { otherOps: newOps, opsForId } = filterOpsForPrefix(objectWithOverridesRef.current.overrides, oldItemId)
+
+				if (
+					!newItemId ||
+					newOps.find((op) => op.path === newItemId) ||
+					objectWithOverridesRef.current.defaults[newItemId]
+				) {
+					throw new Error('Id is invalid or already in use')
+				}
+
+				if (objectWithOverridesRef.current.defaults[oldItemId]) {
+					// Future: should we be able to handle this?
+					throw new Error("Can't change id of object with defaults")
+				} else {
+					// Change the id prefix of the ops
+					for (const op of opsForId) {
+						const newPath = `${newItemId}${op.path.substring(oldItemId.length)}`
+
+						const newOp = {
+							...op,
+							path: newPath,
+						}
+						newOps.push(newOp)
+
+						if (newOp.path === newItemId && newOp.op === 'set') {
+							newOp.value._id = newItemId
+						}
+					}
+
+					saveOverrides(newOps)
+				}
+			},
+
 			setItemValue: (itemId: string, subPath: string | null, value: any) => {
 				console.log(`set ${itemId}.${subPath} = ${value}`)
 
@@ -135,35 +174,7 @@ export function useOverrideOpHelper<T extends object>(
 
 					saveOverrides(newOps)
 				} else if (subPath === '_id') {
-					// Change id
-
-					const { otherOps: newOps, opsForId } = filterOpsForPrefix(objectWithOverridesRef.current.overrides, itemId)
-
-					if (!value || newOps.find((op) => op.path === value) || objectWithOverridesRef.current.defaults[value]) {
-						throw new Error('Id is invalid or already in use')
-					}
-
-					if (objectWithOverridesRef.current.defaults[itemId]) {
-						// Future: should we be able to handle this?
-						throw new Error("Can't change id of object with defaults")
-					} else {
-						// Change the id prefix of the ops
-						for (const op of opsForId) {
-							const newPath = `${value}${op.path.substring(itemId.length)}`
-
-							const newOp = {
-								...op,
-								path: newPath,
-							}
-							newOps.push(newOp)
-
-							if (newOp.path === value && newOp.op === 'set') {
-								newOp.value._id = value
-							}
-						}
-
-						saveOverrides(newOps)
-					}
+					throw new Error('Item id cannot be changed through this helper')
 				} else if (subPath) {
 					// Set a property
 					const { otherOps: newOps, opsForId } = filterOpsForPrefix(objectWithOverridesRef.current.overrides, itemId)
