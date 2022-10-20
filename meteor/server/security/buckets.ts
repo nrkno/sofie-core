@@ -5,8 +5,9 @@ import { check } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { StudioReadAccess, StudioContentWriteAccess, StudioContentAccess } from './studio'
 import { BucketAdLib, BucketAdLibs } from '../../lib/collections/BucketAdlibs'
-import { BucketAdLibAction, BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
+import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { AdLibActionId, BucketId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketAdLibActions } from '../serverCollections'
 
 export namespace BucketSecurity {
 	export interface BucketContentAccess extends StudioContentAccess {
