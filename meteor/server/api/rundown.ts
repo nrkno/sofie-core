@@ -24,11 +24,11 @@ import {
 	VerifiedRundownContentAccess,
 	VerifiedRundownPlaylistContentAccess,
 } from './lib'
-import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
+import { Blueprint } from '../../lib/collections/Blueprints'
 import { Studio, Studios } from '../../lib/collections/Studios'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Rundowns } from '../serverCollections'
+import { Blueprints, Rundowns } from '../serverCollections'
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */

@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Blueprints } from '../../../lib/collections/Blueprints'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
@@ -25,6 +24,7 @@ import { Switch, Route, Redirect } from 'react-router-dom'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints } from '../../../lib/clientCollections'
 
 interface IProps {
 	match: {

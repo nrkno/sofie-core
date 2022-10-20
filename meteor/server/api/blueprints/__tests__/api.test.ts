@@ -2,12 +2,13 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment, packageBlueprint } from '../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { literal, getRandomId, protectString } from '../../../../lib/lib'
-import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints'
+import { Blueprint } from '../../../../lib/collections/Blueprints'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { CoreSystem, SYSTEM_ID, ICoreSystem } from '../../../../lib/collections/CoreSystem'
 import { insertBlueprint, uploadBlueprint } from '../api'
 import { MeteorCall, MethodContext } from '../../../../lib/api/methods'
 import '../../../../__mocks__/_extendJest'
+import { Blueprints } from '../../../serverCollections'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 

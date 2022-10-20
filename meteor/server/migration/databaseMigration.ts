@@ -36,7 +36,6 @@ import {
 import { logger } from '../../lib/logging'
 import { internalStoreSystemSnapshot } from '../api/snapshot'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { Blueprints } from '../../lib/collections/Blueprints'
 import {
 	CoreSystem,
 	GENESIS_SYSTEM_VERSION,
@@ -55,6 +54,7 @@ import {
 } from '../api/blueprints/migrationContext'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { SnapshotId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints } from '../serverCollections'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)

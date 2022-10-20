@@ -17,13 +17,14 @@ import { faPlus, faTrash, faExclamationTriangle, faCaretRight, faCaretDown } fro
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '../../../lib/collections/Blueprints'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Settings as MeteorSettings } from '../../../lib/Settings'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { TFunction, useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { Blueprints } from '../../../lib/clientCollections'
 
 interface ISettingsMenuProps {
 	superAdmin?: boolean

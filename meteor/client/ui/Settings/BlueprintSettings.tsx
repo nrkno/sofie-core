@@ -4,7 +4,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '../../../lib/collections/Blueprints'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
 import { Studio, Studios } from '../../../lib/collections/Studios'
@@ -19,6 +19,7 @@ import { faUpload, faExclamationTriangle } from '@fortawesome/free-solid-svg-ico
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints } from '../../../lib/clientCollections'
 
 interface IProps {
 	match: {

@@ -3,7 +3,6 @@ import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { Blueprints } from '../../lib/collections/Blueprints'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
 import { Buckets } from '../../lib/collections/Buckets'
@@ -48,7 +47,7 @@ import {
 	RundownPlaylistId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IngestDataCache, RundownBaselineObjs, RundownPlaylists, Rundowns } from '../serverCollections'
+import { Blueprints, IngestDataCache, RundownBaselineObjs, RundownPlaylists, Rundowns } from '../serverCollections'
 
 export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Promise<CollectionCleanupResult | string> {
 	if (actuallyCleanup) {

@@ -4,7 +4,7 @@ import { promises as fsp } from 'fs'
 import { getCurrentTime, protectString, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
-import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '../../../lib/collections/Blueprints'
 import {
 	BlueprintManifestType,
 	SomeBlueprintManifest,
@@ -22,8 +22,9 @@ import { SystemWriteAccess } from '../../security/system'
 import { Credentials, isResolvedCredentials } from '../../security/lib/credentials'
 import { Settings } from '../../../lib/Settings'
 import { upsertBundles } from '../translationsBundles'
-import { BlueprintLight, fetchBlueprintLight } from '../../../lib/collections/optimizations'
 import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints } from '../../serverCollections'
+import { fetchBlueprintLight, BlueprintLight } from '../../serverOptimisations'
 
 export async function insertBlueprint(
 	methodContext: MethodContext,

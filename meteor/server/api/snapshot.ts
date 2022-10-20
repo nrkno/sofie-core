@@ -43,7 +43,7 @@ import { ICoreSystem, CoreSystem, parseVersion, getCoreSystemAsync } from '../..
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
+import { Blueprint } from '../../lib/collections/Blueprints'
 import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { importIngestRundown } from './ingest/http'
@@ -85,7 +85,7 @@ import {
 	SnapshotId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists } from '../serverCollections'
+import { Blueprints, RundownPlaylists } from '../serverCollections'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined

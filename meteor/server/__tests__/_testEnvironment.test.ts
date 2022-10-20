@@ -6,7 +6,6 @@ import { waitForPromise, protectString, waitTime, getRandomString } from '../../
 import { testInFiber } from '../../__mocks__/helpers/jest'
 
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { Blueprints } from '../../lib/collections/Blueprints'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { Evaluations } from '../../lib/collections/Evaluations'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
@@ -19,7 +18,7 @@ import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDevice
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Pieces } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { IngestDataCache, RundownBaselineObjs, Rundowns } from '../serverCollections'
+import { Blueprints, IngestDataCache, RundownBaselineObjs, Rundowns } from '../serverCollections'
 import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'

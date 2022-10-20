@@ -15,7 +15,7 @@ import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from './migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './migration/currentSystemVersion'
 import { setSystemStatus, removeSystemStatus } from './systemStatus/systemStatus'
-import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
+import { Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
 import { Studios, Studio } from '../lib/collections/Studios'
@@ -30,6 +30,7 @@ import { createShowStyleCompound } from './api/showStyles'
 import { fetchShowStyleBasesLight } from '../lib/collections/optimizations'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints } from './serverCollections'
 
 export { PackageInfo }
 

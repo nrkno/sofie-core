@@ -13,9 +13,8 @@ import {
 import { logger } from '../logging'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { Blueprints } from '../../lib/collections/Blueprints'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { RundownPlaylists, Rundowns } from '../serverCollections'
+import { Blueprints, RundownPlaylists, Rundowns } from '../serverCollections'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 

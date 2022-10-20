@@ -9,7 +9,6 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/Sh
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
-import { Blueprints } from '../../../lib/collections/Blueprints'
 import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { StudioRoutings } from './Studio/Routings'
 import { StudioDevices } from './Studio/Devices'
@@ -21,6 +20,7 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints } from '../../../lib/clientCollections'
 
 interface IStudioSettingsProps {
 	match: {

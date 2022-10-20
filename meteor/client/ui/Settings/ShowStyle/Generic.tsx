@@ -9,8 +9,8 @@ import { SettingsNavigation } from '../../../lib/SettingsNavigation'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Link } from 'react-router-dom'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
-import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { Studio } from '../../../../lib/collections/Studios'
+import { Blueprints } from '../../../../lib/clientCollections'
 
 interface IShowStyleGenericPropertiesProps {
 	showStyleBase: ShowStyleBase
