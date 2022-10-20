@@ -124,6 +124,7 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 								setItemValue={overrideHelper.setItemValue}
 								clearItemOverride={overrideHelper.clearItemOverrides}
 								resetItem={overrideHelper.resetItem}
+								deleteItem={overrideHelper.deleteItem}
 								changeItemId={overrideHelper.changeItemId}
 							/>
 						) : (
@@ -181,7 +182,8 @@ interface EntryProps {
 	isExpanded: boolean
 	toggleExpanded: (itemId: string, forceState?: boolean) => void
 	resetItem: (itemId: string) => void
-	setItemValue: (itemId: string, subPath: string | null, value: any) => void
+	deleteItem: (itemId: string) => void
+	setItemValue: (itemId: string, subPath: string, value: any) => void
 	clearItemOverride: (itemId: string, subPath: string) => void
 	changeItemId: (oldItemId: string, newItemId: string) => void
 }
@@ -191,6 +193,7 @@ function OutputLayerEntry({
 	isExpanded,
 	toggleExpanded,
 	resetItem,
+	deleteItem,
 	setItemValue,
 	clearItemOverride,
 	changeItemId,
@@ -215,7 +218,7 @@ function OutputLayerEntry({
 			no: t('Cancel'),
 			yes: t('Delete'),
 			onAccept: () => {
-				setItemValue(item._id, null, undefined)
+				deleteItem(item._id)
 			},
 			message: (
 				<React.Fragment>
@@ -224,7 +227,7 @@ function OutputLayerEntry({
 				</React.Fragment>
 			),
 		})
-	}, [t, item._id, item.name, showStyleBase?._id, setItemValue])
+	}, [t, item._id, item.name, showStyleBase?._id, deleteItem])
 
 	return (
 		<>
