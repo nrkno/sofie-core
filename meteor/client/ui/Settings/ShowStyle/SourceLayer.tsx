@@ -1,16 +1,37 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import ClassNames from 'classnames'
-import { faPencilAlt, faTrash, faCheck, faExclamationTriangle, faPlus } from '@fortawesome/free-solid-svg-icons'
+import {
+	faPencilAlt,
+	faTrash,
+	faCheck,
+	faExclamationTriangle,
+	faPlus,
+	faRefresh,
+} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { assertNever, literal, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import Tooltip from 'rc-tooltip'
 import { TFunction, useTranslation } from 'react-i18next'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { EditAttribute } from '../../../lib/EditAttribute'
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { findHighestRank } from '../StudioSettings'
+import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
+import { ObjectOverrideSetOp, SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	getAllCurrentAndDeletedItemsFromOverrides,
+	OverrideOpHelper,
+	useOverrideOpHelper,
+	WrappedOverridableItemNormal,
+} from '../util/OverrideOpHelper'
+import { TextInputControl, TextInputControlWithOverrideForObject } from '../../../lib/Components/TextInput'
+import { CheckboxControlWithOverrideForObject } from '../../../lib/Components/Checkbox'
+import { IntInputControlWithOverrideForObject } from '../../../lib/Components/IntInput'
+import {
+	DropdownInputControlWithOverrideForObject,
+	getDropdownInputOptions,
+} from '../../../lib/Components/DropdownInput'
 
 function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceLayerType) {
 	switch (type) {
@@ -55,16 +76,7 @@ interface IStudioSourcesSettingsProps {
 export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsProps) {
 	const { t } = useTranslation()
 
-	const [expandedItemIds, setExpandedItemIds] = useState({})
-	const toggleExpanded = useCallback((itemId: string) => {
-		setExpandedItemIds((oldExpanded) => {
-			// This will leak entries as layers are added and removed, but not fast enough to be a problem
-			return {
-				...oldExpanded,
-				[itemId]: !oldExpanded[itemId],
-			}
-		})
-	}, [])
+	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
 	const onAddSource = useCallback(() => {
 		const maxRank = findHighestRank(Object.values(showStyleBase.sourceLayersWithOverrides.defaults))
@@ -76,16 +88,37 @@ export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsPro
 			type: SourceLayerType.UNKNOWN,
 		})
 
+		const addOp = literal<ObjectOverrideSetOp>({
+			op: 'set',
+			path: newSource._id,
+			value: newSource,
+		})
+
 		ShowStyleBases.update(showStyleBase._id, {
 			$push: {
-				sourceLayers: newSource,
+				'sourceLayersWithOverrides.overrides': addOp,
 			},
 		})
 	}, [])
 
-	const sortedSourceLayers = Object.values(showStyleBase.sourceLayersWithOverrides.defaults)
-		.filter((l): l is ISourceLayer => !!l)
-		.sort((a, b) => a._rank - b._rank)
+	const sortedSourceLayers = useMemo(
+		() =>
+			getAllCurrentAndDeletedItemsFromOverrides(showStyleBase.sourceLayersWithOverrides, (a, b) => a._rank - b._rank),
+		[showStyleBase.sourceLayersWithOverrides]
+	)
+
+	const saveOverrides = useCallback(
+		(newOps: SomeObjectOverrideOp[]) => {
+			ShowStyleBases.update(showStyleBase._id, {
+				$set: {
+					'sourceLayersWithOverrides.overrides': newOps,
+				},
+			})
+		},
+		[showStyleBase._id]
+	)
+
+	const overrideHelper = useOverrideOpHelper(saveOverrides, showStyleBase.sourceLayersWithOverrides)
 
 	return (
 		<div>
@@ -105,15 +138,19 @@ export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsPro
 			) : null}
 			<table className="expando settings-studio-source-table">
 				<tbody>
-					{sortedSourceLayers.map((item) => (
-						<SourceLayerEntry
-							key={item._id}
-							showStyleBase={showStyleBase}
-							item={item}
-							isExpanded={!!expandedItemIds[item._id]}
-							toggleExpanded={toggleExpanded}
-						/>
-					))}
+					{sortedSourceLayers.map((item) =>
+						item.type === 'deleted' ? (
+							<SourceLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={overrideHelper.resetItem} />
+						) : (
+							<SourceLayerEntry
+								key={item.id}
+								item={item}
+								isExpanded={isExpanded(item.id)}
+								toggleExpanded={toggleExpanded}
+								overrideHelper={overrideHelper}
+							/>
+						)
+					)}
 				</tbody>
 			</table>
 			<div className="mod mhs">
@@ -125,16 +162,49 @@ export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsPro
 	)
 }
 
-interface EntryProps {
-	showStyleBase: ShowStyleBase
+interface DeletedEntryProps {
 	item: ISourceLayer
-	isExpanded: boolean
-	toggleExpanded: (itemId: string) => void
+	doUndelete: (itemId: string) => void
 }
-function SourceLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: EntryProps) {
+function SourceLayerDeletedEntry({ item, doUndelete }: DeletedEntryProps) {
 	const { t } = useTranslation()
 
-	const toggleEditItem = useCallback(() => toggleExpanded(item._id), [toggleExpanded, item._id])
+	const doUndeleteItem = useCallback(() => doUndelete(item._id), [doUndelete, item._id])
+
+	return (
+		<tr>
+			<th className="settings-studio-source-table__name c2 deleted">{item.name}</th>
+			<td className="settings-studio-source-table__id c4 deleted">{item._id}</td>
+			<td className="settings-studio-source-table__type c3">
+				{sourceLayerString(t, Number.parseInt(item.type.toString(), 10) as SourceLayerType)}
+			</td>
+			<td className="settings-studio-output-table__actions table-item-actions c3">
+				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
+					<FontAwesomeIcon icon={faRefresh} />
+				</button>
+			</td>
+		</tr>
+	)
+}
+
+interface EntryProps {
+	item: WrappedOverridableItemNormal<ISourceLayer>
+	isExpanded: boolean
+	toggleExpanded: (itemId: string, force?: boolean) => void
+	overrideHelper: OverrideOpHelper
+}
+function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: EntryProps) {
+	const { t } = useTranslation()
+
+	const toggleEditItem = useCallback(() => toggleExpanded(item.id), [toggleExpanded, item.id])
+	const doResetItem = useCallback(() => overrideHelper.resetItem(item.id), [overrideHelper, item.id])
+	const doChangeItemId = useCallback(
+		(newItemId: string) => {
+			overrideHelper.changeItemId(item.id, newItemId)
+			toggleExpanded(newItemId, true)
+		},
+		[overrideHelper, toggleExpanded, item.id]
+	)
 
 	const confirmDelete = useCallback(() => {
 		doModalDialog({
@@ -142,28 +212,20 @@ function SourceLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: E
 			no: t('Cancel'),
 			yes: t('Delete'),
 			onAccept: () => {
-				if (showStyleBase?._id) {
-					ShowStyleBases.update(showStyleBase._id, {
-						$pull: {
-							sourceLayers: {
-								_id: item._id,
-							},
-						},
-					})
-				}
+				overrideHelper.deleteItem(item.id)
 			},
 			message: (
 				<React.Fragment>
 					<p>
 						{t('Are you sure you want to delete source layer "{{sourceLayerId}}"?', {
-							sourceLayerId: item && item.name,
+							sourceLayerId: item.computed.name,
 						})}
 					</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</React.Fragment>
 			),
 		})
-	}, [t, item._id, item.name, showStyleBase?._id])
+	}, [t, item.id, item.computed.name, overrideHelper])
 
 	return (
 		<>
@@ -172,10 +234,10 @@ function SourceLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: E
 					hl: isExpanded,
 				})}
 			>
-				<th className="settings-studio-source-table__name c2">{item.name}</th>
-				<td className="settings-studio-source-table__id c4">{item._id}</td>
+				<th className="settings-studio-source-table__name c2">{item.computed.name}</th>
+				<td className="settings-studio-source-table__id c4">{item.computed._id}</td>
 				<td className="settings-studio-source-table__type c3">
-					{sourceLayerString(t, Number.parseInt(item.type.toString(), 10) as SourceLayerType)}
+					{sourceLayerString(t, Number.parseInt(item.computed.type.toString(), 10) as SourceLayerType)}
 				</td>
 				<td className="settings-studio-source-table__actions table-item-actions c3">
 					<button className="action-btn" onClick={toggleEditItem}>
@@ -191,232 +253,179 @@ function SourceLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded }: E
 					<td colSpan={4}>
 						<div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Source Name')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.name`}
-										obj={showStyleBase}
-										type="text"
-										collection={ShowStyleBases}
-										className="input text-input input-l"
-									></EditAttribute>
-								</label>
+								<TextInputControlWithOverrideForObject
+									modifiedClassName="bghl"
+									classNames="input text-input input-l"
+									label={t('Source Name')}
+									item={item}
+									itemKey={'name'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
 							</div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Source Abbreviation')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.abbreviation`}
-										obj={showStyleBase}
-										type="text"
-										collection={ShowStyleBases}
-										className="input text-input input-l"
-									></EditAttribute>
-								</label>
+								<TextInputControlWithOverrideForObject
+									modifiedClassName="bghl"
+									classNames="input text-input input-l"
+									label={t('Source Abbreviation')}
+									item={item}
+									itemKey={'abbreviation'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
 							</div>
 							<div className="mod mvs mhs">
 								<label className="field">
 									{t('Internal ID')}
-									<EditAttribute
+									<TextInputControl
 										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}._id`}
-										obj={showStyleBase}
-										type="text"
-										collection={ShowStyleBases}
-										className="input text-input input-l"
-									></EditAttribute>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Source Type')}
-									<div className="select focusable">
-										<EditAttribute
-											modifiedClassName="bghl"
-											attribute={`sourceLayersWithOverrides.defaults.${item._id}.type`}
-											obj={showStyleBase}
-											type="dropdown"
-											options={SourceLayerType}
-											optionsAreNumbers
-											collection={ShowStyleBases}
-											className="focusable-main input-l"
-										></EditAttribute>
-									</div>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.isRemoteInput`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-									></EditAttribute>
-									{t('Is a Live Remote Input')}
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.isGuestInput`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-									></EditAttribute>
-									{t('Is a Guest Input')}
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.isHidden`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-									></EditAttribute>
-									{t('Is hidden')}
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Display Rank')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}._rank`}
-										obj={showStyleBase}
-										type="int"
-										collection={ShowStyleBases}
-										className="input text-input input-l"
-									></EditAttribute>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.onPresenterScreen`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-									></EditAttribute>
-									{t("Display on Presenter's Screen")}
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.onListViewColumn`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-									></EditAttribute>
-									{t('Display in a column in List View')}
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.onListViewAdLibColumn`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-									></EditAttribute>
-									{t('Display AdLibs in a column in List View')}
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.isClearable`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-									></EditAttribute>
-									{t('Pieces on this layer can be cleared')}
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.isSticky`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-									></EditAttribute>
-									{t('Pieces on this layer are sticky')}
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.stickyOriginalOnly`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-									></EditAttribute>
-									{t('Only Pieces present in rundown are sticky')}
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.allowDisable`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
+										classNames="input text-input input-l"
+										value={item.id}
+										handleUpdate={doChangeItemId}
+										disabled={!!item.defaults}
 									/>
-									{t('Allow disabling of Pieces')}
 								</label>
 							</div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.isQueueable`}
-										obj={showStyleBase}
-										type="checkbox"
-										collection={ShowStyleBases}
-										className=""
-									></EditAttribute>
-									{t('AdLibs on this layer can be queued')}
-								</label>
+								<DropdownInputControlWithOverrideForObject
+									classNames="focusable-main input-l"
+									label={t('Source Type')}
+									item={item}
+									itemKey={'type'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+									options={getDropdownInputOptions(SourceLayerType)}
+								/>
 							</div>
 							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Exclusivity group')}
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute={`sourceLayersWithOverrides.defaults.${item._id}.exclusiveGroup`}
-										obj={showStyleBase}
-										type="text"
-										collection={ShowStyleBases}
-										className="input text-input input-l"
-									></EditAttribute>
-								</label>
+								<CheckboxControlWithOverrideForObject
+									label={t('Is a Live Remote Input')}
+									item={item}
+									itemKey={'isRemoteInput'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
+							</div>
+							<div className="mod mvs mhs">
+								<CheckboxControlWithOverrideForObject
+									label={t('Is a Guest Input')}
+									item={item}
+									itemKey={'isGuestInput'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
+							</div>
+							<div className="mod mvs mhs">
+								<CheckboxControlWithOverrideForObject
+									label={t('Is hidden')}
+									item={item}
+									itemKey={'isHidden'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
+							</div>
+							<div className="mod mvs mhs">
+								<IntInputControlWithOverrideForObject
+									modifiedClassName="bghl"
+									classNames="input text-input input-l"
+									label={t('Display Rank')}
+									item={item}
+									itemKey={'_rank'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
+							</div>
+							<div className="mod mvs mhs">
+								<CheckboxControlWithOverrideForObject
+									label={t("Display on Presenter's Screen")}
+									item={item}
+									itemKey={'onPresenterScreen'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
+							</div>
+							<div className="mod mvs mhs">
+								<CheckboxControlWithOverrideForObject
+									label={t('Display in a column in List View')}
+									item={item}
+									itemKey={'onListViewColumn'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
+							</div>
+							<div className="mod mvs mhs">
+								<CheckboxControlWithOverrideForObject
+									label={t('Display AdLibs in a column in List View')}
+									item={item}
+									itemKey={'onListViewAdLibColumn'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
+							</div>
+							<div className="mod mvs mhs">
+								<CheckboxControlWithOverrideForObject
+									label={t('Pieces on this layer can be cleared')}
+									item={item}
+									itemKey={'isClearable'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
+							</div>
+							<div className="mod mvs mhs">
+								<CheckboxControlWithOverrideForObject
+									label={t('Pieces on this layer are sticky')}
+									item={item}
+									itemKey={'isSticky'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
+							</div>
+							<div className="mod mvs mhs">
+								<CheckboxControlWithOverrideForObject
+									label={t('Only Pieces present in rundown are sticky')}
+									item={item}
+									itemKey={'stickyOriginalOnly'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
+							</div>
+							<div className="mod mvs mhs">
+								<CheckboxControlWithOverrideForObject
+									label={t('Allow disabling of Pieces')}
+									item={item}
+									itemKey={'allowDisable'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
+							</div>
+							<div className="mod mvs mhs">
+								<CheckboxControlWithOverrideForObject
+									label={t('AdLibs on this layer can be queued')}
+									item={item}
+									itemKey={'isQueueable'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
+							</div>
+							<div className="mod mvs mhs">
+								<TextInputControlWithOverrideForObject
+									modifiedClassName="bghl"
+									classNames="input text-input input-l"
+									label={t('Exclusivity group')}
+									item={item}
+									itemKey={'exclusiveGroup'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								/>
 							</div>
 						</div>
 						<div className="mod alright">
+							{item.defaults && (
+								<button className="btn btn-primary" onClick={doResetItem} title="Reset to defaults">
+									<FontAwesomeIcon icon={faRefresh} />
+								</button>
+							)}
+							&nbsp;
 							<button className="btn btn-primary" onClick={toggleEditItem}>
 								<FontAwesomeIcon icon={faCheck} />
 							</button>

@@ -11,6 +11,7 @@ import { MongoCollection } from '../../lib/collections/lib'
 import { CheckboxControl } from './Components/Checkbox'
 import { TextInputControl } from './Components/TextInput'
 import { IntInputControl } from './Components/IntInput'
+import { DropdownInputControl, getDropdownInputOptions } from './Components/DropdownInput'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -490,122 +491,20 @@ const EditAttributeDropdown = wrapEditAttribute(
 
 			this.handleChange = this.handleChange.bind(this)
 		}
-		handleChange(event) {
-			// because event.target.value is always a string, use the original value instead
-			const option = _.find(this.getOptions(), (o) => {
-				return o.value + '' === event.target.value + ''
-			})
-
-			const value = option ? option.value : event.target.value
-
+		handleChange(value: string) {
 			this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
 		}
-		getOptions(addOptionForCurrentValue?: boolean) {
-			const options: Array<{ value: any; name: string; i?: number }> = []
-
-			if (Array.isArray(this.props.options)) {
-				// is it an enum?
-				for (const val of this.props.options) {
-					if (typeof val === 'object') {
-						options.push({
-							name: val.name,
-							value: val.value,
-						})
-					} else {
-						options.push({
-							name: val,
-							value: val,
-						})
-					}
-				}
-			} else if (typeof this.props.options === 'object') {
-				// Is options an enum?
-				const keys = Object.keys(this.props.options)
-				const first = this.props.options[keys[0]]
-				if (this.props.options[first] + '' === keys[0] + '') {
-					// is an enum, only pick
-					for (const key in this.props.options) {
-						if (!_.isNaN(parseInt(key, 10))) {
-							// key is a number (the key)
-							const enumValue = this.props.options[key]
-							const enumKey = this.props.options[enumValue]
-							options.push({
-								name: enumValue,
-								value: enumKey,
-							})
-						}
-					}
-				} else {
-					for (const key in this.props.options) {
-						const val = this.props.options[key]
-						if (Array.isArray(val)) {
-							options.push({
-								name: key,
-								value: val,
-							})
-						} else {
-							options.push({
-								name: key + ': ' + val,
-								value: val,
-							})
-						}
-					}
-				}
-			}
-
-			if (addOptionForCurrentValue) {
-				const currentValue = this.getAttribute()
-				const currentOption = _.find(options, (o) => {
-					if (Array.isArray(o.value)) {
-						return _.contains(o.value, currentValue)
-					}
-					return o.value === currentValue
-				})
-				if (!currentOption) {
-					// if currentOption not found, then add it to the list:
-					options.push({
-						name: 'Value: ' + currentValue,
-						value: currentValue,
-					})
-				}
-			}
-
-			for (let i = 0; i < options.length; i++) {
-				options[i].i = i
-			}
-
-			return options
-		}
 		render() {
+			const options = getDropdownInputOptions<string>(this.props.options)
+
 			return (
-				<select
-					className={
-						'form-control' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					value={this.getAttributeText()}
-					onChange={this.handleChange}
+				<DropdownInputControl
+					classNames={this.props.className}
 					disabled={this.props.disabled}
-				>
-					{this.getOptions(true).map((o, j) =>
-						Array.isArray(o.value) ? (
-							<optgroup key={j} label={o.name}>
-								{o.value.map((v, i) => (
-									<option key={i} value={v + ''}>
-										{v}
-									</option>
-								))}
-							</optgroup>
-						) : (
-							<option key={o.i} value={o.value + ''}>
-								{o.name}
-							</option>
-						)
-					)}
-				</select>
+					value={this.getAttribute()}
+					options={options}
+					handleUpdate={this.handleChange}
+				/>
 			)
 		}
 	}
@@ -646,81 +545,8 @@ const EditAttributeDropdownText = wrapEditAttribute(
 				this.handleDiscard()
 			}
 		}
-		getOptions(addOptionForCurrentValue?: boolean) {
-			const options: Array<{ value: any; name: string; i?: number }> = []
-
-			if (Array.isArray(this.props.options)) {
-				// is it an enum?
-				for (const val of this.props.options) {
-					if (typeof val === 'object') {
-						options.push({
-							name: val.name,
-							value: val.value,
-						})
-					} else {
-						options.push({
-							name: val,
-							value: val,
-						})
-					}
-				}
-			} else if (typeof this.props.options === 'object') {
-				// Is options an enum?
-				const keys = Object.keys(this.props.options)
-				const first = this.props.options[keys[0]]
-				if (this.props.options[first] + '' === keys[0] + '') {
-					// is an enum, only pick
-					for (const key in this.props.options) {
-						if (!_.isNaN(parseInt(key, 10))) {
-							// key is a number (the key)
-							const enumValue = this.props.options[key]
-							const enumKey = this.props.options[enumValue]
-							options.push({
-								name: enumValue,
-								value: enumKey,
-							})
-						}
-					}
-				} else {
-					for (const key in this.props.options) {
-						const val = this.props.options[key]
-						if (Array.isArray(val)) {
-							options.push({
-								name: key,
-								value: val,
-							})
-						} else {
-							options.push({
-								name: key + ': ' + val,
-								value: val,
-							})
-						}
-					}
-				}
-			}
-
-			if (addOptionForCurrentValue) {
-				const currentValue = this.getAttribute()
-				const currentOption = _.find(options, (o) => {
-					if (Array.isArray(o.value)) {
-						return _.contains(o.value, currentValue)
-					}
-					return o.value === currentValue
-				})
-				if (!currentOption) {
-					// if currentOption not found, then add it to the list:
-					options.push({
-						name: 'Value: ' + currentValue,
-						value: currentValue,
-					})
-				}
-			}
-
-			for (let i = 0; i < options.length; i++) {
-				options[i].i = i
-			}
-
-			return options
+		getOptions() {
+			return getDropdownInputOptions(this.props.options)
 		}
 		render() {
 			return (
@@ -746,7 +572,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 					/>
 
 					<datalist id={this._id}>
-						{this.getOptions(false).map((o, j) =>
+						{this.getOptions().map((o, j) =>
 							Array.isArray(o.value) ? (
 								<optgroup key={j} label={o.name}>
 									{o.value.map((v, i) => (

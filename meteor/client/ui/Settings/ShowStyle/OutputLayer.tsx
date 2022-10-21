@@ -108,7 +108,9 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 			<table className="expando settings-studio-output-table">
 				<tbody>
 					{sortedOutputLayers.map((item) =>
-						item.computed ? (
+						item.type === 'deleted' ? (
+							<OutputLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={overrideHelper.resetItem} />
+						) : (
 							<OutputLayerEntry
 								key={item.id}
 								item={item}
@@ -116,10 +118,6 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 								toggleExpanded={toggleExpanded}
 								overrideHelper={overrideHelper}
 							/>
-						) : (
-							item.defaults && (
-								<OutputLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={overrideHelper.resetItem} />
-							)
 						)
 					)}
 				</tbody>
@@ -138,9 +136,8 @@ interface DeletedEntryProps {
 	doUndelete: (itemId: string) => void
 }
 function OutputLayerDeletedEntry({ item, doUndelete }: DeletedEntryProps) {
-	const doUndeleteItem = useCallback(() => {
-		doUndelete(item._id)
-	}, [doUndelete, item._id])
+	const doUndeleteItem = useCallback(() => doUndelete(item._id), [doUndelete, item._id])
+
 	return (
 		<tr>
 			<th className="settings-studio-output-table__name c2 deleted">{item.name}</th>
