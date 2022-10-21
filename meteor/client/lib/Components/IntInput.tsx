@@ -1,9 +1,8 @@
 import { faRefresh } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ReadonlyDeep } from 'type-fest'
+import { OverrideOpHelper, WrappedOverridableItemNormal } from '../../ui/Settings/util/OverrideOpHelper'
 import { hasOpWithPath } from './util'
 
 interface IIntInputControlProps {
@@ -133,53 +132,47 @@ export function IntInputControlWithOverride({
 	)
 }
 
-interface IntInputControlWithOverrideForObjectProps<T> {
+interface IntInputControlWithOverrideForObjectProps<T extends object> {
 	label: string
 	placeholder?: string
-	item: T
-	defaultItem: T | undefined
+	item: WrappedOverridableItemNormal<T>
 	itemKey: keyof T
-	itemOps: ReadonlyDeep<SomeObjectOverrideOp[]>
 	opPrefix: string
-	setValue: (opPrefix: string, key: string, value: number) => void
-	clearOverride: (opPrefix: string, key: string) => void
+	overrideHelper: OverrideOpHelper
 
 	classNames?: string
 	modifiedClassName?: string
 	disabled?: boolean
 }
-export function IntInputControlWithOverrideForObject<T>({
+export function IntInputControlWithOverrideForObject<T extends object>({
 	label,
 	placeholder,
 	item,
 	itemKey,
-	itemOps,
 	opPrefix,
-	defaultItem,
-	setValue,
-	clearOverride,
+	overrideHelper,
 	classNames,
 	modifiedClassName,
 	disabled,
 }: IntInputControlWithOverrideForObjectProps<T>) {
 	const setValueInner = useCallback(
 		(newValue: number) => {
-			setValue(opPrefix, String(itemKey), newValue)
+			overrideHelper.setItemValue(opPrefix, String(itemKey), newValue)
 		},
-		[setValue, opPrefix, itemKey]
+		[overrideHelper, opPrefix, itemKey]
 	)
 	const clearOverrideInner = useCallback(() => {
-		clearOverride(opPrefix, String(itemKey))
-	}, [clearOverride, opPrefix, itemKey])
+		overrideHelper.clearItemOverrides(opPrefix, String(itemKey))
+	}, [overrideHelper, opPrefix, itemKey])
 
-	if (defaultItem) {
+	if (item.defaults) {
 		return (
 			<IntInputControlWithOverride
-				value={Number(item[itemKey] || '0')}
+				value={Number(item.computed[itemKey] || '0')}
 				handleUpdate={setValueInner}
-				isOverridden={hasOpWithPath(itemOps, opPrefix, String(itemKey))}
+				isOverridden={hasOpWithPath(item.overrideOps, opPrefix, String(itemKey))}
 				clearOverride={clearOverrideInner}
-				defaultValue={Number(defaultItem[String(itemKey)])}
+				defaultValue={Number(item.defaults[String(itemKey)])}
 				label={label}
 				placeholder={placeholder}
 				classNames={classNames}
@@ -192,7 +185,7 @@ export function IntInputControlWithOverrideForObject<T>({
 			<label className="field">
 				{label}
 				<IntInputControl
-					value={Number(item[itemKey] || '0')}
+					value={Number(item.computed[itemKey] || '0')}
 					handleUpdate={setValueInner}
 					placeholder={placeholder}
 					classNames={classNames}

@@ -19,8 +19,12 @@ import { doModalDialog } from '../../../lib/ModalDialog'
 import { findHighestRank } from '../StudioSettings'
 import { ObjectOverrideSetOp, SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { CheckboxControlWithOverrideForObject } from '../../../lib/Components/Checkbox'
-import { useOverrideOpHelper, getAllCurrentAndDeletedItemsFromOverrides } from '../util/OverrideOpHelper'
-import { ReadonlyDeep } from 'type-fest'
+import {
+	useOverrideOpHelper,
+	getAllCurrentAndDeletedItemsFromOverrides,
+	OverrideOpHelper,
+	WrappedOverridableItemNormal,
+} from '../util/OverrideOpHelper'
 import { TextInputControl, TextInputControlWithOverrideForObject } from '../../../lib/Components/TextInput'
 import { IntInputControlWithOverrideForObject } from '../../../lib/Components/IntInput'
 
@@ -116,16 +120,10 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 							<OutputLayerEntry
 								key={item.id}
 								showStyleBase={showStyleBase}
-								item={item.computed}
-								defaultItem={item.defaults}
+								item={item}
 								isExpanded={!!expandedItemIds[item.id]}
-								itemOps={item.overrideOps}
 								toggleExpanded={toggleExpanded}
-								setItemValue={overrideHelper.setItemValue}
-								clearItemOverride={overrideHelper.clearItemOverrides}
-								resetItem={overrideHelper.resetItem}
-								deleteItem={overrideHelper.deleteItem}
-								changeItemId={overrideHelper.changeItemId}
+								overrideHelper={overrideHelper}
 							/>
 						) : (
 							item.defaults && (
@@ -176,40 +174,22 @@ function OutputLayerDeletedEntry({ item, doUndelete }: DeletedEntryProps) {
 
 interface EntryProps {
 	showStyleBase: ShowStyleBase
-	item: IOutputLayer
-	defaultItem: IOutputLayer | undefined
-	itemOps: ReadonlyDeep<SomeObjectOverrideOp[]>
+	item: WrappedOverridableItemNormal<IOutputLayer>
 	isExpanded: boolean
 	toggleExpanded: (itemId: string, forceState?: boolean) => void
-	resetItem: (itemId: string) => void
-	deleteItem: (itemId: string) => void
-	setItemValue: (itemId: string, subPath: string, value: any) => void
-	clearItemOverride: (itemId: string, subPath: string) => void
-	changeItemId: (oldItemId: string, newItemId: string) => void
+	overrideHelper: OverrideOpHelper
 }
-function OutputLayerEntry({
-	showStyleBase,
-	item,
-	isExpanded,
-	toggleExpanded,
-	resetItem,
-	deleteItem,
-	setItemValue,
-	clearItemOverride,
-	changeItemId,
-	defaultItem,
-	itemOps,
-}: EntryProps) {
+function OutputLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded, overrideHelper }: EntryProps) {
 	const { t } = useTranslation()
 
-	const toggleEditItem = useCallback(() => toggleExpanded(item._id), [toggleExpanded, item._id])
-	const doResetItem = useCallback(() => resetItem(item._id), [resetItem, item._id])
+	const toggleEditItem = useCallback(() => toggleExpanded(item.id), [toggleExpanded, item.id])
+	const doResetItem = useCallback(() => overrideHelper.resetItem(item.id), [overrideHelper, item.id])
 	const doChangeItemId = useCallback(
 		(newItemId: string) => {
-			changeItemId(item._id, newItemId)
+			overrideHelper.changeItemId(item.id, newItemId)
 			toggleExpanded(newItemId, true)
 		},
-		[changeItemId, toggleExpanded, item._id]
+		[overrideHelper, toggleExpanded, item.id]
 	)
 
 	const confirmDelete = useCallback(() => {
@@ -218,16 +198,16 @@ function OutputLayerEntry({
 			no: t('Cancel'),
 			yes: t('Delete'),
 			onAccept: () => {
-				deleteItem(item._id)
+				overrideHelper.deleteItem(item.id)
 			},
 			message: (
 				<React.Fragment>
-					<p>{t('Are you sure you want to delete output layer "{{outputId}}"?', { outputId: item?.name })}</p>
+					<p>{t('Are you sure you want to delete output layer "{{outputId}}"?', { outputId: item.computed.name })}</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</React.Fragment>
 			),
 		})
-	}, [t, item._id, item.name, showStyleBase?._id, deleteItem])
+	}, [t, item.id, item.computed.name, showStyleBase?._id, overrideHelper])
 
 	return (
 		<>
@@ -236,12 +216,12 @@ function OutputLayerEntry({
 					hl: isExpanded,
 				})}
 			>
-				<th className="settings-studio-output-table__name c2">{item.name}</th>
-				<td className="settings-studio-output-table__id c4">{item._id}</td>
+				<th className="settings-studio-output-table__name c2">{item.computed.name}</th>
+				<td className="settings-studio-output-table__id c4">{item.computed._id}</td>
 				<td className="settings-studio-output-table__isPGM c3">
 					<div
 						className={ClassNames('switch', 'switch-tight', {
-							'switch-active': item.isPGM,
+							'switch-active': item.computed.isPGM,
 						})}
 					>
 						PGM
@@ -266,12 +246,9 @@ function OutputLayerEntry({
 									classNames="input text-input input-l"
 									label={t('Channel Name')}
 									item={item}
-									defaultItem={defaultItem}
 									itemKey={'name'}
-									itemOps={itemOps}
-									opPrefix={item._id}
-									setValue={setItemValue}
-									clearOverride={clearItemOverride}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
 								/>
 							</div>
 							<div className="mod mvs mhs">
@@ -280,9 +257,9 @@ function OutputLayerEntry({
 									<TextInputControl
 										modifiedClassName="bghl"
 										classNames="input text-input input-l"
-										value={item._id}
+										value={item.id}
 										handleUpdate={doChangeItemId}
-										disabled={!!defaultItem}
+										disabled={!!item.defaults}
 									/>
 								</label>
 							</div>
@@ -290,12 +267,9 @@ function OutputLayerEntry({
 								<CheckboxControlWithOverrideForObject
 									label={t('Is PGM Output')}
 									item={item}
-									defaultItem={defaultItem}
 									itemKey={'isPGM'}
-									itemOps={itemOps}
-									opPrefix={item._id}
-									setValue={setItemValue}
-									clearOverride={clearItemOverride}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
 								/>
 							</div>
 							<div className="mod mvs mhs">
@@ -304,41 +278,32 @@ function OutputLayerEntry({
 									classNames="input text-input input-l"
 									label={t('Display Rank')}
 									item={item}
-									defaultItem={defaultItem}
 									itemKey={'_rank'}
-									itemOps={itemOps}
-									opPrefix={item._id}
-									setValue={setItemValue}
-									clearOverride={clearItemOverride}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
 								/>
 							</div>
 							<div className="mod mvs mhs">
 								<CheckboxControlWithOverrideForObject
 									label={t('Is collapsed by default')}
 									item={item}
-									defaultItem={defaultItem}
 									itemKey={'isDefaultCollapsed'}
-									itemOps={itemOps}
-									opPrefix={item._id}
-									setValue={setItemValue}
-									clearOverride={clearItemOverride}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
 								/>
 							</div>
 							<div className="mod mvs mhs">
 								<CheckboxControlWithOverrideForObject
 									label={t('Is flattened')}
 									item={item}
-									defaultItem={defaultItem}
 									itemKey={'isFlattened'}
-									itemOps={itemOps}
-									opPrefix={item._id}
-									setValue={setItemValue}
-									clearOverride={clearItemOverride}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
 								/>
 							</div>
 						</div>
 						<div className="mod alright">
-							{defaultItem && (
+							{item.defaults && (
 								<button className="btn btn-primary" onClick={doResetItem} title="Reset to defaults">
 									<FontAwesomeIcon icon={faRefresh} />
 								</button>

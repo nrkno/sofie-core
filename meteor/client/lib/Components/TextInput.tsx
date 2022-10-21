@@ -1,9 +1,8 @@
 import { faRefresh } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import React, { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ReadonlyDeep } from 'type-fest'
+import { OverrideOpHelper, WrappedOverridableItemNormal } from '../../ui/Settings/util/OverrideOpHelper'
 import { hasOpWithPath } from './util'
 
 interface ITextInputControlProps {
@@ -121,53 +120,47 @@ export function TextInputControlWithOverride({
 	)
 }
 
-interface TextInputControlWithOverrideForObjectProps<T> {
+interface TextInputControlWithOverrideForObjectProps<T extends object> {
 	label: string
 	placeholder?: string
-	item: T
-	defaultItem: T | undefined
+	item: WrappedOverridableItemNormal<T>
 	itemKey: keyof T
-	itemOps: ReadonlyDeep<SomeObjectOverrideOp[]>
 	opPrefix: string
-	setValue: (opPrefix: string, key: string, value: string) => void
-	clearOverride: (opPrefix: string, key: string) => void
+	overrideHelper: OverrideOpHelper
 
 	classNames?: string
 	modifiedClassName?: string
 	disabled?: boolean
 }
-export function TextInputControlWithOverrideForObject<T>({
+export function TextInputControlWithOverrideForObject<T extends object>({
 	label,
 	placeholder,
 	item,
 	itemKey,
-	itemOps,
 	opPrefix,
-	defaultItem,
-	setValue,
-	clearOverride,
+	overrideHelper,
 	classNames,
 	modifiedClassName,
 	disabled,
 }: TextInputControlWithOverrideForObjectProps<T>) {
 	const setValueInner = useCallback(
 		(newValue: string) => {
-			setValue(opPrefix, String(itemKey), newValue)
+			overrideHelper.setItemValue(opPrefix, String(itemKey), newValue)
 		},
-		[setValue, opPrefix, itemKey]
+		[overrideHelper, opPrefix, itemKey]
 	)
 	const clearOverrideInner = useCallback(() => {
-		clearOverride(opPrefix, String(itemKey))
-	}, [clearOverride, opPrefix, itemKey])
+		overrideHelper.clearItemOverrides(opPrefix, String(itemKey))
+	}, [overrideHelper, opPrefix, itemKey])
 
-	if (defaultItem) {
+	if (item.defaults) {
 		return (
 			<TextInputControlWithOverride
-				value={String(item[itemKey] || '')}
+				value={String(item.computed[itemKey] || '')}
 				handleUpdate={setValueInner}
-				isOverridden={hasOpWithPath(itemOps, opPrefix, String(itemKey))}
+				isOverridden={hasOpWithPath(item.overrideOps, opPrefix, String(itemKey))}
 				clearOverride={clearOverrideInner}
-				defaultValue={String(defaultItem[String(itemKey)])}
+				defaultValue={String(item.defaults[String(itemKey)])}
 				label={label}
 				placeholder={placeholder}
 				classNames={classNames}
@@ -180,7 +173,7 @@ export function TextInputControlWithOverrideForObject<T>({
 			<label className="field">
 				{label}
 				<TextInputControl
-					value={String(item[itemKey] || '')}
+					value={String(item.computed[itemKey] || '')}
 					handleUpdate={setValueInner}
 					placeholder={placeholder}
 					classNames={classNames}

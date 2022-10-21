@@ -1,9 +1,8 @@
 import { faCheckSquare, faRefresh, faSquare } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ReadonlyDeep } from 'type-fest'
+import { OverrideOpHelper, WrappedOverridableItemNormal } from '../../ui/Settings/util/OverrideOpHelper'
 import { hasOpWithPath } from './util'
 
 interface ICheckboxControlProps {
@@ -69,51 +68,45 @@ export function CheckboxControlWithOverride({
 	)
 }
 
-interface CheckboxControlWithOverrideForObjectProps<T> {
+interface CheckboxControlWithOverrideForObjectProps<T extends object> {
 	label: string
-	item: T
-	defaultItem: T | undefined
+	item: WrappedOverridableItemNormal<T>
 	itemKey: keyof T
-	itemOps: ReadonlyDeep<SomeObjectOverrideOp[]>
 	opPrefix: string
-	setValue: (opPrefix: string, key: string, value: boolean) => void
-	clearOverride: (opPrefix: string, key: string) => void
+	overrideHelper: OverrideOpHelper
 }
-export function CheckboxControlWithOverrideForObject<T>({
+export function CheckboxControlWithOverrideForObject<T extends object>({
 	label,
 	item,
 	itemKey,
-	itemOps,
 	opPrefix,
-	defaultItem,
-	setValue,
-	clearOverride,
+	overrideHelper,
 }: CheckboxControlWithOverrideForObjectProps<T>) {
 	const setValueInner = useCallback(
 		(newValue: boolean) => {
-			setValue(opPrefix, String(itemKey), newValue)
+			overrideHelper.setItemValue(opPrefix, String(itemKey), newValue)
 		},
-		[setValue, opPrefix, itemKey]
+		[overrideHelper, opPrefix, itemKey]
 	)
 	const clearOverrideInner = useCallback(() => {
-		clearOverride(opPrefix, String(itemKey))
-	}, [clearOverride, opPrefix, itemKey])
+		overrideHelper.clearItemOverrides(opPrefix, String(itemKey))
+	}, [overrideHelper, opPrefix, itemKey])
 
-	if (defaultItem) {
+	if (item.defaults) {
 		return (
 			<CheckboxControlWithOverride
-				value={!!item[itemKey]}
+				value={!!item.computed[itemKey]}
 				handleUpdate={setValueInner}
-				isOverridden={hasOpWithPath(itemOps, opPrefix, String(itemKey))}
+				isOverridden={hasOpWithPath(item.overrideOps, opPrefix, String(itemKey))}
 				clearOverride={clearOverrideInner}
-				defaultValue={!!defaultItem[String(itemKey)]}
+				defaultValue={!!item.defaults[String(itemKey)]}
 				label={label}
 			/>
 		)
 	} else {
 		return (
 			<label className="field">
-				<CheckboxControl value={!!item[String(itemKey)]} handleUpdate={setValueInner} />
+				<CheckboxControl value={!!item.computed[String(itemKey)]} handleUpdate={setValueInner} />
 				{label}
 			</label>
 		)

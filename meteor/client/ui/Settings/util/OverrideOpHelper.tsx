@@ -34,12 +34,24 @@ function filterOverrideOpsForPrefix(
 	return res
 }
 
-export interface WrappedOverridableItem<T extends object> {
+export interface WrappedOverridableItemDeleted<T extends object> {
+	type: 'deleted'
 	id: string
-	computed: T | undefined
+	computed: undefined
+	defaults: ReadonlyDeep<T>
+	overrideOps: ReadonlyDeep<SomeObjectOverrideOp[]>
+}
+export interface WrappedOverridableItemNormal<T extends object> {
+	type: 'normal'
+	id: string
+	computed: T
 	defaults: ReadonlyDeep<T> | undefined
 	overrideOps: ReadonlyDeep<SomeObjectOverrideOp[]>
 }
+
+export type WrappedOverridableItem<T extends object> =
+	| WrappedOverridableItemDeleted<T>
+	| WrappedOverridableItemNormal<T>
 
 /**
  * Compile a sorted array of all the items currently in the ObjectWithOverrides, and those that have been deleted
@@ -50,7 +62,7 @@ export interface WrappedOverridableItem<T extends object> {
 export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 	rawObject: ReadonlyDeep<ObjectWithOverrides<Record<string, T | undefined>>>,
 	comparitor: (a: T | ReadonlyDeep<T>, b: T | ReadonlyDeep<T>) => number
-) {
+): WrappedOverridableItem<T>[] {
 	const resolvedObject = applyAndValidateOverrides(rawObject).obj
 
 	// Convert the items into an array
@@ -63,7 +75,8 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 	const sortedItems = validItems
 		.sort((a, b) => comparitor(a[1], b[1]))
 		.map(([id, obj]) =>
-			literal<WrappedOverridableItem<T>>({
+			literal<WrappedOverridableItemNormal<T>>({
+				type: 'normal',
 				id: id,
 				computed: obj,
 				defaults: rawObject.defaults[id],
@@ -71,16 +84,15 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 			})
 		)
 
-	type WrappedItemWithDefaults = Omit<WrappedOverridableItem<T>, 'defaults'> & { defaults: ReadonlyDeep<T> }
-
-	const removedOutputLayers: WrappedItemWithDefaults[] = []
+	const removedOutputLayers: WrappedOverridableItemDeleted<T>[] = []
 
 	// Find the items which have been deleted with an override
 	const computedOutputLayerIds = new Set(sortedItems.map((l) => l.id))
 	for (const [id, output] of Object.entries(rawObject.defaults)) {
 		if (!computedOutputLayerIds.has(id) && output) {
 			removedOutputLayers.push(
-				literal<WrappedItemWithDefaults>({
+				literal<WrappedOverridableItemDeleted<T>>({
+					type: 'deleted',
 					id: id,
 					computed: undefined,
 					defaults: output,
