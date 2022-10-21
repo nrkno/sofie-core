@@ -59,11 +59,14 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 				'outputLayersWithOverrides.overrides': addOp,
 			},
 		})
-	}, [])
+	}, [showStyleBase.outputLayersWithOverrides, showStyleBase._id])
 
 	const sortedOutputLayers = useMemo(
 		() =>
-			getAllCurrentAndDeletedItemsFromOverrides(showStyleBase.outputLayersWithOverrides, (a, b) => a._rank - b._rank),
+			getAllCurrentAndDeletedItemsFromOverrides(
+				showStyleBase.outputLayersWithOverrides,
+				(a, b) => a[1]._rank - b[1]._rank
+			),
 		[showStyleBase.outputLayersWithOverrides]
 	)
 

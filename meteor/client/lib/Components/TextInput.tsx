@@ -80,6 +80,7 @@ interface ITextInputControlPropsWithOverride extends ITextInputControlProps {
 	clearOverride: () => void
 
 	label: string
+	hint?: string
 }
 export function TextInputControlWithOverride({
 	classNames,
@@ -93,6 +94,7 @@ export function TextInputControlWithOverride({
 	isOverridden,
 	clearOverride,
 	label,
+	hint,
 }: ITextInputControlPropsWithOverride) {
 	const { t } = useTranslation()
 
@@ -108,6 +110,7 @@ export function TextInputControlWithOverride({
 				placeholder={placeholder}
 				updateOnKey={updateOnKey}
 			/>
+			{hint && <span className="text-s dimmed">{hint}</span>}
 			<span>
 				&nbsp;({t('Default')} = &quot;{defaultValue || ''}&quot;)
 			</span>
@@ -122,6 +125,7 @@ export function TextInputControlWithOverride({
 
 interface TextInputControlWithOverrideForObjectProps<T extends object> {
 	label: string
+	hint?: string
 	placeholder?: string
 	item: WrappedOverridableItemNormal<T>
 	itemKey: keyof T
@@ -134,6 +138,7 @@ interface TextInputControlWithOverrideForObjectProps<T extends object> {
 }
 export function TextInputControlWithOverrideForObject<T extends object>({
 	label,
+	hint,
 	placeholder,
 	item,
 	itemKey,
@@ -162,6 +167,7 @@ export function TextInputControlWithOverrideForObject<T extends object>({
 				clearOverride={clearOverrideInner}
 				defaultValue={String(item.defaults[String(itemKey)])}
 				label={label}
+				hint={hint}
 				placeholder={placeholder}
 				classNames={classNames}
 				modifiedClassName={modifiedClassName}
@@ -180,6 +186,7 @@ export function TextInputControlWithOverrideForObject<T extends object>({
 					modifiedClassName={modifiedClassName}
 					disabled={disabled}
 				/>
+				{hint && <span className="text-s dimmed">{hint}</span>}
 			</label>
 		)
 	}

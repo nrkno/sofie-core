@@ -156,6 +156,7 @@ interface IDropdownInputControlPropsWithOverride<TValue> extends IDropdownInputC
 	clearOverride: () => void
 
 	label: string
+	hint?: string
 }
 export function DropdownInputControlWithOverride<TValue>({
 	classNames,
@@ -167,6 +168,7 @@ export function DropdownInputControlWithOverride<TValue>({
 	isOverridden,
 	clearOverride,
 	label,
+	hint,
 }: IDropdownInputControlPropsWithOverride<TValue>) {
 	const { t } = useTranslation()
 
@@ -190,6 +192,7 @@ export function DropdownInputControlWithOverride<TValue>({
 				options={options}
 				handleUpdate={handleUpdate}
 			/>
+			{hint && <span className="text-s dimmed">{hint}</span>}
 			<span>
 				&nbsp;({t('Default')} = &quot;{defaultValueText || ''}&quot;)
 			</span>
@@ -204,6 +207,7 @@ export function DropdownInputControlWithOverride<TValue>({
 
 interface DropdownInputControlWithOverrideForObjectProps<T extends object, TValue> {
 	label: string
+	hint?: string
 	item: WrappedOverridableItemNormal<T>
 	itemKey: keyof T
 	opPrefix: string
@@ -215,6 +219,7 @@ interface DropdownInputControlWithOverrideForObjectProps<T extends object, TValu
 }
 export function DropdownInputControlWithOverrideForObject<T extends object, TValue>({
 	label,
+	hint,
 	item,
 	itemKey,
 	opPrefix,
@@ -242,6 +247,7 @@ export function DropdownInputControlWithOverrideForObject<T extends object, TVal
 				clearOverride={clearOverrideInner}
 				defaultValue={item.defaults[String(itemKey)]}
 				label={label}
+				hint={hint}
 				classNames={classNames}
 				disabled={disabled}
 				options={options}
@@ -258,6 +264,7 @@ export function DropdownInputControlWithOverrideForObject<T extends object, TVal
 					disabled={disabled}
 					options={options}
 				/>
+				{hint && <span className="text-s dimmed">{hint}</span>}
 			</label>
 		)
 	}

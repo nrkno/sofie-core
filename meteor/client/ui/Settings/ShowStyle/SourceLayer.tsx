@@ -99,11 +99,14 @@ export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsPro
 				'sourceLayersWithOverrides.overrides': addOp,
 			},
 		})
-	}, [])
+	}, [showStyleBase.sourceLayersWithOverrides.defaults, showStyleBase._id])
 
 	const sortedSourceLayers = useMemo(
 		() =>
-			getAllCurrentAndDeletedItemsFromOverrides(showStyleBase.sourceLayersWithOverrides, (a, b) => a._rank - b._rank),
+			getAllCurrentAndDeletedItemsFromOverrides(
+				showStyleBase.sourceLayersWithOverrides,
+				(a, b) => a[1]._rank - b[1]._rank
+			),
 		[showStyleBase.sourceLayersWithOverrides]
 	)
 

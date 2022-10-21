@@ -61,7 +61,7 @@ export type WrappedOverridableItem<T extends object> =
  */
 export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 	rawObject: ReadonlyDeep<ObjectWithOverrides<Record<string, T | undefined>>>,
-	comparitor: (a: T | ReadonlyDeep<T>, b: T | ReadonlyDeep<T>) => number
+	comparitor: (a: [id: string, obj: T | ReadonlyDeep<T>], b: [id: string, obj: T | ReadonlyDeep<T>]) => number
 ): WrappedOverridableItem<T>[] {
 	const resolvedObject = applyAndValidateOverrides(rawObject).obj
 
@@ -73,7 +73,7 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 
 	// Sort and wrap in the return type
 	const sortedItems = validItems
-		.sort((a, b) => comparitor(a[1], b[1]))
+		.sort((a, b) => comparitor(a, b))
 		.map(([id, obj]) =>
 			literal<WrappedOverridableItemNormal<T>>({
 				type: 'normal',
@@ -102,7 +102,7 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 		}
 	}
 
-	removedOutputLayers.sort((a, b) => comparitor(a.defaults, b.defaults))
+	removedOutputLayers.sort((a, b) => comparitor([a.id, a.defaults], [b.id, b.defaults]))
 
 	return [...sortedItems, ...removedOutputLayers]
 }
