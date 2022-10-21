@@ -22,7 +22,7 @@ import {
 } from '@sofie-automation/corelib/dist/deviceConfig'
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
 import { MongoCollection } from '../../../../lib/collections/lib'
-import { renderEditAttribute } from '../components/ConfigManifestEntryComponent'
+import { ManifestEntryWithOverrides, renderEditAttribute } from '../components/ConfigManifestEntryComponent'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import {
 	getAllCurrentAndDeletedItemsFromOverrides,
@@ -359,11 +359,12 @@ function StudioMappingsEntry({
 									overrideHelper={overrideHelper}
 								/>
 							</div>
-							{/* <DeviceMappingSettings
-								studio={this.props.studio}
-								attribute={'mappingsWithOverrides.defaults.' + layerId}
-								manifest={manifest[mapping.device]}
-							/>  */}
+							{manifest &&
+								manifest.map((m) => (
+									<div className="mod mvs mhs" key={m.id}>
+										<ManifestEntryWithOverrides configField={m as any} item={item} overrideHelper={overrideHelper} />
+									</div>
+								))}
 						</div>
 						<div className="mod alright">
 							<button className={ClassNames('btn btn-primary')} onClick={toggleEditItem}>
@@ -440,6 +441,7 @@ export function DeviceMappingSettings({ attribute, showOptional, manifest, studi
 						<label className="field">
 							{m.name}
 							{showOptional && renderOptionalInput(attribute + '.' + m.id, studio, Studios)}
+
 							{renderEditAttribute(Studios, m as any, studio, attribute + '.')}
 							{m.hint && <span className="text-s dimmed">{m.hint}</span>}
 						</label>

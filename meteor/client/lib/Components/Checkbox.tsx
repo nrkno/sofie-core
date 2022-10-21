@@ -69,6 +69,7 @@ export function CheckboxControlWithOverride({
 }
 
 interface CheckboxControlWithOverrideForObjectProps<T extends object> {
+	classNames?: string
 	label: string
 	item: WrappedOverridableItemNormal<T>
 	itemKey: keyof T
@@ -76,6 +77,7 @@ interface CheckboxControlWithOverrideForObjectProps<T extends object> {
 	overrideHelper: OverrideOpHelper
 }
 export function CheckboxControlWithOverrideForObject<T extends object>({
+	classNames,
 	label,
 	item,
 	itemKey,
@@ -95,6 +97,7 @@ export function CheckboxControlWithOverrideForObject<T extends object>({
 	if (item.defaults) {
 		return (
 			<CheckboxControlWithOverride
+				classNames={classNames}
 				value={!!item.computed[itemKey]}
 				handleUpdate={setValueInner}
 				isOverridden={hasOpWithPath(item.overrideOps, opPrefix, String(itemKey))}
@@ -106,7 +109,11 @@ export function CheckboxControlWithOverrideForObject<T extends object>({
 	} else {
 		return (
 			<label className="field">
-				<CheckboxControl value={!!item.computed[String(itemKey)]} handleUpdate={setValueInner} />
+				<CheckboxControl
+					classNames={classNames}
+					value={!!item.computed[String(itemKey)]}
+					handleUpdate={setValueInner}
+				/>
 				{label}
 			</label>
 		)
