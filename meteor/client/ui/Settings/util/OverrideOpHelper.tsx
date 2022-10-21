@@ -125,7 +125,7 @@ export class OverrideOpHelper {
 	 * Clear all of the overrides for an value inside of an item
 	 * This acts as a reset of property of its child properties
 	 */
-	clearItemOverrides(itemId: string, subPath: string): void {
+	clearItemOverrides = (itemId: string, subPath: string): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
 		const opPath = `${itemId}.${subPath}`
@@ -139,7 +139,7 @@ export class OverrideOpHelper {
 	 * Clear all of the overrides for an item
 	 * This acts as a reset to defaults or undelete
 	 */
-	resetItem(itemId: string): void {
+	resetItem = (itemId: string): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
 		const newOps = filterOverrideOpsForPrefix(this.#objectWithOverridesRef.current.overrides, itemId).otherOps
@@ -150,7 +150,7 @@ export class OverrideOpHelper {
 	/**
 	 * Delete an item from the object
 	 */
-	deleteItem(itemId: string): void {
+	deleteItem = (itemId: string): void => {
 		const newOps = filterOverrideOpsForPrefix(this.#objectWithOverridesRef.current.overrides, itemId).otherOps
 		if (this.#objectWithOverridesRef.current.defaults[itemId]) {
 			// If it was from the defaults, we need to mark it deleted
@@ -169,7 +169,7 @@ export class OverrideOpHelper {
 	 * Change the id of an item.
 	 * This is only possible for ones which were created by an override, and does not exist in the defaults
 	 */
-	changeItemId(oldItemId: string, newItemId: string): void {
+	changeItemId = (oldItemId: string, newItemId: string): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
 		const { otherOps: newOps, opsForPrefix: opsForId } = filterOverrideOpsForPrefix(
@@ -212,7 +212,7 @@ export class OverrideOpHelper {
 	 * Set the value of a property of an item.
 	 * Note: the id cannot be changed in this way
 	 */
-	setItemValue(itemId: string, subPath: string, value: any): void {
+	setItemValue = (itemId: string, subPath: string, value: any): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
 		if (subPath === '_id') {
