@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import ClassNames from 'classnames'
 import {
 	faPencilAlt,
@@ -27,6 +27,7 @@ import {
 } from '../util/OverrideOpHelper'
 import { TextInputControl, TextInputControlWithOverrideForObject } from '../../../lib/Components/TextInput'
 import { IntInputControlWithOverrideForObject } from '../../../lib/Components/IntInput'
+import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -35,16 +36,7 @@ interface IOutputSettingsProps {
 export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 	const { t } = useTranslation()
 
-	const [expandedItemIds, setExpandedItemIds] = useState({})
-	const toggleExpanded = useCallback((itemId: string, forceState?: boolean) => {
-		setExpandedItemIds((oldExpanded) => {
-			// This will leak entries as layers are added and removed, but not fast enough to be a problem
-			return {
-				...oldExpanded,
-				[itemId]: forceState ?? !oldExpanded[itemId],
-			}
-		})
-	}, [])
+	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
 	const onAddOutput = useCallback(() => {
 		const maxRank = findHighestRank(Object.values(showStyleBase.outputLayersWithOverrides.defaults))
@@ -119,9 +111,8 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 						item.computed ? (
 							<OutputLayerEntry
 								key={item.id}
-								showStyleBase={showStyleBase}
 								item={item}
-								isExpanded={!!expandedItemIds[item.id]}
+								isExpanded={isExpanded(item.id)}
 								toggleExpanded={toggleExpanded}
 								overrideHelper={overrideHelper}
 							/>
@@ -173,13 +164,12 @@ function OutputLayerDeletedEntry({ item, doUndelete }: DeletedEntryProps) {
 }
 
 interface EntryProps {
-	showStyleBase: ShowStyleBase
 	item: WrappedOverridableItemNormal<IOutputLayer>
 	isExpanded: boolean
 	toggleExpanded: (itemId: string, forceState?: boolean) => void
 	overrideHelper: OverrideOpHelper
 }
-function OutputLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded, overrideHelper }: EntryProps) {
+function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: EntryProps) {
 	const { t } = useTranslation()
 
 	const toggleEditItem = useCallback(() => toggleExpanded(item.id), [toggleExpanded, item.id])
@@ -207,7 +197,7 @@ function OutputLayerEntry({ showStyleBase, item, isExpanded, toggleExpanded, ove
 				</React.Fragment>
 			),
 		})
-	}, [t, item.id, item.computed.name, showStyleBase?._id, overrideHelper])
+	}, [t, item.id, item.computed.name, overrideHelper])
 
 	return (
 		<>
