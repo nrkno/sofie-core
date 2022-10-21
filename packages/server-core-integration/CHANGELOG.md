@@ -3,6 +3,54 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
+
+
+
+
+# [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
+
+
+### Bug Fixes
+
+* remove deprecated ConfigManifestEntryType.Number ([cb777aa](https://github.com/nrkno/tv-automation-server-core/commit/cb777aa1d7738a8b72da8aa21943c58bc9b5df9c))
+
+
+
+# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0...v1.43.0-in-testing.0) (2022-05-18)
+
+
+### Bug Fixes
+
+* type errors ([bbc0945](https://github.com/nrkno/tv-automation-server-core/commit/bbc0945de4d24d21ef657c8631545d11873ada3d))
+
+
+
+# [1.39.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.39.0) (2022-04-29)
+
+
+
+# [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.42.0-in-testing.0) (2022-04-29)
+
+
+
+
+
+# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.43.0-in-testing.0) (2022-05-18)
+
+
+### Bug Fixes
+
+* type errors ([bbc0945](https://github.com/nrkno/tv-automation-server-core/commit/bbc0945de4d24d21ef657c8631545d11873ada3d))
+
+
+
+
+# [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.42.0-in-testing.0) (2022-04-29)
+
 ## [1.41.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.4-0...v1.41.4) (2022-08-18)
 
 **Note:** Version bump only for package @sofie-automation/server-core-integration
@@ -23,192 +71,157 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package @sofie-automation/server-core-integration
 
-
-
-
+# [1.41.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
 
 # [1.41.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.41.0) (2022-06-28)
 
-
 ### Bug Fixes
 
-* add timeout for commands sent to Core from gateways ([caed8c7](https://github.com/nrkno/tv-automation-server-core/commit/caed8c708387457fbd89a40bc3fa96209a48c555))
-
-
-
-
-
-# [1.41.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.41.0-in-testing.1) (2022-04-28)
-
-
+- add timeout for commands sent to Core from gateways ([caed8c7](https://github.com/nrkno/tv-automation-server-core/commit/caed8c708387457fbd89a40bc3fa96209a48c555))
 
 # [1.41.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2...v1.41.0-in-testing.0) (2022-03-28)
 
-
-
 # [1.40.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
-
-
 
 # [1.39.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-1...v1.39.0-in-testing.4) (2022-03-10)
 
-
-
 # [1.39.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
-
-
 
 # [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
 
-
-
 # [1.39.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
-
 
 ### Bug Fixes
 
-* better handling of errors from Core ([3ae8152](https://github.com/nrkno/tv-automation-server-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
-
-
+- better handling of errors from Core ([3ae8152](https://github.com/nrkno/tv-automation-server-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
 
 # [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
 
-
 ### Bug Fixes
 
-* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
-
+- replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
 
 ### Features
 
-* REST method for disabling subdevice ([#649](https://github.com/nrkno/tv-automation-server-core/issues/649)) ([930e27f](https://github.com/nrkno/tv-automation-server-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
+- REST method for disabling subdevice ([#649](https://github.com/nrkno/tv-automation-server-core/issues/649)) ([930e27f](https://github.com/nrkno/tv-automation-server-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
 
+# [1.41.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.41.0-in-testing.1) (2022-04-28)
 
+# [1.41.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.41.0-in-testing.1) (2022-04-28)
 
+# [1.41.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2...v1.41.0-in-testing.0) (2022-03-28)
 
+# [1.39.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.39.0) (2022-04-29)
+
+# [1.39.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.3...v1.39.0-in-testing.7) (2022-03-30)
+
+# [1.39.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.4...v1.39.0-in-testing.5) (2022-03-11)
+
+# [1.39.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-1...v1.39.0-in-testing.4) (2022-03-10)
+
+# [1.39.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
+
+# [1.39.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
+
+# [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
+
+### Features
+
+- REST method for disabling subdevice ([#649](https://github.com/nrkno/tv-automation-server-core/issues/649)) ([930e27f](https://github.com/nrkno/tv-automation-server-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
+
+# [1.39.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.3...v1.39.0-in-testing.7) (2022-03-30)
+
+# [1.40.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
+
+# [1.39.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-1...v1.39.0-in-testing.4) (2022-03-10)
+
+# [1.39.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
+
+# [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
+
+# [1.39.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
+
+### Bug Fixes
+
+- better handling of errors from Core ([3ae8152](https://github.com/nrkno/tv-automation-server-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
+
+# [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
+
+### Bug Fixes
+
+- replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
+
+### Features
+
+- REST method for disabling subdevice ([#649](https://github.com/nrkno/tv-automation-server-core/issues/649)) ([930e27f](https://github.com/nrkno/tv-automation-server-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
 
 # [1.41.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.5...v1.41.0-in-testing.0) (2022-03-28)
 
-
-
 # [1.40.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
 
-
-
 # [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
-
 
 ### Bug Fixes
 
-* better handling of errors from Core ([3ae8152](https://github.com/nrkno/tv-automation-server-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
-* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
-
-
-
-
+- better handling of errors from Core ([3ae8152](https://github.com/nrkno/tv-automation-server-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
+- replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
 
 # [1.40.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.4...v1.40.0-in-testing.1) (2022-03-10)
 
-
-
 # [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
-
 
 ### Bug Fixes
 
-* better handling of errors from Core ([3ae8152](https://github.com/nrkno/tv-automation-server-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
-* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
-
-
-
-
+- better handling of errors from Core ([3ae8152](https://github.com/nrkno/tv-automation-server-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
+- replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
 
 # [1.40.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.1...v1.40.0-in-testing.0) (2022-02-09)
+
 # [1.39.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-1...v1.39.0-in-testing.4) (2022-03-10)
 
-
-
 # [1.39.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
-
-
 
 # [1.39.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
 
-
-
 # [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
-
 
 ### Features
 
-* REST method for disabling subdevice ([#649](https://github.com/nrkno/tv-automation-server-core/issues/649)) ([930e27f](https://github.com/nrkno/tv-automation-server-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
-
-
-
-
+- REST method for disabling subdevice ([#649](https://github.com/nrkno/tv-automation-server-core/issues/649)) ([930e27f](https://github.com/nrkno/tv-automation-server-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
 
 # [1.39.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.2-0...v1.39.0-in-testing.3) (2022-02-14)
 
-
 ### Bug Fixes
 
-* better handling of errors from Core ([3ae8152](https://github.com/nrkno/tv-automation-server-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
-* replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
-
-
-
-
+- better handling of errors from Core ([3ae8152](https://github.com/nrkno/tv-automation-server-core/commit/3ae8152d5428a5cc92e1ebf1c698ccc0c320a61c))
+- replace codecov from npm with github action ([f390abb](https://github.com/nrkno/tv-automation-server-core/commit/f390abbfef492b956ac947534a8a4e9e1a03f521))
 
 # [1.39.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0-in-testing.0...v1.39.0-in-testing.1) (2022-02-07)
 
 **Note:** Version bump only for package @sofie-automation/server-core-integration
 
-
-
-
-
 # [1.39.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.1...v1.39.0-in-testing.0) (2022-02-04)
-
 
 ### Features
 
-* REST method for disabling subdevice ([#649](https://github.com/nrkno/tv-automation-server-core/issues/649)) ([930e27f](https://github.com/nrkno/tv-automation-server-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
-
-
-
-
+- REST method for disabling subdevice ([#649](https://github.com/nrkno/tv-automation-server-core/issues/649)) ([930e27f](https://github.com/nrkno/tv-automation-server-core/commit/930e27f8c955750bffff8984d9df3d0636d4a317))
 
 ## [1.38.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0...v1.38.1) (2022-01-27)
 
 **Note:** Version bump only for package @sofie-automation/server-core-integration
 
-
-
-
-
 # [1.38.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.2...v1.38.0) (2022-01-26)
-
-
 
 # [1.38.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0-in-testing.1...v1.38.0-in-testing.2) (2021-12-17)
 
-
-
 # [1.38.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.1-0...v1.38.0-in-testing.1) (2021-12-17)
-
-
 
 # [1.38.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.37.0...v1.38.0-in-testing.0) (2021-12-17)
 
-
 ### Features
 
-* rundown metadata update ([#591](https://github.com/nrkno/tv-automation-server-core/issues/591)) ([8da7eda](https://github.com/nrkno/tv-automation-server-core/commit/8da7eda76f1eb8f5ab0e84ac75326317f69823de))
-* Rundown view, rundown header, and presenter view customization ([#551](https://github.com/nrkno/tv-automation-server-core/issues/551)) ([f945594](https://github.com/nrkno/tv-automation-server-core/commit/f945594ff7983618c79d66023e8628eeaa93f898)), closes [#554](https://github.com/nrkno/tv-automation-server-core/issues/554)
-
-
-
-
+- rundown metadata update ([#591](https://github.com/nrkno/tv-automation-server-core/issues/591)) ([8da7eda](https://github.com/nrkno/tv-automation-server-core/commit/8da7eda76f1eb8f5ab0e84ac75326317f69823de))
+- Rundown view, rundown header, and presenter view customization ([#551](https://github.com/nrkno/tv-automation-server-core/issues/551)) ([f945594](https://github.com/nrkno/tv-automation-server-core/commit/f945594ff7983618c79d66023e8628eeaa93f898)), closes [#554](https://github.com/nrkno/tv-automation-server-core/issues/554)
 
 # [1.38.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.0-in-testing.1...v1.38.0-in-testing.2) (2021-12-17)
 

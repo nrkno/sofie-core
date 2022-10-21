@@ -1,9 +1,8 @@
 import {
 	CoreConnection,
 	CoreOptions,
-	PeripheralDeviceAPI as P,
 	DDPConnectorOptions,
-	PeripheralDeviceAPI,
+	CollectionObj,
 } from '@sofie-automation/server-core-integration'
 
 import {
@@ -15,7 +14,6 @@ import {
 	MediaObject,
 	DeviceOptionsAny,
 } from 'timeline-state-resolver'
-import { CollectionObj } from '@sofie-automation/server-core-integration'
 
 import * as _ from 'underscore'
 import { DeviceConfig } from './connector'
@@ -25,6 +23,16 @@ import { Logger } from 'winston'
 import { ThreadedClass, MemUsageReport as ThreadMemUsageReport } from 'threadedclass'
 import { Process } from './process'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
+	StatusObject,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
+import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 
 export interface CoreConfig {
 	host: string
@@ -34,7 +42,7 @@ export interface CoreConfig {
 export interface PeripheralDeviceCommand {
 	_id: string
 
-	deviceId: string
+	deviceId: PeripheralDeviceId
 	functionName: string
 	args: Array<any>
 
@@ -73,7 +81,6 @@ export class CoreHandler {
 	private _studioId: string | undefined
 	private _timelineSubscription: string | null = null
 	private _expectedItemsSubscription: string | null = null
-	private _rundownsSubscription: string | null = null
 
 	private _statusInitialized = false
 	private _statusDestroyed = false
@@ -89,7 +96,7 @@ export class CoreHandler {
 		this._process = process
 
 		this.core = new CoreConnection(
-			this.getCoreConnectionOptions('Playout gateway', 'PlayoutCoreParent', P.SUBTYPE_PROCESS)
+			this.getCoreConnectionOptions('Playout gateway', 'PlayoutCoreParent', PERIPHERAL_SUBTYPE_PROCESS)
 		)
 
 		this.core.onConnected(() => {
@@ -103,7 +110,7 @@ export class CoreHandler {
 			this.logger.warn('Core Disconnected!')
 		})
 		this.core.onError((err) => {
-			this.logger.error('Core Error: ' + (err.message || err.toString() || err))
+			this.logger.error('Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString() || err))
 		})
 
 		const ddpConfig: DDPConnectorOptions = {
@@ -139,6 +146,7 @@ export class CoreHandler {
 			this.core.autoSubscribe('mappingsForDevice', this.core.deviceId),
 			this.core.autoSubscribe('timelineForDevice', this.core.deviceId),
 			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
+			this.core.autoSubscribe('rundownsForDevice', this.core.deviceId),
 		])
 
 		this.logger.info('Core: Subscriptions are set up!')
@@ -151,8 +159,8 @@ export class CoreHandler {
 		}
 		// setup observers
 		const observer = this.core.observe('peripheralDevices')
-		observer.added = (id: string) => this.onDeviceChanged(id)
-		observer.changed = (id: string) => this.onDeviceChanged(id)
+		observer.added = (id: string) => this.onDeviceChanged(protectString(id))
+		observer.changed = (id: string) => this.onDeviceChanged(protectString(id))
 		this.setupObserverForPeripheralDeviceCommands(this)
 	}
 	async destroy(): Promise<void> {
@@ -163,32 +171,19 @@ export class CoreHandler {
 	getCoreConnectionOptions(
 		name: string,
 		subDeviceId: string,
-		subDeviceType: DeviceType | P.SUBTYPE_PROCESS
+		subDeviceType: DeviceType | PERIPHERAL_SUBTYPE_PROCESS
 	): CoreOptions {
-		let credentials: {
-			deviceId: string
-			deviceToken: string
+		if (!this._deviceOptions.deviceId) {
+			// this.logger.warn('DeviceId not set, using a temporary random id!')
+			throw new Error('DeviceId is not set!')
 		}
 
-		if (this._deviceOptions.deviceId && this._deviceOptions.deviceToken) {
-			credentials = {
-				deviceId: this._deviceOptions.deviceId + subDeviceId,
-				deviceToken: this._deviceOptions.deviceToken,
-			}
-		} else if (this._deviceOptions.deviceId) {
-			this.logger.warn('Token not set, only id! This might be unsecure!')
-			credentials = {
-				deviceId: this._deviceOptions.deviceId + subDeviceId,
-				deviceToken: 'unsecureToken',
-			}
-		} else {
-			credentials = CoreConnection.getCredentials(subDeviceId)
-		}
 		const options: CoreOptions = {
-			...credentials,
+			deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
+			deviceToken: this._deviceOptions.deviceToken,
 
-			deviceCategory: P.DeviceCategory.PLAYOUT,
-			deviceType: P.DeviceType.PLAYOUT,
+			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: subDeviceType,
 
 			deviceName: name,
@@ -196,13 +191,19 @@ export class CoreHandler {
 
 			configManifest: PLAYOUT_DEVICE_CONFIG,
 		}
-		if (subDeviceType === P.SUBTYPE_PROCESS) options.versions = this._getVersions()
+
+		if (!options.deviceToken) {
+			this.logger.warn('Token not set, only id! This might be unsecure!')
+			options.deviceToken = 'unsecureToken'
+		}
+
+		if (subDeviceType === PERIPHERAL_SUBTYPE_PROCESS) options.versions = this._getVersions()
 		return options
 	}
 	onConnected(fcn: () => any): void {
 		this._onConnected = fcn
 	}
-	onDeviceChanged(id: string): void {
+	onDeviceChanged(id: PeripheralDeviceId): void {
 		if (id === this.core.deviceId) {
 			const col = this.core.getCollection('peripheralDevices')
 			if (!col) throw new Error('collection "peripheralDevices" not found!')
@@ -281,22 +282,6 @@ export class CoreHandler {
 						this.logger.error(err)
 					})
 				this.logger.debug('VIZDEBUG: Subscription to expectedPlayoutItems done')
-				// Set up rundowns data subscription:
-				if (this._rundownsSubscription) {
-					this.core.unsubscribe(this._rundownsSubscription)
-					this._rundownsSubscription = null
-				}
-				this.core
-					.autoSubscribe('rundowns', {
-						studioId: studioId,
-					})
-					.then((subscriptionId) => {
-						this._rundownsSubscription = subscriptionId
-					})
-					.catch((err) => {
-						this.logger.error(err)
-					})
-				this.logger.debug('VIZDEBUG: Subscription to rundowns done')
 			}
 
 			if (this._tsrHandler) {
@@ -325,7 +310,7 @@ export class CoreHandler {
 					this.logger.error('executeFunction error', err, err.stack)
 				}
 				fcnObject.core
-					.callMethod(P.methods.functionReply, [cmd._id, err, res])
+					.callMethod(PeripheralDeviceAPIMethods.functionReply, [cmd._id, err, res])
 					.then(() => {
 						// console.log('cb done')
 					})
@@ -487,15 +472,15 @@ export class CoreHandler {
 		await device.formatDisks()
 	}
 	async updateCoreStatus(): Promise<any> {
-		let statusCode = P.StatusCode.GOOD
+		let statusCode = StatusCode.GOOD
 		const messages: Array<string> = []
 
 		if (!this._statusInitialized) {
-			statusCode = P.StatusCode.BAD
+			statusCode = StatusCode.BAD
 			messages.push('Starting up...')
 		}
 		if (this._statusDestroyed) {
-			statusCode = P.StatusCode.BAD
+			statusCode = StatusCode.BAD
 			messages.push('Shut down')
 		}
 
@@ -547,8 +532,8 @@ export class CoreTSRDeviceHandler {
 	private _tsrHandler: TSRHandler
 	private _subscriptions: Array<string> = []
 	private _hasGottenStatusChange = false
-	private _deviceStatus: P.StatusObject = {
-		statusCode: P.StatusCode.BAD,
+	private _deviceStatus: StatusObject = {
+		statusCode: StatusCode.BAD,
 		messages: ['Starting up...'],
 	}
 
@@ -562,13 +547,6 @@ export class CoreTSRDeviceHandler {
 		this._devicePr = device
 		this._deviceId = deviceId
 		this._tsrHandler = tsrHandler
-
-		// this._coreParentHandler.logger.info('new CoreTSRDeviceHandler ' + device.deviceName)
-
-		// this.core = new CoreConnection(parent.getCoreConnectionOptions('MOS: ' + device.idPrimary, device.idPrimary, false))
-		// this.core.onError((err) => {
-		// 	this._coreParentHandler.logger.error('Core Error: ' + (err.message || err.toString() || err))
-		// })
 	}
 	async init(): Promise<void> {
 		this._device = await this._devicePr
@@ -587,20 +565,15 @@ export class CoreTSRDeviceHandler {
 				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err)
 			)
 		})
-		this.core.onInfo((message) => {
-			this._coreParentHandler.logger.info(
-				'Core Info: ' + ((_.isObject(message) && message.message) || message.toString() || message)
-			)
-		})
 		await this.core.init(this._coreParentHandler.core)
 
 		if (!this._hasGottenStatusChange) {
 			this._deviceStatus = {
 				statusCode: (await this._device.device.canConnect)
 					? (await this._device.device.connected)
-						? P.StatusCode.GOOD
-						: P.StatusCode.BAD
-					: P.StatusCode.GOOD,
+						? StatusCode.GOOD
+						: StatusCode.BAD
+					: StatusCode.GOOD,
 			}
 			this.sendStatus()
 		}
@@ -634,7 +607,7 @@ export class CoreTSRDeviceHandler {
 		// setup observers
 		this._coreParentHandler.setupObserverForPeripheralDeviceCommands(this)
 	}
-	statusChanged(deviceStatus: Partial<P.StatusObject>): void {
+	statusChanged(deviceStatus: Partial<StatusObject>): void {
 		this._hasGottenStatusChange = true
 
 		this._deviceStatus = {
@@ -662,19 +635,19 @@ export class CoreTSRDeviceHandler {
 		}
 	): void {
 		this.core
-			.callMethodLowPrio(PeripheralDeviceAPI.methods.reportCommandError, [errorMessage, ref])
+			.callMethodLowPrio(PeripheralDeviceAPIMethods.reportCommandError, [errorMessage, ref])
 			.catch((error) => this._coreParentHandler.logger.error(`Error when callMethodLowPrio.`, { data: error }))
 	}
 	onUpdateMediaObject(collectionId: string, docId: string, doc: MediaObject | null): void {
 		this.core
-			.callMethodLowPrio(PeripheralDeviceAPI.methods.updateMediaObject, [collectionId, docId, doc])
+			.callMethodLowPrio(PeripheralDeviceAPIMethods.updateMediaObject, [collectionId, docId, doc])
 			.catch((error) =>
 				this._coreParentHandler.logger.error(`Error when updating Media Object.`, { data: error })
 			)
 	}
 	onClearMediaObjectCollection(collectionId: string): void {
 		this.core
-			.callMethodLowPrio(PeripheralDeviceAPI.methods.clearMediaObjectCollection, [collectionId])
+			.callMethodLowPrio(PeripheralDeviceAPIMethods.clearMediaObjectCollection, [collectionId])
 			.catch((error) =>
 				this._coreParentHandler.logger.error(`Error when clearing Media Objects collection:`, { data: error })
 			)
@@ -687,7 +660,7 @@ export class CoreTSRDeviceHandler {
 
 		await this._tsrHandler.tsr.removeDevice(this._deviceId)
 		await this.core.setStatus({
-			statusCode: P.StatusCode.BAD,
+			statusCode: StatusCode.BAD,
 			messages: ['Uninitialized'],
 		})
 	}

@@ -2,10 +2,8 @@ import { Connector } from '../connector'
 import * as Winston from 'winston'
 
 test('Simple test', async () => {
-	let c: Connector
-
-	let logger = Winston.createLogger({
-		transports: [new Winston.transports.Console()]
+	const logger = Winston.createLogger({
+		transports: [new Winston.transports.Console()],
 	})
 	// @ts-ignore
 	logger.info = console.log
@@ -16,7 +14,7 @@ test('Simple test', async () => {
 	// @ts-ignore
 	logger.warn = console.log
 
-	c = new Connector(logger)
+	const c: Connector = new Connector(logger)
 
 	expect(c).toBeInstanceOf(Connector)
 	await c.dispose()

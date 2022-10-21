@@ -1,13 +1,13 @@
 import { PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString, protectStringArray, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { CacheForPlayout } from '../../playout/cache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
-import { ReadonlyDeep, SetRequired } from 'type-fest'
+import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
 import { ContextInfo, RundownUserContext } from './context'
 import {
@@ -31,7 +31,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { JobContext } from '../../jobs'
 import { logChanges } from '../../cache/lib'
-import { MongoModifier } from '../../db'
+import { EditableMongoModifier } from '../../db'
 import { serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export class SyncIngestUpdateToPartInstanceContext
@@ -42,6 +42,8 @@ export class SyncIngestUpdateToPartInstanceContext
 	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance>
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
 
+	private partInstance: DBPartInstance | undefined
+
 	constructor(
 		private readonly _context: JobContext,
 		contextInfo: ContextInfo,
@@ -49,7 +51,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		studio: ReadonlyDeep<DBStudio>,
 		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
-		private partInstance: DBPartInstance,
+		partInstance: DBPartInstance,
 		pieceInstances: PieceInstance[],
 		proposedPieceInstances: PieceInstance[],
 		private playStatus: 'previous' | 'current' | 'next'
@@ -62,6 +64,8 @@ export class SyncIngestUpdateToPartInstanceContext
 			_context.getShowStyleBlueprintConfig(showStyleCompound),
 			rundown
 		)
+
+		this.partInstance = partInstance
 
 		// Create temporary cache databases
 		this._pieceInstanceCache = DbCacheWriteCollection.createFromArray(
@@ -101,6 +105,8 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found`)
 		}
 
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
+
 		// filter the submission to the allowed ones
 		const piece = modifiedPiece
 			? postProcessPieces(
@@ -133,6 +139,8 @@ export class SyncIngestUpdateToPartInstanceContext
 	insertPieceInstance(piece0: IBlueprintPiece): IBlueprintPieceInstance {
 		const trimmedPiece: IBlueprintPiece = _.pick(piece0, IBlueprintPieceObjectsSampleKeys)
 
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
+
 		const piece = postProcessPieces(
 			this._context,
 			[trimmedPiece],
@@ -158,6 +166,8 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`Cannot update PieceInstance "${pieceInstanceId}". Some valid properties must be defined`)
 		}
 
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
+
 		const pieceInstance = this._pieceInstanceCache.findOne(protectString(pieceInstanceId))
 		if (!pieceInstance) {
 			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found`)
@@ -166,7 +176,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PieceInstance "${pieceInstanceId}" does not belong to the current PartInstance`)
 		}
 
-		const update: SetRequired<MongoModifier<PieceInstance>, '$set' | '$unset'> = {
+		const update: EditableMongoModifier<PieceInstance> = {
 			$set: {},
 			$unset: {},
 		}
@@ -187,6 +197,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			if (val === undefined) {
 				update.$unset[`piece.${k}`] = 1
 			} else {
+				// @ts-expect-error This can't key correctly because of the loosely typed `k`
 				update.$set[`piece.${k}`] = val
 			}
 		}
@@ -202,10 +213,14 @@ export class SyncIngestUpdateToPartInstanceContext
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		// filter the submission to the allowed ones
-		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(updatePart, IBlueprintMutatablePartSampleKeys)
+		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(updatePart, [
+			...IBlueprintMutatablePartSampleKeys,
+		])
 		if (Object.keys(trimmedProps).length === 0) {
 			throw new Error(`Cannot update PartInstance. Some valid properties must be defined`)
 		}
+
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
 		const update: any = {
 			$set: {},
@@ -229,7 +244,21 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		return convertPartInstanceToBlueprints(updatedPartInstance)
 	}
+
+	removePartInstance(): void {
+		if (this.playStatus !== 'next') throw new Error(`Only the 'next' PartInstance can be removed`)
+
+		if (this.partInstance) {
+			const partInstanceId = this.partInstance._id
+
+			this._partInstanceCache.remove(partInstanceId)
+			this._pieceInstanceCache.remove((piece) => piece.partInstanceId === partInstanceId)
+		}
+	}
+
 	removePieceInstances(...pieceInstanceIds: string[]): string[] {
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
+
 		const pieceInstances = this._pieceInstanceCache.findFetch({
 			partInstanceId: this.partInstance._id,
 			_id: { $in: protectStringArray(pieceInstanceIds) },

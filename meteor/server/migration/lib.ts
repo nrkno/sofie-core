@@ -4,12 +4,13 @@ import {
 	MigrationStepInput,
 	MigrationStepInputFilteredResult,
 	MigrationStepBase,
+	MigrationStepCore,
 } from '@sofie-automation/blueprints-integration'
 import { Collections, objectPathGet, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
-import { TransformedCollection } from '../../lib/typings/meteor'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { AsyncMongoCollection } from '../../lib/collections/lib'
 
 /**
  * Returns a migration step that ensures the provided property is set in the collection
@@ -18,6 +19,7 @@ export function ensureCollectionProperty<T = any>(
 	collectionName: CollectionName,
 	selector: Mongo.Selector<T>,
 	property: string,
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	defaultValue: any,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
@@ -62,10 +64,11 @@ export function ensureCollectionPropertyManual<T = any>(
 	collectionName: CollectionName,
 	selector: Mongo.Selector<T>,
 	property: string,
-	inputType?: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
-	label?: string,
-	description?: string,
-	defaultValue?: any,
+	inputType: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
+	label: string,
+	description: string,
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	defaultValue: any,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
 	const collection = Collections.get(collectionName)
@@ -162,13 +165,13 @@ export function removeCollectionProperty<T = any>(
 interface RenameContent {
 	content: { [newValue: string]: string }
 }
-export function renamePropertiesInCollection<T extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+export function renamePropertiesInCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	id: string,
-	collection: TransformedCollection<T, DBInterface>,
+	collection: AsyncMongoCollection<DBInterface>,
 	collectionName: string,
-	renames: Partial<{ [newAttr in keyof T]: string | RenameContent }>,
+	renames: Partial<{ [newAttr in keyof DBInterface]: string | RenameContent }>,
 	dependOnResultFrom?: string
-) {
+): Omit<MigrationStepCore, 'version'> {
 	const m: any = {
 		$or: [],
 	}

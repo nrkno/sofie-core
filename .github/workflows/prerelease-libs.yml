@@ -14,7 +14,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package-name: [blueprints-integration, server-core-integration]
+        package-name:
+          - blueprints-integration
+          - server-core-integration
+          - shared-lib
 
     steps:
       - uses: actions/checkout@v2
@@ -44,7 +47,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package-name: [blueprints-integration, server-core-integration]
+        package-name:
+          - blueprints-integration
+          - server-core-integration
+          - shared-lib
         node-version: [14.x, 16.x]
 
     steps:
@@ -78,7 +84,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package-name: [blueprints-integration, server-core-integration]
+        package-name:
+          - blueprints-integration
+          - server-core-integration
+          - shared-lib
 
     steps:
       - uses: actions/checkout@v2
@@ -125,6 +134,8 @@ jobs:
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
           CI: true
+      - name: Modify dependencies to use npm packages
+        run: node scripts/prepublish.js
       - name: Publish to NPM
         id: publish-npm
         if: ${{ steps.do-publish.outputs.publish }}

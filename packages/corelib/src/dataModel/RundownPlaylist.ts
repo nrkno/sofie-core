@@ -8,6 +8,7 @@ import {
 	OrganizationId,
 	RundownPlaylistId,
 	StudioId,
+	RundownId,
 } from './Ids'
 
 /** Details of an ab-session requested by the blueprints in onTimelineGenerate */
@@ -56,6 +57,8 @@ export interface DBRundownPlaylist {
 	holdState?: RundownHoldState
 	/** Truthy when the playlist is currently active in the studio. This is regenerated upon each activation/reset. */
 	activationId?: RundownPlaylistActivationId
+	/** Timestamp when the playlist was last reset. Used to silence a few errors upon reset.*/
+	resetTime?: Time
 	/** Should the playlist loop at the end */
 	loop?: boolean
 	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
@@ -86,8 +89,10 @@ export interface DBRundownPlaylist {
 	/** Actual time of each rundown starting playback */
 	rundownsStartedPlayback?: Record<string, Time>
 
-	/** If the _rank of rundowns in this playlist has ben set manually by a user in Sofie */
+	/** If the order of rundowns in this playlist has ben set manually by a user in Sofie */
 	rundownRanksAreSetInSofie?: boolean
+	/** If the order of rundowns in this playlist has ben set manually by a user/blueprints in Sofie */
+	rundownIdsInOrder: RundownId[]
 
 	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState

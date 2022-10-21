@@ -10,12 +10,14 @@ export interface MultiSelectEvent {
 	selectedValues: Array<string>
 }
 
+export type MultiSelectOptions = _.Dictionary<{ value: string | string[]; className?: string }>
+
 interface IProps {
 	/**
 	 * A value of type string results in a checkbox with the key becoming the label.
 	 * A value of type string[] results in a group of checkboxes with the key becoming the header of the group.
 	 */
-	availableOptions: _.Dictionary<string | string[]>
+	availableOptions: MultiSelectOptions
 	placeholder?: string
 	className?: string
 	value?: Array<string>
@@ -98,14 +100,32 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		return !!this.state.checkedValues[key]
 	}
 
-	generateSummary = () => {
+	generateSimpleSummary = () => {
 		return _.compact(
 			_.values(
 				_.mapObject(this.state.checkedValues, (value, key) => {
-					return value ? this.props.availableOptions[key] || key : null
+					return value ? this.props.availableOptions[key].value || key : null
 				})
 			)
 		).join(', ')
+	}
+
+	generateRichSummary = () => {
+		return (
+			<>
+				{_.compact(
+					_.values(
+						_.mapObject(this.state.checkedValues, (value, key) => {
+							return value ? (
+								<span key={key} className={this.props.availableOptions[key].className}>
+									{this.props.availableOptions[key].value || key}
+								</span>
+							) : null
+						})
+					)
+				)}
+			</>
+		)
 	}
 
 	onBlur = (event: React.FocusEvent<HTMLDivElement>) => {
@@ -149,10 +169,10 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		this._popperUpdate = update
 	}
 
-	renderOption = (value: string, key: string) => {
+	renderOption = (value: string, key: string, className: string | undefined) => {
 		return (
 			<p className="expco-item" key={key}>
-				<label className="action-btn">
+				<label className={ClassNames('action-btn', className)}>
 					<span className="checkbox">
 						<input
 							type="checkbox"
@@ -174,7 +194,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 	}
 
 	render() {
-		const summary = this.generateSummary()
+		const simpleSummary = this.generateSimpleSummary()
 		return (
 			<Manager>
 				<Reference>
@@ -193,12 +213,12 @@ export class MultiSelect extends React.Component<IProps, IState> {
 						>
 							<div
 								className={ClassNames('expco-title', {
-									placeholder: !summary,
+									placeholder: !simpleSummary,
 								})}
 								onClick={this.toggleExpco}
-								title={summary || this.props.placeholder || ''}
+								title={simpleSummary || this.props.placeholder || ''}
 							>
-								{summary || this.props.placeholder || ''}
+								{this.generateRichSummary() || this.props.placeholder || ''}
 							</div>
 							<a className="action-btn right expco-expand subtle" onClick={this.toggleExpco}>
 								<FontAwesomeIcon icon={faChevronUp} />
@@ -242,17 +262,17 @@ export class MultiSelect extends React.Component<IProps, IState> {
 									<div className="expco-body bd">
 										{_.values(
 											_.mapObject(this.props.availableOptions, (value, key) => {
-												return Array.isArray(value) ? (
+												return Array.isArray(value.value) ? (
 													<React.Fragment key={key}>
 														<p className="expco-item" key={key}>
 															{key}
 														</p>
-														{_.map(value, (v) => {
-															return this.renderOption(v, v)
+														{_.map(value.value, (v) => {
+															return this.renderOption(v, v, value.className)
 														})}
 													</React.Fragment>
 												) : (
-													this.renderOption(value, key)
+													this.renderOption(value.value, key, value.className)
 												)
 											})
 										)}

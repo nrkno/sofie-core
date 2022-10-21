@@ -1,4 +1,4 @@
-import ClassNames from 'classnames'
+import classNames from 'classnames'
 import React, { ReactNode } from 'react'
 import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
@@ -55,23 +55,27 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 
 	duration = budget - playedOut
 
+	const showNegativeStyling = !props.fixed && !props.countUp
+
+	let value = duration
+	if (props.fixed) {
+		value = budget
+	} else if (props.countUp) {
+		value = playedOut
+	}
+
 	if (duration !== undefined) {
 		return (
 			<>
 				{props.label}
-				{props.fixed ? (
-					<span className={ClassNames(props.className)} role="timer">
-						{RundownUtils.formatDiffToTimecode(budget, false, false, true, false, true, '+')}
-					</span>
-				) : props.countUp ? (
-					<span className={ClassNames(props.className)} role="timer">
-						{RundownUtils.formatDiffToTimecode(playedOut, false, false, true, false, true, '+')}
-					</span>
-				) : (
-					<span className={ClassNames(props.className, duration < 0 ? 'negative' : undefined)} role="timer">
-						{RundownUtils.formatDiffToTimecode(duration, false, false, true, false, true, '+')}
-					</span>
-				)}
+				<span
+					className={classNames(props.className, {
+						negative: showNegativeStyling && duration < 0,
+					})}
+					role="timer"
+				>
+					{RundownUtils.formatDiffToTimecode(value, false, false, true, false, true, '+')}
+				</span>
 			</>
 		)
 	}

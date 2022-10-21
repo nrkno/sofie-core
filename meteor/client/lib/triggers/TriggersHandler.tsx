@@ -29,7 +29,6 @@ import {
 import { PartId } from '../../../lib/collections/Parts'
 import { flatten, ProtectedString, protectString } from '../../../lib/lib'
 import { IWrappedAdLib } from '../../../lib/api/triggers/actionFilterChainCompilers'
-import { Mongo } from 'meteor/mongo'
 import { AdLibActionId } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { PieceId } from '../../../lib/collections/Pieces'
@@ -39,6 +38,7 @@ import { getFinalKey } from './codesToKeyLabels'
 import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../../ui/RundownView/RundownViewEventBus'
 import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../../lib/Settings'
+import { createInMemoryMongoCollection } from '../../../lib/collections/lib'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -71,9 +71,7 @@ function useSubscriptions(
 		useSubscription(PubSub.rundownPlaylists, {
 			_id: rundownPlaylistId,
 		}),
-		useSubscription(PubSub.rundowns, {
-			playlistId: rundownPlaylistId,
-		}),
+		useSubscription(PubSub.rundowns, [rundownPlaylistId], null),
 
 		useSubscription(PubSub.adLibActions, {
 			rundownId: {
@@ -104,7 +102,7 @@ function useSubscriptions(
 }
 
 function createAction(
-	id: TriggeredActionId,
+	_id: TriggeredActionId,
 	actions: SomeAction[],
 	showStyleBase: ShowStyleBase,
 	t: TFunction,
@@ -157,7 +155,7 @@ export interface MountedAdLibTrigger {
 	targetId: AdLibActionId | RundownBaselineAdLibActionId | PieceId | ISourceLayer['_id']
 	/** Keys or combos that have a listener mounted to */
 	keys: string[]
-	/** Final keys in the combos */
+	/** Final keys in the `keys` combos, that can be used for figuring out where on the keyboard this action is mounted */
 	finalKeys: string[]
 	/** A label of the action, if available */
 	name?: string | ITranslatableMessage
@@ -167,7 +165,7 @@ export interface MountedAdLibTrigger {
 	targetName?: string | ITranslatableMessage
 }
 
-export const MountedAdLibTriggers = new Mongo.Collection<MountedAdLibTrigger>(null)
+export const MountedAdLibTriggers = createInMemoryMongoCollection<MountedAdLibTrigger>('MountedAdLibTrigger')
 
 type MountedGenericTriggerId = ProtectedString<'mountedGenericTriggerId'>
 /** A generic action that will be triggered by hotkeys (generic, i.e. non-AdLib) */
@@ -179,7 +177,7 @@ export interface MountedGenericTrigger {
 	triggeredActionId: TriggeredActionId
 	/** Keys or combos that have a listener mounted to */
 	keys: string[]
-	/** Final keys in the combos */
+	/** Final keys in the combos, that can be used for figuring out where on the keyboard this action is mounted */
 	finalKeys: string[]
 	/** A label of the action, if available */
 	name: string | ITranslatableMessage
@@ -187,7 +185,7 @@ export interface MountedGenericTrigger {
 	adLibOnly: boolean
 }
 
-export const MountedGenericTriggers = new Mongo.Collection<MountedGenericTrigger>(null)
+export const MountedGenericTriggers = createInMemoryMongoCollection<MountedGenericTrigger>('MountedGenericTrigger')
 
 export function isMountedAdLibTrigger(
 	mountedTrigger: MountedAdLibTrigger | MountedGenericTrigger
@@ -297,7 +295,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			'Digit9',
 			'Digit0',
 		]
-		const systemActionKeys = ['AnyEnter', 'NumpadEnter', 'Tab']
+		const systemActionKeys = [Settings.confirmKeyCode, 'Tab']
 
 		const poisonKey: string | null = Settings.poisonKey
 
@@ -475,7 +473,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				const genericTriggerId = protectString(`${pair._id}`)
 				const keys = triggers.map((trigger) => trigger.keys)
 				const finalKeys = keys.map((key) => getFinalKey(key))
-				const adLibOnly = pair.actions.every((action) => action.action === PlayoutActions.adlib)
+				const adLibOnly = pair.actions.every((actionDescriptor) => actionDescriptor.action === PlayoutActions.adlib)
 				MountedGenericTriggers.upsert(genericTriggerId, {
 					$set: {
 						_id: genericTriggerId,
@@ -493,7 +491,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				.filter((trigger) => trigger.type === TriggerType.hotkey)
 				.map((trigger) => trigger.keys)
 
-			const finalKeys = hotkeyTriggers.map((key) => getFinalKey(key))
+			const hotkeyFinalKeys = hotkeyTriggers.map((key) => getFinalKey(key))
 
 			previewAutoruns.push(
 				isolatedAutorunWithCleanup(() => {
@@ -514,7 +512,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 								type: adLib.type,
 								triggeredActionId: pair._id,
 								keys: hotkeyTriggers,
-								finalKeys,
+								finalKeys: hotkeyFinalKeys,
 								name: pair.name,
 								targetName: adLib.label,
 								sourceLayerId: adLib.sourceLayerId,

@@ -1,23 +1,71 @@
-name: automerge
+name: Scheduled Automerge Master -> Staging -> Develop
 
 on:
   schedule:
-    - cron: '30 0 * * *' # every night
+    - cron: '0 0 * * 1-5' # At 00:00, Monday through Friday
   workflow_dispatch: # on button click
 
 jobs:
-  merge-staging-to-dev:
+  merge-master-to-staging:
+    name: Merge Master to Staging
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set Git config
         run: |
-          git config --local user.email "${GITHUB_ACTOR}"
-          git config --local user.name "${GITHUB_ACTOR}@users.noreply.github.com"
-      - name: Merge staging to develop
+          git config --local user.email "Sofie-Automation@users.noreply.github.com"
+          git config --local user.name "GitHub Actions # Sofie-Automation"
+      - name: Merge 'master' to 'staging'
+        id: merge
+        continue-on-error: true
+        run: |
+          git fetch --unshallow
+          git checkout staging
+          git pull
+          git merge --no-ff origin/master -m "Automerge 'master' to 'staging'"
+          git push
+      - name: Abort merge
+        if: steps.merge.outcome == 'failure'
+        run: git merge --abort
+      - name: Create Pull Request on merge failure
+        if: steps.merge.outcome == 'failure'
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: master
+          destination_branch: staging
+          pr_title: "Automerge Failed: master -> staging"
+          pr_body: Failed to merge 'master' into 'staging'.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  merge-staging-to-develop:
+    name: Merge Staging to Develop
+    runs-on: ubuntu-latest
+    needs: merge-master-to-staging
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set Git config
+        run: |
+          git config --local user.email "Sofie-Automation@users.noreply.github.com"
+          git config --local user.name "GitHub Actions # Sofie-Automation"
+      - name: Merge 'staging' to 'develop'
+        id: merge
+        continue-on-error: true
         run: |
           git fetch --unshallow
           git checkout develop
           git pull
-          git merge --no-ff origin/staging -m "Auto-merge staging to develop"
+          git merge --no-ff origin/staging -m "Automerge 'staging' to 'develop'."
           git push
+      - name: Abort merge
+        if: steps.merge.outcome == 'failure'
+        run: git merge --abort
+      - name: Create Pull Request on merge failure
+        if: steps.merge.outcome == 'failure'
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: staging
+          destination_branch: develop
+          pr_title: "Automerge Failed: staging -> develop"
+          pr_body: Failed to merge 'staging' into 'develop'.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+

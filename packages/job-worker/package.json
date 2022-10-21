@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/job-worker",
-	"version": "42.0.0",
+	"version": "46.0.0",
 	"description": "Worker for things",
 	"main": "dist/index.js",
 	"license": "MIT",
@@ -26,15 +26,12 @@
 		"watch": "jest --watch",
 		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"changelog": "standard-version",
-		"release": "yarn reset && yarn test && yarn changelog",
-		"reset": "git clean -dfx && git reset --hard && yarn",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
 		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.18 || ^16.14"
+		"node": "^14.19 || ^16.14"
 	},
 	"files": [
 		"/dist",
@@ -43,31 +40,29 @@
 		"/LICENSE"
 	],
 	"dependencies": {
+		"@slack/webhook": "^6.1.0",
 		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
 		"@sofie-automation/corelib": "link:../corelib",
+		"@sofie-automation/shared-lib": "link:../shared-lib",
+		"amqplib": "^0.10.3",
 		"debounce-fn": "^4.0.0",
 		"deepmerge": "^4.2.2",
-		"elastic-apm-node": "^3.26.0",
+		"elastic-apm-node": "^3.38.0",
 		"eventemitter3": "^4.0.7",
-		"mongodb": "^4.3.1",
+		"mongodb": "^4.9.1",
 		"p-lazy": "^3.1.0",
-		"read-pkg-up": "^7.0.0",
-		"superfly-timeline": "8.2.1",
-		"threadedclass": "1.0.3-nightly--20220808-110410-b00ecb0.0",
-		"tslib": "^2.1.0",
-		"type-fest": "^2.11.1",
-		"underscore": "^1.13.2",
-		"vm2": "^3.9.5"
+		"p-timeout": "^4.1.0",
+		"superfly-timeline": "^8.2.8",
+		"threadedclass": "^1.1.0",
+		"tslib": "^2.4.0",
+		"type-fest": "^2.19.0",
+		"underscore": "^1.13.4",
+		"vm2": "^3.9.11"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged"
-		}
-	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
-			"prettier --write"
+			"prettier"
 		],
 		"*.{ts,tsx}": [
 			"yarn lint:raw"

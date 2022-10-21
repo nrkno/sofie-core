@@ -5,7 +5,7 @@ export class ReactiveMap<T> {
 	private dependencyMap = new Map<string, Tracker.Dependency>()
 	private globalDependency = new Tracker.Dependency()
 
-	set(key: string, value: T) {
+	set(key: string, value: T): void {
 		const prevVal = this.baseMap.get(key)
 		this.baseMap.set(key, value)
 		if (this.dependencyMap.has(key) && prevVal !== value) {

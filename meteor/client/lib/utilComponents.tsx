@@ -3,6 +3,10 @@ import * as _ from 'underscore'
 import * as VelocityReact from 'velocity-react'
 
 export function makeTableOfObject(o: any) {
+	if (typeof o === 'string') {
+		return o
+	}
+
 	return (
 		<table>
 			<tbody>
@@ -22,8 +26,7 @@ export function makeTableOfObject(o: any) {
 								// ignore
 							}
 							if (json) {
-								// @ts-ignore
-								content = <pre>{JSON.stringify(json, '', ' ')}</pre>
+								content = <pre>{JSON.stringify(json, undefined, ' ')}</pre>
 							}
 						}
 					}

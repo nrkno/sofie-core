@@ -19,37 +19,8 @@ export interface IBlueprintExternalMessageQueueObj {
 	retryUntil?: Time
 }
 export enum IBlueprintExternalMessageQueueType {
-	SOAP = 'soap',
 	SLACK = 'slack',
 	RABBIT_MQ = 'rabbitmq',
-}
-export interface ExternalMessageQueueObjSOAP extends IBlueprintExternalMessageQueueObj {
-	type: IBlueprintExternalMessageQueueType.SOAP
-	receiver: {
-		/** SOAP URL endpoint to send message to */
-		url: string
-	}
-	message: {
-		/** Which SOAP function to execute */
-		fcn: string
-		clip_key: ExternalMessageQueueObjSOAPMessageAttrOrFcn
-		clip: ExternalMessageQueueObjSOAPMessageAttrOrFcn
-	}
-}
-export type ExternalMessageQueueObjSOAPMessageAttrOrFcn = ExternalMessageQueueObjSOAPMessageAttrFcn | any
-export interface ExternalMessageQueueObjSOAPMessageAttr {
-	[attr: string]: ExternalMessageQueueObjSOAPMessageAttrOrFcn
-}
-export interface ExternalMessageQueueObjSOAPMessageAttrFcn {
-	_fcn: {
-		soapFetchFrom?: {
-			fcn: string
-			attrs: any[]
-		}
-		xmlEncode?: {
-			value: any
-		}
-	}
 }
 
 export interface ExternalMessageQueueObjSlack extends IBlueprintExternalMessageQueueObj {

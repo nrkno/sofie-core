@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/server-core-integration",
-	"version": "42.0.0",
+	"version": "46.0.1",
 	"description": "Library for connecting to Core",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -34,7 +34,8 @@
 	"scripts": {
 		"build": "rimraf dist && yarn build:main && yarn copytypes",
 		"build:main": "tsc -p tsconfig.build.json",
-		"lint": "tslint --project tsconfig.json --config tslint.json",
+		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "yarn lint:raw .",
 		"unit": "jest",
 		"test": "yarn lint && yarn unit",
 		"test:integration": "yarn lint && jest --config=jest-integration.config.js",
@@ -44,10 +45,10 @@
 		"cov-open": "open-cli coverage/lcov-report/index.html",
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "node-license-validator -p -d --allow-licenses MIT BSD BSD-2-Clause BSD-3-Clause 0BSD ISC Apache Apache-2.0 Unlicense"
+		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.18 || ^16.14"
+		"node": "^14.19 || ^16.14"
 	},
 	"files": [
 		"/dist",
@@ -69,19 +70,20 @@
 		"production"
 	],
 	"dependencies": {
-		"data-store": "^4.0.3",
-		"ejson": "^2.2.2",
+		"@sofie-automation/shared-lib": "link:../shared-lib",
+		"ejson": "^2.2.3",
+		"eventemitter3": "^4.0.7",
 		"faye-websocket": "^0.11.4",
 		"got": "^11.8.5",
-		"tslib": "^2.3.1",
-		"underscore": "^1.12.1"
+		"tslib": "^2.4.0",
+		"underscore": "^1.13.4"
 	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
 			"prettier"
 		],
 		"*.{ts,tsx}": [
-			"yarn lint"
+			"yarn lint:raw"
 		]
 	}
 }

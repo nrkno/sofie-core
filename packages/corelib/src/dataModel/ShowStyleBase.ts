@@ -1,11 +1,6 @@
 import { IBlueprintShowStyleBase, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { ProtectedStringProperties } from '../protectedString'
-import { BlueprintId, OrganizationId, ShowStyleBaseId, ShowStyleVariantId } from './Ids'
-
-export interface ShowStyleCompound extends DBShowStyleBase {
-	showStyleVariantId: ShowStyleVariantId
-	_rundownVersionHashVariant: string
-}
+import { BlueprintId, OrganizationId, ShowStyleBaseId } from './Ids'
 
 export interface HotkeyDefinition {
 	_id: string

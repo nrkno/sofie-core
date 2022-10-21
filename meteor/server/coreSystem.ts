@@ -10,7 +10,7 @@ import {
 	compareSemverVersions,
 	isPrerelease,
 } from '../lib/collections/CoreSystem'
-import { getCurrentTime, unprotectString, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, unprotectString, waitForPromise, waitForPromiseAll } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from './migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './migration/currentSystemVersion'
@@ -18,7 +18,7 @@ import { setSystemStatus, removeSystemStatus } from './systemStatus/systemStatus
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
-import { Studios, StudioId } from '../lib/collections/Studios'
+import { Studios, StudioId, Studio } from '../lib/collections/Studios'
 import { getEnvLogLevel, logger, LogLevel, setLogLevel } from './logging'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
@@ -27,7 +27,7 @@ const PackageInfo = require('../package.json')
 // import { profiler } from './api/profiler'
 import { TMP_TSR_VERSION, StatusCode } from '@sofie-automation/blueprints-integration'
 import { createShowStyleCompound } from './api/showStyles'
-import { fetchShowStyleBasesLight, fetchStudiosLight } from '../lib/collections/optimizations'
+import { fetchShowStyleBasesLight } from '../lib/collections/optimizations'
 
 export { PackageInfo }
 
@@ -138,8 +138,8 @@ function checkDatabaseVersions() {
 			if (blueprint.hasCode) {
 				blueprintIds[unprotectString(blueprint._id)] = true
 
-				// @ts-ignore
-				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) blueprint.databaseVersion = {}
+				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion))
+					blueprint.databaseVersion = { showStyle: {}, studio: {}, system: undefined }
 				if (!blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {}
 				if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
 
@@ -152,9 +152,11 @@ function checkDatabaseVersions() {
 				}
 
 				const studioIds: { [studioId: string]: true } = {}
-				fetchShowStyleBasesLight({
-					blueprintId: blueprint._id,
-				}).forEach((showStyleBase) => {
+				waitForPromise(
+					fetchShowStyleBasesLight({
+						blueprintId: blueprint._id,
+					})
+				).forEach((showStyleBase) => {
 					if (o.statusCode === StatusCode.GOOD) {
 						o = compareSemverVersions(
 							parseVersion(blueprint.blueprintVersion),
@@ -167,9 +169,12 @@ function checkDatabaseVersions() {
 					}
 
 					// TODO - is this correct for the current relationships? What about studio blueprints?
-					fetchStudiosLight({
-						supportedShowStyleBase: showStyleBase._id,
-					}).forEach((studio) => {
+					Studios.find(
+						{ supportedShowStyleBase: showStyleBase._id },
+						{
+							fields: { _id: 1 },
+						}
+					).forEach((studio: Pick<Studio, '_id'>) => {
 						if (!studioIds[unprotectString(studio._id)]) {
 							// only run once per blueprint and studio
 							studioIds[unprotectString(studio._id)] = true
@@ -374,7 +379,7 @@ function startupMessage() {
 		logger.info(`Core starting up`)
 		logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
 
-		// @ts-ignore
+		// @ts-expect-error Its not always defined
 		if (global.gc) {
 			logger.info(`Manual garbage-collection is enabled`)
 		} else {

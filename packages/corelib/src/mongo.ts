@@ -1,8 +1,8 @@
 import * as _ from 'underscore'
 import { ProtectedString } from './protectedString'
-// eslint-disable-next-line node/no-missing-import
-// import type { Mongo } from 'meteor/mongo'
 import * as objectPath from 'object-path'
+// eslint-disable-next-line node/no-extraneous-import
+import type { Filter, UpdateFilter } from 'mongodb'
 
 /** Hack's using typings pulled from meteor */
 
@@ -19,36 +19,20 @@ export type MongoFieldSpecifierZeroes<T> = {
 }
 export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpecifierZeroes<T>
 
-export type IndexSpecifier<T> = {
-	[P in keyof T]?: -1 | 1 | string
-}
-
 export interface FindOneOptions<TDoc> {
 	sort?: SortSpecifier<TDoc>
 	skip?: number
 	fields?: MongoFieldSpecifier<TDoc>
-	reactive?: boolean
-	// transform?: Function
 }
 export interface FindOptions<TDoc> extends FindOneOptions<TDoc> {
 	limit?: number
 }
-export interface UpdateOptions {
-	multi?: boolean
-	upsert?: boolean
-}
-export interface UpsertOptions {
-	multi?: boolean
-}
-/** Mongo Selector. Contains everything that can be sent into collection.find(selector) */
-export type MongoSelector<_TDoc> = any // Mongo.Selector<TDoc>
 /**
  * Subset of MongoSelector, only allows direct queries, not QueryWithModifiers such as $explain etc.
  * Used for simplified expressions (ie not using $and, $or etc..)
  * */
-export type MongoQuery<_TDoc> = any //Mongo.Query<TDoc>
-export type MongoQueryKey<_TDoc> = any //RegExp | T | Mongo.FieldExpression<T> // Allowed properties in a Mongo.Query
-export type MongoModifier<_TDoc> = any //Mongo.Modifier<TDoc>
+export type MongoQuery<TDoc> = Filter<TDoc>
+export type MongoModifier<TDoc> = UpdateFilter<TDoc>
 
 /** End of hacks */
 
@@ -255,7 +239,7 @@ export function mongoModify<TDoc extends { _id: ProtectedString<any> }>(
 		}
 	}
 	if (replace) {
-		const newDoc = modifier
+		const newDoc = modifier as TDoc
 		if (!newDoc._id) newDoc._id = doc._id
 		return newDoc
 	} else {

@@ -50,6 +50,7 @@ await addDepsForRoot("./packages", "blueprints-integration");
 await addDepsForRoot("./packages", "server-core-integration");
 await addDepsForRoot("./packages", "mos-gateway");
 await addDepsForRoot("./packages", "corelib");
+await addDepsForRoot("./packages", "shared-lib");
 await addDepsForRoot("./packages", "job-worker");
 await addDepsForRoot("./packages", "playout-gateway");
 

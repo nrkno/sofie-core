@@ -36,7 +36,6 @@ $previewline-color: rgb(38, 137, 186);
 	functional part of the timeline starts at the same level as the segment title
 */
 $segment-timeline-padding: $segment-header-height 0 1.5em;
-$segment-border-radius: 11px;
 
 $segment-layer-height: 1.5em;
 $segment-layer-separator-color: transparentize(#000, 0.5);
@@ -93,9 +92,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 }
 
 .rundown-view {
-	padding-top: 4rem;
+	// padding-top: 4rem;
 	padding-bottom: 50vh;
-	padding-right: $statusbar-width;
+	// padding-right: $statusbar-width;
 	transition: 0s padding-right 0s;
 
 	.invert-flash {
@@ -142,11 +141,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 
 	&.notification-center-open {
-		padding-right: calc(#{$statusbar-width} + #{$notification-center-width});
+		padding-right: $notification-center-width;
 		transition: 0s padding-right 1s;
 
 		> .header .rundown-overview {
-			padding-right: calc(#{$statusbar-width} + #{$notification-center-width} + 1.5em);
+			padding-right: calc(#{$notification-center-width} + 1.5em);
 			transition: 0s padding-right 1s;
 		}
 	}
@@ -207,13 +206,6 @@ body.no-overflow {
 }
 
 .header.rundown {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	z-index: 200;
-	user-select: none;
-
 	.row {
 		width: 100%;
 
@@ -259,6 +251,7 @@ body.no-overflow {
 			&.left {
 				text-align: left;
 			}
+
 
 			&.time-now {
 				position: absolute;
@@ -461,15 +454,16 @@ svg.icon {
 	-webkit-user-select: none;
 
 	width: auto;
-	margin: 1em 1.5em;
+	margin: $segment-margin-y $segment-margin-x;
 	// padding: 0 0 0.15em 0.15em;
 
 	background: $segment-background-color;
-	box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.7);
+	box-shadow: 7px 6px 15px 0px rgba(0, 0, 0, 0.3);
 
 	--segment-layer-height: #{$segment-layer-height};
 	--infinite-piece-background-line-height: #{$segment-layer-height / 8};
 	border-radius: $segment-border-radius;
+	border-bottom: 1px solid black;
 
 	// padding has to be the same on both of these elements so that the layers and their controls line up
 	.segment-timeline__output-layers,
@@ -502,7 +496,7 @@ svg.icon {
 			margin: 0;
 			padding: 0.3em;
 			line-height: 1.2em;
-			letter-spacing: 0px;
+			//letter-spacing: 0px;
 			font-weight: 400;
 			hyphens: auto;
 			-webkit-hyphens: auto;
@@ -517,60 +511,19 @@ svg.icon {
 			font-size: 0.75em;
 			font-weight: 400;
 			grid-row: title-notifications / title-identifiers;
-
-			> .segment-timeline__title__notes__note {
-				position: relative;
-				padding-left: 20px;
-				cursor: pointer;
-
-				&:not(:last-child) {
-					margin-bottom: 5px;
-				}
-
-				> svg {
-					position: absolute;
-					left: 0;
-					top: -0.1em;
-					height: 1.6em;
-					width: 1.6em;
-				}
-
-				> .segment-timeline__title__notes__count {
-					display: inline-block;
-					min-width: 1.1em;
-					line-height: 1.1em;
-					font-weight: 600;
-					text-align: center;
-					border-radius: 1em;
-					font-size: 0.9em;
-					position: relative;
-					top: -0.3em;
-					left: -0.3em;
-					white-space: nowrap;
-					padding: 0 2px 0 0.3em;
-				}
-
-				> svg.type-warning + .segment-timeline__title__notes__count {
-					background: yellow;
-					color: #000;
-				}
-
-				> svg.type-critical + .segment-timeline__title__notes__count {
-					background: red;
-					color: #fff;
-				}
-			}
 		}
 
 		.segment-timeline__part-identifiers {
 			grid-row: title-identifiers / end;
 
 			.segment-timeline__part-identifiers__identifier {
+				font-weight: 300;
+				text-shadow: none;
 				margin: 2.5px;
-				padding: 0 4px;
+				padding: 1px 4px;
 				background-color: $part-identifier;
 				color: $part-identifier-text;
-				border-radius: 0 10px 10px 0;
+				border-radius: 10px;
 				font-size: 0.85rem;
 
 				&:hover {
@@ -763,6 +716,45 @@ svg.icon {
 	}
 }
 
+.segment-timeline__switch-view-mode-button {
+	grid-row: header / main-view;
+	grid-column: timeline / end;
+	justify-self: end;
+	align-self: start;
+	z-index: 1;
+	background: $segment-background-color;
+	width: 1.4em;
+	height: 1.4em;
+	padding: 0;
+
+	border: none;
+	border-radius: 2em;
+	transition: 0.3s background-color;
+
+	margin-top: 0.1em;
+	margin-right: 0.1em;
+
+	&:hover {
+		background: #8c8c8c;
+		transition: 0s background-color;
+
+		> svg path {
+			color: #fff;
+		}
+	}
+
+	&:active {
+		background: $ui-button-primary;
+		transition: 0s background-color;
+	}
+
+	> svg {
+		position: relative;
+		top: 0.1em;
+		color: #999999;
+	}
+}
+
 .segment-timeline {
 	.segment-timeline__timeline-zoom-buttons {
 		position: relative;
@@ -770,8 +762,8 @@ svg.icon {
 		grid-column: segment-group-controls / timeline;
 		grid-row: header / end;
 		align-self: end;
-		grid-template-columns: 1.3fr 1fr 1fr 1fr;
-		padding: 0 0.3em 0.05em 0.3em;
+		grid-template-columns: 1fr 1fr 1fr;
+		padding: 0 1.2em 0.05em;
 
 		> .segment-timeline__timeline-zoom-buttons__button {
 			min-width: 22px;
@@ -1147,8 +1139,7 @@ svg.icon {
 			&.segment-timeline__liveline__appendage--piece-countdown {
 				color: $liveline-timecode-color;
 				font-weight: 400;
-				text-shadow: -1px -1px 1px #000, 1px -1px 1px #000, -1px 1px 1px #000, 1px 1px 1px #000, 2px 2px 5px #000;
-
+				text-shadow: -1px -1px 4px #000, 1px -1px 4px #000, -1px 1px 4px #000, 1px 1px 4px #000, 2px 2px 5px #000;
 				white-space: nowrap;
 
 				> .segment-timeline__liveline__appendage--piece-countdown__content {
@@ -2101,6 +2092,7 @@ svg.icon {
 				> .segment-timeline__piece__label {
 					margin: 0;
 					max-width: none;
+					display: inline;
 				}
 
 				> .segment-timeline__piece__label + .segment-timeline__piece__label {
@@ -2633,6 +2625,49 @@ svg.icon {
 	100% {
 		opacity: 1;
 		clip-path: inset(0 -100px 0 -100px);
+	}
+}
+
+.segment-timeline__title__notes__note {
+	position: relative;
+	padding-left: 20px;
+	cursor: pointer;
+
+	&:not(:last-child) {
+		margin-bottom: 5px;
+	}
+
+	> svg {
+		position: absolute;
+		left: 0;
+		top: -0.1em;
+		height: 1.6em;
+		width: 1.6em;
+	}
+
+	> .segment-timeline__title__notes__count {
+		display: inline-block;
+		min-width: 1.1em;
+		line-height: 1.1em;
+		font-weight: 600;
+		text-align: center;
+		border-radius: 1em;
+		font-size: 0.9em;
+		position: relative;
+		top: -0.3em;
+		left: -0.3em;
+		white-space: nowrap;
+		padding: 0 2px 0 0.3em;
+	}
+
+	> svg.type-warning + .segment-timeline__title__notes__count {
+		background: yellow;
+		color: #000;
+	}
+
+	> svg.type-critical + .segment-timeline__title__notes__count {
+		background: red;
+		color: #fff;
 	}
 }
 

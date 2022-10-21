@@ -175,12 +175,12 @@ function getRundownPlaylistFromExternalId(externalId: string): DBRundownPlaylist
  * Serve a localized version of the WebManifest. It will return an English version by default, one can specify a
  * supported locale using ?lng=XX URL query parameter. Uses the same localisation files as the Frontend app.
  */
-PickerGET.route('/site.webmanifest', (_, req, res) => {
-	logger.debug(`WebManifest: ${req.connection.remoteAddress} GET "${req.url}"`, {
+PickerGET.route('/site.webmanifest', async (_, req, res) => {
+	logger.debug(`WebManifest: ${req.socket.remoteAddress} GET "${req.url}"`, {
 		url: req.url,
 		method: 'GET',
-		remoteAddress: req.connection.remoteAddress,
-		remotePort: req.connection.remotePort,
+		remoteAddress: req.socket.remoteAddress,
+		remotePort: req.socket.remotePort,
 		headers: req.headers,
 	})
 
@@ -190,28 +190,28 @@ PickerGET.route('/site.webmanifest', (_, req, res) => {
 		lngCode = url.searchParams.get('lng') || lngCode
 	}
 
-	getWebManifest(lngCode)
-		.then((manifest) => {
-			res.statusCode = 200
-			res.setHeader('Content-Type', 'application/manifest+json;charset=utf-8')
-			res.end(JSON.stringify(manifest))
-		})
-		.catch((e) => {
-			logger.error(`Could not produce PWA WebManifest`, e)
-			sendResponseCode(res, 500, 'Internal Server Error')
-		})
+	try {
+		const manifest = await getWebManifest(lngCode)
+
+		res.statusCode = 200
+		res.setHeader('Content-Type', 'application/manifest+json;charset=utf-8')
+		res.end(JSON.stringify(manifest))
+	} catch (e) {
+		logger.error(`Could not produce PWA WebManifest`, e)
+		sendResponseCode(res, 500, 'Internal Server Error')
+	}
 })
 
 /**
  * Handle the web+nrcs://rundown/<NRCS-EXTERNAL-ID> URL scheme. This allows for external integrations to direct the User
  * to a Sofie Rundown View of a given Rundown or Rundown Playlist.
  */
-PickerGET.route('/url/nrcs', (_, req, res) => {
-	logger.debug(`NRCS URL: ${req.connection.remoteAddress} GET "${req.url}"`, {
+PickerGET.route('/url/nrcs', async (_, req, res) => {
+	logger.debug(`NRCS URL: ${req.socket.remoteAddress} GET "${req.url}"`, {
 		url: req.url,
 		method: 'GET',
-		remoteAddress: req.connection.remoteAddress,
-		remotePort: req.connection.remotePort,
+		remoteAddress: req.socket.remoteAddress,
+		remotePort: req.socket.remotePort,
 		headers: req.headers,
 	})
 

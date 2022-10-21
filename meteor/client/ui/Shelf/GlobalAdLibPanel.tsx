@@ -58,6 +58,7 @@ export function GlobalAdLibPanel({
 				nextInCurrentPart: false,
 				oneNextPerSourceLayer: false,
 				showThumbnailsInList: false,
+				disableHoverInspector: false,
 			}),
 		[t]
 	)

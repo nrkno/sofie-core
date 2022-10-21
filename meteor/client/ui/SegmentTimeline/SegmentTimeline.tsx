@@ -42,6 +42,7 @@ import { RundownTimingContext } from '../../lib/rundownTiming'
 import { IOutputLayer, ISourceLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
+import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 
 interface IProps {
 	id: string
@@ -815,10 +816,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		)
 	}
 
-	renderEndOfSegment() {
-		return <div className="segment-timeline__part segment-timeline__part--end-of-segment"></div>
-	}
-
 	getActiveOutputGroups(): IOutputLayerUi[] {
 		if (this.props.segment.outputLayers === undefined) return []
 
@@ -866,7 +863,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							outputLayer.sourceLayers
 								.filter((i) => showHiddenSourceLayers || !i.isHidden)
 								.sort((a, b) => a._rank - b._rank)
-								.map((sourceLayer, index, array) => {
+								.map((sourceLayer, _index, array) => {
 									return (
 										<div
 											key={sourceLayer._id}
@@ -1100,7 +1097,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						<ErrorBoundary>
 							{this.renderTimeline()}
 							{this.renderBudgetGapPart()}
-							{this.renderEndOfSegment()}
 						</ErrorBoundary>
 					</div>
 					{this.renderEditorialLine()}
@@ -1116,8 +1112,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						onScroll={this.props.onScroll}
 						onShowEntireSegment={this.props.onShowEntireSegment}
 						onZoomChange={this.props.onZoomChange}
-						onSwitchViewMode={this.props.onSwitchViewMode}
 					/>
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<SwitchViewModeButton currentMode={SegmentViewMode.Timeline} onSwitchViewMode={this.props.onSwitchViewMode} />
 				</ErrorBoundary>
 				<ErrorBoundary>
 					<SegmentTimelineZoom

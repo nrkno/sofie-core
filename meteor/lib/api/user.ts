@@ -25,10 +25,11 @@ export async function createUser(newUser: NewUser): Promise<UserId> {
 	// The reason for that is that the client-side should use Accounts.createUser right away
 	// so that the password aren't sent in "plaintext" to the server.
 
-	return new Promise((resolve, reject) => {
+	return new Promise<UserId>((resolve, reject) => {
 		const userId = Accounts.createUser(newUser, (error) => {
 			if (error) reject(error)
-			else resolve(protectString(userId))
+			else if (!userId) reject(new Error('Missing UserId'))
+			else resolve(protectString<UserId>(userId))
 		})
 	})
 }

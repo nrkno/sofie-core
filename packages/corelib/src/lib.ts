@@ -1,17 +1,24 @@
 import * as _ from 'underscore'
 import { ReadonlyDeep } from 'type-fest'
 import fastClone = require('fast-clone')
-import { Random } from './random'
 import { ProtectedString, protectString } from './protectedString'
 import * as objectPath from 'object-path'
 import { Timecode } from 'timecode'
 import { iterateDeeply, iterateDeeplyEnum, Time } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings } from './dataModel/Studio'
 import { UserError } from './error'
+import { customAlphabet as createNanoid } from 'nanoid'
+
+/**
+ * Limited characterset to use for id generation
+ * Generating id's using these characters has 2 reasons:
+ * 1. By omitting 0, O, I, 1 it makes it easier to read for humans
+ * 2. The Timeline only supports A-Za-z0-9 in id's and classnames
+ */
+const UNMISTAKABLE_CHARS = '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghijkmnopqrstuvwxyz'
+const nanoid = createNanoid(UNMISTAKABLE_CHARS, 17)
 
 export * from './hash'
-
-export type TimeDuration = number
 
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
 
@@ -90,7 +97,7 @@ function deepFreezeInner(object: any): void {
 }
 
 export function getRandomString(numberOfChars?: number): string {
-	return Random.id(numberOfChars)
+	return nanoid(numberOfChars)
 }
 
 export function getRandomId<T extends ProtectedString<any>>(numberOfChars?: number): T {

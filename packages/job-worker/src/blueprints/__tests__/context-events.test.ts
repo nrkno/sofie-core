@@ -17,7 +17,7 @@ import { protectString, unprotectString } from '@sofie-automation/corelib/dist/p
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { wrapPartToTemporaryInstance } from '../../__mocks__/partinstance'
 import { ReadonlyDeep } from 'type-fest'
 import { convertPartInstanceToBlueprints } from '../context/lib'

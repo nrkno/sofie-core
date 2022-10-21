@@ -6,6 +6,7 @@
         "packages/playout-gateway",
         "packages/server-core-integration",
         "packages/corelib",
+        "packages/shared-lib",
         "packages/job-worker"
     ],
     "prettier.enable": true,

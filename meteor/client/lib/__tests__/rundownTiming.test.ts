@@ -3,7 +3,7 @@ import { PartInstance } from '../../../lib/collections/PartInstances'
 import { DBPart, Part, PartId } from '../../../lib/collections/Parts'
 import { DBSegment } from '../../../lib/collections/Segments'
 import { DBRundown } from '../../../lib/collections/Rundowns'
-import { literal, protectString, unprotectString } from '../../../lib/lib'
+import { literal, protectString } from '../../../lib/lib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
 import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 
@@ -24,6 +24,7 @@ function makeMockPlaylist(): RundownPlaylist {
 		timing: {
 			type: PlaylistTimingType.None,
 		},
+		rundownIdsInOrder: [],
 	})
 }
 
@@ -62,7 +63,8 @@ function makeMockSegment(id: string, rank: number, rundownId: string): DBSegment
 	})
 }
 
-function makeMockRundown(id: string, playlistId: string, rank: number) {
+function makeMockRundown(id: string, playlist: RundownPlaylist) {
+	playlist.rundownIdsInOrder.push(protectString(id))
 	return literal<DBRundown>({
 		_id: protectString(id),
 		externalId: id,
@@ -79,8 +81,7 @@ function makeMockRundown(id: string, playlistId: string, rank: number) {
 		name: 'test',
 		externalNRCSName: 'mockNRCS',
 		organizationId: protectString(''),
-		playlistId: protectString(playlistId),
-		_rank: rank,
+		playlistId: playlist._id,
 	})
 }
 
@@ -100,7 +101,8 @@ describe('rundown Timing Calculator', () => {
 			parts,
 			partInstancesMap,
 			segments,
-			DEFAULT_DURATION
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -149,7 +151,7 @@ describe('rundown Timing Calculator', () => {
 		parts.push(makeMockPart('part3', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part4', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
-		const rundown = makeMockRundown(rundownId, unprotectString(playlist._id), 0)
+		const rundown = makeMockRundown(rundownId, playlist)
 		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			0,
@@ -160,7 +162,8 @@ describe('rundown Timing Calculator', () => {
 			parts,
 			partInstancesMap,
 			segments,
-			DEFAULT_DURATION
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -248,7 +251,7 @@ describe('rundown Timing Calculator', () => {
 		parts.push(makeMockPart('part3', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part4', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
-		const rundown = makeMockRundown(rundownId, unprotectString(playlist._id), 0)
+		const rundown = makeMockRundown(rundownId, playlist)
 		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			0,
@@ -259,7 +262,8 @@ describe('rundown Timing Calculator', () => {
 			parts,
 			partInstancesMap,
 			segments,
-			DEFAULT_DURATION
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -348,8 +352,8 @@ describe('rundown Timing Calculator', () => {
 		parts.push(makeMockPart('part3', 0, rundownId2, segmentId2, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part4', 0, rundownId2, segmentId2, { expectedDuration: 1000 }))
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
-		const rundown1 = makeMockRundown(rundownId1, unprotectString(playlist._id), 0)
-		const rundown2 = makeMockRundown(rundownId1, unprotectString(playlist._id), 0)
+		const rundown1 = makeMockRundown(rundownId1, playlist)
+		const rundown2 = makeMockRundown(rundownId1, playlist)
 		const rundowns = [rundown1, rundown2]
 		const result = timing.updateDurations(
 			0,
@@ -360,7 +364,8 @@ describe('rundown Timing Calculator', () => {
 			parts,
 			partInstancesMap,
 			segments,
-			DEFAULT_DURATION
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -474,7 +479,7 @@ describe('rundown Timing Calculator', () => {
 			})
 		)
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
-		const rundown = makeMockRundown(rundownId1, unprotectString(playlist._id), 0)
+		const rundown = makeMockRundown(rundownId1, playlist)
 		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			0,
@@ -485,7 +490,8 @@ describe('rundown Timing Calculator', () => {
 			parts,
 			partInstancesMap,
 			segments,
-			DEFAULT_DURATION
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -588,7 +594,7 @@ describe('rundown Timing Calculator', () => {
 		)
 		parts.push(makeMockPart('part4', 0, rundownId1, segmentId2, { expectedDuration: 1000 }))
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
-		const rundown = makeMockRundown(rundownId1, unprotectString(playlist._id), 0)
+		const rundown = makeMockRundown(rundownId1, playlist)
 		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			0,
@@ -599,7 +605,8 @@ describe('rundown Timing Calculator', () => {
 			parts,
 			partInstancesMap,
 			segments,
-			DEFAULT_DURATION
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({

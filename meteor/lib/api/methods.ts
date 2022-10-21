@@ -95,7 +95,7 @@ export abstract class MethodContextAPI implements MethodContext {
 	public connection: Meteor.Connection | null
 }
 /** Convenience-method to call a userAction method old-Meteor.call-style */
-export function CallUserActionAPIMethod(method: UserActionAPIMethods, ...args: any[]) {
+export function CallUserActionAPIMethod(method: UserActionAPIMethods, ...args: any[]): any {
 	const m: string = method
 	const fcn = MeteorCall[m.replace(/^userAction\./, '')]
 	return fcn(...args)

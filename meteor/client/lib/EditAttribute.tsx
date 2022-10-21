@@ -4,12 +4,12 @@ import { withTracker } from './ReactMeteorData/react-meteor-data'
 import { faCheckSquare, faSquare } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { MultiSelect, MultiSelectEvent } from './multiSelect'
-import { TransformedCollection } from '../../lib/typings/meteor'
+import { MultiSelect, MultiSelectEvent, MultiSelectOptions } from './multiSelect'
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { assertNever, getRandomString } from '../../lib/lib'
+import { MongoCollection } from '../../lib/collections/lib'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -70,7 +70,7 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 interface IEditAttributeBaseProps {
 	updateOnKey?: boolean
 	attribute?: string
-	collection?: TransformedCollection<any, any>
+	collection?: MongoCollection<any>
 	myObject?: any
 	obj?: any
 	options?: any
@@ -530,6 +530,18 @@ const EditAttributeSwitch = wrapEditAttribute(
 		}
 	}
 )
+
+interface EditAttributeDropdownOption {
+	value: any
+	name: string
+	i?: number
+}
+
+interface EditAttributeDropdownOptionsResult {
+	options: EditAttributeDropdownOption[]
+	currentOptionMissing: boolean
+}
+
 const EditAttributeDropdown = wrapEditAttribute(
 	class EditAttributeDropdown extends EditAttributeBase {
 		constructor(props) {
@@ -539,7 +551,7 @@ const EditAttributeDropdown = wrapEditAttribute(
 		}
 		handleChange(event) {
 			// because event.target.value is always a string, use the original value instead
-			const option = _.find(this.getOptions(), (o) => {
+			const option = _.find(this.getOptions().options, (o) => {
 				return o.value + '' === event.target.value + ''
 			})
 
@@ -547,8 +559,8 @@ const EditAttributeDropdown = wrapEditAttribute(
 
 			this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
 		}
-		getOptions(addOptionForCurrentValue?: boolean) {
-			const options: Array<{ value: any; name: string; i?: number }> = []
+		getOptions(addOptionForCurrentValue?: boolean): EditAttributeDropdownOptionsResult {
+			const options: EditAttributeDropdownOption[] = []
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
@@ -600,14 +612,12 @@ const EditAttributeDropdown = wrapEditAttribute(
 				}
 			}
 
+			const currentValue = this.getAttribute()
+			const currentOption = options.find((o) =>
+				Array.isArray(o.value) ? o.value.includes(currentValue) : o.value === currentValue
+			)
+
 			if (addOptionForCurrentValue) {
-				const currentValue = this.getAttribute()
-				const currentOption = _.find(options, (o) => {
-					if (Array.isArray(o.value)) {
-						return _.contains(o.value, currentValue)
-					}
-					return o.value === currentValue
-				})
 				if (!currentOption) {
 					// if currentOption not found, then add it to the list:
 					options.push({
@@ -621,23 +631,23 @@ const EditAttributeDropdown = wrapEditAttribute(
 				options[i].i = i
 			}
 
-			return options
+			return { options, currentOptionMissing: !currentOption }
 		}
 		render() {
+			const options = this.getOptions(true)
 			return (
 				<select
-					className={
-						'form-control' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
+					className={ClassNames(
+						'form-control',
+						this.props.className,
+						this.state.editing && this.props.modifiedClassName,
+						options.currentOptionMissing && 'option-missing'
+					)}
 					value={this.getAttributeText()}
 					onChange={this.handleChange}
 					disabled={this.props.disabled}
 				>
-					{this.getOptions(true).map((o, j) =>
+					{options.options.map((o, j) =>
 						Array.isArray(o.value) ? (
 							<optgroup key={j} label={o.name}>
 								{o.value.map((v, i) => (
@@ -748,12 +758,9 @@ const EditAttributeDropdownText = wrapEditAttribute(
 
 			if (addOptionForCurrentValue) {
 				const currentValue = this.getAttribute()
-				const currentOption = _.find(options, (o) => {
-					if (Array.isArray(o.value)) {
-						return _.contains(o.value, currentValue)
-					}
-					return o.value === currentValue
-				})
+				const currentOption = options.find((o) =>
+					Array.isArray(o.value) ? o.value.includes(currentValue) : o.value === currentValue
+				)
 				if (!currentOption) {
 					// if currentOption not found, then add it to the list:
 					options.push({
@@ -812,6 +819,12 @@ const EditAttributeDropdownText = wrapEditAttribute(
 		}
 	}
 )
+
+interface EditAttributeMultiSelectOptionsResult {
+	options: MultiSelectOptions
+	currentOptionMissing: boolean
+}
+
 const EditAttributeMultiSelect = wrapEditAttribute(
 	class EditAttributeMultiSelect extends EditAttributeBase {
 		constructor(props) {
@@ -822,16 +835,16 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 		handleChange(event: MultiSelectEvent) {
 			this.handleUpdate(event.selectedValues)
 		}
-		getOptions() {
-			const options: _.Dictionary<string | string[]> = {}
+		getOptions(addOptionsForCurrentValue?: boolean): EditAttributeMultiSelectOptionsResult {
+			const options: MultiSelectOptions = {}
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
 				for (const val of this.props.options) {
 					if (typeof val === 'object') {
-						options[val.value] = val.name
+						options[val.value] = { value: val.name }
 					} else {
-						options[val] = val
+						options[val] = { value: val }
 					}
 				}
 			} else if (typeof this.props.options === 'object') {
@@ -845,28 +858,38 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 							// key is a number (the key)
 							const enumValue = this.props.options[key]
 							const enumKey = this.props.options[enumValue]
-							options[enumKey] = enumValue
+							options[enumKey] = { value: enumValue }
 						}
 					}
 				} else {
 					for (const key in this.props.options) {
 						const val = this.props.options[key]
 						if (Array.isArray(val)) {
-							options[key] = val
+							options[key] = { value: val }
 						} else {
-							options[val] = key + ': ' + val
+							options[val] = { value: key + ': ' + val }
 						}
 					}
 				}
 			}
 
-			return options
+			const currentValue = this.getAttribute()
+			const missingOptions = Array.isArray(currentValue) ? currentValue.filter((v) => !(v in options)) : []
+
+			if (addOptionsForCurrentValue) {
+				missingOptions.forEach((option) => {
+					options[option] = { value: `${option}`, className: 'option-missing' }
+				})
+			}
+
+			return { options, currentOptionMissing: !!missingOptions.length }
 		}
 		render() {
+			const options = this.getOptions(true)
 			return (
 				<MultiSelect
-					className={this.props.className}
-					availableOptions={this.getOptions()}
+					className={ClassNames(this.props.className, options.currentOptionMissing && 'option-missing')}
+					availableOptions={options.options}
 					value={this.getAttribute()}
 					placeholder={this.props.label}
 					onChange={this.handleChange}

@@ -209,8 +209,8 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 
 				handleRundownDrop(rundownId: RundownId) {
 					const { rundown, playlistId, t } = this.props
-					doUserAction(t, 'Drag and drop add rundown to playlist', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
-						MeteorCall.userAction.moveRundown(e, rundownId, playlistId, [rundown._id, rundownId])
+					doUserAction(t, 'Drag and drop add rundown to playlist', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
+						MeteorCall.userAction.moveRundown(e, ts, rundownId, playlistId, [rundown._id, rundownId])
 					)
 				}
 

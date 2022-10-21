@@ -11,7 +11,6 @@ import {
 	stringifyObjects,
 	partial,
 	partialExceptId,
-	escapeHtml,
 	protectString,
 	equalSets,
 	equivalentArrays,
@@ -201,11 +200,6 @@ describe('lib/lib', () => {
 		expect(formatDateTime(2579299201000)).toBe('2051-09-26 00:00:01')
 		expect(formatDateTime(2579299200000)).toBe('2051-09-26 00:00:00')
 		expect(formatDateTime(2579299344070)).toBe('2051-09-26 00:02:24')
-	})
-	testInFiber('escapeHtml', () => {
-		expect(escapeHtml(`<div>Hello & goodbye! Please use '"'-signs!</div>`)).toBe(
-			`&lt;div&gt;Hello &amp; goodbye! Please use &#039;&quot;&#039;-signs!&lt;/div&gt;`
-		)
 	})
 
 	testInFiber('equalSets', () => {

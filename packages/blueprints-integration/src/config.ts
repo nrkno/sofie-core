@@ -5,8 +5,6 @@ import { SourceLayerType } from './content'
 export enum ConfigManifestEntryType {
 	STRING = 'string',
 	MULTILINE_STRING = 'multiline_string',
-	/** @deprecated use INT/FLOAT instead */
-	NUMBER = 'number',
 	INT = 'int',
 	FLOAT = 'float',
 	BOOLEAN = 'boolean',
@@ -15,19 +13,21 @@ export enum ConfigManifestEntryType {
 	SELECT = 'select',
 	SOURCE_LAYERS = 'source_layers',
 	LAYER_MAPPINGS = 'layer_mappings',
+	SELECT_FROM_COLUMN = 'select_from_column',
 	JSON = 'json',
 }
 
 export type BasicConfigManifestEntry =
 	| ConfigManifestEntryString
 	| ConfigManifestEntryMultilineString
-	| ConfigManifestEntryNumber
 	| ConfigManifestEntryInt
 	| ConfigManifestEntryFloat
 	| ConfigManifestEntryBoolean
 	| ConfigManifestEntryEnum
 	| ConfigManifestEntrySelectFromOptions<true>
 	| ConfigManifestEntrySelectFromOptions<false>
+	| ConfigManifestEntrySelectFromColumn<true>
+	| ConfigManifestEntrySelectFromColumn<false>
 	| ConfigManifestEntrySourceLayers<true>
 	| ConfigManifestEntrySourceLayers<false>
 	| ConfigManifestEntryLayerMappings<true>
@@ -54,15 +54,6 @@ export interface ConfigManifestEntryString extends ConfigManifestEntryBase {
 export interface ConfigManifestEntryMultilineString extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.MULTILINE_STRING
 	defaultVal: string[]
-}
-/** @deprecated use INT/FLOAT instead */
-export interface ConfigManifestEntryNumber extends ConfigManifestEntryBase {
-	type: ConfigManifestEntryType.NUMBER
-	defaultVal: number
-	/** Zero-based values will be stored in the database (and reported to blueprints) as values starting from 0, however,
-	 * 	when rendered in settings pages they will appear as value + 1
-	 */
-	zeroBased?: boolean
 }
 export interface ConfigManifestEntryInt extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.INT
@@ -107,6 +98,15 @@ export interface ConfigManifestEntrySelectFromOptions<Multiple extends boolean>
 	extends ConfigManifestEntrySelectBase<Multiple> {
 	type: ConfigManifestEntryType.SELECT
 	options: string[]
+}
+
+export interface ConfigManifestEntrySelectFromColumn<Multiple extends boolean>
+	extends ConfigManifestEntrySelectBase<Multiple> {
+	type: ConfigManifestEntryType.SELECT_FROM_COLUMN
+	/** The id of a ConfigManifestEntryTable in the same config manifest */
+	tableId: string
+	/** The id of a BasicConfigManifestEntry in the table */
+	columnId: string
 }
 
 export interface ConfigManifestEntrySourceLayers<Multiple extends boolean>

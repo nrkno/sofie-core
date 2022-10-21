@@ -84,7 +84,7 @@ export function SourceLayer(props: ISourceLayerProps) {
 			id="segment-timeline-context-menu"
 			attributes={{
 				className: 'segment-timeline__layer',
-				//@ts-ignore A Data attribue is perfectly fine
+				//@ts-expect-error A Data attribue is perfectly fine
 				'data-layer-id': props.layer._id,
 				onMouseUpCapture: (e) => onMouseUp(e),
 				role: 'log',

@@ -407,7 +407,13 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							.filter((i) => showHiddenSourceLayers || !i.isHidden)
 							.sort((a, b) => a._rank - b._rank)
 						const currentIndex = indexAccumulator
-						indexAccumulator += this.props.collapsedOutputs[layer._id] === true ? 1 : sourceLayers.length
+						const isCollapsed =
+							this.props.collapsedOutputs[layer._id] !== undefined
+								? this.props.collapsedOutputs[layer._id] === true
+								: layer.isDefaultCollapsed
+						const isFlattened = layer.collapsed || false
+
+						indexAccumulator += isFlattened || isCollapsed ? 1 : sourceLayers.length
 						return (
 							<OutputGroup
 								key={layer._id}

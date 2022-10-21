@@ -19,9 +19,18 @@ import {
 	ConfigManifestEntrySourceLayers,
 	ConfigManifestEntryLayerMappings,
 	SourceLayerType,
+	ConfigManifestEntrySelectFromColumn,
+	ConfigManifestEntryBoolean,
+	ConfigManifestEntryEnum,
+	ConfigManifestEntryFloat,
+	ConfigManifestEntryInt,
+	ConfigManifestEntryMultilineString,
+	ConfigManifestEntrySelectFromOptions,
+	ConfigManifestEntryString,
+	ConfigManifestEntryJson,
 } from '@sofie-automation/blueprints-integration'
 import { DBObj, ProtectedString, objectPathGet, getRandomString } from '../../../lib/lib'
-import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
+import { MongoModifier } from '../../../lib/typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { getHelpMode } from '../../lib/localStorage'
 import {
@@ -37,6 +46,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { MongoCollection } from '../../../lib/collections/lib'
 
 function filterSourceLayers(
 	select: ConfigManifestEntrySourceLayers<true | false>,
@@ -70,13 +80,35 @@ function filterLayerMappings(
 	return result
 }
 
-function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
-	collection: TransformedCollection<DBInterface, DBInterface>,
+function getTableColumnValues<DBInterface extends { _id: ProtectedString<any> }>(
+	item: ConfigManifestEntrySelectFromColumn<boolean>,
+	configPath: string,
 	object: DBInterface,
-	item: BasicConfigManifestEntry,
+	alternateObject?: any
+): string[] {
+	const attribute = `${configPath}.${item.tableId}`
+	const table = objectPathGet(object, attribute) ?? objectPathGet(alternateObject, attribute)
+	const result: string[] = []
+	if (!Array.isArray(table)) {
+		return result
+	}
+	table.forEach((row) => {
+		if (typeof row === 'object' && row[item.columnId] !== undefined) {
+			result.push(row[item.columnId])
+		}
+	})
+	return result
+}
+
+function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
+	collection: MongoCollection<DBInterface>,
+	configPath: string,
+	object: DBInterface,
+	item: BasicConfigManifestEntry | ResolvedBasicConfigManifestEntry,
 	attribute: string,
 	layerMappings?: { [key: string]: MappingsExt },
-	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
+	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>,
+	alternateObject?: any
 ) {
 	switch (item.type) {
 		case ConfigManifestEntryType.STRING:
@@ -105,7 +137,6 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 					}
 				/>
 			)
-		case ConfigManifestEntryType.NUMBER:
 		case ConfigManifestEntryType.INT:
 			return (
 				<EditAttribute
@@ -178,48 +209,69 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 				/>
 			)
 		case ConfigManifestEntryType.SOURCE_LAYERS:
-			if (sourceLayers) {
-				return (
-					<EditAttribute
-						modifiedClassName="bghl"
-						attribute={attribute}
-						obj={object}
-						type={item.multiple ? 'multiselect' : 'dropdown'}
-						options={filterSourceLayers(item, sourceLayers)}
-						collection={collection}
-						className="input text-input dropdown input-l"
-					/>
-				)
-			}
-			break
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type={item.multiple ? 'multiselect' : 'dropdown'}
+					options={'options' in item ? item.options : filterSourceLayers(item, sourceLayers ?? [])}
+					collection={collection}
+					className="input text-input dropdown input-l"
+				/>
+			)
 		case ConfigManifestEntryType.LAYER_MAPPINGS:
-			if (layerMappings) {
-				return (
-					<EditAttribute
-						modifiedClassName="bghl"
-						attribute={attribute}
-						obj={object}
-						type={item.multiple ? 'multiselect' : 'dropdown'}
-						options={filterLayerMappings(item, layerMappings)}
-						collection={collection}
-						className="input text-input dropdown input-l"
-					/>
-				)
-			}
-			break
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type={item.multiple ? 'multiselect' : 'dropdown'}
+					options={'options' in item ? item.options : filterLayerMappings(item, layerMappings ?? {})}
+					collection={collection}
+					className="input text-input dropdown input-l"
+				/>
+			)
+		case ConfigManifestEntryType.SELECT_FROM_COLUMN:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type={item.multiple ? 'multiselect' : 'dropdown'}
+					options={'options' in item ? item.options : getTableColumnValues(item, configPath, object, alternateObject)}
+					collection={collection}
+					className="input text-input dropdown input-l"
+				/>
+			)
 		default:
 			return null
 	}
 }
 
+type ResolvedBasicConfigManifestEntry =
+	| ConfigManifestEntryString
+	| ConfigManifestEntryMultilineString
+	| ConfigManifestEntryInt
+	| ConfigManifestEntryFloat
+	| ConfigManifestEntryBoolean
+	| ConfigManifestEntryEnum
+	| ConfigManifestEntrySelectFromOptions<boolean>
+	| (ConfigManifestEntrySelectFromColumn<boolean> & { options: string[] })
+	| (ConfigManifestEntrySourceLayers<boolean> & { options: Array<{ name: string; value: string }> })
+	| (ConfigManifestEntryLayerMappings<boolean> & { options: Array<{ name: string; value: string }> })
+	| ConfigManifestEntryJson
+
 interface IConfigManifestSettingsProps<
-	TCol extends TransformedCollection<DBInterface, DBInterface>,
+	TCol extends MongoCollection<DBInterface>,
 	DBInterface extends { _id: ProtectedString<any> }
 > {
 	manifest: ConfigManifestEntry[]
 
 	collection: TCol
 	object: DBInterface
+	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
+	alternateObject?: any
 	configPath: string
 
 	layerMappings?: { [key: string]: MappingsExt }
@@ -237,7 +289,7 @@ interface IConfigManifestSettingsState {
 }
 
 interface IConfigManifestTableProps<
-	TCol extends TransformedCollection<DBInterface, DBInterface>,
+	TCol extends MongoCollection<DBInterface>,
 	DBInterface extends { _id: ProtectedString<any> }
 > {
 	item: ConfigManifestEntryTable
@@ -245,6 +297,9 @@ interface IConfigManifestTableProps<
 
 	collection: TCol
 	object: DBInterface
+	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
+	alternateObject?: any
+	configPath: string
 
 	layerMappings?: { [key: string]: MappingsExt }
 	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
@@ -255,10 +310,11 @@ interface IConfigManifestTableState {
 	uploadFileKey: number // Used to force clear the input after use
 	sortColumn: number
 	sortOrder: 'asc' | 'desc'
+	resolvedColumns: (ResolvedBasicConfigManifestEntry & { rank: number })[]
 }
 
 export class ConfigManifestTable<
-	TCol extends TransformedCollection<DBInterface, DBInterface>,
+	TCol extends MongoCollection<DBInterface>,
 	DBInterface extends DBObj
 > extends React.Component<Translated<IConfigManifestTableProps<TCol, DBInterface>>, IConfigManifestTableState> {
 	constructor(props: Translated<IConfigManifestTableProps<TCol, DBInterface>>) {
@@ -268,6 +324,7 @@ export class ConfigManifestTable<
 			uploadFileKey: Date.now(),
 			sortColumn: -1,
 			sortOrder: 'asc',
+			resolvedColumns: [],
 		}
 	}
 
@@ -383,6 +440,38 @@ export class ConfigManifestTable<
 		}
 	}
 
+	static getDerivedStateFromProps(
+		props: Translated<IConfigManifestTableProps<any, any>>
+	): Partial<IConfigManifestTableState> {
+		return {
+			resolvedColumns: props.item.columns
+				.sort((a, b) => a.rank - b.rank)
+				.map((column) => {
+					switch (column.type) {
+						case ConfigManifestEntryType.SOURCE_LAYERS:
+							return {
+								...column,
+								options: props.sourceLayers ? filterSourceLayers(column, props.sourceLayers) : [],
+							}
+						case ConfigManifestEntryType.LAYER_MAPPINGS:
+							return {
+								...column,
+								options: props.layerMappings ? filterLayerMappings(column, props.layerMappings) : [],
+							}
+						case ConfigManifestEntryType.SELECT_FROM_COLUMN:
+							return {
+								...column,
+								options: props.layerMappings
+									? getTableColumnValues(column, props.configPath, props.object, props.alternateObject)
+									: [],
+							}
+						default:
+							return column
+					}
+				}),
+		}
+	}
+
 	render() {
 		const { t } = this.props
 
@@ -411,7 +500,6 @@ export class ConfigManifestTable<
 						} else {
 							return (a as string).localeCompare(b as string)
 						}
-					case ConfigManifestEntryType.NUMBER:
 					case ConfigManifestEntryType.INT:
 					case ConfigManifestEntryType.FLOAT:
 						return (a as number) - (b as number)
@@ -426,55 +514,45 @@ export class ConfigManifestTable<
 					<table className="table">
 						<thead>
 							<tr>
-								{_.map(
-									configEntry.columns.sort((a, b) => {
-										if (a.rank > b.rank) return 1
-										if (a.rank < b.rank) return -1
-
-										return 0
-									}),
-									(col, i) => (
-										<th key={col.id}>
-											<span title={col.description}>{col.name} </span>
-											{(col.type === ConfigManifestEntryType.STRING ||
-												col.type === ConfigManifestEntryType.NUMBER ||
-												col.type === ConfigManifestEntryType.INT ||
-												col.type === ConfigManifestEntryType.FLOAT) && (
-												<button
-													className={ClassNames('action-btn', {
-														disabled: this.state.sortColumn !== i,
-													})}
-													onClick={() => this.sort(i)}
-												>
-													<FontAwesomeIcon
-														icon={
-															this.state.sortColumn === i
-																? this.state.sortOrder === 'asc'
-																	? faSortUp
-																	: faSortDown
-																: faSort
-														}
-													/>
-												</button>
-											)}
-										</th>
-									)
-								)}
+								{_.map(this.state.resolvedColumns, (col, i) => (
+									<th key={col.id}>
+										<span title={col.description}>{col.name} </span>
+										{(col.type === ConfigManifestEntryType.STRING ||
+											col.type === ConfigManifestEntryType.INT ||
+											col.type === ConfigManifestEntryType.FLOAT) && (
+											<button
+												className={ClassNames('action-btn', {
+													disabled: this.state.sortColumn !== i,
+												})}
+												onClick={() => this.sort(i)}
+											>
+												<FontAwesomeIcon
+													icon={
+														this.state.sortColumn === i
+															? this.state.sortOrder === 'asc'
+																? faSortUp
+																: faSortDown
+															: faSort
+													}
+												/>
+											</button>
+										)}
+									</th>
+								))}
 								<th>&nbsp;</th>
 							</tr>
 						</thead>
 						<tbody>
 							{_.map(vals, (val, i) => (
 								<tr key={sortedIndices[i]}>
-									{_.map(configEntry.columns, (col) => (
+									{_.map(this.state.resolvedColumns, (col) => (
 										<td key={col.id}>
 											{getEditAttribute(
 												this.props.collection,
+												this.props.configPath,
 												this.props.object,
 												col,
-												`${baseAttribute}.${sortedIndices[i]}.${col.id}`,
-												this.props.layerMappings,
-												this.props.sourceLayers
+												`${baseAttribute}.${sortedIndices[i]}.${col.id}`
 											)}
 										</td>
 									))}
@@ -527,7 +605,7 @@ export class ConfigManifestTable<
 }
 
 export class ConfigManifestSettings<
-	TCol extends TransformedCollection<DBInterface, DBInterface>,
+	TCol extends MongoCollection<DBInterface>,
 	DBInterface extends DBObj
 > extends React.Component<Translated<IConfigManifestSettingsProps<TCol, DBInterface>>, IConfigManifestSettingsState> {
 	constructor(props: Translated<IConfigManifestSettingsProps<TCol, DBInterface>>) {
@@ -681,7 +759,6 @@ export class ConfigManifestSettings<
 				) : (
 					value.toString()
 				)
-			case ConfigManifestEntryType.NUMBER:
 			case ConfigManifestEntryType.INT:
 				return _.isNumber(value) && item.zeroBased ? (value + 1).toString() : value.toString()
 			default:
@@ -690,7 +767,7 @@ export class ConfigManifestSettings<
 	}
 
 	renderEditableArea(item: ConfigManifestEntry, valIndex: string) {
-		const baseAttribute = `blueprintConfig.${valIndex}`
+		const baseAttribute = `${this.props.configPath}.${valIndex}`
 		const { t, collection, object, i18n, tReady } = this.props
 		switch (item.type) {
 			case ConfigManifestEntryType.TABLE:
@@ -705,9 +782,12 @@ export class ConfigManifestSettings<
 						item={item}
 						layerMappings={this.props.layerMappings}
 						sourceLayers={this.props.sourceLayers}
+						configPath={this.props.configPath}
+						alternateObject={this.props.alternateObject}
 					/>
 				)
 			case ConfigManifestEntryType.SELECT:
+			case ConfigManifestEntryType.SELECT_FROM_COLUMN:
 			case ConfigManifestEntryType.LAYER_MAPPINGS:
 			case ConfigManifestEntryType.SOURCE_LAYERS:
 				return (
@@ -715,11 +795,13 @@ export class ConfigManifestSettings<
 						{t('Value')}
 						{getEditAttribute(
 							this.props.collection,
+							this.props.configPath,
 							this.props.object,
 							item as BasicConfigManifestEntry,
 							baseAttribute,
 							this.props.layerMappings,
-							this.props.sourceLayers
+							this.props.sourceLayers,
+							this.props.alternateObject
 						)}
 					</div>
 				)
@@ -729,11 +811,13 @@ export class ConfigManifestSettings<
 						{t('Value')}
 						{getEditAttribute(
 							this.props.collection,
+							this.props.configPath,
 							this.props.object,
 							item as BasicConfigManifestEntry,
 							baseAttribute,
 							this.props.layerMappings,
-							this.props.sourceLayers
+							this.props.sourceLayers,
+							this.props.alternateObject
 						)}
 					</label>
 				)
@@ -833,7 +917,7 @@ export class ConfigManifestSettings<
 									modifiedClassName="bghl"
 									type="dropdown"
 									options={this.getAddOptions()}
-									updateFunction={(e, v) => this.setState({ addItemId: v })}
+									updateFunction={(_e, v) => this.setState({ addItemId: v })}
 									overrideDisplayValue={this.state.addItemId}
 								/>
 							</div>

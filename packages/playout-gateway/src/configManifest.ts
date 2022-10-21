@@ -2,8 +2,8 @@ import {
 	DeviceConfigManifest,
 	ConfigManifestEntryType,
 	SubDeviceConfigManifest,
-	SubDeviceConfigManifestEntry,
 	MappingsManifest,
+	ConfigManifestEntry,
 } from '@sofie-automation/server-core-integration'
 import {
 	DeviceType as TSRDeviceType,
@@ -21,7 +21,7 @@ import {
 	MappingOBSType,
 } from 'timeline-state-resolver'
 
-const PLAYOUT_SUBDEVICE_COMMON: SubDeviceConfigManifestEntry[] = [
+const PLAYOUT_SUBDEVICE_COMMON: ConfigManifestEntry[] = [
 	{
 		id: 'debug',
 		name: 'Activate debug logging for device',
@@ -38,14 +38,14 @@ const PLAYOUT_SUBDEVICE_COMMON: SubDeviceConfigManifestEntry[] = [
 		type: ConfigManifestEntryType.FLOAT,
 	},
 ]
-const PLAYOUT_SUBDEVICE_HOST = [
+const PLAYOUT_SUBDEVICE_HOST: ConfigManifestEntry[] = [
 	{
 		id: 'options.host',
 		name: 'Host',
 		type: ConfigManifestEntryType.STRING,
 	},
 ]
-const PLAYOUT_SUBDEVICE_HOST_PORT = [
+const PLAYOUT_SUBDEVICE_HOST_PORT: ConfigManifestEntry[] = [
 	...PLAYOUT_SUBDEVICE_HOST,
 	{
 		id: 'options.port',
@@ -156,7 +156,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.faderThreshold',
 			name: 'Fader cutoff value',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 			placeholder: '-60',
 		},
 	],
@@ -202,7 +202,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 					{
 						id: 'temporalPriority',
 						name: 'Temporal Priority',
-						type: ConfigManifestEntryType.NUMBER,
+						type: ConfigManifestEntryType.INT,
 					},
 					{
 						id: 'queueId',
@@ -242,7 +242,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 					{
 						id: 'temporalPriority',
 						name: 'Temporal Priority',
-						type: ConfigManifestEntryType.NUMBER,
+						type: ConfigManifestEntryType.INT,
 					},
 					{
 						id: 'queueId',
@@ -259,7 +259,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.minRecordingTime',
 			name: 'Minimum recording time',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 	],
 	[TSRDeviceType.PHAROS]: [
@@ -297,7 +297,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.expectedHttpResponse',
 			name: 'Expected HTTP Response',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 		{
 			id: 'options.keyword',
@@ -307,7 +307,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.interval',
 			name: 'Interval',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 	],
 	[TSRDeviceType.SISYFOS]: [...PLAYOUT_SUBDEVICE_COMMON, ...PLAYOUT_SUBDEVICE_HOST_PORT],
@@ -336,7 +336,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.serverId',
 			name: 'Quantel Server ID',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 		{
 			id: 'options.allowCloneClips',
@@ -350,12 +350,12 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		{
 			id: 'options.restPort',
 			name: '(Optional) REST port',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 		{
 			id: 'options.wsPort',
 			name: '(Optional) Websocket port',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 		{
 			id: 'options.engineRestPort',
@@ -442,7 +442,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 			type: ConfigManifestEntryType.STRING,
 		},
 	],
-	[TSRDeviceType.TELEMETRICS]: [], // TODO: Remove when merging with next release. Added due to TSR upgrade needed for threadedClass issues.
+	[TSRDeviceType.TELEMETRICS]: [...PLAYOUT_SUBDEVICE_HOST],
 }
 
 // TODO: should come from types
@@ -506,7 +506,7 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 		{
 			id: 'options.retryInterval',
 			name: 'Media retry interval (ms), -1 disables, 0 default',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 		},
 	],
 	[TSRDeviceType.HYPERDECK]: [
@@ -538,7 +538,7 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 		},
 		{
 			id: 'priority',
-			type: ConfigManifestEntryType.NUMBER,
+			type: ConfigManifestEntryType.INT,
 			name: 'Priority',
 		},
 	],
@@ -656,7 +656,7 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 			optional: true,
 		},
 	],
-	[TSRDeviceType.TELEMETRICS]: [], // TODO: Remove when merging with next release. Added due to TSR upgrade needed for threadedClass issues.
+	[TSRDeviceType.TELEMETRICS]: [],
 }
 
 export const PLAYOUT_DEVICE_CONFIG: DeviceConfigManifest = {

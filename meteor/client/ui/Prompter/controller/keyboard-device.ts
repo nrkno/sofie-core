@@ -30,7 +30,7 @@ export class KeyboardController extends ControllerAbstract {
 	private _updateSpeedHandle: number | null = null
 
 	constructor(view: PrompterViewInner) {
-		super(view)
+		super()
 
 		this._prompterView = view
 
@@ -132,13 +132,6 @@ export class KeyboardController extends ControllerAbstract {
 		// Nothing
 	}
 
-	private _toggleMode() {
-		this._setMode(Mode.NORMAL)
-	}
-	private _setMode(mode: Mode) {
-		this._mode = mode
-		localStorage.setItem(LOCALSTORAGE_MODE, mode)
-	}
 	private _getDistanceToStop(currentSpeed, stopAcceleration): number {
 		if (!stopAcceleration) return 0
 		const timeToStop = currentSpeed / stopAcceleration // (not in seconds, but frames!)

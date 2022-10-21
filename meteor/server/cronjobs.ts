@@ -9,7 +9,7 @@ import { IngestDataCache } from '../lib/collections/IngestDataCache'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
-import { CASPARCG_RESTART_TIME } from '../lib/constants'
+import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
 import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
@@ -19,6 +19,7 @@ import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { Parts } from '../lib/collections/Parts'
 import { PartInstances } from '../lib/collections/PartInstances'
 import { PieceInstances } from '../lib/collections/PieceInstances'
+import { deferAsync } from '@sofie-automation/corelib/dist/lib'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -37,7 +38,7 @@ function isLowSeason() {
 let lastNightlyCronjob = 0
 let failedRetries = 0
 
-export function nightlyCronjobInner() {
+export function nightlyCronjobInner(): void {
 	const previousLastNightlyCronjob = lastNightlyCronjob
 	lastNightlyCronjob = getCurrentTime()
 	logger.info('Nightly cronjob: starting...')
@@ -175,7 +176,7 @@ export function nightlyCronjobInner() {
 		RundownPlaylists.find(filter).forEach((playlist) => {
 			lowPrioFcn(() => {
 				logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
-				ps.push(internalStoreRundownPlaylistSnapshot(null, playlist._id, 'Automatic, taken by cron job'))
+				ps.push(internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job'))
 			})
 		})
 	}
@@ -207,16 +208,21 @@ Meteor.startup(() => {
 
 	function cleanupPlaylists(force?: boolean) {
 		if (isLowSeason() || force) {
-			// Ensure there are no empty playlists on an interval
-			const studioIds = fetchStudioIds({})
-			Promise.all(
-				studioIds.map(async (studioId) => {
-					const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
-					await job.complete
-				})
-			).catch((e) => {
-				logger.error(`Cron: CleanupPlaylists error: ${e}`)
-			})
+			deferAsync(
+				async () => {
+					// Ensure there are no empty playlists on an interval
+					const studioIds = await fetchStudioIds({})
+					await Promise.all(
+						studioIds.map(async (studioId) => {
+							const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
+							await job.complete
+						})
+					)
+				},
+				(e) => {
+					logger.error(`Cron: CleanupPlaylists error: ${e}`)
+				}
+			)
 		}
 	}
 	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes

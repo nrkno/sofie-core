@@ -5,7 +5,7 @@ import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
-import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { UserId } from '../../lib/typings/meteor'
 import { OrganizationId } from '../../lib/collections/Organization'
@@ -53,6 +53,7 @@ export namespace ServerClientAPI {
 	export async function runUserActionInLogForPlaylistOnWorker<T extends keyof StudioJobFunc>(
 		context: MethodContext,
 		userEvent: string,
+		eventTime: Time,
 		playlistId: RundownPlaylistId,
 		checkArgs: () => void,
 		jobName: T,
@@ -61,12 +62,13 @@ export namespace ServerClientAPI {
 		return runUserActionInLog(
 			context,
 			userEvent,
+			eventTime,
 			`worker.${jobName}`,
 			[jobArguments],
 			async (_credentials, userActionMetadata) => {
 				checkArgs()
 
-				const access = checkAccessToPlaylist(context, playlistId)
+				const access = await checkAccessToPlaylist(context, playlistId)
 				return runStudioJob(access.playlist.studioId, jobName, jobArguments, userActionMetadata)
 			}
 		)
@@ -78,6 +80,7 @@ export namespace ServerClientAPI {
 	export async function runUserActionInLogForRundownOnWorker<T extends keyof StudioJobFunc>(
 		context: MethodContext,
 		userEvent: string,
+		eventTime: Time,
 		rundownId: RundownId,
 		checkArgs: () => void,
 		jobName: T,
@@ -86,12 +89,13 @@ export namespace ServerClientAPI {
 		return runUserActionInLog(
 			context,
 			userEvent,
+			eventTime,
 			`worker.${jobName}`,
 			[jobArguments],
 			async (_credentials, userActionMetadata) => {
 				checkArgs()
 
-				const access = checkAccessToRundown(context, rundownId)
+				const access = await checkAccessToRundown(context, rundownId)
 				return runStudioJob(access.rundown.studioId, jobName, jobArguments, userActionMetadata)
 			}
 		)
@@ -103,16 +107,18 @@ export namespace ServerClientAPI {
 	export async function runUserActionInLogForPlaylist<T>(
 		context: MethodContext,
 		userEvent: string,
+		eventTime: Time,
 		playlistId: RundownPlaylistId,
 		checkArgs: () => void,
 		methodName: string,
 		args: any[],
 		fcn: (access: VerifiedRundownPlaylistContentAccess) => Promise<T>
 	): Promise<ClientAPI.ClientResponse<T>> {
-		return runUserActionInLog(context, userEvent, methodName, args, async () => {
+		return runUserActionInLog(context, userEvent, eventTime, methodName, args, async () => {
 			checkArgs()
 
-			return fcn(checkAccessToPlaylist(context, playlistId))
+			const access = await checkAccessToPlaylist(context, playlistId)
+			return fcn(access)
 		})
 	}
 
@@ -122,16 +128,18 @@ export namespace ServerClientAPI {
 	export async function runUserActionInLogForRundown<T>(
 		context: MethodContext,
 		userEvent: string,
+		eventTime: Time,
 		rundownId: RundownId,
 		checkArgs: () => void,
 		methodName: string,
 		args: any[],
 		fcn: (access: VerifiedRundownContentAccess) => Promise<T>
 	): Promise<ClientAPI.ClientResponse<T>> {
-		return runUserActionInLog(context, userEvent, methodName, args, async () => {
+		return runUserActionInLog(context, userEvent, eventTime, methodName, args, async () => {
 			checkArgs()
 
-			return fcn(checkAccessToRundown(context, rundownId))
+			const access = await checkAccessToRundown(context, rundownId)
+			return fcn(access)
 		})
 	}
 
@@ -174,6 +182,7 @@ export namespace ServerClientAPI {
 	export async function runUserActionInLog<TRes>(
 		context: MethodContext,
 		userEvent: string,
+		eventTime: Time,
 		methodName: string,
 		methodArgs: unknown[],
 		fcn: (credentials: BasicAccessContext, userActionMetadata: UserActionMetadata) => Promise<TRes>
@@ -201,7 +210,7 @@ export namespace ServerClientAPI {
 					return rewrapError(methodName, e)
 				}
 			} else {
-				const credentials = getLoggedInCredentials(context)
+				const credentials = await getLoggedInCredentials(context)
 
 				// Start the db entry, but don't wait for it
 				const actionId: UserActionsLogItemId = getRandomId()
@@ -215,6 +224,7 @@ export namespace ServerClientAPI {
 						method: methodName,
 						args: JSON.stringify(methodArgs),
 						timestamp: getCurrentTime(),
+						clientTime: eventTime,
 					})
 				).catch((e) => {
 					// If this fails make sure it is handled
@@ -315,7 +325,7 @@ export namespace ServerClientAPI {
 			})
 		}
 
-		const access = PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+		const access = await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
 
 		await UserActionsLog.insertAsync(
 			literal<UserActionsLogItem>({
@@ -358,13 +368,13 @@ export namespace ServerClientAPI {
 				return Promise.reject(err)
 			})
 	}
-	function getLoggedInCredentials(methodContext: MethodContext): BasicAccessContext {
+	async function getLoggedInCredentials(methodContext: MethodContext): Promise<BasicAccessContext> {
 		let userId: UserId | null = null
 		let organizationId: OrganizationId | null = null
 		if (Settings.enableUserAccounts) {
-			const cred = resolveCredentials({ userId: methodContext.userId })
+			const cred = await resolveCredentials({ userId: methodContext.userId })
 			if (cred.user) userId = cred.user._id
-			if (cred.organization) organizationId = cred.organization._id
+			organizationId = cred.organizationId
 		}
 		return { userId, organizationId }
 	}
@@ -400,24 +410,7 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		functionName: string,
 		...args: any[]
 	) {
-		const methodContext: MethodContext = this // eslint-disable-line @typescript-eslint/no-this-alias
-		if (!Settings.enableUserAccounts) {
-			// Note: This is a temporary hack to keep backwards compatibility.
-			// in the case of not enableUserAccounts, a token is needed, but not provided when called from client
-			const device = PeripheralDevices.findOne(deviceId)
-			if (device) {
-				// @ts-ignore hack
-				methodContext.token = device.token
-			}
-		}
-		return ServerClientAPI.callPeripheralDeviceFunction(
-			methodContext,
-			context,
-			deviceId,
-			timeoutTime,
-			functionName,
-			...args
-		)
+		return ServerClientAPI.callPeripheralDeviceFunction(this, context, deviceId, timeoutTime, functionName, ...args)
 	}
 }
 registerClassToMeteorMethods(ClientAPIMethods, ServerClientAPIClass, false)

@@ -37,8 +37,6 @@ interface IListViewItemProps {
 	playlist: RundownPlaylist
 }
 
-const _isMacLike = !!navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i)
-
 export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 	class AdLibListItem extends MeteorReactComponent<Translated<IListViewItemProps>> {
 		constructor(props: IListViewItemProps) {
@@ -56,7 +54,7 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 							floated: this.props.piece.floated,
 							disabled: this.props.disabled,
 						}),
-						//@ts-ignore React.HTMLAttributes does not list data attributes, but that's fine
+						//@ts-expect-error React.HTMLAttributes does not list data attributes, but that's fine
 						'data-obj-id': this.props.piece._id,
 						onClick: () => this.props.onSelectAdLib && this.props.onSelectAdLib(this.props.piece),
 						onContextMenu: () => this.props.onSelectAdLib && this.props.onSelectAdLib(this.props.piece),

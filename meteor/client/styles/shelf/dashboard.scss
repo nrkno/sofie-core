@@ -16,6 +16,11 @@ $dashboard-button-height: 5.625em;
 	--dashboard-button-grid-height: 1.625em;
 	--dashboard-panel-margin-width: 0.938em;
 	--dashboard-panel-margin-height: 2.75em;
+	--dashboard-panel-scale: 1;
+
+	.dashboard__panel--font-scaled {
+		font-size: calc(var(--dashboard-panel-scale) * 1.5em);
+	}
 }
 
 .dashboard-panel {
@@ -277,7 +282,7 @@ $dashboard-button-height: 5.625em;
 		height: $dashboard-button-height;
 		margin: 4px;
 		vertical-align: top;
-		cursor: default;
+		cursor: pointer;
 
 		@include item-type-colors();
 		@include invalid-overlay();

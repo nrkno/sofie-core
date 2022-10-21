@@ -1,105 +1,115 @@
-// @ts-ignore
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { CoreConnection } from '../src/index'
-import { PeripheralDeviceAPI as P } from '../src/lib/corePeripherals'
 
-let core = new CoreConnection({
-	deviceId: 'ExampleDevice',
+const core = new CoreConnection({
+	deviceId: protectString('ExampleDevice'),
 	deviceToken: 'abcd',
-	deviceType: P.DeviceType.PLAYOUT,
+	deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+	deviceType: PeripheralDeviceType.PLAYOUT,
 	deviceName: 'Jest test framework',
-	deviceCategory: P.DeviceCategory.PLAYOUT
 })
-
-// let consolelog = console.log
-// console.log = (...args) => {
-// 	consolelog(new Date().getTime() / 1000, ...args)
-// }
 
 core.onConnectionChanged((connected) => {
 	console.log('onConnectionChanged', connected)
 })
-core.onConnected(async () => {
+core.onConnected(() => {
 	console.log('onConnected!')
 
-	await setupSubscription()
+	setupSubscription().catch((e) => {
+		console.error(`Failed to setup sub`, e)
+	})
 })
 core.onDisconnected(() => {
 	console.log('onDisconnected!')
 })
 core.onError((err) => {
-	console.log('onError: ' + (err.message || err.toString() || err), err)
+	console.log('onError: ' + (typeof err === 'string' ? err : err.message || err.toString() || err))
 })
 core.onFailed((err) => {
 	console.log('onFailed: ' + (err.message || err.toString() || err))
 })
 
-let setupSubscription = () => {
+const setupSubscription = async () => {
 	console.log('Setup subscription')
-	return core.subscribe('peripheralDevices', {
-		_id: core.deviceId
-	})
-	.then(() => {
-		console.log('sub OK!')
-	})
+	return core
+		.subscribe('peripheralDevices', {
+			_id: core.deviceId,
+		})
+		.then(() => {
+			console.log('sub OK!')
+		})
 }
-let setupObserver = () => {
+const setupObserver = () => {
 	console.log('Setup observer')
-	let observer = core.observe('peripheralDevices')
-	observer.added = (id) =>	{ console.log('added', id) }
-	observer.changed = (id) =>	{ console.log('changed', id) }
-	observer.removed = (id) =>	{ console.log('removed', id) }
+	const observer = core.observe('peripheralDevices')
+	observer.added = (id) => {
+		console.log('added', id)
+	}
+	observer.changed = (id) => {
+		console.log('changed', id)
+	}
+	observer.removed = (id) => {
+		console.log('removed', id)
+	}
 }
 // Initiate connection to Core:
 
-let setup = async () => {
+const setup = async () => {
 	try {
-
 		console.log('init...')
 		await core.init({
 			host: '127.0.0.1',
-			port: 3000
+			port: 3000,
 		})
 		console.log('init!')
 
 		await core.setStatus({
-			statusCode: P.StatusCode.GOOD,
-			messages: ['']
+			statusCode: StatusCode.GOOD,
+			messages: [''],
 		})
 
 		setupObserver()
 
 		await setupSubscription()
 
-		setTimeout(async () => {
+		setTimeout(() => {
 			console.log('updating status')
-			await core.setStatus({
-				statusCode: P.StatusCode.GOOD,
-				messages: ['a']
+			core.setStatus({
+				statusCode: StatusCode.GOOD,
+				messages: ['a'],
+			}).catch((e) => {
+				console.error(`Failed to set status`, e)
 			})
-		},500)
+		}, 500)
 
 		setTimeout(() => {
 			console.log('closing socket')
-			if (core.ddp.ddpClient) {
-				core.ddp.ddpClient['socket'].close()
-			}
-		},1500)
+			core.ddp.ddpClient?.socket?.close()
+		}, 1500)
 
-		setTimeout(async () => {
+		setTimeout(() => {
 			console.log('updating status')
-			await core.setStatus({
-				statusCode: P.StatusCode.GOOD,
-				messages: ['b']
+			core.setStatus({
+				statusCode: StatusCode.GOOD,
+				messages: ['b'],
+			}).catch((e) => {
+				console.error(`Failed to set status`, e)
 			})
-		},3500)
+		}, 3500)
 	} catch (e) {
 		console.log('ERROR ===========')
-		console.log(e, e.stack)
+		console.log(e)
 	}
-
 }
 
-setup().then(console.log).catch(console.error)
+setup().catch((e) => {
+	console.error(`Failed to setup`, e)
+})
 // .then(() => {
 // 	core.setStatus({
 // 		statusCode: P.StatusCode.GOOD,

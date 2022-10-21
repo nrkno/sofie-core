@@ -18,7 +18,7 @@ export const getPackageContainerPackageStatus = (
 	studioId: StudioId,
 	packageContainerId: string,
 	expectedPackageId: ExpectedPackageId
-) => {
+): PackageContainerPackageStatusDB | undefined => {
 	const id = getPackageContainerPackageId(studioId, packageContainerId, expectedPackageId)
 
 	return storePackageContainerPackageStatuses.getValue(id, () => {

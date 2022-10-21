@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2022-05-19T11:28:47.600Z\n"
-"PO-Revision-Date: 2022-05-19 13:34+0200\n"
+"POT-Creation-Date: 2022-08-02T12:04:21.289Z\n"
+"PO-Revision-Date: 2022-08-02 14:14+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.0.1\n"
+"X-Generator: Poedit 3.1.1\n"
 
 msgid "Account Page"
 msgstr "Brukarkontoside"
@@ -217,18 +217,6 @@ msgstr "Ut"
 msgid "Next"
 msgstr "Neste"
 
-msgid "Could not get system status. Please consult system administrator."
-msgstr "Kan ikkje innhente status for systemet. Kontakt systemadministrator."
-
-msgid "Welcome to the Sofie Automation system"
-msgstr "Velkomen til Sofie"
-
-msgid "Sofie Automation version"
-msgstr "Sofie-versjon"
-
-msgid "Sofie status"
-msgstr "Sofie-status"
-
 msgid "Test test"
 msgstr "Test test"
 
@@ -243,9 +231,6 @@ msgstr "Til slutten av segment"
 
 msgid "Until next rundown"
 msgstr "Til neste køyreplan"
-
-msgid "Until end of rundown"
-msgstr "Til slutten av køyreplanen"
 
 msgid "Until end of showstyle"
 msgstr "Til slutten av showstyle"
@@ -291,6 +276,9 @@ msgstr "Prompter"
 
 msgid "End of script"
 msgstr "Slutt på manus"
+
+msgid "Could not get system status. Please consult system administrator."
+msgstr "Kan ikkje innhente status for systemet. Kontakt systemadministrator."
 
 msgid "There are no rundowns ingested into Sofie."
 msgstr "Det er ikkje send køyreplanar til Sofie."
@@ -354,11 +342,11 @@ msgstr "Migrering"
 msgid "Documentation is available at"
 msgstr "Dokumentasjon er tilgjengelig på"
 
-msgid "Using local Sofie order"
-msgstr "Rekkefølgje satt i Sofie"
+msgid "Use {{nrcsName}} order"
+msgstr "Nytt rekkefølgje frå {{nrcsName}}"
 
-msgid "Change order in playlist to override"
-msgstr "Gjør ei endring for å overstyre"
+msgid "Reset Sort Order"
+msgstr "Tilbakestill rekkefølgje"
 
 msgid "Enable configuration mode by adding ?configure=1 to the address bar."
 msgstr ""
@@ -368,7 +356,9 @@ msgstr ""
 msgid "You need to run migrations to set the system up for operation."
 msgstr "Du må køyre migrering for å klargjere systemet for bruk."
 
-msgid "Drop rundown here to move it out of its current playlist"
+#, fuzzy
+#| msgid "Drop rundown here to move it out of its current playlist"
+msgid "Drop Rundown here to move it out of its current Playlist"
 msgstr "Slepp køyreplanen her for å flytta den ut av nåværande speleliste"
 
 msgid "Sofie Automation"
@@ -563,6 +553,26 @@ msgstr "Feil"
 
 msgid "This rundown is now active. Are you sure you want to exit this screen?"
 msgstr "Denne køyreplanen er aktiv. Er du sikker på at du vil avslutte?"
+
+msgid "Invalid AdLib"
+msgstr "Ugyldig adlib"
+
+msgid "Cannot play this AdLib because it is marked as Invalid"
+msgstr "Kan ikkje spele av adlib fordi den er markert som ugyldig"
+
+#, fuzzy
+#| msgid "Floated AdLib"
+msgid "Floated Adlib"
+msgstr "Adlib satt på vent"
+
+msgid "Cannot play this AdLib because it is marked as Floated"
+msgstr "Kan ikkje spele av adlib fordi den er markert som på vent (float)"
+
+msgid "Not queueable"
+msgstr "Kan ikkje setjast i kø"
+
+msgid "Cannot play this adlib because source layer is not queueable"
+msgstr "Kan ikkje spele av adlib fordi den ikkje kan setjast i kø på kjeldelaget"
 
 msgid ""
 "There are no Playout Gateways connected and attached to this studio. Please "
@@ -851,14 +861,14 @@ msgstr "Alle eininger fungerer som dei skal"
 msgid "Auto"
 msgstr "Auto"
 
-msgid "Diff"
-msgstr "Skilnad"
-
 msgid "Expected End"
 msgstr "Venta slutt"
 
 msgid "Next Loop at"
 msgstr "Neste loop starter"
+
+msgid "Diff"
+msgstr "Skilnad"
 
 msgid "Started"
 msgstr "Starta"
@@ -874,6 +884,9 @@ msgstr "{{currentRundownName}} - {{rundownPlaylistName}}"
 
 msgid "{{rundownPlaylistName}} (Looping)"
 msgstr "{{rundownPlaylistName}} (Looper)"
+
+msgid "Floated AdLib"
+msgstr "Adlib satt på vent"
 
 msgid "Switchboard"
 msgstr "Omkoplingssentral"
@@ -1155,11 +1168,20 @@ msgstr "Deaktiver versjonsjekk"
 msgid "Upload Blueprints"
 msgstr "Last opp blueprints"
 
-msgid "Spreadsheet credentials succesfully uploaded."
-msgstr "Opplasting av Spreadsheet Credentials var vellukka."
+msgid "OAuth credentials succesfully uploaded."
+msgstr "Opplasting av OAuth credentials var vellukka."
 
-msgid "Failed to upload spreadsheet credentials: {{errorMessage}}"
-msgstr "Opplasting av Spreadsheet Credentials feila: {{errorMessage}}"
+msgid "Failed to upload OAuth credentials: {{errorMessage}}"
+msgstr "Opplasting av OAuth credentials feila: {{errorMessage}}"
+
+msgid "OAuth credentials successfuly reset"
+msgstr "OAuth credentials nullstilt."
+
+msgid "Failed to reset OAuth credentials: {{errorMessage}}"
+msgstr "Nullstilling av OAuth credentials feila: {{errorMessage}}"
+
+msgid "Reset Authentication"
+msgstr "Passord for autentisering"
 
 msgid "Application credentials"
 msgstr "Brukarnamn/passord (Application Credentials)"
@@ -1167,15 +1189,11 @@ msgstr "Brukarnamn/passord (Application Credentials)"
 msgid "Access token"
 msgstr "Tilgongskode (Access Token)"
 
-msgid ""
-"Click on the link below and accept the permissions request. Paste the "
-"received URL below."
-msgstr ""
-"Klikk på lenka under og godta permissions-førespurnaden. Lim deretter inn "
-"adressa (url-en) du får oppgitt i feltet under."
+msgid "Click on the link below and accept the permissions request."
+msgstr "Klikk på lenka under og godta permissions-førespurnaden"
 
 msgid "Waiting for gateway to generate URL..."
-msgstr "Ventar på at gateway genererar url..."
+msgstr "Ventar på at gateway genererar URL..."
 
 msgid "Only Match Global AdLibs"
 msgstr "Vis kun globale adliber"
@@ -1189,26 +1207,11 @@ msgstr "Stil for vising"
 msgid "Show thumbnails next to list items"
 msgstr "Vis miniatyrbilete ved sida av listeelement"
 
-msgid "X"
-msgstr "X"
-
-msgid "Y"
-msgstr "Y"
-
-msgid "Width"
-msgstr "Breidde"
-
-msgid "Height"
-msgstr "Høgde"
-
 msgid "Button width scale factor"
 msgstr "Breiddeskala for knapp"
 
 msgid "Button height scale factor"
 msgstr "Høgdeskala for knapp"
-
-msgid "Display Rank"
-msgstr "Rangering for visning"
 
 msgid "Only Display AdLibs from Current Segment"
 msgstr "Vis berre adliber frå gjeldande tittel"
@@ -1233,9 +1236,6 @@ msgstr "Etikett inneheld"
 
 msgid "Tags must contain"
 msgstr "Tagger må innehalde"
-
-msgid "Register Shortcuts for this Panel"
-msgstr "Legg til snarvegar for dette panelet"
 
 msgid "Hide Panel from view"
 msgstr "Ikkje vis dette panelet"
@@ -1275,6 +1275,9 @@ msgstr ""
 
 msgid "URL"
 msgstr "Adresse (url)"
+
+msgid "Display Rank"
+msgstr "Rangering for visning"
 
 msgid "Role"
 msgstr "Rolle"
@@ -1372,6 +1375,18 @@ msgstr ""
 
 msgid "All additional source layers must have active pieces"
 msgstr ""
+
+msgid "X"
+msgstr "X"
+
+msgid "Y"
+msgstr "Y"
+
+msgid "Width"
+msgstr "Breidde"
+
+msgid "Height"
+msgstr "Høgde"
 
 msgid "Scale"
 msgstr "Skala"
@@ -1483,6 +1498,12 @@ msgstr "Vel synlege kjeldelag"
 msgid "Select visible Output Groups"
 msgstr "Vel synleg gruppe for utgang"
 
+msgid "Display piece duration for source layers"
+msgstr ""
+
+msgid "Piece on selected source layers will have a duration label shown"
+msgstr ""
+
 msgid "Expose layout as a standalone page"
 msgstr "Gjer layout tilgjengeleg som ei sjølvstendig side"
 
@@ -1492,14 +1513,32 @@ msgstr "Åpne skuff som standard"
 msgid "Default shelf height"
 msgstr "Standard høyde for skuff"
 
+msgid "Show Buckets"
+msgstr "Vis bøtter"
+
+msgid "Show Inspector"
+msgstr ""
+
+msgid "Disable Context Menu"
+msgstr "Skruv av kontekstmeny"
+
 msgid "This action has an invalid combination of filters"
 msgstr "Denne handlinga har ein ugydlig kombinasjon av filtre"
+
+msgid "Use Trigger Mode"
+msgstr "Type utløysar"
+
+msgid "Trigger Mode"
+msgstr ""
 
 msgid "Force"
 msgstr "Tving"
 
 msgid "Rehearsal"
 msgstr "Testmodus"
+
+msgid "Mode: {{triggerMode}}"
+msgstr ""
 
 msgid "Undo"
 msgstr "Angre"
@@ -1518,6 +1557,9 @@ msgstr "Veklse"
 
 msgid "On"
 msgstr "På"
+
+msgid "Forward: {{forward}}"
+msgstr ""
 
 msgid "Activate Rundown"
 msgstr "Aktiver køyreplan"
@@ -1552,6 +1594,9 @@ msgstr "Gå til OnAir-posisjon"
 msgid "Show entire On Air Segment"
 msgstr "Vis heile tittelen som er OnAir"
 
+msgid "Queue AdLib from Minishelf"
+msgstr ""
+
 msgid "Force (deactivate others)"
 msgstr "Tving (deaktiver andre)"
 
@@ -1569,6 +1614,9 @@ msgstr ""
 
 msgid "State"
 msgstr "Tilstand"
+
+msgid "Forward"
+msgstr ""
 
 msgid "Action"
 msgstr "Handling"
@@ -1938,6 +1986,9 @@ msgstr "Er du sikker på at du vil slette layouten \"{{name}}\"?"
 msgid "Action Buttons"
 msgstr "Handlingsknappar"
 
+msgid "Toggled Label"
+msgstr ""
+
 msgid "Icon"
 msgstr "Ikon"
 
@@ -2136,8 +2187,26 @@ msgstr "Ingen programutgang"
 msgid "Key"
 msgstr "Key"
 
+#, fuzzy
+#| msgid "Host"
+msgid "Host Key"
+msgstr "Vert"
+
+#, fuzzy
+#| msgid "Source Layer Type"
+msgid "Source Layer type"
+msgstr "Kjeldelagstypar"
+
+#, fuzzy
+#| msgid "Icon color"
+msgid "Key color"
+msgstr "Ikonfarge"
+
 msgid "Custom Hotkey Labels"
 msgstr "Eigendefinerte etikettar for hurtigtastar"
+
+msgid "AHK"
+msgstr ""
 
 msgid "Remove this Variant?"
 msgstr "Fjern denne varianten?"
@@ -2314,6 +2383,9 @@ msgstr "Ingen"
 
 msgid "New Layer"
 msgstr "Nytt lag"
+
+msgid "Route Type"
+msgstr ""
 
 msgid "Source Layer not found"
 msgstr "Kjeldelag ikkje funnen"
@@ -2611,6 +2683,11 @@ msgstr ""
 msgid "Allow Rundowns to be reset while on-air"
 msgstr "Ein aktivert køyreplan kan ikkje tilbakestillast"
 
+msgid ""
+"Preserve position of segments when unsynced relative to other segments. "
+"Note: this has only been tested for the iNews gateway"
+msgstr ""
+
 msgid "Remove indexes"
 msgstr "Fjern indexer"
 
@@ -2693,6 +2770,19 @@ msgstr "Rydd opp i gamle databaseindexer"
 msgid "Cleanup old data"
 msgstr "Rydd opp i gamle data"
 
+msgid "Disable CasparCG restart job"
+msgstr "Deaktiver CasparCG restartjobbar"
+
+msgid "Enable automatic storage of Rundown Playlist snapshots periodically"
+msgstr ""
+
+msgid "Filter: If set, only store snapshots for certain rundowns"
+msgstr ""
+
+msgid ""
+"(Comma separated list. Empty - will store snapshots of all Rundown Playlists)"
+msgstr ""
+
 msgid "Error when checking for cleaning up"
 msgstr ""
 
@@ -2721,20 +2811,18 @@ msgstr "Siste {{layerName}}"
 msgid "Clear {{layerName}}"
 msgstr "Tøm {{layerName}}"
 
-msgid "Invalid AdLib"
-msgstr "Ugyldig adlib"
-
-msgid "Cannot play this AdLib because it is marked as Invalid"
-msgstr "Kan ikkje spele av adlib fordi den er markert som ugyldig"
-
-msgid "Floated AdLib"
-msgstr "Adlib satt på vent"
-
-msgid "Cannot play this AdLib because it is marked as Floated"
-msgstr "Kan ikkje spele av adlib fordi den er markert som på vent (float)"
-
 msgid "Search..."
 msgstr "Søk..."
+
+msgid ""
+"Are you sure you want to deactivate this Rundown\n"
+"(This will clear the outputs)"
+msgstr ""
+"Er du sikker på at du vil deaktivere denne køyreplanen?\n"
+"(Dette vil nullstille alle utgangar.)"
+
+msgid "Successfully stored snapshot"
+msgstr "Tilbakestilling frå snapshot var vellukka"
 
 msgid "End Words"
 msgstr "Stikkord"
@@ -2768,6 +2856,9 @@ msgstr "Nedteljing for del"
 
 msgid "Part Count Up"
 msgstr "Opptelling for del"
+
+msgid "Until end of rundown"
+msgstr "Til slutten av køyreplanen"
 
 msgid "New Bucket"
 msgstr "Ny bøtte"
@@ -3075,6 +3166,15 @@ msgstr "Metode"
 msgid "Parameters"
 msgstr "Parametrar"
 
+msgid "Time from platform user event to Action received by Core"
+msgstr ""
+
+msgid "GUI"
+msgstr "Brukergrensesnitt"
+
+msgid "Core + Worker processing time"
+msgstr ""
+
 msgid "Core"
 msgstr ""
 
@@ -3325,6 +3425,24 @@ msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
+#~ msgid "Welcome to the Sofie Automation system"
+#~ msgstr "Velkomen til Sofie"
+
+#~ msgid "Sofie Automation version"
+#~ msgstr "Sofie-versjon"
+
+#~ msgid "Sofie status"
+#~ msgstr "Sofie-status"
+
+#~ msgid "Using local Sofie order"
+#~ msgstr "Rekkefølgje satt i Sofie"
+
+#~ msgid "Change order in playlist to override"
+#~ msgstr "Gjør ei endring for å overstyre"
+
+#~ msgid "Register Shortcuts for this Panel"
+#~ msgstr "Legg til snarvegar for dette panelet"
+
 #~ msgid "Cannot play this AdLib becasue it is marked as Invalid"
 #~ msgstr "Kan ikkje spele av adlib fordi den er markert som ugyldig"
 
@@ -3340,9 +3458,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
 #~ msgid "Next Break"
 #~ msgstr "Neste pause"
-
-#~ msgid "Use {{nrcsName}} order"
-#~ msgstr "Nytt rekkefølgje frå {{nrcsName}}"
 
 #~ msgid "Using {{nrcsName}} order"
 #~ msgstr "Nytter rekkefølgje frå {{nrcsName}}"
@@ -3650,9 +3765,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 #~ msgid "Are you sure you want to remove this command?"
 #~ msgstr "Er du sikker på at du vil fjerne denne kommandoen?"
 
-#~ msgid "Host"
-#~ msgstr "Vert"
-
 #~ msgid "Queue"
 #~ msgstr "Kø"
 
@@ -3805,9 +3917,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klippet°°°°°°"
 
 #~ msgid "Enable SSL"
 #~ msgstr "Aktiver SSL"
-
-#~ msgid "URI"
-#~ msgstr "URI"
 
 #~ msgid "HTTPMethod"
 #~ msgstr "HTTPMethod"

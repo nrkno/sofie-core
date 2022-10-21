@@ -13,7 +13,6 @@ import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { IconName } from '@fortawesome/fontawesome-svg-core'
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons'
 import { LoopingIcon } from '../../lib/ui/icons/looping'
 import { getRundownPlaylistLink } from './util'
@@ -34,13 +33,14 @@ import {
 } from './DragAndDropTypes'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownUtils } from '../../lib/rundown'
-import PlaylistRankMethodToggle from './PlaylistRankMethodToggle'
+import PlaylistRankResetButton from './PlaylistRankResetButton'
 import { DisplayFormattedTime } from './DisplayFormattedTime'
 import { getAllowStudio } from '../../lib/localStorage'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -147,15 +147,15 @@ export const RundownPlaylistUi = DropTarget(
 
 				if (playlist.rundowns.findIndex((rundown) => rundownId === rundown._id) > -1) {
 					// finalize order from component state
-					doUserAction(t, 'Drag and drop rundown playlist reorder', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
-						MeteorCall.userAction.moveRundown(e, rundownId, playlistId, rundownOrder)
+					doUserAction(t, 'Drag and drop rundown playlist reorder', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
+						MeteorCall.userAction.moveRundown(e, ts, rundownId, playlistId, rundownOrder)
 					)
 				} else {
 					// add rundown to playlist
 					rundownOrder.push(rundownId)
 
-					doUserAction(t, 'Drag and drop add rundown to playlist', UserAction.RUNDOWN_ORDER_MOVE, (e) =>
-						MeteorCall.userAction.moveRundown(e, rundownId, playlistId, rundownOrder)
+					doUserAction(t, 'Drag and drop add rundown to playlist', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
+						MeteorCall.userAction.moveRundown(e, ts, rundownId, playlistId, rundownOrder)
 					)
 				}
 			}
@@ -166,7 +166,7 @@ export const RundownPlaylistUi = DropTarget(
 					t,
 					'User clicked the playlist rundown order toggle to reset',
 					UserAction.RUNDOWN_ORDER_RESET,
-					(e) => MeteorCall.userAction.restoreRundownOrder(e, this.props.playlist._id)
+					(e, ts) => MeteorCall.userAction.restoreRundownOrder(e, ts, this.props.playlist._id)
 				)
 			}
 
@@ -206,26 +206,6 @@ export const RundownPlaylistUi = DropTarget(
 				if (this.rundownsHaveChanged(prevProps)) {
 					this.resetLocalRundownOrder()
 				}
-			}
-
-			private saveViewChoice(key: string) {
-				UIStateStorage.setItem(`rundownList.${this.props.playlist.studioId}`, 'defaultView', key)
-			}
-
-			private renderViewLinkItem(layout: RundownLayoutBase, link: string, key: string) {
-				return (
-					<Link to={link} onClick={() => this.saveViewChoice(key)} key={key}>
-						<div className="action-btn expco-item">
-							<div
-								className={ClassNames('action-btn layout-icon', { small: !layout.icon })}
-								style={{ color: layout.iconColor || 'transparent' }}
-							>
-								<FontAwesomeIcon icon={(layout.icon as IconName) || 'circle'} />
-							</div>
-							<span className="expco-text">{layout.name}</span>
-						</div>
-					</Link>
-				)
 			}
 
 			private swapRundownOrder(a: RundownId, b: RundownId): void {
@@ -300,7 +280,11 @@ export const RundownPlaylistUi = DropTarget(
 				const expectedDuration =
 					playlistExpectedDuration !== undefined &&
 					(playlist.loop ? (
-						<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+						<Tooltip
+							overlay={t('This rundown will loop indefinitely')}
+							mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+							placement="top"
+						>
 							<span>
 								{t('({{timecode}})', {
 									timecode: RundownUtils.formatDiffToTimecode(playlistExpectedDuration, false, true, true, false, true),
@@ -329,7 +313,7 @@ export const RundownPlaylistUi = DropTarget(
 									</span>
 								</h2>
 								{getAllowStudio() ? (
-									<PlaylistRankMethodToggle
+									<PlaylistRankResetButton
 										manualSortingActive={playlist.rundownRanksAreSetInSofie === true}
 										nrcsName={(playlist.rundowns[0] && playlist.rundowns[0].externalNRCSName) || 'NRCS'}
 										toggleCallbackHandler={() => {
@@ -351,7 +335,11 @@ export const RundownPlaylistUi = DropTarget(
 								{expectedDuration ? (
 									expectedDuration
 								) : playlist.loop ? (
-									<Tooltip overlay={t('This rundown will loop indefinitely')} placement="top">
+									<Tooltip
+										mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+										overlay={t('This rundown will loop indefinitely')}
+										placement="top"
+									>
 										<LoopingIcon />
 									</Tooltip>
 								) : (

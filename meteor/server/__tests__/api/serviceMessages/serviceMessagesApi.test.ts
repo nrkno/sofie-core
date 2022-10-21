@@ -41,46 +41,46 @@ describe('Service messages internal API', () => {
 	// const mockedGetCoreSystem: jest.Mock<typeof CoreSystem.getCoreSystem> = CoreSystem.getCoreSystem as any
 
 	describe('readAllMessages', () => {
-		it('should throw when core system object cant be accessed', () => {
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => undefined)
+		it('should throw when core system object cant be accessed', async () => {
+			const spy = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => undefined)
 
-			expect(readAllMessages).toThrow()
+			await expect(readAllMessages()).rejects.toThrow()
 
 			spy.mockRestore()
 		})
 
-		it('should throw when core system object doesnt have a serviceMessages field', () => {
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => {
+		it('should throw when core system object doesnt have a serviceMessages field', async () => {
+			const spy = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => {
 				const brokenCore = { ...fakeCoreSystem }
 				// @ts-expect-error
 				delete brokenCore.serviceMessages
 				return brokenCore
 			})
 
-			expect(readAllMessages).toThrow()
+			await expect(readAllMessages()).rejects.toThrow()
 
 			spy.mockRestore()
 		})
 
-		it('should return an empty array when there are no service messages', () => {
+		it('should return an empty array when there are no service messages', async () => {
 			const cs = { ...fakeCoreSystem }
 			cs.serviceMessages = {}
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
+			const spy = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => cs)
 
-			const actual = readAllMessages()
+			const actual = await readAllMessages()
 
 			expect(actual).toEqual([])
 
 			spy.mockRestore()
 		})
 
-		it('should return all service messages as an array', () => {
+		it('should return all service messages as an array', async () => {
 			const cs = { ...fakeCoreSystem }
 			cs.serviceMessages[message1.id] = convertExternalToServiceMessage(message1)
 			cs.serviceMessages[message2.id] = convertExternalToServiceMessage(message2)
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
+			const spy = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => cs)
 
-			const actual = readAllMessages()
+			const actual = await readAllMessages()
 
 			expect(actual).toContainEqual(convertExternalToServiceMessage(message1))
 			expect(actual).toContainEqual(convertExternalToServiceMessage(message2))
@@ -89,63 +89,63 @@ describe('Service messages internal API', () => {
 	})
 
 	describe('writeMessage', () => {
-		it('should throw when core system object cant be accessed', () => {
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => undefined)
+		it('should throw when core system object cant be accessed', async () => {
+			const spy = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => undefined)
 
-			expect(writeMessage).toThrow()
+			await expect(writeMessage({} as any)).rejects.toThrow()
 
 			spy.mockRestore()
 		})
 
-		it('should throw when core system object doesnt have a serviceMessages field', () => {
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => {
+		it('should throw when core system object doesnt have a serviceMessages field', async () => {
+			const spy = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => {
 				const brokenCore = { ...fakeCoreSystem }
 				// @ts-expect-error
 				delete brokenCore.serviceMessages
 				return brokenCore
 			})
 
-			expect(writeMessage).toThrow()
+			await expect(writeMessage({} as any)).rejects.toThrow()
 
 			spy.mockRestore()
 		})
 
-		it('should set isUpdate flag true when message with given id exists in system already', () => {
+		it('should set isUpdate flag true when message with given id exists in system already', async () => {
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {},
 			})
 			cs.serviceMessages[message1.id] = convertExternalToServiceMessage(message1)
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
+			const spy = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => cs)
 
-			const actual = writeMessage(convertExternalToServiceMessage(message1))
+			const actual = await writeMessage(convertExternalToServiceMessage(message1))
 
 			expect(actual).toHaveProperty('isUpdate', true)
 			spy.mockRestore()
 		})
 
-		it('should set isUpdate flag false when message does not already exist in system', () => {
+		it('should set isUpdate flag false when message does not already exist in system', async () => {
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {},
 			})
 			cs.serviceMessages[message1.id] = convertExternalToServiceMessage(message1)
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
-			const actual = writeMessage(convertExternalToServiceMessage(message2))
+			const spy = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => cs)
+			const actual = await writeMessage(convertExternalToServiceMessage(message2))
 
 			expect(actual).toHaveProperty('isUpdate', false)
 			spy.mockRestore()
 		})
 
-		it('should write message to CoreSystem.serviceMessages', () => {
+		it('should write message to CoreSystem.serviceMessages', async () => {
 			const expected = {}
 			expected[message2.id] = convertExternalToServiceMessage(message2)
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {},
 			})
-			const spyGetCoreSystem = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
+			const spyGetCoreSystem = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => cs)
 
-			writeMessage(convertExternalToServiceMessage(message2))
+			await writeMessage(convertExternalToServiceMessage(message2))
 
-			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, {
+			expect(CoreSystem.CoreSystem.updateAsync).toHaveBeenCalledWith(cs._id, {
 				$set: {
 					serviceMessages: expected,
 				},
@@ -153,7 +153,7 @@ describe('Service messages internal API', () => {
 			spyGetCoreSystem.mockRestore()
 		})
 
-		it('should leave existing messages untouched', () => {
+		it('should leave existing messages untouched', async () => {
 			const expected = {}
 			expected[message1.id] = convertExternalToServiceMessage(message1)
 			expected[message2.id] = convertExternalToServiceMessage(message2)
@@ -161,10 +161,10 @@ describe('Service messages internal API', () => {
 				serviceMessages: {},
 			})
 			cs.serviceMessages[message1.id] = convertExternalToServiceMessage(message1)
-			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
-			writeMessage(convertExternalToServiceMessage(message2))
+			const spy = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => cs)
+			await writeMessage(convertExternalToServiceMessage(message2))
 
-			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, {
+			expect(CoreSystem.CoreSystem.updateAsync).toHaveBeenCalledWith(cs._id, {
 				$set: {
 					serviceMessages: expected,
 				},
@@ -172,18 +172,16 @@ describe('Service messages internal API', () => {
 			spy.mockRestore()
 		})
 
-		it('should throw when message cant be written', () => {
-			const spyUpdate = jest.spyOn(CoreSystem.CoreSystem, 'update').mockImplementation(() => {
+		it('should throw when message cant be written', async () => {
+			const spyUpdate = jest.spyOn(CoreSystem.CoreSystem, 'updateAsync').mockImplementation(() => {
 				throw new Error('lol')
 			})
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {},
 			})
-			const spyGetCoreSystem = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
+			const spyGetCoreSystem = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => cs)
 
-			expect(() => {
-				writeMessage(convertExternalToServiceMessage(message2))
-			}).toThrow()
+			await expect(writeMessage(convertExternalToServiceMessage(message2))).rejects.toThrow()
 
 			spyGetCoreSystem.mockRestore()
 			spyUpdate.mockRestore()

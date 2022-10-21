@@ -1,10 +1,8 @@
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { CoreSystem, getCoreSystem, ServiceMessage } from '../../../lib/collections/CoreSystem'
+import { CoreSystem, getCoreSystemAsync, ServiceMessage } from '../../../lib/collections/CoreSystem'
 import { logger } from '../../logging'
 
-export { deleteMessage, readAllMessages, writeMessage, WriteStatus }
-
-interface WriteStatus {
+export interface WriteStatus {
 	isUpdate?: boolean
 }
 
@@ -15,17 +13,15 @@ interface WriteStatus {
  *
  * @throws if messages cant be read due to a technical problem
  */
-function readAllMessages(): Array<ServiceMessage> {
-	const coreSystem = getCoreSystem()
+export async function readAllMessages(): Promise<Array<ServiceMessage>> {
+	const coreSystem = await getCoreSystemAsync()
 	if (!coreSystem || !coreSystem.serviceMessages) {
 		logger.error('coreSystem.serviceMessages doesnt exist. ServiceMessages API wont work.')
 		throw new Error('coreSystem.serviceMessages is not available. Database not migrated?')
 	}
 
 	const { serviceMessages } = coreSystem
-	const messages = Object.keys(serviceMessages).map((key) => serviceMessages[key])
-
-	return messages
+	return Object.keys(serviceMessages).map((key) => serviceMessages[key])
 }
 
 /**
@@ -37,8 +33,8 @@ function readAllMessages(): Array<ServiceMessage> {
  *
  * @throws when a message can't be written
  */
-function writeMessage(message: ServiceMessage): WriteStatus {
-	const coreSystem = getCoreSystem()
+export async function writeMessage(message: ServiceMessage): Promise<WriteStatus> {
+	const coreSystem = await getCoreSystemAsync()
 	if (!coreSystem || !coreSystem.serviceMessages) {
 		throw new Error('coreSystem.serviceMessages is not available. Database not migrated?')
 	}
@@ -48,7 +44,7 @@ function writeMessage(message: ServiceMessage): WriteStatus {
 
 	try {
 		serviceMessages[message.id] = message
-		CoreSystem.update(coreSystem._id, { $set: { serviceMessages } })
+		await CoreSystem.updateAsync(coreSystem._id, { $set: { serviceMessages } })
 		return { isUpdate }
 	} catch (error) {
 		logger.error(stringifyError(error))
@@ -56,8 +52,8 @@ function writeMessage(message: ServiceMessage): WriteStatus {
 	}
 }
 
-function deleteMessage(id: string): ServiceMessage {
-	const coreSystem = getCoreSystem()
+export async function deleteMessage(id: string): Promise<ServiceMessage> {
+	const coreSystem = await getCoreSystemAsync()
 	if (!coreSystem || !coreSystem.serviceMessages) {
 		throw new Error('coreSystem.serviceMessages is not available. Database not migrated?')
 	}
@@ -68,7 +64,7 @@ function deleteMessage(id: string): ServiceMessage {
 	try {
 		if (message) {
 			delete serviceMessages[message.id]
-			CoreSystem.update(coreSystem._id, { $set: { serviceMessages } })
+			await CoreSystem.updateAsync(coreSystem._id, { $set: { serviceMessages } })
 			return message
 		} else {
 			throw new Error(`Message with id ${id} can not be found, and therefore not deleted`)

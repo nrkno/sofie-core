@@ -37,6 +37,7 @@ import {
 	PartInstances,
 	PartInstanceId,
 	findPartInstanceOrWrapToTemporary,
+	PartInstance,
 } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
@@ -77,14 +78,7 @@ export type SourceLayerLookup = Record<string, ISourceLayer>
 
 type MinimalRundown = Pick<
 	Rundown,
-	| '_id'
-	| 'name'
-	| '_rank'
-	| 'playlistId'
-	| 'timing'
-	| 'showStyleBaseId'
-	| 'showStyleVariantId'
-	| 'endOfRundownIsShowBreak'
+	'_id' | 'name' | 'playlistId' | 'timing' | 'showStyleBaseId' | 'showStyleVariantId' | 'endOfRundownIsShowBreak'
 >
 
 export interface AdLibFetchAndFilterProps {
@@ -137,7 +131,10 @@ function actionToAdLibPieceUi(
 }
 
 interface IFetchAndFilterProps {
-	playlist: Pick<RundownPlaylist, '_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId'>
+	playlist: Pick<
+		RundownPlaylist,
+		'_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId' | 'rundownIdsInOrder'
+	>
 	showStyleBase: Pick<ShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
@@ -183,9 +180,25 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			segments: Segment[],
 			rundowns: Record<string, MinimalRundown>
 		) => {
-			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
-				props.playlist
-			)
+			const currentPartInstance =
+				currentPartInstanceId &&
+				(PartInstances.findOne(currentPartInstanceId, {
+					projection: {
+						_id: 1,
+						segmentId: 1,
+						rundownId: 1,
+					},
+				}) as Pick<PartInstance, '_id' | 'segmentId' | 'rundownId'> | undefined)
+			const nextPartInstance =
+				nextPartInstanceId &&
+				(PartInstances.findOne(nextPartInstanceId, {
+					projection: {
+						_id: 1,
+						segmentId: 1,
+						rundownId: 1,
+					},
+				}) as Pick<PartInstance, '_id' | 'segmentId' | 'rundownId'> | undefined)
+
 			// This is a map of partIds mapped onto segments they are part of
 			const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
 			const uiPartMap = new Map<PartId, DBPart>()
@@ -275,13 +288,13 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 	uiSegments.forEach((segment) => (segment.pieces = []))
 
 	if (props.filter === undefined || props.filter.rundownBaseline !== 'only') {
-		const rundownIds = RundownPlaylistCollectionUtil.getRundownIDs(props.playlist)
+		const unorderedRundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(props.playlist)
 		const partIds = Array.from(uiPartSegmentMap.keys())
 
 		AdLibPieces.find(
 			{
 				rundownId: {
-					$in: rundownIds,
+					$in: unorderedRundownIds,
 				},
 				partId: {
 					$in: partIds,
@@ -307,18 +320,18 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			})
 
 		const adlibActions = memoizedIsolatedAutorun(
-			(rundownIds: RundownId[], partIds: PartId[]) =>
+			(unorderedRundownIds: RundownId[], partIds: PartId[]) =>
 				AdLibActions.find(
 					{
 						rundownId: {
-							$in: rundownIds,
+							$in: unorderedRundownIds,
 						},
 						partId: {
 							$in: partIds,
 						},
 					},
 					{
-						// @ts-ignore deep-property
+						// @ts-expect-error deep-property
 						sort: { 'display._rank': 1 },
 					}
 				).map<{
@@ -331,7 +344,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 					}
 				}),
 			'adLibActions',
-			rundownIds,
+			unorderedRundownIds,
 			partIds
 		)
 
@@ -368,10 +381,9 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 	) {
 		const t = i18nTranslator
 
-		const rundowns = RundownPlaylistCollectionUtil.getRundowns(props.playlist, undefined, {
+		const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(props.playlist, undefined, {
 			fields: {
 				_id: 1,
-				_rank: 1,
 				name: 1,
 			},
 		})
@@ -434,7 +446,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 									},
 								},
 								{
-									// @ts-ignore deep-property
+									// @ts-expect-error deep-property
 									sort: { 'display._rank': 1 },
 								}
 							)
@@ -542,7 +554,12 @@ export function AdLibPanel({
 			fetchAndFilter({
 				playlist: playlist as Pick<
 					RundownPlaylist,
-					'_id' | 'studioId' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId'
+					| '_id'
+					| 'studioId'
+					| 'currentPartInstanceId'
+					| 'nextPartInstanceId'
+					| 'previousPartInstanceId'
+					| 'rundownIdsInOrder'
 				>,
 				showStyleBase: showStyleBase as Pick<ShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>,
 				filter,
@@ -554,6 +571,7 @@ export function AdLibPanel({
 			playlist.currentPartInstanceId,
 			playlist.nextPartInstanceId,
 			playlist.previousPartInstanceId,
+			playlist.rundownIdsInOrder,
 			showStyleBase._id,
 			showStyleBase.sourceLayers,
 			showStyleBase.outputLayers,
@@ -656,13 +674,22 @@ export function AdLibPanel({
 			if (currentPartInstanceId) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
-					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-						MeteorCall.userAction.executeAction(e, playlistId, action._id, action.actionId, action.userData, mode?.data)
+					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e, ts) =>
+						MeteorCall.userAction.executeAction(
+							e,
+							ts,
+							playlistId,
+							action._id,
+							action.actionId,
+							action.userData,
+							mode?.data
+						)
 					)
 				} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
-					doUserAction(t, e, UserAction.START_ADLIB, (e) =>
+					doUserAction(t, e, UserAction.START_ADLIB, (e, ts) =>
 						MeteorCall.userAction.segmentAdLibPieceStart(
 							e,
+							ts,
 							playlistId,
 							currentPartInstanceId,
 							adlibPiece._id,
@@ -670,9 +697,10 @@ export function AdLibPanel({
 						)
 					)
 				} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e, ts) =>
 						MeteorCall.userAction.baselineAdLibPieceStart(
 							e,
+							ts,
 							playlistId,
 							currentPartInstanceId,
 							adlibPiece._id,
@@ -680,8 +708,8 @@ export function AdLibPanel({
 						)
 					)
 				} else if (adlibPiece.isSticky) {
-					doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
-						MeteorCall.userAction.sourceLayerStickyPieceStart(e, playlistId, adlibPiece.sourceLayerId)
+					doUserAction(t, e, UserAction.START_STICKY_PIECE, (e, ts) =>
+						MeteorCall.userAction.sourceLayerStickyPieceStart(e, ts, playlistId, adlibPiece.sourceLayerId)
 					)
 				}
 			}

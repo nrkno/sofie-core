@@ -6,7 +6,7 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
-import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
+import { meteorSubscribe, PubSubTypes } from '../../../lib/api/pubsub'
 import { stringifyObjects } from '../../../lib/lib'
 
 const globalTrackerQueue: Array<Function> = []
@@ -175,14 +175,14 @@ class MeteorDataManager {
 	}
 }
 export const ReactMeteorData = {
-	UNSAFE_componentWillMount() {
+	UNSAFE_componentWillMount(this: any) {
 		this.data = {}
 		this._meteorDataManager = new MeteorDataManager(this, this._queueTrackerUpdates || false)
 		const newData = this._meteorDataManager.calculateData()
 		this._meteorDataManager.updateData(newData)
 	},
 
-	UNSAFE_componentWillUpdate(nextProps, nextState) {
+	UNSAFE_componentWillUpdate(this: any, nextProps: any, nextState: any) {
 		const saveProps = this.props
 		const saveState = this.state
 		let newData
@@ -205,7 +205,7 @@ export const ReactMeteorData = {
 		this._meteorDataManager.updateData(newData)
 	},
 
-	componentWillUnmount() {
+	componentWillUnmount(this: any) {
 		this._meteorDataManager.dispose()
 	},
 	// pick the MeteorReactComponent member functions, so they will be available in withTracker(() => { >here< })
@@ -334,7 +334,7 @@ export function useTracker<T, K extends undefined | T = undefined>(
  * @param {...any[]} args A list of arugments for the subscription. This is used for optimizing the subscription across
  * 		renders so that it isn't torn down and created for every render.
  */
-export function useSubscription(sub: PubSub, ...args: any[]): boolean {
+export function useSubscription<K extends keyof PubSubTypes>(sub: K, ...args: Parameters<PubSubTypes[K]>): boolean {
 	const [ready, setReady] = useState<boolean>(false)
 
 	useEffect(() => {

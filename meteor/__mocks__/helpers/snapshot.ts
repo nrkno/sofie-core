@@ -28,7 +28,7 @@ type Data =
  */
 export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 	if (_.isArray(data)) {
-		const dataArray = _.map(data, fixSnapshot)
+		const dataArray = _.map(data, (d) => fixSnapshot(d, sortData))
 		if (sortData) {
 			dataArray.sort((a: Data, b: Data) => {
 				if (!a && b) return 1

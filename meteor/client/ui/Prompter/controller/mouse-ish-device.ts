@@ -21,7 +21,6 @@ const LOCALSTORAGE_MODE = 'prompter-controller-mouseish'
  */
 export class MouseIshController extends ControllerAbstract {
 	private _mode: Mode = Mode.NORMAL
-	private _allowModeSwitch: boolean = true
 	private _destroyed: boolean = false
 
 	private _mouseKeyDown: { [button: string]: number } = {}
@@ -46,18 +45,16 @@ export class MouseIshController extends ControllerAbstract {
 	private _lastWheelTime: number = 0
 
 	constructor(view: PrompterViewInner) {
-		super(view)
+		super()
 
 		this._prompterView = view
 
 		if (view.configOptions.controlMode !== undefined) {
 			this._setMode(view.configOptions.controlMode as Mode)
-			this._allowModeSwitch = false
 		} else {
 			// Recall mode:
 			const recalledMode: string | null = localStorage.getItem(LOCALSTORAGE_MODE)
 			this._setMode((recalledMode as Mode) || Mode.NORMAL)
-			this._allowModeSwitch = true
 		}
 	}
 	public destroy() {
