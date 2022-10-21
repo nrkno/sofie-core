@@ -18,10 +18,8 @@ export * from '@sofie-automation/corelib/dist/lib'
 
 /**
  * Convenience method to convert a Meteor.call() into a Promise
- * @param  {string} Method name
- * @return {Promise<any>}
  */
-export async function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any> {
+export async function MeteorPromiseCall<T>(callName: string, ...args: any[]): Promise<T> {
 	return new Promise((resolve, reject) => {
 		Meteor.call(callName, ...args, (err, res) => {
 			if (err) reject(err)
@@ -186,7 +184,7 @@ function cleanOldCacheResult() {
 const lazyIgnoreCache: { [name: string]: number } = {}
 export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: number): void {
 	// Don't execute the function f1 until the time t has passed.
-	// Subsequent calls will extend the lazyness and ignore the previous call
+	// Subsequent calls will extend the laziness and ignore the previous call
 
 	if (lazyIgnoreCache[name]) {
 		Meteor.clearTimeout(lazyIgnoreCache[name])
@@ -223,34 +221,6 @@ export function toc(name: string = 'default', logStr?: string | Promise<any>[]):
 		return t
 	}
 }
-
-// export function MeteorWrapAsync(func: Function, context?: Object): any {
-// 	// A variant of Meteor.wrapAsync to fix the bug
-// 	// https://github.com/meteor/meteor/issues/11120
-
-// 	return Meteor.wrapAsync((...args: any[]) => {
-// 		// Find the callback-function:
-// 		for (let i = args.length - 1; i >= 0; i--) {
-// 			if (typeof args[i] === 'function') {
-// 				if (i < args.length - 1) {
-// 					// The callback is not the last argument, make it so then:
-// 					const callback = args[i]
-// 					const fixedArgs = args
-// 					fixedArgs[i] = undefined
-// 					fixedArgs.push(callback)
-
-// 					func.apply(context, fixedArgs)
-// 					return
-// 				} else {
-// 					// The callback is the last argument, that's okay
-// 					func.apply(context, args)
-// 					return
-// 				}
-// 			}
-// 		}
-// 		throw new Meteor.Error(500, `Error in MeteorWrapAsync: No callback found!`)
-// 	})
-// }
 
 /**
  * Blocks the fiber until all the Promises have resolved
