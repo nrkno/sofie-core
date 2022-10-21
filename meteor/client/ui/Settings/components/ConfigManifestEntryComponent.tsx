@@ -1,8 +1,7 @@
 import * as React from 'react'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../../lib/EditAttribute'
-import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { ConfigManifestEntry, ConfigManifestEntryType } from '@sofie-automation/corelib/dist/deviceConfig'
 import { ConfigManifestEntry as BlueprintConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { MongoCollection } from '../../../../lib/collections/lib'
@@ -86,34 +85,28 @@ export interface IConfigManifestEntryComponentProps {
 	configField: ConfigManifestEntry | BlueprintConfigManifestEntry
 	obj: object
 	prefix?: string
-	hideLabel?: boolean
 	collection?: MongoCollection<any>
 	className?: string
 }
-export const ConfigManifestEntryComponent = withTranslation()(
-	class ConfigManifestEntryComponent extends React.Component<Translated<IConfigManifestEntryComponentProps>, {}> {
-		renderEditAttribute(configField: ConfigManifestEntry | BlueprintConfigManifestEntry, obj: object, prefix?: string) {
-			return renderEditAttribute(this.props.collection || PeripheralDevices, configField, obj, prefix)
-		}
 
-		renderConfigField(configField: ConfigManifestEntry | BlueprintConfigManifestEntry, obj: object, prefix?: string) {
-			const { t } = this.props
+export function ConfigManifestEntryComponent({
+	configField,
+	obj,
+	prefix,
+	collection,
+	className,
+}: IConfigManifestEntryComponentProps) {
+	const { t } = useTranslation() // TODO - should this use a namespace?
 
-			return (
-				<div className={this.props.className !== undefined ? this.props.className : 'mod mvs mhs'}>
-					<label className="field">
-						{t(configField.name)}
-						{this.renderEditAttribute(configField, obj, prefix)}
-						{configField.hint && <span className="text-s dimmed">{t(configField.hint)}</span>}
-					</label>
-				</div>
-			)
-		}
-
-		render() {
-			const { configField, obj, prefix } = this.props
-
-			return <div>{this.renderConfigField(configField, obj, prefix)}</div>
-		}
-	}
-)
+	return (
+		<div>
+			<div className={className ?? 'mod mvs mhs'}>
+				<label className="field">
+					{t(configField.name)}
+					{renderEditAttribute(collection || PeripheralDevices, configField, obj, prefix)}
+					{configField.hint && <span className="text-s dimmed">{t(configField.hint)}</span>}
+				</label>
+			</div>
+		</div>
+	)
+}
