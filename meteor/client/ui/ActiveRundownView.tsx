@@ -3,13 +3,15 @@ import * as _ from 'underscore'
 import { Route, Switch } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { Studios, Studio, StudioId } from '../../lib/collections/Studios'
 
 import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { objectPathGet } from '../../lib/lib'
 import { PubSub } from '../../lib/api/pubsub'
+import { UIStudios } from './Collections'
+import { UIStudio } from '../../lib/api/studios'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	match: {
@@ -21,7 +23,7 @@ interface IProps {
 }
 interface ITrackedProps {
 	playlist?: RundownPlaylist
-	studio?: Studio
+	studio?: UIStudio
 	studioId?: StudioId
 	// isReady: boolean
 }
@@ -32,7 +34,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	const studioId = objectPathGet(props, 'match.params.studioId')
 	let studio
 	if (studioId) {
-		studio = Studios.findOne(studioId)
+		studio = UIStudios.findOne(studioId)
 	}
 	const playlist = RundownPlaylists.findOne({
 		activationId: { $exists: true },
@@ -69,9 +71,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			)
 
 			if (this.props.studioId) {
-				this.subscribe(PubSub.studios, {
-					_id: this.props.studioId,
-				})
+				this.subscribe(PubSub.uiStudio, this.props.studioId)
 			}
 
 			this.autorun(() => {

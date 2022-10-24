@@ -12,17 +12,17 @@ import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { findPieceInstanceToShowFromInstances, IFoundPieceInstance } from '../PieceIcons/utils'
 import { pieceIconSupportedLayers } from '../PieceIcons/PieceIcon'
 import { RundownUtils } from '../../lib/rundown'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 interface IPartNamePanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPartName
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 }
 
 interface IState {}
@@ -85,10 +85,7 @@ export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, I
 				const pieceInstances = PieceInstances.find({ partInstanceId: selectedPartInstance._id }).fetch()
 				instanceToShow = findPieceInstanceToShowFromInstances(
 					pieceInstances,
-					props.showStyleBase.sourceLayers.reduce((prev, curr) => {
-						prev[curr._id] = curr
-						return prev
-					}, {}),
+					props.showStyleBase.sourceLayers,
 					pieceIconSupportedLayers
 				)
 			}
@@ -100,7 +97,7 @@ export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, I
 			instanceToShow,
 		}
 	},
-	(data, props, nextProps) => {
+	(_data, props, nextProps) => {
 		return (
 			!_.isEqual(props.panel, nextProps.panel) ||
 			props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||

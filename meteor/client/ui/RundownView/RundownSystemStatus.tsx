@@ -9,14 +9,15 @@ import {
 	PeripheralDevices,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
-import { Studio } from '../../../lib/collections/Studios'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PubSub } from '../../../lib/api/pubsub'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
+import { UIStudio } from '../../../lib/api/studios'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -61,7 +62,7 @@ export const MOSLastUpdateStatus = withTranslation()(
 )
 
 interface IProps {
-	studio: Studio
+	studio: UIStudio
 	playlist: RundownPlaylist
 	rundownIds: RundownId[]
 	firstRundown: Rundown | undefined
@@ -157,7 +158,7 @@ export const RundownSystemStatus = translateWithTracker(
 			playoutDevices: playout.onlineOffline,
 		}
 	},
-	(data, props: IProps, nextProps: IProps) => {
+	(_data, props: IProps, nextProps: IProps) => {
 		if (props.playlist._id === nextProps.playlist._id && props.studio._id === nextProps.studio._id) return false
 		return true
 	}

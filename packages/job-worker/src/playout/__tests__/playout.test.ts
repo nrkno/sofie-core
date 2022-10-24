@@ -46,12 +46,12 @@ import {
 	defaultPiece,
 	defaultAdLibPiece,
 } from '../../__mocks__/defaultCollectionObjects'
-import { PieceLifespan } from '../../../../blueprints-integration/dist'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
 import { adjustFakeTime, getCurrentTime, useFakeCurrentTime } from '../../__mocks__/time'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { ProcessedShowStyleCompound } from '../../jobs'
 
 // const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
 const mockExecutePeripheralDeviceFunction = jest
@@ -60,7 +60,7 @@ const mockExecutePeripheralDeviceFunction = jest
 
 describe('Playout API', () => {
 	let context: MockJobContext
-	let showStyle: ReadonlyDeep<ShowStyleCompound>
+	let showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 	let playoutDevice: PeripheralDevice
 	// const origGetCurrentTime = lib.getCurrentTime
 
@@ -658,14 +658,17 @@ describe('Playout API', () => {
 			const currentPartInstance = (await getSelectedPartInstances(context, playlist))
 				.currentPartInstance as DBPartInstance
 			expect(currentPartInstance).toBeTruthy()
-			expect(currentPartInstance.timings?.startedPlayback).toBe(now)
+			expect(currentPartInstance.timings?.reportedStartedPlayback).toBe(now)
+			expect(currentPartInstance.timings?.plannedStartedPlayback).toBe(now)
 
 			// the piece instances timings are set
 			const pieceInstances = await getAllPieceInstancesForPartInstance(currentPartInstance._id)
 			expect(pieceInstances).toHaveLength(2)
 			pieceInstances.forEach((pieceInstance) => {
-				expect(pieceInstance.startedPlayback).toBeTruthy()
-				expect(pieceInstance.startedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
+				expect(pieceInstance.reportedStartedPlayback).toBeTruthy()
+				expect(pieceInstance.reportedStartedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
+				expect(pieceInstance.plannedStartedPlayback).toBeTruthy()
+				expect(pieceInstance.plannedStartedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
 			})
 		}
 
@@ -744,11 +747,13 @@ describe('Playout API', () => {
 				currentPartInstanceBeforeTakeId
 			)
 			expect(previousPartInstanceAfterTake).toBeTruthy()
-			expect(previousPartInstanceAfterTake?.timings?.stoppedPlayback).toBe(now)
+			expect(previousPartInstanceAfterTake?.timings?.reportedStoppedPlayback).toBe(now)
+			expect(previousPartInstanceAfterTake?.timings?.plannedStoppedPlayback).toBe(now)
 
 			const pieceInstances2 = await getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId)
 			pieceInstances2.forEach((pieceInstance) => {
-				expect(pieceInstance.stoppedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
+				expect(pieceInstance.reportedStoppedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
+				expect(pieceInstance.plannedStoppedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
 			})
 		}
 	})
@@ -825,8 +830,11 @@ describe('Playout API', () => {
 async function setupRundownWithAutoplayPart0(
 	context: MockJobContext,
 	rundownId: RundownId,
-	showStyle: ReadonlyDeep<ShowStyleCompound>
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 ): Promise<{ playlistId: RundownPlaylistId; rundownId: RundownId }> {
+	const outputLayerIds = Object.keys(showStyle.outputLayers)
+	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
+
 	const playlistId = await context.directCollections.RundownPlaylists.insertOne(
 		defaultRundownPlaylist(protectString(`playlist_${rundownId}`), context.studioId)
 	)
@@ -864,8 +872,8 @@ async function setupRundownWithAutoplayPart0(
 		...defaultPiece(protectString(rundownId + '_piece000'), rundown._id, part00.segmentId, part00._id),
 		externalId: 'MOCK_PIECE_000',
 		name: 'Piece 000',
-		sourceLayerId: showStyle.sourceLayers[0]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 	}
 	await context.directCollections.Pieces.insertOne(piece000)
 
@@ -873,8 +881,8 @@ async function setupRundownWithAutoplayPart0(
 		...defaultPiece(protectString(rundownId + '_piece001'), rundown._id, part00.segmentId, part00._id),
 		externalId: 'MOCK_PIECE_001',
 		name: 'Piece 001',
-		sourceLayerId: showStyle.sourceLayers[1]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 	}
 	await context.directCollections.Pieces.insertOne(piece001)
 
@@ -884,8 +892,8 @@ async function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_ADLIB_000',
 		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
-		sourceLayerId: showStyle.sourceLayers[1]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 	}
 
 	await context.directCollections.AdLibPieces.insertOne(adLibPiece000)
@@ -902,8 +910,8 @@ async function setupRundownWithAutoplayPart0(
 		...defaultPiece(protectString(rundownId + '_piece010'), rundown._id, part01.segmentId, part01._id),
 		externalId: 'MOCK_PIECE_010',
 		name: 'Piece 010',
-		sourceLayerId: showStyle.sourceLayers[0]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 	}
 	await context.directCollections.Pieces.insertOne(piece010)
 
@@ -955,8 +963,8 @@ async function setupRundownWithAutoplayPart0(
 		rundownId: segment0.rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
-		sourceLayerId: showStyle.sourceLayers[0]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
@@ -969,8 +977,8 @@ async function setupRundownWithAutoplayPart0(
 		rundownId: segment0.rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
-		sourceLayerId: showStyle.sourceLayers[1]._id,
-		outputLayerId: showStyle.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}

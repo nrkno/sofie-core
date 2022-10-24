@@ -59,10 +59,10 @@ export default withTranslation()(
 					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Show Buckets')}
+							{t('Disable Context Menu')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={'showBuckets'}
+								attribute={'disableContextMenu'}
 								obj={this.props.item}
 								options={RundownLayoutType}
 								type="checkbox"
@@ -87,16 +87,17 @@ export default withTranslation()(
 					</div>
 					<div className="mod mvs mhs">
 						<label className="field">
-							{t('Disable Context Menu')}
+							{t('Hide default AdLib Start/Execute options')}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={'disableContextMenu'}
+								attribute={'hideDefaultStartExecute'}
 								obj={this.props.item}
 								options={RundownLayoutType}
 								type="checkbox"
 								collection={RundownLayouts}
 								className="mod mas"
 							></EditAttribute>
+							<span className="text-s dimmed">{t('Only custom trigger modes will be shown')}</span>
 						</label>
 					</div>
 				</React.Fragment>

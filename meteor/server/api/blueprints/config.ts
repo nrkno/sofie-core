@@ -6,7 +6,7 @@ import { ReadonlyDeep } from 'type-fest'
 export function findMissingConfigs(
 	manifest: ConfigManifestEntry[] | undefined,
 	config: ReadonlyDeep<IBlueprintConfig>
-) {
+): string[] {
 	const missingKeys: string[] = []
 	if (manifest === undefined) {
 		return missingKeys

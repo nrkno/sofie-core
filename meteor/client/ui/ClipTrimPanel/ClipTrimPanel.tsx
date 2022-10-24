@@ -2,19 +2,18 @@ import * as React from 'react'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
+import { Pieces, Piece } from '../../../lib/collections/Pieces'
 import { PubSub } from '../../../lib/api/pubsub'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { VideoEditMonitor } from './VideoEditMonitor'
 import { MediaObjects, MediaObject } from '../../../lib/collections/MediaObjects'
-import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import { TimecodeEncoder } from './TimecodeEncoder'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { PartId } from '../../../lib/collections/Parts'
-import { RundownId } from '../../../lib/collections/Rundowns'
 import { faUndo } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Tooltip from 'rc-tooltip'
+import { UIStudios } from '../Collections'
+import { UIStudio } from '../../../lib/api/studios'
+import { PartId, PieceId, RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface IProps {
 	pieceId: PieceId
@@ -36,7 +35,7 @@ export interface IProps {
 interface ITrackedProps {
 	piece: Piece | undefined
 	mediaObject: MediaObject | undefined
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 	maxDuration: number
 	frameRate: number
 }
@@ -53,7 +52,7 @@ type StateChange = Partial<IState>
 
 export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	const piece = Pieces.findOne(props.pieceId)
-	const studio = Studios.findOne(props.studioId)
+	const studio = UIStudios.findOne(props.studioId)
 	const content = piece?.content as VTContent | undefined
 	return {
 		piece: piece,

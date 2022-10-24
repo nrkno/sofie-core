@@ -1,12 +1,13 @@
 import { check, Match } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
-import { MediaWorkFlows, MediaWorkFlow, MediaWorkFlowId } from '../../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowSteps, MediaWorkFlowStep, MediaWorkFlowStepId } from '../../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlows, MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowSteps, MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaWorkFlowRevision, MediaWorkFlowStepRevision } from '../../../lib/api/peripheralDevice'
-import { PeripheralDeviceId, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
+import { MediaWorkFlowId, MediaWorkFlowStepId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace MediaManagerIntegration {
 	export async function getMediaWorkFlowStepRevisions(

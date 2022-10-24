@@ -38,7 +38,7 @@ function isLowSeason() {
 let lastNightlyCronjob = 0
 let failedRetries = 0
 
-export function nightlyCronjobInner() {
+export function nightlyCronjobInner(): void {
 	const previousLastNightlyCronjob = lastNightlyCronjob
 	lastNightlyCronjob = getCurrentTime()
 	logger.info('Nightly cronjob: starting...')
@@ -67,7 +67,7 @@ export function nightlyCronjobInner() {
 			.map((part) => part._id)
 		const oldPartInstanceSelector = {
 			reset: true,
-			'timings.takeOut': { $lt: cleanLimitTime },
+			'timings.plannedStoppedPlayback': { $lt: cleanLimitTime },
 			'part._id': { $nin: existingPartIds },
 		}
 		const oldPartInstanceIds = PartInstances.find(oldPartInstanceSelector, { fields: { _id: 1 } })

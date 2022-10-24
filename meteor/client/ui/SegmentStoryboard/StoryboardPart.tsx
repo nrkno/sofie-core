@@ -20,6 +20,7 @@ import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
 import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
 import { SegmentEnd } from '../../lib/ui/icons/segment'
 import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
+import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 
 interface IProps {
 	className?: string
@@ -64,7 +65,9 @@ export function StoryboardPart({
 	const { t } = useTranslation()
 	const [highlight, setHighlight] = useState(false)
 	const willBeAutoNextedInto = isNextPart ? currentPartWillAutonext : part.willProbablyAutoNext
-	const isFinished = (part.instance.timings?.stoppedPlayback ?? part.instance.timings?.takeOut) !== undefined
+	const isFinished =
+		!!part.instance.timings?.plannedStoppedPlayback &&
+		part.instance.timings.plannedStoppedPlayback > getCurrentTimeReactive()
 
 	const getPartContext = useCallback(() => {
 		const partElement = document.querySelector('#' + SegmentTimelinePartElementId + part.instance._id)
@@ -84,7 +87,7 @@ export function StoryboardPart({
 		}
 
 		return ctx
-	}, [segment, part])
+	}, [segment, part, onContextMenu])
 
 	const highlightTimeout = useRef<number | null>(null)
 	const onHighlight = useCallback(
@@ -129,7 +132,7 @@ export function StoryboardPart({
 					},
 					className
 				),
-				//@ts-ignore A Data attribue is perfectly fine
+				//@ts-expect-error A Data attribue is perfectly fine
 				'data-layer-id': part.instance._id,
 				id: SegmentTimelinePartElementId + part.instance._id,
 				style: style,

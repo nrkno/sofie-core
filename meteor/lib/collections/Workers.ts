@@ -3,7 +3,6 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '../lib'
 import { createMongoCollection } from './lib'
-export { WorkerId }
 
 export interface WorkerStatus {
 	_id: WorkerId

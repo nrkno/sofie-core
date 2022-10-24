@@ -15,6 +15,12 @@
 			margin-top: 0.6em;
 			margin-right: 0.7em;
 		}
+
+		&.menu-item-child {
+			h4 {
+				padding-left: 1.2rem;
+			}
+		}
 	}
 
 	h2 {
@@ -208,6 +214,14 @@
 		.svg-inline--fa {
 			color: $color-status-warning;
 		}
+	}
+
+	.option-missing {
+		text-decoration: line-through;
+	}
+
+	select.option-missing {
+		border-color: $color-status-fatal;
 	}
 }
 

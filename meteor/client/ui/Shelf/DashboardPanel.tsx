@@ -5,7 +5,7 @@ import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { IOutputLayer, ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
@@ -21,8 +21,6 @@ import {
 	UserAgentPointer,
 	USER_AGENT_POINTER_PROPERTY,
 } from '../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
-import { PieceId } from '../../../lib/collections/Pieces'
 import { MeteorCall } from '../../../lib/api/methods'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
@@ -36,14 +34,15 @@ import {
 	isAdLibNext,
 	isAdLibOnAir,
 } from '../../lib/shelf'
+import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { UIStudio } from '../../../lib/api/studios'
+import { UIStudios } from '../Collections'
+import { Meteor } from 'meteor/meteor'
+import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IState {
-	outputLayers: {
-		[key: string]: IOutputLayer
-	}
-	sourceLayers: {
-		[key: string]: ISourceLayer
-	}
+	outputLayers: OutputLayers
+	sourceLayers: SourceLayers
 	searchFilter: string | undefined
 	selectedAdLib?: AdLibPieceUi
 	singleClickMode: boolean
@@ -56,7 +55,7 @@ export interface IDashboardPanelProps {
 }
 
 export interface IDashboardPanelTrackedProps {
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 	unfinishedAdLibIds: PieceId[]
 	unfinishedTags: string[]
 	nextAdLibIds: PieceId[]
@@ -132,7 +131,7 @@ export function dashboardElementStyle(el: DashboardPositionableElement): React.C
 					: `calc(${-1 * el.y - 1} * var(--dashboard-button-grid-height))`
 				: getVerticalOffsetFromHeight(el),
 
-		// @ts-ignore
+		// @ts-expect-error css variables
 		'--dashboard-panel-scale': el.scale || 1,
 		'--dashboard-panel-scaled-font-size': (el.scale || 1) * 1.5 + 'em',
 	}
@@ -156,20 +155,9 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	static getDerivedStateFromProps(
 		props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>
 	): Partial<IState> | null {
-		const tOLayers: {
-			[key: string]: IOutputLayer
-		} = {}
-		const tSLayers: {
-			[key: string]: ISourceLayer
-		} = {}
-
 		if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
-			props.showStyleBase.outputLayers.forEach((outputLayer) => {
-				tOLayers[outputLayer._id] = outputLayer
-			})
-			props.showStyleBase.sourceLayers.forEach((sourceLayer) => {
-				tSLayers[sourceLayer._id] = sourceLayer
-			})
+			const tOLayers = props.showStyleBase.outputLayers
+			const tSLayers = props.showStyleBase.sourceLayers
 
 			return {
 				outputLayers: tOLayers,
@@ -344,7 +332,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (queue && sourceLayer && !sourceLayer.isQueueable) {
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 			return
-			// TODOSYNC: TV2 uses queue = false
 		}
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
@@ -572,6 +559,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											heightScale={filter.buttonHeightScale}
 											displayStyle={filter.displayStyle}
 											showThumbnailsInList={filter.showThumbnailsInList}
+											disableHoverInspector={filter.disableHoverInspector ?? false}
 											toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
 											isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}
 											disabled={adLibPiece.disabled}
@@ -656,6 +644,9 @@ export const DashboardPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps>) => {
+		const studio = UIStudios.findOne(props.playlist.studioId)
+		if (!studio) throw new Meteor.Error(404, 'Studio "' + props.playlist.studioId + '" not found!')
+
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist,
 			props.showStyleBase
@@ -663,14 +654,14 @@ export const DashboardPanel = translateWithTracker<
 		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
 		return {
 			...fetchAndFilter(props),
-			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
+			studio,
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,
 			nextTags,
 		}
 	},
-	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	(_data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
 )(DashboardPanelInner)

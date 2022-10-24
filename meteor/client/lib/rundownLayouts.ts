@@ -1,10 +1,11 @@
+import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import _ from 'underscore'
+import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { getCurrentTime } from '../../lib/lib'
 import { invalidateAt } from './invalidatingTime'
 import { memoizedIsolatedAutorun } from './reactiveData/reactiveDataHelper'
@@ -14,7 +15,7 @@ import { memoizedIsolatedAutorun } from './reactiveData/reactiveDataHelper'
  */
 export function getIsFilterActive(
 	playlist: RundownPlaylist,
-	showStyleBase: DBShowStyleBase,
+	showStyleBase: UIShowStyleBase,
 	panel: RequiresActiveLayers
 ): { active: boolean; activePieceInstance: PieceInstance | undefined } {
 	const unfinishedPieces = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
@@ -50,10 +51,14 @@ export function getIsFilterActive(
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, showStyleBase: DBShowStyleBase) {
+export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, showStyleBase: UIShowStyleBase) {
 	if (playlist.activationId && playlist.currentPartInstanceId) {
 		return memoizedIsolatedAutorun(
-			(playlistActivationId, currentPartInstanceId, showStyleBase) => {
+			(
+				playlistActivationId: RundownPlaylistActivationId,
+				currentPartInstanceId: PartInstanceId,
+				showStyleBase: UIShowStyleBase
+			) => {
 				const now = getCurrentTime()
 				let prospectivePieces: PieceInstance[] = []
 
@@ -65,10 +70,14 @@ export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, s
 						playlistActivationId: playlistActivationId,
 					}).fetch()
 
-					const nowInPart = partInstance.timings?.startedPlayback
-						? now - partInstance.timings.startedPlayback
+					const nowInPart = partInstance.timings?.plannedStartedPlayback
+						? now - partInstance.timings.plannedStartedPlayback
 						: 0
-					prospectivePieces = processAndPrunePieceInstanceTimings(showStyleBase, prospectivePieces, nowInPart)
+					prospectivePieces = processAndPrunePieceInstanceTimings(
+						showStyleBase.sourceLayers,
+						prospectivePieces,
+						nowInPart
+					)
 
 					let nearestEnd = Number.POSITIVE_INFINITY
 					prospectivePieces = prospectivePieces.filter((pieceInstance) => {
@@ -80,12 +89,22 @@ export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, s
 						}
 
 						let end: number | undefined
-						if (pieceInstance.stoppedPlayback) {
-							end = pieceInstance.stoppedPlayback
-						} else if (pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number') {
-							end = pieceInstance.userDuration.end
-						} else if (typeof piece.enable.duration === 'number' && pieceInstance.startedPlayback) {
-							end = piece.enable.duration + pieceInstance.startedPlayback
+						if (pieceInstance.plannedStoppedPlayback) {
+							end = pieceInstance.plannedStoppedPlayback
+						} else if (
+							pieceInstance.userDuration &&
+							'endRelativeToPart' in pieceInstance.userDuration &&
+							typeof pieceInstance.userDuration.endRelativeToPart === 'number'
+						) {
+							end = pieceInstance.userDuration.endRelativeToPart
+						} else if (
+							pieceInstance.userDuration &&
+							'endRelativeToNow' in pieceInstance.userDuration &&
+							typeof pieceInstance.userDuration.endRelativeToNow === 'number'
+						) {
+							end = pieceInstance.userDuration.endRelativeToNow + now
+						} else if (typeof piece.enable.duration === 'number' && pieceInstance.plannedStartedPlayback) {
+							end = piece.enable.duration + pieceInstance.plannedStartedPlayback
 						}
 
 						if (end !== undefined) {

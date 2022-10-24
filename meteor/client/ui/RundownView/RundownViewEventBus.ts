@@ -1,18 +1,21 @@
-import { SegmentId } from '../../../lib/collections/Segments'
-import { PartId } from '../../../lib/collections/Parts'
 import EventEmitter from 'events'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceId } from '../../../lib/collections/Pieces'
 import { ShelfTabs } from '../Shelf/Shelf'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibItem } from '../Shelf/RundownViewBuckets'
-import { RundownId } from '../../../lib/collections/Rundowns'
 import { Bucket } from '../../../lib/collections/Buckets'
-import { TriggeredActionId } from '../../../lib/collections/TriggeredActions'
+import {
+	PartId,
+	PartInstanceId,
+	PieceId,
+	RundownId,
+	SegmentId,
+	TriggeredActionId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export enum RundownViewEvents {
 	ACTIVATE_RUNDOWN_PLAYLIST = 'activateRundownPlaylist',
+	DEACTIVATE_RUNDOWN_PLAYLIST = 'deactivateRundownPlaylist',
 	RESYNC_RUNDOWN_PLAYLIST = 'resyncRundownPlaylist',
 	RESET_RUNDOWN_PLAYLIST = 'resetRundownPlaylist',
 	TAKE = 'take',
@@ -38,6 +41,8 @@ export enum RundownViewEvents {
 	RENAME_BUCKET = 'renameBucket',
 	DELETE_BUCKET = 'deleteBucket',
 	CREATE_BUCKET = 'createBucket',
+
+	CREATE_SNAPSHOT_FOR_DEBUG = 'createSnapshotForDebug',
 }
 
 export interface IEventContext {
@@ -49,6 +54,8 @@ type BaseEvent = IEventContext
 export interface ActivateRundownPlaylistEvent extends IEventContext {
 	rehearsal?: boolean
 }
+
+export type DeactivateRundownPlaylistEvent = IEventContext
 
 export interface RevealInShelfEvent extends IEventContext {
 	pieceId: PieceId
@@ -104,6 +111,7 @@ export interface TriggerActionEvent extends IEventContext {
 
 class RundownViewEventBus0 extends EventEmitter {
 	emit(event: RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, e: ActivateRundownPlaylistEvent): boolean
+	emit(event: RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, e: DeactivateRundownPlaylistEvent): boolean
 	emit(event: RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, e: BaseEvent): boolean
 	emit(event: RundownViewEvents.RESET_RUNDOWN_PLAYLIST, e: BaseEvent): boolean
 	emit(event: RundownViewEvents.TAKE, e: BaseEvent): boolean
@@ -127,11 +135,16 @@ class RundownViewEventBus0 extends EventEmitter {
 	emit(event: RundownViewEvents.CREATE_BUCKET, e: IEventContext): boolean
 	emit(event: RundownViewEvents.DELETE_BUCKET_ADLIB, e: BucketAdLibEvent): boolean
 	emit(event: RundownViewEvents.RENAME_BUCKET_ADLIB, e: BucketAdLibEvent): boolean
+	emit(event: RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, e: BaseEvent): boolean
 	emit(event: string, ...args: any[]) {
 		return super.emit(event, ...args)
 	}
 
 	on(event: RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, listener: (e: ActivateRundownPlaylistEvent) => void): this
+	on(
+		event: RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST,
+		listener: (e: DeactivateRundownPlaylistEvent) => void
+	): this
 	on(event: RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, listener: (e: BaseEvent) => void): this
 	on(event: RundownViewEvents.RESET_RUNDOWN_PLAYLIST, listener: (e: BaseEvent) => void): this
 	on(event: RundownViewEvents.TAKE, listener: (e: BaseEvent) => void): this
@@ -155,6 +168,7 @@ class RundownViewEventBus0 extends EventEmitter {
 	on(event: RundownViewEvents.CREATE_BUCKET, listener: (e: IEventContext) => void): this
 	on(event: RundownViewEvents.DELETE_BUCKET_ADLIB, listener: (e: BucketAdLibEvent) => void): this
 	on(event: RundownViewEvents.RENAME_BUCKET_ADLIB, listener: (e: BucketAdLibEvent) => void): this
+	on(event: RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, listener: (e: BaseEvent) => void): this
 	on(event: string, listener: (...args: any[]) => void) {
 		return super.on(event, listener)
 	}

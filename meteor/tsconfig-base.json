@@ -4,8 +4,6 @@
 		/* At the time of writing we are not ready for stricter rules */
 		"strict": true,
 		"noImplicitAny": false,
-		"noImplicitThis": false,
-		"noUnusedParameters": false,
 		"strictPropertyInitialization": false,
 
 		"skipLibCheck": true,

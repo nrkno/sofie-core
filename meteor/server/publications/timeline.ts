@@ -10,12 +10,16 @@ import {
 	TimelineBlob,
 } from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
-import { PubSub } from '../../lib/api/pubsub'
-import { FindOptions } from '../../lib/typings/meteor'
-import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
-import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
-import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { Studios, getActiveRoutes, StudioId, ResultingMappingRoutes } from '../../lib/collections/Studios'
+import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
+import { FindOptions } from '../../lib/collections/lib'
+import {
+	CustomPublish,
+	meteorCustomPublish,
+	setUpOptimizedObserverArray,
+	TriggerUpdate,
+} from '../lib/customPublication'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { Studios, getActiveRoutes, ResultingMappingRoutes } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
 import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
@@ -24,6 +28,7 @@ import { logger } from '../logging'
 import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { Time } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
+import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 meteorPublish(PubSub.timeline, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -36,9 +41,9 @@ meteorPublish(PubSub.timeline, async function (selector, token) {
 	return null
 })
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.timelineForDevice,
-	'studioTimeline',
+	CustomCollectionName.StudioTimeline,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = PeripheralDevices.findOne(deviceId)
@@ -48,16 +53,20 @@ meteorCustomPublishArray(
 			const studioId = peripheralDevice.studioId
 			if (!studioId) return
 
-			await createObserverForTimelinePublication(pub, PubSub.timelineForDevice, studioId)
+			await createObserverForTimelinePublication(pub, studioId)
 		}
 	}
 )
 
-meteorCustomPublishArray(PubSub.timelineForStudio, 'studioTimeline', async function (pub, studioId: StudioId, token) {
-	if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
-		await createObserverForTimelinePublication(pub, PubSub.timelineForStudio, studioId)
+meteorCustomPublish(
+	PubSub.timelineForStudio,
+	CustomCollectionName.StudioTimeline,
+	async function (pub, studioId: StudioId, token) {
+		if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
+			await createObserverForTimelinePublication(pub, studioId)
+		}
 	}
-})
+)
 
 interface RoutedTimelineArgs {
 	readonly studioId: StudioId
@@ -189,34 +198,23 @@ async function manipulateTimelinePublicationData(
 			timelineHash: state.timelineHash,
 			timelineBlob: state.routedTimeline,
 			generated: state.timeline?.generated ?? Date.now(),
-			published: Date.now(),
 		}),
 	]
 }
 
 /** Create an observer for each publication, to simplify the stop conditions */
-async function createObserverForTimelinePublication(
-	pub: CustomPublishArray<RoutedTimeline>,
-	observerId: PubSub,
-	studioId: StudioId
-) {
-	const observer = await setUpOptimizedObserver<
+async function createObserverForTimelinePublication(pub: CustomPublish<RoutedTimeline>, studioId: StudioId) {
+	await setUpOptimizedObserverArray<
 		RoutedTimeline,
 		RoutedTimelineArgs,
 		RoutedTimelineState,
 		RoutedTimelineUpdateProps
 	>(
-		`pub_${observerId}_${studioId}`,
+		`${CustomCollectionName.StudioTimeline}_${studioId}`,
 		{ studioId },
 		setupTimelinePublicationObservers,
 		manipulateTimelinePublicationData,
-		(_args, newData) => {
-			// Don't need to perform any deep diffing
-			pub.updatedDocs(newData)
-		},
+		pub,
 		0 // ms
 	)
-	pub.onStop(() => {
-		observer.stop()
-	})
 }

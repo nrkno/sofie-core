@@ -2,11 +2,10 @@ import '../../../__mocks__/_extendJest'
 
 import { MethodContext } from '../../../lib/api/methods'
 import { setCoreSystemStorePath } from '../../../lib/collections/CoreSystem'
-import { DBOrganization, OrganizationId, Organizations } from '../../../lib/collections/Organization'
+import { DBOrganization, Organizations } from '../../../lib/collections/Organization'
 import { User, Users } from '../../../lib/collections/Users'
 import { protectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
-import { UserId } from '../../../lib/typings/meteor'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { beforeAllInFiber, testInFiber } from '../../../__mocks__/helpers/jest'
 import { BucketsAPI } from '../../api/buckets'
@@ -16,6 +15,7 @@ import { Credentials } from '../lib/credentials'
 import { NoSecurityReadAccess } from '../noSecurity'
 import { OrganizationContentWriteAccess, OrganizationReadAccess } from '../organization'
 import { StudioContentWriteAccess } from '../studio'
+import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 describe('Security', () => {
 	function getContext(cred: Credentials): MethodContext {

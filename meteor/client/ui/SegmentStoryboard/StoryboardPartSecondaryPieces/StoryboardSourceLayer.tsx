@@ -4,11 +4,11 @@ import * as VelocityReact from 'velocity-react'
 import { ISourceLayerExtended, PartExtended, PieceExtended } from '../../../../lib/Rundown'
 import StudioContext from '../../RundownView/StudioContext'
 import { StoryboardSecondaryPiece } from './StoryboardSecondaryPiece'
-import { PieceInstanceId } from '../../../../lib/collections/PieceInstances'
 import { getCurrentTime } from '../../../../lib/lib'
 import { useInvalidateTimeout } from '../../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { HOVER_TIMEOUT } from '../../Shelf/DashboardPieceButton'
+import { PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	sourceLayer: ISourceLayerExtended
@@ -125,8 +125,8 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 	)
 
 	const playedOutState = usePlayedOutPieceState(
-		part?.instance.timings?.startedPlayback,
-		part?.instance.timings?.stoppedPlayback,
+		part?.instance.timings?.plannedStartedPlayback,
+		part?.instance.timings?.plannedStoppedPlayback,
 		piecesOnLayer
 	)
 
@@ -220,7 +220,7 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 										hover: index === hoverIndex,
 									})}
 									style={{
-										//@ts-ignore: CSS Variable
+										//@ts-expect-error: CSS Variable
 										'--piece-playback-duration': `${piece.renderedDuration}ms`,
 										zIndex:
 											hoverIndex !== null

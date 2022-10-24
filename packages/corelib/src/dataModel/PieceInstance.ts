@@ -54,10 +54,19 @@ export interface PieceInstance
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
 	infinite?: PieceInstanceInfinite
 
-	/** This is set when the duration needs to be overriden from some user action (milliseconds since start of part) */
-	userDuration?: {
-		end: number
-	}
+	/** This is set when the duration needs to be overriden from some user action */
+	userDuration?:
+		| {
+				/** The time relative to the part (milliseconds since start of part) */
+				endRelativeToPart: number
+		  }
+		| {
+				/** The time relative to 'now' (ms since 'now') */
+				endRelativeToNow: number
+		  }
+
+	plannedStartedPlayback?: number
+	plannedStoppedPlayback?: number
 }
 
 export interface ResolvedPieceInstance

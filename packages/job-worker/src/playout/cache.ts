@@ -2,7 +2,7 @@ import { RundownId, RundownPlaylistId, ShowStyleBaseId } from '@sofie-automation
 import { DbCacheWriteObject, DbCacheWriteOptionalObject } from '../cache/CacheObject'
 import { CacheBase, ReadOnlyCache } from '../cache/CacheBase'
 import { DbCacheReadCollection, DbCacheWriteCollection } from '../cache/CacheCollection'
-import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
@@ -21,6 +21,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PlaylistLock } from '../jobs/lock'
 import { CacheForIngest } from '../ingest/cache'
 import { MongoQuery } from '../db'
+import { logger } from '../logging'
 
 /**
  * This is a cache used for playout operations.
@@ -181,7 +182,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			context,
 			null,
 			initCache.Playlist.doc,
-			initCache.Rundowns.findFetch({}).map((r) => r._id)
+			initCache.Rundowns.findAll(null).map((r) => r._id)
 		)
 
 		// Not strictly necessary, but make a copy of the collection that we know is writable
@@ -333,10 +334,10 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 		if (ingestCache) {
 			// Populate the collections with the cached data instead
-			segments.fillWithDataFromArray(ingestCache.Segments.findFetch({}), true)
-			parts.fillWithDataFromArray(ingestCache.Parts.findFetch({}), true)
+			segments.fillWithDataFromArray(ingestCache.Segments.findAll(null), true)
+			parts.fillWithDataFromArray(ingestCache.Parts.findAll(null), true)
 			if (baselineFromIngest) {
-				baselineObjects.fillWithDataFromArray(baselineFromIngest.findFetch({}), true)
+				baselineObjects.fillWithDataFromArray(baselineFromIngest.findAll(null), true)
 			}
 		}
 
@@ -369,6 +370,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	}
 
 	async saveAllToDatabase(): Promise<void> {
+		logger.silly('saveAllToDatabase')
 		// TODO - ideally we should make sure to preserve the lock during this operation
 		if (!this.PlaylistLock.isLocked) {
 			throw new Error('Cannot save changes with released playlist lock')
@@ -394,6 +396,21 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			return super.saveAllToDatabase()
 		}
 	}
+
+	#isMultiGatewayMode: boolean | undefined = undefined
+	public get isMultiGatewayMode(): boolean {
+		if (this.#isMultiGatewayMode === undefined) {
+			if (this.context.studio.settings.forceMultiGatewayMode) {
+				this.#isMultiGatewayMode = true
+			} else {
+				const playoutDevices = this.PeripheralDevices.findAll(
+					(device) => device.type === PeripheralDeviceType.PLAYOUT
+				)
+				this.#isMultiGatewayMode = playoutDevices.length > 1
+			}
+		}
+		return this.#isMultiGatewayMode
+	}
 }
 
 export function getOrderedSegmentsAndPartsFromPlayoutCache(cache: CacheForPlayout): {
@@ -403,7 +420,7 @@ export function getOrderedSegmentsAndPartsFromPlayoutCache(cache: CacheForPlayou
 	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, cache.Playlist.doc)
 }
 export function getRundownIDsFromCache(cache: CacheForPlayout): RundownId[] {
-	return cache.Rundowns.findFetch({}).map((r) => r._id)
+	return cache.Rundowns.findAll(null).map((r) => r._id)
 }
 export function getSelectedPartInstancesFromCache(cache: CacheForPlayout): {
 	currentPartInstance: DBPartInstance | undefined
@@ -425,7 +442,7 @@ export function getSelectedPartInstancesFromCache(cache: CacheForPlayout): {
 	}
 }
 export function getShowStyleIdsRundownMappingFromCache(cache: CacheForPlayout): Map<RundownId, ShowStyleBaseId> {
-	const rundowns = cache.Rundowns.findFetch({})
+	const rundowns = cache.Rundowns.findAll(null)
 	const ret = new Map()
 
 	for (const rundown of rundowns) {

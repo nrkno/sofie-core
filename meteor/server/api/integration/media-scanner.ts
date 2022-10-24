@@ -1,10 +1,11 @@
 import { Meteor } from 'meteor/meteor'
-import { MediaObject, MediaObjects, MediaObjId } from '../../../lib/collections/MediaObjects'
-import { getStudioIdFromDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { getStudioIdFromDevice } from '../../../lib/collections/PeripheralDevices'
 import { protectString } from '../../../lib/lib'
 import { MediaObjectRevision } from '../../../lib/api/peripheralDevice'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { MethodContext } from '../../../lib/api/methods'
+import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
+import { MediaObjId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace MediaScannerIntegration {
 	export async function getMediaObjectRevisions(
@@ -76,11 +77,12 @@ export namespace MediaScannerIntegration {
 		}
 	}
 	export async function clearMediaObjectCollection(
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		collectionId: string
 	): Promise<void> {
-		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, this)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		const studioId = await getStudioIdFromDevice(peripheralDevice)
 

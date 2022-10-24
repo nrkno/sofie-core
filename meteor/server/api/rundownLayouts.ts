@@ -6,19 +6,16 @@ import {
 	RundownLayouts,
 	RundownLayoutType,
 	RundownLayoutBase,
-	RundownLayoutId,
 	CustomizableRegions,
 } from '../../lib/collections/RundownLayouts'
 import { literal, getRandomId, protectString } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { BlueprintId } from '../../lib/collections/Blueprints'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
-import { UserId } from '../../lib/collections/Users'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
 import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
+import { BlueprintId, RundownLayoutId, ShowStyleBaseId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export async function createRundownLayout(
 	name: string,
@@ -27,7 +24,7 @@ export async function createRundownLayout(
 	regionId: CustomizableRegions,
 	blueprintId: BlueprintId | undefined,
 	userId?: UserId | undefined
-) {
+): Promise<RundownLayoutId> {
 	const id: RundownLayoutId = getRandomId()
 	await RundownLayouts.insertAsync(
 		literal<RundownLayoutBase>({
@@ -40,12 +37,13 @@ export async function createRundownLayout(
 			icon: '',
 			iconColor: '#ffffff',
 			regionId,
+			isDefaultLayout: false,
 		})
 	)
 	return id
 }
 
-export async function removeRundownLayout(layoutId: RundownLayoutId) {
+export async function removeRundownLayout(layoutId: RundownLayoutId): Promise<void> {
 	await RundownLayouts.removeAsync(layoutId)
 }
 
@@ -87,7 +85,7 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', async (params, req: In
 	res.end(content)
 })
 
-PickerGET.route('/shelfLayouts/download/:id', async (params, req: IncomingMessage, res: ServerResponse) => {
+PickerGET.route('/shelfLayouts/download/:id', async (params, _req: IncomingMessage, res: ServerResponse) => {
 	const layoutId: RundownLayoutId = protectString(params.id)
 
 	check(layoutId, String)
@@ -155,11 +153,4 @@ class ServerRundownLayoutsAPI extends MethodContextAPI implements NewRundownLayo
 		return apiRemoveRundownLayout(this, rundownLayoutId)
 	}
 }
-registerClassToMeteorMethods(
-	RundownLayoutsAPIMethods,
-	ServerRundownLayoutsAPI,
-	false,
-	(methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
-		return fcn.apply(methodContext, args)
-	}
-)
+registerClassToMeteorMethods(RundownLayoutsAPIMethods, ServerRundownLayoutsAPI, false)

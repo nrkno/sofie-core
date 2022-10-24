@@ -37,8 +37,19 @@ a:visited {
 }
 
 .header {
-	position: relative;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
 	z-index: 500;
+	user-select: none;
+	
+	// position: relative;
+	// z-index: 500;
+}
+.header-clear {
+	padding-top: 4rem;
+	padding-right: $statusbar-width;
 }
 
 #render-target {

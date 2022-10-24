@@ -3,14 +3,15 @@ import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMe
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { omit, Time } from '../../../lib/lib'
-import { PubSub } from '../../../lib/api/pubsub'
+import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
-import { RoutedMappings, StudioId } from '../../../lib/collections/Studios'
-import { Mongo } from 'meteor/mongo'
+import { RoutedMappings } from '../../../lib/collections/Studios'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
+import { createCustomPublicationMongoCollection } from '../../../lib/collections/lib'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-const StudioMappings = new Mongo.Collection<RoutedMappings>('studioMappings')
+const StudioMappings = createCustomPublicationMongoCollection(CustomCollectionName.StudioMappings)
 
 interface IMappingsViewProps {
 	match?: {

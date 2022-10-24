@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { makePromise, sleep, waitForPromise } from '../../lib/lib'
+import { sleep } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -16,12 +16,13 @@ import { SystemWriteAccess } from '../security/system'
 import { check } from '../../lib/check'
 import { AsyncMongoCollection, createMongoCollection, IndexSpecifier } from '../../lib/collections/lib'
 import { getBundle as getTranslationBundleInner } from './translationsBundles'
-import { TranslationsBundle, TranslationsBundleId } from '../../lib/collections/TranslationsBundles'
+import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ClientAPI } from '../../lib/api/client'
 import { cleanupOldDataInner } from './cleanup'
 import { IndexSpecification } from 'mongodb'
 import { nightlyCronjobInner } from '../cronjobs'
+import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 async function setupIndexes(removeOldIndexes: boolean = false): Promise<Array<IndexSpecification>> {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
@@ -82,7 +83,7 @@ Meteor.startup(() => {
 	ensureIndexes()
 })
 
-export async function cleanupIndexes(
+async function cleanupIndexes(
 	context: MethodContext,
 	actuallyRemoveOldIndexes: boolean
 ): Promise<Array<IndexSpecification>> {
@@ -91,17 +92,17 @@ export async function cleanupIndexes(
 
 	return setupIndexes(actuallyRemoveOldIndexes)
 }
-export function cleanupOldData(
+async function cleanupOldData(
 	context: MethodContext,
 	actuallyRemoveOldData: boolean
-): string | CollectionCleanupResult {
+): Promise<string | CollectionCleanupResult> {
 	check(actuallyRemoveOldData, Boolean)
-	waitForPromise(SystemWriteAccess.coreSystem(context))
+	await SystemWriteAccess.coreSystem(context)
 
 	return cleanupOldDataInner(actuallyRemoveOldData)
 }
-export function runCronjob(context: MethodContext): void {
-	waitForPromise(SystemWriteAccess.coreSystem(context))
+async function runCronjob(context: MethodContext): Promise<void> {
+	await SystemWriteAccess.coreSystem(context)
 
 	return nightlyCronjobInner()
 }
@@ -196,7 +197,6 @@ async function doSystemBenchmarkInner() {
 			// MongoDB test: read
 			const DOC_COUNT = 100
 			// Prepare data in db:
-			const insertedIds: string[] = []
 			for (let i = 0; i < DOC_COUNT; i++) {
 				const objectToInsert = {
 					_id: 'myObject' + i,
@@ -209,7 +209,7 @@ async function doSystemBenchmarkInner() {
 					prop0: i,
 					indexedProp: i,
 				}
-				insertedIds.push(mongoTest.insert(objectToInsert))
+				mongoTest.insert(objectToInsert)
 				mongoTest.update(objectToInsert._id, {
 					$set: {
 						prop1: 'qwerty',
@@ -354,11 +354,11 @@ CPU JSON stringifying:       ${avg.cpuStringifying} ms (${comparison.cpuStringif
 	}
 }
 
-function getTranslationBundle(context: MethodContext, bundleId: TranslationsBundleId) {
+async function getTranslationBundle(context: MethodContext, bundleId: TranslationsBundleId) {
 	check(bundleId, String)
 
-	waitForPromise(OrganizationContentWriteAccess.translationBundle(context))
-	return ClientAPI.responseSuccess(getTranslationBundleInner(bundleId))
+	await OrganizationContentWriteAccess.translationBundle(context)
+	return ClientAPI.responseSuccess(await getTranslationBundleInner(bundleId))
 }
 
 class SystemAPIClass extends MethodContextAPI implements SystemAPI {
@@ -366,16 +366,16 @@ class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 		return cleanupIndexes(this, actuallyRemoveOldIndexes)
 	}
 	async cleanupOldData(actuallyRemoveOldData: boolean) {
-		return makePromise(() => cleanupOldData(this, actuallyRemoveOldData))
+		return cleanupOldData(this, actuallyRemoveOldData)
 	}
 	async runCronjob() {
-		return makePromise(() => runCronjob(this))
+		return runCronjob(this)
 	}
 	async doSystemBenchmark(runCount: number = 1) {
 		return doSystemBenchmark(this, runCount)
 	}
 	async getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>> {
-		return makePromise(() => getTranslationBundle(this, bundleId))
+		return getTranslationBundle(this, bundleId)
 	}
 }
 registerClassToMeteorMethods(SystemAPIMethods, SystemAPIClass, false)

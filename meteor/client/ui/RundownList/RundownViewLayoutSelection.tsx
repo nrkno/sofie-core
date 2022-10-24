@@ -10,8 +10,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import classNames from 'classnames'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { withTranslation } from 'react-i18next'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IRundownShelfLayoutSelectionProps {
 	playlistId: RundownPlaylistId

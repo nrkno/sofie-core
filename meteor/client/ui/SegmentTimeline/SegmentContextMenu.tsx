@@ -8,7 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
-import { SegmentId } from '../../../lib/collections/Segments'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
@@ -66,15 +66,14 @@ export const SegmentContextMenu = withTranslation()(
 						)}
 						{part && !part.instance.part.invalid && timecode !== null && (
 							<>
-								{startsAt !== null && (
-									<MenuItem
-										onClick={(e) => this.props.onSetNext(part.instance.part, e)}
-										disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
-									>
-										<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span> (
-										{RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
-									</MenuItem>
-								)}
+								<MenuItem
+									onClick={(e) => this.props.onSetNext(part.instance.part, e)}
+									disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
+								>
+									<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span>
+									{startsAt !== null &&
+										'\u00a0(' + RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000) + ')'}
+								</MenuItem>
 								{startsAt !== null && part && this.props.enablePlayFromAnywhere ? (
 									<>
 										<MenuItem

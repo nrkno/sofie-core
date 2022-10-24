@@ -2,7 +2,7 @@ import { check as MeteorCheck, Match as orgMatch } from 'meteor/check'
 
 /* tslint:disable variable-name */
 
-export function check(value: any, pattern: Match.Pattern) {
+export function check(value: unknown, pattern: Match.Pattern): void {
 	// This is a wrapper for Meteor.check, since that asserts the returned type too strictly
 	if (checkDisabled) {
 		return
@@ -24,35 +24,39 @@ export namespace Match {
 	export type Pattern = orgMatch.Pattern
 	export type PatternMatch<T extends Pattern> = orgMatch.PatternMatch<T>
 
-	export function Maybe(pattern: any) {
+	export function Maybe<T extends Pattern>(
+		pattern: T
+	): orgMatch.Matcher<PatternMatch<T> | undefined | null> | undefined {
 		if (checkDisabled) return
 		return orgMatch.Maybe(pattern)
 	}
-	export function Optional(pattern: any) {
+	export function Optional<T extends Pattern>(pattern: T): orgMatch.Matcher<PatternMatch<T> | undefined> | undefined {
 		if (checkDisabled) return
 		return orgMatch.Optional(pattern)
 	}
-	export function ObjectIncluding(dico: any) {
+	export function ObjectIncluding<T extends { [key: string]: Pattern }>(
+		dico: T
+	): orgMatch.Matcher<PatternMatch<T>> | undefined {
 		if (checkDisabled) return
 		return orgMatch.ObjectIncluding(dico)
 	}
-	export function OneOf(...patterns: any[]) {
+	export function OneOf<T extends Pattern[]>(...patterns: T): orgMatch.Matcher<PatternMatch<T[number]>> | undefined {
 		if (checkDisabled) return
 		return orgMatch.OneOf(...patterns)
 	}
-	export function Where(condition: any) {
+	export function Where<T>(condition: (val: any) => val is T): orgMatch.Matcher<T> | undefined {
 		if (checkDisabled) return
 		return orgMatch.Where(condition)
 	}
-	export function test(value: any, pattern: any) {
-		if (checkDisabled) return
+	export function test<T extends Pattern>(value: unknown, pattern: T): value is PatternMatch<T> {
+		if (checkDisabled) return true
 		return orgMatch.test(value, pattern)
 	}
 }
 let checkDisabled = false
-export function disableChecks() {
+export function disableChecks(): void {
 	checkDisabled = true
 }
-export function enableChecks() {
+export function enableChecks(): void {
 	checkDisabled = false
 }

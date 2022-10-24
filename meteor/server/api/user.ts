@@ -1,17 +1,18 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
-import { unprotectString, protectString, waitTime } from '../../lib/lib'
+import { unprotectString, protectString, waitTime, waitForPromise } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewUserAPI, UserAPIMethods, createUser } from '../../lib/api/user'
 import { registerClassToMeteorMethods } from '../methods'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { logNotAllowed } from '../../server/security/lib/lib'
-import { User, UserId, Users } from '../../lib/collections/Users'
+import { User, Users } from '../../lib/collections/Users'
 import { createOrganization } from './organizations'
-import { DBOrganizationBase, Organizations, OrganizationId } from '../../lib/collections/Organization'
+import { DBOrganizationBase, Organizations } from '../../lib/collections/Organization'
 import { resetCredentials } from '../security/lib/credentials'
+import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 async function enrollUser(email: string, name: string): Promise<UserId> {
 	triggerWriteAccessBecauseNoCheckNecessary()
@@ -35,7 +36,7 @@ function afterCreateNewUser(userId: UserId, organization: DBOrganizationBase): O
 	sendVerificationEmail(userId)
 
 	// Create an organization for the user:
-	const orgId = createOrganization(organization)
+	const orgId = waitForPromise(createOrganization(organization))
 	// Add user to organization:
 	Users.update(userId, { $set: { organizationId: orgId } })
 	Organizations.update(orgId, {
@@ -103,7 +104,7 @@ registerClassToMeteorMethods(UserAPIMethods, ServerUserAPI, false)
 Accounts.onCreateUser((options, user) => {
 	user.profile = options.profile
 
-	// @ts-ignore hack, add the property "createOrganization" to trigger creation of an org
+	// @ts-expect-error hack, add the property "createOrganization" to trigger creation of an org
 	const createOrganization = options.createOrganization
 	if (createOrganization) {
 		Meteor.defer(() => {

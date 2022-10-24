@@ -16,7 +16,6 @@ import {
 	ActionButtonType,
 	DashboardLayoutActionButton,
 	RundownLayoutElementType,
-	RundownLayoutId,
 } from '../../../lib/collections/RundownLayouts'
 import {
 	CustomizableRegionLayout,
@@ -37,6 +36,7 @@ import FilterEditor from './components/FilterEditor'
 import ShelfLayoutSettings from './components/rundownLayouts/ShelfLayoutSettings'
 import RundownHeaderLayoutSettings from './components/rundownLayouts/RundownHeaderLayoutSettings'
 import RundownViewLayoutSettings from './components/rundownLayouts/RundownViewLayoutSettings'
+import { RundownLayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface IProps {
 	showStyleBase: ShowStyleBase
@@ -138,6 +138,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						default: false,
 						nextInCurrentPart: false,
 						oneNextPerSourceLayer: false,
+						disableHoverInspector: false,
 					}),
 				},
 			})
@@ -184,7 +185,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		}
 
-		onDeleteLayout = (e: any, item: RundownLayoutBase) => {
+		onDeleteLayout = (_e: any, item: RundownLayoutBase) => {
 			const { t } = this.props
 
 			doModalDialog({
@@ -341,6 +342,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								type="colorpicker"
 								collection={RundownLayouts}
 								className="input text-input input-s"
+							></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Use as default')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'isDefaultLayout'}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
 							></EditAttribute>
 						</label>
 					</div>

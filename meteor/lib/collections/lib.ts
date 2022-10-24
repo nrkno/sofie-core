@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { MongoModifier, MongoQuery, UserId } from '../typings/meteor'
+import { MongoModifier, MongoQuery } from '../typings/meteor'
 import {
 	stringifyObjects,
 	getHash,
@@ -10,14 +10,15 @@ import {
 	registerCollection,
 	stringifyError,
 	protectString,
-	MongoFieldSpecifier,
-	SortSpecifier,
 	waitForPromise,
 } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import type { AnyBulkWriteOperation, Collection as RawCollection, Db as RawDb, CreateIndexesOptions } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { MongoFieldSpecifier, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { CustomCollectionType } from '../api/pubsub'
+import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const ObserveChangeBufferTimeout = 2000
 
@@ -25,17 +26,17 @@ type Timeout = number
 
 export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: AsyncMongoCollection<DBInterface>,
-	hashName: string,
-	hashFields: string[],
+	hashName: keyof DBInterface,
+	hashFields: (keyof DBInterface)[],
 	skipEnsureUpdatedOnStart?: boolean
-) {
+): void {
 	const doUpdate = (id: DBInterface['_id'], obj: any) => {
-		const newHash = getHash(stringifyObjects(_.pick(obj, ...hashFields)))
+		const newHash = getHash(stringifyObjects(_.pick(obj, ...(hashFields as string[]))))
 
 		if (newHash !== obj[hashName]) {
-			logger.debug('Updating hash:', id, hashName + ':', newHash)
+			logger.debug('Updating hash:', id, `${String(hashName)}:${newHash}`)
 			const update: Partial<DBInterface> = {}
-			update[hashName] = newHash
+			update[String(hashName)] = newHash
 			collection.update(id, { $set: update })
 		}
 	}
@@ -45,7 +46,7 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
 	collection.find().observeChanges({
 		changed: (id: DBInterface['_id'], changedFields) => {
 			// Ignore the hash field, to stop an infinite loop
-			delete changedFields[hashName]
+			delete changedFields[String(hashName)]
 
 			if (_.keys(changedFields).length > 0) {
 				const data: Timeout | undefined = observedChangesTimeouts.get(id)
@@ -125,6 +126,17 @@ export function createInMemoryMongoCollection<DBInterface extends { _id: Protect
 ): MongoCollection<DBInterface> {
 	const collection = new Mongo.Collection<DBInterface>(null)
 	return new WrappedMongoCollection<DBInterface>(collection, name)
+}
+
+/**
+ * Create a Mongo Collection for a virtual collection populated by a custom-publication
+ * @param name Name of the custom-collection
+ */
+export function createCustomPublicationMongoCollection<K extends keyof CustomCollectionType>(
+	name: K
+): MongoCollection<CustomCollectionType[K]> {
+	const collection = new Mongo.Collection<CustomCollectionType[K]>(name)
+	return new WrappedMongoCollection<CustomCollectionType[K]>(collection, name)
 }
 
 class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
@@ -313,7 +325,6 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 			return this.insert(doc)
 		}).catch((err) => {
 			if (err.toString().match(/duplicate key/i)) {
-				// @ts-ignore id duplicate, doc._id must exist
 				return doc._id
 			} else {
 				throw err
@@ -446,7 +457,6 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 			return this.insert(doc)
 		} catch (err) {
 			if (stringifyError(err).match(/duplicate key/i)) {
-				// @ts-ignore id duplicate, doc._id must exist
 				return doc._id
 			} else {
 				throw err

@@ -10,7 +10,6 @@ import {
 	formatDateTime,
 	stringifyObjects,
 	partial,
-	partialExceptId,
 	protectString,
 	equalSets,
 	equivalentArrays,
@@ -172,19 +171,6 @@ describe('lib/lib', () => {
 			f: undefined,
 		}
 		expect(partial(o)).toEqual(o) // The function only affects typings
-	})
-	testInFiber('partialExceptId', () => {
-		const o = {
-			_id: protectString('myId'),
-			a: 1,
-			b: 'asdf',
-			c: {
-				d: 1,
-			},
-			e: null,
-			f: undefined,
-		}
-		expect(partialExceptId(o)).toEqual(o) // The function only affects typings
 	})
 	testInFiber('formatDateTime', () => {
 		if (process.platform === 'win32') {

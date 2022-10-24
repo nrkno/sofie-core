@@ -1,6 +1,6 @@
 const ntpClient: NtpClient = require('ntp-client')
+import { DiffTimeResult } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { NtpClient } from '../../typings/ntp-client'
-import { DiffTimeResult } from '../../../lib/api/peripheralDevice'
 
 /**
  * Example usage:
@@ -15,7 +15,7 @@ import { DiffTimeResult } from '../../../lib/api/peripheralDevice'
  * })
  */
 
-export async function determineDiffTime(config?: Partial<Config>) {
+export async function determineDiffTime(config?: Partial<Config>): Promise<DiffTimeResult> {
 	return determineDiffTimeInner({
 		maxSampleCount: 20,
 		minSampleCount: 10,

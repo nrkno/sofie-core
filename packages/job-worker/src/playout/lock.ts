@@ -1,6 +1,7 @@
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownPlayoutPropsBase } from '@sofie-automation/corelib/dist/worker/studio'
+import { logger } from '../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { JobContext } from '../jobs'
@@ -91,7 +92,7 @@ export async function runWithPlaylistCache<TRes>(
 
 	try {
 		const res = await fcn(fullCache)
-
+		logger.silly('runWithPlaylistCache: saveAllToDatabase')
 		await fullCache.saveAllToDatabase()
 
 		return res

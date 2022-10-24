@@ -1,6 +1,7 @@
 @import '../colorScheme';
 
 .mini-rundown-panel {
+	--dashboard-panel-scale: 1;
 	position: absolute;
 	user-select: none;
 	white-space: nowrap;
@@ -9,9 +10,10 @@
 
 	.mini-rundown-panel__container {
 		width: 100%;
-		height: 95%;
+		height: calc(100% - var(--dashboard-panel-scale) * 1em);
 		overflow-x: hidden;
 		overflow-y: auto;
+		position: relative;
 	}
 
 	.mini-rundown-panel__segment {

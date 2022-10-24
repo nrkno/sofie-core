@@ -1,7 +1,5 @@
 import React from 'react'
-import { Rundown, RundownCollectionUtil, RundownId } from '../../../lib/collections/Rundowns'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
@@ -33,11 +31,14 @@ import { getEmptyImage } from 'react-dnd-html5-backend'
 import { unprotectString } from '../../../lib/lib'
 import RundownListItemView from './RundownListItemView'
 import { Settings } from '../../../lib/Settings'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
+import { UIShowStyleBases, UIStudios } from '../Collections'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
+import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export const HTML_ID_PREFIX = 'rundown-'
 
@@ -53,8 +54,8 @@ export interface IRundownListItemProps {
 }
 
 interface IRundownListItemTrackedProps {
-	studio: Studio | undefined
-	showStyleBase: ShowStyleBase | undefined
+	studio: UIStudio | undefined
+	showStyleBase: UIShowStyleBase | undefined
 	showStyleVariant: ShowStyleVariant | undefined
 }
 
@@ -149,25 +150,9 @@ const dropCollect: DropTargetCollector<IRundownDropTargetProps, IRundownListItem
 
 export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, IRundownListItemTrackedProps>(
 	(props: Translated<IRundownListItemProps>) => {
-		let studio: Studio | undefined = undefined
-		let showStyle: ShowStyleBase | undefined = undefined
-		let showStyleVariant: ShowStyleVariant | undefined = undefined
-
-		try {
-			studio = Studios.findOne(props.rundown.studioId)
-		} catch (e) {
-			// this is fine, we'll probably have it eventually and the component can render without it
-		}
-		try {
-			showStyle = RundownCollectionUtil.getShowStyleBase(props.rundown)
-		} catch (e) {
-			// this is fine, we'll probably have it eventually and the component can render without it
-		}
-		try {
-			showStyleVariant = RundownCollectionUtil.getShowStyleVariant(props.rundown)
-		} catch (e) {
-			// this is fine, we'll probably have it eventually and the component can render without it
-		}
+		const studio = UIStudios.findOne(props.rundown.studioId)
+		const showStyle = UIShowStyleBases.findOne(props.rundown.showStyleBaseId)
+		const showStyleVariant = ShowStyleVariants.findOne(props.rundown.showStyleVariantId)
 
 		return {
 			studio,

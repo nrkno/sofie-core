@@ -1,7 +1,6 @@
 import { createMongoCollection } from './lib'
 import { DBStudio, ResultingMappingRoutes } from './Studios'
-import { StudioId, TimelineObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { TimelineObjId }
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import {
@@ -10,7 +9,6 @@ import {
 	updateLookaheadLayer,
 	TimelineBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { Time } from '@sofie-automation/blueprints-integration'
 export * from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 export function getRoutedTimeline(
@@ -70,8 +68,6 @@ export interface RoutedTimeline {
 	/** serialized JSON Array containing all timeline-objects */
 	timelineBlob: TimelineBlob
 	generated: TimelineComplete['generated']
-	/** The point in time the data was published */
-	published: Time
 }
 
 export const Timeline = createMongoCollection<TimelineComplete>(CollectionName.Timelines)

@@ -1,7 +1,8 @@
-import { MongoSelector } from '../typings/meteor'
-import { BlueprintId, Blueprints, Blueprint } from './Blueprints'
-import { DBShowStyleBase, ShowStyleBaseId, ShowStyleBases } from './ShowStyleBases'
-import { DBStudio, StudioId, Studios, StudioLight } from './Studios'
+import { BlueprintId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MongoQuery } from '../typings/meteor'
+import { Blueprints, Blueprint } from './Blueprints'
+import { DBShowStyleBase, ShowStyleBases } from './ShowStyleBases'
+import { DBStudio, Studios, StudioLight } from './Studios'
 
 export { StudioLight } from './Studios' // TODO: Legacy
 
@@ -26,13 +27,13 @@ export type BlueprintLight = Omit<Blueprint, 'code'>
 export async function fetchStudioLight(studioId: StudioId): Promise<StudioLight | undefined> {
 	return Studios.findOneAsync(studioId, {
 		fields: {
-			mappings: 0,
-			blueprintConfig: 0,
+			mappingsWithOverrides: 0,
+			blueprintConfigWithOverrides: 0,
 		},
 	})
 }
 
-export async function fetchStudioIds(selector: MongoSelector<DBStudio>): Promise<StudioId[]> {
+export async function fetchStudioIds(selector: MongoQuery<DBStudio>): Promise<StudioId[]> {
 	const studios = await Studios.findFetchAsync(selector, {
 		fields: {
 			_id: 1,
@@ -59,21 +60,22 @@ export async function checkStudioExists(studioId: StudioId): Promise<boolean> {
 export async function fetchShowStyleBaseLight(showStyleId: ShowStyleBaseId): Promise<ShowStyleBaseLight | undefined> {
 	return ShowStyleBases.findOneAsync(showStyleId, {
 		fields: {
-			blueprintConfig: 0,
-			outputLayers: 0,
-			sourceLayers: 0,
+			blueprintConfigWithOverrides: 0,
+			outputLayersWithOverrides: 0,
+			sourceLayersWithOverrides: 0,
 		},
 	})
 }
-export async function fetchShowStyleBasesLight(
-	selector: MongoSelector<DBShowStyleBase>
-): Promise<ShowStyleBaseLight[]> {
+export async function fetchShowStyleBasesLight(selector: MongoQuery<DBShowStyleBase>): Promise<ShowStyleBaseLight[]> {
 	return ShowStyleBases.findFetchAsync(selector, {
 		fields: {
-			blueprintConfig: 0,
-			outputLayers: 0,
-			sourceLayers: 0,
+			blueprintConfigWithOverrides: 0,
+			outputLayersWithOverrides: 0,
+			sourceLayersWithOverrides: 0,
 		},
 	})
 }
-export type ShowStyleBaseLight = Omit<DBShowStyleBase, 'blueprintConfig' | 'outputLayers' | 'sourceLayers'>
+export type ShowStyleBaseLight = Omit<
+	DBShowStyleBase,
+	'blueprintConfigWithOverrides' | 'outputLayersWithOverrides' | 'sourceLayersWithOverrides'
+>

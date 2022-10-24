@@ -118,7 +118,7 @@ export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
 		result = isolatedAutorunsMem[fId].value
 		isolatedAutorunsMem[fId].dependancy.depend()
 	}
-	// @ts-ignore
+	// @ts-expect-error it is assigned by the tracker
 	return result
 }
 
@@ -171,7 +171,7 @@ export function slowDownReactivity<T extends (...args: any) => any>(fnc: T, dela
 		if (invalidationTimeout) Meteor.clearTimeout(invalidationTimeout)
 	})
 
-	// @ts-ignore
+	// @ts-expect-error it is assigned by the tracker
 	return result
 }
 

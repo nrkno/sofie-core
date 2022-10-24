@@ -1,31 +1,34 @@
 import { check } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
-import { ExpectedPackageId, ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
+import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { ExpectedPackageStatusAPI, PackageInfo } from '@sofie-automation/blueprints-integration'
 import {
 	ExpectedPackageWorkStatus,
 	ExpectedPackageWorkStatuses,
-	ExpectedPackageWorkStatusId,
 } from '../../../lib/collections/ExpectedPackageWorkStatuses'
 import { assertNever, getCurrentTime, literal, protectString } from '../../../lib/lib'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatuses,
 	PackageContainerPackageStatusDB,
-	PackageContainerPackageId,
 } from '../../../lib/collections/PackageContainerPackageStatus'
 import { getPackageInfoId, PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import { onUpdatedPackageInfo } from '../ingest/packageInfo'
 import {
 	getPackageContainerId,
-	PackageContainerId,
 	PackageContainerStatusDB,
 	PackageContainerStatuses,
 } from '../../../lib/collections/PackageContainerStatus'
+import {
+	ExpectedPackageId,
+	ExpectedPackageWorkStatusId,
+	PackageContainerId,
+	PackageContainerPackageId,
+	PeripheralDeviceId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace PackageManagerIntegration {
 	export async function updateExpectedPackageWorkStatuses(
@@ -372,7 +375,7 @@ export namespace PackageManagerIntegration {
 		packageId: ExpectedPackageId,
 		expectedContentVersionHash: string,
 		actualContentVersionHash: string,
-		payload: any
+		payload: unknown
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		check(packageId, String)

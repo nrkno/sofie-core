@@ -1,7 +1,7 @@
 import React from 'react'
-import { Studio } from '../../../lib/collections/Studios'
+import { UIStudio } from '../../../lib/api/studios'
 
-type StudioFromContext = Studio | undefined
+type StudioFromContext = UIStudio | undefined
 
 const StudioContext = React.createContext<StudioFromContext>(undefined)
 

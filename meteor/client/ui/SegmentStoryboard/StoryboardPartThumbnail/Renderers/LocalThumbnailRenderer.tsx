@@ -1,6 +1,7 @@
 import React from 'react'
 import { EvsContent } from '@sofie-automation/blueprints-integration'
 import { IProps } from './ThumbnailRendererFactory'
+import { getSizeClassForLabel } from '../../utils/getLabelClass'
 
 export function LocalThumbnailRenderer({ pieceInstance }: IProps) {
 	const localContent = pieceInstance.instance.piece.content as EvsContent
@@ -9,14 +10,14 @@ export function LocalThumbnailRenderer({ pieceInstance }: IProps) {
 
 	return (
 		<>
-			<div className="segment-storyboard__thumbnail__label segment-storyboard__thumbnail__label--lg">
+			<div
+				className={`segment-storyboard__thumbnail__label ${getSizeClassForLabel(pieceInstance.instance.piece.name)}`}
+			>
 				{color && (
 					<span
-						style={{ backgroundColor: color.startsWith('#') ? color : `#${color}` }}
+						style={{ color: color.startsWith('#') ? color : `#${color}` }}
 						className="segment-storyboard__thumbnail__label segment-storyboard__thumbnail__label__colored-mark"
-					>
-						·
-					</span>
+					></span>
 				)}
 				{pieceInstance.instance.piece.name}
 			</div>

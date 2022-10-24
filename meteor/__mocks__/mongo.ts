@@ -1,27 +1,20 @@
 import * as _ from 'underscore'
-import {
-	mongoWhere,
-	literal,
-	ProtectedString,
-	unprotectString,
-	protectString,
-	mongoModify,
-	mongoFindOptions,
-	sleep,
-} from '../lib/lib'
+import { literal, ProtectedString, unprotectString, protectString, sleep } from '../lib/lib'
 import { RandomMock } from './random'
-import { FindOptions, FindOneOptions } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import {
 	AsyncMongoCollection,
+	FindOneOptions,
+	FindOptions,
 	ObserveCallbacks,
 	ObserveChangesCallbacks,
 	UpdateOptions,
 	UpsertOptions,
 } from '../lib/collections/lib'
+import { mongoWhere, mongoFindOptions, mongoModify } from '@sofie-automation/corelib/dist/mongo'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -47,8 +40,8 @@ export namespace MongoMock {
 	export class Collection<T extends CollectionObject> implements MongoCollection {
 		public _name: string
 		private _options: any = {}
-		// @ts-ignore used in test to check that it's a mock
-		private _isMock: true = true
+		// @ts-expect-error used in test to check that it's a mock
+		private _isMock = true as const
 		private observers: ObserverEntry<T>[] = []
 
 		public asyncBulkWriteDelay = 100
@@ -249,9 +242,6 @@ export namespace MongoMock {
 		}
 		rawCollection() {
 			return {
-				// indexes: () => {}
-				// stats: () => {}
-				// drop: () => {}
 				bulkWrite: async (updates: AnyBulkWriteOperation<any>[], _options) => {
 					await sleep(this.asyncBulkWriteDelay)
 
@@ -285,9 +275,6 @@ export namespace MongoMock {
 				collectionName: this._name,
 			}
 		}
-		// observe () {
-		// 	// todo
-		// }
 		private get documents(): MockCollection<T> {
 			if (!mockCollections[this._name]) mockCollections[this._name] = {}
 			return mockCollections[this._name]

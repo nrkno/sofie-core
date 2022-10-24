@@ -1,11 +1,12 @@
 import { RundownPlaylist, DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { DBPart, Part, PartId } from '../../../lib/collections/Parts'
+import { DBPart, Part } from '../../../lib/collections/Parts'
 import { DBSegment } from '../../../lib/collections/Segments'
 import { DBRundown } from '../../../lib/collections/Rundowns'
 import { literal, protectString } from '../../../lib/lib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
 import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const DEFAULT_DURATION = 4000
 
@@ -90,6 +91,7 @@ describe('rundown Timing Calculator', () => {
 		const timing = new RundownTimingCalculator()
 		const playlist: RundownPlaylist = makeMockPlaylist()
 		const parts: Part[] = []
+		const segments: DBSegment[] = []
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
 		const result = timing.updateDurations(
 			0,
@@ -99,7 +101,9 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
-			DEFAULT_DURATION
+			segments,
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -123,6 +127,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -157,8 +162,9 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
-			// segments, // TODOSYNC: should updateDurations() include the segments?
-			DEFAULT_DURATION
+			segments,
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -221,7 +227,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				// segmentStartedPlayback: {}, // TODOSYNC: should updateDurations() include the segments?
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -256,8 +262,9 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
-			// segments, // TODOSYNC: should updateDurations() include the segments
-			DEFAULT_DURATION
+			segments,
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -320,7 +327,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				// segmentStartedPlayback: {}, // TODOSYNC: should updateDurations() include the segments
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -357,8 +364,9 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
-			// segments, // TODOSYNC: should updateDurations() include the segments
-			DEFAULT_DURATION
+			segments,
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -423,7 +431,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				// segmentStartedPlayback: {}, // TODOSYNC: should updateDurations() include the segments
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -482,8 +490,9 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
-			// segments, // TODOSYNC: should updateDurations() include the segments
-			DEFAULT_DURATION
+			segments,
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
@@ -546,8 +555,7 @@ describe('rundown Timing Calculator', () => {
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
 				segmentBudgetDurations: {},
-				// segmentBudgetDurations: {}, // TODOSYNC
-				// segmentStartedPlayback: {}, // TODOSYNC
+				segmentStartedPlayback: {},
 			})
 		)
 	})
@@ -597,21 +605,22 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
-			// segments, // TODOSYNC
-			DEFAULT_DURATION
+			segments,
+			DEFAULT_DURATION,
+			[]
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
-				asPlayedPlaylistDuration: 4000, // TODOSYNC, should this be 8000 after segment budget duration re-implementation?
+				asPlayedPlaylistDuration: 8000,
 				currentPartWillAutoNext: false,
 				currentTime: 0,
 				rundownExpectedDurations: {
 					[rundownId1]: 4000,
 				},
 				rundownAsPlayedDurations: {
-					[rundownId1]: 4000, // tv2 org: 8000
+					[rundownId1]: 8000,
 				},
 				partCountdown: {
 					part1: 0,
@@ -655,8 +664,8 @@ describe('rundown Timing Calculator', () => {
 					part3: 2000,
 					part4: 3000,
 				},
-				remainingPlaylistDuration: 4000, // 8000,
-				totalPlaylistDuration: 4000, // 8000,
+				remainingPlaylistDuration: 8000,
+				totalPlaylistDuration: 8000,
 				breakIsLastRundown: undefined,
 				remainingTimeOnCurrentPart: undefined,
 				rundownsBeforeNextBreak: undefined,
@@ -664,7 +673,7 @@ describe('rundown Timing Calculator', () => {
 					[segmentId1]: 5000,
 					[segmentId2]: 3000,
 				},
-				// segmentStartedPlayback: {}, // TODOSYNC
+				segmentStartedPlayback: {},
 			})
 		)
 	})

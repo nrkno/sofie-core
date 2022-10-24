@@ -1,12 +1,17 @@
 import { Meteor, Subscription } from 'meteor/meteor'
 import { PubSubTypes } from '../../lib/api/pubsub'
 import { extractFunctionSignature } from '../lib'
-import { MongoQuery, UserId } from '../../lib/typings/meteor'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
 import { Settings } from '../../lib/Settings'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { MongoCursor } from '../../lib/collections/lib'
-import { OrganizationId, PeripheralDeviceId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	OrganizationId,
+	PeripheralDeviceId,
+	ShowStyleBaseId,
+	UserId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectStringObject, waitForPromise } from '../../lib/lib'
 import { DBShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
@@ -33,7 +38,7 @@ export function meteorPublish<K extends keyof PubSubTypes>(
 		this: SubscriptionContext,
 		...args: Parameters<PubSubTypes[K]>
 	) => Promise<MongoCursor<ReturnType<PubSubTypes[K]>> | null>
-) {
+): void {
 	const signature = extractFunctionSignature(callback)
 	if (signature) MeteorPublicationSignatures[name] = signature
 

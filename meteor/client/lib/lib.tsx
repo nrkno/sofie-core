@@ -12,7 +12,7 @@ function multilineText(txt: string) {
 }
 
 function isEventInInputField(e: Event) {
-	// @ts-ignore localName
+	// @ts-expect-error localName
 	return e && e.target && ['textarea', 'input'].indexOf(e.target.localName + '') !== -1
 }
 
@@ -70,7 +70,7 @@ export enum UserAgentPointer {
 
 type MutableRef<T> = ((instance: T | null) => void) | React.MutableRefObject<T | null> | null
 
-export function useCombinedRefs<T>(initial, ...refs: MutableRef<T>[]) {
+export function useCombinedRefs<T>(initial: T | null, ...refs: MutableRef<T>[]) {
 	const targetRef = useRef<T>(initial)
 
 	useEffect(() => {

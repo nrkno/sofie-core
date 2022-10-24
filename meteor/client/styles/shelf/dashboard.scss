@@ -282,7 +282,7 @@ $dashboard-button-height: 5.625em;
 		height: $dashboard-button-height;
 		margin: 4px;
 		vertical-align: top;
-		cursor: default;
+		cursor: pointer;
 
 		@include item-type-colors();
 		@include invalid-overlay();
@@ -300,6 +300,14 @@ $dashboard-button-height: 5.625em;
 					var(--adlib-item-selected-color),
 				$dashboard-panel__button__border-width ($dashboard-panel__button__border-width * -1) 0
 					var(--adlib-item-selected-color);
+		}
+
+		&.live-speak {
+			background: linear-gradient(
+				to top,
+				var(--segment-layer-background-live-speak-2) 1em,
+				var(--segment-layer-background-live-speak-1) 1em
+			);
 		}
 
 		&.live {

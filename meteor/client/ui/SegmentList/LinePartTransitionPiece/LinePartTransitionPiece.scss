@@ -1,0 +1,20 @@
+.segment-opl__transition-piece {
+	position: absolute;
+	display: block;
+	top: 0;
+	left: 0;
+	transform: translate(-100%, 0);
+	background: #363636;
+	font-size: 0.75em;
+	font-weight: 500;
+	line-height: 1em;
+	white-space: nowrap;
+	word-wrap: nowrap;
+	padding: 0.3em 0.2em 0.2em 0.3em;
+	border-radius: 3px;
+	z-index: 1;
+}
+
+.segment-opl__timeline-flag.segment-opl__take-line:not(.next).auto + .segment-opl__transition-piece {
+	top: 0.75em;
+}

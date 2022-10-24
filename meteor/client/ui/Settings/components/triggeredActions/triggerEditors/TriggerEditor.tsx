@@ -12,13 +12,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 interface IProps {
-	index: number
+	id: string
 	trigger: DBBlueprintTrigger
 	opened?: boolean
-	onChangeTrigger: (index: number, newVal: DBBlueprintTrigger) => void
-	onRemove: (index: number) => void
-	onFocus: (index: number) => void
-	onClose: (index: number) => void
+	onChangeTrigger: (id: string, newVal: DBBlueprintTrigger) => void
+	onRemove: (id: string) => void
+	onFocus: (id: string) => void
+	onClose: (id: string) => void
 }
 
 function getTriggerTypes(t: TFunction): Record<string, TriggerType> {
@@ -27,7 +27,7 @@ function getTriggerTypes(t: TFunction): Record<string, TriggerType> {
 	}
 }
 
-export const TriggerEditor = function TriggerEditor({ opened, trigger, index, ...props }: IProps) {
+export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...props }: IProps) {
 	const { t } = useTranslation()
 	const [localTrigger, setLocalTrigger] = useState<DBBlueprintTrigger>({ ...trigger })
 	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
@@ -44,11 +44,11 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, index, ..
 		],
 	})
 
-	const onFocus = useCallback(() => props.onFocus(index), [index])
-	const onRemove = useCallback(() => props.onRemove(index), [index])
+	const onFocus = useCallback(() => props.onFocus(id), [id])
+	const onRemove = useCallback(() => props.onRemove(id), [id])
 	const onChangeTrigger = useCallback(
-		(changeLocalTrigger: DBBlueprintTrigger) => props.onChangeTrigger(index, changeLocalTrigger),
-		[index]
+		(changeLocalTrigger: DBBlueprintTrigger) => props.onChangeTrigger(id, changeLocalTrigger),
+		[id]
 	)
 
 	useEffect(() => {
@@ -60,7 +60,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, index, ..
 				!composedPath.includes(popperElement) &&
 				!composedPath.includes(referenceElement)
 			) {
-				props.onClose(index)
+				props.onClose(id)
 			}
 		}
 
@@ -130,7 +130,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, index, ..
 							options={getTriggerTypes(t)}
 							overrideDisplayValue={trigger.type}
 							attribute={''}
-							updateFunction={(e, newVal) => onChangeType(newVal)}
+							updateFunction={(_e, newVal) => onChangeType(newVal)}
 						/>
 					</div>
 					<div>{triggerEditor}</div>

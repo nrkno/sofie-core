@@ -14,6 +14,7 @@ enum LocalStorageProperty {
 	UI_ZOOM_LEVEL = 'uiZoomLevel',
 	HELP_MODE = 'helpMode',
 	LOG_NOTIFICATIONS = 'logNotifications',
+	PROTO_ONE_PART_PER_LINE = 'proto:onePartPerLine',
 }
 
 const GUI_FLAGS: {
@@ -142,4 +143,11 @@ export function unsetReportNotifications() {
 }
 export function getReportNotifications(): string | null {
 	return localStorageGetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS)
+}
+
+export function getUseOnePartPerLine(): boolean | null {
+	return localStorageGetCachedItem(LocalStorageProperty.PROTO_ONE_PART_PER_LINE) === '1'
+}
+export function setUseOnePartPerLine(useOnePartPerLine: boolean) {
+	localStorageSetCachedItem(LocalStorageProperty.PROTO_ONE_PART_PER_LINE, useOnePartPerLine ? '1' : '0')
 }

@@ -2,13 +2,10 @@ import { check } from '../../lib/check'
 import { literal, getCurrentTime, Time, getRandomId, stringifyError } from '../../lib/lib'
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
-import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
+import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
-import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
-import { UserId } from '../../lib/typings/meteor'
-import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { resolveCredentials } from '../security/lib/credentials'
 import { isInTestWrite, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
@@ -17,10 +14,17 @@ import { endTrace, sendTrace, startTrace } from './integration/influx'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
-import { StudioId } from '../../lib/collections/Studios'
 import { QueueStudioJob } from '../worker/worker'
 import { profiler } from './profiler'
-import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	OrganizationId,
+	PeripheralDeviceId,
+	RundownId,
+	RundownPlaylistId,
+	StudioId,
+	UserActionsLogItemId,
+	UserId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	checkAccessToPlaylist,
 	checkAccessToRundown,

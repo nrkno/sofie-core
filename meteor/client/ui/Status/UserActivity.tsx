@@ -30,7 +30,7 @@ function prettyPrintJsonString(str: string): string {
 	}
 }
 
-export function UserActionsList(props: IUserActionsListProps) {
+function UserActionsList(props: IUserActionsListProps) {
 	const { t } = useTranslation()
 
 	function renderMessageHead() {

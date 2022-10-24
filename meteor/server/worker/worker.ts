@@ -14,9 +14,9 @@ import {
 	getRandomString,
 	ManualPromise,
 	stringifyError,
+	Time,
 	waitForPromise,
 } from '../../lib/lib'
-import { Time } from 'superfly-timeline'
 import { UserActionsLogItem, UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fastTrack'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
@@ -28,7 +28,7 @@ import { MongoQuery } from '../../lib/typings/meteor'
 
 const FREEZE_LIMIT = 1000 // how long to wait for a response to a Ping
 const RESTART_TIMEOUT = 30000 // how long to wait for a restart to complete before throwing an error
-const KILL_TIMOUT = 30000 // how long to wait for a thread to terminate before throwing an error
+const KILL_TIMEOUT = 30000 // how long to wait for a thread to terminate before throwing an error
 
 interface JobEntry {
 	spec: JobSpec
@@ -254,7 +254,7 @@ Meteor.startup(() => {
 				autoRestart: true,
 				freezeLimit: FREEZE_LIMIT,
 				restartTimeout: RESTART_TIMEOUT,
-				killTimeout: KILL_TIMOUT,
+				killTimeout: KILL_TIMEOUT,
 			}
 		)
 	)

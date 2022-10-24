@@ -5,8 +5,8 @@ import {
 	PeripheralDeviceType,
 	PeripheralDeviceSubType,
 	PERIPHERAL_SUBTYPE_PROCESS,
-	StatusObject,
-	InitOptions,
+	PeripheralDeviceStatusObject,
+	PeripheralDeviceInitOptions,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 
@@ -237,7 +237,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	get deviceId(): PeripheralDeviceId {
 		return this._coreOptions.deviceId
 	}
-	async setStatus(status: StatusObject): Promise<StatusObject> {
+	async setStatus(status: PeripheralDeviceStatusObject): Promise<PeripheralDeviceStatusObject> {
 		return this.callMethod(PeripheralDeviceAPIMethods.setStatus, [status])
 	}
 	async callMethod(methodName: PeripheralDeviceAPIMethods | string, attrs?: Array<any>): Promise<any> {
@@ -420,7 +420,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	private async _sendInit(): Promise<string> {
 		if (!this.ddp || !this.ddp.connectionId) throw Error('Not connected to Core')
 
-		const options: InitOptions = {
+		const options: PeripheralDeviceInitOptions = {
 			category: this._coreOptions.deviceCategory,
 			type: this._coreOptions.deviceType,
 			subType: this._coreOptions.deviceSubType,

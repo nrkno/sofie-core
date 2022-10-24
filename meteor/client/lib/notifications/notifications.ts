@@ -12,17 +12,16 @@ import {
 	assertNever,
 	getRandomString,
 } from '../../../lib/lib'
-import { SegmentId } from '../../../lib/collections/Segments'
 import {
 	isTranslatableMessage,
 	ITranslatableMessage,
 	translateMessage,
 } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { RundownId } from '../../../lib/collections/Rundowns'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { MeteorCall } from '../../../lib/api/methods'
 import { i18nTranslator } from '../../ui/i18n'
 import { getReportNotifications } from '../localStorage'
+import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /**
  * Priority level for Notifications.
@@ -358,13 +357,7 @@ class NotificationCenter0 {
 		let n = this.getNotifications()
 		if (filters && filters.length) {
 			const matchers = filters.map((filter) => _.matches(filter))
-			n = n.filter((v, _index, _array) =>
-				_.reduce<boolean[], boolean>(
-					matchers.map((m) => m(v)),
-					(value, memo) => value || memo,
-					false
-				)
-			)
+			n = n.filter((v, _index, _array) => matchers.map((m) => m(v)).reduce((value, memo) => value || memo, false))
 		}
 		n.forEach((item) => item.snooze())
 	}

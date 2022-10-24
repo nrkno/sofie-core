@@ -3,7 +3,6 @@ import {
 	RundownLayout,
 	DashboardLayout,
 	RundownLayoutType,
-	RundownLayoutId,
 	RundownLayoutElementBase,
 	RundownLayoutFilterBase,
 	RundownLayoutElementType,
@@ -37,11 +36,11 @@ import {
 	RundownLayoutColoredBox,
 	RundownLayoutMiniRundown,
 } from '../collections/RundownLayouts'
-import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
 import { literal } from '../lib'
 import { TFunction } from 'i18next'
-import { StudioId } from '../collections/Studios'
+import { Settings } from '../Settings'
+import { RundownLayoutId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface NewRundownLayoutsAPI {
 	createRundownLayout(
@@ -176,29 +175,35 @@ class RundownLayoutsRegistry {
 
 export namespace RundownLayoutsAPI {
 	const registry = new RundownLayoutsRegistry()
+	const rundownLayoutSupportedFilters = [
+		RundownLayoutElementType.ADLIB_REGION,
+		RundownLayoutElementType.EXTERNAL_FRAME,
+		RundownLayoutElementType.FILTER,
+		RundownLayoutElementType.PIECE_COUNTDOWN,
+		RundownLayoutElementType.NEXT_INFO,
+	]
+	if (Settings.enableKeyboardPreview) {
+		rundownLayoutSupportedFilters.push(RundownLayoutElementType.KEYBOARD_PREVIEW)
+	}
 	registry.registerShelfLayout(RundownLayoutType.RUNDOWN_LAYOUT, {
 		filtersTitle: 'Tabs',
-		supportedFilters: [
-			RundownLayoutElementType.ADLIB_REGION,
-			RundownLayoutElementType.EXTERNAL_FRAME,
-			RundownLayoutElementType.FILTER,
-			RundownLayoutElementType.PIECE_COUNTDOWN,
-			RundownLayoutElementType.NEXT_INFO,
-			// RundownLayoutElementType.KEYBOARD_PREVIEW, // This is used by TV2
-		],
+		supportedFilters: rundownLayoutSupportedFilters,
 	})
+	const dashboardLayoutSupportedFilters = [
+		RundownLayoutElementType.ADLIB_REGION,
+		RundownLayoutElementType.EXTERNAL_FRAME,
+		RundownLayoutElementType.FILTER,
+		RundownLayoutElementType.PIECE_COUNTDOWN,
+		RundownLayoutElementType.NEXT_INFO,
+		RundownLayoutElementType.TEXT_LABEL,
+		RundownLayoutElementType.MINI_RUNDOWN,
+	]
+	if (Settings.enableKeyboardPreview) {
+		rundownLayoutSupportedFilters.push(RundownLayoutElementType.KEYBOARD_PREVIEW)
+	}
 	registry.registerShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
 		filtersTitle: 'Panels',
-		supportedFilters: [
-			RundownLayoutElementType.ADLIB_REGION,
-			RundownLayoutElementType.EXTERNAL_FRAME,
-			RundownLayoutElementType.FILTER,
-			RundownLayoutElementType.PIECE_COUNTDOWN,
-			RundownLayoutElementType.NEXT_INFO,
-			RundownLayoutElementType.TEXT_LABEL,
-			// RundownLayoutElementType.KEYBOARD_PREVIEW, // This is used by TV2
-			RundownLayoutElementType.MINI_RUNDOWN,
-		],
+		supportedFilters: dashboardLayoutSupportedFilters,
 	})
 	registry.registerMiniShelfLayout(RundownLayoutType.DASHBOARD_LAYOUT, {
 		supportedFilters: [RundownLayoutElementType.FILTER],
@@ -294,6 +299,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isRundownHeaderLayout(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
 		return layout.type === RundownLayoutType.RUNDOWN_HEADER_LAYOUT
+	}
+
+	export function isDefaultLayout(layout: RundownLayoutBase): boolean {
+		return layout.isDefaultLayout
 	}
 
 	export function isFilter(element: RundownLayoutElementBase): element is RundownLayoutFilterBase {
@@ -405,6 +414,7 @@ export namespace RundownLayoutsAPI {
 			nextInCurrentPart: false,
 			oneNextPerSourceLayer: false,
 			hideDuplicates: false,
+			disableHoverInspector: false,
 		}
 	}
 }

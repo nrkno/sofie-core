@@ -1,19 +1,33 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { logNotAllowed } from './lib/lib'
-import { ShowStyleVariants, ShowStyleVariantId, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
-import { RundownLayouts, RundownLayoutId, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { MongoQuery, MongoQueryKey, UserId } from '../../lib/typings/meteor'
+import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { MongoQuery, MongoQueryKey } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { allowAccessToShowStyleBase, allowAccessToShowStyleVariant } from './lib/security'
-import { OrganizationId } from '../../lib/collections/Organization'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { Settings } from '../../lib/Settings'
 import { isProtectedString } from '../../lib/lib'
-import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import { TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { SystemWriteAccess } from './system'
 import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../../lib/collections/optimizations'
+import {
+	OrganizationId,
+	RundownLayoutId,
+	ShowStyleBaseId,
+	ShowStyleVariantId,
+	TriggeredActionId,
+	UserId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+
+export interface ShowStyleContentAccess {
+	userId: UserId | null
+	organizationId: OrganizationId | null
+	showStyleBaseId: ShowStyleBaseId | null
+	showStyleBase: ShowStyleBaseLight | null
+	cred: ResolvedCredentials | Credentials
+}
 
 export namespace ShowStyleReadAccess {
 	/** Handles read access for all showstyle document */
@@ -58,7 +72,10 @@ export namespace ShowStyleContentWriteAccess {
 	// These functions throws if access is not allowed.
 
 	/** Check permissions for write access to a showStyleVariant */
-	export async function showStyleVariant(cred0: Credentials, existingVariant: ShowStyleVariant | ShowStyleVariantId) {
+	export async function showStyleVariant(
+		cred0: Credentials,
+		existingVariant: ShowStyleVariant | ShowStyleVariantId
+	): Promise<ShowStyleContentAccess & { showStyleVariant: ShowStyleVariant }> {
 		triggerWriteAccess()
 		if (existingVariant && isProtectedString(existingVariant)) {
 			const variantId = existingVariant
@@ -69,7 +86,10 @@ export namespace ShowStyleContentWriteAccess {
 		return { ...(await anyContent(cred0, existingVariant.showStyleBaseId)), showStyleVariant: existingVariant }
 	}
 	/** Check permissions for write access to a rundownLayout */
-	export async function rundownLayout(cred0: Credentials, existingLayout: RundownLayoutBase | RundownLayoutId) {
+	export async function rundownLayout(
+		cred0: Credentials,
+		existingLayout: RundownLayoutBase | RundownLayoutId
+	): Promise<ShowStyleContentAccess & { rundownLayout: RundownLayoutBase }> {
 		triggerWriteAccess()
 		if (existingLayout && isProtectedString(existingLayout)) {
 			const layoutId = existingLayout
@@ -83,7 +103,7 @@ export namespace ShowStyleContentWriteAccess {
 	export async function triggeredActions(
 		cred0: Credentials,
 		existingTriggeredAction: TriggeredActionsObj | TriggeredActionId
-	) {
+	): Promise<(ShowStyleContentAccess & { triggeredActions: TriggeredActionsObj }) | boolean> {
 		triggerWriteAccess()
 		if (existingTriggeredAction && isProtectedString(existingTriggeredAction)) {
 			const layoutId = existingTriggeredAction
@@ -104,13 +124,7 @@ export namespace ShowStyleContentWriteAccess {
 	export async function anyContent(
 		cred0: Credentials,
 		showStyleBaseId: ShowStyleBaseId
-	): Promise<{
-		userId: UserId | null
-		organizationId: OrganizationId | null
-		showStyleBaseId: ShowStyleBaseId | null
-		showStyleBase: ShowStyleBaseLight | null
-		cred: ResolvedCredentials | Credentials
-	}> {
+	): Promise<ShowStyleContentAccess> {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) {
 			return {

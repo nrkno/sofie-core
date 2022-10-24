@@ -9,20 +9,20 @@ import { unprotectString } from '../../../../lib/lib'
 import { ExpectedPackageDB, ExpectedPackages } from '../../../../lib/collections/ExpectedPackages'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../../lib/userAction'
-import { Studios } from '../../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import { PackageStatus } from './PackageStatus'
 import { PackageContainerStatuses } from '../../../../lib/collections/PackageContainerStatus'
 import { PackageContainerStatus } from './PackageContainerStatus'
 import { Spinner } from '../../../lib/Spinner'
 import { useTranslation } from 'react-i18next'
+import { UIStudios } from '../../Collections'
 
 export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesStatus(_props: {}) {
 	const { t } = useTranslation()
 
 	const studioIds = useTracker(
 		() =>
-			Studios.find()
+			UIStudios.find()
 				.fetch()
 				.map((studio) => studio._id),
 		[]
@@ -47,7 +47,7 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 	const packageContainerStatuses = useTracker(() => PackageContainerStatuses.find().fetch(), [], [])
 
 	function restartAllExpectations(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
-		const studio = Studios.findOne()
+		const studio = UIStudios.findOne()
 		if (!studio) throw new Meteor.Error(404, `No studio found!`)
 
 		doUserAction(t, e, UserAction.PACKAGE_MANAGER_RESTART_WORK, (e, ts) =>

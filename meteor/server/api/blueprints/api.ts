@@ -4,7 +4,7 @@ import { promises as fsp } from 'fs'
 import { getCurrentTime, protectString, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
-import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
+import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
 import {
 	BlueprintManifestType,
 	SomeBlueprintManifest,
@@ -19,11 +19,11 @@ import { removeSystemStatus } from '../../systemStatus/systemStatus'
 import { MethodContext, MethodContextAPI } from '../../../lib/api/methods'
 import { OrganizationContentWriteAccess, OrganizationReadAccess } from '../../security/organization'
 import { SystemWriteAccess } from '../../security/system'
-import { OrganizationId } from '../../../lib/collections/Organization'
 import { Credentials, isResolvedCredentials } from '../../security/lib/credentials'
 import { Settings } from '../../../lib/Settings'
 import { upsertBundles } from '../translationsBundles'
 import { BlueprintLight, fetchBlueprintLight } from '../../../lib/collections/optimizations'
+import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export async function insertBlueprint(
 	methodContext: MethodContext,
@@ -236,7 +236,7 @@ async function innerUploadBlueprint(
 		// Note that the type has to be string in the manifest interfaces to allow attaching the
 		// stringified JSON in the first place.
 		const translations = (blueprintManifest as any).translations as TranslationsBundle[]
-		upsertBundles(translations, blueprintId)
+		await upsertBundles(translations, blueprintId)
 	}
 
 	// Parse the versions, just to verify that the format is correct:

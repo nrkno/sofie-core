@@ -14,7 +14,6 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 		this._cleanUp()
 	}
 	subscribe<K extends keyof PubSubTypes>(name: K, ...args: Parameters<PubSubTypes[K]>): Meteor.SubscriptionHandle {
-		// @ts-ignore
 		return Tracker.nonreactive(() => {
 			// let id = name + '_' + JSON.stringify(args.join())
 			const id = name + '_' + stringifyObjects(args)
