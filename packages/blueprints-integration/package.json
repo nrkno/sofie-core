@@ -39,7 +39,7 @@
 	],
 	"dependencies": {
 		"@sofie-automation/shared-lib": "link:../shared-lib",
-		"timeline-state-resolver-types": "7.3.0-release44.2",
+		"timeline-state-resolver-types": "7.3.0",
 		"tslib": "^2.4.0",
 		"type-fest": "^2.12.2"
 	},

@@ -2930,10 +2930,10 @@
     webpack-sources "^1.4.3"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.44.0-in-testing.1"
+  version "1.44.0-in-testing.3"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "7.3.0-release44.2"
+    timeline-state-resolver-types "7.3.0"
     tslib "^2.4.0"
     type-fest "^2.12.2"
 
@@ -2958,7 +2958,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.44.0-in-testing.1"
+  version "1.44.0-in-testing.3"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     "@sofie-automation/shared-lib" "link:shared-lib"
@@ -2973,7 +2973,7 @@
     underscore "^1.13.3"
 
 "@sofie-automation/shared-lib@link:shared-lib":
-  version "1.44.0-in-testing.1"
+  version "1.44.0-in-testing.3"
   dependencies:
     tslib "^2.4.0"
     type-fest "^2.12.2"
@@ -13793,17 +13793,17 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.3.0-release44.2:
-  version "7.3.0-release44.2"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.3.0-release44.2.tgz#2f4c0fed777d93445365bec1647e5f6bd0df9aad"
-  integrity sha512-ZwQi1qTIR0YcDkzQAlI8Zq5mWX9gHaB8SMLOhO/XMQ5OZj3D9yIFDXFfIdIxO70jSZgKzJzTFscjA9hEQ6xMGw==
+timeline-state-resolver-types@7.3.0:
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.3.0.tgz#72515377c89a2ac253158b577bba3d9ffbf8d7c2"
+  integrity sha512-Y4fmmP0aut9LjpnnDzu1BliUhAYgAe+ygQsAx3uxMkpYGBEs/A/1wROv4WGyKpsqtf3PjeyDch92s1Femq3TSA==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.3.0-release44.2:
-  version "7.3.0-release44.2"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.3.0-release44.2.tgz#b6ee11bc1dd44daa28458d85a092ae4c4c116e75"
-  integrity sha512-qPiRGDdUVdMFgJ3Jz7cOZOSpduyXSijYIuVvJRj8vwBvxTwsaA6yIhl6LAAz+ND+1JevD60Wxt43I+b+QLx7mA==
+timeline-state-resolver@7.3.0:
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.3.0.tgz#6276815cfbc961dab8a55b07c5fb7e52b8a4e201"
+  integrity sha512-2cNEKeYiPrb1ChfCVvhCN0GW/DnFs7P6jz6gQXO7NQW3g93JkdV1XSkJnIw39Sw6Uth8ZIwEQd5f8TZ1KmgVXA==
   dependencies:
     "@tv2media/v-connection" "^6.0.2"
     atem-connection "2.4.0"
@@ -13825,7 +13825,7 @@ timeline-state-resolver@7.3.0-release44.2:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.2.7"
     threadedclass "^1.1.1"
-    timeline-state-resolver-types "7.3.0-release44.2"
+    timeline-state-resolver-types "7.3.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.4"
     underscore "^1.12.0"
