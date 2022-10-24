@@ -146,6 +146,7 @@ export class CoreHandler {
 			this.core.autoSubscribe('studioOfDevice', this.core.deviceId),
 			this.core.autoSubscribe('mappingsForDevice', this.core.deviceId),
 			this.core.autoSubscribe('timelineForDevice', this.core.deviceId),
+			this.core.autoSubscribe('timelineDatastoreForDevice', this.core.deviceId),
 			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
 			this.core.autoSubscribe('rundownsForDevice', this.core.deviceId),
 		])
