@@ -78,7 +78,7 @@ export class DatastoreActionExecutionContext
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
-		showStyle: ReadonlyDeep<ShowStyleCompound>,
+		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 		watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, context, showStyle, watchedPackages)

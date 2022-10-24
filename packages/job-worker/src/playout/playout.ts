@@ -24,7 +24,7 @@ import {
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { logger } from '../logging'
 import _ = require('underscore')
-import { JobContext } from '../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { innerStopPieces } from './adlib'
 import {
 	CacheForPlayout,
@@ -59,13 +59,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import {
-	applyToArray,
-	assertNever,
-	getRandomId,
-	stringifyError,
-	normalizeArrayToMap,
-} from '@sofie-automation/corelib/dist/lib'
+import { applyToArray, assertNever, getRandomId, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import {
 	ActionExecutionContext,
 	ActionPartChange,
@@ -95,7 +89,6 @@ import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pi
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { INCORRECT_PLAYING_PART_DEBOUNCE, RESET_IGNORE_ERRORS } from './constants'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number): void {
@@ -624,7 +617,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 			// logger.info(o)
 			// logger.info(JSON.stringify(o, '', 2))
 
-			const allowedSourceLayers = normalizeArrayToMap(showStyleBase.sourceLayers, '_id')
+			const allowedSourceLayers = showStyleBase.sourceLayers
 
 			const getNextPiece = (partInstance: DBPartInstance, ignoreStartedPlayback: boolean) => {
 				// Find next piece to disable
@@ -637,7 +630,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 				const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
 
 				const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
-					const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+					const sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
 					if (
 						sourceLayer &&
 						sourceLayer.allowDisable &&
@@ -650,7 +643,7 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 
 				const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(
 					_.sortBy(filteredPieces, (piece: PieceInstance) => {
-						const sourceLayer = allowedSourceLayers.get(piece.piece.sourceLayerId)
+						const sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
 						return sourceLayer?._rank || -9999
 					}),
 					nowInPart
@@ -1200,7 +1193,7 @@ export async function executeActionInner(
 	context: JobContext,
 	cache: CacheForPlayout,
 	rundown: DBRundown,
-	showStyle: ReadonlyDeep<ShowStyleCompound>,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	currentPartInstance: DBPartInstance,
 	watchedPackages: WatchedPackagesHelper,
@@ -1301,7 +1294,7 @@ export async function stopPiecesOnSourceLayers(
 			const changedIds = innerStopPieces(
 				context,
 				cache,
-				showStyleBase,
+				showStyleBase.sourceLayers,
 				partInstance,
 				(pieceInstance) => sourceLayerIds.has(pieceInstance.piece.sourceLayerId),
 				undefined
