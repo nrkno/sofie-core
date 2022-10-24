@@ -12,6 +12,9 @@ import { CheckboxControl } from './Components/Checkbox'
 import { TextInputControl } from './Components/TextInput'
 import { IntInputControl } from './Components/IntInput'
 import { DropdownInputControl, getDropdownInputOptions } from './Components/DropdownInput'
+import { FloatInputControl } from './Components/FloatInput'
+import { joinLines, MultiLineTextInputControl, splitValueIntoLines } from './Components/MultiLineTextInput'
+import { JsonTextInputControl, tryParseJson } from './Components/JsonTextInput'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -230,7 +233,7 @@ const EditAttributeText = wrapEditAttribute(
 
 			this.handleChange = this.handleChange.bind(this)
 		}
-		handleChange(value: string) {
+		private handleChange(value: string) {
 			this.handleUpdate(value)
 		}
 		render() {
@@ -241,7 +244,7 @@ const EditAttributeText = wrapEditAttribute(
 					disabled={this.props.disabled}
 					placeholder={this.props.label}
 					updateOnKey={this.props.updateOnKey}
-					value={this.getEditAttribute() || ''}
+					value={this.getAttribute() || ''}
 					handleUpdate={this.handleChange}
 				/>
 			)
@@ -254,45 +257,20 @@ const EditAttributeMultilineText = wrapEditAttribute(
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
-			this.handleBlur = this.handleBlur.bind(this)
-			this.handleEscape = this.handleEscape.bind(this)
 		}
-		handleChange(event) {
-			this.handleEdit(event.target.value)
-		}
-		handleBlur(event) {
-			this.handleUpdate(event.target.value)
-		}
-		handleEscape(event) {
-			const e = event as KeyboardEvent
-			if (e.key === 'Escape') {
-				this.handleDiscard()
-			}
-		}
-		handleEnterKey(event) {
-			const e = event as KeyboardEvent
-			if (e.key === 'Enter') {
-				e.stopPropagation()
-			}
+		private handleChange(value: string[]) {
+			this.handleEdit(joinLines(value)) // as single string
 		}
 		render() {
 			return (
-				<textarea
-					className={
-						'form-control' +
-						' ' +
-						(this.state.valueError ? 'error ' : '') +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					placeholder={this.props.label}
-					value={this.getEditAttribute() || ''}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-					onKeyUp={this.handleEscape}
-					onKeyPress={this.handleEnterKey}
+				<MultiLineTextInputControl
+					classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
+					modifiedClassName={this.props.modifiedClassName}
 					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={splitValueIntoLines(this.getAttribute())}
+					handleUpdate={this.handleChange}
 				/>
 			)
 		}
@@ -305,7 +283,7 @@ const EditAttributeInt = wrapEditAttribute(
 
 			this.handleChange = this.handleChange.bind(this)
 		}
-		handleChange(value: number) {
+		private handleChange(value: number) {
 			this.handleUpdate(value)
 		}
 		render() {
@@ -316,7 +294,7 @@ const EditAttributeInt = wrapEditAttribute(
 					disabled={this.props.disabled}
 					placeholder={this.props.label}
 					updateOnKey={this.props.updateOnKey}
-					value={this.getEditAttribute() || ''}
+					value={this.getAttribute() || ''}
 					handleUpdate={this.handleChange}
 				/>
 			)
@@ -329,42 +307,20 @@ const EditAttributeFloat = wrapEditAttribute(
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
-			this.handleBlur = this.handleBlur.bind(this)
 		}
-		getValue(event) {
-			return parseFloat(event.target.value.replace(',', '.'))
-		}
-		handleChange(event) {
-			// this.handleEdit(this.getValue(event))
-			const v = this.getValue(event)
-			_.isNaN(v) ? this.handleUpdateButDontSave(v, true) : this.handleUpdateEditing(v)
-		}
-		handleBlur(event) {
-			const v = this.getValue(event)
-			_.isNaN(v) ? this.handleDiscard() : this.handleUpdate(v)
-		}
-		getEditAttributeNumber() {
-			let val = this.getEditAttribute()
-			if (_.isNaN(val)) val = ''
-			return val
+		private handleChange(value: number) {
+			this.handleUpdate(value)
 		}
 		render() {
 			return (
-				<input
-					type="number"
-					step="0.1"
-					className={
-						'form-control' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					placeholder={this.props.label}
-					value={this.getEditAttributeNumber()}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
+				<FloatInputControl
+					classNames={this.props.className || ''}
+					modifiedClassName={this.props.modifiedClassName}
 					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={this.getAttribute() || ''}
+					handleUpdate={this.handleChange}
 				/>
 			)
 		}
@@ -377,10 +333,7 @@ const EditAttributeCheckbox = wrapEditAttribute(
 
 			this.handleChange = this.handleChange.bind(this)
 		}
-		isChecked() {
-			return !!this.getEditAttribute()
-		}
-		handleChange(value: boolean) {
+		private handleChange(value: boolean) {
 			this.handleUpdate(value)
 		}
 		render() {
@@ -393,7 +346,7 @@ const EditAttributeCheckbox = wrapEditAttribute(
 				<label>
 					<CheckboxControl
 						classNames={classNames}
-						value={this.isChecked()}
+						value={!!this.getAttribute()}
 						handleUpdate={this.handleChange}
 						disabled={this.props.disabled}
 					/>
@@ -661,82 +614,26 @@ const EditAttributeJson = wrapEditAttribute(
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
-			this.handleBlur = this.handleBlur.bind(this)
-			this.handleEscape = this.handleEscape.bind(this)
 		}
-		isJson(str: string) {
-			try {
-				const parsed = JSON.parse(str)
-				if (typeof parsed === 'object') return { parsed: parsed }
-			} catch (err) {
-				// ignore
-			}
-			return false
-		}
-		handleChange(event) {
-			const v = event.target.value
-
-			const jsonObj = this.isJson(v)
-			if (jsonObj) {
-				const storeValue = this.props.storeJsonAsObject ? jsonObj.parsed : v
-				this.handleEdit(v, storeValue)
-				this.setState({
-					valueError: false,
-				})
-			} else {
-				this.handleUpdateButDontSave(v, true)
-			}
-		}
-		handleBlur(event) {
-			let v = event.target.value
-			if (v === '') {
-				v = '{}'
-			}
-			const jsonObj = this.isJson(v)
-			if (jsonObj) {
-				const storeValue = this.props.storeJsonAsObject ? jsonObj.parsed : v
-				this.handleUpdate(v, storeValue)
-				this.setState({
-					valueError: false,
-				})
-			} else {
-				this.handleUpdateButDontSave(v, true)
-				this.setState({
-					valueError: true,
-				})
-			}
-		}
-		handleEscape(event) {
-			const e = event as KeyboardEvent
-			if (e.key === 'Escape') {
-				this.handleDiscard()
-			}
-		}
-		getAttribute() {
-			const value = super.getAttribute()
-			if (this.props.storeJsonAsObject) {
-				return value ? JSON.stringify(value, null, 2) : value
-			} else return value
+		private handleChange(value: object) {
+			const storeValue = this.props.storeJsonAsObject ? value : JSON.stringify(value, undefined, 2)
+			this.handleUpdate(storeValue)
 		}
 		render() {
+			const value = this.props.storeJsonAsObject ? this.getAttribute() : tryParseJson(this.getAttribute())?.parsed
+
 			return (
-				<input
-					type="text"
-					className={ClassNames(
-						'form-control',
-						this.props.className,
-						this.state.valueError && this.props.invalidClassName
-							? this.props.invalidClassName
-							: this.state.editing
-							? this.props.modifiedClassName || ''
-							: ''
-					)}
-					placeholder={this.props.label}
-					value={this.getEditAttribute() || ''}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-					onKeyUp={this.handleEscape}
+				<JsonTextInputControl
+					classNames={`${this.props.className || ''} ${
+						this.state.valueError ? `${this.props.invalidClassName || 'error'} ` : ''
+					}`}
+					invalidClassName={this.props.invalidClassName}
+					modifiedClassName={this.props.modifiedClassName}
 					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={value}
+					handleUpdate={this.handleChange}
 				/>
 			)
 		}

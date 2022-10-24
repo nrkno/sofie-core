@@ -9,9 +9,13 @@ import { OverrideOpHelper, WrappedOverridableItemNormal } from '../util/Override
 import { IntInputControlWithOverrideForObject } from '../../../lib/Components/IntInput'
 import { TextInputControlWithOverrideForObject } from '../../../lib/Components/TextInput'
 import { CheckboxControlWithOverrideForObject } from '../../../lib/Components/Checkbox'
+import { FloatInputControlWithOverrideForObject } from '../../../lib/Components/FloatInput'
+import { DropdownInputControlWithOverrideForObject } from '../../../lib/Components/DropdownInput'
+import { MultiLineTextInputControlWithOverrideForObject } from '../../../lib/Components/MultiLineTextInput'
+import { JsonTextInputControlWithOverrideForObject } from '../../../lib/Components/JsonTextInput'
 
 interface ConfigManifestEntryWithOverridesProps {
-	configField: ConfigManifestEntry | BlueprintConfigManifestEntry
+	configField: ConfigManifestEntry
 
 	item: WrappedOverridableItemNormal<any>
 	overrideHelper: OverrideOpHelper
@@ -26,7 +30,7 @@ export function ManifestEntryWithOverrides({
 	const commonOpts = {
 		modifiedClassName: 'bghl',
 		label: t(configField.name),
-		placeholder: (configField as ConfigManifestEntry).placeholder || '',
+		placeholder: configField.placeholder || '',
 		hint: configField.hint ? t(configField.hint) : undefined,
 
 		item: item,
@@ -35,10 +39,9 @@ export function ManifestEntryWithOverrides({
 		overrideHelper: overrideHelper,
 	}
 
-	// if (configField.type === ConfigManifestEntryType.FLOAT) {
-	// 	return <EditAttribute {...opts} type="float" className="input text-input input-l"></EditAttribute>
-	// } else
-	if (configField.type === ConfigManifestEntryType.INT) {
+	if (configField.type === ConfigManifestEntryType.FLOAT) {
+		return <FloatInputControlWithOverrideForObject classNames="input text-input input-l" {...commonOpts} />
+	} else if (configField.type === ConfigManifestEntryType.INT) {
 		return (
 			<IntInputControlWithOverrideForObject
 				classNames="input text-input input-l"
@@ -50,38 +53,19 @@ export function ManifestEntryWithOverrides({
 		return <TextInputControlWithOverrideForObject classNames="input text-input input-l" {...commonOpts} />
 	} else if (configField.type === ConfigManifestEntryType.BOOLEAN) {
 		return <CheckboxControlWithOverrideForObject classNames="input input-l" {...commonOpts} />
-		// } else if (configField.type === ConfigManifestEntryType.ENUM) {
-		// 	return (
-		// 		<EditAttribute
-		// 			{...opts}
-		// 			type="dropdown"
-		// 			options={(configField as ConfigManifestEntry).values || []}
-		// 			className="input text-input input-l"
-		// 		></EditAttribute>
-		// 	)
-		// } else if (configField.type === ConfigManifestEntryType.OBJECT) {
-		// 	return (
-		// 		<EditAttribute
-		// 			{...opts}
-		// 			mutateDisplayValue={(v) => JSON.stringify(v, undefined, 2)}
-		// 			mutateUpdateValue={(v) => JSON.parse(v)}
-		// 			type="multiline"
-		// 			className="input text-input input-l"
-		// 		></EditAttribute>
-		// 	)
-		// } else if (configField.type === ConfigManifestEntryType.MULTILINE_STRING) {
-		// 	return (
-		// 		<EditAttribute
-		// 			{...opts}
-		// 			modifiedClassName="bghl"
-		// 			type="multiline"
-		// 			className="input text-input input-l"
-		// 			mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join('\n'))}
-		// 			mutateUpdateValue={(v) =>
-		// 				v === undefined || v.length === 0 ? undefined : v.split('\n').map((i) => i.trimStart())
-		// 			}
-		// 		/>
-		// 	)
+	} else if (configField.type === ConfigManifestEntryType.ENUM) {
+		return (
+			<DropdownInputControlWithOverrideForObject
+				classNames="input text-input input-l"
+				{...commonOpts}
+				options={configField.values}
+			/>
+		)
+	} else if (configField.type === ConfigManifestEntryType.OBJECT) {
+		return <JsonTextInputControlWithOverrideForObject classNames="input text-input input-l" {...commonOpts} />
+	} else if (configField.type === ConfigManifestEntryType.MULTILINE_STRING) {
+		return <MultiLineTextInputControlWithOverrideForObject classNames="input text-input input-l" {...commonOpts} />
+
 		// TODO: Handle these?
 		// } else if (configField.type === ConfigManifestEntryType.TABLE) {
 		// 	// not handled here, handled by GenericDeviceSettingsComponent
