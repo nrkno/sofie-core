@@ -43,7 +43,7 @@
  * 1.41.0: Release 41 (2022-06-29)
  * 1.42.0: Release 42 (Skipped)
  * 1.43.0: Release 43 (Skipped)
- * 1.44.0: Release 44 (2022-07-xx)
+ * 1.44.0: Release 44 (2022-10-24)
  */
 
 // Note: Only set this to release versions, (ie X.Y.Z), not pre-releases (ie X.Y.Z-0-pre-release)
