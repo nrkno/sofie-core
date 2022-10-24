@@ -353,6 +353,18 @@ export class TSRHandler {
 			this._triggerupdateExpectedPlayoutItems()
 		}
 		this._observers.push(expectedPlayoutItemsObserver)
+
+		const timelineDatastoreObserver = this._coreHandler.core.observe('studioTimelineDatastore')
+		timelineDatastoreObserver.added = () => {
+			this._triggerUpdateDatastore()
+		}
+		timelineDatastoreObserver.changed = () => {
+			this._triggerUpdateDatastore()
+		}
+		timelineDatastoreObserver.removed = () => {
+			this._triggerUpdateDatastore()
+		}
+		this._observers.push(timelineDatastoreObserver)
 	}
 	private resendStatuses(): void {
 		_.each(this._coreTsrHandlers, (tsrHandler) => {
@@ -1075,6 +1087,25 @@ export class TSRHandler {
 				}
 			})
 		)
+	}
+	private _triggerUpdateDatastore() {
+		if (!this._initialized) return
+		this._updateDatastore().catch((e) => this.logger.error('Error in _updateDatastore', e))
+	}
+	private async _updateDatastore() {
+		const datastoreCollection = this._coreHandler.core.getCollection('studioTimelineDatastore')
+		const peripheralDevice = this._getPeripheralDevice()
+
+		const datastoreObjs = datastoreCollection.find({
+			studioId: peripheralDevice.studioId,
+		})
+		const datastore: Record<string, any> = {}
+		for (const { key, value, modified } of datastoreObjs) {
+			datastore[key] = { value, modified }
+		}
+
+		this.logger.debug(datastore)
+		this.tsr.setDatastore(datastore)
 	}
 	/**
 	 * Go through and transform timeline and generalize the Core-specific things

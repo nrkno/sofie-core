@@ -301,6 +301,10 @@ export namespace RundownLayoutsAPI {
 		return layout.type === RundownLayoutType.RUNDOWN_HEADER_LAYOUT
 	}
 
+	export function isDefaultLayout(layout: RundownLayoutBase): boolean {
+		return layout.isDefaultLayout
+	}
+
 	export function isFilter(element: RundownLayoutElementBase): element is RundownLayoutFilterBase {
 		return element.type === undefined || element.type === RundownLayoutElementType.FILTER
 	}

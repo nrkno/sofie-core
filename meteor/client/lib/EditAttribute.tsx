@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { withTracker } from './ReactMeteorData/react-meteor-data'
 
-import { MultiSelect, MultiSelectEvent } from './multiSelect'
+import { MultiSelect, MultiSelectEvent, MultiSelectOptions } from './multiSelect'
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
@@ -437,6 +437,7 @@ const EditAttributeSwitch = wrapEditAttribute(
 		}
 	}
 )
+
 const EditAttributeDropdown = wrapEditAttribute(
 	class EditAttributeDropdown extends EditAttributeBase {
 		constructor(props) {
@@ -544,6 +545,12 @@ const EditAttributeDropdownText = wrapEditAttribute(
 		}
 	}
 )
+
+interface EditAttributeMultiSelectOptionsResult {
+	options: MultiSelectOptions
+	currentOptionMissing: boolean
+}
+
 const EditAttributeMultiSelect = wrapEditAttribute(
 	class EditAttributeMultiSelect extends EditAttributeBase {
 		constructor(props) {
@@ -554,16 +561,16 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 		handleChange(event: MultiSelectEvent) {
 			this.handleUpdate(event.selectedValues)
 		}
-		getOptions() {
-			const options: _.Dictionary<string | string[]> = {}
+		getOptions(addOptionsForCurrentValue?: boolean): EditAttributeMultiSelectOptionsResult {
+			const options: MultiSelectOptions = {}
 
 			if (Array.isArray(this.props.options)) {
 				// is it an enum?
 				for (const val of this.props.options) {
 					if (typeof val === 'object') {
-						options[val.value] = val.name
+						options[val.value] = { value: val.name }
 					} else {
-						options[val] = val
+						options[val] = { value: val }
 					}
 				}
 			} else if (typeof this.props.options === 'object') {
@@ -577,28 +584,38 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 							// key is a number (the key)
 							const enumValue = this.props.options[key]
 							const enumKey = this.props.options[enumValue]
-							options[enumKey] = enumValue
+							options[enumKey] = { value: enumValue }
 						}
 					}
 				} else {
 					for (const key in this.props.options) {
 						const val = this.props.options[key]
 						if (Array.isArray(val)) {
-							options[key] = val
+							options[key] = { value: val }
 						} else {
-							options[val] = key + ': ' + val
+							options[val] = { value: key + ': ' + val }
 						}
 					}
 				}
 			}
 
-			return options
+			const currentValue = this.getAttribute()
+			const missingOptions = Array.isArray(currentValue) ? currentValue.filter((v) => !(v in options)) : []
+
+			if (addOptionsForCurrentValue) {
+				missingOptions.forEach((option) => {
+					options[option] = { value: `${option}`, className: 'option-missing' }
+				})
+			}
+
+			return { options, currentOptionMissing: !!missingOptions.length }
 		}
 		render() {
+			const options = this.getOptions(true)
 			return (
 				<MultiSelect
-					className={this.props.className}
-					availableOptions={this.getOptions()}
+					className={ClassNames(this.props.className, options.currentOptionMissing && 'option-missing')}
+					availableOptions={options.options}
 					value={this.getAttribute()}
 					placeholder={this.props.label}
 					onChange={this.handleChange}

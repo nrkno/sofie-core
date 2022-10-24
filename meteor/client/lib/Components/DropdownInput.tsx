@@ -10,6 +10,10 @@ export interface DropdownInputOption<TValue> {
 	name: string
 	i: number
 }
+// export interface DropdownOptionsResult<TValue> {
+// 	options: DropdownInputOption<TValue>[]
+// 	currentOptionMissing: boolean
+// }
 
 export function getDropdownInputOptions<T>(rawOptions: any): DropdownInputOption<T>[] {
 	const options: Omit<DropdownInputOption<T>, 'i'>[] = []
@@ -104,12 +108,15 @@ export function DropdownInputControl<TValue>({
 		[handleUpdate, options]
 	)
 
-	const optionsWithCurrentValue: DropdownInputOption<TValue>[] = useMemo(() => {
+	const {
+		optionsWithCurrentValue,
+		currentOptionMissing,
+	}: { optionsWithCurrentValue: DropdownInputOption<TValue>[]; currentOptionMissing: boolean } = useMemo(() => {
 		const currentOption = findOptionByValue(options, value)
 		if (!currentOption) {
 			// if currentOption not found, then add it to the list:
 
-			return [
+			const newOptions = [
 				...options,
 				{
 					name: 'Value: ' + value,
@@ -117,15 +124,17 @@ export function DropdownInputControl<TValue>({
 					i: options.length,
 				},
 			]
+
+			return { optionsWithCurrentValue: newOptions, currentOptionMissing: true }
 		}
 
-		return options
+		return { optionsWithCurrentValue: options, currentOptionMissing: false }
 	}, [options, value])
 
 	return (
 		<div className="select focusable">
 			<select
-				className={`form-control ${classNames || ''}`}
+				className={`form-control ${classNames || ''} ${currentOptionMissing ? 'option-missing' : ''}`}
 				value={value + ''}
 				onChange={handleChange}
 				disabled={disabled}

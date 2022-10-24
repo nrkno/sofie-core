@@ -1,11 +1,30 @@
 .show-style-panel {
     position: absolute;
+    display: flex;
+    justify-content: flex-start;
 
-    .timing-clock {
-        margin-right: 1.2em;
-    }
+    .show-style-subpanel {
+        flex: 1;
+        overflow: hidden;
+        margin-right: 1em;
+        font-size: 1.5em;
+        font-family: 'Roboto', Helvetica Neue, Arial, sans-serif;
+        font-weight: 100; 
 
-    .name {
-        font-weight: 400;
+        &__label {
+            margin-top: 6px;
+            color: #b8b8b8;
+            text-transform: uppercase;
+            white-space: nowrap;
+            font-weight: 300;
+            font-size: 0.5em;
+        }
+        
+        &__name {
+            overflow: hidden;
+            font-weight: 400;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
     }
 }
