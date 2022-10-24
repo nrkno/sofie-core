@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
@@ -46,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
@@ -108,7 +108,7 @@ jobs:
             echo "Skipping docker build"
           fi
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         if: ${{ steps.image-tags.outputs.images }}
         with:
           node-version-file: ".node-version"
@@ -206,7 +206,7 @@ jobs:
             echo "Skipping docker build"
           fi
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         if: ${{ steps.image-tags.outputs.images }}
         with:
           node-version-file: ".node-version"
@@ -263,7 +263,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
       - name: Prepare Environment
@@ -310,7 +310,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
       - name: Prepare Environment
@@ -339,7 +339,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
       - name: Prepare Environment
@@ -393,7 +393,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
       - name: Prepare Environment # have to run this first to make sure the semver lib is available
@@ -447,7 +447,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
