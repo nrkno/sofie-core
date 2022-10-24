@@ -137,7 +137,7 @@
 		"@types/winston": "^2.4.4",
 		"@types/xml2js": "^0.4.11",
 		"@welldone-software/why-did-you-render": "^4.3.1",
-		"@xmldom/xmldom": "^0.8.0",
+		"@xmldom/xmldom": "^0.8.3",
 		"babel-jest": "^26.6.3",
 		"concurrently": "^6.5.1",
 		"ejson": "^2.2.2",
