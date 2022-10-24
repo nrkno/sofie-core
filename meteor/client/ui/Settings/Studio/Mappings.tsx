@@ -30,7 +30,11 @@ import {
 	useOverrideOpHelper,
 	WrappedOverridableItemNormal,
 } from '../util/OverrideOpHelper'
-import { ObjectOverrideSetOp, SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	applyAndValidateOverrides,
+	ObjectOverrideSetOp,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TextInputControl, TextInputControlWithOverrideForObject } from '../../../lib/Components/TextInput'
@@ -51,10 +55,12 @@ export function StudioMappings({ manifest, studio }: IStudioMappingsProps) {
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
 	const addNewLayer = useCallback(() => {
+		const resolvedMappings = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
+
 		// find free key name
 		const newLayerKeyName = 'newLayer'
 		let iter = 0
-		while ((studio.mappingsWithOverrides.defaults || {})[newLayerKeyName + iter.toString()]) {
+		while (resolvedMappings[newLayerKeyName + iter.toString()]) {
 			iter++
 		}
 

@@ -13,7 +13,7 @@ import {
 	ISourceLayer,
 	SourceLayerType,
 } from '@sofie-automation/blueprints-integration'
-import { ConfigManifestSettings } from './ConfigManifestSettings'
+import { BlueprintConfigManifestSettings } from './BlueprintConfigManifestSettings'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
 import { SourceLayerSettings } from './ShowStyle/SourceLayer'
@@ -166,7 +166,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									})}
 
 									<Route path={`${this.props.match.path}/blueprint-config`}>
-										<ConfigManifestSettings
+										<BlueprintConfigManifestSettings
 											t={this.props.t}
 											i18n={this.props.i18n}
 											tReady={this.props.tReady}

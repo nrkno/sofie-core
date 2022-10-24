@@ -8,7 +8,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
-import { ConfigManifestSettings } from './ConfigManifestSettings'
+import { BlueprintConfigManifestSettings } from './BlueprintConfigManifestSettings'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { StudioRoutings } from './Studio/Routings'
@@ -167,7 +167,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/blueprint-config`}>
-										<ConfigManifestSettings
+										<BlueprintConfigManifestSettings
 											t={this.props.t}
 											i18n={this.props.i18n}
 											tReady={this.props.tReady}

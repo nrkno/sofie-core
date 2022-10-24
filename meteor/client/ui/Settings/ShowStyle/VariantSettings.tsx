@@ -12,7 +12,7 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
-import { ConfigManifestSettings } from '../ConfigManifestSettings'
+import { BlueprintConfigManifestSettings } from '../BlueprintConfigManifestSettings'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
@@ -126,7 +126,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 									</div>
 									<div className="row">
 										<div className="col c12 r1-c12 phs">
-											<ConfigManifestSettings
+											<BlueprintConfigManifestSettings
 												t={this.props.t}
 												i18n={this.props.i18n}
 												tReady={this.props.tReady}
