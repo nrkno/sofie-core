@@ -128,7 +128,7 @@ export class CustomLayerItemRenderer<
 				this.props.piece.instance.dynamicallyInserted)
 		) {
 			return (
-				<div className="segment-timeline__piece__label label-overflow-time">
+				<div className="segment-timeline__piece__label label-overflow-time overflow-label">
 					{RundownUtils.formatDiffToTimecode(overflowTime, true, false, true)}
 				</div>
 			)
