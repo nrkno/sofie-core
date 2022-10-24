@@ -127,9 +127,6 @@ export const ShowStyleVariantsSettings = withTranslation()(
 									<div className="row">
 										<div className="col c12 r1-c12 phs">
 											<BlueprintConfigManifestSettings
-												t={this.props.t}
-												i18n={this.props.i18n}
-												tReady={this.props.tReady}
 												manifest={this.props.blueprintConfigManifest}
 												collection={ShowStyleVariants}
 												configPath={'blueprintConfigWithOverrides.defaults'}

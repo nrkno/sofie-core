@@ -168,9 +168,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									</Route>
 									<Route path={`${this.props.match.path}/blueprint-config`}>
 										<BlueprintConfigManifestSettings
-											t={this.props.t}
-											i18n={this.props.i18n}
-											tReady={this.props.tReady}
 											manifest={this.props.blueprintConfigManifest}
 											object={this.props.studio}
 											layerMappings={this.getLayerMappingsFlat()}

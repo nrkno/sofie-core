@@ -6,7 +6,6 @@ import Tooltip from 'rc-tooltip'
 import { MappingsExt } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
-import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
 	ConfigManifestEntry,
@@ -31,7 +30,6 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { DBObj, ProtectedString, objectPathGet, getRandomString, clone } from '../../../lib/lib'
 import { MongoModifier } from '../../../lib/typings/meteor'
-import { Meteor } from 'meteor/meteor'
 import { getHelpMode } from '../../lib/localStorage'
 import {
 	faDownload,
@@ -47,7 +45,8 @@ import {
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { MongoCollection } from '../../../lib/collections/lib'
-import { useTranslation } from 'react-i18next'
+import { TFunction, useTranslation } from 'react-i18next'
+import { useToggleExpandHelper } from './util/ToggleExpandedHelper'
 
 function filterSourceLayers(
 	select: ConfigManifestEntrySourceLayers<true | false>,
@@ -107,8 +106,8 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 	object: DBInterface,
 	item: BasicConfigManifestEntry | ResolvedBasicConfigManifestEntry,
 	attribute: string,
-	layerMappings?: { [key: string]: MappingsExt },
-	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>,
+	layerMappings: { [key: string]: MappingsExt } | undefined,
+	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined,
 	alternateObject?: any
 ) {
 	switch (item.type) {
@@ -280,15 +279,6 @@ interface IConfigManifestSettingsProps<
 
 	subPanel?: boolean
 }
-interface IConfigManifestSettingsState {
-	showAddItem: boolean
-	addItemId: string | undefined
-	showDeleteConfirm: boolean
-	deleteConfirmItem: ConfigManifestEntry | undefined
-	editedItems: Array<string>
-	uploadFileKey: number // Used to force clear the input after use
-}
-
 interface IConfigManifestTableProps<
 	TCol extends MongoCollection<DBInterface>,
 	DBInterface extends { _id: ProtectedString<any> }
@@ -302,10 +292,10 @@ interface IConfigManifestTableProps<
 	alternateObject?: any
 	configPath: string
 
-	layerMappings?: { [key: string]: MappingsExt }
-	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
+	layerMappings: { [key: string]: MappingsExt } | undefined
+	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined
 
-	subPanel?: boolean
+	subPanel: boolean
 }
 
 interface BlueprintConfigManifestTableEntryProps<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj> {
@@ -320,7 +310,7 @@ interface BlueprintConfigManifestTableEntryProps<TCol extends MongoCollection<DB
 
 	removeRow: (id: string) => void
 
-	subPanel?: boolean
+	subPanel: boolean
 }
 function BlueprintConfigManifestTableEntry<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj>({
 	resolvedColumns,
@@ -337,7 +327,9 @@ function BlueprintConfigManifestTableEntry<TCol extends MongoCollection<DBInterf
 	return (
 		<tr>
 			{resolvedColumns.map((col) => (
-				<td key={col.id}>{getEditAttribute(collection, configPath, object, col, `${valPath}.${col.id}`)}</td>
+				<td key={col.id}>
+					{getEditAttribute(collection, configPath, object, col, `${valPath}.${col.id}`, undefined, undefined)}
+				</td>
 			))}
 			<td>
 				<button
@@ -649,7 +641,7 @@ interface AddItemModalProps {
 	config: IBlueprintConfig
 
 	configPath: string
-	updateObject: (modifer: MongoModifier<DBInterface>) => void
+	updateObject: (modifer: MongoModifier<any>) => void
 }
 interface AddItemModalRef {
 	show: () => void
@@ -741,7 +733,68 @@ const AddItemModal = forwardRef(function AddItemModal(
 	)
 })
 
-export function BlueprintConfigManifestSettings2<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj>({
+interface DeleteItemModalProps {
+	manifest: ConfigManifestEntry[]
+
+	configPath: string
+	updateObject: (modifer: MongoModifier<any>) => void
+}
+interface DeleteItemModalRef {
+	show: (item: ConfigManifestEntry) => void
+}
+const DeleteItemModal = forwardRef(function DeleteItemModal(
+	{ manifest, configPath, updateObject }: DeleteItemModalProps,
+	ref: React.ForwardedRef<DeleteItemModalRef>
+) {
+	const { t } = useTranslation()
+
+	const [showForItem, setShowForItem] = useState<ConfigManifestEntry | null>(null)
+
+	useImperativeHandle(ref, () => {
+		return {
+			show: (item: ConfigManifestEntry) => {
+				setShowForItem(item)
+			},
+		}
+	})
+
+	const handleConfirmDeleteCancel = useCallback(() => {
+		setShowForItem(null)
+	}, [])
+
+	const handleConfirmDeleteAccept = useCallback(() => {
+		if (showForItem) {
+			const m: any = {
+				$unset: {
+					[`${configPath}.${showForItem.id}`]: '',
+				},
+			}
+			updateObject(m)
+		}
+
+		setShowForItem(null)
+	}, [showForItem, manifest, updateObject, configPath])
+
+	return (
+		<ModalDialog
+			title={t('Delete this item?')}
+			acceptText={t('Delete')}
+			secondaryText={t('Cancel')}
+			show={!!showForItem}
+			onAccept={handleConfirmDeleteAccept}
+			onSecondary={handleConfirmDeleteCancel}
+		>
+			<p>
+				{t('Are you sure you want to delete this config item "{{configId}}"?', {
+					configId: showForItem?.name ?? '??',
+				})}
+			</p>
+			<p>{t('Please note: This action is irreversible!')}</p>
+		</ModalDialog>
+	)
+})
+
+export function BlueprintConfigManifestSettings<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj>({
 	manifest,
 	collection,
 	object,
@@ -754,6 +807,7 @@ export function BlueprintConfigManifestSettings2<TCol extends MongoCollection<DB
 	const { t } = useTranslation()
 
 	const addRef = useRef<AddItemModalRef>(null)
+	const deleteRef = useRef<DeleteItemModalRef>(null)
 
 	const config = objectPathGet(object, configPath)
 
@@ -763,6 +817,19 @@ export function BlueprintConfigManifestSettings2<TCol extends MongoCollection<DB
 		},
 		[collection, object._id]
 	)
+
+	const addItem = useCallback(() => {
+		if (addRef.current) {
+			addRef.current.show()
+		}
+	}, [])
+	const showDelete = useCallback((item: ConfigManifestEntry) => {
+		if (deleteRef.current) {
+			deleteRef.current.show(item)
+		}
+	}, [])
+
+	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
 	return (
 		<div className="scroll-x">
@@ -774,35 +841,48 @@ export function BlueprintConfigManifestSettings2<TCol extends MongoCollection<DB
 				updateObject={updateObject}
 			/>
 
-			<ModalDialog
-				title={t('Delete this item?')}
-				acceptText={t('Delete')}
-				secondaryText={t('Cancel')}
-				show={this.state.showDeleteConfirm}
-				onAccept={() => this.handleConfirmDeleteAccept()}
-				onSecondary={() => this.handleConfirmDeleteCancel()}
-			>
-				<p>
-					{t('Are you sure you want to delete this config item "{{configId}}"?', {
-						configId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name,
-					})}
-				</p>
-				<p>{t('Please note: This action is irreversible!')}</p>
-			</ModalDialog>
+			<DeleteItemModal ref={deleteRef} manifest={manifest} configPath={configPath} updateObject={updateObject} />
+
 			{subPanel ? (
 				<h3 className="mhn">{t('Blueprint Configuration')}</h3>
 			) : (
 				<h2 className="mhn">{t('Blueprint Configuration')}</h2>
 			)}
+
 			<table className="table expando settings-studio-custom-config-table">
-				<tbody>{this.renderItems()}</tbody>
+				<tbody>
+					{manifest.map((item) => {
+						const configItem = objectPathGet(config, item.id)
+						if (configItem === undefined && !item.required) return undefined
+
+						return (
+							<BlueprintConfigManifestEntry<TCol, DBInterface>
+								key={item.id}
+								item={item}
+								configItem={configItem}
+								showDelete={showDelete}
+								updateObject={updateObject}
+								configPath={configPath}
+								collection={collection}
+								object={object}
+								alternateObject={alternateObject}
+								layerMappings={layerMappings}
+								sourceLayers={sourceLayers}
+								subPanel={!!subPanel}
+								isExpanded={isExpanded(item.id)}
+								toggleExpanded={toggleExpanded}
+							/>
+						)
+					})}
+				</tbody>
 			</table>
+
 			<div className="mod mhs">
 				<button
 					className={ClassNames('btn btn-primary', {
 						'btn-tight': subPanel,
 					})}
-					onClick={addRef.current?.show}
+					onClick={addItem}
 				>
 					<Tooltip
 						overlay={t('More settings specific to this studio can be found here')}
@@ -817,301 +897,193 @@ export function BlueprintConfigManifestSettings2<TCol extends MongoCollection<DB
 	)
 }
 
-export class BlueprintConfigManifestSettings<
-	TCol extends MongoCollection<DBInterface>,
-	DBInterface extends DBObj
-> extends React.Component<Translated<IConfigManifestSettingsProps<TCol, DBInterface>>, IConfigManifestSettingsState> {
-	constructor(props: Translated<IConfigManifestSettingsProps<TCol, DBInterface>>) {
-		super(props)
+function renderConfigValue(t: TFunction, item: ConfigManifestEntry, rawValue: ConfigItemValue | undefined) {
+	const value = rawValue === undefined ? item.defaultVal : rawValue
 
-		this.state = {
-			showAddItem: false,
-			addItemId: undefined,
-			showDeleteConfirm: false,
-			deleteConfirmItem: undefined,
-			editedItems: [],
-			uploadFileKey: Date.now(),
-		}
+	const rawValueArr = rawValue as any[]
+
+	switch (item.type) {
+		case ConfigManifestEntryType.BOOLEAN:
+			return value ? t('true') : t('false')
+		case ConfigManifestEntryType.TABLE:
+			return t('{{count}} rows', { count: (rawValueArr || []).length })
+		case ConfigManifestEntryType.SELECT:
+		case ConfigManifestEntryType.LAYER_MAPPINGS:
+		case ConfigManifestEntryType.SOURCE_LAYERS:
+			return _.isArray(value) ? (
+				<React.Fragment>
+					<ul className="table-values-list">
+						{_.map((value as string[]) || [], (val) => (
+							<li key={val}>{val}</li>
+						))}
+					</ul>
+				</React.Fragment>
+			) : (
+				value.toString()
+			)
+		case ConfigManifestEntryType.INT:
+			return _.isNumber(value) && item.zeroBased ? (value + 1).toString() : value.toString()
+		default:
+			return value.toString()
 	}
+}
 
-	private getObjectConfig(): IBlueprintConfig {
-		return objectPathGet(this.props.object, this.props.configPath)
-	}
+interface BlueprintConfigManifestEntryProps<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj> {
+	item: ConfigManifestEntry
+	configItem: any
 
-	private updateObject(obj: DBInterface, updateObj: MongoModifier<DBInterface>) {
-		this.props.collection.update(obj._id, updateObj)
-	}
+	showDelete: (item: ConfigManifestEntry) => void
+	updateObject: (updateObj: MongoModifier<any>) => void
+	configPath: string
 
-	private isItemEdited = (item: ConfigManifestEntry) => {
-		return this.state.editedItems.indexOf(item.id) >= 0
-	}
+	collection: TCol
+	object: DBInterface
+	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
+	alternateObject?: any
+	layerMappings: { [key: string]: MappingsExt } | undefined
+	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined
 
-	private finishEditItem = (item: ConfigManifestEntry) => {
-		const index = this.state.editedItems.indexOf(item.id)
-		if (index >= 0) {
-			this.state.editedItems.splice(index, 1)
-			this.setState({
-				editedItems: this.state.editedItems,
-			})
-		}
-	}
+	subPanel: boolean
 
-	private createItem = (item: ConfigManifestEntry) => {
+	isExpanded: boolean
+	toggleExpanded: (id: string, force?: boolean) => void
+}
+function BlueprintConfigManifestEntry<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj>({
+	item,
+	configItem,
+	showDelete,
+	updateObject,
+	configPath,
+	collection,
+	object,
+	alternateObject,
+	layerMappings,
+	sourceLayers,
+	subPanel,
+	isExpanded,
+	toggleExpanded,
+}: BlueprintConfigManifestEntryProps<TCol, DBInterface>) {
+	const { t } = useTranslation()
+
+	const doShowDelete = useCallback(() => showDelete(item), [item, showDelete])
+	const doToggleExpanded = useCallback(() => toggleExpanded(item.id), [item.id, toggleExpanded])
+
+	const createItem = useCallback(() => {
 		const m: any = {
 			$set: {
-				[`${this.props.configPath}.${item.id}`]: item.defaultVal,
+				[`${configPath}.${item.id}`]: item.defaultVal,
 			},
 		}
-		this.updateObject(this.props.object, m)
+		updateObject(m)
+	}, [updateObject, configPath, item])
+
+	let component: React.ReactElement | undefined = undefined
+	const baseAttribute = `${configPath}.${item.id}`
+	switch (item.type) {
+		case ConfigManifestEntryType.TABLE:
+			component = (
+				<BlueprintConfigManifestTable
+					collection={collection}
+					object={object}
+					baseAttribute={baseAttribute}
+					item={item}
+					layerMappings={layerMappings}
+					sourceLayers={sourceLayers}
+					configPath={configPath}
+					alternateObject={alternateObject}
+					subPanel={subPanel}
+				/>
+			)
+			break
+		case ConfigManifestEntryType.SELECT:
+		case ConfigManifestEntryType.SELECT_FROM_COLUMN:
+		case ConfigManifestEntryType.LAYER_MAPPINGS:
+		case ConfigManifestEntryType.SOURCE_LAYERS:
+			component = (
+				<div className="field">
+					{t('Value')}
+					{getEditAttribute(
+						collection,
+						configPath,
+						object,
+						item as BasicConfigManifestEntry,
+						baseAttribute,
+						layerMappings,
+						sourceLayers,
+						alternateObject
+					)}
+				</div>
+			)
+			break
+		default:
+			component = (
+				<label className="field">
+					{t('Value')}
+					{getEditAttribute(
+						collection,
+						configPath,
+						object,
+						item as BasicConfigManifestEntry,
+						baseAttribute,
+						layerMappings,
+						sourceLayers,
+						alternateObject
+					)}
+				</label>
+			)
+			break
 	}
 
-	private editItem = (item: ConfigManifestEntry) => {
-		// Ensure the item exists, so edit by index works
-		const val = objectPathGet(this.getObjectConfig(), item.id)
-
-		if (val === undefined) throw new Meteor.Error(500, `Unable to edit an item that doesn't exist`)
-
-		if (this.state.editedItems.indexOf(item.id) < 0) {
-			this.state.editedItems.push(item.id)
-			this.setState({
-				editedItems: this.state.editedItems,
-			})
-		} else {
-			this.finishEditItem(item)
-		}
-	}
-
-	private confirmDelete = (item: ConfigManifestEntry) => {
-		this.setState({
-			showAddItem: false,
-			showDeleteConfirm: true,
-			deleteConfirmItem: item,
-		})
-	}
-
-	private handleConfirmDeleteCancel = () => {
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteConfirm: false,
-		})
-	}
-
-	private handleConfirmDeleteAccept = () => {
-		if (this.state.deleteConfirmItem) {
-			const m: any = {
-				$unset: {
-					[`${this.props.configPath}.${this.state.deleteConfirmItem.id}`]: '',
-				},
-			}
-			this.updateObject(this.props.object, m)
-		}
-
-		this.setState({
-			deleteConfirmItem: undefined,
-			showDeleteConfirm: false,
-		})
-	}
-
-	private renderConfigValue(item: ConfigManifestEntry, rawValue: ConfigItemValue | undefined) {
-		const { t } = this.props
-
-		const value = rawValue === undefined ? item.defaultVal : rawValue
-
-		const rawValueArr = rawValue as any[]
-
-		switch (item.type) {
-			case ConfigManifestEntryType.BOOLEAN:
-				return value ? t('true') : t('false')
-			case ConfigManifestEntryType.TABLE:
-				return t('{{count}} rows', { count: (rawValueArr || []).length })
-			case ConfigManifestEntryType.SELECT:
-			case ConfigManifestEntryType.LAYER_MAPPINGS:
-			case ConfigManifestEntryType.SOURCE_LAYERS:
-				return _.isArray(value) ? (
-					<React.Fragment>
-						<ul className="table-values-list">
-							{_.map((value as string[]) || [], (val) => (
-								<li key={val}>{val}</li>
-							))}
-						</ul>
-					</React.Fragment>
-				) : (
-					value.toString()
-				)
-			case ConfigManifestEntryType.INT:
-				return _.isNumber(value) && item.zeroBased ? (value + 1).toString() : value.toString()
-			default:
-				return value.toString()
-		}
-	}
-
-	private renderEditableArea(item: ConfigManifestEntry, valIndex: string) {
-		const baseAttribute = `${this.props.configPath}.${valIndex}`
-		const { t, collection, object, i18n, tReady } = this.props
-		switch (item.type) {
-			case ConfigManifestEntryType.TABLE:
-				return (
-					<BlueprintConfigManifestTable
-						t={t}
-						i18n={i18n}
-						tReady={tReady}
-						collection={collection}
-						object={object}
-						baseAttribute={baseAttribute}
-						item={item}
-						layerMappings={this.props.layerMappings}
-						sourceLayers={this.props.sourceLayers}
-						configPath={this.props.configPath}
-						alternateObject={this.props.alternateObject}
-					/>
-				)
-			case ConfigManifestEntryType.SELECT:
-			case ConfigManifestEntryType.SELECT_FROM_COLUMN:
-			case ConfigManifestEntryType.LAYER_MAPPINGS:
-			case ConfigManifestEntryType.SOURCE_LAYERS:
-				return (
-					<div className="field">
-						{t('Value')}
-						{getEditAttribute(
-							this.props.collection,
-							this.props.configPath,
-							this.props.object,
-							item as BasicConfigManifestEntry,
-							baseAttribute,
-							this.props.layerMappings,
-							this.props.sourceLayers,
-							this.props.alternateObject
-						)}
-					</div>
-				)
-			default:
-				return (
-					<label className="field">
-						{t('Value')}
-						{getEditAttribute(
-							this.props.collection,
-							this.props.configPath,
-							this.props.object,
-							item as BasicConfigManifestEntry,
-							baseAttribute,
-							this.props.layerMappings,
-							this.props.sourceLayers,
-							this.props.alternateObject
-						)}
-					</label>
-				)
-		}
-	}
-
-	private renderItems() {
-		const { t } = this.props
-
-		const values = this.getObjectConfig()
-		return this.props.manifest.map((item) => {
-			const configItem = objectPathGet(values, item.id)
-			if (configItem === undefined && !item.required) return undefined
-
-			return (
-				<React.Fragment key={`${item.id}`}>
-					<tr
-						className={ClassNames({
-							hl: this.isItemEdited(item),
-						})}
-					>
-						<th className="settings-studio-custom-config-table__name c2">{item.name}</th>
-						<td className="settings-studio-custom-config-table__value c3">
-							{this.renderConfigValue(item, configItem)}
-						</td>
-						<td className="settings-studio-custom-config-table__actions table-item-actions c3">
-							{configItem !== undefined ? (
-								<React.Fragment>
-									<button className="action-btn" onClick={() => this.editItem(item)}>
-										<FontAwesomeIcon icon={faPencilAlt} />
-									</button>
-									{!item.required && (
-										<button className="action-btn" onClick={() => this.confirmDelete(item)}>
-											<FontAwesomeIcon icon={faTrash} />
-										</button>
-									)}
-								</React.Fragment>
-							) : (
-								<button
-									className={ClassNames('btn btn-primary', {
-										'btn-tight': this.props.subPanel,
-									})}
-									onClick={() => this.createItem(item)}
-								>
-									<FontAwesomeIcon icon={faPlus} /> {t('Create')}
+	return (
+		<>
+			<tr
+				className={ClassNames({
+					hl: isExpanded,
+				})}
+			>
+				<th className="settings-studio-custom-config-table__name c2">{item.name}</th>
+				<td className="settings-studio-custom-config-table__value c3">{renderConfigValue(t, item, configItem)}</td>
+				<td className="settings-studio-custom-config-table__actions table-item-actions c3">
+					{configItem !== undefined ? (
+						<React.Fragment>
+							<button className="action-btn" onClick={doToggleExpanded}>
+								<FontAwesomeIcon icon={faPencilAlt} />
+							</button>
+							{!item.required && (
+								<button className="action-btn" onClick={doShowDelete}>
+									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							)}
-						</td>
-					</tr>
-					{this.isItemEdited(item) && (
-						<tr className="expando-details hl">
-							<td colSpan={4}>
-								<div>
-									<div className="mod mvs mhs">
-										<label className="field">{item.description}</label>
-									</div>
-									<div className="mod mvs mhs">{this.renderEditableArea(item, item.id)}</div>
-								</div>
-								<div className="mod alright">
-									<button className={ClassNames('btn btn-primary')} onClick={() => this.finishEditItem(item)}>
-										<FontAwesomeIcon icon={faCheck} />
-									</button>
-								</div>
-							</td>
-						</tr>
-					)}
-				</React.Fragment>
-			)
-		})
-	}
-
-	render() {
-		const { t } = this.props
-		return (
-			<div className="scroll-x">
-				<ModalDialog
-					title={t('Delete this item?')}
-					acceptText={t('Delete')}
-					secondaryText={t('Cancel')}
-					show={this.state.showDeleteConfirm}
-					onAccept={() => this.handleConfirmDeleteAccept()}
-					onSecondary={() => this.handleConfirmDeleteCancel()}
-				>
-					<p>
-						{t('Are you sure you want to delete this config item "{{configId}}"?', {
-							configId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name,
-						})}
-					</p>
-					<p>{t('Please note: This action is irreversible!')}</p>
-				</ModalDialog>
-				{this.props.subPanel ? (
-					<h3 className="mhn">{t('Blueprint Configuration')}</h3>
-				) : (
-					<h2 className="mhn">{t('Blueprint Configuration')}</h2>
-				)}
-				<table className="table expando settings-studio-custom-config-table">
-					<tbody>{this.renderItems()}</tbody>
-				</table>
-				<div className="mod mhs">
-					<button
-						className={ClassNames('btn btn-primary', {
-							'btn-tight': this.props.subPanel,
-						})}
-						// onClick={this.addConfigItem}
-					>
-						<Tooltip
-							overlay={t('More settings specific to this studio can be found here')}
-							visible={getHelpMode()}
-							placement="right"
+						</React.Fragment>
+					) : (
+						<button
+							className={ClassNames('btn btn-primary', {
+								'btn-tight': subPanel,
+							})}
+							onClick={createItem}
 						>
-							<FontAwesomeIcon icon={faPlus} />
-						</Tooltip>
-					</button>
-				</div>
-			</div>
-		)
-	}
+							<FontAwesomeIcon icon={faPlus} /> {t('Create')}
+						</button>
+					)}
+				</td>
+			</tr>
+			{isExpanded && configItem !== undefined && (
+				<tr className="expando-details hl">
+					<td colSpan={4}>
+						<div>
+							<div className="mod mvs mhs">
+								<label className="field">{item.description}</label>
+							</div>
+							<div className="mod mvs mhs">{component}</div>
+						</div>
+						<div className="mod alright">
+							<button className={ClassNames('btn btn-primary')} onClick={doToggleExpanded}>
+								<FontAwesomeIcon icon={faCheck} />
+							</button>
+						</div>
+					</td>
+				</tr>
+			)}
+		</>
+	)
 }

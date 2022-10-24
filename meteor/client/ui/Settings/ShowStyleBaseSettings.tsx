@@ -167,9 +167,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 									<Route path={`${this.props.match.path}/blueprint-config`}>
 										<BlueprintConfigManifestSettings
-											t={this.props.t}
-											i18n={this.props.i18n}
-											tReady={this.props.tReady}
 											manifest={this.props.blueprintConfigManifest}
 											object={showStyleBase}
 											collection={ShowStyleBases}
