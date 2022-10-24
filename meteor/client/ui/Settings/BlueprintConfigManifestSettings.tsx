@@ -411,17 +411,11 @@ type ResolvedBasicConfigManifestEntry =
 	| (ConfigManifestEntryLayerMappings<boolean> & { options: Array<{ name: string; value: string }> })
 	| ConfigManifestEntryJson
 
-interface IConfigManifestSettingsProps<
-	TCol extends MongoCollection<DBInterface>,
-	DBInterface extends { _id: ProtectedString<any> }
-> {
+interface IConfigManifestSettingsProps {
 	manifest: ConfigManifestEntry[]
 
-	collection: TCol
-	object: DBInterface
 	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
 	alternateObject?: any
-	configPath: string
 
 	layerMappings?: { [key: string]: MappingsExt }
 	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
@@ -432,18 +426,11 @@ interface IConfigManifestSettingsProps<
 	saveOverrides: (newOps: SomeObjectOverrideOp[]) => void
 	pushOverride: (newOp: SomeObjectOverrideOp) => void
 }
-interface IConfigManifestTableProps<
-	TCol extends MongoCollection<DBInterface>,
-	DBInterface extends { _id: ProtectedString<any> }
-> {
+interface IConfigManifestTableProps {
 	item: ConfigManifestEntryTable
-	baseAttribute: string
 
-	collection: TCol
-	object: DBInterface
 	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
 	alternateObject?: any
-	configPath: string
 
 	layerMappings: { [key: string]: MappingsExt } | undefined
 	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined
@@ -503,17 +490,13 @@ interface TableSort {
 	order: 'asc' | 'desc'
 }
 
-function BlueprintConfigManifestTable<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj>({
+function BlueprintConfigManifestTable({
 	item,
-	baseAttribute,
-	collection,
-	object,
 	alternateObject,
-	configPath,
 	layerMappings,
 	sourceLayers,
 	subPanel,
-}: IConfigManifestTableProps<TCol, DBInterface>) {
+}: IConfigManifestTableProps) {
 	const { t } = useTranslation()
 
 	const resolvedColumns = useMemo(() => {
@@ -988,12 +971,9 @@ function getAllCurrentAndDeletedItemsFromOverrides(
 	return [...validItems, ...removedOutputLayers]
 }
 
-export function BlueprintConfigManifestSettings<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj>({
+export function BlueprintConfigManifestSettings({
 	manifest,
-	collection,
-	object,
 	alternateObject,
-	configPath,
 	layerMappings,
 	sourceLayers,
 	subPanel,
@@ -1001,13 +981,11 @@ export function BlueprintConfigManifestSettings<TCol extends MongoCollection<DBI
 	configObject,
 	saveOverrides,
 	pushOverride,
-}: IConfigManifestSettingsProps<TCol, DBInterface>) {
+}: IConfigManifestSettingsProps) {
 	const { t } = useTranslation()
 
 	const addRef = useRef<AddItemModalRef>(null)
 	const deleteRef = useRef<DeleteItemModalRef>(null)
-
-	const config = objectPathGet(object, configPath)
 
 	const addItem = useCallback(() => {
 		if (addRef.current) {
@@ -1035,6 +1013,8 @@ export function BlueprintConfigManifestSettings<TCol extends MongoCollection<DBI
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
+	const resolvedConfig = useMemo(() => applyAndValidateOverrides(configObject).obj, [configObject])
+
 	const sortedManifestItems = useMemo(
 		() => getAllCurrentAndDeletedItemsFromOverrides(manifest, configObject),
 		[configObject, manifest]
@@ -1044,7 +1024,7 @@ export function BlueprintConfigManifestSettings<TCol extends MongoCollection<DBI
 
 	return (
 		<div className="scroll-x">
-			<AddItemModal ref={addRef} manifest={manifest} config={config} doCreate={doCreate} />
+			<AddItemModal ref={addRef} manifest={manifest} config={resolvedConfig} doCreate={doCreate} />
 			<DeleteItemModal ref={deleteRef} manifest={manifest} doDelete={overrideHelper.deleteItem} />
 
 			{subPanel ? (
@@ -1069,16 +1049,13 @@ export function BlueprintConfigManifestSettings<TCol extends MongoCollection<DBI
 							)
 						} else {
 							return (
-								<BlueprintConfigManifestEntry<TCol, DBInterface>
+								<BlueprintConfigManifestEntry
 									key={item.id}
 									wrappedItem={item}
 									overrideHelper={overrideHelper}
 									value={item.computed}
 									showDelete={showDelete}
 									doCreate={doCreate}
-									configPath={configPath}
-									collection={collection}
-									object={object}
 									alternateObject={alternateObject}
 									layerMappings={layerMappings}
 									sourceLayers={sourceLayers}
@@ -1188,7 +1165,7 @@ function BlueprintConfigManifestDeletedEntry({
 	)
 }
 
-interface BlueprintConfigManifestEntryProps<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj> {
+interface BlueprintConfigManifestEntryProps {
 	value: any
 
 	wrappedItem: WrappedOverridableItemNormal<any> & WrappedOverridableExt
@@ -1197,10 +1174,6 @@ interface BlueprintConfigManifestEntryProps<TCol extends MongoCollection<DBInter
 	showDelete: (item: ConfigManifestEntry) => void
 	doCreate: (itemId: string, value: any) => void
 
-	configPath: string
-
-	collection: TCol
-	object: DBInterface
 	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
 	alternateObject?: any
 	layerMappings: { [key: string]: MappingsExt } | undefined
@@ -1211,22 +1184,19 @@ interface BlueprintConfigManifestEntryProps<TCol extends MongoCollection<DBInter
 	isExpanded: boolean
 	toggleExpanded: (id: string, force?: boolean) => void
 }
-function BlueprintConfigManifestEntry<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj>({
+function BlueprintConfigManifestEntry({
 	value,
 	wrappedItem,
 	overrideHelper,
 	showDelete,
 	doCreate,
-	configPath,
-	collection,
-	object,
 	alternateObject,
 	layerMappings,
 	sourceLayers,
 	subPanel,
 	isExpanded,
 	toggleExpanded,
-}: BlueprintConfigManifestEntryProps<TCol, DBInterface>) {
+}: BlueprintConfigManifestEntryProps) {
 	const { t } = useTranslation()
 
 	const manifestEntry = wrappedItem.manifest
@@ -1250,17 +1220,12 @@ function BlueprintConfigManifestEntry<TCol extends MongoCollection<DBInterface>,
 	}, [overrideHelper, wrappedItem.id, wrappedItem.defaults])
 
 	let component: React.ReactElement | undefined = undefined
-	const baseAttribute = `${configPath}.${manifestEntry.id}`
 	if (manifestEntry.type === ConfigManifestEntryType.TABLE) {
 		component = (
 			<BlueprintConfigManifestTable
-				collection={collection}
-				object={object}
-				baseAttribute={baseAttribute}
 				item={manifestEntry}
 				layerMappings={layerMappings}
 				sourceLayers={sourceLayers}
-				configPath={configPath}
 				alternateObject={alternateObject}
 				subPanel={subPanel}
 			/>

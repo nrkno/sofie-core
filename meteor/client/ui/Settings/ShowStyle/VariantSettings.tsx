@@ -145,10 +145,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 										<div className="col c12 r1-c12 phs">
 											<BlueprintConfigManifestSettings
 												manifest={this.props.blueprintConfigManifest}
-												collection={ShowStyleVariants}
-												configPath={'blueprintConfigWithOverrides.defaults'}
 												alternateObject={this.props.showStyleBase}
-												object={showStyleVariant}
 												layerMappings={this.props.layerMappings}
 												sourceLayers={this.props.sourceLayers}
 												subPanel={true}

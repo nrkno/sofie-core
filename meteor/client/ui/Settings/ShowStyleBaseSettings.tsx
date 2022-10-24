@@ -190,11 +190,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									<Route path={`${this.props.match.path}/blueprint-config`}>
 										<BlueprintConfigManifestSettings
 											manifest={this.props.blueprintConfigManifest}
-											object={showStyleBase}
-											collection={ShowStyleBases}
 											layerMappings={this.props.layerMappings}
 											sourceLayers={this.props.sourceLayers}
-											configPath={'blueprintConfigWithOverrides.defaults'}
 											configObject={showStyleBase.blueprintConfigWithOverrides}
 											saveOverrides={this.saveBlueprintConfigOverrides}
 											pushOverride={this.pushBlueprintConfigOverride}

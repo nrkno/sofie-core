@@ -192,10 +192,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									<Route path={`${this.props.match.path}/blueprint-config`}>
 										<BlueprintConfigManifestSettings
 											manifest={this.props.blueprintConfigManifest}
-											object={this.props.studio}
 											layerMappings={this.getLayerMappingsFlat()}
-											collection={Studios}
-											configPath={'blueprintConfigWithOverrides.defaults'}
 											configObject={this.props.studio.blueprintConfigWithOverrides}
 											saveOverrides={this.saveBlueprintConfigOverrides}
 											pushOverride={this.pushBlueprintConfigOverride}
