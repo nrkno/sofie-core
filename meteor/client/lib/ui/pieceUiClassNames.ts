@@ -36,9 +36,7 @@ export function pieceUiClassNames(
 
 		'hide-overflow-labels':
 			uiState && elementWidth
-				? uiState.leftAnchoredWidth > 0 &&
-				  uiState.rightAnchoredWidth > 0 &&
-				  uiState.leftAnchoredWidth + uiState.rightAnchoredWidth > elementWidth
+				? uiState.leftAnchoredWidth > 0 && uiState.leftAnchoredWidth + uiState.rightAnchoredWidth > elementWidth
 				: undefined,
 
 		'super-infinite':
