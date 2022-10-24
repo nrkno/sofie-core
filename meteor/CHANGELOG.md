@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.44.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.44.0-in-testing.2...v1.44.0-in-testing.3) (2022-10-24)
+
+
+### Bug Fixes
+
+* **Dashboard:** ensure that Pointer events aren't handled when Pointer is mouse ([c3df8b7](https://github.com/nrkno/sofie-core/commit/c3df8b72925324dec222219bd675793b89ffd0ee))
+* **SegmentTimeline:** Pieces may be rendered incorrectly, if cropped, but they have an overflow counter ([5da31ba](https://github.com/nrkno/sofie-core/commit/5da31ba5ccfd94f969d4c1fcda8802373ec47694))
+
 ## [1.44.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.41.4...v1.44.0-in-testing.2) (2022-10-13)
 
 
