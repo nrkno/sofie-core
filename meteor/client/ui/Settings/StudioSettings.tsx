@@ -18,7 +18,10 @@ import { StudioPackageManagerSettings } from './Studio/PackageManager'
 import { StudioGenericProperties } from './Studio/Generic'
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	applyAndValidateOverrides,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
@@ -139,11 +142,31 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		IStudioSettingsState
 	> {
 		getLayerMappingsFlat() {
+			// TODO - this is too reactive
 			const mappings = {}
 			if (this.props.studio) {
 				mappings[this.props.studio.name] = applyAndValidateOverrides(this.props.studio.mappingsWithOverrides).obj
 			}
 			return mappings
+		}
+
+		private saveBlueprintConfigOverrides = (newOps: SomeObjectOverrideOp[]) => {
+			if (this.props.studio) {
+				Studios.update(this.props.studio._id, {
+					$set: {
+						'blueprintConfigWithOverrides.overrides': newOps,
+					},
+				})
+			}
+		}
+		private pushBlueprintConfigOverride = (newOp: SomeObjectOverrideOp) => {
+			if (this.props.studio) {
+				Studios.update(this.props.studio._id, {
+					$push: {
+						'blueprintConfigWithOverrides.overrides': newOp,
+					},
+				})
+			}
 		}
 
 		render() {
@@ -173,6 +196,9 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 											layerMappings={this.getLayerMappingsFlat()}
 											collection={Studios}
 											configPath={'blueprintConfigWithOverrides.defaults'}
+											configObject={this.props.studio.blueprintConfigWithOverrides}
+											saveOverrides={this.saveBlueprintConfigOverrides}
+											pushOverride={this.pushBlueprintConfigOverride}
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/mappings`}>

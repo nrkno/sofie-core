@@ -13,6 +13,8 @@ import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { BlueprintConfigManifestSettings } from '../BlueprintConfigManifestSettings'
+import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
@@ -83,6 +85,21 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			})
 		}
 
+		private saveBlueprintConfigOverrides = (variantId: ShowStyleVariantId, newOps: SomeObjectOverrideOp[]) => {
+			ShowStyleVariants.update(variantId, {
+				$set: {
+					'blueprintConfigWithOverrides.overrides': newOps,
+				},
+			})
+		}
+		private pushBlueprintConfigOverride = (variantId: ShowStyleVariantId, newOp: SomeObjectOverrideOp) => {
+			ShowStyleVariants.update(variantId, {
+				$push: {
+					'blueprintConfigWithOverrides.overrides': newOp,
+				},
+			})
+		}
+
 		renderShowStyleVariants() {
 			const { t } = this.props
 
@@ -135,6 +152,9 @@ export const ShowStyleVariantsSettings = withTranslation()(
 												layerMappings={this.props.layerMappings}
 												sourceLayers={this.props.sourceLayers}
 												subPanel={true}
+												configObject={showStyleVariant.blueprintConfigWithOverrides}
+												saveOverrides={(newOps) => this.saveBlueprintConfigOverrides(showStyleVariant._id, newOps)}
+												pushOverride={(newOp) => this.pushBlueprintConfigOverride(showStyleVariant._id, newOp)}
 											/>
 										</div>
 									</div>

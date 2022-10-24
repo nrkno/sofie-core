@@ -23,7 +23,10 @@ import { ShowStyleVariantsSettings } from './ShowStyle/VariantSettings'
 import { ShowStyleGenericProperties } from './ShowStyle/Generic'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	applyAndValidateOverrides,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
@@ -121,6 +124,25 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			reader.readAsText(file)
 		}
 
+		private saveBlueprintConfigOverrides = (newOps: SomeObjectOverrideOp[]) => {
+			if (this.props.showStyleBase) {
+				ShowStyleBases.update(this.props.showStyleBase._id, {
+					$set: {
+						'blueprintConfigWithOverrides.overrides': newOps,
+					},
+				})
+			}
+		}
+		private pushBlueprintConfigOverride = (newOp: SomeObjectOverrideOp) => {
+			if (this.props.showStyleBase) {
+				ShowStyleBases.update(this.props.showStyleBase._id, {
+					$push: {
+						'blueprintConfigWithOverrides.overrides': newOp,
+					},
+				})
+			}
+		}
+
 		renderEditForm(showStyleBase: ShowStyleBase) {
 			const { t } = this.props
 
@@ -173,6 +195,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											layerMappings={this.props.layerMappings}
 											sourceLayers={this.props.sourceLayers}
 											configPath={'blueprintConfigWithOverrides.defaults'}
+											configObject={showStyleBase.blueprintConfigWithOverrides}
+											saveOverrides={this.saveBlueprintConfigOverrides}
+											pushOverride={this.pushBlueprintConfigOverride}
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/variants`}>

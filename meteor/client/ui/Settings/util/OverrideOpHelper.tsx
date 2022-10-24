@@ -14,7 +14,7 @@ import { ReadonlyDeep } from 'type-fest'
  * @param allOps The array of SomeObjectOverrideOp
  * @param prefix The prefix to match, without a trailing `.`
  */
-function filterOverrideOpsForPrefix(
+export function filterOverrideOpsForPrefix(
 	allOps: ReadonlyDeep<SomeObjectOverrideOp[]>,
 	prefix: string
 ): { opsForPrefix: ReadonlyDeep<SomeObjectOverrideOp>[]; otherOps: ReadonlyDeep<SomeObjectOverrideOp>[] } {
@@ -254,6 +254,28 @@ export class OverrideOpHelper {
 
 			this.#saveOverrides(newOps)
 		}
+	}
+
+	/**
+	 * TODO
+	 */
+	replaceItem = (itemId: string, value: any): void => {
+		if (!this.#objectWithOverridesRef.current) return
+
+		// Set a property
+		const { otherOps: newOps } = filterOverrideOpsForPrefix(this.#objectWithOverridesRef.current.overrides, itemId)
+
+		// TODO - is this too naive?
+
+		newOps.push(
+			literal<ObjectOverrideSetOp>({
+				op: 'set',
+				path: `${itemId}`,
+				value: value,
+			})
+		)
+
+		this.#saveOverrides(newOps)
 	}
 }
 

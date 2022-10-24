@@ -4,7 +4,7 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo
 import * as _ from 'underscore'
 import Tooltip from 'rc-tooltip'
 import { MappingsExt } from '../../../lib/collections/Studios'
-import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
+import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -28,7 +28,7 @@ import {
 	ConfigManifestEntryString,
 	ConfigManifestEntryJson,
 } from '@sofie-automation/blueprints-integration'
-import { DBObj, ProtectedString, objectPathGet, getRandomString, clone } from '../../../lib/lib'
+import { DBObj, ProtectedString, objectPathGet, getRandomString, clone, literal } from '../../../lib/lib'
 import { MongoModifier } from '../../../lib/typings/meteor'
 import { getHelpMode } from '../../lib/localStorage'
 import {
@@ -41,12 +41,37 @@ import {
 	faSortUp,
 	faSortDown,
 	faSort,
+	faRefresh,
 } from '@fortawesome/free-solid-svg-icons'
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { MongoCollection } from '../../../lib/collections/lib'
 import { TFunction, useTranslation } from 'react-i18next'
 import { useToggleExpandHelper } from './util/ToggleExpandedHelper'
+import {
+	applyAndValidateOverrides,
+	ObjectOverrideSetOp,
+	ObjectWithOverrides,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ReadonlyDeep } from 'type-fest'
+import {
+	filterOverrideOpsForPrefix,
+	OverrideOpHelper,
+	useOverrideOpHelper,
+	WrappedOverridableItem,
+	WrappedOverridableItemDeleted,
+	WrappedOverridableItemNormal,
+} from './util/OverrideOpHelper'
+import { DropdownInputControl, DropdownInputOption } from '../../lib/Components/DropdownInput'
+import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { TextInputControlWithOverride } from '../../lib/Components/TextInput'
+import { t } from 'i18next'
+import { MultiLineTextInputControlWithOverride } from '../../lib/Components/MultiLineTextInput'
+import { isEqual } from 'underscore'
+import { IntInputControlWithOverride } from '../../lib/Components/IntInput'
+import { FloatInputControlWithOverride } from '../../lib/Components/FloatInput'
+import { CheckboxControlWithOverride } from '../../lib/Components/Checkbox'
 
 function filterSourceLayers(
 	select: ConfigManifestEntrySourceLayers<true | false>,
@@ -249,6 +274,130 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
 	}
 }
 
+function getEditAttribute2(
+	item: WrappedOverridableItemNormal<any> & WrappedOverridableExt,
+	// layerMappings: { [key: string]: MappingsExt } | undefined,
+	// sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined,
+	// alternateObject?: any
+	handleUpdate: (value: any) => void,
+	clearOverride: () => void
+) {
+	const manifest = item.manifest
+
+	const commonProps = {
+		label: t('Value'),
+		hint: manifest.hint,
+		modifiedClassName: 'bghl',
+		value: item.computed,
+		defaultValue: item.defaults,
+		isOverridden: item.defaults !== item.computed,
+		handleUpdate: handleUpdate,
+		clearOverride: clearOverride,
+	}
+
+	switch (manifest.type) {
+		case ConfigManifestEntryType.STRING:
+			return <TextInputControlWithOverride classNames="input text-input input-l" {...commonProps} />
+		case ConfigManifestEntryType.MULTILINE_STRING:
+			return (
+				<MultiLineTextInputControlWithOverride
+					classNames="input text-input input-l"
+					{...commonProps}
+					isOverridden={!isEqual(item.defaults, item.computed)}
+				/>
+			)
+		case ConfigManifestEntryType.INT:
+			return (
+				<IntInputControlWithOverride
+					classNames="input text-input input-m"
+					{...commonProps}
+					zeroBased={manifest.zeroBased}
+				/>
+			)
+		case ConfigManifestEntryType.FLOAT:
+			return <FloatInputControlWithOverride classNames="input text-input input-m" {...commonProps} />
+		case ConfigManifestEntryType.BOOLEAN:
+			return <CheckboxControlWithOverride classNames="input" {...commonProps} />
+
+		// TODO
+		// case ConfigManifestEntryType.ENUM:
+		// 	return (
+		// 		<EditAttribute
+		// 			modifiedClassName="bghl"
+		// 			attribute={attribute}
+		// 			obj={object}
+		// 			type="dropdown"
+		// 			options={item.options || []}
+		// 			collection={collection}
+		// 			className="input text-input input-l"
+		// 		/>
+		// 	)
+		// case ConfigManifestEntryType.JSON:
+		// 	return (
+		// 		<EditAttribute
+		// 			modifiedClassName="bghl"
+		// 			invalidClassName="warn"
+		// 			attribute={attribute}
+		// 			obj={object}
+		// 			type="json"
+		// 			collection={collection}
+		// 			className="input text-input input-l"
+		// 		/>
+		// 	)
+		// case ConfigManifestEntryType.SELECT:
+		// 	return (
+		// 		<EditAttribute
+		// 			modifiedClassName="bghl"
+		// 			attribute={attribute}
+		// 			obj={object}
+		// 			type={item.multiple ? 'multiselect' : 'dropdown'}
+		// 			options={item.options}
+		// 			collection={collection}
+		// 			className="input text-input dropdown input-l"
+		// 		/>
+		// 	)
+		// case ConfigManifestEntryType.SOURCE_LAYERS:
+		// 	return (
+		// 		<EditAttribute
+		// 			modifiedClassName="bghl"
+		// 			attribute={attribute}
+		// 			obj={object}
+		// 			type={item.multiple ? 'multiselect' : 'dropdown'}
+		// 			options={'options' in item ? item.options : filterSourceLayers(item, sourceLayers ?? [])}
+		// 			collection={collection}
+		// 			className="input text-input dropdown input-l"
+		// 		/>
+		// 	)
+		// case ConfigManifestEntryType.LAYER_MAPPINGS:
+		// 	return (
+		// 		<EditAttribute
+		// 			modifiedClassName="bghl"
+		// 			attribute={attribute}
+		// 			obj={object}
+		// 			type={item.multiple ? 'multiselect' : 'dropdown'}
+		// 			options={'options' in item ? item.options : filterLayerMappings(item, layerMappings ?? {})}
+		// 			collection={collection}
+		// 			className="input text-input dropdown input-l"
+		// 		/>
+		// 	)
+		// case ConfigManifestEntryType.SELECT_FROM_COLUMN:
+		// 	return (
+		// 		<EditAttribute
+		// 			modifiedClassName="bghl"
+		// 			attribute={attribute}
+		// 			obj={object}
+		// 			type={item.multiple ? 'multiselect' : 'dropdown'}
+		// 			options={'options' in item ? item.options : getTableColumnValues(item, configPath, object, alternateObject)}
+		// 			collection={collection}
+		// 			className="input text-input dropdown input-l"
+		// 		/>
+		// 	)
+		default:
+			// assertNever(item)
+			return undefined
+	}
+}
+
 type ResolvedBasicConfigManifestEntry =
 	| ConfigManifestEntryString
 	| ConfigManifestEntryMultilineString
@@ -278,6 +427,10 @@ interface IConfigManifestSettingsProps<
 	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
 
 	subPanel?: boolean
+
+	configObject: ObjectWithOverrides<IBlueprintConfig>
+	saveOverrides: (newOps: SomeObjectOverrideOp[]) => void
+	pushOverride: (newOp: SomeObjectOverrideOp) => void
 }
 interface IConfigManifestTableProps<
 	TCol extends MongoCollection<DBInterface>,
@@ -459,18 +612,24 @@ function BlueprintConfigManifestTable<TCol extends MongoCollection<DBInterface>,
 
 	const vals: TableConfigItemValue = objectPath.get(object, baseAttribute) || []
 
+	// Limit reactivity of export callback, by passing values through a ref
+	const valsRef = useRef(vals)
+	useEffect(() => {
+		valsRef.current = vals
+	}, [vals])
 	const exportJSON = useCallback(() => {
-		// TODO - this is very reactive
-		const jsonStr = JSON.stringify(vals, undefined, 4)
+		if (valsRef.current) {
+			const jsonStr = JSON.stringify(valsRef.current, undefined, 4)
 
-		const element = document.createElement('a')
-		element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
-		element.download = `${object._id}_config_${configEntry.id}.json`
+			const element = document.createElement('a')
+			element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
+			element.download = `${object._id}_config_${configEntry.id}.json`
 
-		document.body.appendChild(element) // Required for this to work in FireFox
-		element.click()
-		document.body.removeChild(element) // Required for this to work in FireFox
-	}, [configEntry.id, object._id, vals])
+			document.body.appendChild(element) // Required for this to work in FireFox
+			element.click()
+			document.body.removeChild(element) // Required for this to work in FireFox
+		}
+	}, [configEntry.id, object._id, valsRef])
 
 	const [uploadFileKey, setUploadFileKey] = useState<number | null>(null)
 	const importJSON = useCallback(
@@ -640,14 +799,13 @@ interface AddItemModalProps {
 	manifest: ConfigManifestEntry[]
 	config: IBlueprintConfig
 
-	configPath: string
-	updateObject: (modifer: MongoModifier<any>) => void
+	doCreate: (itemId: string, value: any) => void
 }
 interface AddItemModalRef {
 	show: () => void
 }
 const AddItemModal = forwardRef(function AddItemModal(
-	{ manifest, config, configPath, updateObject }: AddItemModalProps,
+	{ manifest, config, doCreate }: AddItemModalProps,
 	ref: React.ForwardedRef<AddItemModalRef>
 ) {
 	const { t } = useTranslation()
@@ -664,8 +822,8 @@ const AddItemModal = forwardRef(function AddItemModal(
 	})
 
 	const addOptions = useMemo(() => {
-		let addOptions: { value: string; name: string }[] = []
-		addOptions = manifest.map((c) => ({ value: c.id, name: c.name }))
+		let addOptions: DropdownInputOption<string>[] = []
+		addOptions = manifest.map((c, i) => ({ value: c.id, name: c.name, i }))
 
 		return addOptions.filter((o) => objectPathGet(config, o.value) === undefined)
 	}, [manifest, config])
@@ -682,29 +840,20 @@ const AddItemModal = forwardRef(function AddItemModal(
 		})
 	}, [addOptions])
 
-	const updateSelected = useCallback((_e: EditAttributeBase, v: any) => {
-		setSelectedItem(v)
-	}, [])
-
 	const handleConfirmAddItemCancel = useCallback(() => {
 		setShow(false)
 		setSelectedItem(null)
 	}, [])
 
 	const handleConfirmAddItemAccept = useCallback(() => {
-		if (selectedItem) {
-			const item = manifest.find((c) => c.id === selectedItem)
-			const m: any = {
-				$set: {
-					[`${configPath}.${selectedItem}`]: item ? item.defaultVal : '',
-				},
-			}
-			updateObject(m)
+		const item = manifest.find((c) => c.id === selectedItem)
+		if (selectedItem && item) {
+			doCreate(item.id, item.defaultVal ?? '')
 		}
 
 		setShow(false)
 		setSelectedItem(null)
-	}, [selectedItem, manifest, updateObject, configPath])
+	}, [selectedItem, manifest, doCreate])
 
 	return (
 		<ModalDialog
@@ -719,13 +868,7 @@ const AddItemModal = forwardRef(function AddItemModal(
 				<label className="field">
 					{t('Item')}
 					<div className="select focusable">
-						<EditAttribute
-							modifiedClassName="bghl"
-							type="dropdown"
-							options={addOptions}
-							updateFunction={updateSelected}
-							overrideDisplayValue={selectedItem}
-						/>
+						<DropdownInputControl value={selectedItem ?? ''} options={addOptions} handleUpdate={setSelectedItem} />
 					</div>
 				</label>
 			</div>
@@ -736,14 +879,13 @@ const AddItemModal = forwardRef(function AddItemModal(
 interface DeleteItemModalProps {
 	manifest: ConfigManifestEntry[]
 
-	configPath: string
-	updateObject: (modifer: MongoModifier<any>) => void
+	doDelete: (id: string) => void
 }
 interface DeleteItemModalRef {
 	show: (item: ConfigManifestEntry) => void
 }
 const DeleteItemModal = forwardRef(function DeleteItemModal(
-	{ manifest, configPath, updateObject }: DeleteItemModalProps,
+	{ manifest, doDelete }: DeleteItemModalProps,
 	ref: React.ForwardedRef<DeleteItemModalRef>
 ) {
 	const { t } = useTranslation()
@@ -764,16 +906,11 @@ const DeleteItemModal = forwardRef(function DeleteItemModal(
 
 	const handleConfirmDeleteAccept = useCallback(() => {
 		if (showForItem) {
-			const m: any = {
-				$unset: {
-					[`${configPath}.${showForItem.id}`]: '',
-				},
-			}
-			updateObject(m)
+			doDelete(showForItem.id)
 		}
 
 		setShowForItem(null)
-	}, [showForItem, manifest, updateObject, configPath])
+	}, [showForItem, manifest])
 
 	return (
 		<ModalDialog
@@ -794,6 +931,63 @@ const DeleteItemModal = forwardRef(function DeleteItemModal(
 	)
 })
 
+interface WrappedOverridableExt {
+	manifest: ConfigManifestEntry
+}
+/**
+ * Compile a sorted array of all the items currently in the ObjectWithOverrides, and those that have been deleted
+ * @param rawConfig The ObjectWithOverrides to look at
+ * @param comparitor Comparitor for sorting the items
+ * @returns Sorted items, with sorted deleted items at the end
+ */
+function getAllCurrentAndDeletedItemsFromOverrides(
+	manifest: ConfigManifestEntry[],
+	rawConfig: ReadonlyDeep<ObjectWithOverrides<IBlueprintConfig>>
+): Array<WrappedOverridableItem<any> & WrappedOverridableExt> {
+	const resolvedObject = applyAndValidateOverrides(rawConfig).obj
+
+	// Convert the items into an array
+	const validItems: Array<WrappedOverridableItemNormal<any> & WrappedOverridableExt> = []
+	for (const entry of manifest) {
+		const value = objectPathGet(resolvedObject, entry.id)
+		// Only include the ones with values or if they are 'required'
+		if (value === undefined && !entry.required) continue
+
+		validItems.push(
+			literal<WrappedOverridableItemNormal<any> & WrappedOverridableExt>({
+				type: 'normal',
+				id: entry.id,
+				computed: value,
+				defaults: objectPathGet(rawConfig.defaults, entry.id),
+				overrideOps: filterOverrideOpsForPrefix(rawConfig.overrides, entry.id).opsForPrefix,
+				manifest: entry,
+			})
+		)
+	}
+
+	const removedOutputLayers: Array<WrappedOverridableItemDeleted<any> & WrappedOverridableExt> = []
+
+	// Find the items which have been deleted with an override
+	const computedOutputLayerIds = new Set(validItems.map((l) => l.id))
+	for (const entry of manifest) {
+		const value = objectPathGet(rawConfig.defaults, entry.id)
+		if (!computedOutputLayerIds.has(entry.id) && value !== undefined) {
+			removedOutputLayers.push(
+				literal<WrappedOverridableItemDeleted<any> & WrappedOverridableExt>({
+					type: 'deleted',
+					id: entry.id,
+					computed: undefined,
+					defaults: value,
+					overrideOps: filterOverrideOpsForPrefix(rawConfig.overrides, entry.id).opsForPrefix,
+					manifest: entry,
+				})
+			)
+		}
+	}
+
+	return [...validItems, ...removedOutputLayers]
+}
+
 export function BlueprintConfigManifestSettings<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj>({
 	manifest,
 	collection,
@@ -803,6 +997,10 @@ export function BlueprintConfigManifestSettings<TCol extends MongoCollection<DBI
 	layerMappings,
 	sourceLayers,
 	subPanel,
+
+	configObject,
+	saveOverrides,
+	pushOverride,
 }: IConfigManifestSettingsProps<TCol, DBInterface>) {
 	const { t } = useTranslation()
 
@@ -810,13 +1008,6 @@ export function BlueprintConfigManifestSettings<TCol extends MongoCollection<DBI
 	const deleteRef = useRef<DeleteItemModalRef>(null)
 
 	const config = objectPathGet(object, configPath)
-
-	const updateObject = useCallback(
-		(modifier: MongoModifier<DBInterface>) => {
-			collection.update(object._id, modifier)
-		},
-		[collection, object._id]
-	)
 
 	const addItem = useCallback(() => {
 		if (addRef.current) {
@@ -829,19 +1020,32 @@ export function BlueprintConfigManifestSettings<TCol extends MongoCollection<DBI
 		}
 	}, [])
 
+	const doCreate = useCallback(
+		(id: string, value: any) => {
+			pushOverride(
+				literal<ObjectOverrideSetOp>({
+					op: 'set',
+					path: id,
+					value,
+				})
+			)
+		},
+		[pushOverride]
+	)
+
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
+
+	const sortedManifestItems = useMemo(
+		() => getAllCurrentAndDeletedItemsFromOverrides(manifest, configObject),
+		[configObject, manifest]
+	)
+
+	const overrideHelper = useOverrideOpHelper(saveOverrides, configObject) // TODO - is this appropriate?
 
 	return (
 		<div className="scroll-x">
-			<AddItemModal
-				ref={addRef}
-				manifest={manifest}
-				config={config}
-				configPath={configPath}
-				updateObject={updateObject}
-			/>
-
-			<DeleteItemModal ref={deleteRef} manifest={manifest} configPath={configPath} updateObject={updateObject} />
+			<AddItemModal ref={addRef} manifest={manifest} config={config} doCreate={doCreate} />
+			<DeleteItemModal ref={deleteRef} manifest={manifest} doDelete={overrideHelper.deleteItem} />
 
 			{subPanel ? (
 				<h3 className="mhn">{t('Blueprint Configuration')}</h3>
@@ -851,28 +1055,39 @@ export function BlueprintConfigManifestSettings<TCol extends MongoCollection<DBI
 
 			<table className="table expando settings-studio-custom-config-table">
 				<tbody>
-					{manifest.map((item) => {
-						const configItem = objectPathGet(config, item.id)
-						if (configItem === undefined && !item.required) return undefined
-
-						return (
-							<BlueprintConfigManifestEntry<TCol, DBInterface>
-								key={item.id}
-								item={item}
-								configItem={configItem}
-								showDelete={showDelete}
-								updateObject={updateObject}
-								configPath={configPath}
-								collection={collection}
-								object={object}
-								alternateObject={alternateObject}
-								layerMappings={layerMappings}
-								sourceLayers={sourceLayers}
-								subPanel={!!subPanel}
-								isExpanded={isExpanded(item.id)}
-								toggleExpanded={toggleExpanded}
-							/>
-						)
+					{sortedManifestItems.map((item) => {
+						if (item.type === 'deleted') {
+							return (
+								<BlueprintConfigManifestDeletedEntry
+									key={item.id}
+									manifestEntry={item.manifest}
+									defaultValue={item.defaults}
+									doUndelete={overrideHelper.resetItem}
+									doCreate={doCreate}
+									subPanel={!!subPanel}
+								/>
+							)
+						} else {
+							return (
+								<BlueprintConfigManifestEntry<TCol, DBInterface>
+									key={item.id}
+									wrappedItem={item}
+									overrideHelper={overrideHelper}
+									value={item.computed}
+									showDelete={showDelete}
+									doCreate={doCreate}
+									configPath={configPath}
+									collection={collection}
+									object={object}
+									alternateObject={alternateObject}
+									layerMappings={layerMappings}
+									sourceLayers={sourceLayers}
+									subPanel={!!subPanel}
+									isExpanded={isExpanded(item.id)}
+									toggleExpanded={toggleExpanded}
+								/>
+							)
+						}
 					})}
 				</tbody>
 			</table>
@@ -910,14 +1125,12 @@ function renderConfigValue(t: TFunction, item: ConfigManifestEntry, rawValue: Co
 		case ConfigManifestEntryType.SELECT:
 		case ConfigManifestEntryType.LAYER_MAPPINGS:
 		case ConfigManifestEntryType.SOURCE_LAYERS:
-			return _.isArray(value) ? (
-				<React.Fragment>
-					<ul className="table-values-list">
-						{_.map((value as string[]) || [], (val) => (
-							<li key={val}>{val}</li>
-						))}
-					</ul>
-				</React.Fragment>
+			return Array.isArray(value) ? (
+				<ul className="table-values-list">
+					{(value as string[]).map((val) => (
+						<li key={val}>{val}</li>
+					))}
+				</ul>
 			) : (
 				value.toString()
 			)
@@ -928,12 +1141,62 @@ function renderConfigValue(t: TFunction, item: ConfigManifestEntry, rawValue: Co
 	}
 }
 
+interface BlueprintConfigManifestDeletedEntryProps {
+	manifestEntry: ConfigManifestEntry
+	defaultValue: any
+
+	doUndelete: (itemId: string) => void
+	doCreate: (itemId: string, value: any) => void
+
+	subPanel: boolean
+}
+function BlueprintConfigManifestDeletedEntry({
+	manifestEntry,
+	defaultValue,
+	doUndelete,
+	doCreate,
+	subPanel,
+}: BlueprintConfigManifestDeletedEntryProps) {
+	const { t } = useTranslation()
+
+	const doUndeleteItem = useCallback(() => doUndelete(manifestEntry.id), [doUndelete, manifestEntry.id])
+	const doCreateItem = useCallback(
+		() => doCreate(manifestEntry.id, manifestEntry.defaultVal ?? ''),
+		[doCreate, manifestEntry.id, manifestEntry.defaultVal]
+	)
+
+	return (
+		<tr>
+			<th className="settings-studio-custom-config-table__name c2">{manifestEntry.name}</th>
+			<td className="settings-studio-custom-config-table__value c3">
+				{renderConfigValue(t, manifestEntry, defaultValue)}
+			</td>
+			<td className="settings-studio-custom-config-table__actions table-item-actions c3">
+				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
+					<FontAwesomeIcon icon={faRefresh} />
+				</button>
+				<button
+					className={ClassNames('btn btn-primary', {
+						'btn-tight': subPanel,
+					})}
+					onClick={doCreateItem}
+				>
+					<FontAwesomeIcon icon={faPlus} /> {t('Create')}
+				</button>
+			</td>
+		</tr>
+	)
+}
+
 interface BlueprintConfigManifestEntryProps<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj> {
-	item: ConfigManifestEntry
-	configItem: any
+	value: any
+
+	wrappedItem: WrappedOverridableItemNormal<any> & WrappedOverridableExt
+	overrideHelper: OverrideOpHelper
 
 	showDelete: (item: ConfigManifestEntry) => void
-	updateObject: (updateObj: MongoModifier<any>) => void
+	doCreate: (itemId: string, value: any) => void
+
 	configPath: string
 
 	collection: TCol
@@ -949,10 +1212,11 @@ interface BlueprintConfigManifestEntryProps<TCol extends MongoCollection<DBInter
 	toggleExpanded: (id: string, force?: boolean) => void
 }
 function BlueprintConfigManifestEntry<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj>({
-	item,
-	configItem,
+	value,
+	wrappedItem,
+	overrideHelper,
 	showDelete,
-	updateObject,
+	doCreate,
 	configPath,
 	collection,
 	object,
@@ -965,73 +1229,44 @@ function BlueprintConfigManifestEntry<TCol extends MongoCollection<DBInterface>,
 }: BlueprintConfigManifestEntryProps<TCol, DBInterface>) {
 	const { t } = useTranslation()
 
-	const doShowDelete = useCallback(() => showDelete(item), [item, showDelete])
-	const doToggleExpanded = useCallback(() => toggleExpanded(item.id), [item.id, toggleExpanded])
+	const manifestEntry = wrappedItem.manifest
 
-	const createItem = useCallback(() => {
-		const m: any = {
-			$set: {
-				[`${configPath}.${item.id}`]: item.defaultVal,
-			},
-		}
-		updateObject(m)
-	}, [updateObject, configPath, item])
+	const doShowDelete = useCallback(() => showDelete(manifestEntry), [manifestEntry, showDelete])
+	const doToggleExpanded = useCallback(() => toggleExpanded(manifestEntry.id), [manifestEntry.id, toggleExpanded])
+
+	const doCreateItem = useCallback(
+		() => doCreate(manifestEntry.id, manifestEntry.defaultVal ?? ''),
+		[doCreate, manifestEntry.id, manifestEntry.defaultVal]
+	)
+
+	const handleUpdate = useCallback(
+		(value: any) => {
+			overrideHelper.replaceItem(wrappedItem.id, value)
+		},
+		[overrideHelper, wrappedItem.id]
+	)
+	const clearOverride = useCallback(() => {
+		overrideHelper.replaceItem(wrappedItem.id, wrappedItem.defaults)
+	}, [overrideHelper, wrappedItem.id, wrappedItem.defaults])
 
 	let component: React.ReactElement | undefined = undefined
-	const baseAttribute = `${configPath}.${item.id}`
-	switch (item.type) {
-		case ConfigManifestEntryType.TABLE:
-			component = (
-				<BlueprintConfigManifestTable
-					collection={collection}
-					object={object}
-					baseAttribute={baseAttribute}
-					item={item}
-					layerMappings={layerMappings}
-					sourceLayers={sourceLayers}
-					configPath={configPath}
-					alternateObject={alternateObject}
-					subPanel={subPanel}
-				/>
-			)
-			break
-		case ConfigManifestEntryType.SELECT:
-		case ConfigManifestEntryType.SELECT_FROM_COLUMN:
-		case ConfigManifestEntryType.LAYER_MAPPINGS:
-		case ConfigManifestEntryType.SOURCE_LAYERS:
-			component = (
-				<div className="field">
-					{t('Value')}
-					{getEditAttribute(
-						collection,
-						configPath,
-						object,
-						item as BasicConfigManifestEntry,
-						baseAttribute,
-						layerMappings,
-						sourceLayers,
-						alternateObject
-					)}
-				</div>
-			)
-			break
-		default:
-			component = (
-				<label className="field">
-					{t('Value')}
-					{getEditAttribute(
-						collection,
-						configPath,
-						object,
-						item as BasicConfigManifestEntry,
-						baseAttribute,
-						layerMappings,
-						sourceLayers,
-						alternateObject
-					)}
-				</label>
-			)
-			break
+	const baseAttribute = `${configPath}.${manifestEntry.id}`
+	if (manifestEntry.type === ConfigManifestEntryType.TABLE) {
+		component = (
+			<BlueprintConfigManifestTable
+				collection={collection}
+				object={object}
+				baseAttribute={baseAttribute}
+				item={manifestEntry}
+				layerMappings={layerMappings}
+				sourceLayers={sourceLayers}
+				configPath={configPath}
+				alternateObject={alternateObject}
+				subPanel={subPanel}
+			/>
+		)
+	} else {
+		component = getEditAttribute2(wrappedItem, handleUpdate, clearOverride)
 	}
 
 	return (
@@ -1041,38 +1276,38 @@ function BlueprintConfigManifestEntry<TCol extends MongoCollection<DBInterface>,
 					hl: isExpanded,
 				})}
 			>
-				<th className="settings-studio-custom-config-table__name c2">{item.name}</th>
-				<td className="settings-studio-custom-config-table__value c3">{renderConfigValue(t, item, configItem)}</td>
+				<th className="settings-studio-custom-config-table__name c2">{manifestEntry.name}</th>
+				<td className="settings-studio-custom-config-table__value c3">{renderConfigValue(t, manifestEntry, value)}</td>
 				<td className="settings-studio-custom-config-table__actions table-item-actions c3">
-					{configItem !== undefined ? (
-						<React.Fragment>
+					{value !== undefined ? (
+						<>
 							<button className="action-btn" onClick={doToggleExpanded}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
-							{!item.required && (
+							{!manifestEntry.required && (
 								<button className="action-btn" onClick={doShowDelete}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							)}
-						</React.Fragment>
+						</>
 					) : (
 						<button
 							className={ClassNames('btn btn-primary', {
 								'btn-tight': subPanel,
 							})}
-							onClick={createItem}
+							onClick={doCreateItem}
 						>
 							<FontAwesomeIcon icon={faPlus} /> {t('Create')}
 						</button>
 					)}
 				</td>
 			</tr>
-			{isExpanded && configItem !== undefined && (
+			{isExpanded && value !== undefined && (
 				<tr className="expando-details hl">
 					<td colSpan={4}>
 						<div>
 							<div className="mod mvs mhs">
-								<label className="field">{item.description}</label>
+								<label className="field">{manifestEntry.description}</label>
 							</div>
 							<div className="mod mvs mhs">{component}</div>
 						</div>
