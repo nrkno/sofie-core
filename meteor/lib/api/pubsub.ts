@@ -90,7 +90,6 @@ export enum PubSub {
 	triggeredActions = 'triggeredActions',
 	snapshots = 'snapshots',
 	studios = 'studios',
-	studioOfDevice = 'studioOfDevice',
 	timeline = 'timeline',
 	timelineDatastore = 'timelineDatastore',
 	userActionsLog = 'userActionsLog',
@@ -184,7 +183,6 @@ export interface PubSubTypes {
 	[PubSub.triggeredActions]: (selector: MongoQuery<DBTriggeredActions>, token?: string) => DBTriggeredActions
 	[PubSub.snapshots]: (selector: MongoQuery<SnapshotItem>, token?: string) => SnapshotItem
 	[PubSub.studios]: (selector: MongoQuery<DBStudio>, token?: string) => DBStudio
-	[PubSub.studioOfDevice]: (deviceId: PeripheralDeviceId, token?: string) => DBStudio
 	[PubSub.timeline]: (selector: MongoQuery<TimelineComplete>, token?: string) => TimelineComplete
 	[PubSub.timelineDatastore]: (studioId: StudioId, token?: string) => DBTimelineDatastoreEntry
 	[PubSub.userActionsLog]: (selector: MongoQuery<UserActionsLogItem>, token?: string) => UserActionsLogItem

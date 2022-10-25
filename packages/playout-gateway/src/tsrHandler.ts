@@ -380,9 +380,7 @@ export class TSRHandler {
 			return undefined
 		}
 		// Note: The studioMappings virtual collection contains a single object that contains all mappings
-		const mappingsObject = this._coreHandler.core.getCollection('studioMappings').findOne(studioId)
-
-		return mappingsObject as any
+		return this._coreHandler.core.getCollection<RoutedMappings>('studioMappings').findOne(studioId)
 	}
 	onSettingsChanged(): void {
 		if (!this._initialized) return
@@ -472,23 +470,11 @@ export class TSRHandler {
 		if (!doc) throw new Error('Missing PeripheralDevice document!')
 		return doc
 	}
-	private _getStudio(): any | null {
-		const peripheralDevice = this._getPeripheralDevice()
-		if (peripheralDevice) {
-			const studios = this._coreHandler.core.getCollection<any>('studios')
-			return studios.findOne(peripheralDevice.studioId)
-		}
-		return null
-	}
 	private _getStudioId(): StudioId | null {
 		if (this._cachedStudioId) return this._cachedStudioId
 
-		const studio = this._getStudio()
-		if (studio) {
-			this._cachedStudioId = studio._id
-			return studio._id
-		}
-		return null
+		const peripheralDevice = this._getPeripheralDevice()
+		return peripheralDevice.studioId ?? null
 	}
 	private _triggerUpdateDevices() {
 		if (!this._initialized) return
