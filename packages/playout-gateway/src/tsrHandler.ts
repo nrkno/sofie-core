@@ -84,7 +84,7 @@ export enum TimelineObjType {
 
 /** This is the data-object published from Core */
 export interface RoutedTimeline {
-	_id: string
+	_id: StudioId
 	/** Hash of the studio mappings */
 	mappingsHash: string
 
@@ -99,7 +99,7 @@ export interface RoutedTimeline {
 	timeline?: TimelineObjGeneric[]
 }
 export interface RoutedMappings {
-	_id: string
+	_id: StudioId
 	mappingsHash: string | undefined
 	mappings: Mappings
 }
