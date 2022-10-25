@@ -1,17 +1,14 @@
-import * as objectPath from 'object-path'
 import ClassNames from 'classnames'
 import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import * as _ from 'underscore'
 import Tooltip from 'rc-tooltip'
 import { MappingsExt } from '../../../lib/collections/Studios'
-import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
 	ConfigManifestEntry,
 	ConfigManifestEntryType,
 	IBlueprintConfig,
-	BasicConfigManifestEntry,
 	ConfigItemValue,
 	ConfigManifestEntryTable,
 	TableConfigItemValue,
@@ -28,8 +25,7 @@ import {
 	ConfigManifestEntryString,
 	ConfigManifestEntryJson,
 } from '@sofie-automation/blueprints-integration'
-import { DBObj, ProtectedString, objectPathGet, getRandomString, clone, literal } from '../../../lib/lib'
-import { MongoModifier } from '../../../lib/typings/meteor'
+import { objectPathGet, getRandomString, clone, literal } from '../../../lib/lib'
 import { getHelpMode } from '../../lib/localStorage'
 import {
 	faDownload,
@@ -45,7 +41,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { MongoCollection } from '../../../lib/collections/lib'
 import { TFunction, useTranslation } from 'react-i18next'
 import { useToggleExpandHelper } from './util/ToggleExpandedHelper'
 import {
@@ -65,23 +60,19 @@ import {
 } from './util/OverrideOpHelper'
 import { DropdownInputControl, DropdownInputOption } from '../../lib/Components/DropdownInput'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { TextInputControlWithOverride } from '../../lib/Components/TextInput'
-import { t } from 'i18next'
-import { MultiLineTextInputControlWithOverride } from '../../lib/Components/MultiLineTextInput'
-import { isEqual } from 'underscore'
-import { IntInputControlWithOverride } from '../../lib/Components/IntInput'
-import { FloatInputControlWithOverride } from '../../lib/Components/FloatInput'
-import { CheckboxControlWithOverride } from '../../lib/Components/Checkbox'
+import { TextInputControl } from '../../lib/Components/TextInput'
+import { MultiLineTextInputControl } from '../../lib/Components/MultiLineTextInput'
+import { IntInputControl } from '../../lib/Components/IntInput'
+import { FloatInputControl } from '../../lib/Components/FloatInput'
+import { CheckboxControl } from '../../lib/Components/Checkbox'
 
 function filterSourceLayers(
 	select: ConfigManifestEntrySourceLayers<true | false>,
 	layers: Array<{ name: string; value: string; type: SourceLayerType }>
 ): Array<{ name: string; value: string; type: SourceLayerType }> {
 	if (select.filters && select.filters.sourceLayerTypes) {
-		const sourceLayerTypes = select.filters.sourceLayerTypes
-		return _.filter(layers, (layer) => {
-			return sourceLayerTypes.includes(layer.type)
-		})
+		const sourceLayerTypes = new Set(select.filters.sourceLayerTypes)
+		return layers.filter((layer) => sourceLayerTypes.has(layer.type))
 	} else {
 		return layers
 	}
@@ -89,7 +80,7 @@ function filterSourceLayers(
 
 function filterLayerMappings(
 	select: ConfigManifestEntryLayerMappings<true | false>,
-	mappings: { [key: string]: MappingsExt }
+	mappings: { [studioId: string]: MappingsExt }
 ): Array<{ name: string; value: string }> {
 	const deviceTypes = select.filters?.deviceTypes
 	const result: Array<{ name: string; value: string }> = []
@@ -105,14 +96,13 @@ function filterLayerMappings(
 	return result
 }
 
-function getTableColumnValues<DBInterface extends { _id: ProtectedString<any> }>(
+function getTableColumnValues(
 	item: ConfigManifestEntrySelectFromColumn<boolean>,
-	configPath: string,
-	object: DBInterface,
-	alternateObject?: any
+	object: IBlueprintConfig,
+	alternateConfig: IBlueprintConfig | undefined
 ): string[] {
-	const attribute = `${configPath}.${item.tableId}`
-	const table = objectPathGet(object, attribute) ?? objectPathGet(alternateObject, attribute)
+	const attribute = item.tableId
+	const table = objectPathGet(object, attribute) ?? objectPathGet(alternateConfig, attribute)
 	const result: string[] = []
 	if (!Array.isArray(table)) {
 		return result
@@ -125,199 +115,31 @@ function getTableColumnValues<DBInterface extends { _id: ProtectedString<any> }>
 	return result
 }
 
-function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }>(
-	collection: MongoCollection<DBInterface>,
-	configPath: string,
-	object: DBInterface,
-	item: BasicConfigManifestEntry | ResolvedBasicConfigManifestEntry,
-	attribute: string,
-	layerMappings: { [key: string]: MappingsExt } | undefined,
-	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined,
-	alternateObject?: any
-) {
-	switch (item.type) {
-		case ConfigManifestEntryType.STRING:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={object}
-					type="text"
-					collection={collection}
-					className="input text-input input-l"
-				/>
-			)
-		case ConfigManifestEntryType.MULTILINE_STRING:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={object}
-					type="multiline"
-					collection={collection}
-					className="input text-input input-l"
-					mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join('\n'))}
-					mutateUpdateValue={(v) =>
-						v === undefined || v.length === 0 ? undefined : v.split('\n').map((i) => i.trimStart())
-					}
-				/>
-			)
-		case ConfigManifestEntryType.INT:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={object}
-					type="int"
-					collection={collection}
-					className="input text-input input-m"
-					mutateDisplayValue={(v) => (item.zeroBased ? v + 1 : v)}
-					mutateUpdateValue={(v) => (item.zeroBased ? v - 1 : v)}
-				/>
-			)
-		case ConfigManifestEntryType.FLOAT:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={object}
-					type="float"
-					collection={collection}
-					className="input text-input input-m"
-				/>
-			)
-		case ConfigManifestEntryType.BOOLEAN:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={object}
-					type="checkbox"
-					collection={collection}
-					className="input"
-				/>
-			)
-		case ConfigManifestEntryType.ENUM:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={object}
-					type="dropdown"
-					options={item.options || []}
-					collection={collection}
-					className="input text-input input-l"
-				/>
-			)
-		case ConfigManifestEntryType.JSON:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					invalidClassName="warn"
-					attribute={attribute}
-					obj={object}
-					type="json"
-					collection={collection}
-					className="input text-input input-l"
-				/>
-			)
-		case ConfigManifestEntryType.SELECT:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={object}
-					type={item.multiple ? 'multiselect' : 'dropdown'}
-					options={item.options}
-					collection={collection}
-					className="input text-input dropdown input-l"
-				/>
-			)
-		case ConfigManifestEntryType.SOURCE_LAYERS:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={object}
-					type={item.multiple ? 'multiselect' : 'dropdown'}
-					options={'options' in item ? item.options : filterSourceLayers(item, sourceLayers ?? [])}
-					collection={collection}
-					className="input text-input dropdown input-l"
-				/>
-			)
-		case ConfigManifestEntryType.LAYER_MAPPINGS:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={object}
-					type={item.multiple ? 'multiselect' : 'dropdown'}
-					options={'options' in item ? item.options : filterLayerMappings(item, layerMappings ?? {})}
-					collection={collection}
-					className="input text-input dropdown input-l"
-				/>
-			)
-		case ConfigManifestEntryType.SELECT_FROM_COLUMN:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={object}
-					type={item.multiple ? 'multiselect' : 'dropdown'}
-					options={'options' in item ? item.options : getTableColumnValues(item, configPath, object, alternateObject)}
-					collection={collection}
-					className="input text-input dropdown input-l"
-				/>
-			)
-		default:
-			return null
-	}
-}
-
-function getEditAttribute2(
-	item: WrappedOverridableItemNormal<any> & WrappedOverridableExt,
-	// layerMappings: { [key: string]: MappingsExt } | undefined,
-	// sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined,
-	// alternateObject?: any
+function getEditAttribute(
+	manifest: ConfigManifestEntry | ResolvedBasicConfigManifestEntry,
+	value: any,
 	handleUpdate: (value: any) => void,
-	clearOverride: () => void
+	_layerMappings: { [studioId: string]: MappingsExt } | undefined,
+	_sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined,
+	_alternateConfig: any | undefined
 ) {
-	const manifest = item.manifest
-
 	const commonProps = {
-		label: t('Value'),
-		hint: manifest.hint,
 		modifiedClassName: 'bghl',
-		value: item.computed,
-		defaultValue: item.defaults,
-		isOverridden: item.defaults !== item.computed,
+		value: value,
 		handleUpdate: handleUpdate,
-		clearOverride: clearOverride,
 	}
 
 	switch (manifest.type) {
 		case ConfigManifestEntryType.STRING:
-			return <TextInputControlWithOverride classNames="input text-input input-l" {...commonProps} />
+			return <TextInputControl classNames="input text-input input-l" {...commonProps} />
 		case ConfigManifestEntryType.MULTILINE_STRING:
-			return (
-				<MultiLineTextInputControlWithOverride
-					classNames="input text-input input-l"
-					{...commonProps}
-					isOverridden={!isEqual(item.defaults, item.computed)}
-				/>
-			)
+			return <MultiLineTextInputControl classNames="input text-input input-l" {...commonProps} />
 		case ConfigManifestEntryType.INT:
-			return (
-				<IntInputControlWithOverride
-					classNames="input text-input input-m"
-					{...commonProps}
-					zeroBased={manifest.zeroBased}
-				/>
-			)
+			return <IntInputControl classNames="input text-input input-m" {...commonProps} zeroBased={manifest.zeroBased} />
 		case ConfigManifestEntryType.FLOAT:
-			return <FloatInputControlWithOverride classNames="input text-input input-m" {...commonProps} />
+			return <FloatInputControl classNames="input text-input input-m" {...commonProps} />
 		case ConfigManifestEntryType.BOOLEAN:
-			return <CheckboxControlWithOverride classNames="input" {...commonProps} />
+			return <CheckboxControl classNames="input" {...commonProps} />
 
 		// TODO
 		// case ConfigManifestEntryType.ENUM:
@@ -387,7 +209,7 @@ function getEditAttribute2(
 		// 			attribute={attribute}
 		// 			obj={object}
 		// 			type={item.multiple ? 'multiselect' : 'dropdown'}
-		// 			options={'options' in item ? item.options : getTableColumnValues(item, configPath, object, alternateObject)}
+		// 			options={'options' in item ? item.options : getTableColumnValues(item, configPath, object, alternateConfig)}
 		// 			collection={collection}
 		// 			className="input text-input dropdown input-l"
 		// 		/>
@@ -412,12 +234,15 @@ type ResolvedBasicConfigManifestEntry =
 	| ConfigManifestEntryJson
 
 interface IConfigManifestSettingsProps {
+	/** An 'id' of this config manifest, eg the studioId it is in refernce to */
+	configManifestId: string
+
 	manifest: ConfigManifestEntry[]
 
 	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
-	alternateObject?: any
+	alternateConfig: IBlueprintConfig | undefined
 
-	layerMappings?: { [key: string]: MappingsExt }
+	layerMappings?: { [studioId: string]: MappingsExt }
 	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
 
 	subPanel?: boolean
@@ -427,48 +252,56 @@ interface IConfigManifestSettingsProps {
 	pushOverride: (newOp: SomeObjectOverrideOp) => void
 }
 interface IConfigManifestTableProps {
-	item: ConfigManifestEntryTable
+	configManifestId: string
 
+	manifest: ConfigManifestEntryTable
+	wrappedItem: WrappedOverridableItemNormal<TableConfigItemValue>
+
+	fullConfig: IBlueprintConfig
 	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
-	alternateObject?: any
+	alternateConfig: IBlueprintConfig | undefined
+	overrideHelper: OverrideOpHelper
 
-	layerMappings: { [key: string]: MappingsExt } | undefined
+	layerMappings: { [studioId: string]: MappingsExt } | undefined
 	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined
 
 	subPanel: boolean
 }
 
-interface BlueprintConfigManifestTableEntryProps<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj> {
+interface BlueprintConfigManifestTableEntryProps {
 	resolvedColumns: ResolvedBasicConfigManifestEntry[]
 
-	collection: TCol
-	object: DBInterface
-	configPath: string
+	rowValue: TableConfigItemValue[0]
 
-	valPath: string
-	val: any
-
+	setCellValue: (id: string, col: string, value: any) => void
 	removeRow: (id: string) => void
 
 	subPanel: boolean
 }
-function BlueprintConfigManifestTableEntry<TCol extends MongoCollection<DBInterface>, DBInterface extends DBObj>({
+function BlueprintConfigManifestTableEntry({
 	resolvedColumns,
-	collection,
-	object,
-	configPath,
-	valPath,
-	val,
+	rowValue,
+	setCellValue,
 	removeRow,
 	subPanel,
-}: BlueprintConfigManifestTableEntryProps<TCol, DBInterface>) {
-	const doRemoveRow = useCallback(() => removeRow(val._id), [removeRow, val._id])
+}: BlueprintConfigManifestTableEntryProps) {
+	const doRemoveRow = useCallback(() => removeRow(rowValue._id), [removeRow, rowValue._id])
 
 	return (
 		<tr>
 			{resolvedColumns.map((col) => (
 				<td key={col.id}>
-					{getEditAttribute(collection, configPath, object, col, `${valPath}.${col.id}`, undefined, undefined)}
+					{getEditAttribute(
+						col,
+						rowValue[col.id],
+						(value) => {
+							setCellValue(rowValue._id, col.id, value)
+						},
+						// These are defined on the column manifest if they are needed
+						undefined,
+						undefined,
+						undefined
+					)}
 				</td>
 			))}
 			<td>
@@ -491,17 +324,21 @@ interface TableSort {
 }
 
 function BlueprintConfigManifestTable({
-	item,
-	alternateObject,
+	configManifestId,
+	manifest,
+	wrappedItem,
+	fullConfig,
+	alternateConfig,
 	layerMappings,
 	sourceLayers,
 	subPanel,
+	overrideHelper,
 }: IConfigManifestTableProps) {
 	const { t } = useTranslation()
 
 	const resolvedColumns = useMemo(() => {
-		// TODO - this is too reactive..
-		return item.columns.map((column): ResolvedBasicConfigManifestEntry => {
+		// Future: this is too reactive, depending on fullConfig
+		return manifest.columns.map((column): ResolvedBasicConfigManifestEntry => {
 			switch (column.type) {
 				case ConfigManifestEntryType.SOURCE_LAYERS:
 					return {
@@ -516,16 +353,16 @@ function BlueprintConfigManifestTable({
 				case ConfigManifestEntryType.SELECT_FROM_COLUMN:
 					return {
 						...column,
-						options: layerMappings ? getTableColumnValues(column, configPath, object, alternateObject) : [],
+						options: layerMappings ? getTableColumnValues(column, fullConfig, alternateConfig) : [],
 					}
 				default:
 					return column
 			}
 		})
-	}, [item.columns, sourceLayers, layerMappings, configPath, object, alternateObject])
+	}, [manifest.columns, sourceLayers, layerMappings, fullConfig, alternateConfig])
 
 	const sortedColumns = useMemo(() => {
-		const columns = [...item.columns]
+		const columns = [...manifest.columns]
 		columns.sort((a, b) => {
 			if (a.rank > b.rank) return 1
 			if (a.rank < b.rank) return -1
@@ -533,9 +370,9 @@ function BlueprintConfigManifestTable({
 			return 0
 		})
 		return columns
-	}, [item.columns])
+	}, [manifest.columns])
 
-	const configEntry = item
+	const configEntry = manifest
 
 	const [tableSort, setTableSort] = useState<TableSort>({ column: -1, order: 'asc' })
 
@@ -562,57 +399,70 @@ function BlueprintConfigManifestTable({
 		})
 	}, [])
 
-	const updateObject = useCallback(
-		(updateObj: MongoModifier<DBInterface>) => {
-			collection.update(object._id, updateObj)
-		},
-		[collection, object._id]
-	)
+	// Limit reactivity of some callbacks callback, by passing values through a ref
+	const currentValueRef = useRef(wrappedItem.computed)
+	useEffect(() => {
+		currentValueRef.current = wrappedItem.computed
+	}, [wrappedItem.computed])
+
 	const addRow = useCallback(() => {
-		const rowDefault: any = {
-			_id: getRandomString(),
-		}
+		if (currentValueRef.current) {
+			const rowDefault: any = {
+				_id: getRandomString(),
+			}
 
-		for (const column of configEntry.columns) {
-			rowDefault[column.id] = clone<any>(column.defaultVal)
-		}
+			for (const column of configEntry.columns) {
+				rowDefault[column.id] = clone<any>(column.defaultVal)
+			}
 
-		const m: any = {}
-		m[baseAttribute] = rowDefault
-		updateObject({ $push: m })
-	}, [updateObject, baseAttribute, configEntry.columns])
+			overrideHelper.replaceItem(configEntry.id, [...currentValueRef.current, rowDefault])
+		}
+	}, [overrideHelper, configEntry.id, configEntry.columns])
 
 	const removeRow = useCallback(
 		(id: string) => {
-			const m: any = {}
-			m[baseAttribute] = {
-				_id: id,
+			if (currentValueRef.current) {
+				overrideHelper.replaceItem(
+					configEntry.id,
+					currentValueRef.current.filter((row) => row._id !== id)
+				)
 			}
-			updateObject({ $pull: m })
 		},
-		[updateObject, baseAttribute]
+		[overrideHelper, configEntry.id]
+	)
+	const setCellValue = useCallback(
+		(rowId: string, colId: string, value: any) => {
+			if (currentValueRef.current) {
+				const newVals = currentValueRef.current.map((row) => {
+					if (row._id === rowId) {
+						return {
+							...row,
+							[colId]: value,
+						}
+					} else {
+						return row
+					}
+				})
+
+				overrideHelper.replaceItem(configEntry.id, newVals)
+			}
+		},
+		[overrideHelper, configEntry.id]
 	)
 
-	const vals: TableConfigItemValue = objectPath.get(object, baseAttribute) || []
-
-	// Limit reactivity of export callback, by passing values through a ref
-	const valsRef = useRef(vals)
-	useEffect(() => {
-		valsRef.current = vals
-	}, [vals])
 	const exportJSON = useCallback(() => {
-		if (valsRef.current) {
-			const jsonStr = JSON.stringify(valsRef.current, undefined, 4)
+		if (currentValueRef.current) {
+			const jsonStr = JSON.stringify(currentValueRef.current, undefined, 4)
 
 			const element = document.createElement('a')
 			element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
-			element.download = `${object._id}_config_${configEntry.id}.json`
+			element.download = `${configManifestId}_config_${configEntry.id}.json`
 
 			document.body.appendChild(element) // Required for this to work in FireFox
 			element.click()
 			document.body.removeChild(element) // Required for this to work in FireFox
 		}
-	}, [configEntry.id, object._id, valsRef])
+	}, [configEntry.id, configManifestId, currentValueRef])
 
 	const [uploadFileKey, setUploadFileKey] = useState<number | null>(null)
 	const importJSON = useCallback(
@@ -662,27 +512,25 @@ function BlueprintConfigManifestTable({
 					return newEntry
 				})
 
-				const m: any = {}
-				m[baseAttribute] = conformedConfig
-				updateObject({ $set: m })
+				overrideHelper.replaceItem(configEntry.id, conformedConfig)
 			}
 			reader.readAsText(file)
 		},
-		[t, updateObject, baseAttribute, configEntry.columns]
+		[t, overrideHelper, configEntry.id, configEntry.columns]
 	)
 
-	let sortedIndices = _.range(vals.length)
+	const sortedRows: TableConfigItemValue = wrappedItem.computed || []
 	if (tableSort.column >= 0) {
-		sortedIndices = sortedIndices.sort((x, y) => {
+		sortedRows.sort((x, y) => {
 			const col = configEntry.columns[tableSort.column]
 			let a
 			let b
 			if (tableSort.order === 'asc') {
-				a = vals[x][col.id]
-				b = vals[y][col.id]
+				a = x[col.id]
+				b = y[col.id]
 			} else {
-				a = vals[y][col.id]
-				b = vals[x][col.id]
+				a = y[col.id]
+				b = x[col.id]
 			}
 			switch (col.type) {
 				case ConfigManifestEntryType.STRING:
@@ -730,15 +578,12 @@ function BlueprintConfigManifestTable({
 						</tr>
 					</thead>
 					<tbody>
-						{_.map(vals, (val, i) => (
+						{sortedRows.map((rowValue) => (
 							<BlueprintConfigManifestTableEntry
-								key={sortedIndices[i]}
+								key={rowValue._id}
 								resolvedColumns={resolvedColumns}
-								collection={collection}
-								object={object}
-								configPath={configPath}
-								valPath={`${baseAttribute}.${sortedIndices[i]}`}
-								val={val}
+								setCellValue={setCellValue}
+								rowValue={rowValue}
 								removeRow={removeRow}
 								subPanel={subPanel}
 							/>
@@ -972,8 +817,9 @@ function getAllCurrentAndDeletedItemsFromOverrides(
 }
 
 export function BlueprintConfigManifestSettings({
+	configManifestId,
 	manifest,
-	alternateObject,
+	alternateConfig,
 	layerMappings,
 	sourceLayers,
 	subPanel,
@@ -1050,13 +896,15 @@ export function BlueprintConfigManifestSettings({
 						} else {
 							return (
 								<BlueprintConfigManifestEntry
+									configManifestId={configManifestId}
 									key={item.id}
 									wrappedItem={item}
 									overrideHelper={overrideHelper}
 									value={item.computed}
 									showDelete={showDelete}
 									doCreate={doCreate}
-									alternateObject={alternateObject}
+									fullConfig={resolvedConfig} // This will react everytime the config is changed..
+									alternateConfig={alternateConfig}
 									layerMappings={layerMappings}
 									sourceLayers={sourceLayers}
 									subPanel={!!subPanel}
@@ -1166,6 +1014,7 @@ function BlueprintConfigManifestDeletedEntry({
 }
 
 interface BlueprintConfigManifestEntryProps {
+	configManifestId: string
 	value: any
 
 	wrappedItem: WrappedOverridableItemNormal<any> & WrappedOverridableExt
@@ -1174,9 +1023,10 @@ interface BlueprintConfigManifestEntryProps {
 	showDelete: (item: ConfigManifestEntry) => void
 	doCreate: (itemId: string, value: any) => void
 
+	fullConfig: IBlueprintConfig
 	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
-	alternateObject?: any
-	layerMappings: { [key: string]: MappingsExt } | undefined
+	alternateConfig: IBlueprintConfig | undefined
+	layerMappings: { [studioId: string]: MappingsExt } | undefined
 	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined
 
 	subPanel: boolean
@@ -1185,12 +1035,14 @@ interface BlueprintConfigManifestEntryProps {
 	toggleExpanded: (id: string, force?: boolean) => void
 }
 function BlueprintConfigManifestEntry({
+	configManifestId,
 	value,
 	wrappedItem,
 	overrideHelper,
 	showDelete,
 	doCreate,
-	alternateObject,
+	fullConfig,
+	alternateConfig,
 	layerMappings,
 	sourceLayers,
 	subPanel,
@@ -1215,23 +1067,60 @@ function BlueprintConfigManifestEntry({
 		},
 		[overrideHelper, wrappedItem.id]
 	)
-	const clearOverride = useCallback(() => {
-		overrideHelper.replaceItem(wrappedItem.id, wrappedItem.defaults)
-	}, [overrideHelper, wrappedItem.id, wrappedItem.defaults])
+	// const clearOverride = useCallback(() => {
+	// 	overrideHelper.replaceItem(wrappedItem.id, wrappedItem.defaults)
+	// }, [overrideHelper, wrappedItem.id, wrappedItem.defaults])
 
 	let component: React.ReactElement | undefined = undefined
-	if (manifestEntry.type === ConfigManifestEntryType.TABLE) {
-		component = (
-			<BlueprintConfigManifestTable
-				item={manifestEntry}
-				layerMappings={layerMappings}
-				sourceLayers={sourceLayers}
-				alternateObject={alternateObject}
-				subPanel={subPanel}
-			/>
-		)
-	} else {
-		component = getEditAttribute2(wrappedItem, handleUpdate, clearOverride)
+	// TODO - the undefined params
+	switch (manifestEntry.type) {
+		case ConfigManifestEntryType.TABLE:
+			component = (
+				<BlueprintConfigManifestTable
+					configManifestId={configManifestId}
+					manifest={manifestEntry}
+					wrappedItem={wrappedItem}
+					layerMappings={layerMappings}
+					sourceLayers={sourceLayers}
+					fullConfig={fullConfig}
+					alternateConfig={alternateConfig}
+					subPanel={subPanel}
+					overrideHelper={overrideHelper}
+				/>
+			)
+			break
+		case ConfigManifestEntryType.SELECT:
+		case ConfigManifestEntryType.LAYER_MAPPINGS:
+		case ConfigManifestEntryType.SOURCE_LAYERS:
+			component = (
+				<div className="field">
+					{t('Value')}
+					{getEditAttribute(
+						manifestEntry,
+						wrappedItem.computed,
+						handleUpdate,
+						layerMappings,
+						sourceLayers,
+						alternateConfig
+					)}
+				</div>
+			)
+			break
+		default:
+			component = (
+				<label className="field">
+					{t('Value')}
+					{getEditAttribute(
+						manifestEntry,
+						wrappedItem.computed,
+						handleUpdate,
+						layerMappings,
+						sourceLayers,
+						alternateConfig
+					)}
+				</label>
+			)
+			break
 	}
 
 	return (

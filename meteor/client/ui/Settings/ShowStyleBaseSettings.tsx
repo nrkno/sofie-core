@@ -28,6 +28,7 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 interface IProps {
 	match: {
@@ -50,7 +51,7 @@ interface ITrackedProps {
 	compatibleStudios: Array<Studio>
 	blueprintConfigManifest: ConfigManifestEntry[]
 	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined
-	layerMappings: { [key: string]: MappingsExt }
+	layerMappings: { [studioId: string]: MappingsExt }
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	const showStyleBase = ShowStyleBases.findOne(props.match.params.showStyleBaseId)
@@ -68,7 +69,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		  })
 		: undefined
 
-	const mappings: { [key: string]: MappingsExt } = {}
+	const mappings: { [studioId: string]: MappingsExt } = {}
 	for (const studio of compatibleStudios) {
 		mappings[studio.name] = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
 	}
@@ -189,12 +190,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 									<Route path={`${this.props.match.path}/blueprint-config`}>
 										<BlueprintConfigManifestSettings
+											configManifestId={unprotectString(showStyleBase._id)}
 											manifest={this.props.blueprintConfigManifest}
 											layerMappings={this.props.layerMappings}
 											sourceLayers={this.props.sourceLayers}
 											configObject={showStyleBase.blueprintConfigWithOverrides}
 											saveOverrides={this.saveBlueprintConfigOverrides}
 											pushOverride={this.pushBlueprintConfigOverride}
+											alternateConfig={undefined}
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/variants`}>

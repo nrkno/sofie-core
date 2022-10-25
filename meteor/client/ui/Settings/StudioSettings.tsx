@@ -24,6 +24,7 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { unDeepString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 interface IStudioSettingsProps {
 	match: {
@@ -191,11 +192,13 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									</Route>
 									<Route path={`${this.props.match.path}/blueprint-config`}>
 										<BlueprintConfigManifestSettings
+											configManifestId={unprotectString(this.props.studio._id)}
 											manifest={this.props.blueprintConfigManifest}
 											layerMappings={this.getLayerMappingsFlat()}
 											configObject={this.props.studio.blueprintConfigWithOverrides}
 											saveOverrides={this.saveBlueprintConfigOverrides}
 											pushOverride={this.pushBlueprintConfigOverride}
+											alternateConfig={undefined}
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/mappings`}>

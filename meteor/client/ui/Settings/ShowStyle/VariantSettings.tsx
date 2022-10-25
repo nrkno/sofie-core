@@ -13,7 +13,10 @@ import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { BlueprintConfigManifestSettings } from '../BlueprintConfigManifestSettings'
-import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	applyAndValidateOverrides,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IShowStyleVariantsProps {
@@ -21,7 +24,7 @@ interface IShowStyleVariantsProps {
 	showStyleVariants: Array<ShowStyleVariant>
 	blueprintConfigManifest: ConfigManifestEntry[]
 
-	layerMappings?: { [key: string]: MappingsExt }
+	layerMappings?: { [studioId: string]: MappingsExt }
 	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
 }
 interface IShowStyleVariantsSettingsState {
@@ -144,8 +147,11 @@ export const ShowStyleVariantsSettings = withTranslation()(
 									<div className="row">
 										<div className="col c12 r1-c12 phs">
 											<BlueprintConfigManifestSettings
+												configManifestId={unprotectString(showStyleVariant._id)}
 												manifest={this.props.blueprintConfigManifest}
-												alternateObject={this.props.showStyleBase}
+												alternateConfig={
+													applyAndValidateOverrides(this.props.showStyleBase.blueprintConfigWithOverrides).obj
+												}
 												layerMappings={this.props.layerMappings}
 												sourceLayers={this.props.sourceLayers}
 												subPanel={true}
