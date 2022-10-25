@@ -48,6 +48,7 @@ import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyle
 import { executeActionInner } from './playout'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { calculateNowOffsetLatency } from './timeline/multi-gateway'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 
 export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAsAdlibNowProps): Promise<void> {
 	return runJobWithPlayoutCache(
@@ -111,10 +112,21 @@ export async function takePieceAsAdlibNow(context: JobContext, data: TakePieceAs
 						break
 					case IBlueprintDirectPlayType.AdLibAction: {
 						const executeProps = pieceToCopy.allowDirectPlay
+						const showStyle = await context.getShowStyleCompound(
+							rundown.showStyleVariantId,
+							rundown.showStyleBaseId
+						)
+						const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+						const watchedPackages = WatchedPackagesHelper.empty(context) // TODO: should this be able to retrieve any watched packages?
+
 						await executeActionInner(
 							context,
 							cache,
-							null, // TODO: should this be able to retrieve any watched packages?
+							rundown,
+							showStyle,
+							blueprint,
+							partInstance,
+							watchedPackages,
 							async (actionContext, _rundown, _currentPartInstance, blueprint) => {
 								if (!blueprint.blueprint.executeAction)
 									throw UserError.create(UserErrorMessage.ActionsNotSupported)
