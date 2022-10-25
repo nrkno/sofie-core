@@ -25,6 +25,7 @@ interface IProps {
 function getTriggerTypes(t: TFunction): Record<string, TriggerType> {
 	return {
 		[t('Hotkey')]: TriggerType.hotkey,
+		[t('Device')]: TriggerType.device,
 	}
 }
 
