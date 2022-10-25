@@ -239,7 +239,11 @@ export interface PubSubTypes {
 	[PubSub.uiStudio]: (studioId: StudioId | null) => UIStudio
 	[PubSub.uiTriggeredActions]: (showStyleBaseId: ShowStyleBaseId | null) => UITriggeredActionsObj
 
-	[PubSub.mountedTriggersForDevice]: (deviceId: PeripheralDeviceId, token?: string) => MountedTrigger
+	[PubSub.mountedTriggersForDevice]: (
+		deviceId: PeripheralDeviceId,
+		deviceIds: string[],
+		token?: string
+	) => MountedTrigger
 }
 
 /**
@@ -266,7 +270,6 @@ export type CustomCollectionType = {
 	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
 	[CustomCollectionName.UIStudio]: UIStudio
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
-
 }
 
 /**

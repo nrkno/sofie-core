@@ -10,6 +10,7 @@ import { EditAttribute } from '../../../../../lib/EditAttribute'
 import { HotkeyEditor } from './HotkeyEditor'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { isHotkeyTrigger } from '../../../../../../lib/api/triggers/triggerTypeSelectors'
 
 interface IProps {
 	id: string
@@ -73,27 +74,25 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 		}
 	}, [popperElement, referenceElement, opened, trigger])
 
-	const triggerPreview =
-		trigger.type === TriggerType.hotkey ? (
-			<HotkeyTrigger
-				innerRef={setReferenceElement}
-				keys={trigger.keys}
-				up={trigger.up || false}
-				onClick={onFocus}
-				selected={opened}
-			/>
-		) : (
-			<div ref={setReferenceElement}>Unknown trigger type: {trigger.type}</div>
-		)
+	const triggerPreview = isHotkeyTrigger(trigger) ? (
+		<HotkeyTrigger
+			innerRef={setReferenceElement}
+			keys={trigger.keys}
+			up={trigger.up || false}
+			onClick={onFocus}
+			selected={opened}
+		/>
+	) : (
+		<div ref={setReferenceElement}>Unknown trigger type: {trigger.type}</div>
+	)
 
-	const triggerEditor =
-		trigger.type === TriggerType.hotkey ? (
-			<HotkeyEditor
-				trigger={localTrigger}
-				onChange={(newVal) => setLocalTrigger(newVal)}
-				modified={trigger.keys !== localTrigger.keys}
-			/>
-		) : null
+	const triggerEditor = isHotkeyTrigger(localTrigger) ? (
+		<HotkeyEditor
+			trigger={localTrigger}
+			onChange={(newVal) => setLocalTrigger(newVal)}
+			modified={!isHotkeyTrigger(trigger) || trigger.keys !== localTrigger.keys}
+		/>
+	) : null
 
 	useLayoutEffect(() => {
 		update && update().catch(console.error)

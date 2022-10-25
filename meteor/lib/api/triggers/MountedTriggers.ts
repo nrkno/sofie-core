@@ -1,9 +1,11 @@
 import { ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
-import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	AdLibActionId,
+	PieceId,
+	RundownBaselineAdLibActionId,
+	TriggeredActionId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import { AdLibActionId } from '../../collections/AdLibActions'
-import { RundownBaselineAdLibActionId } from '../../collections/RundownBaselineAdLibActions'
-import { TriggeredActionId } from '../../collections/TriggeredActions'
 import { IWrappedAdLib } from './actionFilterChainCompilers'
 
 export type MountedTrigger = MountedGenericTrigger | MountedAdLibTrigger

@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { faCopy, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { PlayoutActions, SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
+import {
+	PlayoutActions,
+	SomeBlueprintTrigger,
+	SourceLayerType,
+	TriggerType,
+} from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
 import { DBBlueprintTrigger, TriggeredActions } from '../../../../../lib/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
@@ -20,6 +25,7 @@ import { useDrag, useDrop } from 'react-dnd'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { isHotkeyTrigger } from '../../../../../lib/api/triggers/triggerTypeSelectors'
 
 interface IProps {
 	showStyleBase: ShowStyleBase | undefined
@@ -198,7 +204,9 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 			if (!triggeredAction) return
 			triggeredAction.triggersWithOverrides.defaults[id] = newVal
 
-			LAST_UP_SETTING = !!newVal.up
+			if (isHotkeyTrigger(newVal)) {
+				LAST_UP_SETTING = !!newVal.up
+			}
 
 			TriggeredActions.update(triggeredActionId, {
 				$set: {
@@ -266,14 +274,23 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 	const closeAction = useCallback(() => setSelectedAction(null), [])
 	const focusAction = useCallback(() => props.onFocus && props.onFocus(triggeredActionId), [triggeredActionId])
 
-	const lastTrigger = last(Object.values(triggeredAction?.triggersWithOverrides?.defaults || {}))
+	const lastTrigger = last(Object.values(triggeredAction?.triggersWithOverrides?.defaults || {})) as
+		| SomeBlueprintTrigger
+		| undefined
+	let lastUp: boolean | undefined = undefined
+	if (lastTrigger && isHotkeyTrigger(lastTrigger)) lastUp = lastTrigger.up
+
+	const selectedTriggerObj = selectedTrigger
+		? triggeredAction?.triggersWithOverrides.defaults[selectedTrigger]
+		: undefined
+	let selectedUp: boolean | undefined = undefined
+	if (selectedTriggerObj && isHotkeyTrigger(selectedTriggerObj)) selectedUp = selectedTriggerObj.up
+
 	useEffect(() => {
 		if (!triggeredAction) return
 
-		LAST_UP_SETTING = selectedTrigger
-			? !!triggeredAction.triggersWithOverrides.defaults[selectedTrigger]?.up
-			: lastTrigger?.up ?? LAST_UP_SETTING
-	}, [triggeredAction, lastTrigger?.up, selectedTrigger])
+		LAST_UP_SETTING = selectedUp !== undefined ? selectedUp : lastUp ?? LAST_UP_SETTING
+	}, [triggeredAction, lastUp, selectedUp])
 
 	// do not render anything until we get the triggered action from the collection
 	if (!triggeredAction) return null

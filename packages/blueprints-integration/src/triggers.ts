@@ -3,6 +3,7 @@ import { ITranslatableMessage } from './translations'
 
 export enum TriggerType {
 	hotkey = 'hotkey',
+	device = 'device',
 }
 
 /**
@@ -63,7 +64,31 @@ export interface IBlueprintHotkeyTrigger extends IBlueprintTrigger {
 	up?: boolean
 }
 
-export type SomeBlueprintTrigger = IBlueprintHotkeyTrigger
+export interface IBlueprintDeviceTrigger extends IBlueprintTrigger {
+	type: TriggerType.device
+
+	/**
+	 * This is an external identifier, identifying a device providing triggers (a panel, keyboard, etc.)
+	 */
+	deviceId: string
+
+	/**
+	 * An optional, user-presentable string identifying the device class ("Stream Deck", "X-Keys")
+	 */
+	deviceClass?: string
+
+	/**
+	 * This is an external identifier, identifying an individual event source (a button, a key, a GPI input pin)
+	 */
+	triggerId: string
+
+	/**
+	 * Additional arguements, provided by the trigger, that are required to match
+	 */
+	arguments?: Record<string, string | number | boolean>
+}
+
+export type SomeBlueprintTrigger = IBlueprintHotkeyTrigger | IBlueprintDeviceTrigger
 
 export enum PlayoutActions {
 	adlib = 'adlib',

@@ -35,6 +35,7 @@ import {
 	TriggeredActionId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MountedAdLibTrigger, MountedGenericTrigger } from '../../../lib/api/triggers/MountedTriggers'
+import { isHotkeyTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -419,7 +420,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			if (pair.name) {
 				const triggers = Object.values(pair.triggers).filter((trigger) => trigger.type === TriggerType.hotkey)
 				const genericTriggerId = protectString(`${pair._id}`)
-				const keys = triggers.map((trigger) => trigger.keys)
+				const keys = triggers.filter(isHotkeyTrigger).map((trigger) => trigger.keys)
 				const finalKeys = keys.map((key) => getFinalKey(key))
 				const adLibOnly = Object.values(pair.actions).every(
 					(actionDescriptor) => actionDescriptor.action === PlayoutActions.adlib
@@ -438,7 +439,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			}
 
 			const hotkeyTriggers = Object.values(pair.triggers)
-				.filter((trigger) => trigger.type === TriggerType.hotkey)
+				.filter(isHotkeyTrigger)
 				.map((trigger) => trigger.keys)
 
 			const hotkeyFinalKeys = hotkeyTriggers.map((key) => getFinalKey(key))

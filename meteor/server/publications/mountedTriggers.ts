@@ -6,22 +6,27 @@ import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
 import { observerChain } from '../lib/observerChain'
 import { MongoCursor } from '../../lib/collections/lib'
 import {
-	CustomPublishArray,
+	CustomPublish,
 	meteorCustomPublish,
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
-import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDeviceId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { MountedTrigger } from '../../lib/api/triggers/MountedTriggers'
 import { ReadonlyDeep } from 'type-fest'
+import { logger } from '../logging'
+import { DBTriggeredActions, TriggeredActions, UITriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import { Complete, literal } from '../../lib/lib'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { TriggerType } from '@sofie-automation/blueprints-integration'
 
 meteorCustomPublish(
 	PubSub.mountedTriggersForDevice,
 	CustomCollectionName.MountedTriggers,
-	async function (pub, deviceId: PeripheralDeviceId, token) {
+	async function (pub, deviceId: PeripheralDeviceId, deviceIds: string[], token) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = PeripheralDevices.findOne(deviceId)
 
@@ -30,7 +35,9 @@ meteorCustomPublish(
 			const studioId = peripheralDevice.studioId
 			if (!studioId) return
 
-			await createObserverForMountedTriggersPublication(pub, PubSub.mountedTriggersForDevice, studioId)
+			await createObserverForMountedTriggersPublication(pub, PubSub.mountedTriggersForDevice, studioId, deviceIds)
+		} else {
+			logger.warn(`Pub.expectedPackagesForDevice: Not allowed: "${deviceId}"`)
 		}
 	}
 )
@@ -38,33 +45,29 @@ meteorCustomPublish(
 type MountedTriggersState = {}
 
 async function createObserverForMountedTriggersPublication(
-	pub: CustomPublishArray<MountedTrigger>,
+	pub: CustomPublish<MountedTrigger>,
 	observerId: PubSub,
-	studioId: StudioId
+	studioId: StudioId,
+	deviceIds: string[]
 ) {
-	const observer = await setUpOptimizedObserverArray<
+	return setUpOptimizedObserverArray<
 		MountedTrigger,
 		MountedTriggersArgs,
 		MountedTriggersState,
 		MountedTriggersUpdateProps
 	>(
 		`pub_${observerId}_${studioId}`,
-		{ studioId },
+		{ studioId, deviceIds },
 		setupMountedTriggersPublicationObservers,
 		manipulateMountedTriggersPublicationData,
-		(_args, newData) => {
-			// Don't need to perform any deep diffing
-			pub.updatedDocs(newData)
-		},
+		pub,
 		0 // ms
 	)
-	pub.onStop(() => {
-		observer.stop()
-	})
 }
 
 interface MountedTriggersArgs {
 	studioId: StudioId
+	deviceIds: string[]
 }
 
 interface MountedTriggersUpdateProps {
@@ -72,7 +75,10 @@ interface MountedTriggersUpdateProps {
 		activePlaylist: Pick<DBRundownPlaylist, '_id' | 'nextPartInstanceId' | 'currentPartInstanceId'>
 		activePartInstance: Pick<DBPartInstance, '_id' | 'rundownId'>
 		currentRundown: Pick<DBRundown, '_id' | 'showStyleBaseId'>
-		showStyleBase: Pick<DBShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers' | 'hotkeyLegend'>
+		showStyleBase: Pick<
+			DBShowStyleBase,
+			'_id' | 'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'hotkeyLegend'
+		>
 	} | null
 }
 
@@ -119,8 +125,16 @@ async function setupMountedTriggersPublicationObservers(
 				chain.currentRundown
 					? (ShowStyleBases.find(
 							{ _id: chain.currentRundown.showStyleBaseId },
-							{ fields: { sourceLayers: 1, outputLayers: 1, hotkeyLegend: 1 }, limit: 1 }
-					  ) as MongoCursor<Pick<DBShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers' | 'hotkeyLegend'>>)
+							{
+								fields: { sourceLayersWithOverrides: 1, outputLayersWithOverrides: 1, hotkeyLegend: 1 },
+								limit: 1,
+							}
+					  ) as MongoCursor<
+							Pick<
+								DBShowStyleBase,
+								'_id' | 'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'hotkeyLegend'
+							>
+					  >)
 					: null
 			)
 			.end((state) => {
@@ -144,6 +158,58 @@ async function setupMountedTriggersPublicationObservers(
 	]
 }
 
-async function manipulateMountedTriggersPublicationData(): Promise<MountedTrigger[]> {
+async function manipulateMountedTriggersPublicationData(
+	args: ReadonlyDeep<MountedTriggersArgs>,
+	_state: Partial<MountedTriggersState>,
+	newProps: ReadonlyDeep<Partial<MountedTriggersUpdateProps> | undefined>
+): Promise<MountedTrigger[]> {
+	const triggeredActions = await getAllPossibleTriggeredActions(newProps?.context?.showStyleBase?._id, args.deviceIds)
+
+	console.log(triggeredActions)
+
 	return []
+}
+
+async function getAllPossibleTriggeredActions(
+	showStyleBaseId: ShowStyleBaseId | undefined,
+	deviceIds: readonly string[]
+): Promise<UITriggeredActionsObj[]> {
+	const possibleActionsAll = await Promise.all([
+		convertAllDocumentsAsync(
+			TriggeredActions.findFetchAsync({
+				showStyleBaseId: null,
+			})
+		),
+		showStyleBaseId
+			? convertAllDocumentsAsync(
+					TriggeredActions.findFetchAsync({
+						showStyleBaseId,
+					})
+			  )
+			: [],
+	])
+
+	const allActions = possibleActionsAll.flat()
+	return allActions.filter((triggeredAction) =>
+		Object.values(triggeredAction.triggers).find(
+			(trigger) => trigger.type === TriggerType.device && deviceIds.includes(trigger.deviceId)
+		)
+	)
+}
+
+async function convertAllDocumentsAsync(docsPromise: Promise<DBTriggeredActions[]>): Promise<UITriggeredActionsObj[]> {
+	return docsPromise.then((docs) => docs.map((doc) => convertDocument(doc)))
+}
+
+function convertDocument(doc: DBTriggeredActions): UITriggeredActionsObj {
+	return literal<Complete<UITriggeredActionsObj>>({
+		_id: doc._id,
+		_rank: doc._rank,
+
+		showStyleBaseId: doc.showStyleBaseId,
+		name: doc.name,
+
+		actions: applyAndValidateOverrides(doc.actionsWithOverrides).obj,
+		triggers: applyAndValidateOverrides(doc.triggersWithOverrides).obj,
+	})
 }
