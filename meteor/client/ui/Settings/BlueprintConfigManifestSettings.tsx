@@ -24,6 +24,7 @@ import {
 	ConfigManifestEntrySelectFromOptions,
 	ConfigManifestEntryString,
 	ConfigManifestEntryJson,
+	BasicConfigManifestEntry,
 } from '@sofie-automation/blueprints-integration'
 import { objectPathGet, getRandomString, clone, literal } from '../../../lib/lib'
 import { getHelpMode } from '../../lib/localStorage'
@@ -65,6 +66,7 @@ import { MultiLineTextInputControl } from '../../lib/Components/MultiLineTextInp
 import { IntInputControl } from '../../lib/Components/IntInput'
 import { FloatInputControl } from '../../lib/Components/FloatInput'
 import { CheckboxControl } from '../../lib/Components/Checkbox'
+import { EditAttribute } from '../../lib/EditAttribute'
 
 function filterSourceLayers(
 	select: ConfigManifestEntrySourceLayers<true | false>,
@@ -116,12 +118,13 @@ function getTableColumnValues(
 }
 
 function getEditAttribute(
-	manifest: ConfigManifestEntry | ResolvedBasicConfigManifestEntry,
+	manifest: BasicConfigManifestEntry | ResolvedBasicConfigManifestEntry,
 	value: any,
 	handleUpdate: (value: any) => void,
-	_layerMappings: { [studioId: string]: MappingsExt } | undefined,
-	_sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined,
-	_alternateConfig: any | undefined
+	layerMappings: { [studioId: string]: MappingsExt } | undefined,
+	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined,
+	fullConfig: IBlueprintConfig | undefined,
+	alternateConfig: IBlueprintConfig | undefined
 ) {
 	const commonProps = {
 		modifiedClassName: 'bghl',
@@ -140,82 +143,70 @@ function getEditAttribute(
 			return <FloatInputControl classNames="input text-input input-m" {...commonProps} />
 		case ConfigManifestEntryType.BOOLEAN:
 			return <CheckboxControl classNames="input" {...commonProps} />
-
-		// TODO
-		// case ConfigManifestEntryType.ENUM:
-		// 	return (
-		// 		<EditAttribute
-		// 			modifiedClassName="bghl"
-		// 			attribute={attribute}
-		// 			obj={object}
-		// 			type="dropdown"
-		// 			options={item.options || []}
-		// 			collection={collection}
-		// 			className="input text-input input-l"
-		// 		/>
-		// 	)
-		// case ConfigManifestEntryType.JSON:
-		// 	return (
-		// 		<EditAttribute
-		// 			modifiedClassName="bghl"
-		// 			invalidClassName="warn"
-		// 			attribute={attribute}
-		// 			obj={object}
-		// 			type="json"
-		// 			collection={collection}
-		// 			className="input text-input input-l"
-		// 		/>
-		// 	)
-		// case ConfigManifestEntryType.SELECT:
-		// 	return (
-		// 		<EditAttribute
-		// 			modifiedClassName="bghl"
-		// 			attribute={attribute}
-		// 			obj={object}
-		// 			type={item.multiple ? 'multiselect' : 'dropdown'}
-		// 			options={item.options}
-		// 			collection={collection}
-		// 			className="input text-input dropdown input-l"
-		// 		/>
-		// 	)
-		// case ConfigManifestEntryType.SOURCE_LAYERS:
-		// 	return (
-		// 		<EditAttribute
-		// 			modifiedClassName="bghl"
-		// 			attribute={attribute}
-		// 			obj={object}
-		// 			type={item.multiple ? 'multiselect' : 'dropdown'}
-		// 			options={'options' in item ? item.options : filterSourceLayers(item, sourceLayers ?? [])}
-		// 			collection={collection}
-		// 			className="input text-input dropdown input-l"
-		// 		/>
-		// 	)
-		// case ConfigManifestEntryType.LAYER_MAPPINGS:
-		// 	return (
-		// 		<EditAttribute
-		// 			modifiedClassName="bghl"
-		// 			attribute={attribute}
-		// 			obj={object}
-		// 			type={item.multiple ? 'multiselect' : 'dropdown'}
-		// 			options={'options' in item ? item.options : filterLayerMappings(item, layerMappings ?? {})}
-		// 			collection={collection}
-		// 			className="input text-input dropdown input-l"
-		// 		/>
-		// 	)
-		// case ConfigManifestEntryType.SELECT_FROM_COLUMN:
-		// 	return (
-		// 		<EditAttribute
-		// 			modifiedClassName="bghl"
-		// 			attribute={attribute}
-		// 			obj={object}
-		// 			type={item.multiple ? 'multiselect' : 'dropdown'}
-		// 			options={'options' in item ? item.options : getTableColumnValues(item, configPath, object, alternateConfig)}
-		// 			collection={collection}
-		// 			className="input text-input dropdown input-l"
-		// 		/>
-		// 	)
+		case ConfigManifestEntryType.ENUM: {
+			const options: DropdownInputOption<string>[] = manifest.options.map((opt, i) => ({ name: opt, value: opt, i }))
+			return <DropdownInputControl classNames="input text-input input-l" {...commonProps} options={options} />
+		}
+		// TODO - replace these EditAttribute
+		case ConfigManifestEntryType.JSON:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					invalidClassName="warn"
+					type="json"
+					className="input text-input input-l"
+					overrideDisplayValue={value}
+					updateFunction={(_e, value) => handleUpdate(value)}
+				/>
+			)
+		case ConfigManifestEntryType.SELECT:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					type={manifest.multiple ? 'multiselect' : 'dropdown'}
+					options={manifest.options}
+					className="input text-input dropdown input-l"
+					overrideDisplayValue={value}
+					updateFunction={(_e, value) => handleUpdate(value)}
+				/>
+			)
+		case ConfigManifestEntryType.SOURCE_LAYERS:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					type={manifest.multiple ? 'multiselect' : 'dropdown'}
+					options={'options' in manifest ? manifest.options : filterSourceLayers(manifest, sourceLayers ?? [])}
+					className="input text-input dropdown input-l"
+					overrideDisplayValue={value}
+					updateFunction={(_e, value) => handleUpdate(value)}
+				/>
+			)
+		case ConfigManifestEntryType.LAYER_MAPPINGS:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					type={manifest.multiple ? 'multiselect' : 'dropdown'}
+					options={'options' in manifest ? manifest.options : filterLayerMappings(manifest, layerMappings ?? {})}
+					className="input text-input dropdown input-l"
+					overrideDisplayValue={value}
+					updateFunction={(_e, value) => handleUpdate(value)}
+				/>
+			)
+		case ConfigManifestEntryType.SELECT_FROM_COLUMN:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					type={manifest.multiple ? 'multiselect' : 'dropdown'}
+					options={
+						'options' in manifest ? manifest.options : getTableColumnValues(manifest, fullConfig || {}, alternateConfig)
+					}
+					className="input text-input dropdown input-l"
+					overrideDisplayValue={value}
+					updateFunction={(_e, value) => handleUpdate(value)}
+				/>
+			)
 		default:
-			// assertNever(item)
+			assertNever(manifest)
 			return undefined
 	}
 }
@@ -298,6 +289,7 @@ function BlueprintConfigManifestTableEntry({
 							setCellValue(rowValue._id, col.id, value)
 						},
 						// These are defined on the column manifest if they are needed
+						undefined,
 						undefined,
 						undefined,
 						undefined
@@ -519,7 +511,7 @@ function BlueprintConfigManifestTable({
 		[t, overrideHelper, configEntry.id, configEntry.columns]
 	)
 
-	const sortedRows: TableConfigItemValue = wrappedItem.computed || []
+	const sortedRows: TableConfigItemValue = [...(wrappedItem.computed || [])]
 	if (tableSort.column >= 0) {
 		sortedRows.sort((x, y) => {
 			const col = configEntry.columns[tableSort.column]
@@ -1067,9 +1059,6 @@ function BlueprintConfigManifestEntry({
 		},
 		[overrideHelper, wrappedItem.id]
 	)
-	// const clearOverride = useCallback(() => {
-	// 	overrideHelper.replaceItem(wrappedItem.id, wrappedItem.defaults)
-	// }, [overrideHelper, wrappedItem.id, wrappedItem.defaults])
 
 	let component: React.ReactElement | undefined = undefined
 	// TODO - the undefined params
@@ -1101,6 +1090,7 @@ function BlueprintConfigManifestEntry({
 						handleUpdate,
 						layerMappings,
 						sourceLayers,
+						fullConfig,
 						alternateConfig
 					)}
 				</div>
@@ -1116,6 +1106,7 @@ function BlueprintConfigManifestEntry({
 						handleUpdate,
 						layerMappings,
 						sourceLayers,
+						fullConfig,
 						alternateConfig
 					)}
 				</label>

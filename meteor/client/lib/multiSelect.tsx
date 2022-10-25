@@ -10,7 +10,7 @@ export interface MultiSelectEvent {
 	selectedValues: Array<string>
 }
 
-export type MultiSelectOptions = _.Dictionary<{ value: string | string[]; className?: string }>
+export type MultiSelectOptions = Record<string, { value: string | string[]; className?: string }>
 
 interface IProps {
 	/**

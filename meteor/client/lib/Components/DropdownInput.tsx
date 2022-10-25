@@ -10,10 +10,6 @@ export interface DropdownInputOption<TValue> {
 	name: string
 	i: number
 }
-// export interface DropdownOptionsResult<TValue> {
-// 	options: DropdownInputOption<TValue>[]
-// 	currentOptionMissing: boolean
-// }
 
 export function getDropdownInputOptions<T>(rawOptions: any): DropdownInputOption<T>[] {
 	const options: Omit<DropdownInputOption<T>, 'i'>[] = []

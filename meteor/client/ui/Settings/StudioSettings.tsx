@@ -24,7 +24,7 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { unDeepString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 interface IStudioSettingsProps {
 	match: {
