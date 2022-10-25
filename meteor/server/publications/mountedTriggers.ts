@@ -5,18 +5,22 @@ import { DBPartInstance, PartInstances } from '../../lib/collections/PartInstanc
 import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
 import { observerChain } from '../lib/observerChain'
 import { MongoCursor } from '../../lib/collections/lib'
-import { CustomPublishArray, meteorCustomPublishArray } from '../lib/customPublication'
-import { PubSub } from '../../lib/api/pubsub'
+import {
+	CustomPublishArray,
+	meteorCustomPublish,
+	setUpOptimizedObserverArray,
+	TriggerUpdate,
+} from '../lib/customPublication'
+import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { MountedTrigger } from '../../lib/api/triggers/MountedTriggers'
-import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
 import { ReadonlyDeep } from 'type-fest'
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.mountedTriggersForDevice,
-	'mountedTriggers',
+	CustomCollectionName.MountedTriggers,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = PeripheralDevices.findOne(deviceId)
@@ -31,12 +35,14 @@ meteorCustomPublishArray(
 	}
 )
 
+type MountedTriggersState = {}
+
 async function createObserverForMountedTriggersPublication(
 	pub: CustomPublishArray<MountedTrigger>,
 	observerId: PubSub,
 	studioId: StudioId
 ) {
-	const observer = await setUpOptimizedObserver<
+	const observer = await setUpOptimizedObserverArray<
 		MountedTrigger,
 		MountedTriggersArgs,
 		MountedTriggersState,
@@ -136,4 +142,8 @@ async function setupMountedTriggersPublicationObservers(
 				})
 			}),
 	]
+}
+
+async function manipulateMountedTriggersPublicationData(): Promise<MountedTrigger[]> {
+	return []
 }

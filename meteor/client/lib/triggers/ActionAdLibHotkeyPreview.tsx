@@ -5,9 +5,10 @@ import { assertNever } from '../../../lib/lib'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { useTracker } from '../ReactMeteorData/ReactMeteorData'
 import { SorensenContext } from '../SorensenContext'
-import { MountedAdLibTrigger, MountedAdLibTriggers } from './TriggersHandler'
+import { MountedAdLibTriggers } from './TriggersHandler'
 import { codesToKeyLabels } from './codesToKeyLabels'
 import { AdLibActionId, PieceId, RundownBaselineAdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MountedAdLibTrigger } from '../../../lib/api/triggers/MountedTriggers'
 
 type IProps =
 	| {

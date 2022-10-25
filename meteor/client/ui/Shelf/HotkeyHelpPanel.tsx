@@ -3,18 +3,14 @@ import type { Sorensen } from '@sofie-automation/sorensen'
 import { useTranslation } from 'react-i18next'
 import { hotkeyHelper } from '../../lib/hotkeyHelper'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import {
-	MountedAdLibTrigger,
-	MountedAdLibTriggers,
-	MountedGenericTrigger,
-	MountedGenericTriggers,
-} from '../../lib/triggers/TriggersHandler'
+import { MountedAdLibTriggers, MountedGenericTriggers } from '../../lib/triggers/TriggersHandler'
 import { SorensenContext } from '../../lib/SorensenContext'
 import { codesToKeyLabels } from '../../lib/triggers/codesToKeyLabels'
 import { TFunction } from 'i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { MongoCursor } from '../../../lib/collections/lib'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { MountedAdLibTrigger, MountedGenericTrigger } from '../../../lib/api/triggers/MountedTriggers'
 
 interface IProps {
 	visible?: boolean
