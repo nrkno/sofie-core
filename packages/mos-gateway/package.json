@@ -69,6 +69,7 @@
 		"@sofie-automation/shared-lib": "1.47.0-in-development",
 		"mos-connection": "^2.0.1",
 		"tslib": "^2.4.0",
+		"type-fest": "^3.1.0",
 		"underscore": "^1.13.4",
 		"winston": "^3.8.2"
 	},

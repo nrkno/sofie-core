@@ -2,7 +2,6 @@ import {
 	Conductor,
 	DeviceType,
 	ConductorOptions,
-	Device,
 	TimelineTriggerTimeResult,
 	DeviceOptionsAny,
 	Mappings,
@@ -28,7 +27,6 @@ import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
 import * as _ from 'underscore'
-import { CoreConnection } from '@sofie-automation/server-core-integration'
 import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
@@ -43,26 +41,18 @@ import {
 	PeripheralDeviceStatusObject,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { StudioId, TimelineHash } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import {
+	PeripheralDevicePublic,
+	PlayoutDeviceSettings,
+} from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { DBTimelineDatastoreEntry } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
 
 const debug = Debug('playout-gateway')
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface TSRConfig {}
-export interface TSRSettings {
-	// Runtime settings from Core
-	devices: {
-		[deviceId: string]: DeviceOptionsAny
-	}
-	mappings: Mappings
-	errorReporting?: boolean
-	multiThreading?: boolean
-	multiThreadedResolver?: boolean
-	useCacheWhenResolving?: boolean
-}
-export interface TSRDevice {
-	coreConnection: CoreConnection
-	device: Device<DeviceOptionsAny>
-}
 
 // ----------------------------------------------------------------------------
 // interface copied from Core lib/collections/Timeline.ts
@@ -151,7 +141,7 @@ export class TSRHandler {
 	private _triggerupdateExpectedPlayoutItemsTimeout: any = null
 	private _coreTsrHandlers: { [deviceId: string]: CoreTSRDeviceHandler } = {}
 	private _observers: Array<any> = []
-	private _cachedStudioId = ''
+	private _cachedStudioId: StudioId | null = null
 
 	private _initialized = false
 	private _multiThreaded: boolean | null = null
@@ -176,7 +166,7 @@ export class TSRHandler {
 		this.logger.info('TSRHandler init')
 
 		const peripheralDevice = await coreHandler.core.getPeripheralDevice()
-		const settings: TSRSettings = peripheralDevice.settings || {}
+		const settings: PlayoutDeviceSettings = peripheralDevice.settings as PlayoutDeviceSettings
 
 		this.logger.info('Devices', settings.devices)
 		const c: ConductorOptions = {
@@ -248,7 +238,7 @@ export class TSRHandler {
 		})
 
 		this.tsr.on('setTimelineTriggerTime', (r: TimelineTriggerTimeResult) => {
-			this._coreHandler.core.callMethod(PeripheralDeviceAPIMethods.timelineTriggerTime, [r]).catch((e) => {
+			this._coreHandler.core.coreMethods.timelineTriggerTime(r).catch((e) => {
 				this.logger.error('Error in setTimelineTriggerTime', e)
 			})
 		})
@@ -265,8 +255,8 @@ export class TSRHandler {
 				this._lastReportedObjHashes.length = 10
 			}
 
-			this._coreHandler.core
-				.callMethod('peripheralDevice.reportResolveDone', [timelineHash, resolveDuration])
+			this._coreHandler.core.coreMethods
+				.reportResolveDone(protectString<TimelineHash>(timelineHash), resolveDuration)
 				.catch((e) => {
 					this.logger.error('Error in reportResolveDone', e)
 				})
@@ -381,9 +371,7 @@ export class TSRHandler {
 			return undefined
 		}
 
-		const timeline = this._coreHandler.core.getCollection('studioTimeline').findOne(studioId)
-
-		return timeline as any
+		return this._coreHandler.core.getCollection<RoutedTimeline>('studioTimeline').findOne(studioId)
 	}
 	getMappings(): RoutedMappings | undefined {
 		const studioId = this._getStudioId()
@@ -478,19 +466,21 @@ export class TSRHandler {
 		this.tsr.timelineHash = timeline.timelineHash
 		this.tsr.setTimelineAndMappings(transformedTimeline, mappingsObject.mappings)
 	}
-	private _getPeripheralDevice() {
-		const peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
-		return peripheralDevices.findOne(this._coreHandler.core.deviceId)
+	private _getPeripheralDevice(): PeripheralDevicePublic {
+		const peripheralDevices = this._coreHandler.core.getCollection<PeripheralDevicePublic>('peripheralDevices')
+		const doc = peripheralDevices.findOne(this._coreHandler.core.deviceId)
+		if (!doc) throw new Error('Missing PeripheralDevice document!')
+		return doc
 	}
 	private _getStudio(): any | null {
 		const peripheralDevice = this._getPeripheralDevice()
 		if (peripheralDevice) {
-			const studios = this._coreHandler.core.getCollection('studios')
+			const studios = this._coreHandler.core.getCollection<any>('studios')
 			return studios.findOne(peripheralDevice.studioId)
 		}
 		return null
 	}
-	private _getStudioId(): string | null {
+	private _getStudioId(): StudioId | null {
 		if (this._cachedStudioId) return this._cachedStudioId
 
 		const studio = this._getStudio()
@@ -543,8 +533,7 @@ export class TSRHandler {
 	private async _updateDevices(): Promise<void> {
 		this.logger.debug('updateDevices start')
 
-		const peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
-		const peripheralDevice = peripheralDevices.findOne(this._coreHandler.core.deviceId)
+		const peripheralDevice = this._getPeripheralDevice()
 
 		const ps: Promise<DeviceActionResult>[] = []
 		const promiseOperations: { [id: string]: { deviceId: string; operation: DeviceAction } } = {}
@@ -562,9 +551,10 @@ export class TSRHandler {
 		const devices = new Map<string, DeviceOptionsAny>()
 
 		if (peripheralDevice) {
-			const settings: TSRSettings = peripheralDevice.settings || {}
+			const settings: PlayoutDeviceSettings = peripheralDevice.settings as PlayoutDeviceSettings
 
-			for (const [deviceId, device] of Object.entries(settings.devices)) {
+			for (const [deviceId, device0] of Object.entries(settings.devices)) {
+				const device = device0 as DeviceOptionsAny
 				if (!device.disable) {
 					devices.set(deviceId, device)
 				}
@@ -681,7 +671,7 @@ export class TSRHandler {
 		await this._reportResult(resultsOrTimeout)
 
 		{
-			const ps: Promise<any>[] = []
+			const ps: Promise<void>[] = []
 			// Set logDebug on the devices:
 			for (const device of this.tsr.getDevices()) {
 				const deviceOptions = devices.get(device.deviceId)
@@ -1048,14 +1038,15 @@ export class TSRHandler {
 		}, 200)
 	}
 	private async _updateExpectedPlayoutItems() {
-		const expectedPlayoutItems = this._coreHandler.core.getCollection('expectedPlayoutItems')
+		const expectedPlayoutItems = this._coreHandler.core.getCollection<any>('expectedPlayoutItems')
 		const peripheralDevice = this._getPeripheralDevice()
 
 		const expectedItems = expectedPlayoutItems.find({
 			studioId: peripheralDevice.studioId,
 		})
+
 		const rundowns = _.indexBy(
-			this._coreHandler.core.getCollection('rundowns').find({
+			this._coreHandler.core.getCollection<any>('rundowns').find({
 				studioId: peripheralDevice.studioId,
 			}),
 			'_id'
@@ -1093,7 +1084,8 @@ export class TSRHandler {
 		this._updateDatastore().catch((e) => this.logger.error('Error in _updateDatastore', e))
 	}
 	private async _updateDatastore() {
-		const datastoreCollection = this._coreHandler.core.getCollection('studioTimelineDatastore')
+		const datastoreCollection =
+			this._coreHandler.core.getCollection<DBTimelineDatastoreEntry>('studioTimelineDatastore')
 		const peripheralDevice = this._getPeripheralDevice()
 
 		const datastoreObjs = datastoreCollection.find({
@@ -1165,12 +1157,12 @@ export class TSRHandler {
 
 	private sendChangedResults = (): void => {
 		this.sendCallbacksTimeout = undefined
-		this._coreHandler.core
-			.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
-			.catch((e) => {
+		if (this.changedResults) {
+			this._coreHandler.core.coreMethods.playoutPlaybackChanged(this.changedResults).catch((e) => {
 				this.logger.error('Error in timelineCallback', e)
 			})
-		this.changedResults = undefined
+			this.changedResults = undefined
+		}
 	}
 
 	private handleTSRTimelineCallback(
@@ -1191,11 +1183,9 @@ export class TSRHandler {
 			// debounce
 			if (this.changedResults && this.changedResults.rundownPlaylistId !== data.rundownPlaylistId) {
 				// The playlistId changed. Send what we have right away and reset:
-				this._coreHandler.core
-					.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
-					.catch((e) => {
-						this.logger.error('Error in timelineCallback', e)
-					})
+				this._coreHandler.core.coreMethods.playoutPlaybackChanged(this.changedResults).catch((e) => {
+					this.logger.error('Error in timelineCallback', e)
+				})
 				this.changedResults = undefined
 			}
 			if (!this.changedResults) {
@@ -1244,11 +1234,12 @@ export class TSRHandler {
 			const method = PeripheralDeviceAPIMethods[callbackName]
 			if (method) {
 				this._coreHandler.core
-					.callMethod(method, [
-						Object.assign({}, data, {
+					.callMethodRaw(method, [
+						{
+							...data,
 							objId: objId,
 							time: time,
-						}),
+						},
 					])
 					.catch((e) => {
 						this.logger.error('Error in timelineCallback', e)

@@ -1,9 +1,4 @@
-import {
-	CoreConnection,
-	CoreOptions,
-	DDPConnectorOptions,
-	CollectionObj,
-} from '@sofie-automation/server-core-integration'
+import { CoreConnection, CoreOptions, DDPConnectorOptions } from '@sofie-automation/server-core-integration'
 
 import {
 	DeviceType,
@@ -29,28 +24,16 @@ import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceStatusObject,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
+import { protectString, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { PeripheralDeviceId, StudioId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/model/PeripheralDeviceCommand'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
+import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 
 export interface CoreConfig {
 	host: string
 	port: number
 	watchdog: boolean
-}
-export interface PeripheralDeviceCommand {
-	_id: string
-
-	deviceId: PeripheralDeviceId
-	functionName: string
-	args: Array<any>
-
-	hasReply: boolean
-	reply?: any
-	replyError?: any
-
-	time: number // time
 }
 
 export interface MemoryUsageReport {
@@ -78,7 +61,7 @@ export class CoreHandler {
 	private _coreConfig?: CoreConfig
 	private _process?: Process
 
-	private _studioId: string | undefined
+	private _studioId: StudioId | undefined
 	private _timelineSubscription: string | null = null
 	private _expectedItemsSubscription: string | null = null
 
@@ -207,7 +190,7 @@ export class CoreHandler {
 	}
 	onDeviceChanged(id: PeripheralDeviceId): void {
 		if (id === this.core.deviceId) {
-			const col = this.core.getCollection('peripheralDevices')
+			const col = this.core.getCollection<PeripheralDevicePublic>('peripheralDevices')
 			if (!col) throw new Error('collection "peripheralDevices" not found!')
 
 			const device = col.findOne(id)
@@ -226,16 +209,6 @@ export class CoreHandler {
 				}
 
 				this.logger.info('Loglevel: ' + this.logger.level)
-
-				// this.logger.debug('Test debug logging')
-				// // @ts-ignore
-				// this.logger.debug({ msg: 'test msg' })
-				// // @ts-ignore
-				// this.logger.debug({ message: 'test message' })
-				// // @ts-ignore
-				// this.logger.debug({ command: 'test command', context: 'test context' })
-
-				// this.logger.debug('End test debug logging')
 			}
 
 			if (this.deviceSettings['errorReporting'] !== this.errorReporting) {
@@ -249,6 +222,8 @@ export class CoreHandler {
 			}
 
 			const studioId = device.studioId
+			if (!studioId) throw new Error('PeripheralDevice has no studio!')
+
 			if (studioId !== this._studioId) {
 				this._studioId = studioId
 
@@ -302,17 +277,17 @@ export class CoreHandler {
 
 	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreTSRDeviceHandler): void {
 		if (cmd) {
-			if (this._executedFunctions[cmd._id]) return // prevent it from running multiple times
+			if (this._executedFunctions[unprotectString(cmd._id)]) return // prevent it from running multiple times
 			this.logger.debug(`Executing function "${cmd.functionName}", args: ${JSON.stringify(cmd.args)}`)
-			this._executedFunctions[cmd._id] = true
+			this._executedFunctions[unprotectString(cmd._id)] = true
 			// console.log('executeFunction', cmd)
 			const cb = (err: any, res?: any) => {
 				// console.log('cb', err, res)
 				if (err) {
 					this.logger.error('executeFunction error', err, err.stack)
 				}
-				fcnObject.core
-					.callMethod(PeripheralDeviceAPIMethods.functionReply, [cmd._id, err, res])
+				fcnObject.core.coreMethods
+					.functionReply(cmd._id, err, res)
 					.then(() => {
 						// console.log('cb done')
 					})
@@ -346,9 +321,9 @@ export class CoreHandler {
 		functionObject.killProcess(0)
 		functionObject._observers.push(observer)
 		const addedChangedCommand = (id: string) => {
-			const cmds = functionObject.core.getCollection('peripheralDeviceCommands')
+			const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
 			if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
-			const cmd = cmds.findOne(id) as PeripheralDeviceCommand
+			const cmd = cmds.findOne(protectString(id))
 			if (!cmd) throw Error('PeripheralCommand "' + id + '" not found!')
 			// console.log('addedChangedCommand', id)
 			if (cmd.deviceId === functionObject.core.deviceId) {
@@ -366,10 +341,9 @@ export class CoreHandler {
 		observer.removed = (id: string) => {
 			this.retireExecuteFunction(id)
 		}
-		const cmds = functionObject.core.getCollection('peripheralDeviceCommands')
+		const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
 		if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
-		cmds.find({}).forEach((cmd0: CollectionObj) => {
-			const cmd = cmd0 as PeripheralDeviceCommand
+		cmds.find({}).forEach((cmd) => {
 			if (cmd.deviceId === functionObject.core.deviceId) {
 				this.executeFunction(cmd, functionObject)
 			}
@@ -633,8 +607,8 @@ export class CoreTSRDeviceHandler {
 			.catch((e) => this._coreParentHandler.logger.error('Error when setting status: ', e, e.stack))
 	}
 	onCommandError(
-		errorMessage: string,
-		ref: {
+		_errorMessage: string,
+		_ref: {
 			rundownId?: string
 			partId?: string
 			pieceId?: string
@@ -642,18 +616,19 @@ export class CoreTSRDeviceHandler {
 			timelineObjId: string
 		}
 	): void {
-		this.core
-			.callMethodLowPrio(PeripheralDeviceAPIMethods.reportCommandError, [errorMessage, ref])
-			.catch((e) => this._coreParentHandler.logger.error('Error when callMethodLowPrio: ', e, e.stack))
+		// This is not implemented in Core
+		// this.core
+		// 	.callMethodLowPrio(PeripheralDeviceAPIMethods.reportCommandError, [errorMessage, ref])
+		// 	.catch((e) => this._coreParentHandler.logger.error('Error when callMethodLowPrio: ', e, e.stack))
 	}
 	onUpdateMediaObject(collectionId: string, docId: string, doc: MediaObject | null): void {
-		this.core
-			.callMethodLowPrio(PeripheralDeviceAPIMethods.updateMediaObject, [collectionId, docId, doc])
+		this.core.coreMethodsLowPriority
+			.updateMediaObject(collectionId, docId, doc as any)
 			.catch((e) => this._coreParentHandler.logger.error('Error when updating Media Object: ' + e, e.stack))
 	}
 	onClearMediaObjectCollection(collectionId: string): void {
-		this.core
-			.callMethodLowPrio(PeripheralDeviceAPIMethods.clearMediaObjectCollection, [collectionId])
+		this.core.coreMethodsLowPriority
+			.clearMediaObjectCollection(collectionId)
 			.catch((e) =>
 				this._coreParentHandler.logger.error('Error when clearing Media Objects collection: ' + e, e.stack)
 			)
