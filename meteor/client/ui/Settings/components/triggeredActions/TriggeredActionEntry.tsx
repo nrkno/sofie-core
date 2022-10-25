@@ -174,7 +174,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 			TriggeredActions.update(triggeredActionId, {
 				$set: {
-					triggers: triggeredAction.triggersWithOverrides,
+					triggersWithOverrides: triggeredAction.triggersWithOverrides,
 				},
 			})
 
@@ -202,7 +202,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 			TriggeredActions.update(triggeredActionId, {
 				$set: {
-					triggers: triggeredAction.triggersWithOverrides,
+					triggersWithOverrides: triggeredAction.triggersWithOverrides,
 				},
 			})
 
@@ -223,7 +223,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 		TriggeredActions.update(triggeredActionId, {
 			$set: {
-				triggers: triggeredAction.triggersWithOverrides,
+				triggersWithOverrides: triggeredAction.triggersWithOverrides,
 			},
 		})
 
@@ -242,7 +242,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 		TriggeredActions.update(triggeredActionId, {
 			$set: {
-				actions: triggeredAction.actionsWithOverrides,
+				actionsWithOverrides: triggeredAction.actionsWithOverrides,
 			},
 		})
 
@@ -256,7 +256,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 		TriggeredActions.update(triggeredActionId, {
 			$set: {
-				actions: triggeredAction.actionsWithOverrides,
+				actionsWithOverrides: triggeredAction.actionsWithOverrides,
 			},
 		})
 
