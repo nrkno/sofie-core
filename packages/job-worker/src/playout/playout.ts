@@ -517,7 +517,7 @@ export async function setNextSegment(context: JobContext, data: SetNextSegmentPr
 				if (!nextSegment) throw new Error(`Segment "${data.nextSegmentId}" not found!`)
 			}
 
-			libSetNextSegment(context, cache, null)
+			libSetNextSegment(context, cache, nextSegment)
 
 			// Update any future lookaheads
 			await updateTimeline(context, cache)
