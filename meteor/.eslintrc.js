@@ -81,7 +81,7 @@ module.exports = {
 		{
 			files: ['*.tsx'],
 			...tsBase,
-			extends: [...tsBase.extends, 'plugin:react/recommended'],
+			extends: [...tsBase.extends, 'plugin:react/recommended', 'plugin:react-hooks/recommended'],
 			parserOptions: {
 				...tsBase.parserOptions,
 				ecmaFeatures: {
