@@ -215,7 +215,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		if (!triggeredAction) return
 
 		const id = getRandomString()
-		triggeredAction.triggersWithOverrides[id] = {
+		triggeredAction.triggersWithOverrides.defaults[id] = {
 			type: TriggerType.hotkey,
 			keys: '',
 			up: LAST_UP_SETTING,
