@@ -61,7 +61,7 @@ export type WrappedOverridableItem<T extends object> =
  */
 export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 	rawObject: ReadonlyDeep<ObjectWithOverrides<Record<string, T | undefined>>>,
-	comparitor: (a: [id: string, obj: T | ReadonlyDeep<T>], b: [id: string, obj: T | ReadonlyDeep<T>]) => number
+	comparitor: ((a: [id: string, obj: T | ReadonlyDeep<T>], b: [id: string, obj: T | ReadonlyDeep<T>]) => number) | null
 ): WrappedOverridableItem<T>[] {
 	const resolvedObject = applyAndValidateOverrides(rawObject).obj
 
@@ -71,18 +71,18 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 		if (obj) validItems.push([id, obj])
 	}
 
+	if (comparitor) validItems.sort((a, b) => comparitor(a, b))
+
 	// Sort and wrap in the return type
-	const sortedItems = validItems
-		.sort((a, b) => comparitor(a, b))
-		.map(([id, obj]) =>
-			literal<WrappedOverridableItemNormal<T>>({
-				type: 'normal',
-				id: id,
-				computed: obj,
-				defaults: rawObject.defaults[id],
-				overrideOps: filterOverrideOpsForPrefix(rawObject.overrides, id).opsForPrefix,
-			})
-		)
+	const sortedItems = validItems.map(([id, obj]) =>
+		literal<WrappedOverridableItemNormal<T>>({
+			type: 'normal',
+			id: id,
+			computed: obj,
+			defaults: rawObject.defaults[id],
+			overrideOps: filterOverrideOpsForPrefix(rawObject.overrides, id).opsForPrefix,
+		})
+	)
 
 	const removedOutputLayers: WrappedOverridableItemDeleted<T>[] = []
 
@@ -102,7 +102,7 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 		}
 	}
 
-	removedOutputLayers.sort((a, b) => comparitor([a.id, a.defaults], [b.id, b.defaults]))
+	if (comparitor) removedOutputLayers.sort((a, b) => comparitor([a.id, a.defaults], [b.id, b.defaults]))
 
 	return [...sortedItems, ...removedOutputLayers]
 }

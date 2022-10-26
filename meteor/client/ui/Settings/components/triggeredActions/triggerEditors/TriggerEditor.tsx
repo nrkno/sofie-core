@@ -8,14 +8,16 @@ import { sameWidth } from '../../../../../lib/popperUtils'
 import { useTranslation } from 'react-i18next'
 import { HotkeyEditor } from './HotkeyEditor'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faRefresh, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { DropdownInputControl, DropdownInputOption } from '../../../../../lib/Components/DropdownInput'
 
 interface IProps {
 	id: string
 	trigger: DBBlueprintTrigger
 	opened?: boolean
+	canReset: boolean
 	onChangeTrigger: (id: string, newVal: DBBlueprintTrigger) => void
+	onResetTrigger: (id: string) => void
 	onRemove: (id: string) => void
 	onFocus: (id: string) => void
 	onClose: (id: string) => void
@@ -31,7 +33,7 @@ function getTriggerTypes(t: TFunction): DropdownInputOption<TriggerType>[] {
 	]
 }
 
-export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...props }: IProps) {
+export const TriggerEditor = function TriggerEditor({ opened, canReset, trigger, id, ...props }: IProps) {
 	const { t } = useTranslation()
 	const [localTrigger, setLocalTrigger] = useState<DBBlueprintTrigger>({ ...trigger })
 	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
@@ -54,6 +56,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 		(changeLocalTrigger: DBBlueprintTrigger) => props.onChangeTrigger(id, changeLocalTrigger),
 		[id]
 	)
+	const onResetTrigger = useCallback(() => props.onResetTrigger(id), [id])
 
 	useEffect(() => {
 		function closeHandler(e: MouseEvent) {
@@ -141,6 +144,11 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 						<button className="btn btn-tight btn-secondary" onClick={onRemove}>
 							<FontAwesomeIcon icon={faTrash} />
 						</button>
+						{canReset && (
+							<button className="btn btn-tight btn-secondary" onClick={onResetTrigger}>
+								<FontAwesomeIcon icon={faRefresh} />
+							</button>
+						)}
 					</div>
 				</div>
 			) : null}
