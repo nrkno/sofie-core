@@ -209,7 +209,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		[triggeredAction, triggeredActionId]
 	)
 
-	function addTrigger() {
+	const addTrigger = useCallback(() => {
 		if (!triggeredAction) return
 
 		const id = getRandomString()
@@ -227,7 +227,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 		setSelectedTrigger(id)
 		setSelectedAction(null)
-	}
+	}, [triggeredAction, triggeredActionId])
 
 	function addAction() {
 		if (!triggeredAction) return
