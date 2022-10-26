@@ -604,7 +604,7 @@ export function AdLibPanel({
 
 				if (found) {
 					RundownViewEventBus.emit(RundownViewEvents.SWITCH_SHELF_TAB, {
-						tab: filter ? `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${filter._id}` : ShelfTabs.ADLIB,
+						tab: filter?._id ? `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${filter._id}` : ShelfTabs.ADLIB,
 					})
 
 					Meteor.setTimeout(() => {
@@ -623,7 +623,7 @@ export function AdLibPanel({
 		return () => {
 			RundownViewEventBus.off(RundownViewEvents.REVEAL_IN_SHELF, onRevealInShelf)
 		}
-	}, [rundownBaselineAdLibs, uiSegments])
+	}, [rundownBaselineAdLibs, uiSegments, filter?._id])
 
 	const playlistId = playlist._id
 	const currentPartInstanceId = playlist.currentPartInstanceId

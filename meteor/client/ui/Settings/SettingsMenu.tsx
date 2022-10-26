@@ -262,7 +262,7 @@ function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
 			{ label: t('Route Sets'), subPath: `route-sets` },
 			{ label: t('Package Manager'), subPath: `package-manager` },
 		],
-		[studio._id]
+		[t]
 	)
 
 	return (
@@ -313,7 +313,7 @@ function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
 					<React.Fragment>
 						<p>
 							{t('Are you sure you want to delete the show style "{{showStyleId}}"?', {
-								showStyleId: showStyleBase && showStyleBase.name,
+								showStyleId: showStyleBase.name,
 							})}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
@@ -341,7 +341,7 @@ function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
 			{ label: t('Blueprint Configuration'), subPath: `blueprint-config` },
 			{ label: t('Variants'), subPath: `variants` },
 		],
-		[showStyleBase._id]
+		[t]
 	)
 
 	return (
@@ -390,7 +390,7 @@ function SettingsMenuBlueprint({ blueprint }: SettingsMenuBlueprintProps) {
 					<React.Fragment>
 						<p>
 							{t('Are you sure you want to delete the blueprint "{{blueprintId}}"?', {
-								blueprintId: blueprint && blueprint.name,
+								blueprintId: blueprint.name,
 							})}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
@@ -455,7 +455,7 @@ function SettingsMenuPeripheralDevice({ device }: SettingsMenuPeripheralDevicePr
 					<React.Fragment>
 						<p>
 							{t('Are you sure you want to remove the device "{{deviceName}}" and all of it\'s sub-devices?', {
-								deviceName: device && device.name,
+								deviceName: device.name,
 							})}
 						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>

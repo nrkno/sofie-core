@@ -116,7 +116,7 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 						piece.sourceLayer?._id === sourceLayer._id
 				)
 				.reverse(),
-		[pieces]
+		[pieces, sourceLayer._id]
 	)
 
 	const nonInfinitePieceCount = useMemo(

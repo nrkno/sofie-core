@@ -79,7 +79,7 @@ export const HotkeyEditor = function HotkeyEditor({ trigger, modified, onChange 
 			...trigger,
 			keys: value,
 		})
-	}, [value])
+	}, [value, onChange])
 
 	return (
 		<>

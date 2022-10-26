@@ -65,11 +65,11 @@ export const ViewFilter: React.FC<IProps> = function ViewFilter({
 		return () => {
 			document.body.removeEventListener('click', closeHandler)
 		}
-	}, [popperElement, referenceElement, opened, index])
+	}, [popperElement, referenceElement, opened, index, onClose])
 
 	useLayoutEffect(() => {
 		update && update().catch(console.error)
-	}, [link])
+	}, [link, update])
 
 	return (
 		<>

@@ -301,10 +301,14 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 	]
 
 	const sourceLayers = useMemo(() => {
-		return showStyleBase ? applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj : undefined
+		return showStyleBase?.sourceLayersWithOverrides
+			? applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj
+			: undefined
 	}, [showStyleBase?.sourceLayersWithOverrides])
 	const outputLayers = useMemo(() => {
-		return showStyleBase ? applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj : undefined
+		return showStyleBase?.outputLayersWithOverrides
+			? applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj
+			: undefined
 	}, [showStyleBase?.outputLayersWithOverrides])
 
 	const availableOptions = useTracker<Record<string, any> | string[], Record<string, any> | string[]>(

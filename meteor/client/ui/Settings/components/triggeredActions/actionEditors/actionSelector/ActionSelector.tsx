@@ -435,11 +435,11 @@ export const ActionSelector = function ActionSelector({
 		return () => {
 			document.body.removeEventListener('click', closeHandler)
 		}
-	}, [popperElement, referenceElement, opened])
+	}, [popperElement, referenceElement, opened, onClose])
 
 	useLayoutEffect(() => {
 		update && update().catch(console.error)
-	}, [action])
+	}, [action, update])
 
 	const { t } = useTranslation()
 

@@ -125,7 +125,9 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 	})
 
 	const triggeredActionActions = useMemo(() => {
-		return triggeredAction ? applyAndValidateOverrides(triggeredAction.actionsWithOverrides).obj : undefined
+		return triggeredAction?.actionsWithOverrides
+			? applyAndValidateOverrides(triggeredAction.actionsWithOverrides).obj
+			: undefined
 	}, [triggeredAction?.actionsWithOverrides])
 
 	const sourceLayers = useMemo(() => {

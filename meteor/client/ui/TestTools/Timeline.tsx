@@ -116,7 +116,7 @@ function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
 		} catch (e) {
 			return [undefined, `Failed to resolveAllStates:\n${e}`]
 		}
-	}, [resolvedTl, now])
+	}, [resolvedTl])
 
 	return (
 		<div>
@@ -166,7 +166,7 @@ function FilterInput({ filterChanged }: FilterInputProps) {
 			filterChanged(filterText)
 			setIsError(false)
 		}
-	}, [filterText])
+	}, [filterText, filterChanged])
 
 	return (
 		<input
@@ -327,7 +327,7 @@ interface ChangeEntry {
 }
 
 function TimelineChangesLog({ resolvedTl, timelineHash }: TimelineChangesLogProps) {
-	const [lastResolvedTl, setLastResolvedTl] = useState<ResolvedTimeline | null>(null)
+	const [_lastResolvedTl, setLastResolvedTl] = useState<ResolvedTimeline | null>(null)
 	const [idFilter, setIdFilter] = useState<FilterInputValue>(undefined)
 
 	const [entries, setEntries] = useState<ChangeEntry[]>([])
@@ -349,64 +349,66 @@ function TimelineChangesLog({ resolvedTl, timelineHash }: TimelineChangesLogProp
 			// },
 		]
 
-		if (resolvedTl && lastResolvedTl) {
-			const keys = Array.from(
-				new Set([...Object.keys(lastResolvedTl.objects), ...Object.keys(resolvedTl.objects)])
-			).sort()
+		setLastResolvedTl((lastResolvedTl) => {
+			if (resolvedTl && lastResolvedTl) {
+				const keys = Array.from(
+					new Set([...Object.keys(lastResolvedTl.objects), ...Object.keys(resolvedTl.objects)])
+				).sort()
 
-			for (const objectId of keys) {
-				const oldObj = lastResolvedTl.objects[objectId] as ResolvedTimelineObject | undefined
-				const newObj = resolvedTl.objects[objectId] as ResolvedTimelineObject | undefined
+				for (const objectId of keys) {
+					const oldObj = lastResolvedTl.objects[objectId] as ResolvedTimelineObject | undefined
+					const newObj = resolvedTl.objects[objectId] as ResolvedTimelineObject | undefined
 
-				if (oldObj && !newObj) {
-					newEntries.push({ msg: `Object "${objectId}" removed` })
-				} else if (!oldObj && newObj) {
-					newEntries.push({ msg: `Object "${objectId}" added with ${newObj.resolved.instances.length} instances` })
-					for (const instance of newObj.resolved.instances) {
-						newEntries.push({
-							msg: `Instance "${objectId}${instance.id}" added - start: ${instance.start} end: ${instance.end}`,
-						})
-					}
-				} else if (newObj && oldObj) {
-					const oldInstancesMap = normalizeArray(oldObj.resolved.instances, 'id')
-					const newInstancesMap = normalizeArray(newObj.resolved.instances, 'id')
-
-					const instanceKeys = Array.from(
-						new Set([...Object.keys(oldInstancesMap), ...Object.keys(newInstancesMap)])
-					).sort()
-
-					for (const instanceId of instanceKeys) {
-						const oldInstance = oldInstancesMap[instanceId] as TimelineObjectInstance | undefined
-						const newInstance = newInstancesMap[instanceId] as TimelineObjectInstance | undefined
-
-						if (oldInstance && !newInstance) {
-							newEntries.push({ msg: `Instance "${objectId}${oldInstance.id}" removed` })
-						} else if (!oldInstance && newInstance) {
+					if (oldObj && !newObj) {
+						newEntries.push({ msg: `Object "${objectId}" removed` })
+					} else if (!oldObj && newObj) {
+						newEntries.push({ msg: `Object "${objectId}" added with ${newObj.resolved.instances.length} instances` })
+						for (const instance of newObj.resolved.instances) {
 							newEntries.push({
-								msg: `Instance "${objectId}${newInstance.id}" added - start: ${newInstance.start} end: ${newInstance.end}`,
+								msg: `Instance "${objectId}${instance.id}" added - start: ${instance.start} end: ${instance.end}`,
 							})
-						} else if (newInstance && oldInstance) {
-							let changes = ''
-
-							if (newInstance.start !== oldInstance.start)
-								changes += ` start: ${newInstance.start} !== ${oldInstance.start}`
-							if (newInstance.end !== oldInstance.end) changes += ` end: ${newInstance.end} !== ${oldInstance.end}`
-
-							if (changes.length > 0) {
-								newEntries.push({ msg: `Instance "${objectId}${oldInstance.id}" changed:${changes}` })
-							}
-						} else {
-							// Ignore instance that is not present in either
 						}
+					} else if (newObj && oldObj) {
+						const oldInstancesMap = normalizeArray(oldObj.resolved.instances, 'id')
+						const newInstancesMap = normalizeArray(newObj.resolved.instances, 'id')
+
+						const instanceKeys = Array.from(
+							new Set([...Object.keys(oldInstancesMap), ...Object.keys(newInstancesMap)])
+						).sort()
+
+						for (const instanceId of instanceKeys) {
+							const oldInstance = oldInstancesMap[instanceId] as TimelineObjectInstance | undefined
+							const newInstance = newInstancesMap[instanceId] as TimelineObjectInstance | undefined
+
+							if (oldInstance && !newInstance) {
+								newEntries.push({ msg: `Instance "${objectId}${oldInstance.id}" removed` })
+							} else if (!oldInstance && newInstance) {
+								newEntries.push({
+									msg: `Instance "${objectId}${newInstance.id}" added - start: ${newInstance.start} end: ${newInstance.end}`,
+								})
+							} else if (newInstance && oldInstance) {
+								let changes = ''
+
+								if (newInstance.start !== oldInstance.start)
+									changes += ` start: ${newInstance.start} !== ${oldInstance.start}`
+								if (newInstance.end !== oldInstance.end) changes += ` end: ${newInstance.end} !== ${oldInstance.end}`
+
+								if (changes.length > 0) {
+									newEntries.push({ msg: `Instance "${objectId}${oldInstance.id}" changed:${changes}` })
+								}
+							} else {
+								// Ignore instance that is not present in either
+							}
+						}
+					} else {
+						// Ignore object that is not present in either
 					}
-				} else {
-					// Ignore object that is not present in either
 				}
 			}
-		}
 
-		if (newEntries.length) setEntries((old) => [...old, ...newEntries])
-		setLastResolvedTl(clone(resolvedTl) || null)
+			if (newEntries.length) setEntries((old) => [...old, ...newEntries])
+			return clone(resolvedTl) || null
+		})
 	}, [resolvedTl])
 
 	const doClear = useCallback(() => {

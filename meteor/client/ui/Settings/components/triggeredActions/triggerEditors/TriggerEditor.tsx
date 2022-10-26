@@ -27,7 +27,7 @@ function getTriggerTypes(t: TFunction): Record<string, TriggerType> {
 	}
 }
 
-export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...props }: IProps) {
+export const TriggerEditor = function TriggerEditor({ opened, trigger, id, onClose, ...props }: IProps) {
 	const { t } = useTranslation()
 	const [localTrigger, setLocalTrigger] = useState<DBBlueprintTrigger>({ ...trigger })
 	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
@@ -60,7 +60,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 				!composedPath.includes(popperElement) &&
 				!composedPath.includes(referenceElement)
 			) {
-				props.onClose(id)
+				onClose(id)
 			}
 		}
 
@@ -71,7 +71,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 		return () => {
 			document.body.removeEventListener('click', closeHandler)
 		}
-	}, [popperElement, referenceElement, opened, trigger])
+	}, [popperElement, referenceElement, opened, trigger, onClose, id])
 
 	const triggerPreview =
 		trigger.type === TriggerType.hotkey ? (
@@ -97,11 +97,11 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 
 	useLayoutEffect(() => {
 		update && update().catch(console.error)
-	}, [trigger])
+	}, [trigger, update])
 
 	useEffect(() => {
 		setLocalTrigger(trigger)
-	}, [opened])
+	}, [opened, setLocalTrigger, trigger])
 
 	function onChangeType(_newValue: string) {
 		// Nothing

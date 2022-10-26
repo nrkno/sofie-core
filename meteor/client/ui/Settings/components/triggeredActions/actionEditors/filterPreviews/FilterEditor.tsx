@@ -63,11 +63,11 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 		return () => {
 			document.body.removeEventListener('click', closeHandler)
 		}
-	}, [popperElement, referenceElement, opened, index])
+	}, [popperElement, referenceElement, opened, index, onClose])
 
 	useLayoutEffect(() => {
 		update && update().catch(console.error)
-	}, [props.fieldLabel, props.valueLabel])
+	}, [props.fieldLabel, props.valueLabel, update])
 
 	return (
 		<>

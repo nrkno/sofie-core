@@ -74,52 +74,61 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 				},
 			})
 		},
-		[action]
+		[action, id, triggeredAction._id]
 	)
 
-	function onFilterInsertNext(filterIndex) {
-		if (action.filterChain.length === filterIndex + 1) {
-			const obj =
-				filterIndex > -1
-					? literal<IAdLibFilterLink>({
-							object: 'adLib',
-							field: 'label',
-							value: [],
-					  })
-					: literal<IGUIContextFilterLink>({
-							object: 'view',
-					  })
+	const onFilterInsertNext = useCallback(
+		(filterIndex: number) => {
+			if (action.filterChain.length === filterIndex + 1) {
+				const obj =
+					filterIndex > -1
+						? literal<IAdLibFilterLink>({
+								object: 'adLib',
+								field: 'label',
+								value: [],
+						  })
+						: literal<IGUIContextFilterLink>({
+								object: 'view',
+						  })
 
-			action.filterChain.splice(filterIndex + 1, 0, obj)
+				action.filterChain.splice(filterIndex + 1, 0, obj)
+
+				TriggeredActions.update(triggeredAction._id, {
+					$set: {
+						[`actionsWithOverrides.defaults.${id}`]: action,
+					},
+				})
+			}
+
+			setOpenFilterIndex(filterIndex + 1)
+			if (typeof onFocus === 'function') onFocus(id)
+		},
+		[action, id, onFocus, triggeredAction._id]
+	)
+
+	const onFilterRemove = useCallback(
+		(filterIndex: number) => {
+			action.filterChain.splice(filterIndex, 1)
 
 			TriggeredActions.update(triggeredAction._id, {
 				$set: {
 					[`actionsWithOverrides.defaults.${id}`]: action,
 				},
 			})
-		}
+		},
+		[id, action, triggeredAction._id]
+	)
 
-		setOpenFilterIndex(filterIndex + 1)
-		if (typeof onFocus === 'function') onFocus(id)
-	}
-
-	function onFilterRemove(filterIndex) {
-		action.filterChain.splice(filterIndex, 1)
-
-		TriggeredActions.update(triggeredAction._id, {
-			$set: {
-				[`actionsWithOverrides.defaults.${id}`]: action,
-			},
-		})
-	}
-
-	function onChange(newVal: SomeAction) {
-		TriggeredActions.update(triggeredAction._id, {
-			$set: {
-				[`actionsWithOverrides.defaults.${id}`]: newVal,
-			},
-		})
-	}
+	const onChange = useCallback(
+		(newVal: SomeAction) => {
+			TriggeredActions.update(triggeredAction._id, {
+				$set: {
+					[`actionsWithOverrides.defaults.${id}`]: newVal,
+				},
+			})
+		},
+		[triggeredAction._id, id]
+	)
 
 	function isFinished(): boolean {
 		return isFinal(action, _.last(action.filterChain))
@@ -133,8 +142,8 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 		)
 	}
 
-	const onRemove = useCallback(() => onRemoveAction(id), [id])
-	const onOuterClose = useCallback(() => onOuterCloseAction && onOuterCloseAction(id), [id])
+	const onRemove = useCallback(() => onRemoveAction(id), [id, onRemoveAction])
+	const onOuterClose = useCallback(() => onOuterCloseAction && onOuterCloseAction(id), [id, onOuterCloseAction])
 	const onActionFocus = useCallback(() => {
 		onOuterActionFocus && onOuterActionFocus(id)
 		onFocus && onFocus(id)
