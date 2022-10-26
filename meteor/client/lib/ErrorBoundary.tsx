@@ -14,18 +14,12 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			display: 'block',
 			margin: '10px',
 			padding: '10px',
-			// fontSize: '12px',
-			// lineHeight: '1.2em',
-
-			// fontWeight: 300,
 			textDecoration: 'none',
-			// width: '100%',
 			height: 'auto',
 			overflow: 'visible',
 			background: '#ffdddd',
 			color: 'black',
 			border: '2px solid red',
-
 			cursor: 'text',
 		},
 		h1: {
@@ -63,29 +57,10 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 
 			fontFamily: 'monospace',
 		},
-		expandedStack: {
-			// whiteSpace: 'pre',
-		},
 		resetButton: {
 			display: 'block',
 			margin: '10px 0',
 			fontWeight: 'normal',
-
-			// position: 'static',
-			// margin: '0 0 0 0',
-			// padding: '0',
-			// fontSize: '10px',
-			// lineHeight: '1.2em',
-			// fontFamily: 'Roboto, sans-serif',
-			// fontWeight: 600,
-			// width: '100%',
-			// height: 'auto',
-			// overflow: 'visible',
-			// background: 'white',
-			// textDecoration: 'underline',
-			// color: 'red',
-			// border: 'none',
-			// cursor: 'pointer',
 		},
 	}
 
