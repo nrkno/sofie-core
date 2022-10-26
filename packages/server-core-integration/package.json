@@ -77,7 +77,7 @@
 		"got": "^11.8.5",
 		"tslib": "^2.4.0",
 		"underscore": "^1.13.4",
-		"winston": "^3.5.1"
+		"winston": "^3.8.2"
 	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [

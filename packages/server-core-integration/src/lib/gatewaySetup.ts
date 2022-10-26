@@ -1,10 +1,9 @@
 import * as Winston from 'winston'
 
 /**
- * Used when JSON.stringifying values that might be circular
- * Usage: JSON.stringify(value, JSONStringifyCircular()))
+ * Used instad of JSON.stringifying for values that might be circular
  */
-function JSONStringifyCircular() {
+function JSONStringifyCircular(obj: unknown): string {
 	const cacheValues: any[] = []
 	const cacheKeys: any[] = []
 	const stringifyFixer = (key: string, value: any) => {
@@ -26,8 +25,9 @@ function JSONStringifyCircular() {
 		}
 		return value
 	}
-	return stringifyFixer
+	return JSON.stringify(obj, stringifyFixer)
 }
+
 const { printf } = Winston.format
 const myLogFormat = Winston.format.combine(
 	// Winston.format.errors({ stack: true }),
@@ -36,7 +36,7 @@ const myLogFormat = Winston.format.combine(
 	// Winston.format.simple()
 	printf((obj): string => {
 		if (obj instanceof Error) return obj.stack || obj.toString()
-		return JSON.stringify(obj, JSONStringifyCircular())
+		return JSONStringifyCircular(obj)
 	})
 )
 
@@ -44,77 +44,16 @@ const myLogFormat = Winston.format.combine(
  * Intended to be run first in the Gateways.
  * Sets up logging, error handling etc.
  */
-export function setupGatewayProcess(options: { logPath: string; logLevel: string | undefined }) {
+export function setupGatewayProcess(options: { logPath: string; logLevel: string | undefined }): {
+	logger: Winston.Logger
+} {
 	let logger: Winston.Logger
 	if (options.logPath) {
 		// Log json to file, human-readable to console
-		const transportConsole = new Winston.transports.Console({
-			level: options.logLevel || 'silly',
-			handleExceptions: true,
-			handleRejections: true,
-		})
-		const transportFile = new Winston.transports.File({
-			level: options.logLevel || 'silly',
-			handleExceptions: true,
-			handleRejections: true,
-			filename: options.logPath,
-			format: myLogFormat,
-		})
-
-		logger = Winston.createLogger({
-			transports: [transportConsole, transportFile],
-		})
-		logger.info('Logging to', options.logPath)
-
-		// Hijack console.log:
-		const orgConsoleLog = console.log
-		console.log = function (...args: any[]) {
-			// orgConsoleLog('a')
-			if (args.length >= 1) {
-				try {
-					// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-					// @ts-ignore one or more arguments
-					logger.debug(...args)
-					// logger.debug(...args.map(JSONStringifyCircular()))
-				} catch (e) {
-					orgConsoleLog('CATCH')
-					orgConsoleLog(...args)
-					throw e
-				}
-				orgConsoleLog(...args)
-			}
-		}
+		logger = createLoggerToFileAndConsole(options.logLevel, options.logPath)
 	} else {
 		// custom json stringifier
-
-		// Log json to console
-		const transportConsole = new Winston.transports.Console({
-			level: options.logLevel || 'silly',
-			handleExceptions: true,
-			handleRejections: true,
-			format: myLogFormat,
-		})
-
-		logger = Winston.createLogger({
-			transports: [transportConsole],
-		})
-		logger.info('Logging to Console')
-
-		// Hijack console.log:
-		console.log = (...args: any[]) => {
-			if (args.length >= 1) {
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore one or more arguments
-				logger.debug(...args)
-			}
-		}
-		console.error = (...args: any[]) => {
-			if (args.length >= 1) {
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore one or more arguments
-				logger.error(...args)
-			}
-		}
+		logger = createLoggerToConsole(options.logLevel)
 	}
 
 	// Because the default NodeJS-handler sucks and wont display error properly
@@ -152,7 +91,7 @@ export function setupGatewayProcess(options: { logPath: string; logLevel: string
 					msg += ' ' + args[i]
 				} else {
 					if (meta === undefined) meta = args[i]
-					else msg += ' ' + JSON.stringify(args[i], JSONStringifyCircular())
+					else msg += ' ' + JSONStringifyCircular(args[i])
 				}
 			}
 
@@ -165,63 +104,76 @@ export function setupGatewayProcess(options: { logPath: string; logLevel: string
 	}
 }
 
-/** Do various loggings, to test that logging works as intended */
-export function testLogging(logger: Winston.Logger) {
-	const o: any = {
-		a: 1,
-		b: {
-			c: 2,
-		},
+function createLoggerToConsole(logLevel: string | undefined): Winston.Logger {
+	// Log json to console
+	const transportConsole = new Winston.transports.Console({
+		level: logLevel || 'silly',
+		handleExceptions: true,
+		handleRejections: true,
+		format: myLogFormat,
+	})
+
+	const logger = Winston.createLogger({
+		transports: [transportConsole],
+	})
+	logger.info('Logging to Console')
+
+	// Hijack console.log:
+	console.log = (...args: any[]) => {
+		if (args.length >= 1) {
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore one or more arguments
+			logger.debug(...args)
+		}
 	}
-	o.b['d'] = o // circular reference
+	console.error = (...args: any[]) => {
+		if (args.length >= 1) {
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore one or more arguments
+			logger.error(...args)
+		}
+	}
 
-	const err = new Error('Hello')
+	return logger
+}
 
-	console.log('Logging to console.log')
-	console.error('Logging to console.error')
+function createLoggerToFileAndConsole(logLevel: string | undefined, logPath: string): Winston.Logger {
+	// Log json to file, human-readable to console
+	const transportConsole = new Winston.transports.Console({
+		level: logLevel || 'silly',
+		handleExceptions: true,
+		handleRejections: true,
+	})
+	const transportFile = new Winston.transports.File({
+		level: logLevel || 'silly',
+		handleExceptions: true,
+		handleRejections: true,
+		filename: logPath,
+		format: myLogFormat,
+	})
 
-	console.log('console.log: error', err)
-	console.log(err)
-	console.log('console.log: obj', o)
+	const logger = Winston.createLogger({
+		transports: [transportConsole, transportFile],
+	})
+	logger.info('Logging to', logPath)
 
-	console.log('console.log: many arguments', 'a', 'b', 'c', 'd')
+	// Hijack console.log:
+	const orgConsoleLog = console.log
+	console.log = function (...args: any[]) {
+		// orgConsoleLog('a')
+		if (args.length >= 1) {
+			try {
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+				// @ts-ignore one or more arguments
+				logger.debug(...args)
+			} catch (e) {
+				orgConsoleLog('CATCH')
+				orgConsoleLog(...args)
+				throw e
+			}
+			orgConsoleLog(...args)
+		}
+	}
 
-	logger.silly('logger silly')
-	logger.verbose('logger verbose')
-	logger.debug('logger debug')
-	logger.info('logger info')
-	logger.warn('logger warn')
-	logger.error('logger error')
-
-	logger.error(err)
-	logger.error('Heres an error:', err)
-	logger.info('Heres an obj', o)
-	logger.info('Heres many arguments', 'a', 'b', 'c', 'd')
-
-	logger.error('Heres another error:', err, 'and this text')
-
-	setTimeout(() => {
-		// Asynchronous error:
-		throw err
-	}, 1)
-
-	setTimeout(() => {
-		// Asynchronous error:
-		// @ts-ignore
-		DaleATuCuerpoAlegría(Macarena)
-	}, 1)
-
-	setTimeout(() => {
-		// unhandled promise:
-		const p = new Promise((_, reject) => {
-			setTimeout(() => {
-				reject(new Error('Rejecting promise!'))
-			}, 1)
-		})
-
-		// tslint:disable-next-line:no-floating-promises
-		p.then(() => {
-			// nothing
-		})
-	}, 1)
+	return logger
 }
