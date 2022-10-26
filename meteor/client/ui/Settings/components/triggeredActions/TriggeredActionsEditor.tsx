@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useContext, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { PubSub } from '../../../../../lib/api/pubsub'
-import { ShowStyleBases } from '../../../../../lib/collections/ShowStyleBases'
 import { TriggeredActions, TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
 import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -34,6 +33,7 @@ import { MongoQuery } from '../../../../../lib/typings/meteor'
 import _ from 'underscore'
 import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 export interface PreviewContext {
 	rundownPlaylist: RundownPlaylist | null
@@ -46,6 +46,8 @@ export interface PreviewContext {
 
 interface IProps {
 	showStyleBaseId: ShowStyleBaseId | null
+	sourceLayers: SourceLayers
+	outputLayers: OutputLayers
 }
 
 export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredActionsEditor(
@@ -75,12 +77,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		},
 	})
 
-	const showStyleBase = useTracker(
-		() => (props.showStyleBaseId === null ? undefined : ShowStyleBases.findOne(props.showStyleBaseId)),
-		[props.showStyleBaseId]
-	)
-
-	const { showStyleBaseId } = props
+	const { showStyleBaseId, sourceLayers, outputLayers } = props
 	const showStyleBaseSelector: MongoQuery<TriggeredActionsObj> = {
 		$or: _.compact([
 			{
@@ -93,13 +90,6 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 				: undefined,
 		]),
 	}
-
-	const sourceLayers = useMemo(() => {
-		return showStyleBase ? applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj : undefined
-	}, [showStyleBase?.sourceLayersWithOverrides])
-	const outputLayers = useMemo(() => {
-		return showStyleBase ? applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj : undefined
-	}, [showStyleBase?.outputLayersWithOverrides])
 
 	useSubscription(PubSub.triggeredActions, showStyleBaseSelector)
 	useSubscription(PubSub.rundowns, null, showStyleBaseId ? [showStyleBaseId] : [])

@@ -6,10 +6,10 @@ import { HotkeyTrigger } from './HotkeyTrigger'
 import { usePopper } from 'react-popper'
 import { sameWidth } from '../../../../../lib/popperUtils'
 import { useTranslation } from 'react-i18next'
-import { EditAttribute } from '../../../../../lib/EditAttribute'
 import { HotkeyEditor } from './HotkeyEditor'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { DropdownInputControl, DropdownInputOption } from '../../../../../lib/Components/DropdownInput'
 
 interface IProps {
 	id: string
@@ -21,10 +21,14 @@ interface IProps {
 	onClose: (id: string) => void
 }
 
-function getTriggerTypes(t: TFunction): Record<string, TriggerType> {
-	return {
-		[t('Hotkey')]: TriggerType.hotkey,
-	}
+function getTriggerTypes(t: TFunction): DropdownInputOption<TriggerType>[] {
+	return [
+		{
+			name: t('Hotkey'),
+			value: TriggerType.hotkey,
+			i: 0,
+		},
+	]
 }
 
 export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...props }: IProps) {
@@ -122,15 +126,11 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 					{...attributes.popper}
 				>
 					<div>
-						<EditAttribute
-							className="form-control input text-input input-m"
-							modifiedClassName="bghl"
-							type={'dropdown'}
-							label={t('Trigger Type')}
+						<DropdownInputControl
+							classNames="form-control input text-input input-m"
+							value={trigger.type}
 							options={getTriggerTypes(t)}
-							overrideDisplayValue={trigger.type}
-							attribute={''}
-							updateFunction={(_e, newVal) => onChangeType(newVal)}
+							handleUpdate={onChangeType}
 						/>
 					</div>
 					<div>{triggerEditor}</div>

@@ -3,7 +3,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, ShowStyleBase, ShowStyleBases, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
@@ -50,7 +50,9 @@ interface ITrackedProps {
 	showStyleVariants: Array<ShowStyleVariant>
 	compatibleStudios: Array<Studio>
 	blueprintConfigManifest: ConfigManifestEntry[]
-	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined
+	sourceLayersLight: Array<{ name: string; value: string; type: SourceLayerType }> | undefined
+	sourceLayers: SourceLayers
+	outputLayers: OutputLayers
 	layerMappings: { [studioId: string]: MappingsExt }
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
@@ -74,6 +76,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		mappings[studio.name] = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
 	}
 
+	const sourceLayers = showStyleBase ? applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj : {}
+	const outputLayers = showStyleBase ? applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj : {}
+
 	return {
 		showStyleBase: showStyleBase,
 		showStyleVariants: showStyleBase
@@ -83,8 +88,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			: [],
 		compatibleStudios: compatibleStudios,
 		blueprintConfigManifest: blueprint ? blueprint.showStyleConfigManifest || [] : [],
-		sourceLayers: showStyleBase
-			? Object.values(applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj)
+		sourceLayers,
+		outputLayers,
+		sourceLayersLight: sourceLayers
+			? Object.values(sourceLayers)
 					.filter((layer): layer is ISourceLayer => !!layer)
 					.map((layer) => {
 						return {
@@ -170,7 +177,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										</div>
 									</Route>
 									<Route path={`${this.props.match.path}/action-triggers`}>
-										<TriggeredActionsEditor showStyleBaseId={showStyleBase._id} />
+										<TriggeredActionsEditor
+											showStyleBaseId={showStyleBase._id}
+											sourceLayers={this.props.sourceLayers}
+											outputLayers={this.props.outputLayers}
+										/>
 									</Route>
 									<Route path={`${this.props.match.path}/hotkey-labels`}>
 										<HotkeyLegendSettings showStyleBase={showStyleBase} />
@@ -180,7 +191,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										return (
 											<Route key={region._id} path={`${this.props.match.path}/layouts-${region._id}`}>
 												<RundownLayoutEditor
-													showStyleBase={showStyleBase}
+													showStyleBaseId={showStyleBase._id}
+													sourceLayers={this.props.sourceLayers}
+													outputLayers={this.props.outputLayers}
 													studios={this.props.compatibleStudios}
 													customRegion={region}
 												/>
@@ -193,7 +206,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											configManifestId={unprotectString(showStyleBase._id)}
 											manifest={this.props.blueprintConfigManifest}
 											layerMappings={this.props.layerMappings}
-											sourceLayers={this.props.sourceLayers}
+											sourceLayers={this.props.sourceLayersLight}
 											configObject={showStyleBase.blueprintConfigWithOverrides}
 											saveOverrides={this.saveBlueprintConfigOverrides}
 											pushOverride={this.pushBlueprintConfigOverride}
@@ -206,7 +219,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											blueprintConfigManifest={this.props.blueprintConfigManifest}
 											showStyleBase={showStyleBase}
 											layerMappings={this.props.layerMappings}
-											sourceLayers={this.props.sourceLayers}
+											sourceLayers={this.props.sourceLayersLight}
 										/>
 									</Route>
 
