@@ -8,10 +8,11 @@ import {
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { IWrappedAdLib } from './actionFilterChainCompilers'
 
-export type MountedTrigger = MountedGenericTrigger | MountedAdLibTrigger
+export type MountedTrigger = (MountedGenericTrigger | MountedAdLibTrigger) & MountedHotkeyMixin
+export type MountedDeviceTrigger = (MountedGenericTrigger | MountedAdLibTrigger) & MountedDeviceMixin
 
 /** A generic action that will be triggered by hotkeys (generic, i.e. non-AdLib) */
-export interface MountedGenericTrigger extends MountedTriggerBase {
+export interface MountedGenericTrigger extends MountedTriggerCommon {
 	_id: MountedGenericTriggerId
 	/** Rank of the Action that is mounted under `keys1 */
 	_rank: number
@@ -23,19 +24,28 @@ export interface MountedGenericTrigger extends MountedTriggerBase {
 
 type MountedGenericTriggerId = ProtectedString<'mountedGenericTriggerId'>
 
-interface MountedTriggerBase {
+interface MountedTriggerCommon {
 	/** Rank of the Action that is mounted under `keys` */
 	_rank: number
-	/** Keys or combos that have a listener mounted to */
-	keys: string[]
-	/** Final keys in the combos, that can be used for figuring out where on the keyboard this action is mounted */
-	finalKeys: string[]
 	/** A label of the action, if available */
 	name?: string | ITranslatableMessage
 }
 
+interface MountedHotkeyMixin {
+	/** Keys or combos that have a listener mounted to */
+	keys: string[]
+	/** Final keys in the combos, that can be used for figuring out where on the keyboard this action is mounted */
+	finalKeys: string[]
+}
+
+interface MountedDeviceMixin {
+	deviceId: string
+	triggerId: string
+	arguments?: Record<string, string | number | boolean>
+}
+
 /** An AdLib action that will be triggered by hotkeys (can be AdLib, RundownBaselineAdLib, AdLib Action, Clear source layer, Sticky, etc.) */
-export interface MountedAdLibTrigger extends MountedTriggerBase {
+export interface MountedAdLibTrigger extends MountedTriggerCommon {
 	_id: MountedAdLibTriggerId
 	/** The ID of the action that will be triggered */
 	triggeredActionId: TriggeredActionId
