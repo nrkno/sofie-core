@@ -176,11 +176,10 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 	const removeTrigger = useCallback(
 		(id: string) => {
 			if (!triggeredAction) return
-			delete triggeredAction.triggersWithOverrides.defaults[id]
 
 			TriggeredActions.update(triggeredActionId, {
-				$set: {
-					triggersWithOverrides: triggeredAction.triggersWithOverrides,
+				$unset: {
+					[`triggersWithOverrides.defaults.${id}`]: 1,
 				},
 			})
 
@@ -202,7 +201,6 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 	const changeTrigger = useCallback(
 		(id: string, newVal: DBBlueprintTrigger) => {
 			if (!triggeredAction) return
-			triggeredAction.triggersWithOverrides.defaults[id] = newVal
 
 			if (isHotkeyTrigger(newVal)) {
 				LAST_UP_SETTING = !!newVal.up
@@ -210,7 +208,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 			TriggeredActions.update(triggeredActionId, {
 				$set: {
-					triggersWithOverrides: triggeredAction.triggersWithOverrides,
+					[`triggersWithOverrides.defaults.${id}`]: newVal,
 				},
 			})
 
@@ -223,7 +221,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		if (!triggeredAction) return
 
 		const id = getRandomString()
-		triggeredAction.triggersWithOverrides[id] = {
+		const newTrigger = {
 			type: TriggerType.hotkey,
 			keys: '',
 			up: LAST_UP_SETTING,
@@ -231,7 +229,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 		TriggeredActions.update(triggeredActionId, {
 			$set: {
-				triggersWithOverrides: triggeredAction.triggersWithOverrides,
+				[`triggersWithOverrides.defaults.${id}`]: newTrigger,
 			},
 		})
 
@@ -243,14 +241,14 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		if (!triggeredAction) return
 
 		const id = getRandomString()
-		triggeredAction.actionsWithOverrides.defaults[id] = {
+		const newAction = {
 			action: PlayoutActions.adlib,
 			filterChain: [],
 		}
 
 		TriggeredActions.update(triggeredActionId, {
 			$set: {
-				actionsWithOverrides: triggeredAction.actionsWithOverrides,
+				[`actionsWithOverrides.defaults.${id}`]: newAction,
 			},
 		})
 
@@ -260,11 +258,10 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 	function removeAction(id: string) {
 		if (!triggeredAction) return
-		delete triggeredAction.actionsWithOverrides.defaults[id]
 
 		TriggeredActions.update(triggeredActionId, {
-			$set: {
-				actionsWithOverrides: triggeredAction.actionsWithOverrides,
+			$unset: {
+				[`actionsWithOverrides.defaults.${id}`]: 1,
 			},
 		})
 
