@@ -10,11 +10,13 @@ export const HotkeyTrigger = ({
 	innerRef,
 	selected,
 	onClick,
+	isDeleted,
 }: {
 	keys: string
 	up: boolean
 	innerRef?: React.Ref<HTMLDivElement>
 	selected?: boolean
+	isDeleted?: boolean
 	onClick?: () => void
 }) => {
 	const [_updatedKeyboardMap, setUpdatedKeyboardMap] = useState(Symbol())
@@ -42,6 +44,7 @@ export const HotkeyTrigger = ({
 			ref={innerRef}
 			className={classNames('triggered-action-entry__hotkey clickable', {
 				selected: selected,
+				deleted: isDeleted,
 			})}
 			onClick={onClick}
 			tabIndex={0}

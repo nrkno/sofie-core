@@ -16,6 +16,7 @@ interface IProps {
 	trigger: DBBlueprintTrigger
 	opened?: boolean
 	canReset: boolean
+	isDeleted: boolean
 	onChangeTrigger: (id: string, newVal: DBBlueprintTrigger) => void
 	onResetTrigger: (id: string) => void
 	onRemove: (id: string) => void
@@ -33,7 +34,7 @@ function getTriggerTypes(t: TFunction): DropdownInputOption<TriggerType>[] {
 	]
 }
 
-export const TriggerEditor = function TriggerEditor({ opened, canReset, trigger, id, ...props }: IProps) {
+export const TriggerEditor = function TriggerEditor({ opened, canReset, isDeleted, trigger, id, ...props }: IProps) {
 	const { t } = useTranslation()
 	const [localTrigger, setLocalTrigger] = useState<DBBlueprintTrigger>({ ...trigger })
 	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
@@ -88,6 +89,7 @@ export const TriggerEditor = function TriggerEditor({ opened, canReset, trigger,
 				up={trigger.up || false}
 				onClick={onFocus}
 				selected={opened}
+				isDeleted={isDeleted}
 			/>
 		) : (
 			<div ref={setReferenceElement}>Unknown trigger type: {trigger.type}</div>
@@ -99,6 +101,7 @@ export const TriggerEditor = function TriggerEditor({ opened, canReset, trigger,
 				trigger={localTrigger}
 				onChange={(newVal) => setLocalTrigger(newVal)}
 				modified={trigger.keys !== localTrigger.keys}
+				readonly={isDeleted}
 			/>
 		) : null
 
@@ -134,20 +137,31 @@ export const TriggerEditor = function TriggerEditor({ opened, canReset, trigger,
 							value={trigger.type}
 							options={getTriggerTypes(t)}
 							handleUpdate={onChangeType}
+							disabled={isDeleted}
 						/>
 					</div>
 					<div>{triggerEditor}</div>
 					<div className="mts">
-						<button className="btn right btn-tight btn-primary" onClick={onConfirm}>
-							<FontAwesomeIcon icon={faCheck} />
-						</button>
-						<button className="btn btn-tight btn-secondary" onClick={onRemove}>
-							<FontAwesomeIcon icon={faTrash} />
-						</button>
-						{canReset && (
-							<button className="btn btn-tight btn-secondary" onClick={onResetTrigger}>
-								<FontAwesomeIcon icon={faRefresh} />
-							</button>
+						{isDeleted ? (
+							<>
+								<button className="btn btn-tight btn-secondary" onClick={onResetTrigger}>
+									<FontAwesomeIcon icon={faRefresh} />
+								</button>
+							</>
+						) : (
+							<>
+								<button className="btn right btn-tight btn-primary" onClick={onConfirm}>
+									<FontAwesomeIcon icon={faCheck} />
+								</button>
+								<button className="btn btn-tight btn-secondary" onClick={onRemove}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
+								{canReset && (
+									<button className="btn btn-tight btn-secondary" onClick={onResetTrigger}>
+										<FontAwesomeIcon icon={faRefresh} />
+									</button>
+								)}
+							</>
 						)}
 					</div>
 				</div>

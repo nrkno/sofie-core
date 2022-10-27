@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { faCopy, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faCopy, faPencilAlt, faPlus, faRefresh, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PlayoutActions, SomeAction, SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
@@ -314,6 +314,17 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		[triggeredAction?._id, actionsOverridesHelper]
 	)
 
+	const onResetActions = useCallback(() => {
+		saveActionsOverrides([])
+	}, [saveActionsOverrides])
+
+	const restoreAction = useCallback(
+		(id: string) => {
+			actionsOverridesHelper.resetItem(id)
+		},
+		[actionsOverridesHelper]
+	)
+
 	const closeAction = useCallback(() => setSelectedAction(null), [])
 	const focusAction = useCallback(() => onFocus && onFocus(triggeredActionId), [triggeredActionId, onFocus])
 
@@ -371,6 +382,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 							trigger={item.computed}
 							opened={selectedTrigger === item.id}
 							canReset={item.defaults !== undefined && item.overrideOps.length > 0}
+							isDeleted={false}
 							onResetTrigger={resetTrigger}
 							onChangeTrigger={changeTrigger}
 							onFocus={focusTrigger}
@@ -378,7 +390,19 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 							onRemove={removeTrigger}
 						/>
 					) : (
-						<p>Deleted</p>
+						<TriggerEditor
+							key={item.id}
+							id={item.id}
+							trigger={item.defaults}
+							opened={selectedTrigger === item.id}
+							canReset={item.defaults !== undefined && item.overrideOps.length > 0}
+							isDeleted={true}
+							onResetTrigger={resetTrigger}
+							onChangeTrigger={changeTrigger}
+							onFocus={focusTrigger}
+							onClose={closeTrigger}
+							onRemove={removeTrigger}
+						/>
 					)
 				)}
 				<button
@@ -407,10 +431,12 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 							onRemove={removeAction}
 						/>
 					) : (
-						<p>Deleted</p>
+						<button className="triggered-action-entry__action-add clickable" onClick={() => restoreAction(item.id)}>
+							{t('Restore Deleted Action')}
+						</button>
 					)
 				)}
-				{sortedWrappedActions.filter((action) => action.type === 'normal').length === 0 ? (
+				{sortedWrappedActions.length === 0 ? (
 					<div className="triggered-action-entry__action">
 						<button className="triggered-action-entry__action-add clickable" onClick={addAction}>
 							{t('Select Action')}
@@ -419,13 +445,26 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 				) : null}
 			</div>
 			<div className="triggered-action-entry__modify">
-				<button className="action-btn" onClick={(e) => onDuplicate(triggeredActionId, e)}>
+				{!!sortedWrappedActions.find((action) => action.overrideOps.length > 0) && (
+					<button className="action-btn" onClick={onResetActions} title={t('Reset Action')}>
+						<FontAwesomeIcon icon={faRefresh} />
+					</button>
+				)}
+				<button
+					className="action-btn"
+					onClick={(e) => onDuplicate(triggeredActionId, e)}
+					title={t('Duplicate Action Trigger')}
+				>
 					<FontAwesomeIcon icon={faCopy} />
 				</button>
-				<button className="action-btn" onClick={(e) => onEdit(triggeredActionId, e)}>
+				<button className="action-btn" onClick={(e) => onEdit(triggeredActionId, e)} title={t('Edit Action Trigger')}>
 					<FontAwesomeIcon icon={faPencilAlt} />
 				</button>
-				<button className="action-btn" onClick={(e) => onRemove(triggeredActionId, e)}>
+				<button
+					className="action-btn"
+					onClick={(e) => onRemove(triggeredActionId, e)}
+					title={t('Delete Action Trigger')}
+				>
 					<FontAwesomeIcon icon={faTrash} />
 				</button>
 			</div>

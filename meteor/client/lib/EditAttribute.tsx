@@ -364,7 +364,9 @@ const EditAttributeToggle = wrapEditAttribute(
 			return !!this.getEditAttribute()
 		}
 		handleChange = () => {
-			this.handleUpdate(!this.state.value)
+			if (!this.props.disabled) {
+				this.handleUpdate(!this.state.value)
+			}
 		}
 		handleClick = () => {
 			this.handleChange()
