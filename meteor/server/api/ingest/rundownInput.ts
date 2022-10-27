@@ -397,11 +397,15 @@ function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObjec
 			})
 			.filter(doesSegmentExistsInCache)
 			.forEach((mediaObjectUpdatedIds: MediaObjectUpdatedIds) => {
-				lazyIgnore(
-					`updateSegmentFromMediaObject_${mediaObjectUpdatedIds.segmentId}`,
-					async () => updateSegmentFromCache(newDocument.studioId, mediaObjectUpdatedIds),
-					200
-				)
+				try {
+					lazyIgnore(
+						`updateSegmentFromMediaObject_${mediaObjectUpdatedIds.segmentId}`,
+						async () => updateSegmentFromCache(newDocument.studioId, mediaObjectUpdatedIds),
+						200
+					)
+				} catch (exception) {
+					logger.error('Error thrown while updating Segment from cache after MediaObject changed', exception)
+				}
 			})
 	}
 }
