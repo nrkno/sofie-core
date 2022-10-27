@@ -177,10 +177,8 @@ export async function CommitIngestOperation(
 
 	console.log('re thing', data.removeRundown, trappedInPlaylistId)
 
-	const showStyle =
-		data.showStyle ?? (await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId))
-	const blueprint =
-		(data.showStyle ? data.blueprint : undefined) ?? (await context.getShowStyleBlueprint(showStyle._id))
+	const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
+	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
 	// Adopt the rundown into its new/retained playlist.
 	// We have to do the locking 'manually' because the playlist may not exist yet, but that is ok
