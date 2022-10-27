@@ -175,8 +175,6 @@ export async function CommitIngestOperation(
 		return
 	}
 
-	console.log('re thing', data.removeRundown, trappedInPlaylistId)
-
 	const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
