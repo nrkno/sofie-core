@@ -61,9 +61,9 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 				const uploadFileContents = (progressEvent.target as any).result
 
-				let newVariants: ShowStyleVariant[]
+				const newVariants: ShowStyleVariant[] = []
 				try {
-					newVariants = JSON.parse(uploadFileContents)
+					JSON.parse(uploadFileContents).map((variant) => newVariants.push(variant))
 					if (!_.isArray(newVariants)) {
 						throw new Error('Imported file did not contain an array')
 					}
@@ -87,14 +87,12 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		importVariantsFromArray = (variants: ShowStyleVariant[]) => {
 			const { t } = this.props
 			_.forEach(variants, (entry: ShowStyleVariant) => {
-				MeteorCall.showstyles.insertShowStyleVariantWithBlueprint(entry, entry._id).catch((error) => {
+				MeteorCall.showstyles.insertShowStyleVariantWithBlueprint(entry, entry._id).catch(() => {
 					NotificationCenter.push(
 						new Notification(
 							undefined,
 							NoticeLevel.WARNING,
-							t(`Failed to import Variant ${entry.name}. Make sure it is not already imported.`, {
-								errorMessage: error + '',
-							}),
+							t('Failed to import Variant {{name}}. Make sure it is not already imported.', { name: entry.name }),
 							'VariantSettings'
 						)
 					)
