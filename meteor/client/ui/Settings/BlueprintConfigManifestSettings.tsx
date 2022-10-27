@@ -66,12 +66,17 @@ import { MultiLineTextInputControl } from '../../lib/Components/MultiLineTextInp
 import { IntInputControl } from '../../lib/Components/IntInput'
 import { FloatInputControl } from '../../lib/Components/FloatInput'
 import { CheckboxControl } from '../../lib/Components/Checkbox'
-import { EditAttribute } from '../../lib/EditAttribute'
+import { MultiSelectInputControl } from '../../lib/Components/MultiSelectInput'
+import { JsonTextInputControl, tryParseJson } from '../../lib/Components/JsonTextInput'
+
+export interface SourceLayerDropdownOption extends DropdownInputOption<string> {
+	type: SourceLayerType
+}
 
 function filterSourceLayers(
 	select: ConfigManifestEntrySourceLayers<true | false>,
-	layers: Array<{ name: string; value: string; type: SourceLayerType }>
-): Array<{ name: string; value: string; type: SourceLayerType }> {
+	layers: Array<SourceLayerDropdownOption>
+): DropdownInputOption<string>[] {
 	if (select.filters && select.filters.sourceLayerTypes) {
 		const sourceLayerTypes = new Set(select.filters.sourceLayerTypes)
 		return layers.filter((layer) => sourceLayerTypes.has(layer.type))
@@ -83,14 +88,14 @@ function filterSourceLayers(
 function filterLayerMappings(
 	select: ConfigManifestEntryLayerMappings<true | false>,
 	mappings: { [studioId: string]: MappingsExt }
-): Array<{ name: string; value: string }> {
+): DropdownInputOption<string>[] {
 	const deviceTypes = select.filters?.deviceTypes
-	const result: Array<{ name: string; value: string }> = []
+	const result: DropdownInputOption<string>[] = []
 
 	for (const studioMappings of Object.values(mappings)) {
 		for (const [layerId, mapping] of Object.entries(studioMappings)) {
 			if (!deviceTypes || deviceTypes.includes(mapping.device)) {
-				result.push({ name: mapping.layerName || layerId, value: layerId })
+				result.push({ name: mapping.layerName || layerId, value: layerId, i: result.length })
 			}
 		}
 	}
@@ -102,27 +107,31 @@ function getTableColumnValues(
 	item: ConfigManifestEntrySelectFromColumn<boolean>,
 	object: IBlueprintConfig,
 	alternateConfig: IBlueprintConfig | undefined
-): string[] {
+): DropdownInputOption<string>[] {
 	const attribute = item.tableId
 	const table = objectPathGet(object, attribute) ?? objectPathGet(alternateConfig, attribute)
-	const result: string[] = []
+	const result: DropdownInputOption<string>[] = []
 	if (!Array.isArray(table)) {
 		return result
 	}
 	table.forEach((row) => {
 		if (typeof row === 'object' && row[item.columnId] !== undefined) {
-			result.push(row[item.columnId])
+			result.push({
+				name: `${row[item.columnId]}`,
+				value: `${row[item.columnId]}`,
+				i: result.length,
+			})
 		}
 	})
 	return result
 }
 
-function getEditAttribute(
+function getInputControl(
 	manifest: BasicConfigManifestEntry | ResolvedBasicConfigManifestEntry,
 	value: any,
 	handleUpdate: (value: any) => void,
 	layerMappings: { [studioId: string]: MappingsExt } | undefined,
-	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined,
+	sourceLayers: Array<SourceLayerDropdownOption> | undefined,
 	fullConfig: IBlueprintConfig | undefined,
 	alternateConfig: IBlueprintConfig | undefined
 ) {
@@ -147,64 +156,50 @@ function getEditAttribute(
 			const options: DropdownInputOption<string>[] = manifest.options.map((opt, i) => ({ name: opt, value: opt, i }))
 			return <DropdownInputControl classNames="input text-input input-l" {...commonProps} options={options} />
 		}
-		// TODO - replace these EditAttribute
 		case ConfigManifestEntryType.JSON:
 			return (
-				<EditAttribute
+				<JsonTextInputControl
+					classNames="input text-input input-l"
 					modifiedClassName="bghl"
 					invalidClassName="warn"
-					type="json"
-					className="input text-input input-l"
-					overrideDisplayValue={value}
-					updateFunction={(_e, value) => handleUpdate(value)}
+					value={tryParseJson(value)?.parsed ?? value}
+					handleUpdate={(valueObj) => handleUpdate(JSON.stringify(valueObj, undefined, 2))}
 				/>
 			)
-		case ConfigManifestEntryType.SELECT:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					type={manifest.multiple ? 'multiselect' : 'dropdown'}
-					options={manifest.options}
-					className="input text-input dropdown input-l"
-					overrideDisplayValue={value}
-					updateFunction={(_e, value) => handleUpdate(value)}
-				/>
+
+		case ConfigManifestEntryType.SELECT: {
+			const options: DropdownInputOption<string>[] = manifest.options.map((opt, i) => ({ name: opt, value: opt, i }))
+			return manifest.multiple ? (
+				<MultiSelectInputControl classNames="input text-input dropdown input-l" {...commonProps} options={options} />
+			) : (
+				<DropdownInputControl classNames="input text-input input-l" {...commonProps} options={options} />
 			)
-		case ConfigManifestEntryType.SOURCE_LAYERS:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					type={manifest.multiple ? 'multiselect' : 'dropdown'}
-					options={'options' in manifest ? manifest.options : filterSourceLayers(manifest, sourceLayers ?? [])}
-					className="input text-input dropdown input-l"
-					overrideDisplayValue={value}
-					updateFunction={(_e, value) => handleUpdate(value)}
-				/>
+		}
+		case ConfigManifestEntryType.SOURCE_LAYERS: {
+			const options = 'options' in manifest ? manifest.options : filterSourceLayers(manifest, sourceLayers ?? [])
+			return manifest.multiple ? (
+				<MultiSelectInputControl classNames="input text-input dropdown input-l" {...commonProps} options={options} />
+			) : (
+				<DropdownInputControl classNames="input text-input input-l" {...commonProps} options={options} />
 			)
-		case ConfigManifestEntryType.LAYER_MAPPINGS:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					type={manifest.multiple ? 'multiselect' : 'dropdown'}
-					options={'options' in manifest ? manifest.options : filterLayerMappings(manifest, layerMappings ?? {})}
-					className="input text-input dropdown input-l"
-					overrideDisplayValue={value}
-					updateFunction={(_e, value) => handleUpdate(value)}
-				/>
+		}
+		case ConfigManifestEntryType.LAYER_MAPPINGS: {
+			const options = 'options' in manifest ? manifest.options : filterLayerMappings(manifest, layerMappings ?? {})
+			return manifest.multiple ? (
+				<MultiSelectInputControl classNames="input text-input dropdown input-l" {...commonProps} options={options} />
+			) : (
+				<DropdownInputControl classNames="input text-input input-l" {...commonProps} options={options} />
 			)
-		case ConfigManifestEntryType.SELECT_FROM_COLUMN:
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					type={manifest.multiple ? 'multiselect' : 'dropdown'}
-					options={
-						'options' in manifest ? manifest.options : getTableColumnValues(manifest, fullConfig || {}, alternateConfig)
-					}
-					className="input text-input dropdown input-l"
-					overrideDisplayValue={value}
-					updateFunction={(_e, value) => handleUpdate(value)}
-				/>
+		}
+		case ConfigManifestEntryType.SELECT_FROM_COLUMN: {
+			const options =
+				'options' in manifest ? manifest.options : getTableColumnValues(manifest, fullConfig || {}, alternateConfig)
+			return manifest.multiple ? (
+				<MultiSelectInputControl classNames="input text-input dropdown input-l" {...commonProps} options={options} />
+			) : (
+				<DropdownInputControl classNames="input text-input input-l" {...commonProps} options={options} />
 			)
+		}
 		default:
 			assertNever(manifest)
 			return undefined
@@ -219,9 +214,9 @@ type ResolvedBasicConfigManifestEntry =
 	| ConfigManifestEntryBoolean
 	| ConfigManifestEntryEnum
 	| ConfigManifestEntrySelectFromOptions<boolean>
-	| (ConfigManifestEntrySelectFromColumn<boolean> & { options: string[] })
-	| (ConfigManifestEntrySourceLayers<boolean> & { options: Array<{ name: string; value: string }> })
-	| (ConfigManifestEntryLayerMappings<boolean> & { options: Array<{ name: string; value: string }> })
+	| (ConfigManifestEntrySelectFromColumn<boolean> & { options: DropdownInputOption<string>[] })
+	| (ConfigManifestEntrySourceLayers<boolean> & { options: DropdownInputOption<string>[] })
+	| (ConfigManifestEntryLayerMappings<boolean> & { options: DropdownInputOption<string>[] })
 	| ConfigManifestEntryJson
 
 interface IConfigManifestSettingsProps {
@@ -234,7 +229,7 @@ interface IConfigManifestSettingsProps {
 	alternateConfig: IBlueprintConfig | undefined
 
 	layerMappings?: { [studioId: string]: MappingsExt }
-	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
+	sourceLayers?: Array<SourceLayerDropdownOption>
 
 	subPanel?: boolean
 
@@ -254,7 +249,7 @@ interface IConfigManifestTableProps {
 	overrideHelper: OverrideOpHelper
 
 	layerMappings: { [studioId: string]: MappingsExt } | undefined
-	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined
+	sourceLayers: Array<SourceLayerDropdownOption> | undefined
 
 	subPanel: boolean
 }
@@ -282,7 +277,7 @@ function BlueprintConfigManifestTableEntry({
 		<tr>
 			{resolvedColumns.map((col) => (
 				<td key={col.id}>
-					{getEditAttribute(
+					{getInputControl(
 						col,
 						rowValue[col.id],
 						(value) => {
@@ -1019,7 +1014,7 @@ interface BlueprintConfigManifestEntryProps {
 	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
 	alternateConfig: IBlueprintConfig | undefined
 	layerMappings: { [studioId: string]: MappingsExt } | undefined
-	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined
+	sourceLayers: Array<SourceLayerDropdownOption> | undefined
 
 	subPanel: boolean
 
@@ -1084,7 +1079,7 @@ function BlueprintConfigManifestEntry({
 			component = (
 				<div className="field">
 					{t('Value')}
-					{getEditAttribute(
+					{getInputControl(
 						manifestEntry,
 						wrappedItem.computed,
 						handleUpdate,
@@ -1100,7 +1095,7 @@ function BlueprintConfigManifestEntry({
 			component = (
 				<label className="field">
 					{t('Value')}
-					{getEditAttribute(
+					{getInputControl(
 						manifestEntry,
 						wrappedItem.computed,
 						handleUpdate,

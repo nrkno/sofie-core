@@ -2,7 +2,7 @@ import React from 'react'
 import ClassNames from 'classnames'
 import { faPencilAlt, faTrash, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { ConfigManifestEntry, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { withTranslation } from 'react-i18next'
@@ -12,7 +12,7 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
-import { BlueprintConfigManifestSettings } from '../BlueprintConfigManifestSettings'
+import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from '../BlueprintConfigManifestSettings'
 import {
 	applyAndValidateOverrides,
 	SomeObjectOverrideOp,
@@ -25,7 +25,7 @@ interface IShowStyleVariantsProps {
 	blueprintConfigManifest: ConfigManifestEntry[]
 
 	layerMappings?: { [studioId: string]: MappingsExt }
-	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
+	sourceLayers?: Array<SourceLayerDropdownOption>
 }
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]

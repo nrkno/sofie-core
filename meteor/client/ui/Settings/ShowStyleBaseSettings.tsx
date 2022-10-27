@@ -7,13 +7,8 @@ import { OutputLayers, ShowStyleBase, ShowStyleBases, SourceLayers } from '../..
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
-import {
-	BlueprintManifestType,
-	ConfigManifestEntry,
-	ISourceLayer,
-	SourceLayerType,
-} from '@sofie-automation/blueprints-integration'
-import { BlueprintConfigManifestSettings } from './BlueprintConfigManifestSettings'
+import { BlueprintManifestType, ConfigManifestEntry, ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from './BlueprintConfigManifestSettings'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
 import { SourceLayerSettings } from './ShowStyle/SourceLayer'
@@ -29,6 +24,7 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { literal } from '@sofie-automation/corelib/dist/lib'
 
 interface IProps {
 	match: {
@@ -50,7 +46,7 @@ interface ITrackedProps {
 	showStyleVariants: Array<ShowStyleVariant>
 	compatibleStudios: Array<Studio>
 	blueprintConfigManifest: ConfigManifestEntry[]
-	sourceLayersLight: Array<{ name: string; value: string; type: SourceLayerType }> | undefined
+	sourceLayersLight: Array<SourceLayerDropdownOption> | undefined
 	sourceLayers: SourceLayers
 	outputLayers: OutputLayers
 	layerMappings: { [studioId: string]: MappingsExt }
@@ -93,13 +89,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		sourceLayersLight: sourceLayers
 			? Object.values(sourceLayers)
 					.filter((layer): layer is ISourceLayer => !!layer)
-					.map((layer) => {
-						return {
+					.map((layer, i) =>
+						literal<SourceLayerDropdownOption>({
 							value: layer._id,
 							name: layer.name,
 							type: layer.type,
-						}
-					})
+							i,
+						})
+					)
 			: undefined,
 		layerMappings: mappings,
 	}
