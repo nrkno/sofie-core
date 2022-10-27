@@ -107,7 +107,6 @@ PickerPOST.route(
 			}
 
 			// TODO - should we clear `blueprintUniqueId`, to avoid blueprints getting them confused with data they own?
-			// TODO - should the `ObjectWithOverrides`  be flattened
 
 			await TriggeredActions.upsertManyAsync(triggeredActions)
 
