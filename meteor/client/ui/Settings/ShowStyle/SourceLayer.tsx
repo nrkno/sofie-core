@@ -78,9 +78,26 @@ export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsPro
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
-	const onAddSource = useCallback(() => {
-		const maxRank = findHighestRank(Object.values(showStyleBase.sourceLayersWithOverrides.defaults))
+	const sortedSourceLayers = useMemo(
+		() =>
+			getAllCurrentAndDeletedItemsFromOverrides(
+				showStyleBase.sourceLayersWithOverrides,
+				(a, b) => a[1]._rank - b[1]._rank
+			),
+		[showStyleBase.sourceLayersWithOverrides]
+	)
 
+	const maxRank = useMemo(
+		() =>
+			findHighestRank(
+				sortedSourceLayers
+					.filter((item): item is WrappedOverridableItemNormal<ISourceLayer> => item.type === 'normal')
+					.map((item) => item.computed)
+			),
+		[sortedSourceLayers]
+	)
+
+	const onAddSource = useCallback(() => {
 		const newSource = literal<ISourceLayer>({
 			_id: `${showStyleBase._id}-${getRandomString(5)}`,
 			_rank: maxRank ? maxRank._rank + 10 : 0,
@@ -99,16 +116,7 @@ export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsPro
 				'sourceLayersWithOverrides.overrides': addOp,
 			},
 		})
-	}, [showStyleBase.sourceLayersWithOverrides.defaults, showStyleBase._id])
-
-	const sortedSourceLayers = useMemo(
-		() =>
-			getAllCurrentAndDeletedItemsFromOverrides(
-				showStyleBase.sourceLayersWithOverrides,
-				(a, b) => a[1]._rank - b[1]._rank
-			),
-		[showStyleBase.sourceLayersWithOverrides]
-	)
+	}, [maxRank, showStyleBase._id])
 
 	const saveOverrides = useCallback(
 		(newOps: SomeObjectOverrideOp[]) => {

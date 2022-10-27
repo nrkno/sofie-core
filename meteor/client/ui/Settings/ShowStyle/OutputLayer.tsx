@@ -38,9 +38,26 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
-	const onAddOutput = useCallback(() => {
-		const maxRank = findHighestRank(Object.values(showStyleBase.outputLayersWithOverrides.defaults))
+	const sortedOutputLayers = useMemo(
+		() =>
+			getAllCurrentAndDeletedItemsFromOverrides(
+				showStyleBase.outputLayersWithOverrides,
+				(a, b) => a[1]._rank - b[1]._rank
+			),
+		[showStyleBase.outputLayersWithOverrides]
+	)
 
+	const maxRank = useMemo(
+		() =>
+			findHighestRank(
+				sortedOutputLayers
+					.filter((item): item is WrappedOverridableItemNormal<IOutputLayer> => item.type === 'normal')
+					.map((item) => item.computed)
+			),
+		[sortedOutputLayers]
+	)
+
+	const onAddOutput = useCallback(() => {
 		const newOutput = literal<IOutputLayer>({
 			_id: `${showStyleBase._id}-${getRandomString(5)}`,
 			_rank: maxRank ? maxRank._rank + 10 : 0,
@@ -59,16 +76,7 @@ export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
 				'outputLayersWithOverrides.overrides': addOp,
 			},
 		})
-	}, [showStyleBase.outputLayersWithOverrides, showStyleBase._id])
-
-	const sortedOutputLayers = useMemo(
-		() =>
-			getAllCurrentAndDeletedItemsFromOverrides(
-				showStyleBase.outputLayersWithOverrides,
-				(a, b) => a[1]._rank - b[1]._rank
-			),
-		[showStyleBase.outputLayersWithOverrides]
-	)
+	}, [maxRank, showStyleBase._id])
 
 	const isPGMChannelSet = useMemo(() => {
 		return !!sortedOutputLayers.find((layer) => layer.computed && layer.computed.isPGM)
