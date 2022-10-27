@@ -374,37 +374,21 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 				<div className="triggered-action-entry__drag-handle locked"></div>
 			)}
 			<div className="triggered-action-entry__triggers">
-				{sortedWrappedTriggers.map((item) =>
-					item.type === 'normal' ? (
-						<TriggerEditor
-							key={item.id}
-							id={item.id}
-							trigger={item.computed}
-							opened={selectedTrigger === item.id}
-							canReset={item.defaults !== undefined && item.overrideOps.length > 0}
-							isDeleted={false}
-							onResetTrigger={resetTrigger}
-							onChangeTrigger={changeTrigger}
-							onFocus={focusTrigger}
-							onClose={closeTrigger}
-							onRemove={removeTrigger}
-						/>
-					) : (
-						<TriggerEditor
-							key={item.id}
-							id={item.id}
-							trigger={item.defaults}
-							opened={selectedTrigger === item.id}
-							canReset={item.defaults !== undefined && item.overrideOps.length > 0}
-							isDeleted={true}
-							onResetTrigger={resetTrigger}
-							onChangeTrigger={changeTrigger}
-							onFocus={focusTrigger}
-							onClose={closeTrigger}
-							onRemove={removeTrigger}
-						/>
-					)
-				)}
+				{sortedWrappedTriggers.map((item) => (
+					<TriggerEditor
+						key={item.id}
+						id={item.id}
+						trigger={item.type === 'normal' ? item.computed : item.defaults}
+						opened={selectedTrigger === item.id}
+						canReset={item.defaults !== undefined && item.overrideOps.length > 0}
+						isDeleted={item.type === 'deleted'}
+						onResetTrigger={resetTrigger}
+						onChangeTrigger={changeTrigger}
+						onFocus={focusTrigger}
+						onClose={closeTrigger}
+						onRemove={removeTrigger}
+					/>
+				))}
 				<button
 					className={classNames('triggered-action-entry__add-trigger', {
 						force: sortedWrappedTriggers.filter((trigger) => trigger.type === 'normal').length === 0,

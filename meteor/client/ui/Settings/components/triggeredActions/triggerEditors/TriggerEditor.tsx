@@ -89,7 +89,7 @@ export const TriggerEditor = function TriggerEditor({ opened, canReset, isDelete
 				up={trigger.up || false}
 				onClick={onFocus}
 				selected={opened}
-				isDeleted={isDeleted}
+				deleted={isDeleted}
 			/>
 		) : (
 			<div ref={setReferenceElement}>Unknown trigger type: {trigger.type}</div>
