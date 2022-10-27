@@ -14,13 +14,12 @@ import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigManifestSettings } from '../ConfigManifestSettings'
 import { UploadButton } from '../../../lib/uploadButton'
-import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
 import _ from 'underscore'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
-	showStyleVariants: Array<ShowStyleVariant>
+	showStyleVariants: ShowStyleVariant[]
 	blueprintConfigManifest: ConfigManifestEntry[]
 
 	layerMappings?: { [key: string]: MappingsExt }
@@ -45,23 +44,24 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				uploadFileKey: Date.now(),
 			}
 		}
-		importVariants(e: React.ChangeEvent<HTMLInputElement>) {
+
+		importVariants(event: React.ChangeEvent<HTMLInputElement>) {
 			const { t } = this.props
 
-			const file = e.target.files ? e.target.files[0] : null
+			const file = event.target.files ? event.target.files[0] : null
 			if (!file) {
 				return
 			}
 
 			const reader = new FileReader()
-			reader.onload = (e2) => {
+			reader.onload = (progressEvent: ProgressEvent<FileReader>) => {
 				this.setState({
 					uploadFileKey: Date.now(),
 				})
 
-				const uploadFileContents = (e2.target as any).result
+				const uploadFileContents = (progressEvent.target as any).result
 
-				let newVariants: Array<ShowStyleVariant> = []
+				let newVariants: ShowStyleVariant[]
 				try {
 					newVariants = JSON.parse(uploadFileContents)
 					if (!_.isArray(newVariants)) {
@@ -79,42 +79,33 @@ export const ShowStyleVariantsSettings = withTranslation()(
 					return
 				}
 
-				_.forEach(newVariants, (entry) => {
-					MeteorCall.showstyles
-						.insertShowStyleVariantWithBlueprint(
-							entry.showStyleBaseId,
-							entry.blueprintConfig,
-							entry._id,
-							entry._rundownVersionHash,
-							entry.name
-						)
-						.catch((error) => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.WARNING,
-									t('Failed to import Variant ' + entry.name + '. Make sure it is not already imported.', {
-										errorMessage: error + '',
-									}),
-									'VariantSettings'
-								)
-							)
-						})
-				})
+				this.importVariantsFromArray(newVariants)
 			}
 			reader.readAsText(file)
 		}
-		copyVariant = (showStyleVariant: ShowStyleVariant) => {
-			MeteorCall.showstyles
-				.insertShowStyleVariantWithBlueprint(
-					showStyleVariant.showStyleBaseId,
-					showStyleVariant.blueprintConfig,
-					getRandomId(),
-					'',
-					'Copy of ' + showStyleVariant.name
-				)
-				.catch(console.error)
+
+		importVariantsFromArray = (variants: ShowStyleVariant[]) => {
+			const { t } = this.props
+			_.forEach(variants, (entry: ShowStyleVariant) => {
+				MeteorCall.showstyles.insertShowStyleVariantWithBlueprint(entry, entry._id).catch((error) => {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.WARNING,
+							t(`Failed to import Variant ${entry.name}. Make sure it is not already imported.`, {
+								errorMessage: error + '',
+							}),
+							'VariantSettings'
+						)
+					)
+				})
+			})
 		}
+
+		copyVariant = (showStyleVariant: ShowStyleVariant) => {
+			MeteorCall.showstyles.insertShowStyleVariantWithBlueprint(showStyleVariant).catch(console.error)
+		}
+
 		downloadVariant = (showstyleVariant: ShowStyleVariant) => {
 			const variantArray = [showstyleVariant]
 			const jsonStr = JSON.stringify(variantArray)
@@ -127,6 +118,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			element.click()
 			document.body.removeChild(element) // Required for this to work in FireFox
 		}
+
 		downloadAllVariants = () => {
 			const jsonStr = JSON.stringify(this.props.showStyleVariants)
 
@@ -138,9 +130,11 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			element.click()
 			document.body.removeChild(element) // Required for this to work in FireFox
 		}
+
 		isItemEdited = (layerId: ProtectedString<any>) => {
 			return this.state.editedMappings.indexOf(layerId) >= 0
 		}
+
 		finishEditItem = (layerId: ProtectedString<any>) => {
 			const index = this.state.editedMappings.indexOf(layerId)
 			if (index >= 0) {
@@ -150,6 +144,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				})
 			}
 		}
+
 		editItem = (layerId: ProtectedString<any>) => {
 			if (this.state.editedMappings.indexOf(layerId) < 0) {
 				this.state.editedMappings.push(layerId)
@@ -160,9 +155,11 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				this.finishEditItem(layerId)
 			}
 		}
+
 		onAddShowStyleVariant = () => {
 			MeteorCall.showstyles.insertShowStyleVariant(this.props.showStyleBase._id).catch(console.error)
 		}
+
 		confirmRemove = (showStyleVariant: ShowStyleVariant) => {
 			const { t } = this.props
 			doModalDialog({
@@ -277,7 +274,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 						<UploadButton
 							className="btn btn-secondary mls"
 							accept="application/json,.json"
-							onChange={(e) => this.importVariants(e)}
+							onChange={(event) => this.importVariants(event)}
 							key={this.state.uploadFileKey}
 						>
 							<FontAwesomeIcon icon={faUpload} />

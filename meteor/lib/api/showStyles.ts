@@ -1,16 +1,12 @@
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
-import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
-import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
+import { ShowStyleVariant, ShowStyleVariantId } from '../collections/ShowStyleVariants'
 
 export interface NewShowStylesAPI {
 	insertShowStyleBase(): Promise<ShowStyleBaseId>
 	insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId): Promise<ShowStyleVariantId>
 	insertShowStyleVariantWithBlueprint(
-		showStyleBaseId: ShowStyleBaseId,
-		blueprintConfig: IBlueprintConfig,
-		_id: ShowStyleVariantId,
-		rundownVersionHash: string,
-		name: string
+		showStyleVariant: ShowStyleVariant,
+		id?: ShowStyleVariantId
 	): Promise<ShowStyleVariantId>
 	removeShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
 	removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId): Promise<void>

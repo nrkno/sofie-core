@@ -83,36 +83,29 @@ export async function insertShowStyleVariant(
 
 	return insertShowStyleVariantInner(showStyleBase, name)
 }
-export async function insertShowStyleVariantInner(
-	showStyleBase: ShowStyleBaseLight,
-	name?: string
-): Promise<ShowStyleVariantId> {
-	return ShowStyleVariants.insertAsync({
-		_id: getRandomId(),
-		showStyleBaseId: showStyleBase._id,
-		name: name || 'Variant',
-		blueprintConfig: {},
-		_rundownVersionHash: '',
-	})
-}
 export async function insertShowStyleVariantWithBlueprint(
 	context: MethodContext | Credentials,
-	showStyleBaseId: ShowStyleBaseId,
-	blueprintConfig: IBlueprintConfig,
-	_id: ShowStyleVariantId,
-	_rundownVersionHash: string,
-	name?: string
+	showStyleVariant: ShowStyleVariant,
+	id?: ShowStyleVariantId
 ): Promise<ShowStyleVariantId> {
-	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
+	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleVariant.showStyleBaseId)
 	const showStyleBase = access.showStyleBase
-	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
+	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleVariant.showStyleBaseId}" not found`)
 
+	return insertShowStyleVariantInner(showStyleBase, showStyleVariant.name, id, showStyleVariant.blueprintConfig)
+}
+export async function insertShowStyleVariantInner(
+	showStyleBase: ShowStyleBaseLight,
+	name?: string,
+	id?: ShowStyleVariantId,
+	blueprintConfig?: IBlueprintConfig
+): Promise<ShowStyleVariantId> {
 	return ShowStyleVariants.insertAsync({
-		_id: _id,
-		showStyleBaseId: showStyleBaseId,
-		name: name || 'Copied variant',
-		blueprintConfig: blueprintConfig,
-		_rundownVersionHash: _rundownVersionHash,
+		_id: id || getRandomId(),
+		showStyleBaseId: showStyleBase._id,
+		name: name || 'Variant',
+		blueprintConfig: blueprintConfig || {},
+		_rundownVersionHash: '',
 	})
 }
 export async function removeShowStyleBase(context: MethodContext, showStyleBaseId: ShowStyleBaseId): Promise<void> {
@@ -151,21 +144,8 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	async insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
 		return insertShowStyleVariant(this, showStyleBaseId)
 	}
-	async insertShowStyleVariantWithBlueprint(
-		showStyleBaseId: ShowStyleBaseId,
-		blueprintConfig: IBlueprintConfig,
-		_id: ShowStyleVariantId,
-		_rundownVersionHash: string,
-		name: string
-	) {
-		return insertShowStyleVariantWithBlueprint(
-			this,
-			showStyleBaseId,
-			blueprintConfig,
-			_id,
-			_rundownVersionHash,
-			name
-		)
+	async insertShowStyleVariantWithBlueprint(showStyleVariant: ShowStyleVariant, id?: ShowStyleVariantId) {
+		return insertShowStyleVariantWithBlueprint(this, showStyleVariant, id)
 	}
 	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 		return removeShowStyleBase(this, showStyleBaseId)
