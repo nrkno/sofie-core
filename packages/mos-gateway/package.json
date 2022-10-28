@@ -30,7 +30,7 @@
 		"buildstart": "yarn build && yarn dev",
 		"buildinspect": "yarn build && yarn inspect",
 		"build:main": "tsc -p tsconfig.build.json",
-		"lint:raw": "eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
+		"lint:raw": "eslint --ext .ts --ext .tsx --ignore-pattern dist",
 		"lint": "yarn lint:raw .",
 		"lint-fix": "yarn lint --fix",
 		"unit": "jest",

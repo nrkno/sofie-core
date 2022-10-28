@@ -1,6 +1,6 @@
 import React from 'react'
 import ClassNames from 'classnames'
-import { faPencilAlt, faTrash, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faPencilAlt, faTrash, faCheck, faPlus, faDownload, faUpload, faCopy } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ConfigManifestEntry, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -13,18 +13,25 @@ import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigManifestSettings } from '../ConfigManifestSettings'
+import { UploadButton } from '../../../lib/uploadButton'
+import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
+import _ from 'underscore'
+import { logger } from '../../../../lib/logging'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
-	showStyleVariants: Array<ShowStyleVariant>
+	showStyleVariants: ShowStyleVariant[]
 	blueprintConfigManifest: ConfigManifestEntry[]
 
 	layerMappings?: { [key: string]: MappingsExt }
 	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
 }
+
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
+	timestampedFileKey: number
 }
+
 export const ShowStyleVariantsSettings = withTranslation()(
 	class ShowStyleVariantsSettings extends React.Component<
 		Translated<IShowStyleVariantsProps>,
@@ -35,12 +42,100 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 			this.state = {
 				editedMappings: [],
+				timestampedFileKey: Date.now(),
 			}
 		}
-		isItemEdited = (layerId: ProtectedString<any>) => {
+
+		private importShowStyleVariants = (event: React.ChangeEvent<HTMLInputElement>): void => {
+			const { t } = this.props
+
+			const file = event.target.files?.[0]
+			if (!file) {
+				return
+			}
+
+			const reader = new FileReader()
+			reader.onload = () => {
+				this.setState({
+					timestampedFileKey: Date.now(),
+				})
+
+				const fileContents = reader.result as string
+
+				const newShowStyleVariants: ShowStyleVariant[] = []
+				try {
+					JSON.parse(fileContents).map((showStyleVariant) => newShowStyleVariants.push(showStyleVariant))
+					if (!_.isArray(newShowStyleVariants)) {
+						throw new Error('Imported file did not contain an array')
+					}
+				} catch (error) {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.WARNING,
+							t('Failed to import new showstyle variants: {{errorMessage}}', { errorMessage: error + '' }),
+							'VariantSettings'
+						)
+					)
+					return
+				}
+
+				this.importShowStyleVariantsFromArray(newShowStyleVariants)
+			}
+			reader.readAsText(file)
+		}
+
+		private importShowStyleVariantsFromArray = (showStyleVariants: ShowStyleVariant[]): void => {
+			const { t } = this.props
+			showStyleVariants.forEach((showStyleVariant: ShowStyleVariant) => {
+				MeteorCall.showstyles.insertShowStyleVariantWithProperties(showStyleVariant, showStyleVariant._id).catch(() => {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.WARNING,
+							t('Failed to import Variant {{name}}. Make sure it is not already imported.', {
+								name: showStyleVariant.name,
+							}),
+							'VariantSettings'
+						)
+					)
+				})
+			})
+		}
+
+		private copyShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
+			showStyleVariant.name = `Copy of ${showStyleVariant.name}`
+			MeteorCall.showstyles.insertShowStyleVariantWithProperties(showStyleVariant).catch(logger.warn)
+		}
+
+		private downloadShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
+			const showStyleVariants = [showStyleVariant]
+			const jsonStr = JSON.stringify(showStyleVariants)
+			const fileName = `${showStyleVariant.name}_showstyleVariant_${showStyleVariant._id}.json`
+			this.download(jsonStr, fileName)
+		}
+
+		private downloadAllShowStyleVariants = (): void => {
+			const jsonStr = JSON.stringify(this.props.showStyleVariants)
+			const fileName = `All variants_${this.props.showStyleBase._id}.json`
+			this.download(jsonStr, fileName)
+		}
+
+		private download = (jsonStr: string, fileName: string): void => {
+			const element = document.createElement('a')
+			element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
+			element.download = fileName
+
+			document.body.appendChild(element) // Required for this to work in FireFox
+			element.click()
+			document.body.removeChild(element) // Required for this to work in FireFox
+		}
+
+		private isItemEdited = (layerId: ProtectedString<any>): boolean => {
 			return this.state.editedMappings.indexOf(layerId) >= 0
 		}
-		finishEditItem = (layerId: ProtectedString<any>) => {
+
+		private finishEditItem = (layerId: ProtectedString<any>): void => {
 			const index = this.state.editedMappings.indexOf(layerId)
 			if (index >= 0) {
 				this.state.editedMappings.splice(index, 1)
@@ -49,7 +144,8 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				})
 			}
 		}
-		editItem = (layerId: ProtectedString<any>) => {
+
+		private editItem = (layerId: ProtectedString<any>): void => {
 			if (this.state.editedMappings.indexOf(layerId) < 0) {
 				this.state.editedMappings.push(layerId)
 				this.setState({
@@ -59,17 +155,19 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				this.finishEditItem(layerId)
 			}
 		}
-		onAddShowStyleVariant = () => {
-			MeteorCall.showstyles.insertShowStyleVariant(this.props.showStyleBase._id).catch(console.error)
+
+		private onAddShowStyleVariant = (): void => {
+			MeteorCall.showstyles.insertShowStyleVariant(this.props.showStyleBase._id).catch(logger.warn)
 		}
-		confirmRemove = (showStyleVariant: ShowStyleVariant) => {
+
+		private confirmRemove = (showStyleVariant: ShowStyleVariant): void => {
 			const { t } = this.props
 			doModalDialog({
 				title: t('Remove this Variant?'),
 				no: t('Cancel'),
 				yes: t('Remove'),
 				onAccept: () => {
-					MeteorCall.showstyles.removeShowStyleVariant(showStyleVariant._id).catch(console.error)
+					MeteorCall.showstyles.removeShowStyleVariant(showStyleVariant._id).catch(logger.warn)
 				},
 				message: (
 					<React.Fragment>
@@ -83,7 +181,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			})
 		}
 
-		renderShowStyleVariants() {
+		private renderShowStyleVariants() {
 			const { t } = this.props
 
 			return this.props.showStyleVariants.map((showStyleVariant) => {
@@ -98,6 +196,12 @@ export const ShowStyleVariantsSettings = withTranslation()(
 								{showStyleVariant.name || t('Unnamed variant')}
 							</th>
 							<td className="settings-studio-showStyleVariant__actions table-item-actions c3">
+								<button className="action-btn" onClick={() => this.downloadShowStyleVariant(showStyleVariant)}>
+									<FontAwesomeIcon icon={faDownload} />
+								</button>
+								<button className="action-btn" onClick={() => this.copyShowStyleVariant(showStyleVariant)}>
+									<FontAwesomeIcon icon={faCopy} />
+								</button>
 								<button className="action-btn" onClick={() => this.editItem(showStyleVariant._id)}>
 									<FontAwesomeIcon icon={faPencilAlt} />
 								</button>
@@ -159,12 +263,26 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			return (
 				<div>
 					<h2 className="mhn">{t('Variants')}</h2>
+					<div className="mod mhs"></div>
 					<table className="table expando settings-studio-showStyleVariants-table">
 						<tbody>{this.renderShowStyleVariants()}</tbody>
 					</table>
 					<div className="mod mhs">
 						<button className="btn btn-primary" onClick={this.onAddShowStyleVariant}>
 							<FontAwesomeIcon icon={faPlus} />
+						</button>
+						<UploadButton
+							className="btn btn-secondary mls"
+							accept="application/json,.json"
+							onChange={(event) => this.importShowStyleVariants(event)}
+							key={this.state.timestampedFileKey}
+						>
+							<FontAwesomeIcon icon={faUpload} />
+							&nbsp;{t('Import')}
+						</UploadButton>
+						<button className="btn btn-secondary mls" onClick={this.downloadAllShowStyleVariants}>
+							<FontAwesomeIcon icon={faDownload} />
+							&nbsp;{t('Export')}
 						</button>
 					</div>
 				</div>
