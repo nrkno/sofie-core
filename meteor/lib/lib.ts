@@ -19,7 +19,7 @@ export * from '@sofie-automation/corelib/dist/lib'
 /**
  * Convenience method to convert a Meteor.call() into a Promise
  */
-export async function MeteorPromiseCall<T>(callName: string, ...args: any[]): Promise<T> {
+export async function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any> {
 	return new Promise((resolve, reject) => {
 		Meteor.call(callName, ...args, (err, res) => {
 			if (err) reject(err)
