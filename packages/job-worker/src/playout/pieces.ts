@@ -75,7 +75,7 @@ function resolvePieceTimeline(
 	pieceInstanceMap: { [id: string]: PieceInstance | undefined },
 	resolveForStr: string
 ): ResolvedPieceInstance[] {
-	const tlResolved = Resolver.resolveTimeline(objs, { time: baseTime })
+	const tlResolved = Resolver.resolveTimeline(objs as any, { time: baseTime })
 	const resolvedPieces: Array<ResolvedPieceInstance> = []
 
 	const unresolvedIds: string[] = []

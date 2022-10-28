@@ -27,10 +27,10 @@ function getBestPieceInstanceId(piece: PieceInstance): string {
 }
 
 function tryActivateKeyframesForObject(
-	obj: TimelineObjectCoreExt,
+	obj: TimelineObjectCoreExt<any>,
 	hasTransition: boolean,
 	classesFromPreviousPart: string[] | undefined
-): TimelineObjectCoreExt['content'] {
+): any {
 	// Try and find a keyframe that is used when in a transition
 	if (hasTransition) {
 		let transitionKF: TimelineTypes.TimelineKeyframe | undefined
