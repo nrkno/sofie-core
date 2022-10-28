@@ -29,7 +29,7 @@ interface IShowStyleVariantsProps {
 
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
-	uploadFileKey: number
+	timestampedFileKey: number
 }
 
 export const ShowStyleVariantsSettings = withTranslation()(
@@ -42,29 +42,29 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 			this.state = {
 				editedMappings: [],
-				uploadFileKey: Date.now(),
+				timestampedFileKey: Date.now(),
 			}
 		}
 
 		private importShowStyleVariants = (event: React.ChangeEvent<HTMLInputElement>): void => {
 			const { t } = this.props
 
-			const file = event.target.files ? event.target.files[0] : null
+			const file = event.target.files?.[0]
 			if (!file) {
 				return
 			}
 
 			const reader = new FileReader()
-			reader.onload = (progressEvent: ProgressEvent<FileReader>) => {
+			reader.onload = () => {
 				this.setState({
-					uploadFileKey: Date.now(),
+					timestampedFileKey: Date.now(),
 				})
 
-				const uploadFileContents = (progressEvent.target as any).result
+				const fileContents = reader.result as string
 
 				const newShowStyleVariants: ShowStyleVariant[] = []
 				try {
-					JSON.parse(uploadFileContents).map((showStyleVariant) => newShowStyleVariants.push(showStyleVariant))
+					JSON.parse(fileContents).map((showStyleVariant) => newShowStyleVariants.push(showStyleVariant))
 					if (!_.isArray(newShowStyleVariants)) {
 						throw new Error('Imported file did not contain an array')
 					}
@@ -104,29 +104,27 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		}
 
 		private copyShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
-			showStyleVariant.name = 'Copy of ' + showStyleVariant.name
+			showStyleVariant.name = `Copy of ${showStyleVariant.name}`
 			MeteorCall.showstyles.insertShowStyleVariantWithProperties(showStyleVariant).catch(logger.warn)
 		}
 
 		private downloadShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
 			const variantArray = [showStyleVariant]
 			const jsonStr = JSON.stringify(variantArray)
-
-			const element = document.createElement('a')
-			element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
-			element.download = `${showStyleVariant.name}_showstyleVariant_${showStyleVariant._id}.json`
-
-			document.body.appendChild(element) // Required for this to work in FireFox
-			element.click()
-			document.body.removeChild(element) // Required for this to work in FireFox
+			const fileName = `${showStyleVariant.name}_showstyleVariant_${showStyleVariant._id}.json`
+			this.download(jsonStr, fileName)
 		}
 
 		private downloadAllShowStyleVariants = (): void => {
 			const jsonStr = JSON.stringify(this.props.showStyleVariants)
+			const fileName = `All variants_${this.props.showStyleBase._id}.json`
+			this.download(jsonStr, fileName)
+		}
 
+		private download = (jsonStr: string, fileName: string): void => {
 			const element = document.createElement('a')
 			element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
-			element.download = `All variants_${this.props.showStyleBase._id}.json`
+			element.download = fileName
 
 			document.body.appendChild(element) // Required for this to work in FireFox
 			element.click()
@@ -277,7 +275,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 							className="btn btn-secondary mls"
 							accept="application/json,.json"
 							onChange={(event) => this.importShowStyleVariants(event)}
-							key={this.state.uploadFileKey}
+							key={this.state.timestampedFileKey}
 						>
 							<FontAwesomeIcon icon={faUpload} />
 							&nbsp;{t('Import')}
