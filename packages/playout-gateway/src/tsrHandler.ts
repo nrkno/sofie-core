@@ -492,16 +492,14 @@ export class TSRHandler {
 		// Defer:
 		setTimeout(() => {
 			this._updateDevices()
-				.then(
-					() =>
-						this._triggerUpdateDevicesCheckAgain &&
+				.then(() => {
+					if (this._triggerUpdateDevicesCheckAgain)
 						debug('triggerUpdateDevices from updateDevices promise resolved')
-				)
-				.catch(
-					() =>
-						this._triggerUpdateDevicesCheckAgain &&
+				})
+				.catch(() => {
+					if (this._triggerUpdateDevicesCheckAgain)
 						debug('triggerUpdateDevices from updateDevices promise rejected')
-				)
+				})
 				.finally(() => {
 					this._updateDevicesIsRunning = false
 					if (!this._triggerUpdateDevicesCheckAgain) {
