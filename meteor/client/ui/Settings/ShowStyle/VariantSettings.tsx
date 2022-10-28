@@ -109,8 +109,8 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		}
 
 		private downloadShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
-			const variantArray = [showStyleVariant]
-			const jsonStr = JSON.stringify(variantArray)
+			const showStyleVariants = [showStyleVariant]
+			const jsonStr = JSON.stringify(showStyleVariants)
 			const fileName = `${showStyleVariant.name}_showstyleVariant_${showStyleVariant._id}.json`
 			this.download(jsonStr, fileName)
 		}
