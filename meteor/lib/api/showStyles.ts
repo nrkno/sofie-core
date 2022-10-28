@@ -4,7 +4,7 @@ import { ShowStyleVariant, ShowStyleVariantId } from '../collections/ShowStyleVa
 export interface NewShowStylesAPI {
 	insertShowStyleBase(): Promise<ShowStyleBaseId>
 	insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId): Promise<ShowStyleVariantId>
-	insertShowStyleVariantWithBlueprint(
+	insertShowStyleVariantWithProperties(
 		showStyleVariant: ShowStyleVariant,
 		id?: ShowStyleVariantId
 	): Promise<ShowStyleVariantId>
@@ -15,7 +15,7 @@ export interface NewShowStylesAPI {
 export enum ShowStylesAPIMethods {
 	'insertShowStyleBase' = 'showstyles.insertShowStyleBase',
 	'insertShowStyleVariant' = 'showstyles.insertShowStyleVariant',
-	'insertShowStyleVariantWithBlueprint' = 'showstyles.insertShowStyleVariantWithBlueprint',
+	'insertShowStyleVariantWithProperties' = 'showstyles.insertShowStyleVariantWithProperties',
 	'removeShowStyleBase' = 'showstyles.removeShowStyleBase',
 	'removeShowStyleVariant' = 'showstyles.removeShowStyleVariant',
 }

@@ -83,7 +83,7 @@ export async function insertShowStyleVariant(
 
 	return insertShowStyleVariantInner(showStyleBase, name)
 }
-export async function insertShowStyleVariantWithBlueprint(
+export async function insertShowStyleVariantWithProperties(
 	context: MethodContext | Credentials,
 	showStyleVariant: ShowStyleVariant,
 	id?: ShowStyleVariantId
@@ -144,8 +144,8 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	async insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
 		return insertShowStyleVariant(this, showStyleBaseId)
 	}
-	async insertShowStyleVariantWithBlueprint(showStyleVariant: ShowStyleVariant, id?: ShowStyleVariantId) {
-		return insertShowStyleVariantWithBlueprint(this, showStyleVariant, id)
+	async insertShowStyleVariantWithProperties(showStyleVariant: ShowStyleVariant, id?: ShowStyleVariantId) {
+		return insertShowStyleVariantWithProperties(this, showStyleVariant, id)
 	}
 	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 		return removeShowStyleBase(this, showStyleBaseId)
