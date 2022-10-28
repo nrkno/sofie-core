@@ -94,13 +94,13 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			const error = this.state.error.error
 			const info = this.state.error.info
 			return (
-				<div style={ErrorBoundary.style.container}>
+				<div className="error-boundary" style={ErrorBoundary.style.container}>
 					<h1 style={ErrorBoundary.style.h1}>Whoops, something went wrong!</h1>
 
 					<div style={ErrorBoundary.style.friendlyMessage}>
 						There was an error in the Sofie GUI which caused it to crash.
 						<br />
-						Please copy the error description below and report it to your system administrator.
+						Please copy the error description below and report it to your tech support.
 						<br />
 						<button style={ErrorBoundary.style.resetButton} onClick={this.resetComponent}>
 							Click here to try to restart component
