@@ -18,6 +18,7 @@ import { Credentials } from '../security/lib/credentials'
 import { OrganizationId } from '../../lib/collections/Organization'
 import deepmerge from 'deepmerge'
 import { ShowStyleBaseLight } from '../../lib/collections/optimizations'
+import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 
 export async function getShowStyleCompound(
 	showStyleVariantId: ShowStyleVariantId
@@ -82,15 +83,28 @@ export async function insertShowStyleVariant(
 
 	return insertShowStyleVariantInner(showStyleBase, name)
 }
+export async function insertShowStyleVariantWithProperties(
+	context: MethodContext | Credentials,
+	showStyleVariant: ShowStyleVariant,
+	id?: ShowStyleVariantId
+): Promise<ShowStyleVariantId> {
+	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleVariant.showStyleBaseId)
+	const showStyleBase = access.showStyleBase
+	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleVariant.showStyleBaseId}" not found`)
+
+	return insertShowStyleVariantInner(showStyleBase, showStyleVariant.name, id, showStyleVariant.blueprintConfig)
+}
 export async function insertShowStyleVariantInner(
 	showStyleBase: ShowStyleBaseLight,
-	name?: string
+	name?: string,
+	id?: ShowStyleVariantId,
+	blueprintConfig?: IBlueprintConfig
 ): Promise<ShowStyleVariantId> {
 	return ShowStyleVariants.insertAsync({
-		_id: getRandomId(),
+		_id: id || getRandomId(),
 		showStyleBaseId: showStyleBase._id,
 		name: name || 'Variant',
-		blueprintConfig: {},
+		blueprintConfig: blueprintConfig || {},
 		_rundownVersionHash: '',
 	})
 }
@@ -129,6 +143,9 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	}
 	async insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
 		return insertShowStyleVariant(this, showStyleBaseId)
+	}
+	async insertShowStyleVariantWithProperties(showStyleVariant: ShowStyleVariant, id?: ShowStyleVariantId) {
+		return insertShowStyleVariantWithProperties(this, showStyleVariant, id)
 	}
 	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 		return removeShowStyleBase(this, showStyleBaseId)
