@@ -1,4 +1,5 @@
 jest.dontMock('ddp')
+import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import {
@@ -86,26 +87,26 @@ test('Integration: Test connection and basic Core functionality', async () => {
 	observer.removed = jest.fn()
 
 	// Subscribe to data:
-	const coll0 = core.getCollection('peripheralDevices')
-	expect(coll0.findOne({ _id: id })).toBeFalsy()
+	const coll0 = core.getCollection<PeripheralDevicePublic>('peripheralDevices')
+	expect(coll0.findOne(id)).toBeFalsy()
 	const subId = await core.subscribe('peripheralDevices', {
 		_id: id,
 	})
-	const coll1 = core.getCollection('peripheralDevices')
-	expect(coll1.findOne({ _id: id })).toMatchObject({
+	const coll1 = core.getCollection<PeripheralDevicePublic>('peripheralDevices')
+	expect(coll1.findOne(id)).toMatchObject({
 		_id: id,
 	})
 	expect(observer.added).toHaveBeenCalledTimes(1)
 
 	// Call a method
-	await expect(core.callMethod('peripheralDevice.testMethod', ['return123'])).resolves.toEqual('return123')
+	await expect(core.coreMethods.testMethod('return123')).resolves.toEqual('return123')
 	// Call a method which will throw error:
-	await expect(core.callMethod('peripheralDevice.testMethod', ['abcd', true])).rejects.toMatchObject({
+	await expect(core.coreMethods.testMethod('abcd', true)).rejects.toMatchObject({
 		error: 418,
 		reason: /error/,
 	})
 	// Call an unknown method
-	await expect(core.callMethod('myunknownMethod123', ['a', 'b'])).rejects.toMatchObject({
+	await expect(core.callMethodRaw('myunknownMethod123', ['a', 'b'])).rejects.toMatchObject({
 		error: 404,
 		reason: /error/,
 	})
@@ -588,21 +589,21 @@ test('Integration: Test callMethodLowPrio', async () => {
 	expect(core.connected).toEqual(true)
 
 	// Call a method
-	await expect(core.callMethod('peripheralDevice.testMethod', ['return123'])).resolves.toEqual('return123')
+	await expect(core.coreMethods.testMethod('return123')).resolves.toEqual('return123')
 	// Call a low-prio method
-	await expect(core.callMethodLowPrio('peripheralDevice.testMethod', ['low123'])).resolves.toEqual('low123')
+	await expect(core.coreMethodsLowPriority.testMethod('low123')).resolves.toEqual('low123')
 
 	const ps: Promise<any>[] = []
 
 	// method should be called before low-prio:
 	let i = 0
 	ps.push(
-		core.callMethodLowPrio('peripheralDevice.testMethod', ['return123']).then(() => {
+		core.coreMethodsLowPriority.testMethod('return123').then(() => {
 			return i++
 		})
 	)
 	ps.push(
-		core.callMethod('peripheralDevice.testMethod', ['low123']).then(() => {
+		core.coreMethods.testMethod('low123').then(() => {
 			return i++
 		})
 	)
