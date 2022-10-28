@@ -8,8 +8,18 @@ interface IState {
 }
 
 export class ErrorBoundary extends React.Component<{}, IState> {
+	static commonStyle: React.CSSProperties = {
+		// Override any inherited styles to ensure readability in any context:
+		fontSize: '1rem',
+		lineHeight: '1.2em',
+		fontFamily: 'Roboto, sans-serif',
+		fontWeight: 300,
+		overflow: 'visible',
+	}
 	static style: { [key: string]: React.CSSProperties } = {
 		container: {
+			...ErrorBoundary.commonStyle,
+
 			position: 'relative',
 			display: 'block',
 			margin: '10px',
@@ -23,6 +33,8 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			cursor: 'text',
 		},
 		h1: {
+			...ErrorBoundary.commonStyle,
+
 			fontSize: '18px',
 			fontWeight: 'bold',
 
@@ -32,12 +44,16 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			color: 'red',
 		},
 		friendlyMessage: {
+			...ErrorBoundary.commonStyle,
+
 			margin: '10px',
 			padding: '0',
 
 			fontWeight: 'bold',
 		},
 		errorDescription: {
+			...ErrorBoundary.commonStyle,
+
 			padding: '10px',
 
 			border: '1px solid red',
@@ -50,6 +66,8 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			fontFamily: 'monospace',
 		},
 		stack: {
+			...ErrorBoundary.commonStyle,
+
 			display: 'block',
 			whiteSpace: 'pre',
 			margin: '0',
@@ -58,6 +76,8 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			fontFamily: 'monospace',
 		},
 		resetButton: {
+			...ErrorBoundary.commonStyle,
+
 			display: 'block',
 			margin: '10px 0',
 			fontWeight: 'normal',
