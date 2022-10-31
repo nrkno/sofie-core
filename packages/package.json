@@ -28,7 +28,7 @@
 		"license-validate": "yarn sofie-licensecheck --allowPackages \"caniuse-lite@1.0.30001400;mos-gateway@$(node -p \"require('mos-gateway/package.json').version\");playout-gateway@$(node -p \"require('playout-gateway/package.json').version\");sofie-documentation@$(node -p \"require('sofie-documentation/package.json').version\");@sofie-automation/corelib@$(node -p \"require('@sofie-automation/corelib/package.json').version\");@sofie-automation/shared-lib@$(node -p \"require('@sofie-automation/shared-lib/package.json').version\");@sofie-automation/job-worker@$(node -p \"require('@sofie-automation/job-worker/package.json').version\");lunr-languages@1.9.0\"",
 		"lint": "lerna run --concurrency 4 --stream lint",
 		"unit": "lerna run --concurrency 2 --stream unit -- --coverage=false",
-		"test": "lerna run --concurrency 2 --stream test",
+		"test": "lerna run --concurrency 2 --stream test -- --coverage=false",
 		"docs:typedoc": "yarn typedoc .",
 		"docs:serve": "lerna run --scope sofie-documentation --stream start",
 		"watch-for-worker-changes": "nodemon --delay 2.5 --watch job-worker/dist --watch corelib/dist --watch shared-lib/dist --watch blueprints-integration/dist --watch server-core-integration/dist ../scripts/meteor-force-restart.js"
@@ -56,7 +56,7 @@
 		"ts-jest": "^27.1.3",
 		"ts-node": "^9.1.1",
 		"typedoc": "^0.22.15",
-		"typescript": "~4.5"
+		"typescript": "~4.8"
 	},
 	"name": "packages"
 }
