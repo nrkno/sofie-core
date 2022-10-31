@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.46.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.46.0-in-testing.0) (2022-10-31)
+
+
+### Bug Fixes
+
+* create rundownsForDevice publication for playout-gateway, as it needs to query on different criteria ([d80fdf8](https://github.com/nrkno/tv-automation-server-core/commit/d80fdf8dba7c500a22a93a0bb23dfd630deb99e5))
+* lowered logging level for a pair of log calls. ([9e6939d](https://github.com/nrkno/tv-automation-server-core/commit/9e6939de7acc2f656944db9a2d1240e9bd9f79a7))
+* SOF-1031 Downgrade superfly-timeline to 8.2.1 ([018f898](https://github.com/nrkno/tv-automation-server-core/commit/018f898700d91678a6b0e5b7320b7886059a9040))
+* update TSR dep ([145bb57](https://github.com/nrkno/tv-automation-server-core/commit/145bb572c76e404d6effd4b3d1424ecf9b11e417))
+
+
+### Features
+
+* remove data-store dependency from server-core-integration ([#738](https://github.com/nrkno/tv-automation-server-core/issues/738)) ([d715108](https://github.com/nrkno/tv-automation-server-core/commit/d7151084e1d96fdcf575864a439fe7a74087d740))
+
+
+
+
+
 # [1.44.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.3...v1.44.0) (2022-10-24)
 
 
