@@ -40,7 +40,6 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 			settings: {
 				frameRate: 25,
 				mediaPreviewsUrl: '',
-				sofieUrl: '',
 			},
 			_rundownVersionHash: '',
 			routeSets: {},

@@ -22,6 +22,13 @@ export * from './hash'
 
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
 
+export function getSofieHostUrl(): string {
+	const url = process.env.ROOT_URL
+	if (url) return url
+
+	throw new Error('ROOT_URL must be defined to launch Sofie')
+}
+
 /**
  * Make all optional properties be required and `| undefined`
  * This is useful to ensure that no property is missed, when manually converting between types, but allowing fields to be undefined
