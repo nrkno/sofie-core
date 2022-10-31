@@ -3092,7 +3092,7 @@
     webpack-sources "^3.2.2"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.47.0-in-development"
+  version "1.47.0-in-testing.0"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
     timeline-state-resolver-types "7.5.0-release47.0"
@@ -3120,7 +3120,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.47.0-in-development"
+  version "1.47.0-in-testing.0"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     "@sofie-automation/shared-lib" "link:shared-lib"
@@ -3136,7 +3136,7 @@
     underscore "^1.13.4"
 
 "@sofie-automation/shared-lib@link:shared-lib":
-  version "1.47.0-in-development"
+  version "1.47.0-in-testing.0"
   dependencies:
     tslib "^2.4.0"
     type-fest "^2.19.0"
@@ -5098,21 +5098,21 @@ caseless@~0.12.0:
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
   integrity sha512-4tYFyifaFfGacoiObjJegolkwSU4xQNGbVgUiNYVUxbQ2x2lUsFvY4hVgVzGiIe6WLOPqycWXA40l+PWsxthUw==
 
-casparcg-connection@^5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/casparcg-connection/-/casparcg-connection-5.1.0.tgz#6ea23c2895b5a28e2cd362a0ab0cd19c6ce68805"
-  integrity sha512-efYJG3jO2HPNJ0RUCvwmVlesXSbPfTxSoMuiUoOO86C7H5mTte4O8jGa6it7YShyBr8NTpUfPqiPEb7bKTAW3w==
+casparcg-connection@5.2.0-nightly-feat-rewrite-20221028-094226-a95a5509.0:
+  version "5.2.0-nightly-feat-rewrite-20221028-094226-a95a5509.0"
+  resolved "https://registry.yarnpkg.com/casparcg-connection/-/casparcg-connection-5.2.0-nightly-feat-rewrite-20221028-094226-a95a5509.0.tgz#463c2bad1f7691d6728ff764690005bb09118289"
+  integrity sha512-CAR3zXoAb7ohPLo63/7Ae9EKwgSzpRQB2VrE3LUNGAbYFxc6SnSHEgcwG+dwJGvefxQq8BkvWxONdTAjfFeeTw==
   dependencies:
-    highland "^3.0.0-beta.6"
-    xml2js "^0.4.19"
-    xmlbuilder "^9.0.7"
+    eventemitter3 "^4.0.7"
+    tslib "^2.4.0"
+    xml2js "^0.4.23"
 
-casparcg-state@2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/casparcg-state/-/casparcg-state-2.1.2.tgz#bfb31e7d5f320818a5653b5172c35874f933b327"
-  integrity sha512-JGKfRZ1gwqxTNxd6/g66jldc5N7lpQPG54mX6X85/H/KIGVE1M3rixSdlf7Ib/8s0Hh+X4qj7i7ouDetM+ldMQ==
+casparcg-state@3.0.0-nightly-feat-connection-rewrite-20221028-100652-4ffcdec.0:
+  version "3.0.0-nightly-feat-connection-rewrite-20221028-100652-4ffcdec.0"
+  resolved "https://registry.yarnpkg.com/casparcg-state/-/casparcg-state-3.0.0-nightly-feat-connection-rewrite-20221028-100652-4ffcdec.0.tgz#2bcec2dd02c83b56d43d8266cc21cc1b1a71c68f"
+  integrity sha512-P8t4M4R/vEnodR58vtwXocAoJfXmG2hWaognXWKgY+nrJc9ViL1C8xHkwBj6UMZ4r6Uoqqi3NDv+tiqPn8BqaA==
   dependencies:
-    casparcg-connection "^5.1.0"
+    casparcg-connection "5.2.0-nightly-feat-rewrite-20221028-094226-a95a5509.0"
     fast-clone "^1.5.13"
     underscore "^1.13.2"
 
@@ -8039,11 +8039,6 @@ he@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
-
-highland@^3.0.0-beta.6:
-  version "3.0.0-beta.10"
-  resolved "https://registry.yarnpkg.com/highland/-/highland-3.0.0-beta.10.tgz#e07869611de2109134c523e2479ef5af5334c112"
-  integrity sha512-fBxAarP4g0AFWRKd+SJBWsKmkyw1WZdQZ1jjFSAVrxLXIhEo5NnEBy+rDEM695Z/i4/tP2lMYW6iuotStDFHYw==
 
 history@^4.9.0:
   version "4.10.1"
@@ -13962,6 +13957,13 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
+timeline-state-resolver-types@7.5.0-nightly-feat-ccg-rewrite-20221031-085841-88bdd9ea2.0:
+  version "7.5.0-nightly-feat-ccg-rewrite-20221031-085841-88bdd9ea2.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0-nightly-feat-ccg-rewrite-20221031-085841-88bdd9ea2.0.tgz#029877ff0760927615f9102d33c1f251ac618aaa"
+  integrity sha512-Vc+2GF9hoQrQqOUDqp3rJ6MmzQpF9r85rMLkyseAEwm+r4P8A1NQoTkbko6vFMf4zrVXP72NrpvLqvFbid5NcA==
+  dependencies:
+    tslib "^2.3.1"
+
 timeline-state-resolver-types@7.5.0-release47.0:
   version "7.5.0-release47.0"
   resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0-release47.0.tgz#c9615f5cce493a361816577b003d4d81406087df"
@@ -13969,16 +13971,16 @@ timeline-state-resolver-types@7.5.0-release47.0:
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.5.0-release47.0:
-  version "7.5.0-release47.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.5.0-release47.0.tgz#f20841aece2e2f233a5dd0efde40240c05268952"
-  integrity sha512-j2oYHT+/gta65cifrApFWvTnw/dm9d6OYCgXskkttqBNLslVL4MFz767V7ml4gwlbADYZcjpIBHzyFiNBd2J4g==
+timeline-state-resolver@7.5.0-nightly-feat-ccg-rewrite-20221031-085841-88bdd9ea2.0:
+  version "7.5.0-nightly-feat-ccg-rewrite-20221031-085841-88bdd9ea2.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.5.0-nightly-feat-ccg-rewrite-20221031-085841-88bdd9ea2.0.tgz#d625016f7263d5da55e4a6f6bea054fa4e2a6418"
+  integrity sha512-KqiW9X4xXpNInWOdSgNakbhwFDLlAwltNIBXnBkHJSDKiOdUjf2y5I71l6fWjaaljS3ha8unIp/EexSLD4FIKA==
   dependencies:
     "@tv2media/v-connection" "^6.0.3"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
-    casparcg-connection "^5.1.0"
-    casparcg-state "2.1.2"
+    casparcg-connection "5.2.0-nightly-feat-rewrite-20221028-094226-a95a5509.0"
+    casparcg-state "3.0.0-nightly-feat-connection-rewrite-20221028-100652-4ffcdec.0"
     debug "^4.3.1"
     deepmerge "^4.2.2"
     emberplus-connection "^0.1.2"
@@ -13994,7 +13996,7 @@ timeline-state-resolver@7.5.0-release47.0:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.3.0"
     threadedclass "^1.1.1"
-    timeline-state-resolver-types "7.5.0-release47.0"
+    timeline-state-resolver-types "7.5.0-nightly-feat-ccg-rewrite-20221031-085841-88bdd9ea2.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.5"
     underscore "^1.13.4"
@@ -15321,7 +15323,7 @@ xml-name-validator@^3.0.0:
   resolved "https://registry.yarnpkg.com/xml-name-validator/-/xml-name-validator-3.0.0.tgz#6ae73e06de4d8c6e47f9fb181f78d648ad457c6a"
   integrity sha512-A5CUptxDsvxKJEU3yO6DuWBSJz/qizqzJKOMIfUJHETbBw/sFaDxgd6fxm1ewUaM0jZ444Fc5vC5ROYurg/4Pw==
 
-xml2js@^0.4.19, xml2js@^0.4.23:
+xml2js@^0.4.23:
   version "0.4.23"
   resolved "https://registry.yarnpkg.com/xml2js/-/xml2js-0.4.23.tgz#a0c69516752421eb2ac758ee4d4ccf58843eac66"
   integrity sha512-ySPiMjM0+pLDftHgXY4By0uswI3SPKLDw/i3UXbnO8M/p28zqexCUoPmQFrYD+/1BzhGJSs2i1ERWKJAtiLrug==
@@ -15333,11 +15335,6 @@ xmlbuilder@^15.1.1:
   version "15.1.1"
   resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-15.1.1.tgz#9dcdce49eea66d8d10b42cae94a79c3c8d0c2ec5"
   integrity sha512-yMqGBqtXyeN1e3TGYvgNgDVZ3j84W4cwkOXQswghol6APgZWaff9lnbvN7MHYJOiXsvGPXtjTYJEiC9J2wv9Eg==
-
-xmlbuilder@^9.0.7:
-  version "9.0.7"
-  resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-9.0.7.tgz#132ee63d2ec5565c557e20f4c22df9aca686b10d"
-  integrity sha512-7YXTQc3P2l9+0rjaUbLwMKRhtmwg1M1eDf6nag7urC7pIPYLD9W/jmzQ4ptRSUbodw5S0jfoGTflLemQibSpeQ==
 
 xmlbuilder@~11.0.0:
   version "11.0.1"
