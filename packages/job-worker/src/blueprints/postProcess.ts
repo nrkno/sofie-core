@@ -171,6 +171,15 @@ export function postProcessTimelineObjects(
 			throw new Error(`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("${obj.id}")`)
 		timelineUniqueIds.add(obj.id)
 
+		if (obj.keyframes) {
+			obj.keyframes = obj.keyframes.map((kf, i) => {
+				return {
+					...kf,
+					id: `${obj.id}_keyframe_${kf.id || i}`,
+				}
+			})
+		}
+
 		return obj
 	})
 

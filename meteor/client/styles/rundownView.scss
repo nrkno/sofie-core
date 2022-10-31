@@ -252,6 +252,7 @@ body.no-overflow {
 				text-align: left;
 			}
 
+
 			&.time-now {
 				position: absolute;
 				top: 0.05em;
@@ -2145,7 +2146,7 @@ svg.icon {
 				}
 			}
 
-			.segment-timeline__piece:not(.infinite) .segment-timeline__piece__label.right-side {
+			.segment-timeline__piece:not(.infinite) > .segment-timeline__piece__label.right-side {
 				background: inherit;
 			}
 

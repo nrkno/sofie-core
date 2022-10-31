@@ -110,9 +110,6 @@ export async function diffAndApplyChanges(
 		renamedSegments: renamedSegments,
 
 		removeRundown: false,
-
-		showStyle: segmentChanges.showStyle,
-		blueprint: segmentChanges.blueprint,
 	})
 }
 

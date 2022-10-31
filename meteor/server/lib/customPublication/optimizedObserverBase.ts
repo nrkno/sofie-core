@@ -1,7 +1,7 @@
 import deepmerge from 'deepmerge'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { clone, createManualPromise, lazyIgnore, ProtectedString } from '../../../lib/lib'
+import { clone, createManualPromise, lazyIgnore, ProtectedString, stringifyError } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { CustomPublish, CustomPublishChanges } from './publish'
 
@@ -101,6 +101,7 @@ export async function setUpOptimizedObserverInner<
 		await thisObserverWrapper.worker
 	} else {
 		const resultingOptimizedObserver = createManualPromise<OptimizedObserverWorker<PublicationDoc, Args, State>>()
+		resultingOptimizedObserver.catch(() => null) // ensure resultingOptimizedObserver doesn't go uncaught
 
 		// Store the optimizedObserver, so that other subscribers can join onto this without creating their own
 		thisObserverWrapper = optimizedObservers[identifier] = {
@@ -260,6 +261,8 @@ async function createOptimizedObserverWorker<
 							)
 						}
 					}
+				} catch (e) {
+					logger.error(`optimizedObserver ${identifier} errored: ${stringifyError(e)}`)
 				} finally {
 					// Update has finished, check if another needs to be performed
 					updateIsRunning = false

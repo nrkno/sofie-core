@@ -59,15 +59,6 @@ export type Partial<T> = {
 export function partial<T>(o: Partial<T>): Partial<T> {
 	return o
 }
-export interface IDObj {
-	_id: ProtectedString<any>
-}
-export function partialExceptId<T>(o: Partial<T> & IDObj): Partial<T> & IDObj {
-	return o
-}
-export interface ObjId {
-	_id: ProtectedString<any>
-}
 
 /**
  * Formats the time as human-readable time "YYYY-MM-DD hh:ii:ss"

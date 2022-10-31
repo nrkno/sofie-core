@@ -15,7 +15,7 @@
 		transition: 0.5s all ease-in-out !important;
 
 		> path {
-			fill: rgb(255, 255, 255);
+			fill: #999;
 			transition: 0.5s all linear;
 		}
 	}
@@ -155,7 +155,7 @@
 		z-index: -1;
 
 		.status-bar__controls__button {
-			color: #fff;
+			color: #999;
 		}
 	}
 }

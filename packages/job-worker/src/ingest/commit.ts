@@ -75,11 +75,6 @@ export async function CommitIngestOperation(
 		return
 	}
 
-	const showStyle =
-		data.showStyle ?? (await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId))
-	const blueprint =
-		(data.showStyle ? data.blueprint : undefined) ?? (await context.getShowStyleBlueprint(showStyle._id))
-
 	const targetPlaylistId: PlaylistIdPair = (beforeRundown?.playlistIdIsSetInSofie
 		? {
 				id: beforeRundown.playlistId,
@@ -180,6 +175,9 @@ export async function CommitIngestOperation(
 		return
 	}
 
+	const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
+	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+
 	// Adopt the rundown into its new/retained playlist.
 	// We have to do the locking 'manually' because the playlist may not exist yet, but that is ok
 	const newPlaylistId: PlaylistIdPair = trappedInPlaylistId ?? targetPlaylistId
@@ -241,7 +239,7 @@ export async function CommitIngestOperation(
 			).map((segment) => segment._id)
 
 			// Do the segment removals
-			if (data.removedSegmentIds.length > 0 || segmentsChangedToHidden.length) {
+			{
 				const purgeSegmentIds = new Set<SegmentId>()
 				const orphanDeletedSegmentIds = new Set<SegmentId>()
 				const orphanHiddenSegmentIds = new Set<SegmentId>()

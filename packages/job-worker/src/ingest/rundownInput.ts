@@ -52,15 +52,12 @@ export async function handleRemovedRundown(context: JobContext, data: IngestRemo
 		async (_context, cache) => {
 			const rundown = getRundown(cache)
 
-			return {
+			return literal<CommitIngestData>({
 				changedSegmentIds: [],
 				removedSegmentIds: [],
 				renamedSegments: new Map(),
 				removeRundown: data.forceDelete || canRundownBeUpdated(rundown, false),
-
-				showStyle: undefined,
-				blueprint: undefined,
-			}
+			})
 		}
 	)
 }
@@ -259,9 +256,6 @@ export async function handleUpdatedRundownMetaDataInner(
 		renamedSegments: new Map(),
 
 		removeRundown: false,
-
-		showStyle: showStyle.compound,
-		blueprint: showStyleBlueprint,
 	})
 }
 export async function handleRegenerateRundown(context: JobContext, data: IngestRegenerateRundownProps): Promise<void> {
@@ -344,16 +338,13 @@ export async function handleRemovedSegment(context: JobContext, data: IngestRemo
 				// segment has already been deleted
 				return null
 			} else {
-				return {
+				return literal<CommitIngestData>({
 					changedSegmentIds: [],
 					removedSegmentIds: [segmentId],
 					renamedSegments: new Map(),
 
 					removeRundown: false,
-
-					showStyle: undefined,
-					blueprint: undefined,
-				}
+				})
 			}
 		}
 	)
@@ -418,15 +409,12 @@ export async function handleUpdatedSegmentRanks(
 				}
 			}
 
-			return {
+			return literal<CommitIngestData>({
 				changedSegmentIds,
 				removedSegmentIds: [],
 				renamedSegments: new Map(),
 				removeRundown: false,
-
-				showStyle: undefined,
-				blueprint: undefined,
-			}
+			})
 		}
 	)
 }
@@ -491,14 +479,12 @@ export async function handleRemoveOrphanedSegemnts(
 				return null
 			}
 
-			return {
+			return literal<CommitIngestData>({
 				changedSegmentIds: changedHiddenSegments,
 				removedSegmentIds: stillDeletedSegments,
 				renamedSegments: new Map(),
 				removeRundown: false,
-				showStyle: undefined,
-				blueprint: undefined,
-			}
+			})
 		}
 	)
 }

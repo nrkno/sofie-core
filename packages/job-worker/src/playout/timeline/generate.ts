@@ -441,12 +441,6 @@ function flattenAndProcessTimelineObjects(context: JobContext, timelineObjs: Arr
 			}
 			delete o.children
 		}
-
-		if (o.keyframes) {
-			o.keyframes.forEach((kf, i) => {
-				kf.id = `${o.id}_keyframe_${i}`
-			})
-		}
 	}
 
 	for (const obj of timelineObjs) {
