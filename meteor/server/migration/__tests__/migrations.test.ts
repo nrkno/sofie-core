@@ -79,7 +79,7 @@ describe('Migrations', () => {
 			migrationNeeded: true,
 
 			migration: {
-				canDoAutomaticMigration: false, // Some "base" migrations require manual data entry
+				canDoAutomaticMigration: true,
 				// manualInputs: [],
 				hash: expect.stringContaining(''),
 				automaticStepCount: expect.any(Number),
@@ -119,7 +119,6 @@ describe('Migrations', () => {
 			migrationStatus1.migration.chunks,
 			migrationStatus1.migration.hash,
 			userInput(migrationStatus1, {
-				'CoreSystem.storePath': 'mock',
 				'studios.settings.mediaPreviewsUrl': 'mock',
 				'studios.settings.sofieUrl': 'http://localhost',
 				'studios.settings.slackEvaluationUrls': 'mock',
