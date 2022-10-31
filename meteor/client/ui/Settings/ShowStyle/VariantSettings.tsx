@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import ClassNames from 'classnames'
 import { faPencilAlt, faTrash, faCheck, faPlus, faDownload, faUpload, faCopy } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -14,8 +14,12 @@ import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigManifestSettings } from '../ConfigManifestSettings'
 import { UploadButton } from '../../../lib/uploadButton'
+import { DndProvider, DragSourceMonitor, DropTargetMonitor, useDrag, useDrop, XYCoord } from 'react-dnd'
+import { Identifier } from 'dnd-core'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import update from 'immutability-helper'
+import { ShowStyleDragDropTypes } from './DragDropTypesShowStyle'
 import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
-import _ from 'underscore'
 import { logger } from '../../../../lib/logging'
 
 interface IShowStyleVariantsProps {
@@ -30,6 +34,11 @@ interface IShowStyleVariantsProps {
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
 	timestampedFileKey: number
+}
+
+interface DragVariant {
+	index: number
+	type: ShowStyleDragDropTypes
 }
 
 export const ShowStyleVariantsSettings = withTranslation()(
@@ -55,6 +64,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			}
 
 			const reader = new FileReader()
+
 			reader.onload = () => {
 				this.setState({
 					timestampedFileKey: Date.now(),
@@ -65,7 +75,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				const newShowStyleVariants: ShowStyleVariant[] = []
 				try {
 					JSON.parse(fileContents).map((showStyleVariant) => newShowStyleVariants.push(showStyleVariant))
-					if (!_.isArray(newShowStyleVariants)) {
+					if (!Array.isArray(newShowStyleVariants)) {
 						throw new Error('Imported file did not contain an array')
 					}
 				} catch (error) {
@@ -181,13 +191,64 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			})
 		}
 
-		private renderShowStyleVariants() {
+		VariantItem = ({ index, showStyleVariant, moveVariantHandler }) => {
+			const ref = useRef<HTMLTableRowElement>(null)
+			const [{ handlerId }, drop] = useDrop<DragVariant, void, { handlerId: Identifier | null }>({
+				accept: ShowStyleDragDropTypes.VARIANT,
+				collect(monitor) {
+					return {
+						handlerId: monitor.getHandlerId(),
+					}
+				},
+				hover(variant: DragVariant, monitor: DropTargetMonitor) {
+					if (!ref.current) {
+						return
+					}
+					const dragIndex = variant.index
+					const hoverIndex = index
+
+					if (dragIndex === hoverIndex) {
+						return
+					}
+
+					const hoverBoundingRect = ref.current?.getBoundingClientRect()
+					const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+					const clientOffset = monitor.getClientOffset()
+					const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top
+
+					if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+						return
+					}
+
+					if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+						return
+					}
+
+					moveVariantHandler(dragIndex, hoverIndex)
+					variant.index = hoverIndex
+				},
+			})
+
+			const [{ isDragging }, drag] = useDrag({
+				item: { index, type: ShowStyleDragDropTypes.VARIANT },
+				collect: (monitor: DragSourceMonitor) => ({
+					isDragging: monitor.isDragging(),
+				}),
+			})
+
+			const opacity = isDragging ? 0.4 : 1
+
+			drag(drop(ref))
+
 			const { t } = this.props
 
-			return this.props.showStyleVariants.map((showStyleVariant) => {
-				return (
-					<React.Fragment key={unprotectString(showStyleVariant._id)}>
+			return (
+				<React.Fragment key={unprotectString(showStyleVariant._id)}>
+					<tbody>
 						<tr
+							data-handler-id={handlerId}
+							ref={ref}
+							style={{ opacity }}
 							className={ClassNames({
 								hl: this.isItemEdited(showStyleVariant._id),
 							})}
@@ -210,83 +271,131 @@ export const ShowStyleVariantsSettings = withTranslation()(
 								</button>
 							</td>
 						</tr>
-						{this.isItemEdited(showStyleVariant._id) && (
-							<tr className="expando-details hl">
-								<td colSpan={5}>
-									<div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Variant Name')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'name'}
-													obj={showStyleVariant}
-													type="text"
-													collection={ShowStyleVariants}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
-									</div>
-									<div className="row">
-										<div className="col c12 r1-c12 phs">
-											<ConfigManifestSettings
-												t={this.props.t}
-												i18n={this.props.i18n}
-												tReady={this.props.tReady}
-												manifest={this.props.blueprintConfigManifest}
+					</tbody>
+					{this.isItemEdited(showStyleVariant._id) && (
+						<tr className="expando-details hl">
+							<td colSpan={5}>
+								<div>
+									<div className="mod mvs mhs">
+										<label className="field">
+											{t('Variant Name')}
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={'name'}
+												obj={showStyleVariant}
+												type="text"
 												collection={ShowStyleVariants}
-												configPath={'blueprintConfig'}
-												alternateObject={this.props.showStyleBase}
-												object={showStyleVariant}
-												layerMappings={this.props.layerMappings}
-												sourceLayers={this.props.sourceLayers}
-												subPanel={true}
-											/>
-										</div>
+												className="input text-input input-l"
+											></EditAttribute>
+										</label>
 									</div>
-									<div className="mod alright">
-										<button className="btn btn-primary" onClick={() => this.finishEditItem(showStyleVariant._id)}>
-											<FontAwesomeIcon icon={faCheck} />
-										</button>
+								</div>
+								<div className="row">
+									<div className="col c12 r1-c12 phs">
+										<ConfigManifestSettings
+											t={this.props.t}
+											i18n={this.props.i18n}
+											tReady={this.props.tReady}
+											manifest={this.props.blueprintConfigManifest}
+											collection={ShowStyleVariants}
+											configPath={'blueprintConfig'}
+											alternateObject={this.props.showStyleBase}
+											object={showStyleVariant}
+											layerMappings={this.props.layerMappings}
+											sourceLayers={this.props.sourceLayers}
+											subPanel={true}
+										/>
 									</div>
-								</td>
-							</tr>
-						)}
-					</React.Fragment>
-				)
-			})
+								</div>
+								<div className="mod alright">
+									<button className="btn btn-primary" onClick={() => this.finishEditItem(showStyleVariant._id)}>
+										<FontAwesomeIcon icon={faCheck} />
+									</button>
+								</div>
+							</td>
+						</tr>
+					)}
+				</React.Fragment>
+			)
 		}
 
-		render() {
+		VariantList = ({ children, className }) => {
+			const [, drop] = useDrop({
+				accept: ShowStyleDragDropTypes.VARIANT,
+				drop: () => ({}),
+				collect: (monitor: DropTargetMonitor) => ({
+					isOver: monitor.isOver(),
+					canDrop: monitor.canDrop(),
+				}),
+			})
+
+			return (
+				<table ref={drop} className={className}>
+					{children}
+				</table>
+			)
+		}
+
+		VariantContainer = () => {
+			const [variants, setVariants] = useState(this.props.showStyleVariants)
+
+			const moveVariantHandler = useCallback((dragIndex: number, hoverIndex: number) => {
+				setVariants((prevVariants: ShowStyleVariant[]) =>
+					update(prevVariants, {
+						$splice: [
+							[dragIndex, 1],
+							[hoverIndex, 0, prevVariants[dragIndex] as ShowStyleVariant],
+						],
+					})
+				)
+			}, [])
+
+			const returnVariantsForList = () => {
+				return variants.map((variant: ShowStyleVariant, index: number) => (
+					<this.VariantItem
+						key={unprotectString(variant._id)}
+						index={index}
+						showStyleVariant={variant}
+						moveVariantHandler={moveVariantHandler}
+					></this.VariantItem>
+				))
+			}
+
 			const { t } = this.props
 			return (
 				<div>
 					<h2 className="mhn">{t('Variants')}</h2>
-					<div className="mod mhs"></div>
-					<table className="table expando settings-studio-showStyleVariants-table">
-						<tbody>{this.renderShowStyleVariants()}</tbody>
-					</table>
-					<div className="mod mhs">
-						<button className="btn btn-primary" onClick={this.onAddShowStyleVariant}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
-						<UploadButton
-							className="btn btn-secondary mls"
-							accept="application/json,.json"
-							onChange={(event) => this.importShowStyleVariants(event)}
-							key={this.state.timestampedFileKey}
-						>
-							<FontAwesomeIcon icon={faUpload} />
-							&nbsp;{t('Import')}
-						</UploadButton>
-						<button className="btn btn-secondary mls" onClick={this.downloadAllShowStyleVariants}>
-							<FontAwesomeIcon icon={faDownload} />
-							&nbsp;{t('Export')}
-						</button>
-					</div>
+					<DndProvider backend={HTML5Backend}>
+						<div>
+							<this.VariantList className="table expando settings-studio-showStyleVariants-table">
+								{returnVariantsForList()}
+							</this.VariantList>
+						</div>
+						<div className="mod mhs">
+							<button className="btn btn-primary" onClick={this.onAddShowStyleVariant}>
+								<FontAwesomeIcon icon={faPlus} />
+							</button>
+							<UploadButton
+								className="btn btn-secondary mls"
+								accept="application/json,.json"
+								onChange={(event) => this.importShowStyleVariants(event)}
+								key={this.state.timestampedFileKey}
+							>
+								<FontAwesomeIcon icon={faUpload} />
+								&nbsp;{t('Import')}
+							</UploadButton>
+							<button className="btn btn-secondary mls" onClick={this.downloadAllShowStyleVariants}>
+								<FontAwesomeIcon icon={faDownload} />
+								&nbsp;{t('Export')}
+							</button>
+						</div>
+					</DndProvider>
 				</div>
 			)
+		}
+
+		render() {
+			return <this.VariantContainer />
 		}
 	}
 )
