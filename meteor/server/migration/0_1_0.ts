@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { Studios } from '../../lib/collections/Studios'
