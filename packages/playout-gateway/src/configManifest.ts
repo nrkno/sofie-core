@@ -442,6 +442,8 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 			type: ConfigManifestEntryType.STRING,
 		},
 	],
+	[TSRDeviceType.SOFIE_CHEF]: [], // HACK
+	[TSRDeviceType.TELEMETRICS]: [], // HACK
 }
 
 // TODO: should come from types
@@ -655,6 +657,8 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 			optional: true,
 		},
 	],
+	[TSRDeviceType.SOFIE_CHEF]: [], // HACK
+	[TSRDeviceType.TELEMETRICS]: [], // HACK
 }
 
 export const PLAYOUT_DEVICE_CONFIG: DeviceConfigManifest = {
