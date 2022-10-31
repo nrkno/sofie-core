@@ -55,7 +55,7 @@ describe('Test blueprint config', () => {
 		const res = preprocessStudioConfig(jobContext.studio, jobContext.studioBlueprint.blueprint)
 		expect(res).toEqual({
 			core: {
-				hostUrl: 'http://sofie-in-jest:3000',
+				hostUrl: 'https://sofie-in-jest:3000',
 			},
 			studio: {
 				sdfsdf: 'one',
