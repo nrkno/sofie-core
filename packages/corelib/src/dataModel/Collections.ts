@@ -39,6 +39,7 @@ export enum CollectionName {
 	Snapshots = 'snapshots',
 	Studios = 'studios',
 	Timelines = 'timeline',
+	TimelineDatastore = 'timelineDatastore',
 	TriggeredActions = 'triggeredActions',
 	TranslationsBundles = 'translationsBundles',
 	UserActionsLog = 'userActionsLog',

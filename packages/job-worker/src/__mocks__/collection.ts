@@ -21,6 +21,7 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { clone, literal } from '@sofie-automation/corelib/dist/lib'
 import {
@@ -294,6 +295,7 @@ export function getMockCollections(): Readonly<IDirectCollections> {
 			ShowStyleVariants: new MockMongoCollection<DBShowStyleVariant>(CollectionName.ShowStyleVariants),
 			Studios: new MockMongoCollection<DBStudio>(CollectionName.Studios),
 			Timelines: new MockMongoCollection<TimelineComplete>(CollectionName.Timelines),
+			TimelineDatastores: new MockMongoCollection<DBTimelineDatastoreEntry>(CollectionName.TimelineDatastore),
 
 			ExpectedPackages: new MockMongoCollection<ExpectedPackageDB>(CollectionName.ExpectedPackages),
 			PackageInfos: new MockMongoCollection(CollectionName.PackageInfos),

@@ -7,11 +7,12 @@ import { assertNever, literal, getRandomString } from '@sofie-automation/corelib
 import Tooltip from 'rc-tooltip'
 import { withTranslation } from 'react-i18next'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { EditAttribute } from '../../../lib/EditAttribute'
+import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { findHighestRank } from '../StudioSettings'
+import { Meteor } from 'meteor/meteor'
 
 interface IStudioSourcesSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -37,7 +38,7 @@ export const SourceLayerSettings = withTranslation()(
 			return this.state.editedSources.indexOf(item._id) >= 0
 		}
 
-		finishEditItem = (item: ISourceLayer) => {
+		finishEditItem = (item: Pick<ISourceLayer, '_id'>) => {
 			const index = this.state.editedSources.indexOf(item._id)
 			if (index >= 0) {
 				this.state.editedSources.splice(index, 1)
@@ -47,7 +48,7 @@ export const SourceLayerSettings = withTranslation()(
 			}
 		}
 
-		editItem = (item: ISourceLayer) => {
+		editItem = (item: Pick<ISourceLayer, '_id'>) => {
 			if (this.state.editedSources.indexOf(item._id) < 0) {
 				this.state.editedSources.push(item._id)
 				this.setState({
@@ -106,18 +107,16 @@ export const SourceLayerSettings = withTranslation()(
 			})
 
 			ShowStyleBases.update(this.props.showStyleBase._id, {
-				$push: {
-					sourceLayers: newSource,
+				$set: {
+					[`sourceLayersWithOverrides.defaults.${newSource._id}`]: newSource,
 				},
 			})
 		}
 		onDeleteSource = (item: ISourceLayer) => {
 			if (this.props.showStyleBase) {
 				ShowStyleBases.update(this.props.showStyleBase._id, {
-					$pull: {
-						sourceLayers: {
-							_id: item._id,
-						},
+					$unset: {
+						[`sourceLayersWithOverrides.defaults.${item._id}`]: 1,
 					},
 				})
 			}
@@ -143,6 +142,31 @@ export const SourceLayerSettings = withTranslation()(
 				),
 			})
 		}
+		updateLayerId = (edit: EditAttributeBase, newValue: string) => {
+			const oldLayerId = edit.props.overrideDisplayValue
+			const newLayerId = newValue + ''
+			const layer = this.props.showStyleBase.sourceLayersWithOverrides.defaults[oldLayerId]
+
+			if (this.props.showStyleBase.sourceLayersWithOverrides.defaults[newLayerId]) {
+				throw new Meteor.Error(400, 'Layer "' + newLayerId + '" already exists')
+			}
+
+			const mSet = {}
+			const mUnset = {}
+			mSet['sourceLayersWithOverrides.defaults.' + newLayerId] = layer
+			mUnset['sourceLayersWithOverrides.defaults.' + oldLayerId] = 1
+
+			if (edit.props.collection) {
+				edit.props.collection.update(this.props.showStyleBase._id, {
+					$set: mSet,
+					$unset: mUnset,
+				})
+			}
+
+			this.finishEditItem(oldLayerId)
+			this.editItem({ _id: newLayerId })
+		}
+
 		renderInputSources() {
 			const { t } = this.props
 
@@ -213,6 +237,7 @@ export const SourceLayerSettings = withTranslation()(
 														type="text"
 														collection={ShowStyleBases}
 														className="input text-input input-l"
+														updateFunction={this.updateLayerId}
 													></EditAttribute>
 												</label>
 											</div>

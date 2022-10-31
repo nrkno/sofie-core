@@ -168,7 +168,6 @@ export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
 		modified: 0,
 		version: '0.0.0',
 		previousVersion: '0.0.0',
-		storePath: '',
 		serviceMessages: {},
 	}
 	const coreSystem = _.extend(defaultCore, doc)

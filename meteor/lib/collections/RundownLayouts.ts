@@ -345,6 +345,7 @@ export interface RundownLayoutBase {
 	iconColor: string
 	/* Customizable region that the layout modifies. */
 	regionId: CustomizableRegions
+	isDefaultLayout: boolean
 }
 
 export interface RundownLayoutWithFilters extends RundownLayoutBase {

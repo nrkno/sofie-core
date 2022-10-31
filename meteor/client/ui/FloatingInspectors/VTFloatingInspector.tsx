@@ -139,7 +139,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 			})}
 			style={!showVideoPlayerInspector ? floatingInspectorStyle : undefined}
 		>
-			{showMiniInspectorNotice && renderNotice(noticeLevel, noticeMessage)}
+			{showMiniInspectorNotice && noticeLevel && renderNotice(noticeLevel, noticeMessage)}
 			{showMiniInspectorClipData && (
 				<div className="segment-timeline__mini-inspector__properties">
 					<span className="mini-inspector__label">{t('Clip:')}</span>
@@ -151,7 +151,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 
 	return (
 		<FloatingInspector shown={showMiniInspector && itemElement !== undefined} displayOn={displayOn}>
-			{showVideoPlayerInspector ? (
+			{showVideoPlayerInspector && previewUrl ? (
 				<VideoPreviewPlayerInspector
 					itemDuration={itemDuration}
 					loop={loop}

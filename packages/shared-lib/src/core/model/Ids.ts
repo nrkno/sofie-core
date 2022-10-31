@@ -32,3 +32,6 @@ export type MediaWorkFlowStepId = ProtectedString<'MediaWorkFlowStepId'>
 export type ExpectedPackageId = ProtectedString<'ExpectedPackageId'>
 
 export type ExpectedPackageWorkStatusId = ProtectedString<'ExpectedPackageStatusId'>
+
+/** A string, identifying a TimelineDatastore entry */
+export type TimelineDatastoreEntryId = ProtectedString<'TimelineDatastoreEntryId'>

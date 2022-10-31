@@ -16,6 +16,7 @@ import {
 	IRundownTimingEventContext,
 	IStudioBaselineContext,
 	IGetRundownContext,
+	IDataStoreActionExecutionContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -166,6 +167,14 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 
 		playoutStatus: 'previous' | 'current' | 'next'
 	) => void
+
+	/** Execute an action defined by an IBlueprintActionManifest */
+	executeDataStoreAction?: (
+		context: IDataStoreActionExecutionContext,
+		actionId: string,
+		userData: ActionUserData,
+		triggerMode?: string
+	) => Promise<void>
 
 	/** Execute an action defined by an IBlueprintActionManifest */
 	executeAction?: (

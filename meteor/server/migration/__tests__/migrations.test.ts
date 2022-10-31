@@ -79,7 +79,7 @@ describe('Migrations', () => {
 			migrationNeeded: true,
 
 			migration: {
-				canDoAutomaticMigration: false, // Some "base" migrations require manual data entry
+				canDoAutomaticMigration: true,
 				// manualInputs: [],
 				hash: expect.stringContaining(''),
 				automaticStepCount: expect.any(Number),
@@ -118,9 +118,7 @@ describe('Migrations', () => {
 		const migrationResult1: RunMigrationResult = await MeteorCall.migration.runMigration(
 			migrationStatus1.migration.chunks,
 			migrationStatus1.migration.hash,
-			userInput(migrationStatus1, {
-				'CoreSystem.storePath': 'mock',
-			})
+			userInput(migrationStatus1, {})
 		)
 		expect(migrationResult1).toMatchObject({
 			migrationCompleted: true,
