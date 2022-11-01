@@ -41,7 +41,7 @@ export const SegmentContextMenu = withTranslation()(
 			return this.props.studioMode && this.props.playlist && this.props.playlist.activationId ? (
 				<Escape to="document">
 					<ContextMenu id="segment-timeline-context-menu">
-						{part && (
+						{part && timecode === null && (
 							<>
 								<MenuItem
 									onClick={(e) => this.props.onSetNext(part.instance.part, e)}
