@@ -2930,7 +2930,7 @@
     webpack-sources "^1.4.3"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.44.0-in-testing.3"
+  version "1.44.0"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
     timeline-state-resolver-types "7.3.0"
@@ -2958,7 +2958,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.44.0-in-testing.3"
+  version "1.44.0"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     "@sofie-automation/shared-lib" "link:shared-lib"
@@ -2973,7 +2973,7 @@
     underscore "^1.13.3"
 
 "@sofie-automation/shared-lib@link:shared-lib":
-  version "1.44.0-in-testing.3"
+  version "1.44.0"
   dependencies:
     tslib "^2.4.0"
     type-fest "^2.12.2"
@@ -13529,13 +13529,13 @@ stylehacks@^5.1.0:
     browserslist "^4.16.6"
     postcss-selector-parser "^6.0.4"
 
-superfly-timeline@^8.2.7:
-  version "8.2.7"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.2.7.tgz#ddd49c64ddecf8464b6dfa98c3f7fbff799f9a44"
-  integrity sha512-CtI7+6hrrURjGlQ7ZQkVv0CtNkFTSM94XAPipiXH49MjMW7eq+C6Q5JsyOyMz2blMTVdU4ZdSy/wUuOqpgm/0g==
+superfly-timeline@^8.2.7, superfly-timeline@^8.3.1:
+  version "8.3.1"
+  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.3.1.tgz#c0be6b627718845255968ba5e936d901a0924a80"
+  integrity sha512-7WCwGocqahsJQcrW1SX4HRKP4ecmzxhdhB70EuqA+Sjbj06SP02IyniT/G5Y4UOLQPliJKEJezW8Uq8aBpxBFA==
   dependencies:
-    tslib "^2.3.1"
-    underscore "^1.13.2"
+    tslib "^2.4.0"
+    underscore "^1.13.6"
 
 supports-color@^5.3.0, supports-color@^5.5.0:
   version "5.5.0"
@@ -14205,10 +14205,10 @@ underscore-deep-extend@^1.1.5:
   resolved "https://registry.yarnpkg.com/underscore-deep-extend/-/underscore-deep-extend-1.1.5.tgz#962ba1f8b3bb2e2afd182ed86f2e5275543c52bd"
   integrity sha1-liuh+LO7Lir9GC7Yby5SdVQ8Ur0=
 
-underscore@^1.12.0, underscore@^1.13.2, underscore@^1.13.3:
-  version "1.13.3"
-  resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.13.3.tgz#54bc95f7648c5557897e5e968d0f76bc062c34ee"
-  integrity sha512-QvjkYpiD+dJJraRA8+dGAU4i7aBbb2s0S3jA45TFOvg2VgqvdCDd/3N6CqA8gluk1W91GLoXg5enMUx560QzuA==
+underscore@^1.12.0, underscore@^1.13.2, underscore@^1.13.3, underscore@^1.13.6:
+  version "1.13.6"
+  resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.13.6.tgz#04786a1f589dc6c09f761fc5f45b89e935136441"
+  integrity sha512-+A5Sja4HP1M08MaXya7p5LvjuM7K6q/2EaC0+iovj/wOcMsTzMvDFbasi/oSapiwOlt252IqsKqPjCl7huKS0A==
 
 unherit@^1.0.4:
   version "1.1.3"
