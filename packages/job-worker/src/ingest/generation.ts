@@ -30,7 +30,7 @@ import _ = require('underscore')
 import { CacheForIngest } from './cache'
 import { LocalIngestSegment, LocalIngestRundown } from './ingestCache'
 import { getSegmentId, getPartId, getRundown, canSegmentBeUpdated, extendIngestRundownCore } from './lib'
-import { JobContext, ProcessedShowStyleCompound } from '../jobs'
+import { JobContext } from '../jobs'
 import { CommitIngestData } from './lock'
 import { SelectedShowStyleVariant, selectShowStyleVariant } from './rundown'
 import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
@@ -45,11 +45,6 @@ export interface UpdateSegmentsResult {
 	pieces: Piece[]
 	adlibPieces: AdLibPiece[]
 	adlibActions: AdLibAction[]
-
-	/** ShowStyle, if loaded to reuse */
-	showStyle: ReadonlyDeep<ProcessedShowStyleCompound> | undefined
-	/** Blueprint, if loaded to reuse */
-	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint> | undefined
 }
 
 async function getWatchedPackagesHelper(
@@ -282,23 +277,10 @@ export async function calculateSegmentsFromIngestData(
 
 			preserveOrphanedSegmentPositionInRundown(context, cache, newSegment)
 		}
-
-		span?.end()
-		return {
-			...res,
-
-			showStyle,
-			blueprint,
-		}
-	} else {
-		span?.end()
-		return {
-			...res,
-
-			showStyle: undefined,
-			blueprint: undefined,
-		}
 	}
+
+	span?.end()
+	return res
 }
 
 function preserveOrphanedSegmentPositionInRundown(context: JobContext, cache: CacheForIngest, newSegment: DBSegment) {
@@ -441,9 +423,6 @@ export async function updateSegmentFromIngestData(
 		renamedSegments: new Map(),
 
 		removeRundown: false,
-
-		showStyle: segmentChanges.showStyle,
-		blueprint: segmentChanges.blueprint,
 	}
 }
 
@@ -490,9 +469,6 @@ export async function regenerateSegmentsFromIngestData(
 		renamedSegments: new Map(),
 
 		removeRundown: false,
-
-		showStyle: segmentChanges.showStyle,
-		blueprint: segmentChanges.blueprint,
 	}
 
 	span?.end()
@@ -581,9 +557,6 @@ export async function updateRundownFromIngestData(
 		renamedSegments: new Map(),
 
 		removeRundown: false,
-
-		showStyle: showStyle.compound,
-		blueprint: showStyleBlueprint,
 	})
 }
 export async function getRundownFromIngestData(

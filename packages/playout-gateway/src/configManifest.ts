@@ -55,7 +55,7 @@ const PLAYOUT_SUBDEVICE_HOST_PORT: ConfigManifestEntry[] = [
 ]
 
 type ImplementedSubDeviceConfig = Pick<SubDeviceConfigManifest['config'], TSRDeviceType>
-
+/** @type {*} */
 const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 	[TSRDeviceType.ABSTRACT]: [...PLAYOUT_SUBDEVICE_COMMON],
 	[TSRDeviceType.CASPARCG]: [
@@ -442,6 +442,20 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 			type: ConfigManifestEntryType.STRING,
 		},
 	],
+	[TSRDeviceType.SOFIE_CHEF]: [
+		...PLAYOUT_SUBDEVICE_COMMON,
+		{
+			id: 'options.address',
+			name: 'Device URL',
+			type: ConfigManifestEntryType.STRING,
+		},
+		{
+			id: 'options.apiKey',
+			name: 'API KEY',
+			type: ConfigManifestEntryType.STRING,
+		},
+	],
+	[TSRDeviceType.TELEMETRICS]: [...PLAYOUT_SUBDEVICE_COMMON, ...PLAYOUT_SUBDEVICE_HOST_PORT],
 }
 
 // TODO: should come from types
@@ -466,6 +480,8 @@ type NoMappingSettingsDeviceTypes =
 	| TSRDeviceType.HTTPWATCHER
 	| TSRDeviceType.VIZMSE
 	| TSRDeviceType.SHOTOKU
+	| TSRDeviceType.TELEMETRICS
+	| TSRDeviceType.SOFIE_CHEF
 
 type ImplementedMappingsManifest = Pick<MappingsManifest, Exclude<TSRDeviceType, NoMappingSettingsDeviceTypes>>
 

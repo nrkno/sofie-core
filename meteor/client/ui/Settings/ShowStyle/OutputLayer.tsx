@@ -113,23 +113,27 @@ export const OutputLayerSettings = withTranslation()(
 			const newLayerId = newValue + ''
 			const layer = this.props.showStyleBase.outputLayersWithOverrides.defaults[oldLayerId]
 
+			if (!layer || !edit.props.collection) {
+				return
+			}
+
 			if (this.props.showStyleBase.outputLayersWithOverrides.defaults[newLayerId]) {
 				throw new Meteor.Error(400, 'Layer "' + newLayerId + '" already exists')
 			}
 
-			const mSet = {}
-			const mUnset = {}
-			mSet['outputLayersWithOverrides.defaults.' + newLayerId] = layer
-			mUnset['outputLayersWithOverrides.defaults.' + oldLayerId] = 1
+			edit.props.collection.update(this.props.showStyleBase._id, {
+				$set: {
+					[`outputLayersWithOverrides.defaults.${newLayerId}`]: {
+						...layer,
+						_id: newLayerId,
+					},
+				},
+				$unset: {
+					[`outputLayersWithOverrides.defaults.${oldLayerId}`]: 1,
+				},
+			})
 
-			if (edit.props.collection) {
-				edit.props.collection.update(this.props.showStyleBase._id, {
-					$set: mSet,
-					$unset: mUnset,
-				})
-			}
-
-			this.finishEditItem(oldLayerId)
+			this.finishEditItem({ _id: oldLayerId })
 			this.editItem({ _id: newLayerId })
 		}
 
@@ -195,6 +199,8 @@ export const OutputLayerSettings = withTranslation()(
 													type="text"
 													collection={ShowStyleBases}
 													className="input text-input input-l"
+													overrideDisplayValue={item._id}
+													updateFunction={this.updateLayerId}
 												></EditAttribute>
 											</label>
 										</div>
