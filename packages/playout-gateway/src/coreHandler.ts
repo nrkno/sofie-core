@@ -13,6 +13,7 @@ import {
 	QuantelDevice,
 	MediaObject,
 	DeviceOptionsAny,
+	VizMSEDevice,
 } from 'timeline-state-resolver'
 
 import * as _ from 'underscore'
@@ -478,6 +479,14 @@ export class CoreHandler {
 		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
 
 		await device.formatDisks()
+	}
+	async vizPurgeRundown(deviceId: string): Promise<any> {
+		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
+
+		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<VizMSEDevice>
+		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
+
+		return device.purgeRundown(true)
 	}
 	async updateCoreStatus(): Promise<any> {
 		let statusCode = StatusCode.GOOD
