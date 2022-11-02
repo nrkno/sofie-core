@@ -100,7 +100,7 @@
 		"react-timer-hoc": "^2.3.0",
 		"semver": "^7.3.7",
 		"superfly-timeline": "^8.3.0",
-		"threadedclass": "^1.1.0",
+		"threadedclass": "^1.1.2",
 		"timecode": "0.0.4",
 		"type-fest": "^2.19.0",
 		"underscore": "^1.13.4",
