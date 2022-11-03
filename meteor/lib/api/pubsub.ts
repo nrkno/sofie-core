@@ -247,7 +247,7 @@ export enum CustomCollectionName {
 	UIShowStyleBase = 'uiShowStyleBase',
 	UIStudio = 'uiStudio',
 	UITriggeredActions = 'uiTriggeredActions',
-	UISegmentPartNote = 'uiSegmentPartNotes',
+	UISegmentPartNotes = 'uiSegmentPartNotes',
 }
 
 /**
@@ -261,7 +261,7 @@ export type CustomCollectionType = {
 	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
 	[CustomCollectionName.UIStudio]: UIStudio
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
-	[CustomCollectionName.UISegmentPartNote]: UISegmentPartNote
+	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
 }
 
 /**
