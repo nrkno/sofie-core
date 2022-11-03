@@ -17,6 +17,7 @@ import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blue
 import { JobContext } from '../jobs'
 import { getPartId, getSegmentId } from './lib'
 import { SetOptional } from 'type-fest'
+import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 
 interface LocalIngestBase {
 	modified: number
@@ -84,8 +85,8 @@ export class RundownIngestDataCache {
 			return !!obj.segmentId
 		}
 
-		const segmentMap = _.groupBy(cacheEntries.filter(hasSegmentId), (e) => unprotectString(e.segmentId))
-		_.each(segmentMap, (objs) => {
+		const segmentMap = groupByToMap(cacheEntries.filter(hasSegmentId), 'segmentId')
+		for (const objs of segmentMap.values()) {
 			const segmentEntry = objs.find((e) => e.type === IngestCacheType.SEGMENT)
 			if (segmentEntry) {
 				const ingestSegment = segmentEntry.data as LocalIngestSegment
@@ -103,7 +104,7 @@ export class RundownIngestDataCache {
 				ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 				ingestRundown.segments.push(ingestSegment)
 			}
-		})
+		}
 
 		ingestRundown.segments = _.sortBy(ingestRundown.segments, (s) => s.rank)
 
