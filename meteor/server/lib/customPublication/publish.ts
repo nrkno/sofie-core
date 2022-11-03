@@ -36,6 +36,13 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	}
 
 	/**
+	 * Terminate the publication with an error
+	 */
+	error(error: Meteor.Error): void {
+		this._meteorSubscription.error(error)
+	}
+
+	/**
 	 * Send the intial documents to the subscriber
 	 */
 	init(docs: DBObj[]) {

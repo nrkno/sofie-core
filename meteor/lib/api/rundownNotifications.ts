@@ -1,4 +1,4 @@
-import { PartNote, SegmentNote, RundownNote, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PieceStatusCode } from '../collections/Pieces'
 import { PartId, PieceId, RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString } from '../lib'
@@ -24,14 +24,11 @@ export type UISegmentPartNoteId = ProtectedString<'UISegmentPartNote'>
 export interface UISegmentPartNote {
 	_id: UISegmentPartNoteId
 	playlistId: RundownPlaylistId
+	segmentId: SegmentId
 
-	rank: number
 	note: TrackedNote
 }
 
-export type RankedNote = (PartNote | SegmentNote | RundownNote) & {
-	rank: number
-}
 /** How often the client polls for updates on media statuses */
 export const MEDIASTATUS_POLL_INTERVAL = 10 * 1000
 

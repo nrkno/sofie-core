@@ -407,6 +407,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 		this.autorun(() => {
 			// TODO - is this a good way of working still?
+			// TODO - the order of these will not be consistent..
 			const notes = UISegmentPartNotes.find({ playlistId: playlistId }).fetch()
 			fullNotes.set(notes)
 		})
@@ -416,8 +417,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			const combined = fullNotes.get()
 
 			combined.forEach((item: UISegmentPartNote) => {
-				const rank = item.rank
-				const { origin, message, type: itemType } = item.note
+				const { origin, message, type: itemType, rank } = item.note
 				const { pieceId, partId, segmentId, rundownId, name, segmentName } = origin
 
 				const translatedMessage = isTranslatableMessage(message) ? translateMessage(message, t) : String(message)

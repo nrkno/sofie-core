@@ -243,7 +243,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				rundownNrcsName ?? 'NRCS',
 				o.parts.map((p) => p.instance.part),
 				o.parts.map((p) => p.instance)
-			)
+			).map((n) => n.note)
 			o.parts.forEach((part) => {
 				notes.push(
 					...getMinimumReactivePieceNotesForPart(props.studio, props.showStyleBase, part.instance.part).map(

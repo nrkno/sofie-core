@@ -22,13 +22,16 @@ interface OptimizedObserverWorker<TData extends { _id: ProtectedString<any> }, T
 	args: ReadonlyDeep<TArgs>
 	context: Partial<TContext>
 	lastData: TData[]
-	stop: () => void
+	stopObservers: () => void
 }
 
 /** Optimized observers */
 const optimizedObservers: Record<string, OptimizedObserverWrapper<any, unknown, unknown>> = {}
 
-export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProps: Partial<UpdateProps>) => void
+export type TriggerUpdate<UpdateProps extends Record<string, any>> = (
+	updateProps: Partial<UpdateProps>,
+	invalidateObservers?: boolean
+) => void
 
 /**
  * This should not be used directly, and should be used through one of the setUpOptimizedObserverArray or setUpCollectionOptimizedObserver wrappers
@@ -182,11 +185,27 @@ async function createOptimizedObserverWorker<
 	let thisObserverWorker: OptimizedObserverWorker<PublicationDoc, Args, State> | undefined
 	let updateIsRunning = true
 
+	const args = clone<ReadonlyDeep<Args>>(args0)
+
+	const abortExecution = (reason: Meteor.Error) => {
+		if (thisObserverWrapper) {
+			for (const sub of thisObserverWrapper.activeSubscribers) {
+				sub.error(reason)
+			}
+			for (const sub of thisObserverWrapper.newSubscribers) {
+				sub.error(reason)
+			}
+		}
+	}
+
+	let hasPendingInvalidateObservers = false
 	let hasPendingUpdate = false
 	let pendingUpdate: Record<string, any> = {}
-	const triggerUpdate: TriggerUpdate<UpdateProps> = (updateProps) => {
+	const triggerUpdate: TriggerUpdate<UpdateProps> = (updateProps, invalidateObservers) => {
 		// Combine the pending updates
 		pendingUpdate = deepmerge(pendingUpdate, updateProps)
+
+		if (invalidateObservers) hasPendingInvalidateObservers = true
 
 		// If already running, set it as pending to be done afterwards
 		if (updateIsRunning) {
@@ -211,8 +230,26 @@ async function createOptimizedObserverWorker<
 							!thisObserverWrapper.newSubscribers.length
 						) {
 							delete optimizedObservers[identifier]
-							thisObserverWorker.stop()
+							thisObserverWorker.stopObservers()
 							return
+						}
+
+						if (hasPendingInvalidateObservers) {
+							thisObserverWorker.stopObservers()
+							thisObserverWorker.stopObservers = () => null // Temporary clear the callback
+
+							try {
+								// Replace with new observers
+								const newObservers = await setupObservers(args, triggerUpdate)
+								thisObserverWorker.stopObservers = () => {
+									newObservers.forEach((observer) => observer.stop())
+								}
+							} catch (e) {
+								// If it errored, then the publication is dead
+								// And we might have some orphaned mongo handles that were never returned..
+								abortExecution(new Meteor.Error(500, `Obervers failed to renew: ${stringifyError(e)}`))
+								return
+							}
 						}
 
 						// Fetch and clear the pending updates
@@ -281,14 +318,13 @@ async function createOptimizedObserverWorker<
 
 	try {
 		// Setup the mongo observers
-		const args = clone<ReadonlyDeep<Args>>(args0)
 		const observers = await setupObservers(args, triggerUpdate)
 
 		thisObserverWorker = {
 			args: args,
 			context: {},
 			lastData: [],
-			stop: () => {
+			stopObservers: () => {
 				observers.forEach((observer) => observer.stop())
 			},
 		}
@@ -301,7 +337,7 @@ async function createOptimizedObserverWorker<
 		if (newDataReceivers.length === 0) {
 			// There is no longer any subscriber to this
 			delete optimizedObservers[identifier]
-			thisObserverWorker.stop()
+			thisObserverWorker.stopObservers()
 
 			throw new Meteor.Error(500, 'All subscribers disappeared!')
 		}
@@ -327,7 +363,7 @@ async function createOptimizedObserverWorker<
 		// Observer is now ready for all to use
 		return thisObserverWorker
 	} catch (e: any) {
-		if (thisObserverWorker) thisObserverWorker.stop()
+		if (thisObserverWorker) thisObserverWorker.stopObservers()
 
 		throw e
 	}
