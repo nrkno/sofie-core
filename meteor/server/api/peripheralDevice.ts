@@ -63,6 +63,7 @@ import {
 	NewPeripheralDeviceAPI,
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
+import { insertTriggerToPreview } from '../publications/deviceTriggersPreview'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -1151,8 +1152,15 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		await PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId)
 	}
 	// --- Triggers ---
-	async trigger(deviceId: PeripheralDeviceId, deviceToken: string, trigger: Record<string, any>): Promise<void> {
-		console.log(deviceId, deviceToken, trigger)
+	async trigger(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		triggerDeviceId: string,
+		triggerId: string,
+		values?: Record<string, string | number | boolean> | null
+	) {
+		console.log(deviceId, deviceToken, triggerDeviceId, triggerId, values)
+		await insertTriggerToPreview(deviceId, triggerDeviceId, triggerId, values ?? undefined)
 	}
 }
 registerClassToMeteorMethods(PeripheralDeviceAPIMethods, ServerPeripheralDeviceAPIClass, false)

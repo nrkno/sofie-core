@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { TFunction } from 'i18next'
-import { TriggerType } from '@sofie-automation/blueprints-integration'
+import { SomeBlueprintTrigger, TriggerType } from '@sofie-automation/blueprints-integration'
 import { DBBlueprintTrigger } from '../../../../../../lib/collections/TriggeredActions'
 import { HotkeyTrigger } from './HotkeyTrigger'
 import { usePopper } from 'react-popper'
@@ -10,7 +10,9 @@ import { EditAttribute } from '../../../../../lib/EditAttribute'
 import { HotkeyEditor } from './HotkeyEditor'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
-import { isHotkeyTrigger } from '../../../../../../lib/api/triggers/triggerTypeSelectors'
+import { isDeviceTrigger, isHotkeyTrigger } from '../../../../../../lib/api/triggers/triggerTypeSelectors'
+import { DeviceTrigger } from './DeviceTrigger'
+import { DeviceEditor } from './DeviceEditor'
 
 interface IProps {
 	id: string
@@ -78,12 +80,21 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 	const triggerPreview = isHotkeyTrigger(trigger) ? (
 		<HotkeyTrigger
 			innerRef={setReferenceElement}
-			keys={trigger.keys}
+			keys={trigger.keys || ''}
 			up={trigger.up || false}
 			onClick={onFocus}
 			selected={opened}
 		/>
+	) : isDeviceTrigger(trigger) ? (
+		<DeviceTrigger
+			innerRef={setReferenceElement}
+			deviceId={trigger.deviceId || ''}
+			trigger={trigger.triggerId || ''}
+			onClick={onFocus}
+			selected={opened}
+		/>
 	) : (
+		// @ts-expect-error trigger.type is `never`, but runtime it can be something else
 		<div ref={setReferenceElement}>Unknown trigger type: {trigger.type}</div>
 	)
 
@@ -92,6 +103,17 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 			trigger={localTrigger}
 			onChange={(newVal) => setLocalTrigger(newVal)}
 			modified={!isHotkeyTrigger(trigger) || trigger.keys !== localTrigger.keys}
+		/>
+	) : isDeviceTrigger(localTrigger) ? (
+		<DeviceEditor
+			trigger={localTrigger}
+			onChange={(newVal) => setLocalTrigger(newVal)}
+			modified={
+				!isDeviceTrigger(trigger) ||
+				trigger.deviceId !== localTrigger.deviceId ||
+				trigger.triggerId !== localTrigger.triggerId ||
+				JSON.stringify(trigger.arguments) !== JSON.stringify(localTrigger.arguments)
+			}
 		/>
 	) : null
 
@@ -103,8 +125,14 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 		setLocalTrigger(trigger)
 	}, [opened])
 
-	function onChangeType(_newValue: string) {
-		// Nothing
+	function onChangeType(newValue: string) {
+		if (!(newValue in TriggerType)) {
+			return
+		}
+
+		setLocalTrigger({
+			type: newValue as TriggerType,
+		} as SomeBlueprintTrigger)
 	}
 
 	function onConfirm() {
@@ -128,7 +156,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 							type={'dropdown'}
 							label={t('Trigger Type')}
 							options={getTriggerTypes(t)}
-							overrideDisplayValue={trigger.type}
+							overrideDisplayValue={localTrigger.type}
 							attribute={''}
 							updateFunction={(_e, newVal) => onChangeType(newVal)}
 						/>

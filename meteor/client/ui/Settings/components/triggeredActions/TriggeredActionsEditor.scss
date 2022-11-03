@@ -64,13 +64,18 @@ $triggered-action-color: #146985;
 			margin: 0 3px 3px 0;
 		}
 
-		> .triggered-action-entry__hotkey {
+		.triggered-action-entry__hotkey,
+		.triggered-action-entry__device {
+			display: inline-flex;
 			background: #555;
 			color: #fff;
 			font-weight: 400;
 			justify-content: center;
 			min-width: 20px;
 			word-break: break-word;
+			border-radius: 3px;
+			padding: 0 3px;
+			margin: 0 3px 3px 0;
 
 			&.selected {
 				position: relative;
@@ -79,6 +84,14 @@ $triggered-action-color: #146985;
 
 			.subtle {
 				color: #aaa;
+			}
+		}
+
+		.triggered-action-entry__device {
+			background: #363e96;
+
+			.subtle {
+				color: #bec3ff;
 			}
 		}
 

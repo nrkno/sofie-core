@@ -14,8 +14,6 @@ export type MountedDeviceTrigger = (MountedGenericTrigger | MountedAdLibTrigger)
 /** A generic action that will be triggered by hotkeys (generic, i.e. non-AdLib) */
 export interface MountedGenericTrigger extends MountedTriggerCommon {
 	_id: MountedGenericTriggerId
-	/** Rank of the Action that is mounted under `keys1 */
-	_rank: number
 	/** The ID of the action that will be triggered */
 	triggeredActionId: TriggeredActionId
 	/** Hint that all actions of this trigger are adLibs */
@@ -31,7 +29,7 @@ interface MountedTriggerCommon {
 	name?: string | ITranslatableMessage
 }
 
-interface MountedHotkeyMixin {
+export interface MountedHotkeyMixin {
 	/** Keys or combos that have a listener mounted to */
 	keys: string[]
 	/** Final keys in the combos, that can be used for figuring out where on the keyboard this action is mounted */
@@ -41,7 +39,7 @@ interface MountedHotkeyMixin {
 interface MountedDeviceMixin {
 	deviceId: string
 	triggerId: string
-	arguments?: Record<string, string | number | boolean>
+	values?: Record<string, string | number | boolean>
 }
 
 /** An AdLib action that will be triggered by hotkeys (can be AdLib, RundownBaselineAdLib, AdLib Action, Clear source layer, Sticky, etc.) */

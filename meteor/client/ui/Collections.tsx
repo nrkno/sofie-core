@@ -18,3 +18,5 @@ export const UIStudios = createCustomPublicationMongoCollection(CustomCollection
  * This has been stripped back to only useful properties, with any ObjectWithOverrides<T> pre-flattened
  */
 export const UITriggeredActions = createCustomPublicationMongoCollection(CustomCollectionName.UITriggeredActions)
+
+export const DeviceTriggersPreviews = createCustomPublicationMongoCollection(CustomCollectionName.DeviceTriggerPreviews)

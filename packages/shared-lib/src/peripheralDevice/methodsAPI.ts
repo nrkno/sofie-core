@@ -310,7 +310,13 @@ export interface NewPeripheralDeviceAPI {
 		packageId: ExpectedPackageId
 	): Promise<void>
 
-	trigger(deviceId: PeripheralDeviceId, deviceToken: string, trigger: Record<string, any>): Promise<void>
+	trigger(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		triggerDeviceId: string,
+		triggerId: string,
+		values: Record<string, string | number | boolean>
+	): Promise<void>
 
 	determineDiffTime(): Promise<DiffTimeResult>
 	getTimeDiff(): Promise<TimeDiff>

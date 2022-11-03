@@ -10,7 +10,7 @@ import { TFunction } from 'i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { MongoCursor } from '../../../lib/collections/lib'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { MountedAdLibTrigger, MountedGenericTrigger } from '../../../lib/api/triggers/MountedTriggers'
+import { MountedTrigger } from '../../../lib/api/triggers/MountedTriggers'
 
 interface IProps {
 	visible?: boolean
@@ -24,11 +24,7 @@ interface IProps {
 
 const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
 
-function mountedTriggerToHotkeyList(
-	hotkeys: MongoCursor<MountedAdLibTrigger | MountedGenericTrigger>,
-	sorensen: Sorensen | null,
-	t: TFunction
-) {
+function mountedTriggerToHotkeyList(hotkeys: MongoCursor<MountedTrigger>, sorensen: Sorensen | null, t: TFunction) {
 	return hotkeys.map((mountedTrigger) => ({
 		key: (sorensen ? mountedTrigger.keys.map((codes) => codesToKeyLabels(codes, sorensen)) : mountedTrigger.keys).join(
 			', '

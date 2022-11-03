@@ -60,7 +60,7 @@ export const HotkeyEditor = function HotkeyEditor({ trigger, modified, onChange 
 	}
 
 	useEffect(() => {
-		let processedKeys = trigger.keys
+		let processedKeys = trigger.keys ?? ''
 		if (sorensen) {
 			processedKeys = codesToKeyLabels(processedKeys, sorensen)
 		}

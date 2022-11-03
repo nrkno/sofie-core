@@ -53,9 +53,10 @@ import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
-import { MountedTrigger } from './triggers/MountedTriggers'
+import { MountedDeviceTrigger } from './triggers/MountedTriggers'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
+import { DeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
 
 /**
  * Ids of possible DDP subscriptions
@@ -129,6 +130,7 @@ export enum PubSub {
 	uiTriggeredActions = 'uiTriggeredActions',
 
 	mountedTriggersForDevice = 'mountedTriggersForDevice',
+	deviceTriggersPreview = 'deviceTriggersPreview',
 }
 
 /**
@@ -243,7 +245,8 @@ export interface PubSubTypes {
 		deviceId: PeripheralDeviceId,
 		deviceIds: string[],
 		token?: string
-	) => MountedTrigger
+	) => MountedDeviceTrigger
+	[PubSub.deviceTriggersPreview]: (studioId: StudioId, token?: string) => DeviceTriggerPreview
 }
 
 /**
@@ -257,6 +260,7 @@ export enum CustomCollectionName {
 	UIStudio = 'uiStudio',
 	UITriggeredActions = 'uiTriggeredActions',
 	MountedTriggers = 'mountedTriggers',
+	DeviceTriggerPreviews = 'deviceTriggerPreviews',
 }
 
 /**
@@ -270,6 +274,7 @@ export type CustomCollectionType = {
 	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
 	[CustomCollectionName.UIStudio]: UIStudio
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
+	[CustomCollectionName.DeviceTriggerPreviews]: DeviceTriggerPreview
 }
 
 /**
