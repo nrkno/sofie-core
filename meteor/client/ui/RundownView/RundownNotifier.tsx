@@ -25,14 +25,12 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator as t } from '../i18n'
-import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { Piece, PieceStatusCode } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
 import { RundownPlaylists, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
-import { RankedNote, IMediaObjectIssue, MEDIASTATUS_POLL_INTERVAL } from '../../../lib/api/rundownNotifications'
+import { IMediaObjectIssue, MEDIASTATUS_POLL_INTERVAL, UISegmentPartNote } from '../../../lib/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { NoteSeverity, StatusCode } from '@sofie-automation/blueprints-integration'
 import { getAllowStudio, getIgnorePieceContentStatus } from '../../lib/localStorage'
@@ -47,6 +45,7 @@ import {
 	SegmentId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { UISegmentPartNotes } from '../Collections'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -402,47 +401,23 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactivePartNotes(playlistId: RundownPlaylistId) {
-		let allNotesPollLock: boolean = false
-		const NOTES_POLL_INTERVAL = MEDIASTATUS_POLL_INTERVAL
-
-		const rRundowns = reactiveData.getRRundowns(playlistId, {
-			fields: {
-				_id: 1,
-			},
-		}) as ReactiveVar<Pick<Rundown, '_id'>[]>
-
-		const fullNotes: ReactiveVar<RankedNote[]> = new ReactiveVar([], _.isEqual)
-		const localNotes: ReactiveVar<RankedNote[]> = new ReactiveVar([], _.isEqual)
+		const fullNotes: ReactiveVar<UISegmentPartNote[]> = new ReactiveVar([], _.isEqual)
 
 		let oldNoteIds: Array<string> = []
 
 		this.autorun(() => {
-			const rundownIds = rRundowns.get().map((r) => r._id)
-			if (this.allNotesPollInterval) clearInterval(this.allNotesPollInterval)
-			this.allNotesPollInterval = Meteor.setInterval(() => {
-				if (allNotesPollLock) return
-				allNotesPollLock = true
-				MeteorCall.rundownNotifications
-					.getSegmentPartNotes(playlistId, rundownIds)
-					.then((result) => {
-						fullNotes.set(result)
-						allNotesPollLock = false
-					})
-					.catch((e) => console.error(e))
-			}, NOTES_POLL_INTERVAL)
-		})
-
-		this.autorun(() => {
-			const rundownIds = rRundowns.get().map((r) => r._id)
-			localNotes.set(getSegmentPartNotes(playlistId, rundownIds))
+			// TODO - is this a good way of working still?
+			const notes = UISegmentPartNotes.find({ playlistId: playlistId }).fetch()
+			fullNotes.set(notes)
 		})
 
 		this.autorun(() => {
 			const newNoteIds: Array<string> = []
-			const combined = fullNotes.get().concat(localNotes.get())
+			const combined = fullNotes.get()
 
-			combined.forEach((item: TrackedNote) => {
-				const { origin, message, type: itemType, rank } = item
+			combined.forEach((item: UISegmentPartNote) => {
+				const rank = item.rank
+				const { origin, message, type: itemType } = item.note
 				const { pieceId, partId, segmentId, rundownId, name, segmentName } = origin
 
 				const translatedMessage = isTranslatableMessage(message) ? translateMessage(message, t) : String(message)
@@ -463,7 +438,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							<div>{translatedMessage || t('There is an unknown problem with the part.')}</div>
 						</>
 					),
-					item.origin.segmentId || item.origin.rundownId || 'unknown',
+					origin.segmentId || origin.rundownId || 'unknown',
 					getCurrentTime(),
 					true,
 					[

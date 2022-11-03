@@ -7,9 +7,7 @@ import {
 } from '../../lib/api/rundownNotifications'
 import { registerClassToMeteorMethods } from '../methods'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { cacheResultAsync, makePromise, normalizeArrayToMap } from '../../lib/lib'
-import { getSegmentPartNotes } from '../../lib/rundownNotifications'
 import { MethodContextAPI } from '../../lib/api/methods'
 import { RundownReadAccess } from '../security/rundown'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
@@ -20,8 +18,7 @@ import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studios } from '../../lib/collections/Studios'
 import { checkPieceContentStatus } from '../../lib/mediaObjects'
-import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { UIStudio } from '../../lib/api/studios'
@@ -115,20 +112,6 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 }
 
 class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownNotificationsAPI {
-	async getSegmentPartNotes(
-		playlistId: RundownPlaylistId,
-		rundownIds: RundownId[]
-	): Promise<(PartNote & { rank: number })[]> {
-		triggerWriteAccessBecauseNoCheckNecessary()
-		if (!(await RundownPlaylistReadAccess.rundownPlaylistContent(playlistId, this)))
-			throw new Meteor.Error(401, 'Invalid access creditials for Segment Parts Notes')
-
-		if (!(await RundownReadAccess.rundownContent({ $in: rundownIds }, this))) {
-			throw new Meteor.Error(401, 'Invalid access creditials for Segment Parts Notes')
-		}
-
-		return getSegmentPartNotes(playlistId, rundownIds)
-	}
 	async getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 		triggerWriteAccessBecauseNoCheckNecessary()
 

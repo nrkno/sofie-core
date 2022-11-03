@@ -53,6 +53,7 @@ import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
+import { UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
 
@@ -124,6 +125,7 @@ export enum PubSub {
 	uiShowStyleBase = 'uiShowStyleBase',
 	uiStudio = 'uiStudio',
 	uiTriggeredActions = 'uiTriggeredActions',
+	uiSegmentPartNotes = 'uiSegmentPartNotes',
 }
 
 /**
@@ -232,6 +234,7 @@ export interface PubSubTypes {
 	/** Subscribe to one or all studios */
 	[PubSub.uiStudio]: (studioId: StudioId | null) => UIStudio
 	[PubSub.uiTriggeredActions]: (showStyleBaseId: ShowStyleBaseId | null) => UITriggeredActionsObj
+	[PubSub.uiSegmentPartNotes]: (playlistId: RundownPlaylistId | null) => UISegmentPartNote
 }
 
 /**
@@ -244,6 +247,7 @@ export enum CustomCollectionName {
 	UIShowStyleBase = 'uiShowStyleBase',
 	UIStudio = 'uiStudio',
 	UITriggeredActions = 'uiTriggeredActions',
+	UISegmentPartNote = 'uiSegmentPartNotes',
 }
 
 /**
@@ -257,6 +261,7 @@ export type CustomCollectionType = {
 	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
 	[CustomCollectionName.UIStudio]: UIStudio
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
+	[CustomCollectionName.UISegmentPartNote]: UISegmentPartNote
 }
 
 /**

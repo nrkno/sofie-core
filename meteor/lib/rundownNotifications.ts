@@ -10,7 +10,7 @@ import { ITranslatableMessage, NoteSeverity } from '@sofie-automation/blueprints
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-export function getSegmentPartNotes(playlistId: RundownPlaylistId, rundownIds: RundownId[]): TrackedNote[] {
+function getSegmentPartNotes(playlistId: RundownPlaylistId, rundownIds: RundownId[]): TrackedNote[] {
 	const playlist = RundownPlaylists.findOne(playlistId)
 	if (!playlist) return []
 
