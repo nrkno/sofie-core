@@ -24,6 +24,7 @@ export type UISegmentPartNoteId = ProtectedString<'UISegmentPartNote'>
 export interface UISegmentPartNote {
 	_id: UISegmentPartNoteId
 	playlistId: RundownPlaylistId
+	rundownId: RundownId
 	segmentId: SegmentId
 
 	note: TrackedNote

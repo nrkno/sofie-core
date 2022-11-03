@@ -4,20 +4,17 @@ import {
 	RundownId,
 	RundownPlaylistId,
 	SegmentId,
-	TriggeredActionId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
-import { UISegmentPartNote, UISegmentPartNoteId } from '../../lib/api/rundownNotifications'
-import { DBPartInstance, PartInstances } from '../../lib/collections/PartInstances'
+import { UISegmentPartNote } from '../../lib/api/rundownNotifications'
+import { PartInstances } from '../../lib/collections/PartInstances'
 import { DBPart, Parts } from '../../lib/collections/Parts'
-import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
-import { Complete, literal } from '../../lib/lib'
+import { literal } from '../../lib/lib'
 import { getBasicNotesForSegment } from '../../lib/rundownNotifications'
 import { MongoQuery } from '../../lib/typings/meteor'
 import {
@@ -43,45 +40,11 @@ interface UISegmentPartNotesState {
 }
 
 interface UISegmentPartNotesUpdateProps {
-	rundownOrderChanged: boolean
 	invalidateRundownIds: RundownId[]
 	invalidateSegmentIds: SegmentId[]
 	invalidatePartIds: PartId[]
 	invalidatePartInstanceIds: PartInstanceId[]
 }
-
-// function compileMongoSelector(
-// 	showStyleBaseId: ShowStyleBaseId | null,
-// 	docIds?: readonly TriggeredActionId[]
-// ): Mongo.Selector<DBSegmentPartNotes> {
-// 	const selector: Mongo.Selector<DBSegmentPartNotes> = { showStyleBaseId: null }
-// 	if (showStyleBaseId) {
-// 		selector.showStyleBaseId = { $in: [null, showStyleBaseId] }
-// 	}
-// 	if (docIds) {
-// 		selector._id = { $in: docIds as TriggeredActionId[] }
-// 	}
-// 	return selector
-// }
-
-// function convertDocument(doc: DBSegmentPartNotes): UISegmentPartNote {
-// 	return literal<Complete<UISegmentPartNote>>({
-// 		_id: doc._id,
-// 		_rank: doc._rank,
-
-// 		showStyleBaseId: doc.showStyleBaseId,
-// 		name: doc.name,
-
-// 		actions: applyAndValidateOverrides(doc.actionsWithOverrides).obj,
-// 		triggers: applyAndValidateOverrides(doc.triggersWithOverrides).obj,
-// 	})
-// }
-
-type PlaylistFields = '_id' | 'rundownIdsInOrder'
-const playlistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PlaylistFields>>({
-	_id: 1,
-	rundownIdsInOrder: 1,
-})
 
 type RundownFields = '_id' | 'externalNRCSName'
 const rundownFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownFields>>({
@@ -144,11 +107,6 @@ async function setupUISegmentPartNotesPublicationObservers(
 
 	// Set up observers:
 	return [
-		RundownPlaylists.find(args.playlistId, { fields: playlistFieldSpecifier }).observe({
-			added: () => triggerUpdate({ rundownOrderChanged: true }),
-			changed: () => triggerUpdate({ rundownOrderChanged: true }),
-			removed: () => triggerUpdate({ rundownOrderChanged: true }),
-		}),
 		Rundowns.find({ playlistId: args.playlistId }, { fields: rundownFieldSpecifier }).observe({
 			added: (obj) => triggerUpdate(trackRundownChange(obj._id), true),
 			changed: (obj) => triggerUpdate(trackRundownChange(obj._id), true), // TODO - does this need to invalidate the observer?
@@ -196,20 +154,20 @@ async function manipulateUISegmentPartNotesPublicationData(
 	console.log(changedRundownIds)
 
 	// Load any segments that have changed
-	const [newSegmentsCache, updatedSegmentIds, reloadedSegmentIds] = await updateSegmentsCache(
+	const [newSegmentsCache, updatedSegmentIds, invalidatedSegmentIds] = await updateSegmentsCache(
 		state.segmentCache,
 		allRundownIds,
 		changedRundownIds as RundownId[],
 		updateProps?.invalidateSegmentIds
 	)
 	state.segmentCache = newSegmentsCache
-	console.log(updatedSegmentIds, reloadedSegmentIds)
+	console.log(updatedSegmentIds, invalidatedSegmentIds)
 
 	// Load any parts that have changed
 	const [newPartsCache, segmentIdsWithPartChanges] = await updatePartsCache(
 		state.partsCache,
 		allRundownIds,
-		reloadedSegmentIds,
+		invalidatedSegmentIds,
 		updateProps?.invalidatePartIds
 	)
 	state.partsCache = newPartsCache
@@ -217,22 +175,26 @@ async function manipulateUISegmentPartNotesPublicationData(
 
 	// TODO - deletedPartInstances
 
-	// changedPartIds tells us which Parts have potentially changed, so we can look at those to generate the notes
-
-	// TODO - handle first run differently or if rundownRanks changed
-
-	// Compile all the segments that may have changed that we should propogate
-	const updateAll = !updateProps || !!updateProps.rundownOrderChanged
+	// Compile a single set of all of the segments that each stage reports may have changes
+	const updateAll = !updateProps
 	const regenerateForSegmentIds = updateAll
 		? new Set(state.segmentCache.keys())
 		: new Set([
 				...updatedSegmentIds,
-				...reloadedSegmentIds,
+				...invalidatedSegmentIds,
 				...segmentIdsWithPartChanges,
 				// TODO - more?
 		  ])
 
-	const removedSegmentIds = new Set<SegmentId>()
+	// We know that `collection` does diffing when 'commiting' all of the changes we have made
+	// meaning that for anything we will call `replace()` on, we can `remove()` it first for no extra cost
+	if (updateAll) {
+		// Remove all the notes
+		collection.remove(null)
+	} else {
+		// Remove ones from segments being regenerated
+		collection.remove((doc) => regenerateForSegmentIds.has(doc.segmentId))
+	}
 
 	// Generate notes for each segment
 	for (const segmentId of regenerateForSegmentIds) {
@@ -243,7 +205,6 @@ async function manipulateUISegmentPartNotesPublicationData(
 			const parts = Array.from(state.partsCache.values()).filter((part) => part.segmentId === segmentId)
 			const deletedPartInstances = [] //Array.from(state.partInstancesCache.values()).filter((part) => part.segmentId === segmentId)
 
-			// TODO - rank of segment within the playlist
 			const notesForSegment = getBasicNotesForSegment(
 				segment,
 				state.rundownToNRCSName.get(segment.rundownId) ?? 'NRCS',
@@ -251,43 +212,18 @@ async function manipulateUISegmentPartNotesPublicationData(
 				deletedPartInstances
 			)
 
-			// Delete all removed notes
-			// TODO - batch this
-			const newNoteIds = new Set(notesForSegment.map((note) => note._id))
-			collection.remove((doc) => doc.segmentId === segment._id && !newNoteIds.has(doc._id))
-
-			// Insert updated notes
+			// Insert generated notes
 			for (const note of notesForSegment) {
-				collection.replace({ ...note, playlistId: args.playlistId })
+				collection.replace({
+					...note,
+					playlistId: args.playlistId,
+					rundownId: segment.rundownId,
+					segmentId: segment._id,
+				})
 			}
 		} else {
-			// Segment no longer exists
-			removedSegmentIds.add(segmentId)
+			// Notes have already been removed
 		}
-	}
-
-	// Batch removal of notes from deleted segments
-	if (removedSegmentIds.size > 0) {
-		collection.remove((note) => removedSegmentIds.has(note.segmentId))
-	}
-
-	if (!updateProps) {
-		// Populate the state with starting data
-		// // First run
-		// const docs = await SegmentPartNotes.findFetchAsync(compileMongoSelector(args.showStyleBaseId))
-		// for (const doc of docs) {
-		// 	collection.insert(convertDocument(doc))
-		// }
-	} else if (updateProps.invalidatePartIds && updateProps.invalidatePartIds.length > 0) {
-		// const changedIds = updateProps.invalidateSegmentPartNotes
-		// // Remove them from the state, so that we detect deletions
-		// for (const id of changedIds) {
-		// 	collection.remove(id)
-		// }
-		// const docs = await SegmentPartNotes.findFetchAsync(compileMongoSelector(args.showStyleBaseId, changedIds))
-		// for (const doc of docs) {
-		// 	collection.replace(convertDocument(doc))
-		// }
 	}
 }
 
@@ -334,7 +270,7 @@ async function updateSegmentsCache(
 	allRundownIds: RundownId[],
 	changedRundownIds: RundownId[],
 	changedSegmentIds: ReadonlyDeep<SegmentId[]> | undefined
-): Promise<[newMap: UISegmentPartNotesState['segmentCache'], changedIds: SegmentId[], reloadedIds: SegmentId[]]> {
+): Promise<[newMap: UISegmentPartNotesState['segmentCache'], changedIds: SegmentId[], invalidatedIds: SegmentId[]]> {
 	// Create a fresh map
 	if (!existingMap) {
 		const segments = (await Segments.findFetchAsync(
@@ -351,8 +287,10 @@ async function updateSegmentsCache(
 		return [newMap, allIds, allIds]
 	}
 
+	// Segments that have simply changed
 	const updatedSegmentIds = new Set<SegmentId>()
-	const reloadedSegmentIds = new Set<SegmentId>()
+	// Segments that were added or removed, and need dependents to be reloaded
+	const invalidatedSegmentIds = new Set<SegmentId>()
 
 	const updateSegmentsForQuery = async (query: MongoQuery<DBSegment>) => {
 		const fetchedSegmentIds = new Set<SegmentId>()
@@ -364,7 +302,7 @@ async function updateSegmentsCache(
 			if (existingMap.has(segment._id)) {
 				updatedSegmentIds.add(segment._id)
 			} else {
-				reloadedSegmentIds.add(segment._id)
+				invalidatedSegmentIds.add(segment._id)
 			}
 
 			existingMap.set(segment._id, segment)
@@ -382,7 +320,7 @@ async function updateSegmentsCache(
 		const changedRundownIdsSet = new Set(changedRundownIds)
 		for (const [id, segment] of existingMap.entries()) {
 			if (changedRundownIdsSet.has(segment.rundownId) && !fetchedSegmentIds.has(segment._id)) {
-				reloadedSegmentIds.add(id)
+				invalidatedSegmentIds.add(id)
 				existingMap.delete(id)
 			}
 		}
@@ -396,19 +334,19 @@ async function updateSegmentsCache(
 		for (const id of changedSegmentIds) {
 			if (!fetchedSegmentIds.has(id)) {
 				// It may have changed
-				reloadedSegmentIds.add(id)
+				invalidatedSegmentIds.add(id)
 				existingMap.delete(id)
 			}
 		}
 	}
 
-	return [existingMap, Array.from(updatedSegmentIds), Array.from(reloadedSegmentIds)]
+	return [existingMap, Array.from(updatedSegmentIds), Array.from(invalidatedSegmentIds)]
 }
 
 async function updatePartsCache(
 	existingMap: UISegmentPartNotesState['partsCache'] | undefined,
 	allRundownIds: RundownId[],
-	changedSegmentIds: SegmentId[],
+	invalidatedSegmentIds: SegmentId[],
 	changedPartIds: ReadonlyDeep<PartId[]> | undefined
 ): Promise<[newMap: UISegmentPartNotesState['partsCache'], affectedSegmentIds: SegmentId[]]> {
 	// Create a fresh map
@@ -428,48 +366,53 @@ async function updatePartsCache(
 		return [newMap, Array.from(affectedSegmentIds)]
 	}
 
+	// Segments that have been affected by any document changes/updates
 	const affectedSegmentIds = new Set<SegmentId>()
 
-	// Reload Segments for any Rundowns that have changed
-	if (changedSegmentIds.length > 0) {
+	// Reload Parts for any Rundowns that have been invalidated
+	if (invalidatedSegmentIds.length > 0) {
+		// We don't need to track these in affectedSegmentIds, as that is implied
+
 		// Remove them from the cache, so that we detect deletions
-		const changedSegmentIdsSet = new Set(changedSegmentIds)
+		const changedSegmentIdsSet = new Set(invalidatedSegmentIds)
 		for (const [id, part] of existingMap.entries()) {
 			if (changedSegmentIdsSet.has(part.segmentId)) {
-				// It may have changed
-				updatedPartIds.add(id)
 				existingMap.delete(id)
 			}
 		}
 
 		const parts = (await Parts.findFetchAsync(
-			{ segmentId: { $in: changedSegmentIds } },
+			{ segmentId: { $in: invalidatedSegmentIds } },
 			{ projection: partFieldSpecifier }
 		)) as Pick<DBPart, PartFields>[]
 		for (const part of parts) {
-			// It may have changed
-			updatedPartIds.add(part._id)
 			existingMap.set(part._id, part)
 		}
 	}
 
 	// Reload any Segments that have changed
 	if (changedPartIds && changedPartIds.length > 0) {
-		// Remove them from the cache, so that we detect deletions
-		for (const id of changedPartIds) {
-			// It may have changed
-			updatedPartIds.add(id)
-			existingMap.delete(id)
-		}
+		const fetchedPartIds = new Set<PartId>()
 
 		const parts = (await Parts.findFetchAsync(
 			{ _id: { $in: changedPartIds as PartId[] } },
 			{ projection: partFieldSpecifier }
 		)) as Pick<DBPart, PartFields>[]
 		for (const part of parts) {
-			// It may have changed
-			updatedPartIds.add(part._id)
+			affectedSegmentIds.add(part.segmentId)
 			existingMap.set(part._id, part)
+			fetchedPartIds.add(part._id)
+		}
+
+		// Remove them from the cache, so that we detect deletions
+		for (const id of changedPartIds) {
+			if (!fetchedPartIds.has(id)) {
+				const existing = existingMap.get(id)
+				if (existing) {
+					affectedSegmentIds.add(existing.segmentId)
+					existingMap.delete(id)
+				}
+			}
 		}
 	}
 

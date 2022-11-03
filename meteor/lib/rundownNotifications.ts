@@ -11,7 +11,7 @@ export type PartForNotes = Pick<
 	'_id' | '_rank' | 'segmentId' | 'rundownId' | 'notes' | 'title' | 'invalid' | 'invalidReason'
 >
 
-export type BasicSegmentPartNote = Omit<UISegmentPartNote, 'playlistId'>
+export type BasicSegmentPartNote = Omit<UISegmentPartNote, 'playlistId' | 'rundownId' | 'segmentId'>
 
 export function getBasicNotesForSegment(
 	segment: SegmentForNotes,
@@ -26,7 +26,6 @@ export function getBasicNotesForSegment(
 			...segment.notes.map((note, i) =>
 				literal<BasicSegmentPartNote>({
 					_id: protectString(`${segment._id}_segment_${i}`),
-					segmentId: segment._id,
 					note: {
 						rank: segment._rank,
 						...note,
@@ -58,7 +57,6 @@ export function getBasicNotesForSegment(
 		}
 		notes.push({
 			_id: protectString(`${segment._id}_segment_orphaned`),
-			segmentId: segment._id,
 			note: {
 				type: NoteSeverity.WARNING,
 				message,
@@ -75,7 +73,6 @@ export function getBasicNotesForSegment(
 		if (deletedPartInstances.length > 0) {
 			notes.push({
 				_id: protectString(`${segment._id}_partinstances_deleted`),
-				segmentId: segment._id,
 				note: {
 					type: NoteSeverity.WARNING,
 					message: generateTranslation('The following parts no longer exist in {{nrcs}}: {{partNames}}', {
@@ -104,7 +101,6 @@ export function getBasicNotesForSegment(
 		if (part.invalidReason) {
 			notes.push({
 				_id: protectString(`${segment._id}_part_${part._id}_invalid`),
-				segmentId: segment._id,
 				note: {
 					type: part.invalidReason.severity ?? NoteSeverity.ERROR,
 					message: part.invalidReason.message,
@@ -119,19 +115,20 @@ export function getBasicNotesForSegment(
 
 		if (part.notes && part.notes.length > 0) {
 			notes.push(
-				...part.notes.map((n, i) => ({
-					_id: protectString(`${segment._id}_part_${part._id}_${i}`),
-					segmentId: segment._id,
-					note: {
-						...n,
-						rank: segment._rank,
-						origin: {
-							...n.origin,
-							...commonOrigin,
-							name: n.origin.name || part.title,
+				...part.notes.map((n, i) =>
+					literal<BasicSegmentPartNote>({
+						_id: protectString(`${segment._id}_part_${part._id}_${i}`),
+						note: {
+							...n,
+							rank: segment._rank,
+							origin: {
+								...n.origin,
+								...commonOrigin,
+								name: n.origin.name || part.title,
+							},
 						},
-					},
-				}))
+					})
+				)
 			)
 		}
 	}
