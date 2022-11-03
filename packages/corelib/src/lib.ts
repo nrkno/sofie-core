@@ -220,6 +220,25 @@ export function groupByToMap<T, K extends keyof T>(array: Array<T> | IterableIte
 	return groupedItems
 }
 
+export function groupByToMapFunc<T, K>(
+	array: Array<T> | IterableIterator<T>,
+	getKey: (o: T) => K | undefined
+): Map<K, T[]> {
+	const groupedItems = new Map<K, T[]>()
+	for (const item of array) {
+		const key = getKey(item)
+		if (key !== undefined) {
+			const existing = groupedItems.get(key)
+			if (existing) {
+				existing.push(item)
+			} else {
+				groupedItems.set(key, [item])
+			}
+		}
+	}
+	return groupedItems
+}
+
 /**
  * Recursively delete all undefined properties from the supplied object.
  * This is necessary as _.isEqual({ a: 1 }, { a: 1, b: undefined }) === false
