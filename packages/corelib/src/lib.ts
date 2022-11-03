@@ -206,6 +206,20 @@ export function normalizeArrayToMapFunc<T, K>(array: Array<T>, getKey: (o: T) =>
 	return normalizedObject
 }
 
+export function groupByToMap<T, K extends keyof T>(array: Array<T> | IterableIterator<T>, indexKey: K): Map<T[K], T[]> {
+	const groupedItems = new Map<T[K], T[]>()
+	for (const item of array) {
+		const key = item[indexKey]
+		const existing = groupedItems.get(key)
+		if (existing) {
+			existing.push(item)
+		} else {
+			groupedItems.set(key, [item])
+		}
+	}
+	return groupedItems
+}
+
 /**
  * Recursively delete all undefined properties from the supplied object.
  * This is necessary as _.isEqual({ a: 1 }, { a: 1, b: undefined }) === false

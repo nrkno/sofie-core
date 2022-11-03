@@ -14,7 +14,7 @@ import { DBPartInstance, PartInstances } from '../../lib/collections/PartInstanc
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
-import { literal } from '../../lib/lib'
+import { groupByToMap, literal } from '../../lib/lib'
 import { getBasicNotesForSegment } from '../../lib/rundownNotifications'
 import { MongoQuery } from '../../lib/typings/meteor'
 import {
@@ -181,13 +181,6 @@ async function manipulateUISegmentPartNotesPublicationData(
 	)
 	state.deletePartInstancesCache = newPartInstancesCache
 
-	const completeState: UISegmentPartNotesState = {
-		rundownToNRCSName: state.rundownToNRCSName,
-		segmentCache: state.segmentCache,
-		partsCache: state.partsCache,
-		deletePartInstancesCache: state.deletePartInstancesCache,
-	}
-
 	// We know that `collection` does diffing when 'commiting' all of the changes we have made
 	// meaning that for anything we will call `replace()` on, we can `remove()` it first for no extra cost
 
@@ -196,8 +189,14 @@ async function manipulateUISegmentPartNotesPublicationData(
 		// Remove all the notes
 		collection.remove(null)
 
+		const updateData = compileUpdateNotesData(
+			state.rundownToNRCSName,
+			state.partsCache,
+			state.deletePartInstancesCache
+		)
+
 		for (const segment of state.segmentCache.values()) {
-			updateNotesForSegment(args, completeState, collection, segment)
+			updateNotesForSegment(args, updateData, collection, segment)
 		}
 	} else {
 		// Remove ones from segments being regenerated
@@ -214,8 +213,14 @@ async function manipulateUISegmentPartNotesPublicationData(
 		for (const segmentId of regenerateForSegmentIds) {
 			const segment = state.segmentCache.get(segmentId)
 
+			const updateData = compileUpdateNotesData(
+				state.rundownToNRCSName,
+				state.partsCache,
+				state.deletePartInstancesCache
+			)
+
 			if (segment) {
-				updateNotesForSegment(args, completeState, collection, segment)
+				updateNotesForSegment(args, updateData, collection, segment)
 			} else {
 				// Notes have already been removed
 			}
@@ -223,23 +228,34 @@ async function manipulateUISegmentPartNotesPublicationData(
 	}
 }
 
+interface UpdateNotesData {
+	rundownToNRCSName: Map<RundownId, string>
+	parts: Map<SegmentId, Pick<DBPart, PartFields>[]>
+	deletedPartInstances: Map<SegmentId, Pick<DBPartInstance, PartInstanceFields>[]>
+}
+function compileUpdateNotesData(
+	rundownToNRCSName: Map<RundownId, string>,
+	partsCache: Map<PartId, Pick<DBPart, PartFields>>,
+	deletePartInstancesCache: Map<PartInstanceId, Pick<DBPartInstance, PartInstanceFields>>
+): UpdateNotesData {
+	return {
+		rundownToNRCSName,
+		parts: groupByToMap(partsCache.values(), 'segmentId'),
+		deletedPartInstances: groupByToMap(deletePartInstancesCache.values(), 'segmentId'),
+	}
+}
+
 function updateNotesForSegment(
 	args: UISegmentPartNotesArgs,
-	state: UISegmentPartNotesState,
+	state: UpdateNotesData,
 	collection: CustomPublishCollection<UISegmentPartNote>,
 	segment: Pick<DBSegment, SegmentFields>
 ) {
-	// TODO - optimise these lookups
-	const parts = Array.from(state.partsCache.values()).filter((part) => part.segmentId === segment._id)
-	const deletedPartInstances = Array.from(state.deletePartInstancesCache.values()).filter(
-		(part) => part.segmentId === segment._id
-	)
-
 	const notesForSegment = getBasicNotesForSegment(
 		segment,
 		state.rundownToNRCSName.get(segment.rundownId) ?? 'NRCS',
-		parts,
-		deletedPartInstances
+		state.parts.get(segment._id) ?? [],
+		state.deletedPartInstances.get(segment._id) ?? []
 	)
 
 	// Insert generated notes
