@@ -25,7 +25,6 @@ import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studio, Studios } from '../../lib/collections/Studios'
 import { groupByToMap, literal } from '../../lib/lib'
-import { getBasicNotesForSegment } from '../../lib/rundownNotifications'
 import { MongoQuery } from '../../lib/typings/meteor'
 import {
 	CustomPublishCollection,
