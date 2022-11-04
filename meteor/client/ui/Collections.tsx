@@ -20,3 +20,8 @@ export const UIStudios = createCustomPublicationMongoCollection(CustomCollection
 export const UITriggeredActions = createCustomPublicationMongoCollection(CustomCollectionName.UITriggeredActions)
 
 export const DeviceTriggersPreviews = createCustomPublicationMongoCollection(CustomCollectionName.DeviceTriggerPreviews)
+/**
+ * TODO
+ */
+export const UISegmentPartNotes = createCustomPublicationMongoCollection(CustomCollectionName.UISegmentPartNotes)
+;(window as any).UISegmentPartNotes = UISegmentPartNotes

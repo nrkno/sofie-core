@@ -1,7 +1,6 @@
 import '../../../__mocks__/_extendJest'
 
 import { MethodContext } from '../../../lib/api/methods'
-import { setCoreSystemStorePath } from '../../../lib/collections/CoreSystem'
 import { DBOrganization, Organizations } from '../../../lib/collections/Organization'
 import { User, Users } from '../../../lib/collections/Users'
 import { protectString } from '../../../lib/lib'
@@ -181,7 +180,6 @@ describe('Security', () => {
 		})
 	})
 	testInFiber('Organization', async () => {
-		setCoreSystemStorePath('/non-existent-path/')
 		const snapshotId = await storeSystemSnapshot(superAdmin, env.studio._id, 'for test')
 
 		await changeEnableUserAccounts(async () => {

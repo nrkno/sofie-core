@@ -13,7 +13,7 @@ import {
 import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../../methods'
-import { parseVersion, CoreSystem, SYSTEM_ID, getCoreSystemAsync } from '../../../lib/collections/CoreSystem'
+import { parseVersion, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
 import { evalBlueprint } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
 import { MethodContext, MethodContextAPI } from '../../../lib/api/methods'
@@ -24,6 +24,7 @@ import { Settings } from '../../../lib/Settings'
 import { upsertBundles } from '../translationsBundles'
 import { BlueprintLight, fetchBlueprintLight } from '../../../lib/collections/optimizations'
 import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getSystemStorePath } from '../../coreSystem'
 
 export async function insertBlueprint(
 	methodContext: MethodContext,
@@ -95,31 +96,25 @@ export async function uploadBlueprintAsset(_context: Credentials, fileId: string
 	check(fileId, String)
 	check(body, String)
 
-	const system = await getCoreSystemAsync()
-	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
-	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
+	const storePath = getSystemStorePath()
 
 	// TODO: add access control here
 	const data = Buffer.from(body, 'base64')
 	const parsedPath = path.parse(fileId)
 	logger.info(
-		`Write ${data.length} bytes to ${path.join(system.storePath, fileId)} (storePath: ${
-			system.storePath
-		}, fileId: ${fileId})`
+		`Write ${data.length} bytes to ${path.join(storePath, fileId)} (storePath: ${storePath}, fileId: ${fileId})`
 	)
 
-	await fsp.mkdir(path.join(system.storePath, parsedPath.dir), { recursive: true })
-	await fsp.writeFile(path.join(system.storePath, fileId), data)
+	await fsp.mkdir(path.join(storePath, parsedPath.dir), { recursive: true })
+	await fsp.writeFile(path.join(storePath, fileId), data)
 }
 export async function retrieveBlueprintAsset(_context: Credentials, fileId: string): Promise<Buffer> {
 	check(fileId, String)
 
-	const system = await getCoreSystemAsync()
-	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
-	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
+	const storePath = getSystemStorePath()
 
 	// TODO: add access control here
-	return fsp.readFile(path.join(system.storePath, fileId))
+	return fsp.readFile(path.join(storePath, fileId))
 }
 /** Only to be called from internal functions */
 export async function internalUploadBlueprint(

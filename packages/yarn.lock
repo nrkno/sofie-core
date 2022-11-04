@@ -3097,7 +3097,7 @@
     "@sofie-automation/shared-lib" "link:shared-lib"
     timeline-state-resolver-types "7.5.0-release47.0"
     tslib "^2.4.0"
-    type-fest "^2.19.0"
+    type-fest "^3.1.0"
 
 "@sofie-automation/code-standard-preset@~2.0.2":
   version "2.0.2"
@@ -3132,14 +3132,14 @@
     object-path "^0.11.8"
     timecode "0.0.4"
     tslib "^2.4.0"
-    type-fest "^2.19.0"
+    type-fest "^3.1.0"
     underscore "^1.13.4"
 
 "@sofie-automation/shared-lib@link:shared-lib":
   version "1.47.0-in-development"
   dependencies:
     tslib "^2.4.0"
-    type-fest "^2.19.0"
+    type-fest "^3.1.0"
 
 "@svgr/babel-plugin-add-jsx-attribute@^5.4.0":
   version "5.4.0"
@@ -14316,10 +14316,15 @@ type-fest@^1.0.1, type-fest@^1.2.1, type-fest@^1.2.2, type-fest@^1.4.0:
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-1.4.0.tgz#e9fb813fe3bf1744ec359d55d1affefa76f14be1"
   integrity sha512-yGSza74xk0UG8k+pLh5oeoYirvIiWo5t0/o3zHHAO2tRDiZcxWP7fywNlXhqb6/r6sWvwi+RsyQMWhVLe4BVuA==
 
-type-fest@^2.0.0, type-fest@^2.19.0, type-fest@^2.5.0:
+type-fest@^2.0.0, type-fest@^2.5.0:
   version "2.19.0"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-2.19.0.tgz#88068015bb33036a598b952e55e9311a60fd3a9b"
   integrity sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==
+
+type-fest@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-3.1.0.tgz#157b74044d9c27fd796b9c6aa46eae6658b1e9b8"
+  integrity sha512-StmrZmK3eD9mDF9Vt7UhqthrDSk66O9iYl5t5a0TSoVkHjl0XZx/xuc/BRz4urAXXGHOY5OLsE0RdJFIApSFmw==
 
 type-is@~1.6.18:
   version "1.6.18"

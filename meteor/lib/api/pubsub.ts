@@ -54,6 +54,7 @@ import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
 import { MountedDeviceTrigger } from './triggers/MountedTriggers'
+import { UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
 import { DeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
@@ -92,7 +93,6 @@ export enum PubSub {
 	triggeredActions = 'triggeredActions',
 	snapshots = 'snapshots',
 	studios = 'studios',
-	studioOfDevice = 'studioOfDevice',
 	timeline = 'timeline',
 	timelineDatastore = 'timelineDatastore',
 	userActionsLog = 'userActionsLog',
@@ -131,6 +131,7 @@ export enum PubSub {
 
 	mountedTriggersForDevice = 'mountedTriggersForDevice',
 	deviceTriggersPreview = 'deviceTriggersPreview',
+	uiSegmentPartNotes = 'uiSegmentPartNotes',
 }
 
 /**
@@ -190,7 +191,6 @@ export interface PubSubTypes {
 	[PubSub.triggeredActions]: (selector: MongoQuery<DBTriggeredActions>, token?: string) => DBTriggeredActions
 	[PubSub.snapshots]: (selector: MongoQuery<SnapshotItem>, token?: string) => SnapshotItem
 	[PubSub.studios]: (selector: MongoQuery<DBStudio>, token?: string) => DBStudio
-	[PubSub.studioOfDevice]: (deviceId: PeripheralDeviceId, token?: string) => DBStudio
 	[PubSub.timeline]: (selector: MongoQuery<TimelineComplete>, token?: string) => TimelineComplete
 	[PubSub.timelineDatastore]: (studioId: StudioId, token?: string) => DBTimelineDatastoreEntry
 	[PubSub.userActionsLog]: (selector: MongoQuery<UserActionsLogItem>, token?: string) => UserActionsLogItem
@@ -247,6 +247,7 @@ export interface PubSubTypes {
 		token?: string
 	) => MountedDeviceTrigger
 	[PubSub.deviceTriggersPreview]: (studioId: StudioId, token?: string) => DeviceTriggerPreview
+	[PubSub.uiSegmentPartNotes]: (playlistId: RundownPlaylistId | null) => UISegmentPartNote
 }
 
 /**
@@ -261,6 +262,7 @@ export enum CustomCollectionName {
 	UITriggeredActions = 'uiTriggeredActions',
 	MountedTriggers = 'mountedTriggers',
 	DeviceTriggerPreviews = 'deviceTriggerPreviews',
+	UISegmentPartNotes = 'uiSegmentPartNotes',
 }
 
 /**
@@ -275,6 +277,7 @@ export type CustomCollectionType = {
 	[CustomCollectionName.UIStudio]: UIStudio
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
 	[CustomCollectionName.DeviceTriggerPreviews]: DeviceTriggerPreview
+	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
 }
 
 /**

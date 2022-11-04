@@ -22,6 +22,13 @@ export * from './hash'
 
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
 
+export function getSofieHostUrl(): string {
+	const url = process.env.ROOT_URL
+	if (url) return url
+
+	throw new Error('ROOT_URL must be defined to launch Sofie')
+}
+
 /**
  * Make all optional properties be required and `| undefined`
  * This is useful to ensure that no property is missed, when manually converting between types, but allowing fields to be undefined
@@ -197,6 +204,39 @@ export function normalizeArrayToMapFunc<T, K>(array: Array<T>, getKey: (o: T) =>
 		}
 	}
 	return normalizedObject
+}
+
+export function groupByToMap<T, K extends keyof T>(array: Array<T> | IterableIterator<T>, indexKey: K): Map<T[K], T[]> {
+	const groupedItems = new Map<T[K], T[]>()
+	for (const item of array) {
+		const key = item[indexKey]
+		const existing = groupedItems.get(key)
+		if (existing) {
+			existing.push(item)
+		} else {
+			groupedItems.set(key, [item])
+		}
+	}
+	return groupedItems
+}
+
+export function groupByToMapFunc<T, K>(
+	array: Array<T> | IterableIterator<T>,
+	getKey: (o: T) => K | undefined
+): Map<K, T[]> {
+	const groupedItems = new Map<K, T[]>()
+	for (const item of array) {
+		const key = getKey(item)
+		if (key !== undefined) {
+			const existing = groupedItems.get(key)
+			if (existing) {
+				existing.push(item)
+			} else {
+				groupedItems.set(key, [item])
+			}
+		}
+	}
+	return groupedItems
 }
 
 /**

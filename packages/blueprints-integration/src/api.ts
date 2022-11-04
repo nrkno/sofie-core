@@ -111,7 +111,11 @@ export interface StudioBlueprintManifest extends BlueprintManifestBase {
 	) => BlueprintResultRundownPlaylist | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getStudioConfig. If not provided, getStudioConfig will return unprocessed blueprint config */
-	preprocessConfig?: (context: ICommonContext, config: IBlueprintConfig) => unknown
+	preprocessConfig?: (
+		context: ICommonContext,
+		config: IBlueprintConfig,
+		coreConfig: BlueprintConfigCoreConfig
+	) => unknown
 }
 
 export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
@@ -187,7 +191,11 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getShowStyleConfig. If not provided, getShowStyleConfig will return unprocessed blueprint config */
-	preprocessConfig?: (context: ICommonContext, config: IBlueprintConfig) => unknown
+	preprocessConfig?: (
+		context: ICommonContext,
+		config: IBlueprintConfig,
+		coreConfig: BlueprintConfigCoreConfig
+	) => unknown
 
 	// Events
 
@@ -302,4 +310,8 @@ export interface BlueprintResultRundownPlaylist {
 	playlist: IBlueprintResultRundownPlaylist
 	/** Returns information about the order of rundowns in a playlist, null will use natural sorting on rundown name */
 	order: BlueprintResultOrderedRundowns | null
+}
+
+export interface BlueprintConfigCoreConfig {
+	hostUrl: string
 }

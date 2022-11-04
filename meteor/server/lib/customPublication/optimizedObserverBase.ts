@@ -22,7 +22,7 @@ interface OptimizedObserverWorker<TData extends { _id: ProtectedString<any> }, T
 	args: ReadonlyDeep<TArgs>
 	context: Partial<TContext>
 	lastData: TData[]
-	stop: () => void
+	stopObservers: () => void
 }
 
 /** Optimized observers */
@@ -76,12 +76,11 @@ export async function setUpOptimizedObserverInner<
 			const i2 = thisObserverWrapper.newSubscribers.indexOf(receiver)
 			if (i2 !== -1) thisObserverWrapper.newSubscribers.splice(i2, 1)
 
+			const subCount = thisObserverWrapper.activeSubscribers.length + thisObserverWrapper.newSubscribers.length
+			logger.debug(`Remove subscriber from ${identifier} ${subCount} are left`)
+
 			// clean up if empty:
-			if (
-				!thisObserverWrapper.activeSubscribers.length &&
-				!thisObserverWrapper.newSubscribers.length &&
-				thisObserverWrapper.subscribersChanged
-			) {
+			if (!subCount && thisObserverWrapper.subscribersChanged) {
 				thisObserverWrapper.subscribersChanged()
 			}
 		}
@@ -93,6 +92,9 @@ export async function setUpOptimizedObserverInner<
 		// Add the new subscriber
 		thisObserverWrapper.newSubscribers.push(receiver)
 		receiver.onStop(() => removeReceiver())
+
+		const subCount = thisObserverWrapper.activeSubscribers.length + thisObserverWrapper.newSubscribers.length
+		logger.debug(`Adding subscriber to ${identifier} ${subCount} are joined`)
 
 		// If the optimizedObserver is setup, we can notify it that we need data
 		if (thisObserverWrapper.subscribersChanged) thisObserverWrapper.subscribersChanged()
@@ -110,6 +112,8 @@ export async function setUpOptimizedObserverInner<
 			worker: resultingOptimizedObserver,
 		}
 		receiver.onStop(() => removeReceiver())
+
+		logger.debug(`Starting publication ${identifier} `)
 
 		// Start the optimizedObserver
 		try {
@@ -182,6 +186,8 @@ async function createOptimizedObserverWorker<
 	let thisObserverWorker: OptimizedObserverWorker<PublicationDoc, Args, State> | undefined
 	let updateIsRunning = true
 
+	const args = clone<ReadonlyDeep<Args>>(args0)
+
 	let hasPendingUpdate = false
 	let pendingUpdate: Record<string, any> = {}
 	const triggerUpdate: TriggerUpdate<UpdateProps> = (updateProps) => {
@@ -211,7 +217,7 @@ async function createOptimizedObserverWorker<
 							!thisObserverWrapper.newSubscribers.length
 						) {
 							delete optimizedObservers[identifier]
-							thisObserverWorker.stop()
+							thisObserverWorker.stopObservers()
 							return
 						}
 
@@ -281,14 +287,13 @@ async function createOptimizedObserverWorker<
 
 	try {
 		// Setup the mongo observers
-		const args = clone<ReadonlyDeep<Args>>(args0)
 		const observers = await setupObservers(args, triggerUpdate)
 
 		thisObserverWorker = {
 			args: args,
 			context: {},
 			lastData: [],
-			stop: () => {
+			stopObservers: () => {
 				observers.forEach((observer) => observer.stop())
 			},
 		}
@@ -301,7 +306,7 @@ async function createOptimizedObserverWorker<
 		if (newDataReceivers.length === 0) {
 			// There is no longer any subscriber to this
 			delete optimizedObservers[identifier]
-			thisObserverWorker.stop()
+			thisObserverWorker.stopObservers()
 
 			throw new Meteor.Error(500, 'All subscribers disappeared!')
 		}
@@ -327,7 +332,7 @@ async function createOptimizedObserverWorker<
 		// Observer is now ready for all to use
 		return thisObserverWorker
 	} catch (e: any) {
-		if (thisObserverWorker) thisObserverWorker.stop()
+		if (thisObserverWorker) thisObserverWorker.stopObservers()
 
 		throw e
 	}

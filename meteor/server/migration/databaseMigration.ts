@@ -55,6 +55,7 @@ import {
 } from '../api/blueprints/migrationContext'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { SnapshotId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getSystemStorePath } from '../coreSystem'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)
@@ -569,8 +570,8 @@ export function runMigration(
 	let snapshotId: SnapshotId = protectString('')
 	if (isFirstOfPartialMigrations) {
 		// First, take a system snapshot:
-		const system = getCoreSystem()
-		if (system && system.storePath) {
+		const storePath = getSystemStorePath()
+		if (storePath) {
 			try {
 				snapshotId = waitForPromise(
 					internalStoreSystemSnapshot(null, null, `Automatic, taken before migration`)

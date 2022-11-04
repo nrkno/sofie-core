@@ -1,11 +1,6 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import {
-	MigrationStepInput,
-	MigrationStepInputFilteredResult,
-	MigrationStepBase,
-	MigrationStepCore,
-} from '@sofie-automation/blueprints-integration'
+import { MigrationStepBase, MigrationStepCore } from '@sofie-automation/blueprints-integration'
 import { Collections, objectPathGet, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
@@ -57,72 +52,7 @@ export function ensureCollectionProperty<T = any>(
 		dependOnResultFrom: dependOnResultFrom,
 	}
 }
-/**
- * Returns a migration step that ensures the provided property is set in the collection
- */
-export function ensureCollectionPropertyManual<T = any>(
-	collectionName: CollectionName,
-	selector: Mongo.Selector<T>,
-	property: string,
-	inputType: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
-	label: string,
-	description: string,
-	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-	defaultValue: any,
-	dependOnResultFrom?: string
-): MigrationStepBase {
-	const collection = Collections.get(collectionName)
-	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
 
-	return {
-		id: `${collectionName}.${property}`,
-		canBeRunAutomatically: false,
-		validate: () => {
-			const objects = collection.find(selector).fetch()
-			let propertyMissing: string | boolean = false
-			_.each(objects, (obj: any) => {
-				const objValue = objectPathGet(obj, property)
-				if (objValue === undefined) {
-					propertyMissing = `${property} is missing on ${obj._id}`
-				}
-			})
-			return propertyMissing
-		},
-		input: () => {
-			const objects = collection.find(selector).fetch()
-
-			const inputs: Array<MigrationStepInput> = []
-			_.each(objects, (obj: any) => {
-				const localLabel = (label + '').replace(/\$id/g, obj._id)
-				const localDescription = (description + '').replace(/\$id/g, obj._id)
-				if (inputType && !obj[property]) {
-					inputs.push({
-						label: localLabel,
-						description: localDescription,
-						inputType: inputType,
-						attribute: obj._id,
-						defaultValue: defaultValue,
-					})
-				}
-			})
-			return inputs
-		},
-		migrate: (input: MigrationStepInputFilteredResult) => {
-			_.each(input, (value, objectId: string) => {
-				if (!_.isUndefined(value)) {
-					const obj = collection.findOne(objectId)
-					if (obj && objectPathGet(obj, property) !== value) {
-						const m = {}
-						m[property] = value
-						logger.info(`Migration: Setting ${collectionName} object "${objectId}".${property} to ${value}`)
-						collection.update(objectId, { $set: m })
-					}
-				}
-			})
-		},
-		dependOnResultFrom: dependOnResultFrom,
-	}
-}
 export function removeCollectionProperty<T = any>(
 	collectionName: CollectionName,
 	selector: Mongo.Selector<T>,

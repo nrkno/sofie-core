@@ -29,6 +29,8 @@ class CustomPublishMock<DBObj extends { _id: ProtectedString<any> }>
 		this.stop = callback
 	}
 
+	error: CustomPublish<DBObj>['error'] = jest.fn()
+
 	init: CustomPublish<DBObj>['init'] = jest.fn()
 	changed: CustomPublish<DBObj>['changed'] = jest.fn()
 }
@@ -78,12 +80,14 @@ describe('optimizedObserver base', () => {
 			expect(receiver.init).toHaveBeenCalledTimes(1)
 			expect(receiver.init).toHaveBeenNthCalledWith(1, [])
 			expect(receiver.stop).toBeTruthy()
+			expect(receiver.error).toHaveBeenCalledTimes(0)
 
 			// Receiver was init, no changes
 			expect(receiver2.changed).toHaveBeenCalledTimes(0)
 			expect(receiver2.init).toHaveBeenCalledTimes(1)
 			expect(receiver2.init).toHaveBeenNthCalledWith(1, [])
 			expect(receiver2.stop).toBeTruthy()
+			expect(receiver2.error).toHaveBeenCalledTimes(0)
 
 			// provided methods were called correctly
 			expect(setupObservers).toHaveBeenCalledTimes(1)
@@ -127,6 +131,7 @@ describe('optimizedObserver base', () => {
 			expect(receiver.init).toHaveBeenCalledTimes(1)
 			expect(receiver2.changed).toHaveBeenCalledTimes(0)
 			expect(receiver2.init).toHaveBeenCalledTimes(0)
+			expect(receiver.error).toHaveBeenCalledTimes(0)
 
 			// Now lets remove our first subscriber
 			receiver.stop!()
@@ -141,8 +146,10 @@ describe('optimizedObserver base', () => {
 			// Check the receiver calls
 			expect(receiver.changed).toHaveBeenCalledTimes(0)
 			expect(receiver.init).toHaveBeenCalledTimes(1)
+			expect(receiver.error).toHaveBeenCalledTimes(0)
 			expect(receiver2.changed).toHaveBeenCalledTimes(0)
 			expect(receiver2.init).toHaveBeenCalledTimes(1)
+			expect(receiver2.error).toHaveBeenCalledTimes(0)
 		} finally {
 			if (receiver.stop) receiver.stop()
 			if (receiver2.stop) receiver2.stop()

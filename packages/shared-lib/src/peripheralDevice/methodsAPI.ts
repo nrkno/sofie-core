@@ -3,6 +3,7 @@ import {
 	ExpectedPackageWorkStatusId,
 	MediaWorkFlowId,
 	MediaWorkFlowStepId,
+	PeripheralDeviceCommandId,
 	PeripheralDeviceId,
 	TimelineHash,
 } from '../core/model/Ids'
@@ -38,6 +39,13 @@ import { MediaWorkFlow } from '../core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '../core/model/MediaWorkFlowSteps'
 
 export interface NewPeripheralDeviceAPI {
+	functionReply(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		commandId: PeripheralDeviceCommandId,
+		err: any,
+		result: any
+	): Promise<void>
 	initialize(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
@@ -345,7 +353,7 @@ export enum PeripheralDeviceAPIMethods {
 
 	'playoutPlaybackChanged' = 'peripheralDevice.playout.playbackChanged',
 
-	'reportCommandError' = 'peripheralDevice.playout.reportCommandError',
+	// 'reportCommandError' = 'peripheralDevice.playout.reportCommandError',
 
 	'mosRoCreate' = 'peripheralDevice.mos.roCreate',
 	'mosRoReplace' = 'peripheralDevice.mos.roReplace',
