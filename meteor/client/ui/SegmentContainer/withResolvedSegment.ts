@@ -239,17 +239,13 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				}
 			}
 
-			// TODO - order
-			// TODO - is this correct? Part vs PartInstance?
-			const rawNotes = UISegmentPartNotes.find({ segmentId: segment._id }).fetch()
-			const notes = rawNotes.map((n) => n.note)
-
-			// const notes: TrackedNote[] = getBasicNotesForSegment(
-			// 	segment,
-			// 	rundownNrcsName ?? 'NRCS',
-			// 	o.parts.map((p) => p.instance.part),
-			// 	o.parts.map((p) => p.instance)
-			// ).map((n) => n.note)
+			// These include the PartInstance, so do not want to be using the custom publication
+			const notes: TrackedNote[] = getBasicNotesForSegment(
+				segment,
+				rundownNrcsName ?? 'NRCS',
+				o.parts.map((p) => p.instance.part),
+				o.parts.map((p) => p.instance)
+			).map((n) => n.note)
 
 			o.parts.forEach((part) => {
 				notes.push(

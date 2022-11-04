@@ -401,22 +401,24 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactivePartNotes(playlistId: RundownPlaylistId) {
-		const fullNotes: ReactiveVar<UISegmentPartNote[]> = new ReactiveVar([], _.isEqual)
-
 		let oldNoteIds: Array<string> = []
 
 		this.autorun(() => {
-			// TODO - is this a good way of working still?
-			// TODO - the order of these will not be consistent..
-			const notes = UISegmentPartNotes.find({ playlistId: playlistId }).fetch()
-			fullNotes.set(notes)
-		})
-
-		this.autorun(() => {
 			const newNoteIds: Array<string> = []
-			const combined = fullNotes.get()
 
-			combined.forEach((item: UISegmentPartNote) => {
+			const rawNotes = UISegmentPartNotes.find(
+				{ playlistId: playlistId },
+				{
+					// A crude sorting
+					sort: {
+						// @ts-expect-error deep property
+						'note.rank': 1,
+						_id: 1,
+					},
+				}
+			).fetch()
+
+			rawNotes.forEach((item: UISegmentPartNote) => {
 				const { origin, message, type: itemType, rank } = item.note
 				const { pieceId, partId, segmentId, rundownId, name, segmentName } = origin
 

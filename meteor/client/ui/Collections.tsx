@@ -20,7 +20,6 @@ export const UIStudios = createCustomPublicationMongoCollection(CustomCollection
 export const UITriggeredActions = createCustomPublicationMongoCollection(CustomCollectionName.UITriggeredActions)
 
 /**
- * TODO
+ * Pre-generated notes to be converted into notificiations.
  */
 export const UISegmentPartNotes = createCustomPublicationMongoCollection(CustomCollectionName.UISegmentPartNotes)
-;(window as any).UISegmentPartNotes = UISegmentPartNotes
