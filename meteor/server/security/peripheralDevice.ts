@@ -62,6 +62,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 		if (device.studioId) {
 			studioId = device.studioId
 		} else if (device.parentDeviceId) {
+			// Child devices aren't assigned to the studio themselves, instead look up the parent device and use it's studioId:
 			const parentDevice = await PeripheralDevices.findOneAsync(device.parentDeviceId)
 			if (!parentDevice)
 				throw new Meteor.Error(
