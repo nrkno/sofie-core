@@ -37,6 +37,7 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { UISegmentPartNotes } from '../Collections'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -238,12 +239,18 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				}
 			}
 
-			const notes: TrackedNote[] = getBasicNotesForSegment(
-				segment,
-				rundownNrcsName ?? 'NRCS',
-				o.parts.map((p) => p.instance.part),
-				o.parts.map((p) => p.instance)
-			).map((n) => n.note)
+			// TODO - order
+			// TODO - is this correct? Part vs PartInstance?
+			const rawNotes = UISegmentPartNotes.find({ segmentId: segment._id }).fetch()
+			const notes = rawNotes.map((n) => n.note)
+
+			// const notes: TrackedNote[] = getBasicNotesForSegment(
+			// 	segment,
+			// 	rundownNrcsName ?? 'NRCS',
+			// 	o.parts.map((p) => p.instance.part),
+			// 	o.parts.map((p) => p.instance)
+			// ).map((n) => n.note)
+
 			o.parts.forEach((part) => {
 				notes.push(
 					...getMinimumReactivePieceNotesForPart(props.studio, props.showStyleBase, part.instance.part).map(

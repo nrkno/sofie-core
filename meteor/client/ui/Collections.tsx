@@ -23,3 +23,4 @@ export const UITriggeredActions = createCustomPublicationMongoCollection(CustomC
  * TODO
  */
 export const UISegmentPartNotes = createCustomPublicationMongoCollection(CustomCollectionName.UISegmentPartNotes)
+;(window as any).UISegmentPartNotes = UISegmentPartNotes

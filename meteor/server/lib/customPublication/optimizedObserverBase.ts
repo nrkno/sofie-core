@@ -205,6 +205,8 @@ async function createOptimizedObserverWorker<
 		// Combine the pending updates
 		pendingUpdate = deepmerge(pendingUpdate, updateProps)
 
+		if (invalidateObservers) console.trace(updateProps, invalidateObservers)
+
 		if (invalidateObservers) hasPendingInvalidateObservers = true
 
 		// If already running, set it as pending to be done afterwards
@@ -235,6 +237,10 @@ async function createOptimizedObserverWorker<
 						}
 
 						if (hasPendingInvalidateObservers) {
+							hasPendingInvalidateObservers = false
+
+							logger.verbose(`Invalidating observers of ${identifier}`)
+
 							thisObserverWorker.stopObservers()
 							thisObserverWorker.stopObservers = () => null // Temporary clear the callback
 

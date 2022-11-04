@@ -109,13 +109,25 @@ async function setupUISegmentPartNotesPublicationObservers(
 	// Set up observers:
 	return [
 		Rundowns.find({ playlistId: args.playlistId }, { fields: rundownFieldSpecifier }).observe({
-			added: (obj) => triggerUpdate(trackRundownChange(obj._id), true),
-			changed: (obj) => triggerUpdate(trackRundownChange(obj._id), true), // TODO - does this need to invalidate the observer?
-			removed: (obj) => triggerUpdate(trackRundownChange(obj._id), true),
+			added: (obj) => {
+				console.log('added', obj)
+				triggerUpdate(trackRundownChange(obj._id)) //, true)
+			},
+			changed: (obj) => {
+				console.log('changed', obj)
+				triggerUpdate(trackRundownChange(obj._id), true) // TODO - does this need to invalidate the observer?
+			},
+			removed: (obj) => {
+				console.log('removed', obj)
+				triggerUpdate(trackRundownChange(obj._id), true)
+			},
 		}),
 		// Second level of reactivity
 		Segments.find({ rundownId: { $in: rundownIds } }, { fields: segmentFieldSpecifier }).observe({
-			added: (obj) => triggerUpdate(trackSegmentChange(obj._id)),
+			added: (obj) => {
+				console.log('trigger segment', obj._id)
+				triggerUpdate(trackSegmentChange(obj._id))
+			},
 			changed: (obj) => triggerUpdate(trackSegmentChange(obj._id)),
 			removed: (obj) => triggerUpdate(trackSegmentChange(obj._id)),
 		}),
@@ -141,6 +153,8 @@ async function manipulateUISegmentPartNotesPublicationData(
 	updateProps: Partial<ReadonlyDeep<UISegmentPartNotesUpdateProps>> | undefined
 ): Promise<void> {
 	// Prepare data for publication:
+
+	console.trace('re-run')
 
 	// Ensure the rundownToNRCSName map exists and is updated with any changes
 	state.rundownToNRCSName = await updateRundownToNRCSNameMap(
@@ -199,15 +213,15 @@ async function manipulateUISegmentPartNotesPublicationData(
 			updateNotesForSegment(args, updateData, collection, segment)
 		}
 	} else {
-		// Remove ones from segments being regenerated
-		collection.remove((doc) => regenerateForSegmentIds.has(doc.segmentId))
-
 		const regenerateForSegmentIds = new Set([
 			...updatedSegmentIds,
 			...invalidatedSegmentIds,
 			...segmentIdsWithPartChanges,
 			...segmentIdsWithPartInstanceChanges,
 		])
+
+		// Remove ones from segments being regenerated
+		collection.remove((doc) => regenerateForSegmentIds.has(doc.segmentId))
 
 		// Generate notes for each segment
 		for (const segmentId of regenerateForSegmentIds) {
