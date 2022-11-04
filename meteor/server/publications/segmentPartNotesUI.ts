@@ -111,10 +111,7 @@ async function setupUISegmentPartNotesPublicationObservers(
 
 		return [
 			Segments.find({ rundownId: { $in: rundownIds } }, { fields: segmentFieldSpecifier }).observeChanges({
-				added: (id) => {
-					console.log('trigger segment', id)
-					triggerUpdate(trackSegmentChange(id))
-				},
+				added: (id) => triggerUpdate(trackSegmentChange(id)),
 				changed: (id) => triggerUpdate(trackSegmentChange(id)),
 				removed: (id) => triggerUpdate(trackSegmentChange(id)),
 			}),
@@ -138,17 +135,14 @@ async function setupUISegmentPartNotesPublicationObservers(
 	return [
 		Rundowns.find({ playlistId: args.playlistId }, { fields: rundownFieldSpecifier }).observeChanges({
 			added: (id) => {
-				console.log('added', id)
 				rundownContentsObserver.restart()
-				triggerUpdate(trackRundownChange(id)) //, true)
+				triggerUpdate(trackRundownChange(id))
 			},
 			changed: (id) => {
-				console.log('changed', id)
-				rundownContentsObserver.restart() // TODO - does this need to invalidate the observer?
+				// We don't need to invalidate the observer, as we get added/removed when a document matches/unmatches out query
 				triggerUpdate(trackRundownChange(id))
 			},
 			removed: (id) => {
-				console.log('removed', id)
 				rundownContentsObserver.restart()
 				triggerUpdate(trackRundownChange(id))
 			},
@@ -165,8 +159,6 @@ async function manipulateUISegmentPartNotesPublicationData(
 	updateProps: Partial<ReadonlyDeep<UISegmentPartNotesUpdateProps>> | undefined
 ): Promise<void> {
 	// Prepare data for publication:
-
-	console.trace('re-run')
 
 	// Ensure the rundownToNRCSName map exists and is updated with any changes
 	state.rundownToNRCSName = await updateRundownToNRCSNameMap(
@@ -196,7 +188,6 @@ async function manipulateUISegmentPartNotesPublicationData(
 		updateProps?.invalidatePartIds
 	)
 	state.partsCache = newPartsCache
-	console.log(segmentIdsWithPartChanges)
 
 	// Load any partInstances that have changed
 	const [newPartInstancesCache, segmentIdsWithPartInstanceChanges] = await updatePartInstancesCache(
