@@ -227,7 +227,6 @@ function checkPieceContentMediaObjectStatus(
 	const settings: IStudioSettings | undefined = studio?.settings
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
 
-	const sourceDuration = piece.content.sourceDuration
 	const ignoreMediaAudioStatus = piece.content && piece.content.ignoreAudioFormat
 
 	const messages: Array<{
@@ -337,84 +336,27 @@ function checkPieceContentMediaObjectStatus(
 							}
 							if (timebase) {
 								// check for black/freeze frames
-								const addFrameWarning = (arr: Array<PackageInfo.Anomaly>, type: string) => {
-									if (arr.length === 1) {
-										const frames = Math.ceil((arr[0].duration * 1000) / timebase)
-										if (arr[0].start === 0) {
-											messages.push({
-												status: PieceStatusCode.SOURCE_HAS_ISSUES,
-												message: generateTranslation(
-													'Clip starts with {{frames}} {{type}} frame',
-													{
-														frames,
-														type,
-														count: frames,
-													}
-												),
-											})
-										} else if (
-											mediaObject.mediainfo &&
-											mediaObject.mediainfo.format &&
-											arr[0].end === Number(mediaObject.mediainfo.format.duration) &&
-											(sourceDuration === undefined ||
-												Math.round(arr[0].start) * 1000 < sourceDuration)
-										) {
-											const freezeStartsAt = Math.round(arr[0].start)
-											messages.push({
-												status: PieceStatusCode.SOURCE_HAS_ISSUES,
-												message: generateTranslation(
-													'This clip ends with {{type}} frames after {{count}} second',
-													{
-														frames,
-														type,
-														count: freezeStartsAt,
-													}
-												),
-											})
-										} else if (
-											sourceDuration === undefined ||
-											Math.round(arr[0].start) * 1000 < sourceDuration
-										) {
-											messages.push({
-												status: PieceStatusCode.SOURCE_HAS_ISSUES,
-												message: generateTranslation(
-													'{{frames}} {{type}} frame detected within the clip',
-													{
-														frames,
-														type,
-														count: frames,
-													}
-												),
-											})
-										}
-									} else if (arr.length > 0) {
-										const dur = arr
-											.filter(
-												(a) => sourceDuration === undefined || a.start * 1000 < sourceDuration
-											)
-											.map((b) => b.duration)
-											.reduce((a, b) => a + b, 0)
-										const frames = Math.ceil((dur * 1000) / timebase)
-										if (frames > 0) {
-											messages.push({
-												status: PieceStatusCode.SOURCE_HAS_ISSUES,
-												message: generateTranslation(
-													'{{frames}} {{type}} frame detected in clip',
-													{
-														frames,
-														type,
-														count: frames,
-													}
-												),
-											})
-										}
-									}
-								}
+								const sourceDuration = piece.content.sourceDuration
+
 								if (!piece.content.ignoreBlackFrames && mediaObject.mediainfo.blacks?.length) {
-									addFrameWarning(mediaObject.mediainfo.blacks, 'black') // TODO - translate
+									addFrameWarning(
+										messages,
+										timebase,
+										sourceDuration,
+										mediaObject.mediainfo.format?.duration,
+										mediaObject.mediainfo.blacks,
+										'black' // TODO - translate
+									)
 								}
 								if (!piece.content.ignoreFreezeFrame && mediaObject.mediainfo.freezes?.length) {
-									addFrameWarning(mediaObject.mediainfo.freezes, 'freeze') // TODO - translate
+									addFrameWarning(
+										messages,
+										timebase,
+										sourceDuration,
+										mediaObject.mediainfo.format?.duration,
+										mediaObject.mediainfo.freezes,
+										'freeze' // TODO - translate
+									)
 								}
 							}
 						}
@@ -472,6 +414,11 @@ function checkPieceContentMediaObjectStatus(
 	}
 }
 
+interface ContentMessage {
+	status: PieceStatusCode
+	message: ITranslatableMessage
+}
+
 function checkPieceContentExpectedPackageStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer,
@@ -481,13 +428,9 @@ function checkPieceContentExpectedPackageStatus(
 	const settings: IStudioSettings | undefined = studio?.settings
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
 
-	const sourceDuration = piece.content.sourceDuration
 	const ignoreMediaAudioStatus = piece.content && piece.content.ignoreAudioFormat
 
-	const messages: Array<{
-		status: PieceStatusCode
-		message: ITranslatableMessage
-	}> = []
+	const messages: Array<ContentMessage> = []
 	const packageInfos: ScanInfoForPackages = {}
 	let readyCount = 0
 
@@ -520,6 +463,7 @@ function checkPieceContentExpectedPackageStatus(
 
 			for (const expectedPackage of mapping.expectedPackages) {
 				const packageOnPackageContainer = getPackageContainerPackageStatus(
+					// TODO.find - this is a caching db call
 					studio._id,
 					packageContainerId,
 					getExpectedPackageId(piece._id, expectedPackage._id)
@@ -676,72 +620,28 @@ function checkPieceContentExpectedPackageStatus(
 				}
 				if (timebase) {
 					// check for black/freeze frames
-					const addFrameWarning = (anomalies: Array<PackageInfo.Anomaly>, type: string) => {
-						if (anomalies.length === 1) {
-							/** Number of frames */
-							const frames = Math.ceil((anomalies[0].duration * 1000) / timebase)
-							if (anomalies[0].start === 0) {
-								messages.push({
-									status: PieceStatusCode.SOURCE_HAS_ISSUES,
-									message: generateTranslation('Clip starts with {{frames}} {{type}} frames', {
-										frames,
-										type,
-										count: frames,
-									}),
-								})
-							} else if (
-								scan.format &&
-								anomalies[0].end === Number(scan.format.duration) &&
-								(sourceDuration === undefined || Math.round(anomalies[0].start) * 1000 < sourceDuration)
-							) {
-								const freezeStartsAt = Math.round(anomalies[0].start)
-								messages.push({
-									status: PieceStatusCode.SOURCE_HAS_ISSUES,
-									message: generateTranslation(
-										'This clip ends with {{type}} frames after {{count}} seconds',
-										{
-											frames,
-											type,
-											count: freezeStartsAt,
-										}
-									),
-								})
-							} else if (frames > 0) {
-								messages.push({
-									status: PieceStatusCode.SOURCE_HAS_ISSUES,
-									message: generateTranslation(
-										'{{frames}} {{type}} frames detected within the clip',
-										{
-											frames,
-											type,
-											count: frames,
-										}
-									),
-								})
-							}
-						} else if (anomalies.length > 0) {
-							const dur = anomalies
-								.filter((a) => sourceDuration === undefined || a.start * 1000 < sourceDuration)
-								.map((b) => b.duration)
-								.reduce((a, b) => a + b, 0)
-							const frames = Math.ceil((dur * 1000) / timebase)
-							if (frames > 0) {
-								messages.push({
-									status: PieceStatusCode.SOURCE_HAS_ISSUES,
-									message: generateTranslation('{{frames}} {{type}} frames detected in the clip', {
-										frames,
-										type,
-										count: frames,
-									}),
-								})
-							}
-						}
+
+					const sourceDuration = piece.content.sourceDuration
+
+					if (!piece.content.ignoreBlackFrames && deepScan?.blacks?.length) {
+						addFrameWarning(
+							messages,
+							timebase,
+							sourceDuration,
+							scan.format?.duration,
+							deepScan.blacks,
+							'black' // TODO - translate
+						)
 					}
-					if (deepScan?.blacks?.length) {
-						addFrameWarning(deepScan.blacks, 'black') // TODO - translate
-					}
-					if (deepScan?.freezes?.length) {
-						addFrameWarning(deepScan.freezes, 'freeze') // TODO - translate
+					if (!piece.content.ignoreFreezeFrame && deepScan?.freezes?.length) {
+						addFrameWarning(
+							messages,
+							timebase,
+							sourceDuration,
+							scan.format?.duration,
+							deepScan.freezes,
+							'freeze' // TODO - translate
+						)
 					}
 				}
 			}
@@ -763,5 +663,68 @@ function checkPieceContentExpectedPackageStatus(
 		packageInfos: packageInfoToForward,
 		messages: messages.map((msg) => msg.message),
 		contentDuration: undefined,
+	}
+}
+
+function addFrameWarning(
+	messages: Array<ContentMessage>,
+	timebase: number,
+	sourceDuration: number | undefined,
+	scannedFormatDuration: number | string | undefined,
+	anomalies: Array<PackageInfo.Anomaly>,
+	type: string
+): void {
+	if (anomalies.length === 1) {
+		/** Number of frames */
+		const frames = Math.ceil((anomalies[0].duration * 1000) / timebase)
+		if (anomalies[0].start === 0) {
+			messages.push({
+				status: PieceStatusCode.SOURCE_HAS_ISSUES,
+				message: generateTranslation('Clip starts with {{frames}} {{type}} frames', {
+					frames,
+					type,
+					count: frames,
+				}),
+			})
+		} else if (
+			scannedFormatDuration &&
+			anomalies[0].end === Number(scannedFormatDuration) &&
+			(sourceDuration === undefined || Math.round(anomalies[0].start) * 1000 < sourceDuration)
+		) {
+			const freezeStartsAt = Math.round(anomalies[0].start)
+			messages.push({
+				status: PieceStatusCode.SOURCE_HAS_ISSUES,
+				message: generateTranslation('This clip ends with {{type}} frames after {{count}} seconds', {
+					frames,
+					type,
+					count: freezeStartsAt,
+				}),
+			})
+		} else if (frames > 0) {
+			messages.push({
+				status: PieceStatusCode.SOURCE_HAS_ISSUES,
+				message: generateTranslation('{{frames}} {{type}} frames detected within the clip', {
+					frames,
+					type,
+					count: frames,
+				}),
+			})
+		}
+	} else if (anomalies.length > 0) {
+		const dur = anomalies
+			.filter((a) => sourceDuration === undefined || a.start * 1000 < sourceDuration)
+			.map((b) => b.duration)
+			.reduce((a, b) => a + b, 0)
+		const frames = Math.ceil((dur * 1000) / timebase)
+		if (frames > 0) {
+			messages.push({
+				status: PieceStatusCode.SOURCE_HAS_ISSUES,
+				message: generateTranslation('{{frames}} {{type}} frames detected in the clip', {
+					frames,
+					type,
+					count: frames,
+				}),
+			})
+		}
 	}
 }
