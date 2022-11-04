@@ -7,6 +7,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UISegmentPartNote } from '../../lib/api/rundownNotifications'
@@ -108,41 +109,41 @@ async function setupUISegmentPartNotesPublicationObservers(
 
 	// Set up observers:
 	return [
-		Rundowns.find({ playlistId: args.playlistId }, { fields: rundownFieldSpecifier }).observe({
-			added: (obj) => {
-				console.log('added', obj)
-				triggerUpdate(trackRundownChange(obj._id)) //, true)
+		Rundowns.find({ playlistId: args.playlistId }, { fields: rundownFieldSpecifier }).observeChanges({
+			added: (id) => {
+				console.log('added', id)
+				triggerUpdate(trackRundownChange(id)) //, true)
 			},
-			changed: (obj) => {
-				console.log('changed', obj)
-				triggerUpdate(trackRundownChange(obj._id), true) // TODO - does this need to invalidate the observer?
+			changed: (id) => {
+				console.log('changed', id)
+				triggerUpdate(trackRundownChange(id), true) // TODO - does this need to invalidate the observer?
 			},
-			removed: (obj) => {
-				console.log('removed', obj)
-				triggerUpdate(trackRundownChange(obj._id), true)
+			removed: (id) => {
+				console.log('removed', id)
+				triggerUpdate(trackRundownChange(id), true)
 			},
 		}),
 		// Second level of reactivity
-		Segments.find({ rundownId: { $in: rundownIds } }, { fields: segmentFieldSpecifier }).observe({
-			added: (obj) => {
-				console.log('trigger segment', obj._id)
-				triggerUpdate(trackSegmentChange(obj._id))
+		Segments.find({ rundownId: { $in: rundownIds } }, { fields: segmentFieldSpecifier }).observeChanges({
+			added: (id) => {
+				console.log('trigger segment', id)
+				triggerUpdate(trackSegmentChange(id))
 			},
-			changed: (obj) => triggerUpdate(trackSegmentChange(obj._id)),
-			removed: (obj) => triggerUpdate(trackSegmentChange(obj._id)),
+			changed: (id) => triggerUpdate(trackSegmentChange(id)),
+			removed: (id) => triggerUpdate(trackSegmentChange(id)),
 		}),
-		Parts.find({ rundownId: { $in: rundownIds } }, { fields: partFieldSpecifier }).observe({
-			added: (obj) => triggerUpdate(trackPartChange(obj._id)),
-			changed: (obj) => triggerUpdate(trackPartChange(obj._id)),
-			removed: (obj) => triggerUpdate(trackPartChange(obj._id)),
+		Parts.find({ rundownId: { $in: rundownIds } }, { fields: partFieldSpecifier }).observeChanges({
+			added: (id) => triggerUpdate(trackPartChange(id)),
+			changed: (id) => triggerUpdate(trackPartChange(id)),
+			removed: (id) => triggerUpdate(trackPartChange(id)),
 		}),
 		PartInstances.find(
 			{ rundownId: { $in: rundownIds }, reset: { $ne: true }, orphaned: 'deleted' },
 			{ fields: partInstanceFieldSpecifier }
-		).observe({
-			added: (obj) => triggerUpdate(trackPartInstanceChange(obj._id)),
-			changed: (obj) => triggerUpdate(trackPartInstanceChange(obj._id)),
-			removed: (obj) => triggerUpdate(trackPartInstanceChange(obj._id)),
+		).observeChanges({
+			added: (id) => triggerUpdate(trackPartInstanceChange(id)),
+			changed: (id) => triggerUpdate(trackPartInstanceChange(id)),
+			removed: (id) => triggerUpdate(trackPartInstanceChange(id)),
 		}),
 	]
 }
