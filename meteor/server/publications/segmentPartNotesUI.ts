@@ -458,6 +458,12 @@ async function updatePartsCache(
 			{ projection: partFieldSpecifier }
 		)) as Pick<DBPart, PartFields>[]
 		for (const part of parts) {
+			// Part could have moved across segments
+			const existing = existingMap.get(part._id)
+			if (existing) {
+				affectedSegmentIds.add(existing.segmentId)
+			}
+
 			affectedSegmentIds.add(part.segmentId)
 			existingMap.set(part._id, part)
 			fetchedPartIds.add(part._id)
@@ -534,6 +540,12 @@ async function updatePartInstancesCache(
 			{ projection: partInstanceFieldSpecifier }
 		)) as Pick<DBPartInstance, PartInstanceFields>[]
 		for (const part of partInstances) {
+			// Part could have moved across segments
+			const existing = existingMap.get(part._id)
+			if (existing) {
+				affectedSegmentIds.add(existing.segmentId)
+			}
+
 			affectedSegmentIds.add(part.segmentId)
 			existingMap.set(part._id, part)
 			fetchedPartInstanceIds.add(part._id)

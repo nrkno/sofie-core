@@ -33,6 +33,24 @@ export interface UISegmentPartNote {
 /** How often the client polls for updates on media statuses */
 export const MEDIASTATUS_POLL_INTERVAL = 10 * 1000
 
+export type UIMediaObjectIssueId = ProtectedString<'UIMediaObjectIssue'>
+export interface UIMediaObjectIssue {
+	_id: UIMediaObjectIssueId
+
+	segmentRank: number
+	partRank: number
+
+	partId: PartId
+	rundownId: RundownId
+	segmentId: SegmentId
+	pieceId: PieceId
+
+	name: string
+	segmentName: string
+	status: PieceStatusCode
+	message: string | null
+}
+
 export interface RundownNotificationsAPI {
 	getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]>
 }
