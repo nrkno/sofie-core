@@ -17,9 +17,7 @@ describe('ReactiveMongoObserverGroup', () => {
 		expect(observerGroup.stop).toBeTruthy()
 		expect(observerGroup.restart).toBeTruthy()
 
-		// Generator should be called after a little while
-		expect(generator).toHaveBeenCalledTimes(0)
-		await sleep(10)
+		// Generator should be called immediately
 		expect(generator).toHaveBeenCalledTimes(1)
 		expect(handle.stop).toHaveBeenCalledTimes(0)
 

@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
-import { PubSub } from '../../../lib/api/pubsub'
 import { ProtectedString } from '../../../lib/lib'
 import { CustomPublishCollection } from './customPublishCollection'
 import { TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase'
@@ -46,11 +45,7 @@ export async function setUpCollectionOptimizedObserver<
 		setupObservers,
 		async (args, state, newProps) => {
 			await manipulateData(args, state, collection, newProps)
-			const changes = collection.commitChanges()
-
-			if (identifier.startsWith(`pub_${PubSub.uiSegmentPartNotes}`))
-				console.log('changes', identifier, changes[1])
-			return changes
+			return collection.commitChanges()
 		},
 		receiver,
 		lazynessDuration

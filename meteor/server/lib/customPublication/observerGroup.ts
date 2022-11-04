@@ -123,8 +123,8 @@ export function ReactiveMongoObserverGroup(
 		},
 	}
 
-	// Initial setup of observers
-	Meteor.defer(() => runCheck())
+	// wait for initial setup of observers, so that they are running once we return
+	runCheck()
 
 	return handle
 }
