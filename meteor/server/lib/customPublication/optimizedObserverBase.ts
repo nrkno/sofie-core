@@ -28,10 +28,7 @@ interface OptimizedObserverWorker<TData extends { _id: ProtectedString<any> }, T
 /** Optimized observers */
 const optimizedObservers: Record<string, OptimizedObserverWrapper<any, unknown, unknown>> = {}
 
-export type TriggerUpdate<UpdateProps extends Record<string, any>> = (
-	updateProps: Partial<UpdateProps>,
-	invalidateObservers?: boolean
-) => void
+export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProps: Partial<UpdateProps>) => void
 
 /**
  * This should not be used directly, and should be used through one of the setUpOptimizedObserverArray or setUpCollectionOptimizedObserver wrappers
@@ -187,27 +184,11 @@ async function createOptimizedObserverWorker<
 
 	const args = clone<ReadonlyDeep<Args>>(args0)
 
-	const abortExecution = (reason: Meteor.Error) => {
-		if (thisObserverWrapper) {
-			for (const sub of thisObserverWrapper.activeSubscribers) {
-				sub.error(reason)
-			}
-			for (const sub of thisObserverWrapper.newSubscribers) {
-				sub.error(reason)
-			}
-		}
-	}
-
-	let hasPendingInvalidateObservers = false
 	let hasPendingUpdate = false
 	let pendingUpdate: Record<string, any> = {}
-	const triggerUpdate: TriggerUpdate<UpdateProps> = (updateProps, invalidateObservers) => {
+	const triggerUpdate: TriggerUpdate<UpdateProps> = (updateProps) => {
 		// Combine the pending updates
 		pendingUpdate = deepmerge(pendingUpdate, updateProps)
-
-		if (invalidateObservers) console.trace(updateProps, invalidateObservers)
-
-		if (invalidateObservers) hasPendingInvalidateObservers = true
 
 		// If already running, set it as pending to be done afterwards
 		if (updateIsRunning) {
@@ -234,28 +215,6 @@ async function createOptimizedObserverWorker<
 							delete optimizedObservers[identifier]
 							thisObserverWorker.stopObservers()
 							return
-						}
-
-						if (hasPendingInvalidateObservers) {
-							hasPendingInvalidateObservers = false
-
-							logger.verbose(`Invalidating observers of ${identifier}`)
-
-							thisObserverWorker.stopObservers()
-							thisObserverWorker.stopObservers = () => null // Temporary clear the callback
-
-							try {
-								// Replace with new observers
-								const newObservers = await setupObservers(args, triggerUpdate)
-								thisObserverWorker.stopObservers = () => {
-									newObservers.forEach((observer) => observer.stop())
-								}
-							} catch (e) {
-								// If it errored, then the publication is dead
-								// And we might have some orphaned mongo handles that were never returned..
-								abortExecution(new Meteor.Error(500, `Obervers failed to renew: ${stringifyError(e)}`))
-								return
-							}
 						}
 
 						// Fetch and clear the pending updates

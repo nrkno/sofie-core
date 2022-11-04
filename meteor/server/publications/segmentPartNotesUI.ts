@@ -7,7 +7,6 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UISegmentPartNote } from '../../lib/api/rundownNotifications'
@@ -21,6 +20,7 @@ import { MongoQuery } from '../../lib/typings/meteor'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,
+	ReactiveMongoObserverGroup,
 	setUpCollectionOptimizedObserver,
 	TriggerUpdate,
 } from '../lib/customPublication'
@@ -103,50 +103,61 @@ async function setupUISegmentPartNotesPublicationObservers(
 		invalidatePartInstanceIds: [id],
 	})
 
-	const rundownIds = (await Rundowns.findFetchAsync({ playlistId: args.playlistId }, { projection: { _id: 1 } })).map(
-		(rd) => rd._id
-	)
+	// Second level of reactivity
+	const rundownContentsObserver = ReactiveMongoObserverGroup(async () => {
+		const rundownIds = (
+			await Rundowns.findFetchAsync({ playlistId: args.playlistId }, { projection: { _id: 1 } })
+		).map((rd) => rd._id)
+
+		return [
+			Segments.find({ rundownId: { $in: rundownIds } }, { fields: segmentFieldSpecifier }).observeChanges({
+				added: (id) => {
+					console.log('trigger segment', id)
+					triggerUpdate(trackSegmentChange(id))
+				},
+				changed: (id) => triggerUpdate(trackSegmentChange(id)),
+				removed: (id) => triggerUpdate(trackSegmentChange(id)),
+			}),
+			Parts.find({ rundownId: { $in: rundownIds } }, { fields: partFieldSpecifier }).observeChanges({
+				added: (id) => triggerUpdate(trackPartChange(id)),
+				changed: (id) => triggerUpdate(trackPartChange(id)),
+				removed: (id) => triggerUpdate(trackPartChange(id)),
+			}),
+			PartInstances.find(
+				{ rundownId: { $in: rundownIds }, reset: { $ne: true }, orphaned: 'deleted' },
+				{ fields: partInstanceFieldSpecifier }
+			).observeChanges({
+				added: (id) => triggerUpdate(trackPartInstanceChange(id)),
+				changed: (id) => triggerUpdate(trackPartInstanceChange(id)),
+				removed: (id) => triggerUpdate(trackPartInstanceChange(id)),
+			}),
+		]
+	})
 
 	// Set up observers:
 	return [
 		Rundowns.find({ playlistId: args.playlistId }, { fields: rundownFieldSpecifier }).observeChanges({
 			added: (id) => {
 				console.log('added', id)
+				rundownContentsObserver.restart()
 				triggerUpdate(trackRundownChange(id)) //, true)
 			},
 			changed: (id) => {
 				console.log('changed', id)
-				triggerUpdate(trackRundownChange(id), true) // TODO - does this need to invalidate the observer?
+				rundownContentsObserver.restart() // TODO - does this need to invalidate the observer?
+				triggerUpdate(trackRundownChange(id))
 			},
 			removed: (id) => {
 				console.log('removed', id)
-				triggerUpdate(trackRundownChange(id), true)
+				rundownContentsObserver.restart()
+				triggerUpdate(trackRundownChange(id))
 			},
 		}),
-		// Second level of reactivity
-		Segments.find({ rundownId: { $in: rundownIds } }, { fields: segmentFieldSpecifier }).observeChanges({
-			added: (id) => {
-				console.log('trigger segment', id)
-				triggerUpdate(trackSegmentChange(id))
-			},
-			changed: (id) => triggerUpdate(trackSegmentChange(id)),
-			removed: (id) => triggerUpdate(trackSegmentChange(id)),
-		}),
-		Parts.find({ rundownId: { $in: rundownIds } }, { fields: partFieldSpecifier }).observeChanges({
-			added: (id) => triggerUpdate(trackPartChange(id)),
-			changed: (id) => triggerUpdate(trackPartChange(id)),
-			removed: (id) => triggerUpdate(trackPartChange(id)),
-		}),
-		PartInstances.find(
-			{ rundownId: { $in: rundownIds }, reset: { $ne: true }, orphaned: 'deleted' },
-			{ fields: partInstanceFieldSpecifier }
-		).observeChanges({
-			added: (id) => triggerUpdate(trackPartInstanceChange(id)),
-			changed: (id) => triggerUpdate(trackPartInstanceChange(id)),
-			removed: (id) => triggerUpdate(trackPartInstanceChange(id)),
-		}),
+
+		rundownContentsObserver,
 	]
 }
+
 async function manipulateUISegmentPartNotesPublicationData(
 	args: UISegmentPartNotesArgs,
 	state: Partial<UISegmentPartNotesState>,
