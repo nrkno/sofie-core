@@ -64,35 +64,35 @@ interface IState {
 	keyDown: { [key: string]: boolean }
 }
 
-export enum GenericFuncionalKeyLabels {
-	Backspace = '⌫',
-	Tab = 'Tab ⭾',
-	CapsLock = 'CapsLock',
-	Enter = 'Enter',
-	ShiftLeft = 'Shift',
-	ShiftRight = 'Shift',
-	ControlLeft = 'Ctrl',
-	MetaLeft = '❖',
-	AltLeft = 'Alt',
-	Space = ' ',
-	AltRight = 'Alt',
-	MetaRight = '❖',
-	ContextMenu = '☰',
-	ControlRight = 'Ctrl',
+export const GenericFunctionalKeyLabels = {
+	Backspace: '⌫',
+	Tab: 'Tab ⭾',
+	CapsLock: 'CapsLock',
+	Enter: 'Enter',
+	ShiftLeft: 'Shift',
+	ShiftRight: 'Shift',
+	ControlLeft: 'Ctrl',
+	MetaLeft: '❖',
+	AltLeft: 'Alt',
+	Space: ' ',
+	AltRight: 'Alt',
+	MetaRight: '❖',
+	ContextMenu: '☰',
+	ControlRight: 'Ctrl',
 
-	Escape = 'Esc',
+	Escape: 'Esc',
 
-	Insert = 'Insert',
-	Delete = 'Delete',
-	Home = 'Home',
-	End = 'End',
-	PageUp = 'PgUp',
-	PageDown = 'PgDn',
+	Insert: 'Insert',
+	Delete: 'Delete',
+	Home: 'Home',
+	End: 'End',
+	PageUp: 'PgUp',
+	PageDown: 'PgDn',
 
-	ArrowUp = '⯅',
-	ArrowDown = '⯆',
-	ArrowLeft = '⯇',
-	ArrowRight = '⯈',
+	ArrowUp: '⯅',
+	ArrowDown: '⯆',
+	ArrowLeft: '⯇',
+	ArrowRight: '⯈',
 }
 
 const _modifierKeys = [
@@ -399,8 +399,8 @@ export const KeyboardPreview = translateWithTracker<IProps, IState, ITrackedProp
 							let modifierKey: string | undefined
 
 							let thisKeyLabel = this.state.layout
-								? this.state.layout.get(key.code) || GenericFuncionalKeyLabels[key.code] || key.code
-								: GenericFuncionalKeyLabels[key.code] || key.code
+								? this.state.layout.get(key.code) || GenericFunctionalKeyLabels[key.code] || key.code
+								: GenericFunctionalKeyLabels[key.code] || key.code
 
 							if (_isMacLike && thisKeyLabel === '❖') {
 								thisKeyLabel = '\u2318'
