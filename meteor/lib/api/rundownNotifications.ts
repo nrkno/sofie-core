@@ -3,6 +3,7 @@ import { PieceStatusCode } from '../collections/Pieces'
 import { PartId, PieceId, RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString } from '../lib'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { PieceContentStatusObj } from '../mediaObjects'
 
 export interface IMediaObjectIssue {
 	segmentRank: number
@@ -48,8 +49,8 @@ export interface UIMediaObjectIssue {
 
 	name: string
 	segmentName: string
-	status: PieceStatusCode
-	message: string | null
+
+	status: PieceContentStatusObj
 }
 
 export interface RundownNotificationsAPI {
