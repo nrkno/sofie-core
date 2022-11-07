@@ -9,58 +9,24 @@ import {
 	NoteSeverity,
 	LiveSpeakContent,
 } from '@sofie-automation/blueprints-integration'
-import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
+import { MediaObjects, MediaObject } from './collections/MediaObjects'
 import { IStudioSettings, routeExpectedPackages } from './collections/Studios'
 import { PackageInfos } from './collections/PackageInfos'
-import { assertNever, generateTranslation, unprotectString } from './lib'
+import { assertNever, Complete, generateTranslation, literal, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
 import { getExpectedPackageId } from './collections/ExpectedPackages'
 import { PieceGeneric, PieceStatusCode } from './collections/Pieces'
 import { UIStudio } from './api/studios'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { PackageContainerPackageStatusDB } from './collections/PackageContainerPackageStatus'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
  * formatted string
  */
-export function buildFormatString(mediainfo: MediaInfo, stream: MediaStream): string {
+export function buildFormatString(field_order: PackageInfo.FieldOrder | undefined, stream: StreamInfo): string {
 	let format = `${stream.width || 0}x${stream.height || 0}`
-	switch (mediainfo.field_order) {
-		case PackageInfo.FieldOrder.Progressive:
-			format += 'p'
-			break
-		case PackageInfo.FieldOrder.Unknown:
-			format += '?'
-			break
-		default:
-			format += 'i'
-			break
-	}
-	if (stream.codec.time_base) {
-		const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
-		let fps = Number(formattedTimebase[2]) / Number(formattedTimebase[1])
-		fps = Math.floor(fps * 100 * 100) / 100
-		format += fps
-	}
-	switch (mediainfo.field_order) {
-		case PackageInfo.FieldOrder.BFF:
-			format += 'bff'
-			break
-		case PackageInfo.FieldOrder.TFF:
-			format += 'tff'
-			break
-		default:
-			break
-	}
-
-	return format
-}
-export function buildPackageFormatString(
-	deepScan: PackageInfo.FFProbeDeepScan,
-	stream: PackageInfo.FFProbeScanStream
-): string {
-	let format = `${stream.width || 0}x${stream.height || 0}`
-	switch (deepScan.field_order) {
+	switch (field_order) {
 		case PackageInfo.FieldOrder.Progressive:
 			format += 'p'
 			break
@@ -72,12 +38,19 @@ export function buildPackageFormatString(
 			break
 	}
 	if (stream.r_frame_rate) {
+		// More accurate method, for package-manager
 		const formattedFramerate = /(\d+)\/(\d+)/.exec(stream.r_frame_rate) as RegExpExecArray
 		let fps = Number(formattedFramerate[1]) / Number(formattedFramerate[2])
 		fps = Math.floor(fps * 100 * 100) / 100
 		format += fps
+	} else if (stream.codec_time_base) {
+		// Less accurate method, for media-manager
+		const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec_time_base) as RegExpExecArray
+		let fps = Number(formattedTimebase[2]) / Number(formattedTimebase[1])
+		fps = Math.floor(fps * 100 * 100) / 100
+		format += fps
 	}
-	switch (deepScan.field_order) {
+	switch (field_order) {
 		case PackageInfo.FieldOrder.BFF:
 			format += 'bff'
 			break
@@ -268,73 +241,30 @@ function checkPieceContentMediaObjectStatus(
 					// Do a format check:
 					if (mediaObject.mediainfo) {
 						if (mediaObject.mediainfo.streams) {
-							if (!ignoreMediaAudioStatus && mediaObject.mediainfo.streams.length < 2) {
-								messages.push({
-									status: PieceStatusCode.SOURCE_BROKEN,
-									message: generateTranslation("Clip doesn't have audio & video", {
-										fileName: displayName,
-									}),
-								})
-							}
-							const formats = getAcceptedFormats(settings)
-							const audioConfig = settings ? settings.supportedAudioStreams : ''
-							const expectedAudioStreams = audioConfig
-								? new Set<string>(audioConfig.split(',').map((v) => v.trim()))
-								: new Set<string>()
+							const mediainfo = mediaObject.mediainfo
+							const timebase = checkStreamFormatsAndCounts(
+								messages,
+								mediaObject.mediainfo.streams.map((stream) =>
+									// Translate to a package-manager type, for code reuse
+									literal<Complete<StreamInfo>>({
+										width: stream.width,
+										height: stream.height,
+										time_base: stream.time_base,
+										codec_type: stream.codec.type,
+										codec_time_base: stream.codec.time_base,
+										channels: stream.channels,
+										r_frame_rate: undefined,
+									})
+								),
+								(stream) => buildFormatString(mediainfo.field_order, stream),
+								settings,
+								sourceLayer,
+								ignoreMediaAudioStatus
+							)
 
-							let timebase: number = 0
-							let audioStreams: number = 0
-							let isStereo: boolean = false
-
-							// check the streams for resolution info
-							for (const stream of mediaObject.mediainfo.streams) {
-								if (stream.width && stream.height) {
-									if (stream.codec.time_base) {
-										const formattedTimebase = /(\d+)\/(\d+)/.exec(
-											stream.codec.time_base
-										) as RegExpExecArray
-										timebase = (1000 * Number(formattedTimebase[1])) / Number(formattedTimebase[2])
-									}
-
-									const format = buildFormatString(mediaObject.mediainfo, stream)
-									if (!acceptFormat(format, formats)) {
-										messages.push({
-											status: PieceStatusCode.SOURCE_BROKEN,
-											message: generateTranslation(
-												'{{sourceLayer}} has the wrong format: {{format}}',
-												{
-													sourceLayer: sourceLayer.name,
-													format,
-												}
-											),
-										})
-									}
-								} else if (stream.codec.type === 'audio') {
-									// this is the first (and hopefully last) track of audio, and has 2 channels
-									if (audioStreams === 0 && stream.channels === 2) {
-										isStereo = true
-									}
-									audioStreams++
-								}
-							}
 							if (timebase) {
 								mediaObject.mediainfo.timebase = timebase
-							}
-							if (
-								!ignoreMediaAudioStatus &&
-								audioConfig &&
-								(!expectedAudioStreams.has(audioStreams.toString()) ||
-									(isStereo && !expectedAudioStreams.has('stereo')))
-							) {
-								messages.push({
-									status: PieceStatusCode.SOURCE_BROKEN,
-									message: generateTranslation('{{sourceLayer}} has {{audioStreams}} audio streams', {
-										sourceLayer: sourceLayer.name,
-										audioStreams,
-									}),
-								})
-							}
-							if (timebase) {
+
 								// check for black/freeze frames
 								const sourceDuration = piece.content.sourceDuration
 
@@ -463,7 +393,6 @@ function checkPieceContentExpectedPackageStatus(
 
 			for (const expectedPackage of mapping.expectedPackages) {
 				const packageOnPackageContainer = getPackageContainerPackageStatus(
-					// TODO.find - this is a caching db call
 					studio._id,
 					packageContainerId,
 					getExpectedPackageId(piece._id, expectedPackage._id)
@@ -475,57 +404,12 @@ function checkPieceContentExpectedPackageStatus(
 					expectedPackage.content.guid ||
 					expectedPackage._id
 
-				if (
-					!packageOnPackageContainer ||
-					packageOnPackageContainer.status.status ===
-						ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
-				) {
-					messages.push({
-						status: PieceStatusCode.SOURCE_MISSING,
-						message: generateTranslation(
-							`Clip "{{fileName}}" can't be played because it doesn't exist on the playout system`,
-							{
-								fileName: packageName,
-							}
-						),
-					})
-				} else if (
-					packageOnPackageContainer.status.status ===
-					ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_READY
-				) {
-					messages.push({
-						status: PieceStatusCode.SOURCE_MISSING,
-						message: generateTranslation('{{sourceLayer}} is not yet ready on the playout system', {
-							sourceLayer: sourceLayer.name,
-						}),
-					})
-				} else if (
-					packageOnPackageContainer.status.status ===
-					ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.TRANSFERRING_READY
-				) {
-					messages.push({
-						status: PieceStatusCode.OK,
-						message: generateTranslation('{{sourceLayer}} is transferring to the the playout system', {
-							sourceLayer: sourceLayer.name,
-						}),
-					})
-				} else if (
-					packageOnPackageContainer.status.status ===
-					ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.TRANSFERRING_NOT_READY
-				) {
-					messages.push({
-						status: PieceStatusCode.SOURCE_MISSING,
-						message: generateTranslation(
-							'{{sourceLayer}} is transferring to the the playout system and cannot be played yet',
-							{
-								sourceLayer: sourceLayer.name,
-							}
-						),
-					})
-				} else if (
-					packageOnPackageContainer.status.status ===
-					ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY
-				) {
+				const warningMessage = getPackageWarningMessage(packageOnPackageContainer, packageName, sourceLayer)
+				if (warningMessage) {
+					messages.push(warningMessage)
+				} else {
+					// No warning, must be OK
+
 					readyCount++
 					packageInfos[expectedPackage._id] = {
 						packageName,
@@ -544,8 +428,6 @@ function checkPieceContentExpectedPackageStatus(
 							packageInfos[expectedPackage._id].deepScan = packageInfo.payload
 						}
 					})
-				} else {
-					assertNever(packageOnPackageContainer.status.status)
 				}
 			}
 		}
@@ -555,70 +437,17 @@ function checkPieceContentExpectedPackageStatus(
 			const { scan, deepScan } = packageInfo
 
 			if (scan && scan.streams) {
-				if (!ignoreMediaAudioStatus && scan.streams.length < 2) {
-					messages.push({
-						status: PieceStatusCode.SOURCE_BROKEN,
-						message: generateTranslation("{{sourceLayer}} doesn't have both audio & video", {
-							sourceLayer: sourceLayer.name,
-						}),
-					})
-				}
-				const formats = getAcceptedFormats(settings)
-				const audioConfig = settings ? settings.supportedAudioStreams : ''
-				const expectedAudioStreams = audioConfig
-					? new Set<string>(audioConfig.split(',').map((v) => v.trim()))
-					: new Set<string>()
-
-				let timebase: number = 0
-				let audioStreams: number = 0
-				let isStereo: boolean = false
-
-				// check the streams for resolution info
-				for (const stream of scan.streams) {
-					if (stream.width && stream.height) {
-						if (stream.codec_time_base) {
-							const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec_time_base) as RegExpExecArray
-							timebase = (1000 * Number(formattedTimebase[1])) / Number(formattedTimebase[2])
-						}
-
-						if (deepScan) {
-							const format = buildPackageFormatString(deepScan, stream)
-							if (!acceptFormat(format, formats)) {
-								messages.push({
-									status: PieceStatusCode.SOURCE_BROKEN,
-									message: generateTranslation('{{sourceLayer}} has the wrong format: {{format}}', {
-										sourceLayer: sourceLayer.name,
-										format,
-									}),
-								})
-							}
-						}
-					} else if (stream.codec_type === 'audio') {
-						// this is the first (and hopefully last) track of audio, and has 2 channels
-						if (audioStreams === 0 && stream.channels === 2) {
-							isStereo = true
-						}
-						audioStreams++
-					}
-				}
+				const timebase = checkStreamFormatsAndCounts(
+					messages,
+					scan.streams,
+					(stream) => (deepScan ? buildFormatString(deepScan.field_order, stream) : null),
+					settings,
+					sourceLayer,
+					ignoreMediaAudioStatus
+				)
 				if (timebase) {
 					packageInfo.timebase = timebase // what todo?
-				}
-				if (
-					!ignoreMediaAudioStatus &&
-					audioConfig &&
-					(!expectedAudioStreams.has(audioStreams.toString()) ||
-						(isStereo && !expectedAudioStreams.has('stereo')))
-				) {
-					messages.push({
-						status: PieceStatusCode.SOURCE_BROKEN,
-						message: generateTranslation('{{sourceLayer}} has {{audioStreams}} audio streams', {
-							sourceLayer: sourceLayer.name,
-							audioStreams,
-						}),
-					})
-				}
-				if (timebase) {
+
 					// check for black/freeze frames
 
 					const sourceDuration = piece.content.sourceDuration
@@ -664,6 +493,148 @@ function checkPieceContentExpectedPackageStatus(
 		messages: messages.map((msg) => msg.message),
 		contentDuration: undefined,
 	}
+}
+
+function getPackageWarningMessage(
+	packageOnPackageContainer: PackageContainerPackageStatusDB | undefined,
+	packageName: string,
+	sourceLayer: ISourceLayer
+): ContentMessage | null {
+	if (
+		!packageOnPackageContainer ||
+		packageOnPackageContainer.status.status ===
+			ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
+	) {
+		return {
+			status: PieceStatusCode.SOURCE_MISSING,
+			message: generateTranslation(
+				`Clip "{{fileName}}" can't be played because it doesn't exist on the playout system`,
+				{
+					fileName: packageName,
+				}
+			),
+		}
+	} else if (
+		packageOnPackageContainer.status.status ===
+		ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_READY
+	) {
+		return {
+			status: PieceStatusCode.SOURCE_MISSING,
+			message: generateTranslation('{{sourceLayer}} is not yet ready on the playout system', {
+				sourceLayer: sourceLayer.name,
+			}),
+		}
+	} else if (
+		packageOnPackageContainer.status.status ===
+		ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.TRANSFERRING_READY
+	) {
+		return {
+			status: PieceStatusCode.OK,
+			message: generateTranslation('{{sourceLayer}} is transferring to the the playout system', {
+				sourceLayer: sourceLayer.name,
+			}),
+		}
+	} else if (
+		packageOnPackageContainer.status.status ===
+		ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.TRANSFERRING_NOT_READY
+	) {
+		return {
+			status: PieceStatusCode.SOURCE_MISSING,
+			message: generateTranslation(
+				'{{sourceLayer}} is transferring to the the playout system and cannot be played yet',
+				{
+					sourceLayer: sourceLayer.name,
+				}
+			),
+		}
+	} else if (
+		packageOnPackageContainer.status.status === ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY
+	) {
+		return null
+	} else {
+		assertNever(packageOnPackageContainer.status.status)
+		return {
+			status: PieceStatusCode.UNKNOWN,
+			message: generateTranslation('{{sourceLayer}} is in an unknown state', {
+				sourceLayer: sourceLayer.name,
+			}),
+		}
+	}
+}
+
+type StreamInfo = Pick<
+	PackageInfo.FFProbeScanStream,
+	'width' | 'height' | 'time_base' | 'codec_type' | 'codec_time_base' | 'channels' | 'r_frame_rate'
+>
+function checkStreamFormatsAndCounts(
+	messages: Array<ContentMessage>,
+	streams: StreamInfo[],
+	getScanFormatString: (stream: StreamInfo) => string | null,
+	studioSettings: IStudioSettings | undefined,
+	sourceLayer: ISourceLayer,
+	ignoreMediaAudioStatus: boolean | undefined
+): number {
+	if (!ignoreMediaAudioStatus && streams.length < 2) {
+		messages.push({
+			status: PieceStatusCode.SOURCE_BROKEN,
+			message: generateTranslation("{{sourceLayer}} doesn't have both audio & video", {
+				sourceLayer: sourceLayer.name,
+			}),
+		})
+	}
+	const formats = getAcceptedFormats(studioSettings)
+	const audioConfig = studioSettings ? studioSettings.supportedAudioStreams : ''
+	const expectedAudioStreams = audioConfig
+		? new Set<string>(audioConfig.split(',').map((v) => v.trim()))
+		: new Set<string>()
+
+	let timebase: number = 0
+	let audioStreams: number = 0
+	let isStereo: boolean = false
+
+	// check the streams for resolution info
+	for (const stream of streams) {
+		if (stream.width && stream.height) {
+			if (stream.codec_time_base) {
+				const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec_time_base) as RegExpExecArray
+				timebase = (1000 * Number(formattedTimebase[1])) / Number(formattedTimebase[2])
+			}
+
+			const deepScanFormat = getScanFormatString(stream)
+			if (deepScanFormat) {
+				if (!acceptFormat(deepScanFormat, formats)) {
+					messages.push({
+						status: PieceStatusCode.SOURCE_BROKEN,
+						message: generateTranslation('{{sourceLayer}} has the wrong format: {{format}}', {
+							sourceLayer: sourceLayer.name,
+							deepScanFormat,
+						}),
+					})
+				}
+			}
+		} else if (stream.codec_type === 'audio') {
+			// this is the first (and hopefully last) track of audio, and has 2 channels
+			if (audioStreams === 0 && stream.channels === 2) {
+				isStereo = true
+			}
+			audioStreams++
+		}
+	}
+	if (
+		!ignoreMediaAudioStatus &&
+		audioConfig &&
+		(!expectedAudioStreams.has(audioStreams.toString()) || (isStereo && !expectedAudioStreams.has('stereo')))
+	) {
+		messages.push({
+			status: PieceStatusCode.SOURCE_BROKEN,
+			message: generateTranslation('{{sourceLayer}} has {{audioStreams}} audio streams', {
+				sourceLayer: sourceLayer.name,
+				audioStreams,
+			}),
+		})
+	}
+
+	return timebase
 }
 
 function addFrameWarning(
