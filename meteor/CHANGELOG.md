@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.47.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
+
 ## [1.47.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
 
 
