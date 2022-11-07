@@ -25,6 +25,7 @@ export enum ThreadStatus {
 	Closed = 0,
 	PendingInit = 1,
 	Ready = 2,
+	/** This is _manual_, in the sense that it's not being handled by threadedClass, but by the worker-parent */
 	ManualRestarting = 3,
 }
 
