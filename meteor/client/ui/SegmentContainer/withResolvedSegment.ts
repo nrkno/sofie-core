@@ -22,7 +22,7 @@ import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveD
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { RundownLayoutFilterBase, RundownViewLayout } from '../../../lib/collections/RundownLayouts'
-import { getReactivePieceNoteCountsForPart } from './getReactivePieceNoteCountsForPart'
+import { getReactivePieceNoteCountsForPart as getReactivePieceNoteCountsForSegment } from './getReactivePieceNoteCountsForSegment'
 import { SegmentViewMode } from './SegmentViewModes'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { AdlibSegmentUi } from '../../lib/shelf'
@@ -256,11 +256,9 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				}
 			}
 
-			for (const part of o.parts) {
-				const pieceNoteCounts = getReactivePieceNoteCountsForPart(part.instance.part)
-				segmentNotes.criticial += pieceNoteCounts.criticial
-				segmentNotes.warning += pieceNoteCounts.warning
-			}
+			const pieceNoteCounts = getReactivePieceNoteCountsForSegment(segment)
+			segmentNotes.criticial += pieceNoteCounts.criticial
+			segmentNotes.warning += pieceNoteCounts.warning
 
 			let lastValidPartIndex = o.parts.length - 1
 

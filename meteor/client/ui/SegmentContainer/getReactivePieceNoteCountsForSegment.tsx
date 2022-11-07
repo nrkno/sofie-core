@@ -1,13 +1,12 @@
 import { assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { UIPieceContentStatus } from '../../../lib/api/rundownNotifications'
-import { Part } from '../../../lib/collections/Parts'
 import { PieceStatusCode } from '../../../lib/collections/Pieces'
 import { getIgnorePieceContentStatus } from '../../lib/localStorage'
 import { UIPieceContentStatuses } from '../Collections'
-import { SegmentNoteCounts } from './withResolvedSegment'
+import { SegmentNoteCounts, SegmentUi } from './withResolvedSegment'
 
-export function getReactivePieceNoteCountsForPart(part: Part): SegmentNoteCounts {
+export function getReactivePieceNoteCountsForPart(segment: SegmentUi): SegmentNoteCounts {
 	const counts: SegmentNoteCounts = {
 		criticial: 0,
 		warning: 0,
@@ -15,8 +14,8 @@ export function getReactivePieceNoteCountsForPart(part: Part): SegmentNoteCounts
 
 	const mediaObjectStatuses = UIPieceContentStatuses.find(
 		{
-			rundownId: part.rundownId,
-			partId: part._id,
+			rundownId: segment.rundownId,
+			segmentId: segment._id,
 		},
 		{
 			fields: literal<MongoFieldSpecifierOnes<UIPieceContentStatus>>({
