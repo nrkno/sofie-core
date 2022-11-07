@@ -13,7 +13,7 @@ import {
 import { RundownPlaylistValidateBlueprintConfigResult } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
-import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
+import { getMediaObjectMediaId } from '../../../lib/mediaObjects'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { Parts, Part } from '../../../lib/collections/Parts'
 import { getCurrentTime, unprotectString } from '../../../lib/lib'
@@ -46,6 +46,7 @@ import {
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UISegmentPartNotes } from '../Collections'
+import { checkPieceContentStatus } from '../../lib/mediaObjects'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)

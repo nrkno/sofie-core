@@ -17,12 +17,68 @@ import { Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
 import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studios } from '../../lib/collections/Studios'
-import { checkPieceContentStatus } from '../../lib/mediaObjects'
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	checkPieceContentStatus as libCheckPieceContentStatus,
+	PieceContentStatusObj,
+	PieceContentStatusPiece,
+	PieceContentStatusStudio,
+} from '../../lib/mediaObjects'
+import { ExpectedPackageId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { UIStudio } from '../../lib/api/studios'
+import { ISourceLayer, PackageInfo } from '@sofie-automation/blueprints-integration'
+import { MediaObjects } from '../../lib/collections/MediaObjects'
+import { PackageInfos } from '../../lib/collections/PackageInfos'
+import { getPackageContainerPackageStatus } from '../../lib/globalStores'
 
+function checkPieceContentStatus(
+	piece: PieceContentStatusPiece,
+	sourceLayer: ISourceLayer | undefined,
+	studio: PieceContentStatusStudio | undefined
+): PieceContentStatusObj {
+	const getMediaObject = (mediaId: string) => {
+		if (studio) {
+			return MediaObjects.findOne({
+				studioId: studio._id,
+				mediaId,
+			})
+		} else {
+			return undefined
+		}
+	}
+
+	const getPackageInfos = (packageId: ExpectedPackageId) => {
+		if (studio) {
+			return PackageInfos.find({
+				studioId: studio._id,
+				packageId: packageId,
+				type: {
+					$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+				},
+			}).fetch()
+		} else {
+			return []
+		}
+	}
+
+	const getPackageContainerPackageStatus2 = (packageContainerId: string, expectedPackageId: ExpectedPackageId) => {
+		if (studio) {
+			return getPackageContainerPackageStatus(studio._id, packageContainerId, expectedPackageId)
+		} else {
+			return undefined
+		}
+	}
+
+	return libCheckPieceContentStatus(
+		piece,
+		sourceLayer,
+		studio,
+		getMediaObject,
+		getPackageInfos,
+		getPackageContainerPackageStatus2
+	)
+}
 async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 	const rundowns = await Rundowns.findFetchAsync({
 		_id: {

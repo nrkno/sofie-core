@@ -6,25 +6,27 @@ import {
 	ISourceLayer,
 	ExpectedPackageStatusAPI,
 	PackageInfo,
-	NoteSeverity,
 	LiveSpeakContent,
 } from '@sofie-automation/blueprints-integration'
-import { MediaObjects, MediaObject } from './collections/MediaObjects'
+import { MediaObject } from './collections/MediaObjects'
 import { IStudioSettings, routeExpectedPackages } from './collections/Studios'
-import { PackageInfos } from './collections/PackageInfos'
+import { PackageInfoDB } from './collections/PackageInfos'
 import { assertNever, Complete, generateTranslation, literal, unprotectString } from './lib'
-import { getPackageContainerPackageStatus } from './globalStores'
 import { getExpectedPackageId } from './collections/ExpectedPackages'
 import { PieceGeneric, PieceStatusCode } from './collections/Pieces'
 import { UIStudio } from './api/studios'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PackageContainerPackageStatusDB } from './collections/PackageContainerPackageStatus'
+import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
  * formatted string
  */
-export function buildFormatString(field_order: PackageInfo.FieldOrder | undefined, stream: StreamInfo): string {
+export function buildFormatString(
+	field_order: PackageInfo.FieldOrder | undefined,
+	stream: PieceContentStreamInfo
+): string {
 	let format = `${stream.width || 0}x${stream.height || 0}`
 	switch (field_order) {
 		case PackageInfo.FieldOrder.Progressive:
@@ -159,17 +161,29 @@ export type PieceContentStatusStudio = Pick<
 export function checkPieceContentStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer | undefined,
-	studio: PieceContentStatusStudio | undefined
+	studio: PieceContentStatusStudio | undefined,
+	getMediaObject: (mediaId: string) => MediaObject | undefined,
+	getPackageInfos: (packageId: ExpectedPackageId) => PackageInfoDB[],
+	getPackageContainerPackageStatus2: (
+		packageContainerId: string,
+		expectedPackageId: ExpectedPackageId
+	) => PackageContainerPackageStatusDB | undefined
 ): PieceContentStatusObj {
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
 	if (!ignoreMediaStatus && sourceLayer && studio) {
 		if (piece.expectedPackages) {
 			// Using Expected Packages:
-			return checkPieceContentExpectedPackageStatus(piece, sourceLayer, studio)
+			return checkPieceContentExpectedPackageStatus(
+				piece,
+				sourceLayer,
+				studio,
+				getPackageInfos,
+				getPackageContainerPackageStatus2
+			)
 		} else {
 			// Fallback to MediaObject statuses:
 
-			return checkPieceContentMediaObjectStatus(piece, sourceLayer, studio)
+			return checkPieceContentMediaObjectStatus(piece, sourceLayer, studio, getMediaObject)
 		}
 	}
 
@@ -181,20 +195,12 @@ export function checkPieceContentStatus(
 		contentDuration: undefined,
 	}
 }
-export function getNoteSeverityForPieceStatus(statusCode: PieceStatusCode): NoteSeverity | null {
-	return statusCode !== PieceStatusCode.OK && statusCode !== PieceStatusCode.UNKNOWN
-		? statusCode === PieceStatusCode.SOURCE_NOT_SET
-			? NoteSeverity.ERROR
-			: // : innerPiece.status === PieceStatusCode.SOURCE_MISSING ||
-			  // innerPiece.status === PieceStatusCode.SOURCE_BROKEN
-			  NoteSeverity.WARNING
-		: null
-}
 
 function checkPieceContentMediaObjectStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer,
-	studio: PieceContentStatusStudio
+	studio: PieceContentStatusStudio,
+	getMediaObject: (mediaId: string) => MediaObject | undefined
 ): PieceContentStatusObj {
 	let metadata: MediaObject | null = null
 	const settings: IStudioSettings | undefined = studio?.settings
@@ -222,10 +228,7 @@ function checkPieceContentMediaObjectStatus(
 					}),
 				})
 			} else {
-				const mediaObject = MediaObjects.findOne({
-					studioId: studio._id,
-					mediaId: fileName,
-				})
+				const mediaObject = getMediaObject(fileName)
 				// If media object not found, then...
 				if (!mediaObject) {
 					messages.push({
@@ -246,7 +249,7 @@ function checkPieceContentMediaObjectStatus(
 								messages,
 								mediaObject.mediainfo.streams.map((stream) =>
 									// Translate to a package-manager type, for code reuse
-									literal<Complete<StreamInfo>>({
+									literal<Complete<PieceContentStreamInfo>>({
 										width: stream.width,
 										height: stream.height,
 										time_base: stream.time_base,
@@ -306,10 +309,7 @@ function checkPieceContentMediaObjectStatus(
 			break
 		case SourceLayerType.GRAPHICS:
 			if (fileName) {
-				const mediaObject = MediaObjects.findOne({
-					studioId: studio._id,
-					mediaId: fileName,
-				})
+				const mediaObject = getMediaObject(fileName)
 				if (!mediaObject) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
@@ -328,7 +328,6 @@ function checkPieceContentMediaObjectStatus(
 
 	if (messages.length) {
 		pieceStatus = messages.reduce((prev, msg) => Math.max(prev, msg.status), PieceStatusCode.UNKNOWN)
-		// message = _.uniq(messages.map((m) => m.message)).join('; ') + '.'
 	} else {
 		if (contentSeemsOK) {
 			pieceStatus = PieceStatusCode.OK
@@ -352,7 +351,12 @@ interface ContentMessage {
 function checkPieceContentExpectedPackageStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer,
-	studio: PieceContentStatusStudio
+	studio: PieceContentStatusStudio,
+	getPackageInfos: (packageId: ExpectedPackageId) => PackageInfoDB[],
+	getPackageContainerPackageStatus2: (
+		packageContainerId: string,
+		expectedPackageId: ExpectedPackageId
+	) => PackageContainerPackageStatusDB | undefined
 ): PieceContentStatusObj {
 	let packageInfoToForward: ScanInfoForPackages | undefined = undefined
 	const settings: IStudioSettings | undefined = studio?.settings
@@ -392,10 +396,10 @@ function checkPieceContentExpectedPackageStatus(
 			checkedPackageContainers[packageContainerId] = true
 
 			for (const expectedPackage of mapping.expectedPackages) {
-				const packageOnPackageContainer = getPackageContainerPackageStatus(
-					studio._id,
+				const expectedPackageId = getExpectedPackageId(piece._id, expectedPackage._id)
+				const packageOnPackageContainer = getPackageContainerPackageStatus2(
 					packageContainerId,
-					getExpectedPackageId(piece._id, expectedPackage._id)
+					expectedPackageId
 				)
 				const packageName =
 					// @ts-expect-error hack
@@ -415,19 +419,14 @@ function checkPieceContentExpectedPackageStatus(
 						packageName,
 					}
 					// Fetch scan-info about the package:
-					PackageInfos.find({
-						studioId: studio._id,
-						packageId: getExpectedPackageId(piece._id, expectedPackage._id),
-						type: {
-							$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN] as any,
-						},
-					}).forEach((packageInfo) => {
+					const dbPackageInfos = getPackageInfos(expectedPackageId)
+					for (const packageInfo of dbPackageInfos) {
 						if (packageInfo.type === PackageInfo.Type.SCAN) {
 							packageInfos[expectedPackage._id].scan = packageInfo.payload
 						} else if (packageInfo.type === PackageInfo.Type.DEEPSCAN) {
 							packageInfos[expectedPackage._id].deepScan = packageInfo.payload
 						}
-					})
+					}
 				}
 			}
 		}
@@ -562,14 +561,14 @@ function getPackageWarningMessage(
 	}
 }
 
-type StreamInfo = Pick<
+export type PieceContentStreamInfo = Pick<
 	PackageInfo.FFProbeScanStream,
 	'width' | 'height' | 'time_base' | 'codec_type' | 'codec_time_base' | 'channels' | 'r_frame_rate'
 >
 function checkStreamFormatsAndCounts(
 	messages: Array<ContentMessage>,
-	streams: StreamInfo[],
-	getScanFormatString: (stream: StreamInfo) => string | null,
+	streams: PieceContentStreamInfo[],
+	getScanFormatString: (stream: PieceContentStreamInfo) => string | null,
 	studioSettings: IStudioSettings | undefined,
 	sourceLayer: ISourceLayer,
 	ignoreMediaAudioStatus: boolean | undefined
