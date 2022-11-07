@@ -43,9 +43,7 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
 import { RundownReadAccess } from '../security/rundown'
 
 interface UIMediaObjectIssuesArgs {
-	// TODO - should this be for a whole playlist?
 	readonly rundownId: RundownId
-	// readonly playlistId: RundownPlaylistId
 }
 
 interface UIMediaObjectIssuesState {
@@ -66,10 +64,13 @@ interface UIMediaObjectIssuesUpdateProps {
 	invalidateSourceLayers: boolean
 	invalidateStudio: boolean
 	invalidateRundown: boolean
-	// invalidateRundownIds: RundownId[]
 	invalidateSegmentIds: SegmentId[]
 	invalidatePartIds: PartId[]
 	invalidatePieceIds: PieceId[]
+
+	invalidateMediaObjectMediaId: string[]
+	invalidateExpectedPackageId: ExpectedPackageId[]
+	invalidatePackageContainerPackageStatusesId: PackageContainerPackageId[]
 }
 
 type RundownFields = '_id' | 'showStyleBaseId' | 'studioId'
@@ -123,9 +124,6 @@ async function setupUIMediaObjectIssuesPublicationObservers(
 	args: ReadonlyDeep<UIMediaObjectIssuesArgs>,
 	triggerUpdate: TriggerUpdate<UIMediaObjectIssuesUpdateProps>
 ): Promise<Meteor.LiveQueryHandle[]> {
-	// const trackRundownChange = (id: RundownId): Partial<UIMediaObjectIssuesUpdateProps> => ({
-	// 	invalidateRundownIds: [id],
-	// })
 	const trackSegmentChange = (id: SegmentId): Partial<UIMediaObjectIssuesUpdateProps> => ({
 		invalidateSegmentIds: [id],
 	})
@@ -134,6 +132,17 @@ async function setupUIMediaObjectIssuesPublicationObservers(
 	})
 	const trackPieceChange = (id: PieceId): Partial<UIMediaObjectIssuesUpdateProps> => ({
 		invalidatePieceIds: [id],
+	})
+	const trackMediaObjectChange = (mediaId: string): Partial<UIMediaObjectIssuesUpdateProps> => ({
+		invalidateMediaObjectMediaId: [mediaId],
+	})
+	const trackPackageInfoChange = (id: ExpectedPackageId): Partial<UIMediaObjectIssuesUpdateProps> => ({
+		invalidateExpectedPackageId: [id],
+	})
+	const trackPackageContainerPackageStatusChange = (
+		id: PackageContainerPackageId
+	): Partial<UIMediaObjectIssuesUpdateProps> => ({
+		invalidatePackageContainerPackageStatusesId: [id],
 	})
 
 	// Second level of reactivity
@@ -153,6 +162,33 @@ async function setupUIMediaObjectIssuesPublicationObservers(
 					added: () => triggerUpdate({ invalidateStudio: true }),
 					changed: () => triggerUpdate({ invalidateStudio: true }),
 					removed: () => triggerUpdate({ invalidateStudio: true }),
+				}),
+
+				// Watch for affecting objects
+				MediaObjects.find({ studioId: rundown.studioId }).observe({
+					added: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
+					changed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
+					removed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
+				}),
+				PackageInfos.find({
+					studioId: rundown.studioId,
+					type: {
+						$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+					},
+				}).observe({
+					added: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
+					changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
+					removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
+				}),
+				PackageContainerPackageStatuses.find({
+					studioId: rundown.studioId,
+					type: {
+						$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+					},
+				}).observeChanges({
+					added: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
+					changed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
+					removed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
 				}),
 			]
 		} else {
@@ -186,6 +222,7 @@ async function setupUIMediaObjectIssuesPublicationObservers(
 
 		rundownContentsObserver,
 
+		// Watch rundown contents
 		Segments.find({ rundownId: args.rundownId }, { fields: segmentFieldSpecifier }).observeChanges({
 			added: (id) => triggerUpdate(trackSegmentChange(id)),
 			changed: (id) => triggerUpdate(trackSegmentChange(id)),
@@ -248,32 +285,13 @@ async function manipulateUIMediaObjectIssuesPublicationData(
 	state.piecesCache = updatedPiecesCache
 
 	// Apply some final updates that don't require re-running the inner checks
-	collection.updateAll((doc) => {
-		let changed = false
-
-		// If the part for this doc changed, update its part.
-		// Note: if the segment of the doc's part changes that will only be noticed here
-		if (updatedPartIds.has(doc.partId)) {
-			const part = state.partsCache?.get(doc.partId)
-			if (part && (part.segmentId !== doc.segmentId || part._rank !== doc.partRank)) {
-				doc.segmentId = part.segmentId
-				doc.partRank = part._rank
-				changed = true
-			}
-		}
-
-		// If the segment for this doc changed, update its rank
-		if (updatedSegmentIds.has(doc.segmentId)) {
-			const segment = state.segmentCache?.get(doc.segmentId)
-			if (segment && (doc.segmentRank !== segment._rank || doc.segmentName !== segment.name)) {
-				doc.segmentRank = segment._rank
-				doc.segmentName = segment.name
-				changed = true
-			}
-		}
-
-		return changed ? doc : false
-	})
+	updatePartAndSegmentInfoForExistingDocs(
+		state.partsCache,
+		state.segmentCache,
+		collection,
+		updatedSegmentIds,
+		updatedPartIds
+	)
 
 	// If there is no studio, then none of the objects should have been found, so delete anything that is known
 	if (!state.uiStudio || !state.sourceLayers) {
@@ -294,7 +312,8 @@ async function manipulateUIMediaObjectIssuesPublicationData(
 		regeneratePieceIds = new Set(state.piecesCache.keys())
 	} else {
 		// Look for which docs should be updated based on the media objects/packages
-		// TODO
+
+		addPiecesWithDependenciesChangesToChangedSet(updateProps, regeneratePieceIds, state.pieceDependencies)
 	}
 
 	regenerateForPieceIds(
@@ -312,6 +331,71 @@ async function manipulateUIMediaObjectIssuesPublicationData(
 	)
 }
 
+function addPiecesWithDependenciesChangesToChangedSet(
+	updateProps: Partial<ReadonlyDeep<UIMediaObjectIssuesUpdateProps>> | undefined,
+	regeneratePieceIds: Set<PieceId>,
+	pieceDependenciesMap: UIMediaObjectIssuesState['pieceDependencies']
+) {
+	if (
+		updateProps &&
+		(updateProps.invalidateExpectedPackageId?.length ||
+			updateProps.invalidateMediaObjectMediaId?.length ||
+			updateProps.invalidatePackageContainerPackageStatusesId?.length)
+	) {
+		const changedMediaObjects = new Set(updateProps.invalidateMediaObjectMediaId)
+		const changedExpectedPackages = new Set(updateProps.invalidateExpectedPackageId)
+		const changedPackageContainerPackages = new Set(updateProps.invalidatePackageContainerPackageStatusesId)
+
+		for (const [pieceId, pieceDependencies] of pieceDependenciesMap.entries()) {
+			if (regeneratePieceIds.has(pieceId)) continue // skip if we already know the piece has changed
+
+			const pieceChanged =
+				pieceDependencies.mediaObjects.find((mediaId) => changedMediaObjects.has(mediaId)) ||
+				pieceDependencies.packageInfos.find((pkgId) => changedExpectedPackages.has(pkgId)) ||
+				pieceDependencies.packageContainerPackageStatuses.find((pkgId) =>
+					changedPackageContainerPackages.has(pkgId)
+				)
+
+			if (pieceChanged) regeneratePieceIds.add(pieceId)
+		}
+	}
+}
+
+function updatePartAndSegmentInfoForExistingDocs(
+	partsCache: UIMediaObjectIssuesState['partsCache'],
+	segmentCache: UIMediaObjectIssuesState['segmentCache'],
+	collection: CustomPublishCollection<UIMediaObjectIssue>,
+	updatedSegmentIds: Set<SegmentId>,
+	updatedPartIds: Set<PartId>
+) {
+	collection.updateAll((doc) => {
+		let changed = false
+
+		// If the part for this doc changed, update its part.
+		// Note: if the segment of the doc's part changes that will only be noticed here
+		if (updatedPartIds.has(doc.partId)) {
+			const part = partsCache?.get(doc.partId)
+			if (part && (part.segmentId !== doc.segmentId || part._rank !== doc.partRank)) {
+				doc.segmentId = part.segmentId
+				doc.partRank = part._rank
+				changed = true
+			}
+		}
+
+		// If the segment for this doc changed, update its rank
+		if (updatedSegmentIds.has(doc.segmentId)) {
+			const segment = segmentCache?.get(doc.segmentId)
+			if (segment && (doc.segmentRank !== segment._rank || doc.segmentName !== segment.name)) {
+				doc.segmentRank = segment._rank
+				doc.segmentName = segment.name
+				changed = true
+			}
+		}
+
+		return changed ? doc : false
+	})
+}
+
 function regenerateForPieceIds(
 	rundownId: RundownId,
 	state: Pick<
@@ -326,6 +410,8 @@ function regenerateForPieceIds(
 	// Apply the updates to the Pieces
 	// TODO - limit concurrency. This causes updating this publication to be slower, be will help ensure that other tasks have a chance to execute in parallel.
 	for (const pieceId of regeneratePieceIds) {
+		state.pieceDependencies.delete(pieceId)
+
 		const pieceDoc = state.piecesCache.get(pieceId)
 		if (!pieceDoc) {
 			// Piece has been deleted, queue it for batching
