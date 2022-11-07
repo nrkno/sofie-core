@@ -92,7 +92,6 @@ export class CoreHandler {
 	}
 
 	async init(config: CoreConfig, process: Process): Promise<void> {
-		// this.logger.info('========')
 		this._statusInitialized = false
 		this._coreConfig = config
 		this._process = process
@@ -317,9 +316,7 @@ export class CoreHandler {
 					.then(() => {
 						// console.log('cb done')
 					})
-					.catch((e) => {
-						this.logger.error(e)
-					})
+					.catch((error) => this.logger.error(error))
 			}
 			// @ts-expect-error Untyped bunch of functions
 			// eslint-disable-next-line @typescript-eslint/ban-types
@@ -328,12 +325,8 @@ export class CoreHandler {
 				if (!fcn) throw Error(`Function "${cmd.functionName}" not found on device "${cmd.deviceId}"!`)
 
 				Promise.resolve(fcn.apply(fcnObject, cmd.args))
-					.then((result) => {
-						cb(null, result)
-					})
-					.catch((e) => {
-						cb(e.toString(), null)
-					})
+					.then((result) => cb(null, result))
+					.catch((error) => cb(error.toString(), null))
 			} catch (e: any) {
 				cb(e.toString(), null)
 			}
