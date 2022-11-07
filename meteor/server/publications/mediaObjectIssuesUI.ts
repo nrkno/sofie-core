@@ -180,12 +180,7 @@ async function setupUIMediaObjectIssuesPublicationObservers(
 					changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
 					removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
 				}),
-				PackageContainerPackageStatuses.find({
-					studioId: rundown.studioId,
-					type: {
-						$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
-					},
-				}).observeChanges({
+				PackageContainerPackageStatuses.find({ studioId: rundown.studioId }).observeChanges({
 					added: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
 					changed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
 					removed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
@@ -706,7 +701,6 @@ async function updatePiecesCache(
 		return [newMap, new Set(pieces.map((p) => p._id))]
 	}
 
-	// TODO - what is this useful for?
 	const affectedPieceIds = new Set<PieceId>()
 
 	// Reload any Parts that have changed

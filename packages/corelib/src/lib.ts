@@ -206,6 +206,12 @@ export function normalizeArrayToMapFunc<T, K>(array: Array<T>, getKey: (o: T) =>
 	return normalizedObject
 }
 
+/**
+ * Group items in an array by a property of the objects, as a Map of arrays
+ * Replacement for `_.groupBy`
+ * @param array Array of items to group
+ * @param indexKey Name of the property to use as the group-key
+ */
 export function groupByToMap<T, K extends keyof T>(array: Array<T> | IterableIterator<T>, indexKey: K): Map<T[K], T[]> {
 	const groupedItems = new Map<T[K], T[]>()
 	for (const item of array) {
@@ -220,6 +226,12 @@ export function groupByToMap<T, K extends keyof T>(array: Array<T> | IterableIte
 	return groupedItems
 }
 
+/**
+ * Group items in an array by a value derived from the objects, as a Map of arrays
+ * Replacement for `_.groupBy`
+ * @param array Array of items to group
+ * @param getKey Function to get the group-key of the object
+ */
 export function groupByToMapFunc<T, K>(
 	array: Array<T> | IterableIterator<T>,
 	getKey: (o: T) => K | undefined
