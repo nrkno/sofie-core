@@ -91,7 +91,7 @@ type ActionExecutor = (t: TFunction, e: any, ctx: ActionContext) => void
  *
  * @interface ExecutableAction
  */
-interface ExecutableAction {
+export interface ExecutableAction {
 	action: ITriggeredActionBase['action']
 	/** Execute the action */
 	execute: ActionExecutor

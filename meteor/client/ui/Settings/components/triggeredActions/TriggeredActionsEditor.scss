@@ -113,6 +113,23 @@ $triggered-action-color: #146985;
 		> .triggered-action-entry__trigger-editor {
 			display: block;
 			min-width: 228px;
+
+			.triggered-action-entry__trigger-editor__triggers-preview {
+				margin: 1em 0 0;
+				padding: 0;
+				list-style: none;
+
+				> li {
+					margin: 0;
+					padding: 0;
+
+					> h6 {
+						font-size: 1em;
+						margin: 0;
+						padding: 0;
+					}
+				}
+			}
 		}
 
 		&:hover {

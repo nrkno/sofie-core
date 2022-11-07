@@ -1,11 +1,11 @@
 import { IBlueprintDeviceTrigger } from '@sofie-automation/blueprints-integration'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import classNames from 'classnames'
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { PubSub } from '../../../../../../lib/api/pubsub'
 import { Studios } from '../../../../../../lib/collections/Studios'
+import { getCurrentTime } from '../../../../../../lib/lib'
 import { DeviceTriggerPreview } from '../../../../../../server/publications/deviceTriggersPreview'
-import { getCurrentTimeReactive } from '../../../../../lib/currentTimeReactive'
 import { useSubscription, useTracker } from '../../../../../lib/ReactMeteorData/ReactMeteorData'
 import { DeviceTriggersPreviews } from '../../../../Collections'
 import { DeviceTrigger } from './DeviceTrigger'
@@ -16,20 +16,17 @@ interface IProps {
 	onChange: (newVal: IBlueprintDeviceTrigger) => void
 }
 
-const TIME_HORIZON = 1 * 60 * 1000 // 60 seconds
-
 export const DeviceEditor = function DeviceEditor({ trigger, modified, onChange }: IProps) {
+	const opened = useMemo(() => getCurrentTime(), [])
 	const deviceTriggersPreview = useTracker(
-		() => {
-			const now = getCurrentTimeReactive()
-			return DeviceTriggersPreviews.find({
+		() =>
+			DeviceTriggersPreviews.find({
 				timestamp: {
-					$gte: now - TIME_HORIZON,
+					$gte: opened,
 				},
 			})
 				.fetch()
-				.reverse()
-		},
+				.reverse(),
 		[],
 		[] as DeviceTriggerPreview[]
 	)
@@ -70,9 +67,31 @@ export const DeviceEditor = function DeviceEditor({ trigger, modified, onChange 
 				}
 			/>
 			<ul className="triggered-action-entry__trigger-editor__triggers-preview">
-				{deviceTriggersPreview.map((trigger) => (
-					<li key={unprotectString(trigger._id)}>
-						<DeviceTrigger deviceId={trigger.triggerDeviceId} trigger={trigger.triggerId} />
+				{deviceTriggersPreview.map((previewedTrigger) => (
+					<li key={unprotectString(previewedTrigger._id)}>
+						<h6>
+							<DeviceTrigger
+								deviceId={previewedTrigger.triggerDeviceId}
+								trigger={previewedTrigger.triggerId}
+								onClick={() => {
+									onChange({
+										...trigger,
+										deviceId: previewedTrigger.triggerDeviceId,
+										triggerId: previewedTrigger.triggerId,
+									})
+								}}
+							/>
+						</h6>
+
+						{previewedTrigger.values && (
+							<p>
+								{Object.entries(previewedTrigger.values).map(([key, value]) => (
+									<span key={key}>
+										{key}: {value}
+									</span>
+								))}
+							</p>
+						)}
 					</li>
 				))}
 			</ul>

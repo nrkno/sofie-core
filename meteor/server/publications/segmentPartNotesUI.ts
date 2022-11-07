@@ -6,6 +6,7 @@ import {
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
@@ -14,7 +15,7 @@ import { DBPartInstance, PartInstances } from '../../lib/collections/PartInstanc
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
-import { groupByToMap, literal } from '../../lib/lib'
+import { literal } from '../../lib/lib'
 import { getBasicNotesForSegment } from '../../lib/rundownNotifications'
 import { MongoQuery } from '../../lib/typings/meteor'
 import {

@@ -47,6 +47,7 @@ export async function insertTriggerToPreview(
 	triggerId: string,
 	values?: Record<string, string | number | boolean>
 ) {
+	if (typeof deviceId !== 'string') return
 	const pDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 	if (!pDevice) throw new Meteor.Error(404, `Could not find peripheralDevice "${deviceId}"`)
@@ -93,6 +94,7 @@ async function setupDeviceTriggersPreviewsObservers(
 		triggerUpdate(lastTriggersStudio)
 	}
 
+	// console.log(lastTriggersStudio.triggers)
 	triggerUpdate(lastTriggersStudio)
 
 	return [
@@ -109,6 +111,8 @@ async function createObserverForDeviceTriggersPreviewsPublication(
 	observerId: PubSub,
 	studioId: StudioId
 ) {
+	// console.log(JSON.stringify(lastTriggers))
+
 	return setUpOptimizedObserverArray<DeviceTriggerPreview, DeviceTriggersPreviewArgs, DeviceTriggersUpdateProps, {}>(
 		`pub_${observerId}_${studioId}`,
 		{ studioId },
