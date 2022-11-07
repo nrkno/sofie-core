@@ -1584,6 +1584,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				for (const rundown of rundowns) {
 					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+					this.subscribe(PubSub.uiMediaObjectIssues, rundown._id)
 				}
 
 				this.subscribe(PubSub.showStyleVariants, {
@@ -3010,11 +3011,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							</ErrorBoundary>
 							<ErrorBoundary>
 								{this.props.playlist && this.props.studio && this.props.showStyleBase && (
-									<RundownNotifier
-										playlistId={this.props.playlist._id}
-										studio={this.props.studio}
-										showStyleBase={this.props.showStyleBase}
-									/>
+									<RundownNotifier playlistId={this.props.playlist._id} studio={this.props.studio} />
 								)}
 							</ErrorBoundary>
 						</div>

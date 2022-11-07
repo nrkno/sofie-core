@@ -23,3 +23,8 @@ export const UITriggeredActions = createCustomPublicationMongoCollection(CustomC
  * Pre-generated notes to be converted into notificiations.
  */
 export const UISegmentPartNotes = createCustomPublicationMongoCollection(CustomCollectionName.UISegmentPartNotes)
+
+/**
+ * Pre-processed MediaObjectIssue for Pieces in the Rundowns
+ */
+export const UIMediaObjectIssues = createCustomPublicationMongoCollection(CustomCollectionName.UIMediaObjectIssues)

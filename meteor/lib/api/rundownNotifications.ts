@@ -5,6 +5,9 @@ import { ProtectedString } from '../lib'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PieceContentStatusObj } from '../mediaObjects'
 
+/**
+ * @deprecated
+ */
 export interface IMediaObjectIssue {
 	segmentRank: number
 	partRank: number
@@ -18,10 +21,6 @@ export interface IMediaObjectIssue {
 	messages: ITranslatableMessage[]
 }
 
-export enum RundownNotificationsAPIMethods {
-	'getMediaObjectIssues' = 'rundownNotifications.getMediaObjectIssues',
-}
-
 export type UISegmentPartNoteId = ProtectedString<'UISegmentPartNote'>
 export interface UISegmentPartNote {
 	_id: UISegmentPartNoteId
@@ -31,9 +30,6 @@ export interface UISegmentPartNote {
 
 	note: TrackedNote
 }
-
-/** How often the client polls for updates on media statuses */
-export const MEDIASTATUS_POLL_INTERVAL = 10 * 1000
 
 export type UIMediaObjectIssueId = ProtectedString<'UIMediaObjectIssue'>
 export interface UIMediaObjectIssue {
@@ -51,8 +47,4 @@ export interface UIMediaObjectIssue {
 	segmentName: string
 
 	status: PieceContentStatusObj
-}
-
-export interface RundownNotificationsAPI {
-	getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]>
 }
