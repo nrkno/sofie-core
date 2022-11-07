@@ -31,9 +31,9 @@ export interface UISegmentPartNote {
 	note: TrackedNote
 }
 
-export type UIMediaObjectIssueId = ProtectedString<'UIMediaObjectIssue'>
-export interface UIMediaObjectIssue {
-	_id: UIMediaObjectIssueId
+export type UIPieceContentStatusId = ProtectedString<'UIPieceContentStatus'>
+export interface UIPieceContentStatus {
+	_id: UIPieceContentStatusId
 
 	segmentRank: number
 	partRank: number

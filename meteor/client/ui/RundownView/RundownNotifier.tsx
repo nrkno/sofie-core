@@ -41,7 +41,7 @@ import {
 	SegmentId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UIMediaObjectIssues, UISegmentPartNotes } from '../Collections'
+import { UIPieceContentStatuses, UISegmentPartNotes } from '../Collections'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -481,7 +481,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				const rundownIds = rRundowns.get().map((rd) => rd._id)
 
 				const allIssues = getIgnorePieceContentStatus()
-					? UIMediaObjectIssues.find({ rundownId: { $in: rundownIds } }).fetch()
+					? UIPieceContentStatuses.find({ rundownId: { $in: rundownIds } }).fetch()
 					: []
 
 				const newPieceIds = _.unique(allIssues.map((item) => item.pieceId))

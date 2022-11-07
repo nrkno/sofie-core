@@ -1584,7 +1584,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				for (const rundown of rundowns) {
 					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
-					this.subscribe(PubSub.uiMediaObjectIssues, rundown._id)
+					this.subscribe(PubSub.uiPieceContentStatuses, rundown._id)
 				}
 
 				this.subscribe(PubSub.showStyleVariants, {

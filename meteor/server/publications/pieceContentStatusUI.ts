@@ -17,7 +17,7 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
-import { UIMediaObjectIssue } from '../../lib/api/rundownNotifications'
+import { UIPieceContentStatus } from '../../lib/api/rundownNotifications'
 import { UIStudio } from '../../lib/api/studios'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { PackageContainerPackageStatuses } from '../../lib/collections/PackageContainerPackageStatus'
@@ -42,11 +42,11 @@ import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { RundownReadAccess } from '../security/rundown'
 
-interface UIMediaObjectIssuesArgs {
+interface UIPieceContentStatusesArgs {
 	readonly rundownId: RundownId
 }
 
-interface UIMediaObjectIssuesState {
+interface UIPieceContentStatusesState {
 	showStyleBaseId: ShowStyleBaseId
 	studioId: StudioId
 
@@ -60,7 +60,7 @@ interface UIMediaObjectIssuesState {
 	pieceDependencies: Map<PieceId, PieceDependencies>
 }
 
-interface UIMediaObjectIssuesUpdateProps {
+interface UIPieceContentStatusesUpdateProps {
 	invalidateSourceLayers: boolean
 	invalidateStudio: boolean
 	invalidateRundown: boolean
@@ -120,28 +120,28 @@ const pieceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PieceFields>>(
 	expectedPackages: 1,
 })
 
-async function setupUIMediaObjectIssuesPublicationObservers(
-	args: ReadonlyDeep<UIMediaObjectIssuesArgs>,
-	triggerUpdate: TriggerUpdate<UIMediaObjectIssuesUpdateProps>
+async function setupUIPieceContentStatusesPublicationObservers(
+	args: ReadonlyDeep<UIPieceContentStatusesArgs>,
+	triggerUpdate: TriggerUpdate<UIPieceContentStatusesUpdateProps>
 ): Promise<Meteor.LiveQueryHandle[]> {
-	const trackSegmentChange = (id: SegmentId): Partial<UIMediaObjectIssuesUpdateProps> => ({
+	const trackSegmentChange = (id: SegmentId): Partial<UIPieceContentStatusesUpdateProps> => ({
 		invalidateSegmentIds: [id],
 	})
-	const trackPartChange = (id: PartId): Partial<UIMediaObjectIssuesUpdateProps> => ({
+	const trackPartChange = (id: PartId): Partial<UIPieceContentStatusesUpdateProps> => ({
 		invalidatePartIds: [id],
 	})
-	const trackPieceChange = (id: PieceId): Partial<UIMediaObjectIssuesUpdateProps> => ({
+	const trackPieceChange = (id: PieceId): Partial<UIPieceContentStatusesUpdateProps> => ({
 		invalidatePieceIds: [id],
 	})
-	const trackMediaObjectChange = (mediaId: string): Partial<UIMediaObjectIssuesUpdateProps> => ({
+	const trackMediaObjectChange = (mediaId: string): Partial<UIPieceContentStatusesUpdateProps> => ({
 		invalidateMediaObjectMediaId: [mediaId],
 	})
-	const trackPackageInfoChange = (id: ExpectedPackageId): Partial<UIMediaObjectIssuesUpdateProps> => ({
+	const trackPackageInfoChange = (id: ExpectedPackageId): Partial<UIPieceContentStatusesUpdateProps> => ({
 		invalidateExpectedPackageId: [id],
 	})
 	const trackPackageContainerPackageStatusChange = (
 		id: PackageContainerPackageId
-	): Partial<UIMediaObjectIssuesUpdateProps> => ({
+	): Partial<UIPieceContentStatusesUpdateProps> => ({
 		invalidatePackageContainerPackageStatusesId: [id],
 	})
 
@@ -236,11 +236,11 @@ async function setupUIMediaObjectIssuesPublicationObservers(
 	]
 }
 
-async function manipulateUIMediaObjectIssuesPublicationData(
-	args: UIMediaObjectIssuesArgs,
-	state: Partial<UIMediaObjectIssuesState>,
-	collection: CustomPublishCollection<UIMediaObjectIssue>,
-	updateProps: Partial<ReadonlyDeep<UIMediaObjectIssuesUpdateProps>> | undefined
+async function manipulateUIPieceContentStatusesPublicationData(
+	args: UIPieceContentStatusesArgs,
+	state: Partial<UIPieceContentStatusesState>,
+	collection: CustomPublishCollection<UIPieceContentStatus>,
+	updateProps: Partial<ReadonlyDeep<UIPieceContentStatusesUpdateProps>> | undefined
 ): Promise<void> {
 	// Prepare data for publication:
 
@@ -327,9 +327,9 @@ async function manipulateUIMediaObjectIssuesPublicationData(
 }
 
 function addPiecesWithDependenciesChangesToChangedSet(
-	updateProps: Partial<ReadonlyDeep<UIMediaObjectIssuesUpdateProps>> | undefined,
+	updateProps: Partial<ReadonlyDeep<UIPieceContentStatusesUpdateProps>> | undefined,
 	regeneratePieceIds: Set<PieceId>,
-	pieceDependenciesMap: UIMediaObjectIssuesState['pieceDependencies']
+	pieceDependenciesMap: UIPieceContentStatusesState['pieceDependencies']
 ) {
 	if (
 		updateProps &&
@@ -357,9 +357,9 @@ function addPiecesWithDependenciesChangesToChangedSet(
 }
 
 function updatePartAndSegmentInfoForExistingDocs(
-	partsCache: UIMediaObjectIssuesState['partsCache'],
-	segmentCache: UIMediaObjectIssuesState['segmentCache'],
-	collection: CustomPublishCollection<UIMediaObjectIssue>,
+	partsCache: UIPieceContentStatusesState['partsCache'],
+	segmentCache: UIPieceContentStatusesState['segmentCache'],
+	collection: CustomPublishCollection<UIPieceContentStatus>,
 	updatedSegmentIds: Set<SegmentId>,
 	updatedPartIds: Set<PartId>
 ) {
@@ -394,10 +394,10 @@ function updatePartAndSegmentInfoForExistingDocs(
 function regenerateForPieceIds(
 	rundownId: RundownId,
 	state: Pick<
-		UIMediaObjectIssuesState,
+		UIPieceContentStatusesState,
 		'partsCache' | 'piecesCache' | 'segmentCache' | 'sourceLayers' | 'uiStudio' | 'pieceDependencies'
 	>,
-	collection: CustomPublishCollection<UIMediaObjectIssue>,
+	collection: CustomPublishCollection<UIPieceContentStatus>,
 	regeneratePieceIds: Set<PieceId>
 ) {
 	const deletedPieceIds = new Set<PieceId>()
@@ -453,7 +453,7 @@ function regenerateForPieceIds(
 }
 
 function checkPieceContentStatusAndDependencies(
-	uiStudio: UIMediaObjectIssuesState['uiStudio'],
+	uiStudio: UIPieceContentStatusesState['uiStudio'],
 	pieceDoc: Pick<Piece, PieceFields>,
 	sourceLayer: ISourceLayer
 ): [status: PieceContentStatusObj, pieceDependencies: PieceDependencies] {
@@ -510,7 +510,9 @@ interface PieceDependencies {
 	packageContainerPackageStatuses: PackageContainerPackageId[]
 }
 
-async function updateIdsFromRundown(args: UIMediaObjectIssuesArgs): Promise<[ShowStyleBaseId, StudioId] | undefined> {
+async function updateIdsFromRundown(
+	args: UIPieceContentStatusesArgs
+): Promise<[ShowStyleBaseId, StudioId] | undefined> {
 	const rundown = (await Rundowns.findOneAsync(args.rundownId, { projection: rundownFieldSpecifier })) as
 		| Pick<Rundown, RundownFields>
 		| undefined
@@ -524,9 +526,9 @@ async function updateIdsFromRundown(args: UIMediaObjectIssuesArgs): Promise<[Sho
 
 async function updateSourceLayers(
 	showStyleBaseId: ShowStyleBaseId | undefined,
-	existingSourceLayers: UIMediaObjectIssuesState['sourceLayers'] | undefined,
+	existingSourceLayers: UIPieceContentStatusesState['sourceLayers'] | undefined,
 	invalidated: boolean | undefined
-): Promise<UIMediaObjectIssuesState['sourceLayers'] | undefined> {
+): Promise<UIPieceContentStatusesState['sourceLayers'] | undefined> {
 	if (!showStyleBaseId) return undefined
 
 	if (!existingSourceLayers || invalidated) {
@@ -546,9 +548,9 @@ async function updateSourceLayers(
 
 async function updateStudio(
 	studioId: StudioId | undefined,
-	existingStudio: UIMediaObjectIssuesState['uiStudio'] | undefined,
+	existingStudio: UIPieceContentStatusesState['uiStudio'] | undefined,
 	invalidated: boolean | undefined
-): Promise<UIMediaObjectIssuesState['uiStudio'] | undefined> {
+): Promise<UIPieceContentStatusesState['uiStudio'] | undefined> {
 	if (!studioId) return undefined
 
 	if (!existingStudio || invalidated) {
@@ -573,10 +575,10 @@ async function updateStudio(
 }
 
 async function updatePartsCache(
-	existingMap: UIMediaObjectIssuesState['partsCache'] | undefined,
+	existingMap: UIPieceContentStatusesState['partsCache'] | undefined,
 	rundownId: RundownId,
 	changedPartIds: ReadonlyDeep<PartId[]> | undefined
-): Promise<[newMap: UIMediaObjectIssuesState['partsCache'], affectedPartIds: Set<PartId>]> {
+): Promise<[newMap: UIPieceContentStatusesState['partsCache'], affectedPartIds: Set<PartId>]> {
 	// Create a fresh map
 	if (!existingMap) {
 		const parts = (await Parts.findFetchAsync(
@@ -584,7 +586,7 @@ async function updatePartsCache(
 			{ projection: partFieldSpecifier }
 		)) as Pick<DBPart, PartFields>[]
 
-		const newMap: UIMediaObjectIssuesState['partsCache'] = new Map()
+		const newMap: UIPieceContentStatusesState['partsCache'] = new Map()
 		for (const part of parts) {
 			newMap.set(part._id, part)
 		}
@@ -628,10 +630,10 @@ async function updatePartsCache(
 }
 
 async function updateSegmentsCache(
-	existingMap: UIMediaObjectIssuesState['segmentCache'] | undefined,
+	existingMap: UIPieceContentStatusesState['segmentCache'] | undefined,
 	rundownId: RundownId,
 	changedSegmentIds: ReadonlyDeep<SegmentId[]> | undefined
-): Promise<[newMap: UIMediaObjectIssuesState['segmentCache'], affectedSegmentIds: Set<SegmentId>]> {
+): Promise<[newMap: UIPieceContentStatusesState['segmentCache'], affectedSegmentIds: Set<SegmentId>]> {
 	// Create a fresh map
 	if (!existingMap) {
 		const segments = (await Segments.findFetchAsync(
@@ -639,7 +641,7 @@ async function updateSegmentsCache(
 			{ projection: segmentFieldSpecifier }
 		)) as Pick<DBSegment, SegmentFields>[]
 
-		const newMap: UIMediaObjectIssuesState['segmentCache'] = new Map()
+		const newMap: UIPieceContentStatusesState['segmentCache'] = new Map()
 		for (const segment of segments) {
 			newMap.set(segment._id, segment)
 		}
@@ -683,10 +685,10 @@ async function updateSegmentsCache(
 }
 
 async function updatePiecesCache(
-	existingMap: UIMediaObjectIssuesState['piecesCache'] | undefined,
+	existingMap: UIPieceContentStatusesState['piecesCache'] | undefined,
 	rundownId: RundownId,
 	changedPieceIds: ReadonlyDeep<PieceId[]> | undefined
-): Promise<[newMap: UIMediaObjectIssuesState['piecesCache'], affectedSegmentIds: Set<PieceId>]> {
+): Promise<[newMap: UIPieceContentStatusesState['piecesCache'], affectedSegmentIds: Set<PieceId>]> {
 	// Create a fresh map
 	if (!existingMap) {
 		const pieces = (await Pieces.findFetchAsync(
@@ -694,7 +696,7 @@ async function updatePiecesCache(
 			{ projection: pieceFieldSpecifier }
 		)) as Pick<Piece, PieceFields>[]
 
-		const newMap: UIMediaObjectIssuesState['piecesCache'] = new Map()
+		const newMap: UIPieceContentStatusesState['piecesCache'] = new Map()
 		for (const piece of pieces) {
 			newMap.set(piece._id, piece)
 		}
@@ -737,8 +739,8 @@ async function updatePiecesCache(
 }
 
 meteorCustomPublish(
-	PubSub.uiMediaObjectIssues,
-	CustomCollectionName.UIMediaObjectIssues,
+	PubSub.uiPieceContentStatuses,
+	CustomCollectionName.UIPieceContentStatuses,
 	async function (pub, rundownId: RundownId | null) {
 		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
 
@@ -747,19 +749,19 @@ meteorCustomPublish(
 			(!cred || NoSecurityReadAccess.any() || (await RundownReadAccess.rundownContent(rundownId, cred)))
 		) {
 			await setUpCollectionOptimizedObserver<
-				UIMediaObjectIssue,
-				UIMediaObjectIssuesArgs,
-				UIMediaObjectIssuesState,
-				UIMediaObjectIssuesUpdateProps
+				UIPieceContentStatus,
+				UIPieceContentStatusesArgs,
+				UIPieceContentStatusesState,
+				UIPieceContentStatusesUpdateProps
 			>(
-				`pub_${PubSub.uiMediaObjectIssues}_${rundownId}`,
+				`pub_${PubSub.uiPieceContentStatuses}_${rundownId}`,
 				{ rundownId },
-				setupUIMediaObjectIssuesPublicationObservers,
-				manipulateUIMediaObjectIssuesPublicationData,
+				setupUIPieceContentStatusesPublicationObservers,
+				manipulateUIPieceContentStatusesPublicationData,
 				pub
 			)
 		} else {
-			logger.warn(`Pub.${CustomCollectionName.UIMediaObjectIssues}: Not allowed: "${rundownId}"`)
+			logger.warn(`Pub.${CustomCollectionName.UIPieceContentStatuses}: Not allowed: "${rundownId}"`)
 		}
 	}
 )

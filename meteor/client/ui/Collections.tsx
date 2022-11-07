@@ -27,4 +27,6 @@ export const UISegmentPartNotes = createCustomPublicationMongoCollection(CustomC
 /**
  * Pre-processed MediaObjectIssue for Pieces in the Rundowns
  */
-export const UIMediaObjectIssues = createCustomPublicationMongoCollection(CustomCollectionName.UIMediaObjectIssues)
+export const UIPieceContentStatuses = createCustomPublicationMongoCollection(
+	CustomCollectionName.UIPieceContentStatuses
+)
