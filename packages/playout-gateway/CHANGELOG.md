@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.47.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
+
+
+### Bug Fixes
+
+* add an option to purge all Viz elements from the viz-rundown, in system-status view ([d22f0d6](https://github.com/nrkno/tv-automation-server-core/commit/d22f0d673e080fc7d9ca11ba7b9df1cb3e43c1d2))
+
+
+
+# [1.47.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+
+
+### Bug Fixes
+
+* **Playout Gateway:** remove uninitialized devices from the list to retry them later and keep the overall device status correct ([0bf9fef](https://github.com/nrkno/tv-automation-server-core/commit/0bf9fef6f8ea0e639ee0abf9c996882dd8b215fa))
+* Upgrade TSR to 2.1.8. ([d3f0e54](https://github.com/nrkno/tv-automation-server-core/commit/d3f0e5473b898449f1630f70b7ca90f9814a6078))
+
+
+### Features
+
+* adlib actions can set timeline datastore ([0cd2f62](https://github.com/nrkno/tv-automation-server-core/commit/0cd2f62ba1a079ea0cc5b17c13846ead26ae7a21))
+* tl datastore collection and testtool ([c4a7a17](https://github.com/nrkno/tv-automation-server-core/commit/c4a7a17bc0b4b7b2e5ff2af0f039d9674151d57f))
+
+
+
+
+
 # [1.47.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
 
 
