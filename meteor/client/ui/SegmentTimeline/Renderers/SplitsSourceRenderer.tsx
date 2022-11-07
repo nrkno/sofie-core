@@ -111,7 +111,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 							</span>
 						) : null}
 						<span
-							className="segment-timeline__piece__label right-side"
+							className="segment-timeline__piece__label right-side overflow-label"
 							ref={this.setRightLabelRef}
 							style={this.getItemLabelOffsetRight()}
 						>

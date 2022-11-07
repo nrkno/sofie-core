@@ -8,11 +8,12 @@ import { Random } from 'meteor/random'
 import Tooltip from 'rc-tooltip'
 import { withTranslation } from 'react-i18next'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { EditAttribute } from '../../../lib/EditAttribute'
+import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { findHighestRank } from '../StudioSettings'
+import { Meteor } from 'meteor/meteor'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -41,7 +42,7 @@ export const OutputLayerSettings = withTranslation()(
 			return this.state.editedOutputs.indexOf(item._id) >= 0
 		}
 
-		finishEditItem = (item: IOutputLayer) => {
+		finishEditItem = (item: Pick<IOutputLayer, '_id'>) => {
 			const index = this.state.editedOutputs.indexOf(item._id)
 			if (index >= 0) {
 				this.state.editedOutputs.splice(index, 1)
@@ -51,7 +52,7 @@ export const OutputLayerSettings = withTranslation()(
 			}
 		}
 
-		editItem = (item: IOutputLayer) => {
+		editItem = (item: Pick<IOutputLayer, '_id'>) => {
 			if (this.state.editedOutputs.indexOf(item._id) < 0) {
 				this.state.editedOutputs.push(item._id)
 				this.setState({
@@ -93,21 +94,47 @@ export const OutputLayerSettings = withTranslation()(
 			})
 
 			ShowStyleBases.update(this.props.showStyleBase._id, {
-				$push: {
-					outputLayers: newOutput,
+				$set: {
+					[`outputLayersWithOverrides.defaults.${newOutput._id}`]: newOutput,
 				},
 			})
 		}
 		onDeleteOutput = (item: IOutputLayer) => {
 			if (this.props.showStyleBase) {
 				ShowStyleBases.update(this.props.showStyleBase._id, {
-					$pull: {
-						outputLayers: {
-							_id: item._id,
-						},
+					$unset: {
+						[`outputLayersWithOverrides.defaults.${item._id}`]: 1,
 					},
 				})
 			}
+		}
+		updateLayerId = (edit: EditAttributeBase, newValue: string) => {
+			const oldLayerId = edit.props.overrideDisplayValue
+			const newLayerId = newValue + ''
+			const layer = this.props.showStyleBase.outputLayersWithOverrides.defaults[oldLayerId]
+
+			if (!layer || !edit.props.collection) {
+				return
+			}
+
+			if (this.props.showStyleBase.outputLayersWithOverrides.defaults[newLayerId]) {
+				throw new Meteor.Error(400, 'Layer "' + newLayerId + '" already exists')
+			}
+
+			edit.props.collection.update(this.props.showStyleBase._id, {
+				$set: {
+					[`outputLayersWithOverrides.defaults.${newLayerId}`]: {
+						...layer,
+						_id: newLayerId,
+					},
+				},
+				$unset: {
+					[`outputLayersWithOverrides.defaults.${oldLayerId}`]: 1,
+				},
+			})
+
+			this.finishEditItem({ _id: oldLayerId })
+			this.editItem({ _id: newLayerId })
 		}
 
 		renderOutputs() {
@@ -172,6 +199,8 @@ export const OutputLayerSettings = withTranslation()(
 													type="text"
 													collection={ShowStyleBases}
 													className="input text-input input-l"
+													overrideDisplayValue={item._id}
+													updateFunction={this.updateLayerId}
 												></EditAttribute>
 											</label>
 										</div>

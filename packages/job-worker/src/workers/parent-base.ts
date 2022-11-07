@@ -272,8 +272,8 @@ export abstract class WorkerParentBase {
 								this.#watchdogJobStarted = startTime
 
 								try {
-									logger.debug(`Starting work ${job.id}: "${job.name}"`)
-									logger.verbose(`Payload ${job.id}: ${JSON.stringify(job.data)}`)
+									logger.verbose(`Starting work ${job.id}: "${job.name}"`)
+									logger.debug(`Payload ${job.id}: ${JSON.stringify(job.data)}`)
 
 									// Future - extend the job lock on an interval
 									let result: WorkerJobResult

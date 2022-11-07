@@ -14,6 +14,7 @@ import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/P
 import { executePeripheralDeviceFunction } from '../peripheralDevice'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { cleanTimelineDatastore } from './datastore'
 
 export async function activateRundownPlaylist(
 	context: JobContext,
@@ -133,6 +134,8 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 	const rundown = await deactivateRundownPlaylistInner(context, cache)
 
 	await updateStudioTimeline(context, cache)
+
+	await cleanTimelineDatastore(context, cache)
 
 	cache.defer(async () => {
 		if (rundown) {

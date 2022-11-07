@@ -2146,7 +2146,7 @@ svg.icon {
 				}
 			}
 
-			.segment-timeline__piece:not(.infinite) .segment-timeline__piece__label.right-side {
+			.segment-timeline__piece:not(.infinite) > .segment-timeline__piece__label.right-side {
 				background: inherit;
 			}
 

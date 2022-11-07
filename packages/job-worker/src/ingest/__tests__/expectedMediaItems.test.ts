@@ -207,8 +207,6 @@ describe('Expected Media Items', () => {
 						removedSegmentIds: [],
 						renamedSegments: new Map(),
 						removeRundown: false,
-						blueprint: undefined,
-						showStyle: undefined,
 					}
 				}
 			)
