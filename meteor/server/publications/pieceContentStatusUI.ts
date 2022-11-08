@@ -28,7 +28,7 @@ import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studio, Studios } from '../../lib/collections/Studios'
-import { literal, protectString } from '../../lib/lib'
+import { clone, literal, protectString } from '../../lib/lib'
 import { checkPieceContentStatus, PieceContentStatusObj } from '../../lib/mediaObjects'
 import {
 	CustomPublishCollection,
@@ -37,6 +37,7 @@ import {
 	setUpCollectionOptimizedObserver,
 	TriggerUpdate,
 } from '../lib/customPublication'
+import { updateGenericCache } from '../lib/customPublication/updateHelper'
 import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
@@ -274,26 +275,40 @@ async function manipulateUIPieceContentStatusesPublicationData(
 	state.uiStudio = await updateStudio(state.studioId, state.uiStudio, updateIds || updateProps.invalidateStudio)
 
 	// Update the Parts and Segments caches
-	const [
-		[updatedSegmentsCache, updatedSegmentIds],
-		[updatedPartsCache, updatedPartIds],
-		[updatedPiecesCache, updatedPieceIds],
-	] = await Promise.all([
-		updateSegmentsCache(state.segmentCache, args.rundownId, updateProps?.invalidateSegmentIds),
-		updatePartsCache(state.partsCache, args.rundownId, updateProps?.invalidatePartIds),
-		updatePiecesCache(state.piecesCache, args.rundownId, updateProps?.invalidatePieceIds),
+	const [segmentUpdates, partsUpdates, piecesUpdates] = await Promise.all([
+		updateGenericCache(
+			Segments,
+			state.segmentCache,
+			{ rundownId: args.rundownId },
+			segmentFieldSpecifier,
+			clone<SegmentId[] | undefined>(updateProps?.invalidateSegmentIds)
+		),
+		updateGenericCache(
+			Parts,
+			state.partsCache,
+			{ rundownId: args.rundownId },
+			segmentFieldSpecifier,
+			clone<PartId[] | undefined>(updateProps?.invalidatePartIds)
+		),
+		updateGenericCache(
+			Pieces,
+			state.piecesCache,
+			{ rundownId: args.rundownId },
+			segmentFieldSpecifier,
+			clone<PieceId[] | undefined>(updateProps?.invalidatePieceIds)
+		),
 	])
-	state.segmentCache = updatedSegmentsCache
-	state.partsCache = updatedPartsCache
-	state.piecesCache = updatedPiecesCache
+	state.segmentCache = segmentUpdates.newCache
+	state.partsCache = partsUpdates.newCache
+	state.piecesCache = piecesUpdates.newCache
 
 	// Apply some final updates that don't require re-running the inner checks
 	updatePartAndSegmentInfoForExistingDocs(
 		state.partsCache,
 		state.segmentCache,
 		collection,
-		updatedSegmentIds,
-		updatedPartIds
+		new Set(segmentUpdates.changedDocIds),
+		new Set(partsUpdates.changedDocIds)
 	)
 
 	// If there is no studio, then none of the objects should have been found, so delete anything that is known
@@ -306,7 +321,7 @@ async function manipulateUIPieceContentStatusesPublicationData(
 		return
 	}
 
-	let regeneratePieceIds = updatedPieceIds
+	let regeneratePieceIds = new Set([...piecesUpdates.changedDocIds, ...piecesUpdates.addedDocIds])
 	if (!state.pieceDependencies) {
 		state.pieceDependencies = new Map()
 
@@ -314,8 +329,13 @@ async function manipulateUIPieceContentStatusesPublicationData(
 		collection.remove(null)
 		regeneratePieceIds = new Set(state.piecesCache.keys())
 	} else {
-		// Look for which docs should be updated based on the media objects/packages
+		// Remove any docs where the piece has been deleted
+		if (piecesUpdates.removedDocIds.length > 0) {
+			const removePieceIds = new Set(piecesUpdates.removedDocIds)
+			collection.remove((doc) => removePieceIds.has(doc.pieceId))
+		}
 
+		// Look for which docs should be updated based on the media objects/packages
 		addPiecesWithDependenciesChangesToChangedSet(updateProps, regeneratePieceIds, state.pieceDependencies)
 	}
 
@@ -580,170 +600,6 @@ async function updateStudio(
 	}
 
 	return existingStudio
-}
-
-async function updatePartsCache(
-	existingMap: UIPieceContentStatusesState['partsCache'] | undefined,
-	rundownId: RundownId,
-	changedPartIds: ReadonlyDeep<PartId[]> | undefined
-): Promise<[newMap: UIPieceContentStatusesState['partsCache'], affectedPartIds: Set<PartId>]> {
-	// Create a fresh map
-	if (!existingMap) {
-		const parts = (await Parts.findFetchAsync(
-			{ rundownId: rundownId },
-			{ projection: partFieldSpecifier }
-		)) as Pick<DBPart, PartFields>[]
-
-		const newMap: UIPieceContentStatusesState['partsCache'] = new Map()
-		for (const part of parts) {
-			newMap.set(part._id, part)
-		}
-		return [newMap, new Set(parts.map((p) => p._id))]
-	}
-
-	// TODO - what is this useful for?
-	const affectedPartIds = new Set<PartId>()
-
-	// Reload any Parts that have changed
-	if (changedPartIds && changedPartIds.length > 0) {
-		const fetchedPartIds = new Set<PartId>()
-		const parts = (await Parts.findFetchAsync(
-			{ _id: { $in: changedPartIds as PartId[] }, rundownId: rundownId },
-			{ projection: partFieldSpecifier }
-		)) as Pick<DBPart, PartFields>[]
-
-		for (const part of parts) {
-			// Part could have moved across segments
-			const existing = existingMap.get(part._id)
-			if (existing) {
-				affectedPartIds.add(existing._id)
-			}
-			affectedPartIds.add(part._id)
-			existingMap.set(part._id, part)
-			fetchedPartIds.add(part._id)
-		}
-
-		// Remove them from the cache, so that we detect deletions
-		for (const id of changedPartIds) {
-			if (!fetchedPartIds.has(id)) {
-				const existing = existingMap.get(id)
-				if (existing) {
-					affectedPartIds.add(existing._id)
-					existingMap.delete(id)
-				}
-			}
-		}
-	}
-	return [existingMap, affectedPartIds]
-}
-
-async function updateSegmentsCache(
-	existingMap: UIPieceContentStatusesState['segmentCache'] | undefined,
-	rundownId: RundownId,
-	changedSegmentIds: ReadonlyDeep<SegmentId[]> | undefined
-): Promise<[newMap: UIPieceContentStatusesState['segmentCache'], affectedSegmentIds: Set<SegmentId>]> {
-	// Create a fresh map
-	if (!existingMap) {
-		const segments = (await Segments.findFetchAsync(
-			{ rundownId: rundownId },
-			{ projection: segmentFieldSpecifier }
-		)) as Pick<DBSegment, SegmentFields>[]
-
-		const newMap: UIPieceContentStatusesState['segmentCache'] = new Map()
-		for (const segment of segments) {
-			newMap.set(segment._id, segment)
-		}
-		return [newMap, new Set(segments.map((p) => p._id))]
-	}
-
-	// TODO - what is this useful for?
-	const affectedSegmentIds = new Set<SegmentId>()
-
-	// Reload any Parts that have changed
-	if (changedSegmentIds && changedSegmentIds.length > 0) {
-		const fetchedSegmentIds = new Set<SegmentId>()
-		const segments = (await Segments.findFetchAsync(
-			{ _id: { $in: changedSegmentIds as SegmentId[] }, rundownId: rundownId },
-			{ projection: segmentFieldSpecifier }
-		)) as Pick<DBSegment, SegmentFields>[]
-
-		for (const segment of segments) {
-			// Part could have moved across segments
-			const existing = existingMap.get(segment._id)
-			if (existing) {
-				affectedSegmentIds.add(existing._id)
-			}
-			affectedSegmentIds.add(segment._id)
-			existingMap.set(segment._id, segment)
-			fetchedSegmentIds.add(segment._id)
-		}
-
-		// Remove them from the cache, so that we detect deletions
-		for (const id of changedSegmentIds) {
-			if (!fetchedSegmentIds.has(id)) {
-				const existing = existingMap.get(id)
-				if (existing) {
-					affectedSegmentIds.add(existing._id)
-					existingMap.delete(id)
-				}
-			}
-		}
-	}
-	return [existingMap, affectedSegmentIds]
-}
-
-async function updatePiecesCache(
-	existingMap: UIPieceContentStatusesState['piecesCache'] | undefined,
-	rundownId: RundownId,
-	changedPieceIds: ReadonlyDeep<PieceId[]> | undefined
-): Promise<[newMap: UIPieceContentStatusesState['piecesCache'], affectedSegmentIds: Set<PieceId>]> {
-	// Create a fresh map
-	if (!existingMap) {
-		const pieces = (await Pieces.findFetchAsync(
-			{ startRundownId: rundownId },
-			{ projection: pieceFieldSpecifier }
-		)) as Pick<Piece, PieceFields>[]
-
-		const newMap: UIPieceContentStatusesState['piecesCache'] = new Map()
-		for (const piece of pieces) {
-			newMap.set(piece._id, piece)
-		}
-		return [newMap, new Set(pieces.map((p) => p._id))]
-	}
-
-	const affectedPieceIds = new Set<PieceId>()
-
-	// Reload any Parts that have changed
-	if (changedPieceIds && changedPieceIds.length > 0) {
-		const fetchedSegmentIds = new Set<PieceId>()
-		const pieces = (await Pieces.findFetchAsync(
-			{ _id: { $in: changedPieceIds as PieceId[] }, startRundownId: rundownId },
-			{ projection: pieceFieldSpecifier }
-		)) as Pick<Piece, PieceFields>[]
-
-		for (const piece of pieces) {
-			// Part could have moved across segments
-			const existing = existingMap.get(piece._id)
-			if (existing) {
-				affectedPieceIds.add(existing._id)
-			}
-			affectedPieceIds.add(piece._id)
-			existingMap.set(piece._id, piece)
-			fetchedSegmentIds.add(piece._id)
-		}
-
-		// Remove them from the cache, so that we detect deletions
-		for (const id of changedPieceIds) {
-			if (!fetchedSegmentIds.has(id)) {
-				const existing = existingMap.get(id)
-				if (existing) {
-					affectedPieceIds.add(existing._id)
-					existingMap.delete(id)
-				}
-			}
-		}
-	}
-	return [existingMap, affectedPieceIds]
 }
 
 meteorCustomPublish(
