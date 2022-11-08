@@ -132,11 +132,9 @@ export function nightlyCronjobInner(): void {
 					logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 
 					ps.push(
-						PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-							subDevice._id,
-							CASPARCG_RESTART_TIME,
-							'restartCasparCG'
-						)
+						PeripheralDeviceAPI.executeFunctionWithCustomTimeout(subDevice._id, CASPARCG_RESTART_TIME, {
+							functionName: 'restartCasparCG',
+						})
 							.then(() => {
 								logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
 							})

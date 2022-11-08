@@ -59,14 +59,31 @@ export namespace PeripheralDeviceContentWriteAccess {
 	 * Check if a user is allowed to execute a PeripheralDevice function in a Studio
 	 */
 	export async function executeFunction(cred0: Credentials, deviceId: PeripheralDeviceId): Promise<ContentAccess> {
+		const checkAccess = async (device: PeripheralDevice | undefined) => {
+			if (!device || !device.studioId) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
+
+			const access = await StudioContentWriteAccess.executeFunction(cred0, device.studioId)
+
+			const access2 = await allowAccessToPeripheralDeviceContent(access.cred, device)
+			if (!access2.playout) throw new Meteor.Error(403, `Not allowed: ${access2.reason}`)
+			return access
+		}
+
 		const device = await PeripheralDevices.findOneAsync(deviceId)
-		if (!device || !device.studioId) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 
-		const access = await StudioContentWriteAccess.executeFunction(cred0, device.studioId)
+		if (device?.parentDeviceId) {
+			// check access on parent
+			const parentDevice = await PeripheralDevices.findOneAsync(device.parentDeviceId)
+			const access = await checkAccess(parentDevice)
+			return {
+				...access,
+				deviceId: device._id,
+				device,
+			}
+		}
 
-		const access2 = await allowAccessToPeripheralDeviceContent(access.cred, device)
-		if (!access2.playout) throw new Meteor.Error(403, `Not allowed: ${access2.reason}`)
-
+		const access = await checkAccess(device)
+		if (!device) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`) // @todo - isn't this essentially just for typings?
 		return {
 			...access,
 			deviceId: device._id,

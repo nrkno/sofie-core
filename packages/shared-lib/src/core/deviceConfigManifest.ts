@@ -25,6 +25,10 @@ export interface DeviceConfigManifest {
 	 * A description of the layer mapping config fields
 	 */
 	layerMappings?: MappingsManifest
+	/**
+	 * A description of supported actions to be executed on the device
+	 */
+	actionManifest?: any
 }
 
 export interface SubDeviceConfigManifest {

@@ -8,6 +8,8 @@ import {
 	QuantelDevice,
 	MediaObject,
 	DeviceOptionsAny,
+	manifest,
+	ActionExecutionResult,
 } from 'timeline-state-resolver'
 
 import * as _ from 'underscore'
@@ -173,7 +175,10 @@ export class CoreHandler {
 			deviceName: name,
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
 
-			configManifest: PLAYOUT_DEVICE_CONFIG,
+			configManifest: {
+				...PLAYOUT_DEVICE_CONFIG,
+				actionManifest: manifest,
+			},
 		}
 
 		if (!options.deviceToken) {
@@ -277,38 +282,42 @@ export class CoreHandler {
 	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreTSRDeviceHandler): void {
 		if (cmd) {
 			if (this._executedFunctions[unprotectString(cmd._id)]) return // prevent it from running multiple times
-			this.logger.debug(`Executing function "${cmd.functionName}", args: ${JSON.stringify(cmd.args)}`)
-			this._executedFunctions[unprotectString(cmd._id)] = true
-			// console.log('executeFunction', cmd)
 			const cb = (err: any, res?: any) => {
-				// console.log('cb', err, res)
 				if (err) {
 					this.logger.error('executeFunction error', err, err.stack)
 				}
-				fcnObject.core.coreMethods
-					.functionReply(cmd._id, err, res)
-					.then(() => {
-						// console.log('cb done')
-					})
-					.catch((e) => {
-						this.logger.error(e)
-					})
+				fcnObject.core.coreMethods.functionReply(cmd._id, err, res).catch((e) => {
+					this.logger.error(e)
+				})
 			}
-			// @ts-expect-error Untyped bunch of functions
-			// eslint-disable-next-line @typescript-eslint/ban-types
-			const fcn: Function = fcnObject[cmd.functionName]
-			try {
-				if (!fcn) throw Error(`Function "${cmd.functionName}" not found on device "${cmd.deviceId}"!`)
 
-				Promise.resolve(fcn.apply(fcnObject, cmd.args))
-					.then((result) => {
-						cb(null, result)
-					})
-					.catch((e) => {
-						cb(e.toString(), null)
-					})
-			} catch (e: any) {
-				cb(e.toString(), null)
+			if (cmd.functionName) {
+				this.logger.debug(`Executing function "${cmd.functionName}", args: ${JSON.stringify(cmd.args)}`)
+				this._executedFunctions[unprotectString(cmd._id)] = true
+				// @ts-expect-error Untyped bunch of functions
+				// eslint-disable-next-line @typescript-eslint/ban-types
+				const fcn: Function = fcnObject[cmd.functionName]
+				try {
+					if (!fcn) throw Error(`Function "${cmd.functionName}" not found on device "${cmd.deviceId}"!`)
+
+					Promise.resolve(fcn.apply(fcnObject, cmd.args))
+						.then((result) => {
+							cb(null, result)
+						})
+						.catch((e) => {
+							cb(e.toString(), null)
+						})
+				} catch (e: any) {
+					cb(e.toString(), null)
+				}
+			} else if (cmd.actionId && 'executeAction' in fcnObject) {
+				this.logger.debug(`Executing action "${cmd.actionId}", payload: ${JSON.stringify(cmd.payload)}`)
+				this._executedFunctions[unprotectString(cmd._id)] = true
+
+				fcnObject
+					.executeAction(cmd.actionId, cmd.payload)
+					.then((result) => cb(null, result))
+					.catch((e) => cb(e.toString, null))
 			}
 		}
 	}
@@ -670,5 +679,11 @@ export class CoreTSRDeviceHandler {
 		} else {
 			return Promise.reject('device.formatHyperdeck not set')
 		}
+	}
+	async executeAction(actionId: string, payload?: Record<string, any>): Promise<ActionExecutionResult> {
+		this._coreParentHandler.logger.info(`Exec ${actionId} on ${this._deviceId}`)
+		const device = this._device.device
+
+		return device.executeAction(actionId, payload)
 	}
 }

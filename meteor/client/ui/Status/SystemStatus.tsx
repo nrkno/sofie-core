@@ -17,7 +17,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
+import { callPeripheralDeviceAction, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -97,6 +97,86 @@ export const DeviceItem = reacti18next.withTranslation()(
 					ignore: !device.ignore,
 				},
 			})
+		}
+		// @todo - don't use any
+		onExecuteAction(event: any, device: PeripheralDevice, action: any) {
+			const { t } = this.props
+
+			if (action.destructive || action.payload) {
+				doModalDialog({
+					title: action.name,
+					message: t('Do you want to execute {{actionName}}?', { actionName: action.name }),
+					onAccept: (event: any) => {
+						callPeripheralDeviceAction(event, device._id, CASPARCG_RESTART_TIME, action.id) // todo - add payload
+							.then((r: TSR.ActionExecutionResult) => {
+								if (r?.result === TSR.ActionExecutionResultCode.Error) {
+									throw new Error(r.response || 'unknown error')
+								}
+								NotificationCenter.push(
+									new Notification(
+										undefined,
+										NoticeLevel.NOTIFICATION,
+										r?.response
+											? t('Executed {{actionName}} on device "{{deviceName}}": {{response}}', {
+													actionName: action.name,
+													deviceName: device.name,
+													response: r.response,
+											  })
+											: t('Executed {{actionName}} on device "{{deviceName}}"...', {
+													actionName: action.name,
+													deviceName: device.name,
+											  }),
+										'SystemStatus'
+									)
+								)
+							})
+							.catch((err) => {
+								NotificationCenter.push(
+									new Notification(
+										undefined,
+										NoticeLevel.WARNING,
+										t('Failed to execute {{actionName}} on device: "{{deviceName}}": {{errorMessage}}', {
+											actionName: action.name,
+											deviceName: device.name,
+											errorMessage: err + '',
+										}),
+										'SystemStatus'
+									)
+								)
+							})
+					},
+				})
+			} else {
+				callPeripheralDeviceAction(event, device._id, CASPARCG_RESTART_TIME, action.id) // todo - add payload
+					.then((r: any) => {
+						console.log('res', r)
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								t('Execute {{actionName}} on device "{{deviceName}}"...', {
+									actionName: action.name,
+									deviceName: device.name,
+								}),
+								'SystemStatus'
+							)
+						)
+					})
+					.catch((err) => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.WARNING,
+								t('Failed to execute {{actionName}} on device: "{{deviceName}}": {{errorMessage}}', {
+									actionName: action.name,
+									deviceName: device.name,
+									errorMessage: err + '',
+								}),
+								'SystemStatus'
+							)
+						)
+					})
+			}
 		}
 		onRestartCasparCG(device: PeripheralDevice) {
 			const { t } = this.props
@@ -253,6 +333,22 @@ export const DeviceItem = reacti18next.withTranslation()(
 
 					<div className="actions-container">
 						<div className="device-item__actions">
+							{this.props.device.type === PeripheralDeviceType.PLAYOUT &&
+								this.props.device.configManifest.actionManifest?.[this.props.device.subType] &&
+								this.props.device.configManifest.actionManifest[this.props.device.subType].actions.map((action) => (
+									<React.Fragment key={action.id}>
+										<button
+											className="btn btn-secondary"
+											onClick={(e) => {
+												e.preventDefault()
+												e.stopPropagation()
+												this.onExecuteAction(e, this.props.device, action)
+											}}
+										>
+											{action.name}
+										</button>
+									</React.Fragment>
+								))}
 							{getAllowStudio() &&
 							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
 							this.props.device.subType === TSR.DeviceType.CASPARCG ? (

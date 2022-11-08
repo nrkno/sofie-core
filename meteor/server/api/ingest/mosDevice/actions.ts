@@ -25,8 +25,7 @@ export namespace MOSDeviceActions {
 			const mosRunningOrder: MOS.IMOSRunningOrder = await PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 				peripheralDevice._id,
 				DEFAULT_MOS_TIMEOUT_TIME + 1000,
-				'triggerGetRunningOrder',
-				rundown.externalId
+				{ functionName: 'triggerGetRunningOrder', args: [rundown.externalId] }
 			)
 
 			logger.info('triggerGetRunningOrder reply ' + mosRunningOrder.ID)
@@ -97,11 +96,10 @@ export namespace MOSDeviceActions {
 			peripheralDevice._id,
 			// we need a very long timeout to make sure we receive notification from the device
 			120 * 1000,
-			'replaceStoryItem',
-			mosPayload.RunningOrderId,
-			mosPayload.ID,
-			story,
-			modifiedFields
+			{
+				functionName: 'replaceStoryItem',
+				args: [mosPayload.RunningOrderId, mosPayload.ID, story, modifiedFields],
+			}
 		).then((response) => {
 			// If the response was a failed write, then reject
 			if (response && response.mos && response.mos.roAck && response.mos.roAck.roStatus !== 'OK')
