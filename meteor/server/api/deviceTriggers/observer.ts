@@ -266,10 +266,13 @@ function setupRundownContentObserver({
 	activationId: RundownPlaylistActivationId | undefined
 	currentRundownId: RundownId
 }): Meteor.LiveQueryHandle {
-	const cache = createReactiveContentCache((cache) => {
-		logger.debug(`DeviceTriggers observer reacting to change in RundownPlaylist "${rundownPlaylistId}"`)
-		refreshDeviceTriggerMountedActions(studioId, showStyleBaseId, currentRundownId, cache)
-	}, REACTIVITY_DEBOUNCE)
+	const cache = createReactiveContentCache(
+		Meteor.bindEnvironment((cache) => {
+			logger.debug(`DeviceTriggers observer reacting to change in RundownPlaylist "${rundownPlaylistId}"`)
+			refreshDeviceTriggerMountedActions(studioId, showStyleBaseId, currentRundownId, cache)
+		}),
+		REACTIVITY_DEBOUNCE
+	)
 
 	const observers: Meteor.LiveQueryHandle[] = [
 		Segments.find({
@@ -332,11 +335,11 @@ function setupRundownContentObserver({
 	]
 
 	return {
-		stop: () => {
+		stop: Meteor.bindEnvironment(() => {
 			logger.debug(`Cleaning up DeviceTriggers`)
 			refreshDeviceTriggerMountedActions(studioId, showStyleBaseId, currentRundownId, null)
 			observers.forEach((observer) => observer.stop())
-		},
+		}),
 	}
 }
 

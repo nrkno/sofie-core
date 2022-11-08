@@ -1,10 +1,11 @@
 import * as i18next from 'i18next'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { ClientAPI } from '../../lib/api/client'
+import _ from 'underscore'
+import { NotificationCenter, Notification, NoticeLevel } from './notifications/notifications'
+import { ClientAPI } from './api/client'
 import { Meteor } from 'meteor/meteor'
-import { eventContextForLog } from './clientAPI'
-import { assertNever, Time } from '../../lib/lib'
-import { UserAction } from '../../lib/userAction'
+import { logger } from './logging'
+import { assertNever, getCurrentTime, systemTime, Time } from './lib'
+import { UserAction } from './userAction'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export { UserAction }
@@ -237,4 +238,46 @@ export function doUserAction<Result>(
 				navigator.vibrate([400, 300, 400, 300, 400])
 			}
 		})
+}
+
+export function eventContextForLog(e: any): [string, Time] {
+	const timeStamp = getEventTimestamp(e)
+	if (!e) return ['', timeStamp]
+	let str: string = ''
+	if (_.isString(e)) {
+		return [e, timeStamp]
+	} else if (e.currentTarget && e.currentTarget.localName && !e.key && !e.code) {
+		let contents = ''
+		if (e.currentTarget.localName !== 'body' && e.currentTarget.innerText) {
+			contents = ` "${e.currentTarget.innerText}"`
+		}
+		str =
+			e.type + ': ' + e.currentTarget.localName + (e.currentTarget.id ? '#' + e.currentTarget.id : '') + contents
+	} else if (e.key && e.code) {
+		str = e.type + ': ' + keyboardEventToShortcut(e as KeyboardEvent)
+	} else {
+		str = e.type
+	}
+	if (!str) {
+		logger.error('Unknown event', e)
+		console.error(e)
+		str = 'N/A'
+	}
+
+	return [str, timeStamp]
+}
+
+function keyboardEventToShortcut(e: KeyboardEvent): string {
+	const combo = _.compact([
+		e.ctrlKey ? 'Control' : undefined,
+		e.shiftKey ? 'Shift' : undefined,
+		e.altKey ? 'Alt' : undefined,
+		e.metaKey ? 'Meta' : undefined,
+		e.code,
+	])
+	return combo.join('+')
+}
+
+export function getEventTimestamp(e: any): Time {
+	return e.timeStamp ? performance.timeOrigin + e.timeStamp + systemTime.timeOriginDiff : getCurrentTime()
 }

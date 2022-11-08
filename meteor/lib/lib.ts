@@ -466,6 +466,22 @@ export enum LogLevel {
 	NONE = 'crit',
 }
 
+export enum LocalStorageProperty {
+	STUDIO = 'studioMode',
+	CONFIGURE = 'configureMode',
+	DEVELOPER = 'developerMode',
+	TESTING = 'testingMode',
+	SPEAKING = 'speakingMode',
+	SERVICE = 'serviceMode',
+	SHELF_FOLLOWS_ON_AIR = 'shelfFollowsOnAir',
+	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers',
+	IGNORE_PIECE_CONTENT_STATUS = 'ignorePieceContentStatus',
+	UI_ZOOM_LEVEL = 'uiZoomLevel',
+	HELP_MODE = 'helpMode',
+	LOG_NOTIFICATIONS = 'logNotifications',
+	PROTO_ONE_PART_PER_LINE = 'proto:onePartPerLine',
+}
+
 /**
  * Convert a MongoQuery from @sofie-automation/corelib typings to Meteor typings.
  * They aren't compatible yet because Meteor is using some 'loose' custom typings, rather than corelib which uses the strong typings given by the mongodb library

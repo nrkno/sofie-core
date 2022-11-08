@@ -11,17 +11,28 @@ import {
 	protectString,
 	assertNever,
 	getRandomString,
-} from '../../../lib/lib'
-import {
-	isTranslatableMessage,
-	ITranslatableMessage,
-	translateMessage,
-} from '@sofie-automation/corelib/dist/TranslatableMessage'
+	LocalStorageProperty,
+} from '../lib'
+import { isTranslatableMessage, ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { MeteorCall } from '../../../lib/api/methods'
-import { i18nTranslator } from '../../ui/i18n'
-import { getReportNotifications } from '../localStorage'
+import { MeteorCall } from '../api/methods'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+
+let reportNotificationsId: string | null = null
+
+export function getReportNotifications() {
+	return reportNotificationsId
+}
+
+export function setReportNotifications(id: string | null) {
+	reportNotificationsId = id
+}
+
+Meteor.startup(() => {
+	if (!Meteor.isClient) return
+
+	reportNotificationsId = localStorage.getItem(LocalStorageProperty.LOG_NOTIFICATIONS)
+})
 
 /**
  * Priority level for Notifications.
@@ -163,7 +174,7 @@ class NotificationCenter0 {
 
 						if (notification && !notification.snoozed) {
 							const message = isTranslatableMessage(notification.message)
-								? translateMessage(notification.message, i18nTranslator)
+								? notification.message.key
 								: typeof notification.message === 'string'
 								? notification.message
 								: '[React Element]'
@@ -545,23 +556,27 @@ export function getNoticeLevelForPieceStatus(statusCode: PieceStatusCode): Notic
 	}
 }
 
-window['testNotification'] = function (
-	delay: number,
-	level: NoticeLevel = NoticeLevel.CRITICAL,
-	fakePersistent: boolean = false
-) {
-	NotificationCenter.push(
-		new Notification(
-			undefined,
-			level,
-			'Notification test',
-			protectString('test'),
-			undefined,
-			fakePersistent,
-			undefined,
-			100000,
-			delay || 10000
+Meteor.startup(() => {
+	if (!Meteor.isClient) return
+
+	window['testNotification'] = function (
+		delay: number,
+		level: NoticeLevel = NoticeLevel.CRITICAL,
+		fakePersistent: boolean = false
+	) {
+		NotificationCenter.push(
+			new Notification(
+				undefined,
+				level,
+				'Notification test',
+				protectString('test'),
+				undefined,
+				fakePersistent,
+				undefined,
+				100000,
+				delay || 10000
+			)
 		)
-	)
-}
-window['notificationCenter'] = NotificationCenter
+	}
+	window['notificationCenter'] = NotificationCenter
+})

@@ -12,7 +12,7 @@ import {
 	PieceInstanceWithTimings,
 } from '@sofie-automation/corelib/dist/playout/infinites'
 import { MongoQuery } from './typings/meteor'
-import { invalidateAfter } from '../client/lib/invalidatingTime'
+import { invalidateAfter } from '../lib/invalidatingTime'
 import { convertCorelibToMeteorMongoQuery, getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from './collections/RundownPlaylists'
 import { Rundown } from './collections/Rundowns'

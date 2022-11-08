@@ -25,7 +25,7 @@ import {
 	SomeContent,
 } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { doUserAction, getEventTimestamp, UserAction } from '../../../lib/clientUserAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
 import {
@@ -33,7 +33,6 @@ import {
 	contextMenuHoldToDisplayTime,
 	UserAgentPointer,
 	USER_AGENT_POINTER_PROPERTY,
-	getEventTimestamp,
 } from '../../lib/lib'
 import { IDashboardPanelTrackedProps } from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'

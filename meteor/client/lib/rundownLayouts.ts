@@ -7,7 +7,7 @@ import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstan
 import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../lib/lib'
-import { invalidateAt } from './invalidatingTime'
+import { invalidateAt } from './../../lib/invalidatingTime'
 import { memoizedIsolatedAutorun } from './reactiveData/reactiveDataHelper'
 
 /**
