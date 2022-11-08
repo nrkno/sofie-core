@@ -244,6 +244,8 @@ async function manipulateUIPieceContentStatusesPublicationData(
 ): Promise<void> {
 	// Prepare data for publication:
 
+	const studioIdBefore = state.studioId
+
 	// Ensure the cached studio/showstyle id are updated
 	const updateIds = !updateProps || updateProps.invalidateRundown
 	if (updateIds) {
@@ -255,6 +257,12 @@ async function manipulateUIPieceContentStatusesPublicationData(
 			state.showStyleBaseId = undefined
 			state.studioId = undefined
 		}
+	}
+
+	if (studioIdBefore !== state.studioId) {
+		// All of the media references are valid, so clear everything that is cached
+		delete state.pieceDependencies
+		collection.remove(null)
 	}
 
 	// Ensure the sourcelayers and studio are updated
