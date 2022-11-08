@@ -6,7 +6,7 @@ declare interface Keyboard {
 	getLayoutMap(): Promise<KeyboardLayoutMap>
 	addEventListener(type: KeyboardLayoutEvents, listener: EventListener): void
 	removeEventListener(type: KeyboardLayoutEvents, listener: EventListener): void
-	lock(): Promise<undefined>
+	lock(keyCodes?: string[]): Promise<undefined>
 }
 
 declare interface Navigator {
