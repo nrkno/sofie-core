@@ -758,7 +758,8 @@ meteorCustomPublish(
 				{ rundownId },
 				setupUIPieceContentStatusesPublicationObservers,
 				manipulateUIPieceContentStatusesPublicationData,
-				pub
+				pub,
+				100
 			)
 		} else {
 			logger.warn(`Pub.${CustomCollectionName.UIPieceContentStatuses}: Not allowed: "${rundownId}"`)

@@ -48,9 +48,10 @@ interface UISegmentPartNotesUpdateProps {
 	invalidatePartInstanceIds: PartInstanceId[]
 }
 
-type RundownFields = '_id' | 'externalNRCSName'
+type RundownFields = '_id' | 'playlistId' | 'externalNRCSName'
 const rundownFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownFields>>({
 	_id: 1,
+	playlistId: 1,
 	externalNRCSName: 1,
 })
 
