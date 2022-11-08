@@ -600,7 +600,7 @@ async function updatePartsCache(
 	if (changedPartIds && changedPartIds.length > 0) {
 		const fetchedPartIds = new Set<PartId>()
 		const parts = (await Parts.findFetchAsync(
-			{ _id: { $in: changedPartIds as PartId[] } },
+			{ _id: { $in: changedPartIds as PartId[] }, rundownId: rundownId },
 			{ projection: partFieldSpecifier }
 		)) as Pick<DBPart, PartFields>[]
 
@@ -655,7 +655,7 @@ async function updateSegmentsCache(
 	if (changedSegmentIds && changedSegmentIds.length > 0) {
 		const fetchedSegmentIds = new Set<SegmentId>()
 		const segments = (await Segments.findFetchAsync(
-			{ _id: { $in: changedSegmentIds as SegmentId[] } },
+			{ _id: { $in: changedSegmentIds as SegmentId[] }, rundownId: rundownId },
 			{ projection: segmentFieldSpecifier }
 		)) as Pick<DBSegment, SegmentFields>[]
 
@@ -709,7 +709,7 @@ async function updatePiecesCache(
 	if (changedPieceIds && changedPieceIds.length > 0) {
 		const fetchedSegmentIds = new Set<PieceId>()
 		const pieces = (await Pieces.findFetchAsync(
-			{ _id: { $in: changedPieceIds as PieceId[] } },
+			{ _id: { $in: changedPieceIds as PieceId[] }, startRundownId: rundownId },
 			{ projection: pieceFieldSpecifier }
 		)) as Pick<Piece, PieceFields>[]
 

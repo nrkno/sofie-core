@@ -510,7 +510,9 @@ async function updateSegmentsCache(
 
 	// Reload Segments for any Rundowns that have changed
 	if (changedRundownIds.length > 0) {
-		const fetchedSegmentIds = await updateSegmentsForQuery({ rundownId: { $in: changedRundownIds } })
+		const fetchedSegmentIds = await updateSegmentsForQuery({
+			$and: [{ rundownId: { $in: changedRundownIds } }, { rundownId: { $in: allRundownIds } }],
+		})
 
 		// Check for deletions
 		const changedRundownIdsSet = new Set(changedRundownIds)
@@ -524,7 +526,10 @@ async function updateSegmentsCache(
 
 	// Reload any Segments that have changed
 	if (changedSegmentIds && changedSegmentIds.length > 0) {
-		const fetchedSegmentIds = await updateSegmentsForQuery({ _id: { $in: changedSegmentIds as SegmentId[] } })
+		const fetchedSegmentIds = await updateSegmentsForQuery({
+			_id: { $in: changedSegmentIds as SegmentId[] },
+			rundownId: { $in: allRundownIds },
+		})
 
 		// Remove them from the cache, so that we detect deletions
 		for (const id of changedSegmentIds) {
@@ -578,7 +583,7 @@ async function updatePartsCache(
 		}
 
 		const parts = (await Parts.findFetchAsync(
-			{ segmentId: { $in: invalidatedSegmentIds } },
+			{ segmentId: { $in: invalidatedSegmentIds }, rundownId: { $in: allRundownIds } },
 			{ projection: partFieldSpecifier }
 		)) as Pick<DBPart, PartFields>[]
 		for (const part of parts) {
@@ -591,7 +596,7 @@ async function updatePartsCache(
 		const fetchedPartIds = new Set<PartId>()
 
 		const parts = (await Parts.findFetchAsync(
-			{ _id: { $in: changedPartIds as PartId[] } },
+			{ _id: { $in: changedPartIds as PartId[] }, rundownId: { $in: allRundownIds } },
 			{ projection: partFieldSpecifier }
 		)) as Pick<DBPart, PartFields>[]
 		for (const part of parts) {
@@ -660,7 +665,7 @@ async function updatePartInstancesCache(
 		}
 
 		const partInstances = (await PartInstances.findFetchAsync(
-			{ segmentId: { $in: invalidatedSegmentIds } },
+			{ segmentId: { $in: invalidatedSegmentIds }, rundownId: { $in: allRundownIds } },
 			{ projection: partInstanceFieldSpecifier }
 		)) as Pick<DBPartInstance, PartInstanceFields>[]
 		for (const part of partInstances) {
@@ -673,7 +678,7 @@ async function updatePartInstancesCache(
 		const fetchedPartInstanceIds = new Set<PartInstanceId>()
 
 		const partInstances = (await PartInstances.findFetchAsync(
-			{ _id: { $in: changedPartInstanceIds as PartInstanceId[] } },
+			{ _id: { $in: changedPartInstanceIds as PartInstanceId[] }, rundownId: { $in: allRundownIds } },
 			{ projection: partInstanceFieldSpecifier }
 		)) as Pick<DBPartInstance, PartInstanceFields>[]
 		for (const part of partInstances) {
