@@ -45,7 +45,7 @@ import {
 	faSort,
 } from '@fortawesome/free-solid-svg-icons'
 import { UploadButton } from '../../lib/uploadButton'
-import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { MongoCollection } from '../../../lib/collections/lib'
 
 function filterSourceLayers(

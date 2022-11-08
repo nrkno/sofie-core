@@ -11,7 +11,7 @@ import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../lib/collections/PeripheralDevices'
 
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 
 import { faPlus, faTrash, faExclamationTriangle, faCaretRight, faCaretDown } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'

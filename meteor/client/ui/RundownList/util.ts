@@ -1,7 +1,7 @@
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { unprotectString } from '../../../lib/lib'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { TFunction } from 'i18next'
 import { handleRundownReloadResponse } from '../RundownView'

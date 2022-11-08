@@ -62,11 +62,11 @@ import {
 	reloadRundownPlaylistClick,
 } from './RundownView/RundownNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
 import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
-import { doUserAction, UserAction } from '../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
@@ -99,7 +99,7 @@ import RundownViewEventBus, {
 	IEventContext,
 	MiniShelfQueueAdLibEvent,
 	RundownViewEvents,
-} from './RundownView/RundownViewEventBus'
+} from '../../lib/api/triggers/RundownViewEventBus'
 import StudioContext from './RundownView/StudioContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'

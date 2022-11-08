@@ -19,8 +19,8 @@ import {
 	IBlueprintActionTriggerMode,
 	SomeContent,
 } from '@sofie-automation/blueprints-integration'
-import { doUserAction, UserAction } from '../../lib/userAction'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import {
 	RundownLayoutFilter,
 	RundownLayoutFilterBase,
@@ -43,7 +43,10 @@ import {
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
-import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	RevealInShelfEvent,
+} from '../../../lib/api/triggers/RundownViewEventBus'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'

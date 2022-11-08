@@ -36,10 +36,12 @@ export interface MountedHotkeyMixin {
 	finalKeys: string[]
 }
 
+export type DeviceTriggerArguments = Record<string, string | number | boolean>
+
 interface MountedDeviceMixin {
 	deviceId: string
 	triggerId: string
-	values?: Record<string, string | number | boolean>
+	values?: DeviceTriggerArguments
 }
 
 /** An AdLib action that will be triggered by hotkeys (can be AdLib, RundownBaselineAdLib, AdLib Action, Clear source layer, Sticky, etc.) */

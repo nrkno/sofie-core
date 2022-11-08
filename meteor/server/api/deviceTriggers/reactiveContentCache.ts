@@ -23,7 +23,7 @@ export interface ContentCache {
 	ShowStyleBases: ReactiveCacheCollection<DBShowStyleBase>
 	TriggeredActions: ReactiveCacheCollection<DBTriggeredActions>
 	RundownPlaylists: ReactiveCacheCollection<
-		Pick<DBRundownPlaylist, '_id' | 'activationId' | 'currentPartInstanceId' | 'nextPartInstanceId'>
+		Pick<DBRundownPlaylist, '_id' | 'name' | 'activationId' | 'currentPartInstanceId' | 'nextPartInstanceId'>
 	>
 }
 
@@ -48,7 +48,7 @@ export function createReactiveContentCache(reaction: ReactionWithCache, reactivi
 		ShowStyleBases: new ReactiveCacheCollection<DBShowStyleBase>(innerReaction),
 		TriggeredActions: new ReactiveCacheCollection<DBTriggeredActions>(innerReaction),
 		RundownPlaylists: new ReactiveCacheCollection<
-			Pick<DBRundownPlaylist, '_id' | 'activationId' | 'currentPartInstanceId' | 'nextPartInstanceId'>
+			Pick<DBRundownPlaylist, '_id' | 'name' | 'activationId' | 'currentPartInstanceId' | 'nextPartInstanceId'>
 		>(innerReaction),
 	}
 

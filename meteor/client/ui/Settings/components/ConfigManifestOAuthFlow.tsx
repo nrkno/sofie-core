@@ -3,7 +3,7 @@ import { withTranslation } from 'react-i18next'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { IngestDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
-import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'
 import { fetchFrom } from '../../../lib/lib'
 
 interface IConfigManifestOAuthFlowComponentState {}

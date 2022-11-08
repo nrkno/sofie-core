@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Time } from '../lib'
 import { UserError } from '@sofie-automation/corelib/dist/error'
-import { NoticeLevel } from '../../client/lib/notifications/notifications'
+import { NoticeLevel } from '../notifications/notifications'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface NewClientAPI {

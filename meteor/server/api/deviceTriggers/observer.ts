@@ -4,14 +4,22 @@ import {
 	RundownPlaylistId,
 	ShowStyleBaseId,
 	StudioId,
+	TriggeredActionId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Complete, literal } from '@sofie-automation/corelib/dist/lib'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ProtectedString, protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import _ from 'underscore'
-import { createAction, ExecutableAction } from '../../../lib/api/triggers/actionFactory'
+import {
+	createAction,
+	ExecutableAction,
+	isPreviewableAction,
+	ReactivePlaylistActionContext,
+} from '../../../lib/api/triggers/actionFactory'
+import { IWrappedAdLib } from '../../../lib/api/triggers/actionFilterChainCompilers'
+import { DeviceTriggerArguments } from '../../../lib/api/triggers/MountedTriggers'
 import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
@@ -26,11 +34,13 @@ import { Segments } from '../../../lib/collections/Segments'
 import { DBShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { DBStudio, Studios } from '../../../lib/collections/Studios'
 import { DBTriggeredActions, TriggeredActions, UITriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+import { DummyReactiveVar } from '../../../lib/lib'
 import { observerChain } from '../../lib/observerChain'
 import { logger } from '../../logging'
+import { ReactiveCacheCollection } from './ReactiveCacheCollection'
 import { ContentCache, createReactiveContentCache } from './reactiveContentCache'
 
-const REACTIVITY_DEBOUNCE = 100
+const REACTIVITY_DEBOUNCE = 20
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
@@ -46,14 +56,15 @@ type LiveStudioPlaylistQueryHandle = Meteor.LiveQueryHandle & {
 	showStyleBaseId: ShowStyleBaseId
 	activePlaylistId: RundownPlaylistId
 	activationId: RundownPlaylistActivationId | undefined
+	currentRundownId: RundownId
 }
 
 const studioObservers: Record<string, Meteor.LiveQueryHandle> = {}
-const studioPlaylistObserver: Record<string, LiveStudioPlaylistQueryHandle> = {}
 
 function setupStudioObserver(studio: DBStudio) {
 	logger.debug(`Creating deviceTriggers observer for Studio "${studio._id}"`)
 	const studioId = studio._id
+	let studioPlaylistObserver: LiveStudioPlaylistQueryHandle | null = null
 
 	const contextChainLiveQuery = observerChain()
 		.next(
@@ -111,7 +122,7 @@ function setupStudioObserver(studio: DBStudio) {
 		.end((state) => {
 			// setupTriggeredActionsObserver(state)
 			if (!state) {
-				const oldObserver = studioPlaylistObserver[unprotectString(studioId)]
+				const oldObserver = studioPlaylistObserver
 				if (!oldObserver) return
 				logger.debug(
 					`Destroying deviceTriggers observer for Studio "${
@@ -121,25 +132,24 @@ function setupStudioObserver(studio: DBStudio) {
 					}"`
 				)
 				oldObserver.stop()
-				delete studioPlaylistObserver[unprotectString(studioId)]
+				studioPlaylistObserver = null
 				return
 			}
 
-			const previousObserver = studioPlaylistObserver[unprotectString(studioId)] as
-				| LiveStudioPlaylistQueryHandle
-				| undefined
+			const previousObserver = studioPlaylistObserver
 			if (
 				!previousObserver ||
 				previousObserver.showStyleBaseId !== state.showStyleBase._id ||
 				previousObserver.activePlaylistId !== state.activePlaylist._id ||
-				previousObserver.activationId !== state.activePlaylist.activationId
+				previousObserver.activationId !== state.activePlaylist.activationId ||
+				previousObserver.currentRundownId !== state.currentRundown._id
 			) {
 				logger.debug(
 					`Restarting deviceTriggers observer for Studio "${studio._id}" for rundownPlaylist "${state.activePlaylist._id}", activation: "${state.activePlaylist.activationId}"`
 				)
 
 				previousObserver?.stop()
-				studioPlaylistObserver[unprotectString(studioId)] = setupRundownPlaylistObserver(studioId, state)
+				studioPlaylistObserver = setupRundownPlaylistObserver(studioId, state)
 			}
 		})
 
@@ -161,9 +171,11 @@ function setupRundownPlaylistObserver(
 	{
 		activePlaylist,
 		showStyleBase,
+		currentRundown,
 	}: {
 		activePlaylist: Pick<DBRundownPlaylist, '_id' | 'activationId'>
 		showStyleBase: Pick<DBShowStyleBase, '_id'>
+		currentRundown: Pick<DBRundown, '_id'>
 	}
 ): LiveStudioPlaylistQueryHandle {
 	// set up observers on the content collections and cache the results so that these can be evaluated later
@@ -172,6 +184,7 @@ function setupRundownPlaylistObserver(
 		studioId,
 		rundownPlaylist: activePlaylist,
 		showStyleBaseId: showStyleBase._id,
+		currentRundownId: currentRundown._id,
 	})
 
 	return {
@@ -181,6 +194,7 @@ function setupRundownPlaylistObserver(
 		showStyleBaseId: showStyleBase._id,
 		activePlaylistId: activePlaylist._id,
 		activationId: activePlaylist.activationId,
+		currentRundownId: currentRundown._id,
 	}
 }
 
@@ -188,10 +202,12 @@ function setupRundownsInPlaylistObserver({
 	studioId,
 	rundownPlaylist,
 	showStyleBaseId,
+	currentRundownId,
 }: {
 	studioId: StudioId
 	rundownPlaylist: Pick<DBRundownPlaylist, '_id' | 'activationId'>
 	showStyleBaseId: ShowStyleBaseId
+	currentRundownId: RundownId
 }): Meteor.LiveQueryHandle {
 	const rundownIds: Set<RundownId> = new Set<RundownId>()
 	let contentObserver: Meteor.LiveQueryHandle | undefined
@@ -204,6 +220,7 @@ function setupRundownsInPlaylistObserver({
 				showStyleBaseId,
 				rundownPlaylistId: rundownPlaylist._id,
 				activationId: rundownPlaylist.activationId,
+				currentRundownId,
 			})
 		}),
 		REACTIVITY_DEBOUNCE
@@ -240,16 +257,18 @@ function setupRundownContentObserver({
 	showStyleBaseId,
 	rundownPlaylistId,
 	activationId,
+	currentRundownId,
 }: {
 	studioId: StudioId
 	rundownIds: RundownId[]
 	showStyleBaseId: ShowStyleBaseId
 	rundownPlaylistId: RundownPlaylistId
 	activationId: RundownPlaylistActivationId | undefined
+	currentRundownId: RundownId
 }): Meteor.LiveQueryHandle {
 	const cache = createReactiveContentCache((cache) => {
 		logger.debug(`DeviceTriggers observer reacting to change in RundownPlaylist "${rundownPlaylistId}"`)
-		refreshDeviceTriggerMountedActions(studioId, showStyleBaseId, cache)
+		refreshDeviceTriggerMountedActions(studioId, showStyleBaseId, currentRundownId, cache)
 	}, REACTIVITY_DEBOUNCE)
 
 	const observers: Meteor.LiveQueryHandle[] = [
@@ -304,6 +323,7 @@ function setupRundownContentObserver({
 		RundownPlaylists.find(rundownPlaylistId, {
 			projection: {
 				_id: 1,
+				name: 1,
 				activationId: 1,
 				currentPartInstanceId: 1,
 				nextPartInstanceId: 1,
@@ -314,7 +334,7 @@ function setupRundownContentObserver({
 	return {
 		stop: () => {
 			logger.debug(`Cleaning up DeviceTriggers`)
-			refreshDeviceTriggerMountedActions(studioId, showStyleBaseId, null)
+			refreshDeviceTriggerMountedActions(studioId, showStyleBaseId, currentRundownId, null)
 			observers.forEach((observer) => observer.stop())
 		},
 	}
@@ -322,15 +342,51 @@ function setupRundownContentObserver({
 
 const allDeviceActions: Record<string, ExecutableAction> = {}
 
+type DeviceTriggerMountedActionId = ProtectedString<'deviceTriggerMountedActionId'>
+interface DeviceTriggerMountedAction {
+	_id: DeviceTriggerMountedActionId
+	studioId: StudioId
+	showStyleBaseId: ShowStyleBaseId
+	deviceId: string
+	deviceTriggerId: string
+	values: DeviceTriggerArguments
+	actionId: string
+	actionType: ExecutableAction['action']
+}
+
+type PreviewWrappedAdLibId = ProtectedString<'previewWrappedAdLibId'>
+type PreviewWrappedAdLib = Omit<IWrappedAdLib, '_id'> & {
+	_id: PreviewWrappedAdLibId
+	triggeredActionId: TriggeredActionId
+	actionKeyId: string
+}
+
+export const DeviceTriggerMountedActions = new ReactiveCacheCollection<DeviceTriggerMountedAction>(() => {
+	DeviceTriggerMountedActions.find().forEach((action) => {
+		console.log(action)
+	})
+})
+export const DeviceTriggerMountedActionAdlibsPreview = new ReactiveCacheCollection<PreviewWrappedAdLib>(() => {
+	DeviceTriggerMountedActionAdlibsPreview.find().forEach((preview) => {
+		console.log(preview)
+	})
+})
+
 function refreshDeviceTriggerMountedActions(
 	studioId: StudioId,
 	showStyleBaseId: ShowStyleBaseId,
+	currentRundownId: RundownId,
 	cache: ContentCache | null
 ): void {
 	if (!cache) {
-		// TODO: remove all mounted actions
+		DeviceTriggerMountedActions.remove({
+			studioId,
+			showStyleBaseId,
+		})
 		return
 	}
+
+	const context = createCurrentContext(currentRundownId, cache)
 
 	const showStyleBase = cache.ShowStyleBases.findOne(showStyleBaseId)
 	if (!showStyleBase) {
@@ -347,12 +403,72 @@ function refreshDeviceTriggerMountedActions(
 		Object.values(pair.triggers).find((trigger) => isDeviceTrigger(trigger))
 	)
 
+	const upsertedDeviceTriggerMountedActionIds: DeviceTriggerMountedActionId[] = []
+
 	for (const triggeredAction of triggeredActions) {
+		const addedPreviewIds: PreviewWrappedAdLibId[] = []
+
 		Object.entries(triggeredAction.actions).forEach(([key, action]) => {
 			const compiledAction = createAction(action, sourceLayers)
-			allDeviceActions[`${studioId}_${triggeredAction._id}_${key}`] = compiledAction
+			const actionId = `${studioId}_${triggeredAction._id}_${key}`
+			allDeviceActions[actionId] = compiledAction
+
+			Object.entries(triggeredAction.triggers).forEach(([key, trigger]) => {
+				if (!isDeviceTrigger(trigger)) {
+					return
+				}
+
+				const deviceTriggerMountedActionId = protectString(`${actionId}_${key}`)
+				DeviceTriggerMountedActions.upsert(deviceTriggerMountedActionId, {
+					$set: {
+						studioId,
+						showStyleBaseId,
+						actionType: compiledAction.action,
+						actionId,
+						deviceId: trigger.deviceId,
+						deviceTriggerId: trigger.deviceId,
+						values: trigger.values,
+					},
+				})
+				upsertedDeviceTriggerMountedActionIds.push(deviceTriggerMountedActionId)
+			})
+
+			if (!isPreviewableAction(compiledAction)) return
+
+			const previewedAdLibs = compiledAction.preview(context)
+			console.log(JSON.stringify(previewedAdLibs))
+
+			previewedAdLibs.forEach((adLib) => {
+				const adLibPreviewId = protectString<PreviewWrappedAdLibId>(
+					`${triggeredAction._id}_${key}_${adLib._id}`
+				)
+				DeviceTriggerMountedActionAdlibsPreview.upsert(adLibPreviewId, {
+					$set: {
+						...adLib,
+						_id: adLibPreviewId,
+						triggeredActionId: triggeredAction._id,
+						actionKeyId: key,
+					},
+				})
+				addedPreviewIds.push(adLibPreviewId)
+			})
+		})
+
+		DeviceTriggerMountedActionAdlibsPreview.remove({
+			triggeredActionId: triggeredAction._id,
+			_id: {
+				$nin: addedPreviewIds,
+			},
 		})
 	}
+
+	DeviceTriggerMountedActions.remove({
+		studioId,
+		showStyleBaseId,
+		_id: {
+			$nin: upsertedDeviceTriggerMountedActionIds,
+		},
+	})
 }
 
 function convertDocument(doc: ReadonlyObjectDeep<DBTriggeredActions>): UITriggeredActionsObj {
@@ -366,4 +482,45 @@ function convertDocument(doc: ReadonlyObjectDeep<DBTriggeredActions>): UITrigger
 		actions: applyAndValidateOverrides(doc.actionsWithOverrides).obj,
 		triggers: applyAndValidateOverrides(doc.triggersWithOverrides).obj,
 	})
+}
+
+function createCurrentContext(currentRundownId: RundownId, cache: ContentCache): ReactivePlaylistActionContext {
+	const rundownPlaylist = cache.RundownPlaylists.findOne({
+		activationId: {
+			$exists: true,
+		},
+	})
+
+	if (!rundownPlaylist) throw new Error('There should be an active RundownPlaylist!')
+
+	const currentPartInstance = rundownPlaylist.currentPartInstanceId
+		? cache.PartInstances.findOne(rundownPlaylist.currentPartInstanceId)
+		: undefined
+	const nextPartInstance = rundownPlaylist.nextPartInstanceId
+		? cache.PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
+		: undefined
+
+	const currentSegmentPartIds = currentPartInstance
+		? cache.Parts.find({
+				segmentId: currentPartInstance.part.segmentId,
+		  }).map((part) => part._id)
+		: []
+	const nextSegmentPartIds = nextPartInstance
+		? nextPartInstance.part.segmentId === currentPartInstance?.part.segmentId
+			? currentSegmentPartIds
+			: cache.Parts.find({
+					segmentId: nextPartInstance.part.segmentId,
+			  }).map((part) => part._id)
+		: []
+
+	return {
+		currentPartInstanceId: new DummyReactiveVar(currentPartInstance?._id ?? null),
+		currentPartId: new DummyReactiveVar(currentPartInstance?.part._id ?? null),
+		nextPartId: new DummyReactiveVar(nextPartInstance?.part._id ?? null),
+		currentRundownId: new DummyReactiveVar(currentRundownId),
+		rundownPlaylist: new DummyReactiveVar(rundownPlaylist),
+		rundownPlaylistId: new DummyReactiveVar(rundownPlaylist._id),
+		currentSegmentPartIds: new DummyReactiveVar(currentSegmentPartIds),
+		nextSegmentPartIds: new DummyReactiveVar(nextSegmentPartIds),
+	}
 }

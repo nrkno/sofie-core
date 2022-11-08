@@ -1,9 +1,9 @@
 import EventEmitter from 'events'
-import { ShelfTabs } from '../Shelf/Shelf'
-import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { IAdLibListItem } from '../Shelf/AdLibListItem'
-import { BucketAdLibItem } from '../Shelf/RundownViewBuckets'
-import { Bucket } from '../../../lib/collections/Buckets'
+import { ShelfTabs } from '../../../client/ui/Shelf/Shelf'
+import { PieceUi } from '../../../client/ui/SegmentTimeline/SegmentTimelineContainer'
+import { IAdLibListItem } from '../../../client/ui/Shelf/AdLibListItem'
+import { BucketAdLibItem } from '../../../client/ui/Shelf/RundownViewBuckets'
+import { Bucket } from '../../collections/Buckets'
 import {
 	PartId,
 	PartInstanceId,

@@ -10,6 +10,7 @@ import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/
 
 import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { ReactiveVar } from 'meteor/reactive-var'
 export { Time, TimeDuration }
 
 // Legacy compatability
@@ -474,4 +475,18 @@ export enum LogLevel {
  */
 export function convertCorelibToMeteorMongoQuery<T>(query: CoreLibMongoQuery<T>): MongoQuery<T> {
 	return query as any
+}
+
+/**
+ * This just looks like a ReactiveVar, but is not reactive.
+ * It's used to use the same interface/typings, but when code is run on both client and server side.
+ * */
+export class DummyReactiveVar<T> implements ReactiveVar<T> {
+	constructor(private value: T) {}
+	public get(): T {
+		return this.value
+	}
+	public set(newValue: T): void {
+		this.value = newValue
+	}
 }

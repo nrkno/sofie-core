@@ -5,6 +5,7 @@ import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
+import { DeviceTriggerArguments } from '../../lib/api/triggers/MountedTriggers'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { getCurrentTime } from '../../lib/lib'
 import { setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
@@ -21,7 +22,7 @@ export interface DeviceTriggerPreview {
 	triggerDeviceId: string
 	triggerId: string
 	timestamp: number
-	values?: Record<string, string | number | boolean>
+	values?: DeviceTriggerArguments
 }
 
 meteorCustomPublish(
@@ -45,7 +46,7 @@ export async function insertTriggerToPreview(
 	deviceId: PeripheralDeviceId,
 	triggerDeviceId: string,
 	triggerId: string,
-	values?: Record<string, string | number | boolean>
+	values?: DeviceTriggerArguments
 ) {
 	if (typeof deviceId !== 'string') return
 	const pDevice = await PeripheralDevices.findOneAsync(deviceId)

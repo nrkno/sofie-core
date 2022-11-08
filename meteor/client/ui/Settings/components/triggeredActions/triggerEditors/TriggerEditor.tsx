@@ -112,7 +112,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 				!isDeviceTrigger(trigger) ||
 				trigger.deviceId !== localTrigger.deviceId ||
 				trigger.triggerId !== localTrigger.triggerId ||
-				JSON.stringify(trigger.arguments) !== JSON.stringify(localTrigger.arguments)
+				JSON.stringify(trigger.values) !== JSON.stringify(localTrigger.values)
 			}
 		/>
 	) : null

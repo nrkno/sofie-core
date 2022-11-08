@@ -5,7 +5,7 @@ import { BucketPanel } from './BucketPanel'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { ISourceLayer, IOutputLayer } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { ClientAPI } from '../../../lib/api/client'
 
 import { withTranslation } from 'react-i18next'
@@ -32,7 +32,7 @@ import RundownViewEventBus, {
 	BucketAdLibEvent,
 	BucketEvent,
 	IEventContext,
-} from '../RundownView/RundownViewEventBus'
+} from '../../../lib/api/triggers/RundownViewEventBus'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { BucketId, ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'

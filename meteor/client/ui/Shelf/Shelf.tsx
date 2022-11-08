@@ -27,10 +27,10 @@ import RundownViewEventBus, {
 	SelectPieceEvent,
 	ShelfStateEvent,
 	SwitchToShelfTabEvent,
-} from '../RundownView/RundownViewEventBus'
+} from '../../../lib/api/triggers/RundownViewEventBus'
 import { IAdLibListItem } from './AdLibListItem'
 import ShelfContextMenu from './ShelfContextMenu'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'

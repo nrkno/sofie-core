@@ -18,14 +18,14 @@ import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
-import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
 import ClassNames from 'classnames'
 import { StatusCode, TSR } from '@sofie-automation/blueprints-integration'
 import { CoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { StatusResponse } from '../../../lib/api/systemStatus'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RESTART_SALT } from '../../../lib/api/userActions'
 import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
@@ -504,7 +504,7 @@ export const CoreItem = reacti18next.withTranslation()(
 															{},
 															UserAction.RESTART_CORE,
 															(e, ts) => MeteorCall.userAction.restartCore(e, ts, restartToken),
-															(err, token) => {
+															(err, token: string | undefined) => {
 																if (err || !token) {
 																	NotificationCenter.push(
 																		new Notification(

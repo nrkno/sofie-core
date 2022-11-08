@@ -9,7 +9,7 @@ import {
 	Notification,
 	NoticeLevel,
 	getNoticeLevelForPieceStatus,
-} from '../../lib/notifications/notifications'
+} from '../../../lib/notifications/notifications'
 import { RundownPlaylistValidateBlueprintConfigResult } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
@@ -22,7 +22,7 @@ import { ReactiveVar } from 'meteor/reactive-var'
 import { Segments, Segment } from '../../../lib/collections/Segments'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator as t } from '../i18n'
 import { Piece, PieceStatusCode } from '../../../lib/collections/Pieces'

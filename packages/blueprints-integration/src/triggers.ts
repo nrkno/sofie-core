@@ -85,8 +85,10 @@ export interface IBlueprintDeviceTrigger extends IBlueprintTrigger {
 	/**
 	 * Additional arguements, provided by the trigger, that are required to match
 	 */
-	arguments?: Record<string, string | number | boolean>
+	values?: DeviceTriggerArguments
 }
+
+export type DeviceTriggerArguments = Record<string, string | number | boolean>
 
 export type SomeBlueprintTrigger = IBlueprintHotkeyTrigger | IBlueprintDeviceTrigger
 

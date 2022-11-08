@@ -1,5 +1,5 @@
 import * as i18next from 'i18next'
-import { NotificationCenter, Notification, NoticeLevel } from './notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { ClientAPI } from '../../lib/api/client'
 import { Meteor } from 'meteor/meteor'
 import { eventContextForLog } from './clientAPI'

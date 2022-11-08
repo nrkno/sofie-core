@@ -21,7 +21,7 @@ import { IWrappedAdLib } from '../../../lib/api/triggers/actionFilterChainCompil
 import { ReactiveVar } from 'meteor/reactive-var'
 import { preventDefault } from '../SorensenContext'
 import { getFinalKey } from './codesToKeyLabels'
-import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../../ui/RundownView/RundownViewEventBus'
+import RundownViewEventBus, { RundownViewEvents, TriggerActionEvent } from '../../../lib/api/triggers/RundownViewEventBus'
 import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../../lib/Settings'
 import { createInMemoryMongoCollection } from '../../../lib/collections/lib'

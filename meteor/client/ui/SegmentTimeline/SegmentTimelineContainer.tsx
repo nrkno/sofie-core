@@ -23,7 +23,7 @@ import RundownViewEventBus, {
 	RundownViewEvents,
 	GoToPartEvent,
 	GoToPartInstanceEvent,
-} from '../RundownView/RundownViewEventBus'
+} from '../../../lib/api/triggers/RundownViewEventBus'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import {
 	PartUi,

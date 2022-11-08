@@ -35,9 +35,9 @@ export enum NoticeLevel {
 	/** High priority notification. Operations will not be affected, but non-critical functions may be affected or the result may be undesirable. */
 	WARNING = 0b0010, // 2
 	/** Confirmation of a successful operation and general informations. */
-	NOTIFICATION = 0b0100, // 3
+	NOTIFICATION = 0b0100, // 4
 	/** Tips to the user */
-	TIP = 0b1000, // 4
+	TIP = 0b1000, // 8
 }
 
 /**
