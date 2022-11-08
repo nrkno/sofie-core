@@ -12,12 +12,11 @@ import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UISegmentPartNote } from '../../lib/api/rundownNotifications'
-import { DBPartInstance, PartInstances } from '../../lib/collections/PartInstances'
+import { DBPartInstance, PartInstance, PartInstances } from '../../lib/collections/PartInstances'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBSegment, Segment, SegmentOrphanedReason, Segments } from '../../lib/collections/Segments'
-import { generateTranslation, groupByToMap, literal, protectString } from '../../lib/lib'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { clone, generateTranslation, groupByToMap, literal, ProtectedString, protectString } from '../../lib/lib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,
@@ -25,6 +24,11 @@ import {
 	setUpCollectionOptimizedObserver,
 	TriggerUpdate,
 } from '../lib/customPublication'
+import {
+	updateGenericCache,
+	UpdateGenericCacheResult,
+	addDocsForQueryToDocMap,
+} from '../lib/customPublication/updateHelper'
 import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
@@ -35,10 +39,10 @@ interface UISegmentPartNotesArgs {
 }
 
 interface UISegmentPartNotesState {
-	rundownToNRCSName: Map<RundownId, string>
+	rundownsCache: Map<RundownId, Pick<Rundown, RundownFields>>
 	segmentCache: Map<SegmentId, Pick<DBSegment, SegmentFields>>
 	partsCache: Map<PartId, Pick<DBPart, PartFields>>
-	deletePartInstancesCache: Map<PartInstanceId, Pick<DBPartInstance, PartInstanceFields>>
+	deletePartInstancesCache: Map<PartInstanceId, Pick<PartInstance, PartInstanceFields>>
 }
 
 interface UISegmentPartNotesUpdateProps {
@@ -154,6 +158,18 @@ async function setupUISegmentPartNotesPublicationObservers(
 	]
 }
 
+function cleanCache<TId extends ProtectedString<any>, T extends Record<string, any>, K extends keyof T>(
+	key: K,
+	ids: Set<TId>,
+	cache: Map<any, T>
+) {
+	cache.forEach((part, id) => {
+		if (ids.has(part[key])) {
+			cache.delete(id)
+		}
+	})
+}
+
 async function manipulateUISegmentPartNotesPublicationData(
 	args: UISegmentPartNotesArgs,
 	state: Partial<UISegmentPartNotesState>,
@@ -163,42 +179,69 @@ async function manipulateUISegmentPartNotesPublicationData(
 	// Prepare data for publication:
 
 	// Ensure the rundownToNRCSName map exists and is updated with any changes
-	state.rundownToNRCSName = await updateRundownToNRCSNameMap(
-		args,
-		state.rundownToNRCSName,
-		updateProps?.invalidateRundownIds
+	const rundownsUpdate = await updateGenericCache(
+		Rundowns,
+		state.rundownsCache,
+		{ playlistId: args.playlistId },
+		rundownFieldSpecifier,
+		clone<RundownId[] | undefined>(updateProps?.invalidateRundownIds)
 	)
+	state.rundownsCache = rundownsUpdate.newCache
+
+	if (rundownsUpdate.removedDocIds.length) {
+		// Some rundowns were deleted, remove all matching child docs
+		const rundownIdSet = new Set(rundownsUpdate.removedDocIds)
+
+		// All caches
+		if (state.partsCache) cleanCache('rundownId', rundownIdSet, state.partsCache)
+		if (state.segmentCache) cleanCache('rundownId', rundownIdSet, state.segmentCache)
+		if (state.deletePartInstancesCache) cleanCache('rundownId', rundownIdSet, state.deletePartInstancesCache)
+
+		// All docs
+		collection.remove((doc) => rundownIdSet.has(doc.rundownId))
+	}
 
 	// Determine which RundownIds have changed, and need to be completely regenerated
-	const allRundownIds = Array.from(state.rundownToNRCSName.keys())
-	const changedRundownIds = updateProps?.invalidateRundownIds ?? allRundownIds
+	const allRundownIds = Array.from(state.rundownsCache.keys())
 
 	// Load any segments that have changed
-	const [newSegmentsCache, updatedSegmentIds, invalidatedSegmentIds] = await updateSegmentsCache(
+	const segmentsUpdate = await updateSegmentsCache(
 		state.segmentCache,
 		allRundownIds,
-		changedRundownIds as RundownId[],
+		rundownsUpdate.addedDocIds,
 		updateProps?.invalidateSegmentIds
 	)
-	state.segmentCache = newSegmentsCache
+	state.segmentCache = segmentsUpdate.newCache
+
+	if (segmentsUpdate.removedDocIds.length) {
+		// Some segments were deleted, remove all matching child docs
+		const segmentIdSet = new Set(segmentsUpdate.removedDocIds)
+
+		// All caches
+		if (state.partsCache) cleanCache('segmentId', segmentIdSet, state.partsCache)
+		if (state.deletePartInstancesCache) cleanCache('segmentId', segmentIdSet, state.deletePartInstancesCache)
+
+		// All docs
+		collection.remove((doc) => segmentIdSet.has(doc.segmentId))
+	}
 
 	// Load any parts that have changed
-	const [newPartsCache, segmentIdsWithPartChanges] = await updatePartsCache(
+	const partsUpdate = await updatePartsCache(
 		state.partsCache,
 		allRundownIds,
-		invalidatedSegmentIds,
+		segmentsUpdate.addedDocIds,
 		updateProps?.invalidatePartIds
 	)
-	state.partsCache = newPartsCache
+	state.partsCache = partsUpdate.newCache
 
 	// Load any partInstances that have changed
-	const [newPartInstancesCache, segmentIdsWithPartInstanceChanges] = await updatePartInstancesCache(
+	const partInstanceUpdates = await updatePartInstancesCache(
 		state.deletePartInstancesCache,
 		allRundownIds,
-		invalidatedSegmentIds,
+		segmentsUpdate.addedDocIds,
 		updateProps?.invalidatePartInstanceIds
 	)
-	state.deletePartInstancesCache = newPartInstancesCache
+	state.deletePartInstancesCache = partInstanceUpdates.newCache
 
 	// We know that `collection` does diffing when 'commiting' all of the changes we have made
 	// meaning that for anything we will call `replace()` on, we can `remove()` it first for no extra cost
@@ -208,22 +251,26 @@ async function manipulateUISegmentPartNotesPublicationData(
 		// Remove all the notes
 		collection.remove(null)
 
-		const updateData = compileUpdateNotesData(
-			state.rundownToNRCSName,
-			state.partsCache,
-			state.deletePartInstancesCache
-		)
+		const updateData = compileUpdateNotesData(state.rundownsCache, state.partsCache, state.deletePartInstancesCache)
 
 		for (const segment of state.segmentCache.values()) {
 			updateNotesForSegment(args, updateData, collection, segment)
 		}
 	} else {
 		const regenerateForSegmentIds = new Set([
-			...updatedSegmentIds,
-			...invalidatedSegmentIds,
-			...segmentIdsWithPartChanges,
-			...segmentIdsWithPartInstanceChanges,
+			...segmentsUpdate.addedDocIds,
+			...segmentsUpdate.changedDocIds,
+			...partsUpdate.changedSegmentIds,
+			...partInstanceUpdates.changedSegmentIds,
 		])
+
+		// Figure out the Rundowns which have changed, but may not have updated the segments/parts
+		const changedRundownIdsSet = new Set(rundownsUpdate.changedDocIds)
+		segmentsUpdate.newCache.forEach((segment) => {
+			if (changedRundownIdsSet.has(segment.rundownId)) {
+				regenerateForSegmentIds.add(segment._id)
+			}
+		})
 
 		// Remove ones from segments being regenerated
 		collection.remove((doc) => regenerateForSegmentIds.has(doc.segmentId))
@@ -233,7 +280,7 @@ async function manipulateUISegmentPartNotesPublicationData(
 			const segment = state.segmentCache.get(segmentId)
 
 			const updateData = compileUpdateNotesData(
-				state.rundownToNRCSName,
+				state.rundownsCache,
 				state.partsCache,
 				state.deletePartInstancesCache
 			)
@@ -248,17 +295,17 @@ async function manipulateUISegmentPartNotesPublicationData(
 }
 
 interface UpdateNotesData {
-	rundownToNRCSName: Map<RundownId, string>
+	rundownsCache: Map<RundownId, Pick<Rundown, RundownFields>>
 	parts: Map<SegmentId, Pick<DBPart, PartFields>[]>
 	deletedPartInstances: Map<SegmentId, Pick<DBPartInstance, PartInstanceFields>[]>
 }
 function compileUpdateNotesData(
-	rundownToNRCSName: Map<RundownId, string>,
+	rundownsCache: Map<RundownId, Pick<Rundown, RundownFields>>,
 	partsCache: Map<PartId, Pick<DBPart, PartFields>>,
 	deletePartInstancesCache: Map<PartInstanceId, Pick<DBPartInstance, PartInstanceFields>>
 ): UpdateNotesData {
 	return {
-		rundownToNRCSName,
+		rundownsCache: rundownsCache,
 		parts: groupByToMap(partsCache.values(), 'segmentId'),
 		deletedPartInstances: groupByToMap(deletePartInstancesCache.values(), 'segmentId'),
 	}
@@ -273,7 +320,7 @@ function updateNotesForSegment(
 	const notesForSegment = getBasicNotesForSegment(
 		args.playlistId,
 		segment,
-		state.rundownToNRCSName.get(segment.rundownId) ?? 'NRCS',
+		state.rundownsCache.get(segment.rundownId)?.externalNRCSName ?? 'NRCS',
 		state.parts.get(segment._id) ?? [],
 		state.deletedPartInstances.get(segment._id) ?? []
 	)
@@ -423,289 +470,124 @@ function getBasicNotesForSegment(
 	return notes
 }
 
-async function updateRundownToNRCSNameMap(
-	args: UISegmentPartNotesArgs,
-	existingMap: UISegmentPartNotesState['rundownToNRCSName'] | undefined,
-	changedIds: ReadonlyDeep<RundownId[]> | undefined
-): Promise<UISegmentPartNotesState['rundownToNRCSName']> {
-	if (!existingMap) {
-		// Ensure the rundownToNRCSName map exists
-
-		const rundowns = (await Rundowns.findFetchAsync(
-			{ playlistId: args.playlistId },
-			{ projection: rundownFieldSpecifier }
-		)) as Pick<Rundown, RundownFields>[]
-
-		const newMap: UISegmentPartNotesState['rundownToNRCSName'] = new Map()
-		for (const rundown of rundowns) {
-			newMap.set(rundown._id, rundown.externalNRCSName)
-		}
-
-		return newMap
-	}
-
-	if (changedIds && changedIds.length > 0) {
-		// Remove them from the state, so that we detect deletions
-		for (const id of changedIds) {
-			existingMap.delete(id)
-		}
-		const docs = (await Rundowns.findFetchAsync(
-			{ _id: { $in: changedIds as RundownId[] }, playlistId: args.playlistId },
-			{ projection: rundownFieldSpecifier }
-		)) as Pick<Rundown, RundownFields>[]
-		for (const doc of docs) {
-			existingMap.set(doc._id, doc.externalNRCSName)
-		}
-	}
-
-	return existingMap
-}
-
 async function updateSegmentsCache(
 	existingMap: UISegmentPartNotesState['segmentCache'] | undefined,
 	allRundownIds: RundownId[],
-	changedRundownIds: RundownId[],
+	addedRundownIds: RundownId[],
 	changedSegmentIds: ReadonlyDeep<SegmentId[]> | undefined
-): Promise<[newMap: UISegmentPartNotesState['segmentCache'], changedIds: SegmentId[], invalidatedIds: SegmentId[]]> {
-	// Create a fresh map
-	if (!existingMap) {
-		const segments = (await Segments.findFetchAsync(
-			{ rundownId: { $in: allRundownIds } },
-			{ projection: segmentFieldSpecifier }
-		)) as Pick<DBSegment, SegmentFields>[]
+): Promise<UpdateGenericCacheResult<SegmentId, Segment, SegmentFields>> {
+	const result = await updateGenericCache(
+		Segments,
+		existingMap,
+		{ rundownId: { $in: allRundownIds } },
+		segmentFieldSpecifier,
+		clone<SegmentId[] | undefined>(changedSegmentIds)
+	)
 
-		const newMap: UISegmentPartNotesState['segmentCache'] = new Map()
-		for (const segment of segments) {
-			newMap.set(segment._id, segment)
-		}
+	// Load contents of any new rundowns
+	if (!result.isNew && addedRundownIds.length) {
+		const allRundownIdsSet = new Set(allRundownIds)
+		const filteredAddedRundownIds = addedRundownIds.filter((id) => allRundownIdsSet.has(id))
 
-		const allIds = segments.map((s) => s._id)
-		return [newMap, allIds, allIds]
-	}
-
-	// Segments that have simply changed
-	const updatedSegmentIds = new Set<SegmentId>()
-	// Segments that were added or removed, and need dependents to be reloaded
-	const invalidatedSegmentIds = new Set<SegmentId>()
-
-	const updateSegmentsForQuery = async (query: MongoQuery<DBSegment>) => {
-		const fetchedSegmentIds = new Set<SegmentId>()
-		const segments = (await Segments.findFetchAsync(query, { projection: segmentFieldSpecifier })) as Pick<
-			DBSegment,
-			SegmentFields
-		>[]
-		for (const segment of segments) {
-			if (existingMap.has(segment._id)) {
-				updatedSegmentIds.add(segment._id)
-			} else {
-				invalidatedSegmentIds.add(segment._id)
-			}
-
-			existingMap.set(segment._id, segment)
-			fetchedSegmentIds.add(segment._id)
-		}
-
-		return fetchedSegmentIds
-	}
-
-	// Reload Segments for any Rundowns that have changed
-	if (changedRundownIds.length > 0) {
-		const fetchedSegmentIds = await updateSegmentsForQuery({
-			$and: [{ rundownId: { $in: changedRundownIds } }, { rundownId: { $in: allRundownIds } }],
-		})
-
-		// Check for deletions
-		const changedRundownIdsSet = new Set(changedRundownIds)
-		for (const [id, segment] of existingMap.entries()) {
-			if (changedRundownIdsSet.has(segment.rundownId) && !fetchedSegmentIds.has(segment._id)) {
-				invalidatedSegmentIds.add(id)
-				existingMap.delete(id)
-			}
+		if (filteredAddedRundownIds.length) {
+			const addedIds = await addDocsForQueryToDocMap(
+				Segments,
+				result.newCache,
+				{ rundownId: { $in: filteredAddedRundownIds } },
+				segmentFieldSpecifier
+			)
+			result.addedDocIds.push(...addedIds)
 		}
 	}
 
-	// Reload any Segments that have changed
-	if (changedSegmentIds && changedSegmentIds.length > 0) {
-		const fetchedSegmentIds = await updateSegmentsForQuery({
-			_id: { $in: changedSegmentIds as SegmentId[] },
-			rundownId: { $in: allRundownIds },
-		})
-
-		// Remove them from the cache, so that we detect deletions
-		for (const id of changedSegmentIds) {
-			if (!fetchedSegmentIds.has(id)) {
-				// It may have changed
-				invalidatedSegmentIds.add(id)
-				existingMap.delete(id)
-			}
-		}
-	}
-
-	return [existingMap, Array.from(updatedSegmentIds), Array.from(invalidatedSegmentIds)]
+	return result
 }
 
 async function updatePartsCache(
 	existingMap: UISegmentPartNotesState['partsCache'] | undefined,
 	allRundownIds: RundownId[],
-	invalidatedSegmentIds: SegmentId[],
+	addedSegmentIds: SegmentId[],
 	changedPartIds: ReadonlyDeep<PartId[]> | undefined
-): Promise<[newMap: UISegmentPartNotesState['partsCache'], affectedSegmentIds: SegmentId[]]> {
-	// Create a fresh map
-	if (!existingMap) {
-		const parts = (await Parts.findFetchAsync(
-			{ rundownId: { $in: allRundownIds } },
-			{ projection: partFieldSpecifier }
-		)) as Pick<DBPart, PartFields>[]
+): Promise<UpdateGenericCacheResult<PartId, DBPart, PartFields> & { changedSegmentIds: SegmentId[] }> {
+	const changedSegmentIds = new Set<SegmentId>()
 
-		const newMap: UISegmentPartNotesState['partsCache'] = new Map()
-		const affectedSegmentIds = new Set<SegmentId>()
-		for (const part of parts) {
-			newMap.set(part._id, part)
-			affectedSegmentIds.add(part.segmentId)
-		}
-
-		return [newMap, Array.from(affectedSegmentIds)]
+	const docChanged = (oldDoc: Pick<DBPart, PartFields> | undefined, newDoc: Pick<DBPart, PartFields> | undefined) => {
+		if (oldDoc) changedSegmentIds.add(oldDoc.segmentId)
+		if (newDoc) changedSegmentIds.add(newDoc.segmentId)
 	}
 
-	// Segments that have been affected by any document changes/updates
-	const affectedSegmentIds = new Set<SegmentId>()
+	const result = await updateGenericCache(
+		Parts,
+		existingMap,
+		{ rundownId: { $in: allRundownIds } },
+		segmentFieldSpecifier,
+		clone<PartId[] | undefined>(changedPartIds),
+		docChanged
+	)
 
-	// Reload Parts for any Rundowns that have been invalidated
-	if (invalidatedSegmentIds.length > 0) {
-		// We don't need to track these in affectedSegmentIds, as that is implied
-
-		// Remove them from the cache, so that we detect deletions
-		const changedSegmentIdsSet = new Set(invalidatedSegmentIds)
-		for (const [id, part] of existingMap.entries()) {
-			if (changedSegmentIdsSet.has(part.segmentId)) {
-				existingMap.delete(id)
-			}
-		}
-
-		const parts = (await Parts.findFetchAsync(
-			{ segmentId: { $in: invalidatedSegmentIds }, rundownId: { $in: allRundownIds } },
-			{ projection: partFieldSpecifier }
-		)) as Pick<DBPart, PartFields>[]
-		for (const part of parts) {
-			existingMap.set(part._id, part)
-		}
+	// Load contents of any new segments
+	if (!result.isNew && addedSegmentIds.length) {
+		const addedIds = await addDocsForQueryToDocMap(
+			Parts,
+			result.newCache,
+			{
+				rundownId: { $in: allRundownIds },
+				segmentId: { $in: addedSegmentIds },
+			},
+			segmentFieldSpecifier,
+			docChanged
+		)
+		result.addedDocIds.push(...addedIds)
 	}
 
-	// Reload any Segments that have changed
-	if (changedPartIds && changedPartIds.length > 0) {
-		const fetchedPartIds = new Set<PartId>()
-
-		const parts = (await Parts.findFetchAsync(
-			{ _id: { $in: changedPartIds as PartId[] }, rundownId: { $in: allRundownIds } },
-			{ projection: partFieldSpecifier }
-		)) as Pick<DBPart, PartFields>[]
-		for (const part of parts) {
-			// Part could have moved across segments
-			const existing = existingMap.get(part._id)
-			if (existing) {
-				affectedSegmentIds.add(existing.segmentId)
-			}
-
-			affectedSegmentIds.add(part.segmentId)
-			existingMap.set(part._id, part)
-			fetchedPartIds.add(part._id)
-		}
-
-		// Remove them from the cache, so that we detect deletions
-		for (const id of changedPartIds) {
-			if (!fetchedPartIds.has(id)) {
-				const existing = existingMap.get(id)
-				if (existing) {
-					affectedSegmentIds.add(existing.segmentId)
-					existingMap.delete(id)
-				}
-			}
-		}
-	}
-
-	return [existingMap, Array.from(affectedSegmentIds)]
+	return { ...result, changedSegmentIds: Array.from(changedSegmentIds) }
 }
 
 async function updatePartInstancesCache(
 	existingMap: UISegmentPartNotesState['deletePartInstancesCache'] | undefined,
 	allRundownIds: RundownId[],
-	invalidatedSegmentIds: SegmentId[],
+	addedSegmentIds: SegmentId[],
 	changedPartInstanceIds: ReadonlyDeep<PartInstanceId[]> | undefined
-): Promise<[newMap: UISegmentPartNotesState['deletePartInstancesCache'], affectedSegmentIds: SegmentId[]]> {
-	// Create a fresh map
-	if (!existingMap) {
-		const partInstances = (await PartInstances.findFetchAsync(
-			{ rundownId: { $in: allRundownIds } },
-			{ projection: partInstanceFieldSpecifier }
-		)) as Pick<DBPartInstance, PartInstanceFields>[]
+): Promise<
+	UpdateGenericCacheResult<PartInstanceId, PartInstance, PartInstanceFields> & { changedSegmentIds: SegmentId[] }
+> {
+	const changedSegmentIds = new Set<SegmentId>()
 
-		const newMap: UISegmentPartNotesState['deletePartInstancesCache'] = new Map()
-		const affectedSegmentIds = new Set<SegmentId>()
-		for (const part of partInstances) {
-			newMap.set(part._id, part)
-			affectedSegmentIds.add(part.segmentId)
-		}
-
-		return [newMap, Array.from(affectedSegmentIds)]
+	const docChanged = (
+		oldDoc: Pick<PartInstance, PartInstanceFields> | undefined,
+		newDoc: Pick<PartInstance, PartInstanceFields> | undefined
+	) => {
+		if (oldDoc) changedSegmentIds.add(oldDoc.segmentId)
+		if (newDoc) changedSegmentIds.add(newDoc.segmentId)
 	}
 
-	// Segments that have been affected by any document changes/updates
-	const affectedSegmentIds = new Set<SegmentId>()
+	const result = await updateGenericCache(
+		PartInstances,
+		existingMap,
+		{ rundownId: { $in: allRundownIds }, reset: { $ne: true }, orphaned: 'deleted' },
+		segmentFieldSpecifier,
+		clone<PartInstanceId[] | undefined>(changedPartInstanceIds),
+		docChanged
+	)
 
-	// Reload Parts for any Rundowns that have been invalidated
-	if (invalidatedSegmentIds.length > 0) {
-		// We don't need to track these in affectedSegmentIds, as that is implied
-
-		// Remove them from the cache, so that we detect deletions
-		const changedSegmentIdsSet = new Set(invalidatedSegmentIds)
-		for (const [id, part] of existingMap.entries()) {
-			if (changedSegmentIdsSet.has(part.segmentId)) {
-				existingMap.delete(id)
-			}
-		}
-
-		const partInstances = (await PartInstances.findFetchAsync(
-			{ segmentId: { $in: invalidatedSegmentIds }, rundownId: { $in: allRundownIds } },
-			{ projection: partInstanceFieldSpecifier }
-		)) as Pick<DBPartInstance, PartInstanceFields>[]
-		for (const part of partInstances) {
-			existingMap.set(part._id, part)
-		}
+	// Load contents of any new segments
+	if (!result.isNew && addedSegmentIds.length) {
+		const addedIds = await addDocsForQueryToDocMap(
+			PartInstances,
+			result.newCache,
+			{
+				rundownId: { $in: allRundownIds },
+				segmentId: { $in: addedSegmentIds },
+				reset: { $ne: true },
+				orphaned: 'deleted',
+			},
+			segmentFieldSpecifier,
+			docChanged
+		)
+		result.addedDocIds.push(...addedIds)
 	}
 
-	// Reload any Segments that have changed
-	if (changedPartInstanceIds && changedPartInstanceIds.length > 0) {
-		const fetchedPartInstanceIds = new Set<PartInstanceId>()
-
-		const partInstances = (await PartInstances.findFetchAsync(
-			{ _id: { $in: changedPartInstanceIds as PartInstanceId[] }, rundownId: { $in: allRundownIds } },
-			{ projection: partInstanceFieldSpecifier }
-		)) as Pick<DBPartInstance, PartInstanceFields>[]
-		for (const part of partInstances) {
-			// Part could have moved across segments
-			const existing = existingMap.get(part._id)
-			if (existing) {
-				affectedSegmentIds.add(existing.segmentId)
-			}
-
-			affectedSegmentIds.add(part.segmentId)
-			existingMap.set(part._id, part)
-			fetchedPartInstanceIds.add(part._id)
-		}
-
-		// Remove them from the cache, so that we detect deletions
-		for (const id of changedPartInstanceIds) {
-			if (!fetchedPartInstanceIds.has(id)) {
-				const existing = existingMap.get(id)
-				if (existing) {
-					affectedSegmentIds.add(existing.segmentId)
-					existingMap.delete(id)
-				}
-			}
-		}
-	}
-
-	return [existingMap, Array.from(affectedSegmentIds)]
+	return { ...result, changedSegmentIds: Array.from(changedSegmentIds) }
 }
 
 meteorCustomPublish(
