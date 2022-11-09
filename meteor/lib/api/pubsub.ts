@@ -53,11 +53,11 @@ import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
-import { MountedDeviceTrigger } from './triggers/MountedTriggers'
 import { UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
 import { DeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
+import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from '../../server/api/deviceTriggers/observer'
 
 /**
  * Ids of possible DDP subscriptions
@@ -130,6 +130,7 @@ export enum PubSub {
 	uiTriggeredActions = 'uiTriggeredActions',
 
 	mountedTriggersForDevice = 'mountedTriggersForDevice',
+	mountedTriggersForDevicePreview = 'mountedTriggersForDevicePreview',
 	deviceTriggersPreview = 'deviceTriggersPreview',
 	uiSegmentPartNotes = 'uiSegmentPartNotes',
 }
@@ -245,7 +246,8 @@ export interface PubSubTypes {
 		deviceId: PeripheralDeviceId,
 		deviceIds: string[],
 		token?: string
-	) => MountedDeviceTrigger
+	) => DeviceTriggerMountedAction
+	[PubSub.mountedTriggersForDevicePreview]: (deviceId: PeripheralDeviceId, token?: string) => PreviewWrappedAdLib
 	[PubSub.deviceTriggersPreview]: (studioId: StudioId, token?: string) => DeviceTriggerPreview
 	[PubSub.uiSegmentPartNotes]: (playlistId: RundownPlaylistId | null) => UISegmentPartNote
 }
@@ -261,6 +263,7 @@ export enum CustomCollectionName {
 	UIStudio = 'uiStudio',
 	UITriggeredActions = 'uiTriggeredActions',
 	MountedTriggers = 'mountedTriggers',
+	MountedTriggersPreviews = 'mountedTriggersPreviews',
 	DeviceTriggerPreviews = 'deviceTriggerPreviews',
 	UISegmentPartNotes = 'uiSegmentPartNotes',
 }
@@ -278,6 +281,8 @@ export type CustomCollectionType = {
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
 	[CustomCollectionName.DeviceTriggerPreviews]: DeviceTriggerPreview
 	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
+	[CustomCollectionName.MountedTriggers]: DeviceTriggerMountedAction
+	[CustomCollectionName.MountedTriggersPreviews]: PreviewWrappedAdLib
 }
 
 /**
