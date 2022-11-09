@@ -27,22 +27,6 @@ import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMes
 
 const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
 
-declare global {
-	type KeyboardLayoutMap = Map<string, string>
-
-	type KeyboardLayoutEvents = 'layoutchange'
-
-	interface Keyboard {
-		getLayoutMap(): Promise<KeyboardLayoutMap>
-		addEventListener(type: KeyboardLayoutEvents, listener: EventListener): void
-		removeEventListener(type: KeyboardLayoutEvents, listener: EventListener): void
-	}
-
-	interface Navigator {
-		keyboard: Keyboard
-	}
-}
-
 export enum SpecialKeyPositions {
 	BLANK_SPACE = '$space',
 }

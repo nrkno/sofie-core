@@ -205,7 +205,6 @@ export const App = translateWithTracker(() => {
 					if ('keyboard' in navigator) {
 						// Keyboard Lock: https://wicg.github.io/keyboard-lock/
 						navigator.keyboard
-							// @ts-expect-error Use Keyboard API to lock the keyboard and disable all browser shortcuts, but we check for its availability, so it should be fine.
 							.lock()
 							.catch((e) => console.error('Could not get Keyboard Lock when running as a PWA', e))
 					}
