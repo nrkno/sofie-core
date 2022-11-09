@@ -83,7 +83,6 @@ describe('lib/mediaObjects', () => {
 		const acceptedFormats = getAcceptedFormats({
 			supportedMediaFormats: '1920x1080i5000, 1280x720, i5000, i5000tff',
 			mediaPreviewsUrl: '',
-			sofieUrl: '',
 			frameRate: 25,
 		})
 		expect(acceptedFormats).toEqual([
@@ -165,7 +164,6 @@ describe('lib/mediaObjects', () => {
 			supportedMediaFormats: '1920x1080i5000, 1280x720, i5000, i5000tff',
 			mediaPreviewsUrl: '',
 			supportedAudioStreams: '4',
-			sofieUrl: '',
 			frameRate: 25,
 		}
 

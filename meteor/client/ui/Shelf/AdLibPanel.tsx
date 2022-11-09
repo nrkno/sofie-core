@@ -30,7 +30,7 @@ import {
 	RundownBaselineAdLibItem,
 	RundownBaselineAdLibPieces,
 } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
+import { literal, unprotectString, protectString } from '../../../lib/lib'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import { PartInstances, findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -382,13 +382,13 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 				name: 1,
 			},
 		})
-		const rMap = normalizeArray(rundowns, '_id')
+
 		currentRundown = rundowns[0]
 		const partInstanceId = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
 		if (partInstanceId) {
 			const partInstance = PartInstances.findOne(partInstanceId)
 			if (partInstance) {
-				currentRundown = rMap[unprotectString(partInstance.rundownId)]
+				currentRundown = rundowns.find((rd) => rd._id === partInstance.rundownId)
 			}
 		}
 

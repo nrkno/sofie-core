@@ -539,13 +539,14 @@ export async function innerStartQueuedAdLib(
 	// Ensure it is labelled as dynamic
 	newPartInstance.orphaned = 'adlib-part'
 
+	// Find the following part, so we can pick a good rank
 	const followingPart = selectNextPart(
 		context,
 		cache.Playlist.doc,
 		currentPartInstance,
 		null,
 		getOrderedSegmentsAndPartsFromPlayoutCache(cache),
-		true
+		false // We want to insert it before any trailing invalid piece
 	)
 	newPartInstance.part._rank = getRank(
 		currentPartInstance.part,
