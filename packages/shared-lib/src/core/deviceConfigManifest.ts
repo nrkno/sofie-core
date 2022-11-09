@@ -29,6 +29,10 @@ export interface DeviceConfigManifest {
 	 * A description of supported actions to be executed on the device
 	 */
 	actionManifest?: any
+	/**
+	 * A description of supported actions to be executed on the device
+	 */
+	translations?: any
 }
 
 export interface SubDeviceConfigManifest {

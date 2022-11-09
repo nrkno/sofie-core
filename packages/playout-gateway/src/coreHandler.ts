@@ -32,6 +32,8 @@ import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 
+import Translations = require('timeline-state-resolver/dist/translations.json')
+
 export interface CoreConfig {
 	host: string
 	port: number
@@ -178,6 +180,7 @@ export class CoreHandler {
 			configManifest: {
 				...PLAYOUT_DEVICE_CONFIG,
 				actionManifest: manifest,
+				translations: Translations,
 			},
 		}
 

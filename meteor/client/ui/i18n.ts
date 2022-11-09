@@ -128,6 +128,8 @@ class I18nContainer extends WithManagedTracker {
 					})
 						.then((bundle) => {
 							const i18NextData = toI18NextData(bundle.data)
+							if (bundle.originBlueprintId.match(/peripheralDevice/))
+								console.log(bundle.originBlueprintId, i18NextData)
 
 							this.i18nInstance.addResourceBundle(
 								bundle.language,

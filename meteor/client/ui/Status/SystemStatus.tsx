@@ -30,6 +30,8 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { RESTART_SALT } from '../../../lib/api/userActions'
 import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { StatusCodePill } from './StatusCodePill'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { i18nTranslator } from '../i18n'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -110,7 +112,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 						callPeripheralDeviceAction(event, device._id, CASPARCG_RESTART_TIME, action.id) // todo - add payload
 							.then((r: TSR.ActionExecutionResult) => {
 								if (r?.result === TSR.ActionExecutionResultCode.Error) {
-									throw new Error(r.response || 'unknown error')
+									console.log(translateMessage(r.response, i18nTranslator))
+									throw new Error(r.response ? translateMessage(r.response, i18nTranslator) : 'Unknown error')
 								}
 								NotificationCenter.push(
 									new Notification(
@@ -120,7 +123,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 											? t('Executed {{actionName}} on device "{{deviceName}}": {{response}}', {
 													actionName: action.name,
 													deviceName: device.name,
-													response: r.response,
+													response: t(r.response),
 											  })
 											: t('Executed {{actionName}} on device "{{deviceName}}"...', {
 													actionName: action.name,
@@ -138,7 +141,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 										t('Failed to execute {{actionName}} on device: "{{deviceName}}": {{errorMessage}}', {
 											actionName: action.name,
 											deviceName: device.name,
-											errorMessage: err + '',
+											errorMessage: err,
 										}),
 										'SystemStatus'
 									)
@@ -345,7 +348,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 												this.onExecuteAction(e, this.props.device, action)
 											}}
 										>
-											{action.name}
+											{t(action.name)}
 										</button>
 									</React.Fragment>
 								))}
