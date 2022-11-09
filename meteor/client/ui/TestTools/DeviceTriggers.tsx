@@ -1,0 +1,134 @@
+import React, { Fragment, useState } from 'react'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Mongo } from 'meteor/mongo'
+import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { useTranslation } from 'react-i18next'
+import { Link, useParams } from 'react-router-dom'
+import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from '../../../lib/api/triggers/MountedTriggers'
+
+const MountedTriggers = new Mongo.Collection<DeviceTriggerMountedAction>(CustomCollectionName.MountedTriggers)
+const MountedTriggersPreviews = new Mongo.Collection<PreviewWrappedAdLib>(CustomCollectionName.MountedTriggersPreviews)
+
+interface DeviceTriggersViewRouteParams {
+	peripheralDeviceId: string
+}
+
+const DeviceTriggersView: React.FC = function TimelineDatastoreView() {
+	const { t } = useTranslation()
+	const { peripheralDeviceId } = useParams<DeviceTriggersViewRouteParams>()
+
+	return (
+		<div className="mtl gutter">
+			<header className="mvs">
+				<h1>{t('Device Triggers')}</h1>
+			</header>
+			<div className="mod mvl">
+				{peripheralDeviceId && (
+					<div>
+						<DeviceTriggersControls peripheralDeviceId={protectString(peripheralDeviceId)} />
+					</div>
+				)}
+			</div>
+		</div>
+	)
+}
+
+interface IDatastoreControlsProps {
+	peripheralDeviceId: PeripheralDeviceId
+}
+function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps) {
+	const [deviceIds, setDeviceIds] = useState([] as string[])
+	useSubscription(PubSub.mountedTriggersForDevice, peripheralDeviceId, deviceIds)
+	useSubscription(PubSub.mountedTriggersForDevicePreview, peripheralDeviceId)
+
+	const mountedTriggers = useTracker(
+		() =>
+			MountedTriggers.find({
+				deviceId: {
+					$in: deviceIds,
+				},
+			}).fetch(),
+		[deviceIds],
+		[] as DeviceTriggerMountedAction[]
+	)
+
+	const mountedTriggersPreviews = useTracker(
+		() =>
+			MountedTriggersPreviews.find({
+				actionId: {
+					$in: mountedTriggers.map((trigger) => trigger.actionId),
+				},
+			}).fetch(),
+		[mountedTriggers],
+		[] as PreviewWrappedAdLib[]
+	)
+
+	return (
+		<div>
+			<label>
+				Device Ids:
+				<input
+					value={deviceIds.join(', ')}
+					onChange={(e) => {
+						setDeviceIds(e.target.value.split(/,\s+/))
+					}}
+				/>
+			</label>
+			<div>
+				<table className="testtools-timelinetable">
+					<tbody>
+						<tr>
+							<th>Device ID</th>
+							<th>Trigger ID</th>
+							<th>Values?</th>
+							<th>Action Type</th>
+						</tr>
+						{mountedTriggers.map((entry) => (
+							<Fragment key={unprotectString(entry._id)}>
+								<tr>
+									<td>{entry.deviceId}</td>
+									<td>{entry.deviceTriggerId}</td>
+									<td>{JSON.stringify(entry.values)}</td>
+									<td>{entry.actionType}</td>
+								</tr>
+								<tr>
+									<td colSpan={4}>
+										{mountedTriggersPreviews
+											.filter((preview) => preview.actionId === entry.actionId)
+											.map((preview) => (
+												<span key={unprotectString(preview._id)}>{JSON.stringify(preview.label)}</span>
+											))}
+									</td>
+								</tr>
+							</Fragment>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	)
+}
+
+const DeviceTriggersDeviceSelect: React.FC = function DeviceTriggersDeviceSelect() {
+	useSubscription(PubSub.peripheralDevices, {})
+	const devices = useTracker(() => PeripheralDevices.find().fetch(), [])
+
+	if (!devices) return null
+
+	return (
+		<>
+			<ul>
+				{devices.map((device) => (
+					<li key={unprotectString(device._id)}>
+						<Link to={`devicetriggers/${device._id}`}>{device.name}</Link>
+					</li>
+				))}
+			</ul>
+		</>
+	)
+}
+
+export { DeviceTriggersView, DeviceTriggersDeviceSelect }

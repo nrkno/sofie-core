@@ -3,9 +3,12 @@ import {
 	AdLibActionId,
 	PieceId,
 	RundownBaselineAdLibActionId,
+	ShowStyleBaseId,
+	StudioId,
 	TriggeredActionId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import { ExecutableAction } from './actionFactory'
 import { IWrappedAdLib } from './actionFilterChainCompilers'
 
 export type MountedTrigger = (MountedGenericTrigger | MountedAdLibTrigger) & MountedHotkeyMixin
@@ -59,4 +62,27 @@ export interface MountedAdLibTrigger extends MountedTriggerCommon {
 	targetName?: string | ITranslatableMessage
 }
 
-type MountedAdLibTriggerId = ProtectedString<'mountedAdLibTriggerId'>
+export type MountedAdLibTriggerId = ProtectedString<'mountedAdLibTriggerId'>
+
+export type DeviceTriggerMountedActionId = ProtectedString<'deviceTriggerMountedActionId'>
+
+export interface DeviceTriggerMountedAction {
+	_id: DeviceTriggerMountedActionId
+	studioId: StudioId
+	showStyleBaseId: ShowStyleBaseId
+	deviceId: string
+	deviceTriggerId: string
+	values: DeviceTriggerArguments
+	actionId: string
+	actionType: ExecutableAction['action']
+	name?: string | ITranslatableMessage
+}
+
+export type PreviewWrappedAdLibId = ProtectedString<'previewWrappedAdLibId'>
+export type PreviewWrappedAdLib = Omit<IWrappedAdLib, '_id'> & {
+	_id: PreviewWrappedAdLibId
+	studioId: StudioId
+	showStyleBaseId: ShowStyleBaseId
+	triggeredActionId: TriggeredActionId
+	actionId: string
+}

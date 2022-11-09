@@ -57,7 +57,7 @@ import { UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
 import { DeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
-import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from '../../server/api/deviceTriggers/observer'
+import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from './triggers/MountedTriggers'
 
 /**
  * Ids of possible DDP subscriptions

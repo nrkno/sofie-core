@@ -64,6 +64,7 @@ import {
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 import { insertTriggerToPreview } from '../publications/deviceTriggersPreview'
+import { receiveTrigger } from './deviceTriggers/observer'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -1159,7 +1160,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		triggerId: string,
 		values?: Record<string, string | number | boolean> | null
 	) {
-		console.log(deviceId, deviceToken, triggerDeviceId, triggerId, values)
+		await receiveTrigger(this, deviceId, deviceToken, triggerDeviceId, triggerId, values ?? undefined)
 		await insertTriggerToPreview(deviceId, triggerDeviceId, triggerId, values ?? undefined)
 	}
 }

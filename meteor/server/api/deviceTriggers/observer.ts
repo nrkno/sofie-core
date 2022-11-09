@@ -1,27 +1,34 @@
 import {
+	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
 	SegmentId,
 	ShowStyleBaseId,
 	StudioId,
-	TriggeredActionId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Complete, literal } from '@sofie-automation/corelib/dist/lib'
-import { ProtectedString, protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import _ from 'underscore'
+import { MethodContext } from '../../../lib/api/methods'
 import {
 	createAction,
 	ExecutableAction,
 	isPreviewableAction,
 	ReactivePlaylistActionContext,
 } from '../../../lib/api/triggers/actionFactory'
-import { IWrappedAdLib } from '../../../lib/api/triggers/actionFilterChainCompilers'
-import { DeviceTriggerArguments } from '../../../lib/api/triggers/MountedTriggers'
+import {
+	DeviceTriggerArguments,
+	DeviceTriggerMountedAction,
+	DeviceTriggerMountedActionId,
+	PreviewWrappedAdLib,
+	PreviewWrappedAdLibId,
+} from '../../../lib/api/triggers/MountedTriggers'
 import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
@@ -39,6 +46,7 @@ import { DBTriggeredActions, TriggeredActions, UITriggeredActionsObj } from '../
 import { DummyReactiveVar } from '../../../lib/lib'
 import { observerChain } from '../../lib/observerChain'
 import { logger } from '../../logging'
+import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { ReactiveCacheCollection } from './ReactiveCacheCollection'
 import { ContentCache, createReactiveContentCache } from './reactiveContentCache'
 
@@ -421,30 +429,7 @@ function setupRundownContentObserver({
 }
 
 const allDeviceActions: Map<string, ExecutableAction> = new Map()
-
-type DeviceTriggerMountedActionId = ProtectedString<'deviceTriggerMountedActionId'>
-
-// TODO: Move this to lib/
-export interface DeviceTriggerMountedAction {
-	_id: DeviceTriggerMountedActionId
-	studioId: StudioId
-	showStyleBaseId: ShowStyleBaseId
-	deviceId: string
-	deviceTriggerId: string
-	values: DeviceTriggerArguments
-	actionId: string
-	actionType: ExecutableAction['action']
-	name?: string | ITranslatableMessage
-}
-
-type PreviewWrappedAdLibId = ProtectedString<'previewWrappedAdLibId'>
-export type PreviewWrappedAdLib = Omit<IWrappedAdLib, '_id'> & {
-	_id: PreviewWrappedAdLibId
-	studioId: StudioId
-	showStyleBaseId: ShowStyleBaseId
-	triggeredActionId: TriggeredActionId
-	actionKeyId: string
-}
+const currentStudioContexts: Map<StudioId, ReactivePlaylistActionContext> = new Map()
 
 export const DeviceTriggerMountedActions = new ReactiveCacheCollection<DeviceTriggerMountedAction>(() => {
 	console.log(`Actions: `, DeviceTriggerMountedActions.find().count())
@@ -452,6 +437,44 @@ export const DeviceTriggerMountedActions = new ReactiveCacheCollection<DeviceTri
 export const DeviceTriggerMountedActionAdlibsPreview = new ReactiveCacheCollection<PreviewWrappedAdLib>(() => {
 	console.log(`AdLibs in Preview: `, DeviceTriggerMountedActionAdlibsPreview.find().count())
 })
+
+export async function receiveTrigger(
+	context: MethodContext,
+	peripheralDeviceId: PeripheralDeviceId,
+	deviceToken: string,
+	deviceId: string,
+	triggerId: string,
+	values?: DeviceTriggerArguments
+): Promise<void> {
+	const peripheralDevice = await checkAccessAndGetPeripheralDevice(peripheralDeviceId, deviceToken, context)
+	check(deviceId, String)
+	check(triggerId, String)
+
+	const studioId = peripheralDevice.studioId
+	if (!studioId) throw new Meteor.Error(400, `Peripheral Device "${peripheralDevice._id}" not assigned to a studio`)
+
+	DeviceTriggerMountedActions.find({
+		deviceId,
+		deviceTriggerId: triggerId,
+		values: values ?? undefined,
+	}).forEach((mountedAction) => {
+		const executableAction = allDeviceActions.get(mountedAction.actionId)
+		if (!executableAction)
+			throw new Meteor.Error(
+				500,
+				`Executable action not found when processing trigger "${deviceId}" "${triggerId}"`
+			)
+
+		const context = currentStudioContexts.get(studioId)
+		if (!context) throw new Meteor.Error(500, `Undefined Device Trigger context for studio "${studioId}"`)
+
+		executableAction.execute(
+			(t: ITranslatableMessage) => t.key ?? t,
+			() => `${deviceId}: ${triggerId}`,
+			context
+		)
+	})
+}
 
 function refreshDeviceTriggerMountedActions(
 	studioId: StudioId,
@@ -474,11 +497,13 @@ function refreshDeviceTriggerMountedActions(
 			studioId,
 			showStyleBaseId,
 		})
+		currentStudioContexts.delete(studioId)
 		console.log(`allDeviceActions: `, allDeviceActions.size)
 		return
 	}
 
-	const context = createCurrentContext(currentRundownId, cache)
+	const context = createCurrentContextFromCache(currentRundownId, cache)
+	currentStudioContexts.set(studioId, context)
 
 	const showStyleBase = cache.ShowStyleBases.findOne(showStyleBaseId)
 	if (!showStyleBase) {
@@ -540,7 +565,7 @@ function refreshDeviceTriggerMountedActions(
 						...adLib,
 						_id: adLibPreviewId,
 						triggeredActionId: triggeredAction._id,
-						actionKeyId: key,
+						actionId: actionId,
 						studioId,
 						showStyleBaseId,
 					},
@@ -581,7 +606,10 @@ function convertDocument(doc: ReadonlyObjectDeep<DBTriggeredActions>): UITrigger
 	})
 }
 
-function createCurrentContext(currentRundownId: RundownId, cache: ContentCache): ReactivePlaylistActionContext {
+function createCurrentContextFromCache(
+	currentRundownId: RundownId,
+	cache: ContentCache
+): ReactivePlaylistActionContext {
 	const rundownPlaylist = cache.RundownPlaylists.findOne({
 		activationId: {
 			$exists: true,
