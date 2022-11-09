@@ -347,34 +347,19 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 		&::before {
 			@keyframes animated-zebra {
 				0% {
-					background-image: repeating-linear-gradient(
-						45deg,
-						transparent,
-						transparent 10px,
-						black 11px,
-						black 15px,
-						transparent 16px
-					);
+					opacity: 0.4;
+				}
+				49% {
+					opacity: 0.4;
 				}
 				50% {
-					background-image: repeating-linear-gradient(
-						45deg,
-						black,
-						black 10px,
-						transparent 11px,
-						transparent 15px,
-						black 16px
-					);
+					opacity: 0.9;
+				}
+				99% {
+					opacity: 0.9;
 				}
 				100% {
-					background-image: repeating-linear-gradient(
-						45deg,
-						transparent,
-						transparent 10px,
-						black 11px,
-						black 15px,
-						transparent 16px
-					);
+					opacity: 0.4;
 				}
 			}
 
@@ -389,12 +374,22 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 			animation-name: animated-zebra;
 			animation-fill-mode: forwards;
 			animation-duration: calc(
-				1s * var(--missing-overlay-animated)
+				0.25s * var(--missing-overlay-animated)
 			); // If the var is not set, the animation will stop at first frame
 			animation-iteration-count: infinite;
 
 			opacity: 0.4;
 			pointer-events: none;
+
+			background-image: repeating-linear-gradient(
+				45deg,
+				transparent,
+				transparent 7px,
+				black 8px,
+				black 12px,
+				transparent 13px,
+				transparent 16px
+			);
 		}
 	}
 
