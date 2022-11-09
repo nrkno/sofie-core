@@ -17,7 +17,7 @@ import { Studios, Studio } from '../../lib/collections/Studios'
 import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { OrderedShowStyleVariants, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
@@ -230,6 +230,20 @@ ShowStyleBases.allow({
 	},
 })
 ShowStyleVariants.allow({
+	insert(): boolean {
+		return false
+	},
+	async update(userId, doc, fields) {
+		const access = await allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
+		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
+
+		return rejectFields(doc, fields, ['showStyleBaseId'])
+	},
+	remove() {
+		return false
+	},
+})
+OrderedShowStyleVariants.allow({
 	insert(): boolean {
 		return false
 	},

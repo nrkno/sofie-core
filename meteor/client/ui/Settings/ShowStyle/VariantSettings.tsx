@@ -8,7 +8,11 @@ import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist
 import { withTranslation } from 'react-i18next'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
+import {
+	ShowStyleVariant,
+	ShowStyleVariants,
+	ShowStyleVariantsOrder,
+} from '../../../../lib/collections/ShowStyleVariants'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
@@ -25,6 +29,7 @@ import { logger } from '../../../../lib/logging'
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
 	showStyleVariants: ShowStyleVariant[]
+	orderedShowStyleVariants: ShowStyleVariantsOrder[]
 	blueprintConfigManifest: ConfigManifestEntry[]
 
 	layerMappings?: { [key: string]: MappingsExt }
@@ -337,6 +342,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		}
 
 		VariantContainer = () => {
+			//MeteorCall.showstyles.updateShowStyleVariantsOrder(this.props.showStyleBase._id).catch(logger.warn)
 			const [variants, setVariants] = useState(this.props.showStyleVariants)
 
 			const moveVariantHandler = useCallback((dragIndex: number, hoverIndex: number) => {

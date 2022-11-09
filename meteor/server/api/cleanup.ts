@@ -29,7 +29,7 @@ import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { OrderedShowStyleVariants, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Snapshots } from '../../lib/collections/Snapshots'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
@@ -352,6 +352,12 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	// ShowStyleVariants
 	{
 		removeByQuery(ShowStyleVariants, {
+			showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
+		})
+	}
+	// OrderedShowStyleVariants
+	{
+		removeByQuery(OrderedShowStyleVariants, {
 			showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
 		})
 	}

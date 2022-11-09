@@ -33,7 +33,7 @@ import { DBRundownPlaylist, RundownPlaylistActivationId, RundownPlaylistId } fro
 import { DBRundown, RundownId } from '../collections/Rundowns'
 import { DBSegment } from '../collections/Segments'
 import { DBShowStyleBase, ShowStyleBaseId } from '../collections/ShowStyleBases'
-import { DBShowStyleVariant } from '../collections/ShowStyleVariants'
+import { DBShowStyleVariant, ShowStyleVariantsOrder } from '../collections/ShowStyleVariants'
 import { SnapshotItem } from '../collections/Snapshots'
 import { DBStudio, RoutedMappings, StudioId } from '../collections/Studios'
 import { RoutedTimeline, TimelineComplete } from '../collections/Timeline'
@@ -72,6 +72,7 @@ export enum PubSub {
 	segments = 'segments',
 	showStyleBases = 'showStyleBases',
 	showStyleVariants = 'showStyleVariants',
+	orderedShowStyleVariants = 'orderedShowStyleVariants',
 	triggeredActions = 'triggeredActions',
 	snapshots = 'snapshots',
 	studios = 'studios',
@@ -157,6 +158,10 @@ export interface PubSubTypes {
 	[PubSub.segments]: (selector: MongoQuery<DBSegment>, token?: string) => DBSegment
 	[PubSub.showStyleBases]: (selector: MongoQuery<DBShowStyleBase>, token?: string) => DBShowStyleBase
 	[PubSub.showStyleVariants]: (selector: MongoQuery<DBShowStyleVariant>, token?: string) => DBShowStyleVariant
+	[PubSub.orderedShowStyleVariants]: (
+		selector: MongoQuery<DBShowStyleVariant>,
+		token?: string
+	) => ShowStyleVariantsOrder
 	[PubSub.triggeredActions]: (selector: MongoQuery<DBTriggeredActions>, token?: string) => DBTriggeredActions
 	[PubSub.snapshots]: (selector: MongoQuery<SnapshotItem>, token?: string) => SnapshotItem
 	[PubSub.studios]: (selector: MongoQuery<DBStudio>, token?: string) => DBStudio

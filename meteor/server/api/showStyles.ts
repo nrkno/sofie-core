@@ -148,7 +148,7 @@ export async function removeShowStyleVariant(
 export async function updateShowStyleVariantsOrder(
 	context: MethodContext,
 	showStyleBaseId: ShowStyleBaseId
-): Promise<ShowStyleVariantsOrder[]> {
+): Promise<ShowStyleVariantId[]> {
 	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
 	const showStyleBase = access.showStyleBase
 	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
@@ -181,18 +181,23 @@ export async function updateShowStyleVariantsOrder(
 
 	let idCount = orderedIds.length
 
-	showStyleVariants.forEach((variant: ShowStyleVariant) => updateShowStyleVariantsOrderInner(variant, idCount++))
-
-	return orderedIds
+	const insertedIds = await Promise.all(
+		showStyleVariants.map(async (variant: ShowStyleVariant) =>
+			updateShowStyleVariantsOrderInner(showStyleBaseId, variant, idCount++)
+		)
+	)
+	return insertedIds
 }
 
 export async function updateShowStyleVariantsOrderInner(
+	showStyleBaseId: ShowStyleBaseId,
 	showStyleVariant: ShowStyleVariant,
 	rank: number
 ): Promise<ShowStyleVariantId> {
 	return OrderedShowStyleVariants.insertAsync({
 		_id: showStyleVariant._id,
 		rank: rank,
+		showStyleBaseId: showStyleBaseId,
 	})
 }
 
@@ -233,6 +238,51 @@ export async function getOrderedShowStyleVariants(
 	return showStyleVariants
 }
 
+export async function reorderShowStyleVariants(
+	context: MethodContext,
+	showStyleBaseId: ShowStyleBaseId,
+	movedShowStyleVariant: ShowStyleVariantsOrder,
+	newRank: number
+): Promise<void> {
+	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
+	const showStyleBase = access.showStyleBase
+	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
+
+	const orderedShowStyleVariants = OrderedShowStyleVariants.find(
+		{
+			_id: movedShowStyleVariant._id,
+		},
+		{
+			fields: {
+				_id: 1,
+				rank: 1,
+			},
+		}
+	).fetch()
+
+	OrderedShowStyleVariants.upsert(movedShowStyleVariant._id, {
+		$set: {
+			rank: newRank,
+		},
+	})
+
+	orderedShowStyleVariants.forEach((variant: ShowStyleVariantsOrder) => {
+		if (newRank < variant.rank) {
+			OrderedShowStyleVariants.upsert(variant._id, {
+				$set: {
+					rank: variant.rank + 1,
+				},
+			})
+		} else if (newRank >= variant.rank) {
+			OrderedShowStyleVariants.upsert(variant._id, {
+				$set: {
+					rank: variant.rank - 1,
+				},
+			})
+		}
+	})
+}
+
 class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	async insertShowStyleBase() {
 		return insertShowStyleBase(this)
@@ -254,6 +304,13 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	}
 	async getOrderedShowStyleVariants(showStyleBaseId: ShowStyleBaseId) {
 		return getOrderedShowStyleVariants(this, showStyleBaseId)
+	}
+	async reorderShowStyleVariants(
+		showStyleBaseId: ShowStyleBaseId,
+		movedShowStyleVariant: ShowStyleVariantsOrder,
+		newRank: number
+	) {
+		return reorderShowStyleVariants(this, showStyleBaseId, movedShowStyleVariant, newRank)
 	}
 }
 registerClassToMeteorMethods(ShowStylesAPIMethods, ServerShowStylesAPI, false)

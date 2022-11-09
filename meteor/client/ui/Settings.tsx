@@ -39,6 +39,7 @@ export const Settings = withTranslation()(
 			this.subscribe(PubSub.peripheralDevices, {})
 			this.subscribe(PubSub.studios, {})
 			this.subscribe(PubSub.showStyleBases, {})
+			this.subscribe(PubSub.orderedShowStyleVariants, {})
 			this.subscribe(PubSub.showStyleVariants, {})
 			this.subscribe(PubSub.blueprints, {})
 			if (MeteorSettings.enableUserAccounts && this.user) {
