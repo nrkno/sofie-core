@@ -73,7 +73,7 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 				<input
 					value={deviceIds.join(', ')}
 					onChange={(e) => {
-						setDeviceIds(e.target.value.split(/,\s+/))
+						setDeviceIds(e.target.value.split(/,\s*/))
 					}}
 				/>
 			</label>

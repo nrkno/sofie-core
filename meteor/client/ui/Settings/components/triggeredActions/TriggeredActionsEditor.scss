@@ -127,6 +127,24 @@ $triggered-action-color: #146985;
 						font-size: 1em;
 						margin: 0;
 						padding: 0;
+						font-weight: normal;
+					}
+
+					> p {
+						margin: 0;
+						padding: 0;
+						font-size: 0.6em;
+						line-height: 1em;
+						position: relative;
+
+						> span {
+							margin: 0 3px 3px 0;
+							display: inline-block;
+							white-space: nowrap;
+							max-width: 100%;
+							overflow: hidden;
+							text-overflow: ellipsis;
+						}
 					}
 				}
 			}
