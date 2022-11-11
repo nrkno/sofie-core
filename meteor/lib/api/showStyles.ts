@@ -1,5 +1,5 @@
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariantId, ShowStyleVariantsOrder } from '../collections/ShowStyleVariants'
+import { ShowStyleVariant, ShowStyleVariantId } from '../collections/ShowStyleVariants'
 
 export interface NewShowStylesAPI {
 	insertShowStyleBase(): Promise<ShowStyleBaseId>
@@ -10,13 +10,7 @@ export interface NewShowStylesAPI {
 	): Promise<ShowStyleVariantId>
 	removeShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
 	removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId): Promise<void>
-	getOrderedShowStyleVariants(showStyleBaseId: ShowStyleBaseId): Promise<ShowStyleVariant[]>
-	updateShowStyleVariantsOrder(showStyleBaseId: ShowStyleBaseId): Promise<ShowStyleVariantId[]>
-	reorderShowStyleVariants(
-		showStyleBaseId: ShowStyleBaseId,
-		movedShowStyleVariant: ShowStyleVariantsOrder,
-		newRank: number
-	)
+	reorderAllShowStyleVariants(showStyleBaseId: ShowStyleBaseId, orderedVariants: ShowStyleVariant[])
 }
 
 export enum ShowStylesAPIMethods {
@@ -25,7 +19,5 @@ export enum ShowStylesAPIMethods {
 	'insertShowStyleVariantWithProperties' = 'showstyles.insertShowStyleVariantWithProperties',
 	'removeShowStyleBase' = 'showstyles.removeShowStyleBase',
 	'removeShowStyleVariant' = 'showstyles.removeShowStyleVariant',
-	'getOrderedShowStyleVariants' = 'showstyles.getOrderedShowStyleVariants',
-	'updateShowStyleVariantsOrder' = 'showstyles.updateShowStyleVariantsOrder',
-	'reorderShowStyleVariants' = 'showstyles.reorderShowStyleVariants',
+	'reorderAllShowStyleVariants' = 'showstyles.reorderAllShowStyleVariants',
 }

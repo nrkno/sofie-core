@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useRef } from 'react'
 import ClassNames from 'classnames'
 import { faPencilAlt, faTrash, faCheck, faPlus, faDownload, faUpload, faCopy } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -39,6 +39,7 @@ interface IShowStyleVariantsProps {
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
 	timestampedFileKey: number
+	dndVariants: ShowStyleVariant[]
 }
 
 interface DragVariant {
@@ -57,7 +58,32 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			this.state = {
 				editedMappings: [],
 				timestampedFileKey: Date.now(),
+				dndVariants: this.getOrderedShowStyleVariants(),
 			}
+		}
+
+		componentDidUpdate() {
+			if (this.props.showStyleVariants.length > 0 && this.state.dndVariants.length === 0) {
+				setTimeout(
+					() =>
+						this.setState({
+							dndVariants: this.getOrderedShowStyleVariants(),
+						}),
+					50
+				)
+			}
+		}
+
+		private getOrderedShowStyleVariants = (): ShowStyleVariant[] => {
+			const orderedVariants: ShowStyleVariant[] = []
+			this.props.orderedShowStyleVariants.map((orderVariant: ShowStyleVariantsOrder) => {
+				this.props.showStyleVariants.map((variant: ShowStyleVariant) => {
+					if (orderVariant._id === variant._id) {
+						orderedVariants.push(variant)
+					}
+				})
+			})
+			return orderedVariants
 		}
 
 		private importShowStyleVariants = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -194,6 +220,12 @@ export const ShowStyleVariantsSettings = withTranslation()(
 					</React.Fragment>
 				),
 			})
+		}
+
+		private persistStateVariants = (): void => {
+			MeteorCall.showstyles
+				.reorderAllShowStyleVariants(this.props.showStyleBase._id, this.state.dndVariants)
+				.catch(logger.warn)
 		}
 
 		VariantItem = ({ index, showStyleVariant, moveVariantHandler }) => {
@@ -342,22 +374,22 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		}
 
 		VariantContainer = () => {
-			//MeteorCall.showstyles.updateShowStyleVariantsOrder(this.props.showStyleBase._id).catch(logger.warn)
-			const [variants, setVariants] = useState(this.props.showStyleVariants)
-
 			const moveVariantHandler = useCallback((dragIndex: number, hoverIndex: number) => {
-				setVariants((prevVariants: ShowStyleVariant[]) =>
-					update(prevVariants, {
+				console.log('Hello there')
+				const prevState = this.state.dndVariants
+				this.setState({
+					dndVariants: update(prevState, {
 						$splice: [
 							[dragIndex, 1],
-							[hoverIndex, 0, prevVariants[dragIndex] as ShowStyleVariant],
+							[hoverIndex, 0, prevState[dragIndex] as ShowStyleVariant],
 						],
-					})
-				)
+					}),
+				})
+				this.persistStateVariants()
 			}, [])
 
 			const returnVariantsForList = () => {
-				return variants.map((variant: ShowStyleVariant, index: number) => (
+				return this.state.dndVariants.map((variant: ShowStyleVariant, index: number) => (
 					<this.VariantItem
 						key={unprotectString(variant._id)}
 						index={index}
