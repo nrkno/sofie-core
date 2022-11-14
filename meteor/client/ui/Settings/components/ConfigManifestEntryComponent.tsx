@@ -6,13 +6,18 @@ import { ConfigManifestEntry, ConfigManifestEntryType } from '@sofie-automation/
 import { ConfigManifestEntry as BlueprintConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { MongoCollection } from '../../../../lib/collections/lib'
 import { OverrideOpHelper, WrappedOverridableItemNormal } from '../util/OverrideOpHelper'
-import { IntInputControlWithOverrideForObject } from '../../../lib/Components/IntInput'
-import { TextInputControlWithOverrideForObject } from '../../../lib/Components/TextInput'
-import { CheckboxControlWithOverrideForObject } from '../../../lib/Components/Checkbox'
-import { FloatInputControlWithOverrideForObject } from '../../../lib/Components/FloatInput'
-import { DropdownInputControlWithOverrideForObject } from '../../../lib/Components/DropdownInput'
-import { MultiLineTextInputControlWithOverrideForObject } from '../../../lib/Components/MultiLineTextInput'
-import { JsonTextInputControlWithOverrideForObject } from '../../../lib/Components/JsonTextInput'
+import { IntInputControl } from '../../../lib/Components/IntInput'
+import { TextInputControl } from '../../../lib/Components/TextInput'
+import { CheckboxControl } from '../../../lib/Components/Checkbox'
+import { FloatInputControl } from '../../../lib/Components/FloatInput'
+import { DropdownInputControl } from '../../../lib/Components/DropdownInput'
+import { MultiLineTextInputControl } from '../../../lib/Components/MultiLineTextInput'
+import { JsonTextInputControl } from '../../../lib/Components/JsonTextInput'
+import {
+	ControlLabelAndOverrides,
+	ControlLabelAndOverridesForCheckbox,
+	ControlLabelAndOverridesProps,
+} from '../../../lib/Components/ControlWithOverrideForObject'
 
 interface ConfigManifestEntryWithOverridesProps {
 	configField: ConfigManifestEntry
@@ -27,10 +32,8 @@ export function ManifestEntryWithOverrides({
 }: ConfigManifestEntryWithOverridesProps) {
 	const { t } = useTranslation()
 
-	const commonOpts = {
-		modifiedClassName: 'bghl',
+	const wrapperProps: Omit<ControlLabelAndOverridesProps<any, any>, 'children'> = {
 		label: t(configField.name),
-		placeholder: configField.placeholder || '',
 		hint: configField.hint ? t(configField.hint) : undefined,
 
 		item: item,
@@ -40,31 +43,95 @@ export function ManifestEntryWithOverrides({
 	}
 
 	if (configField.type === ConfigManifestEntryType.FLOAT) {
-		return <FloatInputControlWithOverrideForObject classNames="input text-input input-l" {...commonOpts} />
+		return (
+			<ControlLabelAndOverrides {...wrapperProps}>
+				{(value, handleUpdate) => (
+					<FloatInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						placeholder={configField.placeholder}
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</ControlLabelAndOverrides>
+		)
 	} else if (configField.type === ConfigManifestEntryType.INT) {
 		return (
-			<IntInputControlWithOverrideForObject
-				classNames="input text-input input-l"
-				zeroBased={configField.zeroBased}
-				{...commonOpts}
-			/>
+			<ControlLabelAndOverrides {...wrapperProps}>
+				{(value, handleUpdate) => (
+					<IntInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						placeholder={configField.placeholder}
+						zeroBased={configField.zeroBased}
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</ControlLabelAndOverrides>
 		)
 	} else if (configField.type === ConfigManifestEntryType.STRING) {
-		return <TextInputControlWithOverrideForObject classNames="input text-input input-l" {...commonOpts} />
+		return (
+			<ControlLabelAndOverrides {...wrapperProps}>
+				{(value, handleUpdate) => (
+					<TextInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						placeholder={configField.placeholder}
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</ControlLabelAndOverrides>
+		)
 	} else if (configField.type === ConfigManifestEntryType.BOOLEAN) {
-		return <CheckboxControlWithOverrideForObject classNames="input input-l" {...commonOpts} />
+		return (
+			<ControlLabelAndOverridesForCheckbox {...wrapperProps}>
+				{(value, handleUpdate) => (
+					<CheckboxControl classNames="input input-l" value={!!value} handleUpdate={handleUpdate} />
+				)}
+			</ControlLabelAndOverridesForCheckbox>
+		)
 	} else if (configField.type === ConfigManifestEntryType.ENUM) {
 		return (
-			<DropdownInputControlWithOverrideForObject
-				classNames="input text-input input-l"
-				{...commonOpts}
-				options={configField.values}
-			/>
+			<ControlLabelAndOverrides {...wrapperProps}>
+				{(value, handleUpdate) => (
+					<DropdownInputControl
+						classNames="input text-input input-l"
+						options={configField.values}
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</ControlLabelAndOverrides>
 		)
 	} else if (configField.type === ConfigManifestEntryType.OBJECT) {
-		return <JsonTextInputControlWithOverrideForObject classNames="input text-input input-l" {...commonOpts} />
+		return (
+			<ControlLabelAndOverrides {...wrapperProps}>
+				{(value, handleUpdate) => (
+					<JsonTextInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</ControlLabelAndOverrides>
+		)
 	} else if (configField.type === ConfigManifestEntryType.MULTILINE_STRING) {
-		return <MultiLineTextInputControlWithOverrideForObject classNames="input text-input input-l" {...commonOpts} />
+		return (
+			<ControlLabelAndOverrides {...wrapperProps}>
+				{(value, handleUpdate) => (
+					<MultiLineTextInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						value={value}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</ControlLabelAndOverrides>
+		)
 
 		// TODO: Handle these?
 		// } else if (configField.type === ConfigManifestEntryType.TABLE) {

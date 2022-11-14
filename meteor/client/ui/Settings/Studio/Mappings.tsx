@@ -37,12 +37,10 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { TextInputControl, TextInputControlWithOverrideForObject } from '../../../lib/Components/TextInput'
-import { IntInputControlWithOverrideForObject } from '../../../lib/Components/IntInput'
-import {
-	DropdownInputControlWithOverrideForObject,
-	getDropdownInputOptions,
-} from '../../../lib/Components/DropdownInput'
+import { TextInputControl } from '../../../lib/Components/TextInput'
+import { IntInputControl } from '../../../lib/Components/IntInput'
+import { DropdownInputControl, getDropdownInputOptions } from '../../../lib/Components/DropdownInput'
+import { ControlLabelAndOverrides } from '../../../lib/Components/ControlWithOverrideForObject'
 
 interface IStudioMappingsProps {
 	studio: Studio
@@ -295,67 +293,100 @@ function StudioMappingsEntry({
 								</label>
 							</div>
 							<div className="mod mvs mhs">
-								<TextInputControlWithOverrideForObject
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
+								<ControlLabelAndOverrides
 									label={t('Layer Name')}
 									hint={t('Human-readable name of the layer')}
 									item={item}
 									itemKey={'layerName'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<TextInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<DropdownInputControlWithOverrideForObject
-									classNames="input text-input input-l"
+								<ControlLabelAndOverrides
 									label={t('Device Type')}
 									hint={t('The type of device to use for the output')}
 									item={item}
 									itemKey={'device'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-									options={getDropdownInputOptions(TSR.DeviceType)}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<DropdownInputControl
+											classNames="input text-input input-l"
+											options={getDropdownInputOptions(TSR.DeviceType)}
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<TextInputControlWithOverrideForObject
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
+								<ControlLabelAndOverrides
 									label={t('Device ID')}
 									hint={t('ID of the device (corresponds to the device ID in the peripheralDevice settings)')}
 									item={item}
 									itemKey={'deviceId'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<TextInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<DropdownInputControlWithOverrideForObject
-									classNames="input text-input input-l"
+								<ControlLabelAndOverrides
 									label={t('Lookahead Mode')}
 									item={item}
 									itemKey={'lookahead'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-									options={getDropdownInputOptions(LookaheadMode)}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<DropdownInputControl
+											classNames="input text-input input-l"
+											options={getDropdownInputOptions(LookaheadMode)}
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<IntInputControlWithOverrideForObject
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
+								<ControlLabelAndOverrides
 									label={t('Lookahead Target Objects (Undefined = 1)')}
 									item={item}
 									itemKey={'lookaheadDepth'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<IntInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<IntInputControlWithOverrideForObject
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
+								<ControlLabelAndOverrides
 									label={t('Lookahead Maximum Search Distance (Undefined = {{limit}})', {
 										limit: LOOKAHEAD_DEFAULT_SEARCH_DISTANCE,
 									})}
@@ -363,7 +394,16 @@ function StudioMappingsEntry({
 									itemKey={'lookaheadMaxSearchDistance'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<IntInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 							{manifest &&
 								manifest.map((m) => (

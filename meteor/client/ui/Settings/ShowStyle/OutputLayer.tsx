@@ -18,16 +18,20 @@ import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { findHighestRank } from '../StudioSettings'
 import { ObjectOverrideSetOp, SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { CheckboxControlWithOverrideForObject } from '../../../lib/Components/Checkbox'
+import { CheckboxControl } from '../../../lib/Components/Checkbox'
 import {
 	useOverrideOpHelper,
 	getAllCurrentAndDeletedItemsFromOverrides,
 	OverrideOpHelper,
 	WrappedOverridableItemNormal,
 } from '../util/OverrideOpHelper'
-import { TextInputControl, TextInputControlWithOverrideForObject } from '../../../lib/Components/TextInput'
-import { IntInputControlWithOverrideForObject } from '../../../lib/Components/IntInput'
+import { TextInputControl } from '../../../lib/Components/TextInput'
+import { IntInputControl } from '../../../lib/Components/IntInput'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
+import {
+	ControlLabelAndOverrides,
+	ControlLabelAndOverridesForCheckbox,
+} from '../../../lib/Components/ControlWithOverrideForObject'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -239,15 +243,22 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 					<td colSpan={4}>
 						<div>
 							<div className="mod mvs mhs">
-								<TextInputControlWithOverrideForObject
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
+								<ControlLabelAndOverrides
 									label={t('Channel Name')}
 									item={item}
 									itemKey={'name'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<TextInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
 								<label className="field">
@@ -262,42 +273,55 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								</label>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('Is PGM Output')}
 									item={item}
 									itemKey={'isPGM'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<IntInputControlWithOverrideForObject
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
+								<ControlLabelAndOverrides
 									label={t('Display Rank')}
 									item={item}
 									itemKey={'_rank'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<IntInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('Is collapsed by default')}
 									item={item}
 									itemKey={'isDefaultCollapsed'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('Is flattened')}
 									item={item}
 									itemKey={'isFlattened'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 						</div>
 						<div className="mod alright">

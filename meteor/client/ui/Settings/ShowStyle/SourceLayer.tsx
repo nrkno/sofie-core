@@ -25,13 +25,14 @@ import {
 	useOverrideOpHelper,
 	WrappedOverridableItemNormal,
 } from '../util/OverrideOpHelper'
-import { TextInputControl, TextInputControlWithOverrideForObject } from '../../../lib/Components/TextInput'
-import { CheckboxControlWithOverrideForObject } from '../../../lib/Components/Checkbox'
-import { IntInputControlWithOverrideForObject } from '../../../lib/Components/IntInput'
+import { TextInputControl } from '../../../lib/Components/TextInput'
+import { CheckboxControl } from '../../../lib/Components/Checkbox'
+import { IntInputControl } from '../../../lib/Components/IntInput'
+import { DropdownInputControl, getDropdownInputOptions } from '../../../lib/Components/DropdownInput'
 import {
-	DropdownInputControlWithOverrideForObject,
-	getDropdownInputOptions,
-} from '../../../lib/Components/DropdownInput'
+	ControlLabelAndOverrides,
+	ControlLabelAndOverridesForCheckbox,
+} from '../../../lib/Components/ControlWithOverrideForObject'
 
 function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceLayerType) {
 	switch (type) {
@@ -264,26 +265,40 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 					<td colSpan={4}>
 						<div>
 							<div className="mod mvs mhs">
-								<TextInputControlWithOverrideForObject
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
+								<ControlLabelAndOverrides
 									label={t('Source Name')}
 									item={item}
 									itemKey={'name'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<TextInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<TextInputControlWithOverrideForObject
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
+								<ControlLabelAndOverrides
 									label={t('Source Abbreviation')}
 									item={item}
 									itemKey={'abbreviation'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<TextInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
 								<label className="field">
@@ -298,136 +313,179 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								</label>
 							</div>
 							<div className="mod mvs mhs">
-								<DropdownInputControlWithOverrideForObject
-									classNames="focusable-main input-l"
+								<ControlLabelAndOverrides
 									label={t('Source Type')}
 									item={item}
 									itemKey={'type'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-									options={getDropdownInputOptions(SourceLayerType)}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<DropdownInputControl
+											classNames="focusable-main input-l"
+											options={getDropdownInputOptions(SourceLayerType)}
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('Is a Live Remote Input')}
 									item={item}
 									itemKey={'isRemoteInput'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('Is a Guest Input')}
 									item={item}
 									itemKey={'isGuestInput'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('Is hidden')}
 									item={item}
 									itemKey={'isHidden'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<IntInputControlWithOverrideForObject
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
+								<ControlLabelAndOverrides
 									label={t('Display Rank')}
 									item={item}
 									itemKey={'_rank'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<IntInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t("Display on Presenter's Screen")}
 									item={item}
 									itemKey={'onPresenterScreen'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('Display in a column in List View')}
 									item={item}
 									itemKey={'onListViewColumn'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('Display AdLibs in a column in List View')}
 									item={item}
 									itemKey={'onListViewAdLibColumn'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('Pieces on this layer can be cleared')}
 									item={item}
 									itemKey={'isClearable'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('Pieces on this layer are sticky')}
 									item={item}
 									itemKey={'isSticky'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('Only Pieces present in rundown are sticky')}
 									item={item}
 									itemKey={'stickyOriginalOnly'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('Allow disabling of Pieces')}
 									item={item}
 									itemKey={'allowDisable'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<CheckboxControlWithOverrideForObject
+								<ControlLabelAndOverridesForCheckbox
 									label={t('AdLibs on this layer can be queued')}
 									item={item}
 									itemKey={'isQueueable'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</ControlLabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<TextInputControlWithOverrideForObject
-									modifiedClassName="bghl"
-									classNames="input text-input input-l"
+								<ControlLabelAndOverrides
 									label={t('Exclusivity group')}
 									item={item}
 									itemKey={'exclusiveGroup'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-								/>
+								>
+									{(value, handleUpdate) => (
+										<TextInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</ControlLabelAndOverrides>
 							</div>
 						</div>
 						<div className="mod alright">
