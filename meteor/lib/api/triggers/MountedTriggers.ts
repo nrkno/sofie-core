@@ -1,4 +1,4 @@
-import { ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, ITranslatableMessage, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import {
 	AdLibActionId,
 	PieceId,
@@ -85,4 +85,7 @@ export type PreviewWrappedAdLib = Omit<IWrappedAdLib, '_id'> & {
 	showStyleBaseId: ShowStyleBaseId
 	triggeredActionId: TriggeredActionId
 	actionId: string
+	sourceLayerType?: SourceLayerType
+	isCurrent?: boolean
+	isNext?: boolean
 }

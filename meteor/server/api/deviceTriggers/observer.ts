@@ -568,6 +568,7 @@ function refreshDeviceTriggerMountedActions(
 						actionId: actionId,
 						studioId,
 						showStyleBaseId,
+						sourceLayerType: adLib.sourceLayerId ? sourceLayers[adLib.sourceLayerId]?.type : undefined,
 					},
 				})
 				addedPreviewIds.push(adLibPreviewId)

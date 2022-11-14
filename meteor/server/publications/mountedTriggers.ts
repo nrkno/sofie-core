@@ -71,7 +71,11 @@ function cursorCustomPublish<T extends { _id: ProtectedString<any> }>(pub: Custo
 	}
 
 	const bufferChanged = _.debounce(function bufferChanged() {
-		pub.changed(buffer)
+		try {
+			pub.changed(buffer)
+		} catch (e) {
+			logger.error(`Error while updating publication: ${e}`, e as any)
+		}
 		buffer = {
 			added: [],
 			changed: [],

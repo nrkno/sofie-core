@@ -99,7 +99,9 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 										{mountedTriggersPreviews
 											.filter((preview) => preview.actionId === entry.actionId)
 											.map((preview) => (
-												<span key={unprotectString(preview._id)}>{JSON.stringify(preview.label)}</span>
+												<span key={unprotectString(preview._id)}>
+													{JSON.stringify(preview.label)}: {preview.type} {preview.sourceLayerType}
+												</span>
 											))}
 									</td>
 								</tr>
