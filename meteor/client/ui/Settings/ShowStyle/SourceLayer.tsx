@@ -29,10 +29,7 @@ import { TextInputControl } from '../../../lib/Components/TextInput'
 import { CheckboxControl } from '../../../lib/Components/Checkbox'
 import { IntInputControl } from '../../../lib/Components/IntInput'
 import { DropdownInputControl, getDropdownInputOptions } from '../../../lib/Components/DropdownInput'
-import {
-	ControlLabelAndOverrides,
-	ControlLabelAndOverridesForCheckbox,
-} from '../../../lib/Components/ControlWithOverrideForObject'
+import { LabelAndOverrides, LabelAndOverridesForCheckbox } from '../../../lib/Components/LabelAndOverrides'
 
 function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceLayerType) {
 	switch (type) {
@@ -265,7 +262,7 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 					<td colSpan={4}>
 						<div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Source Name')}
 									item={item}
 									itemKey={'name'}
@@ -280,10 +277,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Source Abbreviation')}
 									item={item}
 									itemKey={'abbreviation'}
@@ -298,7 +295,7 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
 								<label className="field">
@@ -313,7 +310,7 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								</label>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Source Type')}
 									item={item}
 									itemKey={'type'}
@@ -328,10 +325,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('Is a Live Remote Input')}
 									item={item}
 									itemKey={'isRemoteInput'}
@@ -339,10 +336,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('Is a Guest Input')}
 									item={item}
 									itemKey={'isGuestInput'}
@@ -350,10 +347,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('Is hidden')}
 									item={item}
 									itemKey={'isHidden'}
@@ -361,10 +358,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Display Rank')}
 									item={item}
 									itemKey={'_rank'}
@@ -379,10 +376,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t("Display on Presenter's Screen")}
 									item={item}
 									itemKey={'onPresenterScreen'}
@@ -390,10 +387,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('Display in a column in List View')}
 									item={item}
 									itemKey={'onListViewColumn'}
@@ -401,10 +398,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('Display AdLibs in a column in List View')}
 									item={item}
 									itemKey={'onListViewAdLibColumn'}
@@ -412,10 +409,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('Pieces on this layer can be cleared')}
 									item={item}
 									itemKey={'isClearable'}
@@ -423,10 +420,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('Pieces on this layer are sticky')}
 									item={item}
 									itemKey={'isSticky'}
@@ -434,10 +431,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('Only Pieces present in rundown are sticky')}
 									item={item}
 									itemKey={'stickyOriginalOnly'}
@@ -445,10 +442,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('Allow disabling of Pieces')}
 									item={item}
 									itemKey={'allowDisable'}
@@ -456,10 +453,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('AdLibs on this layer can be queued')}
 									item={item}
 									itemKey={'isQueueable'}
@@ -467,10 +464,10 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Exclusivity group')}
 									item={item}
 									itemKey={'exclusiveGroup'}
@@ -485,7 +482,7 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 						</div>
 						<div className="mod alright">

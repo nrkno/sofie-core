@@ -28,10 +28,7 @@ import {
 import { TextInputControl } from '../../../lib/Components/TextInput'
 import { IntInputControl } from '../../../lib/Components/IntInput'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
-import {
-	ControlLabelAndOverrides,
-	ControlLabelAndOverridesForCheckbox,
-} from '../../../lib/Components/ControlWithOverrideForObject'
+import { LabelAndOverrides, LabelAndOverridesForCheckbox } from '../../../lib/Components/LabelAndOverrides'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -243,7 +240,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 					<td colSpan={4}>
 						<div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Channel Name')}
 									item={item}
 									itemKey={'name'}
@@ -258,7 +255,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
 								<label className="field">
@@ -273,7 +270,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								</label>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('Is PGM Output')}
 									item={item}
 									itemKey={'isPGM'}
@@ -281,10 +278,10 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Display Rank')}
 									item={item}
 									itemKey={'_rank'}
@@ -299,10 +296,10 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('Is collapsed by default')}
 									item={item}
 									itemKey={'isDefaultCollapsed'}
@@ -310,10 +307,10 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverridesForCheckbox
+								<LabelAndOverridesForCheckbox
 									label={t('Is flattened')}
 									item={item}
 									itemKey={'isFlattened'}
@@ -321,7 +318,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 									overrideHelper={overrideHelper}
 								>
 									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</ControlLabelAndOverridesForCheckbox>
+								</LabelAndOverridesForCheckbox>
 							</div>
 						</div>
 						<div className="mod alright">

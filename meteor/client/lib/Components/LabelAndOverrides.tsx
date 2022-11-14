@@ -6,7 +6,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { OverrideOpHelper, WrappedOverridableItemNormal } from '../../ui/Settings/util/OverrideOpHelper'
 import { hasOpWithPath } from './util'
 
-export interface ControlLabelAndOverridesProps<T extends object, TValue> {
+export interface LabelAndOverridesProps<T extends object, TValue> {
 	label: string
 	hint?: string
 	item: WrappedOverridableItemNormal<T>
@@ -19,7 +19,8 @@ export interface ControlLabelAndOverridesProps<T extends object, TValue> {
 
 	children: (value: TValue, setValue: (value: TValue) => void) => React.ReactNode
 }
-export function ControlLabelAndOverrides<T extends object, TValue = any>({
+
+export function LabelAndOverrides<T extends object, TValue = any>({
 	children,
 	label,
 	hint,
@@ -28,7 +29,7 @@ export function ControlLabelAndOverrides<T extends object, TValue = any>({
 	opPrefix,
 	overrideHelper,
 	labelAfter,
-}: ControlLabelAndOverridesProps<T, TValue>) {
+}: LabelAndOverridesProps<T, TValue>) {
 	const { t } = useTranslation()
 
 	const clearOverride = useCallback(() => {
@@ -45,8 +46,16 @@ export function ControlLabelAndOverrides<T extends object, TValue = any>({
 
 	let displayValue = ''
 	if (item.defaults) {
-		// TODO - other types
-		displayValue = item.defaults[itemKey] ? 'true' : 'false'
+		const defaultValue = item.defaults[itemKey]
+		// Special cases for formatting of the default
+		if (defaultValue === false) {
+			displayValue = 'false'
+		} else if (defaultValue === true) {
+			displayValue = 'true'
+		} else if (defaultValue) {
+			// Display it as a string
+			displayValue = defaultValue + ''
+		}
 	}
 	return (
 		<label className="field">
@@ -73,8 +82,8 @@ export function ControlLabelAndOverrides<T extends object, TValue = any>({
 	)
 }
 
-export function ControlLabelAndOverridesForCheckbox<T extends object, TValue = any>(
-	props: Omit<ControlLabelAndOverridesProps<T, TValue>, 'labelAfter'>
+export function LabelAndOverridesForCheckbox<T extends object, TValue = any>(
+	props: Omit<LabelAndOverridesProps<T, TValue>, 'labelAfter'>
 ) {
-	return <ControlLabelAndOverrides<T, TValue> {...props} labelAfter={true} />
+	return <LabelAndOverrides<T, TValue> {...props} labelAfter={true} />
 }

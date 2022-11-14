@@ -14,10 +14,10 @@ import { DropdownInputControl } from '../../../lib/Components/DropdownInput'
 import { MultiLineTextInputControl } from '../../../lib/Components/MultiLineTextInput'
 import { JsonTextInputControl } from '../../../lib/Components/JsonTextInput'
 import {
-	ControlLabelAndOverrides,
-	ControlLabelAndOverridesForCheckbox,
-	ControlLabelAndOverridesProps,
-} from '../../../lib/Components/ControlWithOverrideForObject'
+	LabelAndOverrides,
+	LabelAndOverridesForCheckbox,
+	LabelAndOverridesProps,
+} from '../../../lib/Components/LabelAndOverrides'
 
 interface ConfigManifestEntryWithOverridesProps {
 	configField: ConfigManifestEntry
@@ -32,7 +32,7 @@ export function ManifestEntryWithOverrides({
 }: ConfigManifestEntryWithOverridesProps) {
 	const { t } = useTranslation()
 
-	const wrapperProps: Omit<ControlLabelAndOverridesProps<any, any>, 'children'> = {
+	const wrapperProps: Omit<LabelAndOverridesProps<any, any>, 'children'> = {
 		label: t(configField.name),
 		hint: configField.hint ? t(configField.hint) : undefined,
 
@@ -44,7 +44,7 @@ export function ManifestEntryWithOverrides({
 
 	if (configField.type === ConfigManifestEntryType.FLOAT) {
 		return (
-			<ControlLabelAndOverrides {...wrapperProps}>
+			<LabelAndOverrides {...wrapperProps}>
 				{(value, handleUpdate) => (
 					<FloatInputControl
 						modifiedClassName="bghl"
@@ -54,11 +54,11 @@ export function ManifestEntryWithOverrides({
 						handleUpdate={handleUpdate}
 					/>
 				)}
-			</ControlLabelAndOverrides>
+			</LabelAndOverrides>
 		)
 	} else if (configField.type === ConfigManifestEntryType.INT) {
 		return (
-			<ControlLabelAndOverrides {...wrapperProps}>
+			<LabelAndOverrides {...wrapperProps}>
 				{(value, handleUpdate) => (
 					<IntInputControl
 						modifiedClassName="bghl"
@@ -69,11 +69,11 @@ export function ManifestEntryWithOverrides({
 						handleUpdate={handleUpdate}
 					/>
 				)}
-			</ControlLabelAndOverrides>
+			</LabelAndOverrides>
 		)
 	} else if (configField.type === ConfigManifestEntryType.STRING) {
 		return (
-			<ControlLabelAndOverrides {...wrapperProps}>
+			<LabelAndOverrides {...wrapperProps}>
 				{(value, handleUpdate) => (
 					<TextInputControl
 						modifiedClassName="bghl"
@@ -83,19 +83,19 @@ export function ManifestEntryWithOverrides({
 						handleUpdate={handleUpdate}
 					/>
 				)}
-			</ControlLabelAndOverrides>
+			</LabelAndOverrides>
 		)
 	} else if (configField.type === ConfigManifestEntryType.BOOLEAN) {
 		return (
-			<ControlLabelAndOverridesForCheckbox {...wrapperProps}>
+			<LabelAndOverridesForCheckbox {...wrapperProps}>
 				{(value, handleUpdate) => (
 					<CheckboxControl classNames="input input-l" value={!!value} handleUpdate={handleUpdate} />
 				)}
-			</ControlLabelAndOverridesForCheckbox>
+			</LabelAndOverridesForCheckbox>
 		)
 	} else if (configField.type === ConfigManifestEntryType.ENUM) {
 		return (
-			<ControlLabelAndOverrides {...wrapperProps}>
+			<LabelAndOverrides {...wrapperProps}>
 				{(value, handleUpdate) => (
 					<DropdownInputControl
 						classNames="input text-input input-l"
@@ -104,11 +104,11 @@ export function ManifestEntryWithOverrides({
 						handleUpdate={handleUpdate}
 					/>
 				)}
-			</ControlLabelAndOverrides>
+			</LabelAndOverrides>
 		)
 	} else if (configField.type === ConfigManifestEntryType.OBJECT) {
 		return (
-			<ControlLabelAndOverrides {...wrapperProps}>
+			<LabelAndOverrides {...wrapperProps}>
 				{(value, handleUpdate) => (
 					<JsonTextInputControl
 						modifiedClassName="bghl"
@@ -117,11 +117,11 @@ export function ManifestEntryWithOverrides({
 						handleUpdate={handleUpdate}
 					/>
 				)}
-			</ControlLabelAndOverrides>
+			</LabelAndOverrides>
 		)
 	} else if (configField.type === ConfigManifestEntryType.MULTILINE_STRING) {
 		return (
-			<ControlLabelAndOverrides {...wrapperProps}>
+			<LabelAndOverrides {...wrapperProps}>
 				{(value, handleUpdate) => (
 					<MultiLineTextInputControl
 						modifiedClassName="bghl"
@@ -130,7 +130,7 @@ export function ManifestEntryWithOverrides({
 						handleUpdate={handleUpdate}
 					/>
 				)}
-			</ControlLabelAndOverrides>
+			</LabelAndOverrides>
 		)
 
 		// TODO: Handle these?

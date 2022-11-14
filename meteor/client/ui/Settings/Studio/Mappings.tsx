@@ -40,7 +40,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TextInputControl } from '../../../lib/Components/TextInput'
 import { IntInputControl } from '../../../lib/Components/IntInput'
 import { DropdownInputControl, getDropdownInputOptions } from '../../../lib/Components/DropdownInput'
-import { ControlLabelAndOverrides } from '../../../lib/Components/ControlWithOverrideForObject'
+import { LabelAndOverrides } from '../../../lib/Components/LabelAndOverrides'
 
 interface IStudioMappingsProps {
 	studio: Studio
@@ -293,7 +293,7 @@ function StudioMappingsEntry({
 								</label>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Layer Name')}
 									hint={t('Human-readable name of the layer')}
 									item={item}
@@ -309,10 +309,10 @@ function StudioMappingsEntry({
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Device Type')}
 									hint={t('The type of device to use for the output')}
 									item={item}
@@ -328,10 +328,10 @@ function StudioMappingsEntry({
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Device ID')}
 									hint={t('ID of the device (corresponds to the device ID in the peripheralDevice settings)')}
 									item={item}
@@ -347,10 +347,10 @@ function StudioMappingsEntry({
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Lookahead Mode')}
 									item={item}
 									itemKey={'lookahead'}
@@ -365,10 +365,10 @@ function StudioMappingsEntry({
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Lookahead Target Objects (Undefined = 1)')}
 									item={item}
 									itemKey={'lookaheadDepth'}
@@ -383,10 +383,10 @@ function StudioMappingsEntry({
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<ControlLabelAndOverrides
+								<LabelAndOverrides
 									label={t('Lookahead Maximum Search Distance (Undefined = {{limit}})', {
 										limit: LOOKAHEAD_DEFAULT_SEARCH_DISTANCE,
 									})}
@@ -403,7 +403,7 @@ function StudioMappingsEntry({
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</ControlLabelAndOverrides>
+								</LabelAndOverrides>
 							</div>
 							{manifest &&
 								manifest.map((m) => (
