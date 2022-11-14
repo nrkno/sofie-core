@@ -89,7 +89,8 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				return true
 			}
 
-			if (prevProps.showStyleVariants !== this.props.showStyleVariants) {
+			if (prevProps.showStyleVariants !== this.props.showStyleVariants && this.state.editedMappings.length > 0) {
+				console.log('showstyle variants do not match')
 				return true
 			}
 
