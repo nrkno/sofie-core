@@ -20,7 +20,7 @@ type Link<T> = {
 		cursorChain: (state: T) => MongoCursor<K> | null
 	) => Link<Simplify<T & { [P in StringLiteral<L>]: K }>>
 
-	end: (complete: (state: T | null) => void) => Meteor.LiveQueryHandle
+	end: (complete: (state: T | null, nextState?: T) => void) => Meteor.LiveQueryHandle
 }
 
 export function observerChain(): {
@@ -32,7 +32,7 @@ export function observerChain(): {
 	function createNextLink(baseCollectorObject: Record<string, any>, liveQueryHandle: Meteor.LiveQueryHandle) {
 		let mode: 'next' | 'end' | undefined
 		let chainedCursor: (state: Record<string, any>) => MongoCursor<any> | null
-		let completeFunction: (state: Record<string, any> | null) => void
+		let completeFunction: (state: Record<string, any> | null, nextState?: Record<string, any>) => void
 		let chainedKey: string | undefined = undefined
 		let previousObserver: Meteor.LiveQueryHandle | null = null
 
@@ -40,7 +40,7 @@ export function observerChain(): {
 			if (mode === 'end') return
 			throw new Error('nextChanged: Unfinished observer chain. This is a memory leak.')
 		}
-		let nextStop: () => void = () => {
+		let nextStop: (nextState?) => void = () => {
 			if (mode === 'end') return
 			throw new Error('nextChanged: Unfinished observer chain. This is a memory leak.')
 		}
@@ -52,6 +52,7 @@ export function observerChain(): {
 			}
 			const cursorResult = chainedCursor(collectorObject)
 			if (cursorResult === null) {
+				console.log('Stopping chain due to a null cursor result')
 				nextStop()
 				return
 			}
@@ -63,7 +64,7 @@ export function observerChain(): {
 						...collectorObject,
 						[chainedKey]: doc,
 					}
-					nextStop()
+					nextStop(newCollectorObject)
 					nextChanged(newCollectorObject)
 				},
 				changed: (doc) => {
@@ -72,7 +73,7 @@ export function observerChain(): {
 						...collectorObject,
 						[chainedKey]: doc,
 					}
-					nextStop()
+					nextStop(newCollectorObject)
 					nextChanged(newCollectorObject)
 				},
 				removed: () => {
@@ -86,17 +87,17 @@ export function observerChain(): {
 			completeFunction(obj)
 		}
 
-		function stopLink() {
+		function stopLink(nextState?: any) {
 			if (previousObserver) {
 				previousObserver.stop()
 				previousObserver = null
 			}
 
-			nextStop()
+			nextStop(nextState)
 		}
 
-		function stopEnd() {
-			completeFunction(null)
+		function stopEnd(nextState?: any) {
+			completeFunction(null, nextState)
 		}
 
 		return {
@@ -114,13 +115,13 @@ export function observerChain(): {
 						assertNever(mode)
 				}
 			},
-			stop: () => {
+			stop: (nextObj?) => {
 				switch (mode) {
 					case 'next':
-						stopLink()
+						stopLink(nextObj)
 						break
 					case 'end':
-						stopEnd()
+						stopEnd(nextObj)
 						break
 					case undefined:
 						break
@@ -151,7 +152,9 @@ export function observerChain(): {
 	}
 
 	const initialStopObject = {
-		stop: () => {},
+		stop: () => {
+			void 0
+		},
 	}
 
 	const { changed, stop, link } = createNextLink({}, initialStopObject)

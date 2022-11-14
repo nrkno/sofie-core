@@ -129,11 +129,30 @@ function setupStudioObserver(studio: DBStudio) {
 				  >)
 				: null
 		)
-		.end((state) => {
+		.end((state, nextState) => {
 			// setupTriggeredActionsObserver(state)
 			if (!state) {
 				const oldObserver = studioPlaylistObserver
 				if (!oldObserver) return
+				if (
+					oldObserver.showStyleBaseId === nextState?.showStyleBase?._id ||
+					oldObserver.activePlaylistId === nextState?.activePlaylist?._id ||
+					oldObserver.activationId === nextState?.activePlaylist?.activationId ||
+					oldObserver.currentRundownId === nextState?.currentRundown?._id
+				) {
+					logger.debug(`Next props for deviceTriggers observer are the same as current, skipping teardown.`)
+					return
+				}
+				console.log(
+					oldObserver.showStyleBaseId,
+					nextState?.showStyleBase._id,
+					oldObserver.activePlaylistId,
+					nextState?.activePlaylist._id,
+					oldObserver.activationId,
+					nextState?.activePlaylist.activationId,
+					oldObserver.currentRundownId,
+					nextState?.currentRundown?._id
+				)
 				logger.debug(
 					`Destroying deviceTriggers observer for Studio "${
 						studio._id
@@ -159,7 +178,12 @@ function setupStudioObserver(studio: DBStudio) {
 				)
 
 				previousObserver?.stop()
-				studioPlaylistObserver = setupRundownPlaylistObserver(studioId, state)
+				studioPlaylistObserver = setupRundownPlaylistObserver(studioId, {
+					activePlaylistId: state.activePlaylist._id,
+					activationId: state.activePlaylist.activationId,
+					currentRundownId: state.currentRundown._id,
+					showStyleBaseId: state.showStyleBase._id,
+				})
 			}
 		})
 
@@ -179,43 +203,48 @@ function destroyStudioObserver(studio: DBStudio) {
 function setupRundownPlaylistObserver(
 	studioId: StudioId,
 	{
-		activePlaylist,
-		showStyleBase,
-		currentRundown,
+		activePlaylistId,
+		activationId,
+		showStyleBaseId,
+		currentRundownId,
 	}: {
-		activePlaylist: Pick<DBRundownPlaylist, '_id' | 'activationId'>
-		showStyleBase: Pick<DBShowStyleBase, '_id'>
-		currentRundown: Pick<DBRundown, '_id'>
+		activePlaylistId: RundownPlaylistId
+		activationId: RundownPlaylistActivationId | undefined
+		showStyleBaseId: ShowStyleBaseId
+		currentRundownId: RundownId
 	}
 ): LiveStudioPlaylistQueryHandle {
 	// set up observers on the content collections and cache the results so that these can be evaluated later
 
 	const observer = setupRundownsInPlaylistObserver({
 		studioId,
-		rundownPlaylist: activePlaylist,
-		showStyleBaseId: showStyleBase._id,
-		currentRundownId: currentRundown._id,
+		activationId,
+		activePlaylistId,
+		showStyleBaseId,
+		currentRundownId,
 	})
 
 	return {
 		stop: () => {
 			observer.stop()
 		},
-		showStyleBaseId: showStyleBase._id,
-		activePlaylistId: activePlaylist._id,
-		activationId: activePlaylist.activationId,
-		currentRundownId: currentRundown._id,
+		showStyleBaseId,
+		activePlaylistId,
+		activationId,
+		currentRundownId,
 	}
 }
 
 function setupRundownsInPlaylistObserver({
 	studioId,
-	rundownPlaylist,
+	activePlaylistId,
+	activationId,
 	showStyleBaseId,
 	currentRundownId,
 }: {
 	studioId: StudioId
-	rundownPlaylist: Pick<DBRundownPlaylist, '_id' | 'activationId'>
+	activePlaylistId: RundownPlaylistId
+	activationId: RundownPlaylistActivationId | undefined
 	showStyleBaseId: ShowStyleBaseId
 	currentRundownId: RundownId
 }): Meteor.LiveQueryHandle {
@@ -228,7 +257,8 @@ function setupRundownsInPlaylistObserver({
 			contentObserver = setupSegmentsInRundownsObserver({
 				currentRundownId,
 				rundownIds: Array.from(rundownIds),
-				rundownPlaylist,
+				rundownPlaylistId: activePlaylistId,
+				activationId,
 				showStyleBaseId,
 				studioId,
 			})
@@ -238,7 +268,7 @@ function setupRundownsInPlaylistObserver({
 
 	const rundownsObserver = Rundowns.find(
 		{
-			playlistId: rundownPlaylist._id,
+			playlistId: activePlaylistId,
 		},
 		{
 			projection: {
@@ -271,13 +301,15 @@ function setupRundownsInPlaylistObserver({
 function setupSegmentsInRundownsObserver({
 	studioId,
 	rundownIds,
-	rundownPlaylist,
+	rundownPlaylistId,
+	activationId,
 	showStyleBaseId,
 	currentRundownId,
 }: {
 	studioId: StudioId
 	rundownIds: RundownId[]
-	rundownPlaylist: Pick<DBRundownPlaylist, '_id' | 'activationId'>
+	rundownPlaylistId: RundownPlaylistId
+	activationId: RundownPlaylistActivationId | undefined
 	showStyleBaseId: ShowStyleBaseId
 	currentRundownId: RundownId
 }): Meteor.LiveQueryHandle {
@@ -292,8 +324,8 @@ function setupSegmentsInRundownsObserver({
 				rundownIds,
 				studioId,
 				showStyleBaseId,
-				rundownPlaylistId: rundownPlaylist._id,
-				activationId: rundownPlaylist.activationId,
+				rundownPlaylistId,
+				activationId,
 				currentRundownId,
 			})
 		}),
