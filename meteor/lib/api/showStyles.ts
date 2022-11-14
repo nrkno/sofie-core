@@ -3,9 +3,10 @@ import { ShowStyleVariant, ShowStyleVariantId } from '../collections/ShowStyleVa
 
 export interface NewShowStylesAPI {
 	insertShowStyleBase(): Promise<ShowStyleBaseId>
-	insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId): Promise<ShowStyleVariantId>
+	insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId, rank: number): Promise<ShowStyleVariantId>
 	insertShowStyleVariantWithProperties(
 		showStyleVariant: ShowStyleVariant,
+		rank: number,
 		id?: ShowStyleVariantId
 	): Promise<ShowStyleVariantId>
 	removeShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>

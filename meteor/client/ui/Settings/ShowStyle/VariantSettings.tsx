@@ -62,8 +62,11 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			}
 		}
 
-		componentDidUpdate() {
-			if (this.props.showStyleVariants.length > 0 && this.state.dndVariants.length === 0) {
+		componentDidUpdate(
+			prevProps: Readonly<Translated<IShowStyleVariantsProps>>,
+			prevState: Readonly<IShowStyleVariantsSettingsState>
+		) {
+			if (this.showStyleVariantsChanged(prevState, prevProps)) {
 				setTimeout(
 					() =>
 						this.setState({
@@ -72,6 +75,25 @@ export const ShowStyleVariantsSettings = withTranslation()(
 					50
 				)
 			}
+		}
+
+		private showStyleVariantsChanged = (
+			prevState: IShowStyleVariantsSettingsState,
+			prevProps: Readonly<Translated<IShowStyleVariantsProps>>
+		): boolean => {
+			if (this.props.showStyleVariants.length > 0 && this.state.dndVariants.length === 0) {
+				return true
+			}
+
+			if (prevState.dndVariants.length !== this.props.showStyleVariants.length) {
+				return true
+			}
+
+			if (prevProps.showStyleVariants !== this.props.showStyleVariants) {
+				return true
+			}
+
+			return false
 		}
 
 		private getOrderedShowStyleVariants = (): ShowStyleVariant[] => {
@@ -128,25 +150,30 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 		private importShowStyleVariantsFromArray = (showStyleVariants: ShowStyleVariant[]): void => {
 			const { t } = this.props
-			showStyleVariants.forEach((showStyleVariant: ShowStyleVariant) => {
-				MeteorCall.showstyles.insertShowStyleVariantWithProperties(showStyleVariant, showStyleVariant._id).catch(() => {
-					NotificationCenter.push(
-						new Notification(
-							undefined,
-							NoticeLevel.WARNING,
-							t('Failed to import Variant {{name}}. Make sure it is not already imported.', {
-								name: showStyleVariant.name,
-							}),
-							'VariantSettings'
+			showStyleVariants.forEach((showStyleVariant: ShowStyleVariant, index: number) => {
+				const rank = this.state.dndVariants.length
+				MeteorCall.showstyles
+					.insertShowStyleVariantWithProperties(showStyleVariant, rank + index, showStyleVariant._id)
+					.catch(() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.WARNING,
+								t('Failed to import Variant {{name}}. Make sure it is not already imported.', {
+									name: showStyleVariant.name,
+								}),
+								'VariantSettings'
+							)
 						)
-					)
-				})
+					})
 			})
 		}
 
 		private copyShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
 			showStyleVariant.name = `Copy of ${showStyleVariant.name}`
-			MeteorCall.showstyles.insertShowStyleVariantWithProperties(showStyleVariant).catch(logger.warn)
+			MeteorCall.showstyles
+				.insertShowStyleVariantWithProperties(showStyleVariant, this.props.showStyleVariants.length)
+				.catch(logger.warn)
 		}
 
 		private downloadShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
@@ -198,7 +225,9 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		}
 
 		private onAddShowStyleVariant = (): void => {
-			MeteorCall.showstyles.insertShowStyleVariant(this.props.showStyleBase._id).catch(logger.warn)
+			MeteorCall.showstyles
+				.insertShowStyleVariant(this.props.showStyleBase._id, this.props.showStyleVariants.length)
+				.catch(logger.warn)
 		}
 
 		private confirmRemove = (showStyleVariant: ShowStyleVariant): void => {
@@ -309,49 +338,51 @@ export const ShowStyleVariantsSettings = withTranslation()(
 							</td>
 						</tr>
 					</tbody>
-					{this.isItemEdited(showStyleVariant._id) && (
-						<tr className="expando-details hl">
-							<td colSpan={5}>
-								<div>
-									<div className="mod mvs mhs">
-										<label className="field">
-											{t('Variant Name')}
-											<EditAttribute
-												modifiedClassName="bghl"
-												attribute={'name'}
-												obj={showStyleVariant}
-												type="text"
+					<tbody>
+						{this.isItemEdited(showStyleVariant._id) && (
+							<tr className="expando-details hl">
+								<td colSpan={5}>
+									<div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Variant Name')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'name'}
+													obj={showStyleVariant}
+													type="text"
+													collection={ShowStyleVariants}
+													className="input text-input input-l"
+												></EditAttribute>
+											</label>
+										</div>
+									</div>
+									<div className="row">
+										<div className="col c12 r1-c12 phs">
+											<ConfigManifestSettings
+												t={this.props.t}
+												i18n={this.props.i18n}
+												tReady={this.props.tReady}
+												manifest={this.props.blueprintConfigManifest}
 												collection={ShowStyleVariants}
-												className="input text-input input-l"
-											></EditAttribute>
-										</label>
+												configPath={'blueprintConfig'}
+												alternateObject={this.props.showStyleBase}
+												object={showStyleVariant}
+												layerMappings={this.props.layerMappings}
+												sourceLayers={this.props.sourceLayers}
+												subPanel={true}
+											/>
+										</div>
 									</div>
-								</div>
-								<div className="row">
-									<div className="col c12 r1-c12 phs">
-										<ConfigManifestSettings
-											t={this.props.t}
-											i18n={this.props.i18n}
-											tReady={this.props.tReady}
-											manifest={this.props.blueprintConfigManifest}
-											collection={ShowStyleVariants}
-											configPath={'blueprintConfig'}
-											alternateObject={this.props.showStyleBase}
-											object={showStyleVariant}
-											layerMappings={this.props.layerMappings}
-											sourceLayers={this.props.sourceLayers}
-											subPanel={true}
-										/>
+									<div className="mod alright">
+										<button className="btn btn-primary" onClick={() => this.finishEditItem(showStyleVariant._id)}>
+											<FontAwesomeIcon icon={faCheck} />
+										</button>
 									</div>
-								</div>
-								<div className="mod alright">
-									<button className="btn btn-primary" onClick={() => this.finishEditItem(showStyleVariant._id)}>
-										<FontAwesomeIcon icon={faCheck} />
-									</button>
-								</div>
-							</td>
-						</tr>
-					)}
+								</td>
+							</tr>
+						)}
+					</tbody>
 				</React.Fragment>
 			)
 		}
@@ -375,7 +406,6 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 		VariantContainer = () => {
 			const moveVariantHandler = useCallback((dragIndex: number, hoverIndex: number) => {
-				console.log('Hello there')
 				const prevState = this.state.dndVariants
 				this.setState({
 					dndVariants: update(prevState, {
@@ -413,6 +443,10 @@ export const ShowStyleVariantsSettings = withTranslation()(
 							<button className="btn btn-primary" onClick={this.onAddShowStyleVariant}>
 								<FontAwesomeIcon icon={faPlus} />
 							</button>
+							<button className="btn btn-secondary mls" onClick={this.downloadAllShowStyleVariants}>
+								<FontAwesomeIcon icon={faDownload} />
+								&nbsp;{t('Export')}
+							</button>
 							<UploadButton
 								className="btn btn-secondary mls"
 								accept="application/json,.json"
@@ -422,10 +456,6 @@ export const ShowStyleVariantsSettings = withTranslation()(
 								<FontAwesomeIcon icon={faUpload} />
 								&nbsp;{t('Import')}
 							</UploadButton>
-							<button className="btn btn-secondary mls" onClick={this.downloadAllShowStyleVariants}>
-								<FontAwesomeIcon icon={faDownload} />
-								&nbsp;{t('Export')}
-							</button>
 						</div>
 					</DndProvider>
 				</div>

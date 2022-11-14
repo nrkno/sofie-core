@@ -9,6 +9,7 @@ import {
 	ShowStyleCompound,
 	ShowStyleVariant,
 	OrderedShowStyleVariants,
+	ShowStyleVariantsOrder,
 } from '../../lib/collections/ShowStyleVariants'
 import { protectString, getRandomId } from '../../lib/lib'
 import { RundownLayouts } from '../../lib/collections/RundownLayouts'
@@ -76,6 +77,7 @@ export async function insertShowStyleBaseInner(organizationId: OrganizationId | 
 export async function insertShowStyleVariant(
 	context: MethodContext | Credentials,
 	showStyleBaseId: ShowStyleBaseId,
+	rank: number,
 	name?: string
 ): Promise<ShowStyleVariantId> {
 	check(showStyleBaseId, String)
@@ -84,19 +86,24 @@ export async function insertShowStyleVariant(
 	const showStyleBase = access.showStyleBase
 	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
 
-	return insertShowStyleVariantInner(showStyleBase, name)
+	const variantId = await Promise.resolve(insertShowStyleVariantInner(showStyleBase, name))
+	return insertShowStyleVariantOrder(showStyleBaseId, variantId, rank)
 }
 
 export async function insertShowStyleVariantWithProperties(
 	context: MethodContext | Credentials,
 	showStyleVariant: ShowStyleVariant,
+	rank: number,
 	id?: ShowStyleVariantId
 ): Promise<ShowStyleVariantId> {
 	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleVariant.showStyleBaseId)
 	const showStyleBase = access.showStyleBase
 	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleVariant.showStyleBaseId}" not found`)
 
-	return insertShowStyleVariantInner(showStyleBase, showStyleVariant.name, id, showStyleVariant.blueprintConfig)
+	const variantId = await Promise.resolve(
+		insertShowStyleVariantInner(showStyleBase, showStyleVariant.name, id, showStyleVariant.blueprintConfig)
+	)
+	return insertShowStyleVariantOrder(showStyleBase._id, variantId, rank)
 }
 
 export async function insertShowStyleVariantInner(
@@ -142,6 +149,7 @@ export async function removeShowStyleVariant(
 	if (!showStyleVariant) throw new Meteor.Error(404, `showStyleVariant "${showStyleVariantId}" not found`)
 
 	await ShowStyleVariants.removeAsync(showStyleVariant._id)
+	await removeShowStyleVariantOrder(showStyleVariantId)
 }
 
 export async function reorderAllShowStyleVariants(
@@ -153,6 +161,10 @@ export async function reorderAllShowStyleVariants(
 	const showStyleBase = access.showStyleBase
 	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
 
+	await reorderAllShowStyleVariantsInner(orderedVariants)
+}
+
+export async function reorderAllShowStyleVariantsInner(orderedVariants: ShowStyleVariant[]): Promise<void> {
 	orderedVariants.forEach((variant: ShowStyleVariant, index: number) => {
 		OrderedShowStyleVariants.upsert(variant._id, {
 			$set: {
@@ -162,15 +174,53 @@ export async function reorderAllShowStyleVariants(
 	})
 }
 
+export async function insertShowStyleVariantOrder(
+	showStyleBaseId: ShowStyleBaseId,
+	showStyleVariantId: ShowStyleVariantId,
+	rank: number
+): Promise<ShowStyleVariantId> {
+	return OrderedShowStyleVariants.insertAsync({
+		_id: showStyleVariantId,
+		rank: rank,
+		showStyleBaseId: showStyleBaseId,
+	})
+}
+
+export async function removeShowStyleVariantOrder(showStyleVariantId: ShowStyleVariantId): Promise<void> {
+	const orderedVariants = OrderedShowStyleVariants.find({ _id: showStyleVariantId }).fetch()
+	const showStyleVariants = ShowStyleVariants.find({ _id: showStyleVariantId }).fetch()
+	const removedVariant = orderedVariants.find((variant: ShowStyleVariantsOrder) => variant._id === showStyleVariantId)
+	const newVariantOrder: ShowStyleVariant[] = []
+	if (!removedVariant) {
+		return
+	}
+
+	orderedVariants.splice(orderedVariants.indexOf(removedVariant), 1)
+	orderedVariants.map((orderVariant: ShowStyleVariantsOrder) => {
+		showStyleVariants.map((variant: ShowStyleVariant) => {
+			if (orderVariant._id === variant._id) {
+				newVariantOrder.push()
+			}
+		})
+	})
+
+	await OrderedShowStyleVariants.removeAsync(showStyleVariantId)
+	await reorderAllShowStyleVariantsInner(newVariantOrder)
+}
+
 class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	async insertShowStyleBase() {
 		return insertShowStyleBase(this)
 	}
-	async insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
-		return insertShowStyleVariant(this, showStyleBaseId)
+	async insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId, rank: number) {
+		return insertShowStyleVariant(this, showStyleBaseId, rank)
 	}
-	async insertShowStyleVariantWithProperties(showStyleVariant: ShowStyleVariant, id?: ShowStyleVariantId) {
-		return insertShowStyleVariantWithProperties(this, showStyleVariant, id)
+	async insertShowStyleVariantWithProperties(
+		showStyleVariant: ShowStyleVariant,
+		rank: number,
+		id: ShowStyleVariantId
+	) {
+		return insertShowStyleVariantWithProperties(this, showStyleVariant, rank, id)
 	}
 	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 		return removeShowStyleBase(this, showStyleBaseId)
