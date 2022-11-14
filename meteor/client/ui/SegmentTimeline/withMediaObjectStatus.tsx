@@ -126,7 +126,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 
 					// Check item status
 					if (piece && (piece.sourceLayer || layer) && studio) {
-						const { metadata, packageInfos, status, contentDuration, message } = checkPieceContentStatus(
+						const { metadata, packageInfos, status, contentDuration, messages } = checkPieceContentStatus(
 							WithMediaObjectStatusHOCComponent.unwrapPieceInstance(piece!),
 							piece.sourceLayer || layer,
 							studio
@@ -140,7 +140,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 									status: status,
 									contentMetaData: metadata,
 									contentPackageInfos: packageInfos,
-									message,
+									messages,
 								}
 
 								if (
@@ -170,7 +170,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 									},
 									contentMetaData: metadata,
 									contentPackageInfos: packageInfos,
-									message,
+									messages,
 								}
 
 								if (

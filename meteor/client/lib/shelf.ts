@@ -12,6 +12,7 @@ import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/d
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PieceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export interface ShelfDisplayOptions {
 	enableBuckets: boolean
@@ -32,7 +33,7 @@ export interface AdLibPieceUi extends Omit<AdLibPiece, 'timelineObjectsString'> 
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
 	contentMetaData?: any
 	contentPackageInfos?: ScanInfoForPackages
-	message?: string | null
+	messages?: ITranslatableMessage[]
 	segmentId?: SegmentId
 }
 

@@ -169,7 +169,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={null}
 					contentMetaData={this.props.piece.contentMetaData || null}
-					noticeMessage={this.props.piece.message || null}
+					noticeMessages={this.props.piece.messages || null}
 					noticeLevel={
 						this.props.piece.status !== null && this.props.piece.status !== undefined
 							? getNoticeLevelForPieceStatus(this.props.piece.status)

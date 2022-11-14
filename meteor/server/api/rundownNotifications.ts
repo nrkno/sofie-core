@@ -83,7 +83,7 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 						const segment = part ? segmentsMap.get(part.segmentId) : undefined
 						if (segment && sourceLayer && part) {
 							// we don't want this to be in a non-reactive context, so we manage this computation manually
-							const { status, message } = checkPieceContentStatus(piece, sourceLayer, uiStudio)
+							const { status, messages } = checkPieceContentStatus(piece, sourceLayer, uiStudio)
 							if (
 								status !== PieceStatusCode.OK &&
 								status !== PieceStatusCode.UNKNOWN &&
@@ -99,7 +99,7 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 									pieceId: piece._id,
 									name: piece.name,
 									status,
-									message,
+									messages,
 								})
 							}
 						}
