@@ -6,8 +6,7 @@ import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
-import { PartUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
-import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { PartUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -26,7 +25,7 @@ export function SegmentListHeader({
 	playlist,
 	studio,
 	highlight,
-	segmentNotes,
+	segmentNoteCounts,
 	isLiveSegment,
 	isNextSegment,
 	isQueuedSegment,
@@ -45,7 +44,7 @@ export function SegmentListHeader({
 	playlist: RundownPlaylist
 	studio: UIStudio
 	parts: Array<PartUi>
-	segmentNotes: Array<SegmentNote>
+	segmentNoteCounts: SegmentNoteCounts
 	highlight: boolean
 	isLiveSegment: boolean
 	isNextSegment: boolean
@@ -78,14 +77,8 @@ export function SegmentListHeader({
 	// 	setDetached(shouldDetach)
 	// }
 
-	const criticalNotes = segmentNotes.reduce((prev, item) => {
-		if (item.type === NoteSeverity.ERROR) return ++prev
-		return prev
-	}, 0)
-	const warningNotes = segmentNotes.reduce((prev, item) => {
-		if (item.type === NoteSeverity.WARNING) return ++prev
-		return prev
-	}, 0)
+	const criticalNotes = segmentNoteCounts.criticial
+	const warningNotes = segmentNoteCounts.warning
 
 	const contents = (
 		<ContextMenuTrigger

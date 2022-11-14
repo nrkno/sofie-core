@@ -10,14 +10,14 @@ import {
 	LiveSpeakContent,
 } from '@sofie-automation/blueprints-integration'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
-import * as i18next from 'i18next'
 import { IStudioSettings, routeExpectedPackages } from './collections/Studios'
 import { PackageInfos } from './collections/PackageInfos'
-import { assertNever, unprotectString } from './lib'
+import { assertNever, generateTranslation, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
 import { getExpectedPackageId } from './collections/ExpectedPackages'
 import { PieceGeneric, PieceStatusCode } from './collections/Pieces'
 import { UIStudio } from './api/studios'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -170,10 +170,10 @@ export interface ScanInfoForPackage {
 }
 
 export interface PieceContentStatusObj {
-	status: PieceStatusCode.OK | PieceStatusCode.UNKNOWN
+	status: PieceStatusCode
 	metadata: MediaObject | null
 	packageInfos: ScanInfoForPackages | undefined
-	message: string | null
+	messages: ITranslatableMessage[]
 	contentDuration: undefined // TODO - why is this never set?
 }
 
@@ -186,22 +186,17 @@ export type PieceContentStatusStudio = Pick<
 export function checkPieceContentStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer | undefined,
-	studio: PieceContentStatusStudio | undefined,
-	t?: i18next.TFunction
+	studio: PieceContentStatusStudio | undefined
 ): PieceContentStatusObj {
-	t =
-		t ||
-		((s: string, options?: _.Dictionary<any> | string) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options)) // kz: TODO not sure if this is ok - the second param can be a defaultValue
-
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
 	if (!ignoreMediaStatus && sourceLayer && studio) {
 		if (piece.expectedPackages) {
 			// Using Expected Packages:
-			return checkPieceContentExpectedPackageStatus(piece, sourceLayer, studio, t)
+			return checkPieceContentExpectedPackageStatus(piece, sourceLayer, studio)
 		} else {
 			// Fallback to MediaObject statuses:
 
-			return checkPieceContentMediaObjectStatus(piece, sourceLayer, studio, t)
+			return checkPieceContentMediaObjectStatus(piece, sourceLayer, studio)
 		}
 	}
 
@@ -209,7 +204,7 @@ export function checkPieceContentStatus(
 		status: PieceStatusCode.UNKNOWN,
 		metadata: null,
 		packageInfos: undefined,
-		message: null,
+		messages: [],
 		contentDuration: undefined,
 	}
 }
@@ -226,11 +221,9 @@ export function getNoteSeverityForPieceStatus(statusCode: PieceStatusCode): Note
 function checkPieceContentMediaObjectStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer,
-	studio: PieceContentStatusStudio,
-	t: i18next.TFunction
+	studio: PieceContentStatusStudio
 ): PieceContentStatusObj {
 	let metadata: MediaObject | null = null
-	let message: string | null = null
 	const settings: IStudioSettings | undefined = studio?.settings
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
 
@@ -239,7 +232,7 @@ function checkPieceContentMediaObjectStatus(
 
 	const messages: Array<{
 		status: PieceStatusCode
-		message: string
+		message: ITranslatableMessage
 	}> = []
 	let contentSeemsOK = false
 	const fileName = getMediaObjectMediaId(piece, sourceLayer)
@@ -252,7 +245,9 @@ function checkPieceContentMediaObjectStatus(
 			if (!fileName) {
 				messages.push({
 					status: PieceStatusCode.SOURCE_NOT_SET,
-					message: t('{{sourceLayer}} is missing a file path', { sourceLayer: sourceLayer.name }),
+					message: generateTranslation('{{sourceLayer}} is missing a file path', {
+						sourceLayer: sourceLayer.name,
+					}),
 				})
 			} else {
 				const mediaObject = MediaObjects.findOne({
@@ -263,7 +258,7 @@ function checkPieceContentMediaObjectStatus(
 				if (!mediaObject) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
-						message: t('{{sourceLayer}} is not yet ready on the playout system', {
+						message: generateTranslation('{{sourceLayer}} is not yet ready on the playout system', {
 							sourceLayer: sourceLayer.name,
 						}),
 					})
@@ -277,7 +272,9 @@ function checkPieceContentMediaObjectStatus(
 							if (!ignoreMediaAudioStatus && mediaObject.mediainfo.streams.length < 2) {
 								messages.push({
 									status: PieceStatusCode.SOURCE_BROKEN,
-									message: t("Clip doesn't have audio & video", { fileName: displayName }),
+									message: generateTranslation("Clip doesn't have audio & video", {
+										fileName: displayName,
+									}),
 								})
 							}
 							const formats = getAcceptedFormats(settings)
@@ -304,10 +301,13 @@ function checkPieceContentMediaObjectStatus(
 									if (!acceptFormat(format, formats)) {
 										messages.push({
 											status: PieceStatusCode.SOURCE_BROKEN,
-											message: t('{{sourceLayer}} has the wrong format: {{format}}', {
-												sourceLayer: sourceLayer.name,
-												format,
-											}),
+											message: generateTranslation(
+												'{{sourceLayer}} has the wrong format: {{format}}',
+												{
+													sourceLayer: sourceLayer.name,
+													format,
+												}
+											),
 										})
 									}
 								} else if (stream.codec.type === 'audio') {
@@ -329,7 +329,7 @@ function checkPieceContentMediaObjectStatus(
 							) {
 								messages.push({
 									status: PieceStatusCode.SOURCE_BROKEN,
-									message: t('{{sourceLayer}} has {{audioStreams}} audio streams', {
+									message: generateTranslation('{{sourceLayer}} has {{audioStreams}} audio streams', {
 										sourceLayer: sourceLayer.name,
 										audioStreams,
 									}),
@@ -339,18 +339,15 @@ function checkPieceContentMediaObjectStatus(
 								// check for black/freeze frames
 								const addFrameWarning = (
 									arr: Array<PackageInfo.Anomaly>,
-									type: string,
-									t: i18next.TFunction
+									strings: FrameWarningStrings
 								) => {
 									if (arr.length === 1) {
 										const frames = Math.ceil((arr[0].duration * 1000) / timebase)
 										if (arr[0].start === 0) {
 											messages.push({
 												status: PieceStatusCode.SOURCE_HAS_ISSUES,
-												message: t('Clip starts with {{frames}} {{type}} frame', {
+												message: generateTranslation(strings.clipStartsWithCount, {
 													frames,
-													type,
-													count: frames,
 												}),
 											})
 										} else if (
@@ -363,14 +360,9 @@ function checkPieceContentMediaObjectStatus(
 											const freezeStartsAt = Math.round(arr[0].start)
 											messages.push({
 												status: PieceStatusCode.SOURCE_HAS_ISSUES,
-												message: t(
-													'This clip ends with {{type}} frames after {{count}} second',
-													{
-														frames,
-														type,
-														count: freezeStartsAt,
-													}
-												),
+												message: generateTranslation(strings.clipEndsWithAfter, {
+													seconds: freezeStartsAt,
+												}),
 											})
 										} else if (
 											sourceDuration === undefined ||
@@ -378,10 +370,8 @@ function checkPieceContentMediaObjectStatus(
 										) {
 											messages.push({
 												status: PieceStatusCode.SOURCE_HAS_ISSUES,
-												message: t('{{frames}} {{type}} frame detected within the clip', {
+												message: generateTranslation(strings.countDetectedWithinClip, {
 													frames,
-													type,
-													count: frames,
 												}),
 											})
 										}
@@ -396,27 +386,25 @@ function checkPieceContentMediaObjectStatus(
 										if (frames > 0) {
 											messages.push({
 												status: PieceStatusCode.SOURCE_HAS_ISSUES,
-												message: t('{{frames}} {{type}} frame detected in clip', {
+												message: generateTranslation(strings.countDetectedInClip, {
 													frames,
-													type,
-													count: frames,
 												}),
 											})
 										}
 									}
 								}
 								if (!piece.content.ignoreBlackFrames && mediaObject.mediainfo.blacks?.length) {
-									addFrameWarning(mediaObject.mediainfo.blacks, t('black'), t)
+									addFrameWarning(mediaObject.mediainfo.blacks, BlackFrameWarnings)
 								}
 								if (!piece.content.ignoreFreezeFrame && mediaObject.mediainfo.freezes?.length) {
-									addFrameWarning(mediaObject.mediainfo.freezes, t('freeze'), t)
+									addFrameWarning(mediaObject.mediainfo.freezes, FreezeFrameWarnings)
 								}
 							}
 						}
 					} else {
 						messages.push({
 							status: PieceStatusCode.SOURCE_MISSING,
-							message: t('{{sourceLayer}} is being ingested', {
+							message: generateTranslation('{{sourceLayer}} is being ingested', {
 								sourceLayer: sourceLayer.name,
 							}),
 						})
@@ -436,7 +424,7 @@ function checkPieceContentMediaObjectStatus(
 				if (!mediaObject) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
-						message: t('Source is missing', { fileName: displayName }),
+						message: generateTranslation('Source is missing', { fileName: displayName }),
 					})
 				} else {
 					contentSeemsOK = true
@@ -448,9 +436,10 @@ function checkPieceContentMediaObjectStatus(
 		// getMediaObjectMediaId()
 		// * withMediaObjectStatus.tsx (updateMediaObjectSubscription)
 	}
+
 	if (messages.length) {
 		pieceStatus = messages.reduce((prev, msg) => Math.max(prev, msg.status), PieceStatusCode.UNKNOWN)
-		message = _.uniq(messages.map((m) => m.message)).join('; ') + '.'
+		// message = _.uniq(messages.map((m) => m.message)).join('; ') + '.'
 	} else {
 		if (contentSeemsOK) {
 			pieceStatus = PieceStatusCode.OK
@@ -461,7 +450,7 @@ function checkPieceContentMediaObjectStatus(
 		status: pieceStatus,
 		metadata: metadata,
 		packageInfos: undefined,
-		message: message,
+		messages: messages.map((msg) => msg.message),
 		contentDuration: undefined,
 	}
 }
@@ -469,11 +458,9 @@ function checkPieceContentMediaObjectStatus(
 function checkPieceContentExpectedPackageStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer,
-	studio: PieceContentStatusStudio,
-	t: i18next.TFunction
+	studio: PieceContentStatusStudio
 ): PieceContentStatusObj {
 	let packageInfoToForward: ScanInfoForPackages | undefined = undefined
-	let message: string | null = null
 	const settings: IStudioSettings | undefined = studio?.settings
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
 
@@ -482,7 +469,7 @@ function checkPieceContentExpectedPackageStatus(
 
 	const messages: Array<{
 		status: PieceStatusCode
-		message: string
+		message: ITranslatableMessage
 	}> = []
 	const packageInfos: ScanInfoForPackages = {}
 	let readyCount = 0
@@ -534,7 +521,7 @@ function checkPieceContentExpectedPackageStatus(
 				) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
-						message: t(
+						message: generateTranslation(
 							`Clip "{{fileName}}" can't be played because it doesn't exist on the playout system`,
 							{
 								fileName: packageName,
@@ -547,7 +534,7 @@ function checkPieceContentExpectedPackageStatus(
 				) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
-						message: t('{{sourceLayer}} is not yet ready on the playout system', {
+						message: generateTranslation('{{sourceLayer}} is not yet ready on the playout system', {
 							sourceLayer: sourceLayer.name,
 						}),
 					})
@@ -557,7 +544,7 @@ function checkPieceContentExpectedPackageStatus(
 				) {
 					messages.push({
 						status: PieceStatusCode.OK,
-						message: t('{{sourceLayer}} is transferring to the the playout system', {
+						message: generateTranslation('{{sourceLayer}} is transferring to the the playout system', {
 							sourceLayer: sourceLayer.name,
 						}),
 					})
@@ -567,7 +554,7 @@ function checkPieceContentExpectedPackageStatus(
 				) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
-						message: t(
+						message: generateTranslation(
 							'{{sourceLayer}} is transferring to the the playout system and cannot be played yet',
 							{
 								sourceLayer: sourceLayer.name,
@@ -610,7 +597,7 @@ function checkPieceContentExpectedPackageStatus(
 				if (!ignoreMediaAudioStatus && scan.streams.length < 2) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_BROKEN,
-						message: t("{{sourceLayer}} doesn't have both audio & video", {
+						message: generateTranslation("{{sourceLayer}} doesn't have both audio & video", {
 							sourceLayer: sourceLayer.name,
 						}),
 					})
@@ -638,7 +625,7 @@ function checkPieceContentExpectedPackageStatus(
 							if (!acceptFormat(format, formats)) {
 								messages.push({
 									status: PieceStatusCode.SOURCE_BROKEN,
-									message: t('{{sourceLayer}} has the wrong format: {{format}}', {
+									message: generateTranslation('{{sourceLayer}} has the wrong format: {{format}}', {
 										sourceLayer: sourceLayer.name,
 										format,
 									}),
@@ -664,7 +651,7 @@ function checkPieceContentExpectedPackageStatus(
 				) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_BROKEN,
-						message: t('{{sourceLayer}} has {{audioStreams}} audio streams', {
+						message: generateTranslation('{{sourceLayer}} has {{audioStreams}} audio streams', {
 							sourceLayer: sourceLayer.name,
 							audioStreams,
 						}),
@@ -672,21 +659,15 @@ function checkPieceContentExpectedPackageStatus(
 				}
 				if (timebase) {
 					// check for black/freeze frames
-					const addFrameWarning = (
-						anomalies: Array<PackageInfo.Anomaly>,
-						type: string,
-						t: i18next.TFunction
-					) => {
+					const addFrameWarning = (anomalies: Array<PackageInfo.Anomaly>, strings: FrameWarningStrings) => {
 						if (anomalies.length === 1) {
 							/** Number of frames */
 							const frames = Math.ceil((anomalies[0].duration * 1000) / timebase)
 							if (anomalies[0].start === 0) {
 								messages.push({
 									status: PieceStatusCode.SOURCE_HAS_ISSUES,
-									message: t('Clip starts with {{frames}} {{type}} frames', {
+									message: generateTranslation(strings.clipStartsWithCount, {
 										frames,
-										type,
-										count: frames,
 									}),
 								})
 							} else if (
@@ -697,19 +678,15 @@ function checkPieceContentExpectedPackageStatus(
 								const freezeStartsAt = Math.round(anomalies[0].start)
 								messages.push({
 									status: PieceStatusCode.SOURCE_HAS_ISSUES,
-									message: t('This clip ends with {{type}} frames after {{count}} seconds', {
-										frames,
-										type,
-										count: freezeStartsAt,
+									message: generateTranslation(strings.clipEndsWithAfter, {
+										seconds: freezeStartsAt,
 									}),
 								})
 							} else if (frames > 0) {
 								messages.push({
 									status: PieceStatusCode.SOURCE_HAS_ISSUES,
-									message: t('{{frames}} {{type}} frames detected within the clip', {
+									message: generateTranslation(strings.countDetectedWithinClip, {
 										frames,
-										type,
-										count: frames,
 									}),
 								})
 							}
@@ -722,20 +699,18 @@ function checkPieceContentExpectedPackageStatus(
 							if (frames > 0) {
 								messages.push({
 									status: PieceStatusCode.SOURCE_HAS_ISSUES,
-									message: t('{{frames}} {{type}} frames detected in the clip', {
+									message: generateTranslation(strings.countDetectedInClip, {
 										frames,
-										type,
-										count: frames,
 									}),
 								})
 							}
 						}
 					}
 					if (deepScan?.blacks?.length) {
-						addFrameWarning(deepScan.blacks, t('black'), t)
+						addFrameWarning(deepScan.blacks, BlackFrameWarnings)
 					}
 					if (deepScan?.freezes?.length) {
-						addFrameWarning(deepScan.freezes, t('freeze'), t)
+						addFrameWarning(deepScan.freezes, FreezeFrameWarnings)
 					}
 				}
 			}
@@ -745,7 +720,6 @@ function checkPieceContentExpectedPackageStatus(
 	}
 	if (messages.length) {
 		pieceStatus = messages.reduce((prev, msg) => Math.max(prev, msg.status), PieceStatusCode.UNKNOWN)
-		message = _.uniq(messages.map((m) => m.message)).join('; ') + '.'
 	} else {
 		if (readyCount > 0) {
 			pieceStatus = PieceStatusCode.OK
@@ -756,7 +730,33 @@ function checkPieceContentExpectedPackageStatus(
 		status: pieceStatus,
 		metadata: null,
 		packageInfos: packageInfoToForward,
-		message: message,
+		messages: messages.map((msg) => msg.message),
 		contentDuration: undefined,
 	}
+}
+
+interface FrameWarningStrings {
+	clipStartsWithCount: string
+	clipEndsWithAfter: string
+	countDetectedWithinClip: string
+	countDetectedInClip: string
+}
+
+// Mock 't' function for i18next to find the keys
+function t(key: string): string {
+	return key
+}
+
+const BlackFrameWarnings: FrameWarningStrings = {
+	clipStartsWithCount: t('Clip starts with {{frames}} black frames'),
+	clipEndsWithAfter: t('This clip ends with black frames after {{seconds}} seconds'),
+	countDetectedWithinClip: t('{{frames}} black frames detected within the clip'),
+	countDetectedInClip: t('{{frames}} black frames detected in the clip'),
+}
+
+const FreezeFrameWarnings: FrameWarningStrings = {
+	clipStartsWithCount: t('Clip starts with {{frames}} freeze frames'),
+	clipEndsWithAfter: t('This clip ends with freeze frames after {{seconds}} seconds'),
+	countDetectedWithinClip: t('{{frames}} freeze frames detected within the clip'),
+	countDetectedInClip: t('{{frames}} freeze frames detected in the clip'),
 }
