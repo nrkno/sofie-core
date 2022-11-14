@@ -255,7 +255,7 @@ interface IConfigManifestTableProps {
 }
 
 interface BlueprintConfigManifestTableEntryProps {
-	resolvedColumns: ResolvedBasicConfigManifestEntry[]
+	resolvedColumns: (ResolvedBasicConfigManifestEntry & { rank: number })[]
 
 	rowValue: TableConfigItemValue[0]
 
@@ -325,27 +325,29 @@ function BlueprintConfigManifestTable({
 
 	const resolvedColumns = useMemo(() => {
 		// Future: this is too reactive, depending on fullConfig
-		return manifest.columns.map((column): ResolvedBasicConfigManifestEntry => {
-			switch (column.type) {
-				case ConfigManifestEntryType.SOURCE_LAYERS:
-					return {
-						...column,
-						options: sourceLayers ? filterSourceLayers(column, sourceLayers) : [],
-					}
-				case ConfigManifestEntryType.LAYER_MAPPINGS:
-					return {
-						...column,
-						options: layerMappings ? filterLayerMappings(column, layerMappings) : [],
-					}
-				case ConfigManifestEntryType.SELECT_FROM_COLUMN:
-					return {
-						...column,
-						options: layerMappings ? getTableColumnValues(column, fullConfig, alternateConfig) : [],
-					}
-				default:
-					return column
-			}
-		})
+		return manifest.columns
+			.sort((a, b) => a.rank - b.rank)
+			.map((column): ResolvedBasicConfigManifestEntry & { rank: number } => {
+				switch (column.type) {
+					case ConfigManifestEntryType.SOURCE_LAYERS:
+						return {
+							...column,
+							options: sourceLayers ? filterSourceLayers(column, sourceLayers) : [],
+						}
+					case ConfigManifestEntryType.LAYER_MAPPINGS:
+						return {
+							...column,
+							options: layerMappings ? filterLayerMappings(column, layerMappings) : [],
+						}
+					case ConfigManifestEntryType.SELECT_FROM_COLUMN:
+						return {
+							...column,
+							options: layerMappings ? getTableColumnValues(column, fullConfig, alternateConfig) : [],
+						}
+					default:
+						return column
+				}
+			})
 	}, [manifest.columns, sourceLayers, layerMappings, fullConfig, alternateConfig])
 
 	const sortedColumns = useMemo(() => {

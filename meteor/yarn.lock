@@ -9674,13 +9674,13 @@ strtok3@^6.2.4:
     "@tokenizer/token" "^0.3.0"
     peek-readable "^4.1.0"
 
-superfly-timeline@^8.3.0:
-  version "8.3.0"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.3.0.tgz#9ee7b396fb918c6a9aaf90a7fda426ec40b103cf"
-  integrity sha512-HrGnrCBY8HF33xyKdJL28mvO301VtKcFZ2QyhF3p4d6Or4QzfDmOZ9t/8HXa4CLIZ0G5JtcPX/Cwq61X7NozJw==
+superfly-timeline@^8.3.1:
+  version "8.3.1"
+  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.3.1.tgz#c0be6b627718845255968ba5e936d901a0924a80"
+  integrity sha512-7WCwGocqahsJQcrW1SX4HRKP4ecmzxhdhB70EuqA+Sjbj06SP02IyniT/G5Y4UOLQPliJKEJezW8Uq8aBpxBFA==
   dependencies:
-    tslib "^2.3.1"
-    underscore "^1.13.2"
+    tslib "^2.4.0"
+    underscore "^1.13.6"
 
 supports-color@^2.0.0:
   version "2.0.0"
@@ -9784,10 +9784,10 @@ text-table@^0.2.0:
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==
 
-threadedclass@^1.1.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.1.1.tgz#6813b3c401b3d55264f6225c9d2c15516d7efa97"
-  integrity sha512-HffBjerRZGOlhUBt9Ue8nYCuV6khK9er86w4svTvf1Xn6ibAyJok290o2MJ/qJ1vy0A4UphEo3DSsxFN5g+TBQ==
+threadedclass@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.1.2.tgz#212992b06b87828b95921d8752a490af73287452"
+  integrity sha512-RAk1UvarFneT7j6xwB9QxAG6+Qm4ceFEkZH5YSyLXECmGa084DrUu7TqcQlX+o7VOXxr7V3WKGi70eWHMRG+hw==
   dependencies:
     callsites "^3.1.0"
     eventemitter3 "^4.0.4"
@@ -9832,10 +9832,10 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.5.0-nightly-release47-20221005-091131-abc856b2a.0:
-  version "7.5.0-nightly-release47-20221005-091131-abc856b2a.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0-nightly-release47-20221005-091131-abc856b2a.0.tgz#a32f2f1a99ff0646d2db0566e2a532ec13774107"
-  integrity sha512-F7VTv3D4WBN6EzEUM0VTAt4hZqwTuIrNGpnjx+pnW6jgueDRoHGuXqQwPG4nuNRUKgxNT92OgnqX58XiqNPG5A==
+timeline-state-resolver-types@7.5.0-release47.3:
+  version "7.5.0-release47.3"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0-release47.3.tgz#a3fdae1410db456b085f757e91f780971d90ca70"
+  integrity sha512-GWAQd7JQsaqPa1ixVeFZ+eSR26v6uKoFPylLxxBw6RFw+OGVDsZhki4ApJlOKEpj76wCP9cOtI7Ljkkp4qEjcg==
   dependencies:
     tslib "^2.3.1"
 
@@ -10156,15 +10156,10 @@ unc-path-regex@^0.1.2:
   resolved "https://registry.yarnpkg.com/unc-path-regex/-/unc-path-regex-0.1.2.tgz#e73dd3d7b0d7c5ed86fbac6b0ae7d8c6a69d50fa"
   integrity sha512-eXL4nmJT7oCpkZsHZUOJo8hcX3GbsiDOa0Qu9F646fi8dT3XuSVopVqAcEiVzSKKH7UoDti23wNX3qGFxcW5Qg==
 
-underscore@^1.13.2:
+underscore@^1.13.4, underscore@^1.13.6:
   version "1.13.6"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.13.6.tgz#04786a1f589dc6c09f761fc5f45b89e935136441"
   integrity sha512-+A5Sja4HP1M08MaXya7p5LvjuM7K6q/2EaC0+iovj/wOcMsTzMvDFbasi/oSapiwOlt252IqsKqPjCl7huKS0A==
-
-underscore@^1.13.4:
-  version "1.13.4"
-  resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.13.4.tgz#7886b46bbdf07f768e0052f1828e1dcab40c0dee"
-  integrity sha512-BQFnUDuAQ4Yf/cYY5LNrK9NCJFKriaRbD9uR1fTeXnBeoa97W0i41qkZfGO9pSo8I5KzjAcSY2XYtdf0oKd7KQ==
 
 unicode-byte-truncate@^1.0.0:
   version "1.0.0"
