@@ -29,13 +29,22 @@ export interface ContentCache {
 
 type ReactionWithCache = (cache: ContentCache) => void
 
-export function createReactiveContentCache(reaction: ReactionWithCache, reactivityDebounce: number): ContentCache {
+export function createReactiveContentCache(
+	reaction: ReactionWithCache,
+	reactivityDebounce: number
+): { cache: ContentCache; cancel: () => void } {
+	let isCancelled = false
 	const innerReaction = _.debounce(
 		Meteor.bindEnvironment(() => {
+			if (isCancelled) return
 			reaction(cache)
 		}),
 		reactivityDebounce
 	)
+	const cancel = () => {
+		isCancelled = true
+		innerReaction?.cancel()
+	}
 
 	const cache: ContentCache = {
 		Segments: new ReactiveCacheCollection<DBSegment>(innerReaction),
@@ -52,5 +61,5 @@ export function createReactiveContentCache(reaction: ReactionWithCache, reactivi
 		>(innerReaction),
 	}
 
-	return cache
+	return { cache, cancel }
 }

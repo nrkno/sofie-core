@@ -351,7 +351,7 @@ function setupRundownContentObserver({
 	activationId: RundownPlaylistActivationId | undefined
 	currentRundownId: RundownId
 }): Meteor.LiveQueryHandle {
-	const cache = createReactiveContentCache(
+	const { cache, cancel: cancelCache } = createReactiveContentCache(
 		Meteor.bindEnvironment((cache) => {
 			logger.debug(`DeviceTriggers observer reacting to change in RundownPlaylist "${rundownPlaylistId}"`)
 			refreshDeviceTriggerMountedActions(studioId, showStyleBaseId, currentRundownId, cache)
@@ -422,6 +422,7 @@ function setupRundownContentObserver({
 	return {
 		stop: Meteor.bindEnvironment(() => {
 			logger.debug(`Cleaning up DeviceTriggers`)
+			cancelCache()
 			refreshDeviceTriggerMountedActions(studioId, showStyleBaseId, currentRundownId, null)
 			observers.forEach((observer) => observer.stop())
 		}),
