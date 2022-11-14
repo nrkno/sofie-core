@@ -29,7 +29,12 @@ import { TextInputControl } from '../../../lib/Components/TextInput'
 import { CheckboxControl } from '../../../lib/Components/Checkbox'
 import { IntInputControl } from '../../../lib/Components/IntInput'
 import { DropdownInputControl, getDropdownInputOptions } from '../../../lib/Components/DropdownInput'
-import { LabelAndOverrides, LabelAndOverridesForCheckbox } from '../../../lib/Components/LabelAndOverrides'
+import {
+	LabelAndOverrides,
+	LabelAndOverridesForCheckbox,
+	LabelAndOverridesForDropdown,
+	LabelAndOverridesForInt,
+} from '../../../lib/Components/LabelAndOverrides'
 
 function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceLayerType) {
 	switch (type) {
@@ -310,22 +315,23 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								</label>
 							</div>
 							<div className="mod mvs mhs">
-								<LabelAndOverrides
+								<LabelAndOverridesForDropdown
 									label={t('Source Type')}
 									item={item}
 									itemKey={'type'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
+									options={getDropdownInputOptions(SourceLayerType)}
 								>
-									{(value, handleUpdate) => (
+									{(value, handleUpdate, options) => (
 										<DropdownInputControl
 											classNames="focusable-main input-l"
-											options={getDropdownInputOptions(SourceLayerType)}
+											options={options}
 											value={value}
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</LabelAndOverrides>
+								</LabelAndOverridesForDropdown>
 							</div>
 							<div className="mod mvs mhs">
 								<LabelAndOverridesForCheckbox
@@ -361,7 +367,7 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<LabelAndOverrides
+								<LabelAndOverridesForInt
 									label={t('Display Rank')}
 									item={item}
 									itemKey={'_rank'}
@@ -376,7 +382,7 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</LabelAndOverrides>
+								</LabelAndOverridesForInt>
 							</div>
 							<div className="mod mvs mhs">
 								<LabelAndOverridesForCheckbox

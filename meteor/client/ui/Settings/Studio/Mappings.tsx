@@ -40,7 +40,11 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TextInputControl } from '../../../lib/Components/TextInput'
 import { IntInputControl } from '../../../lib/Components/IntInput'
 import { DropdownInputControl, getDropdownInputOptions } from '../../../lib/Components/DropdownInput'
-import { LabelAndOverrides } from '../../../lib/Components/LabelAndOverrides'
+import {
+	LabelAndOverrides,
+	LabelAndOverridesForDropdown,
+	LabelAndOverridesForInt,
+} from '../../../lib/Components/LabelAndOverrides'
 
 interface IStudioMappingsProps {
 	studio: Studio
@@ -312,23 +316,24 @@ function StudioMappingsEntry({
 								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<LabelAndOverrides
+								<LabelAndOverridesForDropdown
 									label={t('Device Type')}
 									hint={t('The type of device to use for the output')}
 									item={item}
 									itemKey={'device'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
+									options={getDropdownInputOptions(TSR.DeviceType)}
 								>
-									{(value, handleUpdate) => (
+									{(value, handleUpdate, options) => (
 										<DropdownInputControl
 											classNames="input text-input input-l"
-											options={getDropdownInputOptions(TSR.DeviceType)}
+											options={options}
 											value={value}
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</LabelAndOverrides>
+								</LabelAndOverridesForDropdown>
 							</div>
 							<div className="mod mvs mhs">
 								<LabelAndOverrides
@@ -350,25 +355,26 @@ function StudioMappingsEntry({
 								</LabelAndOverrides>
 							</div>
 							<div className="mod mvs mhs">
-								<LabelAndOverrides
+								<LabelAndOverridesForDropdown
 									label={t('Lookahead Mode')}
 									item={item}
 									itemKey={'lookahead'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
+									options={getDropdownInputOptions(LookaheadMode)}
 								>
-									{(value, handleUpdate) => (
+									{(value, handleUpdate, options) => (
 										<DropdownInputControl
 											classNames="input text-input input-l"
-											options={getDropdownInputOptions(LookaheadMode)}
+											options={options}
 											value={value}
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</LabelAndOverrides>
+								</LabelAndOverridesForDropdown>
 							</div>
 							<div className="mod mvs mhs">
-								<LabelAndOverrides
+								<LabelAndOverridesForInt
 									label={t('Lookahead Target Objects (Undefined = 1)')}
 									item={item}
 									itemKey={'lookaheadDepth'}
@@ -383,10 +389,10 @@ function StudioMappingsEntry({
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</LabelAndOverrides>
+								</LabelAndOverridesForInt>
 							</div>
 							<div className="mod mvs mhs">
-								<LabelAndOverrides
+								<LabelAndOverridesForInt
 									label={t('Lookahead Maximum Search Distance (Undefined = {{limit}})', {
 										limit: LOOKAHEAD_DEFAULT_SEARCH_DISTANCE,
 									})}
@@ -403,7 +409,7 @@ function StudioMappingsEntry({
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</LabelAndOverrides>
+								</LabelAndOverridesForInt>
 							</div>
 							{manifest &&
 								manifest.map((m) => (

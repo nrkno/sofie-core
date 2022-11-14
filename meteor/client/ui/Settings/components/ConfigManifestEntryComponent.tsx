@@ -16,6 +16,9 @@ import { JsonTextInputControl } from '../../../lib/Components/JsonTextInput'
 import {
 	LabelAndOverrides,
 	LabelAndOverridesForCheckbox,
+	LabelAndOverridesForDropdown,
+	LabelAndOverridesForInt,
+	LabelAndOverridesForMultiLineText,
 	LabelAndOverridesProps,
 } from '../../../lib/Components/LabelAndOverrides'
 
@@ -58,7 +61,7 @@ export function ManifestEntryWithOverrides({
 		)
 	} else if (configField.type === ConfigManifestEntryType.INT) {
 		return (
-			<LabelAndOverrides {...wrapperProps}>
+			<LabelAndOverridesForInt {...wrapperProps} zeroBased={configField.zeroBased}>
 				{(value, handleUpdate) => (
 					<IntInputControl
 						modifiedClassName="bghl"
@@ -69,7 +72,7 @@ export function ManifestEntryWithOverrides({
 						handleUpdate={handleUpdate}
 					/>
 				)}
-			</LabelAndOverrides>
+			</LabelAndOverridesForInt>
 		)
 	} else if (configField.type === ConfigManifestEntryType.STRING) {
 		return (
@@ -95,16 +98,16 @@ export function ManifestEntryWithOverrides({
 		)
 	} else if (configField.type === ConfigManifestEntryType.ENUM) {
 		return (
-			<LabelAndOverrides {...wrapperProps}>
-				{(value, handleUpdate) => (
+			<LabelAndOverridesForDropdown {...wrapperProps} options={configField.values}>
+				{(value, handleUpdate, options) => (
 					<DropdownInputControl
 						classNames="input text-input input-l"
-						options={configField.values}
+						options={options}
 						value={value}
 						handleUpdate={handleUpdate}
 					/>
 				)}
-			</LabelAndOverrides>
+			</LabelAndOverridesForDropdown>
 		)
 	} else if (configField.type === ConfigManifestEntryType.OBJECT) {
 		return (
@@ -121,7 +124,7 @@ export function ManifestEntryWithOverrides({
 		)
 	} else if (configField.type === ConfigManifestEntryType.MULTILINE_STRING) {
 		return (
-			<LabelAndOverrides {...wrapperProps}>
+			<LabelAndOverridesForMultiLineText {...wrapperProps}>
 				{(value, handleUpdate) => (
 					<MultiLineTextInputControl
 						modifiedClassName="bghl"
@@ -130,7 +133,7 @@ export function ManifestEntryWithOverrides({
 						handleUpdate={handleUpdate}
 					/>
 				)}
-			</LabelAndOverrides>
+			</LabelAndOverridesForMultiLineText>
 		)
 
 		// TODO: Handle these?

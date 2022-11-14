@@ -65,7 +65,7 @@ export function getDropdownInputOptions<T>(rawOptions: any): DropdownInputOption
 	}))
 }
 
-function findOptionByValue<T>(options: DropdownInputOption<T>[], value: T): DropdownInputOption<T> | undefined {
+export function findOptionByValue<T>(options: DropdownInputOption<T>[], value: T): DropdownInputOption<T> | undefined {
 	return options.find((o) => {
 		if (Array.isArray(o.value)) {
 			return o.value.includes(value)

@@ -28,7 +28,11 @@ import {
 import { TextInputControl } from '../../../lib/Components/TextInput'
 import { IntInputControl } from '../../../lib/Components/IntInput'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
-import { LabelAndOverrides, LabelAndOverridesForCheckbox } from '../../../lib/Components/LabelAndOverrides'
+import {
+	LabelAndOverrides,
+	LabelAndOverridesForCheckbox,
+	LabelAndOverridesForInt,
+} from '../../../lib/Components/LabelAndOverrides'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -281,7 +285,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 								</LabelAndOverridesForCheckbox>
 							</div>
 							<div className="mod mvs mhs">
-								<LabelAndOverrides
+								<LabelAndOverridesForInt
 									label={t('Display Rank')}
 									item={item}
 									itemKey={'_rank'}
@@ -296,7 +300,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 											handleUpdate={handleUpdate}
 										/>
 									)}
-								</LabelAndOverrides>
+								</LabelAndOverridesForInt>
 							</div>
 							<div className="mod mvs mhs">
 								<LabelAndOverridesForCheckbox
