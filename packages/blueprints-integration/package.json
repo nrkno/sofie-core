@@ -39,7 +39,7 @@
 	],
 	"dependencies": {
 		"@sofie-automation/shared-lib": "link:../shared-lib",
-		"timeline-state-resolver-types": "npm:@tv2media/timeline-state-resolver-types@2.2.3",
+		"timeline-state-resolver-types": "npm:@tv2media/timeline-state-resolver-types@2.3.1",
 		"tslib": "^2.4.0",
 		"type-fest": "^2.19.0"
 	},
