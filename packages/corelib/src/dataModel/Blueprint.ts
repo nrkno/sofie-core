@@ -1,5 +1,13 @@
-import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintManifestType,
+	ConfigManifestEntry,
+	IBlueprintConfig,
+	IConfigPreset,
+} from '@sofie-automation/blueprints-integration'
+import { ProtectedString } from '../protectedString'
 import { BlueprintId, OrganizationId } from './Ids'
+
+export type BlueprintHash = ProtectedString<'BlueprintHash'>
 
 export interface Blueprint {
 	_id: BlueprintId
@@ -20,6 +28,8 @@ export interface Blueprint {
 	studioConfigManifest?: ConfigManifestEntry[]
 	showStyleConfigManifest?: ConfigManifestEntry[]
 
+	configPresets?: Record<string, IConfigPreset>
+
 	databaseVersion: {
 		showStyle: {
 			[showStyleBaseId: string]: string
@@ -35,4 +45,14 @@ export interface Blueprint {
 	TSRVersion: string
 	/** Whether version checks should be disabled for this version */
 	disableVersionChecks?: boolean
+
+	/** Hash for the blueprint, changed each time it is changed */
+	blueprintHash: BlueprintHash | undefined // TODO - removed `| undefined`
+}
+
+export interface LastBlueprintConfig {
+	blueprintId: BlueprintId
+	blueprintHash: BlueprintHash
+
+	config: IBlueprintConfig
 }

@@ -61,6 +61,8 @@ export async function insertBlueprint(
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
+
+		blueprintHash: getRandomId(),
 	})
 }
 export async function removeBlueprint(methodContext: MethodContext, blueprintId: BlueprintId): Promise<void> {
@@ -160,6 +162,7 @@ async function innerUploadBlueprint(
 		TSRVersion: '',
 		disableVersionChecks: false,
 		blueprintType: undefined,
+		blueprintHash: getRandomId(),
 	}
 
 	let blueprintManifest: SomeBlueprintManifest | undefined
@@ -184,6 +187,10 @@ async function innerUploadBlueprint(
 	newBlueprint.blueprintVersion = blueprintManifest.blueprintVersion
 	newBlueprint.integrationVersion = blueprintManifest.integrationVersion
 	newBlueprint.TSRVersion = blueprintManifest.TSRVersion
+
+	if ('configPresets' in blueprintManifest) {
+		newBlueprint.configPresets = blueprintManifest.configPresets
+	}
 
 	if (blueprint && blueprint.blueprintType && blueprint.blueprintType !== newBlueprint.blueprintType) {
 		throw new Meteor.Error(
