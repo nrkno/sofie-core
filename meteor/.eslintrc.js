@@ -54,7 +54,6 @@ const tsBase = {
 			},
 		],
 		'jest/no-standalone-expect': 'off', // testInFiber confuses the rule
-		'@typescript-eslint/no-duplicate-enum-values': 'off',
 		...tmpRules,
 	},
 }
