@@ -197,7 +197,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		}
 
 		private downloadAllShowStyleVariants = (): void => {
-			const jsonStr = JSON.stringify(this.props.showStyleVariants)
+			const jsonStr = JSON.stringify(this.state.dndVariants)
 			const fileName = `All variants_${this.props.showStyleBase._id}.json`
 			this.download(jsonStr, fileName)
 		}
@@ -261,6 +261,29 @@ export const ShowStyleVariantsSettings = withTranslation()(
 						</p>
 					</React.Fragment>
 				),
+			})
+		}
+
+		private confirmRemoveAllShowStyleVariants = (): void => {
+			const { t } = this.props
+			doModalDialog({
+				title: t('Remove all variants?'),
+				no: t('Cancel'),
+				yes: t('Remove'),
+				onAccept: () => {
+					this.removeAllShowStyleVariants()
+				},
+				message: (
+					<React.Fragment>
+						<p>{t('Are you sure you want to remove all variants in the table?')}</p>
+					</React.Fragment>
+				),
+			})
+		}
+
+		private removeAllShowStyleVariants = (): void => {
+			this.state.dndVariants.forEach((variant: ShowStyleVariant) => {
+				MeteorCall.showstyles.removeShowStyleVariant(variant._id).catch(logger.warn)
 			})
 		}
 
@@ -472,6 +495,9 @@ export const ShowStyleVariantsSettings = withTranslation()(
 								<FontAwesomeIcon icon={faUpload} />
 								&nbsp;{t('Import')}
 							</UploadButton>
+							<button className="btn btn-secondary right" onClick={this.confirmRemoveAllShowStyleVariants}>
+								<FontAwesomeIcon icon={faTrash} />
+							</button>
 						</div>
 					</DndProvider>
 				</div>
