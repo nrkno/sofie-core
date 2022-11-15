@@ -163,7 +163,7 @@ function checkDocUpgradeStatus(
 			invalidReason: generateTranslation(
 				'Invalid config preset for blueprint: "{{configPresetId}}" ({{blueprintId}})',
 				{
-					configPresetId: doc.blueprintConfigPresetId,
+					configPresetId: doc.blueprintConfigPresetId ?? '',
 					blueprintId: doc.blueprintId,
 				}
 			),

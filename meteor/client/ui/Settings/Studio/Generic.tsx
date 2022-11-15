@@ -172,7 +172,6 @@ export const StudioGenericProperties = withTranslation()(
 								collection={Studios}
 								className="mdinput"
 							/>
-							<SettingsNavigation attribute="blueprintId" obj={this.props.studio} type="blueprint"></SettingsNavigation>
 							<span className="mdfx"></span>
 						</div>
 					</label>

@@ -65,7 +65,7 @@ export async function handleBlueprintValidateConfigForStudio(
 	if (!context.studio.blueprintConfigPresetId) throw new Error('Studio is missing config preset')
 
 	const blueprintContext = new CommonContext({
-		name: 'applyConfig',
+		name: 'validateConfig',
 		identifier: `studio:${context.studioId},blueprint:${blueprint.blueprintId}`,
 	})
 	const rawBlueprintConfig = applyAndValidateOverrides(context.studio.blueprintConfigWithOverrides).obj
