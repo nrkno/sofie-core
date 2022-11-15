@@ -1,6 +1,15 @@
 import React, { useCallback, useRef } from 'react'
 import ClassNames from 'classnames'
-import { faPencilAlt, faTrash, faCheck, faPlus, faDownload, faUpload, faCopy } from '@fortawesome/free-solid-svg-icons'
+import {
+	faPencilAlt,
+	faTrash,
+	faCheck,
+	faPlus,
+	faDownload,
+	faUpload,
+	faCopy,
+	faGripLines,
+} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ConfigManifestEntry, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -25,6 +34,7 @@ import update from 'immutability-helper'
 import { ShowStyleDragDropTypes } from './DragDropTypesShowStyle'
 import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
 import { logger } from '../../../../lib/logging'
+import Timeout = NodeJS.Timeout
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
@@ -47,6 +57,9 @@ interface DragVariant {
 	type: ShowStyleDragDropTypes
 }
 
+const timeout: number = 50
+let timer: Timeout
+
 export const ShowStyleVariantsSettings = withTranslation()(
 	class ShowStyleVariantsSettings extends React.Component<
 		Translated<IShowStyleVariantsProps>,
@@ -67,14 +80,18 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			prevState: Readonly<IShowStyleVariantsSettingsState>
 		) {
 			if (this.showStyleVariantsChanged(prevState, prevProps)) {
-				setTimeout(
+				timer = setTimeout(
 					() =>
 						this.setState({
 							dndVariants: this.getOrderedShowStyleVariants(),
 						}),
-					50
+					timeout
 				)
 			}
+		}
+
+		componentWillUnmount() {
+			clearTimeout(timer)
 		}
 
 		private showStyleVariantsChanged = (
@@ -89,12 +106,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				return true
 			}
 
-			if (prevProps.showStyleVariants !== this.props.showStyleVariants && this.state.editedMappings.length > 0) {
-				console.log('showstyle variants do not match')
-				return true
-			}
-
-			return false
+			return prevProps.showStyleVariants !== this.props.showStyleVariants && this.state.editedMappings.length > 0
 		}
 
 		private getOrderedShowStyleVariants = (): ShowStyleVariant[] => {
@@ -321,6 +333,9 @@ export const ShowStyleVariantsSettings = withTranslation()(
 							})}
 						>
 							<th className="settings-studio-showStyleVariant__name c3">
+								<span className="settings-studio-showStyleVariants-table__drag">
+									<FontAwesomeIcon icon={faGripLines} />
+								</span>
 								{showStyleVariant.name || t('Unnamed variant')}
 							</th>
 							<td className="settings-studio-showStyleVariant__actions table-item-actions c3">
