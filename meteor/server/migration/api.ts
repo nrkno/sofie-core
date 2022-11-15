@@ -5,8 +5,14 @@ import * as Migrations from './databaseMigration'
 import { MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import { MethodContextAPI } from '../../lib/api/methods'
 import { SystemWriteAccess } from '../security/system'
-import { getUpgradeStatus, runUpgradeForStudio, validateConfigForStudio } from './upgrades'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	getUpgradeStatus,
+	runUpgradeForShowStyleBase,
+	runUpgradeForStudio,
+	validateConfigForShowStyleBase,
+	validateConfigForStudio,
+} from './upgrades'
+import { ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 
 class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
@@ -64,6 +70,24 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		await SystemWriteAccess.migrations(this)
 
 		return runUpgradeForStudio(studioId)
+	}
+
+	async validateConfigForShowStyleBase(
+		showStyleBaseId: ShowStyleBaseId
+	): Promise<BlueprintValidateConfigForStudioResult> {
+		check(showStyleBaseId, String)
+
+		await SystemWriteAccess.migrations(this)
+
+		return validateConfigForShowStyleBase(showStyleBaseId)
+	}
+
+	async runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void> {
+		check(showStyleBaseId, String)
+
+		await SystemWriteAccess.migrations(this)
+
+		return runUpgradeForShowStyleBase(showStyleBaseId)
 	}
 }
 registerClassToMeteorMethods(MigrationAPIMethods, ServerMigrationAPI, false)

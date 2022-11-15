@@ -17,6 +17,8 @@ export interface NewMigrationAPI {
 	getUpgradeStatus(): Promise<GetUpgradeStatusResult>
 	validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult>
 	runUpgradeForStudio(studioId: StudioId): Promise<void>
+	validateConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<BlueprintValidateConfigForStudioResult>
+	runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
 }
 
 export enum MigrationAPIMethods {
@@ -28,6 +30,8 @@ export enum MigrationAPIMethods {
 	'getUpgradeStatus' = 'migration.getUpgradeStatus',
 	'validateConfigForStudio' = 'migration.validateConfigForStudio',
 	'runUpgradeForStudio' = 'migration.runUpgradeForStudio',
+	'validateConfigForShowStyleBase' = 'migration.validateConfigForShowStyleBase',
+	'runUpgradeForShowStyleBase' = 'migration.runUpgradeForShowStyleBase',
 }
 
 export interface GetUpgradeStatusResultStudio {

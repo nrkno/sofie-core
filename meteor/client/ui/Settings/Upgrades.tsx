@@ -91,6 +91,7 @@ export function UpgradesView() {
 						<ShowUpgradesForShowStyleBase
 							key={unprotectString(showStyleBase.showStyleBaseId)}
 							showStyleBaseUpgrade={showStyleBase}
+							refreshList={clickRefresh}
 						/>
 					))}
 			</div>
@@ -200,19 +201,86 @@ function ShowUpgradesForStudio({ studioUpgrade, refreshList }: ShowUpgradesForSt
 }
 
 interface ShowUpgradesForShowStyleBaseProps {
+	refreshList: () => void
 	showStyleBaseUpgrade: GetUpgradeStatusResultShowStyleBase
 }
-function ShowUpgradesForShowStyleBase({ showStyleBaseUpgrade }: ShowUpgradesForShowStyleBaseProps) {
-	// const clickRunPending = useCallback(() => {
-	// 	// TODO
-	// }, [])
-	// const clickRunForced = useCallback(() => {
-	// 	// TODO
-	// }, [])
+function ShowUpgradesForShowStyleBase({ showStyleBaseUpgrade, refreshList }: ShowUpgradesForShowStyleBaseProps) {
+	const clickValidate = useCallback(() => {
+		MeteorCall.migration
+			.validateConfigForShowStyleBase(showStyleBaseUpgrade.showStyleBaseId)
+			.then((res) => {
+				doModalDialog({
+					title: t('Upgrade config for {{name}}', { name: showStyleBaseUpgrade.name }),
+					message:
+						res.messages.length === 0 ? (
+							t('Config looks good')
+						) : (
+							<div>
+								{res.messages.map((msg, i) => (
+									<p key={i}>
+										{NoteSeverity[msg.level]}: {translateMessage(msg.message, i18nTranslator)}
+									</p>
+								))}
+							</div>
+						),
+					yes: res.messages.length === 0 ? t('Apply') : t('Ignore and apply'),
+					no: t('Cancel'),
+					onAccept: () => {
+						MeteorCall.migration
+							.runUpgradeForShowStyleBase(showStyleBaseUpgrade.showStyleBaseId)
+							.then(() => {
+								console.log('done')
+								refreshList()
+							})
+							.catch((e) => {
+								console.error('err', e)
+								refreshList()
+							})
+					},
+				})
+			})
+			.catch(() => {
+				doModalDialog({
+					title: t('Upgrade config for {{name}}', { name: showStyleBaseUpgrade.name }),
+					message: t('Failed to validate config'),
+					yes: t('Ignore and apply'),
+					no: t('Cancel'),
+					onAccept: () => {
+						MeteorCall.migration
+							.runUpgradeForShowStyleBase(showStyleBaseUpgrade.showStyleBaseId)
+							.then(() => {
+								console.log('done')
+								refreshList()
+							})
+							.catch((e) => {
+								console.error('err', e)
+								refreshList()
+							})
+					},
+				})
+			})
+	}, [showStyleBaseUpgrade.showStyleBaseId, refreshList])
+	const clickRunForced = useCallback(() => {
+		MeteorCall.migration
+			.runUpgradeForShowStyleBase(showStyleBaseUpgrade.showStyleBaseId)
+			.then(() => {
+				console.log('done')
+				refreshList()
+			})
+			.catch((e) => {
+				console.error('err', e)
+				refreshList()
+			})
+	}, [showStyleBaseUpgrade.showStyleBaseId, refreshList])
 
 	return (
 		<div>
-			<h3>{showStyleBaseUpgrade.name}</h3>
+			<h3>
+				{showStyleBaseUpgrade.name}{' '}
+				{showStyleBaseUpgrade.pendingUpgrade && (
+					<FontAwesomeIcon icon={faBoltLightning} title={t('Upgrade required')} />
+				)}
+			</h3>
 
 			{showStyleBaseUpgrade.invalidReason && (
 				<p>
@@ -220,16 +288,17 @@ function ShowUpgradesForShowStyleBase({ showStyleBaseUpgrade }: ShowUpgradesForS
 				</p>
 			)}
 
-			{/* <div className="mod mhn mvm">
-				<button className="btn mrm" onClick={clickRunPending} disabled={!showStyleBaseUpgrade.pendingUpgrade}>
+			<div className="mod mhn mvm">
+				<button className="btn mrm" onClick={clickValidate}>
 					<FontAwesomeIcon icon={faDatabase} />
-					<span>{t('Apply all pending')}</span>
+					<span>{t('Validate Config')}</span>
 				</button>
+
 				<button className="btn mrm" onClick={clickRunForced}>
 					<FontAwesomeIcon icon={faDatabase} />
-					<span>{t('Force re-run all')}</span>
+					<span>{t('Force re-run')}</span>
 				</button>
-			</div> */}
+			</div>
 		</div>
 	)
 }
