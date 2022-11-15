@@ -12,6 +12,7 @@ import * as _ from 'underscore'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { MeteorCall } from '../../../lib/api/methods'
 import { checkForOldDataAndCleanUp } from './SystemManagement'
+import { UpgradesView } from './Upgrades'
 
 interface IProps {}
 interface IState {
@@ -466,6 +467,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 							</div>
 						) : null}
 					</div>
+
+					<UpgradesView />
 				</div>
 			)
 		}

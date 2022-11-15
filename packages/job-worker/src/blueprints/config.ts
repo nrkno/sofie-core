@@ -1,16 +1,14 @@
 import { ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import {
-	BasicConfigItemValue,
 	BlueprintConfigCoreConfig,
 	ConfigItemValue,
 	ConfigManifestEntry,
 	IBlueprintConfig,
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
-	TableConfigItemValue,
 } from '@sofie-automation/blueprints-integration'
-import { getSofieHostUrl, objectPathGet, objectPathSet, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { getSofieHostUrl, objectPathGet, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { logger } from '../logging'
 import { CommonContext } from './context'
@@ -91,7 +89,7 @@ export interface ProcessedStudioConfig {
 	_studioConfig: never
 }
 
-function compileCoreConfigValues(): BlueprintConfigCoreConfig {
+export function compileCoreConfigValues(): BlueprintConfigCoreConfig {
 	return {
 		hostUrl: getSofieHostUrl(),
 	}
@@ -101,14 +99,7 @@ export function preprocessStudioConfig(
 	studio: ReadonlyDeep<DBStudio>,
 	blueprint: ReadonlyDeep<StudioBlueprintManifest>
 ): ProcessedStudioConfig {
-	const rawBlueprintConfig = applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
-
-	let res: any = {}
-	if (blueprint.studioConfigManifest !== undefined) {
-		applyToConfig(res, blueprint.studioConfigManifest, rawBlueprintConfig, `Studio ${studio._id}`)
-	} else {
-		res = rawBlueprintConfig
-	}
+	let res: any = applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
 
 	try {
 		if (blueprint.preprocessConfig) {
@@ -130,17 +121,7 @@ export function preprocessShowStyleConfig(
 	showStyle: Pick<ReadonlyDeep<ProcessedShowStyleCompound>, '_id' | 'combinedBlueprintConfig' | 'showStyleVariantId'>,
 	blueprint: ReadonlyDeep<ShowStyleBlueprintManifest>
 ): ProcessedShowStyleConfig {
-	let res: any = {}
-	if (blueprint.showStyleConfigManifest !== undefined) {
-		applyToConfig(
-			res,
-			blueprint.showStyleConfigManifest,
-			showStyle.combinedBlueprintConfig,
-			`ShowStyle ${showStyle._id}`
-		)
-	} else {
-		res = showStyle.combinedBlueprintConfig
-	}
+	let res: any = showStyle.combinedBlueprintConfig
 
 	try {
 		if (blueprint.preprocessConfig) {
@@ -172,27 +153,4 @@ export function findMissingConfigs(
 	})
 
 	return missingKeys
-}
-
-export function applyToConfig(
-	res: unknown,
-	configManifest: ReadonlyDeep<ConfigManifestEntry[]>,
-	blueprintConfig: ReadonlyDeep<IBlueprintConfig>,
-	source: string
-): void {
-	for (const val of configManifest) {
-		let newVal = val.defaultVal
-
-		const overrideVal = objectPathGet(blueprintConfig, val.id) as
-			| BasicConfigItemValue
-			| TableConfigItemValue
-			| undefined
-		if (overrideVal !== undefined) {
-			newVal = overrideVal
-		} else if (val.required) {
-			logger.warn(`Required config not defined in ${source}: "${val.name}"`)
-		}
-
-		objectPathSet(res, val.id, newVal)
-	}
 }

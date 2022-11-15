@@ -36,6 +36,7 @@ import {
 	restoreRundownsInPlaylistToDefaultOrder,
 } from '../../rundownPlaylists'
 import { handleGeneratePlaylistSnapshot, handleRestorePlaylistSnapshot } from '../../playout/snapshot'
+import { handleBlueprintUpgradeForStudio } from '../../playout/upgrade'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -84,6 +85,8 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.GeneratePlaylistSnapshot]: handleGeneratePlaylistSnapshot,
 	[StudioJobs.RestorePlaylistSnapshot]: handleRestorePlaylistSnapshot,
 	[StudioJobs.DebugCrash]: handleDebugCrash,
+
+	[StudioJobs.BlueprintUpgradeForStudio]: handleBlueprintUpgradeForStudio,
 }
 
 async function updateTimelineDebug(context: JobContext, _data: void): Promise<void> {

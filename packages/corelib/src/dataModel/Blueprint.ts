@@ -53,6 +53,7 @@ export interface Blueprint {
 export interface LastBlueprintConfig {
 	blueprintId: BlueprintId
 	blueprintHash: BlueprintHash
+	blueprintConfigPresetId: string
 
 	config: IBlueprintConfig
 }
