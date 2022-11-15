@@ -13,6 +13,8 @@ import {
 } from '../dataModel/Ids'
 import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { CoreRundownPlaylistSnapshot } from '../snapshots'
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { ITranslatableMessage } from '../TranslatableMessage'
 
 /** List of all Jobs performed by the Worker related to a certain Studio */
 export enum StudioJobs {
@@ -55,6 +57,7 @@ export enum StudioJobs {
 	DebugCrash = 'debugCrash',
 
 	BlueprintUpgradeForStudio = 'blueprintUpgradeForStudio',
+	BlueprintValidateConfigForStudio = 'blueprintValidateConfigForStudio',
 }
 
 export interface RundownPlayoutPropsBase {
@@ -164,6 +167,13 @@ export interface RestorePlaylistSnapshotResult {
 	playlistId: RundownPlaylistId
 }
 
+export interface BlueprintValidateConfigForStudioResult {
+	messages: Array<{
+		level: NoteSeverity
+		message: ITranslatableMessage
+	}>
+}
+
 /**
  * Set of valid functions, of form:
  * `id: (data) => return`
@@ -208,6 +218,7 @@ export type StudioJobFunc = {
 	[StudioJobs.DebugCrash]: (data: DebugRegenerateNextPartInstanceProps) => void
 
 	[StudioJobs.BlueprintUpgradeForStudio]: () => void
+	[StudioJobs.BlueprintValidateConfigForStudio]: () => BlueprintValidateConfigForStudioResult
 }
 
 export function getStudioQueueName(id: StudioId): string {

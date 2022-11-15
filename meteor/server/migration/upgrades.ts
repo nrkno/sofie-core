@@ -1,4 +1,4 @@
-import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
+import { BlueprintManifestType, IConfigMessage } from '@sofie-automation/blueprints-integration'
 import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
@@ -119,6 +119,26 @@ function checkStudioUpgradeStatus(
 
 	return {
 		pendingUpgrade: hasPendingUpdate,
+	}
+}
+
+export async function verifyConfigForStudio(studioId: StudioId): Promise<IConfigMessage[]> {
+	const studio = (await Studios.findOneAsync(studioId, {
+		projection: {
+			_id: 1,
+		},
+	})) as Pick<Studio, '_id'> | undefined
+	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
+
+	const queuedJob = await QueueStudioJob(StudioJobs.BlueprintValidateConfigForStudio, studioId, undefined)
+
+	const span = profiler.startSpan('queued-job')
+	try {
+		const res = await queuedJob.complete
+		// explicitly await before returning
+		return res
+	} finally {
+		span?.end()
 	}
 }
 
