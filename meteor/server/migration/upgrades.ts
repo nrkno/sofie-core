@@ -1,8 +1,8 @@
-import { BlueprintManifestType, IConfigMessage } from '@sofie-automation/blueprints-integration'
+import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { BlueprintValidateConfigForStudioResult, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { GetUpgradeStatusResult, GetUpgradeStatusResultStudio } from '../../lib/api/migration'
@@ -122,7 +122,7 @@ function checkStudioUpgradeStatus(
 	}
 }
 
-export async function verifyConfigForStudio(studioId: StudioId): Promise<IConfigMessage[]> {
+export async function validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {
 	const studio = (await Studios.findOneAsync(studioId, {
 		projection: {
 			_id: 1,

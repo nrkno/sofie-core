@@ -1,6 +1,7 @@
 import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import { BlueprintId, ShowStyleBaseId, SnapshotId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 
 export interface NewMigrationAPI {
 	getMigrationStatus(): Promise<GetMigrationStatusResult>
@@ -14,6 +15,7 @@ export interface NewMigrationAPI {
 	resetDatabaseVersions(): Promise<void>
 
 	getUpgradeStatus(): Promise<GetUpgradeStatusResult>
+	validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult>
 	runUpgradeForStudio(studioId: StudioId): Promise<void>
 }
 
@@ -24,6 +26,7 @@ export enum MigrationAPIMethods {
 	'resetDatabaseVersions' = 'migration.resetDatabaseVersions',
 
 	'getUpgradeStatus' = 'migration.getUpgradeStatus',
+	'validateConfigForStudio' = 'migration.validateConfigForStudio',
 	'runUpgradeForStudio' = 'migration.runUpgradeForStudio',
 }
 

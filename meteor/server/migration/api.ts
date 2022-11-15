@@ -5,8 +5,9 @@ import * as Migrations from './databaseMigration'
 import { MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import { MethodContextAPI } from '../../lib/api/methods'
 import { SystemWriteAccess } from '../security/system'
-import { getUpgradeStatus, runUpgradeForStudio } from './upgrades'
+import { getUpgradeStatus, runUpgradeForStudio, validateConfigForStudio } from './upgrades'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 
 class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 	async getMigrationStatus() {
@@ -47,6 +48,14 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		await SystemWriteAccess.migrations(this)
 
 		return getUpgradeStatus()
+	}
+
+	async validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {
+		check(studioId, String)
+
+		await SystemWriteAccess.migrations(this)
+
+		return validateConfigForStudio(studioId)
 	}
 
 	async runUpgradeForStudio(studioId: StudioId): Promise<void> {

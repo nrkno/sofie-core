@@ -70,7 +70,8 @@ export async function handleBlueprintValidateConfigForStudio(
 	})
 	const rawBlueprintConfig = applyAndValidateOverrides(context.studio.blueprintConfigWithOverrides).obj
 
-	const messages = blueprint.blueprint.validateConfig(blueprintContext, rawBlueprintConfig)
+	// TODO - why is this clone necessary?
+	const messages = clone(blueprint.blueprint.validateConfig(blueprintContext, rawBlueprintConfig))
 
 	return {
 		messages: messages.map((msg) => ({
