@@ -214,7 +214,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		context: ICommonContext,
 		config: TRawConfig,
 		coreConfig: BlueprintConfigCoreConfig
-	) => BlueprintResultApplyStudioConfig
+	) => BlueprintResultApplyShowStyleConfig
 
 	/** Preprocess config before storing it by core to later be returned by context's getShowStyleConfig. If not provided, getShowStyleConfig will return unprocessed blueprint config */
 	preprocessConfig?: (
