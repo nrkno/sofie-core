@@ -32,6 +32,7 @@ import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 
+// @ts-expect-error: node is just fine importing this but our typescript version isn't quite there yet
 import Translations = require('timeline-state-resolver/dist/translations.json')
 
 export interface CoreConfig {

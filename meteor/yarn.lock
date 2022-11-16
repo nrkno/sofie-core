@@ -9832,10 +9832,10 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.5.0-nightly-release47-20221005-091131-abc856b2a.0:
-  version "7.5.0-nightly-release47-20221005-091131-abc856b2a.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0-nightly-release47-20221005-091131-abc856b2a.0.tgz#a32f2f1a99ff0646d2db0566e2a532ec13774107"
-  integrity sha512-F7VTv3D4WBN6EzEUM0VTAt4hZqwTuIrNGpnjx+pnW6jgueDRoHGuXqQwPG4nuNRUKgxNT92OgnqX58XiqNPG5A==
+timeline-state-resolver-types@7.6.0-nightly-feat-action-manifest-20221108-131233-e5eca1cbd.0:
+  version "7.6.0-nightly-feat-action-manifest-20221108-131233-e5eca1cbd.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.6.0-nightly-feat-action-manifest-20221108-131233-e5eca1cbd.0.tgz#f67fb7af55ce21cd95c06ccb51e4ef31f6c595d5"
+  integrity sha512-YCkjAjPdB8eoz7Aol0Nr7Q01W66mIIOpR8VFv+Ae4XWaEMDYKMZm86W+xs6T5PnNtInPMTVD+6xBIKqxlJLFWg==
   dependencies:
     tslib "^2.3.1"
 
