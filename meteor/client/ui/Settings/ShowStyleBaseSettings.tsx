@@ -71,9 +71,16 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			  }).fetch()
 			: [],
 		orderedShowStyleVariants: showStyleBase
-			? OrderedShowStyleVariants.find({
-					showStyleBaseId: showStyleBase._id,
-			  }).fetch()
+			? OrderedShowStyleVariants.find(
+					{
+						showStyleBaseId: showStyleBase._id,
+					},
+					{
+						sort: {
+							rank: 1,
+						},
+					}
+			  ).fetch()
 			: [],
 		compatibleStudios: compatibleStudios,
 		blueprintConfigManifest: blueprint ? blueprint.showStyleConfigManifest || [] : [],

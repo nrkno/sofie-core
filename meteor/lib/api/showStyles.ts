@@ -11,7 +11,11 @@ export interface NewShowStylesAPI {
 	): Promise<ShowStyleVariantId>
 	removeShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
 	removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId): Promise<void>
-	reorderAllShowStyleVariants(showStyleBaseId: ShowStyleBaseId, orderedVariants: ShowStyleVariant[])
+	reorderAllShowStyleVariants(showStyleBaseId: ShowStyleBaseId, orderedVariants: ShowStyleVariant[]): Promise<void>
+	insertShowStyleVariantsMissingFromOrder(
+		showStyleBaseId: ShowStyleBaseId,
+		unorderedVariant: ShowStyleVariant
+	): Promise<void>
 }
 
 export enum ShowStylesAPIMethods {
@@ -21,4 +25,5 @@ export enum ShowStylesAPIMethods {
 	'removeShowStyleBase' = 'showstyles.removeShowStyleBase',
 	'removeShowStyleVariant' = 'showstyles.removeShowStyleVariant',
 	'reorderAllShowStyleVariants' = 'showstyles.reorderAllShowStyleVariants',
+	'insertShowStyleVariantsMissingFromOrder' = 'showstyles.insertShowStyleVariantsMissingFromOrder',
 }

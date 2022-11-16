@@ -71,8 +71,35 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			this.state = {
 				editedMappings: [],
 				timestampedFileKey: Date.now(),
-				dndVariants: this.getOrderedShowStyleVariants(),
+				dndVariants: this.getShowStyleVariantsFromOrder(),
 			}
+		}
+
+		componentDidMount() {
+			if (this.props.showStyleVariants) {
+				this.setShowStyleVariantsFromProps()
+			}
+		}
+
+		private setShowStyleVariantsFromProps() {
+			timer = setTimeout(() => {
+				if (this.props.showStyleVariants) {
+					this.setShowStyleVariantsFromProps()
+					return
+				}
+
+				this.setState({
+					dndVariants: this.getShowStyleVariantsFromOrder(),
+				})
+			}, timeout)
+		}
+
+		private addUnorderedShowStyleVariantToDatabase(unorderedVariants: ShowStyleVariant[]) {
+			unorderedVariants.forEach((unorderedVariant) => {
+				MeteorCall.showstyles
+					.insertShowStyleVariantsMissingFromOrder(this.props.showStyleBase._id, unorderedVariant)
+					.catch(logger.warn)
+			})
 		}
 
 		componentDidUpdate(
@@ -80,18 +107,31 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			prevState: Readonly<IShowStyleVariantsSettingsState>
 		) {
 			if (this.showStyleVariantsChanged(prevState, prevProps)) {
-				timer = setTimeout(
-					() =>
-						this.setState({
-							dndVariants: this.getOrderedShowStyleVariants(),
-						}),
-					timeout
-				)
+				timer = setTimeout(() => {
+					this.setState({
+						dndVariants: this.getShowStyleVariantsFromOrder(),
+					})
+				}, timeout)
+			} else {
+				clearTimeout(timer)
 			}
 		}
 
 		componentWillUnmount() {
 			clearTimeout(timer)
+		}
+
+		shouldComponentUpdate(): boolean {
+			timer = setTimeout(() => {
+				if (!(this.props.showStyleVariants && this.props.orderedShowStyleVariants.length === 0)) {
+					this.setShowStyleVariantsFromProps()
+					return
+				}
+
+				this.addUnorderedShowStyleVariantToDatabase(this.props.showStyleVariants)
+			}, timeout)
+
+			return !(!this.props.showStyleVariants && this.props.orderedShowStyleVariants.length === 0)
 		}
 
 		private showStyleVariantsChanged = (
@@ -109,7 +149,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			return prevProps.showStyleVariants !== this.props.showStyleVariants && this.state.editedMappings.length > 0
 		}
 
-		private getOrderedShowStyleVariants = (): ShowStyleVariant[] => {
+		private getShowStyleVariantsFromOrder = (): ShowStyleVariant[] => {
 			const orderedVariants: ShowStyleVariant[] = []
 			this.props.orderedShowStyleVariants.map((orderVariant: ShowStyleVariantsOrder) => {
 				this.props.showStyleVariants.map((variant: ShowStyleVariant) => {
@@ -118,6 +158,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 					}
 				})
 			})
+
 			return orderedVariants
 		}
 
@@ -429,7 +470,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		VariantList = ({ children, className }) => {
 			const [, drop] = useDrop({
 				accept: ShowStyleDragDropTypes.VARIANT,
-				drop: () => ({}),
+				drop: () => this.persistStateVariants(),
 				collect: (monitor: DropTargetMonitor) => ({
 					isOver: monitor.isOver(),
 					canDrop: monitor.canDrop(),
@@ -454,7 +495,6 @@ export const ShowStyleVariantsSettings = withTranslation()(
 						],
 					}),
 				})
-				this.persistStateVariants()
 			}, [])
 
 			const returnVariantsForList = () => {

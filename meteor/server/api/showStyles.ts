@@ -174,6 +174,18 @@ export async function reorderAllShowStyleVariantsInner(orderedVariants: ShowStyl
 	})
 }
 
+export async function insertShowStyleVariantsMissingFromOrder(
+	context: MethodContext,
+	showStyleBaseId: ShowStyleBaseId,
+	unorderedVariant: ShowStyleVariant
+): Promise<void> {
+	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
+	const showStyleBase = access.showStyleBase
+	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
+
+	await insertShowStyleVariantOrder(showStyleBaseId, unorderedVariant._id, 500)
+}
+
 export async function insertShowStyleVariantOrder(
 	showStyleBaseId: ShowStyleBaseId,
 	showStyleVariantId: ShowStyleVariantId,
@@ -230,6 +242,12 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	}
 	async reorderAllShowStyleVariants(showStyleBaseId: ShowStyleBaseId, orderedVariants: ShowStyleVariant[]) {
 		return reorderAllShowStyleVariants(this, showStyleBaseId, orderedVariants)
+	}
+	async insertShowStyleVariantsMissingFromOrder(
+		showStyleBaseId: ShowStyleBaseId,
+		unorderedVariant: ShowStyleVariant
+	) {
+		return insertShowStyleVariantsMissingFromOrder(this, showStyleBaseId, unorderedVariant)
 	}
 }
 registerClassToMeteorMethods(ShowStylesAPIMethods, ServerShowStylesAPI, false)
