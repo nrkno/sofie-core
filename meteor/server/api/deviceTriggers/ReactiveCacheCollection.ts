@@ -1,6 +1,7 @@
 import { omit } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Mongo } from 'meteor/mongo'
+import { ObserveCallbacks } from '../../../lib/collections/lib'
 
 type Reaction = () => void
 
@@ -103,7 +104,7 @@ export class ReactiveCacheCollection<
 		return result
 	}
 
-	link() {
+	link(): ObserveCallbacks<Document> {
 		return {
 			added: (doc: Document) => {
 				this.upsert(doc._id, { $set: omit(doc, '_id') as Partial<Document> })

@@ -143,16 +143,6 @@ function setupStudioObserver(studio: DBStudio) {
 					logger.debug(`Next props for deviceTriggers observer are the same as current, skipping teardown.`)
 					return
 				}
-				console.log(
-					oldObserver.showStyleBaseId,
-					nextState?.showStyleBase._id,
-					oldObserver.activePlaylistId,
-					nextState?.activePlaylist._id,
-					oldObserver.activationId,
-					nextState?.activePlaylist.activationId,
-					oldObserver.currentRundownId,
-					nextState?.currentRundown?._id
-				)
 				logger.debug(
 					`Destroying deviceTriggers observer for Studio "${
 						studio._id

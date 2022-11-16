@@ -85,6 +85,7 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 							<th>Trigger ID</th>
 							<th>Values?</th>
 							<th>Action Type</th>
+							<th>Name</th>
 						</tr>
 						{mountedTriggers.map((entry) => (
 							<Fragment key={unprotectString(entry._id)}>
@@ -93,9 +94,10 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 									<td>{entry.deviceTriggerId}</td>
 									<td>{JSON.stringify(entry.values)}</td>
 									<td>{entry.actionType}</td>
+									<td>{JSON.stringify(entry.name)}</td>
 								</tr>
 								<tr>
-									<td colSpan={4}>
+									<td colSpan={5}>
 										{mountedTriggersPreviews
 											.filter((preview) => preview.actionId === entry.actionId)
 											.map((preview) => (
