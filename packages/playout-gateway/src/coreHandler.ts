@@ -10,6 +10,7 @@ import {
 	DeviceOptionsAny,
 	manifest,
 	ActionExecutionResult,
+	VizMSEDevice,
 } from 'timeline-state-resolver'
 
 import * as _ from 'underscore'
@@ -79,7 +80,6 @@ export class CoreHandler {
 	}
 
 	async init(config: CoreConfig, process: Process): Promise<void> {
-		// this.logger.info('========')
 		this._statusInitialized = false
 		this._coreConfig = config
 		this._process = process
@@ -464,6 +464,14 @@ export class CoreHandler {
 		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
 
 		await device.formatDisks()
+	}
+	async vizPurgeRundown(deviceId: string): Promise<any> {
+		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
+
+		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<VizMSEDevice>
+		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
+
+		return device.purgeRundown(true)
 	}
 	async updateCoreStatus(): Promise<any> {
 		let statusCode = StatusCode.GOOD

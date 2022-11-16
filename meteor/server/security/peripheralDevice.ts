@@ -17,6 +17,7 @@ import {
 	PeripheralDeviceId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace PeripheralDeviceReadAccess {
 	/** Check for read access for a peripheral device */
@@ -59,31 +60,35 @@ export namespace PeripheralDeviceContentWriteAccess {
 	 * Check if a user is allowed to execute a PeripheralDevice function in a Studio
 	 */
 	export async function executeFunction(cred0: Credentials, deviceId: PeripheralDeviceId): Promise<ContentAccess> {
-		const checkAccess = async (device: PeripheralDevice | undefined) => {
-			if (!device || !device.studioId) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
-
-			const access = await StudioContentWriteAccess.executeFunction(cred0, device.studioId)
-
-			const access2 = await allowAccessToPeripheralDeviceContent(access.cred, device)
-			if (!access2.playout) throw new Meteor.Error(403, `Not allowed: ${access2.reason}`)
-			return access
-		}
-
 		const device = await PeripheralDevices.findOneAsync(deviceId)
+		if (!device) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 
-		if (device?.parentDeviceId) {
-			// check access on parent
+		let studioId: StudioId
+		if (device.studioId) {
+			studioId = device.studioId
+		} else if (device.parentDeviceId) {
+			// Child devices aren't assigned to the studio themselves, instead look up the parent device and use it's studioId:
 			const parentDevice = await PeripheralDevices.findOneAsync(device.parentDeviceId)
-			const access = await checkAccess(parentDevice)
-			return {
-				...access,
-				deviceId: device._id,
-				device,
-			}
+			if (!parentDevice)
+				throw new Meteor.Error(
+					404,
+					`Parent PeripheralDevice "${device.parentDeviceId}" of "${deviceId}" not found!`
+				)
+			if (!parentDevice.studioId)
+				throw new Meteor.Error(
+					404,
+					`Parent PeripheralDevice "${device.parentDeviceId}" of "${deviceId}" doesn't have any studioId set`
+				)
+			studioId = parentDevice.studioId
+		} else {
+			throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" doesn't have any studioId set`)
 		}
 
-		const access = await checkAccess(device)
-		if (!device) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`) // @todo - isn't this essentially just for typings?
+		const access = await StudioContentWriteAccess.executeFunction(cred0, studioId)
+
+		const access2 = await allowAccessToPeripheralDeviceContent(access.cred, device)
+		if (!access2.playout) throw new Meteor.Error(403, `Not allowed: ${access2.reason}`)
+
 		return {
 			...access,
 			deviceId: device._id,

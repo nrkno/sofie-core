@@ -241,6 +241,41 @@ export const DeviceItem = reacti18next.withTranslation()(
 			})
 		}
 
+		onVizPurgeRundown(device: PeripheralDevice) {
+			const { t } = this.props
+
+			doModalDialog({
+				title: t('Purge Viz Rundown'),
+				message: t('Do you want to purge all elements from the viz-rundown?'),
+				onAccept: (event: any) => {
+					callPeripheralDeviceFunction(event, device._id, undefined, 'vizPurgeRundown')
+						.then(() => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.NOTIFICATION,
+									t('Purged all elements from rundown on Viz-device "{{deviceName}}"!', { deviceName: device.name }),
+									'SystemStatus'
+								)
+							)
+						})
+						.catch((err) => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.WARNING,
+									t('Purging failed: {{errorMessage}}', {
+										deviceName: device.name,
+										errorMessage: err + '',
+									}),
+									'SystemStatus'
+								)
+							)
+						})
+				},
+			})
+		}
+
 		render() {
 			const { t } = this.props
 
@@ -323,6 +358,22 @@ export const DeviceItem = reacti18next.withTranslation()(
 										}}
 									>
 										{t('Restart Quantel Gateway')}
+									</button>
+								</React.Fragment>
+							) : null}
+							{getAllowStudio() &&
+							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
+							this.props.device.subType === TSR.DeviceType.VIZMSE ? (
+								<React.Fragment>
+									<button
+										className="btn btn-secondary"
+										onClick={(e) => {
+											e.preventDefault()
+											e.stopPropagation()
+											this.onVizPurgeRundown(this.props.device)
+										}}
+									>
+										{t('Purge Viz Rundown')}
 									</button>
 								</React.Fragment>
 							) : null}

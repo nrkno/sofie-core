@@ -13,7 +13,7 @@ import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../dat
 import { DBPartInstance } from '../dataModel/PartInstance'
 import { DBRundown } from '../dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
-import { assertNever, flatten, getRandomId, literal, max, normalizeArrayToMapFunc } from '../lib'
+import { assertNever, flatten, getRandomId, groupByToMapFunc, literal, max, normalizeArrayToMapFunc } from '../lib'
 import { protectString } from '../protectedString'
 import { getPieceControlObjectId } from './ids'
 import { SourceLayers } from '../dataModel/ShowStyleBase'
@@ -120,15 +120,15 @@ export function getPlayheadTrackingInfinitesForPart(
 		rundown
 	)
 
-	const groupedPlayingPieceInstances = _.groupBy(currentPartPieceInstances, (p) => p.piece.sourceLayerId)
-	for (const [sourceLayerId, pieceInstances] of Object.entries(groupedPlayingPieceInstances)) {
+	const groupedPlayingPieceInstances = groupByToMapFunc(currentPartPieceInstances, (p) => p.piece.sourceLayerId)
+	for (const [sourceLayerId, pieceInstances] of groupedPlayingPieceInstances.entries()) {
 		// Find the ones that starts last. Note: any piece will stop an onChange
-		const lastPiecesByStart = _.groupBy(pieceInstances, (p) => p.piece.enable.start)
-		let lastPieceInstances = lastPiecesByStart['now'] || []
+		const lastPiecesByStart = groupByToMapFunc(pieceInstances, (p) => p.piece.enable.start)
+		let lastPieceInstances = lastPiecesByStart.get('now') ?? []
 		if (lastPieceInstances.length === 0) {
-			const target = max(Object.keys(lastPiecesByStart), (k) => Number(k))
+			const target = max(Array.from(lastPiecesByStart.keys()), (k) => Number(k))
 			if (target !== undefined) {
-				lastPieceInstances = lastPiecesByStart[target] || []
+				lastPieceInstances = lastPiecesByStart.get(target) ?? []
 			}
 		}
 
@@ -168,7 +168,7 @@ export function getPlayheadTrackingInfinitesForPart(
 
 		// Check if we should persist any adlib onEnd infinites
 		if (canContinueAdlibOnEnds) {
-			const piecesByInfiniteMode = _.groupBy(
+			const piecesByInfiniteMode = groupByToMapFunc(
 				pieceInstances.filter((p) => p.dynamicallyInserted),
 				(p) => p.piece.lifespan
 			)
@@ -181,7 +181,7 @@ export function getPlayheadTrackingInfinitesForPart(
 					| PieceLifespan.OutOnRundownEnd
 					| PieceLifespan.OutOnSegmentEnd
 					| PieceLifespan.OutOnShowStyleEnd
-				const pieces = (piecesByInfiniteMode[mode] || []).filter(
+				const pieces = (piecesByInfiniteMode.get(mode) || []).filter(
 					(p) => p.infinite && (p.infinite.fromPreviousPlayhead || p.dynamicallyInserted)
 				)
 				// This is the piece we may copy across
@@ -550,7 +550,7 @@ export function processAndPrunePieceInstanceTimings(
 		}
 	}
 
-	const groupedPieces = _.groupBy(
+	const groupedPieces = groupByToMapFunc(
 		keepDisabledPieces ? pieces : pieces.filter((p) => !p.disabled),
 		// At this stage, if a Piece is disabled, the `keepDisabledPieces` must be turned on. If that's the case
 		// we split out the disabled Pieces onto the sourceLayerId they actually exist on, instead of putting them
@@ -559,10 +559,10 @@ export function processAndPrunePieceInstanceTimings(
 		(p) =>
 			p.disabled ? p.piece.sourceLayerId : exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
 	)
-	for (const pieces of Object.values(groupedPieces)) {
+	for (const pieces of groupedPieces.values()) {
 		// Group and sort the pieces so that we can step through each point in time
 		const piecesByStart: Array<[number | 'now', PieceInstance[]]> = _.sortBy(
-			Object.entries(_.groupBy(pieces, (p) => p.piece.enable.start)).map(([k, v]) =>
+			Array.from(groupByToMapFunc(pieces, (p) => p.piece.enable.start).entries()).map(([k, v]) =>
 				literal<[number | 'now', PieceInstance[]]>([k === 'now' ? 'now' : Number(k), v])
 			),
 			([k]) => (k === 'now' ? nowInPart : k)
