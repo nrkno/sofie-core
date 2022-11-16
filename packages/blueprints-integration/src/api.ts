@@ -95,7 +95,7 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 	/** A list of Migration steps related to a Studio */
 	studioMigrations: MigrationStep[]
 
-	configPresets: Record<string, IConfigPreset<TRawConfig>>
+	configPresets: Record<string, IStudioConfigPreset<TRawConfig>>
 
 	/** Translations connected to the studio (as stringified JSON) */
 	translations?: string
@@ -142,7 +142,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	/** A list of Migration steps related to a ShowStyle */
 	showStyleMigrations: MigrationStep[]
 
-	configPresets: Record<string, IConfigPreset<TRawConfig>>
+	configPresets: Record<string, IShowStyleConfigPreset<TRawConfig>>
 
 	/** Translations connected to the studio (as stringified JSON) */
 	translations?: string
@@ -358,8 +358,22 @@ export interface BlueprintResultApplyShowStyleConfig {
 	triggeredActions: IBlueprintTriggeredActions[]
 }
 
-export interface IConfigPreset<TConfig = IBlueprintConfig> {
+export interface IStudioConfigPreset<TConfig = IBlueprintConfig> {
 	name: string
 
 	config: TConfig
+}
+
+export interface IShowStyleConfigPreset<TConfig = IBlueprintConfig> {
+	name: string
+
+	config: TConfig
+
+	variants: Record<string, IShowStyleVariantConfigPreset<TConfig>>
+}
+
+export interface IShowStyleVariantConfigPreset<TConfig = IBlueprintConfig> {
+	name: string
+
+	config: Partial<TConfig>
 }
