@@ -1,4 +1,5 @@
 import { DeviceType } from 'timeline-state-resolver-types'
+import { BasicConfigItemValue } from './common'
 // import { ConfigItemValue, TableConfigItemValue } from './common'
 import { SourceLayerType } from './content'
 
@@ -85,6 +86,7 @@ export interface ConfigManifestEntryTable extends ConfigManifestEntryBase {
 	columns: (BasicConfigManifestEntry & {
 		/** Column rank (left to right, lowest to highest) */
 		rank: number
+		defaultVal: BasicConfigItemValue
 	})[]
 	// defaultVal: TableConfigItemValue
 }
