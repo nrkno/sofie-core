@@ -428,7 +428,9 @@ function setupRundownContentObserver({
 		}).observe(cache.AdLibPieces.link()),
 		ShowStyleBases.find(showStyleBaseId).observe(cache.ShowStyleBases.link()),
 		TriggeredActions.find({
-			showStyleBaseId,
+			showStyleBaseId: {
+				$in: [showStyleBaseId, null],
+			},
 		}).observe(cache.TriggeredActions.link()),
 		RundownPlaylists.find(rundownPlaylistId, {
 			projection: {
@@ -537,7 +539,9 @@ function refreshDeviceTriggerMountedActions(
 	const { obj: sourceLayers } = applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides)
 
 	const allTriggeredActions = cache.TriggeredActions.find({
-		showStyleBaseId,
+		showStyleBaseId: {
+			$in: [showStyleBaseId, null],
+		},
 	}).map((pair) => convertDocument(pair))
 	const triggeredActions = allTriggeredActions.filter((pair) =>
 		Object.values(pair.triggers).find((trigger) => isDeviceTrigger(trigger))
