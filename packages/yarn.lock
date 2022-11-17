@@ -3095,7 +3095,7 @@
   version "1.48.0-in-development"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "7.5.0-nightly-feat-refactor-timeline-types-20221031-101833-770453cd6.0"
+    timeline-state-resolver-types "7.6.0-nightly-release48-20221117-120217-d85b2fddf.0"
     tslib "^2.4.0"
     type-fest "^3.1.0"
 
@@ -5107,10 +5107,10 @@ casparcg-connection@^6.0.0:
     tslib "^2.4.0"
     xml2js "^0.4.23"
 
-casparcg-state@2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/casparcg-state/-/casparcg-state-2.1.2.tgz#bfb31e7d5f320818a5653b5172c35874f933b327"
-  integrity sha512-JGKfRZ1gwqxTNxd6/g66jldc5N7lpQPG54mX6X85/H/KIGVE1M3rixSdlf7Ib/8s0Hh+X4qj7i7ouDetM+ldMQ==
+casparcg-state@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/casparcg-state/-/casparcg-state-3.0.1.tgz#e6aa97db649c66fe58fe03ab02ed0d776ad80fa2"
+  integrity sha512-KVGCh4VZfKAfyOw3MzyhHxc54wZuhUb9kZaB4J96rzGEOoDiEA0Qqyni2MTAqWElCOL4+oDFY7hJeSYIDgFv1w==
   dependencies:
     casparcg-connection "^6.0.0"
     fast-clone "^1.5.13"
@@ -13714,14 +13714,6 @@ superfly-timeline@^8.3.1:
     tslib "^2.4.0"
     underscore "^1.13.6"
 
-superfly-timeline@^8.3.1:
-  version "8.3.1"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.3.1.tgz#c0be6b627718845255968ba5e936d901a0924a80"
-  integrity sha512-7WCwGocqahsJQcrW1SX4HRKP4ecmzxhdhB70EuqA+Sjbj06SP02IyniT/G5Y4UOLQPliJKEJezW8Uq8aBpxBFA==
-  dependencies:
-    tslib "^2.4.0"
-    underscore "^1.13.6"
-
 supports-color@^5.3.0, supports-color@^5.5.0:
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
@@ -13975,23 +13967,23 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.5.0-nightly-feat-refactor-timeline-types-20221031-101833-770453cd6.0:
-  version "7.5.0-nightly-feat-refactor-timeline-types-20221031-101833-770453cd6.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0-nightly-feat-refactor-timeline-types-20221031-101833-770453cd6.0.tgz#41afccb3cbb43d4daaab58a10e11e60d9df626b9"
-  integrity sha512-CVvMJmkEEDpl3mM2W9Pl555qa/+BS+g3Qpedn9FGscgGTFR9gyOJmF2Oq3A3SlCAuRewxlXS70f3u+72Hj+gxw==
+timeline-state-resolver-types@7.6.0-nightly-release48-20221117-120217-d85b2fddf.0:
+  version "7.6.0-nightly-release48-20221117-120217-d85b2fddf.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.6.0-nightly-release48-20221117-120217-d85b2fddf.0.tgz#ccfa798443ca558be5f7c935a59581b597ace6d5"
+  integrity sha512-i6VOCXH5B/WO1XEWMkEbLVHV+9owDaOF+Bgk1tLRlnBgfhr9vQgmDBZeRpntQFcJJvFEStBfs73V2lyr3D7U1g==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.5.0-nightly-feat-refactor-timeline-types-20221031-101833-770453cd6.0:
-  version "7.5.0-nightly-feat-refactor-timeline-types-20221031-101833-770453cd6.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.5.0-nightly-feat-refactor-timeline-types-20221031-101833-770453cd6.0.tgz#b4a8e52c21c0eca7f3fe1019e455b36b4893a543"
-  integrity sha512-a4C0ba3g2aofhCcgoz6ykpnQUf21iFjEUaIF+/rJRGoKqvqa9OiHL0WSnWDRo5k06WxDz9fnanCFepJxCatn1g==
+timeline-state-resolver@7.6.0-nightly-release48-20221117-120217-d85b2fddf.0:
+  version "7.6.0-nightly-release48-20221117-120217-d85b2fddf.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.6.0-nightly-release48-20221117-120217-d85b2fddf.0.tgz#5ed7db10d6ee35039ae6ec095d341e52339d6e40"
+  integrity sha512-BOSRoFNyQDcpuAqKXU60UTutUJDHNmq7xdDbNbkcniI+StqZK+kZ6xilyGvpDjkwAZziReX25WeNeGXGuVpi9A==
   dependencies:
     "@tv2media/v-connection" "^6.0.3"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
-    casparcg-connection "^5.1.0"
-    casparcg-state "2.1.2"
+    casparcg-connection "^6.0.0"
+    casparcg-state "^3.0.1"
     debug "^4.3.1"
     deepmerge "^4.2.2"
     emberplus-connection "^0.1.2"
@@ -14007,7 +13999,7 @@ timeline-state-resolver@7.5.0-nightly-feat-refactor-timeline-types-20221031-1018
     sprintf-js "^1.1.2"
     superfly-timeline "^8.3.1"
     threadedclass "^1.1.1"
-    timeline-state-resolver-types "7.5.0-nightly-feat-refactor-timeline-types-20221031-101833-770453cd6.0"
+    timeline-state-resolver-types "7.6.0-nightly-release48-20221117-120217-d85b2fddf.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.5"
     underscore "^1.13.4"
