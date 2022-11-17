@@ -5,12 +5,7 @@ import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import {
-	ShowStyleVariants,
-	ShowStyleVariant,
-	OrderedShowStyleVariants,
-	ShowStyleVariantsOrder,
-} from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
 import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
@@ -43,7 +38,6 @@ interface IState {
 interface ITrackedProps {
 	showStyleBase?: ShowStyleBase
 	showStyleVariants: Array<ShowStyleVariant>
-	orderedShowStyleVariants: Array<ShowStyleVariantsOrder>
 	compatibleStudios: Array<Studio>
 	blueprintConfigManifest: ConfigManifestEntry[]
 }
@@ -66,18 +60,13 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	return {
 		showStyleBase: showStyleBase,
 		showStyleVariants: showStyleBase
-			? ShowStyleVariants.find({
-					showStyleBaseId: showStyleBase._id,
-			  }).fetch()
-			: [],
-		orderedShowStyleVariants: showStyleBase
-			? OrderedShowStyleVariants.find(
+			? ShowStyleVariants.find(
 					{
 						showStyleBaseId: showStyleBase._id,
 					},
 					{
 						sort: {
-							rank: 1,
+							_rank: 1,
 						},
 					}
 			  ).fetch()
@@ -197,7 +186,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									<Route path={`${this.props.match.path}/variants`}>
 										<ShowStyleVariantsSettings
 											showStyleVariants={this.props.showStyleVariants}
-											orderedShowStyleVariants={this.props.orderedShowStyleVariants}
 											blueprintConfigManifest={this.props.blueprintConfigManifest}
 											showStyleBase={showStyleBase}
 											layerMappings={layerMappings}

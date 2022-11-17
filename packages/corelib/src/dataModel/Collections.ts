@@ -36,7 +36,6 @@ export enum CollectionName {
 	Segments = 'segments',
 	ShowStyleBases = 'showStyleBases',
 	ShowStyleVariants = 'showStyleVariants',
-	ShowStyleVariantsOrder = 'showStyleVariantsOrder',
 	Snapshots = 'snapshots',
 	Studios = 'studios',
 	Timelines = 'timeline',

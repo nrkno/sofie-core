@@ -17,11 +17,7 @@ import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist
 import { withTranslation } from 'react-i18next'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import {
-	ShowStyleVariant,
-	ShowStyleVariants,
-	ShowStyleVariantsOrder,
-} from '../../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
@@ -39,7 +35,6 @@ import Timeout = NodeJS.Timeout
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
 	showStyleVariants: ShowStyleVariant[]
-	orderedShowStyleVariants: ShowStyleVariantsOrder[]
 	blueprintConfigManifest: ConfigManifestEntry[]
 
 	layerMappings?: { [key: string]: MappingsExt }
@@ -71,45 +66,15 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			this.state = {
 				editedMappings: [],
 				timestampedFileKey: Date.now(),
-				dndVariants: this.getShowStyleVariantsFromOrder(),
+				dndVariants: this.props.showStyleVariants,
 			}
 		}
 
-		componentDidMount() {
-			if (this.props.showStyleVariants) {
-				this.setShowStyleVariantsFromProps()
-			}
-		}
-
-		private setShowStyleVariantsFromProps() {
-			timer = setTimeout(() => {
-				if (this.props.showStyleVariants) {
-					this.setShowStyleVariantsFromProps()
-					return
-				}
-
-				this.setState({
-					dndVariants: this.getShowStyleVariantsFromOrder(),
-				})
-			}, timeout)
-		}
-
-		private addUnorderedShowStyleVariantToDatabase(unorderedVariants: ShowStyleVariant[]) {
-			unorderedVariants.forEach((unorderedVariant) => {
-				MeteorCall.showstyles
-					.insertShowStyleVariantsMissingFromOrder(this.props.showStyleBase._id, unorderedVariant)
-					.catch(logger.warn)
-			})
-		}
-
-		componentDidUpdate(
-			prevProps: Readonly<Translated<IShowStyleVariantsProps>>,
-			prevState: Readonly<IShowStyleVariantsSettingsState>
-		) {
-			if (this.showStyleVariantsChanged(prevState, prevProps)) {
+		componentDidUpdate(prevProps: Readonly<Translated<IShowStyleVariantsProps>>) {
+			if (this.showStyleVariantsChanged(prevProps)) {
 				timer = setTimeout(() => {
 					this.setState({
-						dndVariants: this.getShowStyleVariantsFromOrder(),
+						dndVariants: this.props.showStyleVariants,
 					})
 				}, timeout)
 			} else {
@@ -121,45 +86,16 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			clearTimeout(timer)
 		}
 
-		shouldComponentUpdate(): boolean {
-			timer = setTimeout(() => {
-				if (!(this.props.showStyleVariants && this.props.orderedShowStyleVariants.length === 0)) {
-					this.setShowStyleVariantsFromProps()
-					return
-				}
+		private showStyleVariantsChanged = (prevProps: Readonly<Translated<IShowStyleVariantsProps>>): boolean => {
+			if (prevProps.showStyleVariants.length !== this.props.showStyleVariants.length) {
+				return true
+			}
 
-				this.addUnorderedShowStyleVariantToDatabase(this.props.showStyleVariants)
-			}, timeout)
-
-			return !(!this.props.showStyleVariants && this.props.orderedShowStyleVariants.length === 0)
-		}
-
-		private showStyleVariantsChanged = (
-			prevState: IShowStyleVariantsSettingsState,
-			prevProps: Readonly<Translated<IShowStyleVariantsProps>>
-		): boolean => {
 			if (this.props.showStyleVariants.length > 0 && this.state.dndVariants.length === 0) {
 				return true
 			}
 
-			if (prevState.dndVariants.length !== this.props.showStyleVariants.length) {
-				return true
-			}
-
 			return prevProps.showStyleVariants !== this.props.showStyleVariants && this.state.editedMappings.length > 0
-		}
-
-		private getShowStyleVariantsFromOrder = (): ShowStyleVariant[] => {
-			const orderedVariants: ShowStyleVariant[] = []
-			this.props.orderedShowStyleVariants.map((orderVariant: ShowStyleVariantsOrder) => {
-				this.props.showStyleVariants.map((variant: ShowStyleVariant) => {
-					if (orderVariant._id === variant._id) {
-						orderedVariants.push(variant)
-					}
-				})
-			})
-
-			return orderedVariants
 		}
 
 		private importShowStyleVariants = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -205,29 +141,26 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		private importShowStyleVariantsFromArray = (showStyleVariants: ShowStyleVariant[]): void => {
 			const { t } = this.props
 			showStyleVariants.forEach((showStyleVariant: ShowStyleVariant, index: number) => {
-				const rank = this.state.dndVariants.length
-				MeteorCall.showstyles
-					.insertShowStyleVariantWithProperties(showStyleVariant, rank + index, showStyleVariant._id)
-					.catch(() => {
-						NotificationCenter.push(
-							new Notification(
-								undefined,
-								NoticeLevel.WARNING,
-								t('Failed to import Variant {{name}}. Make sure it is not already imported.', {
-									name: showStyleVariant.name,
-								}),
-								'VariantSettings'
-							)
+				const rank = this.state.dndVariants.length || 1
+				showStyleVariant._rank = rank + index
+				MeteorCall.showstyles.insertShowStyleVariantWithProperties(showStyleVariant, showStyleVariant._id).catch(() => {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.WARNING,
+							t('Failed to import Variant {{name}}. Make sure it is not already imported.', {
+								name: showStyleVariant.name,
+							}),
+							'VariantSettings'
 						)
-					})
+					)
+				})
 			})
 		}
 
 		private copyShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
 			showStyleVariant.name = `Copy of ${showStyleVariant.name}`
-			MeteorCall.showstyles
-				.insertShowStyleVariantWithProperties(showStyleVariant, this.props.showStyleVariants.length)
-				.catch(logger.warn)
+			MeteorCall.showstyles.insertShowStyleVariantWithProperties(showStyleVariant).catch(logger.warn)
 		}
 
 		private downloadShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
@@ -280,7 +213,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 		private onAddShowStyleVariant = (): void => {
 			MeteorCall.showstyles
-				.insertShowStyleVariant(this.props.showStyleBase._id, this.props.showStyleVariants.length)
+				.insertShowStyleVariant(this.props.showStyleBase._id, this.props.showStyleVariants.length || 1)
 				.catch(logger.warn)
 		}
 

@@ -1,12 +1,7 @@
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import {
-	ShowStyleVariants,
-	ShowStyleVariant,
-	ShowStyleVariantsOrder,
-	OrderedShowStyleVariants,
-} from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { ShowStyleReadAccess } from '../security/showStyle'
 import { OrganizationReadAccess } from '../security/organization'
@@ -44,23 +39,6 @@ meteorPublish(PubSub.showStyleVariants, async function (selector0, token) {
 		(selector._id && (await ShowStyleReadAccess.showStyleVariant(selector._id, cred)))
 	) {
 		return ShowStyleVariants.find(selector, modifier)
-	}
-	return null
-})
-
-meteorPublish(PubSub.orderedShowStyleVariants, async function (selector0, token) {
-	const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
-
-	const modifier: FindOptions<ShowStyleVariantsOrder> = {
-		fields: {},
-	}
-	if (
-		!cred ||
-		NoSecurityReadAccess.any() ||
-		(selector.showStyleBaseId && (await ShowStyleReadAccess.showStyleBaseContent(selector, cred))) ||
-		(selector._id && (await ShowStyleReadAccess.showStyleVariant(selector._id, cred)))
-	) {
-		return OrderedShowStyleVariants.find(selector, modifier)
 	}
 	return null
 })
