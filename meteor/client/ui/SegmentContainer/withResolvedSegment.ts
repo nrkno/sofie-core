@@ -23,9 +23,8 @@ import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { RundownLayoutFilterBase, RundownViewLayout } from '../../../lib/collections/RundownLayouts'
-import { getMinimumReactivePieceNotesForPart } from './getMinimumReactivePieceNotesForPart'
+import { getReactivePieceNoteCountsForPart } from './getMinimumReactivePieceNotesForPart'
 import { SegmentViewMode } from './SegmentViewModes'
-import { SegmentNote, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { AdlibSegmentUi } from '../../lib/shelf'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
@@ -37,6 +36,7 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -60,7 +60,7 @@ export interface PieceUi extends PieceExtended {
 	/** Metadata object */
 	contentMetaData?: any
 	contentPackageInfos?: ScanInfoForPackages
-	message?: string | null
+	messages?: ITranslatableMessage[]
 }
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
@@ -100,10 +100,15 @@ export interface IProps {
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
 
+export interface SegmentNoteCounts {
+	criticial: number
+	warning: number
+}
+
 export interface ITrackedProps {
 	segmentui: SegmentUi | undefined
 	parts: Array<PartUi>
-	segmentNotes: Array<SegmentNote>
+	segmentNoteCounts: SegmentNoteCounts
 	hasRemoteItems: boolean
 	hasGuestItems: boolean
 	hasAlreadyPlayed: boolean
@@ -129,7 +134,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				return {
 					segmentui: undefined,
 					parts: [],
-					segmentNotes: [],
+					segmentNoteCounts: { criticial: 0, warning: 0 },
 					hasRemoteItems: false,
 					hasGuestItems: false,
 					hasAlreadyPlayed: false,
@@ -238,29 +243,33 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				}
 			}
 
-			const notes: TrackedNote[] = getBasicNotesForSegment(
+			const segmentNoteCounts: SegmentNoteCounts = {
+				criticial: 0,
+				warning: 0,
+			}
+			const rawNotes = getBasicNotesForSegment(
 				segment,
 				rundownNrcsName ?? 'NRCS',
 				o.parts.map((p) => p.instance.part),
 				o.parts.map((p) => p.instance)
 			)
-			o.parts.forEach((part) => {
-				notes.push(
-					...getMinimumReactivePieceNotesForPart(props.studio, props.showStyleBase, part.instance.part).map(
-						(note): TrackedNote => ({
-							...note,
-							rank: segment._rank,
-							origin: {
-								...note.origin,
-								partId: part.partId,
-								rundownId: segment.rundownId,
-								segmentId: segment._id,
-								segmentName: segment.name,
-							},
-						})
-					)
+			for (const note of rawNotes) {
+				if (note.type === NoteSeverity.ERROR) {
+					segmentNoteCounts.criticial++
+				} else if (note.type === NoteSeverity.WARNING) {
+					segmentNoteCounts.warning++
+				}
+			}
+
+			for (const part of o.parts) {
+				const pieceNoteCounts = getReactivePieceNoteCountsForPart(
+					props.studio,
+					props.showStyleBase,
+					part.instance.part
 				)
-			})
+				segmentNoteCounts.criticial += pieceNoteCounts.criticial
+				segmentNoteCounts.warning += pieceNoteCounts.warning
+			}
 
 			let lastValidPartIndex = o.parts.length - 1
 
@@ -303,7 +312,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			return {
 				segmentui: o.segmentExtended,
 				parts: o.parts,
-				segmentNotes: notes,
+				segmentNoteCounts,
 				hasAlreadyPlayed: o.hasAlreadyPlayed,
 				hasRemoteItems: o.hasRemoteItems,
 				hasGuestItems: o.hasGuestItems,

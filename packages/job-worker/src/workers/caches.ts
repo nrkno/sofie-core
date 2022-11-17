@@ -303,6 +303,10 @@ async function loadStudioBlueprintOrPlaceholder(
 	const blueprintDoc = await collections.Blueprints.findOne(studio.blueprintId)
 	const blueprintManifest = await parseBlueprintDocument(blueprintDoc)
 	if (!blueprintManifest) {
+		return Object.freeze({
+			blueprintId: protectString('__placeholder__'),
+			blueprint: DefaultStudioBlueprint,
+		})
 		throw new Error(`Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
 	}
 

@@ -367,7 +367,7 @@ async function getTimelineRundown(
 					)
 					sendTrace(endTrace(influxTrace))
 					if (span) span.end()
-					timelineObjs = tlGenRes.timeline.map((object: OnGenerateTimelineObj) => {
+					timelineObjs = tlGenRes.timeline.map((object: OnGenerateTimelineObj<any>) => {
 						return literal<TimelineObjGeneric & OnGenerateTimelineObjExt>({
 							...(object as OnGenerateTimelineObjExt),
 							objectType: TimelineObjType.RUNDOWN,
@@ -427,8 +427,7 @@ function flattenAndProcessTimelineObjects(context: JobContext, timelineObjs: Arr
 	const fixObjectChildren = (o: TimelineObjGeneric): void => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
 		if (o.isGroup && o.children && o.children.length) {
-			const children = o.children as TSR.TSRTimelineObjBase[]
-			for (const child of children) {
+			for (const child of o.children) {
 				const childFixed: TimelineObjGeneric = {
 					...child,
 					objectType: o.objectType,

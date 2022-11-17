@@ -1,3 +1,4 @@
+import { TSRTimelineContent } from 'timeline-state-resolver-types'
 import { Time } from './common'
 import { TimelineObjectCoreExt } from './timeline'
 
@@ -30,7 +31,7 @@ export enum SourceLayerType {
 }
 
 export type WithTimeline<T extends BaseContent> = T & {
-	timelineObjects: TimelineObjectCoreExt[]
+	timelineObjects: TimelineObjectCoreExt<TSRTimelineContent>[]
 }
 
 export interface BaseContent {
