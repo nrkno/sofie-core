@@ -188,8 +188,10 @@ async function innerUploadBlueprint(
 	newBlueprint.integrationVersion = blueprintManifest.integrationVersion
 	newBlueprint.TSRVersion = blueprintManifest.TSRVersion
 
-	if ('configPresets' in blueprintManifest) {
-		newBlueprint.configPresets = blueprintManifest.configPresets
+	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
+		newBlueprint.showStyleConfigPresets = blueprintManifest.configPresets
+	} else if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
+		newBlueprint.studioConfigPresets = blueprintManifest.configPresets
 	}
 
 	if (blueprint && blueprint.blueprintType && blueprint.blueprintType !== newBlueprint.blueprintType) {

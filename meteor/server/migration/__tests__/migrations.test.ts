@@ -14,6 +14,7 @@ import {
 	PlaylistTimingType,
 	PlaylistTimingNone,
 	ShowStyleBlueprintManifest,
+	StudioBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Blueprints } from '../../../lib/collections/Blueprints'
@@ -134,6 +135,7 @@ describe('Migrations', () => {
 						packageContainers: {},
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
+						lastBlueprintConfig: undefined,
 					})
 				},
 			},
@@ -164,6 +166,7 @@ describe('Migrations', () => {
 						packageContainers: {},
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
+						lastBlueprintConfig: undefined,
 					})
 				},
 			},
@@ -194,6 +197,7 @@ describe('Migrations', () => {
 						packageContainers: {},
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
+						lastBlueprintConfig: undefined,
 					})
 				},
 			},
@@ -215,70 +219,92 @@ describe('Migrations', () => {
 		const studio = Studios.findOne() as Studio
 		expect(studio).toBeTruthy()
 
-		const studioManifest = () => ({
-			blueprintType: 'studio' as BlueprintManifestType.STUDIO,
-			blueprintVersion: '1.0.0',
-			integrationVersion: '0.0.0',
-			TSRVersion: '0.0.0',
+		const studioManifest = () =>
+			literal<StudioBlueprintManifest>({
+				blueprintType: 'studio' as BlueprintManifestType.STUDIO,
+				blueprintVersion: '1.0.0',
+				integrationVersion: '0.0.0',
+				TSRVersion: '0.0.0',
 
-			studioConfigManifest: [],
-			studioMigrations: [
-				{
-					version: '0.2.0',
-					id: 'myStudioMockStep2',
-					validate: (context: MigrationContextStudio) => {
-						if (!context.getConfig('mocktest2')) return `mocktest2 config not set`
-						return false
-					},
-					canBeRunAutomatically: true,
-					migrate: (context: MigrationContextStudio) => {
-						if (!context.getConfig('mocktest2')) {
-							context.setConfig('mocktest2', true)
-						}
+				configPresets: {
+					main: {
+						name: 'Main',
+						config: {},
 					},
 				},
-				{
-					version: '0.3.0',
-					id: 'myStudioMockStep3',
-					validate: (context: MigrationContextStudio) => {
-						if (!context.getConfig('mocktest3')) return `mocktest3 config not set`
-						return false
+
+				studioConfigManifest: [],
+				studioMigrations: [
+					{
+						version: '0.2.0',
+						id: 'myStudioMockStep2',
+						validate: (context: MigrationContextStudio) => {
+							if (!context.getConfig('mocktest2')) return `mocktest2 config not set`
+							return false
+						},
+						canBeRunAutomatically: true,
+						migrate: (context: MigrationContextStudio) => {
+							if (!context.getConfig('mocktest2')) {
+								context.setConfig('mocktest2', true)
+							}
+						},
 					},
-					canBeRunAutomatically: true,
-					migrate: (context: MigrationContextStudio) => {
-						if (!context.getConfig('mocktest3')) {
-							context.setConfig('mocktest3', true)
-						}
+					{
+						version: '0.3.0',
+						id: 'myStudioMockStep3',
+						validate: (context: MigrationContextStudio) => {
+							if (!context.getConfig('mocktest3')) return `mocktest3 config not set`
+							return false
+						},
+						canBeRunAutomatically: true,
+						migrate: (context: MigrationContextStudio) => {
+							if (!context.getConfig('mocktest3')) {
+								context.setConfig('mocktest3', true)
+							}
+						},
 					},
+					{
+						version: '0.1.0',
+						id: 'myStudioMockStep1',
+						validate: (context: MigrationContextStudio) => {
+							if (!context.getConfig('mocktest1')) return `mocktest1 config not set`
+							return false
+						},
+						canBeRunAutomatically: true,
+						migrate: (context: MigrationContextStudio) => {
+							if (!context.getConfig('mocktest1')) {
+								context.setConfig('mocktest1', true)
+							}
+						},
+					},
+				],
+				getBaseline: () => {
+					return {
+						timelineObjects: [],
+					}
 				},
-				{
-					version: '0.1.0',
-					id: 'myStudioMockStep1',
-					validate: (context: MigrationContextStudio) => {
-						if (!context.getConfig('mocktest1')) return `mocktest1 config not set`
-						return false
-					},
-					canBeRunAutomatically: true,
-					migrate: (context: MigrationContextStudio) => {
-						if (!context.getConfig('mocktest1')) {
-							context.setConfig('mocktest1', true)
-						}
-					},
-				},
-			],
-			getBaseline: () => {
-				return {
-					timelineObjects: [],
-				}
-			},
-			getShowStyleId: () => null,
-		})
+				getShowStyleId: () => null,
+			})
 
 		const showStyleManifest = (): ShowStyleBlueprintManifest => ({
 			blueprintType: 'showstyle' as BlueprintManifestType.SHOWSTYLE,
 			blueprintVersion: '1.0.0',
 			integrationVersion: '0.0.0',
 			TSRVersion: '0.0.0',
+
+			configPresets: {
+				main: {
+					name: 'Main',
+					config: {},
+
+					variants: {
+						main: {
+							name: 'Default',
+							config: {},
+						},
+					},
+				},
+			},
 
 			showStyleConfigManifest: [],
 			showStyleMigrations: [
@@ -356,6 +382,7 @@ describe('Migrations', () => {
 			hotkeyLegend: [],
 			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',
+			lastBlueprintConfig: undefined,
 		})
 
 		ShowStyleVariants.insert({

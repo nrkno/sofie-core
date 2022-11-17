@@ -49,6 +49,7 @@ describe('Test blueprint management api', () => {
 
 				blueprintId: protectString(''),
 				blueprintType: BlueprintManifestType.SYSTEM,
+				blueprintHash: getRandomId(),
 
 				studioConfigManifest: [],
 				showStyleConfigManifest: [],
@@ -293,7 +294,7 @@ describe('Test blueprint management api', () => {
 			const blueprint = await uploadBlueprint(DEFAULT_CONTEXT, protectString('tmp_showstyle'), blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
-				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
+				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion' | 'blueprintHash'>>({
 					_id: protectString('tmp_showstyle'),
 					name: 'tmp_showstyle',
 					organizationId: null,
@@ -335,7 +336,7 @@ describe('Test blueprint management api', () => {
 			)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
-				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
+				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion' | 'blueprintHash'>>({
 					_id: protectString('tmp_studio'),
 					name: 'tmp name',
 					organizationId: null,
@@ -378,7 +379,7 @@ describe('Test blueprint management api', () => {
 			)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
-				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
+				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion' | 'blueprintHash'>>({
 					_id: protectString('tmp_system'),
 					name: 'tmp name',
 					organizationId: null,
@@ -419,7 +420,7 @@ describe('Test blueprint management api', () => {
 			const blueprint = await uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
-				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
+				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion' | 'blueprintHash'>>({
 					_id: existingBlueprint._id,
 					name: existingBlueprint.name,
 					organizationId: null,
@@ -464,7 +465,7 @@ describe('Test blueprint management api', () => {
 			const blueprint = await uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
-				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
+				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion' | 'blueprintHash'>>({
 					_id: existingBlueprint._id,
 					name: existingBlueprint.name,
 					organizationId: null,

@@ -73,6 +73,7 @@ export async function insertShowStyleBaseInner(organizationId: OrganizationId | 
 		sourceLayersWithOverrides: wrapDefaultObject({}),
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
+		lastBlueprintConfig: undefined,
 	}
 	ShowStyleBases.insert(showStyleBase)
 	await insertShowStyleVariantInner(showStyleBase, 'Default')

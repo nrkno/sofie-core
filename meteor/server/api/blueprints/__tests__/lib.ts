@@ -1,5 +1,5 @@
 import { BlueprintManifestType, SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
-import { literal, protectString } from '../../../../lib/lib'
+import { getRandomId, literal, protectString } from '../../../../lib/lib'
 import { Blueprint } from '../../../../lib/collections/Blueprints'
 
 export function generateFakeBlueprint(
@@ -36,6 +36,7 @@ export function generateFakeBlueprint(
 
 		blueprintId: protectString(''),
 		blueprintType: type,
+		blueprintHash: getRandomId(),
 
 		studioConfigManifest: [],
 		showStyleConfigManifest: [],

@@ -71,8 +71,8 @@ export const StudioGenericProperties = withTranslation()(
 					_id: this.props.studio.blueprintId,
 				})
 
-				if (blueprint && blueprint.configPresets) {
-					for (const [id, preset] of Object.entries(blueprint.configPresets)) {
+				if (blueprint && blueprint.studioConfigPresets) {
+					for (const [id, preset] of Object.entries(blueprint.studioConfigPresets)) {
 						options.push({
 							value: id,
 							name: preset.name,

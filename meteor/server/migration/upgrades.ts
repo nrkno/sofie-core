@@ -2,14 +2,18 @@ import {
 	BlueprintConfigCoreConfig,
 	BlueprintManifestType,
 	ICommonContext,
+	IShowStyleConfigPreset,
+	IStudioConfigPreset,
 	NoteSeverity,
 	ShowStyleBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
+import { BlueprintHash } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { BlueprintId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	assertNever,
 	getHash,
 	getSofieHostUrl,
+	literal,
 	normalizeArray,
 	normalizeArrayToMap,
 } from '@sofie-automation/corelib/dist/lib'
@@ -67,14 +71,23 @@ async function checkStudiosUpgradeStatus(): Promise<GetUpgradeStatusResultStudio
 		{
 			projection: {
 				_id: 1,
-				configPresets: 1,
+				studioConfigPresets: 1,
 				blueprintHash: 1,
 			},
 		}
-	)) as Array<BlueprintForUpgradeCheck>
+	)) as Array<StudioBlueprintForUpgradeCheck>
 
 	// Check each studio
-	const blueprintsMap = normalizeArrayToMap(studioBlueprints, '_id')
+	const blueprintsMap = normalizeArrayToMap(
+		studioBlueprints.map((doc) =>
+			literal<BlueprintMapEntry>({
+				_id: doc._id,
+				configPresets: doc.studioConfigPresets,
+				blueprintHash: doc.blueprintHash,
+			})
+		),
+		'_id'
+	)
 	for (const studio of studios) {
 		result.push({
 			...checkDocUpgradeStatus(blueprintsMap, studio),
@@ -111,14 +124,23 @@ async function checkShowStyleBaseUpgradeStatus(): Promise<GetUpgradeStatusResult
 		{
 			projection: {
 				_id: 1,
-				configPresets: 1,
+				showStyleConfigPresets: 1,
 				blueprintHash: 1,
 			},
 		}
-	)) as Array<BlueprintForUpgradeCheck>
+	)) as Array<ShowStyleBlueprintForUpgradeCheck>
 
 	// Check each studio
-	const blueprintsMap = normalizeArrayToMap(showStyleBlueprints, '_id')
+	const blueprintsMap = normalizeArrayToMap(
+		showStyleBlueprints.map((doc) =>
+			literal<BlueprintMapEntry>({
+				_id: doc._id,
+				configPresets: doc.showStyleConfigPresets,
+				blueprintHash: doc.blueprintHash,
+			})
+		),
+		'_id'
+	)
 	for (const showStyle of showStyles) {
 		result.push({
 			...checkDocUpgradeStatus(blueprintsMap, showStyle),
@@ -138,10 +160,17 @@ type ShowStyleBaseForUpgradeCheck = Pick<
 	ShowStyleBase,
 	'_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'lastBlueprintConfig' | 'blueprintConfigWithOverrides' | 'name'
 >
-type BlueprintForUpgradeCheck = Pick<Blueprint, '_id' | 'configPresets' | 'blueprintHash'>
+type StudioBlueprintForUpgradeCheck = Pick<Blueprint, '_id' | 'studioConfigPresets' | 'blueprintHash'>
+type ShowStyleBlueprintForUpgradeCheck = Pick<Blueprint, '_id' | 'showStyleConfigPresets' | 'blueprintHash'>
+
+interface BlueprintMapEntry {
+	_id: BlueprintId
+	configPresets: Record<string, IStudioConfigPreset> | Record<string, IShowStyleConfigPreset> | undefined
+	blueprintHash: BlueprintHash | undefined
+}
 
 function checkDocUpgradeStatus(
-	blueprintMap: Map<BlueprintId, BlueprintForUpgradeCheck>,
+	blueprintMap: Map<BlueprintId, BlueprintMapEntry>,
 	doc: StudioForUpgradeCheck | ShowStyleBaseForUpgradeCheck
 ): Pick<GetUpgradeStatusResultStudio, 'pendingUpgrade' | 'invalidReason'> {
 	// Check the blueprintId is valid

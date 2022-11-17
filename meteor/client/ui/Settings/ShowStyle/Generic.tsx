@@ -46,8 +46,8 @@ export const ShowStyleGenericProperties = withTranslation()(
 					_id: this.props.showStyleBase.blueprintId,
 				})
 
-				if (blueprint && blueprint.configPresets) {
-					for (const [id, preset] of Object.entries(blueprint.configPresets)) {
+				if (blueprint && blueprint.showStyleConfigPresets) {
+					for (const [id, preset] of Object.entries(blueprint.showStyleConfigPresets)) {
 						options.push({
 							value: id,
 							name: preset.name,

@@ -2,7 +2,8 @@ import {
 	BlueprintManifestType,
 	ConfigManifestEntry,
 	IBlueprintConfig,
-	IConfigPreset,
+	IStudioConfigPreset,
+	IShowStyleConfigPreset,
 } from '@sofie-automation/blueprints-integration'
 import { ProtectedString } from '../protectedString'
 import { BlueprintId, OrganizationId } from './Ids'
@@ -28,7 +29,8 @@ export interface Blueprint {
 	studioConfigManifest?: ConfigManifestEntry[]
 	showStyleConfigManifest?: ConfigManifestEntry[]
 
-	configPresets?: Record<string, IConfigPreset>
+	studioConfigPresets?: Record<string, IStudioConfigPreset>
+	showStyleConfigPresets?: Record<string, IShowStyleConfigPreset>
 
 	databaseVersion: {
 		showStyle: {
