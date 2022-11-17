@@ -19,8 +19,6 @@ export interface IStudioSettings {
 
 	/** URL to endpoint where media preview are exposed */
 	mediaPreviewsUrl: string // (former media_previews_url in config)
-	/** URL to Sofie Core endpoint */
-	sofieUrl: string // (former sofie_url in config)
 	/** URLs for slack webhook to send evaluations */
 	slackEvaluationUrls?: string // (former slack_evaluation in config)
 

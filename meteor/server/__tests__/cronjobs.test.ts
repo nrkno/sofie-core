@@ -56,7 +56,6 @@ describe('cronjobs', () => {
 			modified: 0,
 			version: '0.0.0',
 			previousVersion: '0.0.0',
-			storePath: '',
 			serviceMessages: {},
 			cron: {
 				casparCGRestart: {
