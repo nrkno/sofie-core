@@ -52,14 +52,14 @@ interface DragVariant {
 	type: ShowStyleDragDropTypes
 }
 
-const SET_STATE_DELAY: number = 50
+const SET_STATE_DELAY = 50
 
 export const ShowStyleVariantsSettings = withTranslation()(
 	class ShowStyleVariantsSettings extends React.Component<
 		Translated<IShowStyleVariantsProps>,
 		IShowStyleVariantsSettingsState
 	> {
-		private timer: number | undefined
+		private timer?: number
 
 		constructor(props: Translated<IShowStyleVariantsProps>) {
 			super(props)
@@ -123,7 +123,9 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 				const newShowStyleVariants: ShowStyleVariant[] = []
 				try {
-					JSON.parse(fileContents).map((showStyleVariant) => newShowStyleVariants.push(showStyleVariant))
+					JSON.parse(fileContents).map((showStyleVariant: ShowStyleVariant) =>
+						newShowStyleVariants.push(showStyleVariant)
+					)
 					if (!Array.isArray(newShowStyleVariants)) {
 						throw new Error('Imported file did not contain an array')
 					}
@@ -147,7 +149,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		private importShowStyleVariantsFromArray = (showStyleVariants: ShowStyleVariant[]): void => {
 			const { t } = this.props
 			showStyleVariants.forEach((showStyleVariant: ShowStyleVariant, index: number) => {
-				const rank = this.state.dndVariants.length || 1
+				const rank = this.state.dndVariants.length
 				showStyleVariant._rank = rank + index
 				MeteorCall.showstyles.importShowStyleVariant(showStyleVariant).catch(() => {
 					NotificationCenter.push(
@@ -166,6 +168,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 		private copyShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
 			showStyleVariant.name = `Copy of ${showStyleVariant.name}`
+			showStyleVariant._rank = this.state.dndVariants.length
 			MeteorCall.showstyles.copyShowStyleVariant(showStyleVariant).catch(logger.warn)
 		}
 
@@ -277,7 +280,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			const ref = useRef<HTMLTableRowElement>(null)
 			const [{ handlerId }, drop] = useDrop<DragVariant, void, { handlerId: Identifier | null }>({
 				accept: ShowStyleDragDropTypes.VARIANT,
-				collect: (monitor) => ({ handlerId: monitor.getHandlerId() }),
+				collect: (monitor: DropTargetMonitor) => ({ handlerId: monitor.getHandlerId() }),
 				hover(variant: DragVariant, monitor: DropTargetMonitor) {
 					if (!ref.current) {
 						return

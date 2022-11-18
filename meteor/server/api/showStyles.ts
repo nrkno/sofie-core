@@ -99,7 +99,7 @@ export async function createDefaultShowStyleVariant(
 		name: name || 'Variant',
 		blueprintConfig: {},
 		_rundownVersionHash: '',
-		_rank: rank || 500,
+		_rank: rank ?? 500,
 		showStyleBaseId: showStyleBaseId,
 	}
 
