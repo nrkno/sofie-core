@@ -30,7 +30,7 @@ import update from 'immutability-helper'
 import { ShowStyleDragDropTypes } from './DragDropTypesShowStyle'
 import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
 import { logger } from '../../../../lib/logging'
-import Timeout = NodeJS.Timeout
+import { Meteor } from 'meteor/meteor'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
@@ -52,14 +52,15 @@ interface DragVariant {
 	type: ShowStyleDragDropTypes
 }
 
-const timeout: number = 50
-let timer: Timeout
+const SET_STATE_DELAY: number = 50
 
 export const ShowStyleVariantsSettings = withTranslation()(
 	class ShowStyleVariantsSettings extends React.Component<
 		Translated<IShowStyleVariantsProps>,
 		IShowStyleVariantsSettingsState
 	> {
+		private timer: number | undefined
+
 		constructor(props: Translated<IShowStyleVariantsProps>) {
 			super(props)
 
@@ -69,21 +70,22 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				dndVariants: this.props.showStyleVariants,
 			}
 		}
-
 		componentDidUpdate(prevProps: Readonly<Translated<IShowStyleVariantsProps>>) {
-			if (this.showStyleVariantsChanged(prevProps)) {
-				timer = setTimeout(() => {
+			if (this.showStyleVariantsChanged(prevProps) || this.noShowStyleVariantsPresentInState()) {
+				this.timer = Meteor.setTimeout(() => {
 					this.setState({
 						dndVariants: this.props.showStyleVariants,
 					})
-				}, timeout)
-			} else {
-				clearTimeout(timer)
+				}, SET_STATE_DELAY)
+			} else if (this.timer) {
+				Meteor.clearTimeout(this.timer)
 			}
 		}
 
 		componentWillUnmount() {
-			clearTimeout(timer)
+			if (this.timer) {
+				Meteor.clearTimeout(this.timer)
+			}
 		}
 
 		private showStyleVariantsChanged = (prevProps: Readonly<Translated<IShowStyleVariantsProps>>): boolean => {
@@ -96,6 +98,12 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			}
 
 			return prevProps.showStyleVariants !== this.props.showStyleVariants && this.state.editedMappings.length > 0
+		}
+
+		private noShowStyleVariantsPresentInState = () => {
+			if (this.props.showStyleVariants.length > 0 && this.state.dndVariants.length === 0) {
+				return true
+			}
 		}
 
 		private importShowStyleVariants = (event: React.ChangeEvent<HTMLInputElement>): void => {
