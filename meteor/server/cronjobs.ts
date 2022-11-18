@@ -206,25 +206,28 @@ Meteor.startup(() => {
 	Meteor.setInterval(nightlyCronjob, 5 * 60 * 1000) // check every 5 minutes
 	nightlyCronjob()
 
-	function cleanupPlaylists(force?: boolean) {
-		if (isLowSeason() || force) {
-			deferAsync(
-				async () => {
-					// Ensure there are no empty playlists on an interval
-					const studioIds = await fetchStudioIds({})
-					await Promise.all(
-						studioIds.map(async (studioId) => {
-							const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
-							await job.complete
-						})
-					)
-				},
-				(e) => {
-					logger.error(`Cron: CleanupPlaylists error: ${e}`)
-				}
-			)
+	function anyTimeCronjob(force?: boolean) {
+		{
+			// Clean up playlists:
+			if (isLowSeason() || force) {
+				deferAsync(
+					async () => {
+						// Ensure there are no empty playlists on an interval
+						const studioIds = await fetchStudioIds({})
+						await Promise.all(
+							studioIds.map(async (studioId) => {
+								const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
+								await job.complete
+							})
+						)
+					},
+					(e) => {
+						logger.error(`Cron: CleanupPlaylists error: ${e}`)
+					}
+				)
+			}
 		}
 	}
-	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
-	cleanupPlaylists(true)
+	Meteor.setInterval(anyTimeCronjob, 30 * 60 * 1000) // every 30 minutes
+	anyTimeCronjob(true)
 })
