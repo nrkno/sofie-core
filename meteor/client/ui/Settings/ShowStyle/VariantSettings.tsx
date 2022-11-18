@@ -366,7 +366,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 									<div>
 										<div className="mod mvs mhs">
 											<label className="field">
-												{t('Variant Name')}
+												{t('Name')}
 												<EditAttribute
 													modifiedClassName="bghl"
 													attribute={'name'}
@@ -452,7 +452,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			const { t } = this.props
 			return (
 				<div>
-					<h2 className="mhn">{t('Variants')}</h2>
+					<h2 className="mhn">{t('Show Style Variants')}</h2>
 					<DndProvider backend={HTML5Backend}>
 						<div>
 							<this.VariantList className="table expando settings-studio-showStyleVariants-table">
