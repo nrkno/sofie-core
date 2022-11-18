@@ -17,8 +17,6 @@ import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { Credentials } from '../security/lib/credentials'
 import { OrganizationId } from '../../lib/collections/Organization'
 import deepmerge from 'deepmerge'
-import { ShowStyleBaseLight } from '../../lib/collections/optimizations'
-import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 
 export async function getShowStyleCompound(
 	showStyleVariantId: ShowStyleVariantId
@@ -68,73 +66,80 @@ export async function insertShowStyleBaseInner(organizationId: OrganizationId | 
 		_rundownVersionHash: '',
 	}
 	ShowStyleBases.insert(showStyleBase)
-	await insertShowStyleVariantInner(showStyleBase, 'Default')
+
+	const showStyleVariant: ShowStyleVariant = {
+		_id: getRandomId(),
+		name: 'Default',
+		blueprintConfig: {},
+		_rundownVersionHash: '',
+		_rank: 500,
+		showStyleBaseId: showStyleBase._id,
+	}
+	await insertShowStyleVariant(showStyleVariant)
 	return showStyleBase._id
 }
-
-export async function insertShowStyleVariant(
-	context: MethodContext | Credentials,
-	showStyleBaseId: ShowStyleBaseId,
-	rank: number,
-	name?: string
-): Promise<ShowStyleVariantId> {
+async function assertShowStyleBaseAccess(context: MethodContext | Credentials, showStyleBaseId: ShowStyleBaseId) {
 	check(showStyleBaseId, String)
 
 	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
 	const showStyleBase = access.showStyleBase
 	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
-
-	return insertShowStyleVariantInner(showStyleBase, name, rank)
 }
 
-export async function insertShowStyleVariantWithProperties(
+export async function createDefaultShowStyleVariant(
 	context: MethodContext | Credentials,
-	showStyleVariant: ShowStyleVariant,
-	id?: ShowStyleVariantId
-): Promise<ShowStyleVariantId> {
-	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleVariant.showStyleBaseId)
-	const showStyleBase = access.showStyleBase
-	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleVariant.showStyleBaseId}" not found`)
-
-	return insertShowStyleVariantInner(
-		showStyleBase,
-		showStyleVariant.name,
-		showStyleVariant._rank,
-		id,
-		showStyleVariant.blueprintConfig
-	)
-}
-
-export async function insertShowStyleVariantInner(
-	showStyleBase: ShowStyleBaseLight,
-	name?: string,
+	showStyleBaseId: ShowStyleBaseId,
 	rank?: number,
-	id?: ShowStyleVariantId,
-	blueprintConfig?: IBlueprintConfig
+	name?: string
 ): Promise<ShowStyleVariantId> {
-	return ShowStyleVariants.insertAsync({
-		_id: id || getRandomId(),
-		showStyleBaseId: showStyleBase._id,
+	await assertShowStyleBaseAccess(context, showStyleBaseId)
+
+	const showStyleVariant: ShowStyleVariant = {
+		_id: getRandomId(),
 		name: name || 'Variant',
-		blueprintConfig: blueprintConfig || {},
+		blueprintConfig: {},
 		_rundownVersionHash: '',
 		_rank: rank || 500,
-	})
+		showStyleBaseId: showStyleBaseId,
+	}
+
+	return insertShowStyleVariant(showStyleVariant)
+}
+
+export async function importShowStyleVariant(
+	context: MethodContext | Credentials,
+	showStyleVariant: ShowStyleVariant
+): Promise<ShowStyleVariantId> {
+	await assertShowStyleBaseAccess(context, showStyleVariant.showStyleBaseId)
+
+	return insertShowStyleVariant(showStyleVariant)
+}
+
+export async function copyShowStyleVariant(
+	context: MethodContext | Credentials,
+	showStyleVariant: ShowStyleVariant
+): Promise<ShowStyleVariantId> {
+	await assertShowStyleBaseAccess(context, showStyleVariant.showStyleBaseId)
+
+	showStyleVariant._id = getRandomId()
+
+	return insertShowStyleVariant(showStyleVariant)
+}
+
+export async function insertShowStyleVariant(showStyleVariant: ShowStyleVariant): Promise<ShowStyleVariantId> {
+	return ShowStyleVariants.insertAsync(showStyleVariant)
 }
 
 export async function removeShowStyleBase(context: MethodContext, showStyleBaseId: ShowStyleBaseId): Promise<void> {
-	check(showStyleBaseId, String)
-	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
-	const showStyleBase = access.showStyleBase
-	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
+	await assertShowStyleBaseAccess(context, showStyleBaseId)
 
 	await Promise.allSettled([
-		ShowStyleBases.removeAsync(showStyleBase._id),
+		ShowStyleBases.removeAsync(showStyleBaseId),
 		ShowStyleVariants.removeAsync({
-			showStyleBaseId: showStyleBase._id,
+			showStyleBaseId: showStyleBaseId,
 		}),
 		RundownLayouts.removeAsync({
-			showStyleBaseId: showStyleBase._id,
+			showStyleBaseId: showStyleBaseId,
 		}),
 	])
 }
@@ -157,9 +162,7 @@ export async function reorderAllShowStyleVariants(
 	showStyleBaseId: ShowStyleBaseId,
 	orderedVariants: ShowStyleVariant[]
 ): Promise<void> {
-	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
-	const showStyleBase = access.showStyleBase
-	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
+	await assertShowStyleBaseAccess(context, showStyleBaseId)
 
 	await reorderAllShowStyleVariantsInner(orderedVariants)
 }
@@ -178,11 +181,14 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	async insertShowStyleBase() {
 		return insertShowStyleBase(this)
 	}
-	async insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId, rank: number) {
-		return insertShowStyleVariant(this, showStyleBaseId, rank)
+	async createDefaultShowStyleVariant(showStyleBaseId: ShowStyleBaseId, rank: number) {
+		return createDefaultShowStyleVariant(this, showStyleBaseId, rank)
 	}
-	async insertShowStyleVariantWithProperties(showStyleVariant: ShowStyleVariant, id: ShowStyleVariantId) {
-		return insertShowStyleVariantWithProperties(this, showStyleVariant, id)
+	async importShowStyleVariant(showStyleVariant: ShowStyleVariant) {
+		return importShowStyleVariant(this, showStyleVariant)
+	}
+	async copyShowStyleVariant(showStyleVariant: ShowStyleVariant) {
+		return copyShowStyleVariant(this, showStyleVariant)
 	}
 	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 		return removeShowStyleBase(this, showStyleBaseId)

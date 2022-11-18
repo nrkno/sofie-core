@@ -143,7 +143,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			showStyleVariants.forEach((showStyleVariant: ShowStyleVariant, index: number) => {
 				const rank = this.state.dndVariants.length || 1
 				showStyleVariant._rank = rank + index
-				MeteorCall.showstyles.insertShowStyleVariantWithProperties(showStyleVariant, showStyleVariant._id).catch(() => {
+				MeteorCall.showstyles.importShowStyleVariant(showStyleVariant).catch(() => {
 					NotificationCenter.push(
 						new Notification(
 							undefined,
@@ -160,7 +160,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 		private copyShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
 			showStyleVariant.name = `Copy of ${showStyleVariant.name}`
-			MeteorCall.showstyles.insertShowStyleVariantWithProperties(showStyleVariant).catch(logger.warn)
+			MeteorCall.showstyles.copyShowStyleVariant(showStyleVariant).catch(logger.warn)
 		}
 
 		private downloadShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
@@ -213,7 +213,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 		private onAddShowStyleVariant = (): void => {
 			MeteorCall.showstyles
-				.insertShowStyleVariant(this.props.showStyleBase._id, this.props.showStyleVariants.length || 1)
+				.createDefaultShowStyleVariant(this.props.showStyleBase._id, this.props.showStyleVariants.length || 1)
 				.catch(logger.warn)
 		}
 
