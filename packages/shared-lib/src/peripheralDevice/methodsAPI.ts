@@ -315,7 +315,8 @@ export interface NewPeripheralDeviceAPI {
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		type: string,
-		packageId: ExpectedPackageId
+		packageId: ExpectedPackageId,
+		removeDelay?: number
 	): Promise<void>
 
 	determineDiffTime(): Promise<DiffTimeResult>

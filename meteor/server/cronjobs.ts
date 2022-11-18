@@ -20,6 +20,7 @@ import { Parts } from '../lib/collections/Parts'
 import { PartInstances } from '../lib/collections/PartInstances'
 import { PieceInstances } from '../lib/collections/PieceInstances'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
+import { getRemovedPackageInfos, PackageInfos } from '../lib/collections/PackageInfos'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -226,6 +227,22 @@ Meteor.startup(() => {
 					}
 				)
 			}
+		}
+		{
+			// Clean up removed PackageInfos:
+			deferAsync(
+				async () => {
+					const removedPackageInfoIds = await getRemovedPackageInfos()
+					if (removedPackageInfoIds.length) {
+						PackageInfos.remove({
+							_id: { $in: removedPackageInfoIds },
+						})
+					}
+				},
+				(e) => {
+					logger.error(`Cron: Cleanup PackageInfos error: ${e}`)
+				}
+			)
 		}
 	}
 	Meteor.setInterval(anyTimeCronjob, 30 * 60 * 1000) // every 30 minutes
