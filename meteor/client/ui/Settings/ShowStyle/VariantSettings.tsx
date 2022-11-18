@@ -101,9 +101,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		}
 
 		private noShowStyleVariantsPresentInState = () => {
-			if (this.props.showStyleVariants.length > 0 && this.state.dndVariants.length === 0) {
-				return true
-			}
+			return this.props.showStyleVariants.length > 0 && this.state.dndVariants.length === 0
 		}
 
 		private importShowStyleVariants = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -279,11 +277,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			const ref = useRef<HTMLTableRowElement>(null)
 			const [{ handlerId }, drop] = useDrop<DragVariant, void, { handlerId: Identifier | null }>({
 				accept: ShowStyleDragDropTypes.VARIANT,
-				collect(monitor) {
-					return {
-						handlerId: monitor.getHandlerId(),
-					}
-				},
+				collect: (monitor) => ({ handlerId: monitor.getHandlerId() }),
 				hover(variant: DragVariant, monitor: DropTargetMonitor) {
 					if (!ref.current) {
 						return
