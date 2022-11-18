@@ -34,6 +34,7 @@ export interface DBShowStyleBase {
 	blueprintId: BlueprintId
 	/** Id of the blueprint config preset */
 	blueprintConfigPresetId?: string
+	blueprintConfigPresetIdUnlinked?: boolean
 
 	/** If set, the Organization that owns this ShowStyleBase */
 	organizationId: OrganizationId | null

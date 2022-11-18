@@ -7,6 +7,10 @@ export interface DBShowStyleVariant {
 	/** Id of parent ShowStyleBase */
 	showStyleBaseId: ShowStyleBaseId
 
+	/** Id of the blueprint config preset */
+	blueprintConfigPresetId?: string
+	blueprintConfigPresetIdUnlinked?: boolean
+
 	name: string
 
 	/** Config values are used by the Blueprints */

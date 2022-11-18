@@ -155,11 +155,16 @@ export const StudioGenericProperties = withTranslation()(
 					</label>
 					<label className="field">
 						{t('Blueprint config preset')}
-						{!this.props.studio.blueprintId ? (
+						{!this.props.studio.blueprintConfigPresetId && (
 							<div className="error-notice inline">
 								{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 							</div>
-						) : null}
+						)}
+						{!this.props.studio.blueprintConfigPresetIdUnlinked && (
+							<div className="error-notice inline">
+								{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
+							</div>
+						)}
 						<div className="mdi">
 							<EditAttribute
 								modifiedClassName="bghl"

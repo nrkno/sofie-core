@@ -10,6 +10,7 @@ import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
 import {
 	BlueprintManifestType,
 	ConfigManifestEntry,
+	IShowStyleConfigPreset,
 	ISourceLayer,
 	SourceLayerType,
 } from '@sofie-automation/blueprints-integration'
@@ -46,6 +47,7 @@ interface ITrackedProps {
 	showStyleVariants: Array<ShowStyleVariant>
 	compatibleStudios: Array<Studio>
 	blueprintConfigManifest: ConfigManifestEntry[]
+	blueprintConfigPreset: IShowStyleConfigPreset | undefined
 	sourceLayers: Array<{ name: string; value: string; type: SourceLayerType }> | undefined
 	layerMappings: { [key: string]: MappingsExt }
 }
@@ -79,6 +81,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			: [],
 		compatibleStudios: compatibleStudios,
 		blueprintConfigManifest: blueprint ? blueprint.showStyleConfigManifest || [] : [],
+		blueprintConfigPreset:
+			blueprint && blueprint.showStyleConfigPresets && showStyleBase?.blueprintConfigPresetId
+				? blueprint.showStyleConfigPresets[showStyleBase.blueprintConfigPresetId]
+				: undefined,
 		sourceLayers: showStyleBase
 			? Object.values(applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj)
 					.filter((layer): layer is ISourceLayer => !!layer)
@@ -182,6 +188,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										<ShowStyleVariantsSettings
 											showStyleVariants={this.props.showStyleVariants}
 											blueprintConfigManifest={this.props.blueprintConfigManifest}
+											blueprintConfigPreset={this.props.blueprintConfigPreset}
 											showStyleBase={showStyleBase}
 											layerMappings={this.props.layerMappings}
 											sourceLayers={this.props.sourceLayers}

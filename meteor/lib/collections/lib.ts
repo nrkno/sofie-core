@@ -11,12 +11,13 @@ import {
 	stringifyError,
 	protectString,
 	waitForPromise,
+	waitForPromiseAll,
 } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import type { AnyBulkWriteOperation, Collection as RawCollection, Db as RawDb, CreateIndexesOptions } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { MongoFieldSpecifier, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifier, MongoFieldSpecifierOnes, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { CustomCollectionType } from '../api/pubsub'
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
@@ -24,31 +25,23 @@ const ObserveChangeBufferTimeout = 2000
 
 type Timeout = number
 
-export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString<any> }>(
+export function ObserveChangesHelper<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: AsyncMongoCollection<DBInterface>,
-	hashName: keyof DBInterface,
-	hashFields: (keyof DBInterface)[],
+	watchFields: (keyof DBInterface)[],
+	doUpdate: (doc: DBInterface) => Promise<void>,
+	changeDebounce: number,
 	skipEnsureUpdatedOnStart?: boolean
 ): void {
-	const doUpdate = (id: DBInterface['_id'], obj: any) => {
-		const newHash = getHash(stringifyObjects(_.pick(obj, ...(hashFields as string[]))))
-
-		if (newHash !== obj[hashName]) {
-			logger.debug('Updating hash:', id, `${String(hashName)}:${newHash}`)
-			const update: Partial<DBInterface> = {}
-			update[String(hashName)] = newHash
-			collection.update(id, { $set: update })
-		}
-	}
-
 	const observedChangesTimeouts = new Map<DBInterface['_id'], Timeout>()
 
-	collection.find().observeChanges({
-		changed: (id: DBInterface['_id'], changedFields) => {
-			// Ignore the hash field, to stop an infinite loop
-			delete changedFields[String(hashName)]
+	const projection: MongoFieldSpecifierOnes<DBInterface> = {}
+	for (const field of watchFields) {
+		projection[field] = 1
+	}
 
-			if (_.keys(changedFields).length > 0) {
+	collection.find({}, { projection }).observeChanges({
+		changed: (id: DBInterface['_id'], changedFields) => {
+			if (Object.keys(changedFields).length > 0) {
 				const data: Timeout | undefined = observedChangesTimeouts.get(id)
 				if (data !== undefined) {
 					// Already queued, so do nothing
@@ -63,9 +56,9 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
 							// Perform hash update
 							const obj = collection.findOne(id)
 							if (obj) {
-								doUpdate(id, obj)
+								waitForPromise(doUpdate(obj))
 							}
-						}, ObserveChangeBufferTimeout)
+						}, changeDebounce)
 					)
 				}
 			}
@@ -74,8 +67,28 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
 
 	if (!skipEnsureUpdatedOnStart) {
 		const existing = collection.find().fetch()
-		_.each(existing, (entry) => doUpdate(entry['_id'] as any, entry))
+		waitForPromiseAll(existing.map(async (doc) => doUpdate(doc)))
 	}
+}
+
+export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString<any> }>(
+	collection: AsyncMongoCollection<DBInterface>,
+	hashName: keyof DBInterface,
+	hashFields: (keyof DBInterface)[],
+	skipEnsureUpdatedOnStart?: boolean
+): void {
+	const doUpdate = async (obj: DBInterface): Promise<void> => {
+		const newHash = getHash(stringifyObjects(_.pick(obj, ...(hashFields as string[]))))
+
+		if (newHash !== obj[hashName]) {
+			logger.debug('Updating hash:', obj._id, `${String(hashName)}:${newHash}`)
+			const update: Partial<DBInterface> = {}
+			update[String(hashName)] = newHash
+			await collection.updateAsync(obj._id, { $set: update })
+		}
+	}
+
+	ObserveChangesHelper(collection, hashFields, doUpdate, ObserveChangeBufferTimeout, skipEnsureUpdatedOnStart)
 }
 
 /**

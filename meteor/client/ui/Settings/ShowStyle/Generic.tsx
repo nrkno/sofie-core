@@ -111,11 +111,16 @@ export const ShowStyleGenericProperties = withTranslation()(
 						</label>
 						<label className="field">
 							{t('Blueprint config preset')}
-							{!this.props.showStyleBase.blueprintId ? (
+							{!this.props.showStyleBase.blueprintConfigPresetId && (
 								<div className="error-notice inline">
 									{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 								</div>
-							) : null}
+							)}
+							{!this.props.showStyleBase.blueprintConfigPresetIdUnlinked && (
+								<div className="error-notice inline">
+									{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
+								</div>
+							)}
 							<div className="mdi">
 								<EditAttribute
 									modifiedClassName="bghl"

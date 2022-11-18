@@ -65,6 +65,7 @@ export interface DBStudio {
 	blueprintId?: BlueprintId
 	/** Id of the blueprint config preset */
 	blueprintConfigPresetId?: string
+	blueprintConfigPresetIdUnlinked?: boolean
 
 	/** Mappings between the physical devices / outputs and logical ones */
 	mappingsWithOverrides: ObjectWithOverrides<MappingsExt>

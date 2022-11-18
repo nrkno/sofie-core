@@ -1,8 +1,13 @@
 import React from 'react'
 import ClassNames from 'classnames'
-import { faPencilAlt, faTrash, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faPencilAlt, faTrash, faCheck, faPlus, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { ConfigManifestEntry, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintManifestType,
+	ConfigManifestEntry,
+	IShowStyleConfigPreset,
+	SourceLayerType,
+} from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { withTranslation } from 'react-i18next'
@@ -13,11 +18,13 @@ import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigManifestSettings } from '../ConfigManifestSettings'
+import { Blueprints } from '../../../../lib/collections/Blueprints'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
 	showStyleVariants: Array<ShowStyleVariant>
 	blueprintConfigManifest: ConfigManifestEntry[]
+	blueprintConfigPreset: IShowStyleConfigPreset | undefined // TODO - use this
 
 	layerMappings?: { [key: string]: MappingsExt }
 	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
@@ -83,6 +90,31 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			})
 		}
 
+		getBlueprintConfigPresetOptions() {
+			const options: { name: string; value: string | null }[] = []
+
+			if (this.props.showStyleBase.blueprintId && this.props.showStyleBase.blueprintConfigPresetId) {
+				const blueprint = Blueprints.findOne({
+					blueprintType: BlueprintManifestType.SHOWSTYLE,
+					_id: this.props.showStyleBase.blueprintId,
+				})
+
+				if (blueprint && blueprint.showStyleConfigPresets) {
+					const basePreset = blueprint.showStyleConfigPresets[this.props.showStyleBase.blueprintConfigPresetId]
+					if (basePreset) {
+						for (const [id, preset] of Object.entries(basePreset.variants)) {
+							options.push({
+								value: id,
+								name: preset.name,
+							})
+						}
+					}
+				}
+			}
+
+			return options
+		}
+
 		renderShowStyleVariants() {
 			const { t } = this.props
 
@@ -124,6 +156,33 @@ export const ShowStyleVariantsSettings = withTranslation()(
 											</label>
 										</div>
 									</div>
+									<label className="field">
+										{t('Blueprint config preset')}
+										{!showStyleVariant.blueprintConfigPresetId && (
+											<div className="error-notice inline">
+												{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+											</div>
+										)}
+										{!showStyleVariant.blueprintConfigPresetIdUnlinked && (
+											<div className="error-notice inline">
+												{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
+											</div>
+										)}
+										<div className="mdi">
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute="blueprintConfigPresetId"
+												obj={showStyleVariant}
+												type="dropdown"
+												options={this.getBlueprintConfigPresetOptions()}
+												mutateDisplayValue={(v) => v || ''}
+												mutateUpdateValue={(v) => (v === '' ? undefined : v)}
+												collection={ShowStyleVariants}
+												className="mdinput"
+											/>
+											<span className="mdfx"></span>
+										</div>
+									</label>
 									<div className="row">
 										<div className="col c12 r1-c12 phs">
 											<ConfigManifestSettings
