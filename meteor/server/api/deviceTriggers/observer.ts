@@ -478,11 +478,13 @@ export async function receiveTrigger(
 	const studioId = peripheralDevice.studioId
 	if (!studioId) throw new Meteor.Error(400, `Peripheral Device "${peripheralDevice._id}" not assigned to a studio`)
 
+	logger.debug(`${deviceId} ${triggerId}`)
+
 	DeviceTriggerMountedActions.find({
 		deviceId,
 		deviceTriggerId: triggerId,
-		values: values ?? undefined,
 	}).forEach((mountedAction) => {
+		if (values && !_.isMatch(values, mountedAction.values)) return
 		const executableAction = allDeviceActions.get(mountedAction.actionId)
 		if (!executableAction)
 			throw new Meteor.Error(
