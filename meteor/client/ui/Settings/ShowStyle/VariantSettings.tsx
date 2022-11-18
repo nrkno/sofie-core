@@ -127,7 +127,10 @@ export const ShowStyleVariantsSettings = withTranslation()(
 							})}
 						>
 							<th className="settings-studio-showStyleVariant__name c3">
-								{showStyleVariant.name || t('Unnamed variant')}
+								{showStyleVariant.name || t('Unnamed variant')}{' '}
+								{(!showStyleVariant.blueprintConfigPresetId || showStyleVariant.blueprintConfigPresetIdUnlinked) && (
+									<FontAwesomeIcon icon={faExclamationTriangle} />
+								)}
 							</th>
 							<td className="settings-studio-showStyleVariant__actions table-item-actions c3">
 								<button className="action-btn" onClick={() => this.editItem(showStyleVariant._id)}>
@@ -163,7 +166,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 												{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 											</div>
 										)}
-										{!showStyleVariant.blueprintConfigPresetIdUnlinked && (
+										{showStyleVariant.blueprintConfigPresetIdUnlinked && showStyleVariant.blueprintConfigPresetId && (
 											<div className="error-notice inline">
 												{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
 											</div>

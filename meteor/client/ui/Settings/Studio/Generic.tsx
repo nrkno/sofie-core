@@ -160,7 +160,7 @@ export const StudioGenericProperties = withTranslation()(
 								{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 							</div>
 						)}
-						{!this.props.studio.blueprintConfigPresetIdUnlinked && (
+						{this.props.studio.blueprintConfigPresetIdUnlinked && this.props.studio.blueprintConfigPresetId && (
 							<div className="error-notice inline">
 								{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
 							</div>

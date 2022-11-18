@@ -733,12 +733,11 @@ export class ConfigManifestSettings<
 		})
 	}
 
-	renderConfigValue(item: ConfigManifestEntry, rawValue: ConfigItemValue | undefined) {
+	renderConfigValue(item: ConfigManifestEntry, value: ConfigItemValue | undefined) {
 		const { t } = this.props
 
-		const value = rawValue === undefined ? item.defaultVal : rawValue
-
-		const rawValueArr = rawValue as any[]
+		const rawValueArr = value as any[]
+		const valueStr = value?.toString?.() ?? ''
 
 		switch (item.type) {
 			case ConfigManifestEntryType.BOOLEAN:
@@ -757,12 +756,12 @@ export class ConfigManifestSettings<
 						</ul>
 					</React.Fragment>
 				) : (
-					value.toString()
+					valueStr
 				)
 			case ConfigManifestEntryType.INT:
-				return _.isNumber(value) && item.zeroBased ? (value + 1).toString() : value.toString()
+				return typeof value === 'number' && item.zeroBased ? (value + 1).toString() : valueStr
 			default:
-				return value.toString()
+				return valueStr
 		}
 	}
 
