@@ -10,17 +10,22 @@ import {
 	TranslationsBundleType,
 } from '@sofie-automation/blueprints-integration'
 import { getHash, protectString, unprotectString } from '../../lib/lib'
-import { BlueprintId, TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	BlueprintId,
+	PeripheralDeviceId,
+	TranslationsBundleId,
+	TranslationsBundleOriginId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /**
  * Insert or update translation bundles in the database.
  *
  * @param bundles the bundles to insert or update
- * @param originBlueprintId id of the blueprint the translation bundles belongs to
+ * @param originId id of the blueprint the translation bundles belongs to
  */
 export async function upsertBundles(
 	bundles: BlueprintTranslationsbundle[],
-	originBlueprintId: BlueprintId
+	originId: TranslationsBundleOriginId
 ): Promise<void> {
 	for (const bundle of bundles) {
 		const { type, language, data } = bundle
@@ -31,15 +36,15 @@ export async function upsertBundles(
 
 		// doesn't matter if it's a new or existing bundle, the id will be the same with the same
 		// originating blueprint and language
-		const _id = createBundleId(originBlueprintId, language)
+		const _id = createBundleId(originId, language)
 
 		await TranslationsBundleCollection.upsertAsync(
 			_id,
 			{
 				_id,
-				originBlueprintId,
+				originId,
 				type,
-				namespace: unprotectString(originBlueprintId),
+				namespace: unprotectString(originId),
 				language,
 				data: fromI18NextData(data),
 				hash: getHash(JSON.stringify(data)),
@@ -91,4 +96,15 @@ function fromI18NextData(data: I18NextData): Translation[] {
 	}
 
 	return translations
+}
+
+export function generateTranslationBundleOriginId(
+	id: BlueprintId | PeripheralDeviceId,
+	bundleType: 'blueprints' | 'peripheralDevice'
+): TranslationsBundleOriginId {
+	if (bundleType === 'blueprints') {
+		return id
+	} else {
+		return protectString('peripheralDevice_' + id)
+	}
 }

@@ -54,7 +54,7 @@ import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
 import { SourceLayers } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
+import { PeripheralDevicesAPI, callPeripheralDeviceAction } from '../lib/clientAPI'
 import {
 	RONotificationEvent,
 	onRONotificationClick as rundownNotificationHandler,
@@ -105,7 +105,7 @@ import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'
 import { SorensenContext } from '../lib/SorensenContext'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { BreakSegment } from './SegmentTimeline/BreakSegment'
 import { PlaylistStartTiming } from './RundownView/RundownTiming/PlaylistStartTiming'
 import { RundownName } from './RundownView/RundownTiming/RundownName'
@@ -2675,7 +2675,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				title: t('Restart CasparCG Server'),
 				message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
 				onAccept: () => {
-					callPeripheralDeviceFunction(e, device._id, CASPARCG_RESTART_TIME, 'restartCasparCG')
+					callPeripheralDeviceAction(e, device._id, DEFAULT_TSR_ACTION_TIMEOUT_TIME, 'restartServer')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(

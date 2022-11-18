@@ -209,73 +209,6 @@ export const DeviceItem = reacti18next.withTranslation()(
 			}
 		}
 
-		onRestartQuantel(device: PeripheralDevice) {
-			const { t } = this.props
-
-			doModalDialog({
-				title: t('Restart Quantel Gateway'),
-				message: t('Do you want to restart Quantel Gateway?'),
-				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, undefined, 'restartQuantel')
-						.then(() => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.NOTIFICATION,
-									t('Quantel Gateway restarting...'),
-									'SystemStatus'
-								)
-							)
-						})
-						.catch((err) => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.WARNING,
-									t('Failed to restart Quantel Gateway: {{errorMessage}}', { errorMessage: err + '' }),
-									'SystemStatus'
-								)
-							)
-						})
-				},
-			})
-		}
-
-		onVizPurgeRundown(device: PeripheralDevice) {
-			const { t } = this.props
-
-			doModalDialog({
-				title: t('Purge Viz Rundown'),
-				message: t('Do you want to purge all elements from the viz-rundown?'),
-				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, undefined, 'vizPurgeRundown')
-						.then(() => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.NOTIFICATION,
-									t('Purged all elements from rundown on Viz-device "{{deviceName}}"!', { deviceName: device.name }),
-									'SystemStatus'
-								)
-							)
-						})
-						.catch((err) => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.WARNING,
-									t('Purging failed: {{errorMessage}}', {
-										deviceName: device.name,
-										errorMessage: err + '',
-									}),
-									'SystemStatus'
-								)
-							)
-						})
-				},
-			})
-		}
-
 		render() {
 			const { t } = this.props
 
@@ -345,38 +278,6 @@ export const DeviceItem = reacti18next.withTranslation()(
 										</button>
 									</React.Fragment>
 								))}
-							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
-							this.props.device.subType === TSR.DeviceType.QUANTEL ? (
-								<React.Fragment>
-									<button
-										className="btn btn-secondary"
-										onClick={(e) => {
-											e.preventDefault()
-											e.stopPropagation()
-											this.onRestartQuantel(this.props.device)
-										}}
-									>
-										{t('Restart Quantel Gateway')}
-									</button>
-								</React.Fragment>
-							) : null}
-							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
-							this.props.device.subType === TSR.DeviceType.VIZMSE ? (
-								<React.Fragment>
-									<button
-										className="btn btn-secondary"
-										onClick={(e) => {
-											e.preventDefault()
-											e.stopPropagation()
-											this.onVizPurgeRundown(this.props.device)
-										}}
-									>
-										{t('Purge Viz Rundown')}
-									</button>
-								</React.Fragment>
-							) : null}
 							{getAllowDeveloper() ? (
 								<button
 									key="button-ignore"

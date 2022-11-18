@@ -63,7 +63,7 @@ import {
 	NewPeripheralDeviceAPI,
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import { upsertBundles } from './translationsBundles'
+import { upsertBundles, generateTranslationBundleOriginId } from './translationsBundles'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -159,7 +159,10 @@ export namespace ServerPeripheralDeviceAPI {
 			})
 		}
 		if (options.configManifest?.translations) {
-			await upsertBundles(options.configManifest.translations, 'peripheralDevice_' + deviceId)
+			await upsertBundles(
+				options.configManifest.translations,
+				generateTranslationBundleOriginId(deviceId, 'peripheralDevice')
+			)
 		}
 		return deviceId
 	}
