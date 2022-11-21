@@ -8,7 +8,7 @@ import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/Sh
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
 import { BlueprintManifestType, ConfigManifestEntry, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from './BlueprintConfigManifestSettings'
+import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from './BlueprintConfigManifest'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
 import { SourceLayerSettings } from './ShowStyle/SourceLayer'

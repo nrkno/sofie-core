@@ -12,7 +12,7 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
-import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from '../BlueprintConfigManifestSettings'
+import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from '../BlueprintConfigManifest'
 import {
 	applyAndValidateOverrides,
 	SomeObjectOverrideOp,
