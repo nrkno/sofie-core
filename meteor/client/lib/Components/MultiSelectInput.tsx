@@ -46,7 +46,9 @@ export function MultiSelectInputControl({
 		<MultiSelect
 			availableOptions={optionsWithCurrentValue}
 			// placeholder?: string
-			className={ClassNames(classNames, currentOptionMissing && 'option-missing')}
+			className={ClassNames(classNames, {
+				'option-missing': currentOptionMissing,
+			})}
 			value={value}
 			onChange={handleChange}
 			disabled={disabled}

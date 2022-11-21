@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react'
+import ClassNames from 'classnames'
 
 interface ITextInputControlProps {
 	classNames?: string
@@ -43,7 +44,7 @@ export function TextInputControl({
 	const handleFocus = useCallback((event: React.FocusEvent<HTMLInputElement>) => {
 		setEditingValue(event.currentTarget.value)
 	}, [])
-	const handleEscape = useCallback(
+	const handleKeyUp = useCallback(
 		(event: React.KeyboardEvent<HTMLInputElement>) => {
 			if (event.key === 'Escape') {
 				setEditingValue(null)
@@ -57,13 +58,13 @@ export function TextInputControl({
 	return (
 		<input
 			type="text"
-			className={`form-control ${classNames || ''} ${editingValue !== null ? modifiedClassName || '' : ''}`}
+			className={ClassNames('form-control', classNames, editingValue !== null && modifiedClassName)}
 			placeholder={placeholder}
 			value={editingValue ?? value ?? ''}
 			onChange={handleChange}
 			onBlur={handleBlur}
 			onFocus={handleFocus}
-			onKeyUp={handleEscape}
+			onKeyUp={handleKeyUp}
 			disabled={disabled}
 		/>
 	)

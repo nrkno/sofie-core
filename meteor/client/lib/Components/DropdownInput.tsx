@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
+import ClassNames from 'classnames'
 
 export interface DropdownInputOption<TValue> {
 	value: TValue
@@ -125,7 +126,9 @@ export function DropdownInputControl<TValue>({
 	return (
 		<div className="select focusable">
 			<select
-				className={`form-control ${classNames || ''} ${currentOptionMissing ? 'option-missing' : ''}`}
+				className={ClassNames('form-control', classNames, {
+					'option-missing': currentOptionMissing,
+				})}
 				value={value + ''}
 				onChange={handleChange}
 				disabled={disabled}

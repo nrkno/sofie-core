@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react'
+import ClassNames from 'classnames'
 
 interface IFloatInputControlProps {
 	classNames?: string
@@ -50,7 +51,7 @@ export function FloatInputControl({
 	const handleFocus = useCallback((event: React.FocusEvent<HTMLInputElement>) => {
 		setEditingValue(parseFloat(event.currentTarget.value.replace(',', '.')))
 	}, [])
-	const handleEscape = useCallback(
+	const handleKeyUp = useCallback(
 		(event: React.KeyboardEvent<HTMLInputElement>) => {
 			if (event.key === 'Escape') {
 				setEditingValue(null)
@@ -74,13 +75,13 @@ export function FloatInputControl({
 		<input
 			type="number"
 			step="0.1"
-			className={`form-control ${classNames || ''} ${editingValue !== null ? modifiedClassName || '' : ''}`}
+			className={ClassNames('form-control', classNames, editingValue !== null && modifiedClassName)}
 			placeholder={placeholder}
 			value={showValue ?? ''}
 			onChange={handleChange}
 			onBlur={handleBlur}
 			onFocus={handleFocus}
-			onKeyUp={handleEscape}
+			onKeyUp={handleKeyUp}
 			disabled={disabled}
 		/>
 	)

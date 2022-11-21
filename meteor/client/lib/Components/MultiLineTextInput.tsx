@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react'
+import ClassNames from 'classnames'
 
 export function splitValueIntoLines(v: string | undefined): string[] {
 	if (v === undefined || v.length === 0) {
@@ -58,12 +59,13 @@ export function MultiLineTextInputControl({
 	const handleFocus = useCallback((event: React.FocusEvent<HTMLTextAreaElement>) => {
 		setEditingValue(event.currentTarget.value)
 	}, [])
-	const handleEscape = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+	const handleKeyUp = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (event.key === 'Escape') {
 			setEditingValue(null)
 		}
 	}, [])
-	const handleEnter = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+	const handleKeyPress = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		// Suppress the default behaviour of submitting on enter press
 		if (event.key === 'Enter') {
 			event.stopPropagation()
 		}
@@ -71,14 +73,14 @@ export function MultiLineTextInputControl({
 
 	return (
 		<textarea
-			className={`form-control ${classNames || ''} ${editingValue !== null ? modifiedClassName || '' : ''}`}
+			className={ClassNames('form-control', classNames, editingValue !== null && modifiedClassName)}
 			placeholder={placeholder}
 			value={editingValue ?? joinLines(value) ?? ''}
 			onChange={handleChange}
 			onBlur={handleBlur}
 			onFocus={handleFocus}
-			onKeyUp={handleEscape}
-			onKeyPress={handleEnter}
+			onKeyUp={handleKeyUp}
+			onKeyPress={handleKeyPress}
 			disabled={disabled}
 		/>
 	)

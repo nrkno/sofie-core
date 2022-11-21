@@ -1,4 +1,6 @@
 import React, { useCallback, useState } from 'react'
+import ClassNames from 'classnames'
+
 interface IIntInputControlProps {
 	classNames?: string
 	modifiedClassName?: string
@@ -49,7 +51,7 @@ export function IntInputControl({
 	const handleFocus = useCallback((event: React.FocusEvent<HTMLInputElement>) => {
 		setEditingValue(parseInt(event.currentTarget.value, 10))
 	}, [])
-	const handleEscape = useCallback(
+	const handleKeyUp = useCallback(
 		(event: React.KeyboardEvent<HTMLInputElement>) => {
 			if (event.key === 'Escape') {
 				setEditingValue(null)
@@ -73,13 +75,13 @@ export function IntInputControl({
 		<input
 			type="number"
 			step="1"
-			className={`form-control ${classNames || ''} ${editingValue !== null ? modifiedClassName || '' : ''}`}
+			className={ClassNames('form-control', classNames, editingValue !== null && modifiedClassName)}
 			placeholder={placeholder}
 			value={showValue ?? ''}
 			onChange={handleChange}
 			onBlur={handleBlur}
 			onFocus={handleFocus}
-			onKeyUp={handleEscape}
+			onKeyUp={handleKeyUp}
 			disabled={disabled}
 		/>
 	)

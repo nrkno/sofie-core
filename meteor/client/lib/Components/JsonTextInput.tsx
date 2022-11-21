@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react'
+import ClassNames from 'classnames'
 
 export function tryParseJson(str: string | undefined): { parsed: object } | undefined {
 	const str2 = str?.trim() ?? ''
@@ -74,12 +75,13 @@ export function JsonTextInputControl({
 	const handleFocus = useCallback((event: React.FocusEvent<HTMLTextAreaElement>) => {
 		setEditingValue(event.currentTarget.value)
 	}, [])
-	const handleEscape = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+	const handleKeyUp = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (event.key === 'Escape') {
 			setEditingValue(null)
 		}
 	}, [])
-	const handleEnter = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+	const handleKeyPress = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		// Suppress the default behaviour of submitting on enter press
 		if (event.key === 'Enter') {
 			event.stopPropagation()
 		}
@@ -87,16 +89,19 @@ export function JsonTextInputControl({
 
 	return (
 		<textarea
-			className={`form-control ${classNames || ''} ${editingValue !== null ? modifiedClassName || '' : ''} ${
-				valueInvalid && invalidClassName ? invalidClassName : ''
-			}`}
+			className={ClassNames(
+				'form-control',
+				classNames,
+				editingValue !== null && modifiedClassName,
+				valueInvalid && invalidClassName
+			)}
 			placeholder={placeholder}
 			value={editingValue ?? JSON.stringify(value, undefined, 2) ?? ''}
 			onChange={handleChange}
 			onBlur={handleBlur}
 			onFocus={handleFocus}
-			onKeyUp={handleEscape}
-			onKeyPress={handleEnter}
+			onKeyUp={handleKeyUp}
+			onKeyPress={handleKeyPress}
 			disabled={disabled}
 		/>
 	)
