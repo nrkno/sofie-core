@@ -28,7 +28,7 @@ import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
 import * as _ from 'underscore'
-import { CoreConnection } from '@sofie-automation/server-core-integration'
+import { CoreConnection, TableConfigManifestEntry } from '@sofie-automation/server-core-integration'
 import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
@@ -43,6 +43,8 @@ import {
 	StatusObject,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
+import { ConfigManifestEntry } from '@sofie-automation/shared-lib/dist/core/deviceConfigManifest'
 
 const debug = Debug('playout-gateway')
 
@@ -528,6 +530,7 @@ export class TSRHandler {
 			this._triggerUpdateDevicesCheckAgain = true
 		}
 	}
+
 	private async _updateDevices(): Promise<void> {
 		this.logger.debug('updateDevices start')
 
@@ -568,7 +571,7 @@ export class TSRHandler {
 						limitSlowFulfilledCommand: 100,
 						options: {},
 					},
-					orgDeviceOptions
+					this.populateDefaultValuesIfMissing(orgDeviceOptions)
 				)
 
 				if (this._multiThreaded !== null && deviceOptions.isMultiThreaded === undefined) {
@@ -687,6 +690,33 @@ export class TSRHandler {
 		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
 		this.logger.debug('updateDevices end')
 	}
+
+	private populateDefaultValuesIfMissing(deviceOptions: DeviceOptionsAny): DeviceOptionsAny {
+		const playoutGatewayDevicesConfig: ConfigManifestEntry | undefined = PLAYOUT_DEVICE_CONFIG.deviceConfig.find(
+			(deviceConfig) => deviceConfig.id === 'devices'
+		)
+		if (!deviceOptions.options || !playoutGatewayDevicesConfig) {
+			return deviceOptions
+		}
+		const deviceConfigs: ConfigManifestEntry[] = (playoutGatewayDevicesConfig as TableConfigManifestEntry).config[
+			deviceOptions.type
+		]
+		deviceConfigs.forEach((configManifestEntry: ConfigManifestEntry) => {
+			if (!configManifestEntry.defaultVal) {
+				return
+			}
+			const attribute = configManifestEntry.id.replace('options.', '')
+			const attributeValue = (deviceOptions.options as any)[attribute]
+			if (!attributeValue) {
+				deviceOptions.options = {
+					...deviceOptions.options,
+					[attribute]: configManifestEntry.defaultVal,
+				}
+			}
+		})
+		return deviceOptions
+	}
+
 	private getDeviceDebug(deviceOptions: DeviceOptionsAny): boolean {
 		return deviceOptions.debug || this._coreHandler.logDebug || false
 	}

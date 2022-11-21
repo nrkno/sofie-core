@@ -229,7 +229,11 @@ const EditAttributeText = wrapEditAttribute(
 			this.handleEdit(event.target.value)
 		}
 		handleBlur(event) {
-			this.handleUpdate(event.target.value)
+			let value: string = event.target.value
+			if (value) {
+				value = value.trim()
+			}
+			this.handleUpdate(value)
 		}
 		handleEscape(event) {
 			const e = event as KeyboardEvent
