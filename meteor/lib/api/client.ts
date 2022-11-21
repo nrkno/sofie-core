@@ -18,7 +18,7 @@ export interface NewClientAPI {
 		context: string,
 		deviceId: PeripheralDeviceId,
 		timeoutTime: number | undefined,
-		functionName: string,
+		actionId: string,
 		payload?: Record<string, any>
 	): Promise<any>
 }

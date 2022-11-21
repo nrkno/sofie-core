@@ -180,7 +180,7 @@ export class CoreHandler {
 
 			configManifest: {
 				...PLAYOUT_DEVICE_CONFIG,
-				actionManifest: manifest,
+				subdeviceManifest: manifest,
 				translations: Translations,
 			},
 		}

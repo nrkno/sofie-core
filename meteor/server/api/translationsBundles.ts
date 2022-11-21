@@ -63,7 +63,7 @@ export async function upsertBundles(
  * @param blueprintId the id of the blueprint the translations were bundled with
  * @param language the language the bundle contains translations for
  */
-function createBundleId(blueprintId: BlueprintId, language: string): TranslationsBundleId {
+function createBundleId(blueprintId: TranslationsBundleOriginId, language: string): TranslationsBundleId {
 	return protectString<TranslationsBundleId>(getHash(`TranslationsBundle${blueprintId}${language}`))
 }
 
@@ -103,7 +103,7 @@ export function generateTranslationBundleOriginId(
 	bundleType: 'blueprints' | 'peripheralDevice'
 ): TranslationsBundleOriginId {
 	if (bundleType === 'blueprints') {
-		return id
+		return protectString(unprotectString(id))
 	} else {
 		return protectString('peripheralDevice_' + id)
 	}

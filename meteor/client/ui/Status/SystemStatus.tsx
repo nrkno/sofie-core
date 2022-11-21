@@ -17,7 +17,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { callPeripheralDeviceAction, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
+import { callPeripheralDeviceAction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -29,6 +29,7 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RESTART_SALT } from '../../../lib/api/userActions'
 import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { SubdeviceAction } from '@sofie-automation/shared-lib/dist/core/deviceConfigManifest'
 import { StatusCodePill } from './StatusCodePill'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
@@ -101,10 +102,50 @@ export const DeviceItem = reacti18next.withTranslation()(
 				},
 			})
 		}
-		// @todo - don't use any
-		onExecuteAction(event: any, device: PeripheralDevice, action: any) {
+		onExecuteAction(event: any, device: PeripheralDevice, action: SubdeviceAction) {
 			const { t } = this.props
 			const namespaces = ['peripheralDevice_' + device._id]
+
+			const processResponse = (r: TSR.ActionExecutionResult) => {
+				if (r?.result === TSR.ActionExecutionResultCode.Error) {
+					throw new Error(
+						r.response && isTranslatableMessage(r.response)
+							? translateMessage({ ...r.response, namespaces }, i18nTranslator)
+							: t('Unknown error')
+					)
+				}
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.NOTIFICATION,
+						r?.response && isTranslatableMessage(r.response)
+							? t('Executed {{actionName}} on device "{{deviceName}}": {{response}}', {
+									actionName: action.name,
+									deviceName: device.name,
+									response: translateMessage({ ...r.response }, i18nTranslator),
+							  })
+							: t('Executed {{actionName}} on device "{{deviceName}}"...', {
+									actionName: action.name,
+									deviceName: device.name,
+							  }),
+						'SystemStatus'
+					)
+				)
+			}
+			const processError = (err: any) => {
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.WARNING,
+						t('Failed to execute {{actionName}} on device: "{{deviceName}}": {{errorMessage}}', {
+							actionName: action.name,
+							deviceName: device.name,
+							errorMessage: err,
+						}),
+						'SystemStatus'
+					)
+				)
+			}
 
 			if (action.destructive || action.payload) {
 				const payload = {}
@@ -118,94 +159,21 @@ export const DeviceItem = reacti18next.withTranslation()(
 						t('Do you want to execute {{actionName}}? This may the disrupt the output', { actionName: action.name })
 					),
 					onAccept: (event: any) => {
-						callPeripheralDeviceAction(event, device._id, action.timeout || DEFAULT_TSR_ACTION_TIMEOUT_TIME, action.id) // todo - add payload
-							.then((r: TSR.ActionExecutionResult) => {
-								if (r?.result === TSR.ActionExecutionResultCode.Error) {
-									throw new Error(
-										r.response ? translateMessage({ ...r.response, namespaces }, i18nTranslator) : t('Unknown error')
-									)
-								}
-								NotificationCenter.push(
-									new Notification(
-										undefined,
-										NoticeLevel.NOTIFICATION,
-										r?.response
-											? t('Executed {{actionName}} on device "{{deviceName}}": {{response}}', {
-													actionName: action.name,
-													deviceName: device.name,
-													response: translateMessage({ ...r.response }, i18nTranslator),
-											  })
-											: t('Executed {{actionName}} on device "{{deviceName}}"...', {
-													actionName: action.name,
-													deviceName: device.name,
-											  }),
-										'SystemStatus'
-									)
-								)
-							})
-							.catch((err) => {
-								NotificationCenter.push(
-									new Notification(
-										undefined,
-										NoticeLevel.WARNING,
-										t('Failed to execute {{actionName}} on device: "{{deviceName}}": {{errorMessage}}', {
-											actionName: action.name,
-											deviceName: device.name,
-											errorMessage: err,
-										}),
-										'SystemStatus'
-									)
-								)
-							})
+						callPeripheralDeviceAction(
+							event,
+							device._id,
+							action.timeout || DEFAULT_TSR_ACTION_TIMEOUT_TIME,
+							action.id,
+							payload
+						)
+							.then(processResponse)
+							.catch(processError)
 					},
 				})
 			} else {
-				callPeripheralDeviceAction(event, device._id, action.timeout || DEFAULT_TSR_ACTION_TIMEOUT_TIME, action.id) // todo - add payload
-					.then((r: any) => {
-						if (r.response && isTranslatableMessage(r.response)) {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									r.result === TSR.ActionExecutionResultCode.Ok ? NoticeLevel.NOTIFICATION : NoticeLevel.WARNING,
-									t('Executed {{actionName}} on device "{{deviceName}}": {{response}}', {
-										actionName: action.name,
-										deviceName: device.name,
-										response: translateMessage({ ...r.response, namespaces }, i18nTranslator),
-									}),
-									'SystemStatus'
-								)
-							)
-						} else {
-							if (r.result === TSR.ActionExecutionResultCode.Error) {
-								throw new Error(t('Unknown error'))
-							}
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.NOTIFICATION,
-									t('Execute {{actionName}} on device "{{deviceName}}"...', {
-										actionName: action.name,
-										deviceName: device.name,
-									}),
-									'SystemStatus'
-								)
-							)
-						}
-					})
-					.catch((err) => {
-						NotificationCenter.push(
-							new Notification(
-								undefined,
-								NoticeLevel.WARNING,
-								t('Failed to execute {{actionName}} on device: "{{deviceName}}": {{errorMessage}}', {
-									actionName: action.name,
-									deviceName: device.name,
-									errorMessage: err + '',
-								}),
-								'SystemStatus'
-							)
-						)
-					})
+				callPeripheralDeviceAction(event, device._id, action.timeout || DEFAULT_TSR_ACTION_TIMEOUT_TIME, action.id)
+					.then(processResponse)
+					.catch(processError)
 			}
 		}
 
@@ -262,9 +230,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 
 					<div className="actions-container">
 						<div className="device-item__actions">
-							{this.props.device.type === PeripheralDeviceType.PLAYOUT &&
-								this.props.device.configManifest.actionManifest?.[this.props.device.subType] &&
-								this.props.device.configManifest.actionManifest[this.props.device.subType].actions.map((action) => (
+							{this.props.device.configManifest.subdeviceManifest?.[this.props.device.subType] &&
+								this.props.device.configManifest.subdeviceManifest[this.props.device.subType].actions?.map((action) => (
 									<React.Fragment key={action.id}>
 										<button
 											className="btn btn-secondary"
