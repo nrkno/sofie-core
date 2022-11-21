@@ -113,7 +113,7 @@ jobs:
           CI: true
       - name: Get the Prerelease tag
         id: prerelease-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@750c706417ebb9a701022906a9725d21332508f7
+        uses: yuya-takeyama/docker-tag-from-github-ref-action@945441eb89abfba1686c6f4724fa1291aa92aca9
         with:
           remove-version-tag-prefix: false
       - name: Bump version

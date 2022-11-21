@@ -80,7 +80,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Get the Docker tag
         id: docker-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@750c706417ebb9a701022906a9725d21332508f7
+        uses: yuya-takeyama/docker-tag-from-github-ref-action@945441eb89abfba1686c6f4724fa1291aa92aca9
         with:
           remove-version-tag-prefix: false
       - name: Determine images to publish
@@ -177,7 +177,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Get the Docker tag
         id: docker-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@750c706417ebb9a701022906a9725d21332508f7
+        uses: yuya-takeyama/docker-tag-from-github-ref-action@945441eb89abfba1686c6f4724fa1291aa92aca9
         with:
           remove-version-tag-prefix: false
       - name: Determine images to publish
