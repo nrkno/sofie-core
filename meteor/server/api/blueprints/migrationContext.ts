@@ -33,7 +33,7 @@ import { ShowStyleVariants, ShowStyleVariant, DBShowStyleVariant } from '../../.
 import { check } from '../../../lib/check'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
-import { TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+import { getTriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { Match } from 'meteor/check'
 import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
@@ -54,10 +54,10 @@ function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj
 class AbstractMigrationContextWithTriggeredActions {
 	protected showStyleBaseId: ShowStyleBaseId | null = null
 	getTriggeredActionId(triggeredActionId: string): string {
-		return getHash((this.showStyleBaseId ?? 'core') + '_' + triggeredActionId)
+		return unprotectString(this.getProtectedTriggeredActionId(triggeredActionId))
 	}
 	private getProtectedTriggeredActionId(triggeredActionId: string): TriggeredActionId {
-		return protectString<TriggeredActionId>(this.getTriggeredActionId(triggeredActionId))
+		return getTriggeredActionId(this.showStyleBaseId, triggeredActionId)
 	}
 	getAllTriggeredActions(): IBlueprintTriggeredActions[] {
 		return TriggeredActions.find({

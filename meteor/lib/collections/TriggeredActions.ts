@@ -6,6 +6,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 
 import { PeripheralDeviceId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ObjectWithOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { getHash, protectString } from '../lib'
 
 export type DBBlueprintTrigger = SomeBlueprintTrigger & {
 	deviceId?: PeripheralDeviceId
@@ -55,6 +56,13 @@ export interface DBTriggeredActions {
 /** Note: Use DBTriggeredActions instead */
 export type TriggeredActionsObj = DBTriggeredActions
 export const TriggeredActions = createMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions)
+
+export function getTriggeredActionId(
+	showStyleBaseId: ShowStyleBaseId | null,
+	triggeredActionId: string
+): TriggeredActionId {
+	return protectString<TriggeredActionId>(getHash((showStyleBaseId ?? 'core') + '_' + triggeredActionId))
+}
 
 registerIndex(TriggeredActions, {
 	showStyleBaseId: 1,

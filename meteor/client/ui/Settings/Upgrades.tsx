@@ -115,6 +115,8 @@ function ShowUpgradesRow({ resourceName, upgradeResult, validateConfig, applyCon
 	const clickValidate = useCallback(() => {
 		validateConfig()
 			.then((res) => {
+				const nonInfoMessagesCount = res.messages.filter((msg) => msg.level !== NoteSeverity.INFO).length
+
 				doModalDialog({
 					title: t('Upgrade config for {{name}}', { name: upgradeResult.name }),
 					message: (
@@ -127,7 +129,7 @@ function ShowUpgradesRow({ resourceName, upgradeResult, validateConfig, applyCon
 							))}
 						</div>
 					),
-					yes: res.messages.length === 0 ? t('Apply') : t('Ignore and apply'),
+					yes: nonInfoMessagesCount === 0 ? t('Apply') : t('Ignore and apply'),
 					no: t('Cancel'),
 					onAccept: () => {
 						applyConfig()

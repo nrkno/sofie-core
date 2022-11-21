@@ -10,17 +10,22 @@ import {
 	ShowStyleBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
 import { BlueprintHash } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { BlueprintId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, ShowStyleBaseId, StudioId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	assertNever,
+	Complete,
 	getHash,
+	getRandomId,
 	getSofieHostUrl,
 	literal,
 	normalizeArray,
 	normalizeArrayToMap,
 	objectPathGet,
 } from '@sofie-automation/corelib/dist/lib'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	applyAndValidateOverrides,
+	wrapDefaultObject,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { BlueprintValidateConfigForStudioResult, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { Meteor } from 'meteor/meteor'
@@ -33,11 +38,13 @@ import {
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studio, Studios } from '../../lib/collections/Studios'
+import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { generateTranslation } from '../../lib/lib'
 import { evalBlueprint } from '../api/blueprints/cache'
 import { profiler } from '../api/profiler'
 import { logger } from '../logging'
 import { QueueStudioJob } from '../worker/worker'
+import type { AnyBulkWriteOperation } from 'mongodb'
 
 export async function getUpgradeStatus(): Promise<GetUpgradeStatusResult> {
 	const studioUpgrades = await checkStudiosUpgradeStatus()
@@ -418,7 +425,69 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 		},
 	})
 
-	// TODO - triggered actions
+	const oldTriggeredActionsArray = await TriggeredActions.findFetchAsync({
+		showStyleBaseId: showStyleBaseId,
+		blueprintUniqueId: { $ne: null },
+	})
+	const oldTriggeredActions = normalizeArrayToMap(oldTriggeredActionsArray, 'blueprintUniqueId')
+
+	const newDocIds: TriggeredActionId[] = []
+	const bulkOps: AnyBulkWriteOperation<DBTriggeredActions>[] = []
+
+	for (const newTriggeredAction of result.triggeredActions) {
+		const oldValue = oldTriggeredActions.get(newTriggeredAction._id)
+		if (oldValue) {
+			// Update an existing TriggeredAction
+			newDocIds.push(oldValue._id)
+			bulkOps.push({
+				updateOne: {
+					filter: {
+						_id: oldValue._id,
+					},
+					update: {
+						$set: {
+							_rank: newTriggeredAction._rank,
+							name: newTriggeredAction.name,
+							'triggersWithOverrides.defaults': newTriggeredAction.triggers,
+							'actionsWithOverrides.defaults': newTriggeredAction.actions,
+						},
+					},
+				},
+			})
+		} else {
+			// Insert a new TriggeredAction
+			const newDocId = getRandomId<TriggeredActionId>()
+			newDocIds.push(newDocId)
+			bulkOps.push({
+				insertOne: {
+					document: literal<Complete<DBTriggeredActions>>({
+						_id: newDocId,
+						_rank: newTriggeredAction._rank,
+						name: newTriggeredAction.name,
+						showStyleBaseId: showStyleBaseId,
+						blueprintUniqueId: newTriggeredAction._id,
+						triggersWithOverrides: wrapDefaultObject(newTriggeredAction.triggers),
+						actionsWithOverrides: wrapDefaultObject(newTriggeredAction.actions),
+						_rundownVersionHash: '',
+					}),
+				},
+			})
+		}
+	}
+
+	// Remove any removed TriggeredAction
+	// Future: should this orphan them or something? Will that cause issues if they get re-added?
+	bulkOps.push({
+		deleteMany: {
+			filter: {
+				showStyleBaseId: showStyleBaseId,
+				blueprintUniqueId: { $ne: null },
+				_id: { $nin: newDocIds },
+			},
+		},
+	})
+
+	await TriggeredActions.bulkWriteAsync(bulkOps)
 }
 
 /** TODO - below is copied from job-worker */
