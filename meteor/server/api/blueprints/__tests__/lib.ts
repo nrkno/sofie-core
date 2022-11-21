@@ -34,7 +34,7 @@ export function generateFakeBlueprint(
 		created: 0,
 		modified: 0,
 
-		blueprintId: protectString(''),
+		blueprintId: '',
 		blueprintType: type,
 		blueprintHash: getRandomId(),
 

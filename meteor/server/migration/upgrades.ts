@@ -351,7 +351,7 @@ export async function validateConfigForShowStyleBase(
 
 	const blueprintContext = new CommonContext(
 		'applyConfig',
-		`showStyleBase:${showStyleBaseId},blueprint:${blueprint.blueprintId}`
+		`showStyleBase:${showStyleBaseId},blueprint:${blueprint._id}`
 	)
 	const rawBlueprintConfig = applyAndValidateOverrides(showStyleBase.blueprintConfigWithOverrides).obj
 
@@ -360,7 +360,7 @@ export async function validateConfigForShowStyleBase(
 	return {
 		messages: messages.map((msg) => ({
 			level: msg.level,
-			message: wrapTranslatableMessageFromBlueprints(msg.message, [blueprint.blueprintId]),
+			message: wrapTranslatableMessageFromBlueprints(msg.message, [blueprint._id]),
 		})),
 	}
 }

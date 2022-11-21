@@ -47,7 +47,7 @@ describe('Test blueprint management api', () => {
 				created: 0,
 				modified: 0,
 
-				blueprintId: protectString(''),
+				blueprintId: '',
 				blueprintType: BlueprintManifestType.SYSTEM,
 				blueprintHash: getRandomId(),
 
@@ -299,7 +299,7 @@ describe('Test blueprint management api', () => {
 					name: 'tmp_showstyle',
 					organizationId: null,
 					blueprintType: BLUEPRINT_TYPE,
-					blueprintId: protectString('ss1'),
+					blueprintId: 'ss1',
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
@@ -340,7 +340,7 @@ describe('Test blueprint management api', () => {
 					_id: protectString('tmp_studio'),
 					name: 'tmp name',
 					organizationId: null,
-					blueprintId: protectString(''),
+					blueprintId: '',
 					blueprintType: BLUEPRINT_TYPE,
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
@@ -383,7 +383,7 @@ describe('Test blueprint management api', () => {
 					_id: protectString('tmp_system'),
 					name: 'tmp name',
 					organizationId: null,
-					blueprintId: protectString('sys'),
+					blueprintId: 'sys',
 					blueprintType: BLUEPRINT_TYPE,
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
@@ -424,7 +424,7 @@ describe('Test blueprint management api', () => {
 					_id: existingBlueprint._id,
 					name: existingBlueprint.name,
 					organizationId: null,
-					blueprintId: protectString(''),
+					blueprintId: '',
 					blueprintType: BLUEPRINT_TYPE,
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
@@ -457,7 +457,7 @@ describe('Test blueprint management api', () => {
 
 			const existingBlueprint = Blueprints.findOne({
 				blueprintType: BlueprintManifestType.SHOWSTYLE,
-				blueprintId: protectString('ss1'),
+				blueprintId: 'ss1',
 			}) as Blueprint
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()
@@ -469,7 +469,7 @@ describe('Test blueprint management api', () => {
 					_id: existingBlueprint._id,
 					name: existingBlueprint.name,
 					organizationId: null,
-					blueprintId: protectString('ss1'),
+					blueprintId: 'ss1',
 					blueprintType: BLUEPRINT_TYPE,
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
@@ -502,7 +502,7 @@ describe('Test blueprint management api', () => {
 
 			const existingBlueprint = Blueprints.findOne({
 				blueprintType: BlueprintManifestType.SHOWSTYLE,
-				blueprintId: protectString('ss1'),
+				blueprintId: 'ss1',
 			}) as Blueprint
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()
@@ -532,7 +532,7 @@ describe('Test blueprint management api', () => {
 
 			const existingBlueprint = Blueprints.findOne({
 				blueprintType: BlueprintManifestType.SHOWSTYLE,
-				blueprintId: protectString('ss1'),
+				blueprintId: 'ss1',
 			}) as Blueprint
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()

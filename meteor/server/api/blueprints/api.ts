@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import path from 'path'
 import { promises as fsp } from 'fs'
-import { getCurrentTime, protectString, unprotectString, getRandomId } from '../../../lib/lib'
+import { getCurrentTime, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
@@ -50,7 +50,7 @@ export async function insertBlueprint(
 		modified: getCurrentTime(),
 		created: getCurrentTime(),
 
-		blueprintId: protectString(''),
+		blueprintId: '',
 		blueprintType: type,
 
 		studioConfigManifest: [],
@@ -160,7 +160,7 @@ async function innerUploadBlueprint(
 					showStyle: {},
 					system: undefined,
 			  },
-		blueprintId: protectString(''),
+		blueprintId: '',
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
@@ -186,7 +186,7 @@ async function innerUploadBlueprint(
 		)
 	}
 
-	newBlueprint.blueprintId = protectString(blueprintManifest.blueprintId || '')
+	newBlueprint.blueprintId = blueprintManifest.blueprintId || ''
 	newBlueprint.blueprintType = blueprintManifest.blueprintType
 	newBlueprint.blueprintVersion = blueprintManifest.blueprintVersion
 	newBlueprint.integrationVersion = blueprintManifest.integrationVersion
