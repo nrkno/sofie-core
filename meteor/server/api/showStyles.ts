@@ -89,17 +89,27 @@ async function assertShowStyleBaseAccess(context: MethodContext | Credentials, s
 export async function createDefaultShowStyleVariant(
 	context: MethodContext | Credentials,
 	showStyleBaseId: ShowStyleBaseId,
-	rank?: number,
 	name?: string
 ): Promise<ShowStyleVariantId> {
 	await assertShowStyleBaseAccess(context, showStyleBaseId)
+
+	const highestRank = ShowStyleVariants.find(
+		{},
+		{
+			sort: {
+				_rank: -1,
+			},
+			limit: 1,
+		}
+	).fetch()[0]?._rank
+	const rank = highestRank !== undefined ? highestRank + 1 : 0
 
 	const showStyleVariant: ShowStyleVariant = {
 		_id: getRandomId(),
 		name: name || 'Variant',
 		blueprintConfig: {},
 		_rundownVersionHash: '',
-		_rank: rank ?? 500,
+		_rank: rank,
 		showStyleBaseId: showStyleBaseId,
 	}
 
@@ -115,7 +125,7 @@ export async function importShowStyleVariant(
 	return insertShowStyleVariant(showStyleVariant)
 }
 
-export async function copyShowStyleVariant(
+export async function importShowStyleVariantAsNew(
 	context: MethodContext | Credentials,
 	showStyleVariant: ShowStyleVariant
 ): Promise<ShowStyleVariantId> {
@@ -126,7 +136,7 @@ export async function copyShowStyleVariant(
 	return insertShowStyleVariant(showStyleVariant)
 }
 
-export async function insertShowStyleVariant(showStyleVariant: ShowStyleVariant): Promise<ShowStyleVariantId> {
+async function insertShowStyleVariant(showStyleVariant: ShowStyleVariant): Promise<ShowStyleVariantId> {
 	return ShowStyleVariants.insertAsync(showStyleVariant)
 }
 
@@ -164,10 +174,10 @@ export async function reorderAllShowStyleVariants(
 ): Promise<void> {
 	await assertShowStyleBaseAccess(context, showStyleBaseId)
 
-	await reorderAllShowStyleVariantsInner(orderedVariants)
+	await reassignShowStyleVariantIndexes(orderedVariants)
 }
 
-export async function reorderAllShowStyleVariantsInner(orderedVariants: ShowStyleVariant[]): Promise<void> {
+async function reassignShowStyleVariantIndexes(orderedVariants: ShowStyleVariant[]): Promise<void> {
 	orderedVariants.forEach((variant: ShowStyleVariant, index: number) => {
 		ShowStyleVariants.upsert(variant._id, {
 			$set: {
@@ -181,14 +191,14 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	async insertShowStyleBase() {
 		return insertShowStyleBase(this)
 	}
-	async createDefaultShowStyleVariant(showStyleBaseId: ShowStyleBaseId, rank: number) {
-		return createDefaultShowStyleVariant(this, showStyleBaseId, rank)
+	async createDefaultShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
+		return createDefaultShowStyleVariant(this, showStyleBaseId)
 	}
 	async importShowStyleVariant(showStyleVariant: ShowStyleVariant) {
 		return importShowStyleVariant(this, showStyleVariant)
 	}
-	async copyShowStyleVariant(showStyleVariant: ShowStyleVariant) {
-		return copyShowStyleVariant(this, showStyleVariant)
+	async importShowStyleVariantAsNew(showStyleVariant: ShowStyleVariant) {
+		return importShowStyleVariantAsNew(this, showStyleVariant)
 	}
 	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 		return removeShowStyleBase(this, showStyleBaseId)

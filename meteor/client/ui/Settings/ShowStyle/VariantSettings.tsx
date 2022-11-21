@@ -169,7 +169,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		private copyShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
 			showStyleVariant.name = `Copy of ${showStyleVariant.name}`
 			showStyleVariant._rank = this.state.dndVariants.length
-			MeteorCall.showstyles.copyShowStyleVariant(showStyleVariant).catch(logger.warn)
+			MeteorCall.showstyles.importShowStyleVariantAsNew(showStyleVariant).catch(logger.warn)
 		}
 
 		private downloadShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
@@ -221,9 +221,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		}
 
 		private onAddShowStyleVariant = (): void => {
-			MeteorCall.showstyles
-				.createDefaultShowStyleVariant(this.props.showStyleBase._id, this.props.showStyleVariants.length || 1)
-				.catch(logger.warn)
+			MeteorCall.showstyles.createDefaultShowStyleVariant(this.props.showStyleBase._id).catch(logger.warn)
 		}
 
 		private confirmRemove = (showStyleVariant: ShowStyleVariant): void => {
