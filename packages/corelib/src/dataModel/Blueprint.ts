@@ -23,7 +23,11 @@ export interface Blueprint {
 	/** Timestamp, when the blueprint was created */
 	created: number
 
-	blueprintId: BlueprintId
+	/**
+	 * Blueprint author defined unique id for this blueprint
+	 * This could be the same for multiple blueprints in the system
+	 */
+	blueprintId: string
 	blueprintType?: BlueprintManifestType
 
 	studioConfigManifest?: ConfigManifestEntry[]

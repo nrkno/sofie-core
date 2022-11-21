@@ -40,7 +40,7 @@ export interface GetUpgradeStatusResultStudio {
 
 	invalidReason?: ITranslatableMessage
 
-	pendingUpgrade: boolean
+	changes: ITranslatableMessage[]
 }
 export interface GetUpgradeStatusResultShowStyleBase {
 	showStyleBaseId: ShowStyleBaseId
@@ -48,7 +48,7 @@ export interface GetUpgradeStatusResultShowStyleBase {
 
 	invalidReason?: ITranslatableMessage
 
-	pendingUpgrade: boolean
+	changes: ITranslatableMessage[]
 }
 
 export interface GetUpgradeStatusResult {

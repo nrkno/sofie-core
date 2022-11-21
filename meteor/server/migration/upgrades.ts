@@ -1,9 +1,11 @@
 import {
 	BlueprintConfigCoreConfig,
 	BlueprintManifestType,
+	ConfigManifestEntry,
 	ICommonContext,
 	IShowStyleConfigPreset,
 	IStudioConfigPreset,
+	ITranslatableMessage,
 	NoteSeverity,
 	ShowStyleBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
@@ -16,6 +18,7 @@ import {
 	literal,
 	normalizeArray,
 	normalizeArrayToMap,
+	objectPathGet,
 } from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -72,6 +75,7 @@ async function checkStudiosUpgradeStatus(): Promise<GetUpgradeStatusResultStudio
 			projection: {
 				_id: 1,
 				studioConfigPresets: 1,
+				studioConfigManifest: 1,
 				blueprintHash: 1,
 			},
 		}
@@ -83,6 +87,7 @@ async function checkStudiosUpgradeStatus(): Promise<GetUpgradeStatusResultStudio
 			literal<BlueprintMapEntry>({
 				_id: doc._id,
 				configPresets: doc.studioConfigPresets,
+				configManifest: doc.studioConfigManifest,
 				blueprintHash: doc.blueprintHash,
 			})
 		),
@@ -125,6 +130,7 @@ async function checkShowStyleBaseUpgradeStatus(): Promise<GetUpgradeStatusResult
 			projection: {
 				_id: 1,
 				showStyleConfigPresets: 1,
+				showStyleConfigManifest: 1,
 				blueprintHash: 1,
 			},
 		}
@@ -136,6 +142,7 @@ async function checkShowStyleBaseUpgradeStatus(): Promise<GetUpgradeStatusResult
 			literal<BlueprintMapEntry>({
 				_id: doc._id,
 				configPresets: doc.showStyleConfigPresets,
+				configManifest: doc.showStyleConfigManifest,
 				blueprintHash: doc.blueprintHash,
 			})
 		),
@@ -160,19 +167,26 @@ type ShowStyleBaseForUpgradeCheck = Pick<
 	ShowStyleBase,
 	'_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'lastBlueprintConfig' | 'blueprintConfigWithOverrides' | 'name'
 >
-type StudioBlueprintForUpgradeCheck = Pick<Blueprint, '_id' | 'studioConfigPresets' | 'blueprintHash'>
-type ShowStyleBlueprintForUpgradeCheck = Pick<Blueprint, '_id' | 'showStyleConfigPresets' | 'blueprintHash'>
+type StudioBlueprintForUpgradeCheck = Pick<
+	Blueprint,
+	'_id' | 'studioConfigPresets' | 'studioConfigManifest' | 'blueprintHash'
+>
+type ShowStyleBlueprintForUpgradeCheck = Pick<
+	Blueprint,
+	'_id' | 'showStyleConfigPresets' | 'showStyleConfigManifest' | 'blueprintHash'
+>
 
 interface BlueprintMapEntry {
 	_id: BlueprintId
 	configPresets: Record<string, IStudioConfigPreset> | Record<string, IShowStyleConfigPreset> | undefined
+	configManifest: ConfigManifestEntry[] | undefined
 	blueprintHash: BlueprintHash | undefined
 }
 
 function checkDocUpgradeStatus(
 	blueprintMap: Map<BlueprintId, BlueprintMapEntry>,
 	doc: StudioForUpgradeCheck | ShowStyleBaseForUpgradeCheck
-): Pick<GetUpgradeStatusResultStudio, 'pendingUpgrade' | 'invalidReason'> {
+): Pick<GetUpgradeStatusResultStudio, 'invalidReason' | 'changes'> {
 	// Check the blueprintId is valid
 	const blueprint = doc.blueprintId ? blueprintMap.get(doc.blueprintId) : null
 	if (!blueprint || !blueprint.configPresets) {
@@ -181,7 +195,7 @@ function checkDocUpgradeStatus(
 			invalidReason: generateTranslation('Invalid blueprint: "{{blueprintId}}"', {
 				blueprintId: doc.blueprintId,
 			}),
-			pendingUpgrade: false,
+			changes: [],
 		}
 	}
 
@@ -196,26 +210,70 @@ function checkDocUpgradeStatus(
 					blueprintId: doc.blueprintId,
 				}
 			),
-			pendingUpgrade: false,
+			changes: [],
 		}
 	}
 
-	// Some basic property checks
-	let hasPendingUpdate =
-		!doc.lastBlueprintConfig ||
-		doc.lastBlueprintConfig.blueprintId !== doc.blueprintId ||
-		doc.lastBlueprintConfig.blueprintConfigPresetId !== doc.blueprintConfigPresetId ||
-		doc.lastBlueprintConfig.blueprintHash !== blueprint.blueprintHash
+	const changes: ITranslatableMessage[] = []
 
-	if (!hasPendingUpdate && doc.lastBlueprintConfig) {
+	// Some basic property checks
+	if (!doc.lastBlueprintConfig) {
+		changes.push(generateTranslation('Config has not been applied before'))
+	} else if (doc.lastBlueprintConfig.blueprintId !== doc.blueprintId) {
+		changes.push(
+			generateTranslation('Blueprint has been changed. From "{{ oldValue }}", to "{{ newValue }}"', {
+				oldValue: doc.lastBlueprintConfig.blueprintId,
+				newValue: doc.blueprintId,
+			})
+		)
+	} else if (doc.lastBlueprintConfig.blueprintConfigPresetId !== doc.blueprintConfigPresetId) {
+		changes.push(
+			generateTranslation(
+				'Blueprint config preset has been changed. From "{{ oldValue }}", to "{{ newValue }}"',
+				{
+					oldValue: doc.lastBlueprintConfig.blueprintConfigPresetId,
+					newValue: doc.blueprintConfigPresetId,
+				}
+			)
+		)
+	} else if (doc.lastBlueprintConfig.blueprintHash !== blueprint.blueprintHash) {
+		changes.push(generateTranslation('Blueprint has a new version'))
+	}
+
+	if (doc.lastBlueprintConfig) {
 		// Check if the config blob has changed since last run
 		const newConfig = applyAndValidateOverrides(doc.blueprintConfigWithOverrides).obj
 		const oldConfig = doc.lastBlueprintConfig.config
-		hasPendingUpdate = !_.isEqual(newConfig, oldConfig)
+
+		// Do a simple check, in case we miss the change when comparing the manifest properties
+		if (!_.isEqual(newConfig, oldConfig)) {
+			changes.push(generateTranslation('Blueprint config has changed'))
+
+			// also do a deeper diff
+			if (blueprint.configManifest) {
+				for (const entry of blueprint.configManifest) {
+					const oldValue = objectPathGet(oldConfig, entry.id)
+					const newValue = objectPathGet(newConfig, entry.id)
+
+					if (!_.isEqual(newValue, oldValue)) {
+						changes.push(
+							generateTranslation(
+								'Config value "{{ name }}" has changed. From "{{ oldValue }}", to "{{ newValue }}"',
+								{
+									name: entry.name,
+									oldValue,
+									newValue,
+								}
+							)
+						)
+					}
+				}
+			}
+		}
 	}
 
 	return {
-		pendingUpgrade: hasPendingUpdate,
+		changes,
 	}
 }
 
@@ -308,6 +366,8 @@ export async function validateConfigForShowStyleBase(
 }
 
 export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void> {
+	logger.info(`Running upgrade for ShowStyleBase "${showStyleBaseId}"`)
+
 	const showStyleBase = (await ShowStyleBases.findOneAsync(showStyleBaseId, {
 		projection: {
 			_id: 1,
@@ -351,7 +411,7 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 			'outputLayersWithOverrides.defaults': normalizeArray(result.outputLayers, '_id'),
 			lastBlueprintConfig: {
 				blueprintHash: blueprint.blueprintHash,
-				blueprintId: blueprint.blueprintId,
+				blueprintId: blueprint._id,
 				blueprintConfigPresetId: showStyleBase.blueprintConfigPresetId,
 				config: rawBlueprintConfig,
 			},
