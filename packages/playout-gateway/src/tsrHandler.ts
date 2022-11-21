@@ -165,6 +165,8 @@ export class TSRHandler {
 	private _triggerUpdateDevicesCheckAgain = false
 	private _triggerUpdateDevicesTimeout: NodeJS.Timeout | undefined
 
+	private defaultDeviceOptions: { [deviceType: string]: Record<string, any> } = {}
+
 	constructor(logger: Logger) {
 		this.logger = logger
 	}
@@ -189,6 +191,9 @@ export class TSRHandler {
 			useCacheWhenResolving: settings.useCacheWhenResolving === true,
 			proActiveResolve: true,
 		}
+
+		this.defaultDeviceOptions = this.loadSubdeviceConfigurations()
+
 		this.tsr = new Conductor(c)
 		this._triggerupdateTimelineAndMappings('TSRHandler.init()')
 
@@ -292,6 +297,28 @@ export class TSRHandler {
 		this._triggerUpdateDevices()
 		this.logger.debug('tsr init done')
 	}
+
+	private loadSubdeviceConfigurations(): { [deviceType: string]: Record<string, any> } {
+		const playoutGatewayDevicesConfig: ConfigManifestEntry | undefined = PLAYOUT_DEVICE_CONFIG.deviceConfig.find(
+			(deviceConfig: ConfigManifestEntry) => deviceConfig.id === 'devices'
+		)
+		if (!playoutGatewayDevicesConfig) {
+			return {}
+		}
+		const tableConfig: TableConfigManifestEntry = playoutGatewayDevicesConfig as TableConfigManifestEntry
+		const defaultDeviceOptions: { [deviceType: string]: Record<string, any> } = {}
+		for (const deviceType in tableConfig.config) {
+			const configEntries = tableConfig.config[deviceType]
+				.filter((configManifestEntry: ConfigManifestEntry) => configManifestEntry.defaultVal)
+				.map((configManifestEntry: ConfigManifestEntry) => [
+					configManifestEntry.id.replace('options.', ''),
+					configManifestEntry.defaultVal,
+				])
+			defaultDeviceOptions[deviceType] = Object.fromEntries(configEntries)
+		}
+		return defaultDeviceOptions
+	}
+
 	private setupObservers(): void {
 		if (this._observers.length) {
 			this.logger.debug('Clearing observers..')
@@ -692,28 +719,10 @@ export class TSRHandler {
 	}
 
 	private populateDefaultValuesIfMissing(deviceOptions: DeviceOptionsAny): DeviceOptionsAny {
-		const playoutGatewayDevicesConfig: ConfigManifestEntry | undefined = PLAYOUT_DEVICE_CONFIG.deviceConfig.find(
-			(deviceConfig) => deviceConfig.id === 'devices'
+		const options = Object.fromEntries(
+			Object.entries({ ...deviceOptions.options }).filter(([_key, value]) => value !== '')
 		)
-		if (!deviceOptions.options || !playoutGatewayDevicesConfig) {
-			return deviceOptions
-		}
-		const deviceConfigs: ConfigManifestEntry[] = (playoutGatewayDevicesConfig as TableConfigManifestEntry).config[
-			deviceOptions.type
-		]
-		deviceConfigs.forEach((configManifestEntry: ConfigManifestEntry) => {
-			if (!configManifestEntry.defaultVal) {
-				return
-			}
-			const attribute = configManifestEntry.id.replace('options.', '')
-			const attributeValue = (deviceOptions.options as any)[attribute]
-			if (!attributeValue) {
-				deviceOptions.options = {
-					...deviceOptions.options,
-					[attribute]: configManifestEntry.defaultVal,
-				}
-			}
-		})
+		deviceOptions.options = { ...this.defaultDeviceOptions[deviceOptions.type], ...options }
 		return deviceOptions
 	}
 
