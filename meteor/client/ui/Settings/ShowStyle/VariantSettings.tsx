@@ -315,6 +315,11 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				collect: (monitor: DragSourceMonitor) => ({
 					isDragging: monitor.isDragging(),
 				}),
+				end: (_item, monitor) => {
+					if (!monitor.didDrop()) {
+						this.persistStateVariants()
+					}
+				},
 			})
 
 			const opacity = isDragging ? 0.4 : 1
