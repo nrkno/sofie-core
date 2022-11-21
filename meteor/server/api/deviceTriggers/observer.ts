@@ -3,7 +3,6 @@ import {
 	RundownId,
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
-	SegmentId,
 	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -244,13 +243,13 @@ function setupRundownsInPlaylistObserver({
 	const refreshSegmentObserver = _.debounce(
 		Meteor.bindEnvironment(function refreshSegmentObserver() {
 			contentObserver?.stop()
-			contentObserver = setupSegmentsInRundownsObserver({
-				currentRundownId,
+			contentObserver = setupRundownContentObserver({
 				rundownIds: Array.from(rundownIds),
+				studioId,
+				showStyleBaseId,
 				rundownPlaylistId: activePlaylistId,
 				activationId,
-				showStyleBaseId,
-				studioId,
+				currentRundownId,
 			})
 		}),
 		REACTIVITY_DEBOUNCE
@@ -288,78 +287,9 @@ function setupRundownsInPlaylistObserver({
 	}
 }
 
-function setupSegmentsInRundownsObserver({
-	studioId,
-	rundownIds,
-	rundownPlaylistId,
-	activationId,
-	showStyleBaseId,
-	currentRundownId,
-}: {
-	studioId: StudioId
-	rundownIds: RundownId[]
-	rundownPlaylistId: RundownPlaylistId
-	activationId: RundownPlaylistActivationId | undefined
-	showStyleBaseId: ShowStyleBaseId
-	currentRundownId: RundownId
-}): Meteor.LiveQueryHandle {
-	const segmentIds: Set<SegmentId> = new Set<SegmentId>()
-
-	let contentObserver: Meteor.LiveQueryHandle | undefined
-	const refreshContentObserver = _.debounce(
-		Meteor.bindEnvironment(function refreshContentObserver() {
-			contentObserver?.stop()
-			contentObserver = setupRundownContentObserver({
-				segmentIds: Array.from(segmentIds),
-				rundownIds,
-				studioId,
-				showStyleBaseId,
-				rundownPlaylistId,
-				activationId,
-				currentRundownId,
-			})
-		}),
-		REACTIVITY_DEBOUNCE
-	)
-
-	const segmentsObserver = Segments.find(
-		{
-			rundownId: {
-				$in: rundownIds,
-			},
-		},
-		{
-			projection: {
-				_id: 1,
-			},
-		}
-	).observe({
-		added: (doc) => {
-			segmentIds.add(doc._id)
-			refreshContentObserver()
-		},
-		changed: (doc) => {
-			segmentIds.add(doc._id)
-			refreshContentObserver()
-		},
-		removed: (doc) => {
-			segmentIds.delete(doc._id)
-			refreshContentObserver()
-		},
-	})
-
-	return {
-		stop: () => {
-			contentObserver?.stop()
-			segmentsObserver.stop()
-		},
-	}
-}
-
 function setupRundownContentObserver({
 	studioId,
 	rundownIds,
-	segmentIds,
 	showStyleBaseId,
 	rundownPlaylistId,
 	activationId,
@@ -367,7 +297,6 @@ function setupRundownContentObserver({
 }: {
 	studioId: StudioId
 	rundownIds: RundownId[]
-	segmentIds: SegmentId[]
 	showStyleBaseId: ShowStyleBaseId
 	rundownPlaylistId: RundownPlaylistId
 	activationId: RundownPlaylistActivationId | undefined
@@ -388,8 +317,8 @@ function setupRundownContentObserver({
 			},
 		}).observe(cache.Segments.link()),
 		Parts.find({
-			segmentId: {
-				$in: segmentIds,
+			rundownId: {
+				$in: rundownIds,
 			},
 		}).observe(cache.Parts.link()),
 		PartInstances.find(
