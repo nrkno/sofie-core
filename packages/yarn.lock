@@ -3095,7 +3095,7 @@
   version "1.48.0-in-development"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "7.6.0-nightly-feat-action-manifest-20221108-131233-e5eca1cbd.0"
+    timeline-state-resolver-types "7.6.0-nightly-feat-action-manifest-20221122-105915-86e203771.0"
     tslib "^2.4.0"
     type-fest "^3.1.0"
 
@@ -13714,22 +13714,6 @@ superfly-timeline@^8.3.1:
     tslib "^2.4.0"
     underscore "^1.13.6"
 
-superfly-timeline@^8.3.1:
-  version "8.3.1"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.3.1.tgz#c0be6b627718845255968ba5e936d901a0924a80"
-  integrity sha512-7WCwGocqahsJQcrW1SX4HRKP4ecmzxhdhB70EuqA+Sjbj06SP02IyniT/G5Y4UOLQPliJKEJezW8Uq8aBpxBFA==
-  dependencies:
-    tslib "^2.4.0"
-    underscore "^1.13.6"
-
-superfly-timeline@^8.3.1:
-  version "8.3.1"
-  resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.3.1.tgz#c0be6b627718845255968ba5e936d901a0924a80"
-  integrity sha512-7WCwGocqahsJQcrW1SX4HRKP4ecmzxhdhB70EuqA+Sjbj06SP02IyniT/G5Y4UOLQPliJKEJezW8Uq8aBpxBFA==
-  dependencies:
-    tslib "^2.4.0"
-    underscore "^1.13.6"
-
 supports-color@^5.3.0, supports-color@^5.5.0:
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/supports-color/-/supports-color-5.5.0.tgz#e2e69a44ac8772f78a1ec0b35b689df6530efc8f"
@@ -13983,24 +13967,17 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.6.0-nightly-feat-action-manifest-20221108-131233-e5eca1cbd.0:
-  version "7.6.0-nightly-feat-action-manifest-20221108-131233-e5eca1cbd.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.6.0-nightly-feat-action-manifest-20221108-131233-e5eca1cbd.0.tgz#f67fb7af55ce21cd95c06ccb51e4ef31f6c595d5"
-  integrity sha512-YCkjAjPdB8eoz7Aol0Nr7Q01W66mIIOpR8VFv+Ae4XWaEMDYKMZm86W+xs6T5PnNtInPMTVD+6xBIKqxlJLFWg==
+timeline-state-resolver-types@7.6.0-nightly-feat-action-manifest-20221122-105915-86e203771.0:
+  version "7.6.0-nightly-feat-action-manifest-20221122-105915-86e203771.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.6.0-nightly-feat-action-manifest-20221122-105915-86e203771.0.tgz#943ac1bea7c82e06c90a2a530f6344a53897466c"
+  integrity sha512-vhyBkplh1nayrMatxj8/mx+odrv+yh/6A6wRZtFaLxkhcliOL7U+4o1Nsnf37WN2LUbaHCvmp22082+7iN3qiQ==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver-types@7.6.0-nightly-feat-action-manifest-20221116-081440-4a671ba36.0:
-  version "7.6.0-nightly-feat-action-manifest-20221116-081440-4a671ba36.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.6.0-nightly-feat-action-manifest-20221116-081440-4a671ba36.0.tgz#a31272989328dbf76dc87d61f4b2f0a5ba8e712d"
-  integrity sha512-KK36d2N24ef6/ZLx6K2IFo/krPsrb0fnsIsweCEUVRjniZws9MvpQvP04XGDDaOySfXKGmJ9622rP2gx1TPoCg==
-  dependencies:
-    tslib "^2.3.1"
-
-timeline-state-resolver@7.6.0-nightly-feat-action-manifest-20221116-081440-4a671ba36.0:
-  version "7.6.0-nightly-feat-action-manifest-20221116-081440-4a671ba36.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.6.0-nightly-feat-action-manifest-20221116-081440-4a671ba36.0.tgz#2ee0a6ebd189315dd277feb2fec6c2d8ce29837b"
-  integrity sha512-d88pBEY9205C+O6buDZSkZN3+ZkaUv758/AB1605HOrrW7ebB1iP/B4PhXBsv13cMi3FNYnhLhIRwgdapda/yA==
+timeline-state-resolver@7.6.0-nightly-feat-action-manifest-20221122-105915-86e203771.0:
+  version "7.6.0-nightly-feat-action-manifest-20221122-105915-86e203771.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.6.0-nightly-feat-action-manifest-20221122-105915-86e203771.0.tgz#d09c25baeaa245efa4d7a7899e94e98f2d8368b4"
+  integrity sha512-FEBwCUs0SJSU1uFaXKwJl9lbrnglodjjsqYIk+5FGtxBDqTL2iSTp9usvKU8IWRWYrrGSbqbaMbID1Q1HXanhg==
   dependencies:
     "@tv2media/v-connection" "^6.0.3"
     atem-connection "2.4.0"
@@ -14022,7 +13999,7 @@ timeline-state-resolver@7.6.0-nightly-feat-action-manifest-20221116-081440-4a671
     sprintf-js "^1.1.2"
     superfly-timeline "^8.3.1"
     threadedclass "^1.1.1"
-    timeline-state-resolver-types "7.6.0-nightly-feat-action-manifest-20221116-081440-4a671ba36.0"
+    timeline-state-resolver-types "7.6.0-nightly-feat-action-manifest-20221122-105915-86e203771.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.5"
     underscore "^1.13.4"

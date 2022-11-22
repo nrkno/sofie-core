@@ -136,7 +136,7 @@ export function nightlyCronjobInner(): void {
 							subDevice._id,
 							DEFAULT_TSR_ACTION_TIMEOUT_TIME,
 							{
-								actionId: 'restartServer',
+								actionId: TSR.CasparCGActions.RestartServer,
 							}
 						)
 							.then(() => {
