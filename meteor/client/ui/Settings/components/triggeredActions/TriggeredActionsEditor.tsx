@@ -321,7 +321,6 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 						omit(
 							{ ...triggeredAction, triggers: [], _rank: (triggeredAction._rank + nextTriggeredActionRank) / 2 },
 							'_id',
-							'_rundownVersionHash',
 							'showStyleBaseId'
 						)
 					)

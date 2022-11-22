@@ -26,7 +26,6 @@ export async function createTriggeredActions(
 			name: base?.name,
 			showStyleBaseId,
 			blueprintUniqueId: null,
-			_rundownVersionHash: '',
 			actionsWithOverrides: base?.actionsWithOverrides ?? wrapDefaultObject({}),
 			triggersWithOverrides: base?.triggersWithOverrides ?? wrapDefaultObject({}),
 		})
@@ -89,7 +88,6 @@ PickerPOST.route(
 				check(triggeredActions[i].triggersWithOverrides, Object)
 				check(triggeredActions[i].actionsWithOverrides, Object)
 				triggeredActions[i].showStyleBaseId = showStyleBaseId ?? null
-				triggeredActions[i]._rundownVersionHash = ''
 			}
 
 			if (replace) {

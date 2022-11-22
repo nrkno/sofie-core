@@ -111,7 +111,6 @@ class AbstractMigrationContextWithTriggeredActions {
 		if (!currentTriggeredAction) {
 			TriggeredActions.insert({
 				...newObj,
-				_rundownVersionHash: '',
 				showStyleBaseId: this.showStyleBaseId,
 				_id: this.getProtectedTriggeredActionId(triggeredActions._id),
 			})
