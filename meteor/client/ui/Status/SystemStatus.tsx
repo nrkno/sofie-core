@@ -110,7 +110,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 				if (r?.result === TSR.ActionExecutionResultCode.Error) {
 					throw new Error(
 						r.response && isTranslatableMessage(r.response)
-							? translateMessage({ ...r.response, namespaces }, i18nTranslator)
+							? translateMessage(r.response, i18nTranslator)
 							: t('Unknown error')
 					)
 				}
@@ -122,7 +122,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 							? t('Executed {{actionName}} on device "{{deviceName}}": {{response}}', {
 									actionName: action.name,
 									deviceName: device.name,
-									response: translateMessage({ ...r.response }, i18nTranslator),
+									response: translateMessage(r.response, i18nTranslator),
 							  })
 							: t('Executed {{actionName}} on device "{{deviceName}}"...', {
 									actionName: action.name,

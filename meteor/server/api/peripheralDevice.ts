@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, stringifyObjects, literal } from '../../lib/lib'
+import { getCurrentTime, protectString, stringifyObjects, literal, unprotectString } from '../../lib/lib'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
@@ -64,6 +64,7 @@ import {
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 import { upsertBundles, generateTranslationBundleOriginId } from './translationsBundles'
+import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -682,6 +683,13 @@ async function functionReply(
 	result: any
 ): Promise<void> {
 	const device = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+
+	if ('response' in result && isTranslatableMessage(result.response)) {
+		result.response.namespaces = [
+			unprotectString(generateTranslationBundleOriginId(deviceId, 'peripheralDevice')),
+			...(result.response.namespaces || []),
+		]
+	}
 
 	// logger.debug('functionReply', err, result)
 	await PeripheralDeviceCommands.updateAsync(
