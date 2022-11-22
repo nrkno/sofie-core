@@ -1,4 +1,6 @@
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import React from 'react'
+import { i18nTranslator } from '../../ui/i18n'
 import { EditAttribute } from '../EditAttribute'
 import { type JSONSchema, TypeName } from './schema-types'
 
@@ -6,40 +8,55 @@ export interface SchemaFormProps {
 	schema: JSONSchema
 	object: any
 	attr: string
+	translationNamespaces?: string[]
 }
 export const SchemaForm = (props: SchemaFormProps) => {
 	switch (props.schema.type) {
 		case TypeName.Object:
 			return <ObjectForm {...props} />
 		case TypeName.Integer:
-			return <WrappedAttribute schema={props.schema} component={<IntegerForm {...props} />} />
+			return <WrappedAttribute {...props} component={<IntegerForm {...props} />} />
 		case TypeName.Number:
-			return <WrappedAttribute schema={props.schema} component={<NumberForm {...props} />} />
+			return <WrappedAttribute {...props} component={<NumberForm {...props} />} />
 		case TypeName.Boolean:
-			return <WrappedAttribute schema={props.schema} component={<BooleanForm {...props} />} />
+			return <WrappedAttribute {...props} component={<BooleanForm {...props} />} />
 		case TypeName.String:
-			return <WrappedAttribute schema={props.schema} component={<BooleanForm {...props} />} />
+			return <WrappedAttribute {...props} component={<StringForm {...props} />} />
 		default:
 			return <></>
 	}
 }
 
-export const ObjectForm = ({ schema, object }: { schema: JSONSchema; object: any }) => {
+export const ObjectForm = (props: SchemaFormProps) => {
 	return (
 		<>
 			{' '}
-			{Object.entries(schema.properties || {}).map(([index, schema]) => {
-				return <SchemaForm key={index} attr={index} schema={schema} object={object} />
+			{Object.entries(props.schema.properties || {}).map(([index, schema]) => {
+				return <SchemaForm key={index} {...props} attr={index} schema={schema} />
 			})}
 		</>
 	)
 }
 
-export const WrappedAttribute = ({ schema, component }: { schema: JSONSchema; component: any }) => {
+export const WrappedAttribute = ({
+	schema,
+	component,
+	translationNamespaces,
+	attr,
+}: SchemaFormProps & { component: any }) => {
 	return (
 		<div className={'mod mvs mhs'}>
-			{schema.title || 'title'}
+			{translationNamespaces
+				? translateMessage({ key: schema.title || attr, namespaces: translationNamespaces }, i18nTranslator)
+				: schema.title || attr}
 			<label className="field">{component}</label>
+			{schema.description && (
+				<span className="text-s dimmed">
+					{translationNamespaces
+						? translateMessage({ key: schema.description, namespaces: translationNamespaces }, i18nTranslator)
+						: schema.description}
+				</span>
+			)}
 		</div>
 	)
 }
@@ -87,7 +104,7 @@ export const StringForm = ({ object, attr }: SchemaFormProps) => {
 			attribute={attr}
 			obj={object}
 			updateFunction={(_, v) => (object[attr] = v)}
-			className="input input-l"
+			className="input text-input input-l"
 		/>
 	)
 }

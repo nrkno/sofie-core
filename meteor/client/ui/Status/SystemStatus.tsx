@@ -154,7 +154,12 @@ export const DeviceItem = reacti18next.withTranslation()(
 					yes: t('Execute'),
 					no: t('Cancel'),
 					message: action.payload ? (
-						<SchemaForm schema={JSON.parse(action.payload)} object={payload} attr={''} />
+						<SchemaForm
+							schema={JSON.parse(action.payload)}
+							object={payload}
+							attr={''}
+							translationNamespaces={namespaces}
+						/>
 					) : (
 						t('Do you want to execute {{actionName}}? This may the disrupt the output', { actionName: action.name })
 					),
