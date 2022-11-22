@@ -7,10 +7,10 @@ import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBa
 import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { Studio, Studios } from '../../lib/collections/Studios'
 
-const ObserveChangeBufferTimeout = 1000 // TODO - refine
+const ObserveChangeBufferTimeout = 100
 
 /**
- * Whenever the ShowStyleBase changes the blueprint or config preset, ensure the config is synced across
+ * Whenever the Studio changes the blueprint or config preset, ensure the config is synced across
  * We want it synced across, so that if the config-preset is removed, then
  */
 Meteor.startup(() => {
