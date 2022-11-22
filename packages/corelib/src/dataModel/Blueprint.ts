@@ -53,9 +53,10 @@ export interface Blueprint {
 	disableVersionChecks?: boolean
 
 	/** Hash for the blueprint, changed each time it is changed */
-	blueprintHash: BlueprintHash | undefined // TODO - removed `| undefined`
+	blueprintHash: BlueprintHash
 }
 
+/** Describes the last state a Blueprint document was in when applying config changes */
 export interface LastBlueprintConfig {
 	blueprintId: BlueprintId
 	blueprintHash: BlueprintHash

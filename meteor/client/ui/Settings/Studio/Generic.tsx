@@ -56,14 +56,7 @@ export const StudioGenericProperties = withTranslation()(
 		}
 
 		getBlueprintConfigPresetOptions() {
-			// const { t } = this.props
-
-			const options: { name: string; value: string | null }[] = [
-				// {
-				// 	name: t('None'),
-				// 	value: '',
-				// },
-			]
+			const options: { name: string; value: string | null }[] = []
 
 			if (this.props.studio.blueprintId) {
 				const blueprint = Blueprints.findOne({

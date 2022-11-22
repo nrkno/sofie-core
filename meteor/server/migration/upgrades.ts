@@ -1,5 +1,4 @@
 import {
-	BlueprintConfigCoreConfig,
 	BlueprintManifestType,
 	ConfigManifestEntry,
 	ICommonContext,
@@ -16,7 +15,6 @@ import {
 	Complete,
 	getHash,
 	getRandomId,
-	getSofieHostUrl,
 	literal,
 	normalizeArray,
 	normalizeArrayToMap,
@@ -410,7 +408,7 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 	)
 	const rawBlueprintConfig = applyAndValidateOverrides(showStyleBase.blueprintConfigWithOverrides).obj
 
-	const result = blueprintManifest.applyConfig(blueprintContext, rawBlueprintConfig, compileCoreConfigValues())
+	const result = blueprintManifest.applyConfig(blueprintContext, rawBlueprintConfig)
 
 	await ShowStyleBases.updateAsync(showStyleBaseId, {
 		$set: {
@@ -490,12 +488,6 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 }
 
 /** TODO - below is copied from job-worker */
-
-function compileCoreConfigValues(): BlueprintConfigCoreConfig {
-	return {
-		hostUrl: getSofieHostUrl(),
-	}
-}
 
 class CommonContext implements ICommonContext {
 	private readonly _contextIdentifier: string

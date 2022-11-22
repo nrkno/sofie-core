@@ -10,6 +10,11 @@ import { Studio, Studios } from '../../lib/collections/Studios'
 const ObserveChangeBufferTimeout = 100
 
 /**
+ * Setup some observers to ensure that the `blueprintConfigWithOverrides.defaults` is kept up to date whenever the `blueprintId` or `blueprintConfigPresetId` of the document changes.
+ * Future: It would be nice to not do this through observers, but due to how data updates are done currently, it will be hard to reliably intercept the calls and perform this
+ */
+
+/**
  * Whenever the Studio changes the blueprint or config preset, ensure the config is synced across
  * We want it synced across, so that if the config-preset is removed, then
  */

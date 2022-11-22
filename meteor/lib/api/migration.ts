@@ -14,10 +14,35 @@ export interface NewMigrationAPI {
 	forceMigration(chunks: Array<MigrationChunk>): Promise<void>
 	resetDatabaseVersions(): Promise<void>
 
+	/**
+	 * Get the status information for each Studio and ShowStyle on their blueprintConfig upgrade status
+	 */
 	getUpgradeStatus(): Promise<GetUpgradeStatusResult>
+
+	/**
+	 * Run `validateConfig` on the blueprint for a Studio
+	 * @param studioId Id of the Studio
+	 * @returns List of messages to display to the user
+	 */
 	validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult>
+
+	/**
+	 * Run `applyConfig` on the blueprint for a Studio, and store the results into the db
+	 * @param studioId Id of the Studio
+	 */
 	runUpgradeForStudio(studioId: StudioId): Promise<void>
+
+	/**
+	 * Run `validateConfig` on the blueprint for a ShowStyleBase
+	 * @param showStyleBaseId Id of the ShowStyleBase
+	 * @returns List of messages to display to the user
+	 */
 	validateConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<BlueprintValidateConfigForStudioResult>
+
+	/**
+	 * Run `applyConfig` on the blueprint for a Studio, and store the results into the db
+	 * @param studioId Id of the Studio
+	 */
 	runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
 }
 

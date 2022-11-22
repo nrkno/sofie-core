@@ -249,6 +249,7 @@ async function innerUploadBlueprint(
 		await upsertBundles(translations, blueprintId)
 	}
 
+	// Ensure anywhere that uses this blueprint has their configPreset updated
 	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
 		await syncConfigPresetsToShowStyles(newBlueprint)
 	} else if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {

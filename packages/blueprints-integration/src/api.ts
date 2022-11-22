@@ -95,6 +95,7 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 	/** A list of Migration steps related to a Studio */
 	studioMigrations: MigrationStep[]
 
+	/** The config presets exposed by this blueprint */
 	configPresets: Record<string, IStudioConfigPreset<TRawConfig>>
 
 	/** Translations connected to the studio (as stringified JSON) */
@@ -117,8 +118,17 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 		playlistExternalId: string
 	) => BlueprintResultRundownPlaylist | null
 
+	/**
+	 * Validate the config passed to this blueprint
+	 * In this you should do various sanity checks of the config and return a list of messages to display to the user.
+	 * These messages do not stop `applyConfig` from being called.
+	 */
 	validateConfig?: (context: ICommonContext, config: TRawConfig) => Array<IConfigMessage>
 
+	/**
+	 * Apply the config by generating the data to be saved into the db.
+	 * This should be written to give a predictable and stable result, it can be called with the same config multiple times
+	 */
 	applyConfig?: (
 		context: ICommonContext,
 		config: TRawConfig,
@@ -142,6 +152,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	/** A list of Migration steps related to a ShowStyle */
 	showStyleMigrations: MigrationStep[]
 
+	/** The config presets exposed by this blueprint */
 	configPresets: Record<string, IShowStyleConfigPreset<TRawConfig>>
 
 	/** Translations connected to the studio (as stringified JSON) */
@@ -208,13 +219,18 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		ingestItem: IngestAdlib
 	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
 
+	/**
+	 * Validate the config passed to this blueprint
+	 * In this you should do various sanity checks of the config and return a list of messages to display to the user.
+	 * These messages do not stop `applyConfig` from being called.
+	 */
 	validateConfig?: (context: ICommonContext, config: TRawConfig) => Array<IConfigMessage>
 
-	applyConfig?: (
-		context: ICommonContext,
-		config: TRawConfig,
-		coreConfig: BlueprintConfigCoreConfig
-	) => BlueprintResultApplyShowStyleConfig
+	/**
+	 * Apply the config by generating the data to be saved into the db.
+	 * This should be written to give a predictable and stable result, it can be called with the same config multiple times
+	 */
+	applyConfig?: (context: ICommonContext, config: TRawConfig) => BlueprintResultApplyShowStyleConfig
 
 	/** Preprocess config before storing it by core to later be returned by context's getShowStyleConfig. If not provided, getShowStyleConfig will return unprocessed blueprint config */
 	preprocessConfig?: (
