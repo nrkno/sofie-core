@@ -186,7 +186,6 @@ export function setupMockTriggeredActions(
 		const mock: DBTriggeredActions = {
 			_id: protectString(`mockTriggeredAction_${showStyleBaseId ?? 'core'}` + i),
 			_rank: i * 1000,
-			_rundownVersionHash: 'asdf',
 			showStyleBaseId,
 			blueprintUniqueId: null,
 			actionsWithOverrides: wrapDefaultObject({
