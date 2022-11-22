@@ -59,7 +59,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		Translated<IShowStyleVariantsProps>,
 		IShowStyleVariantsSettingsState
 	> {
-		private timer?: number
+		private timeout?: number
 
 		constructor(props: Translated<IShowStyleVariantsProps>) {
 			super(props)
@@ -70,26 +70,34 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				dndVariants: this.props.showStyleVariants,
 			}
 		}
+
 		componentDidUpdate(prevProps: Readonly<Translated<IShowStyleVariantsProps>>) {
-			if (this.showStyleVariantsChanged(prevProps) || this.noShowStyleVariantsPresentInState()) {
-				this.timer = Meteor.setTimeout(() => {
-					this.setState({
-						dndVariants: this.props.showStyleVariants,
-					})
-				}, SET_STATE_DELAY)
-			} else if (this.timer) {
-				Meteor.clearTimeout(this.timer)
+			this.updateShowStyleVariants(prevProps.showStyleVariants)
+		}
+
+		private updateShowStyleVariants(prevShowStyleVariants: ShowStyleVariant[]) {
+			if (!this.showStyleVariantsChanged(prevShowStyleVariants) && !this.noShowStyleVariantsPresentInState()) {
+				return
 			}
+
+			if (this.timeout) {
+				Meteor.clearTimeout(this.timeout)
+			}
+			this.timeout = Meteor.setTimeout(() => {
+				this.setState({
+					dndVariants: this.props.showStyleVariants,
+				})
+			}, SET_STATE_DELAY)
 		}
 
 		componentWillUnmount() {
-			if (this.timer) {
-				Meteor.clearTimeout(this.timer)
+			if (this.timeout) {
+				Meteor.clearTimeout(this.timeout)
 			}
 		}
 
-		private showStyleVariantsChanged = (prevProps: Readonly<Translated<IShowStyleVariantsProps>>): boolean => {
-			if (prevProps.showStyleVariants.length !== this.props.showStyleVariants.length) {
+		private showStyleVariantsChanged = (prevShowStyleVariants: ShowStyleVariant[]): boolean => {
+			if (prevShowStyleVariants !== this.props.showStyleVariants) {
 				return true
 			}
 
@@ -97,10 +105,10 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				return true
 			}
 
-			return prevProps.showStyleVariants !== this.props.showStyleVariants && this.state.editedMappings.length > 0
+			return prevShowStyleVariants !== this.props.showStyleVariants && this.state.editedMappings.length > 0
 		}
 
-		private noShowStyleVariantsPresentInState = () => {
+		private noShowStyleVariantsPresentInState = (): boolean => {
 			return this.props.showStyleVariants.length > 0 && this.state.dndVariants.length === 0
 		}
 
