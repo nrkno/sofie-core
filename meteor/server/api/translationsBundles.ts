@@ -103,7 +103,7 @@ export function generateTranslationBundleOriginId(
 	bundleType: 'blueprints' | 'peripheralDevice'
 ): TranslationsBundleOriginId {
 	if (bundleType === 'blueprints') {
-		return protectString(unprotectString(id))
+		return protectString('blueprint_' + id)
 	} else {
 		return protectString('peripheralDevice_' + id)
 	}

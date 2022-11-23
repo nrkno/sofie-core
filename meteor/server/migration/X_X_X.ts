@@ -3,6 +3,7 @@ import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { TranslationsBundles, TranslationsBundle } from '../../lib/collections/TranslationsBundles'
 import { generateTranslationBundleOriginId } from '../api/translationsBundles'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 /*
  * **************************************************************************************
@@ -34,9 +35,11 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			}).fetch()
 			for (const obj0 of objects) {
 				const obj = obj0 as TranslationsBundle & { blueprintOriginId: BlueprintId }
+				const id = generateTranslationBundleOriginId(obj.blueprintOriginId, 'blueprints')
 				TranslationsBundles.update(obj._id, {
 					$set: {
-						originId: generateTranslationBundleOriginId(obj.blueprintOriginId, 'blueprints'),
+						originId: id,
+						namespace: unprotectString(id),
 					},
 					$unset: {
 						blueprintOriginId: 1,
