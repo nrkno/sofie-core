@@ -148,15 +148,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				})
 			}
 		}
-		private pushBlueprintConfigOverride = (newOp: SomeObjectOverrideOp) => {
-			if (this.props.showStyleBase) {
-				ShowStyleBases.update(this.props.showStyleBase._id, {
-					$push: {
-						'blueprintConfigWithOverrides.overrides': newOp,
-					},
-				})
-			}
-		}
 
 		renderEditForm(showStyleBase: ShowStyleBase) {
 			const { t } = this.props
@@ -216,7 +207,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											sourceLayers={this.props.sourceLayersLight}
 											configObject={showStyleBase.blueprintConfigWithOverrides}
 											saveOverrides={this.saveBlueprintConfigOverrides}
-											pushOverride={this.pushBlueprintConfigOverride}
 											alternateConfig={undefined}
 										/>
 									</Route>

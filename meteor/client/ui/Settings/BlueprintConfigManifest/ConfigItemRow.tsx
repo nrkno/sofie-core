@@ -1,4 +1,4 @@
-import { faRefresh, faPlus, faCheck, faPencilAlt, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faRefresh, faCheck, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
 	ConfigItemValue,
@@ -26,8 +26,7 @@ export interface BlueprintConfigManifestRowProps {
 	wrappedItem: WrappedOverridableItemNormal<any> & WrappedOverridableExt
 	overrideHelper: OverrideOpHelper
 
-	showDelete: (item: ConfigManifestEntry) => void
-	doCreate: (itemId: string, value: any) => void
+	showReset: (item: ConfigManifestEntry) => void
 
 	fullConfig: IBlueprintConfig
 	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
@@ -45,8 +44,7 @@ export function BlueprintConfigManifestRow({
 	value,
 	wrappedItem,
 	overrideHelper,
-	showDelete,
-	doCreate,
+	showReset,
 	fullConfig,
 	alternateConfig,
 	layerMappings,
@@ -59,13 +57,8 @@ export function BlueprintConfigManifestRow({
 
 	const manifestEntry = wrappedItem.manifest
 
-	const doShowDelete = useCallback(() => showDelete(manifestEntry), [manifestEntry, showDelete])
+	const doShowReset = useCallback(() => showReset(manifestEntry), [manifestEntry, showReset])
 	const doToggleExpanded = useCallback(() => toggleExpanded(manifestEntry.id), [manifestEntry.id, toggleExpanded])
-
-	const doCreateItem = useCallback(
-		() => doCreate(manifestEntry.id, manifestEntry.defaultVal ?? ''),
-		[doCreate, manifestEntry.id, manifestEntry.defaultVal]
-	)
 
 	const handleUpdate = useCallback(
 		(value: any) => {
@@ -138,27 +131,14 @@ export function BlueprintConfigManifestRow({
 				<th className="settings-studio-custom-config-table__name c2">{manifestEntry.name}</th>
 				<td className="settings-studio-custom-config-table__value c3">{renderConfigValue(t, manifestEntry, value)}</td>
 				<td className="settings-studio-custom-config-table__actions table-item-actions c3">
-					{value !== undefined ? (
-						<>
-							<button className="action-btn" onClick={doToggleExpanded}>
-								<FontAwesomeIcon icon={faPencilAlt} />
-							</button>
-							{!manifestEntry.required && (
-								<button className="action-btn" onClick={doShowDelete}>
-									<FontAwesomeIcon icon={faTrash} />
-								</button>
-							)}
-						</>
-					) : (
-						<button
-							className={ClassNames('btn btn-primary', {
-								'btn-tight': subPanel,
-							})}
-							onClick={doCreateItem}
-						>
-							<FontAwesomeIcon icon={faPlus} /> {t('Create')}
+					{wrappedItem.overrideOps.length > 0 && (
+						<button className="action-btn" onClick={doShowReset}>
+							<FontAwesomeIcon icon={faRefresh} />
 						</button>
 					)}
+					<button className="action-btn" onClick={doToggleExpanded}>
+						<FontAwesomeIcon icon={faPencilAlt} />
+					</button>
 				</td>
 			</tr>
 			{isExpanded && value !== undefined && (
@@ -179,53 +159,6 @@ export function BlueprintConfigManifestRow({
 				</tr>
 			)}
 		</>
-	)
-}
-
-export interface BlueprintConfigManifestDeletedRowProps {
-	manifestEntry: ConfigManifestEntry
-	defaultValue: any
-
-	doUndelete: (itemId: string) => void
-	doCreate: (itemId: string, value: any) => void
-
-	subPanel: boolean
-}
-export function BlueprintConfigManifestDeletedRow({
-	manifestEntry,
-	defaultValue,
-	doUndelete,
-	doCreate,
-	subPanel,
-}: BlueprintConfigManifestDeletedRowProps) {
-	const { t } = useTranslation()
-
-	const doUndeleteItem = useCallback(() => doUndelete(manifestEntry.id), [doUndelete, manifestEntry.id])
-	const doCreateItem = useCallback(
-		() => doCreate(manifestEntry.id, manifestEntry.defaultVal ?? ''),
-		[doCreate, manifestEntry.id, manifestEntry.defaultVal]
-	)
-
-	return (
-		<tr>
-			<th className="settings-studio-custom-config-table__name c2">{manifestEntry.name}</th>
-			<td className="settings-studio-custom-config-table__value c3">
-				{renderConfigValue(t, manifestEntry, defaultValue)}
-			</td>
-			<td className="settings-studio-custom-config-table__actions table-item-actions c3">
-				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
-					<FontAwesomeIcon icon={faRefresh} />
-				</button>
-				<button
-					className={ClassNames('btn btn-primary', {
-						'btn-tight': subPanel,
-					})}
-					onClick={doCreateItem}
-				>
-					<FontAwesomeIcon icon={faPlus} /> {t('Create')}
-				</button>
-			</td>
-		</tr>
 	)
 }
 
