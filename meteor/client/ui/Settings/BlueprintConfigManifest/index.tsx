@@ -24,9 +24,9 @@ import {
 	WrappedOverridableItemNormal,
 } from '../util/OverrideOpHelper'
 import { AddItemModalRef, AddItemModal } from './AddItemModal'
-import { DeleteItemModalRef, DeleteItemModal } from './DeleteItemModal'
 import { SourceLayerDropdownOption } from './resolveColumns'
 import { BlueprintConfigManifestDeletedRow, BlueprintConfigManifestRow, WrappedOverridableExt } from './ConfigItemRow'
+import { doModalDialog } from '../../../lib/ModalDialog'
 
 export { SourceLayerDropdownOption }
 
@@ -118,16 +118,10 @@ export function BlueprintConfigManifestSettings({
 	const { t } = useTranslation()
 
 	const addRef = useRef<AddItemModalRef>(null)
-	const deleteRef = useRef<DeleteItemModalRef>(null)
 
 	const addItem = useCallback(() => {
 		if (addRef.current) {
 			addRef.current.show()
-		}
-	}, [])
-	const showDelete = useCallback((item: ConfigManifestEntry) => {
-		if (deleteRef.current) {
-			deleteRef.current.show(item)
 		}
 	}, [])
 
@@ -153,12 +147,35 @@ export function BlueprintConfigManifestSettings({
 		[configObject, manifest]
 	)
 
-	const overrideHelper = useOverrideOpHelper(saveOverrides, configObject) // TODO - is this appropriate?
+	const overrideHelper = useOverrideOpHelper(saveOverrides, configObject)
+
+	const showDelete = useCallback(
+		(item: ConfigManifestEntry) => {
+			doModalDialog({
+				title: t('Delete this item?'),
+				yes: t('Delete'),
+				no: t('Cancel'),
+				onAccept: () => {
+					overrideHelper.deleteItem(item.id)
+				},
+				message: (
+					<>
+						<p>
+							{t('Are you sure you want to delete this config item "{{configId}}"?', {
+								configId: item.name ?? '??',
+							})}
+						</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</>
+				),
+			})
+		},
+		[overrideHelper]
+	)
 
 	return (
 		<div className="scroll-x">
 			<AddItemModal ref={addRef} manifest={manifest} config={resolvedConfig} doCreate={doCreate} />
-			<DeleteItemModal ref={deleteRef} manifest={manifest} doDelete={overrideHelper.deleteItem} />
 
 			{subPanel ? (
 				<h3 className="mhn">{t('Blueprint Configuration')}</h3>
