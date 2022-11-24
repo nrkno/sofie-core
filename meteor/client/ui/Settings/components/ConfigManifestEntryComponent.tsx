@@ -10,7 +10,7 @@ import { IntInputControl } from '../../../lib/Components/IntInput'
 import { TextInputControl } from '../../../lib/Components/TextInput'
 import { CheckboxControl } from '../../../lib/Components/Checkbox'
 import { FloatInputControl } from '../../../lib/Components/FloatInput'
-import { DropdownInputControl } from '../../../lib/Components/DropdownInput'
+import { DropdownInputControl, getDropdownInputOptions } from '../../../lib/Components/DropdownInput'
 import { MultiLineTextInputControl } from '../../../lib/Components/MultiLineTextInput'
 import { JsonTextInputControl } from '../../../lib/Components/JsonTextInput'
 import {
@@ -98,7 +98,7 @@ export function ManifestEntryWithOverrides({
 		)
 	} else if (configField.type === ConfigManifestEntryType.ENUM) {
 		return (
-			<LabelAndOverridesForDropdown {...wrapperProps} options={configField.values}>
+			<LabelAndOverridesForDropdown {...wrapperProps} options={getDropdownInputOptions(configField.values)}>
 				{(value, handleUpdate, options) => (
 					<DropdownInputControl
 						classNames="input text-input input-l"
