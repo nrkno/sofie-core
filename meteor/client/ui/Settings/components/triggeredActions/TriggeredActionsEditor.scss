@@ -76,6 +76,10 @@ $triggered-action-color: #146985;
 				position: relative;
 				z-index: 1001;
 			}
+			&.deleted {
+				text-decoration: line-through;
+				opacity: 0.7;
+			}
 
 			.subtle {
 				color: #aaa;

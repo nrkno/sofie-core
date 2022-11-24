@@ -8,7 +8,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
-import { ConfigManifestSettings } from './ConfigManifestSettings'
+import { BlueprintConfigManifestSettings } from './BlueprintConfigManifest'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { StudioRoutings } from './Studio/Routings'
@@ -18,9 +18,13 @@ import { StudioPackageManagerSettings } from './Studio/PackageManager'
 import { StudioGenericProperties } from './Studio/Generic'
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	applyAndValidateOverrides,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 interface IStudioSettingsProps {
 	match: {
@@ -139,11 +143,31 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		IStudioSettingsState
 	> {
 		getLayerMappingsFlat() {
+			// TODO - this is too reactive
 			const mappings = {}
 			if (this.props.studio) {
 				mappings[this.props.studio.name] = applyAndValidateOverrides(this.props.studio.mappingsWithOverrides).obj
 			}
 			return mappings
+		}
+
+		private saveBlueprintConfigOverrides = (newOps: SomeObjectOverrideOp[]) => {
+			if (this.props.studio) {
+				Studios.update(this.props.studio._id, {
+					$set: {
+						'blueprintConfigWithOverrides.overrides': newOps,
+					},
+				})
+			}
+		}
+		private pushBlueprintConfigOverride = (newOp: SomeObjectOverrideOp) => {
+			if (this.props.studio) {
+				Studios.update(this.props.studio._id, {
+					$push: {
+						'blueprintConfigWithOverrides.overrides': newOp,
+					},
+				})
+			}
 		}
 
 		render() {
@@ -167,15 +191,14 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/blueprint-config`}>
-										<ConfigManifestSettings
-											t={this.props.t}
-											i18n={this.props.i18n}
-											tReady={this.props.tReady}
+										<BlueprintConfigManifestSettings
+											configManifestId={unprotectString(this.props.studio._id)}
 											manifest={this.props.blueprintConfigManifest}
-											object={this.props.studio}
 											layerMappings={this.getLayerMappingsFlat()}
-											collection={Studios}
-											configPath={'blueprintConfigWithOverrides.defaults'}
+											configObject={this.props.studio.blueprintConfigWithOverrides}
+											saveOverrides={this.saveBlueprintConfigOverrides}
+											pushOverride={this.pushBlueprintConfigOverride}
+											alternateConfig={undefined}
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/mappings`}>

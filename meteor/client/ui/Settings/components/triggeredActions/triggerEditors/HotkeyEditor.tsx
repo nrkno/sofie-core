@@ -11,6 +11,7 @@ import { codesToKeyLabels } from '../../../../../lib/triggers/codesToKeyLabels'
 interface IProps {
 	trigger: DBBlueprintTrigger
 	modified?: boolean
+	readonly?: boolean
 	onChange: (newVal: DBBlueprintTrigger) => void
 }
 
@@ -37,7 +38,7 @@ export function convertToLenientModifiers(keys: string[]): string[] {
 	})
 }
 
-export const HotkeyEditor = function HotkeyEditor({ trigger, modified, onChange }: IProps) {
+export const HotkeyEditor = function HotkeyEditor({ trigger, modified, readonly, onChange }: IProps) {
 	const sorensen = useContext(SorensenContext)
 	const [input, setInput] = useState<HTMLInputElement | null>(null)
 	const [displayValue, setDisplayValue] = useState(trigger.keys)
@@ -95,6 +96,7 @@ export const HotkeyEditor = function HotkeyEditor({ trigger, modified, onChange 
 				onChange={() => {
 					// Do nothing
 				}}
+				disabled={readonly}
 			/>
 			<EditAttribute
 				type={'toggle'}
@@ -107,6 +109,7 @@ export const HotkeyEditor = function HotkeyEditor({ trigger, modified, onChange 
 					})
 				}
 				label={t('On release')}
+				disabled={readonly}
 			/>
 		</>
 	)

@@ -97,7 +97,7 @@ export interface ConfigManifestObjectEntry extends ConfigManifestEntryBase {
 }
 export interface ConfigManifestMultilineStringEntry extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.MULTILINE_STRING
-	defaultVal?: string
+	defaultVal?: string[]
 }
 export interface ConfigManifestIntEntry extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.INT
