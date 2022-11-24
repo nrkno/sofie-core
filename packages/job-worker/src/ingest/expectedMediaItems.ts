@@ -31,6 +31,7 @@ import { saveIntoDb } from '../db/changes'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 
 export enum PieceType {
 	PIECE = 'piece',
@@ -81,7 +82,7 @@ function generateExpectedMediaItemsFull(
 	rundownId: RundownId,
 	pieces: Piece[],
 	adlibs: AdLibPiece[],
-	actions: AdLibAction[]
+	actions: (AdLibAction | RundownBaselineAdLibAction)[]
 ): ExpectedMediaItem[] {
 	const eMIs: ExpectedMediaItem[] = []
 
@@ -220,7 +221,17 @@ export async function updateExpectedMediaItemForBucketAdLibAction(
 export function updateExpectedMediaItemsOnRundown(context: JobContext, cache: CacheForIngest): void {
 	const pieces = cache.Pieces.findFetch({})
 	const adlibs = cache.AdLibPieces.findFetch({})
-	const actions = cache.AdLibActions.findFetch({})
+	const actions: (AdLibAction | RundownBaselineAdLibAction)[] = cache.AdLibActions.findFetch({})
+
+	const baselinePiece = cache.RundownBaselineAdLibPieces.getIfLoaded()?.findFetch({})
+	if (baselinePiece) {
+		adlibs.push(...baselinePiece)
+	}
+
+	const baseLineActions = cache.RundownBaselineAdLibActions.getIfLoaded()?.findFetch({})
+	if (baseLineActions) {
+		actions.push(...baseLineActions)
+	}
 
 	const eMIs = generateExpectedMediaItemsFull(context.studio._id, cache.RundownId, pieces, adlibs, actions)
 	saveIntoCache<ExpectedMediaItem>(context, cache.ExpectedMediaItems, {}, eMIs)
