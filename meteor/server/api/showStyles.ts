@@ -173,7 +173,6 @@ export async function reorderAllShowStyleVariants(
 	orderedVariants: ShowStyleVariant[]
 ): Promise<void> {
 	await assertShowStyleBaseAccess(context, showStyleBaseId)
-
 	await reassignShowStyleVariantIndexes(orderedVariants)
 }
 
