@@ -105,6 +105,12 @@ export const ConfigManifestEntryComponent = withTranslation()(
 						{t(configField.name)}
 						{this.renderEditAttribute(configField, obj, prefix)}
 						{configField.hint && <span className="text-s dimmed">{t(configField.hint)}</span>}
+						{configField.hint && configField.defaultVal && <span className="text-s dimmed"> - </span>}
+						{configField.defaultVal && (
+							<span className="text-s dimmed">
+								{t("Defaults to '{{defaultVal}}' if left empty", { defaultVal: configField.defaultVal })}
+							</span>
+						)}
 					</label>
 				</div>
 			)
