@@ -6,7 +6,6 @@ import {
 	BlueprintManifestType,
 	ConfigManifestEntry,
 	IShowStyleConfigPreset,
-	SourceLayerType,
 } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -17,8 +16,13 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
-import { ConfigManifestSettings } from '../ConfigManifestSettings'
 import { Blueprints } from '../../../../lib/collections/Blueprints'
+import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	SomeObjectOverrideOp,
+	applyAndValidateOverrides,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { SourceLayerDropdownOption, BlueprintConfigManifestSettings } from '../BlueprintConfigManifest'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
@@ -26,8 +30,8 @@ interface IShowStyleVariantsProps {
 	blueprintConfigManifest: ConfigManifestEntry[]
 	blueprintConfigPreset: IShowStyleConfigPreset | undefined // TODO - use this
 
-	layerMappings?: { [key: string]: MappingsExt }
-	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
+	layerMappings?: { [studioId: string]: MappingsExt }
+	sourceLayers?: Array<SourceLayerDropdownOption>
 }
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
@@ -90,7 +94,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			})
 		}
 
-		getBlueprintConfigPresetOptions() {
+		private getBlueprintConfigPresetOptions() {
 			const options: { name: string; value: string | null }[] = []
 
 			if (this.props.showStyleBase.blueprintId && this.props.showStyleBase.blueprintConfigPresetId) {
@@ -113,6 +117,20 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			}
 
 			return options
+		}
+		private saveBlueprintConfigOverrides = (variantId: ShowStyleVariantId, newOps: SomeObjectOverrideOp[]) => {
+			ShowStyleVariants.update(variantId, {
+				$set: {
+					'blueprintConfigWithOverrides.overrides': newOps,
+				},
+			})
+		}
+		private pushBlueprintConfigOverride = (variantId: ShowStyleVariantId, newOp: SomeObjectOverrideOp) => {
+			ShowStyleVariants.update(variantId, {
+				$push: {
+					'blueprintConfigWithOverrides.overrides': newOp,
+				},
+			})
 		}
 
 		renderShowStyleVariants() {
@@ -188,18 +206,18 @@ export const ShowStyleVariantsSettings = withTranslation()(
 									</label>
 									<div className="row">
 										<div className="col c12 r1-c12 phs">
-											<ConfigManifestSettings
-												t={this.props.t}
-												i18n={this.props.i18n}
-												tReady={this.props.tReady}
+											<BlueprintConfigManifestSettings
+												configManifestId={unprotectString(showStyleVariant._id)}
 												manifest={this.props.blueprintConfigManifest}
-												collection={ShowStyleVariants}
-												configPath={'blueprintConfigWithOverrides.defaults'}
-												alternateObject={this.props.showStyleBase}
-												object={showStyleVariant}
+												alternateConfig={
+													applyAndValidateOverrides(this.props.showStyleBase.blueprintConfigWithOverrides).obj
+												}
 												layerMappings={this.props.layerMappings}
 												sourceLayers={this.props.sourceLayers}
 												subPanel={true}
+												configObject={showStyleVariant.blueprintConfigWithOverrides}
+												saveOverrides={(newOps) => this.saveBlueprintConfigOverrides(showStyleVariant._id, newOps)}
+												pushOverride={(newOp) => this.pushBlueprintConfigOverride(showStyleVariant._id, newOp)}
 											/>
 										</div>
 									</div>

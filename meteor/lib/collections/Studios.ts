@@ -15,18 +15,19 @@ import {
 	MappingsHash,
 	StudioRouteType,
 	MappingsExt,
+	StudioRouteSet,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ReadonlyDeep } from 'type-fest'
 export * from '@sofie-automation/corelib/dist/dataModel/Studio'
 
-export function getActiveRoutes(studio: Pick<DBStudio, 'routeSets'>): ResultingMappingRoutes {
+export function getActiveRoutes(routeSets: Record<string, StudioRouteSet>): ResultingMappingRoutes {
 	const routes: ResultingMappingRoutes = {
 		existing: {},
 		inserted: [],
 	}
 
 	const exclusivityGroups: { [groupId: string]: true } = {}
-	_.each(studio.routeSets, (routeSet) => {
+	_.each(routeSets, (routeSet) => {
 		if (routeSet.active) {
 			let useRoute: boolean = true
 			if (routeSet.exclusivityGroup) {
@@ -134,7 +135,7 @@ export function routeExpectedPackages(
 	}
 
 	// Route the mappings
-	const routes = getActiveRoutes(studio)
+	const routes = getActiveRoutes(studio.routeSets)
 	return getRoutedMappings(mappingsWithPackages, routes)
 }
 
