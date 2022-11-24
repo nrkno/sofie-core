@@ -580,8 +580,8 @@ class RundownViewNotifier extends WithManagedTracker {
 
 							if (!this.subscriptionsReady()) return
 
-							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
-							if (status !== PieceStatusCode.UNKNOWN || message) {
+							const { status, messages } = checkPieceContentStatus(piece, sourceLayer, studio)
+							if (status !== PieceStatusCode.UNKNOWN || messages.length) {
 								localStatus.push({
 									name: piece.name,
 									rundownId: part.rundownId,
@@ -592,7 +592,7 @@ class RundownViewNotifier extends WithManagedTracker {
 									segmentName: segment.name,
 									partRank: part._rank,
 									status,
-									message,
+									messages,
 								})
 							}
 						})
@@ -606,17 +606,21 @@ class RundownViewNotifier extends WithManagedTracker {
 			const allIssues = fullMediaStatus.get().concat(localMediaStatus.get())
 			const newPieceIds = _.unique(allIssues.map((item) => item.pieceId))
 			allIssues.forEach((issue) => {
-				const { status, message } = issue
+				const { status, messages } = issue
 
 				let newNotification: Notification | undefined = undefined
 				if (status !== PieceStatusCode.OK && status !== PieceStatusCode.UNKNOWN) {
+					const messagesStr = messages.length
+						? messages.map((msg) => translateMessage(msg, t)).join('; ')
+						: t('There is an unspecified problem with the source.')
+
 					newNotification = new Notification(
 						issue.pieceId,
 						getNoticeLevelForPieceStatus(status) || NoticeLevel.WARNING,
 						(
 							<>
 								<h5>{`${issue.segmentName}${issue.name ? SEGMENT_DELIMITER + issue.name : ''}`}</h5>
-								<div>{message || t('There is an unspecified problem with the source.')}</div>
+								<div>{messagesStr}</div>
 							</>
 						),
 						issue.segmentId ? issue.segmentId : 'line_' + issue.partId,

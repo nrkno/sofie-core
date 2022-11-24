@@ -1,5 +1,5 @@
 import React from 'react'
-import { useTranslation } from 'react-i18next'
+import { TFunction, useTranslation } from 'react-i18next'
 
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { FloatingInspector } from '../FloatingInspector'
@@ -14,6 +14,7 @@ import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer'
 import classNames from 'classnames'
 import { UIStudio } from '../../../lib/api/studios'
 import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ITranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 interface IProps {
 	status: PieceStatusCode
@@ -25,7 +26,7 @@ interface IProps {
 	timePosition: number
 	content: VTContent | undefined
 	noticeLevel: NoticeLevel | null
-	noticeMessage: string | null
+	noticeMessages: ITranslatableMessage[] | null
 	contentMetaData: MediaObject | null
 	renderedDuration?: number | undefined
 
@@ -38,7 +39,12 @@ interface IProps {
 	hideHoverscrubPreview?: boolean
 }
 
-function renderNotice(noticeLevel: NoticeLevel, noticeMessage: string | null): JSX.Element {
+function renderNotice(
+	t: TFunction,
+	noticeLevel: NoticeLevel,
+	noticeMessages: ITranslatableMessage[] | null
+): JSX.Element {
+	const messagesStr = noticeMessages ? noticeMessages.map((msg) => translateMessage(msg, t)).join('; ') : ''
 	return (
 		<>
 			<div className="segment-timeline__mini-inspector__notice-header">
@@ -48,7 +54,7 @@ function renderNotice(noticeLevel: NoticeLevel, noticeMessage: string | null): J
 					<WarningIconSmall />
 				) : null}
 			</div>
-			<div className="segment-timeline__mini-inspector__notice">{noticeMessage}</div>
+			<div className="segment-timeline__mini-inspector__notice">{messagesStr}</div>
 		</>
 	)
 }
@@ -96,7 +102,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	contentMetaData,
 	hideHoverscrubPreview,
 	noticeLevel,
-	noticeMessage,
+	noticeMessages,
 	showMiniInspector,
 	itemElement,
 	displayOn,
@@ -139,7 +145,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 			})}
 			style={!showVideoPlayerInspector ? floatingInspectorStyle : undefined}
 		>
-			{showMiniInspectorNotice && noticeLevel && renderNotice(noticeLevel, noticeMessage)}
+			{showMiniInspectorNotice && noticeLevel && renderNotice(t, noticeLevel, noticeMessages)}
 			{showMiniInspectorClipData && (
 				<div className="segment-timeline__mini-inspector__properties">
 					<span className="mini-inspector__label">{t('Clip:')}</span>

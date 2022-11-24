@@ -41,7 +41,7 @@ describe('Test blueprint post-process', () => {
 			for (const key of _.keys(template)) {
 				const key2 = key as keyof T
 				if (obj[key2] === undefined) {
-					errs.push(`${i}.${key2}`)
+					errs.push(`${i}.${String(key2)}`)
 				}
 			}
 		})
@@ -58,7 +58,7 @@ describe('Test blueprint post-process', () => {
 		})
 
 		test('some no ids', () => {
-			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObj<any>[]>([
 				{
 					id: 'testObj',
 					enable: { while: 1 },
@@ -116,7 +116,7 @@ describe('Test blueprint post-process', () => {
 		test('duplicate ids', () => {
 			const blueprintId = context.studio.blueprintId
 
-			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObj<any>[]>([
 				{
 					id: 'testObj',
 					enable: { while: 1 },
@@ -165,7 +165,7 @@ describe('Test blueprint post-process', () => {
 		})
 
 		test('some no ids', () => {
-			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObj<any>[]>([
 				{
 					id: 'testObj',
 					enable: { while: 1 },
@@ -240,7 +240,7 @@ describe('Test blueprint post-process', () => {
 		})
 
 		test('duplicate ids', () => {
-			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObj<any>[]>([
 				{
 					id: 'testObj',
 					enable: { while: 1 },
@@ -393,7 +393,7 @@ describe('Test blueprint post-process', () => {
 				outputLayerId: 'ol0',
 				content: {
 					timelineObjects: [
-						literal<TimelineObjectCoreExt>({
+						literal<TimelineObjectCoreExt<any>>({
 							id: '',
 							enable: { while: 1 },
 							layer: 'four',
@@ -529,7 +529,7 @@ describe('Test blueprint post-process', () => {
 				outputLayerId: 'ol0',
 				content: {
 					timelineObjects: [
-						literal<TimelineObjectCoreExt>({
+						literal<TimelineObjectCoreExt<any>>({
 							id: '',
 							enable: { while: 1 },
 							layer: 'four',
@@ -573,7 +573,7 @@ describe('Test blueprint post-process', () => {
 				outputLayerId: 'ol0',
 				content: {
 					timelineObjects: [
-						literal<TimelineObjectCoreExt>({
+						literal<TimelineObjectCoreExt<any>>({
 							id: '',
 							enable: { while: 1 },
 							layer: 'four',

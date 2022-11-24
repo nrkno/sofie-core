@@ -33,7 +33,6 @@ export async function createTriggeredActions(
 			name: base?.name,
 			showStyleBaseId,
 			blueprintUniqueId: null,
-			_rundownVersionHash: '',
 			// User source objects should be formed purely of overrides
 			actionsWithOverrides: convertObjectIntoOverrides(base?.actions),
 			triggersWithOverrides: convertObjectIntoOverrides(base?.triggers),
@@ -97,7 +96,6 @@ PickerPOST.route(
 				check(triggeredActions[i].triggersWithOverrides, Object)
 				check(triggeredActions[i].actionsWithOverrides, Object)
 				triggeredActions[i].showStyleBaseId = showStyleBaseId ?? null
-				triggeredActions[i]._rundownVersionHash = ''
 			}
 
 			if (replace) {
