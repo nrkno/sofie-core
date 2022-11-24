@@ -47,7 +47,7 @@ interface IShowStyleVariantsSettingsState {
 	dndVariants: ShowStyleVariant[]
 }
 
-interface DragVariant {
+interface DraggableVariant {
 	index: number
 	type: ShowStyleDragDropTypes
 }
@@ -97,15 +97,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		}
 
 		private showStyleVariantsChanged = (prevShowStyleVariants: ShowStyleVariant[]): boolean => {
-			if (prevShowStyleVariants !== this.props.showStyleVariants) {
-				return true
-			}
-
-			if (this.props.showStyleVariants.length > 0 && this.state.dndVariants.length === 0) {
-				return true
-			}
-
-			return prevShowStyleVariants !== this.props.showStyleVariants && this.state.editedMappings.length > 0
+			return prevShowStyleVariants !== this.props.showStyleVariants
 		}
 
 		private noShowStyleVariantsPresentInState = (): boolean => {
@@ -198,9 +190,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
 			element.download = fileName
 
-			document.body.appendChild(element) // Required for this to work in FireFox
 			element.click()
-			document.body.removeChild(element) // Required for this to work in FireFox
 		}
 
 		private isItemEdited = (layerId: ProtectedString<any>): boolean => {
@@ -284,10 +274,10 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 		VariantItem = ({ index, showStyleVariant, moveVariantHandler }) => {
 			const ref = useRef<HTMLTableRowElement>(null)
-			const [{ handlerId }, drop] = useDrop<DragVariant, void, { handlerId: Identifier | null }>({
+			const [{ handlerId }, drop] = useDrop<DraggableVariant, void, { handlerId: Identifier | null }>({
 				accept: ShowStyleDragDropTypes.VARIANT,
 				collect: (monitor: DropTargetMonitor) => ({ handlerId: monitor.getHandlerId() }),
-				hover(variant: DragVariant, monitor: DropTargetMonitor) {
+				hover(variant: DraggableVariant, monitor: DropTargetMonitor) {
 					if (!ref.current) {
 						return
 					}
