@@ -61,5 +61,7 @@ export function createReactiveContentCache(
 		>(innerReaction),
 	}
 
+	innerReaction()
+
 	return { cache, cancel }
 }

@@ -66,6 +66,8 @@ export type MountedAdLibTriggerId = ProtectedString<'mountedAdLibTriggerId'>
 
 export type DeviceTriggerMountedActionId = ProtectedString<'deviceTriggerMountedActionId'>
 
+export type DeviceActionId = ProtectedString<'DeviceActionId'>
+
 export interface DeviceTriggerMountedAction {
 	_id: DeviceTriggerMountedActionId
 	studioId: StudioId
@@ -73,7 +75,7 @@ export interface DeviceTriggerMountedAction {
 	deviceId: string
 	deviceTriggerId: string
 	values: DeviceTriggerArguments
-	actionId: string
+	actionId: DeviceActionId
 	actionType: ExecutableAction['action']
 	name?: string | ITranslatableMessage
 }
@@ -84,7 +86,7 @@ export type PreviewWrappedAdLib = Omit<IWrappedAdLib, '_id'> & {
 	studioId: StudioId
 	showStyleBaseId: ShowStyleBaseId
 	triggeredActionId: TriggeredActionId
-	actionId: string
+	actionId: DeviceActionId
 	sourceLayerType?: SourceLayerType
 	isCurrent?: boolean
 	isNext?: boolean
