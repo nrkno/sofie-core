@@ -52,7 +52,7 @@ interface DraggableVariant {
 	type: ShowStyleDragDropTypes
 }
 
-const SET_STATE_DELAY = 50
+const TIMEOUT_DELAY = 50
 
 export const ShowStyleVariantsSettings = withTranslation()(
 	class ShowStyleVariantsSettings extends React.Component<
@@ -87,7 +87,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				this.setState({
 					dndVariants: this.props.showStyleVariants,
 				})
-			}, SET_STATE_DELAY)
+			}, TIMEOUT_DELAY)
 		}
 
 		componentWillUnmount() {

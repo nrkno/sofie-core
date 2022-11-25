@@ -178,7 +178,7 @@ export async function reorderAllShowStyleVariants(
 
 async function reassignShowStyleVariantIndexes(orderedVariants: ShowStyleVariant[]): Promise<void> {
 	orderedVariants.forEach((variant: ShowStyleVariant, index: number) => {
-		ShowStyleVariants.upsert(variant._id, {
+		return ShowStyleVariants.upsertAsync(variant._id, {
 			$set: {
 				_rank: index,
 			},
