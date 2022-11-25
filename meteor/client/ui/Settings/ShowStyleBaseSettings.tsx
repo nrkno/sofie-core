@@ -60,9 +60,16 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	return {
 		showStyleBase: showStyleBase,
 		showStyleVariants: showStyleBase
-			? ShowStyleVariants.find({
-					showStyleBaseId: showStyleBase._id,
-			  }).fetch()
+			? ShowStyleVariants.find(
+					{
+						showStyleBaseId: showStyleBase._id,
+					},
+					{
+						sort: {
+							_rank: 1,
+						},
+					}
+			  ).fetch()
 			: [],
 		compatibleStudios: compatibleStudios,
 		blueprintConfigManifest: blueprint ? blueprint.showStyleConfigManifest || [] : [],
@@ -120,10 +127,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 		renderEditForm(showStyleBase: ShowStyleBase) {
 			const { t } = this.props
-
 			const layerMappings = this.getLayerMappingsFlat()
 			const sourceLayers = this.getSourceLayersFlat()
-
 			return (
 				<div className="studio-edit mod mhl mvn">
 					<div className="row">

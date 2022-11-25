@@ -177,6 +177,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					showStyleBaseId: id,
 					blueprintConfig: {},
 					_rundownVersionHash: '',
+					_rank: 0,
 				})
 
 				if (!studio.supportedShowStyleBase || studio.supportedShowStyleBase.length === 0) {
@@ -208,6 +209,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					showStyleBaseId: id,
 					blueprintConfig: {},
 					_rundownVersionHash: '',
+					_rank: 0,
 				})
 			}
 		},

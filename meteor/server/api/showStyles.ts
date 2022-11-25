@@ -17,8 +17,6 @@ import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { Credentials } from '../security/lib/credentials'
 import { OrganizationId } from '../../lib/collections/Organization'
 import deepmerge from 'deepmerge'
-import { ShowStyleBaseLight } from '../../lib/collections/optimizations'
-import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 
 export async function getShowStyleCompound(
 	showStyleVariantId: ShowStyleVariantId
@@ -55,6 +53,7 @@ export async function insertShowStyleBase(context: MethodContext | Credentials):
 	const access = await OrganizationContentWriteAccess.showStyleBase(context)
 	return insertShowStyleBaseInner(access.organizationId)
 }
+
 export async function insertShowStyleBaseInner(organizationId: OrganizationId | null): Promise<ShowStyleBaseId> {
 	const showStyleBase: ShowStyleBase = {
 		_id: getRandomId(),
@@ -67,63 +66,94 @@ export async function insertShowStyleBaseInner(organizationId: OrganizationId | 
 		_rundownVersionHash: '',
 	}
 	ShowStyleBases.insert(showStyleBase)
-	await insertShowStyleVariantInner(showStyleBase, 'Default')
+
+	const showStyleVariant: ShowStyleVariant = {
+		_id: getRandomId(),
+		name: 'Default',
+		blueprintConfig: {},
+		_rundownVersionHash: '',
+		_rank: 500,
+		showStyleBaseId: showStyleBase._id,
+	}
+	await insertShowStyleVariant(showStyleVariant)
 	return showStyleBase._id
 }
-export async function insertShowStyleVariant(
+async function assertShowStyleBaseAccess(context: MethodContext | Credentials, showStyleBaseId: ShowStyleBaseId) {
+	check(showStyleBaseId, String)
+
+	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
+	const showStyleBase = access.showStyleBase
+	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
+}
+
+export async function createDefaultShowStyleVariant(
 	context: MethodContext | Credentials,
 	showStyleBaseId: ShowStyleBaseId,
 	name?: string
 ): Promise<ShowStyleVariantId> {
-	check(showStyleBaseId, String)
+	await assertShowStyleBaseAccess(context, showStyleBaseId)
 
-	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
-	const showStyleBase = access.showStyleBase
-	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
+	const highestRank = ShowStyleVariants.find(
+		{},
+		{
+			sort: {
+				_rank: -1,
+			},
+			limit: 1,
+		}
+	).fetch()[0]?._rank
+	const rank = highestRank !== undefined ? highestRank + 1 : 0
 
-	return insertShowStyleVariantInner(showStyleBase, name)
-}
-export async function insertShowStyleVariantWithProperties(
-	context: MethodContext | Credentials,
-	showStyleVariant: ShowStyleVariant,
-	id?: ShowStyleVariantId
-): Promise<ShowStyleVariantId> {
-	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleVariant.showStyleBaseId)
-	const showStyleBase = access.showStyleBase
-	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleVariant.showStyleBaseId}" not found`)
-
-	return insertShowStyleVariantInner(showStyleBase, showStyleVariant.name, id, showStyleVariant.blueprintConfig)
-}
-export async function insertShowStyleVariantInner(
-	showStyleBase: ShowStyleBaseLight,
-	name?: string,
-	id?: ShowStyleVariantId,
-	blueprintConfig?: IBlueprintConfig
-): Promise<ShowStyleVariantId> {
-	return ShowStyleVariants.insertAsync({
-		_id: id || getRandomId(),
-		showStyleBaseId: showStyleBase._id,
+	const showStyleVariant: ShowStyleVariant = {
+		_id: getRandomId(),
 		name: name || 'Variant',
-		blueprintConfig: blueprintConfig || {},
+		blueprintConfig: {},
 		_rundownVersionHash: '',
-	})
+		_rank: rank,
+		showStyleBaseId: showStyleBaseId,
+	}
+
+	return insertShowStyleVariant(showStyleVariant)
 }
+
+export async function importShowStyleVariant(
+	context: MethodContext | Credentials,
+	showStyleVariant: ShowStyleVariant
+): Promise<ShowStyleVariantId> {
+	await assertShowStyleBaseAccess(context, showStyleVariant.showStyleBaseId)
+
+	return insertShowStyleVariant(showStyleVariant)
+}
+
+export async function importShowStyleVariantAsNew(
+	context: MethodContext | Credentials,
+	showStyleVariant: ShowStyleVariant
+): Promise<ShowStyleVariantId> {
+	await assertShowStyleBaseAccess(context, showStyleVariant.showStyleBaseId)
+
+	showStyleVariant._id = getRandomId()
+
+	return insertShowStyleVariant(showStyleVariant)
+}
+
+async function insertShowStyleVariant(showStyleVariant: ShowStyleVariant): Promise<ShowStyleVariantId> {
+	return ShowStyleVariants.insertAsync(showStyleVariant)
+}
+
 export async function removeShowStyleBase(context: MethodContext, showStyleBaseId: ShowStyleBaseId): Promise<void> {
-	check(showStyleBaseId, String)
-	const access = await ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
-	const showStyleBase = access.showStyleBase
-	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
+	await assertShowStyleBaseAccess(context, showStyleBaseId)
 
 	await Promise.allSettled([
-		ShowStyleBases.removeAsync(showStyleBase._id),
+		ShowStyleBases.removeAsync(showStyleBaseId),
 		ShowStyleVariants.removeAsync({
-			showStyleBaseId: showStyleBase._id,
+			showStyleBaseId: showStyleBaseId,
 		}),
 		RundownLayouts.removeAsync({
-			showStyleBaseId: showStyleBase._id,
+			showStyleBaseId: showStyleBaseId,
 		}),
 	])
 }
+
 export async function removeShowStyleVariant(
 	context: MethodContext,
 	showStyleVariantId: ShowStyleVariantId
@@ -137,21 +167,48 @@ export async function removeShowStyleVariant(
 	await ShowStyleVariants.removeAsync(showStyleVariant._id)
 }
 
+export async function reorderAllShowStyleVariants(
+	context: MethodContext,
+	showStyleBaseId: ShowStyleBaseId,
+	orderedVariants: ShowStyleVariant[]
+): Promise<void> {
+	await assertShowStyleBaseAccess(context, showStyleBaseId)
+	await reassignShowStyleVariantIndexes(orderedVariants)
+}
+
+async function reassignShowStyleVariantIndexes(orderedVariants: ShowStyleVariant[]): Promise<void> {
+	await Promise.all(
+		orderedVariants.map(async (variant: ShowStyleVariant, index: number) => {
+			return ShowStyleVariants.upsertAsync(variant._id, {
+				$set: {
+					_rank: index,
+				},
+			})
+		})
+	)
+}
+
 class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	async insertShowStyleBase() {
 		return insertShowStyleBase(this)
 	}
-	async insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
-		return insertShowStyleVariant(this, showStyleBaseId)
+	async createDefaultShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
+		return createDefaultShowStyleVariant(this, showStyleBaseId)
 	}
-	async insertShowStyleVariantWithProperties(showStyleVariant: ShowStyleVariant, id?: ShowStyleVariantId) {
-		return insertShowStyleVariantWithProperties(this, showStyleVariant, id)
+	async importShowStyleVariant(showStyleVariant: ShowStyleVariant) {
+		return importShowStyleVariant(this, showStyleVariant)
+	}
+	async importShowStyleVariantAsNew(showStyleVariant: ShowStyleVariant) {
+		return importShowStyleVariantAsNew(this, showStyleVariant)
 	}
 	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 		return removeShowStyleBase(this, showStyleBaseId)
 	}
 	async removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId) {
 		return removeShowStyleVariant(this, showStyleVariantId)
+	}
+	async reorderAllShowStyleVariants(showStyleBaseId: ShowStyleBaseId, orderedVariants: ShowStyleVariant[]) {
+		return reorderAllShowStyleVariants(this, showStyleBaseId, orderedVariants)
 	}
 }
 registerClassToMeteorMethods(ShowStylesAPIMethods, ServerShowStylesAPI, false)

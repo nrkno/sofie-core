@@ -279,6 +279,7 @@ export function setupMockShowStyleVariant(
 		showStyleBaseId: showStyleBaseId,
 		blueprintConfig: {},
 		_rundownVersionHash: '',
+		_rank: 0,
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)
 	ShowStyleVariants.insert(showStyleVariant)

@@ -1,6 +1,15 @@
-import React from 'react'
+import React, { useCallback, useRef } from 'react'
 import ClassNames from 'classnames'
-import { faPencilAlt, faTrash, faCheck, faPlus, faDownload, faUpload, faCopy } from '@fortawesome/free-solid-svg-icons'
+import {
+	faPencilAlt,
+	faTrash,
+	faCheck,
+	faPlus,
+	faDownload,
+	faUpload,
+	faCopy,
+	faGripLines,
+} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ConfigManifestEntry, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -14,9 +23,14 @@ import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigManifestSettings } from '../ConfigManifestSettings'
 import { UploadButton } from '../../../lib/uploadButton'
+import { DndProvider, DragSourceMonitor, DropTargetMonitor, useDrag, useDrop, XYCoord } from 'react-dnd'
+import { Identifier } from 'dnd-core'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import update from 'immutability-helper'
+import { ShowStyleDragDropTypes } from './DragDropTypesShowStyle'
 import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
-import _ from 'underscore'
 import { logger } from '../../../../lib/logging'
+import { Meteor } from 'meteor/meteor'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
@@ -30,20 +44,64 @@ interface IShowStyleVariantsProps {
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
 	timestampedFileKey: number
+	dndVariants: ShowStyleVariant[]
 }
+
+interface DraggableVariant {
+	index: number
+	type: ShowStyleDragDropTypes
+}
+
+const TIMEOUT_DELAY = 50
 
 export const ShowStyleVariantsSettings = withTranslation()(
 	class ShowStyleVariantsSettings extends React.Component<
 		Translated<IShowStyleVariantsProps>,
 		IShowStyleVariantsSettingsState
 	> {
+		private timeout?: number
+
 		constructor(props: Translated<IShowStyleVariantsProps>) {
 			super(props)
 
 			this.state = {
 				editedMappings: [],
 				timestampedFileKey: Date.now(),
+				dndVariants: this.props.showStyleVariants,
 			}
+		}
+
+		componentDidUpdate(prevProps: Readonly<Translated<IShowStyleVariantsProps>>) {
+			this.updateShowStyleVariants(prevProps.showStyleVariants)
+		}
+
+		private updateShowStyleVariants(prevShowStyleVariants: ShowStyleVariant[]) {
+			if (!this.showStyleVariantsChanged(prevShowStyleVariants) && !this.noShowStyleVariantsPresentInState()) {
+				return
+			}
+
+			if (this.timeout) {
+				Meteor.clearTimeout(this.timeout)
+			}
+			this.timeout = Meteor.setTimeout(() => {
+				this.setState({
+					dndVariants: this.props.showStyleVariants,
+				})
+			}, TIMEOUT_DELAY)
+		}
+
+		componentWillUnmount() {
+			if (this.timeout) {
+				Meteor.clearTimeout(this.timeout)
+			}
+		}
+
+		private showStyleVariantsChanged = (prevShowStyleVariants: ShowStyleVariant[]): boolean => {
+			return prevShowStyleVariants !== this.props.showStyleVariants
+		}
+
+		private noShowStyleVariantsPresentInState = (): boolean => {
+			return this.props.showStyleVariants.length > 0 && this.state.dndVariants.length === 0
 		}
 
 		private importShowStyleVariants = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -55,6 +113,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			}
 
 			const reader = new FileReader()
+
 			reader.onload = () => {
 				this.setState({
 					timestampedFileKey: Date.now(),
@@ -64,8 +123,10 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 				const newShowStyleVariants: ShowStyleVariant[] = []
 				try {
-					JSON.parse(fileContents).map((showStyleVariant) => newShowStyleVariants.push(showStyleVariant))
-					if (!_.isArray(newShowStyleVariants)) {
+					JSON.parse(fileContents).map((showStyleVariant: ShowStyleVariant) =>
+						newShowStyleVariants.push(showStyleVariant)
+					)
+					if (!Array.isArray(newShowStyleVariants)) {
 						throw new Error('Imported file did not contain an array')
 					}
 				} catch (error) {
@@ -87,8 +148,10 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 		private importShowStyleVariantsFromArray = (showStyleVariants: ShowStyleVariant[]): void => {
 			const { t } = this.props
-			showStyleVariants.forEach((showStyleVariant: ShowStyleVariant) => {
-				MeteorCall.showstyles.insertShowStyleVariantWithProperties(showStyleVariant, showStyleVariant._id).catch(() => {
+			showStyleVariants.forEach((showStyleVariant: ShowStyleVariant, index: number) => {
+				const rank = this.state.dndVariants.length
+				showStyleVariant._rank = rank + index
+				MeteorCall.showstyles.importShowStyleVariant(showStyleVariant).catch(() => {
 					NotificationCenter.push(
 						new Notification(
 							undefined,
@@ -105,7 +168,8 @@ export const ShowStyleVariantsSettings = withTranslation()(
 
 		private copyShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
 			showStyleVariant.name = `Copy of ${showStyleVariant.name}`
-			MeteorCall.showstyles.insertShowStyleVariantWithProperties(showStyleVariant).catch(logger.warn)
+			showStyleVariant._rank = this.state.dndVariants.length
+			MeteorCall.showstyles.importShowStyleVariantAsNew(showStyleVariant).catch(logger.warn)
 		}
 
 		private downloadShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
@@ -116,7 +180,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		}
 
 		private downloadAllShowStyleVariants = (): void => {
-			const jsonStr = JSON.stringify(this.props.showStyleVariants)
+			const jsonStr = JSON.stringify(this.state.dndVariants)
 			const fileName = `All variants_${this.props.showStyleBase._id}.json`
 			this.download(jsonStr, fileName)
 		}
@@ -126,9 +190,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
 			element.download = fileName
 
-			document.body.appendChild(element) // Required for this to work in FireFox
 			element.click()
-			document.body.removeChild(element) // Required for this to work in FireFox
 		}
 
 		private isItemEdited = (layerId: ProtectedString<any>): boolean => {
@@ -157,7 +219,7 @@ export const ShowStyleVariantsSettings = withTranslation()(
 		}
 
 		private onAddShowStyleVariant = (): void => {
-			MeteorCall.showstyles.insertShowStyleVariant(this.props.showStyleBase._id).catch(logger.warn)
+			MeteorCall.showstyles.createDefaultShowStyleVariant(this.props.showStyleBase._id).catch(logger.warn)
 		}
 
 		private confirmRemove = (showStyleVariant: ShowStyleVariant): void => {
@@ -181,18 +243,102 @@ export const ShowStyleVariantsSettings = withTranslation()(
 			})
 		}
 
-		private renderShowStyleVariants() {
+		private confirmRemoveAllShowStyleVariants = (): void => {
+			const { t } = this.props
+			doModalDialog({
+				title: t('Remove all variants?'),
+				no: t('Cancel'),
+				yes: t('Remove'),
+				onAccept: () => {
+					this.removeAllShowStyleVariants()
+				},
+				message: (
+					<React.Fragment>
+						<p>{t('Are you sure you want to remove all variants in the table?')}</p>
+					</React.Fragment>
+				),
+			})
+		}
+
+		private removeAllShowStyleVariants = (): void => {
+			this.state.dndVariants.forEach((variant: ShowStyleVariant) => {
+				MeteorCall.showstyles.removeShowStyleVariant(variant._id).catch(logger.warn)
+			})
+		}
+
+		private persistStateVariants = (): void => {
+			MeteorCall.showstyles
+				.reorderAllShowStyleVariants(this.props.showStyleBase._id, this.state.dndVariants)
+				.catch(logger.warn)
+		}
+
+		VariantItem = ({ index, showStyleVariant, moveVariantHandler }) => {
+			const ref = useRef<HTMLTableRowElement>(null)
+			const [{ handlerId }, drop] = useDrop<DraggableVariant, void, { handlerId: Identifier | null }>({
+				accept: ShowStyleDragDropTypes.VARIANT,
+				collect: (monitor: DropTargetMonitor) => ({ handlerId: monitor.getHandlerId() }),
+				hover(variant: DraggableVariant, monitor: DropTargetMonitor) {
+					if (!ref.current) {
+						return
+					}
+					const dragIndex = variant.index
+					const hoverIndex = index
+
+					if (dragIndex === hoverIndex) {
+						return
+					}
+
+					const hoverBoundingRect = ref.current?.getBoundingClientRect()
+					const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+					const clientOffset = monitor.getClientOffset()
+					const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top
+
+					if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+						return
+					}
+
+					if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+						return
+					}
+
+					moveVariantHandler(dragIndex, hoverIndex)
+					variant.index = hoverIndex
+				},
+			})
+
+			const [{ isDragging }, drag] = useDrag({
+				item: { index, type: ShowStyleDragDropTypes.VARIANT },
+				collect: (monitor: DragSourceMonitor) => ({
+					isDragging: monitor.isDragging(),
+				}),
+				end: (_item, monitor) => {
+					if (!monitor.didDrop()) {
+						this.persistStateVariants()
+					}
+				},
+			})
+
+			const opacity = isDragging ? 0.4 : 1
+
+			drag(drop(ref))
+
 			const { t } = this.props
 
-			return this.props.showStyleVariants.map((showStyleVariant) => {
-				return (
-					<React.Fragment key={unprotectString(showStyleVariant._id)}>
+			return (
+				<React.Fragment key={unprotectString(showStyleVariant._id)}>
+					<tbody>
 						<tr
+							data-handler-id={handlerId}
+							ref={ref}
+							style={{ opacity }}
 							className={ClassNames({
 								hl: this.isItemEdited(showStyleVariant._id),
 							})}
 						>
 							<th className="settings-studio-showStyleVariant__name c3">
+								<span className="settings-studio-showStyleVariants-table__drag">
+									<FontAwesomeIcon icon={faGripLines} />
+								</span>
 								{showStyleVariant.name || t('Unnamed variant')}
 							</th>
 							<td className="settings-studio-showStyleVariant__actions table-item-actions c3">
@@ -210,6 +356,8 @@ export const ShowStyleVariantsSettings = withTranslation()(
 								</button>
 							</td>
 						</tr>
+					</tbody>
+					<tbody>
 						{this.isItemEdited(showStyleVariant._id) && (
 							<tr className="expando-details hl">
 								<td colSpan={5}>
@@ -253,40 +401,90 @@ export const ShowStyleVariantsSettings = withTranslation()(
 								</td>
 							</tr>
 						)}
-					</React.Fragment>
-				)
-			})
+					</tbody>
+				</React.Fragment>
+			)
 		}
 
-		render() {
+		VariantList = ({ children, className }) => {
+			const [, drop] = useDrop({
+				accept: ShowStyleDragDropTypes.VARIANT,
+				drop: () => this.persistStateVariants(),
+				collect: (monitor: DropTargetMonitor) => ({
+					isOver: monitor.isOver(),
+					canDrop: monitor.canDrop(),
+				}),
+			})
+
+			return (
+				<table ref={drop} className={className}>
+					{children}
+				</table>
+			)
+		}
+
+		VariantContainer = () => {
+			const moveVariantHandler = useCallback((dragIndex: number, hoverIndex: number) => {
+				const prevState = this.state.dndVariants
+				this.setState({
+					dndVariants: update(prevState, {
+						$splice: [
+							[dragIndex, 1],
+							[hoverIndex, 0, prevState[dragIndex] as ShowStyleVariant],
+						],
+					}),
+				})
+			}, [])
+
+			const returnVariantsForList = () => {
+				return this.state.dndVariants.map((variant: ShowStyleVariant, index: number) => (
+					<this.VariantItem
+						key={unprotectString(variant._id)}
+						index={index}
+						showStyleVariant={variant}
+						moveVariantHandler={moveVariantHandler}
+					></this.VariantItem>
+				))
+			}
+
 			const { t } = this.props
 			return (
 				<div>
 					<h2 className="mhn">{t('Show Style Variants')}</h2>
-					<div className="mod mhs"></div>
-					<table className="table expando settings-studio-showStyleVariants-table">
-						<tbody>{this.renderShowStyleVariants()}</tbody>
-					</table>
-					<div className="mod mhs">
-						<button className="btn btn-primary" onClick={this.onAddShowStyleVariant}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
-						<UploadButton
-							className="btn btn-secondary mls"
-							accept="application/json,.json"
-							onChange={(event) => this.importShowStyleVariants(event)}
-							key={this.state.timestampedFileKey}
-						>
-							<FontAwesomeIcon icon={faUpload} />
-							&nbsp;{t('Import')}
-						</UploadButton>
-						<button className="btn btn-secondary mls" onClick={this.downloadAllShowStyleVariants}>
-							<FontAwesomeIcon icon={faDownload} />
-							&nbsp;{t('Export')}
-						</button>
-					</div>
+					<DndProvider backend={HTML5Backend}>
+						<div>
+							<this.VariantList className="table expando settings-studio-showStyleVariants-table">
+								{returnVariantsForList()}
+							</this.VariantList>
+						</div>
+						<div className="mod mhs">
+							<button className="btn btn-primary" onClick={this.onAddShowStyleVariant}>
+								<FontAwesomeIcon icon={faPlus} />
+							</button>
+							<button className="btn btn-secondary mls" onClick={this.downloadAllShowStyleVariants}>
+								<FontAwesomeIcon icon={faDownload} />
+								&nbsp;{t('Export')}
+							</button>
+							<UploadButton
+								className="btn btn-secondary mls"
+								accept="application/json,.json"
+								onChange={(event) => this.importShowStyleVariants(event)}
+								key={this.state.timestampedFileKey}
+							>
+								<FontAwesomeIcon icon={faUpload} />
+								&nbsp;{t('Import')}
+							</UploadButton>
+							<button className="btn btn-secondary right" onClick={this.confirmRemoveAllShowStyleVariants}>
+								<FontAwesomeIcon icon={faTrash} />
+							</button>
+						</div>
+					</DndProvider>
 				</div>
 			)
+		}
+
+		render() {
+			return <this.VariantContainer />
 		}
 	}
 )

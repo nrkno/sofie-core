@@ -400,6 +400,7 @@ export class MigrationContextShowStyle
 				showStyleBaseId: this.showStyleBase._id,
 				blueprintConfig: {},
 				_rundownVersionHash: '',
+				_rank: 0,
 			})
 		)
 	}
