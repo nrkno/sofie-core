@@ -177,13 +177,15 @@ export async function reorderAllShowStyleVariants(
 }
 
 async function reassignShowStyleVariantIndexes(orderedVariants: ShowStyleVariant[]): Promise<void> {
-	orderedVariants.forEach((variant: ShowStyleVariant, index: number) => {
-		return ShowStyleVariants.upsertAsync(variant._id, {
-			$set: {
-				_rank: index,
-			},
+	await Promise.all(
+		orderedVariants.map(async (variant: ShowStyleVariant, index: number) => {
+			return ShowStyleVariants.upsertAsync(variant._id, {
+				$set: {
+					_rank: index,
+				},
+			})
 		})
-	})
+	)
 }
 
 class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
