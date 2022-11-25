@@ -218,21 +218,25 @@ export async function updateExpectedMediaItemForBucketAdLibAction(
 }
 
 /** @deprecated */
-export function updateExpectedMediaItemsOnRundown(context: JobContext, cache: CacheForIngest): void {
+export async function updateExpectedMediaItemsOnRundown(context: JobContext, cache: CacheForIngest): Promise<void> {
 	const pieces = cache.Pieces.findFetch({})
 	const adlibs = cache.AdLibPieces.findFetch({})
 	const actions: (AdLibAction | RundownBaselineAdLibAction)[] = cache.AdLibActions.findFetch({})
 
-	const baselinePiece = cache.RundownBaselineAdLibPieces.getIfLoaded()?.findFetch({})
-	if (baselinePiece) {
-		adlibs.push(...baselinePiece)
-	}
+	const [baselineAdlibPieces, baselineAdlibActions] = await Promise.all([
+		cache.RundownBaselineAdLibPieces.get(),
+		cache.RundownBaselineAdLibActions.get(),
+	])
 
-	const baseLineActions = cache.RundownBaselineAdLibActions.getIfLoaded()?.findFetch({})
-	if (baseLineActions) {
-		actions.push(...baseLineActions)
-	}
+	adlibs.push(...baselineAdlibPieces.findFetch({}))
+	actions.push(...baselineAdlibActions.findFetch({}))
 
-	const eMIs = generateExpectedMediaItemsFull(context.studio._id, cache.RundownId, pieces, adlibs, actions)
-	saveIntoCache<ExpectedMediaItem>(context, cache.ExpectedMediaItems, {}, eMIs)
+	const expectedMediaItems = generateExpectedMediaItemsFull(
+		context.studio._id,
+		cache.RundownId,
+		pieces,
+		adlibs,
+		actions
+	)
+	saveIntoCache<ExpectedMediaItem>(context, cache.ExpectedMediaItems, {}, expectedMediaItems)
 }
