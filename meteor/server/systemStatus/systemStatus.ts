@@ -21,7 +21,7 @@ import {
 	SystemInstanceId,
 	Component,
 } from '../../lib/api/systemStatus'
-import { getRelevantSystemVersions } from '../coreSystem'
+import { RelevantSystemVersions } from '../coreSystem'
 import { Settings } from '../../lib/Settings'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
@@ -294,7 +294,7 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 		// statusCode: systemStatus,
 		statusCodeString: StatusCode[systemStatus],
 		messages: collectMesages(statusObj),
-		versions: getRelevantSystemVersions(),
+		versions: await RelevantSystemVersions,
 	}
 	statusObj.statusMessage = statusObj._internal.messages.join(', ')
 
