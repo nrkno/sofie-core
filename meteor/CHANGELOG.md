@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.44.1](///compare/v1.44.0...v1.44.1) (2022-11-28)
+
+
+### Bug Fixes
+
+* allow codecov upload to fail ([#776](undefined/undefined/undefined/issues/776)) e05e181
+* empty segment not being hidden 78607c9
+* hide 'set segment as next' when right clicking on a part f99b004
+* **setNextSegment:** next segment isn't selected when setNextSegment is called 521ce15
+* update supertimeline fad98b3
+
 ## [1.44.0](https://github.com/nrkno/sofie-core/compare/v1.44.0-in-testing.3...v1.44.0) (2022-10-24)
 
 ### [1.41.7](https://github.com/nrkno/sofie-core/compare/v1.41.6...v1.41.7) (2022-09-14)
