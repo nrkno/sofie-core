@@ -263,7 +263,7 @@ async function syncConfigPresetsToShowStyles(blueprint: Blueprint): Promise<void
 	const showStyles = (await ShowStyleBases.findFetchAsync(
 		{ blueprintId: blueprint._id },
 		{
-			projection: {
+			fields: {
 				_id: 1,
 				blueprintConfigPresetId: 1,
 			},
@@ -297,7 +297,7 @@ async function syncConfigPresetsToShowStyles(blueprint: Blueprint): Promise<void
 	const variants = (await ShowStyleVariants.findFetchAsync(
 		{ showStyleBaseId: { $in: showStyles.map((s) => s._id) } },
 		{
-			projection: {
+			fields: {
 				_id: 1,
 				showStyleBaseId: 1,
 				blueprintConfigPresetId: 1,
@@ -330,7 +330,7 @@ async function syncConfigPresetsToStudios(blueprint: Blueprint): Promise<void> {
 	const studios = (await Studios.findFetchAsync(
 		{ blueprintId: blueprint._id },
 		{
-			projection: {
+			fields: {
 				_id: 1,
 				blueprintConfigPresetId: 1,
 			},

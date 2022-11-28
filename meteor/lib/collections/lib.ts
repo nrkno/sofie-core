@@ -38,7 +38,7 @@ export function ObserveChangesHelper<DBInterface extends { _id: ProtectedString<
 		projection[field] = 1
 	}
 
-	collection.find({}, { projection }).observeChanges({
+	collection.find({}, { fields: projection }).observeChanges({
 		changed: (id: DBInterface['_id'], changedFields) => {
 			if (Object.keys(changedFields).length > 0) {
 				const data: Timeout | undefined = observedChangesTimeouts.get(id)
@@ -79,7 +79,7 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
 	const doUpdate = async (obj: DBInterface): Promise<void> => {
 		const newHash = getHash(stringifyObjects(_.pick(obj, ...(hashFields as string[]))))
 
-		if (newHash !== obj[hashName]) {
+		if (newHash !== String(obj[hashName])) {
 			logger.debug('Updating hash:', obj._id, `${String(hashName)}:${newHash}`)
 			const update: Partial<DBInterface> = {}
 			update[String(hashName)] = newHash

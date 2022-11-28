@@ -73,7 +73,7 @@ async function checkStudioBlueprintConfigs(updateSystemStatusIds: Set<string>) {
 	const studios = (await Studios.findFetchAsync(
 		{ blueprintId: { $exists: true } },
 		{
-			projection: {
+			fields: {
 				_id: 1,
 				blueprintId: 1,
 				blueprintConfigWithOverrides: 1,
@@ -90,7 +90,7 @@ async function checkStudioBlueprintConfigs(updateSystemStatusIds: Set<string>) {
 				blueprintType: BlueprintManifestType.SHOWSTYLE,
 			},
 			{
-				projection: {
+				fields: {
 					_id: 1,
 					studioConfigManifest: 1,
 				},
@@ -111,7 +111,7 @@ async function checkShowStyleBlueprintConfigs(updateSystemStatusIds: Set<string>
 	const showStyleBases = (await ShowStyleBases.findFetchAsync(
 		{ blueprintId: { $exists: true } },
 		{
-			projection: {
+			fields: {
 				_id: 1,
 				blueprintId: 1,
 				blueprintConfigWithOverrides: 1,
@@ -128,7 +128,7 @@ async function checkShowStyleBlueprintConfigs(updateSystemStatusIds: Set<string>
 				blueprintType: BlueprintManifestType.SHOWSTYLE,
 			},
 			{
-				projection: {
+				fields: {
 					_id: 1,
 					showStyleConfigManifest: 1,
 				},
@@ -139,7 +139,7 @@ async function checkShowStyleBlueprintConfigs(updateSystemStatusIds: Set<string>
 		const variants = (await ShowStyleVariants.findFetchAsync(
 			{ showStyleBaseId: showStyleBase._id },
 			{
-				projection: {
+				fields: {
 					_id: 1,
 					blueprintConfigWithOverrides: 1,
 				},

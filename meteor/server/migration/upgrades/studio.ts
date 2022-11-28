@@ -7,7 +7,7 @@ import { QueueStudioJob } from '../../worker/worker'
 
 export async function validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {
 	const studio = (await Studios.findOneAsync(studioId, {
-		projection: {
+		fields: {
 			_id: 1,
 		},
 	})) as Pick<Studio, '_id'> | undefined
@@ -27,7 +27,7 @@ export async function validateConfigForStudio(studioId: StudioId): Promise<Bluep
 
 export async function runUpgradeForStudio(studioId: StudioId): Promise<void> {
 	const studio = (await Studios.findOneAsync(studioId, {
-		projection: {
+		fields: {
 			_id: 1,
 		},
 	})) as Pick<Studio, '_id'> | undefined

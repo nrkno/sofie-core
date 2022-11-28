@@ -62,7 +62,7 @@ export function checkDatabaseVersions() {
 				const blueprints = (await Blueprints.findFetchAsync(
 					{},
 					{
-						projection: {
+						fields: {
 							_id: 1,
 							blueprintVersion: 1,
 							databaseVersion: 1,
@@ -105,7 +105,7 @@ export function checkDatabaseVersions() {
 						const showStylesForBlueprint = (await ShowStyleBases.findFetchAsync(
 							{ blueprintId: blueprint._id },
 							{
-								projection: { _id: 1 },
+								fields: { _id: 1 },
 							}
 						)) as Array<Pick<ShowStyleBase, '_id'>>
 						for (const showStyleBase of showStylesForBlueprint) {
@@ -123,7 +123,7 @@ export function checkDatabaseVersions() {
 							const studiosForShowStyleBase = (await Studios.findFetchAsync(
 								{ supportedShowStyleBase: showStyleBase._id },
 								{
-									projection: { _id: 1 },
+									fields: { _id: 1 },
 								}
 							)) as Array<Pick<Studio, '_id'>>
 							for (const studio of studiosForShowStyleBase) {

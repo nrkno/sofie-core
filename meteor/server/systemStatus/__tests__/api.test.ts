@@ -12,6 +12,7 @@ import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 
 require('../api')
+require('../../coreSystem/index')
 const PackageInfo = require('../../../package.json')
 
 describe('systemStatus API', () => {
@@ -47,6 +48,7 @@ describe('systemStatus API', () => {
 		testInFiber('REST /health with state BAD', async () => {
 			env = await setupDefaultStudioEnvironment()
 			MeteorMock.mockRunMeteorStartup()
+			await MeteorMock.sleepNoFakeTimers(200)
 
 			// The system is uninitialized, the status will be BAD
 			const expectedStatus0 = StatusCode.BAD
@@ -102,6 +104,7 @@ describe('systemStatus API', () => {
 		testInFiber('REST /health with state GOOD', async () => {
 			env = await setupDefaultStudioEnvironment()
 			MeteorMock.mockRunMeteorStartup()
+			await MeteorMock.sleepNoFakeTimers(200)
 
 			// simulate initialized system
 			setSystemStatus('systemTime', {

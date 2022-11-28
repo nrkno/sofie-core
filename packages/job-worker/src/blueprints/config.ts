@@ -108,7 +108,6 @@ export function preprocessStudioConfig(
 				identifier: `studioId=${studio._id}`,
 			})
 			res = blueprint.preprocessConfig(context, res, compileCoreConfigValues())
-			console.log(res, 'aaa')
 		}
 	} catch (err) {
 		logger.error(`Error in studioBlueprint.preprocessConfig: ${stringifyError(err)}`)

@@ -35,7 +35,7 @@ Meteor.startup(() => {
 
 		const blueprint = (await Blueprints.findOneAsync(
 			{ _id: doc.blueprintId, blueprintType: BlueprintManifestType.STUDIO },
-			{ projection: { _id: 1, studioConfigPresets: 1 } }
+			{ fields: { _id: 1, studioConfigPresets: 1 } }
 		)) as Pick<Blueprint, '_id' | 'studioConfigPresets'> | undefined
 
 		if (!blueprint || !blueprint.studioConfigPresets) {
@@ -94,7 +94,7 @@ Meteor.startup(() => {
 
 		const blueprint = (await Blueprints.findOneAsync(
 			{ _id: doc.blueprintId, blueprintType: BlueprintManifestType.SHOWSTYLE },
-			{ projection: { _id: 1, showStyleConfigPresets: 1 } }
+			{ fields: { _id: 1, showStyleConfigPresets: 1 } }
 		)) as Pick<Blueprint, '_id' | 'showStyleConfigPresets'> | undefined
 
 		if (!blueprint || !blueprint.showStyleConfigPresets) {
@@ -110,7 +110,7 @@ Meteor.startup(() => {
 
 		const variants = (await ShowStyleVariants.findFetchAsync(
 			{ showStyleBaseId: doc._id },
-			{ projection: { blueprintConfigPresetId: 1 } }
+			{ fields: { blueprintConfigPresetId: 1 } }
 		)) as Pick<ShowStyleVariant, '_id' | 'blueprintConfigPresetId'>[]
 
 		const ps: Promise<unknown>[] = [
@@ -182,7 +182,7 @@ Meteor.startup(() => {
 
 		const blueprint = (await Blueprints.findOneAsync(
 			{ _id: showStyleBase.blueprintId, blueprintType: BlueprintManifestType.SHOWSTYLE },
-			{ projection: { _id: 1, showStyleConfigPresets: 1 } }
+			{ fields: { _id: 1, showStyleConfigPresets: 1 } }
 		)) as Pick<Blueprint, '_id' | 'showStyleConfigPresets'> | undefined
 
 		if (!blueprint || !blueprint.showStyleConfigPresets) {

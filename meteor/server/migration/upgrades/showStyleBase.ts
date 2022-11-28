@@ -20,7 +20,7 @@ export async function validateConfigForShowStyleBase(
 	showStyleBaseId: ShowStyleBaseId
 ): Promise<BlueprintValidateConfigForStudioResult> {
 	const showStyleBase = (await ShowStyleBases.findOneAsync(showStyleBaseId, {
-		projection: {
+		fields: {
 			_id: 1,
 			blueprintId: 1,
 			blueprintConfigPresetId: 1,
@@ -68,7 +68,7 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 	logger.info(`Running upgrade for ShowStyleBase "${showStyleBaseId}"`)
 
 	const showStyleBase = (await ShowStyleBases.findOneAsync(showStyleBaseId, {
-		projection: {
+		fields: {
 			_id: 1,
 			blueprintId: 1,
 			blueprintConfigPresetId: 1,

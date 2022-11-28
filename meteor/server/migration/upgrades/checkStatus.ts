@@ -36,7 +36,7 @@ async function checkStudiosUpgradeStatus(): Promise<GetUpgradeStatusResultStudio
 	const studios = (await Studios.findFetchAsync(
 		{},
 		{
-			projection: {
+			fields: {
 				_id: 1,
 				blueprintId: 1,
 				blueprintConfigPresetId: 1,
@@ -53,7 +53,7 @@ async function checkStudiosUpgradeStatus(): Promise<GetUpgradeStatusResultStudio
 			_id: { $in: _.compact(studios.map((st) => st.blueprintId)) },
 		},
 		{
-			projection: {
+			fields: {
 				_id: 1,
 				studioConfigPresets: 1,
 				studioConfigManifest: 1,
@@ -91,7 +91,7 @@ async function checkShowStyleBaseUpgradeStatus(): Promise<GetUpgradeStatusResult
 	const showStyles = (await ShowStyleBases.findFetchAsync(
 		{},
 		{
-			projection: {
+			fields: {
 				_id: 1,
 				blueprintId: 1,
 				blueprintConfigPresetId: 1,
@@ -108,7 +108,7 @@ async function checkShowStyleBaseUpgradeStatus(): Promise<GetUpgradeStatusResult
 			_id: { $in: _.compact(showStyles.map((st) => st.blueprintId)) },
 		},
 		{
-			projection: {
+			fields: {
 				_id: 1,
 				showStyleConfigPresets: 1,
 				showStyleConfigManifest: 1,

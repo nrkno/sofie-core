@@ -30,6 +30,7 @@ describe('systemStatus', () => {
 	testInFiber('getSystemStatus: after startup', async () => {
 		env = await setupDefaultStudioEnvironment()
 		MeteorMock.mockRunMeteorStartup()
+		await MeteorMock.sleepNoFakeTimers(200)
 
 		const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
