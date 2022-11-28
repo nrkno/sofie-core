@@ -31,7 +31,7 @@ import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { Workers } from '../../lib/collections/Workers'
 import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-// import { getUpgradeSystemStatusMessages } from '../migration/upgrades'
+import { getUpgradeSystemStatusMessages } from '../migration/upgrades'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -257,8 +257,8 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 		}
 	}
 
-	// const blueprintUpgradeMessages = await getUpgradeSystemStatusMessages()
-	// statusObj.components.push(...blueprintUpgradeMessages)
+	const blueprintUpgradeMessages = await getUpgradeSystemStatusMessages()
+	statusObj.components.push(...blueprintUpgradeMessages)
 
 	// Check status of devices:
 	let devices: PeripheralDevice[] = []
