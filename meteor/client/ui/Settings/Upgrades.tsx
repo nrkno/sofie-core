@@ -17,6 +17,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
+import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
 export function UpgradesView() {
 	const { t } = useTranslation()
@@ -35,6 +36,10 @@ export function UpgradesView() {
 			})
 			.catch((e) => {
 				console.error('Failed', e)
+
+				NotificationCenter.push(
+					new Notification(undefined, NoticeLevel.WARNING, t('Failed to check status.'), 'UpgradesView')
+				)
 			})
 	}, [refreshToken])
 
@@ -134,9 +139,24 @@ function ShowUpgradesRow({ resourceName, upgradeResult, validateConfig, applyCon
 					onAccept: () => {
 						applyConfig()
 							.then(() => {
-								console.log('done')
+								NotificationCenter.push(
+									new Notification(
+										undefined,
+										NoticeLevel.NOTIFICATION,
+										t('Config for {{name}} upgraded successfully', { name: upgradeResult.name }),
+										'UpgradesView'
+									)
+								)
 							})
 							.catch((e) => {
+								NotificationCenter.push(
+									new Notification(
+										undefined,
+										NoticeLevel.WARNING,
+										t('Config for {{name}} upgraded failed', { name: upgradeResult.name }),
+										'UpgradesView'
+									)
+								)
 								console.error('err', e)
 							})
 					},
@@ -151,9 +171,24 @@ function ShowUpgradesRow({ resourceName, upgradeResult, validateConfig, applyCon
 					onAccept: () => {
 						applyConfig()
 							.then(() => {
-								console.log('done')
+								NotificationCenter.push(
+									new Notification(
+										undefined,
+										NoticeLevel.NOTIFICATION,
+										t('Config for {{name}} upgraded successfully', { name: upgradeResult.name }),
+										'UpgradesView'
+									)
+								)
 							})
 							.catch((e) => {
+								NotificationCenter.push(
+									new Notification(
+										undefined,
+										NoticeLevel.WARNING,
+										t('Config for {{name}} upgraded failed', { name: upgradeResult.name }),
+										'UpgradesView'
+									)
+								)
 								console.error('err', e)
 							})
 					},

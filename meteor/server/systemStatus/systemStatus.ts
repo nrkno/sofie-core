@@ -31,6 +31,7 @@ import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { Workers } from '../../lib/collections/Workers'
 import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getUpgradeSystemStatusMessages } from '../migration/upgrades'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -216,12 +217,12 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 		},
 		checks: checks,
 	}
+	if (!statusObj.components) statusObj.components = []
 
 	// Check status of workers
 	const workerStatuses = await Workers.findFetchAsync({})
 	if (workerStatuses.length) {
 		for (const workerStatus of workerStatuses) {
-			if (!statusObj.components) statusObj.components = []
 			const status = workerStatus.connected ? StatusCode.GOOD : StatusCode.BAD
 			statusObj.components.push(
 				literal<Component>({
@@ -239,7 +240,6 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 
 			const statuses = await WorkerThreadStatuses.findFetchAsync({ workerId: workerStatus._id })
 			for (const wts of statuses) {
-				if (!statusObj.components) statusObj.components = []
 				statusObj.components.push(
 					literal<Component>({
 						name: `worker-${wts.name}`,
@@ -256,6 +256,9 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 			}
 		}
 	}
+
+	const blueprintUpgradeMessages = await getUpgradeSystemStatusMessages()
+	statusObj.components.push(...blueprintUpgradeMessages)
 
 	// Check status of devices:
 	let devices: PeripheralDevice[] = []
