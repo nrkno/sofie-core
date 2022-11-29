@@ -11,7 +11,6 @@ import { DeviceTriggerMountedActionId, PreviewWrappedAdLibId } from '../../../li
 import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { DummyReactiveVar, protectString } from '../../../lib/lib'
-import { logger } from '../../logging'
 import { GlobalTriggerManager } from './GlobalTriggerManager'
 import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from './observer'
 import { ContentCache } from './reactiveContentCache'
@@ -62,7 +61,6 @@ export class StudioDeviceTriggerManager {
 
 		const showStyleBase = cache.ShowStyleBases.findOne(showStyleBaseId)
 		if (!showStyleBase) {
-			logger.debug(`Show Style Base required to process triggered actions`)
 			return
 		}
 
@@ -146,8 +144,6 @@ export class StudioDeviceTriggerManager {
 				$nin: upsertedDeviceTriggerMountedActionIds,
 			},
 		})
-
-		logger.debug(`TriggeredMountedActionIDs: ${upsertedDeviceTriggerMountedActionIds.length}`)
 	}
 
 	dispose() {

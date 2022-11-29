@@ -8,7 +8,7 @@ type Reaction = () => void
 export class ReactiveCacheCollection<
 	Document extends { _id: ProtectedString<any> }
 > extends Mongo.Collection<Document> {
-	constructor(private reaction?: Reaction) {
+	constructor(public collectionName: string, private reaction?: Reaction) {
 		super(null)
 	}
 

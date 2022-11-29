@@ -21,7 +21,7 @@ import { RundownsObserver } from './RundownsObserver'
 
 type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) => () => void
 
-const REACTIVITY_DEBOUNCE = 5
+const REACTIVITY_DEBOUNCE = 20
 
 export class StudioObserver extends EventEmitter {
 	#playlistInStudioLiveQuery: Meteor.LiveQueryHandle
@@ -49,11 +49,11 @@ export class StudioObserver extends EventEmitter {
 						},
 						{
 							projection: {
+								_id: 1,
 								nextPartInstanceId: 1,
 								currentPartInstanceId: 1,
 								activationId: 1,
 							},
-							limit: 1,
 						}
 					) as MongoCursor<
 						Pick<DBRundownPlaylist, '_id' | 'nextPartInstanceId' | 'currentPartInstanceId' | 'activationId'>
@@ -82,16 +82,19 @@ export class StudioObserver extends EventEmitter {
 					activePartInstance: Pick<DBPartInstance, '_id' | 'rundownId'>
 				} | null
 			): void => {
-				if (!state) {
+				const activePlaylistId = state?.activePlaylist?._id
+				const activationId = state?.activePlaylist?.activationId
+				const currentRundownId = state?.activePartInstance?.rundownId
+
+				if (!activePlaylistId || !activationId || !currentRundownId) {
+					logger.silly(`Stopping showStyleOfRundown live query, due to shutdown...`)
+					this.#showStyleOfRundownLiveQuery?.stop()
 					this.activePlaylistId = undefined
 					this.activationId = undefined
-					this.#showStyleOfRundownLiveQuery?.stop()
+					this.currentRundownId = undefined
 					return
 				}
 
-				const currentRundownId = state.activePartInstance?.rundownId
-				const activePlaylistId = state.activePlaylist?._id
-				const activationId = state.activePlaylist?.activationId
 				if (
 					currentRundownId === this.currentRundownId &&
 					activePlaylistId === this.activePlaylistId &&
@@ -99,10 +102,7 @@ export class StudioObserver extends EventEmitter {
 				)
 					return
 
-				logger.debug(`ActivePlaylistId is: "${activePlaylistId}", was: "${this.activePlaylistId}"`)
-				logger.debug(`activationId is: "${activationId}", was: "${this.activationId}"`)
-				logger.debug(`currentRundownId is: "${currentRundownId}", was: "${this.currentRundownId}"`)
-
+				logger.silly(`Stopping showStyleOfRundown live query, will be restarted...`)
 				this.#showStyleOfRundownLiveQuery?.stop()
 				this.#showStyleOfRundownLiveQuery = undefined
 
@@ -110,7 +110,6 @@ export class StudioObserver extends EventEmitter {
 				this.activationId = activationId
 				this.currentRundownId = currentRundownId
 
-				if (!currentRundownId) return
 				this.#showStyleOfRundownLiveQuery = this.setupShowStyleOfRundownObserver(currentRundownId)
 			}
 		),
@@ -145,7 +144,9 @@ export class StudioObserver extends EventEmitter {
 			.end(this.updateShowStyle)
 
 		return {
-			stop: chain.stop,
+			stop: () => {
+				chain.stop()
+			},
 		}
 	}
 
@@ -160,19 +161,16 @@ export class StudioObserver extends EventEmitter {
 					>
 				} | null
 			) => {
-				if (!this.activePlaylistId || !this.activationId) return
 				const showStyleBaseId = state?.showStyleBase._id
 
-				logger.debug(`Current showStyleBaseId is "${this.showStyleBaseId}", turning to "${showStyleBaseId}"`)
-				if (showStyleBaseId === undefined) {
+				if (showStyleBaseId === undefined || !this.activePlaylistId || !this.activationId) {
 					this.#rundownsLiveQuery?.stop()
 					this.#rundownsLiveQuery = undefined
+					this.showStyleBaseId = showStyleBaseId
 					return
 				}
 
 				if (showStyleBaseId === this.showStyleBaseId) return
-
-				logger.debug(`Stopping #rundownsLiveQuery...`)
 
 				this.#rundownsLiveQuery?.stop()
 				this.#rundownsLiveQuery = undefined
@@ -181,30 +179,26 @@ export class StudioObserver extends EventEmitter {
 				const activationId = this.activationId
 				this.showStyleBaseId = showStyleBaseId
 
-				const obs0 = new RundownsObserver(
-					activePlaylistId,
-					Meteor.bindEnvironment((rundownIds) => {
-						const obs1 = new RundownContentObserver(
-							activePlaylistId,
-							showStyleBaseId,
-							rundownIds,
-							activationId,
-							Meteor.bindEnvironment((cache) => {
-								this.#cleanup = this.#changed(showStyleBaseId, cache)
+				const obs0 = new RundownsObserver(activePlaylistId, (rundownIds) => {
+					const obs1 = new RundownContentObserver(
+						activePlaylistId,
+						showStyleBaseId,
+						rundownIds,
+						activationId,
+						(cache) => {
+							this.#cleanup = this.#changed(showStyleBaseId, cache)
 
-								return () => {
-									logger.debug('Destroying old RundownContentObserver')
-								}
-							})
-						)
-
-						return () => {
-							logger.debug('Destroying old RundownsObserver')
-							this.#cleanup?.()
-							obs1.dispose()
+							return () => {
+								void 0
+							}
 						}
-					})
-				)
+					)
+
+					return () => {
+						this.#cleanup?.()
+						obs1.dispose()
+					}
+				})
 
 				this.#rundownsLiveQuery = {
 					stop: () => {

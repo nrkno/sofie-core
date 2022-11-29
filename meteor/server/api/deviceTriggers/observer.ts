@@ -69,8 +69,12 @@ Meteor.startup(() => {
 })
 
 // TODO: These actually don't have to be reactiveCacheCollections, they can be a plain Meteor in-memory collection
-export const DeviceTriggerMountedActions = new ReactiveCacheCollection<DeviceTriggerMountedAction>()
-export const DeviceTriggerMountedActionAdlibsPreview = new ReactiveCacheCollection<PreviewWrappedAdLib>()
+export const DeviceTriggerMountedActions = new ReactiveCacheCollection<DeviceTriggerMountedAction>(
+	'deviceTriggerMountedActions'
+)
+export const DeviceTriggerMountedActionAdlibsPreview = new ReactiveCacheCollection<PreviewWrappedAdLib>(
+	'deviceTriggerMountedActionAdlibsPreview'
+)
 
 export async function receiveTrigger(
 	context: MethodContext,

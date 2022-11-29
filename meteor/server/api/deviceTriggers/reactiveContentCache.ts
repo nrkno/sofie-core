@@ -47,18 +47,27 @@ export function createReactiveContentCache(
 	}
 
 	const cache: ContentCache = {
-		Segments: new ReactiveCacheCollection<DBSegment>(innerReaction),
-		PartInstances: new ReactiveCacheCollection<Pick<DBPartInstance, '_id' | 'part'>>(innerReaction),
-		Parts: new ReactiveCacheCollection<DBPart>(innerReaction),
-		AdLibPieces: new ReactiveCacheCollection<AdLibPiece>(innerReaction),
-		AdLibActions: new ReactiveCacheCollection<AdLibAction>(innerReaction),
-		RundownBaselineAdLibPieces: new ReactiveCacheCollection<RundownBaselineAdLibItem>(innerReaction),
-		RundownBaselineAdLibActions: new ReactiveCacheCollection<RundownBaselineAdLibAction>(innerReaction),
-		ShowStyleBases: new ReactiveCacheCollection<DBShowStyleBase>(innerReaction),
-		TriggeredActions: new ReactiveCacheCollection<DBTriggeredActions>(innerReaction),
+		Segments: new ReactiveCacheCollection<DBSegment>('segments', innerReaction),
+		PartInstances: new ReactiveCacheCollection<Pick<DBPartInstance, '_id' | 'part'>>(
+			'partInstances',
+			innerReaction
+		),
+		Parts: new ReactiveCacheCollection<DBPart>('parts', innerReaction),
+		AdLibPieces: new ReactiveCacheCollection<AdLibPiece>('adLibPieces', innerReaction),
+		AdLibActions: new ReactiveCacheCollection<AdLibAction>('adLibActions', innerReaction),
+		RundownBaselineAdLibPieces: new ReactiveCacheCollection<RundownBaselineAdLibItem>(
+			'rundownBaselineAdLibPieces',
+			innerReaction
+		),
+		RundownBaselineAdLibActions: new ReactiveCacheCollection<RundownBaselineAdLibAction>(
+			'rundownBaselineAdLibActions',
+			innerReaction
+		),
+		ShowStyleBases: new ReactiveCacheCollection<DBShowStyleBase>('showStyleBases', innerReaction),
+		TriggeredActions: new ReactiveCacheCollection<DBTriggeredActions>('triggeredActions', innerReaction),
 		RundownPlaylists: new ReactiveCacheCollection<
 			Pick<DBRundownPlaylist, '_id' | 'name' | 'activationId' | 'currentPartInstanceId' | 'nextPartInstanceId'>
-		>(innerReaction),
+		>('rundownPlaylists', innerReaction),
 	}
 
 	innerReaction()

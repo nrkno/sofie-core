@@ -52,7 +52,6 @@ export function observerChain(): {
 			}
 			const cursorResult = chainedCursor(collectorObject)
 			if (cursorResult === null) {
-				console.log('Stopping chain due to a null cursor result')
 				nextStop()
 				return
 			}

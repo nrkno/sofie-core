@@ -3,7 +3,7 @@ import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dat
 import _ from 'underscore'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 
-const REACTIVITY_DEBOUNCE = 5
+const REACTIVITY_DEBOUNCE = 20
 
 type ChangedHandler = (rundownIds: RundownId[]) => () => void
 
@@ -11,7 +11,7 @@ export class RundownsObserver {
 	#rundownsLiveQuery: Meteor.LiveQueryHandle
 	#rundownIds: Set<RundownId> = new Set<RundownId>()
 	#changed: ChangedHandler | undefined
-	#cleanup: () => void | undefined
+	#cleanup: (() => void) | undefined
 
 	constructor(activePlaylistId: RundownPlaylistId, onChanged: ChangedHandler) {
 		this.#changed = onChanged
@@ -46,15 +46,21 @@ export class RundownsObserver {
 		return Array.from(this.#rundownIds)
 	}
 
-	public updateRundownContent = _.debounce(() => {
+	private innerUpdateRundownContent = () => {
 		if (!this.#changed) return
-		this.#cleanup = this.#changed(this.rundownIds)
-	}, REACTIVITY_DEBOUNCE)
+		const changed = this.#changed
+		this.#cleanup = changed(this.rundownIds)
+	}
+
+	public updateRundownContent = _.debounce(
+		Meteor.bindEnvironment(this.innerUpdateRundownContent),
+		REACTIVITY_DEBOUNCE
+	)
 
 	public dispose = (): void => {
-		this.#changed = undefined
-		this.#cleanup?.()
 		this.updateRundownContent.cancel()
 		this.#rundownsLiveQuery.stop()
+		this.#changed = undefined
+		this.#cleanup?.()
 	}
 }

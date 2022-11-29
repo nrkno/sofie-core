@@ -18,12 +18,12 @@ import { TriggeredActions } from '../../../lib/collections/TriggeredActions'
 import { logger } from '../../logging'
 import { ContentCache, createReactiveContentCache } from './reactiveContentCache'
 
-const REACTIVITY_DEBOUNCE = 5
+const REACTIVITY_DEBOUNCE = 20
 
 type ChangedHandler = (cache: ContentCache) => () => void
 
 export class RundownContentObserver {
-	#observers: Meteor.LiveQueryHandle[]
+	#observers: Meteor.LiveQueryHandle[] = []
 	#cache: ContentCache
 	#cancelCache: () => void
 	#cleanup: () => void
@@ -35,9 +35,9 @@ export class RundownContentObserver {
 		activationId: RundownPlaylistActivationId,
 		onChanged: ChangedHandler
 	) {
-		logger.debug(`Creating RundownContentObserver for playlist "${rundownPlaylistId}" activation "${activationId}"`)
+		logger.silly(`Creating RundownContentObserver for playlist "${rundownPlaylistId}" activation "${activationId}"`)
 		const { cache, cancel: cancelCache } = createReactiveContentCache(() => {
-			logger.debug(`DeviceTriggers observer reacting to change in RundownPlaylist "${rundownPlaylistId}"`)
+			logger.silly(`DeviceTriggers observer reacting to change in RundownPlaylist "${rundownPlaylistId}"`)
 			this.#cleanup = onChanged(cache)
 		}, REACTIVITY_DEBOUNCE)
 
@@ -112,7 +112,7 @@ export class RundownContentObserver {
 	}
 
 	public dispose = (): void => {
-		logger.debug(`Destroying RundownContentObserver`)
+		logger.silly(`Destroying RundownContentObserver`)
 		this.#cancelCache()
 		this.#observers.forEach((observer) => observer.stop())
 		this.#cleanup()
