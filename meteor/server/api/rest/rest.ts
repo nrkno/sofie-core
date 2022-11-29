@@ -9,6 +9,7 @@ import { UserActionAPIMethods } from '../../../lib/api/userActions'
 import { PickerPOST, PickerGET, AsyncRouter } from '../http'
 import { logger } from '../../../lib/logging'
 import { ClientAPI } from '../../../lib/api/client'
+import { waitForPromise } from '../../../lib/lib'
 
 const apiVersion = 0
 
@@ -90,12 +91,15 @@ Meteor.startup(() => {
 
 			assignRoute('GET', resource, docString, (args) => {
 				const convArgs = typeConvertUrlParameters(args)
-				const cursor = f.apply(
-					{
-						ready: () => null,
-					},
-					convArgs
+				const cursor = waitForPromise(
+					f.apply(
+						{
+							ready: () => null,
+						},
+						convArgs
+					)
 				)
+				console.log(f, cursor)
 				if (cursor) return cursor.fetch()
 				return []
 			})
