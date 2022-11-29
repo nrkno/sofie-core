@@ -2,8 +2,8 @@ import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { protectString, protectStringArray } from '@sofie-automation/corelib/dist/protectedString'
+import { ProcessedShowStyleCompound } from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	moveRundownIntoPlaylist,
@@ -19,7 +19,7 @@ import {
 
 describe('Rundown', () => {
 	let context: MockJobContext
-	let showStyle: ReadonlyDeep<ShowStyleCompound>
+	let showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 	beforeAll(async () => {
 		context = setupDefaultJobEnvironment()
 

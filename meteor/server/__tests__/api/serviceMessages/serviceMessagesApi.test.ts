@@ -34,7 +34,6 @@ const fakeCoreSystem: CoreSystem.ICoreSystem = {
 	version: '3',
 	previousVersion: null,
 	serviceMessages: {},
-	storePath: '/dev/null',
 }
 
 describe('Service messages internal API', () => {

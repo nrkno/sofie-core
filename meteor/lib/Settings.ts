@@ -67,14 +67,11 @@ export interface ISettings {
  * Default values for Settings
  */
 const DEFAULT_SETTINGS = Object.freeze<ISettings>({
-	// frameRate: 25,
 	autoRewindLeavingSegment: true,
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
 	enableUserAccounts: false,
-	// preserveUnsyncedPlayingSegmentContents: false,
-	// allowRundownResetOnAir: false,
 	defaultDisplayDuration: 3000,
 	allowMultiplePlaylistsInGUI: false,
 	poisonKey: 'Escape',

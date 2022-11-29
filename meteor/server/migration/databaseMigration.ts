@@ -35,7 +35,7 @@ import {
 } from '../../lib/api/migration'
 import { logger } from '../../lib/logging'
 import { internalStoreSystemSnapshot } from '../api/snapshot'
-import { ShowStyleBaseId, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import {
 	CoreSystem,
@@ -45,8 +45,7 @@ import {
 	setCoreSystemVersion,
 	Version,
 } from '../../lib/collections/CoreSystem'
-import { SnapshotId } from '../../lib/collections/Snapshots'
-import { StudioId, Studios } from '../../lib/collections/Studios'
+import { Studios } from '../../lib/collections/Studios'
 import { getHash, protectString, stringifyError, unprotectString, waitForPromise } from '../../lib/lib'
 import { evalBlueprint } from '../api/blueprints/cache'
 import {
@@ -55,6 +54,8 @@ import {
 	MigrationContextSystem,
 } from '../api/blueprints/migrationContext'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
+import { SnapshotId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getSystemStorePath } from '../coreSystem'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)
@@ -569,8 +570,8 @@ export function runMigration(
 	let snapshotId: SnapshotId = protectString('')
 	if (isFirstOfPartialMigrations) {
 		// First, take a system snapshot:
-		const system = getCoreSystem()
-		if (system && system.storePath) {
+		const storePath = getSystemStorePath()
+		if (storePath) {
 			try {
 				snapshotId = waitForPromise(
 					internalStoreSystemSnapshot(null, null, `Automatic, taken before migration`)

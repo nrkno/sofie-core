@@ -3,10 +3,9 @@ import { Meteor } from 'meteor/meteor'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
 import { IngestDataCache, IngestCacheType, IngestDataCacheObj } from '../../../lib/collections/IngestDataCache'
 import { logger } from '../../../lib/logging'
-import { RundownId } from '../../../lib/collections/Rundowns'
-import { SegmentId } from '../../../lib/collections/Segments'
 import { profiler } from '../profiler'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 
 interface LocalIngestBase {
 	modified: number
@@ -40,8 +39,8 @@ export class RundownIngestDataCache {
 		const ingestRundown = cachedRundown.data as LocalIngestRundown
 		ingestRundown.modified = cachedRundown.modified
 
-		const segmentMap = _.groupBy(this.documents, (e) => unprotectString(e.segmentId) as string)
-		_.each(segmentMap, (objs) => {
+		const segmentMap = groupByToMap(this.documents, 'segmentId')
+		for (const objs of segmentMap.values()) {
 			const segmentEntry = objs.find((e) => e.type === IngestCacheType.SEGMENT)
 			if (segmentEntry) {
 				const ingestSegment = segmentEntry.data as LocalIngestSegment
@@ -59,7 +58,7 @@ export class RundownIngestDataCache {
 				ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 				ingestRundown.segments.push(ingestSegment)
 			}
-		})
+		}
 
 		ingestRundown.segments = _.sortBy(ingestRundown.segments, (s) => s.rank)
 

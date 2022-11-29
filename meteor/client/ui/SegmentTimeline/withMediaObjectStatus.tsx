@@ -7,21 +7,22 @@ import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { RundownUtils } from '../../lib/rundown'
 import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
-import { Studio } from '../../../lib/collections/Studios'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
 import { literal } from '../../../lib/lib'
-import { ExpectedPackageId, getExpectedPackageId } from '../../../lib/collections/ExpectedPackages'
+import { getExpectedPackageId } from '../../../lib/collections/ExpectedPackages'
 import * as _ from 'underscore'
-import { MongoSelector } from '../../../lib/typings/meteor'
+import { MongoQuery } from '../../../lib/typings/meteor'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { AdLibPieceUi } from '../../lib/shelf'
+import { UIStudio } from '../../../lib/api/studios'
+import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 type AnyPiece = {
 	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
 	layer?: ISourceLayer | undefined
 	isLiveLine?: boolean
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 }
 
 type IWrappedComponent<IProps extends AnyPiece, IState> = new (props: IProps, state: IState) => React.Component<
@@ -87,7 +88,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 							if (this.expectedPackageIds.length) {
 								this.subPackageInfos = this.subscribe(
 									PubSub.packageInfos,
-									literal<MongoSelector<PackageInfoDB>>({
+									literal<MongoQuery<PackageInfoDB>>({
 										studioId: this.props.studio._id,
 										packageId: { $in: this.expectedPackageIds },
 									})
@@ -125,7 +126,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 
 					// Check item status
 					if (piece && (piece.sourceLayer || layer) && studio) {
-						const { metadata, packageInfos, status, contentDuration, message } = checkPieceContentStatus(
+						const { metadata, packageInfos, status, contentDuration, messages } = checkPieceContentStatus(
 							WithMediaObjectStatusHOCComponent.unwrapPieceInstance(piece!),
 							piece.sourceLayer || layer,
 							studio
@@ -139,7 +140,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 									status: status,
 									contentMetaData: metadata,
 									contentPackageInfos: packageInfos,
-									message,
+									messages,
 								}
 
 								if (
@@ -169,7 +170,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 									},
 									contentMetaData: metadata,
 									contentPackageInfos: packageInfos,
-									message,
+									messages,
 								}
 
 								if (

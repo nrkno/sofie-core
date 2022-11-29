@@ -6,13 +6,13 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/tv2/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
 		"directory": "packages/playout-gateway"
 	},
 	"bugs": {
-		"url": "https://github.com/tv2/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/tv2/tv-automation-server-core/blob/master/packages/playout-gateway#readme",
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/playout-gateway#readme",
 	"author": {
 		"name": "Johan Nyman",
 		"email": "johan@superfly.tv",
@@ -56,9 +56,9 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
-		"@sofie-automation/server-core-integration": "link:../server-core-integration",
-		"@sofie-automation/shared-lib": "link:../shared-lib",
+		"@sofie-automation/blueprints-integration": "1.48.0-in-development",
+		"@sofie-automation/server-core-integration": "1.48.0-in-development",
+		"@sofie-automation/shared-lib": "1.48.0-in-development",
 		"debug": "^4.3.3",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.3",

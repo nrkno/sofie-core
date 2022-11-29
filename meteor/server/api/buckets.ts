@@ -5,8 +5,7 @@ import { getRandomId, literal } from '../../lib/lib'
 import { BucketSecurity } from '../security/buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { Studios } from '../../lib/collections/Studios'
-import { ShowStyleVariantId, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { AdLibAction, AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibActions, BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { Rundowns } from '../../lib/collections/Rundowns'
@@ -16,6 +15,7 @@ import { StudioContentAccess } from '../security/studio'
 import { Settings } from '../../lib/Settings'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { getShowStyleCompound } from './showStyles'
+import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 

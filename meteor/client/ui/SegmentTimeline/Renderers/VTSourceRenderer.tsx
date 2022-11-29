@@ -22,11 +22,11 @@ import { clone } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
 import StudioContext from '../../RundownView/StudioContext'
-import { Studio } from '../../../../lib/collections/Studios'
 import { Settings } from '../../../../lib/Settings'
+import { UIStudio } from '../../../../lib/api/studios'
 
 interface IProps extends ICustomLayerItemProps {
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 }
 interface IState {
 	scenes?: Array<number>
@@ -613,7 +613,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
 					typeClass={this.props.typeClass}
 					contentMetaData={this.props.piece.contentMetaData}
-					noticeMessage={this.props.piece.message || ''}
+					noticeMessages={this.props.piece.messages || []}
 					renderedDuration={this.props.piece.renderedDuration || undefined}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
 					pieceId={this.props.piece.instance.piece._id}

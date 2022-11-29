@@ -1,5 +1,4 @@
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import { PackageInfo, WithTimeline } from '@sofie-automation/blueprints-integration'
 import {
 	buildFormatString,
 	acceptFormat,
@@ -10,15 +9,19 @@ import {
 import { MediaObjects, MediaInfo, MediaObject, MediaStream, MediaStreamType } from './../collections/MediaObjects'
 import { literal, protectString } from '../lib'
 import {
+	PackageInfo,
+	WithTimeline,
 	ISourceLayer,
 	SourceLayerType,
 	IBlueprintPieceGeneric,
 	PieceLifespan,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
-import { IStudioSettings, Studio } from '../collections/Studios'
+import { IStudioSettings } from '../collections/Studios'
 import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
 import { EmptyPieceTimelineObjectsBlob, PieceGeneric, PieceStatusCode } from '../collections/Pieces'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { UIStudio } from '../api/studios'
 
 describe('lib/mediaObjects', () => {
 	testInFiber('buildFormatString', () => {
@@ -80,7 +83,6 @@ describe('lib/mediaObjects', () => {
 		const acceptedFormats = getAcceptedFormats({
 			supportedMediaFormats: '1920x1080i5000, 1280x720, i5000, i5000tff',
 			mediaPreviewsUrl: '',
-			sofieUrl: '',
 			frameRate: 25,
 		})
 		expect(acceptedFormats).toEqual([
@@ -162,12 +164,14 @@ describe('lib/mediaObjects', () => {
 			supportedMediaFormats: '1920x1080i5000, 1280x720, i5000, i5000tff',
 			mediaPreviewsUrl: '',
 			supportedAudioStreams: '4',
-			sofieUrl: '',
 			frameRate: 25,
 		}
-		const mockStudio: Studio = {
-			...defaultStudio(protectString('studio0')),
+
+		const mockDefaultStudio = defaultStudio(protectString('studio0'))
+		const mockStudio: Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'> = {
+			...mockDefaultStudio,
 			settings: mockStudioSettings,
+			mappings: applyAndValidateOverrides(mockDefaultStudio.mappingsWithOverrides).obj,
 		}
 
 		MediaObjects.insert(
@@ -358,14 +362,20 @@ describe('lib/mediaObjects', () => {
 
 		const status1 = checkPieceContentStatus(piece1, sourcelayer1, mockStudio)
 		expect(status1.status).toEqual(PieceStatusCode.OK)
-		expect(status1.message).toBeFalsy()
+		expect(status1.messages).toHaveLength(0)
 
 		const status2 = checkPieceContentStatus(piece2, sourcelayer1, mockStudio)
 		expect(status2.status).toEqual(PieceStatusCode.SOURCE_BROKEN)
-		expect(status2.message).toContain('has the wrong format:')
+		expect(status2.messages).toHaveLength(1)
+		expect(status2.messages[0]).toMatchObject({
+			key: '{{sourceLayer}} has the wrong format: {{format}}',
+		})
 
 		const status3 = checkPieceContentStatus(piece3, sourcelayer1, mockStudio)
 		expect(status3.status).toEqual(PieceStatusCode.SOURCE_MISSING)
-		expect(status3.message).toContain('is not yet ready on the playout system')
+		expect(status3.messages).toHaveLength(1)
+		expect(status3.messages[0]).toMatchObject({
+			key: '{{sourceLayer}} is not yet ready on the playout system',
+		})
 	})
 })

@@ -6,8 +6,6 @@ import ClassNames from 'classnames'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { RundownHoldState } from '../../../lib/collections/Rundowns'
-import { Studio } from '../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
 import { SegmentTimelinePart } from './Parts/SegmentTimelinePart'
@@ -22,20 +20,17 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
-import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
 import { IContextMenuContext } from '../RundownView'
 import { literal, protectString, unprotectString } from '../../../lib/lib'
-import { SegmentId } from '../../../lib/collections/Segments'
-import { isPartPlayable, PartId } from '../../../lib/collections/Parts'
+import { isPartPlayable } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
 
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownTimingContext } from '../../lib/rundownTiming'
@@ -43,6 +38,10 @@ import { IOutputLayer, ISourceLayer, NoteSeverity } from '@sofie-automation/blue
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
+import { UIStudio } from '../../../lib/api/studios'
+import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { SegmentNoteCounts } from '../SegmentContainer/withResolvedSegment'
 
 interface IProps {
 	id: string
@@ -50,9 +49,9 @@ interface IProps {
 	segment: SegmentUi
 	playlist: RundownPlaylist
 	followLiveSegments: boolean
-	studio: Studio
+	studio: UIStudio
 	parts: Array<PartUi>
-	segmentNotes: Array<SegmentNote>
+	segmentNoteCounts: SegmentNoteCounts
 	timeScale: number
 	maxTimeScale: number
 	onRecalculateMaxTimeScale: () => Promise<number>
@@ -901,18 +900,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	render() {
-		const notes: Array<SegmentNote> = this.props.segmentNotes
-
 		const { t } = this.props
 
-		const criticalNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteSeverity.ERROR) return ++prev
-			return prev
-		}, 0)
-		const warningNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteSeverity.WARNING) return ++prev
-			return prev
-		}, 0)
+		const criticalNotes = this.props.segmentNoteCounts.criticial
+		const warningNotes = this.props.segmentNoteCounts.warning
 
 		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts
 			.map((p) =>

@@ -1,16 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
-import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
-import {
-	PeripheralDevices,
-	PeripheralDeviceId,
-	PeripheralDeviceType,
-	PeripheralDevice,
-} from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDevices, PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, stringifyObjects, literal } from '../../lib/lib'
-import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
 import { registerClassToMeteorMethods } from '../methods'
@@ -29,8 +24,8 @@ import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
 import { MediaObject } from '../../lib/collections/MediaObjects'
 import { MediaManagerIntegration } from './integration/mediaWorkFlows'
-import { MediaWorkFlowId, MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
 import { MOS } from '@sofie-automation/corelib'
 import { determineDiffTime } from './systemTime/systemTime'
 import { getTimeDiff } from './systemTime/api'
@@ -41,8 +36,6 @@ import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerGET, PickerPOST } from './http'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
-import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
-import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
@@ -51,8 +44,25 @@ import {
 	DeviceConfigManifest,
 	TableConfigManifestEntry,
 } from '@sofie-automation/corelib/dist/deviceConfig'
-import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import {
+	PlayoutChangedResults,
+	PeripheralDeviceInitOptions,
+	PeripheralDeviceStatusObject,
+	TimelineTriggerTimeResult,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { checkStudioExists } from '../../lib/collections/optimizations'
+import {
+	ExpectedPackageId,
+	ExpectedPackageWorkStatusId,
+	MediaWorkFlowId,
+	MediaWorkFlowStepId,
+	PeripheralDeviceCommandId,
+	PeripheralDeviceId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	NewPeripheralDeviceAPI,
+	PeripheralDeviceAPIMethods,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -60,7 +70,7 @@ export namespace ServerPeripheralDeviceAPI {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
-		options: PeripheralDeviceAPI.InitOptions
+		options: PeripheralDeviceInitOptions
 	): Promise<PeripheralDeviceId> {
 		triggerWriteAccess() // This is somewhat of a hack, since we want to check if it exists at all, before checking access
 		check(deviceId, String)
@@ -165,8 +175,8 @@ export namespace ServerPeripheralDeviceAPI {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
-		status: PeripheralDeviceAPI.StatusObject
-	): Promise<PeripheralDeviceAPI.StatusObject> {
+		status: PeripheralDeviceStatusObject
+	): Promise<PeripheralDeviceStatusObject> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(deviceId, String)
@@ -222,7 +232,7 @@ export namespace ServerPeripheralDeviceAPI {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
-		results: PeripheralDeviceAPI.TimelineTriggerTimeResult
+		results: TimelineTriggerTimeResult
 	): Promise<void> {
 		const transaction = profiler.startTransaction('timelineTriggerTime', apmNamespace)
 
@@ -709,13 +719,13 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	) {
 		return functionReply(this, deviceId, deviceToken, commandId, err, result)
 	}
-	async initialize(deviceId: PeripheralDeviceId, deviceToken: string, options: PeripheralDeviceAPI.InitOptions) {
+	async initialize(deviceId: PeripheralDeviceId, deviceToken: string, options: PeripheralDeviceInitOptions) {
 		return ServerPeripheralDeviceAPI.initialize(this, deviceId, deviceToken, options)
 	}
 	async unInitialize(deviceId: PeripheralDeviceId, deviceToken: string) {
 		return ServerPeripheralDeviceAPI.unInitialize(this, deviceId, deviceToken)
 	}
-	async setStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: PeripheralDeviceAPI.StatusObject) {
+	async setStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: PeripheralDeviceStatusObject) {
 		return ServerPeripheralDeviceAPI.setStatus(this, deviceId, deviceToken, status)
 	}
 	async ping(deviceId: PeripheralDeviceId, deviceToken: string) {
@@ -745,11 +755,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	}
 
 	// ------ Playout Gateway --------
-	async timelineTriggerTime(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		r: PeripheralDeviceAPI.TimelineTriggerTimeResult
-	) {
+	async timelineTriggerTime(deviceId: PeripheralDeviceId, deviceToken: string, r: TimelineTriggerTimeResult) {
 		return ServerPeripheralDeviceAPI.timelineTriggerTime(this, deviceId, deviceToken, r)
 	}
 	async playoutPlaybackChanged(

@@ -8,15 +8,11 @@ import {
 	unprotectString,
 	objectPathGet,
 	objectPathSet,
-	omit,
+	clone,
+	Complete,
 } from '../../../lib/lib'
 import { Studios, Studio, DBStudio } from '../../../lib/collections/Studios'
-import {
-	ShowStyleBase,
-	ShowStyleBases,
-	DBShowStyleBase,
-	ShowStyleBaseId,
-} from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
 import {
 	ConfigItemValue,
@@ -33,18 +29,27 @@ import {
 	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
 
-import {
-	ShowStyleVariants,
-	ShowStyleVariant,
-	ShowStyleVariantId,
-	DBShowStyleVariant,
-} from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants, ShowStyleVariant, DBShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { check } from '../../../lib/check'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
-import { TriggeredActionId, TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+import { TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { Match } from 'meteor/check'
 import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ShowStyleBaseId, ShowStyleVariantId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+
+function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj): IBlueprintTriggeredActions {
+	const obj: Complete<IBlueprintTriggeredActions> = {
+		_id: unprotectString(triggeredAction._id),
+		_rank: triggeredAction._rank,
+		name: triggeredAction.name,
+		triggers: clone(triggeredAction.triggersWithOverrides.defaults),
+		actions: clone(triggeredAction.actionsWithOverrides.defaults),
+	}
+
+	return obj
+}
 
 class AbstractMigrationContextWithTriggeredActions {
 	protected showStyleBaseId: ShowStyleBaseId | null = null
@@ -57,7 +62,7 @@ class AbstractMigrationContextWithTriggeredActions {
 	getAllTriggeredActions(): IBlueprintTriggeredActions[] {
 		return TriggeredActions.find({
 			showStyleBaseId: this.showStyleBaseId,
-		}).map((triggeredActions) => unprotectObject(triggeredActions))
+		}).map(convertTriggeredActionToBlueprints)
 	}
 	private getTriggeredActionFromDb(triggeredActionId: string): TriggeredActionsObj | undefined {
 		const triggeredAction = TriggeredActions.findOne({
@@ -78,24 +83,34 @@ class AbstractMigrationContextWithTriggeredActions {
 			throw new Meteor.Error(500, `Triggered actions Id "${triggeredActionId}" is invalid`)
 		}
 
-		return unprotectObject(this.getTriggeredActionFromDb(triggeredActionId))
+		const obj = this.getTriggeredActionFromDb(triggeredActionId)
+		return obj ? convertTriggeredActionToBlueprints(obj) : undefined
 	}
 	setTriggeredAction(triggeredActions: IBlueprintTriggeredActions) {
 		check(triggeredActions, Object)
 		check(triggeredActions._id, String)
 		check(triggeredActions._rank, Number)
-		check(triggeredActions.actions, Array)
-		check(triggeredActions.triggers, Array)
+		check(triggeredActions.actions, Object)
+		check(triggeredActions.triggers, Object)
 		check(triggeredActions.name, Match.OneOf(Match.Optional(Object), Match.Optional(String)))
 		if (!triggeredActions) {
 			throw new Meteor.Error(500, `Triggered Actions object is invalid`)
 		}
 
+		const newObj: Omit<TriggeredActionsObj, '_id' | '_rundownVersionHash' | 'showStyleBaseId'> = {
+			// _rundownVersionHash: '',
+			// _id: this.getProtectedTriggeredActionId(triggeredActions._id),
+			_rank: triggeredActions._rank,
+			name: triggeredActions.name,
+			triggersWithOverrides: wrapDefaultObject(triggeredActions.triggers),
+			actionsWithOverrides: wrapDefaultObject(triggeredActions.actions),
+			blueprintUniqueId: triggeredActions._id,
+		}
+
 		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActions._id)
 		if (!currentTriggeredAction) {
 			TriggeredActions.insert({
-				...triggeredActions,
-				_rundownVersionHash: '',
+				...newObj,
 				showStyleBaseId: this.showStyleBaseId,
 				_id: this.getProtectedTriggeredActionId(triggeredActions._id),
 			})
@@ -105,9 +120,7 @@ class AbstractMigrationContextWithTriggeredActions {
 					_id: currentTriggeredAction._id,
 				},
 				{
-					$set: {
-						...omit(triggeredActions, '_id'),
-					},
+					$set: newObj,
 				}
 			)
 		}
@@ -141,12 +154,12 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 	getMapping(mappingId: string): BlueprintMapping | undefined {
 		check(mappingId, String)
-		const mapping = this.studio.mappings[mappingId]
-		if (mapping) return unprotectObject(_.clone(mapping))
+		const mapping = this.studio.mappingsWithOverrides.defaults[mappingId]
+		if (mapping) return unprotectObject(clone(mapping))
 	}
 	insertMapping(mappingId: string, mapping: OmitId<BlueprintMapping>): string {
 		check(mappingId, String)
-		if (this.studio.mappings[mappingId]) {
+		if (this.studio.mappingsWithOverrides.defaults[mappingId]) {
 			throw new Meteor.Error(404, `Mapping "${mappingId}" cannot be inserted as it already exists`)
 		}
 		if (!mappingId) {
@@ -154,38 +167,41 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		}
 
 		const m: any = {}
-		m['mappings.' + mappingId] = mapping
+		m['mappingsWithOverrides.defaults.' + mappingId] = mapping
 		Studios.update(this.studio._id, { $set: m })
-		this.studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
+		this.studio.mappingsWithOverrides.defaults[mappingId] = m['mappingsWithOverrides.defaults.' + mappingId] // Update local
 		return mappingId
 	}
 	updateMapping(mappingId: string, mapping: Partial<BlueprintMapping>): void {
 		check(mappingId, String)
-		if (!this.studio.mappings[mappingId]) {
+		if (!this.studio.mappingsWithOverrides.defaults[mappingId]) {
 			throw new Meteor.Error(404, `Mapping "${mappingId}" cannot be updated as it does not exist`)
 		}
 
 		if (mappingId) {
 			const m: any = {}
-			m['mappings.' + mappingId] = _.extend(this.studio.mappings[mappingId], mapping)
+			m['mappingsWithOverrides.defaults.' + mappingId] = _.extend(
+				this.studio.mappingsWithOverrides.defaults[mappingId],
+				mapping
+			)
 			Studios.update(this.studio._id, { $set: m })
-			this.studio.mappings[mappingId] = m['mappings.' + mappingId] // Update local
+			this.studio.mappingsWithOverrides.defaults[mappingId] = m['mappingsWithOverrides.defaults.' + mappingId] // Update local
 		}
 	}
 	removeMapping(mappingId: string): void {
 		check(mappingId, String)
 		if (mappingId) {
 			const m: any = {}
-			m['mappings.' + mappingId] = 1
+			m['mappingsWithOverrides.defaults.' + mappingId] = 1
 			Studios.update(this.studio._id, { $unset: m })
-			delete this.studio.mappings[mappingId] // Update local
+			delete this.studio.mappingsWithOverrides.defaults[mappingId] // Update local
 		}
 	}
 
 	getConfig(configId: string): ConfigItemValue | undefined {
 		check(configId, String)
 		if (configId === '') return undefined
-		const configItem = objectPathGet(this.studio.blueprintConfig, configId)
+		const configItem = objectPathGet(this.studio.blueprintConfigWithOverrides.defaults, configId)
 		return trimIfString(configItem)
 	}
 	setConfig(configId: string, value: ConfigItemValue): void {
@@ -200,17 +216,17 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		if (value === undefined) {
 			modifier = {
 				$unset: {
-					[`blueprintConfig.${configId}`]: 1,
+					[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
 				},
 			}
-			objectPath.del(this.studio.blueprintConfig, configId) // Update local
+			objectPath.del(this.studio.blueprintConfigWithOverrides.defaults, configId) // Update local
 		} else {
 			modifier = {
 				$set: {
-					[`blueprintConfig.${configId}`]: value,
+					[`blueprintConfigWithOverrides.defaults.${configId}`]: value,
 				},
 			}
-			objectPathSet(this.studio.blueprintConfig, configId, value) // Update local
+			objectPathSet(this.studio.blueprintConfigWithOverrides.defaults, configId, value) // Update local
 		}
 		Studios.update(
 			{
@@ -229,12 +245,12 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 				},
 				{
 					$unset: {
-						[`blueprintConfig.${configId}`]: 1,
+						[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
 					},
 				}
 			)
 			// Update local:
-			objectPath.del(this.studio.blueprintConfig, configId)
+			objectPath.del(this.studio.blueprintConfigWithOverrides.defaults, configId)
 		}
 	}
 
@@ -279,7 +295,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		}
 
 		const settings = parentDevice.settings as PlayoutDeviceSettings | undefined
-		if (settings && settings.devices[deviceId]) {
+		if (settings && settings.devices && settings.devices[deviceId]) {
 			throw new Meteor.Error(404, `Device "${deviceId}" cannot be inserted as it already exists`)
 		}
 
@@ -398,7 +414,7 @@ export class MigrationContextShowStyle
 				...variant,
 				_id: this.getProtectedVariantId(variantId),
 				showStyleBaseId: this.showStyleBase._id,
-				blueprintConfig: {},
+				blueprintConfigWithOverrides: wrapDefaultObject({}),
 				_rundownVersionHash: '',
 				_rank: 0,
 			})
@@ -431,7 +447,7 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `SourceLayer id "${sourceLayerId}" is invalid`)
 		}
 
-		return _.find(this.showStyleBase.sourceLayers, (part) => part._id === sourceLayerId)
+		return this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId]
 	}
 	insertSourceLayer(sourceLayerId: string, layer: OmitId<ISourceLayer>): string {
 		check(sourceLayerId, String)
@@ -439,7 +455,7 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `SourceLayer id "${sourceLayerId}" is invalid`)
 		}
 
-		const oldLayer = _.find(this.showStyleBase.sourceLayers, (part) => part._id === sourceLayerId)
+		const oldLayer = this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId]
 		if (oldLayer) {
 			throw new Meteor.Error(500, `SourceLayer "${sourceLayerId}" already exists`)
 		}
@@ -453,13 +469,12 @@ export class MigrationContextShowStyle
 				_id: this.showStyleBase._id,
 			},
 			{
-				$push: {
-					sourceLayers: fullLayer,
+				$set: {
+					[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: fullLayer,
 				},
 			}
 		)
-		if (!this.showStyleBase.sourceLayers) this.showStyleBase.sourceLayers = []
-		this.showStyleBase.sourceLayers.push(fullLayer) // Update local
+		this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId] = fullLayer // Update local
 		return fullLayer._id
 	}
 	updateSourceLayer(sourceLayerId: string, layer: Partial<ISourceLayer>): void {
@@ -468,13 +483,13 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `SourceLayer id "${sourceLayerId}" is invalid`)
 		}
 
-		const localLayerIndex = _.findIndex(this.showStyleBase.sourceLayers, (part) => part._id === sourceLayerId)
-		if (localLayerIndex === -1) {
+		const oldLayer = this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId]
+		if (!oldLayer) {
 			throw new Meteor.Error(404, `SourceLayer "${sourceLayerId}" cannot be updated as it does not exist`)
 		}
 
 		const fullLayer = {
-			...this.showStyleBase.sourceLayers[localLayerIndex],
+			...oldLayer,
 			...layer,
 		}
 		ShowStyleBases.update(
@@ -484,11 +499,11 @@ export class MigrationContextShowStyle
 			},
 			{
 				$set: {
-					'sourceLayers.$': fullLayer,
+					[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: fullLayer,
 				},
 			}
 		)
-		this.showStyleBase.sourceLayers[localLayerIndex] = fullLayer // Update local
+		this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId] = fullLayer // Update local
 	}
 	removeSourceLayer(sourceLayerId: string): void {
 		check(sourceLayerId, String)
@@ -501,15 +516,13 @@ export class MigrationContextShowStyle
 				_id: this.showStyleBase._id,
 			},
 			{
-				$pull: {
-					sourceLayers: {
-						_id: sourceLayerId,
-					},
+				$unset: {
+					[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: 1,
 				},
 			}
 		)
 		// Update local:
-		this.showStyleBase.sourceLayers = _.reject(this.showStyleBase.sourceLayers, (c) => c._id === sourceLayerId)
+		delete this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId]
 	}
 	getOutputLayer(outputLayerId: string): IOutputLayer | undefined {
 		check(outputLayerId, String)
@@ -517,7 +530,7 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `OutputLayer id "${outputLayerId}" is invalid`)
 		}
 
-		return _.find(this.showStyleBase.outputLayers, (part) => part._id === outputLayerId)
+		return this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId]
 	}
 	insertOutputLayer(outputLayerId: string, layer: OmitId<IOutputLayer>): string {
 		check(outputLayerId, String)
@@ -525,7 +538,7 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `OutputLayer id "${outputLayerId}" is invalid`)
 		}
 
-		const oldLayer = _.find(this.showStyleBase.outputLayers, (part) => part._id === outputLayerId)
+		const oldLayer = this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId]
 		if (oldLayer) {
 			throw new Meteor.Error(500, `OutputLayer "${outputLayerId}" already exists`)
 		}
@@ -539,13 +552,13 @@ export class MigrationContextShowStyle
 				_id: this.showStyleBase._id,
 			},
 			{
-				$push: {
-					outputLayers: fullLayer,
+				$set: {
+					[`outputLayersWithOverrides.defaults.${outputLayerId}`]: fullLayer,
 				},
 			}
 		)
-		if (!this.showStyleBase.outputLayers) this.showStyleBase.outputLayers = []
-		this.showStyleBase.outputLayers.push(fullLayer) // Update local
+
+		this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId] = fullLayer // Update local
 		return fullLayer._id
 	}
 	updateOutputLayer(outputLayerId: string, layer: Partial<IOutputLayer>): void {
@@ -554,27 +567,26 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `OutputLayer id "${outputLayerId}" is invalid`)
 		}
 
-		const localLayerIndex = _.findIndex(this.showStyleBase.outputLayers, (part) => part._id === outputLayerId)
-		if (localLayerIndex === -1) {
+		const oldLayer = this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId]
+		if (!oldLayer) {
 			throw new Meteor.Error(404, `OutputLayer "${outputLayerId}" cannot be updated as it does not exist`)
 		}
 
 		const fullLayer = {
-			...this.showStyleBase.outputLayers[localLayerIndex],
+			...oldLayer,
 			...layer,
 		}
 		ShowStyleBases.update(
 			{
 				_id: this.showStyleBase._id,
-				'outputLayers._id': outputLayerId,
 			},
 			{
 				$set: {
-					'outputLayers.$': fullLayer,
+					[`outputLayersWithOverrides.defaults.${outputLayerId}`]: fullLayer,
 				},
 			}
 		)
-		this.showStyleBase.outputLayers[localLayerIndex] = fullLayer // Update local
+		this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId] = fullLayer // Update local
 	}
 	removeOutputLayer(outputLayerId: string): void {
 		check(outputLayerId, String)
@@ -587,20 +599,18 @@ export class MigrationContextShowStyle
 				_id: this.showStyleBase._id,
 			},
 			{
-				$pull: {
-					outputLayers: {
-						_id: outputLayerId,
-					},
+				$unset: {
+					[`outputLayersWithOverrides.defaults.${outputLayerId}`]: 1,
 				},
 			}
 		)
 		// Update local:
-		this.showStyleBase.outputLayers = _.reject(this.showStyleBase.outputLayers, (c) => c._id === outputLayerId)
+		delete this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId]
 	}
 	getBaseConfig(configId: string): ConfigItemValue | undefined {
 		check(configId, String)
 		if (configId === '') return undefined
-		const configItem = objectPathGet(this.showStyleBase.blueprintConfig, configId)
+		const configItem = objectPathGet(this.showStyleBase.blueprintConfigWithOverrides.defaults, configId)
 		return trimIfString(configItem)
 	}
 	setBaseConfig(configId: string, value: ConfigItemValue): void {
@@ -615,7 +625,7 @@ export class MigrationContextShowStyle
 
 		const modifier: MongoModifier<DBShowStyleBase> = {
 			$set: {
-				[`blueprintConfig.${configId}`]: value,
+				[`blueprintConfigWithOverrides.defaults.${configId}`]: value,
 			},
 		}
 		ShowStyleBases.update(
@@ -624,7 +634,7 @@ export class MigrationContextShowStyle
 			},
 			modifier
 		)
-		objectPathSet(this.showStyleBase.blueprintConfig, configId, value) // Update local
+		objectPathSet(this.showStyleBase.blueprintConfigWithOverrides.defaults, configId, value) // Update local
 	}
 	removeBaseConfig(configId: string): void {
 		check(configId, String)
@@ -635,12 +645,12 @@ export class MigrationContextShowStyle
 				},
 				{
 					$unset: {
-						[`blueprintConfig.${configId}`]: 1,
+						[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
 					},
 				}
 			)
 			// Update local:
-			objectPath.del(this.showStyleBase.blueprintConfig, configId)
+			objectPath.del(this.showStyleBase.blueprintConfigWithOverrides.defaults, configId)
 		}
 	}
 	getVariantConfig(variantId: string, configId: string): ConfigItemValue | undefined {
@@ -651,7 +661,7 @@ export class MigrationContextShowStyle
 		const variant = this.getVariantFromDb(variantId)
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
-		const configItem = objectPathGet(variant.blueprintConfig, configId)
+		const configItem = objectPathGet(variant.blueprintConfigWithOverrides.defaults, configId)
 		return trimIfString(configItem)
 	}
 	setVariantConfig(variantId: string, configId: string, value: ConfigItemValue): void {
@@ -671,7 +681,7 @@ export class MigrationContextShowStyle
 
 		const modifier: MongoModifier<DBShowStyleVariant> = {
 			$set: {
-				[`blueprintConfig.${configId}`]: value,
+				[`blueprintConfigWithOverrides.defaults.${configId}`]: value,
 			},
 		}
 		ShowStyleVariants.update(
@@ -680,7 +690,7 @@ export class MigrationContextShowStyle
 			},
 			modifier
 		)
-		objectPathSet(variant.blueprintConfig, configId, value) // Update local
+		objectPathSet(variant.blueprintConfigWithOverrides.defaults, configId, value) // Update local
 	}
 	removeVariantConfig(variantId: string, configId: string): void {
 		check(variantId, String)
@@ -696,12 +706,12 @@ export class MigrationContextShowStyle
 				},
 				{
 					$unset: {
-						[`blueprintConfig.${configId}`]: 1,
+						[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
 					},
 				}
 			)
 			// Update local:
-			objectPath.del(variant.blueprintConfig, configId)
+			objectPath.del(variant.blueprintConfigWithOverrides.defaults, configId)
 		}
 	}
 }

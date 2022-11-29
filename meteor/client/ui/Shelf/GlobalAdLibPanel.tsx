@@ -1,10 +1,8 @@
 import React, { useMemo } from 'react'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IAdLibListItem } from './AdLibListItem'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { AdLibPanel } from './AdLibPanel'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import { literal } from '../../../lib/lib'
 import {
@@ -15,11 +13,13 @@ import {
 import { ShelfTabs } from './Shelf'
 import { useTranslation } from 'react-i18next'
 import { AdLibPieceUi } from '../../lib/shelf'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 
 interface IProps {
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
-	studio: Studio
+	showStyleBase: UIShowStyleBase
+	studio: UIStudio
 	visible: boolean
 	studioMode: boolean
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined

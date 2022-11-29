@@ -57,6 +57,7 @@ export class StudioWorkerChild {
 		// Load some 'static' data from the db
 		const dataCache = await loadWorkerDataCache(collections, this.#studioId)
 
+		// Now that everything is loaded, set #staticData to mark it as initialised:
 		this.#staticData = {
 			mongoClient,
 			collections,

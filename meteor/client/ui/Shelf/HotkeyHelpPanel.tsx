@@ -2,7 +2,6 @@ import React, { useContext } from 'react'
 import type { Sorensen } from '@sofie-automation/sorensen'
 import { useTranslation } from 'react-i18next'
 import { hotkeyHelper } from '../../lib/hotkeyHelper'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	MountedAdLibTrigger,
@@ -15,10 +14,11 @@ import { codesToKeyLabels } from '../../lib/triggers/codesToKeyLabels'
 import { TFunction } from 'i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { MongoCursor } from '../../../lib/collections/lib'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 interface IProps {
 	visible?: boolean
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 
 	hotkeys: Array<{
 		key: string

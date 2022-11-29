@@ -2,6 +2,7 @@ import {
 	IBlueprintPieceType,
 	Timeline as TimelineTypes,
 	TimelineObjectCoreExt,
+	TSR,
 } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
@@ -27,10 +28,10 @@ function getBestPieceInstanceId(piece: PieceInstance): string {
 }
 
 function tryActivateKeyframesForObject(
-	obj: TimelineObjectCoreExt,
+	obj: TimelineObjectCoreExt<TSR.TSRTimelineContent>,
 	hasTransition: boolean,
 	classesFromPreviousPart: string[] | undefined
-): TimelineObjectCoreExt['content'] {
+): TSR.TSRTimelineContent {
 	// Try and find a keyframe that is used when in a transition
 	if (hasTransition) {
 		let transitionKF: TimelineTypes.TimelineKeyframe | undefined

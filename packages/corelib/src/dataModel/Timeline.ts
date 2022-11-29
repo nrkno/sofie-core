@@ -20,14 +20,14 @@ export { PartPlaybackCallbackData, PiecePlaybackCallbackData }
 export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
 
 export interface OnGenerateTimelineObjExt<TMetadata = unknown, TKeyframeMetadata = unknown>
-	extends SetRequired<OnGenerateTimelineObj<TMetadata, TKeyframeMetadata>, 'metaData'> {
+	extends SetRequired<OnGenerateTimelineObj<TSR.TSRTimelineContent, TMetadata, TKeyframeMetadata>, 'metaData'> {
 	/** The id of the partInstance this object belongs to */
 	partInstanceId: PartInstanceId | null
 	/** If this is from an infinite piece, the id of the infinite instance */
 	infinitePieceInstanceId?: PieceInstanceInfiniteId
 }
 
-export interface TimelineObjGeneric extends TimelineObjectCoreExt {
+export interface TimelineObjGeneric extends TimelineObjectCoreExt<TSR.TSRTimelineContent> {
 	/** Unique within a timeline (ie within a studio) */
 	id: string
 	/** Set when the id of the object is prefixed */

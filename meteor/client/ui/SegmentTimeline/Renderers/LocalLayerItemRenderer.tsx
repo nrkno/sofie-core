@@ -61,16 +61,14 @@ export class LocalLayerItemRenderer extends CustomLayerItemRenderer<IProps, ISta
 									<span
 										style={{ color: color.startsWith('#') ? color : `#${color}` }}
 										className="segment-timeline__piece__label segment-timeline__piece__label__colored-mark"
-									>
-										·
-									</span>
+									></span>
 								)}
 								<span className="segment-timeline__piece__label">{this.props.piece.instance.piece.name}</span>
 							</span>
 						</span>
 					) : null}
 					<span
-						className="segment-timeline__piece__label right-side"
+						className="segment-timeline__piece__label right-side overflow-label"
 						ref={this.setRightLabelRef}
 						style={this.getItemLabelOffsetRight()}
 					>

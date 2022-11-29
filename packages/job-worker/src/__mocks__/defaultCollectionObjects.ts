@@ -20,6 +20,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getRundownId } from '../ingest/lib'
 import { getCurrentTime } from '../lib'
 import { IBlueprintPieceType, PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): DBRundownPlaylist {
 	return {
@@ -91,13 +92,12 @@ export function defaultStudio(_id: StudioId): DBStudio {
 
 		name: 'mockStudio',
 		organizationId: null,
-		mappings: {},
+		mappingsWithOverrides: wrapDefaultObject({}),
 		supportedShowStyleBase: [],
-		blueprintConfig: {},
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		settings: {
 			frameRate: 25,
 			mediaPreviewsUrl: '',
-			sofieUrl: '',
 		},
 		_rundownVersionHash: '',
 		routeSets: {},

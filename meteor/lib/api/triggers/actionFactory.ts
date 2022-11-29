@@ -13,10 +13,10 @@ import { TFunction } from 'i18next'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { MeteorCall } from '../methods'
-import { PartInstance, PartInstanceId, PartInstances } from '../../collections/PartInstances'
-import { PartId, Parts } from '../../collections/Parts'
-import { RundownPlaylist, RundownPlaylistCollectionUtil, RundownPlaylistId } from '../../collections/RundownPlaylists'
-import { ShowStyleBase } from '../../collections/ShowStyleBases'
+import { PartInstance, PartInstances } from '../../collections/PartInstances'
+import { Parts } from '../../collections/Parts'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../collections/RundownPlaylists'
+import { ShowStyleBase, SourceLayers } from '../../collections/ShowStyleBases'
 import { Studio } from '../../collections/Studios'
 import { assertNever } from '../../lib'
 import { logger } from '../../logging'
@@ -30,8 +30,8 @@ import {
 	IWrappedAdLib,
 } from './actionFilterChainCompilers'
 import { ClientAPI } from '../client'
-import { RundownId } from '../../collections/Rundowns'
 import { ReactiveVar } from 'meteor/reactive-var'
+import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
@@ -193,15 +193,15 @@ function createRundownPlaylistContext(
  * particular AdLib type
  *
  * @param {AdLibFilterChainLink[]} filterChain
- * @param {ShowStyleBase} showStyleBase
+ * @param {SourceLayers} sourceLayers
  * @return {*}  {ExecutableAdLibAction}
  */
 function createAdLibAction(
 	filterChain: AdLibFilterChainLink[],
-	showStyleBase: ShowStyleBase,
+	sourceLayers: SourceLayers,
 	actionArguments: IAdlibPlayoutActionArguments | undefined
 ): ExecutableAdLibAction {
-	const compiledAdLibFilter = compileAdLibFilter(filterChain, showStyleBase)
+	const compiledAdLibFilter = compileAdLibFilter(filterChain, sourceLayers)
 
 	return {
 		action: PlayoutActions.adlib,
@@ -433,6 +433,17 @@ function createRundownPlaylistSoftResetRundownAction(_filterChain: IGUIContextFi
 	}
 }
 
+function createTakeRundownSnapshotAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
+	return {
+		action: PlayoutActions.createSnapshotForDebug,
+		execute: (_t, e) => {
+			RundownViewEventBus.emit(RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, {
+				context: e,
+			})
+		},
+	}
+}
+
 /**
  * A utility method to create an ExecutableAction wrapping a simple UserAction call that takes some variables from
  * InternalActionContext as input
@@ -461,10 +472,10 @@ function createUserActionWithCtx(
 /**
  * This is a factory method to create the ExecutableAction from a SomeAction-type description
  * @param action
- * @param showStyleBase
+ * @param sourceLayers
  * @returns
  */
-export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): ExecutableAction {
+export function createAction(action: SomeAction, sourceLayers: SourceLayers): ExecutableAction {
 	switch (action.action) {
 		case ClientActions.shelf:
 			return createShelfAction(action.filterChain, action.state)
@@ -473,7 +484,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 		case ClientActions.rewindSegments:
 			return createRewindSegmentsAction(action.filterChain)
 		case PlayoutActions.adlib:
-			return createAdLibAction(action.filterChain, showStyleBase, action.arguments || undefined)
+			return createAdLibAction(action.filterChain, sourceLayers, action.arguments || undefined)
 		case PlayoutActions.activateRundownPlaylist:
 			if (action.force) {
 				return createUserActionWithCtx(
@@ -523,9 +534,13 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				MeteorCall.userAction.disableNextPiece(e, ts, ctx.rundownPlaylistId.get(), !!action.undo)
 			)
 		case PlayoutActions.createSnapshotForDebug:
-			return createUserActionWithCtx(action, UserAction.CREATE_SNAPSHOT_FOR_DEBUG, async (e, ts, ctx) =>
-				MeteorCall.userAction.storeRundownSnapshot(e, ts, ctx.rundownPlaylistId.get(), `action`, false)
-			)
+			if (isActionTriggeredFromUiContext(action)) {
+				return createTakeRundownSnapshotAction(action.filterChain as IGUIContextFilterLink[])
+			} else {
+				return createUserActionWithCtx(action, UserAction.CREATE_SNAPSHOT_FOR_DEBUG, async (e, ts, ctx) =>
+					MeteorCall.userAction.storeRundownSnapshot(e, ts, ctx.rundownPlaylistId.get(), `action`, false)
+				)
+			}
 		case PlayoutActions.moveNext:
 			return createUserActionWithCtx(action, UserAction.MOVE_NEXT, async (e, ts, ctx) =>
 				MeteorCall.userAction.moveNext(

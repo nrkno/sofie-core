@@ -181,10 +181,6 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 
 	const segmentRef = useRef<HTMLDivElement | null>(null)
 
-	if (props.segmentui === undefined) {
-		return null
-	}
-
 	const subscriptionsReady = piecesReady && pieceInstancesReady
 
 	// We are only interested in when subscriptionsReady turns *true* the first time. It can turn false later
@@ -227,6 +223,10 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		}
 	}, [props.onSegmentScroll, isLiveSegment])
 
+	if (props.segmentui === undefined) {
+		return null
+	}
+
 	return (
 		<SegmentStoryboard
 			id={props.id}
@@ -235,7 +235,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			segment={props.segmentui}
 			studio={props.studio}
 			parts={props.parts}
-			segmentNotes={props.segmentNotes}
+			segmentNoteCounts={props.segmentNoteCounts}
 			onItemClick={props.onPieceClick}
 			onItemDoubleClick={props.onPieceDoubleClick}
 			playlist={props.playlist}

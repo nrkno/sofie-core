@@ -8,13 +8,13 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/tv2/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
 		"directory": "packages/corelib"
 	},
 	"bugs": {
-		"url": "https://github.com/tv2/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/tv2/tv-automation-server-core/blob/master/packages/corelib#readme",
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/corelib#readme",
 	"scripts": {
 		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
@@ -49,7 +49,7 @@
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",
 		"tslib": "^2.4.0",
-		"type-fest": "^2.19.0",
+		"type-fest": "^3.1.0",
 		"underscore": "^1.13.4"
 	},
 	"peerDependencies": {

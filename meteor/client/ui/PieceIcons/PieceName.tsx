@@ -5,8 +5,8 @@ import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integr
 import { PubSub } from '../../../lib/api/pubsub'
 import { IPropsHeader } from './PieceIcon'
 import { findPieceInstanceToShow } from './utils'
-import { RundownPlaylistActivationId } from '../../../lib/collections/RundownPlaylists'
 import { PieceGeneric } from '../../../lib/collections/Pieces'
+import { RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface INamePropsHeader extends IPropsHeader {
 	partName: string
@@ -58,9 +58,7 @@ export function PieceNameContainer(props: INamePropsHeader): JSX.Element | null 
 		playlistActivationId: props.playlistActivationId,
 	})
 
-	useSubscription(PubSub.showStyleBases, {
-		_id: props.showStyleBaseId,
-	})
+	useSubscription(PubSub.uiShowStyleBase, props.showStyleBaseId)
 
 	if (pieceInstance && sourceLayer && supportedLayers.has(sourceLayer.type)) {
 		return getPieceLabel(pieceInstance.piece, sourceLayer.type)

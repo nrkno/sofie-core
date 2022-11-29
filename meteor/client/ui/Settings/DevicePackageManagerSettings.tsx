@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
@@ -8,6 +8,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Meteor } from 'meteor/meteor'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IDevicePackageManagerSettingsProps {
 	deviceId: PeripheralDeviceId

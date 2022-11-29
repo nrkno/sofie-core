@@ -202,7 +202,9 @@ export const App = translateWithTracker(() => {
 						})
 						.catch((e) => console.error('Could not get FullScreen when running as a PWA', e))
 
+					// Use Keyboard API to lock the keyboard and disable all browser shortcuts
 					if ('keyboard' in navigator) {
+						// but we check for its availability, so it should be fine.
 						// Keyboard Lock: https://wicg.github.io/keyboard-lock/
 						navigator.keyboard
 							.lock()

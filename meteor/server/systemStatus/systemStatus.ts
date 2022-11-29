@@ -1,7 +1,11 @@
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevices,
+	PeripheralDevice,
+	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '../../lib/collections/PeripheralDevices'
 import { getCurrentTime, Time, getRandomId, assertNever, literal } from '../../lib/lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	parseVersion,
 	parseCoreIntegrationCompatabilityRange,
@@ -18,7 +22,6 @@ import {
 	Component,
 } from '../../lib/api/systemStatus'
 import { getRelevantSystemVersions } from '../coreSystem'
-import { StudioId } from '../../lib/collections/Studios'
 import { Settings } from '../../lib/Settings'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
@@ -27,6 +30,7 @@ import { SystemReadAccess } from '../security/system'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { Workers } from '../../lib/collections/Workers'
 import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -87,7 +91,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 
 		// Check core-integration version is as expected
 		if (
-			device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS ||
+			device.subType === PERIPHERAL_SUBTYPE_PROCESS ||
 			deviceVersions['@sofie-automation/server-core-integration']
 		) {
 			const integrationVersion = parseVersion(deviceVersions['@sofie-automation/server-core-integration'])

@@ -8,12 +8,12 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { unprotectString } from '../../../lib/lib'
 import renderItem from './Renderers/ItemRendererFactory'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { Studio } from '../../../lib/collections/Studios'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime, ensureHasTrailingSlash } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPieceUi } from '../../lib/shelf'
+import { UIStudio } from '../../../lib/api/studios'
 
 export interface IAdLibListItem extends AdLibPieceUi {
 	status: PieceStatusCode
@@ -28,7 +28,7 @@ export interface IAdLibListItem extends AdLibPieceUi {
 
 interface IListViewItemProps {
 	piece: IAdLibListItem
-	studio: Studio
+	studio: UIStudio
 	layer: ISourceLayer | undefined
 	selected: boolean
 	disabled?: boolean
@@ -83,7 +83,7 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						outputLayer: this.props.piece.outputLayer,
 						selected: this.props.selected,
 						status: this.props.piece.status,
-						message: this.props.piece.message,
+						messages: this.props.piece.messages,
 						metadata: this.props.piece.contentMetaData,
 						mediaPreviewUrl: ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl)!,
 						packageInfos: this.props.piece.contentPackageInfos,

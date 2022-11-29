@@ -19,8 +19,8 @@ import { ExpectedPackage, PieceLifespan, VTContent } from '@sofie-automation/blu
 import { updateExpectedPackagesOnRundown } from '../expectedPackages'
 import { runIngestJob, UpdateIngestRundownAction } from '../lock'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { ReadonlyDeep } from 'type-fest'
+import { ProcessedShowStyleCompound } from '../../jobs'
 
 describe('Expected Media Items', () => {
 	const rplId0: RundownPlaylistId = protectString('playlist0')
@@ -44,7 +44,7 @@ describe('Expected Media Items', () => {
 	const mockFlow1 = 'mockFlow1'
 
 	let context: MockJobContext
-	let showStyleCompound: ReadonlyDeep<ShowStyleCompound>
+	let showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>
 	beforeAll(async () => {
 		context = setupDefaultJobEnvironment()
 
@@ -207,8 +207,6 @@ describe('Expected Media Items', () => {
 						removedSegmentIds: [],
 						renamedSegments: new Map(),
 						removeRundown: false,
-						blueprint: undefined,
-						showStyle: undefined,
 					}
 				}
 			)

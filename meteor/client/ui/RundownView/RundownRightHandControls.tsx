@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react'
 import * as VelocityReact from 'velocity-react'
 
 import { StudioRouteSet, StudioRouteBehavior, StudioRouteSetExclusivityGroup } from '../../../lib/collections/Studios'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFastBackward } from '@fortawesome/free-solid-svg-icons'
+import { RewindAllSegmentsIcon } from '../../lib/ui/icons/rewindAllSegmentsIcon'
 
 import { Lottie } from '@crello/react-lottie'
 import { NotificationCenterPanelToggle } from '../../lib/notifications/NotificationCenterPanel'
@@ -145,7 +144,7 @@ export function RundownRightHandControls(props: IProps) {
 					tabIndex={0}
 					aria-label={t('Rewind all Segments')}
 				>
-					<FontAwesomeIcon icon={faFastBackward} />
+					<RewindAllSegmentsIcon />
 				</button>
 				{!props.isFollowingOnAir && (
 					<button

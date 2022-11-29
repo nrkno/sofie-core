@@ -8,13 +8,13 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/tv2/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
 		"directory": "packages/sharelib"
 	},
 	"bugs": {
-		"url": "https://github.com/tv2/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/tv2/tv-automation-server-core/blob/master/packages/shared-lib#readme",
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/sharelib#readme",
 	"scripts": {
 		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
@@ -40,7 +40,7 @@
 	],
 	"dependencies": {
 		"tslib": "^2.4.0",
-		"type-fest": "^2.19.0"
+		"type-fest": "^3.1.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

@@ -406,7 +406,7 @@ $identifier-area-width: 3em;
 						display: block;
 						font-weight: 500;
 						font-size: 0.8em;
-						margin-top: 0.7em;
+						margin-top: 1em;
 						margin-left: 0.3em;
 						color: #ffffff;
 						text-shadow: -1px -1px 1px #000, 1px -1px 1px #000, -1px 1px 1px #000, 1px 1px 1px #000, 2px 2px 3px #000;
@@ -433,8 +433,8 @@ $identifier-area-width: 3em;
 
 				> .segment-opl__freeze-marker {
 					position: absolute;
-					top: 0.1em;
-					margin-left: 0.3em;
+					top: -0.1em;
+					margin-left: 0.1em;
 					white-space: nowrap;
 
 					> .flash {
@@ -531,7 +531,6 @@ $identifier-area-width: 3em;
 		padding: 0.45em $duration-area-margin 0 $duration-area-margin;
 		line-height: 1em;
 		font-weight: 400;
-		cursor: pointer;
 		transition: 0.3s color;
 		letter-spacing: 0;
 
@@ -542,6 +541,10 @@ $identifier-area-width: 3em;
 			text-transform: uppercase;
 			line-height: 1em;
 			color: #888;
+		}
+
+		> .segment-timeline__timeUntil__label {
+			text-align: right;
 		}
 
 		> .negative {
@@ -556,6 +559,7 @@ $identifier-area-width: 3em;
 
 	.segment-opl__timeUntil {
 		color: #888;
+		cursor: pointer;
 
 		&--time-of-day {
 			color: #fff;

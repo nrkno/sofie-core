@@ -2,8 +2,6 @@ import { DeviceConfigManifest } from '../core/deviceConfigManifest'
 import { PeripheralDeviceId, RundownPlaylistId, PartInstanceId, PieceInstanceId } from '../core/model/Ids'
 import { StatusCode } from '../lib/status'
 
-export type StatusObject = PeripheralDeviceStatusObject
-
 export interface PartPlaybackCallbackData {
 	rundownPlaylistId: RundownPlaylistId
 	partInstanceId: PartInstanceId
@@ -100,7 +98,7 @@ export const PERIPHERAL_SUBTYPE_PROCESS: PERIPHERAL_SUBTYPE_PROCESS = '_process'
 export type MOS_DeviceType = 'mos_connection'
 export type Spreadsheet_DeviceType = 'spreadsheet_connection'
 
-export interface InitOptions {
+export interface PeripheralDeviceInitOptions {
 	category: PeripheralDeviceCategory
 	type: PeripheralDeviceType
 	subType: PeripheralDeviceSubType

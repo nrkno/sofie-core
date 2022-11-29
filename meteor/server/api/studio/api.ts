@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { registerClassToMeteorMethods } from '../../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '../../../lib/api/studios'
-import { Studios, DBStudio, StudioId } from '../../../lib/collections/Studios'
+import { Studios, DBStudio } from '../../../lib/collections/Studios'
 import { literal, getRandomId, lazyIgnore } from '../../../lib/lib'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
@@ -13,11 +13,12 @@ import { Timeline } from '../../../lib/collections/Timeline'
 import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { Credentials } from '../../security/lib/credentials'
-import { OrganizationId } from '../../../lib/collections/Organization'
 import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatuses } from '../../../lib/collections/ExpectedPackageWorkStatuses'
 import { PackageInfos } from '../../../lib/collections/PackageInfos'
 import { PackageContainerPackageStatuses } from '../../../lib/collections/PackageContainerPackageStatus'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { OrganizationId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 async function insertStudio(context: MethodContext | Credentials, newId?: StudioId): Promise<StudioId> {
 	if (newId) check(newId, String)
@@ -32,14 +33,13 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 			name: 'New Studio',
 			organizationId: organizationId,
 			// blueprintId?: BlueprintId
-			mappings: {},
+			mappingsWithOverrides: wrapDefaultObject({}),
 			supportedShowStyleBase: [],
-			blueprintConfig: {},
+			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			// testToolsConfig?: ITestToolsConfig
 			settings: {
 				frameRate: 25,
 				mediaPreviewsUrl: '',
-				sofieUrl: '',
 			},
 			_rundownVersionHash: '',
 			routeSets: {},
@@ -117,7 +117,7 @@ Studios.find(
 	{},
 	{
 		fields: {
-			mappings: 1,
+			mappingsWithOverrides: 1,
 			routeSets: 1,
 		},
 	}

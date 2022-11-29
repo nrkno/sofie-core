@@ -9,13 +9,13 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/tv2/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
 		"directory": "packages/server-core-integration"
 	},
 	"bugs": {
-		"url": "https://github.com/tv2/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/tv2/tv-automation-server-core/blob/master/packages/server-core-integration#readme",
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/server-core-integration#readme",
 	"author": {
 		"name": "Johan Nyman",
 		"email": "johan@superfly.tv",
@@ -70,7 +70,7 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/shared-lib": "link:../shared-lib",
+		"@sofie-automation/shared-lib": "1.48.0-in-development",
 		"ejson": "^2.2.3",
 		"eventemitter3": "^4.0.7",
 		"faye-websocket": "^0.11.4",

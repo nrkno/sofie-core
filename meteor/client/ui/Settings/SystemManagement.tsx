@@ -146,7 +146,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 
 						<div className="row">
 							<div className="col c12 r1-c12">
-								<TriggeredActionsEditor showStyleBaseId={null} />
+								<TriggeredActionsEditor showStyleBaseId={null} sourceLayers={{}} outputLayers={{}} />
 							</div>
 						</div>
 

@@ -1,8 +1,8 @@
 import { ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { ReadonlyDeep } from 'type-fest'
 import {
 	BasicConfigItemValue,
+	BlueprintConfigCoreConfig,
 	ConfigItemValue,
 	ConfigManifestEntry,
 	IBlueprintConfig,
@@ -10,13 +10,14 @@ import {
 	StudioBlueprintManifest,
 	TableConfigItemValue,
 } from '@sofie-automation/blueprints-integration'
-import { objectPathGet, objectPathSet, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { getSofieHostUrl, objectPathGet, objectPathSet, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { logger } from '../logging'
 import { CommonContext } from './context'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { StudioCacheContext } from '../jobs'
+import { ProcessedShowStyleCompound, StudioCacheContext } from '../jobs'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
@@ -57,7 +58,7 @@ async function retrieveBlueprintConfigRef(
 ): Promise<ConfigItemValue | undefined> {
 	if (!reference) return undefined
 
-	const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
+	const m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^}]+)\}/)
 	if (m) {
 		if (m[1] === 'studio' && _.isString(m[2]) && _.isString(m[3])) {
 			const studioId: StudioId = protectString(m[2])
@@ -90,19 +91,24 @@ export interface ProcessedStudioConfig {
 	_studioConfig: never
 }
 
+function compileCoreConfigValues(): BlueprintConfigCoreConfig {
+	return {
+		hostUrl: getSofieHostUrl(),
+	}
+}
+
 export function preprocessStudioConfig(
 	studio: ReadonlyDeep<DBStudio>,
 	blueprint: ReadonlyDeep<StudioBlueprintManifest>
 ): ProcessedStudioConfig {
+	const rawBlueprintConfig = applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
+
 	let res: any = {}
 	if (blueprint.studioConfigManifest !== undefined) {
-		applyToConfig(res, blueprint.studioConfigManifest, studio.blueprintConfig, `Studio ${studio._id}`)
+		applyToConfig(res, blueprint.studioConfigManifest, rawBlueprintConfig, `Studio ${studio._id}`)
 	} else {
-		res = studio.blueprintConfig
+		res = rawBlueprintConfig
 	}
-
-	// Expose special values as defined in the studio
-	res['SofieHostURL'] = studio.settings.sofieUrl
 
 	try {
 		if (blueprint.preprocessConfig) {
@@ -110,7 +116,8 @@ export function preprocessStudioConfig(
 				name: `preprocessStudioConfig`,
 				identifier: `studioId=${studio._id}`,
 			})
-			res = blueprint.preprocessConfig(context, res)
+			res = blueprint.preprocessConfig(context, res, compileCoreConfigValues())
+			console.log(res, 'aaa')
 		}
 	} catch (err) {
 		logger.error(`Error in studioBlueprint.preprocessConfig: ${stringifyError(err)}`)
@@ -120,14 +127,19 @@ export function preprocessStudioConfig(
 }
 
 export function preprocessShowStyleConfig(
-	showStyle: ReadonlyDeep<ShowStyleCompound>,
+	showStyle: Pick<ReadonlyDeep<ProcessedShowStyleCompound>, '_id' | 'combinedBlueprintConfig' | 'showStyleVariantId'>,
 	blueprint: ReadonlyDeep<ShowStyleBlueprintManifest>
 ): ProcessedShowStyleConfig {
 	let res: any = {}
 	if (blueprint.showStyleConfigManifest !== undefined) {
-		applyToConfig(res, blueprint.showStyleConfigManifest, showStyle.blueprintConfig, `ShowStyle ${showStyle._id}`)
+		applyToConfig(
+			res,
+			blueprint.showStyleConfigManifest,
+			showStyle.combinedBlueprintConfig,
+			`ShowStyle ${showStyle._id}`
+		)
 	} else {
-		res = showStyle.blueprintConfig
+		res = showStyle.combinedBlueprintConfig
 	}
 
 	try {
@@ -136,7 +148,7 @@ export function preprocessShowStyleConfig(
 				name: `preprocessShowStyleConfig`,
 				identifier: `showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
 			})
-			res = blueprint.preprocessConfig(context, res)
+			res = blueprint.preprocessConfig(context, res, compileCoreConfigValues())
 		}
 	} catch (err) {
 		logger.error(`Error in showStyleBlueprint.preprocessConfig: ${stringifyError(err)}`)

@@ -18,16 +18,17 @@ import {
 } from '../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { withTranslation } from 'react-i18next'
 import { defaultColorPickerPalette } from '../../../lib/colorPicker'
+import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 interface IProps {
 	item: RundownLayoutBase
 	filter: RundownLayoutElementBase
 	index: number
-	showStyleBase: ShowStyleBase
+	sourceLayers: SourceLayers
+	outputLayers: OutputLayers
 	supportedFilters: RundownLayoutElementType[]
 }
 
@@ -212,9 +213,10 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.sourceLayerIds`}
 							obj={item}
-							options={this.props.showStyleBase.sourceLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
+							options={Object.values(this.props.sourceLayers)
+								.filter((s): s is ISourceLayer => !!s)
+								.sort((a, b) => a._rank - b._rank)
+								.map((l) => ({ name: l.name, value: l._id }))}
 							type="multiselect"
 							label={t('Filter Disabled')}
 							collection={RundownLayouts}
@@ -265,9 +267,10 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.outputLayerIds`}
 							obj={item}
-							options={this.props.showStyleBase.outputLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
+							options={Object.values(this.props.outputLayers)
+								.filter((s): s is IOutputLayer => !!s)
+								.sort((a, b) => a._rank - b._rank)
+								.map((l) => ({ name: l.name, value: l._id }))}
 							type="multiselect"
 							label={t('Filter Disabled')}
 							collection={RundownLayouts}
@@ -668,9 +671,10 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.sourceLayerIds`}
 							obj={item}
-							options={this.props.showStyleBase.sourceLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
+							options={Object.values(this.props.sourceLayers)
+								.filter((s): s is ISourceLayer => !!s)
+								.sort((a, b) => a._rank - b._rank)
+								.map((l) => ({ name: l.name, value: l._id }))}
 							type="multiselect"
 							label={t('Disabled')}
 							collection={RundownLayouts}
@@ -1379,9 +1383,10 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.requiredLayerIds`}
 							obj={item}
-							options={this.props.showStyleBase.sourceLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
+							options={Object.values(this.props.sourceLayers)
+								.filter((s): s is ISourceLayer => !!s)
+								.sort((a, b) => a._rank - b._rank)
+								.map((l) => ({ name: l.name, value: l._id }))}
 							type="multiselect"
 							label={t('Disabled')}
 							collection={RundownLayouts}
@@ -1406,9 +1411,10 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.additionalLayers`}
 							obj={item}
-							options={this.props.showStyleBase.sourceLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
+							options={Object.values(this.props.sourceLayers)
+								.filter((s): s is ISourceLayer => !!s)
+								.sort((a, b) => a._rank - b._rank)
+								.map((l) => ({ name: l.name, value: l._id }))}
 							type="multiselect"
 							label={t('Disabled')}
 							collection={RundownLayouts}

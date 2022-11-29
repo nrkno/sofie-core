@@ -3,7 +3,6 @@ import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { RundownLayoutId, UserId, ShowStyleBaseId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-export { RundownLayoutId }
 import { DashboardPanel } from '../../client/ui/Shelf/DashboardPanel'
 
 /**

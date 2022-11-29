@@ -3,9 +3,6 @@ import { assertNever, literal } from '../lib'
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 
-import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { ExpectedPackageId }
-
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { StudioLight } from './Studios'
@@ -70,7 +67,7 @@ export function getThumbnailPackageSettings(
 }
 export function getSideEffect(
 	expectedPackage: ExpectedPackage.Base,
-	studio: StudioLight
+	studio: Pick<StudioLight, 'previewContainerIds' | 'thumbnailContainerIds'>
 ): ExpectedPackage.Base['sideEffect'] {
 	return deepExtend(
 		{},

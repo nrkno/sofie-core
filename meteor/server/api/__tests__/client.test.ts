@@ -8,12 +8,12 @@ import { setLogLevel } from '../../logging'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import {
 	PeripheralDeviceCategory,
-	PeripheralDeviceId,
 	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../lib/collections/PeripheralDevices'
 import { setupMockPeripheralDevice, setupMockStudio } from '../../../__mocks__/helpers/database'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { MeteorCall } from '../../../lib/api/methods'
+import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 require('../client') // include in order to create the Meteor methods needed
 
@@ -28,7 +28,7 @@ describe('ClientAPI', () => {
 		const mockDevice = setupMockPeripheralDevice(
 			PeripheralDeviceCategory.PLAYOUT,
 			PeripheralDeviceType.PLAYOUT,
-			PeripheralDeviceAPI.SUBTYPE_PROCESS,
+			PERIPHERAL_SUBTYPE_PROCESS,
 			studio
 		)
 		mockDeviceId = mockDevice._id

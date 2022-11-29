@@ -2,13 +2,7 @@ import { protectString, unprotectString } from '../lib'
 import { createMongoCollection } from './lib'
 import { DBPart } from './Parts'
 import { registerIndex } from '../database'
-import {
-	PartInstanceId,
-	SegmentPlayoutId,
-	PartId,
-	RundownPlaylistActivationId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { PartInstanceId, SegmentPlayoutId }
+import { PartId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'

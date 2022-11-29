@@ -6,7 +6,6 @@ import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { ExpectedPackageDB } from './ExpectedPackages'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { StudioId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import {
@@ -14,19 +13,21 @@ import {
 	DBStudio,
 	MappingExt,
 	MappingsHash,
-	StudioLight,
 	StudioRouteType,
+	MappingsExt,
+	StudioRouteSet,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { ReadonlyDeep } from 'type-fest'
 export * from '@sofie-automation/corelib/dist/dataModel/Studio'
 
-export function getActiveRoutes(studio: StudioLight): ResultingMappingRoutes {
+export function getActiveRoutes(routeSets: Record<string, StudioRouteSet>): ResultingMappingRoutes {
 	const routes: ResultingMappingRoutes = {
 		existing: {},
 		inserted: [],
 	}
 
 	const exclusivityGroups: { [groupId: string]: true } = {}
-	_.each(studio.routeSets, (routeSet) => {
+	_.each(routeSets, (routeSet) => {
 		if (routeSet.active) {
 			let useRoute: boolean = true
 			if (routeSet.exclusivityGroup) {
@@ -111,14 +112,15 @@ export type MappingsExtWithPackage = {
 	[layerName: string]: MappingExt & { expectedPackages: (ExpectedPackage.Base & { rundownId?: string })[] }
 }
 export function routeExpectedPackages(
-	studio: Studio,
+	studio: Pick<Studio, 'routeSets'>,
+	studioMappings: ReadonlyDeep<MappingsExt>,
 	expectedPackages: (ExpectedPackageDB | ExpectedPackage.Base)[]
 ): MappingsExtWithPackage {
 	// Map the expectedPackages onto their specified layer:
 	const mappingsWithPackages: MappingsExtWithPackage = {}
 	for (const expectedPackage of expectedPackages) {
 		for (const layerName of expectedPackage.layers) {
-			const mapping = studio.mappings[layerName]
+			const mapping = studioMappings[layerName]
 
 			if (mapping) {
 				if (!mappingsWithPackages[layerName]) {
@@ -133,14 +135,14 @@ export function routeExpectedPackages(
 	}
 
 	// Route the mappings
-	const routes = getActiveRoutes(studio)
+	const routes = getActiveRoutes(studio.routeSets)
 	return getRoutedMappings(mappingsWithPackages, routes)
 }
 
 export interface RoutedMappings {
 	_id: StudioId
 	mappingsHash: MappingsHash | undefined
-	mappings: { [layerName: string]: MappingExt }
+	mappings: MappingsExt
 }
 
 export type Studio = DBStudio
@@ -152,6 +154,6 @@ registerIndex(Studios, {
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ObserveChangesForHash(Studios, '_rundownVersionHash', ['blueprintConfig'])
+		ObserveChangesForHash(Studios, '_rundownVersionHash', ['blueprintConfigWithOverrides'])
 	}
 })

@@ -13,16 +13,16 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { getScriptPreview } from '../../lib/ui/scriptPreview'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
+import { getScriptPreview } from '../../lib/ui/scriptPreview'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 interface IEndsWordsPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutEndWords
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 }
 
 interface IEndsWordsPanelTrackedProps {
@@ -82,13 +82,13 @@ function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefi
 	)
 
 	const highestStartedPlayback = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.reduce(
-		(hsp, piece: PieceInstance) => Math.max(hsp, piece.startedPlayback ?? 0),
+		(hsp, piece: PieceInstance) => Math.max(hsp, piece.reportedStartedPlayback ?? 0),
 		0
 	)
 
 	const unfinishedPieces = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.filter(
 		(pieceInstance: PieceInstance) => {
-			return !pieceInstance.startedPlayback || pieceInstance.startedPlayback == highestStartedPlayback
+			return !pieceInstance.reportedStartedPlayback || pieceInstance.reportedStartedPlayback == highestStartedPlayback
 		}
 	)
 

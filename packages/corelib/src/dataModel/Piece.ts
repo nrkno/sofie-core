@@ -74,16 +74,18 @@ export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'co
 
 export type PieceTimelineObjectsBlob = ProtectedString<'PieceTimelineObjectsBlob'>
 
-export function deserializePieceTimelineObjectsBlob(timelineBlob: PieceTimelineObjectsBlob): TimelineObjectCoreExt[] {
+export function deserializePieceTimelineObjectsBlob(
+	timelineBlob: PieceTimelineObjectsBlob
+): TimelineObjectCoreExt<any>[] {
 	const str = unprotectString(timelineBlob) + ''
 	try {
-		return JSON.parse(str) as Array<TimelineObjectCoreExt>
+		return JSON.parse(str) as Array<TimelineObjectCoreExt<any>>
 	} catch (err) {
 		;(err as Error).message += ` Blob: ${str.slice(0, 100)}`
 		throw err
 	}
 }
-export function serializePieceTimelineObjectsBlob(timeline: TimelineObjectCoreExt[]): PieceTimelineObjectsBlob {
+export function serializePieceTimelineObjectsBlob(timeline: TimelineObjectCoreExt<any>[]): PieceTimelineObjectsBlob {
 	return protectString(JSON.stringify(timeline))
 }
 export const EmptyPieceTimelineObjectsBlob = serializePieceTimelineObjectsBlob([])

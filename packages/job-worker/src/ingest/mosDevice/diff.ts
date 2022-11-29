@@ -20,7 +20,7 @@ export function diffAndUpdateSegmentIds(
 ): CommitIngestData['renamedSegments'] {
 	const span = context.startSpan('mosDevice.ingest.diffAndApplyChanges')
 
-	const oldSegments = cache.Segments.findFetch({})
+	const oldSegments = cache.Segments.findAll(null)
 	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
 	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
@@ -48,7 +48,7 @@ export async function diffAndApplyChanges(
 	const span = context.startSpan('mosDevice.ingest.diffAndApplyChanges')
 
 	// Fetch all existing segments:
-	const oldSegments = cache.Segments.findFetch({})
+	const oldSegments = cache.Segments.findAll(null)
 
 	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
 	const newSegmentEntries = compileSegmentEntries(newIngestRundown.segments)
@@ -58,10 +58,9 @@ export async function diffAndApplyChanges(
 
 	// Update segment ranks:
 	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
-		cache.Segments.update(getSegmentId(rundown._id, segmentExternalId), {
-			$set: {
-				_rank: newRank,
-			},
+		cache.Segments.updateOne(getSegmentId(rundown._id, segmentExternalId), (s) => {
+			s._rank = newRank
+			return s
 		})
 	})
 
@@ -88,10 +87,13 @@ export async function diffAndApplyChanges(
 	// Remove/orphan old segments
 	const segmentIdsToRemove = new Set(Object.keys(segmentDiff.removed).map((id) => getSegmentId(rundown._id, id)))
 	// We orphan it and queue for deletion. the commit phase will complete if possible
-	const orphanedSegmentIds = cache.Segments.update((s) => segmentIdsToRemove.has(s._id), {
-		$set: {
-			orphaned: SegmentOrphanedReason.DELETED,
-		},
+	const orphanedSegmentIds = cache.Segments.updateAll((s) => {
+		if (segmentIdsToRemove.has(s._id)) {
+			s.orphaned = SegmentOrphanedReason.DELETED
+			return s
+		} else {
+			return false
+		}
 	})
 
 	if (!context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
@@ -108,9 +110,6 @@ export async function diffAndApplyChanges(
 		renamedSegments: renamedSegments,
 
 		removeRundown: false,
-
-		showStyle: segmentChanges.showStyle,
-		blueprint: segmentChanges.blueprint,
 	})
 }
 
@@ -138,14 +137,14 @@ function applyExternalIdDiff(
 	})
 
 	// Move over those parts to the new segmentId.
-	for (const part of cache.Parts.findFetch({})) {
+	for (const part of cache.Parts.findAll(null)) {
 		const newSegmentId = renamedSegments.get(part.segmentId)
 		if (newSegmentId) {
 			part.segmentId = newSegmentId
 			cache.Parts.replace(part)
 		}
 	}
-	for (const piece of cache.Pieces.findFetch({})) {
+	for (const piece of cache.Pieces.findAll(null)) {
 		const newSegmentId = renamedSegments.get(piece.startSegmentId)
 		if (newSegmentId) {
 			piece.startSegmentId = newSegmentId

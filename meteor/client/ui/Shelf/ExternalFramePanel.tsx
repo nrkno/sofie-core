@@ -10,12 +10,8 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { assertNever, getRandomString, literal, protectString } from '../../../lib/lib'
-import {
-	RundownPlaylist,
-	RundownPlaylistCollectionUtil,
-	RundownPlaylistId,
-} from '../../../lib/collections/RundownPlaylists'
-import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { parseMosPluginMessageXml, MosPluginMessage, fixMosData } from '../../lib/parsers/mos/mosXml2Js'
 import {
 	createMosAppInfoXmlString,
@@ -27,11 +23,12 @@ import { MOS } from '@sofie-automation/corelib'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Buckets, BucketId } from '../../../lib/collections/Buckets'
+import { Buckets } from '../../../lib/collections/Buckets'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { check } from '../../../lib/check'
+import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const PackageInfo = require('../../../package.json')
 
@@ -459,6 +456,14 @@ export const ExternalFramePanel = withTranslation()(
 				cancelable: false,
 			})
 			window.dispatchEvent(event)
+
+			// When dragging from an iframe, the focus stays within the iframe.
+			// This can cause confusion among users, since Sofie-keyboard shortcuts doesn't work, until they click somewhere in Sofie.
+			// To solve this, we simply reset the focus so that the iframe doesn't have the focus anymore.
+			const activeElement = document.activeElement as HTMLElement | undefined
+			if (activeElement?.tagName === 'IFRAME') {
+				activeElement.blur?.()
+			}
 		}
 
 		registerHandlers = () => {

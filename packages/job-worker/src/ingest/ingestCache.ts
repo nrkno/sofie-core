@@ -17,6 +17,7 @@ import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blue
 import { JobContext } from '../jobs'
 import { getPartId, getSegmentId } from './lib'
 import { SetOptional } from 'type-fest'
+import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 
 interface LocalIngestBase {
 	modified: number
@@ -69,7 +70,7 @@ export class RundownIngestDataCache {
 	fetchRundown(): LocalIngestRundown | undefined {
 		const span = this.context.startSpan('ingest.ingestCache.loadCachedRundownData')
 
-		const cacheEntries = this.collection.findFetch({})
+		const cacheEntries = this.collection.findAll(null)
 
 		const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
 		if (!cachedRundown) {
@@ -84,8 +85,8 @@ export class RundownIngestDataCache {
 			return !!obj.segmentId
 		}
 
-		const segmentMap = _.groupBy(cacheEntries.filter(hasSegmentId), (e) => unprotectString(e.segmentId))
-		_.each(segmentMap, (objs) => {
+		const segmentMap = groupByToMap(cacheEntries.filter(hasSegmentId), 'segmentId')
+		for (const objs of segmentMap.values()) {
 			const segmentEntry = objs.find((e) => e.type === IngestCacheType.SEGMENT)
 			if (segmentEntry) {
 				const ingestSegment = segmentEntry.data as LocalIngestSegment
@@ -103,7 +104,7 @@ export class RundownIngestDataCache {
 				ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 				ingestRundown.segments.push(ingestSegment)
 			}
-		})
+		}
 
 		ingestRundown.segments = _.sortBy(ingestRundown.segments, (s) => s.rank)
 
@@ -112,7 +113,7 @@ export class RundownIngestDataCache {
 	}
 
 	fetchSegment(segmentId: SegmentId): LocalIngestSegment | undefined {
-		const cacheEntries = this.collection.findFetch({ segmentId: segmentId })
+		const cacheEntries = this.collection.findAll((d) => d.segmentId === segmentId)
 
 		const segmentEntries = cacheEntries.filter((e) => e.type === IngestCacheType.SEGMENT)
 		if (segmentEntries.length > 1)
@@ -144,11 +145,11 @@ export class RundownIngestDataCache {
 	update(ingestRundown: LocalIngestRundown): void {
 		// cache the Data:
 		const cacheEntries: IngestDataCacheObj[] = generateCacheForRundown(this.rundownId, ingestRundown)
-		saveIntoCache<IngestDataCacheObj>(this.context, this.collection, {}, cacheEntries)
+		saveIntoCache<IngestDataCacheObj>(this.context, this.collection, null, cacheEntries)
 	}
 
 	delete(): void {
-		this.collection.remove({})
+		this.collection.remove(null)
 	}
 
 	async saveToDatabase(): Promise<Changes> {

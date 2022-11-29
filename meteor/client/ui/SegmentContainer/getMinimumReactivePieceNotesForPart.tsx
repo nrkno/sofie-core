@@ -1,19 +1,21 @@
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
-import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Studio } from '../../../lib/collections/Studios'
-import { normalizeArray } from '../../../lib/lib'
 import { checkPieceContentStatus, getNoteSeverityForPieceStatus } from '../../../lib/mediaObjects'
 import { getIgnorePieceContentStatus } from '../../lib/localStorage'
+import { SegmentNoteCounts } from './withResolvedSegment'
 
-export function getMinimumReactivePieceNotesForPart(
-	studio: Studio,
-	showStyleBase: ShowStyleBase,
+export function getReactivePieceNoteCountsForPart(
+	studio: UIStudio,
+	showStyleBase: UIShowStyleBase,
 	part: Part
-): PartNote[] {
-	const notes: Array<PartNote> = []
+): SegmentNoteCounts {
+	const counts: SegmentNoteCounts = {
+		criticial: 0,
+		warning: 0,
+	}
 
 	const pieces = Pieces.find(
 		{
@@ -31,7 +33,7 @@ export function getMinimumReactivePieceNotesForPart(
 		}
 	).fetch() as Array<Pick<Piece, '_id' | 'name' | 'sourceLayerId' | 'content' | 'expectedPackages'>>
 
-	const sourceLayerMap = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
+	const sourceLayerMap = showStyleBase && showStyleBase.sourceLayers
 	for (const piece of pieces) {
 		// TODO: check statuses (like media availability) here
 
@@ -39,18 +41,14 @@ export function getMinimumReactivePieceNotesForPart(
 			const sourceLayer = sourceLayerMap[piece.sourceLayerId]
 			const st = checkPieceContentStatus(piece, sourceLayer, studio)
 			if (st.status !== PieceStatusCode.OK && st.status !== PieceStatusCode.UNKNOWN && !getIgnorePieceContentStatus()) {
-				notes.push({
-					type: getNoteSeverityForPieceStatus(st.status) || NoteSeverity.WARNING,
-					origin: {
-						name: 'Media Check',
-						pieceId: piece._id,
-					},
-					message: {
-						key: st.message || '',
-					},
-				})
+				const severity = getNoteSeverityForPieceStatus(st.status) || NoteSeverity.WARNING
+				if (severity === NoteSeverity.ERROR) {
+					counts.criticial++
+				} else if (severity === NoteSeverity.WARNING) {
+					counts.warning++
+				}
 			}
 		}
 	}
-	return notes
+	return counts
 }

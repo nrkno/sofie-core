@@ -5,13 +5,13 @@ import * as _ from 'underscore'
 import {
 	Studio,
 	Studios,
-	MappingExt,
 	DBStudio,
 	StudioRouteSet,
 	StudioRouteBehavior,
 	RouteMapping,
 	StudioRouteSetExclusivityGroup,
 	StudioRouteType,
+	MappingsExt,
 } from '../../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
@@ -20,14 +20,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { protectString } from '../../../../lib/lib'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../../lib/userAction'
 import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { DeviceMappingSettings } from './Mappings'
+import { ReadonlyDeep } from 'type-fest'
 
 interface IStudioRoutingsProps {
 	studio: Studio
+	studioMappings: ReadonlyDeep<MappingsExt>
 	manifest?: MappingsManifest
 }
 interface IStudioRoutingsState {
@@ -280,7 +281,7 @@ export const StudioRoutings = withTranslation()(
 					) : null}
 					{routeSet.routes.map((route, index) => {
 						const deviceTypeFromMappedLayer: TSR.DeviceType | undefined = route.mappedLayer
-							? this.props.studio.mappings[route.mappedLayer]?.device
+							? this.props.studioMappings[route.mappedLayer]?.device
 							: undefined
 						const routeDeviceType: TSR.DeviceType | undefined =
 							route.routeType === StudioRouteType.REMAP
@@ -305,7 +306,7 @@ export const StudioRoutings = withTranslation()(
 												attribute={`routeSets.${routeSetId}.routes.${index}.mappedLayer`}
 												obj={this.props.studio}
 												type="dropdowntext"
-												options={Object.keys(this.props.studio.mappings)}
+												options={Object.keys(this.props.studioMappings)}
 												label={t('None')}
 												collection={Studios}
 												className="input text-input input-l"
@@ -392,17 +393,10 @@ export const StudioRoutings = withTranslation()(
 												</label>
 											</div>
 											<DeviceMappingSettings
-												mapping={
-													{
-														device: routeDeviceType,
-														...route.remapping,
-														deviceId: route.remapping?.deviceId ? protectString(route.remapping.deviceId) : undefined,
-													} as MappingExt
-												}
 												studio={this.props.studio}
 												attribute={`routeSets.${routeSetId}.routes.${index}.remapping`}
 												showOptional={true}
-												manifest={manifest}
+												manifest={manifest[(routeDeviceType ?? route.remapping?.device) as TSR.DeviceType]}
 											/>
 										</>
 									) : null}

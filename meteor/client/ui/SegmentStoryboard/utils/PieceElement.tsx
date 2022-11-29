@@ -1,8 +1,8 @@
 import React from 'react'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { PieceExtended } from '../../../../lib/Rundown'
-import { PartId } from '../../../../lib/collections/Parts'
 import { pieceUiClassNames } from '../../../lib/ui/pieceUiClassNames'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	className: string

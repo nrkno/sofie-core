@@ -1,15 +1,14 @@
-import * as _ from 'underscore'
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, ShowStyleBase, ShowStyleBases, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
-import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
-import { ConfigManifestSettings } from './ConfigManifestSettings'
+import { BlueprintManifestType, ConfigManifestEntry, ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from './BlueprintConfigManifest'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
 import { SourceLayerSettings } from './ShowStyle/SourceLayer'
@@ -19,6 +18,13 @@ import { ShowStyleVariantsSettings } from './ShowStyle/VariantSettings'
 import { ShowStyleGenericProperties } from './ShowStyle/Generic'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import {
+	applyAndValidateOverrides,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { literal } from '@sofie-automation/corelib/dist/lib'
 
 interface IProps {
 	match: {
@@ -40,6 +46,10 @@ interface ITrackedProps {
 	showStyleVariants: Array<ShowStyleVariant>
 	compatibleStudios: Array<Studio>
 	blueprintConfigManifest: ConfigManifestEntry[]
+	sourceLayersLight: Array<SourceLayerDropdownOption> | undefined
+	sourceLayers: SourceLayers
+	outputLayers: OutputLayers
+	layerMappings: { [studioId: string]: MappingsExt }
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	const showStyleBase = ShowStyleBases.findOne(props.match.params.showStyleBaseId)
@@ -57,6 +67,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		  })
 		: undefined
 
+	const mappings: { [studioId: string]: MappingsExt } = {}
+	for (const studio of compatibleStudios) {
+		mappings[studio.name] = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
+	}
+
+	const sourceLayers = showStyleBase ? applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj : {}
+	const outputLayers = showStyleBase ? applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj : {}
+
 	return {
 		showStyleBase: showStyleBase,
 		showStyleVariants: showStyleBase
@@ -73,6 +91,21 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			: [],
 		compatibleStudios: compatibleStudios,
 		blueprintConfigManifest: blueprint ? blueprint.showStyleConfigManifest || [] : [],
+		sourceLayers,
+		outputLayers,
+		sourceLayersLight: sourceLayers
+			? Object.values(sourceLayers)
+					.filter((layer): layer is ISourceLayer => !!layer)
+					.map((layer, i) =>
+						literal<SourceLayerDropdownOption>({
+							value: layer._id,
+							name: layer.name,
+							type: layer.type,
+							i,
+						})
+					)
+			: undefined,
+		layerMappings: mappings,
 	}
 })(
 	class ShowStyleBaseSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -103,32 +136,27 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			reader.readAsText(file)
 		}
 
-		getLayerMappingsFlat() {
-			const mappings: { [key: string]: MappingsExt } = {}
-			_.each(this.props.compatibleStudios, (studio) => {
-				mappings[studio.name] = studio.mappings
-			})
-			return mappings
-		}
-
-		getSourceLayersFlat() {
+		private saveBlueprintConfigOverrides = (newOps: SomeObjectOverrideOp[]) => {
 			if (this.props.showStyleBase) {
-				return _.map(this.props.showStyleBase.sourceLayers, (layer) => {
-					return {
-						value: layer._id,
-						name: layer.name,
-						type: layer.type,
-					}
+				ShowStyleBases.update(this.props.showStyleBase._id, {
+					$set: {
+						'blueprintConfigWithOverrides.overrides': newOps,
+					},
 				})
-			} else {
-				return []
+			}
+		}
+		private pushBlueprintConfigOverride = (newOp: SomeObjectOverrideOp) => {
+			if (this.props.showStyleBase) {
+				ShowStyleBases.update(this.props.showStyleBase._id, {
+					$push: {
+						'blueprintConfigWithOverrides.overrides': newOp,
+					},
+				})
 			}
 		}
 
 		renderEditForm(showStyleBase: ShowStyleBase) {
 			const { t } = this.props
-			const layerMappings = this.getLayerMappingsFlat()
-			const sourceLayers = this.getSourceLayersFlat()
 			return (
 				<div className="studio-edit mod mhl mvn">
 					<div className="row">
@@ -152,7 +180,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										</div>
 									</Route>
 									<Route path={`${this.props.match.path}/action-triggers`}>
-										<TriggeredActionsEditor showStyleBaseId={showStyleBase._id} />
+										<TriggeredActionsEditor
+											showStyleBaseId={showStyleBase._id}
+											sourceLayers={this.props.sourceLayers}
+											outputLayers={this.props.outputLayers}
+										/>
 									</Route>
 									<Route path={`${this.props.match.path}/hotkey-labels`}>
 										<HotkeyLegendSettings showStyleBase={showStyleBase} />
@@ -162,7 +194,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										return (
 											<Route key={region._id} path={`${this.props.match.path}/layouts-${region._id}`}>
 												<RundownLayoutEditor
-													showStyleBase={showStyleBase}
+													showStyleBaseId={showStyleBase._id}
+													sourceLayers={this.props.sourceLayers}
+													outputLayers={this.props.outputLayers}
 													studios={this.props.compatibleStudios}
 													customRegion={region}
 												/>
@@ -171,16 +205,15 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									})}
 
 									<Route path={`${this.props.match.path}/blueprint-config`}>
-										<ConfigManifestSettings
-											t={this.props.t}
-											i18n={this.props.i18n}
-											tReady={this.props.tReady}
+										<BlueprintConfigManifestSettings
+											configManifestId={unprotectString(showStyleBase._id)}
 											manifest={this.props.blueprintConfigManifest}
-											object={showStyleBase}
-											collection={ShowStyleBases}
-											layerMappings={layerMappings}
-											sourceLayers={sourceLayers}
-											configPath={'blueprintConfig'}
+											layerMappings={this.props.layerMappings}
+											sourceLayers={this.props.sourceLayersLight}
+											configObject={showStyleBase.blueprintConfigWithOverrides}
+											saveOverrides={this.saveBlueprintConfigOverrides}
+											pushOverride={this.pushBlueprintConfigOverride}
+											alternateConfig={undefined}
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/variants`}>
@@ -188,8 +221,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											showStyleVariants={this.props.showStyleVariants}
 											blueprintConfigManifest={this.props.blueprintConfigManifest}
 											showStyleBase={showStyleBase}
-											layerMappings={layerMappings}
-											sourceLayers={sourceLayers}
+											layerMappings={this.props.layerMappings}
+											sourceLayers={this.props.sourceLayersLight}
 										/>
 									</Route>
 

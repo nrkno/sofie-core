@@ -1,283 +1,344 @@
-import React from 'react'
+import React, { useCallback, useMemo } from 'react'
 import ClassNames from 'classnames'
-import { faPencilAlt, faTrash, faCheck, faExclamationTriangle, faPlus } from '@fortawesome/free-solid-svg-icons'
+import {
+	faPencilAlt,
+	faTrash,
+	faCheck,
+	faExclamationTriangle,
+	faPlus,
+	faRefresh,
+} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IOutputLayer } from '@sofie-automation/blueprints-integration'
-import { literal } from '@sofie-automation/corelib/dist/lib'
-import { Random } from 'meteor/random'
+import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import Tooltip from 'rc-tooltip'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { EditAttribute } from '../../../lib/EditAttribute'
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
-import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { findHighestRank } from '../StudioSettings'
-import _ from 'underscore'
+import { ObjectOverrideSetOp, SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { CheckboxControl } from '../../../lib/Components/Checkbox'
+import {
+	useOverrideOpHelper,
+	getAllCurrentAndDeletedItemsFromOverrides,
+	OverrideOpHelper,
+	WrappedOverridableItemNormal,
+} from '../util/OverrideOpHelper'
+import { TextInputControl } from '../../../lib/Components/TextInput'
+import { IntInputControl } from '../../../lib/Components/IntInput'
+import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
+import {
+	LabelAndOverrides,
+	LabelAndOverridesForCheckbox,
+	LabelAndOverridesForInt,
+} from '../../../lib/Components/LabelAndOverrides'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
 }
-interface IOutputSettingsState {
-	editedOutputs: Array<string>
+
+export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
+	const { t } = useTranslation()
+
+	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
+
+	const sortedOutputLayers = useMemo(
+		() =>
+			getAllCurrentAndDeletedItemsFromOverrides(
+				showStyleBase.outputLayersWithOverrides,
+				(a, b) => a[1]._rank - b[1]._rank
+			),
+		[showStyleBase.outputLayersWithOverrides]
+	)
+
+	const maxRank = useMemo(
+		() =>
+			findHighestRank(
+				sortedOutputLayers
+					.filter((item): item is WrappedOverridableItemNormal<IOutputLayer> => item.type === 'normal')
+					.map((item) => item.computed)
+			),
+		[sortedOutputLayers]
+	)
+
+	const onAddOutput = useCallback(() => {
+		const newOutput = literal<IOutputLayer>({
+			_id: `${showStyleBase._id}-${getRandomString(5)}`,
+			_rank: maxRank ? maxRank._rank + 10 : 0,
+			name: t('New Output'),
+			isPGM: false,
+		})
+
+		const addOp = literal<ObjectOverrideSetOp>({
+			op: 'set',
+			path: newOutput._id,
+			value: newOutput,
+		})
+
+		ShowStyleBases.update(showStyleBase._id, {
+			$push: {
+				'outputLayersWithOverrides.overrides': addOp,
+			},
+		})
+	}, [maxRank, showStyleBase._id])
+
+	const isPGMChannelSet = useMemo(() => {
+		return !!sortedOutputLayers.find((layer) => layer.computed && layer.computed.isPGM)
+	}, [sortedOutputLayers])
+
+	const saveOverrides = useCallback(
+		(newOps: SomeObjectOverrideOp[]) => {
+			ShowStyleBases.update(showStyleBase._id, {
+				$set: {
+					'outputLayersWithOverrides.overrides': newOps,
+				},
+			})
+		},
+		[showStyleBase._id]
+	)
+
+	const overrideHelper = useOverrideOpHelper(saveOverrides, showStyleBase.outputLayersWithOverrides)
+
+	return (
+		<div>
+			<h2 className="mhn">
+				<Tooltip
+					overlay={t('Output channels are required for your studio to work')}
+					visible={getHelpMode() && !sortedOutputLayers.length}
+					placement="top"
+				>
+					<span>{t('Output channels')}</span>
+				</Tooltip>
+			</h2>
+			{!sortedOutputLayers.length ? (
+				<div className="error-notice">
+					<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No output channels set')}
+				</div>
+			) : null}
+			{!isPGMChannelSet ? (
+				<div className="error-notice">
+					<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No PGM output')}
+				</div>
+			) : null}
+			<table className="expando settings-studio-output-table">
+				<tbody>
+					{sortedOutputLayers.map((item) =>
+						item.type === 'deleted' ? (
+							<OutputLayerDeletedEntry key={item.id} item={item.defaults} doUndelete={overrideHelper.resetItem} />
+						) : (
+							<OutputLayerEntry
+								key={item.id}
+								item={item}
+								isExpanded={isExpanded(item.id)}
+								toggleExpanded={toggleExpanded}
+								overrideHelper={overrideHelper}
+							/>
+						)
+					)}
+				</tbody>
+			</table>
+			<div className="mod mhs">
+				<button className="btn btn-primary" onClick={onAddOutput}>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
+			</div>
+		</div>
+	)
 }
 
-export const OutputLayerSettings = withTranslation()(
-	class OutputSettings extends React.Component<Translated<IOutputSettingsProps>, IOutputSettingsState> {
-		constructor(props: Translated<IOutputSettingsProps>) {
-			super(props)
+interface DeletedEntryProps {
+	item: IOutputLayer
+	doUndelete: (itemId: string) => void
+}
+function OutputLayerDeletedEntry({ item, doUndelete }: DeletedEntryProps) {
+	const doUndeleteItem = useCallback(() => doUndelete(item._id), [doUndelete, item._id])
 
-			this.state = {
-				editedOutputs: [],
-			}
-		}
-
-		isPGMChannelSet() {
-			if (!this.props.showStyleBase.outputLayers) return false
-			return this.props.showStyleBase.outputLayers.filter((layer) => layer.isPGM).length > 0
-		}
-
-		isItemEdited = (item: IOutputLayer) => {
-			return this.state.editedOutputs.indexOf(item._id) >= 0
-		}
-
-		finishEditItem = (item: IOutputLayer) => {
-			const index = this.state.editedOutputs.indexOf(item._id)
-			if (index >= 0) {
-				this.state.editedOutputs.splice(index, 1)
-				this.setState({
-					editedOutputs: this.state.editedOutputs,
-				})
-			}
-		}
-
-		editItem = (item: IOutputLayer) => {
-			if (this.state.editedOutputs.indexOf(item._id) < 0) {
-				this.state.editedOutputs.push(item._id)
-				this.setState({
-					editedOutputs: this.state.editedOutputs,
-				})
-			} else {
-				this.finishEditItem(item)
-			}
-		}
-
-		confirmDelete = (output: IOutputLayer) => {
-			const { t } = this.props
-			doModalDialog({
-				title: t('Delete this output?'),
-				no: t('Cancel'),
-				yes: t('Delete'),
-				onAccept: () => {
-					this.onDeleteOutput(output)
-				},
-				message: (
-					<React.Fragment>
-						<p>
-							{t('Are you sure you want to delete source layer "{{outputId}}"?', { outputId: output && output.name })}
-						</p>
-						<p>{t('Please note: This action is irreversible!')}</p>
-					</React.Fragment>
-				),
-			})
-		}
-		onAddOutput = () => {
-			const maxRank = findHighestRank(this.props.showStyleBase.outputLayers)
-			const { t } = this.props
-
-			const newOutput = literal<IOutputLayer>({
-				_id: this.props.showStyleBase._id + '-' + Random.id(5),
-				_rank: maxRank ? maxRank._rank + 10 : 0,
-				name: t('New Output'),
-				isPGM: false,
-			})
-
-			ShowStyleBases.update(this.props.showStyleBase._id, {
-				$push: {
-					outputLayers: newOutput,
-				},
-			})
-		}
-		onDeleteOutput = (item: IOutputLayer) => {
-			if (this.props.showStyleBase) {
-				ShowStyleBases.update(this.props.showStyleBase._id, {
-					$pull: {
-						outputLayers: {
-							_id: item._id,
-						},
-					},
-				})
-			}
-		}
-
-		renderOutputs() {
-			const { t } = this.props
-			return _.map(this.props.showStyleBase.outputLayers, (item, index) => {
-				const newItem = _.clone(item) as IOutputLayer & { index: number }
-				newItem.index = index
-				return newItem
-			})
-				.sort((a, b) => {
-					return a._rank - b._rank
-				})
-				.map((item) => {
-					return [
-						<tr
-							key={item._id}
-							className={ClassNames({
-								hl: this.isItemEdited(item),
-							})}
-						>
-							<th className="settings-studio-output-table__name c2">{item.name}</th>
-							<td className="settings-studio-output-table__id c4">{item._id}</td>
-							<td className="settings-studio-output-table__isPGM c3">
-								<div
-									className={ClassNames('switch', 'switch-tight', {
-										'switch-active': item.isPGM,
-									})}
-								>
-									PGM
-								</div>
-							</td>
-							<td className="settings-studio-output-table__actions table-item-actions c3">
-								<button className="action-btn" onClick={() => this.editItem(item)}>
-									<FontAwesomeIcon icon={faPencilAlt} />
-								</button>
-								<button className="action-btn" onClick={() => this.confirmDelete(item)}>
-									<FontAwesomeIcon icon={faTrash} />
-								</button>
-							</td>
-						</tr>,
-						this.isItemEdited(item) ? (
-							<tr className="expando-details hl" key={item._id + '-details'}>
-								<td colSpan={4}>
-									<div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Channel Name')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '.name'}
-													obj={this.props.showStyleBase}
-													type="text"
-													collection={ShowStyleBases}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Internal ID')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '._id'}
-													obj={this.props.showStyleBase}
-													type="text"
-													collection={ShowStyleBases}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '.isPGM'}
-													obj={this.props.showStyleBase}
-													type="checkbox"
-													collection={ShowStyleBases}
-													className=""
-												></EditAttribute>
-												{t('Is PGM Output')}
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Display Rank')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '._rank'}
-													obj={this.props.showStyleBase}
-													type="int"
-													collection={ShowStyleBases}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '.isDefaultCollapsed'}
-													obj={this.props.showStyleBase}
-													type="checkbox"
-													collection={ShowStyleBases}
-													className=""
-												></EditAttribute>
-												{t('Is collapsed by default')}
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '.isFlattened'}
-													obj={this.props.showStyleBase}
-													type="checkbox"
-													collection={ShowStyleBases}
-													className=""
-												></EditAttribute>
-												{t('Is flattened')}
-											</label>
-										</div>
-									</div>
-									<div className="mod alright">
-										<button className="btn btn-primary" onClick={() => this.finishEditItem(item)}>
-											<FontAwesomeIcon icon={faCheck} />
-										</button>
-									</div>
-								</td>
-							</tr>
-						) : null,
-					]
-				})
-		}
-
-		render() {
-			const { t } = this.props
-			return (
-				<div>
-					<h2 className="mhn">
-						<Tooltip
-							overlay={t('Output channels are required for your studio to work')}
-							visible={getHelpMode() && !this.props.showStyleBase.outputLayers.length}
-							placement="top"
-						>
-							<span>{t('Output channels')}</span>
-						</Tooltip>
-					</h2>
-					{!this.props.showStyleBase ||
-					!this.props.showStyleBase.outputLayers ||
-					!this.props.showStyleBase.outputLayers.length ? (
-						<div className="error-notice">
-							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No output channels set')}
-						</div>
-					) : null}
-					{!this.isPGMChannelSet() ? (
-						<div className="error-notice">
-							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No PGM output')}
-						</div>
-					) : null}
-					<table className="expando settings-studio-output-table">
-						<tbody>{this.renderOutputs()}</tbody>
-					</table>
-					<div className="mod mhs">
-						<button className="btn btn-primary" onClick={this.onAddOutput}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
-					</div>
+	return (
+		<tr>
+			<th className="settings-studio-output-table__name c2 deleted">{item.name}</th>
+			<td className="settings-studio-output-table__id c4 deleted">{item._id}</td>
+			<td className="settings-studio-output-table__isPGM c3">
+				<div
+					className={ClassNames('switch', 'switch-tight', {
+						'switch-active': item.isPGM,
+					})}
+				>
+					PGM
 				</div>
-			)
-		}
-	}
-)
+			</td>
+			<td className="settings-studio-output-table__actions table-item-actions c3">
+				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
+					<FontAwesomeIcon icon={faRefresh} />
+				</button>
+			</td>
+		</tr>
+	)
+}
+
+interface EntryProps {
+	item: WrappedOverridableItemNormal<IOutputLayer>
+	isExpanded: boolean
+	toggleExpanded: (itemId: string, forceState?: boolean) => void
+	overrideHelper: OverrideOpHelper
+}
+function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: EntryProps) {
+	const { t } = useTranslation()
+
+	const toggleEditItem = useCallback(() => toggleExpanded(item.id), [toggleExpanded, item.id])
+	const doResetItem = useCallback(() => overrideHelper.resetItem(item.id), [overrideHelper, item.id])
+	const doChangeItemId = useCallback(
+		(newItemId: string) => {
+			overrideHelper.changeItemId(item.id, newItemId)
+			toggleExpanded(newItemId, true)
+		},
+		[overrideHelper, toggleExpanded, item.id]
+	)
+
+	const confirmDelete = useCallback(() => {
+		doModalDialog({
+			title: t('Delete this output?'),
+			no: t('Cancel'),
+			yes: t('Delete'),
+			onAccept: () => {
+				overrideHelper.deleteItem(item.id)
+			},
+			message: (
+				<React.Fragment>
+					<p>{t('Are you sure you want to delete output layer "{{outputId}}"?', { outputId: item.computed.name })}</p>
+					<p>{t('Please note: This action is irreversible!')}</p>
+				</React.Fragment>
+			),
+		})
+	}, [t, item.id, item.computed.name, overrideHelper])
+
+	return (
+		<>
+			<tr
+				className={ClassNames({
+					hl: isExpanded,
+				})}
+			>
+				<th className="settings-studio-output-table__name c2">{item.computed.name}</th>
+				<td className="settings-studio-output-table__id c4">{item.computed._id}</td>
+				<td className="settings-studio-output-table__isPGM c3">
+					<div
+						className={ClassNames('switch', 'switch-tight', {
+							'switch-active': item.computed.isPGM,
+						})}
+					>
+						PGM
+					</div>
+				</td>
+				<td className="settings-studio-output-table__actions table-item-actions c3">
+					<button className="action-btn" onClick={toggleEditItem}>
+						<FontAwesomeIcon icon={faPencilAlt} />
+					</button>
+					<button className="action-btn" onClick={confirmDelete}>
+						<FontAwesomeIcon icon={faTrash} />
+					</button>
+				</td>
+			</tr>
+			{isExpanded && (
+				<tr className="expando-details hl">
+					<td colSpan={4}>
+						<div>
+							<div className="mod mvs mhs">
+								<LabelAndOverrides
+									label={t('Channel Name')}
+									item={item}
+									itemKey={'name'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								>
+									{(value, handleUpdate) => (
+										<TextInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</LabelAndOverrides>
+							</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Internal ID')}
+									<TextInputControl
+										modifiedClassName="bghl"
+										classNames="input text-input input-l"
+										value={item.id}
+										handleUpdate={doChangeItemId}
+										disabled={!!item.defaults}
+									/>
+								</label>
+							</div>
+							<div className="mod mvs mhs">
+								<LabelAndOverridesForCheckbox
+									label={t('Is PGM Output')}
+									item={item}
+									itemKey={'isPGM'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</LabelAndOverridesForCheckbox>
+							</div>
+							<div className="mod mvs mhs">
+								<LabelAndOverridesForInt
+									label={t('Display Rank')}
+									item={item}
+									itemKey={'_rank'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								>
+									{(value, handleUpdate) => (
+										<IntInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</LabelAndOverridesForInt>
+							</div>
+							<div className="mod mvs mhs">
+								<LabelAndOverridesForCheckbox
+									label={t('Is collapsed by default')}
+									item={item}
+									itemKey={'isDefaultCollapsed'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</LabelAndOverridesForCheckbox>
+							</div>
+							<div className="mod mvs mhs">
+								<LabelAndOverridesForCheckbox
+									label={t('Is flattened')}
+									item={item}
+									itemKey={'isFlattened'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								>
+									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+								</LabelAndOverridesForCheckbox>
+							</div>
+						</div>
+						<div className="mod alright">
+							{item.defaults && (
+								<button className="btn btn-primary" onClick={doResetItem} title="Reset to defaults">
+									<FontAwesomeIcon icon={faRefresh} />
+								</button>
+							)}
+							&nbsp;
+							<button className="btn btn-primary" onClick={toggleEditItem}>
+								<FontAwesomeIcon icon={faCheck} />
+							</button>
+						</div>
+					</td>
+				</tr>
+			)}
+		</>
+	)
+}

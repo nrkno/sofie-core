@@ -1,11 +1,7 @@
 import { SegmentId, PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
-import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { getRundownsSegmentsAndPartsFromCache } from '../playout/lib'
 import { clone } from 'underscore'
-import _ = require('underscore')
 import { CacheForIngest } from './cache'
 import { BeforePartMap, CommitIngestOperation } from './commit'
 import { LocalIngestRundown, RundownIngestDataCache } from './ingestCache'
@@ -13,8 +9,8 @@ import { getRundownId } from './lib'
 import { JobContext } from '../jobs'
 import { IngestPropsBase } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ReadonlyDeep } from 'type-fest'
 import { RundownLock } from '../jobs/lock'
+import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 
 export interface CommitIngestData {
 	/** Segment Ids which had any changes */
@@ -30,11 +26,6 @@ export interface CommitIngestData {
 
 	/** Whether the rundown should be removed or orphaned */
 	removeRundown: boolean
-
-	/** ShowStyle, if loaded to reuse */
-	showStyle: ReadonlyDeep<ShowStyleCompound> | undefined
-	/** Blueprint, if loaded to reuse */
-	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint> | undefined
 }
 
 export enum UpdateIngestRundownAction {
@@ -174,12 +165,12 @@ function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {
 		// Feed fake data because we only care about the single rundown
 		rundownIdsInOrder: [cache.RundownId],
 	})
-	const existingRundownParts = _.groupBy(segmentsAndParts.parts, (part) => unprotectString(part.segmentId))
+	const existingRundownParts = groupByToMap(segmentsAndParts.parts, 'segmentId')
 
 	const res = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
-	for (const [segmentId, parts] of Object.entries(existingRundownParts)) {
+	for (const [segmentId, parts] of existingRundownParts.entries()) {
 		res.set(
-			protectString(segmentId),
+			segmentId,
 			parts.map((p) => ({ id: p._id, rank: p._rank }))
 		)
 	}

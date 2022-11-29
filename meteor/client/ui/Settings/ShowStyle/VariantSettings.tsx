@@ -11,7 +11,7 @@ import {
 	faGripLines,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { ConfigManifestEntry, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { withTranslation } from 'react-i18next'
@@ -21,24 +21,29 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
-import { ConfigManifestSettings } from '../ConfigManifestSettings'
-import { UploadButton } from '../../../lib/uploadButton'
+import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from '../BlueprintConfigManifest'
+import {
+	applyAndValidateOverrides,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DndProvider, DragSourceMonitor, DropTargetMonitor, useDrag, useDrop, XYCoord } from 'react-dnd'
-import { Identifier } from 'dnd-core'
-import { HTML5Backend } from 'react-dnd-html5-backend'
-import update from 'immutability-helper'
 import { ShowStyleDragDropTypes } from './DragDropTypesShowStyle'
-import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
-import { logger } from '../../../../lib/logging'
 import { Meteor } from 'meteor/meteor'
+import { NoticeLevel, NotificationCenter, Notification } from '../../../lib/notifications/notifications'
+import { logger } from '../../../../lib/logging'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+import { UploadButton } from '../../../lib/uploadButton'
+import update from 'immutability-helper'
+import { Identifier } from 'dnd-core'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
 	showStyleVariants: ShowStyleVariant[]
 	blueprintConfigManifest: ConfigManifestEntry[]
 
-	layerMappings?: { [key: string]: MappingsExt }
-	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
+	layerMappings?: { [studioId: string]: MappingsExt }
+	sourceLayers?: Array<SourceLayerDropdownOption>
 }
 
 interface IShowStyleVariantsSettingsState {
@@ -271,6 +276,20 @@ export const ShowStyleVariantsSettings = withTranslation()(
 				.reorderAllShowStyleVariants(this.props.showStyleBase._id, this.state.dndVariants)
 				.catch(logger.warn)
 		}
+		private saveBlueprintConfigOverrides = (variantId: ShowStyleVariantId, newOps: SomeObjectOverrideOp[]) => {
+			ShowStyleVariants.update(variantId, {
+				$set: {
+					'blueprintConfigWithOverrides.overrides': newOps,
+				},
+			})
+		}
+		private pushBlueprintConfigOverride = (variantId: ShowStyleVariantId, newOp: SomeObjectOverrideOp) => {
+			ShowStyleVariants.update(variantId, {
+				$push: {
+					'blueprintConfigWithOverrides.overrides': newOp,
+				},
+			})
+		}
 
 		VariantItem = ({ index, showStyleVariant, moveVariantHandler }) => {
 			const ref = useRef<HTMLTableRowElement>(null)
@@ -378,18 +397,18 @@ export const ShowStyleVariantsSettings = withTranslation()(
 									</div>
 									<div className="row">
 										<div className="col c12 r1-c12 phs">
-											<ConfigManifestSettings
-												t={this.props.t}
-												i18n={this.props.i18n}
-												tReady={this.props.tReady}
+											<BlueprintConfigManifestSettings
+												configManifestId={unprotectString(showStyleVariant._id)}
 												manifest={this.props.blueprintConfigManifest}
-												collection={ShowStyleVariants}
-												configPath={'blueprintConfig'}
-												alternateObject={this.props.showStyleBase}
-												object={showStyleVariant}
+												alternateConfig={
+													applyAndValidateOverrides(this.props.showStyleBase.blueprintConfigWithOverrides).obj
+												}
 												layerMappings={this.props.layerMappings}
 												sourceLayers={this.props.sourceLayers}
 												subPanel={true}
+												configObject={showStyleVariant.blueprintConfigWithOverrides}
+												saveOverrides={(newOps) => this.saveBlueprintConfigOverrides(showStyleVariant._id, newOps)}
+												pushOverride={(newOp) => this.pushBlueprintConfigOverride(showStyleVariant._id, newOp)}
 											/>
 										</div>
 									</div>

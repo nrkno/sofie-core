@@ -1,14 +1,14 @@
 import * as React from 'react'
-import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
+import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { PeripheralDevice, PeripheralDevices, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
-import { ConfigManifestSettings } from './ConfigManifestSettings'
+import { BlueprintConfigManifestSettings } from './BlueprintConfigManifest'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { StudioRoutings } from './Studio/Routings'
@@ -18,6 +18,13 @@ import { StudioPackageManagerSettings } from './Studio/PackageManager'
 import { StudioGenericProperties } from './Studio/Generic'
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import {
+	applyAndValidateOverrides,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ReadonlyDeep } from 'type-fest'
+import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 interface IStudioSettingsProps {
 	match: {
@@ -31,6 +38,7 @@ interface IStudioSettingsProps {
 interface IStudioSettingsState {}
 interface IStudioSettingsTrackedProps {
 	studio?: Studio
+	studioMappings: ReadonlyDeep<MappingsExt>
 	studioDevices: Array<PeripheralDevice>
 	availableShowStyleVariants: Array<{
 		name: string
@@ -59,6 +67,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 
 		return {
 			studio: studio,
+			studioMappings: studio ? applyAndValidateOverrides(studio.mappingsWithOverrides).obj : {},
 			studioDevices: PeripheralDevices.find({
 				studioId: props.match.params.studioId,
 			}).fetch(),
@@ -134,11 +143,31 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		IStudioSettingsState
 	> {
 		getLayerMappingsFlat() {
+			// TODO - this is too reactive
 			const mappings = {}
 			if (this.props.studio) {
-				mappings[this.props.studio.name] = this.props.studio.mappings
+				mappings[this.props.studio.name] = applyAndValidateOverrides(this.props.studio.mappingsWithOverrides).obj
 			}
 			return mappings
+		}
+
+		private saveBlueprintConfigOverrides = (newOps: SomeObjectOverrideOp[]) => {
+			if (this.props.studio) {
+				Studios.update(this.props.studio._id, {
+					$set: {
+						'blueprintConfigWithOverrides.overrides': newOps,
+					},
+				})
+			}
+		}
+		private pushBlueprintConfigOverride = (newOp: SomeObjectOverrideOp) => {
+			if (this.props.studio) {
+				Studios.update(this.props.studio._id, {
+					$push: {
+						'blueprintConfigWithOverrides.overrides': newOp,
+					},
+				})
+			}
 		}
 
 		render() {
@@ -162,22 +191,25 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/blueprint-config`}>
-										<ConfigManifestSettings
-											t={this.props.t}
-											i18n={this.props.i18n}
-											tReady={this.props.tReady}
+										<BlueprintConfigManifestSettings
+											configManifestId={unprotectString(this.props.studio._id)}
 											manifest={this.props.blueprintConfigManifest}
-											object={this.props.studio}
 											layerMappings={this.getLayerMappingsFlat()}
-											collection={Studios}
-											configPath={'blueprintConfig'}
+											configObject={this.props.studio.blueprintConfigWithOverrides}
+											saveOverrides={this.saveBlueprintConfigOverrides}
+											pushOverride={this.pushBlueprintConfigOverride}
+											alternateConfig={undefined}
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/mappings`}>
 										<StudioMappings studio={this.props.studio} manifest={this.props.layerMappingsManifest} />
 									</Route>
 									<Route path={`${this.props.match.path}/route-sets`}>
-										<StudioRoutings studio={this.props.studio} manifest={this.props.layerMappingsManifest} />
+										<StudioRoutings
+											studio={this.props.studio}
+											studioMappings={this.props.studioMappings}
+											manifest={this.props.layerMappingsManifest}
+										/>
 									</Route>
 									<Route path={`${this.props.match.path}/package-manager`}>
 										<StudioPackageManagerSettings studio={this.props.studio} />
@@ -195,12 +227,12 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 	}
 )
 
-export function findHighestRank(array: Array<{ _rank: number }>): { _rank: number } | null {
+export function findHighestRank(array: Array<{ _rank: number } | undefined>): { _rank: number } | null {
 	if (!array) return null
 	let max: { _rank: number } | null = null
 
 	array.forEach((value) => {
-		if (max === null || max._rank < value._rank) {
+		if (value && (max === null || max._rank < value._rank)) {
 			max = value
 		}
 	})

@@ -67,7 +67,7 @@ export function nightlyCronjobInner(): void {
 			.map((part) => part._id)
 		const oldPartInstanceSelector = {
 			reset: true,
-			'timings.takeOut': { $lt: cleanLimitTime },
+			'timings.plannedStoppedPlayback': { $lt: cleanLimitTime },
 			'part._id': { $nin: existingPartIds },
 		}
 		const oldPartInstanceIds = PartInstances.find(oldPartInstanceSelector, { fields: { _id: 1 } })

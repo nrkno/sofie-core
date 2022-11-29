@@ -1,4 +1,5 @@
 import { BlueprintMapping, IBlueprintConfig, PackageContainer, TSR } from '@sofie-automation/blueprints-integration'
+import { ObjectWithOverrides } from '../settings/objectWithOverrides'
 import { ProtectedString } from '../protectedString'
 import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, PeripheralDeviceId } from './Ids'
 
@@ -18,8 +19,6 @@ export interface IStudioSettings {
 
 	/** URL to endpoint where media preview are exposed */
 	mediaPreviewsUrl: string // (former media_previews_url in config)
-	/** URL to Sofie Core endpoint */
-	sofieUrl: string // (former sofie_url in config)
 	/** URLs for slack webhook to send evaluations */
 	slackEvaluationUrls?: string // (former slack_evaluation in config)
 
@@ -31,13 +30,15 @@ export interface IStudioSettings {
 	/** Should the play from anywhere feature be enabled in this studio */
 	enablePlayFromAnywhere?: boolean
 
-	/** If set, forces the "now"-time to be set right away (aka the "multi-playout-gateway" feature).
-	 * even for single playout-gateways */
-	forceSettingNowTime?: boolean
+	/**
+	 * If set, forces the multi-playout-gateway mode (aka set "now"-time right away)
+	 * for single playout-gateways setups
+	 */
+	forceMultiGatewayMode?: boolean
 
 	/** How much extra delay to add to the Now-time (used for the "multi-playout-gateway" feature) .
 	 * A higher value adds delays in playout, but reduces the risk of missed frames. */
-	nowSafeLatency?: number
+	multiGatewayNowSafeLatency?: number
 
 	/** Preserve unsynced segment contents when the playing segment is removed, rather than removing all but the playing part */
 	preserveUnsyncedPlayingSegmentContents?: boolean
@@ -49,7 +50,7 @@ export interface IStudioSettings {
 }
 export type MappingsHash = ProtectedString<'MappingsHash'>
 
-export type StudioLight = Omit<DBStudio, 'mappings' | 'blueprintConfig'>
+export type StudioLight = Omit<DBStudio, 'mappingsWithOverrides' | 'blueprintConfigWithOverrides'>
 
 /** A set of available layer groups in a given installation */
 export interface DBStudio {
@@ -63,7 +64,7 @@ export interface DBStudio {
 	blueprintId?: BlueprintId
 
 	/** Mappings between the physical devices / outputs and logical ones */
-	mappings: MappingsExt
+	mappingsWithOverrides: ObjectWithOverrides<MappingsExt>
 
 	/**
 	 * A hash that is to be changed whenever there is a change to the mappings or routeSets
@@ -75,7 +76,7 @@ export interface DBStudio {
 	supportedShowStyleBase: Array<ShowStyleBaseId>
 
 	/** Config values are used by the Blueprints */
-	blueprintConfig: IBlueprintConfig
+	blueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
 
 	settings: IStudioSettings
 

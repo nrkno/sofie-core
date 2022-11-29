@@ -1,16 +1,31 @@
-import { DBStudio, StudioId } from '../lib/collections/Studios'
-import { getCurrentTime, unprotectString } from '../lib/lib'
-import { DBRundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
-import { PeripheralDeviceId } from '../lib/collections/PeripheralDevices'
-import { ShowStyleBaseId } from '../lib/collections/ShowStyleBases'
-import { ShowStyleVariantId } from '../lib/collections/ShowStyleVariants'
-import { DBRundown, RundownId } from '../lib/collections/Rundowns'
-import { DBSegment, SegmentId } from '../lib/collections/Segments'
-import { PartId, DBPart } from '../lib/collections/Parts'
+import { DBStudio } from '../lib/collections/Studios'
+import { clone, getCurrentTime, unprotectString } from '../lib/lib'
+import { DBRundownPlaylist } from '../lib/collections/RundownPlaylists'
+import { DBRundown } from '../lib/collections/Rundowns'
+import { DBSegment } from '../lib/collections/Segments'
+import { DBPart } from '../lib/collections/Parts'
 import { IBlueprintPieceType, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PieceId, Piece, PieceStatusCode, EmptyPieceTimelineObjectsBlob } from '../lib/collections/Pieces'
+import { Piece, PieceStatusCode, EmptyPieceTimelineObjectsBlob } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
 import { getRundownId } from '../server/api/ingest/lib'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { PartInstance } from '../lib/collections/PartInstances'
+import { PieceInstance } from '../lib/collections/PieceInstances'
+import {
+	PartId,
+	PartInstanceId,
+	PeripheralDeviceId,
+	PieceId,
+	PieceInstanceId,
+	RundownId,
+	RundownPlaylistActivationId,
+	RundownPlaylistId,
+	SegmentId,
+	SegmentPlayoutId,
+	ShowStyleBaseId,
+	ShowStyleVariantId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): DBRundownPlaylist {
 	return {
@@ -80,13 +95,12 @@ export function defaultStudio(_id: StudioId): DBStudio {
 
 		name: 'mockStudio',
 		organizationId: null,
-		mappings: {},
+		mappingsWithOverrides: wrapDefaultObject({}),
 		supportedShowStyleBase: [],
-		blueprintConfig: {},
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		settings: {
 			frameRate: 25,
 			mediaPreviewsUrl: '',
-			sofieUrl: '',
 		},
 		_rundownVersionHash: '',
 		routeSets: {},
@@ -154,5 +168,39 @@ export function defaultAdLibPiece(_id: PieceId, rundownId: RundownId, partId: Pa
 		outputLayerId: '',
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+	}
+}
+export function defaultPartInstance(
+	_id: PartInstanceId,
+	playlistActivationId: RundownPlaylistActivationId,
+	segmentPlayoutId: SegmentPlayoutId,
+	part: DBPart
+): PartInstance {
+	return {
+		_id,
+		isTemporary: false,
+		part: clone(part),
+		playlistActivationId,
+		rehearsal: false,
+		rundownId: part.rundownId,
+		segmentId: part.segmentId,
+		takeCount: 0,
+		segmentPlayoutId,
+	}
+}
+export function defaultPieceInstance(
+	_id: PieceInstanceId,
+	playlistActivationId: RundownPlaylistActivationId,
+	rundownId: RundownId,
+	partInstanceId: PartInstanceId,
+	piece: Piece
+): PieceInstance {
+	return {
+		_id,
+		partInstanceId,
+		piece: clone(piece),
+		playlistActivationId,
+		rundownId,
+		isTemporary: false,
 	}
 }

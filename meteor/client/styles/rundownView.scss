@@ -252,7 +252,6 @@ body.no-overflow {
 				text-align: left;
 			}
 
-
 			&.time-now {
 				position: absolute;
 				top: 0.05em;
@@ -446,7 +445,7 @@ svg.icon {
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
-	grid-template-columns: [segment-name] $segment-header-width [segment-group-controls] $segment-group-controls-width [timeline] auto [end]; // 120px [future-timeline-end]
+	grid-template-columns: [segment-name] ($segment-header-width / 2) [duration-onAirIn-split] ($segment-header-width / 2) [segment-group-controls] $segment-group-controls-width [timeline] auto [end]; // 120px [future-timeline-end]
 	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
 	user-select: none;
@@ -655,7 +654,7 @@ svg.icon {
 		padding: 0;
 		text-align: right;
 
-		grid-column: segment-name / segment-group-controls;
+		grid-column: segment-name / duration-onAirIn-split;
 		grid-row: header / main-view;
 
 		padding-right: 0px;
@@ -665,7 +664,6 @@ svg.icon {
 		letter-spacing: 0;
 		font-weight: 400;
 
-		cursor: pointer;
 		transition: 0.3s color;
 
 		> span.negative {
@@ -697,14 +695,14 @@ svg.icon {
 			right: auto;
 		}
 	}
+
 	.segment-timeline__timeUntil {
+		grid-column: duration-onAirIn-split / segment-group-controls;
 		color: #888;
+		cursor: pointer;
 	}
 
 	&.time-of-day-countdowns {
-		.segment-timeline__duration {
-			color: #888;
-		}
 		.segment-timeline__timeUntil {
 			color: #fff;
 			font-weight: 500;
@@ -1482,6 +1480,8 @@ svg.icon {
 			}
 
 			&.live {
+				--missing-overlay-animated: 1;
+
 				.segment-timeline__part__nextline:not(.segment-timeline__part__nextline--endline) {
 					&::after,
 					&::before {
@@ -1567,6 +1567,8 @@ svg.icon {
 			}
 
 			&.next {
+				--missing-overlay-animated: 1;
+
 				.segment-timeline__part__nextline:not(.offset) {
 					.segment-timeline__part__nextline__label {
 						> svg {
@@ -2128,13 +2130,26 @@ svg.icon {
 					}
 				}
 				.segment-timeline__piece__label__colored-mark {
-					font-size: 600%;
 					line-height: 23px;
 					width: 25px;
+					margin: 0 3px 0 2px;
+
+					&::before {
+						content: ' ';
+						display: inline-block;
+						width: 12px;
+						height: 12px;
+						background-color: currentColor;
+						border: 1px solid rgba(255, 255, 255, 0.3);
+						border-radius: 100%;
+						box-shadow: 0 0 4px black;
+						vertical-align: top;
+						margin-top: 0.35em;
+					}
 				}
 			}
 
-			.segment-timeline__piece:not(.infinite) .segment-timeline__piece__label.right-side {
+			.segment-timeline__piece:not(.infinite) > .segment-timeline__piece__label.right-side {
 				background: inherit;
 			}
 

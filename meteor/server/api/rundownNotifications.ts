@@ -6,7 +6,7 @@ import {
 	MEDIASTATUS_POLL_INTERVAL,
 } from '../../lib/api/rundownNotifications'
 import { registerClassToMeteorMethods } from '../methods'
-import { RundownId, Rundowns } from '../../lib/collections/Rundowns'
+import { Rundowns } from '../../lib/collections/Rundowns'
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { cacheResultAsync, makePromise, normalizeArrayToMap } from '../../lib/lib'
 import { getSegmentPartNotes } from '../../lib/rundownNotifications'
@@ -20,9 +20,11 @@ import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studios } from '../../lib/collections/Studios'
 import { checkPieceContentStatus } from '../../lib/mediaObjects'
-import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { UIStudio } from '../../lib/api/studios'
 
 async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 	const rundowns = await Rundowns.findFetchAsync({
@@ -41,6 +43,8 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 			if (showStyle && rundownStudio) {
 				const showStyleBase = showStyle
 				const studio = rundownStudio
+
+				const sourceLayers = applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj
 
 				const pSegments = Segments.findFetchAsync({ rundownId: rundown._id })
 
@@ -63,15 +67,23 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 				const partMap = normalizeArrayToMap(parts, '_id')
 				const segmentsMap = normalizeArrayToMap(await pSegments, '_id')
 
+				const uiStudio: Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'> = {
+					_id: studio._id,
+					settings: studio.settings,
+					packageContainers: studio.packageContainers,
+					mappings: applyAndValidateOverrides(studio.mappingsWithOverrides).obj,
+					routeSets: studio.routeSets,
+				}
+
 				const pieceStatus = pieces.map(async (piece) =>
 					makePromise(() => {
 						// run these in parallel. checkPieceContentStatus does some db ops
-						const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === piece.sourceLayerId)
+						const sourceLayer = sourceLayers[piece.sourceLayerId]
 						const part = partMap.get(piece.startPartId)
 						const segment = part ? segmentsMap.get(part.segmentId) : undefined
 						if (segment && sourceLayer && part) {
 							// we don't want this to be in a non-reactive context, so we manage this computation manually
-							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
+							const { status, messages } = checkPieceContentStatus(piece, sourceLayer, uiStudio)
 							if (
 								status !== PieceStatusCode.OK &&
 								status !== PieceStatusCode.UNKNOWN &&
@@ -87,7 +99,7 @@ async function getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObje
 									pieceId: piece._id,
 									name: piece.name,
 									status,
-									message,
+									messages,
 								})
 							}
 						}

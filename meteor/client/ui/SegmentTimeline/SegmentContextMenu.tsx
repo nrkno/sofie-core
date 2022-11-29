@@ -8,7 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
-import { SegmentId } from '../../../lib/collections/Segments'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
@@ -41,7 +41,7 @@ export const SegmentContextMenu = withTranslation()(
 			return this.props.studioMode && this.props.playlist && this.props.playlist.activationId ? (
 				<Escape to="document">
 					<ContextMenu id="segment-timeline-context-menu">
-						{part && (
+						{part && timecode === null && (
 							<>
 								<MenuItem
 									onClick={(e) => this.props.onSetNext(part.instance.part, e)}

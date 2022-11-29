@@ -1,9 +1,7 @@
-import { RundownId } from '../collections/Rundowns'
 import { PartNote, SegmentNote, RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { PieceId, PieceStatusCode } from '../collections/Pieces'
-import { PartId } from '../collections/Parts'
-import { SegmentId } from '../collections/Segments'
-import { RundownPlaylistId } from '../collections/RundownPlaylists'
+import { PieceStatusCode } from '../collections/Pieces'
+import { PartId, PieceId, RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export interface IMediaObjectIssue {
 	segmentRank: number
@@ -15,7 +13,7 @@ export interface IMediaObjectIssue {
 	name: string
 	segmentName: string
 	status: PieceStatusCode
-	message: string | null
+	messages: ITranslatableMessage[]
 }
 
 export enum RundownNotificationsAPIMethods {

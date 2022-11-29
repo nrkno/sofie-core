@@ -1,17 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { faCopy, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { faCopy, faPencilAlt, faPlus, faRefresh, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { PlayoutActions, SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
+import { PlayoutActions, SomeAction, SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
-import {
-	DBBlueprintTrigger,
-	TriggeredActionId,
-	TriggeredActions,
-} from '../../../../../lib/collections/TriggeredActions'
+import { DBBlueprintTrigger, TriggeredActions } from '../../../../../lib/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
-import { ShowStyleBase, ShowStyleBaseId } from '../../../../../lib/collections/ShowStyleBases'
-import { flatten, normalizeArray } from '../../../../../lib/lib'
+import { OutputLayers, SourceLayers } from '../../../../../lib/collections/ShowStyleBases'
+import { flatten, getRandomString, last, literal } from '../../../../../lib/lib'
 import { createAction, isPreviewableAction } from '../../../../../lib/api/triggers/actionFactory'
 import { PreviewContext } from './TriggeredActionsEditor'
 import { IWrappedAdLib } from '../../../../../lib/api/triggers/actionFilterChainCompilers'
@@ -22,9 +18,18 @@ import { EditAttribute } from '../../../../lib/EditAttribute'
 import { iconDragHandle } from '../../../RundownList/icons'
 import { useDrag, useDrop } from 'react-dnd'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import {
+	applyAndValidateOverrides,
+	ObjectOverrideSetOp,
+	SomeObjectOverrideOp,
+	wrapDefaultObject,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getAllCurrentAndDeletedItemsFromOverrides, useOverrideOpHelper } from '../../util/OverrideOpHelper'
 
 interface IProps {
-	showStyleBase: ShowStyleBase | undefined
+	sourceLayers: SourceLayers | undefined
+	outputLayers: OutputLayers | undefined
 	triggeredActionId: TriggeredActionId
 	selected?: boolean
 	previewContext: PreviewContext | null
@@ -39,16 +44,23 @@ let LAST_UP_SETTING = false
 
 export const TRIGGERED_ACTION_ENTRY_DRAG_TYPE = 'TriggeredActionEntry'
 
-export const TriggeredActionEntry: React.FC<IProps> = React.memo(function TriggeredActionEntry(
-	props: IProps
-): React.ReactElement | null {
-	const { showStyleBase, triggeredActionId, selected, locked, previewContext, onEdit, onRemove, onDuplicate } = props
-
+export const TriggeredActionEntry: React.FC<IProps> = React.memo(function TriggeredActionEntry({
+	sourceLayers,
+	outputLayers,
+	triggeredActionId,
+	selected,
+	locked,
+	previewContext,
+	onEdit,
+	onRemove,
+	onDuplicate,
+	onFocus,
+}: IProps): React.ReactElement | null {
 	const triggeredAction = useTracker(() => TriggeredActions.findOne(triggeredActionId), [triggeredActionId])
 
 	const { t } = useTranslation()
-	const [selectedTrigger, setSelectedTrigger] = useState(-1)
-	const [selectedAction, setSelectedAction] = useState(-1)
+	const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null)
+	const [selectedAction, setSelectedAction] = useState<string | null>(null)
 
 	const [{ isDragging }, drag, dragPreview] = useDrag({
 		item: { id: triggeredActionId, type: TRIGGERED_ACTION_ENTRY_DRAG_TYPE },
@@ -126,11 +138,19 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		},
 	})
 
+	const resolvedActions = useMemo(
+		() =>
+			triggeredAction?.actionsWithOverrides
+				? applyAndValidateOverrides(triggeredAction.actionsWithOverrides).obj
+				: undefined,
+		[triggeredAction?.actionsWithOverrides]
+	)
+
 	const previewItems = useTracker(
 		() => {
 			try {
-				if (triggeredAction && selected && showStyleBase) {
-					const executableActions = triggeredAction.actions.map((value) => createAction(value, showStyleBase))
+				if (resolvedActions && selected && sourceLayers) {
+					const executableActions = Object.values(resolvedActions).map((value) => createAction(value, sourceLayers))
 					const ctx = previewContext
 					if (ctx && ctx.rundownPlaylist) {
 						return flatten(
@@ -143,128 +163,192 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 			}
 			return [] as IWrappedAdLib[]
 		},
-		[selected, triggeredAction],
+		[selected, resolvedActions, sourceLayers],
 		[] as IWrappedAdLib[]
 	)
 
-	const sourceLayers = showStyleBase ? normalizeArray(showStyleBase.sourceLayers, '_id') : []
-
 	function getType(sourceLayerId: string | undefined): SourceLayerType {
-		return sourceLayerId ? sourceLayers[sourceLayerId]?.type ?? SourceLayerType.UNKNOWN : SourceLayerType.UNKNOWN
+		return sourceLayerId && sourceLayers
+			? sourceLayers[sourceLayerId]?.type ?? SourceLayerType.UNKNOWN
+			: SourceLayerType.UNKNOWN
 	}
 
 	function getShortName(sourceLayerId: string | undefined) {
-		return sourceLayerId
+		return sourceLayerId && sourceLayers
 			? sourceLayers[sourceLayerId]?.abbreviation ?? sourceLayers[sourceLayerId]?.name ?? t('Unknown')
 			: t('Unknown')
 	}
 
-	const removeTrigger = useCallback(
-		(index: number) => {
-			if (!triggeredAction) return
-			triggeredAction.triggers.splice(index, 1)
+	const saveActionsOverrides = useCallback(
+		(newOps: SomeObjectOverrideOp[]) => {
+			if (!triggeredAction?._id) return
 
-			TriggeredActions.update(triggeredActionId, {
+			TriggeredActions.update(triggeredAction?._id, {
 				$set: {
-					triggers: triggeredAction.triggers,
+					[`actionsWithOverrides.overrides`]: newOps,
 				},
 			})
-
-			setSelectedTrigger(-1)
 		},
-		[triggeredAction, triggeredActionId]
+		[triggeredAction?._id]
+	)
+	const actionsOverridesHelper = useOverrideOpHelper(
+		saveActionsOverrides,
+		triggeredAction?.actionsWithOverrides ?? wrapDefaultObject({})
+	)
+
+	const saveTriggersOverrides = useCallback(
+		(newOps: SomeObjectOverrideOp[]) => {
+			if (!triggeredAction?._id) return
+
+			TriggeredActions.update(triggeredAction?._id, {
+				$set: {
+					[`triggersWithOverrides.overrides`]: newOps,
+				},
+			})
+		},
+		[triggeredAction?._id]
+	)
+	const triggersOverridesHelper = useOverrideOpHelper(
+		saveTriggersOverrides,
+		triggeredAction?.triggersWithOverrides ?? wrapDefaultObject({})
+	)
+
+	const removeTrigger = useCallback(
+		(id: string) => {
+			triggersOverridesHelper.deleteItem(id)
+
+			setSelectedTrigger(null)
+		},
+		[triggersOverridesHelper]
 	)
 
 	const focusTrigger = useCallback(
-		(index: number) => {
-			if (!triggeredAction) return
-			setSelectedTrigger(index)
+		(id: string) => {
+			if (!triggeredAction?._id) return
+			setSelectedTrigger(id)
 		},
-		[triggeredAction]
+		[triggeredAction?._id]
 	)
 
-	const closeTrigger = useCallback(() => setSelectedTrigger(-1), [])
+	const closeTrigger = useCallback(() => setSelectedTrigger(null), [])
 
 	const changeTrigger = useCallback(
-		(index: number, newVal: DBBlueprintTrigger) => {
-			if (!triggeredAction) return
-			triggeredAction.triggers.splice(index, 1, newVal)
+		(id: string, newVal: DBBlueprintTrigger) => {
+			if (!triggeredAction?._id) return
 
 			LAST_UP_SETTING = !!newVal.up
 
-			TriggeredActions.update(triggeredActionId, {
-				$set: {
-					triggers: triggeredAction.triggers,
-				},
-			})
+			triggersOverridesHelper.replaceItem(id, newVal)
 
-			setSelectedTrigger(-1)
+			setSelectedTrigger(null)
 		},
-		[triggeredAction, triggeredActionId]
+		[triggeredAction?._id, triggersOverridesHelper]
 	)
 
-	function addTrigger() {
-		if (!triggeredAction) return
+	const resetTrigger = useCallback(
+		(id: string) => {
+			if (!triggeredAction?._id) return
 
-		const index =
-			triggeredAction.triggers.push({
-				type: TriggerType.hotkey,
-				keys: '',
-				up: LAST_UP_SETTING,
-			}) - 1
+			triggersOverridesHelper.resetItem(id)
 
-		TriggeredActions.update(triggeredActionId, {
-			$set: {
-				triggers: triggeredAction.triggers,
+			setSelectedTrigger(null)
+		},
+		[triggeredAction?._id, triggersOverridesHelper]
+	)
+
+	const addTrigger = useCallback(() => {
+		if (!triggeredAction?._id) return
+
+		const id = getRandomString()
+		const newTrigger = {
+			type: TriggerType.hotkey,
+			keys: '',
+			up: LAST_UP_SETTING,
+		}
+
+		TriggeredActions.update(triggeredAction?._id, {
+			$push: {
+				'triggersWithOverrides.overrides': literal<ObjectOverrideSetOp>({
+					op: 'set',
+					path: id,
+					value: newTrigger,
+				}),
 			},
 		})
 
-		setSelectedTrigger(index)
-		setSelectedAction(-1)
-	}
+		setSelectedTrigger(id)
+		setSelectedAction(null)
+	}, [triggeredAction?._id])
 
-	function addAction() {
-		if (!triggeredAction) return
-		const index =
-			triggeredAction.actions.push({
-				action: PlayoutActions.adlib,
-				filterChain: [],
-			}) - 1
+	const addAction = useCallback(() => {
+		if (!triggeredAction?._id) return
 
-		TriggeredActions.update(triggeredActionId, {
+		const id = getRandomString()
+		const newAction = {
+			action: PlayoutActions.adlib,
+			filterChain: [],
+		}
+
+		TriggeredActions.update(triggeredAction?._id, {
 			$set: {
-				actions: triggeredAction.actions,
+				'actionsWithOverrides.overrides': literal<ObjectOverrideSetOp>({
+					op: 'set',
+					path: id,
+					value: newAction,
+				}),
 			},
 		})
 
-		setSelectedTrigger(-1)
-		setSelectedAction(index)
-	}
+		setSelectedTrigger(null)
+		setSelectedAction(id)
+	}, [triggeredAction?._id])
 
-	function removeAction(index: number) {
-		if (!triggeredAction) return
-		triggeredAction.actions.splice(index, 1)
+	const removeAction = useCallback(
+		(id: string) => {
+			if (!triggeredAction?._id) return
 
-		TriggeredActions.update(triggeredActionId, {
-			$set: {
-				actions: triggeredAction.actions,
-			},
-		})
+			actionsOverridesHelper.deleteItem(id)
 
-		setSelectedAction(-1)
-	}
+			setSelectedAction(null)
+		},
+		[triggeredAction?._id, actionsOverridesHelper]
+	)
 
-	const closeAction = useCallback(() => setSelectedAction(-1), [])
-	const focusAction = useCallback(() => props.onFocus && props.onFocus(triggeredActionId), [triggeredActionId])
+	const onResetActions = useCallback(() => {
+		saveActionsOverrides([])
+	}, [saveActionsOverrides])
+
+	const restoreAction = useCallback(
+		(id: string) => {
+			actionsOverridesHelper.resetItem(id)
+		},
+		[actionsOverridesHelper]
+	)
+
+	const closeAction = useCallback(() => setSelectedAction(null), [])
+	const focusAction = useCallback(() => onFocus && onFocus(triggeredActionId), [triggeredActionId, onFocus])
 
 	useEffect(() => {
-		if (!triggeredAction) return
+		if (!triggeredAction?.triggersWithOverrides) return
 
-		LAST_UP_SETTING =
-			selectedTrigger >= 0
-				? !!triggeredAction.triggers[selectedTrigger]?.up
-				: triggeredAction.triggers[triggeredAction.triggers.length - 1]?.up ?? LAST_UP_SETTING
-	}, [triggeredAction, triggeredAction?.triggers[triggeredAction.triggers.length - 1]?.up, selectedTrigger])
+		const resolvedActions = applyAndValidateOverrides(triggeredAction.triggersWithOverrides).obj
+
+		const lastTrigger = last(Object.values(resolvedActions))
+		LAST_UP_SETTING = selectedTrigger ? !!resolvedActions[selectedTrigger]?.up : lastTrigger?.up ?? LAST_UP_SETTING
+	}, [triggeredAction?.triggersWithOverrides, selectedTrigger])
+
+	const sortedWrappedTriggers = useMemo(
+		() =>
+			triggeredAction ? getAllCurrentAndDeletedItemsFromOverrides(triggeredAction?.triggersWithOverrides, null) : [],
+		[triggeredAction]
+	)
+	const sortedWrappedActions = useMemo(
+		() =>
+			triggeredAction
+				? getAllCurrentAndDeletedItemsFromOverrides<SomeAction>(triggeredAction?.actionsWithOverrides, null)
+				: [],
+		[triggeredAction]
+	)
 
 	// do not render anything until we get the triggered action from the collection
 	if (!triggeredAction) return null
@@ -290,12 +374,15 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 				<div className="triggered-action-entry__drag-handle locked"></div>
 			)}
 			<div className="triggered-action-entry__triggers">
-				{triggeredAction.triggers.map((trigger, index) => (
+				{sortedWrappedTriggers.map((item) => (
 					<TriggerEditor
-						key={index}
-						index={index}
-						trigger={trigger}
-						opened={selectedTrigger === index}
+						key={item.id}
+						id={item.id}
+						trigger={item.type === 'normal' ? item.computed : item.defaults}
+						opened={selectedTrigger === item.id}
+						canReset={item.defaults !== undefined && item.overrideOps.length > 0}
+						isDeleted={item.type === 'deleted'}
+						onResetTrigger={resetTrigger}
 						onChangeTrigger={changeTrigger}
 						onFocus={focusTrigger}
 						onClose={closeTrigger}
@@ -304,7 +391,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 				))}
 				<button
 					className={classNames('triggered-action-entry__add-trigger', {
-						force: triggeredAction.triggers.length === 0,
+						force: sortedWrappedTriggers.filter((trigger) => trigger.type === 'normal').length === 0,
 					})}
 					onClick={addTrigger}
 				>
@@ -312,21 +399,28 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 				</button>
 			</div>
 			<div className="triggered-action-entry__actions">
-				{triggeredAction.actions.map((action, index) => (
-					<ActionEditor
-						key={index}
-						action={action}
-						index={index}
-						triggeredAction={triggeredAction}
-						showStyleBase={showStyleBase}
-						onActionFocus={setSelectedAction}
-						onFocus={focusAction}
-						onClose={closeAction}
-						opened={selectedAction === index}
-						onRemove={removeAction}
-					/>
-				))}
-				{triggeredAction.actions.length === 0 ? (
+				{sortedWrappedActions.map((item) =>
+					item.type === 'normal' ? (
+						<ActionEditor
+							key={item.id}
+							action={item.computed}
+							actionId={item.id}
+							sourceLayers={sourceLayers}
+							outputLayers={outputLayers}
+							onActionFocus={setSelectedAction}
+							overrideHelper={actionsOverridesHelper}
+							onFocus={focusAction}
+							onClose={closeAction}
+							opened={selectedAction === item.id}
+							onRemove={removeAction}
+						/>
+					) : (
+						<button className="triggered-action-entry__action-add clickable" onClick={() => restoreAction(item.id)}>
+							{t('Restore Deleted Action')}
+						</button>
+					)
+				)}
+				{sortedWrappedActions.length === 0 ? (
 					<div className="triggered-action-entry__action">
 						<button className="triggered-action-entry__action-add clickable" onClick={addAction}>
 							{t('Select Action')}
@@ -335,13 +429,26 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 				) : null}
 			</div>
 			<div className="triggered-action-entry__modify">
-				<button className="action-btn" onClick={(e) => onDuplicate(triggeredActionId, e)}>
+				{!!sortedWrappedActions.find((action) => action.overrideOps.length > 0) && (
+					<button className="action-btn" onClick={onResetActions} title={t('Reset Action')}>
+						<FontAwesomeIcon icon={faRefresh} />
+					</button>
+				)}
+				<button
+					className="action-btn"
+					onClick={(e) => onDuplicate(triggeredActionId, e)}
+					title={t('Duplicate Action Trigger')}
+				>
 					<FontAwesomeIcon icon={faCopy} />
 				</button>
-				<button className="action-btn" onClick={(e) => onEdit(triggeredActionId, e)}>
+				<button className="action-btn" onClick={(e) => onEdit(triggeredActionId, e)} title={t('Edit Action Trigger')}>
 					<FontAwesomeIcon icon={faPencilAlt} />
 				</button>
-				<button className="action-btn" onClick={(e) => onRemove(triggeredActionId, e)}>
+				<button
+					className="action-btn"
+					onClick={(e) => onRemove(triggeredActionId, e)}
+					title={t('Delete Action Trigger')}
+				>
 					<FontAwesomeIcon icon={faTrash} />
 				</button>
 			</div>

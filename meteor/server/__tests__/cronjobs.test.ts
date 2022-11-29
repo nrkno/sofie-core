@@ -2,11 +2,11 @@ import '../../__mocks__/_extendJest'
 import { testInFiber, runAllTimers, beforeAllInFiber } from '../../__mocks__/helpers/jest'
 import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
-import { IngestDataCache, IngestCacheType, IngestDataCacheObjId } from '../../lib/collections/IngestDataCache'
+import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { getRandomId, getRandomString, protectString } from '../../lib/lib'
-import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
-import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
+import { Rundowns } from '../../lib/collections/Rundowns'
+import { UserActionsLog } from '../../lib/collections/UserActionsLog'
+import { Snapshots, SnapshotType } from '../../lib/collections/Snapshots'
 import {
 	IBlueprintPieceType,
 	PieceLifespan,
@@ -17,16 +17,25 @@ import {
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import {
 	PeripheralDevices,
-	PeripheralDeviceId,
 	PeripheralDeviceType,
 	PeripheralDeviceCategory,
 } from '../../lib/collections/PeripheralDevices'
 import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
-import { DBPart, PartId, Parts } from '../../lib/collections/Parts'
-import { SegmentId } from '../../lib/collections/Segments'
+import { DBPart, Parts } from '../../lib/collections/Parts'
 import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { Meteor } from 'meteor/meteor'
+import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import {
+	IngestDataCacheObjId,
+	PartId,
+	PeripheralDeviceId,
+	RundownId,
+	SegmentId,
+	SnapshotId,
+	UserActionsLogItemId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 // Set up mocks for tests in this suite
 let mockCurrentTime = 0
@@ -36,9 +45,6 @@ jest.mock('../logging')
 import '../cronjobs'
 
 import '../api/peripheralDevice'
-import { Meteor } from 'meteor/meteor'
-import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-
 describe('cronjobs', () => {
 	beforeEach(() => {
 		// cannot use setupDefaultStudioEnvironment or setupMockCore because MeteorMock.mockRunMeteorStartup
@@ -50,7 +56,6 @@ describe('cronjobs', () => {
 			modified: 0,
 			version: '0.0.0',
 			previousVersion: '0.0.0',
-			storePath: '',
 			serviceMessages: {},
 			cron: {
 				casparCGRestart: {
@@ -224,7 +229,7 @@ describe('cronjobs', () => {
 				part: part0,
 				reset: true,
 				timings: {
-					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
+					plannedStoppedPlayback: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
 				},
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
@@ -250,7 +255,7 @@ describe('cronjobs', () => {
 				part: part1,
 				reset: true,
 				timings: {
-					takeOut: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
+					plannedStoppedPlayback: lib.getCurrentTime() - 1000 * 3600 * 24 * 51,
 				},
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),

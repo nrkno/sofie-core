@@ -1,7 +1,7 @@
 import { PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import classNames from 'classnames'
-import { PartId } from '../../../lib/collections/Parts'
 import { PieceUi } from '../../ui/SegmentContainer/withResolvedSegment'
 import { RundownUtils } from '../rundown'
 
@@ -36,9 +36,7 @@ export function pieceUiClassNames(
 
 		'hide-overflow-labels':
 			uiState && elementWidth
-				? uiState.leftAnchoredWidth > 0 &&
-				  uiState.rightAnchoredWidth > 0 &&
-				  uiState.leftAnchoredWidth + uiState.rightAnchoredWidth > elementWidth
+				? uiState.leftAnchoredWidth > 0 && uiState.leftAnchoredWidth + uiState.rightAnchoredWidth > elementWidth
 				: undefined,
 
 		'super-infinite':

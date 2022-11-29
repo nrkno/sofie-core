@@ -1,10 +1,10 @@
 import { Meteor } from 'meteor/meteor'
-import { UserId } from '../../lib/collections/Users'
 import { Credentials, resolveAuthenticatedUser, resolveCredentials } from './lib/credentials'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToCoreSystem, allowAccessToCurrentUser, allowAccessToSystemStatus } from './lib/security'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
+import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace SystemReadAccess {
 	/** Handles read access for all organization content (segments, parts, pieces etc..) */

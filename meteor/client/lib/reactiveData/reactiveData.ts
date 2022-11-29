@@ -2,12 +2,11 @@ import { Tracker } from 'meteor/tracker'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Rundowns, Rundown, DBRundown } from '../../../lib/collections/Rundowns'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { StudioId } from '../../../lib/collections/Studios'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
 import { getCurrentTime } from '../../../lib/lib'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { FindOptions } from '../../../lib/typings/meteor'
+import { FindOptions } from '../../../lib/collections/lib'
+import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace reactiveData {
 	// export function getRRundownId (rundownId: RundownId): ReactiveVar<RundownId | undefined> {

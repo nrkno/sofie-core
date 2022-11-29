@@ -26,6 +26,7 @@ import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/
 import { prefixSingleObjectId } from '../lib'
 import { LookaheadTimelineObject } from './findObjects'
 import { hasPieceInstanceDefinitelyEnded } from '../timeline/lib'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -50,7 +51,8 @@ export async function getLookeaheadObjects(
 	partInstancesInfo0: SelectedPartInstancesTimelineInfo
 ): Promise<Array<TimelineObjRundown & OnGenerateTimelineObjExt>> {
 	const span = context.startSpan('getLookeaheadObjects')
-	const mappingsToConsider = Object.entries(context.studio.mappings ?? {}).filter(
+	const allMappings = applyAndValidateOverrides(context.studio.mappingsWithOverrides)
+	const mappingsToConsider = Object.entries(allMappings.obj).filter(
 		([_id, map]) => map.lookahead !== LookaheadMode.NONE && map.lookahead !== undefined
 	)
 	if (mappingsToConsider.length === 0) {
@@ -86,7 +88,7 @@ export async function getLookeaheadObjects(
 	}
 
 	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
-		if (!info.partInstance.timings?.startedPlayback) {
+		if (!info.partInstance.timings?.plannedStartedPlayback) {
 			return info.pieceInstances
 		} else {
 			return info.pieceInstances.filter((p) => !hasPieceInstanceDefinitelyEnded(p, info.nowInPart))
@@ -174,10 +176,10 @@ export async function getLookeaheadObjects(
 }
 
 // elsewhere uses prefixAllObjectIds to do this, but we want to apply to a single object from itself
-const getStartOfObjectRef = (obj: TimelineObjRundown & OnGenerateTimelineObj): string =>
+const getStartOfObjectRef = (obj: TimelineObjRundown & OnGenerateTimelineObj<any>): string =>
 	`#${prefixSingleObjectId(obj, obj.pieceInstanceId ?? '')}.start`
 const calculateStartAfterPreviousObj = (
-	prevObj: TimelineObjRundown & OnGenerateTimelineObj
+	prevObj: TimelineObjRundown & OnGenerateTimelineObj<any>
 ): TimelineTypes.TimelineEnable => {
 	const prevHasDelayFlag = (prevObj.classes || []).indexOf('_lookahead_start_delay') !== -1
 
@@ -202,7 +204,12 @@ function mutateLookaheadObject(
 	obj.enable = enable
 	obj.isLookahead = true
 	if (obj.keyframes) {
-		obj.keyframes = obj.keyframes.filter((kf) => kf.preserveForLookahead)
+		obj.keyframes = obj.keyframes
+			.filter((kf) => kf.preserveForLookahead)
+			.map((kf, i) => ({
+				...kf,
+				id: `${obj.id}_keyframe_${i}`,
+			}))
 	}
 	delete obj.inGroup // force it to be cleared
 	obj.disabled = disabled

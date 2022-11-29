@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { Segments, SegmentId } from '../../../lib/collections/Segments'
+import { Segments } from '../../../lib/collections/Segments'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { computeSegmentDisplayDuration, RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -15,7 +15,7 @@ import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
-import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstances } from '../../../lib/collections/PartInstances'
 import { Parts } from '../../../lib/collections/Parts'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
@@ -34,6 +34,7 @@ import {
 } from '../SegmentContainer/withResolvedSegment'
 import { computeSegmentDuration, RundownTimingContext } from '../../lib/rundownTiming'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
+import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 // Kept for backwards compatibility
 export { SegmentUi, PartUi, PieceUi, ISourceLayerUi, IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'
@@ -559,9 +560,9 @@ export const SegmentTimelineContainer = withResolvedSegment(
 						(this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0]?.instance.part._id)] ||
 							0)
 
-					let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
+					let isExpectedToPlay = !!currentLivePartInstance.timings?.plannedStartedPlayback
 					const lastTake = currentLivePartInstance.timings?.take
-					const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
+					const lastStartedPlayback = currentLivePartInstance.timings?.plannedStartedPlayback
 					const lastTakeOffset = currentLivePartInstance.timings?.playOffset || 0
 					const virtualStartedPlayback =
 						(lastTake || 0) > (lastStartedPlayback || -1)
@@ -702,7 +703,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 							segment={this.props.segmentui}
 							studio={this.props.studio}
 							parts={this.props.parts}
-							segmentNotes={this.props.segmentNotes}
+							segmentNoteCounts={this.props.segmentNoteCounts}
 							timeScale={this.state.timeScale}
 							maxTimeScale={this.state.maxTimeScale}
 							onRecalculateMaxTimeScale={this.updateMaxTimeScale}

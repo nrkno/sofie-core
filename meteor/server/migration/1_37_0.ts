@@ -14,9 +14,9 @@ import {
 import { logger } from '../logging'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { Blueprints } from '../../lib/collections/Blueprints'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 // Release 37 (2021-12-09)
 
@@ -25,8 +25,8 @@ let j = 0
 const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 	{
 		_id: 'core_toggleShelf',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: ClientActions.shelf,
 				filterChain: [
 					{
@@ -35,21 +35,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 				],
 				state: 'toggle',
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'Tab',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Toggle Shelf'),
 	},
 	{
 		_id: 'core_activateRundownPlaylist',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.activateRundownPlaylist,
 				rehearsal: false,
 				filterChain: [
@@ -58,21 +58,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 					},
 				],
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'Backquote',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Activate (On-Air)'),
 	},
 	{
 		_id: 'core_activateRundownPlaylist_rehearsal',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.activateRundownPlaylist,
 				rehearsal: true,
 				filterChain: [
@@ -81,21 +81,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 					},
 				],
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'Control+Backquote',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Activate (Rehearsal)'),
 	},
 	{
 		_id: 'core_deactivateRundownPlaylist',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.deactivateRundownPlaylist,
 				filterChain: [
 					{
@@ -103,21 +103,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 					},
 				],
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'Control+Shift+Backquote',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Deactivate'),
 	},
 	{
 		_id: 'core_take',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.take,
 				filterChain: [
 					{
@@ -125,26 +125,26 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 					},
 				],
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'NumpadEnter',
 				up: true,
 			},
-			{
+			'1': {
 				type: TriggerType.hotkey,
 				keys: 'F12',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Take'),
 	},
 	{
 		_id: 'core_hold',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.hold,
 				filterChain: [
 					{
@@ -152,21 +152,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 					},
 				],
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'KeyH',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Hold'),
 	},
 	{
 		_id: 'core_hold_undo',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.hold,
 				undo: true,
 				filterChain: [
@@ -175,21 +175,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 					},
 				],
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'Shift+KeyH',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Undo Hold'),
 	},
 	{
 		_id: 'core_reset_rundown_playlist',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.resetRundownPlaylist,
 				filterChain: [
 					{
@@ -197,26 +197,26 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 					},
 				],
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'Control+Shift+F12',
 				up: true,
 			},
-			{
+			'1': {
 				type: TriggerType.hotkey,
 				keys: 'Control+Shift+AnyEnter',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Reset Rundown'),
 	},
 	{
 		_id: 'core_disable_next_piece',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.disableNextPiece,
 				filterChain: [
 					{
@@ -224,21 +224,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 					},
 				],
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'KeyG',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Disable the next element'),
 	},
 	{
 		_id: 'core_disable_next_piece_undo',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.disableNextPiece,
 				filterChain: [
 					{
@@ -247,21 +247,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 				],
 				undo: true,
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'Shift+KeyG',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Undo Disable the next element'),
 	},
 	{
 		_id: 'core_create_snapshot_for_debug',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.createSnapshotForDebug,
 				filterChain: [
 					{
@@ -269,21 +269,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 					},
 				],
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'Backspace',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Store Snapshot'),
 	},
 	{
 		_id: 'core_move_next_part',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.moveNext,
 				filterChain: [
 					{
@@ -293,21 +293,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 				parts: 1,
 				segments: 0,
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'F9',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Move Next forwards'),
 	},
 	{
 		_id: 'core_move_next_segment',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.moveNext,
 				filterChain: [
 					{
@@ -317,21 +317,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 				parts: 0,
 				segments: 1,
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'F10',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Move Next to the following segment'),
 	},
 	{
 		_id: 'core_move_previous_part',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.moveNext,
 				filterChain: [
 					{
@@ -341,21 +341,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 				parts: -1,
 				segments: 0,
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'Shift+F9',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Move Next backwards'),
 	},
 	{
 		_id: 'core_move_previous_segment',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: PlayoutActions.moveNext,
 				filterChain: [
 					{
@@ -365,21 +365,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 				parts: 0,
 				segments: -1,
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'Shift+F10',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Move Next to the previous segment'),
 	},
 	{
 		_id: 'core_go_to_onAir_line',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: ClientActions.goToOnAirLine,
 				filterChain: [
 					{
@@ -387,21 +387,21 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 					},
 				],
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'Control+Home',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Go to On Air line'),
 	},
 	{
 		_id: 'core_rewind_segments',
-		actions: [
-			{
+		actions: {
+			'0': {
 				action: ClientActions.rewindSegments,
 				filterChain: [
 					{
@@ -409,74 +409,74 @@ const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
 					},
 				],
 			},
-		],
-		triggers: [
-			{
+		},
+		triggers: {
+			'0': {
 				type: TriggerType.hotkey,
 				keys: 'Shift+Home',
 				up: true,
 			},
-		],
+		},
 		_rank: ++j * 1000,
 		name: t('Rewind segments to start'),
 	},
 ]
 
 export const addSteps = addMigrationSteps('1.37.0', [
-	{
-		id: 'ShowStyleBase.sourceLayers.clearKeyboardHotkey',
-		canBeRunAutomatically: true,
-		validate: () => {
-			const outdatedShowStyleBases = ShowStyleBases.find(
-				{
-					sourceLayers: {
-						$elemMatch: {
-							clearKeyboardHotkey: {
-								$exists: true,
-							},
-						},
-					},
-				},
-				{
-					fields: {
-						name: 1,
-					},
-				}
-			).map((showStyleBase) => showStyleBase._id)
+	// {
+	// 	id: 'ShowStyleBase.sourceLayers.clearKeyboardHotkey',
+	// 	canBeRunAutomatically: true,
+	// 	validate: () => {
+	// 		const outdatedShowStyleBases = ShowStyleBases.find(
+	// 			{
+	// 				sourceLayers: {
+	// 					$elemMatch: {
+	// 						clearKeyboardHotkey: {
+	// 							$exists: true,
+	// 						},
+	// 					},
+	// 				},
+	// 			},
+	// 			{
+	// 				fields: {
+	// 					name: 1,
+	// 				},
+	// 			}
+	// 		).map((showStyleBase) => showStyleBase._id)
 
-			if (outdatedShowStyleBases.length > 0) {
-				return `Show Styles: ${outdatedShowStyleBases
-					.map((name) => `"${name}"`)
-					.join(', ')} need to have their Source Layers clearable settings migrated.`
-			}
+	// 		if (outdatedShowStyleBases.length > 0) {
+	// 			return `Show Styles: ${outdatedShowStyleBases
+	// 				.map((name) => `"${name}"`)
+	// 				.join(', ')} need to have their Source Layers clearable settings migrated.`
+	// 		}
 
-			return false
-		},
-		migrate: () => {
-			ShowStyleBases.find({
-				sourceLayers: {
-					$elemMatch: {
-						clearKeyboardHotkey: {
-							$exists: true,
-						},
-					},
-				},
-			}).forEach((showStyleBase) => {
-				ShowStyleBases.update(showStyleBase._id, {
-					$set: {
-						sourceLayers: showStyleBase.sourceLayers.map((sourceLayer) => {
-							sourceLayer.isClearable = !!sourceLayer['clearKeyboardHotkey']
-							delete sourceLayer['clearKeyboardHotkey']
-							delete sourceLayer['activateKeyboardHotkeys']
-							delete sourceLayer['assignHotkeysToGlobalAdlibs']
-							delete sourceLayer['activateStickyKeyboardHotkey']
-							return sourceLayer
-						}),
-					},
-				})
-			})
-		},
-	},
+	// 		return false
+	// 	},
+	// 	migrate: () => {
+	// 		ShowStyleBases.find({
+	// 			sourceLayers: {
+	// 				$elemMatch: {
+	// 					clearKeyboardHotkey: {
+	// 						$exists: true,
+	// 					},
+	// 				},
+	// 			},
+	// 		}).forEach((showStyleBase) => {
+	// 			ShowStyleBases.update(showStyleBase._id, {
+	// 				$set: {
+	// 					sourceLayers: showStyleBase.sourceLayers.map((sourceLayer) => {
+	// 						sourceLayer.isClearable = !!sourceLayer['clearKeyboardHotkey']
+	// 						delete sourceLayer['clearKeyboardHotkey']
+	// 						delete sourceLayer['activateKeyboardHotkeys']
+	// 						delete sourceLayer['assignHotkeysToGlobalAdlibs']
+	// 						delete sourceLayer['activateStickyKeyboardHotkey']
+	// 						return sourceLayer
+	// 					}),
+	// 				},
+	// 			})
+	// 		})
+	// 	},
+	// },
 	{
 		id: 'TriggeredActions.core',
 		canBeRunAutomatically: true,
@@ -494,10 +494,13 @@ export const addSteps = addMigrationSteps('1.37.0', [
 		migrate: () => {
 			DEFAULT_CORE_TRIGGERS.forEach((triggeredAction) => {
 				TriggeredActions.insert({
-					...triggeredAction,
 					_id: protectString(getHash(triggeredAction._id)),
+					_rank: triggeredAction._rank,
+					name: triggeredAction.name,
+					blueprintUniqueId: null,
 					showStyleBaseId: null,
-					_rundownVersionHash: '',
+					actionsWithOverrides: wrapDefaultObject(triggeredAction.actions),
+					triggersWithOverrides: wrapDefaultObject(triggeredAction.triggers),
 				})
 			})
 		},

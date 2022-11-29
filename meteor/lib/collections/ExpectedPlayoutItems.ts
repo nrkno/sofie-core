@@ -1,7 +1,5 @@
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { ExpectedPlayoutItemId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { ExpectedPlayoutItemId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'

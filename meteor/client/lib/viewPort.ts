@@ -1,12 +1,12 @@
 import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
-import { Parts, PartId } from '../../lib/collections/Parts'
-import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
-import { SegmentId } from '../../lib/collections/Segments'
+import { Parts } from '../../lib/collections/Parts'
+import { PartInstances } from '../../lib/collections/PartInstances'
 import { isProtectedString } from '../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents } from '../ui/RundownView/RundownViewEventBus'
 import { Settings } from '../../lib/Settings'
+import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-const HEADER_MARGIN = 15
+const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. If it's needed to be different, it needs to be made generic somehow..
 const FALLBACK_HEADER_HEIGHT = 65
 
 let focusInterval: NodeJS.Timer | undefined

@@ -7,13 +7,13 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/tv2/tv-automation-server-core.git",
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
 		"directory": "packages/blueprints-integration"
 	},
 	"bugs": {
-		"url": "https://github.com/tv2/tv-automation-server-core/issues"
+		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
 	},
-	"homepage": "https://github.com/tv2/tv-automation-server-core/blob/master/packages/blueprints-integration#readme",
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/blueprints-integration#readme",
 	"scripts": {
 		"build": "rimraf dist && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
@@ -41,7 +41,7 @@
 		"@sofie-automation/shared-lib": "link:../shared-lib",
 		"timeline-state-resolver-types": "7.6.0-nightly-release48-20221117-120217-d85b2fddf.0",
 		"tslib": "^2.4.0",
-		"type-fest": "^2.19.0"
+		"type-fest": "^3.1.0"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

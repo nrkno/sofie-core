@@ -1,6 +1,7 @@
 ---
 sidebar_position: 1
 ---
+
 # Sofie Core: System Configuration
 
 _Sofie&nbsp;Core_ is configured at it's most basic level using a settings file and environment variables.
@@ -26,20 +27,6 @@ _Sofie&nbsp;Core_ is configured at it's most basic level using a settings file a
 			<td>
 				<code>$(cat settings.json)</code>
 			</td>
-		</tr>
-		<tr>
-			<td>
-				<code>NTP_SERVERS</code>
-			</td>
-			<td>List of time servers to sync the system to (comma separated).</td>
-			<td>
-				0.pool.ntp.org,
-				<br />
-				1.pool.ntp.org,
-				<br />
-				2.pool.ntp.org
-			</td>
-			<td></td>
 		</tr>
 		<tr>
 			<td>
@@ -83,8 +70,8 @@ The settings file is an optional JSON file that contains some configuration sett
 
 To use a settings file:
 
-* During development: `meteor --settings settings.json`
-* During prod: environment variable \(see above\)
+- During development: `meteor --settings settings.json`
+- During prod: environment variable \(see above\)
 
 The structure of the file allows for public and private fields. At the moment, Sofie only uses public fields. Below is an example settings file:
 
@@ -98,24 +85,27 @@ The structure of the file allows for public and private fields. At the moment, S
 
 There are various settings you can set for an installation. See the list below:
 
-| **Field name**                 | Use                                                                                                                  | Default value |
-| :----------------------------- | :------------------------------------------------------------------------------------------------------------------- | :------------ |
-| `frameRate`                    | The framerate used to display time-codes in the GUI                                                                  | `25`          |
-| `defaultToCollapsedSegments`   | Should all segments be collapsed by default, until the user expands them                                             | `false`       |
-| `autoRewindLeavingSegment`     | Should segments be automatically rewound after they stop playing                                                     | `false`       |
-| `autoExpandCurrentNextSegment` | Should the segments be expanded when they are On Air or Next, useful with `defaultToCollapsedSegments`               | `false`       |
-| `disableBlurBorder`            | Should a border be displayed around the Rundown View when it's not in focus and studio mode is enabled               | `false`       |
-| `defaultTimeScale`             | An arbitrary number, defining the default zoom factor of the Timelines                                               | `1`           |
-| `allowGrabbingTimeline`        | Can Segment Timelines be grabbed to scroll them?                                                                     | `true`        |
-| `enableUserAccounts`           | Enables User Accounts and Authentication. If disabled, all user stations will be treated as a single, anonymous user | `false`       |
-| `allowUnsyncedSegments`        | Switches behavior between unsyncing entire Rundowns or just Segments                                                 | `false`       |
-| `allowRundownResetOnAir`       | Should the user be allowed to reset Rundowns when they are On Air                                                    | `false`       |
-| `defaultDisplayDuration`       | The fallback duration of a Part, when it's expectedDuration is 0. \_\_In milliseconds                                | `3000`        |
-
+| **Field name**                | Use                                                                                                                           | Default value                          |
+| :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------- | :------------------------------------- |
+| `defaultToCollapsedSegments`  | Should all segments be collapsed by default, until the user expands them                                                      | `false`                                |
+| `autoRewindLeavingSegment`    | Should segments be automatically rewound after they stop playing                                                              | `false`                                |
+| `disableBlurBorder`           | Should a border be displayed around the Rundown View when it's not in focus and studio mode is enabled                        | `false`                                |
+| `defaultTimeScale`            | An arbitrary number, defining the default zoom factor of the Timelines                                                        | `1`                                    |
+| `allowGrabbingTimeline`       | Can Segment Timelines be grabbed to scroll them?                                                                              | `true`                                 |
+| `enableUserAccounts`          | Enables User Accounts and Authentication. If disabled, all user stations will be treated as a single, anonymous user          | `false`                                |
+| `defaultDisplayDuration`      | The fallback duration of a Part, when it's expectedDuration is 0. \_\_In milliseconds                                         | `3000`                                 |
+| `allowMultiplePlaylistsInGUI` | If true, allows creation of new playlists in the Lobby Gui (rundown list). If false; only pre-existing playlists are allowed. | `false`                                |
+| `followOnAirSegmentsHistory`  | How many segments of history to show when scrolling back in time (0 = show current segment only)                              | `0`                                    |
+| `maximumDataAge`              | Clean up stuff that are older than this [ms])                                                                                 | 100 days                               |
+| `poisonKey`                   | Enable the use of poison key if present and use the key specified.                                                            | `'Escape'`                             |
+| `enableNTPTimeChecker`        | If set, enables a check to ensure that the system time doesn't differ too much from the speficied NTP server time.            | `null`                                 |
+| `defaultShelfDisplayOptions`  | Default value used to toggle Shelf options when the 'display' URL argument is not provided.                                   | `buckets,layout,shelfLayout,inspector` |
+| `enableKeyboardPreview`       | The KeyboardPreview is a feature that is not implemented in the main Fork, and is kept here for compatibility                 | `false`                                |
+| `keyboardMapLayout`           | Keyboard map layout (what physical layout to use for the keyboard)                                                            | STANDARD_102_TKL                       |
+| `customizationClassName`      | CSS class applied to the body of the page. Used to include custom implementations that differ from the main Fork.             | `undefined`                            |
+| `useCountdownToFreezeFrame`   | If true, countdowns of videos will count down to the last freeze-frame of the video instead of to the end of the video        | `true`                                 |
+| `confirmKeyCode`              | Which keyboard key is used as "Confirm" in modal dialogs etc.                                                                 | `'Enter'`                              |
 
 :::info
 The exact definition for the settings can be found [in the code here](https://github.com/nrkno/sofie-core/blob/master/meteor/lib/Settings.ts#L12).
 :::
-
-
-

@@ -3,6 +3,7 @@ import {
 	ExpectedPackageWorkStatusId,
 	MediaWorkFlowId,
 	MediaWorkFlowStepId,
+	PeripheralDeviceCommandId,
 	PeripheralDeviceId,
 	TimelineHash,
 } from '../core/model/Ids'
@@ -26,8 +27,8 @@ import {
 } from './mos'
 import { ExpectedPackageStatusAPI } from '../package-manager/package'
 import {
-	InitOptions,
-	StatusObject,
+	PeripheralDeviceInitOptions,
+	PeripheralDeviceStatusObject,
 	TimelineTriggerTimeResult,
 	DiffTimeResult,
 	TimeDiff,
@@ -38,9 +39,24 @@ import { MediaWorkFlow } from '../core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '../core/model/MediaWorkFlowSteps'
 
 export interface NewPeripheralDeviceAPI {
-	initialize(deviceId: PeripheralDeviceId, deviceToken: string, options: InitOptions): Promise<PeripheralDeviceId>
+	functionReply(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		commandId: PeripheralDeviceCommandId,
+		err: any,
+		result: any
+	): Promise<void>
+	initialize(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		options: PeripheralDeviceInitOptions
+	): Promise<PeripheralDeviceId>
 	unInitialize(deviceId: PeripheralDeviceId, deviceToken: string): Promise<PeripheralDeviceId>
-	setStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: StatusObject): Promise<StatusObject>
+	setStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		status: PeripheralDeviceStatusObject
+	): Promise<PeripheralDeviceStatusObject>
 	ping(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 	getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<PeripheralDevicePublic>
 	playoutPlaybackChanged(deviceId: PeripheralDeviceId, deviceToken: string, r: PlayoutChangedResults): Promise<void>
@@ -329,7 +345,7 @@ export enum PeripheralDeviceAPIMethods {
 
 	'playoutPlaybackChanged' = 'peripheralDevice.playout.playbackChanged',
 
-	'reportCommandError' = 'peripheralDevice.playout.reportCommandError',
+	// 'reportCommandError' = 'peripheralDevice.playout.reportCommandError',
 
 	'mosRoCreate' = 'peripheralDevice.mos.roCreate',
 	'mosRoReplace' = 'peripheralDevice.mos.roReplace',

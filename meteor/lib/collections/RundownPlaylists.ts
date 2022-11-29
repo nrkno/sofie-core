@@ -1,8 +1,6 @@
-import { Meteor } from 'meteor/meteor'
-import { MongoQuery, FindOptions } from '../typings/meteor'
+import { MongoQuery } from '../typings/meteor'
 import * as _ from 'underscore'
 import { normalizeArrayFunc, normalizeArrayToMap, unprotectString } from '../lib'
-import { Studio, Studios } from './Studios'
 import {
 	sortPartsInSegments,
 	sortPartsInSortedSegments,
@@ -13,19 +11,13 @@ import { Rundowns, Rundown, DBRundown } from './Rundowns'
 import { Segments, Segment, DBSegment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { PartInstance, PartInstances } from './PartInstances'
-import { createMongoCollection } from './lib'
+import { createMongoCollection, FindOptions } from './lib'
 import { registerIndex } from '../database'
-import {
-	RundownPlaylistId,
-	ActiveInstanceId,
-	RundownPlaylistActivationId,
-	RundownId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { RundownPlaylistId, ActiveInstanceId, RundownPlaylistActivationId }
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-export * from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+export { DBRundownPlaylist }
 
 /** Note: Use RundownPlaylist instead */
 export type RundownPlaylist = DBRundownPlaylist
@@ -90,14 +82,6 @@ export class RundownPlaylistCollectionUtil {
 		return rundowns.map((i) => i._id)
 	}
 
-	/** Return the studio for this RundownPlaylist */
-	static getStudio(playlist: Pick<RundownPlaylist, '_id' | 'studioId'>): Studio {
-		if (!playlist.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
-		const studio = Studios.findOne(playlist.studioId)
-		if (studio) {
-			return studio
-		} else throw new Meteor.Error(404, 'Studio "' + playlist.studioId + '" not found!')
-	}
 	/** Returns all segments joined with their rundowns in their correct oreder for this RundownPlaylist */
 	static getRundownsAndSegments(
 		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,

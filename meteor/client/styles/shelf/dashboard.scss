@@ -245,6 +245,7 @@ $dashboard-button-height: 5.625em;
 		}
 
 		&.next {
+			--missing-overlay-animated: 1;
 			.dashboard-panel__panel__group__liveline {
 				&::after {
 					background: var(--general-next-color);
@@ -256,6 +257,7 @@ $dashboard-button-height: 5.625em;
 		}
 
 		&.live {
+			--missing-overlay-animated: 1;
 			.dashboard-panel__panel__group__liveline {
 				&::after {
 					background: var(--general-live-color);
@@ -300,6 +302,14 @@ $dashboard-button-height: 5.625em;
 					var(--adlib-item-selected-color),
 				$dashboard-panel__button__border-width ($dashboard-panel__button__border-width * -1) 0
 					var(--adlib-item-selected-color);
+		}
+
+		&.live-speak {
+			background: linear-gradient(
+				to top,
+				var(--segment-layer-background-live-speak-2) 1em,
+				var(--segment-layer-background-live-speak-1) 1em
+			);
 		}
 
 		&.live {
