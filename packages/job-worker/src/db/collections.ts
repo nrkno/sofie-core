@@ -71,7 +71,7 @@ export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	watch(pipeline: any[]): IChangeStream<TDoc>
 }
 
-export type IChangeStreamEvents<TDoc> = {
+export type IChangeStreamEvents<TDoc extends { _id: ProtectedString<any> }> = {
 	error: [e: Error]
 	end: []
 	change: [doc: ChangeStreamDocument<TDoc>]

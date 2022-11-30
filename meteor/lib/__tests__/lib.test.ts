@@ -1,3 +1,5 @@
+import '../../__mocks__/_extendJest'
+
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { afterEachInFiber, testInFiber } from '../../__mocks__/helpers/jest'
@@ -14,6 +16,7 @@ import {
 	equalSets,
 	equivalentArrays,
 	LogLevel,
+	makePromise,
 } from '../lib'
 import { MeteorMock } from '../../__mocks__/meteor'
 
@@ -195,5 +198,38 @@ describe('lib/lib', () => {
 	testInFiber('equivalentArrays', () => {
 		expect(equivalentArrays(['a', 'b', 'c'], ['c', 'a', 'b'])).toBe(true)
 		expect(equivalentArrays(['a', 'b', 'c'], ['b', 'g', 'a'])).toBe(false)
+	})
+	testInFiber('makePromise', async () => {
+		let a = 0
+		// Check that they are executed in order:
+		expect(
+			await Promise.all([
+				makePromise(() => {
+					return a++
+				}),
+				makePromise(() => {
+					return a++
+				}),
+			])
+		).toStrictEqual([0, 1])
+
+		// Handle an instant throw:
+		await expect(
+			makePromise(() => {
+				throw new Error('asdf')
+			})
+		).rejects.toMatchToString(/asdf/)
+
+		// Handle a delayed throw:
+		const delayedThrow = Meteor.wrapAsync((callback) => {
+			setTimeout(() => {
+				callback(new Error('asdf'), null)
+			}, 10)
+		})
+		await expect(
+			makePromise(() => {
+				delayedThrow()
+			})
+		).rejects.toMatchToString(/asdf/)
 	})
 })

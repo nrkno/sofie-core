@@ -202,7 +202,7 @@ async function manipulateTimelinePublicationData(
 
 	if (!state.routes) {
 		// Routes need recalculating
-		state.routes = getActiveRoutes(state.studio)
+		state.routes = getActiveRoutes(state.studio.routeSets)
 		invalidateTimeline = true
 	}
 

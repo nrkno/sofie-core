@@ -1,23 +1,23 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import _ from 'underscore'
 import { IAdLibFilterLink, IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { assertNever } from '../../../../../../../lib/lib'
 import { FilterEditor } from './FilterEditor'
-import { OutputLayers, ShowStyleBase, SourceLayers } from '../../../../../../../lib/collections/ShowStyleBases'
+import { OutputLayers, SourceLayers } from '../../../../../../../lib/collections/ShowStyleBases'
 import { EditAttributeType } from '../../../../../../lib/EditAttribute'
 import { useTracker } from '../../../../../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownBaselineAdLibActions } from '../../../../../../../lib/collections/RundownBaselineAdLibActions'
 import { AdLibActions } from '../../../../../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibPieces } from '../../../../../../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPieces } from '../../../../../../../lib/collections/AdLibPieces'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 interface IProps {
 	index: number
 	link: IAdLibFilterLink
-	showStyleBase: ShowStyleBase | undefined
+	sourceLayers: SourceLayers | undefined
+	outputLayers: OutputLayers | undefined
 	readonly?: boolean
 	opened: boolean
 	onChange: (index, newVal: IAdLibFilterLink, oldVal: IAdLibFilterLink) => void
@@ -275,7 +275,8 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 	index,
 	link,
 	readonly,
-	showStyleBase,
+	sourceLayers,
+	outputLayers,
 	opened,
 	onClose,
 	onChange,
@@ -299,13 +300,6 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 		'sourceLayerType',
 		'type',
 	]
-
-	const sourceLayers = useMemo(() => {
-		return showStyleBase ? applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj : undefined
-	}, [showStyleBase?.sourceLayersWithOverrides])
-	const outputLayers = useMemo(() => {
-		return showStyleBase ? applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj : undefined
-	}, [showStyleBase?.outputLayersWithOverrides])
 
 	const availableOptions = useTracker<Record<string, any> | string[], Record<string, any> | string[]>(
 		() => {

@@ -10,7 +10,7 @@ export interface MultiSelectEvent {
 	selectedValues: Array<string>
 }
 
-export type MultiSelectOptions = _.Dictionary<{ value: string | string[]; className?: string }>
+export type MultiSelectOptions = Record<string, { value: string | string[]; className?: string }>
 
 interface IProps {
 	/**
@@ -22,6 +22,7 @@ interface IProps {
 	className?: string
 	value?: Array<string>
 	onChange?: (event: MultiSelectEvent) => void
+	disabled?: boolean
 }
 
 interface IState {
@@ -74,10 +75,11 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	handleChange = (item) => {
-		const obj = {}
-		obj[item] = !this.state.checkedValues[item]
-		const valueUpdate = _.extend(this.state.checkedValues, obj)
+	handleChange = (key: string) => {
+		const valueUpdate = {
+			...this.state.checkedValues,
+			[key]: !this.state.checkedValues[key],
+		}
 
 		this.setState({
 			checkedValues: valueUpdate,
@@ -145,6 +147,8 @@ export class MultiSelect extends React.Component<IProps, IState> {
 	}
 
 	toggleExpco = async () => {
+		if (this.props.disabled) return
+
 		await this._popperUpdate()
 		this.setState({
 			expanded: !this.state.expanded,
@@ -205,6 +209,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 								'expco subtle',
 								{
 									'expco-expanded': this.state.expanded,
+									disabled: this.props.disabled,
 								},
 								this.props.className
 							)}

@@ -354,7 +354,10 @@ export namespace PackageManagerIntegration {
 
 		const ids = packageIds.map((packageId) => getPackageInfoId(packageId, type))
 		const packageInfos = await PackageInfos.findFetchAsync(
-			{ _id: { $in: ids } },
+			{
+				_id: { $in: ids },
+				$or: [{ removeTime: null }, { removeTime: { $exists: false } }],
+			},
 			{
 				fields: {
 					payload: 0,
@@ -401,6 +404,9 @@ export namespace PackageManagerIntegration {
 		}
 		await PackageInfos.upsertAsync(id, {
 			$set: doc,
+			$unset: {
+				removeTime: 1,
+			},
 		})
 
 		onUpdatedPackageInfo(packageId, doc)
@@ -410,7 +416,8 @@ export namespace PackageManagerIntegration {
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		type: string,
-		packageId: ExpectedPackageId
+		packageId: ExpectedPackageId,
+		removeDelay?: number
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		check(packageId, String)
@@ -420,8 +427,18 @@ export namespace PackageManagerIntegration {
 
 		const id = getPackageInfoId(packageId, type)
 
-		await PackageInfos.removeAsync(id)
+		if (removeDelay) {
+			// Set a time to remove the package later:
+			await PackageInfos.updateAsync(id, {
+				$set: {
+					removeTime: getCurrentTime() + removeDelay,
+				},
+			})
+		} else {
+			// Remove right away:
+			await PackageInfos.removeAsync(id)
 
-		onUpdatedPackageInfo(packageId, null) // ?
+			onUpdatedPackageInfo(packageId, null) // ?
+		}
 	}
 }

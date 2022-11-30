@@ -313,7 +313,7 @@ export const waitForPromise: <T>(p: Promise<T> | T) => Awaited<T> = Meteor.wrapA
  * Makes the Fiber function to run in its own fiber and return a promise
  */
 export async function makePromise<T>(fcn: () => T): Promise<T> {
-	return new Promise((resolve, reject) => {
+	const p = new Promise<T>((resolve, reject) => {
 		Meteor.defer(() => {
 			try {
 				resolve(fcn())
@@ -322,6 +322,14 @@ export async function makePromise<T>(fcn: () => T): Promise<T> {
 			}
 		})
 	})
+
+	return (
+		await Promise.all([
+			p,
+			// Pause the current Fiber briefly, in order to allow for the deferred Fiber to start executing:
+			sleep(0),
+		])
+	)[0]
 }
 
 export function deferAsync(fcn: () => Promise<void>): void {
