@@ -38,6 +38,7 @@ export class StudioDeviceTriggerManager {
 		logger.silly(`${runId}: ShowStyleBaseId is ${showStyleBaseId}, cache: ${!!cache}`)
 
 		if (!showStyleBaseId) {
+			logger.silly(`${runId}: no showStyleBaseId, finishing`)
 			return
 		}
 
@@ -57,6 +58,7 @@ export class StudioDeviceTriggerManager {
 				showStyleBaseId,
 			})
 			GlobalTriggerManager.deleteStudioContext(studioId)
+			logger.silly(`${runId}: no cache, finishing`)
 			return
 		}
 
@@ -66,6 +68,7 @@ export class StudioDeviceTriggerManager {
 			},
 		})
 		if (!rundownPlaylist) {
+			logger.silly(`${runId}: no rundownPlaylist, finishing`)
 			return
 		}
 
@@ -74,6 +77,7 @@ export class StudioDeviceTriggerManager {
 
 		const showStyleBase = cache.ShowStyleBases.findOne(showStyleBaseId)
 		if (!showStyleBase) {
+			logger.silly(`${runId}: no showStyleBase, finishing`)
 			return
 		}
 
