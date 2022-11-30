@@ -37,7 +37,6 @@ export class RundownContentObserver {
 	) {
 		logger.silly(`Creating RundownContentObserver for playlist "${rundownPlaylistId}" activation "${activationId}"`)
 		const { cache, cancel: cancelCache } = createReactiveContentCache(() => {
-			logger.silly(`DeviceTriggers observer reacting to change in RundownPlaylist "${rundownPlaylistId}"`)
 			this.#cleanup = onChanged(cache)
 		}, REACTIVITY_DEBOUNCE)
 
@@ -112,7 +111,6 @@ export class RundownContentObserver {
 	}
 
 	public dispose = (): void => {
-		logger.silly(`Destroying RundownContentObserver`)
 		this.#cancelCache()
 		this.#observers.forEach((observer) => observer.stop())
 		this.#cleanup()

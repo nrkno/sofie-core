@@ -33,7 +33,7 @@ export class StudioObserver extends EventEmitter {
 	showStyleBaseId: ShowStyleBaseId | undefined
 
 	#changed: ChangedHandler
-	#cleanup: () => void | undefined
+	#cleanup: (() => void) | undefined
 
 	constructor(studioId: StudioId, onChanged: ChangedHandler) {
 		super()
@@ -87,7 +87,6 @@ export class StudioObserver extends EventEmitter {
 				const currentRundownId = state?.activePartInstance?.rundownId
 
 				if (!activePlaylistId || !activationId || !currentRundownId) {
-					logger.silly(`Stopping showStyleOfRundown live query, due to shutdown...`)
 					this.#showStyleOfRundownLiveQuery?.stop()
 					this.activePlaylistId = undefined
 					this.activationId = undefined
@@ -102,7 +101,6 @@ export class StudioObserver extends EventEmitter {
 				)
 					return
 
-				logger.silly(`Stopping showStyleOfRundown live query, will be restarted...`)
 				this.#showStyleOfRundownLiveQuery?.stop()
 				this.#showStyleOfRundownLiveQuery = undefined
 
@@ -180,6 +178,7 @@ export class StudioObserver extends EventEmitter {
 				this.showStyleBaseId = showStyleBaseId
 
 				const obs0 = new RundownsObserver(activePlaylistId, (rundownIds) => {
+					logger.silly(`Creating new RundownContentObserver`)
 					const obs1 = new RundownContentObserver(
 						activePlaylistId,
 						showStyleBaseId,
@@ -195,8 +194,8 @@ export class StudioObserver extends EventEmitter {
 					)
 
 					return () => {
-						this.#cleanup?.()
 						obs1.dispose()
+						this.#cleanup?.()
 					}
 				})
 

@@ -13,6 +13,7 @@ import { Studios } from '../../../lib/collections/Studios'
 import { logger } from '../../logging'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { GlobalTriggerManager } from './GlobalTriggerManager'
+import { PromiseQueue } from './Queue'
 import { ReactiveCacheCollection } from './ReactiveCacheCollection'
 import { StudioDeviceTriggerManager } from './StudioDeviceTriggerManager'
 import { StudioObserver } from './StudioObserver'
@@ -25,16 +26,29 @@ type ObserverAndManager = {
 Meteor.startup(() => {
 	if (!Meteor.isServer) return
 	const studioObserversAndManagers = new Map<StudioId, ObserverAndManager>()
+	const workQueue = new PromiseQueue()
+
+	function workInQueue(fnc: () => Promise<void>) {
+		workQueue.add(fnc).catch((e) => {
+			logger.error(`Error in DeviceTriggers Studio observer reaction: ${e}`)
+			logger.error(e)
+		})
+	}
 
 	function createObserverAndManager(studioId: StudioId) {
 		logger.debug(`Creating observer for studio "${studioId}"`)
 		const manager = new StudioDeviceTriggerManager(studioId)
 		const observer = new StudioObserver(studioId, (showStyleBaseId, cache) => {
-			manager.showStyleBaseId = showStyleBaseId
-			manager.updateTriggers(cache)
+			workInQueue(async () => {
+				manager.showStyleBaseId = showStyleBaseId
+				manager.updateTriggers(cache)
+			})
 
 			return () => {
-				manager.showStyleBaseId = null
+				workInQueue(async () => {
+					manager.updateTriggers(null)
+					manager.showStyleBaseId = null
+				})
 			}
 		})
 

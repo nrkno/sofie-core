@@ -81,15 +81,17 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 				<table className="testtools-timelinetable">
 					<tbody>
 						<tr>
+							<th></th>
 							<th>Device ID</th>
 							<th>Trigger ID</th>
 							<th>Values?</th>
 							<th>Action Type</th>
 							<th>Name</th>
 						</tr>
-						{mountedTriggers.map((entry) => (
+						{mountedTriggers.map((entry, index) => (
 							<Fragment key={unprotectString(entry._id)}>
 								<tr>
+									<td>{index}</td>
 									<td>{entry.deviceId}</td>
 									<td>{entry.deviceTriggerId}</td>
 									<td>{JSON.stringify(entry.values)}</td>

@@ -1,5 +1,5 @@
 import { ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Complete, literal } from '@sofie-automation/corelib/dist/lib'
+import { Complete, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import {
@@ -11,6 +11,7 @@ import { DeviceTriggerMountedActionId, PreviewWrappedAdLibId } from '../../../li
 import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { DummyReactiveVar, protectString } from '../../../lib/lib'
+import { logger } from '../../logging'
 import { GlobalTriggerManager } from './GlobalTriggerManager'
 import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from './observer'
 import { ContentCache } from './reactiveContentCache'
@@ -25,17 +26,20 @@ export class StudioDeviceTriggerManager {
 	}
 
 	public set showStyleBaseId(value: ShowStyleBaseId | null) {
-		if (value === null) {
-			this.updateTriggers(null)
-		}
 		this.#showStyleBaseId = value
 	}
 
-	updateTriggers(cache: ContentCache | null) {
+	updateTriggers(cache: ContentCache | null): void {
 		const studioId = this.studioId
 		const showStyleBaseId = this.#showStyleBaseId
 
-		if (!showStyleBaseId) return
+		const runId = getRandomString(10)
+
+		logger.silly(`${runId}: ShowStyleBaseId is ${showStyleBaseId}, cache: ${!!cache}`)
+
+		if (!showStyleBaseId) {
+			return
+		}
 
 		if (!cache) {
 			DeviceTriggerMountedActions.find({
@@ -53,6 +57,15 @@ export class StudioDeviceTriggerManager {
 				showStyleBaseId,
 			})
 			GlobalTriggerManager.deleteStudioContext(studioId)
+			return
+		}
+
+		const rundownPlaylist = cache.RundownPlaylists.findOne({
+			activationId: {
+				$exists: true,
+			},
+		})
+		if (!rundownPlaylist) {
 			return
 		}
 
@@ -144,6 +157,8 @@ export class StudioDeviceTriggerManager {
 				$nin: upsertedDeviceTriggerMountedActionIds,
 			},
 		})
+
+		logger.silly(`${runId}: finished processing`)
 	}
 
 	dispose() {
