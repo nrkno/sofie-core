@@ -5,15 +5,13 @@ All notable changes to this project will be documented in this file. See [standa
 ## [1.47.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
 
 ## [1.47.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
+## [1.46.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.0...v1.46.0-in-testing.1) (2022-11-30)
 
 
 ### Bug Fixes
 
 * add an option to purge all Viz elements from the viz-rundown, in system-status view ([d22f0d6](https://github.com/nrkno/sofie-core/commit/d22f0d673e080fc7d9ca11ba7b9df1cb3e43c1d2))
 * better of restarting/crash handling of worker threads ([8d6ce2d](https://github.com/nrkno/sofie-core/commit/8d6ce2d5b050dabe7cf378e155e5b34a2c89da81))
-* bug fix: unable to executeFunction on sub-peripheralDevices ([7422f1c](https://github.com/nrkno/sofie-core/commit/7422f1ca6f2715991c1d72bc11dfe92cb40dc118))
-* changing source/output layers ids ([ff81854](https://github.com/nrkno/sofie-core/commit/ff8185440a728d39a4855948db13dac83725a9f3))
-* hide 'set segment as next' when right clicking on a part ([f99b004](https://github.com/nrkno/sofie-core/commit/f99b004d452b30708ee02dc77f0e87c35dd8daac))
 * prevent blueprint migrations which inserted playout-gateway subdevices on a fresh install from failing ([#792](https://github.com/nrkno/sofie-core/issues/792)) ([98f16ef](https://github.com/nrkno/sofie-core/commit/98f16ef48ddadc3b7e6bc40a956c121fef7585d2))
 * reduce risk of init failing, causing infinite init()-loop ([73776f5](https://github.com/nrkno/sofie-core/commit/73776f5df63b6f6e920648ea9e3800b10aab10b7))
 * update supertimeline ([fad98b3](https://github.com/nrkno/sofie-core/commit/fad98b3906dd26656e4ca193ae5a96b7f70d75f8))
@@ -60,15 +58,17 @@ All notable changes to this project will be documented in this file. See [standa
 * validate the timeline from blueprints, to ensure that it doesn't contain any nastiness that can crash the Timeline Resolver later ([46081be](https://github.com/nrkno/sofie-core/commit/46081be8289171f481e57e967c9bef733ef82251))
 
 ## [1.47.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+* bug fix: unable to executeFunction on sub-peripheralDevices ([7422f1c](https://github.com/nrkno/sofie-core/commit/7422f1ca6f2715991c1d72bc11dfe92cb40dc118))
+* hide 'set segment as next' when right clicking on a part ([f99b004](https://github.com/nrkno/sofie-core/commit/f99b004d452b30708ee02dc77f0e87c35dd8daac))
+* prevent blueprint migrations which inserted playout-gateway subdevices on a fresh install from failing ([#792](https://github.com/nrkno/sofie-core/issues/792)) ([98f16ef](https://github.com/nrkno/sofie-core/commit/98f16ef48ddadc3b7e6bc40a956c121fef7585d2))
+* update supertimeline ([fad98b3](https://github.com/nrkno/sofie-core/commit/fad98b3906dd26656e4ca193ae5a96b7f70d75f8))
+## [1.46.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.44.0...v1.46.0-in-testing.0) (2022-10-31)
 
 
-### Features
 
 * add CacheCollection.updateAll method ([89e3045](https://github.com/nrkno/sofie-core/commit/89e3045ce07f66461cc023af9dca56a078cb8763))
-* add state for rundownSegmentViewMode ([4c01c40](https://github.com/nrkno/sofie-core/commit/4c01c40e30bae1e119d18cb709fe7a4a7ab241d6))
 * adlib actions can set timeline datastore ([0cd2f62](https://github.com/nrkno/sofie-core/commit/0cd2f62ba1a079ea0cc5b17c13846ead26ae7a21))
 * change interaction model for PieceIndicatorMenu to be click + somewhat of a context menu ([c4b1348](https://github.com/nrkno/sofie-core/commit/c4b1348128972cce4c30c9c78b0e4442303c2059))
-* custom PieceIndicatorMenu ([9af8204](https://github.com/nrkno/sofie-core/commit/9af8204e7d8863cbcf1b30ffcaabc674222bf2de))
 * datastore table view ([83467af](https://github.com/nrkno/sofie-core/commit/83467afec8f52521b8af5ebe91287cafcb000953))
 * differentiate user/default settings datastructure changes ([#772](https://github.com/nrkno/sofie-core/issues/772)) ([b39067d](https://github.com/nrkno/sofie-core/commit/b39067d9e4e7b87e7e00a80bdca19aade8b3bc04))
 * **List View:** open shelf and reveal AdLib when double clicking on column indicator ([de23d05](https://github.com/nrkno/sofie-core/commit/de23d05ed37b442ac93d0c99fb255c7741b5b35a))
