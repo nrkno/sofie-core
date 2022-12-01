@@ -70,8 +70,6 @@ export interface DeviceOAuthFlow {
 }
 
 export enum ConfigManifestEntryType {
-	LABEL = 'label',
-	LINK = 'link',
 	STRING = 'string',
 	MULTILINE_STRING = 'multiline_string',
 	BOOLEAN = 'boolean',

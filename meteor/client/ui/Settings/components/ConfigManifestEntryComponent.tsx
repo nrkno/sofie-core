@@ -21,6 +21,7 @@ import {
 	LabelAndOverridesForMultiLineText,
 	LabelAndOverridesProps,
 } from '../../../lib/Components/LabelAndOverrides'
+import { assertNever } from '@sofie-automation/corelib/dist/lib'
 
 interface ConfigManifestEntryWithOverridesProps {
 	configField: ConfigManifestEntry
@@ -135,16 +136,11 @@ export function ManifestEntryWithOverrides({
 				)}
 			</LabelAndOverridesForMultiLineText>
 		)
-
-		// TODO: Handle these?
-		// } else if (configField.type === ConfigManifestEntryType.TABLE) {
-		// 	// not handled here, handled by GenericDeviceSettingsComponent
-		// } else if (configField.type === ConfigManifestEntryType.LABEL) {
-		// 	// todo ?
-		// } else if (configField.type === ConfigManifestEntryType.LINK) {
-		// 	// todo ?
+	} else if (configField.type === ConfigManifestEntryType.TABLE) {
+		// not handled here, handled by GenericDeviceSettingsComponent
+		return <p>{t('Unknown table type')}</p>
 	} else {
-		// assertNever(configField.type)
+		assertNever(configField)
 		return <p>{t('Unknown type')}</p>
 	}
 }
