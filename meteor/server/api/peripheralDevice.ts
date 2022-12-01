@@ -684,7 +684,7 @@ async function functionReply(
 ): Promise<void> {
 	const device = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
-	if ('response' in result && isTranslatableMessage(result.response)) {
+	if (typeof result === 'object' && 'response' in result && isTranslatableMessage(result.response)) {
 		result.response.namespaces = [
 			unprotectString(generateTranslationBundleOriginId(deviceId, 'peripheralDevice')),
 			...(result.response.namespaces || []),
