@@ -107,13 +107,25 @@ jobs:
         run: |
           echo "Enable build and push: ${{ env.SECRET_ACCESS != '' }}"
           echo "enable=${{ env.SECRET_ACCESS != '' }}" >> $GITHUB_OUTPUT
-      - name: Get the Docker tag
-        id: docker-tag
+      - name: Get the Docker tag for GHCR
+        id: ghcr-tag
         if: steps.check-build-and-push.outputs.enable == 'true'
         uses: docker/metadata-action@v4
         with:
           images: |
-            server-core
+            ghcr.io/${{ github.repository }}/server-core
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Get the Docker tag for DockerHub
+        id: dockerhub-tag
+        if: steps.check-build-and-push.outputs.enable == 'true'
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ secrets.DOCKERHUB_IMAGE_PREFIX }}server-core
           tags: |
             type=schedule
             type=ref,event=branch
@@ -172,8 +184,8 @@ jobs:
           context: .
           file: ./meteor/Dockerfile.circle
           push: true
-          labels: ${{ steps.docker-tag.outputs.labels }}
-          tags: "ghcr.io/${{ github.repository }}/${{ steps.docker-tag.outputs.tags }}"
+          labels: ${{ steps.ghcr-tag.outputs.labels }}
+          tags: "${{ steps.ghcr-tag.outputs.tags }}"
       - name: Build and push to DockerHub
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
         uses: docker/build-push-action@v3
@@ -181,8 +193,8 @@ jobs:
           context: .
           file: ./meteor/Dockerfile.circle
           push: true
-          labels: ${{ steps.docker-tag.outputs.labels }}
-          tags: "${{ secrets.DOCKERHUB_IMAGE_PREFIX }}${{ steps.docker-tag.outputs.tags }}"
+          labels: ${{ steps.dockerhub-tag.outputs.labels }}
+          tags: "${{ steps.dockerhub-tag.outputs.tags }}"
 
   build-gateways:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
@@ -225,13 +237,25 @@ jobs:
         run: |
           echo "Enable build and push: ${{ env.SECRET_ACCESS != '' }}"
           echo "enable=${{ env.SECRET_ACCESS != '' }}" >> $GITHUB_OUTPUT
-      - name: Get the Docker tag
-        id: docker-tag
+      - name: Get the Docker tag for GHCR
+        id: ghcr-tag
         if: steps.check-build-and-push.outputs.enable == 'true'
         uses: docker/metadata-action@v4
         with:
           images: |
-            ${{ matrix.gateway-name }}
+            ghcr.io/${{ github.repository }}/${{ matrix.gateway-name }}
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Get the Docker tag for DockerHub
+        id: dockerhub-tag
+        if: steps.check-build-and-push.outputs.enable == 'true'
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ secrets.DOCKERHUB_IMAGE_PREFIX }}${{ matrix.gateway-name }}
           tags: |
             type=schedule
             type=ref,event=branch
@@ -272,8 +296,8 @@ jobs:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
           push: true
-          labels: ${{ steps.docker-tag.outputs.labels }}
-          tags: "ghcr.io/${{ github.repository }}/${{ steps.docker-tag.outputs.tags }}"
+          labels: ${{ steps.ghcr-tag.outputs.labels }}
+          tags: "${{ steps.ghcr-tag.outputs.tags }}"
       - name: Build and push to DockerHub
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
         uses: docker/build-push-action@v3
@@ -281,8 +305,8 @@ jobs:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
           push: true
-          labels: ${{ steps.docker-tag.outputs.labels }}
-          tags: "${{ secrets.DOCKERHUB_IMAGE_PREFIX }}${{ steps.docker-tag.outputs.tags }}"
+          labels: ${{ steps.dockerhub-tag.outputs.labels }}
+          tags: "${{ steps.dockerhub-tag.outputs.tags }}"
 
   lint-packages:
     name: Lint Package
