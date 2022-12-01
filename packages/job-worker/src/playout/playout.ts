@@ -1161,7 +1161,11 @@ export async function executeAction(context: JobContext, data: ExecuteActionProp
 							}
 
 							// If any action cannot be done due to timings, that needs to be rejected by the context
-							logger.info(`Executing AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)}`)
+							logger.info(
+								`Executing AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)} (${
+									data.triggerMode
+								})`
+							)
 
 							try {
 								await blueprint.blueprint.executeAction(
