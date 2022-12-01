@@ -1,4 +1,4 @@
-import { faRefresh, faCheck, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
+import { faSync, faCheck, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
 	ConfigItemValue,
@@ -133,7 +133,7 @@ export function BlueprintConfigManifestRow({
 				<td className="settings-studio-custom-config-table__actions table-item-actions c3">
 					{wrappedItem.overrideOps.length > 0 && (
 						<button className="action-btn" onClick={doShowReset}>
-							<FontAwesomeIcon icon={faRefresh} />
+							<FontAwesomeIcon icon={faSync} />
 						</button>
 					)}
 					<button className="action-btn" onClick={doToggleExpanded}>
