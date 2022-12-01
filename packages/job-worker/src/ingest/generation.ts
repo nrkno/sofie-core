@@ -1,7 +1,7 @@
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { PeripheralDeviceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, PeripheralDeviceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentNote, PartNote, RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Piece, serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
@@ -11,7 +11,7 @@ import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataMod
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { StudioUserContext, SegmentUserContext, GetRundownContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
@@ -63,6 +63,10 @@ async function getWatchedPackagesHelper(
 			(p) => 'segmentId' in p && segmentIds.has(p.segmentId)
 		)
 	}
+}
+
+function translationNamespace(id: BlueprintId): string {
+	return 'blueprint_' + id
 }
 
 /**
@@ -149,7 +153,7 @@ export async function calculateSegmentsFromIngestData(
 							type: NoteSeverity.ERROR,
 							message: {
 								key: 'Internal Error generating segment',
-								namespaces: [unprotectString(blueprint.blueprintId)],
+								namespaces: [translationNamespace(blueprint.blueprintId)],
 							},
 							origin: {
 								name: '', // TODO
@@ -175,7 +179,7 @@ export async function calculateSegmentsFromIngestData(
 							type: note.type,
 							message: {
 								...note.message,
-								namespaces: [unprotectString(blueprint.blueprintId)],
+								namespaces: [translationNamespace(blueprint.blueprintId)],
 							},
 							origin: {
 								name: '', // TODO
@@ -208,7 +212,7 @@ export async function calculateSegmentsFromIngestData(
 								type: note.type,
 								message: {
 									...note.message,
-									namespaces: [unprotectString(blueprint.blueprintId)],
+									namespaces: [translationNamespace(blueprint.blueprintId)],
 								},
 								origin: {
 									name: '', // TODO
@@ -231,7 +235,7 @@ export async function calculateSegmentsFromIngestData(
 								...blueprintPart.part.invalidReason,
 								message: {
 									...blueprintPart.part.invalidReason.message,
-									namespaces: [unprotectString(blueprint.blueprintId)],
+									namespaces: [translationNamespace(blueprint.blueprintId)],
 								},
 						  }
 						: undefined,
@@ -624,10 +628,10 @@ export async function getRundownFromIngestData(
 
 	const translationNamespaces: string[] = []
 	if (showStyleBlueprint.blueprintId) {
-		translationNamespaces.push(unprotectString(showStyleBlueprint.blueprintId))
+		translationNamespaces.push(translationNamespace(showStyleBlueprint.blueprintId))
 	}
 	if (context.studio.blueprintId) {
-		translationNamespaces.push(unprotectString(context.studio.blueprintId))
+		translationNamespaces.push(translationNamespace(context.studio.blueprintId))
 	}
 
 	// Ensure the ids in the notes are clean

@@ -9,7 +9,7 @@ import { IngestDataCache } from '../lib/collections/IngestDataCache'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
 import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
@@ -135,8 +135,10 @@ export function nightlyCronjobInner(): void {
 					ps.push(
 						PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 							subDevice._id,
-							CASPARCG_RESTART_TIME,
-							'restartCasparCG'
+							DEFAULT_TSR_ACTION_TIMEOUT_TIME,
+							{
+								actionId: TSR.CasparCGActions.RestartServer,
+							}
 						)
 							.then(() => {
 								logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')

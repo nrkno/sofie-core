@@ -22,8 +22,7 @@ export namespace GenericDeviceActions {
 			const ingestRundown: IngestRundown | null = await PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 				peripheralDevice._id,
 				DEFAULT_NRCS_TIMEOUT_TIME + 1000,
-				'triggerReloadRundown',
-				rundown.externalId
+				{ functionName: 'triggerReloadRundown', args: [rundown.externalId] }
 			)
 
 			if (ingestRundown === null) {

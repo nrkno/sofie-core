@@ -14,12 +14,20 @@ export interface NewClientAPI {
 		functionName: string,
 		...args: any[]
 	): Promise<any>
+	callPeripheralDeviceAction(
+		context: string,
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		actionId: string,
+		payload?: Record<string, any>
+	): Promise<any>
 }
 
 export enum ClientAPIMethods {
 	'clientErrorReport' = 'client.clientErrorReport',
 	'clientLogNotification' = 'client.clientLogNotification',
 	'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction',
+	'callPeripheralDeviceAction' = 'client.callPeripheralDeviceAction',
 }
 
 export namespace ClientAPI {
