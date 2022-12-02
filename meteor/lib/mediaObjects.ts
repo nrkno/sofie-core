@@ -522,10 +522,7 @@ function checkPieceContentExpectedPackageStatus(
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
 						message: generateTranslation(
-							`Clip "{{fileName}}" can't be played because it doesn't exist on the playout system`,
-							{
-								fileName: packageName,
-							}
+							`Clip can't be played because it doesn't exist on the playout system`,
 						),
 					})
 				} else if (
