@@ -87,10 +87,9 @@ function cursorCustomPublish<T extends { _id: ProtectedString<any> }>(pub: Custo
 		added: (doc) => {
 			if (!pub.isReady) return
 			buffer.added.push(doc)
-			const index = buffer.removed.indexOf(doc._id)
-			if (index >= 0) {
-				buffer.removed.splice(index, 1)
-			}
+			const id = doc._id
+			// if the document with the same id has been marked as removed before, clear the removal
+			buffer.removed = buffer.removed.filter((removedId) => removedId !== id)
 			bufferChanged()
 		},
 		changed: (doc) => {
@@ -108,10 +107,8 @@ function cursorCustomPublish<T extends { _id: ProtectedString<any> }>(pub: Custo
 			if (!pub.isReady) return
 			buffer.removed.push(doc._id)
 			const id = doc._id
-			const index = buffer.added.findIndex((doc) => doc._id === id)
-			if (index >= 0) {
-				buffer.added.splice(index, 1)
-			}
+			// if the document with the same id has been added before, clear the addition
+			buffer.added = buffer.added.filter((addedDoc) => addedDoc._id !== id)
 			bufferChanged()
 		},
 	})
