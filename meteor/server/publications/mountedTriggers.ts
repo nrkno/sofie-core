@@ -87,16 +87,31 @@ function cursorCustomPublish<T extends { _id: ProtectedString<any> }>(pub: Custo
 		added: (doc) => {
 			if (!pub.isReady) return
 			buffer.added.push(doc)
+			const index = buffer.removed.indexOf(doc._id)
+			if (index >= 0) {
+				buffer.removed.splice(index, 1)
+			}
 			bufferChanged()
 		},
 		changed: (doc) => {
 			if (!pub.isReady) return
-			buffer.changed.push(doc)
+			const id = doc._id
+			const index = buffer.added.findIndex((doc) => doc._id === id)
+			if (index >= 0) {
+				buffer.added.splice(index, 1, doc)
+			} else {
+				buffer.changed.push(doc)
+			}
 			bufferChanged()
 		},
 		removed: (doc) => {
 			if (!pub.isReady) return
 			buffer.removed.push(doc._id)
+			const id = doc._id
+			const index = buffer.added.findIndex((doc) => doc._id === id)
+			if (index >= 0) {
+				buffer.added.splice(index, 1)
+			}
 			bufferChanged()
 		},
 	})
