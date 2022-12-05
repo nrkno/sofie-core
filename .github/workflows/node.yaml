@@ -78,16 +78,11 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
-      - name: Get the Docker tag
-        id: docker-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@750c706417ebb9a701022906a9725d21332508f7
-        with:
-          remove-version-tag-prefix: false
       - name: Determine images to publish
         id: image-tags
         run: |
           IMAGES=
-          DOCKER_TAG=${{ steps.docker-tag.outputs.tag }}
+          DOCKER_TAG=${{ github.ref_name }}
           # check if a release branch, or master, or a tag
           if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ github.ref }}" == refs/tags/* ]]
           then
@@ -102,8 +97,8 @@ jobs:
             # debug output
             echo dockerhub-publish $DOCKERHUB_PUBLISH
             echo images $IMAGES
-            echo ::set-output name=images::"$IMAGES"
-            echo ::set-output name=dockerhub-publish::"$DOCKERHUB_PUBLISH"
+            echo "images=$IMAGES" >> $GITHUB_OUTPUT
+            echo "dockerhub-publish=$DOCKERHUB_PUBLISH" >> $GITHUB_OUTPUT
           else
             echo "Skipping docker build"
           fi
@@ -175,17 +170,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Get the Docker tag
-        id: docker-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@750c706417ebb9a701022906a9725d21332508f7
-        with:
-          remove-version-tag-prefix: false
       - name: Determine images to publish
         id: image-tags
         # TODO - image needs changing...
         run: |
           IMAGES=
-          DOCKER_TAG=${{ steps.docker-tag.outputs.tag }}
+          DOCKER_TAG=${{ github.ref_name }}
           # check if a release branch, or master, or a tag
           if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ github.ref }}" == refs/tags/* ]]
           then
@@ -200,8 +190,8 @@ jobs:
             # debug output
             echo dockerhub-publish $DOCKERHUB_PUBLISH
             echo images $IMAGES
-            echo ::set-output name=images::"$IMAGES"
-            echo ::set-output name=dockerhub-publish::"$DOCKERHUB_PUBLISH"
+            echo "images=$IMAGES" >> $GITHUB_OUTPUT
+            echo "dockerhub-publish=$DOCKERHUB_PUBLISH" >> $GITHUB_OUTPUT
           else
             echo "Skipping docker build"
           fi
@@ -418,7 +408,7 @@ jobs:
             NPM_TAG=$(node ../../scripts/determine-npm-tag.js $PUBLISHED_VERSION $THIS_VERSION)
 
             echo "Publishing $NPM_TAG"
-            echo ::set-output name=tag::"$NPM_TAG"
+            echo "tag=$NPM_TAG" >> $GITHUB_OUTPUT
 
           fi
       - name: Build

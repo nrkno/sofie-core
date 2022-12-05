@@ -102,7 +102,7 @@ jobs:
             echo "No Token"
           else
             echo "Publish prerelease"
-            echo ::set-output name=publish::"1"
+            echo "publish=1" >> $GITHUB_OUTPUT
           fi
       - name: Prepare Environment
         if: ${{ steps.do-publish.outputs.publish }}
@@ -144,7 +144,7 @@ jobs:
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
           yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag nightly
-          echo ::set-output name=version::$NEW_VERSION
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
         env:
           CI: true
       - name: Post published prerelease lib version comment in PR
