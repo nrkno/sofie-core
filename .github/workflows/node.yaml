@@ -82,7 +82,11 @@ jobs:
         id: image-tags
         run: |
           IMAGES=
-          DOCKER_TAG=${{ github.ref_name }}
+          if [[ ${{ github.ref_name }} == "master" || ${{ github.ref_name }} == "main" ]]
+            DOCKER_TAG=latest
+          else
+            DOCKER_TAG=${{ github.ref_name }}
+          fi
           # check if a release branch, or master, or a tag
           if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ github.ref }}" == refs/tags/* ]]
           then
@@ -175,7 +179,11 @@ jobs:
         # TODO - image needs changing...
         run: |
           IMAGES=
-          DOCKER_TAG=${{ github.ref_name }}
+          if [[ ${{ github.ref_name }} == "master" || ${{ github.ref_name }} == "main" ]]
+            DOCKER_TAG=latest
+          else
+            DOCKER_TAG=${{ github.ref_name }}
+          fi
           # check if a release branch, or master, or a tag
           if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ github.ref }}" == refs/tags/* ]]
           then
