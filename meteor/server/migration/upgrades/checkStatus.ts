@@ -212,8 +212,8 @@ function checkDocUpgradeStatus(
 			generateTranslation(
 				'Blueprint config preset has been changed. From "{{ oldValue }}", to "{{ newValue }}"',
 				{
-					oldValue: doc.lastBlueprintConfig.blueprintConfigPresetId||'',
-					newValue: doc.blueprintConfigPresetId||'',
+					oldValue: doc.lastBlueprintConfig.blueprintConfigPresetId || '',
+					newValue: doc.blueprintConfigPresetId || '',
 				}
 			)
 		)
@@ -242,8 +242,8 @@ function checkDocUpgradeStatus(
 								'Config value "{{ name }}" has changed. From "{{ oldValue }}", to "{{ newValue }}"',
 								{
 									name: entry.name,
-									oldValue??'',
-									newValue??'',
+									oldValue: oldValue ?? '',
+									newValue: newValue ?? '',
 								}
 							)
 						)

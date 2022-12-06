@@ -6,7 +6,6 @@ import { TFunction } from 'i18next'
 import { BucketAdLibAction } from './dataModel/BucketAdLibAction'
 import { BlueprintId } from './dataModel/Ids'
 import { ArrayElement } from './lib'
-import { unprotectStringArray } from './protectedString'
 
 /**
  * @enum - A translatable message (i18next)
