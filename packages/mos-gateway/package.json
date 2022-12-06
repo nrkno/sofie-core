@@ -48,7 +48,7 @@
 		"dev": "yarn start -id localDevMos"
 	},
 	"engines": {
-		"node": "^14.19 || ^16.14"
+		"node": "^14.19 || ^16.14 || ^18.12"
 	},
 	"keywords": [
 		"mos",

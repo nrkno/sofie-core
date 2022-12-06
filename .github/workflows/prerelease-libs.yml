@@ -51,7 +51,7 @@ jobs:
           - blueprints-integration
           - server-core-integration
           - shared-lib
-        node-version: [14.x, 16.x]
+        node-version: [14.x, 16.x, 18.x]
 
     steps:
       - uses: actions/checkout@v3
@@ -113,7 +113,7 @@ jobs:
           CI: true
       - name: Get the Prerelease tag
         id: prerelease-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
+        uses: yuya-takeyama/docker-tag-from-github-ref-action@750c706417ebb9a701022906a9725d21332508f7
         with:
           remove-version-tag-prefix: false
       - name: Bump version
@@ -149,7 +149,7 @@ jobs:
           CI: true
       - name: Post published prerelease lib version comment in PR
         if: ${{ steps.do-publish.outputs.publish }}
-        uses: mshick/add-pr-comment@v1
+        uses: mshick/add-pr-comment@v2
         with:
           message: |
             ⚡ Published prerelease version **${{ matrix.package-name }}@${{ steps.publish-npm.outputs.version }}** to NPM

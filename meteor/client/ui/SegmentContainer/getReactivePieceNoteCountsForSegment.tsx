@@ -6,7 +6,7 @@ import { getIgnorePieceContentStatus } from '../../lib/localStorage'
 import { UIPieceContentStatuses } from '../Collections'
 import { SegmentNoteCounts, SegmentUi } from './withResolvedSegment'
 
-export function getReactivePieceNoteCountsForPart(segment: SegmentUi): SegmentNoteCounts {
+export function getReactivePieceNoteCountsForSegment(segment: SegmentUi): SegmentNoteCounts {
 	const counts: SegmentNoteCounts = {
 		criticial: 0,
 		warning: 0,

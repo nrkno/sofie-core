@@ -42,7 +42,7 @@ interface IProps {
 	playlist: RundownPlaylist
 	studio: UIStudio
 	parts: Array<PartUi>
-	segmentNotes: SegmentNoteCounts
+	segmentNoteCounts: SegmentNoteCounts
 	// timeScale: number
 	// maxTimeScale: number
 	// onRecalculateMaxTimeScale: () => Promise<number>
@@ -118,8 +118,8 @@ export const SegmentStoryboard = React.memo(
 			}
 		}
 
-		const criticalNotes = props.segmentNotes.criticial
-		const warningNotes = props.segmentNotes.warning
+		const criticalNotes = props.segmentNoteCounts.criticial
+		const warningNotes = props.segmentNoteCounts.warning
 
 		const [useTimeOfDayCountdowns, setUseTimeOfDayCountdowns] = useState(
 			UIStateStorage.getItemBoolean(

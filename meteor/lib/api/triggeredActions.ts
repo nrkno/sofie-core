@@ -1,12 +1,20 @@
+import { ITranslatableMessage, SomeAction } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBTriggeredActions } from '../collections/TriggeredActions'
+import { DBBlueprintTrigger } from '../collections/TriggeredActions'
 
 export interface NewTriggeredActionsAPI {
 	createTriggeredActions(
 		showStyleBaseId: ShowStyleBaseId | null,
-		base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggersWithOverrides' | 'actionsWithOverrides' | 'name'>>
+		base?: CreateTriggeredActionsContent
 	): Promise<TriggeredActionId>
 	removeTriggeredActions(id: TriggeredActionId): Promise<void>
+}
+
+export interface CreateTriggeredActionsContent {
+	_rank?: number
+	name?: ITranslatableMessage | string
+	triggers?: Record<string, DBBlueprintTrigger>
+	actions?: Record<string, SomeAction>
 }
 
 export enum TriggeredActionsAPIMethods {

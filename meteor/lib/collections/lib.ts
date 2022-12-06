@@ -6,7 +6,6 @@ import {
 	getHash,
 	ProtectedString,
 	makePromise,
-	sleep,
 	registerCollection,
 	stringifyError,
 	protectString,
@@ -291,12 +290,9 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 		options?: FindOptions<DBInterface>
 	): Promise<Array<DBInterface>> {
 		// Make the collection fethcing in another Fiber:
-		const p = makePromise(() => {
+		return makePromise(() => {
 			return this.find(selector as any, options).fetch()
 		})
-		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-		await sleep(0)
-		return p
 	}
 
 	async findOneAsync(
@@ -308,12 +304,9 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
-		const p = makePromise(() => {
+		return makePromise(() => {
 			return this.insert(doc)
 		})
-		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-		await sleep(0)
-		return p
 	}
 
 	async insertManyAsync(docs: DBInterface[]): Promise<Array<DBInterface['_id']>> {
@@ -321,7 +314,7 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 	}
 
 	async insertIgnoreAsync(doc: DBInterface): Promise<DBInterface['_id']> {
-		const p = makePromise(() => {
+		return makePromise(() => {
 			return this.insert(doc)
 		}).catch((err) => {
 			if (err.toString().match(/duplicate key/i)) {
@@ -330,9 +323,6 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 				throw err
 			}
 		})
-		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-		await sleep(0)
-		return p
 	}
 
 	async updateAsync(
@@ -340,12 +330,9 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 		modifier: MongoModifier<DBInterface>,
 		options?: UpdateOptions
 	): Promise<number> {
-		const p = makePromise(() => {
+		return makePromise(() => {
 			return this.update(selector, modifier, options)
 		})
-		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-		await sleep(0)
-		return p
 	}
 
 	async upsertAsync(
@@ -353,12 +340,9 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 		modifier: MongoModifier<DBInterface>,
 		options?: UpsertOptions
 	): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }> {
-		const p = makePromise(() => {
+		return makePromise(() => {
 			return this.upsert(selector, modifier, options)
 		})
-		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-		await sleep(0)
-		return p
 	}
 
 	async upsertManyAsync(docs: DBInterface[]): Promise<{ numberAffected: number; insertedIds: DBInterface['_id'][] }> {
@@ -381,12 +365,9 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 	}
 
 	async removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number> {
-		const p = makePromise(() => {
+		return makePromise(() => {
 			return this.remove(selector)
 		})
-		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-		await sleep(0)
-		return p
 	}
 
 	async bulkWriteAsync(ops: Array<AnyBulkWriteOperation<DBInterface>>): Promise<void> {

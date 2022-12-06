@@ -2,12 +2,11 @@ import { CoreConnection, CoreOptions, DDPConnectorOptions } from '@sofie-automat
 
 import {
 	DeviceType,
-	CasparCGDevice,
 	DeviceContainer,
-	HyperdeckDevice,
-	QuantelDevice,
 	MediaObject,
 	DeviceOptionsAny,
+	manifest,
+	ActionExecutionResult,
 } from 'timeline-state-resolver'
 
 import * as _ from 'underscore'
@@ -15,7 +14,7 @@ import { DeviceConfig } from './connector'
 import { TSRHandler } from './tsrHandler'
 import { Logger } from 'winston'
 // eslint-disable-next-line node/no-extraneous-import
-import { ThreadedClass, MemUsageReport as ThreadMemUsageReport } from 'threadedclass'
+import { MemUsageReport as ThreadMemUsageReport } from 'threadedclass'
 import { Process } from './process'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
 import {
@@ -29,6 +28,9 @@ import { PeripheralDeviceId, StudioId } from '@sofie-automation/shared-lib/dist/
 import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/model/PeripheralDeviceCommand'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+
+// @ts-expect-error: node is just fine importing this but our typescript version isn't quite there yet
+import Translations = require('timeline-state-resolver/dist/translations.json')
 
 export interface CoreConfig {
 	host: string
@@ -74,7 +76,6 @@ export class CoreHandler {
 	}
 
 	async init(config: CoreConfig, process: Process): Promise<void> {
-		// this.logger.info('========')
 		this._statusInitialized = false
 		this._coreConfig = config
 		this._process = process
@@ -173,7 +174,11 @@ export class CoreHandler {
 			deviceName: name,
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
 
-			configManifest: PLAYOUT_DEVICE_CONFIG,
+			configManifest: {
+				...PLAYOUT_DEVICE_CONFIG,
+				subdeviceManifest: manifest,
+				translations: Translations,
+			},
 		}
 
 		if (!options.deviceToken) {
@@ -277,38 +282,48 @@ export class CoreHandler {
 	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreTSRDeviceHandler): void {
 		if (cmd) {
 			if (this._executedFunctions[unprotectString(cmd._id)]) return // prevent it from running multiple times
-			this.logger.debug(`Executing function "${cmd.functionName}", args: ${JSON.stringify(cmd.args)}`)
-			this._executedFunctions[unprotectString(cmd._id)] = true
-			// console.log('executeFunction', cmd)
 			const cb = (err: any, res?: any) => {
-				// console.log('cb', err, res)
 				if (err) {
 					this.logger.error('executeFunction error', err, err.stack)
 				}
-				fcnObject.core.coreMethods
-					.functionReply(cmd._id, err, res)
-					.then(() => {
-						// console.log('cb done')
-					})
-					.catch((e) => {
-						this.logger.error(e)
-					})
+				fcnObject.core.coreMethods.functionReply(cmd._id, err, res).catch((e) => {
+					this.logger.error(e)
+				})
 			}
-			// @ts-expect-error Untyped bunch of functions
-			// eslint-disable-next-line @typescript-eslint/ban-types
-			const fcn: Function = fcnObject[cmd.functionName]
-			try {
-				if (!fcn) throw Error(`Function "${cmd.functionName}" not found on device "${cmd.deviceId}"!`)
 
-				Promise.resolve(fcn.apply(fcnObject, cmd.args))
-					.then((result) => {
-						cb(null, result)
-					})
-					.catch((e) => {
-						cb(e.toString(), null)
-					})
-			} catch (e: any) {
-				cb(e.toString(), null)
+			if (cmd.functionName) {
+				this.logger.debug(`Executing function "${cmd.functionName}", args: ${JSON.stringify(cmd.args)}`)
+				this._executedFunctions[unprotectString(cmd._id)] = true
+				// @ts-expect-error Untyped bunch of functions
+				// eslint-disable-next-line @typescript-eslint/ban-types
+				const fcn: Function = fcnObject[cmd.functionName]
+				try {
+					if (!fcn) throw Error(`Function "${cmd.functionName}" not found on device "${cmd.deviceId}"!`)
+
+					Promise.resolve(fcn.apply(fcnObject, cmd.args))
+						.then((result) => {
+							cb(null, result)
+						})
+						.catch((e) => {
+							cb(e.toString(), null)
+						})
+				} catch (e: any) {
+					cb(e.toString(), null)
+				}
+			} else if (cmd.actionId && 'executeAction' in fcnObject) {
+				this.logger.debug(`Executing action "${cmd.actionId}", payload: ${JSON.stringify(cmd.payload)}`)
+				this._executedFunctions[unprotectString(cmd._id)] = true
+
+				fcnObject
+					.executeAction(cmd.actionId, cmd.payload)
+					.then((result) => cb(null, result))
+					.catch((e) => cb(e.toString, null))
+			} else if (cmd.actionId) {
+				this.logger.warning(`Could not execute action "${cmd.actionId}", because there is no handler`)
+				cb(`Could not execute action "${cmd.actionId}", because there is no handler`)
+			} else {
+				this.logger.debug('Received incomplete peripheralDeviceCommand')
+				cb('Received incomplete peripheralDeviceCommand')
 			}
 		}
 	}
@@ -427,30 +442,6 @@ export class CoreHandler {
 		} else {
 			throw new Error('TSR not set up!')
 		}
-	}
-	async restartCasparCG(deviceId: string): Promise<any> {
-		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
-
-		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<CasparCGDevice>
-		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
-
-		return device.restartCasparCG()
-	}
-	async restartQuantel(deviceId: string): Promise<any> {
-		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
-
-		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<QuantelDevice>
-		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
-
-		return device.restartGateway()
-	}
-	async formatHyperdeck(deviceId: string): Promise<void> {
-		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
-
-		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<HyperdeckDevice>
-		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
-
-		await device.formatDisks()
 	}
 	async updateCoreStatus(): Promise<any> {
 		let statusCode = StatusCode.GOOD
@@ -647,28 +638,10 @@ export class CoreTSRDeviceHandler {
 	killProcess(actually: number): boolean {
 		return this._coreParentHandler.killProcess(actually)
 	}
-	async restartCasparCG(): Promise<any> {
-		const device = this._device.device as ThreadedClass<CasparCGDevice>
-		if (device.restartCasparCG) {
-			return device.restartCasparCG()
-		} else {
-			return Promise.reject('device.restartCasparCG not set')
-		}
-	}
-	async restartQuantel(): Promise<any> {
-		const device = this._device.device as ThreadedClass<QuantelDevice>
-		if (device.restartGateway) {
-			return device.restartGateway()
-		} else {
-			return Promise.reject('device.restartGateway not set')
-		}
-	}
-	async formatHyperdeck(): Promise<any> {
-		const device = this._device.device as ThreadedClass<HyperdeckDevice>
-		if (device.formatDisks) {
-			return device.formatDisks()
-		} else {
-			return Promise.reject('device.formatHyperdeck not set')
-		}
+	async executeAction(actionId: string, payload?: Record<string, any>): Promise<ActionExecutionResult> {
+		this._coreParentHandler.logger.info(`Exec ${actionId} on ${this._deviceId}`)
+		const device = this._device.device
+
+		return device.executeAction(actionId, payload)
 	}
 }

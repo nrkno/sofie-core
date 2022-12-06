@@ -16,8 +16,10 @@ export interface JobManager {
 }
 
 export interface JobStream {
+	/** Wait for the job queue to notify */
+	wait(): Promise<void>
 	/** Get the next queued job */
-	next(): Promise<JobSpec | null>
+	pop(): Promise<JobSpec | null>
 	/** Make the next job returned be `null` */
 	interrupt(): void
 	/** Close the JobStream */

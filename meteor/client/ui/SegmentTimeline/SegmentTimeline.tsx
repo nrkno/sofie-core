@@ -51,7 +51,7 @@ interface IProps {
 	followLiveSegments: boolean
 	studio: UIStudio
 	parts: Array<PartUi>
-	segmentNotes: SegmentNoteCounts
+	segmentNoteCounts: SegmentNoteCounts
 	timeScale: number
 	maxTimeScale: number
 	onRecalculateMaxTimeScale: () => Promise<number>
@@ -902,8 +902,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	render() {
 		const { t } = this.props
 
-		const criticalNotes = this.props.segmentNotes.criticial
-		const warningNotes = this.props.segmentNotes.warning
+		const criticalNotes = this.props.segmentNoteCounts.criticial
+		const warningNotes = this.props.segmentNoteCounts.warning
 
 		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts
 			.map((p) =>

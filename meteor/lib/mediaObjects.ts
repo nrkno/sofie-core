@@ -16,8 +16,8 @@ import { getExpectedPackageId } from './collections/ExpectedPackages'
 import { PieceGeneric, PieceStatusCode } from './collections/Pieces'
 import { UIStudio } from './api/studios'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { PackageContainerPackageStatusDB } from './collections/PackageContainerPackageStatus'
 import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PackageContainerPackageStatusDB } from './collections/PackageContainerPackageStatus'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -208,10 +208,7 @@ function checkPieceContentMediaObjectStatus(
 
 	const ignoreMediaAudioStatus = piece.content && piece.content.ignoreAudioFormat
 
-	const messages: Array<{
-		status: PieceStatusCode
-		message: ITranslatableMessage
-	}> = []
+	const messages: Array<ContentMessage> = []
 	let contentSeemsOK = false
 	const fileName = getMediaObjectMediaId(piece, sourceLayer)
 	const displayName = piece.name
@@ -278,7 +275,7 @@ function checkPieceContentMediaObjectStatus(
 										sourceDuration,
 										mediaObject.mediainfo.format?.duration,
 										mediaObject.mediainfo.blacks,
-										'black' // TODO - translate
+										BlackFrameWarnings
 									)
 								}
 								if (!piece.content.ignoreFreezeFrame && mediaObject.mediainfo.freezes?.length) {
@@ -288,7 +285,7 @@ function checkPieceContentMediaObjectStatus(
 										sourceDuration,
 										mediaObject.mediainfo.format?.duration,
 										mediaObject.mediainfo.freezes,
-										'freeze' // TODO - translate
+										FreezeFrameWarnings
 									)
 								}
 							}
@@ -458,7 +455,7 @@ function checkPieceContentExpectedPackageStatus(
 							sourceDuration,
 							scan.format?.duration,
 							deepScan.blacks,
-							'black' // TODO - translate
+							BlackFrameWarnings
 						)
 					}
 					if (!piece.content.ignoreFreezeFrame && deepScan?.freezes?.length) {
@@ -468,7 +465,7 @@ function checkPieceContentExpectedPackageStatus(
 							sourceDuration,
 							scan.format?.duration,
 							deepScan.freezes,
-							'freeze' // TODO - translate
+							FreezeFrameWarnings
 						)
 					}
 				}
@@ -642,7 +639,7 @@ function addFrameWarning(
 	sourceDuration: number | undefined,
 	scannedFormatDuration: number | string | undefined,
 	anomalies: Array<PackageInfo.Anomaly>,
-	type: string
+	strings: FrameWarningStrings
 ): void {
 	if (anomalies.length === 1) {
 		/** Number of frames */
@@ -650,10 +647,8 @@ function addFrameWarning(
 		if (anomalies[0].start === 0) {
 			messages.push({
 				status: PieceStatusCode.SOURCE_HAS_ISSUES,
-				message: generateTranslation('Clip starts with {{frames}} {{type}} frames', {
+				message: generateTranslation(strings.clipStartsWithCount, {
 					frames,
-					type,
-					count: frames,
 				}),
 			})
 		} else if (
@@ -664,19 +659,15 @@ function addFrameWarning(
 			const freezeStartsAt = Math.round(anomalies[0].start)
 			messages.push({
 				status: PieceStatusCode.SOURCE_HAS_ISSUES,
-				message: generateTranslation('This clip ends with {{type}} frames after {{count}} seconds', {
-					frames,
-					type,
-					count: freezeStartsAt,
+				message: generateTranslation(strings.clipEndsWithAfter, {
+					seconds: freezeStartsAt,
 				}),
 			})
 		} else if (frames > 0) {
 			messages.push({
 				status: PieceStatusCode.SOURCE_HAS_ISSUES,
-				message: generateTranslation('{{frames}} {{type}} frames detected within the clip', {
+				message: generateTranslation(strings.countDetectedWithinClip, {
 					frames,
-					type,
-					count: frames,
 				}),
 			})
 		}
@@ -689,12 +680,36 @@ function addFrameWarning(
 		if (frames > 0) {
 			messages.push({
 				status: PieceStatusCode.SOURCE_HAS_ISSUES,
-				message: generateTranslation('{{frames}} {{type}} frames detected in the clip', {
+				message: generateTranslation(strings.countDetectedInClip, {
 					frames,
-					type,
-					count: frames,
 				}),
 			})
 		}
 	}
+}
+
+interface FrameWarningStrings {
+	clipStartsWithCount: string
+	clipEndsWithAfter: string
+	countDetectedWithinClip: string
+	countDetectedInClip: string
+}
+
+// Mock 't' function for i18next to find the keys
+function t(key: string): string {
+	return key
+}
+
+const BlackFrameWarnings: FrameWarningStrings = {
+	clipStartsWithCount: t('Clip starts with {{frames}} black frames'),
+	clipEndsWithAfter: t('This clip ends with black frames after {{seconds}} seconds'),
+	countDetectedWithinClip: t('{{frames}} black frames detected within the clip'),
+	countDetectedInClip: t('{{frames}} black frames detected in the clip'),
+}
+
+const FreezeFrameWarnings: FrameWarningStrings = {
+	clipStartsWithCount: t('Clip starts with {{frames}} freeze frames'),
+	clipEndsWithAfter: t('This clip ends with freeze frames after {{seconds}} seconds'),
+	countDetectedWithinClip: t('{{frames}} freeze frames detected within the clip'),
+	countDetectedInClip: t('{{frames}} freeze frames detected in the clip'),
 }

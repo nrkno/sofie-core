@@ -102,7 +102,7 @@ function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
 			}
 
 			// TODO - dont repeat unless changed
-			const tl = Resolver.resolveTimeline(timeline, { time: tlComplete?.generated || now })
+			const tl = Resolver.resolveTimeline(timeline as any, { time: tlComplete?.generated || now })
 			return [tl, undefined]
 		} catch (e) {
 			return [undefined, `Failed to resolveTimeline:\n${e}`]

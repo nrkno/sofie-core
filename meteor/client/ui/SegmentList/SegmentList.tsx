@@ -33,7 +33,7 @@ interface IProps {
 	playlist: RundownPlaylist
 	studio: UIStudio
 	parts: Array<PartUi>
-	segmentNotes: SegmentNoteCounts
+	segmentNoteCounts: SegmentNoteCounts
 
 	fixedSegmentDuration: boolean
 	showCountdownToSegment: boolean
@@ -225,7 +225,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				segment={props.segment}
 				playlist={props.playlist}
 				studio={props.studio}
-				segmentNotes={props.segmentNotes}
+				segmentNoteCounts={props.segmentNoteCounts}
 				highlight={highlight}
 				isLiveSegment={props.isLiveSegment}
 				isNextSegment={props.isNextSegment}

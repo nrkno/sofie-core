@@ -22,7 +22,7 @@ import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveD
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { RundownLayoutFilterBase, RundownViewLayout } from '../../../lib/collections/RundownLayouts'
-import { getReactivePieceNoteCountsForPart as getReactivePieceNoteCountsForSegment } from './getReactivePieceNoteCountsForSegment'
+import { getReactivePieceNoteCountsForSegment } from './getReactivePieceNoteCountsForSegment'
 import { SegmentViewMode } from './SegmentViewModes'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { AdlibSegmentUi } from '../../lib/shelf'
@@ -109,7 +109,7 @@ export interface SegmentNoteCounts {
 export interface ITrackedProps {
 	segmentui: SegmentUi | undefined
 	parts: Array<PartUi>
-	segmentNotes: SegmentNoteCounts
+	segmentNoteCounts: SegmentNoteCounts
 	hasRemoteItems: boolean
 	hasGuestItems: boolean
 	hasAlreadyPlayed: boolean
@@ -135,7 +135,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				return {
 					segmentui: undefined,
 					parts: [],
-					segmentNotes: { criticial: 0, warning: 0 },
+					segmentNoteCounts: { criticial: 0, warning: 0 },
 					hasRemoteItems: false,
 					hasGuestItems: false,
 					hasAlreadyPlayed: false,
@@ -240,7 +240,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				}
 			}
 
-			const segmentNotes: SegmentNoteCounts = {
+			const segmentNoteCounts: SegmentNoteCounts = {
 				criticial: 0,
 				warning: 0,
 			}
@@ -250,15 +250,15 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			).fetch() as Pick<UISegmentPartNote, 'note'>[]
 			for (const note of rawNotes) {
 				if (note.note.type === NoteSeverity.ERROR) {
-					segmentNotes.criticial++
+					segmentNoteCounts.criticial++
 				} else if (note.note.type === NoteSeverity.WARNING) {
-					segmentNotes.warning++
+					segmentNoteCounts.warning++
 				}
 			}
 
 			const pieceNoteCounts = getReactivePieceNoteCountsForSegment(segment)
-			segmentNotes.criticial += pieceNoteCounts.criticial
-			segmentNotes.warning += pieceNoteCounts.warning
+			segmentNoteCounts.criticial += pieceNoteCounts.criticial
+			segmentNoteCounts.warning += pieceNoteCounts.warning
 
 			let lastValidPartIndex = o.parts.length - 1
 
@@ -301,7 +301,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			return {
 				segmentui: o.segmentExtended,
 				parts: o.parts,
-				segmentNotes: segmentNotes,
+				segmentNoteCounts,
 				hasAlreadyPlayed: o.hasAlreadyPlayed,
 				hasRemoteItems: o.hasRemoteItems,
 				hasGuestItems: o.hasGuestItems,

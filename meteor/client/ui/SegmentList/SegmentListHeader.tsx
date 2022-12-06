@@ -25,7 +25,7 @@ export function SegmentListHeader({
 	playlist,
 	studio,
 	highlight,
-	segmentNotes,
+	segmentNoteCounts,
 	isLiveSegment,
 	isNextSegment,
 	isQueuedSegment,
@@ -44,7 +44,7 @@ export function SegmentListHeader({
 	playlist: RundownPlaylist
 	studio: UIStudio
 	parts: Array<PartUi>
-	segmentNotes: SegmentNoteCounts
+	segmentNoteCounts: SegmentNoteCounts
 	highlight: boolean
 	isLiveSegment: boolean
 	isNextSegment: boolean
@@ -77,8 +77,8 @@ export function SegmentListHeader({
 	// 	setDetached(shouldDetach)
 	// }
 
-	const criticalNotes = segmentNotes.criticial
-	const warningNotes = segmentNotes.warning
+	const criticalNotes = segmentNoteCounts.criticial
+	const warningNotes = segmentNoteCounts.warning
 
 	const contents = (
 		<ContextMenuTrigger
