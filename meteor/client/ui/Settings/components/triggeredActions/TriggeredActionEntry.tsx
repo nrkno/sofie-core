@@ -291,11 +291,13 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 		TriggeredActions.update(triggeredAction?._id, {
 			$set: {
-				'actionsWithOverrides.overrides': literal<ObjectOverrideSetOp>({
-					op: 'set',
-					path: id,
-					value: newAction,
-				}),
+				'actionsWithOverrides.overrides': [
+					literal<ObjectOverrideSetOp>({
+						op: 'set',
+						path: id,
+						value: newAction,
+					}),
+				],
 			},
 		})
 

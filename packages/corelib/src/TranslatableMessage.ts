@@ -106,7 +106,7 @@ export function wrapTranslatableMessageFromBlueprints(
 ): ITranslatableMessage {
 	return {
 		...message,
-		namespaces: unprotectStringArray(blueprintIds),
+		namespaces: blueprintIds.map((id) => `blueprint_${id}`),
 	}
 }
 

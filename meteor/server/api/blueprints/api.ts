@@ -22,7 +22,7 @@ import { OrganizationContentWriteAccess, OrganizationReadAccess } from '../../se
 import { SystemWriteAccess } from '../../security/system'
 import { Credentials, isResolvedCredentials } from '../../security/lib/credentials'
 import { Settings } from '../../../lib/Settings'
-import { upsertBundles } from '../translationsBundles'
+import { generateTranslationBundleOriginId, upsertBundles } from '../translationsBundles'
 import { BlueprintLight, fetchBlueprintLight } from '../../../lib/collections/optimizations'
 import { BlueprintId, OrganizationId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getSystemStorePath } from '../../coreSystem'
@@ -246,7 +246,7 @@ async function innerUploadBlueprint(
 		// Note that the type has to be string in the manifest interfaces to allow attaching the
 		// stringified JSON in the first place.
 		const translations = (blueprintManifest as any).translations as TranslationsBundle[]
-		await upsertBundles(translations, blueprintId)
+		await upsertBundles(translations, generateTranslationBundleOriginId(blueprintId, 'blueprints'))
 	}
 
 	// Ensure anywhere that uses this blueprint has their configPreset updated
