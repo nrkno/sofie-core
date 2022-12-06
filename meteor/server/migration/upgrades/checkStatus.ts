@@ -203,8 +203,8 @@ function checkDocUpgradeStatus(
 	} else if (doc.lastBlueprintConfig.blueprintId !== doc.blueprintId) {
 		changes.push(
 			generateTranslation('Blueprint has been changed. From "{{ oldValue }}", to "{{ newValue }}"', {
-				oldValue: doc.lastBlueprintConfig.blueprintId,
-				newValue: doc.blueprintId,
+				oldValue: doc.lastBlueprintConfig.blueprintId || '',
+				newValue: doc.blueprintId || '',
 			})
 		)
 	} else if (doc.lastBlueprintConfig.blueprintConfigPresetId !== doc.blueprintConfigPresetId) {
@@ -212,8 +212,8 @@ function checkDocUpgradeStatus(
 			generateTranslation(
 				'Blueprint config preset has been changed. From "{{ oldValue }}", to "{{ newValue }}"',
 				{
-					oldValue: doc.lastBlueprintConfig.blueprintConfigPresetId,
-					newValue: doc.blueprintConfigPresetId,
+					oldValue: doc.lastBlueprintConfig.blueprintConfigPresetId||'',
+					newValue: doc.blueprintConfigPresetId||'',
 				}
 			)
 		)
@@ -242,8 +242,8 @@ function checkDocUpgradeStatus(
 								'Config value "{{ name }}" has changed. From "{{ oldValue }}", to "{{ newValue }}"',
 								{
 									name: entry.name,
-									oldValue,
-									newValue,
+									oldValue??'',
+									newValue??'',
 								}
 							)
 						)
