@@ -117,7 +117,12 @@ export namespace ServerPeripheralDeviceAPI {
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
 
-					configManifest: options.configManifest,
+					configManifest: options.configManifest
+						? {
+								...options.configManifest,
+								translations: undefined, // unset the translations
+						  }
+						: undefined,
 				},
 				$unset:
 					newVersionsStr !== oldVersionsStr
@@ -152,11 +157,14 @@ export namespace ServerPeripheralDeviceAPI {
 				versions: options.versions,
 				// settings: {},
 
-				configManifest:
-					options.configManifest ??
-					literal<DeviceConfigManifest>({
-						deviceConfig: [],
-					}),
+				configManifest: options.configManifest
+					? {
+							...options.configManifest,
+							translations: undefined,
+					  }
+					: literal<DeviceConfigManifest>({
+							deviceConfig: [],
+					  }),
 			})
 		}
 		if (options.configManifest?.translations) {
