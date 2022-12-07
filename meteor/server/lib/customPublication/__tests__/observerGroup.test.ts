@@ -1,7 +1,6 @@
 import '../../../../__mocks__/_extendJest'
 
 // import { createManualPromise, sleep } from '@sofie-automation/corelib/dist/lib'
-import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { Meteor } from 'meteor/meteor'
 import { ReactiveMongoObserverGroup } from '../observerGroup'
 
