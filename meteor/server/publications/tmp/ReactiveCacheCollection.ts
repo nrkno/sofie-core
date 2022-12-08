@@ -105,16 +105,19 @@ export class ReactiveCacheCollection<
 		return result
 	}
 
-	link(): ObserveCallbacks<Document> {
+	link(cb?: () => void): ObserveCallbacks<Document> {
 		return {
 			added: (doc: Document) => {
 				this.upsert(doc._id, { $set: omit(doc, '_id') as Partial<Document> })
+				cb?.()
 			},
 			changed: (doc: Document) => {
 				this.upsert(doc._id, { $set: omit(doc, '_id') as Partial<Document> })
+				cb?.()
 			},
 			removed: (doc: Document) => {
 				this.remove(doc._id)
+				cb?.()
 			},
 		}
 	}

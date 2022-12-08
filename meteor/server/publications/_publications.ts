@@ -2,7 +2,7 @@ import './lib'
 
 import './buckets'
 import './expectedPackages'
-import './pieceContentStatusUI'
+import './pieceContentStatusUI/publication'
 import './organization'
 import './peripheralDevice'
 import './rundown'

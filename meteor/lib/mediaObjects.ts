@@ -18,6 +18,7 @@ import { UIStudio } from './api/studios'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PackageContainerPackageStatusDB } from './collections/PackageContainerPackageStatus'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -153,9 +154,8 @@ export interface PieceContentStatusObj {
 }
 
 export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'name' | 'content' | 'expectedPackages'>
-export type PieceContentStatusStudio = Pick<
-	UIStudio,
-	'_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'
+export type PieceContentStatusStudio = ReadonlyDeep<
+	Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'>
 >
 
 export function checkPieceContentStatus(
