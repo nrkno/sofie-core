@@ -9,7 +9,7 @@ describe('ReactiveMongoObserverGroup', () => {
 		const handle: Meteor.LiveQueryHandle = { stop: jest.fn() }
 		const generator = jest.fn(async () => [handle])
 
-		const observerGroup = ReactiveMongoObserverGroup(generator)
+		const observerGroup = await ReactiveMongoObserverGroup(generator)
 
 		// Ensure we got a sane response
 		expect(observerGroup).toBeTruthy()

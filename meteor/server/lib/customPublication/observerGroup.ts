@@ -1,6 +1,6 @@
 import { ManualPromise, createManualPromise } from '@sofie-automation/corelib/dist/lib'
 import { Meteor } from 'meteor/meteor'
-import { waitForPromise } from '../../../lib/lib'
+import { deferAsync, waitForPromise } from '../../../lib/lib'
 
 export interface ReactiveMongoObserverGroupHandle extends Meteor.LiveQueryHandle {
 	/**
@@ -15,9 +15,9 @@ export interface ReactiveMongoObserverGroupHandle extends Meteor.LiveQueryHandle
  * @param generator Function to generate the `Meteor.LiveQueryHandle`s
  * @returns Handle to stop and restart the observer group
  */
-export function ReactiveMongoObserverGroup(
+export async function ReactiveMongoObserverGroup(
 	generator: () => Promise<Array<Meteor.LiveQueryHandle>>
-): ReactiveMongoObserverGroupHandle {
+): Promise<ReactiveMongoObserverGroupHandle> {
 	let running = true
 	let pendingStop: ManualPromise<void> | undefined
 	let pendingRestart: ManualPromise<void> | undefined
@@ -36,7 +36,7 @@ export function ReactiveMongoObserverGroup(
 
 	// TODO - debounce?
 	let checkRunning = false
-	const runCheck = () => {
+	const runCheck = async () => {
 		let result: ManualPromise<void> | undefined
 		try {
 			if (!running) throw new Meteor.Error(500, 'ObserverGroup has been stopped!')
@@ -76,10 +76,10 @@ export function ReactiveMongoObserverGroup(
 			// Start the child observers
 			if (!handles) {
 				// handles = await generator()
-				handles = waitForPromise(generator())
+				handles = await generator()
 
 				// check for another pending operation
-				Meteor.defer(() => runCheck())
+				deferAsync(async () => runCheck())
 			}
 
 			// Inform caller
@@ -102,7 +102,7 @@ export function ReactiveMongoObserverGroup(
 				pendingStop = promise
 			}
 
-			Meteor.defer(() => runCheck())
+			deferAsync(async () => runCheck())
 
 			// Block the caller until the stop has completed
 			waitForPromise(promise)
@@ -116,7 +116,7 @@ export function ReactiveMongoObserverGroup(
 				pendingRestart = promise
 			}
 
-			Meteor.defer(() => runCheck())
+			deferAsync(async () => runCheck())
 
 			// Block the caller until the restart has completed
 			waitForPromise(promise)
@@ -124,7 +124,7 @@ export function ReactiveMongoObserverGroup(
 	}
 
 	// wait for initial setup of observers, so that they are running once we return
-	runCheck()
+	await runCheck()
 
 	return handle
 }

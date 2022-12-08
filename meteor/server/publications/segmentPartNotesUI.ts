@@ -110,7 +110,7 @@ async function setupUISegmentPartNotesPublicationObservers(
 	})
 
 	// Second level of reactivity
-	const rundownContentsObserver = ReactiveMongoObserverGroup(async () => {
+	const rundownContentsObserver = await ReactiveMongoObserverGroup(async () => {
 		const rundownIds = (
 			await Rundowns.findFetchAsync({ playlistId: args.playlistId }, { projection: { _id: 1 } })
 		).map((rd) => rd._id)
