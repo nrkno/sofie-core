@@ -8,7 +8,6 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UISegmentPartNote } from '../../lib/api/rundownNotifications'
@@ -16,7 +15,15 @@ import { DBPartInstance, PartInstance, PartInstances } from '../../lib/collectio
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBSegment, Segment, SegmentOrphanedReason, Segments } from '../../lib/collections/Segments'
-import { clone, generateTranslation, groupByToMap, literal, ProtectedString, protectString } from '../../lib/lib'
+import {
+	clone,
+	generateTranslation,
+	groupByToMap,
+	literal,
+	ProtectedString,
+	protectString,
+	waitForPromise,
+} from '../../lib/lib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,
@@ -33,6 +40,7 @@ import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
+import { LiveQueryHandle } from '../lib/customPublication/optimizedObserverBase'
 
 interface UISegmentPartNotesArgs {
 	readonly playlistId: RundownPlaylistId
@@ -95,7 +103,7 @@ const partInstanceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PartIns
 async function setupUISegmentPartNotesPublicationObservers(
 	args: ReadonlyDeep<UISegmentPartNotesArgs>,
 	triggerUpdate: TriggerUpdate<UISegmentPartNotesUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<LiveQueryHandle[]> {
 	const trackRundownChange = (id: RundownId): Partial<UISegmentPartNotesUpdateProps> => ({
 		invalidateRundownIds: [id],
 	})
@@ -141,7 +149,7 @@ async function setupUISegmentPartNotesPublicationObservers(
 	return [
 		Rundowns.find({ playlistId: args.playlistId }, { fields: rundownFieldSpecifier }).observeChanges({
 			added: (id) => {
-				rundownContentsObserver.restart()
+				waitForPromise(rundownContentsObserver.restart())
 				triggerUpdate(trackRundownChange(id))
 			},
 			changed: (id) => {
@@ -149,7 +157,7 @@ async function setupUISegmentPartNotesPublicationObservers(
 				triggerUpdate(trackRundownChange(id))
 			},
 			removed: (id) => {
-				rundownContentsObserver.restart()
+				waitForPromise(rundownContentsObserver.restart())
 				triggerUpdate(trackRundownChange(id))
 			},
 		}),

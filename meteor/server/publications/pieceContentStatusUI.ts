@@ -14,7 +14,6 @@ import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UIPieceContentStatus } from '../../lib/api/rundownNotifications'
@@ -28,7 +27,7 @@ import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studio, Studios } from '../../lib/collections/Studios'
-import { clone, literal, protectString } from '../../lib/lib'
+import { clone, literal, protectString, waitForPromise } from '../../lib/lib'
 import { checkPieceContentStatus, PieceContentStatusObj } from '../../lib/mediaObjects'
 import {
 	CustomPublishCollection,
@@ -37,6 +36,7 @@ import {
 	setUpCollectionOptimizedObserver,
 	TriggerUpdate,
 } from '../lib/customPublication'
+import { LiveQueryHandle } from '../lib/customPublication/optimizedObserverBase'
 import { updateGenericCache } from '../lib/customPublication/updateHelper'
 import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
@@ -124,7 +124,7 @@ const pieceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PieceFields>>(
 async function setupUIPieceContentStatusesPublicationObservers(
 	args: ReadonlyDeep<UIPieceContentStatusesArgs>,
 	triggerUpdate: TriggerUpdate<UIPieceContentStatusesUpdateProps>
-): Promise<Meteor.LiveQueryHandle[]> {
+): Promise<LiveQueryHandle[]> {
 	const trackSegmentChange = (id: SegmentId): Partial<UIPieceContentStatusesUpdateProps> => ({
 		invalidateSegmentIds: [id],
 	})
@@ -147,7 +147,7 @@ async function setupUIPieceContentStatusesPublicationObservers(
 	})
 
 	// Second level of reactivity
-	const rundownContentsObserver = ReactiveMongoObserverGroup(async () => {
+	const rundownContentsObserver = await ReactiveMongoObserverGroup(async () => {
 		const rundown = (await Rundowns.findOneAsync(args.rundownId, { projection: rundownFieldSpecifier })) as
 			| Pick<Rundown, RundownFields>
 			| undefined
@@ -200,17 +200,17 @@ async function setupUIPieceContentStatusesPublicationObservers(
 	return [
 		Rundowns.find({ _id: args.rundownId }, { fields: rundownFieldSpecifier }).observeChanges({
 			added: () => {
-				rundownContentsObserver.restart()
+				waitForPromise(rundownContentsObserver.restart())
 				// triggerUpdate(trackRundownChange(id))
 				triggerUpdate({ invalidateRundown: true })
 			},
 			changed: () => {
-				rundownContentsObserver.restart()
+				waitForPromise(rundownContentsObserver.restart())
 				// triggerUpdate(trackRundownChange(id))
 				triggerUpdate({ invalidateRundown: true })
 			},
 			removed: () => {
-				rundownContentsObserver.restart()
+				waitForPromise(rundownContentsObserver.restart())
 				// triggerUpdate(trackRundownChange(id))
 				triggerUpdate({ invalidateRundown: true })
 			},

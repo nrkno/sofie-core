@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { clone, ProtectedString } from '../../../lib/lib'
-import { TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase'
+import { TriggerUpdate, setUpOptimizedObserverInner, LiveQueryHandle } from './optimizedObserverBase'
 import { CustomPublish, CustomPublishChanges } from './publish'
 import { diffObject } from './lib'
 
@@ -28,7 +28,7 @@ export async function setUpOptimizedObserverArray<
 		args: ReadonlyDeep<Args>,
 		/** Trigger an update by mutating the context of manipulateData */
 		triggerUpdate: TriggerUpdate<UpdateProps>
-	) => Promise<Meteor.LiveQueryHandle[]>,
+	) => Promise<LiveQueryHandle[]>,
 	manipulateData: (
 		args: ReadonlyDeep<Args>,
 		state: Partial<State>,
