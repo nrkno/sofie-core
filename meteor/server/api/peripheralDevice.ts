@@ -1153,7 +1153,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		await PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId)
 	}
 	// --- Triggers ---
-	async trigger(
+	async inputDeviceTrigger(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		triggerDeviceId: string,

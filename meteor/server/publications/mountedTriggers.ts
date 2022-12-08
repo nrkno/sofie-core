@@ -64,51 +64,54 @@ meteorCustomPublish(
 )
 
 function cursorCustomPublish<T extends { _id: ProtectedString<any> }>(pub: CustomPublish<T>, cursor: Mongo.Cursor<T>) {
-	let buffer: CustomPublishChanges<T> = {
-		added: [],
-		changed: [],
-		removed: [],
+	function createEmptyBuffer(): CustomPublishChanges<T> {
+		return {
+			added: new Map(),
+			changed: new Map(),
+			removed: new Set(),
+		}
 	}
 
+	let buffer: CustomPublishChanges<T> = createEmptyBuffer()
+
 	const bufferChanged = _.debounce(function bufferChanged() {
+		const bufferToSend = buffer
+		buffer = createEmptyBuffer()
 		try {
-			pub.changed(buffer)
+			// this can now be async
+			pub.changed(bufferToSend)
 		} catch (e) {
 			logger.error(`Error while updating publication: ${e}`, e as any)
-		}
-		buffer = {
-			added: [],
-			changed: [],
-			removed: [],
 		}
 	}, PUBLICATION_DEBOUNCE)
 
 	const observer = cursor.observe({
 		added: (doc) => {
 			if (!pub.isReady) return
-			buffer.added.push(doc)
 			const id = doc._id
+			buffer.added.set(id, doc)
 			// if the document with the same id has been marked as removed before, clear the removal
-			buffer.removed = buffer.removed.filter((removedId) => removedId !== id)
+			buffer.removed.delete(id)
+			buffer.changed.delete(id)
 			bufferChanged()
 		},
 		changed: (doc) => {
 			if (!pub.isReady) return
 			const id = doc._id
-			const index = buffer.added.findIndex((doc) => doc._id === id)
-			if (index >= 0) {
-				buffer.added.splice(index, 1, doc)
+			if (buffer.added.has(id)) {
+				buffer.added.set(id, doc)
 			} else {
-				buffer.changed.push(doc)
+				buffer.changed.set(id, doc)
 			}
 			bufferChanged()
 		},
 		removed: (doc) => {
 			if (!pub.isReady) return
-			buffer.removed.push(doc._id)
 			const id = doc._id
+			buffer.removed.add(id)
 			// if the document with the same id has been added before, clear the addition
-			buffer.added = buffer.added.filter((addedDoc) => addedDoc._id !== id)
+			buffer.changed.delete(id)
+			buffer.added.delete(id)
 			bufferChanged()
 		},
 	})

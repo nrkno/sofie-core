@@ -36,7 +36,7 @@ export function createReactiveContentCache(
 	let isCancelled = false
 	const innerReaction = _.debounce(
 		Meteor.bindEnvironment(() => {
-			if (isCancelled) isCancelled
+			if (isCancelled) return
 			reaction(cache)
 		}),
 		reactivityDebounce

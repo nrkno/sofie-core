@@ -318,7 +318,7 @@ export interface NewPeripheralDeviceAPI {
 		packageId: ExpectedPackageId
 	): Promise<void>
 
-	trigger(
+	inputDeviceTrigger(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		triggerDeviceId: string,
@@ -419,5 +419,5 @@ export enum PeripheralDeviceAPIMethods {
 	'requestUserAuthToken' = 'peripheralDevice.spreadsheet.requestUserAuthToken',
 	'storeAccessToken' = 'peripheralDevice.spreadsheet.storeAccessToken',
 
-	'trigger' = 'peripheralDevice.input.trigger',
+	'inputDeviceTrigger' = 'peripheralDevice.input.inputDeviceTrigger',
 }

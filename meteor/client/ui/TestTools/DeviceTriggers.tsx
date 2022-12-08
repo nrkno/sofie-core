@@ -40,11 +40,11 @@ interface IDatastoreControlsProps {
 	peripheralDeviceId: PeripheralDeviceId
 }
 function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps) {
-	const [deviceIds, setDeviceIds] = useState([] as string[])
+	const [deviceIds, setDeviceIds] = useState<string[]>([])
 	useSubscription(PubSub.mountedTriggersForDevice, peripheralDeviceId, deviceIds)
 	useSubscription(PubSub.mountedTriggersForDevicePreview, peripheralDeviceId)
 
-	const mountedTriggers = useTracker(
+	const mountedTriggers = useTracker<DeviceTriggerMountedAction[], DeviceTriggerMountedAction[]>(
 		() =>
 			MountedTriggers.find({
 				deviceId: {
@@ -52,10 +52,10 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 				},
 			}).fetch(),
 		[deviceIds],
-		[] as DeviceTriggerMountedAction[]
+		[]
 	)
 
-	const mountedTriggersPreviews = useTracker(
+	const mountedTriggersPreviews = useTracker<PreviewWrappedAdLib[], PreviewWrappedAdLib[]>(
 		() =>
 			MountedTriggersPreviews.find({
 				actionId: {
@@ -63,7 +63,7 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 				},
 			}).fetch(),
 		[mountedTriggers],
-		[] as PreviewWrappedAdLib[]
+		[]
 	)
 
 	return (

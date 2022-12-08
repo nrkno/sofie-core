@@ -1,7 +1,7 @@
 import { IBlueprintDeviceTrigger } from '@sofie-automation/blueprints-integration'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import classNames from 'classnames'
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { PubSub } from '../../../../../../lib/api/pubsub'
 import { Studios } from '../../../../../../lib/collections/Studios'
 import { getCurrentTime } from '../../../../../../lib/lib'
@@ -18,7 +18,7 @@ interface IProps {
 
 export const DeviceEditor = function DeviceEditor({ trigger, modified, onChange }: IProps) {
 	const opened = useMemo(() => getCurrentTime(), [])
-	const deviceTriggersPreview = useTracker(
+	const deviceTriggersPreview = useTracker<DeviceTriggerPreview[], DeviceTriggerPreview[]>(
 		() =>
 			DeviceTriggersPreviews.find({
 				timestamp: {
@@ -28,15 +28,11 @@ export const DeviceEditor = function DeviceEditor({ trigger, modified, onChange 
 				.fetch()
 				.reverse(),
 		[],
-		[] as DeviceTriggerPreview[]
+		[]
 	)
 	const studio = useTracker(() => Studios.findOne(), [], undefined)
 
 	useSubscription(PubSub.deviceTriggersPreview, studio?._id ?? protectString(''))
-
-	useEffect(() => {
-		console.log(deviceTriggersPreview)
-	}, [deviceTriggersPreview])
 
 	return (
 		<>
