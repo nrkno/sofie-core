@@ -19,9 +19,7 @@ import { UIStudio } from '../../../lib/api/studios'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PackageContainerPackageStatuses } from '../../../lib/collections/PackageContainerPackageStatus'
 import { PackageInfos } from '../../../lib/collections/PackageInfos'
-import { DBPart } from '../../../lib/collections/Parts'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { Segment } from '../../../lib/collections/Segments'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { literal, protectString } from '../../../lib/lib'
 import { checkPieceContentStatus, PieceContentStatusObj } from '../../../lib/mediaObjects'
@@ -36,7 +34,7 @@ import { logger } from '../../logging'
 import { resolveCredentials } from '../../security/lib/credentials'
 import { NoSecurityReadAccess } from '../../security/noSecurity'
 import { RundownPlaylistReadAccess } from '../../security/rundownPlaylist'
-import { ContentCache, PartFields, PieceFields, SegmentFields } from './reactiveContentCache'
+import { ContentCache, PieceFields } from './reactiveContentCache'
 import { RundownContentObserver } from './rundownContentObserver'
 import { RundownsObserver } from './rundownsObserver'
 
@@ -61,10 +59,8 @@ interface UIPieceContentStatusesUpdateProps {
 	invalidateStudio: StudioId
 
 	updatedSegmentIds: SegmentId[]
-	removedSegments: Pick<Segment, SegmentFields>[]
 
 	updatedPartIds: PartId[]
-	removedParts: Pick<DBPart, PartFields>[]
 
 	updatedPieceIds: PieceId[]
 	removedPieces: Pick<Piece, PieceFields>[]
@@ -117,15 +113,15 @@ async function setupUIPieceContentStatusesPublicationObservers(
 			triggerUpdate({ newCache: cache })
 
 			const innerQueries = [
-				cache.Segments.find({}).observe({
-					added: (doc) => triggerUpdate({ updatedSegmentIds: [doc._id] }),
-					changed: (doc) => triggerUpdate({ updatedSegmentIds: [doc._id] }),
-					removed: (doc) => triggerUpdate({ removedSegments: [doc] }),
+				cache.Segments.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
 				}),
-				cache.Parts.find({}).observe({
-					added: (doc) => triggerUpdate({ updatedPartIds: [doc._id] }),
-					changed: (doc) => triggerUpdate({ updatedPartIds: [doc._id] }),
-					removed: (doc) => triggerUpdate({ removedParts: [doc] }),
+				cache.Parts.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedPartIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedPartIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
 				}),
 				cache.Pieces.find({}).observe({
 					added: (doc) => triggerUpdate({ updatedPieceIds: [doc._id] }),
@@ -158,11 +154,7 @@ async function setupUIPieceContentStatusesPublicationObservers(
 
 	// Set up observers:
 	return [
-		{
-			stop: () => {
-				rundownsObserver.dispose()
-			},
-		},
+		rundownsObserver,
 
 		Studios.find({ _id: playlist.studioId }).observeChanges({
 			added: (id) => triggerUpdate({ invalidateStudio: id }),

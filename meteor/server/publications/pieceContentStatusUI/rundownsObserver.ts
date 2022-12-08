@@ -7,7 +7,7 @@ const REACTIVITY_DEBOUNCE = 20
 
 type ChangedHandler = (rundownIds: RundownId[]) => () => void
 
-export class RundownsObserver {
+export class RundownsObserver implements Meteor.LiveQueryHandle {
 	#rundownsLiveQuery: Meteor.LiveQueryHandle
 	#rundownIds: Set<RundownId> = new Set<RundownId>()
 	#changed: ChangedHandler | undefined
@@ -58,7 +58,7 @@ export class RundownsObserver {
 		REACTIVITY_DEBOUNCE
 	)
 
-	public dispose = (): void => {
+	public stop = (): void => {
 		this.updateRundownContent.cancel()
 		this.#rundownsLiveQuery.stop()
 		this.#changed = undefined
