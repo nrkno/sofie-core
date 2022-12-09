@@ -1563,6 +1563,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				})
 				// TODO: This is a hack, which should be replaced by something more clever, like in withMediaObjectStatus()
 				this.subscribe(PubSub.packageContainerPackageStatuses, playlist.studioId)
+
+				this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 			})
 
 			this.autorun(() => {
@@ -1584,7 +1586,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 				for (const rundown of rundowns) {
 					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
-					this.subscribe(PubSub.uiPieceContentStatuses, rundown._id)
 				}
 
 				this.subscribe(PubSub.showStyleVariants, {
