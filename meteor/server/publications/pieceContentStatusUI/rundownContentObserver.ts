@@ -49,7 +49,6 @@ export class RundownContentObserver {
 		const rundownGroup = waitForPromise(
 			ReactiveMongoObserverGroup(async () => {
 				// We can use the `cache.Rundowns` here, as this is restarted every time that collection changes
-
 				const showStyleBaseIds = cache.Rundowns.find({})
 					.fetch()
 					.map((rd) => rd.showStyleBaseId)

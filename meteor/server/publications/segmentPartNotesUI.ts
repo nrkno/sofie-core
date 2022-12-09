@@ -254,15 +254,15 @@ async function manipulateUISegmentPartNotesPublicationData(
 	// We know that `collection` does diffing when 'commiting' all of the changes we have made
 	// meaning that for anything we will call `replace()` on, we can `remove()` it first for no extra cost
 
+	const updateContext = compileUpdateNotesData(state.rundownsCache, state.partsCache, state.deletePartInstancesCache)
+
 	const updateAll = !updateProps
 	if (updateAll) {
 		// Remove all the notes
 		collection.remove(null)
 
-		const updateData = compileUpdateNotesData(state.rundownsCache, state.partsCache, state.deletePartInstancesCache)
-
 		for (const segment of state.segmentCache.values()) {
-			updateNotesForSegment(args, updateData, collection, segment)
+			updateNotesForSegment(args, updateContext, collection, segment)
 		}
 	} else {
 		const regenerateForSegmentIds = new Set([
@@ -287,14 +287,8 @@ async function manipulateUISegmentPartNotesPublicationData(
 		for (const segmentId of regenerateForSegmentIds) {
 			const segment = state.segmentCache.get(segmentId)
 
-			const updateData = compileUpdateNotesData(
-				state.rundownsCache,
-				state.partsCache,
-				state.deletePartInstancesCache
-			)
-
 			if (segment) {
-				updateNotesForSegment(args, updateData, collection, segment)
+				updateNotesForSegment(args, updateContext, collection, segment)
 			} else {
 				// Notes have already been removed
 			}

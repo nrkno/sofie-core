@@ -36,7 +36,7 @@ import { NoSecurityReadAccess } from '../../security/noSecurity'
 import { RundownPlaylistReadAccess } from '../../security/rundownPlaylist'
 import { ContentCache, PieceFields } from './reactiveContentCache'
 import { RundownContentObserver } from './rundownContentObserver'
-import { RundownsObserver } from './rundownsObserver'
+import { RundownsObserver } from '../lib/rundownsObserver'
 
 interface UIPieceContentStatusesArgs {
 	readonly rundownPlaylistId: RundownPlaylistId
