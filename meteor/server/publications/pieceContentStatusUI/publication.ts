@@ -195,10 +195,10 @@ async function manipulateUIPieceContentStatusesPublicationData(
 	// Prepare data for publication:
 
 	// Ensure the cached studio/showstyle id are updated
-	const invalidateAll =
+	const invalidateAllPieces =
 		!updateProps || updateProps.newCache || updateProps.invalidateStudio || updateProps.invalidateAll
 
-	if (invalidateAll) {
+	if (invalidateAllPieces) {
 		// Everything is invalid, reset everything
 		delete state.pieceDependencies
 		collection.remove(null)
@@ -231,7 +231,7 @@ async function manipulateUIPieceContentStatusesPublicationData(
 	)
 
 	let regeneratePieceIds: Set<PieceId>
-	if (!state.pieceDependencies || invalidateAll) {
+	if (!state.pieceDependencies || invalidateAllPieces) {
 		state.pieceDependencies = new Map()
 
 		// force every piece to be regenerated
@@ -282,6 +282,10 @@ function addPiecesWithDependenciesChangesToChangedSet(
 	}
 }
 
+/**
+ * To avoid regenerating every piece whenever its segment or part changes, we can selectively apply the relevant updates.
+ * Regenerating a piece is costly as it requires querying the database
+ */
 function updatePartAndSegmentInfoForExistingDocs(
 	contentCache: ReadonlyDeep<ContentCache>,
 	collection: CustomPublishCollection<UIPieceContentStatus>,
@@ -316,6 +320,10 @@ function updatePartAndSegmentInfoForExistingDocs(
 	})
 }
 
+/**
+ * Regenerating the status for the provided PieceIds
+ * Note: This will do many calls to the database
+ */
 function regenerateForPieceIds(
 	contentCache: ReadonlyDeep<ContentCache>,
 	uiStudio: ReadonlyDeep<StudioMini>,
@@ -326,7 +334,7 @@ function regenerateForPieceIds(
 	const deletedPieceIds = new Set<PieceId>()
 
 	// Apply the updates to the Pieces
-	// TODO - limit concurrency. This causes updating this publication to be slower, be will help ensure that other tasks have a chance to execute in parallel.
+	// Future: this could be done with some limited concurrency. It will need to balance performance of the updates and not interfering with other tasks
 	for (const pieceId of regeneratePieceIds) {
 		pieceDependenciesState.delete(pieceId)
 
