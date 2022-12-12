@@ -139,7 +139,7 @@ export class RundownContentObserver {
 
 		if (!equivalentArrays(newShowStyleBaseIds, this.#showStyleBaseIds)) {
 			// trigger the rundown group to restart
-			waitForPromise(this.#showStyleBaseIdObserver.restart())
+			this.#showStyleBaseIdObserver.restart()
 		}
 	}, REACTIVITY_DEBOUNCE)
 
