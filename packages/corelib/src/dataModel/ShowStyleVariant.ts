@@ -9,6 +9,7 @@ export interface DBShowStyleVariant {
 
 	/** Id of the blueprint config preset */
 	blueprintConfigPresetId?: string
+	/** Whether blueprintConfigPresetId is invalid, and does not match a currently exposed preset from the Blueprint */
 	blueprintConfigPresetIdUnlinked?: boolean
 
 	name: string

@@ -16,7 +16,7 @@ const ObserveChangeBufferTimeout = 100
 
 /**
  * Whenever the Studio changes the blueprint or config preset, ensure the config is synced across
- * We want it synced across, so that if the config-preset is removed, then
+ * We want it synced across, so that if the config-preset is removed, then there is some config that can be used
  */
 Meteor.startup(() => {
 	const doUpdate = async (doc: Studio): Promise<void> => {
@@ -62,7 +62,7 @@ Meteor.startup(() => {
 
 /**
  * Whenever the ShowStyleBase changes the blueprint or config preset, ensure the config is synced across
- * We want it synced across, so that if the config-preset is removed, then
+ * We want it synced across, so that if the config-preset is removed, then there is some config that can be used
  */
 Meteor.startup(() => {
 	const doUpdate = async (doc: ShowStyleBase): Promise<void> => {
@@ -160,7 +160,7 @@ Meteor.startup(() => {
 
 /**
  * Whenever the ShowStyleVariant changes the config preset, ensure the config is synced across
- * We want it synced across, so that if the config-preset is removed, then
+ * We want it synced across, so that if the config-preset is removed, then there is some config that can be used
  */
 Meteor.startup(() => {
 	const doUpdate = async (doc: ShowStyleVariant): Promise<void> => {
