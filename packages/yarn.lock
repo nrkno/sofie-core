@@ -3092,7 +3092,7 @@
     webpack-sources "^3.2.2"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.48.0-in-development"
+  version "1.49.0-in-development"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
     timeline-state-resolver-types "8.0.0-nightly-release48-20221201-105636-907ae8e9a.0"
@@ -3120,7 +3120,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.48.0-in-development"
+  version "1.49.0-in-development"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     "@sofie-automation/shared-lib" "link:shared-lib"
@@ -3136,7 +3136,7 @@
     underscore "^1.13.4"
 
 "@sofie-automation/shared-lib@link:shared-lib":
-  version "1.48.0-in-development"
+  version "1.49.0-in-development"
   dependencies:
     tslib "^2.4.0"
     type-fest "^3.1.0"
