@@ -29,7 +29,6 @@ import {
 	setUpCollectionOptimizedObserver,
 	TriggerUpdate,
 } from '../../lib/customPublication'
-import { LiveQueryHandle } from '../../lib/customPublication/optimizedObserverBase'
 import { logger } from '../../logging'
 import { resolveCredentials } from '../../security/lib/credentials'
 import { NoSecurityReadAccess } from '../../security/noSecurity'
@@ -37,6 +36,7 @@ import { RundownPlaylistReadAccess } from '../../security/rundownPlaylist'
 import { ContentCache, PieceFields } from './reactiveContentCache'
 import { RundownContentObserver } from './rundownContentObserver'
 import { RundownsObserver } from '../lib/rundownsObserver'
+import { LiveQueryHandle } from '../../lib/lib'
 
 interface UIPieceContentStatusesArgs {
 	readonly rundownPlaylistId: RundownPlaylistId

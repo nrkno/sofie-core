@@ -5,6 +5,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { clone, createManualPromise, lazyIgnore, ProtectedString, stringifyError } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection'
+import { LiveQueryHandle } from '../lib'
 import { CustomPublish, CustomPublishChanges } from './publish'
 
 interface OptimizedObserverWrapper<TData extends { _id: ProtectedString<any> }, TArgs, TContext> {
@@ -29,10 +30,6 @@ interface OptimizedObserverWorker<TData extends { _id: ProtectedString<any> }, T
 
 /** Optimized observers */
 const optimizedObservers: Record<string, OptimizedObserverWrapper<any, unknown, unknown>> = {}
-
-export interface LiveQueryHandle {
-	stop(): void | Promise<void>
-}
 
 export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProps: Partial<UpdateProps>) => void
 
@@ -86,7 +83,7 @@ export async function setUpOptimizedObserverInner<
 			logger.debug(`Remove subscriber from ${identifier} ${subCount} are left`)
 
 			// clean up if empty:
-			if (!subCount && thisObserverWrapper.subscribersChanged) {
+			if (subCount === 0 && thisObserverWrapper.subscribersChanged) {
 				thisObserverWrapper.subscribersChanged()
 			}
 		}

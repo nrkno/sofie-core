@@ -1,15 +1,28 @@
+import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
-import { UIPieceContentStatus } from '../../../lib/api/rundownNotifications'
+import { UIPieceContentStatus, UISegmentPartNote } from '../../../lib/api/rundownNotifications'
 import { PieceStatusCode } from '../../../lib/collections/Pieces'
 import { getIgnorePieceContentStatus } from '../../lib/localStorage'
-import { UIPieceContentStatuses } from '../Collections'
+import { UIPieceContentStatuses, UISegmentPartNotes } from '../Collections'
 import { SegmentNoteCounts, SegmentUi } from './withResolvedSegment'
 
 export function getReactivePieceNoteCountsForSegment(segment: SegmentUi): SegmentNoteCounts {
-	const counts: SegmentNoteCounts = {
+	const segmentNoteCounts: SegmentNoteCounts = {
 		criticial: 0,
 		warning: 0,
+	}
+
+	const rawNotes = UISegmentPartNotes.find({ segmentId: segment._id }, { fields: { note: 1 } }).fetch() as Pick<
+		UISegmentPartNote,
+		'note'
+	>[]
+	for (const note of rawNotes) {
+		if (note.note.type === NoteSeverity.ERROR) {
+			segmentNoteCounts.criticial++
+		} else if (note.note.type === NoteSeverity.WARNING) {
+			segmentNoteCounts.warning++
+		}
 	}
 
 	const mediaObjectStatuses = UIPieceContentStatuses.find(
@@ -34,12 +47,12 @@ export function getReactivePieceNoteCountsForSegment(segment: SegmentUi): Segmen
 					// Ignore
 					break
 				case PieceStatusCode.SOURCE_NOT_SET:
-					counts.criticial++
+					segmentNoteCounts.criticial++
 					break
 				case PieceStatusCode.SOURCE_HAS_ISSUES:
 				case PieceStatusCode.SOURCE_BROKEN:
 				case PieceStatusCode.SOURCE_MISSING:
-					counts.warning++
+					segmentNoteCounts.warning++
 					break
 				default:
 					assertNever(obj.status.status)
@@ -48,5 +61,5 @@ export function getReactivePieceNoteCountsForSegment(segment: SegmentUi): Segmen
 		}
 	}
 
-	return counts
+	return segmentNoteCounts
 }

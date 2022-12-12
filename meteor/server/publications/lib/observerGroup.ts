@@ -1,7 +1,7 @@
 import { ManualPromise, createManualPromise } from '@sofie-automation/corelib/dist/lib'
 import { Meteor } from 'meteor/meteor'
 import { deferAsync } from '../../../lib/lib'
-import { LiveQueryHandle } from './optimizedObserverBase'
+import { LiveQueryHandle } from '../../lib/lib'
 
 export interface ReactiveMongoObserverGroupHandle extends LiveQueryHandle {
 	/**

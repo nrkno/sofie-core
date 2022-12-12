@@ -1,9 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { clone, ProtectedString } from '../../../lib/lib'
-import { TriggerUpdate, setUpOptimizedObserverInner, LiveQueryHandle } from './optimizedObserverBase'
+import { TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase'
 import { CustomPublish, CustomPublishChanges } from './publish'
 import { diffObject } from './lib'
+import { LiveQueryHandle } from '../lib'
 
 /**
  * This is an optimization to enable multiple listeners that observes (and manipulates) the same data, to only use one observer and manipulator,

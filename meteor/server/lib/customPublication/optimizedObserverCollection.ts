@@ -1,7 +1,8 @@
 import { ReadonlyDeep } from 'type-fest'
 import { ProtectedString } from '../../../lib/lib'
+import { LiveQueryHandle } from '../lib'
 import { CustomPublishCollection } from './customPublishCollection'
-import { TriggerUpdate, setUpOptimizedObserverInner, LiveQueryHandle } from './optimizedObserverBase'
+import { TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase'
 import { CustomPublish } from './publish'
 
 /**

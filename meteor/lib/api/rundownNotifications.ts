@@ -1,25 +1,7 @@
 import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { PieceStatusCode } from '../collections/Pieces'
 import { PartId, PieceId, RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString } from '../lib'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PieceContentStatusObj } from '../mediaObjects'
-
-/**
- * @deprecated
- */
-export interface IMediaObjectIssue {
-	segmentRank: number
-	partRank: number
-	partId: PartId
-	rundownId: RundownId
-	segmentId: SegmentId
-	pieceId: PieceId
-	name: string
-	segmentName: string
-	status: PieceStatusCode
-	messages: ITranslatableMessage[]
-}
 
 export type UISegmentPartNoteId = ProtectedString<'UISegmentPartNote'>
 export interface UISegmentPartNote {

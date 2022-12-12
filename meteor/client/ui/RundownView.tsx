@@ -1547,6 +1547,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				_id: playlistId,
 			})
 			this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
+			this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 			this.subscribe(PubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1563,8 +1564,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				})
 				// TODO: This is a hack, which should be replaced by something more clever, like in withMediaObjectStatus()
 				this.subscribe(PubSub.packageContainerPackageStatuses, playlist.studioId)
-
-				this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 			})
 
 			this.autorun(() => {

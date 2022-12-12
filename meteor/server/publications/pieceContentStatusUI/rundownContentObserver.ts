@@ -17,9 +17,9 @@ import {
 import { Pieces } from '../../../lib/collections/Pieces'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { ReactiveMongoObserverGroup } from '../../lib/customPublication'
 import { waitForPromise } from '../../../lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ReactiveMongoObserverGroup } from '../lib/observerGroup'
 
 const REACTIVITY_DEBOUNCE = 20
 
