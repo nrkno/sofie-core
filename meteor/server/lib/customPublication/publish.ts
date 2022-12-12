@@ -5,9 +5,9 @@ import { ProtectedString, protectString, protectStringObject, unprotectString, w
 import { SubscriptionContext } from '../../publications/lib'
 
 export interface CustomPublishChanges<T extends { _id: ProtectedString<any> }> {
-	added: Map<T['_id'], T>
-	changed: Map<T['_id'], Pick<T, '_id'> & Partial<T>>
-	removed: Set<T['_id']>
+	added: Array<T>
+	changed: Array<Pick<T, '_id'> & Partial<T>>
+	removed: T['_id'][]
 }
 
 export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
@@ -33,13 +33,6 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	 */
 	onStop(callback: () => void) {
 		this.#onStop = callback
-	}
-
-	/**
-	 * Terminate the publication with an error
-	 */
-	error(error: Meteor.Error): void {
-		this._meteorSubscription.error(error)
 	}
 
 	/**

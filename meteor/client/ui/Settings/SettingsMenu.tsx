@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React, { useMemo } from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { unprotectString } from '../../../lib/lib'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -24,6 +24,7 @@ import { Settings as MeteorSettings } from '../../../lib/Settings'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { TFunction, useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 interface ISettingsMenuProps {
 	superAdmin?: boolean
@@ -344,6 +345,19 @@ function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
 		[showStyleBase._id]
 	)
 
+	const showStyleHasError = useMemo(() => {
+		if (!showStyleBase.sourceLayersWithOverrides) return true
+		if (!showStyleBase.outputLayersWithOverrides) return true
+
+		const resolvedSourceLayers = applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj
+		const resolvedOutputLayers = applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj
+
+		if (!Object.keys(resolvedSourceLayers).length) return true
+		if (!Object.keys(resolvedOutputLayers).length) return true
+		if (!Object.values(resolvedOutputLayers).find((l) => l && l.isPGM)) return true
+		return false
+	}, [showStyleBase.outputLayersWithOverrides, showStyleBase.sourceLayersWithOverrides])
+
 	return (
 		<SettingsCollapsibleGroup
 			basePath={`/settings/showStyleBase/${showStyleBase._id}`}
@@ -353,22 +367,13 @@ function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
 			<button className="action-btn right" onClick={onDeleteShowStyleBase}>
 				<FontAwesomeIcon icon={faTrash} />
 			</button>
-			{showStyleHasError(showStyleBase) ? (
+			{showStyleHasError ? (
 				<button className="action-btn right error-notice">
 					<FontAwesomeIcon icon={faExclamationTriangle} />
 				</button>
 			) : null}
 		</SettingsCollapsibleGroup>
 	)
-}
-
-function showStyleHasError(showstyle: ShowStyleBase): boolean {
-	if (!showstyle.sourceLayersWithOverrides) return true
-	if (!showstyle.outputLayersWithOverrides) return true
-	if (!Object.keys(showstyle.sourceLayersWithOverrides.defaults).length) return true
-	if (!Object.keys(showstyle.outputLayersWithOverrides.defaults).length) return true
-	if (!Object.values(showstyle.outputLayersWithOverrides.defaults).find((l) => l && l.isPGM)) return true
-	return false
 }
 
 interface SettingsMenuBlueprintProps {

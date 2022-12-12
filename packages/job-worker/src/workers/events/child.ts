@@ -68,17 +68,18 @@ export class EventsWorkerChild {
 		// Load some 'static' data from the db
 		const dataCache = await loadWorkerDataCache(collections, this.#studioId)
 
+		{
+			const watcherCollections = getMongoCollections(mongoClient, dbName, true)
+			const dataCache = await WorkerDataCacheWrapperImpl.create(watcherCollections, this.#studioId)
+			this.#externalMessageQueue = await ExternalMessageQueueRunner.create(watcherCollections, dataCache)
+		}
+
+		// Now that everything is loaded, set #staticData to mark it as initialised:
 		this.#staticData = {
 			mongoClient,
 			collections,
 
 			dataCache,
-		}
-
-		{
-			const watcherCollections = getMongoCollections(mongoClient, dbName, true)
-			const dataCache = await WorkerDataCacheWrapperImpl.create(watcherCollections, this.#studioId)
-			this.#externalMessageQueue = await ExternalMessageQueueRunner.create(watcherCollections, dataCache)
 		}
 
 		logger.info(`Events thread for ${this.#studioId} initialised`)

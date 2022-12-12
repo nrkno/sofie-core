@@ -1,9 +1,8 @@
 import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import classNames from 'classnames'
-import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { PartUi, PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
+import { PartUi, PieceUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { IContextMenuContext } from '../RundownView'
 import { useCombinedRefs } from '../../lib/lib'
 import { literal } from '@sofie-automation/corelib/dist/lib'
@@ -34,7 +33,7 @@ interface IProps {
 	playlist: RundownPlaylist
 	studio: UIStudio
 	parts: Array<PartUi>
-	segmentNotes: Array<SegmentNote>
+	segmentNoteCounts: SegmentNoteCounts
 
 	fixedSegmentDuration: boolean
 	showCountdownToSegment: boolean
@@ -226,7 +225,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				segment={props.segment}
 				playlist={props.playlist}
 				studio={props.studio}
-				segmentNotes={props.segmentNotes}
+				segmentNoteCounts={props.segmentNoteCounts}
 				highlight={highlight}
 				isLiveSegment={props.isLiveSegment}
 				isNextSegment={props.isNextSegment}

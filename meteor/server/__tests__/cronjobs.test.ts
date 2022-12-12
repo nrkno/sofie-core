@@ -465,7 +465,7 @@ describe('cronjobs', () => {
 			expect(pendingCommands).toHaveLength(1)
 			expect(pendingCommands[0]).toMatchObject({
 				deviceId: mockCasparCg,
-				functionName: 'restartCasparCG',
+				actionId: 'restartServer',
 			})
 
 			// Emulate that the restart was successful:

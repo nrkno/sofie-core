@@ -14,9 +14,9 @@ import { StudioReadAccess } from '../security/studio'
 
 type DeviceTriggerPreviewId = ProtectedString<'deviceTriggerPreviewId'>
 
-const lastTriggers: Record<string, { triggers: DeviceTriggerPreview[]; updated?: (() => void) | undefined }> = {}
+const lastTriggers: Record<string, { triggers: UIDeviceTriggerPreview[]; updated?: (() => void) | undefined }> = {}
 
-export interface DeviceTriggerPreview {
+export interface UIDeviceTriggerPreview {
 	_id: DeviceTriggerPreviewId
 	peripheralDeviceId: PeripheralDeviceId
 	triggerDeviceId: string
@@ -27,7 +27,7 @@ export interface DeviceTriggerPreview {
 
 meteorCustomPublish(
 	PubSub.deviceTriggersPreview,
-	CustomCollectionName.DeviceTriggerPreviews,
+	CustomCollectionName.UIDeviceTriggerPreviews,
 	async function (pub, studioId: StudioId, token) {
 		check(studioId, String)
 
@@ -108,13 +108,18 @@ async function setupDeviceTriggersPreviewsObservers(
 }
 
 async function createObserverForDeviceTriggersPreviewsPublication(
-	pub: CustomPublish<DeviceTriggerPreview>,
+	pub: CustomPublish<UIDeviceTriggerPreview>,
 	observerId: PubSub,
 	studioId: StudioId
 ) {
 	// console.log(JSON.stringify(lastTriggers))
 
-	return setUpOptimizedObserverArray<DeviceTriggerPreview, DeviceTriggersPreviewArgs, DeviceTriggersUpdateProps, {}>(
+	return setUpOptimizedObserverArray<
+		UIDeviceTriggerPreview,
+		DeviceTriggersPreviewArgs,
+		DeviceTriggersUpdateProps,
+		{}
+	>(
 		`pub_${observerId}_${studioId}`,
 		{ studioId },
 		setupDeviceTriggersPreviewsObservers,
@@ -128,8 +133,8 @@ async function manipulateMountedTriggersPublicationData(
 	_args: ReadonlyDeep<DeviceTriggersPreviewArgs>,
 	_state: Partial<{}>,
 	newProps: ReadonlyDeep<Partial<DeviceTriggersUpdateProps> | undefined>
-): Promise<DeviceTriggerPreview[]> {
-	const triggers: DeviceTriggerPreview[] = Array.from(newProps?.triggers ?? [])
+): Promise<UIDeviceTriggerPreview[]> {
+	const triggers: UIDeviceTriggerPreview[] = Array.from(newProps?.triggers ?? [])
 	return triggers
 }
 
@@ -138,5 +143,5 @@ interface DeviceTriggersPreviewArgs {
 }
 
 interface DeviceTriggersUpdateProps {
-	triggers: readonly DeviceTriggerPreview[]
+	triggers: readonly UIDeviceTriggerPreview[]
 }

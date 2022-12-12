@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { CustomPublish, CustomPublishChanges, meteorCustomPublish } from '../lib/customPublication'
+import { CustomPublish, meteorCustomPublish } from '../lib/customPublication'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
@@ -63,8 +63,14 @@ meteorCustomPublish(
 	}
 )
 
+interface CustomOptimizedPublishChanges<DBObj extends { _id: ProtectedString<any> }> {
+	added: Map<DBObj['_id'], DBObj>
+	changed: Map<DBObj['_id'], Pick<DBObj, '_id'> & Partial<DBObj>>
+	removed: Set<DBObj['_id']>
+}
+
 function cursorCustomPublish<T extends { _id: ProtectedString<any> }>(pub: CustomPublish<T>, cursor: Mongo.Cursor<T>) {
-	function createEmptyBuffer(): CustomPublishChanges<T> {
+	function createEmptyBuffer(): CustomOptimizedPublishChanges<T> {
 		return {
 			added: new Map(),
 			changed: new Map(),
@@ -72,14 +78,18 @@ function cursorCustomPublish<T extends { _id: ProtectedString<any> }>(pub: Custo
 		}
 	}
 
-	let buffer: CustomPublishChanges<T> = createEmptyBuffer()
+	let buffer: CustomOptimizedPublishChanges<T> = createEmptyBuffer()
 
 	const bufferChanged = _.debounce(function bufferChanged() {
 		const bufferToSend = buffer
 		buffer = createEmptyBuffer()
 		try {
 			// this can now be async
-			pub.changed(bufferToSend)
+			pub.changed({
+				added: Array.from(bufferToSend.added.values()),
+				changed: Array.from(bufferToSend.changed.values()),
+				removed: Array.from(bufferToSend.removed.values()),
+			})
 		} catch (e) {
 			logger.error(`Error while updating publication: ${e}`, e as any)
 		}

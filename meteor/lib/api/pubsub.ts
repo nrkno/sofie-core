@@ -53,10 +53,10 @@ import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
-import { UISegmentPartNote } from './rundownNotifications'
+import { UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
-import { DeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
+import { UIDeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
 import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from './triggers/MountedTriggers'
 
 /**
@@ -133,6 +133,7 @@ export enum PubSub {
 	mountedTriggersForDevicePreview = 'mountedTriggersForDevicePreview',
 	deviceTriggersPreview = 'deviceTriggersPreview',
 	uiSegmentPartNotes = 'uiSegmentPartNotes',
+	uiPieceContentStatuses = 'uiPieceContentStatuses',
 }
 
 /**
@@ -248,8 +249,9 @@ export interface PubSubTypes {
 		token?: string
 	) => DeviceTriggerMountedAction
 	[PubSub.mountedTriggersForDevicePreview]: (deviceId: PeripheralDeviceId, token?: string) => PreviewWrappedAdLib
-	[PubSub.deviceTriggersPreview]: (studioId: StudioId, token?: string) => DeviceTriggerPreview
+	[PubSub.deviceTriggersPreview]: (studioId: StudioId, token?: string) => UIDeviceTriggerPreview
 	[PubSub.uiSegmentPartNotes]: (playlistId: RundownPlaylistId | null) => UISegmentPartNote
+	[PubSub.uiPieceContentStatuses]: (rundownPlaylistId: RundownPlaylistId | null) => UIPieceContentStatus
 }
 
 /**
@@ -264,8 +266,9 @@ export enum CustomCollectionName {
 	UITriggeredActions = 'uiTriggeredActions',
 	MountedTriggers = 'mountedTriggers',
 	MountedTriggersPreviews = 'mountedTriggersPreviews',
-	DeviceTriggerPreviews = 'deviceTriggerPreviews',
+	UIDeviceTriggerPreviews = 'deviceTriggerPreviews',
 	UISegmentPartNotes = 'uiSegmentPartNotes',
+	UIPieceContentStatuses = 'uiPieceContentStatuses',
 }
 
 /**
@@ -279,10 +282,11 @@ export type CustomCollectionType = {
 	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
 	[CustomCollectionName.UIStudio]: UIStudio
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
-	[CustomCollectionName.DeviceTriggerPreviews]: DeviceTriggerPreview
+	[CustomCollectionName.UIDeviceTriggerPreviews]: UIDeviceTriggerPreview
 	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
 	[CustomCollectionName.MountedTriggers]: DeviceTriggerMountedAction
 	[CustomCollectionName.MountedTriggersPreviews]: PreviewWrappedAdLib
+	[CustomCollectionName.UIPieceContentStatuses]: UIPieceContentStatus
 }
 
 /**

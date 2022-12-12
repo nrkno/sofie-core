@@ -5,7 +5,7 @@ import React, { useMemo } from 'react'
 import { PubSub } from '../../../../../../lib/api/pubsub'
 import { Studios } from '../../../../../../lib/collections/Studios'
 import { getCurrentTime } from '../../../../../../lib/lib'
-import { DeviceTriggerPreview } from '../../../../../../server/publications/deviceTriggersPreview'
+import { UIDeviceTriggerPreview } from '../../../../../../server/publications/deviceTriggersPreview'
 import { useSubscription, useTracker } from '../../../../../lib/ReactMeteorData/ReactMeteorData'
 import { DeviceTriggersPreviews } from '../../../../Collections'
 import { DeviceTrigger } from './DeviceTrigger'
@@ -13,12 +13,13 @@ import { DeviceTrigger } from './DeviceTrigger'
 interface IProps {
 	trigger: IBlueprintDeviceTrigger
 	modified?: boolean
+	readonly?: boolean
 	onChange: (newVal: IBlueprintDeviceTrigger) => void
 }
 
-export const DeviceEditor = function DeviceEditor({ trigger, modified, onChange }: IProps) {
+export const DeviceEditor = function DeviceEditor({ trigger, modified, readonly, onChange }: IProps) {
 	const opened = useMemo(() => getCurrentTime(), [])
-	const deviceTriggersPreview = useTracker<DeviceTriggerPreview[], DeviceTriggerPreview[]>(
+	const deviceTriggersPreview = useTracker<UIDeviceTriggerPreview[], UIDeviceTriggerPreview[]>(
 		() =>
 			DeviceTriggersPreviews.find({
 				timestamp: {
@@ -48,6 +49,7 @@ export const DeviceEditor = function DeviceEditor({ trigger, modified, onChange 
 						deviceId: e.target.value,
 					})
 				}
+				disabled={readonly}
 			/>
 			<input
 				type="text"
@@ -61,6 +63,7 @@ export const DeviceEditor = function DeviceEditor({ trigger, modified, onChange 
 						triggerId: e.target.value,
 					})
 				}
+				disabled={readonly}
 			/>
 			<ul className="triggered-action-entry__trigger-editor__triggers-preview">
 				{deviceTriggersPreview.map((previewedTrigger) => (

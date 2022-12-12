@@ -11,7 +11,7 @@ const commonConfig = {
 				plugins: [
 					'@babel/plugin-transform-modules-commonjs',
 					// Fibers and await do not work well together. This transpiles await calls to something that works
-					'meteor-babel/plugins/async-await.js',
+					'./__mocks__/plugins/meteor-async-await.js',
 				],
 			},
 			diagnostics: {

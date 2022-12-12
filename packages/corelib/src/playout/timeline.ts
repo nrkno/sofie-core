@@ -52,6 +52,6 @@ export function transformTimeline(timeline: Array<TimelineObjGeneric>): Array<Ti
 }
 
 // TSR: ---------
-export interface TimelineContentObject extends TSR.Timeline.TimelineObject {
+export interface TimelineContentObject extends TSR.Timeline.TimelineObject<any> {
 	inGroup?: string
 }

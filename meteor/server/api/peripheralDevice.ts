@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, stringifyObjects, literal } from '../../lib/lib'
+import { getCurrentTime, protectString, stringifyObjects, literal, unprotectString } from '../../lib/lib'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
@@ -65,6 +65,8 @@ import {
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 import { insertTriggerToPreview } from '../publications/deviceTriggersPreview'
 import { receiveTrigger } from './deviceTriggers/observer'
+import { upsertBundles, generateTranslationBundleOriginId } from './translationsBundles'
+import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -117,7 +119,12 @@ export namespace ServerPeripheralDeviceAPI {
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
 
-					configManifest: options.configManifest,
+					configManifest: options.configManifest
+						? {
+								...options.configManifest,
+								translations: undefined, // unset the translations
+						  }
+						: undefined,
 				},
 				$unset:
 					newVersionsStr !== oldVersionsStr
@@ -152,12 +159,21 @@ export namespace ServerPeripheralDeviceAPI {
 				versions: options.versions,
 				// settings: {},
 
-				configManifest:
-					options.configManifest ??
-					literal<DeviceConfigManifest>({
-						deviceConfig: [],
-					}),
+				configManifest: options.configManifest
+					? {
+							...options.configManifest,
+							translations: undefined,
+					  }
+					: literal<DeviceConfigManifest>({
+							deviceConfig: [],
+					  }),
 			})
+		}
+		if (options.configManifest?.translations) {
+			await upsertBundles(
+				options.configManifest.translations,
+				generateTranslationBundleOriginId(deviceId, 'peripheralDevice')
+			)
 		}
 		return deviceId
 	}
@@ -677,6 +693,13 @@ async function functionReply(
 	result: any
 ): Promise<void> {
 	const device = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+
+	if (result && typeof result === 'object' && 'response' in result && isTranslatableMessage(result.response)) {
+		result.response.namespaces = [
+			unprotectString(generateTranslationBundleOriginId(deviceId, 'peripheralDevice')),
+			...(result.response.namespaces || []),
+		]
+	}
 
 	// logger.debug('functionReply', err, result)
 	await PeripheralDeviceCommands.updateAsync(

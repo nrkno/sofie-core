@@ -52,7 +52,7 @@ export function fetchFrom(input: RequestInfo, init?: RequestInit) {
 
 export function ensureHasTrailingSlash(input: string | null): string | undefined {
 	if (input) {
-		return input.substr(-1) === '/' ? input : input + '/'
+		return input.endsWith('/') ? input : input + '/'
 	} else {
 		return undefined
 	}

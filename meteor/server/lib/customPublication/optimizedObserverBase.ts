@@ -22,11 +22,15 @@ interface OptimizedObserverWorker<TData extends { _id: ProtectedString<any> }, T
 	args: ReadonlyDeep<TArgs>
 	context: Partial<TContext>
 	lastData: TData[]
-	stopObservers: () => void
+	stopObservers: () => Promise<void>
 }
 
 /** Optimized observers */
 const optimizedObservers: Record<string, OptimizedObserverWrapper<any, unknown, unknown>> = {}
+
+export interface LiveQueryHandle {
+	stop(): void | Promise<void>
+}
 
 export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProps: Partial<UpdateProps>) => void
 
@@ -54,7 +58,7 @@ export async function setUpOptimizedObserverInner<
 		args: ReadonlyDeep<Args>,
 		/** Trigger an update by mutating the context of manipulateData */
 		triggerUpdate: TriggerUpdate<UpdateProps>
-	) => Promise<Meteor.LiveQueryHandle[]>,
+	) => Promise<LiveQueryHandle[]>,
 	manipulateData: (
 		args: ReadonlyDeep<Args>,
 		state: Partial<State>,
@@ -175,7 +179,7 @@ async function createOptimizedObserverWorker<
 		args: ReadonlyDeep<Args>,
 		/** Trigger an update by mutating the context of manipulateData */
 		triggerUpdate: TriggerUpdate<UpdateProps>
-	) => Promise<Meteor.LiveQueryHandle[]>,
+	) => Promise<LiveQueryHandle[]>,
 	manipulateData: (
 		args: ReadonlyDeep<Args>,
 		state: Partial<State>,
@@ -217,7 +221,7 @@ async function createOptimizedObserverWorker<
 							!thisObserverWrapper.newSubscribers.length
 						) {
 							delete optimizedObservers[identifier]
-							thisObserverWorker.stopObservers()
+							await thisObserverWorker.stopObservers()
 							return
 						}
 
@@ -293,8 +297,8 @@ async function createOptimizedObserverWorker<
 			args: args,
 			context: {},
 			lastData: [],
-			stopObservers: () => {
-				observers.forEach((observer) => observer.stop())
+			stopObservers: async () => {
+				await Promise.allSettled(observers.map((observer) => observer.stop()))
 			},
 		}
 
@@ -306,7 +310,7 @@ async function createOptimizedObserverWorker<
 		if (newDataReceivers.length === 0) {
 			// There is no longer any subscriber to this
 			delete optimizedObservers[identifier]
-			thisObserverWorker.stopObservers()
+			await thisObserverWorker.stopObservers()
 
 			throw new Meteor.Error(500, 'All subscribers disappeared!')
 		}
@@ -332,7 +336,7 @@ async function createOptimizedObserverWorker<
 		// Observer is now ready for all to use
 		return thisObserverWorker
 	} catch (e: any) {
-		if (thisObserverWorker) thisObserverWorker.stopObservers()
+		if (thisObserverWorker) await thisObserverWorker.stopObservers()
 
 		throw e
 	}

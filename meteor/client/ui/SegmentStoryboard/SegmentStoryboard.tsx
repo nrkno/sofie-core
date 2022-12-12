@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IContextMenuContext } from '../RundownView'
-import { PartUi, PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
+import { PartUi, PieceUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
@@ -29,7 +29,6 @@ import { SegmentScrollbar } from './SegmentScrollbar'
 import { OptionalVelocityComponent } from '../../lib/utilComponents'
 import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
-import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 import { UIStudio } from '../../../lib/api/studios'
@@ -43,7 +42,7 @@ interface IProps {
 	playlist: RundownPlaylist
 	studio: UIStudio
 	parts: Array<PartUi>
-	segmentNotes: Array<SegmentNote>
+	segmentNoteCounts: SegmentNoteCounts
 	// timeScale: number
 	// maxTimeScale: number
 	// onRecalculateMaxTimeScale: () => Promise<number>
@@ -93,7 +92,6 @@ export const SegmentStoryboard = React.memo(
 		const [touched, setTouched] = useState<{ clientX: number; clientY: number } | null>(null)
 		const [animateScrollLeft, setAnimateScrollLeft] = useState(true)
 		const { t } = useTranslation()
-		const notes: Array<SegmentNote> = props.segmentNotes
 		const [squishedHover, setSquishedHover] = useState<null | number>(null)
 		const [highlight, setHighlight] = useState(false)
 		const squishedHoverTimeout = useRef<number | null>(null)
@@ -120,14 +118,8 @@ export const SegmentStoryboard = React.memo(
 			}
 		}
 
-		const criticalNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteSeverity.ERROR) return ++prev
-			return prev
-		}, 0)
-		const warningNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteSeverity.WARNING) return ++prev
-			return prev
-		}, 0)
+		const criticalNotes = props.segmentNoteCounts.criticial
+		const warningNotes = props.segmentNoteCounts.warning
 
 		const [useTimeOfDayCountdowns, setUseTimeOfDayCountdowns] = useState(
 			UIStateStorage.getItemBoolean(

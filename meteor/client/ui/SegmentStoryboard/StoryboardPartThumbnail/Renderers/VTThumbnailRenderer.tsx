@@ -51,7 +51,7 @@ export function VTThumbnailRenderer({
 				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 				itemElement={null}
 				contentMetaData={pieceInstance.contentMetaData || null}
-				noticeMessage={pieceInstance.message || null}
+				noticeMessages={pieceInstance.messages || null}
 				noticeLevel={noticeLevel}
 				mediaPreviewUrl={mediaPreviewUrl}
 				contentPackageInfos={pieceInstance.contentPackageInfos}

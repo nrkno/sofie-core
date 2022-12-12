@@ -39,7 +39,7 @@ export function VTRenderer({
 				typeClass={typeClass}
 				itemElement={null}
 				contentMetaData={pieceInstance.contentMetaData || null}
-				noticeMessage={pieceInstance.message || null}
+				noticeMessages={pieceInstance.messages || null}
 				noticeLevel={status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null}
 				mediaPreviewUrl={mediaPreviewUrl}
 				contentPackageInfos={pieceInstance.contentPackageInfos}

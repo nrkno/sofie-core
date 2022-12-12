@@ -725,7 +725,7 @@ export class CoreHandler {
 	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreMosDeviceHandler): void {
 		if (cmd) {
 			if (this._executedFunctions[unprotectString(cmd._id)]) return // prevent it from running multiple times
-			this.logger.debug(cmd.functionName, cmd.args)
+			this.logger.debug(cmd.functionName || cmd.actionId || '', cmd.args)
 			this._executedFunctions[unprotectString(cmd._id)] = true
 			// console.log('executeFunction', cmd)
 			const cb = (err: any, res?: any) => {

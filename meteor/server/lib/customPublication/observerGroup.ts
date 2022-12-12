@@ -1,33 +1,32 @@
 import { ManualPromise, createManualPromise } from '@sofie-automation/corelib/dist/lib'
 import { Meteor } from 'meteor/meteor'
-import { waitForPromise } from '../../../lib/lib'
+import { deferAsync } from '../../../lib/lib'
+import { LiveQueryHandle } from './optimizedObserverBase'
 
-export interface ReactiveMongoObserverGroupHandle extends Meteor.LiveQueryHandle {
+export interface ReactiveMongoObserverGroupHandle extends LiveQueryHandle {
 	/**
 	 * Restart the observers inside this group
 	 */
-	restart(): void
+	restart(): Promise<void>
 }
 
 /**
  * Helper to trigger reactivity inside of an OptimisedObserver whenever one of the other Mongo observers changes
  * Note: care needs to be taken when using this, as Mongo observers call `added` for every document when they start. It is very easy to form an infinite loop of observer invalidations
- * @param generator Function to generate the `Meteor.LiveQueryHandle`s
+ * @param generator Function to generate the `LiveQueryHandle`s
  * @returns Handle to stop and restart the observer group
  */
-export function ReactiveMongoObserverGroup(
-	generator: () => Promise<Array<Meteor.LiveQueryHandle>>
-): ReactiveMongoObserverGroupHandle {
+export async function ReactiveMongoObserverGroup(
+	generator: () => Promise<Array<LiveQueryHandle>>
+): Promise<ReactiveMongoObserverGroupHandle> {
 	let running = true
 	let pendingStop: ManualPromise<void> | undefined
 	let pendingRestart: ManualPromise<void> | undefined
-	let handles: Array<Meteor.LiveQueryHandle> | null = null
+	let handles: Array<LiveQueryHandle> | null = null
 
-	const stopAll = () => {
+	const stopAll = async () => {
 		if (handles) {
-			for (const handle of handles) {
-				handle.stop()
-			}
+			await Promise.allSettled(handles.map((h) => h.stop()))
 			handles = null
 		}
 	}
@@ -36,7 +35,7 @@ export function ReactiveMongoObserverGroup(
 
 	// TODO - debounce?
 	let checkRunning = false
-	const runCheck = () => {
+	const runCheck = async () => {
 		let result: ManualPromise<void> | undefined
 		try {
 			if (!running) throw new Meteor.Error(500, 'ObserverGroup has been stopped!')
@@ -52,7 +51,7 @@ export function ReactiveMongoObserverGroup(
 				pendingStop = undefined
 
 				// Stop the child observers
-				stopAll()
+				await stopAll()
 
 				result.manualResolve()
 
@@ -70,16 +69,16 @@ export function ReactiveMongoObserverGroup(
 				pendingRestart = undefined
 
 				// Stop the child observers
-				stopAll()
+				await stopAll()
 			}
 
 			// Start the child observers
 			if (!handles) {
 				// handles = await generator()
-				handles = waitForPromise(generator())
+				handles = await generator()
 
 				// check for another pending operation
-				Meteor.defer(() => runCheck())
+				deferAsync(async () => runCheck())
 			}
 
 			// Inform caller
@@ -93,38 +92,30 @@ export function ReactiveMongoObserverGroup(
 	}
 
 	const handle: ReactiveMongoObserverGroupHandle = {
-		stop: () => {
+		stop: async () => {
 			if (!running) throw new Meteor.Error(500, 'ReactiveMongoObserverGroup is not running!')
 
-			let promise = pendingStop
-			if (!promise) {
-				promise = createManualPromise<void>()
-				pendingStop = promise
-			}
+			pendingStop = pendingStop || createManualPromise<void>()
 
-			Meteor.defer(() => runCheck())
+			deferAsync(async () => runCheck())
 
 			// Block the caller until the stop has completed
-			waitForPromise(promise)
+			await pendingStop
 		},
-		restart: () => {
+		restart: async () => {
 			if (!running) throw new Meteor.Error(500, 'ReactiveMongoObserverGroup is not running!')
 
-			let promise = pendingRestart
-			if (!promise) {
-				promise = createManualPromise<void>()
-				pendingRestart = promise
-			}
+			pendingRestart = pendingRestart || createManualPromise<void>()
 
-			Meteor.defer(() => runCheck())
+			deferAsync(async () => runCheck())
 
 			// Block the caller until the restart has completed
-			waitForPromise(promise)
+			await pendingRestart
 		},
 	}
 
 	// wait for initial setup of observers, so that they are running once we return
-	runCheck()
+	await runCheck()
 
 	return handle
 }

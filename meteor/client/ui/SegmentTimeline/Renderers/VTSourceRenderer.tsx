@@ -613,7 +613,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
 					typeClass={this.props.typeClass}
 					contentMetaData={this.props.piece.contentMetaData}
-					noticeMessage={this.props.piece.message || ''}
+					noticeMessages={this.props.piece.messages || []}
 					renderedDuration={this.props.piece.renderedDuration || undefined}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
 					pieceId={this.props.piece.instance.piece._id}

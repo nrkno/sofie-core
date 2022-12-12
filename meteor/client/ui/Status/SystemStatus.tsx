@@ -17,7 +17,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
+import { callPeripheralDeviceAction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -28,8 +28,12 @@ import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RESTART_SALT } from '../../../lib/api/userActions'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { SubdeviceAction } from '@sofie-automation/shared-lib/dist/core/deviceConfigManifest'
 import { StatusCodePill } from './StatusCodePill'
+import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { i18nTranslator } from '../i18n'
+import { SchemaForm } from '../../lib/forms/schemaForm'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -98,106 +102,84 @@ export const DeviceItem = reacti18next.withTranslation()(
 				},
 			})
 		}
-		onRestartCasparCG(device: PeripheralDevice) {
+		onExecuteAction(event: any, device: PeripheralDevice, action: SubdeviceAction) {
 			const { t } = this.props
+			const namespaces = ['peripheralDevice_' + device._id]
 
-			doModalDialog({
-				title: t('Restart CasparCG Server'),
-				message: t('Do you want to restart CasparCG Server?'),
-				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, CASPARCG_RESTART_TIME, 'restartCasparCG')
-						.then(() => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.NOTIFICATION,
-									t('CasparCG on device "{{deviceName}}" restarting...', { deviceName: device.name }),
-									'SystemStatus'
-								)
-							)
-						})
-						.catch((err) => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.WARNING,
-									t('Failed to restart CasparCG on device: "{{deviceName}}": {{errorMessage}}', {
-										deviceName: device.name,
-										errorMessage: err + '',
-									}),
-									'SystemStatus'
-								)
-							)
-						})
-				},
-			})
-		}
+			const processResponse = (r: TSR.ActionExecutionResult) => {
+				if (r?.result === TSR.ActionExecutionResultCode.Error) {
+					throw new Error(
+						r.response && isTranslatableMessage(r.response)
+							? translateMessage(r.response, i18nTranslator)
+							: t('Unknown error')
+					)
+				}
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.NOTIFICATION,
+						r?.response && isTranslatableMessage(r.response)
+							? t('Executed {{actionName}} on device "{{deviceName}}": {{response}}', {
+									actionName: action.name,
+									deviceName: device.name,
+									response: translateMessage(r.response, i18nTranslator),
+							  })
+							: t('Executed {{actionName}} on device "{{deviceName}}"...', {
+									actionName: action.name,
+									deviceName: device.name,
+							  }),
+						'SystemStatus'
+					)
+				)
+			}
+			const processError = (err: any) => {
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.WARNING,
+						t('Failed to execute {{actionName}} on device: "{{deviceName}}": {{errorMessage}}', {
+							actionName: action.name,
+							deviceName: device.name,
+							errorMessage: err,
+						}),
+						'SystemStatus'
+					)
+				)
+			}
 
-		onRestartQuantel(device: PeripheralDevice) {
-			const { t } = this.props
-
-			doModalDialog({
-				title: t('Restart Quantel Gateway'),
-				message: t('Do you want to restart Quantel Gateway?'),
-				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, undefined, 'restartQuantel')
-						.then(() => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.NOTIFICATION,
-									t('Quantel Gateway restarting...'),
-									'SystemStatus'
-								)
-							)
-						})
-						.catch((err) => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.WARNING,
-									t('Failed to restart Quantel Gateway: {{errorMessage}}', { errorMessage: err + '' }),
-									'SystemStatus'
-								)
-							)
-						})
-				},
-			})
-		}
-
-		onFormatHyperdeck(device: PeripheralDevice) {
-			const { t } = this.props
-
-			doModalDialog({
-				title: t('Format HyperDeck disks'),
-				message: t('Do you want to format the HyperDeck disks? This is a destructive action and cannot be undone.'),
-				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, undefined, 'formatHyperdeck')
-						.then(() => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.NOTIFICATION,
-									t('Formatting HyperDeck disks on device "{{deviceName}}"...', { deviceName: device.name }),
-									'SystemStatus'
-								)
-							)
-						})
-						.catch((err) => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.WARNING,
-									t('Failed to format HyperDecks on device: "{{deviceName}}": {{errorMessage}}', {
-										deviceName: device.name,
-										errorMessage: err + '',
-									}),
-									'SystemStatus'
-								)
-							)
-						})
-				},
-			})
+			if (action.destructive || action.payload) {
+				const payload = {}
+				doModalDialog({
+					title: translateMessage({ key: action.name, namespaces }, i18nTranslator),
+					yes: t('Execute'),
+					no: t('Cancel'),
+					message: action.payload ? (
+						<SchemaForm
+							schema={JSON.parse(action.payload)}
+							object={payload}
+							attr={''}
+							translationNamespaces={namespaces}
+						/>
+					) : (
+						t('Do you want to execute {{actionName}}? This may the disrupt the output', { actionName: action.name })
+					),
+					onAccept: (event: any) => {
+						callPeripheralDeviceAction(
+							event,
+							device._id,
+							action.timeout || DEFAULT_TSR_ACTION_TIMEOUT_TIME,
+							action.id,
+							payload
+						)
+							.then(processResponse)
+							.catch(processError)
+					},
+				})
+			} else {
+				callPeripheralDeviceAction(event, device._id, action.timeout || DEFAULT_TSR_ACTION_TIMEOUT_TIME, action.id)
+					.then(processResponse)
+					.catch(processError)
+			}
 		}
 
 		render() {
@@ -253,55 +235,21 @@ export const DeviceItem = reacti18next.withTranslation()(
 
 					<div className="actions-container">
 						<div className="device-item__actions">
-							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
-							this.props.device.subType === TSR.DeviceType.CASPARCG ? (
-								<React.Fragment>
-									<button
-										className="btn btn-secondary"
-										onClick={(e) => {
-											e.preventDefault()
-											e.stopPropagation()
-											this.onRestartCasparCG(this.props.device)
-										}}
-									>
-										{t('Restart')}
-										{/** IDK what this does, but it doesn't seem to make a lot of sense: JSON.stringify(this.props.device.settings) */}
-									</button>
-								</React.Fragment>
-							) : null}
-							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
-							this.props.device.subType === TSR.DeviceType.HYPERDECK ? (
-								<React.Fragment>
-									<button
-										className="btn btn-secondary"
-										onClick={(e) => {
-											e.preventDefault()
-											e.stopPropagation()
-											this.onFormatHyperdeck(this.props.device)
-										}}
-									>
-										{t('Format disks')}
-									</button>
-								</React.Fragment>
-							) : null}
-							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
-							this.props.device.subType === TSR.DeviceType.QUANTEL ? (
-								<React.Fragment>
-									<button
-										className="btn btn-secondary"
-										onClick={(e) => {
-											e.preventDefault()
-											e.stopPropagation()
-											this.onRestartQuantel(this.props.device)
-										}}
-									>
-										{t('Restart Quantel Gateway')}
-									</button>
-								</React.Fragment>
-							) : null}
+							{this.props.device.configManifest.subdeviceManifest?.[this.props.device.subType] &&
+								this.props.device.configManifest.subdeviceManifest[this.props.device.subType].actions?.map((action) => (
+									<React.Fragment key={action.id}>
+										<button
+											className="btn btn-secondary"
+											onClick={(e) => {
+												e.preventDefault()
+												e.stopPropagation()
+												this.onExecuteAction(e, this.props.device, action)
+											}}
+										>
+											{t(action.name)}
+										</button>
+									</React.Fragment>
+								))}
 							{getAllowDeveloper() ? (
 								<button
 									key="button-ignore"

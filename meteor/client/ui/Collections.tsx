@@ -19,9 +19,15 @@ export const UIStudios = createCustomPublicationMongoCollection(CustomCollection
  */
 export const UITriggeredActions = createCustomPublicationMongoCollection(CustomCollectionName.UITriggeredActions)
 
-export const DeviceTriggersPreviews = createCustomPublicationMongoCollection(CustomCollectionName.DeviceTriggerPreviews)
+export const DeviceTriggersPreviews = createCustomPublicationMongoCollection(CustomCollectionName.UIDeviceTriggerPreviews)
 /**
- * TODO
+ * Pre-generated notes to be converted into notificiations.
  */
 export const UISegmentPartNotes = createCustomPublicationMongoCollection(CustomCollectionName.UISegmentPartNotes)
-;(window as any).UISegmentPartNotes = UISegmentPartNotes
+
+/**
+ * Pre-processed MediaObjectIssue for Pieces in the Rundowns
+ */
+export const UIPieceContentStatuses = createCustomPublicationMongoCollection(
+	CustomCollectionName.UIPieceContentStatuses
+)

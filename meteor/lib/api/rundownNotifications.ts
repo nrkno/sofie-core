@@ -2,7 +2,12 @@ import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PieceStatusCode } from '../collections/Pieces'
 import { PartId, PieceId, RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString } from '../lib'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { PieceContentStatusObj } from '../mediaObjects'
 
+/**
+ * @deprecated
+ */
 export interface IMediaObjectIssue {
 	segmentRank: number
 	partRank: number
@@ -13,11 +18,7 @@ export interface IMediaObjectIssue {
 	name: string
 	segmentName: string
 	status: PieceStatusCode
-	message: string | null
-}
-
-export enum RundownNotificationsAPIMethods {
-	'getMediaObjectIssues' = 'rundownNotifications.getMediaObjectIssues',
+	messages: ITranslatableMessage[]
 }
 
 export type UISegmentPartNoteId = ProtectedString<'UISegmentPartNote'>
@@ -30,9 +31,20 @@ export interface UISegmentPartNote {
 	note: TrackedNote
 }
 
-/** How often the client polls for updates on media statuses */
-export const MEDIASTATUS_POLL_INTERVAL = 10 * 1000
+export type UIPieceContentStatusId = ProtectedString<'UIPieceContentStatus'>
+export interface UIPieceContentStatus {
+	_id: UIPieceContentStatusId
 
-export interface RundownNotificationsAPI {
-	getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]>
+	segmentRank: number
+	partRank: number
+
+	partId: PartId
+	rundownId: RundownId
+	segmentId: SegmentId
+	pieceId: PieceId
+
+	name: string
+	segmentName: string
+
+	status: PieceContentStatusObj
 }

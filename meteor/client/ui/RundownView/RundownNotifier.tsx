@@ -13,28 +13,24 @@ import {
 import { RundownPlaylistValidateBlueprintConfigResult } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
-import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-import { Parts, Part } from '../../../lib/collections/Parts'
 import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { Segments, Segment } from '../../../lib/collections/Segments'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator as t } from '../i18n'
-import { Piece, PieceStatusCode } from '../../../lib/collections/Pieces'
+import { PieceStatusCode } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
 import { RundownPlaylists, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { IMediaObjectIssue, MEDIASTATUS_POLL_INTERVAL, UISegmentPartNote } from '../../../lib/api/rundownNotifications'
+import { UISegmentPartNote } from '../../../lib/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { NoteSeverity, StatusCode } from '@sofie-automation/blueprints-integration'
 import { getAllowStudio, getIgnorePieceContentStatus } from '../../lib/localStorage'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
 import {
 	PartId,
@@ -45,7 +41,7 @@ import {
 	SegmentId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UISegmentPartNotes } from '../Collections'
+import { UIPieceContentStatuses, UISegmentPartNotes } from '../Collections'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -80,7 +76,6 @@ class RundownViewNotifier extends WithManagedTracker {
 	private _notifier: NotifierHandle
 
 	private _mediaStatus: _.Dictionary<Notification | undefined> = {}
-	private _mediaStatusComps: _.Dictionary<Tracker.Computation> = {}
 	private _mediaStatusDep: Tracker.Dependency
 
 	private _notes: _.Dictionary<Notification | undefined> = {}
@@ -100,10 +95,8 @@ class RundownViewNotifier extends WithManagedTracker {
 
 	private _unsentExternalMessagesStatus: Notification | undefined = undefined
 	private _unsentExternalMessageStatusDep: Tracker.Dependency
-	private mediaObjectsPollInterval = 0
-	private allNotesPollInterval = 0
 
-	constructor(playlistId: RundownPlaylistId | undefined, showStyleBase: UIShowStyleBase, studio: UIStudio) {
+	constructor(playlistId: RundownPlaylistId | undefined, studio: UIStudio) {
 		super()
 		this._notificationList = new NotificationList([])
 		this._mediaStatusDep = new Tracker.Dependency()
@@ -123,8 +116,8 @@ class RundownViewNotifier extends WithManagedTracker {
 				this.reactiveVersionAndConfigStatus(playlistId)
 
 				this.autorun(() => {
-					if (showStyleBase && studio) {
-						this.reactiveMediaStatus(playlistId, showStyleBase, studio)
+					if (studio) {
+						this.reactiveMediaStatus(playlistId)
 						this.reactivePartNotes(playlistId)
 						this.reactivePeripheralDeviceStatus(studio._id)
 						this.reactiveQueueStatus(studio._id, playlistId)
@@ -171,10 +164,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 		if (this._rundownImportVersionAndConfigInterval) Meteor.clearInterval(this._rundownImportVersionAndConfigInterval)
 
-		Object.values(this._mediaStatusComps).forEach((element) => element.stop())
 		this._notifier.stop()
-		if (this.mediaObjectsPollInterval) clearInterval(this.mediaObjectsPollInterval)
-		if (this.allNotesPollInterval) clearInterval(this.allNotesPollInterval)
 	}
 
 	private reactiveRundownStatus(playlistId: RundownPlaylistId) {
@@ -401,22 +391,24 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactivePartNotes(playlistId: RundownPlaylistId) {
-		const fullNotes: ReactiveVar<UISegmentPartNote[]> = new ReactiveVar([], _.isEqual)
-
 		let oldNoteIds: Array<string> = []
 
 		this.autorun(() => {
-			// TODO - is this a good way of working still?
-			// TODO - the order of these will not be consistent..
-			const notes = UISegmentPartNotes.find({ playlistId: playlistId }).fetch()
-			fullNotes.set(notes)
-		})
-
-		this.autorun(() => {
 			const newNoteIds: Array<string> = []
-			const combined = fullNotes.get()
 
-			combined.forEach((item: UISegmentPartNote) => {
+			const rawNotes = UISegmentPartNotes.find(
+				{ playlistId: playlistId },
+				{
+					// A crude sorting
+					sort: {
+						// @ts-expect-error deep property
+						'note.rank': 1,
+						_id: 1,
+					},
+				}
+			).fetch()
+
+			rawNotes.forEach((item: UISegmentPartNote) => {
 				const { origin, message, type: itemType, rank } = item.note
 				const { pieceId, partId, segmentId, rundownId, name, segmentName } = origin
 
@@ -475,176 +467,91 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveMediaStatus(playlistId: RundownPlaylistId, showStyleBase: UIShowStyleBase, studio: UIStudio) {
-		let mediaObjectsPollLock: boolean = false
-		const MEDIAOBJECTS_POLL_INTERVAL = MEDIASTATUS_POLL_INTERVAL
-
-		const fullMediaStatus: ReactiveVar<IMediaObjectIssue[]> = new ReactiveVar([], _.isEqual)
-		const localMediaStatus: ReactiveVar<IMediaObjectIssue[]> = new ReactiveVar([], _.isEqual)
-
-		let oldPieceIds: PieceId[] = []
-		const rPieces = reactiveData.getRPieces(playlistId, {
+	private reactiveMediaStatus(playlistId: RundownPlaylistId) {
+		const rRundowns = reactiveData.getRRundowns(playlistId, {
 			fields: {
 				_id: 1,
-				sourceLayerId: 1,
-				outputLayerId: 1,
-				name: 1,
-				content: 1,
-				startPartId: 1,
-				expectedPackages: 1,
 			},
-		}) as ReactiveVar<
-			Pick<Piece, '_id' | 'sourceLayerId' | 'outputLayerId' | 'name' | 'content' | 'startPartId' | 'expectedPackages'>[]
-		>
-
-		this.autorun(() => {
-			const rundownIds: RundownId[] = reactiveData
-				.getRRundowns(playlistId, {
-					fields: {
-						_id: 1,
-					},
-				})
-				.get()
-				.map((rundown) => rundown._id)
-
-			if (this.mediaObjectsPollInterval) clearInterval(this.mediaObjectsPollInterval)
-			this.mediaObjectsPollInterval = Meteor.setInterval(() => {
-				if (mediaObjectsPollLock) return
-				mediaObjectsPollLock = true
-				if (!getIgnorePieceContentStatus()) {
-					MeteorCall.rundownNotifications
-						.getMediaObjectIssues(rundownIds)
-						.then((result) => {
-							fullMediaStatus.set(result)
-							mediaObjectsPollLock = false
-						})
-						.catch((e) => console.error(e))
-				}
-			}, MEDIAOBJECTS_POLL_INTERVAL)
 		})
-		this.autorun(() => {
-			const localStatus: IMediaObjectIssue[] = []
-			if (!getIgnorePieceContentStatus()) {
-				const pieces = rPieces.get()
-				pieces.forEach((piece) => {
-					const sourceLayer = showStyleBase.sourceLayers[piece.sourceLayerId]
-					const part = Parts.findOne(piece.startPartId, {
-						fields: {
-							_rank: 1,
-							segmentId: 1,
-							rundownId: 1,
-						},
-					}) as Pick<Part, '_id' | '_rank' | 'segmentId' | 'rundownId'> | undefined
-					const segment = part
-						? (Segments.findOne(part.segmentId, {
-								fields: {
-									_rank: 1,
-									name: 1,
+
+		let oldPieceIds: PieceId[] = []
+
+		if (getIgnorePieceContentStatus())
+			this.autorun(() => {
+				const rundownIds = rRundowns.get().map((rd) => rd._id)
+
+				const allIssues = getIgnorePieceContentStatus()
+					? UIPieceContentStatuses.find({ rundownId: { $in: rundownIds } }).fetch()
+					: []
+
+				const newPieceIds = _.unique(allIssues.map((item) => item.pieceId))
+				allIssues.forEach((issue) => {
+					const { status, messages } = issue.status
+
+					let newNotification: Notification | undefined = undefined
+					if (status !== PieceStatusCode.OK && status !== PieceStatusCode.UNKNOWN) {
+						const messagesStr = messages.length
+							? messages.map((msg) => translateMessage(msg, t)).join('; ')
+							: t('There is an unspecified problem with the source.')
+
+						newNotification = new Notification(
+							issue.pieceId,
+							getNoticeLevelForPieceStatus(status) || NoticeLevel.WARNING,
+							(
+								<>
+									<h5>{`${issue.segmentName}${issue.name ? SEGMENT_DELIMITER + issue.name : ''}`}</h5>
+									<div>{messagesStr}</div>
+								</>
+							),
+							issue.segmentId ? issue.segmentId : 'line_' + issue.partId,
+							getCurrentTime(),
+							true,
+							[
+								{
+									label: t('Show issue'),
+									type: 'default',
 								},
-						  }) as Pick<Segment, '_id' | '_rank' | 'name'> | undefined)
-						: undefined
-					if (segment && sourceLayer && part) {
-						// we don't want this to be in a non-reactive context, so we manage this computation manually
-						this._mediaStatusComps[unprotectString(piece._id)] = Tracker.autorun(() => {
-							const mediaId = getMediaObjectMediaId(piece, sourceLayer)
-							if (mediaId) {
-								this.subscribe(PubSub.mediaObjects, studio._id, {
-									mediaId: mediaId.toUpperCase(),
-								})
-							}
-
-							if (!this.subscriptionsReady()) return
-
-							const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio)
-							if (status !== PieceStatusCode.UNKNOWN || message) {
-								localStatus.push({
-									name: piece.name,
-									rundownId: part.rundownId,
-									pieceId: piece._id,
-									partId: part._id,
-									segmentId: segment._id,
-									segmentRank: segment._rank,
-									segmentName: segment.name,
-									partRank: part._rank,
-									status,
-									message,
-								})
+							],
+							issue.segmentRank * 1000 + issue.partRank
+						)
+						newNotification.on('action', (_notification, type) => {
+							if (type === 'default') {
+								const handler = onRONotificationClick.get()
+								if (handler && typeof handler === 'function') {
+									handler({
+										sourceLocator: {
+											name: issue.name,
+											rundownId: issue.rundownId,
+											pieceId: issue.pieceId,
+											partId: issue.partId,
+										},
+									})
+								}
 							}
 						})
 					}
+
+					if (
+						newNotification &&
+						!Notification.isEqual(this._mediaStatus[unprotectString(issue.pieceId)], newNotification)
+					) {
+						this._mediaStatus[unprotectString(issue.pieceId)] = newNotification
+						this._mediaStatusDep.changed()
+					} else if (!newNotification && this._mediaStatus[unprotectString(issue.pieceId)]) {
+						delete this._mediaStatus[unprotectString(issue.pieceId)]
+						this._mediaStatusDep.changed()
+					}
 				})
-			}
 
-			localMediaStatus.set(localStatus)
-		})
-		this.autorun(() => {
-			const allIssues = fullMediaStatus.get().concat(localMediaStatus.get())
-			const newPieceIds = _.unique(allIssues.map((item) => item.pieceId))
-			allIssues.forEach((issue) => {
-				const { status, message } = issue
+				const removedPieceIds = _.difference(oldPieceIds, newPieceIds)
+				removedPieceIds.forEach((pieceId) => {
+					const pId = unprotectString(pieceId)
+					delete this._mediaStatus[pId]
 
-				let newNotification: Notification | undefined = undefined
-				if (status !== PieceStatusCode.OK && status !== PieceStatusCode.UNKNOWN) {
-					newNotification = new Notification(
-						issue.pieceId,
-						getNoticeLevelForPieceStatus(status) || NoticeLevel.WARNING,
-						(
-							<>
-								<h5>{`${issue.segmentName}${issue.name ? SEGMENT_DELIMITER + issue.name : ''}`}</h5>
-								<div>{message || t('There is an unspecified problem with the source.')}</div>
-							</>
-						),
-						issue.segmentId ? issue.segmentId : 'line_' + issue.partId,
-						getCurrentTime(),
-						true,
-						[
-							{
-								label: t('Show issue'),
-								type: 'default',
-							},
-						],
-						issue.segmentRank * 1000 + issue.partRank
-					)
-					newNotification.on('action', (_notification, type) => {
-						if (type === 'default') {
-							const handler = onRONotificationClick.get()
-							if (handler && typeof handler === 'function') {
-								handler({
-									sourceLocator: {
-										name: issue.name,
-										rundownId: issue.rundownId,
-										pieceId: issue.pieceId,
-										partId: issue.partId,
-									},
-								})
-							}
-						}
-					})
-				}
-
-				if (
-					newNotification &&
-					!Notification.isEqual(this._mediaStatus[unprotectString(issue.pieceId)], newNotification)
-				) {
-					this._mediaStatus[unprotectString(issue.pieceId)] = newNotification
 					this._mediaStatusDep.changed()
-				} else if (!newNotification && this._mediaStatus[unprotectString(issue.pieceId)]) {
-					delete this._mediaStatus[unprotectString(issue.pieceId)]
-					this._mediaStatusDep.changed()
-				}
+				})
+				oldPieceIds = newPieceIds
 			})
-
-			const removedPieceIds = _.difference(oldPieceIds, newPieceIds)
-			removedPieceIds.forEach((pieceId) => {
-				const pId = unprotectString(pieceId)
-				delete this._mediaStatus[pId]
-				if (this._mediaStatusComps[pId]) this._mediaStatusComps[pId].stop()
-				delete this._mediaStatusComps[pId]
-
-				this._mediaStatusDep.changed()
-			})
-			oldPieceIds = newPieceIds
-		})
 	}
 
 	private reactiveVersionAndConfigStatus(playlistId: RundownPlaylistId) {
@@ -905,7 +812,6 @@ interface IProps {
 	// }
 	playlistId: RundownPlaylistId
 	studio: UIStudio
-	showStyleBase: UIShowStyleBase
 }
 
 export const RundownNotifier = class RundownNotifier extends React.Component<IProps> {
@@ -913,15 +819,11 @@ export const RundownNotifier = class RundownNotifier extends React.Component<IPr
 
 	constructor(props: IProps) {
 		super(props)
-		this.notifier = new RundownViewNotifier(props.playlistId, props.showStyleBase, props.studio)
+		this.notifier = new RundownViewNotifier(props.playlistId, props.studio)
 	}
 
 	shouldComponentUpdate(nextProps: IProps): boolean {
-		if (
-			this.props.playlistId === nextProps.playlistId &&
-			this.props.showStyleBase._id === nextProps.showStyleBase._id &&
-			this.props.studio._id === nextProps.studio._id
-		) {
+		if (this.props.playlistId === nextProps.playlistId && this.props.studio._id === nextProps.studio._id) {
 			return false
 		}
 		return true
@@ -929,7 +831,7 @@ export const RundownNotifier = class RundownNotifier extends React.Component<IPr
 
 	componentDidUpdate() {
 		this.notifier.stop()
-		this.notifier = new RundownViewNotifier(this.props.playlistId, this.props.showStyleBase, this.props.studio)
+		this.notifier = new RundownViewNotifier(this.props.playlistId, this.props.studio)
 	}
 
 	componentWillUnmount() {

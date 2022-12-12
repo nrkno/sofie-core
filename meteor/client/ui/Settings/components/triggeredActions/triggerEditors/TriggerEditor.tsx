@@ -6,32 +6,43 @@ import { HotkeyTrigger } from './HotkeyTrigger'
 import { usePopper } from 'react-popper'
 import { sameWidth } from '../../../../../lib/popperUtils'
 import { useTranslation } from 'react-i18next'
-import { EditAttribute } from '../../../../../lib/EditAttribute'
 import { HotkeyEditor } from './HotkeyEditor'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { isDeviceTrigger, isHotkeyTrigger } from '../../../../../../lib/api/triggers/triggerTypeSelectors'
 import { DeviceTrigger } from './DeviceTrigger'
 import { DeviceEditor } from './DeviceEditor'
+import { faCheck, faRefresh, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { DropdownInputControl, DropdownInputOption } from '../../../../../lib/Components/DropdownInput'
 
 interface IProps {
 	id: string
 	trigger: DBBlueprintTrigger
 	opened?: boolean
+	canReset: boolean
+	isDeleted: boolean
 	onChangeTrigger: (id: string, newVal: DBBlueprintTrigger) => void
+	onResetTrigger: (id: string) => void
 	onRemove: (id: string) => void
 	onFocus: (id: string) => void
 	onClose: (id: string) => void
 }
 
-function getTriggerTypes(t: TFunction): Record<string, TriggerType> {
-	return {
-		[t('Hotkey')]: TriggerType.hotkey,
-		[t('Device')]: TriggerType.device,
-	}
+function getTriggerTypes(t: TFunction): DropdownInputOption<TriggerType>[] {
+	return [
+		{
+			name: t('Hotkey'),
+			value: TriggerType.hotkey,
+			i: 0,
+		},
+		{
+			name: t('Device'),
+			value: TriggerType.device,
+			i: 1,
+		},
+	]
 }
 
-export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...props }: IProps) {
+export const TriggerEditor = function TriggerEditor({ opened, canReset, isDeleted, trigger, id, ...props }: IProps) {
 	const { t } = useTranslation()
 	const [localTrigger, setLocalTrigger] = useState<DBBlueprintTrigger>({ ...trigger })
 	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)
@@ -54,6 +65,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 		(changeLocalTrigger: DBBlueprintTrigger) => props.onChangeTrigger(id, changeLocalTrigger),
 		[id]
 	)
+	const onResetTrigger = useCallback(() => props.onResetTrigger(id), [id])
 
 	useEffect(() => {
 		function closeHandler(e: MouseEvent) {
@@ -84,6 +96,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 			up={trigger.up || false}
 			onClick={onFocus}
 			selected={opened}
+			deleted={isDeleted}
 		/>
 	) : isDeviceTrigger(trigger) ? (
 		<DeviceTrigger
@@ -92,6 +105,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 			trigger={trigger.triggerId || ''}
 			onClick={onFocus}
 			selected={opened}
+			deleted={isDeleted}
 		/>
 	) : (
 		// @ts-expect-error trigger.type is `never`, but runtime it can be something else
@@ -103,6 +117,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 			trigger={localTrigger}
 			onChange={(newVal) => setLocalTrigger(newVal)}
 			modified={!isHotkeyTrigger(trigger) || trigger.keys !== localTrigger.keys}
+			readonly={isDeleted}
 		/>
 	) : isDeviceTrigger(localTrigger) ? (
 		<DeviceEditor
@@ -114,6 +129,7 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 				trigger.triggerId !== localTrigger.triggerId ||
 				JSON.stringify(trigger.values) !== JSON.stringify(localTrigger.values)
 			}
+			readonly={isDeleted}
 		/>
 	) : null
 
@@ -150,25 +166,37 @@ export const TriggerEditor = function TriggerEditor({ opened, trigger, id, ...pr
 					{...attributes.popper}
 				>
 					<div>
-						<EditAttribute
-							className="form-control input text-input input-m"
-							modifiedClassName="bghl"
-							type={'dropdown'}
-							label={t('Trigger Type')}
+						<DropdownInputControl
+							classNames="form-control input text-input input-m"
+							value={localTrigger.type}
 							options={getTriggerTypes(t)}
-							overrideDisplayValue={localTrigger.type}
-							attribute={''}
-							updateFunction={(_e, newVal) => onChangeType(newVal)}
+							handleUpdate={onChangeType}
+							disabled={isDeleted}
 						/>
 					</div>
 					<div>{triggerEditor}</div>
 					<div className="mts">
-						<button className="btn right btn-tight btn-primary" onClick={onConfirm}>
-							<FontAwesomeIcon icon={faCheck} />
-						</button>
-						<button className="btn btn-tight btn-secondary" onClick={onRemove}>
-							<FontAwesomeIcon icon={faTrash} />
-						</button>
+						{isDeleted ? (
+							<>
+								<button className="btn btn-tight btn-secondary" onClick={onResetTrigger}>
+									<FontAwesomeIcon icon={faRefresh} />
+								</button>
+							</>
+						) : (
+							<>
+								<button className="btn right btn-tight btn-primary" onClick={onConfirm}>
+									<FontAwesomeIcon icon={faCheck} />
+								</button>
+								<button className="btn btn-tight btn-secondary" onClick={onRemove}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
+								{canReset && (
+									<button className="btn btn-tight btn-secondary" onClick={onResetTrigger}>
+										<FontAwesomeIcon icon={faRefresh} />
+									</button>
+								)}
+							</>
+						)}
 					</div>
 				</div>
 			) : null}

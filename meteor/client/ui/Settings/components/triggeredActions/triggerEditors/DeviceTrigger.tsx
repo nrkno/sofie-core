@@ -7,12 +7,14 @@ export const DeviceTrigger = React.memo(function DeviceTrigger({
 	trigger,
 	innerRef,
 	selected,
+	deleted,
 	onClick,
 }: {
 	deviceId: string
 	trigger?: string
 	innerRef?: React.Ref<HTMLDivElement>
 	selected?: boolean
+	deleted?: boolean
 	onClick?: () => void
 }) {
 	const { t } = useTranslation()
@@ -22,6 +24,7 @@ export const DeviceTrigger = React.memo(function DeviceTrigger({
 			ref={innerRef}
 			className={classNames('triggered-action-entry__device clickable', {
 				selected: selected,
+				deleted: deleted,
 			})}
 			onClick={onClick}
 			tabIndex={0}

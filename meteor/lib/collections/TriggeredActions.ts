@@ -1,6 +1,5 @@
-import { Meteor } from 'meteor/meteor'
 import { ITranslatableMessage, SomeAction, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
-import { ObserveChangesForHash, createMongoCollection } from './lib'
+import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
@@ -46,8 +45,6 @@ export interface DBTriggeredActions {
 
 	/** A list of actions to execute */
 	actionsWithOverrides: ObjectWithOverrides<Record<string, SomeAction>>
-
-	_rundownVersionHash: string
 }
 
 /** Note: Use DBTriggeredActions instead */
@@ -56,14 +53,4 @@ export const TriggeredActions = createMongoCollection<DBTriggeredActions>(Collec
 
 registerIndex(TriggeredActions, {
 	showStyleBaseId: 1,
-})
-
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		ObserveChangesForHash(TriggeredActions, '_rundownVersionHash', [
-			'showStyleBaseId',
-			'triggersWithOverrides',
-			'actionsWithOverrides',
-		])
-	}
 })

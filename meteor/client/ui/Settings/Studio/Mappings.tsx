@@ -1,15 +1,19 @@
 import ClassNames from 'classnames'
-import * as React from 'react'
-import { Meteor } from 'meteor/meteor'
+import React, { useCallback, useMemo } from 'react'
 import * as _ from 'underscore'
 import Tooltip from 'rc-tooltip'
-import { Studio, Studios, MappingExt, getActiveRoutes } from '../../../../lib/collections/Studios'
-import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
+import {
+	Studio,
+	Studios,
+	MappingExt,
+	getActiveRoutes,
+	ResultingMappingRoutes,
+} from '../../../../lib/collections/Studios'
+import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
-import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
-import { withTranslation } from 'react-i18next'
+import { faTrash, faPencilAlt, faCheck, faPlus, faRefresh } from '@fortawesome/free-solid-svg-icons'
+import { useTranslation } from 'react-i18next'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import {
 	ConfigManifestEntryType,
@@ -18,386 +22,486 @@ import {
 } from '@sofie-automation/corelib/dist/deviceConfig'
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
 import { MongoCollection } from '../../../../lib/collections/lib'
-import { renderEditAttribute } from '../components/ConfigManifestEntryComponent'
+import { ManifestEntryWithOverrides, renderEditAttribute } from '../components/ConfigManifestEntryComponent'
+import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
+import {
+	getAllCurrentAndDeletedItemsFromOverrides,
+	OverrideOpHelper,
+	useOverrideOpHelper,
+	WrappedOverridableItemNormal,
+} from '../util/OverrideOpHelper'
+import {
+	applyAndValidateOverrides,
+	ObjectOverrideSetOp,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { literal } from '@sofie-automation/corelib/dist/lib'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { TextInputControl } from '../../../lib/Components/TextInput'
+import { IntInputControl } from '../../../lib/Components/IntInput'
+import { DropdownInputControl, getDropdownInputOptions } from '../../../lib/Components/DropdownInput'
+import {
+	LabelAndOverrides,
+	LabelAndOverridesForDropdown,
+	LabelAndOverridesForInt,
+} from '../../../lib/Components/LabelAndOverrides'
 
 interface IStudioMappingsProps {
 	studio: Studio
-	manifest?: MappingsManifest
-}
-interface IStudioMappingsState {
-	editedMappings: Array<string>
+	manifest: MappingsManifest | undefined
 }
 
-export const StudioMappings = withTranslation()(
-	class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, IStudioMappingsState> {
-		constructor(props: Translated<IStudioMappingsProps>) {
-			super(props)
+export function StudioMappings({ manifest, studio }: IStudioMappingsProps) {
+	const { t } = useTranslation()
 
-			this.state = {
-				editedMappings: [],
-			}
+	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
+
+	const addNewLayer = useCallback(() => {
+		const resolvedMappings = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
+
+		// find free key name
+		const newLayerKeyName = 'newLayer'
+		let iter = 0
+		while (resolvedMappings[newLayerKeyName + iter.toString()]) {
+			iter++
 		}
-		isItemEdited = (layerId: string) => {
-			return this.state.editedMappings.indexOf(layerId) >= 0
-		}
-		finishEditItem = (layerId: string) => {
-			const index = this.state.editedMappings.indexOf(layerId)
-			if (index >= 0) {
-				this.state.editedMappings.splice(index, 1)
-				this.setState({
-					editedMappings: this.state.editedMappings,
-				})
-			}
-		}
-		editItem = (layerId: string) => {
-			if (this.state.editedMappings.indexOf(layerId) < 0) {
-				this.state.editedMappings.push(layerId)
-				this.setState({
-					editedMappings: this.state.editedMappings,
-				})
-			} else {
-				this.finishEditItem(layerId)
-			}
-		}
-		confirmRemove = (mappingId: string) => {
-			const { t } = this.props
-			doModalDialog({
-				title: t('Remove this mapping?'),
-				yes: t('Remove'),
-				no: t('Cancel'),
-				onAccept: () => {
-					this.removeLayer(mappingId)
+
+		const newId = newLayerKeyName + iter.toString()
+		const newMapping = literal<MappingExt>({
+			device: TSR.DeviceType.CASPARCG,
+			deviceId: protectString('newDeviceId'),
+			lookahead: LookaheadMode.NONE,
+		})
+
+		const addOp = literal<ObjectOverrideSetOp>({
+			op: 'set',
+			path: newId,
+			value: newMapping,
+		})
+
+		Studios.update(studio._id, {
+			$push: {
+				'mappingsWithOverrides.overrides': addOp,
+			},
+		})
+
+		setImmediate(() => {
+			toggleExpanded(newId, true)
+		})
+	}, [studio._id, studio.mappingsWithOverrides])
+
+	const activeRoutes = useMemo(() => getActiveRoutes(studio.routeSets), [studio.routeSets])
+
+	const sortedMappings = useMemo(
+		() => getAllCurrentAndDeletedItemsFromOverrides(studio.mappingsWithOverrides, (a, b) => a[0].localeCompare(b[0])),
+		[studio.mappingsWithOverrides]
+	)
+
+	const saveOverrides = useCallback(
+		(newOps: SomeObjectOverrideOp[]) => {
+			Studios.update(studio._id, {
+				$set: {
+					'mappingsWithOverrides.overrides': newOps,
 				},
-				message: (
-					<React.Fragment>
-						<p>{t('Are you sure you want to remove mapping for layer "{{mappingId}}"?', { mappingId: mappingId })}</p>
-						<p>{t('Please note: This action is irreversible!')}</p>
-					</React.Fragment>
-				),
 			})
-		}
-		removeLayer = (mappingId: string) => {
-			const unsetObject = {}
-			unsetObject['mappingsWithOverrides.defaults.' + mappingId] = ''
-			Studios.update(this.props.studio._id, {
-				$unset: unsetObject,
-			})
-		}
-		addNewLayer = () => {
-			// find free key name
-			const newLayerKeyName = 'newLayer'
-			let iter = 0
-			while ((this.props.studio.mappingsWithOverrides.defaults || {})[newLayerKeyName + iter.toString()]) {
-				iter++
-			}
-			const setObject = {}
-			setObject['mappingsWithOverrides.defaults.' + newLayerKeyName + iter.toString()] = {
-				device: TSR.DeviceType.CASPARCG,
-				deviceId: 'newDeviceId',
-			}
+		},
+		[studio._id]
+	)
 
-			Studios.update(this.props.studio._id, {
-				$set: setObject,
-			})
-		}
-		updateLayerId = (edit: EditAttributeBase, newValue: string) => {
-			const oldLayerId = edit.props.overrideDisplayValue
-			const newLayerId = newValue + ''
-			const layer = this.props.studio.mappingsWithOverrides.defaults[oldLayerId]
+	const overrideHelper = useOverrideOpHelper(saveOverrides, studio.mappingsWithOverrides)
 
-			if (this.props.studio.mappingsWithOverrides.defaults[newLayerId]) {
-				throw new Meteor.Error(400, 'Layer "' + newLayerId + '" already exists')
-			}
+	return (
+		<div>
+			<h2 className="mhn">{t('Layer Mappings')}</h2>
+			{!manifest ? (
+				<span>{t('Add a playout device to the studio in order to edit the layer mappings')}</span>
+			) : (
+				<React.Fragment>
+					<table className="expando settings-studio-mappings-table">
+						<tbody>
+							{sortedMappings.map((item) =>
+								item.type === 'deleted' ? (
+									<MappingDeletedEntry
+										key={item.id}
+										activeRoutes={activeRoutes}
+										layerId={item.id}
+										manifest={manifest[item.defaults.device]}
+										mapping={item.defaults}
+										doUndelete={overrideHelper.resetItem}
+									/>
+								) : (
+									<StudioMappingsEntry
+										key={item.id}
+										item={item}
+										activeRoutes={activeRoutes}
+										toggleExpanded={toggleExpanded}
+										isExpanded={isExpanded(item.id)}
+										manifest={manifest[item.computed.device]}
+										overrideHelper={overrideHelper}
+									/>
+								)
+							)}
+						</tbody>
+					</table>
+					<div className="mod mhs">
+						<button className="btn btn-primary" onClick={addNewLayer}>
+							<FontAwesomeIcon icon={faPlus} />
+						</button>
+					</div>
+				</React.Fragment>
+			)}
+		</div>
+	)
+}
 
-			const mSet = {}
-			const mUnset = {}
-			mSet['mappingsWithOverrides.defaults.' + newLayerId] = layer
-			mUnset['mappingsWithOverrides.defaults.' + oldLayerId] = 1
+interface DeletedEntryProps {
+	activeRoutes: ResultingMappingRoutes
+	manifest: MappingManifestEntry[] | undefined
+	mapping: MappingExt
+	layerId: string
+	doUndelete: (itemId: string) => void
+}
+function MappingDeletedEntry({ activeRoutes, manifest, mapping, layerId, doUndelete }: DeletedEntryProps) {
+	const { t } = useTranslation()
 
-			if (edit.props.collection) {
-				edit.props.collection.update(this.props.studio._id, {
-					$set: mSet,
-					$unset: mUnset,
-				})
-			}
+	const doUndeleteItem = useCallback(() => doUndelete(layerId), [doUndelete, layerId])
 
-			this.finishEditItem(oldLayerId)
-			this.editItem(newLayerId)
-		}
+	return (
+		<tr>
+			<th className="settings-studio-device__name c3 notifications-s notifications-text">
+				{mapping.layerName || layerId}
+				{activeRoutes.existing[layerId] !== undefined ? (
+					<Tooltip
+						overlay={t('This layer is now rerouted by an active Route Set: {{routeSets}}', {
+							routeSets: activeRoutes.existing[layerId].map((s) => s.outputMappedLayer).join(', '),
+							count: activeRoutes.existing[layerId].length,
+						})}
+						placement="right"
+					>
+						<span className="notification">{activeRoutes.existing[layerId].length}</span>
+					</Tooltip>
+				) : null}
+			</th>
+			<td className="settings-studio-device__id c2 deleted">{TSR.DeviceType[mapping.device]}</td>
+			<td className="settings-studio-device__id c2 deleted">{mapping.deviceId}</td>
+			<td className="settings-studio-device__id c4 deleted">
+				<MappingSummary manifest={manifest} mapping={mapping} />
+			</td>
+			<td className="settings-studio-output-table__actions table-item-actions c3">
+				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
+					<FontAwesomeIcon icon={faRefresh} />
+				</button>
+			</td>
+		</tr>
+	)
+}
 
-		renderSummary(manifest: MappingsManifest, mapping: MappingExt) {
-			const m = manifest[mapping.device]
-			if (m) {
-				return (
-					<span>
-						{m
-							.filter((entry) => entry.includeInSummary)
-							.map((entry) => {
-								const summary = entry.name + ': '
+interface StudioMappingsEntryProps {
+	activeRoutes: ResultingMappingRoutes
+	manifest: MappingManifestEntry[] | undefined
 
-								let mappingValue = entry.values && entry.values[mapping[entry.id]]
-								if (!mappingValue) {
-									mappingValue = mapping[entry.id]
-								}
+	toggleExpanded: (layerId: string, force?: boolean) => void
+	isExpanded: boolean
 
-								if (entry.type === ConfigManifestEntryType.INT && entry.zeroBased && _.isNumber(mappingValue)) {
-									mappingValue += 1
-								}
+	item: WrappedOverridableItemNormal<MappingExt>
+	overrideHelper: OverrideOpHelper
+}
 
-								return summary + mappingValue
-							})
-							.join(' - ')}
-					</span>
-				)
-			} else {
-				return <span>-</span>
-			}
-		}
+function StudioMappingsEntry({
+	activeRoutes,
+	manifest,
+	toggleExpanded,
+	isExpanded,
+	item,
+	overrideHelper,
+}: StudioMappingsEntryProps) {
+	const { t } = useTranslation()
 
-		renderMappings(manifest: MappingsManifest) {
-			const { t } = this.props
+	const toggleEditItem = useCallback(() => toggleExpanded(item.id), [toggleExpanded, item.id])
+	const confirmDelete = useCallback(() => {
+		doModalDialog({
+			title: t('Remove this mapping?'),
+			yes: t('Remove'),
+			no: t('Cancel'),
+			onAccept: () => {
+				overrideHelper.deleteItem(item.id)
+			},
+			message: (
+				<React.Fragment>
+					<p>{t('Are you sure you want to remove mapping for layer "{{mappingId}}"?', { mappingId: item.id })}</p>
+					<p>{t('Please note: This action is irreversible!')}</p>
+				</React.Fragment>
+			),
+		})
+	}, [t, item.id, overrideHelper])
 
-			const activeRoutes = getActiveRoutes(this.props.studio)
+	const doChangeItemId = useCallback(
+		(newItemId: string) => {
+			overrideHelper.changeItemId(item.id, newItemId)
+			toggleExpanded(newItemId, true)
+		},
+		[overrideHelper, toggleExpanded, item.id]
+	)
 
-			return _.map(this.props.studio.mappingsWithOverrides.defaults, (mapping: MappingExt, layerId: string) => {
-				return (
-					<React.Fragment key={layerId}>
-						<tr
-							className={ClassNames({
-								hl: this.isItemEdited(layerId),
+	return (
+		<React.Fragment>
+			<tr
+				className={ClassNames({
+					hl: isExpanded,
+				})}
+			>
+				<th className="settings-studio-device__name c3 notifications-s notifications-text">
+					{item.computed.layerName || item.id}
+					{activeRoutes.existing[item.id] !== undefined ? (
+						<Tooltip
+							overlay={t('This layer is now rerouted by an active Route Set: {{routeSets}}', {
+								routeSets: activeRoutes.existing[item.id].map((s) => s.outputMappedLayer).join(', '),
+								count: activeRoutes.existing[item.id].length,
 							})}
+							placement="right"
 						>
-							<th className="settings-studio-device__name c3 notifications-s notifications-text">
-								{mapping.layerName || layerId}
-								{activeRoutes.existing[layerId] !== undefined ? (
-									<Tooltip
-										overlay={t('This layer is now rerouted by an active Route Set: {{routeSets}}', {
-											routeSets: activeRoutes.existing[layerId].map((s) => s.outputMappedLayer).join(', '),
-											count: activeRoutes.existing[layerId].length,
-										})}
-										placement="right"
-									>
-										<span className="notification">{activeRoutes.existing[layerId].length}</span>
-									</Tooltip>
-								) : null}
-							</th>
-							<td className="settings-studio-device__id c2">{TSR.DeviceType[mapping.device]}</td>
-							<td className="settings-studio-device__id c2">{mapping.deviceId}</td>
-							<td className="settings-studio-device__id c4">{this.renderSummary(manifest, mapping)}</td>
+							<span className="notification">{activeRoutes.existing[item.id].length}</span>
+						</Tooltip>
+					) : null}
+				</th>
+				<td className="settings-studio-device__id c2">{TSR.DeviceType[item.computed.device]}</td>
+				<td className="settings-studio-device__id c2">{item.computed.deviceId}</td>
+				<td className="settings-studio-device__id c4">
+					<MappingSummary manifest={manifest} mapping={item.computed} />
+				</td>
 
-							<td className="settings-studio-device__actions table-item-actions c3">
-								<button className="action-btn" onClick={() => this.editItem(layerId)}>
-									<FontAwesomeIcon icon={faPencilAlt} />
-								</button>
-								<button className="action-btn" onClick={() => this.confirmRemove(layerId)}>
-									<FontAwesomeIcon icon={faTrash} />
-								</button>
-							</td>
-						</tr>
-						{this.isItemEdited(layerId) && (
-							<tr className="expando-details hl">
-								<td colSpan={5}>
-									<div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Layer ID')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'mappingsWithOverrides.defaults'}
-													overrideDisplayValue={layerId}
-													obj={this.props.studio}
-													type="text"
-													collection={Studios}
-													updateFunction={this.updateLayerId}
-													className="input text-input input-l"
-												></EditAttribute>
-												<span className="text-s dimmed">{t('ID of the timeline-layer to map to some output')}</span>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Layer Name')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'mappingsWithOverrides.defaults.' + layerId + '.layerName'}
-													obj={this.props.studio}
-													type="text"
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
-												<span className="text-s dimmed">{t('Human-readable name of the layer')}</span>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Device Type')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'mappingsWithOverrides.defaults.' + layerId + '.device'}
-													obj={this.props.studio}
-													type="dropdown"
-													options={TSR.DeviceType}
-													optionsAreNumbers={true}
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
-												<span className="text-s dimmed">{t('The type of device to use for the output')}</span>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Device ID')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'mappingsWithOverrides.defaults.' + layerId + '.deviceId'}
-													obj={this.props.studio}
-													type="text"
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
-												<span className="text-s dimmed">
-													{t('ID of the device (corresponds to the device ID in the peripheralDevice settings)')}
-												</span>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Lookahead Mode')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'mappingsWithOverrides.defaults.' + layerId + '.lookahead'}
-													obj={this.props.studio}
-													type="dropdown"
-													options={LookaheadMode}
-													optionsAreNumbers={true}
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Lookahead Target Objects (Default = 1)')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'mappingsWithOverrides.defaults.' + layerId + '.lookaheadDepth'}
-													obj={this.props.studio}
-													type="int"
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Lookahead Maximum Search Distance (Default = {{limit}})', {
-													limit: LOOKAHEAD_DEFAULT_SEARCH_DISTANCE,
-												})}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'mappingsWithOverrides.defaults.' + layerId + '.lookaheadMaxSearchDistance'}
-													obj={this.props.studio}
-													type="int"
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
-										<DeviceMappingSettings
-											mapping={mapping}
-											studio={this.props.studio}
-											attribute={'mappingsWithOverrides.defaults.' + layerId}
-											manifest={manifest}
-										/>
-									</div>
-									<div className="mod alright">
-										<button className={ClassNames('btn btn-primary')} onClick={() => this.finishEditItem(layerId)}>
-											<FontAwesomeIcon icon={faCheck} />
-										</button>
-									</div>
-								</td>
-							</tr>
-						)}
-					</React.Fragment>
-				)
-			})
-		}
-
-		render() {
-			const { t } = this.props
-			return (
-				<div>
-					<h2 className="mhn">{t('Layer Mappings')}</h2>
-					{!this.props.manifest && (
-						<span>{t('Add a playout device to the studio in order to edit the layer mappings')}</span>
-					)}
-					{this.props.manifest && (
-						<React.Fragment>
-							<table className="expando settings-studio-mappings-table">
-								<tbody>{this.renderMappings(this.props.manifest)}</tbody>
-							</table>
-							<div className="mod mhs">
-								<button className="btn btn-primary" onClick={() => this.addNewLayer()}>
-									<FontAwesomeIcon icon={faPlus} />
-								</button>
+				<td className="settings-studio-device__actions table-item-actions c3">
+					<button className="action-btn" onClick={toggleEditItem}>
+						<FontAwesomeIcon icon={faPencilAlt} />
+					</button>
+					<button className="action-btn" onClick={confirmDelete}>
+						<FontAwesomeIcon icon={faTrash} />
+					</button>
+				</td>
+			</tr>
+			{isExpanded && (
+				<tr className="expando-details hl">
+					<td colSpan={5}>
+						<div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Layer ID')}
+									<TextInputControl
+										modifiedClassName="bghl"
+										classNames="input text-input input-l"
+										value={item.id}
+										handleUpdate={doChangeItemId}
+										disabled={!!item.defaults}
+									/>
+									<span className="text-s dimmed">{t('ID of the timeline-layer to map to some output')}</span>
+								</label>
 							</div>
-						</React.Fragment>
-					)}
-				</div>
-			)
-		}
+							<div className="mod mvs mhs">
+								<LabelAndOverrides
+									label={t('Layer Name')}
+									hint={t('Human-readable name of the layer')}
+									item={item}
+									itemKey={'layerName'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								>
+									{(value, handleUpdate) => (
+										<TextInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</LabelAndOverrides>
+							</div>
+							<div className="mod mvs mhs">
+								<LabelAndOverridesForDropdown
+									label={t('Device Type')}
+									hint={t('The type of device to use for the output')}
+									item={item}
+									itemKey={'device'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+									options={getDropdownInputOptions(TSR.DeviceType)}
+								>
+									{(value, handleUpdate, options) => (
+										<DropdownInputControl
+											classNames="input text-input input-l"
+											options={options}
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</LabelAndOverridesForDropdown>
+							</div>
+							<div className="mod mvs mhs">
+								<LabelAndOverrides
+									label={t('Device ID')}
+									hint={t('ID of the device (corresponds to the device ID in the peripheralDevice settings)')}
+									item={item}
+									itemKey={'deviceId'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								>
+									{(value, handleUpdate) => (
+										<TextInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</LabelAndOverrides>
+							</div>
+							<div className="mod mvs mhs">
+								<LabelAndOverridesForDropdown
+									label={t('Lookahead Mode')}
+									item={item}
+									itemKey={'lookahead'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+									options={getDropdownInputOptions(LookaheadMode)}
+								>
+									{(value, handleUpdate, options) => (
+										<DropdownInputControl
+											classNames="input text-input input-l"
+											options={options}
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</LabelAndOverridesForDropdown>
+							</div>
+							<div className="mod mvs mhs">
+								<LabelAndOverridesForInt
+									label={t('Lookahead Target Objects (Undefined = 1)')}
+									item={item}
+									itemKey={'lookaheadDepth'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								>
+									{(value, handleUpdate) => (
+										<IntInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</LabelAndOverridesForInt>
+							</div>
+							<div className="mod mvs mhs">
+								<LabelAndOverridesForInt
+									label={t('Lookahead Maximum Search Distance (Undefined = {{limit}})', {
+										limit: LOOKAHEAD_DEFAULT_SEARCH_DISTANCE,
+									})}
+									item={item}
+									itemKey={'lookaheadMaxSearchDistance'}
+									opPrefix={item.id}
+									overrideHelper={overrideHelper}
+								>
+									{(value, handleUpdate) => (
+										<IntInputControl
+											modifiedClassName="bghl"
+											classNames="input text-input input-l"
+											value={value}
+											handleUpdate={handleUpdate}
+										/>
+									)}
+								</LabelAndOverridesForInt>
+							</div>
+							{manifest &&
+								manifest.map((m) => (
+									<div className="mod mvs mhs" key={m.id}>
+										<ManifestEntryWithOverrides configField={m as any} item={item} overrideHelper={overrideHelper} />
+									</div>
+								))}
+						</div>
+						<div className="mod alright">
+							<button className={ClassNames('btn btn-primary')} onClick={toggleEditItem}>
+								<FontAwesomeIcon icon={faCheck} />
+							</button>
+						</div>
+					</td>
+				</tr>
+			)}
+		</React.Fragment>
+	)
+}
+
+interface MappingSummaryProps {
+	manifest: MappingManifestEntry[] | undefined
+	mapping: MappingExt
+}
+function MappingSummary({ manifest, mapping }: MappingSummaryProps) {
+	if (manifest) {
+		return (
+			<span>
+				{manifest
+					.filter((entry) => entry.includeInSummary)
+					.map((entry) => {
+						const summary = entry.name + ': '
+
+						let mappingValue = entry.values && entry.values[mapping[entry.id]]
+						if (!mappingValue) {
+							mappingValue = mapping[entry.id]
+						}
+
+						if (entry.type === ConfigManifestEntryType.INT && entry.zeroBased && _.isNumber(mappingValue)) {
+							mappingValue += 1
+						}
+
+						return summary + mappingValue
+					})
+					.join(' - ')}
+			</span>
+		)
+	} else {
+		return <span>-</span>
 	}
-)
+}
+
+function renderOptionalInput(attribute: string, obj: any, collection: MongoCollection<any>) {
+	return (
+		<EditAttribute
+			modifiedClassName="bghl"
+			attribute={attribute}
+			obj={obj}
+			type="checkbox"
+			collection={collection}
+			className="mod mvn mhs"
+			mutateDisplayValue={(v) => (v === undefined ? false : true)}
+			mutateUpdateValue={() => undefined}
+		/>
+	)
+}
 
 interface IDeviceMappingSettingsProps {
 	studio: Studio
-	mapping: MappingExt
 	attribute: string
 	showOptional?: boolean
-	manifest: MappingsManifest
+	manifest: MappingManifestEntry[] | undefined
 }
 
-export const DeviceMappingSettings = withTranslation()(
-	class DeviceMappingSettings extends React.Component<Translated<IDeviceMappingSettingsProps>> {
-		renderOptionalInput(attribute: string, obj: any, collection: MongoCollection<any>) {
-			return (
-				<EditAttribute
-					modifiedClassName="bghl"
-					attribute={attribute}
-					obj={obj}
-					type="checkbox"
-					collection={collection}
-					className="mod mvn mhs"
-					mutateDisplayValue={(v) => (v === undefined ? false : true)}
-					mutateUpdateValue={() => undefined}
-				/>
-			)
-		}
+export function DeviceMappingSettings({ attribute, showOptional, manifest, studio }: IDeviceMappingSettingsProps) {
+	if (manifest) {
+		return (
+			<React.Fragment>
+				{manifest.map((m) => (
+					<div className="mod mvs mhs" key={m.id}>
+						<label className="field">
+							{m.name}
+							{showOptional && renderOptionalInput(attribute + '.' + m.id, studio, Studios)}
 
-		renderManifestEntry(attribute: string, manifest: MappingManifestEntry[], showOptional?: boolean) {
-			return (
-				<React.Fragment>
-					{manifest.map((m) => (
-						<div className="mod mvs mhs" key={m.id}>
-							<label className="field">
-								{m.name}
-								{showOptional && this.renderOptionalInput(attribute + '.' + m.id, this.props.studio, Studios)}
-								{renderEditAttribute(Studios, m as any, this.props.studio, attribute + '.')}
-								{m.hint && <span className="text-s dimmed">{m.hint}</span>}
-							</label>
-						</div>
-					))}
-				</React.Fragment>
-			)
-		}
-
-		render() {
-			const { mapping, attribute, showOptional } = this.props
-			const manifest = this.props.manifest[mapping.device]
-
-			if (manifest) return this.renderManifestEntry(attribute, manifest, showOptional)
-
-			return null
-		}
+							{renderEditAttribute(Studios, m as any, studio, attribute + '.')}
+							{m.hint && <span className="text-s dimmed">{m.hint}</span>}
+						</label>
+					</div>
+				))}
+			</React.Fragment>
+		)
 	}
-)
+
+	return null
+}
