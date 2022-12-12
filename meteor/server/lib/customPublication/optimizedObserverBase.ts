@@ -1,8 +1,10 @@
 import deepmerge from 'deepmerge'
 import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { clone, createManualPromise, lazyIgnore, ProtectedString, stringifyError } from '../../../lib/lib'
 import { logger } from '../../logging'
+import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection'
 import { CustomPublish, CustomPublishChanges } from './publish'
 
 interface OptimizedObserverWrapper<TData extends { _id: ProtectedString<any> }, TArgs, TContext> {
@@ -196,7 +198,18 @@ async function createOptimizedObserverWorker<
 	let pendingUpdate: Record<string, any> = {}
 	const triggerUpdate: TriggerUpdate<UpdateProps> = (updateProps) => {
 		// Combine the pending updates
-		pendingUpdate = deepmerge(pendingUpdate, updateProps)
+		pendingUpdate = deepmerge(pendingUpdate, updateProps, {
+			isMergeableObject: (obj) => {
+				// Ensure any Mongo collections aren't cloned, as they will break
+				if (obj instanceof Mongo.Collection || obj instanceof ReactiveCacheCollection) {
+					return false
+				}
+
+				return true
+			},
+			// Some things can't be cloned. But we know the ownership, so this is safe
+			clone: false,
+		})
 
 		// If already running, set it as pending to be done afterwards
 		if (updateIsRunning) {
