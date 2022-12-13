@@ -1,5 +1,5 @@
 import { ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Complete, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
+import { Complete, literal } from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import {
@@ -11,7 +11,6 @@ import { DeviceTriggerMountedActionId, PreviewWrappedAdLibId } from '../../../li
 import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { DummyReactiveVar, protectString } from '../../../lib/lib'
-import { logger } from '../../logging'
 import { GlobalTriggerManager } from './GlobalTriggerManager'
 import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from './observer'
 import { ContentCache } from './reactiveContentCache'
@@ -29,36 +28,11 @@ export class StudioDeviceTriggerManager {
 		this.#showStyleBaseId = value
 	}
 
-	updateTriggers(cache: ContentCache | null): void {
+	updateTriggers(cache: ContentCache): void {
 		const studioId = this.studioId
 		const showStyleBaseId = this.#showStyleBaseId
 
-		const runId = getRandomString(10)
-
-		logger.silly(`${runId}: ShowStyleBaseId is ${showStyleBaseId}, cache: ${!!cache}`)
-
 		if (!showStyleBaseId) {
-			logger.silly(`${runId}: no showStyleBaseId, finishing`)
-			return
-		}
-
-		if (!cache) {
-			DeviceTriggerMountedActions.find({
-				studioId,
-				showStyleBaseId,
-			}).forEach((mountedAction) => {
-				GlobalTriggerManager.deleteAction(mountedAction.actionId)
-			})
-			DeviceTriggerMountedActions.remove({
-				studioId,
-				showStyleBaseId,
-			})
-			DeviceTriggerMountedActionAdlibsPreview.remove({
-				studioId,
-				showStyleBaseId,
-			})
-			GlobalTriggerManager.deleteStudioContext(studioId)
-			logger.silly(`${runId}: no cache, finishing`)
 			return
 		}
 
@@ -68,7 +42,6 @@ export class StudioDeviceTriggerManager {
 			},
 		})
 		if (!rundownPlaylist) {
-			logger.silly(`${runId}: no rundownPlaylist, finishing`)
 			return
 		}
 
@@ -77,7 +50,6 @@ export class StudioDeviceTriggerManager {
 
 		const showStyleBase = cache.ShowStyleBases.findOne(showStyleBaseId)
 		if (!showStyleBase) {
-			logger.silly(`${runId}: no showStyleBase, finishing`)
 			return
 		}
 
@@ -161,12 +133,35 @@ export class StudioDeviceTriggerManager {
 				$nin: upsertedDeviceTriggerMountedActionIds,
 			},
 		})
+	}
 
-		logger.silly(`${runId}: finished processing`)
+	clearTriggers(): void {
+		const studioId = this.studioId
+		const showStyleBaseId = this.#showStyleBaseId
+
+		if (!showStyleBaseId) {
+			return
+		}
+
+		DeviceTriggerMountedActions.find({
+			studioId,
+			showStyleBaseId,
+		}).forEach((mountedAction) => {
+			GlobalTriggerManager.deleteAction(mountedAction.actionId)
+		})
+		DeviceTriggerMountedActions.remove({
+			studioId,
+			showStyleBaseId,
+		})
+		DeviceTriggerMountedActionAdlibsPreview.remove({
+			studioId,
+			showStyleBaseId,
+		})
+		GlobalTriggerManager.deleteStudioContext(studioId)
 	}
 
 	stop() {
-		this.updateTriggers(null)
+		this.clearTriggers()
 	}
 }
 

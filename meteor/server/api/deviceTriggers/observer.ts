@@ -46,7 +46,7 @@ Meteor.startup(() => {
 
 			return () => {
 				workInQueue(async () => {
-					manager.updateTriggers(null)
+					manager.clearTriggers()
 					manager.showStyleBaseId = null
 				})
 			}
