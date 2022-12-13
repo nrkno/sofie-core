@@ -11,20 +11,135 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBTriggeredActions } from '../../../lib/collections/TriggeredActions'
 import { ReactiveCacheCollection } from './ReactiveCacheCollection'
+import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { literal } from '@sofie-automation/corelib/dist/lib'
+
+export type RundownPlaylistFields = '_id' | 'name' | 'activationId' | 'currentPartInstanceId' | 'nextPartInstanceId'
+export const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
+	_id: 1,
+	name: 1,
+	activationId: 1,
+	currentPartInstanceId: 1,
+	nextPartInstanceId: 1,
+})
+
+export type SegmentFields = '_id' | '_rank' | 'isHidden' | 'name' | 'rundownId' | 'identifier'
+export const segmentFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<SegmentFields>>({
+	_id: 1,
+	_rank: 1,
+	isHidden: 1,
+	name: 1,
+	rundownId: 1,
+	identifier: 1,
+})
+
+export type PartFields =
+	| '_id'
+	| '_rank'
+	| 'title'
+	| 'identifier'
+	| 'autoNext'
+	| 'floated'
+	| 'gap'
+	| 'invalid'
+	| 'invalidReason'
+	| 'rundownId'
+	| 'segmentId'
+	| 'untimed'
+export const partFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PartFields>>({
+	_id: 1,
+	_rank: 1,
+	autoNext: 1,
+	floated: 1,
+	gap: 1,
+	identifier: 1,
+	invalid: 1,
+	invalidReason: 1,
+	rundownId: 1,
+	segmentId: 1,
+	title: 1,
+	untimed: 1,
+})
+
+export type PartInstanceFields = '_id' | 'part'
+export const partInstanceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PartInstanceFields>>({
+	_id: 1,
+	part: 1,
+})
+
+export type AdLibActionFields =
+	| '_id'
+	| 'actionId'
+	| 'display'
+	| 'partId'
+	| 'rundownId'
+	| 'triggerModes'
+	| 'userData'
+	| 'uniquenessId'
+	| 'userDataManifest'
+export const adLibActionFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<AdLibActionFields>>({
+	_id: 1,
+	actionId: 1,
+	display: 1,
+	partId: 1,
+	rundownId: 1,
+	triggerModes: 1,
+	uniquenessId: 1,
+	userData: 1,
+	userDataManifest: 1,
+})
+
+export type AdLibPieceFields =
+	| '_id'
+	| '_rank'
+	| 'name'
+	| 'sourceLayerId'
+	| 'outputLayerId'
+	| 'content'
+	| 'expectedDuration'
+	| 'currentPieceTags'
+	| 'nextPieceTags'
+	| 'invertOnAirState'
+	| 'invalid'
+	| 'lifespan'
+	| 'floated'
+	| 'rundownId'
+	| 'partId'
+	| 'status'
+	| 'tags'
+	| 'uniquenessId'
+export const adLibPieceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<AdLibPieceFields>>({
+	_id: 1,
+	_rank: 1,
+	name: 1,
+	sourceLayerId: 1,
+	outputLayerId: 1,
+	content: 1,
+	expectedDuration: 1,
+	currentPieceTags: 1,
+	nextPieceTags: 1,
+	invertOnAirState: 1,
+	invalid: 1,
+	lifespan: 1,
+	floated: 1,
+	partId: 1,
+	rundownId: 1,
+	status: 1,
+	tags: 1,
+	uniquenessId: 1,
+})
 
 export interface ContentCache {
-	Segments: ReactiveCacheCollection<DBSegment>
-	PartInstances: ReactiveCacheCollection<Pick<DBPartInstance, '_id' | 'part'>>
-	Parts: ReactiveCacheCollection<DBPart>
-	AdLibPieces: ReactiveCacheCollection<AdLibPiece>
-	AdLibActions: ReactiveCacheCollection<AdLibAction>
-	RundownBaselineAdLibPieces: ReactiveCacheCollection<RundownBaselineAdLibItem>
-	RundownBaselineAdLibActions: ReactiveCacheCollection<RundownBaselineAdLibAction>
+	RundownPlaylists: ReactiveCacheCollection<Pick<DBRundownPlaylist, RundownPlaylistFields>>
 	ShowStyleBases: ReactiveCacheCollection<DBShowStyleBase>
+	Segments: ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>
+	Parts: ReactiveCacheCollection<Pick<DBPart, PartFields>>
+	PartInstances: ReactiveCacheCollection<Pick<DBPartInstance, PartInstanceFields>>
+	AdLibPieces: ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>
+	AdLibActions: ReactiveCacheCollection<Pick<AdLibAction, AdLibActionFields>>
+	RundownBaselineAdLibPieces: ReactiveCacheCollection<Pick<RundownBaselineAdLibItem, AdLibPieceFields>>
+	RundownBaselineAdLibActions: ReactiveCacheCollection<Pick<RundownBaselineAdLibAction, AdLibActionFields>>
 	TriggeredActions: ReactiveCacheCollection<DBTriggeredActions>
-	RundownPlaylists: ReactiveCacheCollection<
-		Pick<DBRundownPlaylist, '_id' | 'name' | 'activationId' | 'currentPartInstanceId' | 'nextPartInstanceId'>
-	>
 }
 
 type ReactionWithCache = (cache: ContentCache) => void
@@ -47,27 +162,28 @@ export function createReactiveContentCache(
 	}
 
 	const cache: ContentCache = {
-		Segments: new ReactiveCacheCollection<DBSegment>('segments', innerReaction),
-		PartInstances: new ReactiveCacheCollection<Pick<DBPartInstance, '_id' | 'part'>>(
-			'partInstances',
-			innerReaction
-		),
-		Parts: new ReactiveCacheCollection<DBPart>('parts', innerReaction),
-		AdLibPieces: new ReactiveCacheCollection<AdLibPiece>('adLibPieces', innerReaction),
-		AdLibActions: new ReactiveCacheCollection<AdLibAction>('adLibActions', innerReaction),
-		RundownBaselineAdLibPieces: new ReactiveCacheCollection<RundownBaselineAdLibItem>(
-			'rundownBaselineAdLibPieces',
-			innerReaction
-		),
-		RundownBaselineAdLibActions: new ReactiveCacheCollection<RundownBaselineAdLibAction>(
-			'rundownBaselineAdLibActions',
+		RundownPlaylists: new ReactiveCacheCollection<Pick<DBRundownPlaylist, RundownPlaylistFields>>(
+			'rundownPlaylists',
 			innerReaction
 		),
 		ShowStyleBases: new ReactiveCacheCollection<DBShowStyleBase>('showStyleBases', innerReaction),
+		Segments: new ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>('segments', innerReaction),
+		PartInstances: new ReactiveCacheCollection<Pick<DBPartInstance, PartInstanceFields>>(
+			'partInstances',
+			innerReaction
+		),
+		Parts: new ReactiveCacheCollection<Pick<DBPart, PartFields>>('parts', innerReaction),
+		AdLibPieces: new ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>('adLibPieces', innerReaction),
+		AdLibActions: new ReactiveCacheCollection<Pick<AdLibAction, AdLibActionFields>>('adLibActions', innerReaction),
+		RundownBaselineAdLibPieces: new ReactiveCacheCollection<Pick<RundownBaselineAdLibItem, AdLibPieceFields>>(
+			'rundownBaselineAdLibPieces',
+			innerReaction
+		),
+		RundownBaselineAdLibActions: new ReactiveCacheCollection<Pick<RundownBaselineAdLibAction, AdLibActionFields>>(
+			'rundownBaselineAdLibActions',
+			innerReaction
+		),
 		TriggeredActions: new ReactiveCacheCollection<DBTriggeredActions>('triggeredActions', innerReaction),
-		RundownPlaylists: new ReactiveCacheCollection<
-			Pick<DBRundownPlaylist, '_id' | 'name' | 'activationId' | 'currentPartInstanceId' | 'nextPartInstanceId'>
-		>('rundownPlaylists', innerReaction),
 	}
 
 	innerReaction()

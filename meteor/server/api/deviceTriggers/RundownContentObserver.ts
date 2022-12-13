@@ -16,7 +16,16 @@ import { Segments } from '../../../lib/collections/Segments'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { TriggeredActions } from '../../../lib/collections/TriggeredActions'
 import { logger } from '../../logging'
-import { ContentCache, createReactiveContentCache } from './reactiveContentCache'
+import {
+	adLibActionFieldSpecifier,
+	adLibPieceFieldSpecifier,
+	ContentCache,
+	createReactiveContentCache,
+	partFieldSpecifier,
+	partInstanceFieldSpecifier,
+	rundownPlaylistFieldSpecifier,
+	segmentFieldSpecifier,
+} from './reactiveContentCache'
 
 const REACTIVITY_DEBOUNCE = 20
 
@@ -45,13 +54,7 @@ export class RundownContentObserver {
 
 		this.#observers = [
 			RundownPlaylists.find(rundownPlaylistId, {
-				projection: {
-					_id: 1,
-					name: 1,
-					activationId: 1,
-					currentPartInstanceId: 1,
-					nextPartInstanceId: 1,
-				},
+				projection: rundownPlaylistFieldSpecifier,
 			}).observe(cache.RundownPlaylists.link()),
 			ShowStyleBases.find(showStyleBaseId).observe(cache.ShowStyleBases.link()),
 			TriggeredActions.find({
@@ -59,16 +62,26 @@ export class RundownContentObserver {
 					$in: [showStyleBaseId, null],
 				},
 			}).observe(cache.TriggeredActions.link()),
-			Segments.find({
-				rundownId: {
-					$in: rundownIds,
+			Segments.find(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
 				},
-			}).observe(cache.Segments.link()),
-			Parts.find({
-				rundownId: {
-					$in: rundownIds,
+				{
+					projection: segmentFieldSpecifier,
+				}
+			).observe(cache.Segments.link()),
+			Parts.find(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
 				},
-			}).observe(cache.Parts.link()),
+				{
+					projection: partFieldSpecifier,
+				}
+			).observe(cache.Parts.link()),
 			PartInstances.find(
 				{
 					playlistActivationId: activationId,
@@ -77,32 +90,49 @@ export class RundownContentObserver {
 					},
 				},
 				{
-					projection: {
-						_id: 1,
-						part: 1,
-					},
+					projection: partInstanceFieldSpecifier,
 				}
 			).observe(cache.PartInstances.link()),
-			RundownBaselineAdLibActions.find({
-				rundownId: {
-					$in: rundownIds,
+			RundownBaselineAdLibActions.find(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
 				},
-			}).observe(cache.RundownBaselineAdLibActions.link()),
-			RundownBaselineAdLibPieces.find({
-				rundownId: {
-					$in: rundownIds,
+				{
+					projection: adLibActionFieldSpecifier,
+				}
+			).observe(cache.RundownBaselineAdLibActions.link()),
+			RundownBaselineAdLibPieces.find(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
 				},
-			}).observe(cache.RundownBaselineAdLibPieces.link()),
-			AdLibActions.find({
-				rundownId: {
-					$in: rundownIds,
+				{
+					projection: adLibPieceFieldSpecifier,
+				}
+			).observe(cache.RundownBaselineAdLibPieces.link()),
+			AdLibActions.find(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
 				},
-			}).observe(cache.AdLibActions.link()),
-			AdLibPieces.find({
-				rundownId: {
-					$in: rundownIds,
+				{
+					projection: adLibActionFieldSpecifier,
+				}
+			).observe(cache.AdLibActions.link()),
+			AdLibPieces.find(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
 				},
-			}).observe(cache.AdLibPieces.link()),
+				{
+					projection: adLibPieceFieldSpecifier,
+				}
+			).observe(cache.AdLibPieces.link()),
 		]
 	}
 
@@ -110,7 +140,7 @@ export class RundownContentObserver {
 		return this.#cache
 	}
 
-	public dispose = (): void => {
+	public stop = (): void => {
 		this.#cancelCache()
 		this.#observers.forEach((observer) => observer.stop())
 		this.#cleanup()

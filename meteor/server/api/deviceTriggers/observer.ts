@@ -59,8 +59,8 @@ Meteor.startup(() => {
 		logger.debug(`Destroying observer for studio "${studioId}"`)
 		const toRemove = studioObserversAndManagers.get(studioId)
 		if (toRemove) {
-			toRemove.observer.dispose()
-			toRemove.manager.dispose()
+			toRemove.observer.stop()
+			toRemove.manager.stop()
 			studioObserversAndManagers.delete(studioId)
 		} else {
 			logger.error(`Observer for studio "${studioId}" not found`)

@@ -57,7 +57,7 @@ export class RundownsObserver {
 		REACTIVITY_DEBOUNCE
 	)
 
-	public dispose = (): void => {
+	public stop = (): void => {
 		this.updateRundownContent.cancel()
 		this.#rundownsLiveQuery.stop()
 		this.#changed = undefined

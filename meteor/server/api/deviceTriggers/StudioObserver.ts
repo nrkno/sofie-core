@@ -5,6 +5,8 @@ import {
 	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { literal } from '@sofie-automation/corelib/dist/lib'
+import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import EventEmitter from 'events'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
@@ -23,6 +25,34 @@ type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) =>
 
 const REACTIVITY_DEBOUNCE = 20
 
+type RundownPlaylistFields = '_id' | 'nextPartInstanceId' | 'currentPartInstanceId' | 'activationId'
+const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
+	_id: 1,
+	activationId: 1,
+	currentPartInstanceId: 1,
+	nextPartInstanceId: 1,
+})
+
+type PartInstanceFields = '_id' | 'rundownId'
+const partInstanceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PartInstanceFields>>({
+	_id: 1,
+	rundownId: 1,
+})
+
+type RundownFields = '_id' | 'showStyleBaseId'
+const rundownFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownFields>>({
+	_id: 1,
+	showStyleBaseId: 1,
+})
+
+type ShowStyleBaseFields = '_id' | 'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'hotkeyLegend'
+const showStyleBaseFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<ShowStyleBaseFields>>({
+	_id: 1,
+	sourceLayersWithOverrides: 1,
+	outputLayersWithOverrides: 1,
+	hotkeyLegend: 1,
+})
+
 export class StudioObserver extends EventEmitter {
 	#playlistInStudioLiveQuery: Meteor.LiveQueryHandle
 	#showStyleOfRundownLiveQuery: Meteor.LiveQueryHandle | undefined
@@ -33,7 +63,6 @@ export class StudioObserver extends EventEmitter {
 	showStyleBaseId: ShowStyleBaseId | undefined
 
 	#changed: ChangedHandler
-	#cleanup: (() => void) | undefined
 
 	constructor(studioId: StudioId, onChanged: ChangedHandler) {
 		super()
@@ -48,16 +77,9 @@ export class StudioObserver extends EventEmitter {
 							activationId: { $exists: true },
 						},
 						{
-							projection: {
-								_id: 1,
-								nextPartInstanceId: 1,
-								currentPartInstanceId: 1,
-								activationId: 1,
-							},
+							projection: rundownPlaylistFieldSpecifier,
 						}
-					) as MongoCursor<
-						Pick<DBRundownPlaylist, '_id' | 'nextPartInstanceId' | 'currentPartInstanceId' | 'activationId'>
-					>
+					) as MongoCursor<Pick<DBRundownPlaylist, RundownPlaylistFields>>
 			)
 			.next('activePartInstance', (chain) => {
 				const activePartInstanceId =
@@ -65,8 +87,8 @@ export class StudioObserver extends EventEmitter {
 				if (!activePartInstanceId) return null
 				return PartInstances.find(
 					{ _id: activePartInstanceId },
-					{ projection: { rundownId: 1 }, limit: 1 }
-				) as MongoCursor<Pick<DBPartInstance, '_id' | 'rundownId'>>
+					{ projection: partInstanceFieldSpecifier, limit: 1 }
+				) as MongoCursor<Pick<DBPartInstance, PartInstanceFields>>
 			})
 			.end(this.updatePlaylistInStudio)
 	}
@@ -75,11 +97,8 @@ export class StudioObserver extends EventEmitter {
 		Meteor.bindEnvironment(
 			(
 				state: {
-					activePlaylist: Pick<
-						DBRundownPlaylist,
-						'_id' | 'nextPartInstanceId' | 'currentPartInstanceId' | 'activationId'
-					>
-					activePartInstance: Pick<DBPartInstance, '_id' | 'rundownId'>
+					activePlaylist: Pick<DBRundownPlaylist, RundownPlaylistFields>
+					activePartInstance: Pick<DBPartInstance, PartInstanceFields>
 				} | null
 			): void => {
 				const activePlaylistId = state?.activePlaylist?._id
@@ -115,12 +134,12 @@ export class StudioObserver extends EventEmitter {
 	)
 
 	private setupShowStyleOfRundownObserver = (rundownId: RundownId): Meteor.LiveQueryHandle => {
-		const chain = observerChain()
+		return observerChain()
 			.next(
 				'currentRundown',
 				() =>
-					Rundowns.find({ _id: rundownId }, { fields: { showStyleBaseId: 1 }, limit: 1 }) as MongoCursor<
-						Pick<DBRundown, '_id' | 'showStyleBaseId'>
+					Rundowns.find({ _id: rundownId }, { fields: rundownFieldSpecifier, limit: 1 }) as MongoCursor<
+						Pick<DBRundown, RundownFields>
 					>
 			)
 			.next('showStyleBase', (chain) =>
@@ -128,35 +147,21 @@ export class StudioObserver extends EventEmitter {
 					? (ShowStyleBases.find(
 							{ _id: chain.currentRundown.showStyleBaseId },
 							{
-								fields: { sourceLayersWithOverrides: 1, outputLayersWithOverrides: 1, hotkeyLegend: 1 },
+								fields: showStyleBaseFieldSpecifier,
 								limit: 1,
 							}
-					  ) as MongoCursor<
-							Pick<
-								DBShowStyleBase,
-								'_id' | 'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'hotkeyLegend'
-							>
-					  >)
+					  ) as MongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>)
 					: null
 			)
 			.end(this.updateShowStyle)
-
-		return {
-			stop: () => {
-				chain.stop()
-			},
-		}
 	}
 
 	private updateShowStyle = _.debounce(
 		Meteor.bindEnvironment(
 			(
 				state: {
-					currentRundown: Pick<DBRundown, '_id' | 'showStyleBaseId'>
-					showStyleBase: Pick<
-						DBShowStyleBase,
-						'_id' | 'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'hotkeyLegend'
-					>
+					currentRundown: Pick<DBRundown, RundownFields>
+					showStyleBase: Pick<DBShowStyleBase, ShowStyleBaseFields>
 				} | null
 			) => {
 				const showStyleBaseId = state?.showStyleBase._id
@@ -177,7 +182,9 @@ export class StudioObserver extends EventEmitter {
 				const activationId = this.activationId
 				this.showStyleBaseId = showStyleBaseId
 
-				const obs0 = new RundownsObserver(activePlaylistId, (rundownIds) => {
+				let cleanupChanges: (() => void) | undefined = undefined
+
+				this.#rundownsLiveQuery = new RundownsObserver(activePlaylistId, (rundownIds) => {
 					logger.silly(`Creating new RundownContentObserver`)
 					const obs1 = new RundownContentObserver(
 						activePlaylistId,
@@ -185,7 +192,7 @@ export class StudioObserver extends EventEmitter {
 						rundownIds,
 						activationId,
 						(cache) => {
-							this.#cleanup = this.#changed(showStyleBaseId, cache)
+							cleanupChanges = this.#changed(showStyleBaseId, cache)
 
 							return () => {
 								void 0
@@ -194,22 +201,16 @@ export class StudioObserver extends EventEmitter {
 					)
 
 					return () => {
-						obs1.dispose()
-						this.#cleanup?.()
+						obs1.stop()
+						cleanupChanges?.()
 					}
 				})
-
-				this.#rundownsLiveQuery = {
-					stop: () => {
-						obs0.dispose()
-					},
-				}
 			}
 		),
 		REACTIVITY_DEBOUNCE
 	)
 
-	public dispose = (): void => {
+	public stop = (): void => {
 		this.#playlistInStudioLiveQuery.stop()
 		this.updatePlaylistInStudio.cancel()
 	}

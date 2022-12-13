@@ -165,7 +165,7 @@ export class StudioDeviceTriggerManager {
 		logger.silly(`${runId}: finished processing`)
 	}
 
-	dispose() {
+	stop() {
 		this.updateTriggers(null)
 	}
 }
