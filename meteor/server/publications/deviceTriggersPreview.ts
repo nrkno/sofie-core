@@ -42,7 +42,7 @@ meteorCustomPublish(
 	}
 )
 
-export async function insertTriggerToPreview(
+export async function insertInputDeviceTriggerToPreview(
 	deviceId: PeripheralDeviceId,
 	triggerDeviceId: string,
 	triggerId: string,

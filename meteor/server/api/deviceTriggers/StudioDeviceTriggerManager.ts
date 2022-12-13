@@ -16,25 +16,13 @@ import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } 
 import { ContentCache } from './reactiveContentCache'
 
 export class StudioDeviceTriggerManager {
-	#showStyleBaseId: ShowStyleBaseId | null = null
+	#lastShowStyleBaseId: ShowStyleBaseId | null = null
 
 	constructor(public studioId: StudioId) {}
 
-	public get showStyleBaseId(): ShowStyleBaseId | null {
-		return this.#showStyleBaseId
-	}
-
-	public set showStyleBaseId(value: ShowStyleBaseId | null) {
-		this.#showStyleBaseId = value
-	}
-
-	updateTriggers(cache: ContentCache): void {
+	updateTriggers(cache: ContentCache, showStyleBaseId: ShowStyleBaseId): void {
 		const studioId = this.studioId
-		const showStyleBaseId = this.#showStyleBaseId
-
-		if (!showStyleBaseId) {
-			return
-		}
+		this.#lastShowStyleBaseId = showStyleBaseId
 
 		const rundownPlaylist = cache.RundownPlaylists.findOne({
 			activationId: {
@@ -137,7 +125,7 @@ export class StudioDeviceTriggerManager {
 
 	clearTriggers(): void {
 		const studioId = this.studioId
-		const showStyleBaseId = this.#showStyleBaseId
+		const showStyleBaseId = this.#lastShowStyleBaseId
 
 		if (!showStyleBaseId) {
 			return
@@ -158,6 +146,8 @@ export class StudioDeviceTriggerManager {
 			showStyleBaseId,
 		})
 		GlobalTriggerManager.deleteStudioContext(studioId)
+
+		this.#lastShowStyleBaseId = null
 	}
 
 	stop() {

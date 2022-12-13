@@ -32,12 +32,12 @@ export class RundownsObserver {
 			}
 		) as MongoCursor<Pick<Rundown, RundownFields>>
 		this.#rundownsLiveQuery = cursor.observeChanges({
-			added: (id) => {
-				this.#rundownIds.add(id)
+			added: (rundownId) => {
+				this.#rundownIds.add(rundownId)
 				this.updateRundownContent()
 			},
-			removed: (id) => {
-				this.#rundownIds.delete(id)
+			removed: (rundownId) => {
+				this.#rundownIds.delete(rundownId)
 				this.updateRundownContent()
 			},
 		})

@@ -40,14 +40,12 @@ Meteor.startup(() => {
 		const manager = new StudioDeviceTriggerManager(studioId)
 		const observer = new StudioObserver(studioId, (showStyleBaseId, cache) => {
 			workInQueue(async () => {
-				manager.showStyleBaseId = showStyleBaseId
-				manager.updateTriggers(cache)
+				manager.updateTriggers(cache, showStyleBaseId)
 			})
 
 			return () => {
 				workInQueue(async () => {
 					manager.clearTriggers()
-					manager.showStyleBaseId = null
 				})
 			}
 		})
@@ -67,17 +65,12 @@ Meteor.startup(() => {
 		}
 	}
 
-	Studios.find({}, { projection: { _id: 1 } }).observe({
-		added: (doc) => {
-			const studioId = doc._id
+	Studios.find({}, { projection: { _id: 1 } }).observeChanges({
+		added: (studioId) => {
 			createObserverAndManager(studioId)
 		},
-		changed: (newDoc, oldDoc) => {
-			destroyObserverAndManager(oldDoc._id)
-			createObserverAndManager(newDoc._id)
-		},
-		removed: (doc) => {
-			destroyObserverAndManager(doc._id)
+		removed: (studioId) => {
+			destroyObserverAndManager(studioId)
 		},
 	})
 })
@@ -90,7 +83,7 @@ export const DeviceTriggerMountedActionAdlibsPreview = new ReactiveCacheCollecti
 	'deviceTriggerMountedActionAdlibsPreview'
 )
 
-export async function receiveTrigger(
+export async function receiveInputDeviceTrigger(
 	context: MethodContext,
 	peripheralDeviceId: PeripheralDeviceId,
 	deviceToken: string,
