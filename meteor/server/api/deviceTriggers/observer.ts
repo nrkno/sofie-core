@@ -13,7 +13,7 @@ import { Studios } from '../../../lib/collections/Studios'
 import { logger } from '../../logging'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { GlobalTriggerManager } from './GlobalTriggerManager'
-import { PromiseQueue } from './Queue'
+import { JobQueue } from './JobQueue'
 import { ReactiveCacheCollection } from './ReactiveCacheCollection'
 import { StudioDeviceTriggerManager } from './StudioDeviceTriggerManager'
 import { StudioObserver } from './StudioObserver'
@@ -26,10 +26,10 @@ type ObserverAndManager = {
 Meteor.startup(() => {
 	if (!Meteor.isServer) return
 	const studioObserversAndManagers = new Map<StudioId, ObserverAndManager>()
-	const workQueue = new PromiseQueue()
+	const jobQueue = new JobQueue()
 
 	function workInQueue(fnc: () => Promise<void>) {
-		workQueue.add(fnc).catch((e) => {
+		jobQueue.add(fnc).catch((e) => {
 			logger.error(`Error in DeviceTriggers Studio observer reaction: ${e}`)
 			logger.error(e)
 		})

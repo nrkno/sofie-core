@@ -17,7 +17,9 @@ type Options = {
 	autoStart: boolean
 }
 
-export class PromiseQueue {
+// TODO: Move to shared-lib?
+
+export class JobQueue {
 	#queue: JobDescription[] = []
 	#autoStart: boolean
 	#paused = true
@@ -59,6 +61,7 @@ export class PromiseQueue {
 	}
 
 	start(): void {
+		if (this.#paused === false) return
 		;(async () => {
 			this.#paused = false
 			// eslint-disable-next-line no-constant-condition
