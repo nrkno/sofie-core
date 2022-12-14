@@ -244,7 +244,7 @@ const EditAttributeText = wrapEditAttribute(
 					disabled={this.props.disabled}
 					placeholder={this.props.label}
 					updateOnKey={this.props.updateOnKey}
-					value={this.getAttribute() || ''}
+					value={this.getAttribute() ?? ''}
 					handleUpdate={this.handleChange}
 				/>
 			)
@@ -294,7 +294,7 @@ const EditAttributeInt = wrapEditAttribute(
 					disabled={this.props.disabled}
 					placeholder={this.props.label}
 					updateOnKey={this.props.updateOnKey}
-					value={this.getAttribute() || ''}
+					value={this.getAttribute() ?? ''}
 					handleUpdate={this.handleChange}
 				/>
 			)
@@ -319,7 +319,7 @@ const EditAttributeFloat = wrapEditAttribute(
 					disabled={this.props.disabled}
 					placeholder={this.props.label}
 					updateOnKey={this.props.updateOnKey}
-					value={this.getAttribute() || ''}
+					value={this.getAttribute() ?? ''}
 					handleUpdate={this.handleChange}
 				/>
 			)
