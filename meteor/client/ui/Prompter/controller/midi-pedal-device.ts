@@ -73,7 +73,7 @@ export class MidiPedalController extends ControllerAbstract {
 			webmidi.enable(this.setupMidiListeners.bind(this))
 		} catch (e: any) {
 			console.error(e)
-			console.log(
+			console.warn(
 				'Are you accessing the page over HTTPS? If not, look at setting Chrome flag unsafely-treat-insecure-origin-as-secure'
 			)
 		}
