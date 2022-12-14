@@ -23,7 +23,7 @@ import {
 	MosDuration,
 	IMOSObjectStatus,
 	IMOSROAck,
-} from 'mos-connection'
+} from '@mos-connection/connector'
 import * as _ from 'underscore'
 import { MosHandler } from './mosHandler'
 import { DeviceConfig } from './connector'
@@ -842,7 +842,7 @@ export class CoreHandler {
 			versions['_process'] = process.env.npm_package_version
 		}
 
-		const pkgNames = ['mos-connection']
+		const pkgNames = ['@mos-connection/connector']
 		try {
 			for (const pkgName of pkgNames) {
 				try {

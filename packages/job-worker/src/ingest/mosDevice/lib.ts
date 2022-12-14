@@ -4,7 +4,7 @@ import { getPartId } from '../lib'
 import { PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import _ = require('underscore')
 
-export function getPartIdFromMosStory(rundownId: RundownId, partMosId: MOS.MosString128 | string): PartId {
+export function getPartIdFromMosStory(rundownId: RundownId, partMosId: MOS.IMOSString128 | string): PartId {
 	if (!partMosId) throw new Error('parameter partMosId missing!')
 	return getPartId(rundownId, typeof partMosId === 'string' ? partMosId : parseMosString(partMosId))
 }
@@ -32,7 +32,7 @@ export function fixIllegalObject(o: unknown): void {
 	}
 }
 
-export function parseMosString(str: MOS.MosString128): string {
+export function parseMosString(str: MOS.MosString128 | MOS.IMOSString128): string {
 	if (!str) throw new Error('parseMosString: str parameter missing!')
-	return str['_str'] || str.toString()
+	return MOS.MosString128.getString(str) ?? str.toString()
 }

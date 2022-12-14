@@ -142,7 +142,7 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 
 	const dependencies: any = PackageInfo.dependencies
 	if (dependencies) {
-		const libNames: string[] = ['mos-connection', 'superfly-timeline']
+		const libNames: string[] = ['@mos-connection/helper', 'superfly-timeline']
 
 		const getRealVersion = async (name: string, fallback: string): Promise<string> => {
 			try {

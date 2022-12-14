@@ -12,7 +12,6 @@ import { IngestPlaylist, IngestRundown, IngestPart, IngestSegment } from './inge
 import { MediaObjectRevision, MediaWorkFlowRevision, MediaWorkFlowStepRevision } from './mediaManager'
 import {
 	IMOSRunningOrder,
-	MosString128,
 	IMOSRunningOrderBase,
 	IMOSRunningOrderStatus,
 	IMOSStoryStatus,
@@ -24,7 +23,8 @@ import {
 	IMOSROAction,
 	IMOSROReadyToAir,
 	IMOSROFullStory,
-} from './mos'
+} from '@mos-connection/model'
+import { MosString128 } from '@mos-connection/helper'
 import { ExpectedPackageStatusAPI } from '../package-manager/package'
 import {
 	PeripheralDeviceInitOptions,

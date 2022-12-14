@@ -20,7 +20,9 @@ import {
 	IMOSDeviceConnectionOptions,
 	MosDevice,
 	IMOSListMachInfo,
-} from 'mos-connection'
+	IMOSString128,
+} from '@mos-connection/connector'
+
 import * as Winston from 'winston'
 import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
 import {
@@ -557,7 +559,7 @@ export class MosHandler {
 	private _getDevice(deviceId: string): MosDevice | null {
 		return this._ownMosDevices[deviceId] || null
 	}
-	private async _getROAck(roId: MosString128, p: Promise<any>): Promise<IMOSROAck> {
+	private async _getROAck(roId: IMOSString128, p: Promise<any>): Promise<IMOSROAck> {
 		return p
 			.then(() => {
 				const roAck: IMOSROAck = {

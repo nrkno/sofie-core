@@ -67,7 +67,7 @@
 	"dependencies": {
 		"@sofie-automation/server-core-integration": "1.49.0-in-development",
 		"@sofie-automation/shared-lib": "1.49.0-in-development",
-		"mos-connection": "^2.0.1",
+		"@mos-connection/connector": "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0",
 		"tslib": "^2.4.0",
 		"type-fest": "^3.1.0",
 		"underscore": "^1.13.4",
