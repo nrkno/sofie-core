@@ -4,7 +4,11 @@ import * as _ from 'underscore'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
-import { PeripheralDevices, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevices,
+	PeripheralDevice,
+	PeripheralDeviceType,
+} from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -18,14 +22,17 @@ import {
 } from '@sofie-automation/corelib/dist/deviceConfig'
 import { ConfigManifestEntryComponent } from './ConfigManifestEntryComponent'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
-import { unprotectString } from '../../../../lib/lib'
-import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { protectString, unprotectString } from '../../../../lib/lib'
+import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { doUserAction, UserAction } from '../../../lib/userAction'
+import { MeteorCall } from '../../../../lib/api/methods'
 
 type EditId = PeripheralDeviceId | string
 interface IGenericDeviceSettingsComponentState {
 	deleteConfirmItemPath: string | undefined
 	showDeleteConfirm: boolean
 	editedObjects: EditId[]
+	deviceDebugState: Map<PeripheralDeviceId, object>
 }
 
 interface IGenericDeviceSettingsComponentProps {
@@ -38,12 +45,55 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 		Translated<IGenericDeviceSettingsComponentProps>,
 		IGenericDeviceSettingsComponentState
 	> {
+		private refreshDebugStatesInterval: NodeJS.Timer | undefined = undefined
+
 		constructor(props: Translated<IGenericDeviceSettingsComponentProps>) {
 			super(props)
 			this.state = {
 				deleteConfirmItemPath: undefined,
 				showDeleteConfirm: false,
 				editedObjects: [],
+				deviceDebugState: new Map(),
+			}
+		}
+
+		componentDidMount() {
+			this.refreshDebugStatesInterval = setInterval(this.refreshDebugStates, 1000)
+		}
+
+		componentWillUnmount() {
+			if (this.refreshDebugStatesInterval) clearInterval(this.refreshDebugStatesInterval)
+		}
+
+		refreshDebugStates = () => {
+			const { t } = this.props
+
+			if (
+				this.props.device.type === PeripheralDeviceType.PLAYOUT &&
+				this.props.device.settings &&
+				this.props.device.settings['debugState']
+			) {
+				doUserAction(
+					t,
+					'Debug States Refresh Timer',
+					UserAction.PERIPHERAL_DEVICE_REFRESH_DEBUG_STATES,
+					(e, ts) => MeteorCall.userAction.getDebugStates(e, ts, this.props.device._id),
+					(err, res) => {
+						if (err) {
+							console.log(`Error fetching device states: ${err}`)
+						} else if (res) {
+							const states: Map<PeripheralDeviceId, object> = new Map()
+							for (const [key, state] of Object.entries(res)) {
+								states.set(protectString(key), state)
+							}
+							this.setState({
+								deviceDebugState: states,
+							})
+						}
+
+						return true
+					}
+				)
 			}
 		}
 
@@ -690,7 +740,12 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 						<React.Fragment>
 							<h2 className="mhn">{t('Attached Subdevices')}</h2>
 							{subDevices.map((device) => (
-								<DeviceItem key={unprotectString(device._id)} device={device} showRemoveButtons={true} />
+								<DeviceItem
+									key={unprotectString(device._id)}
+									device={device}
+									showRemoveButtons={true}
+									debugState={this.state.deviceDebugState.get(device._id)}
+								/>
 							))}
 						</React.Fragment>
 					)}
