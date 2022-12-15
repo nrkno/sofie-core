@@ -1,4 +1,5 @@
-import { TSR, OnGenerateTimelineObj, TimelineObjectCoreExt, Time } from '@sofie-automation/blueprints-integration'
+import { TSR, OnGenerateTimelineObj, Time } from '@sofie-automation/blueprints-integration'
+import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { SetRequired } from 'type-fest'
 import { ProtectedString, protectString, unprotectString } from '../protectedString'
 import { PartInstanceId, PieceInstanceInfiniteId, BlueprintId, StudioId } from './Ids'
@@ -17,6 +18,8 @@ import {
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 export { PartPlaybackCallbackData, PiecePlaybackCallbackData }
 
+export { TimelineObjGeneric, TimelineObjType }
+
 export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
 
 export interface OnGenerateTimelineObjExt<TMetadata = unknown, TKeyframeMetadata = unknown>
@@ -27,24 +30,6 @@ export interface OnGenerateTimelineObjExt<TMetadata = unknown, TKeyframeMetadata
 	infinitePieceInstanceId?: PieceInstanceInfiniteId
 }
 
-export interface TimelineObjGeneric extends TimelineObjectCoreExt<TSR.TSRTimelineContent> {
-	/** Unique within a timeline (ie within a studio) */
-	id: string
-	/** Set when the id of the object is prefixed */
-	originalId?: string
-
-	objectType: TimelineObjType
-
-	enable: TimelineEnableExt | TimelineEnableExt[]
-
-	/** The id of the group object this object is in  */
-	inGroup?: string
-}
-
-export enum TimelineObjType {
-	/** Objects played in a rundown */
-	RUNDOWN = 'rundown',
-}
 export interface TimelineObjRundown extends TimelineObjGeneric {
 	objectType: TimelineObjType.RUNDOWN
 }
