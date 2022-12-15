@@ -423,6 +423,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 		}
 
 		getConfigSummaryFields(configManifest: TableConfigManifestEntry) {
+			const { t } = this.props
 			const fieldNames: { [field: string]: TableEntryConfigManifestEntry } = {}
 
 			_.each(configManifest.config, (c) => {
@@ -436,8 +437,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 			if (configManifest.config && Object.keys(configManifest.config).length > 1) {
 				fieldNames[configManifest.typeField || 'type'] = {
 					id: 'type',
-					name: 'Type',
-					columnName: 'Type',
+					name: t('Type'),
+					columnName: t('Type'),
 					type: ConfigManifestEntryType.STRING,
 				}
 			}
