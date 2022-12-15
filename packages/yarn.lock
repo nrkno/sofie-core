@@ -3861,7 +3861,7 @@
   version "1.49.0-in-development"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "8.0.0-release48.0"
+    timeline-state-resolver-types "8.0.0-nightly-feat-multi-osc-20221215-165008-af34aa023.0"
     tslib "^2.4.0"
     type-fest "^3.1.0"
 
@@ -14812,17 +14812,17 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@8.0.0-release48.0:
-  version "8.0.0-release48.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-8.0.0-release48.0.tgz#2278f48e14dcfb36213d1397c17b5003615544b5"
-  integrity sha512-vJYmI24URU0Nsqete5XlTqVDkoKQOT9NtR/B6VT7pUGTf0XVwIOXSE+LPnyGJheUtIZS1swbhgBf5kv8PvEFDg==
+timeline-state-resolver-types@8.0.0-nightly-feat-multi-osc-20221215-165008-af34aa023.0:
+  version "8.0.0-nightly-feat-multi-osc-20221215-165008-af34aa023.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-8.0.0-nightly-feat-multi-osc-20221215-165008-af34aa023.0.tgz#48f3a21f1a456ec480bb50de357be247c465679f"
+  integrity sha512-fDbw3gZx3yOEBDI/eY9ybhE5r4ceY7Yvz6Jo7psCceFpvUwJHCGfmOmIgqdiAyBmBkMKZlbV9cbJnccaDIeUgA==
   dependencies:
     tslib "^2.4.1"
 
-timeline-state-resolver@8.0.0-release48.0:
-  version "8.0.0-release48.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.0.0-release48.0.tgz#8fbc3bc9324edbd111f26978474a9cda979a65dc"
-  integrity sha512-0IkMTBSmX1RoP1hEODFoxBgTCdRoxjELF8JCdSPqI3SAgmIWBF/VQNBL/f461WX3G8R39rRmVwmBlng3uqbENg==
+timeline-state-resolver@8.0.0-nightly-feat-multi-osc-20221215-165008-af34aa023.0:
+  version "8.0.0-nightly-feat-multi-osc-20221215-165008-af34aa023.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.0.0-nightly-feat-multi-osc-20221215-165008-af34aa023.0.tgz#6c9247dd10b54310452b2a7c91bec63f36d46112"
+  integrity sha512-uldMUE79B2HKK9LbJY0Mt9uxDYELZBT0TGsA+24rBg6admO5P77nOVkhs9lOEjaZ9uJ5+v/7GWbYXW4nrmwzcw==
   dependencies:
     "@tv2media/v-connection" "^6.0.3"
     atem-connection "2.4.0"
@@ -14844,7 +14844,7 @@ timeline-state-resolver@8.0.0-release48.0:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.3.1"
     threadedclass "^1.2.0"
-    timeline-state-resolver-types "8.0.0-release48.0"
+    timeline-state-resolver-types "8.0.0-nightly-feat-multi-osc-20221215-165008-af34aa023.0"
     tslib "^2.4.1"
     tv-automation-quantel-gateway-client "^2.0.5"
     underscore "^1.13.4"

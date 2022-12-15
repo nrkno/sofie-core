@@ -456,6 +456,51 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		},
 	],
 	[TSRDeviceType.TELEMETRICS]: [...PLAYOUT_SUBDEVICE_COMMON, ...PLAYOUT_SUBDEVICE_HOST_PORT],
+	[TSRDeviceType.MULTI_OSC]: [
+		...PLAYOUT_SUBDEVICE_COMMON,
+		{
+			id: 'options.connections',
+			name: 'Connections',
+			type: ConfigManifestEntryType.TABLE,
+			defaultType: 'default',
+			config: {
+				default: [
+					{
+						id: 'connectionId',
+						name: 'Connection ID',
+						columnName: 'ID',
+						type: ConfigManifestEntryType.STRING,
+						defaultVal: '',
+					},
+					{
+						id: 'host',
+						name: 'Host',
+						columnName: 'Host',
+						type: ConfigManifestEntryType.STRING,
+						defaultVal: '',
+					},
+					{
+						id: 'port',
+						name: 'Port',
+						columnName: 'Port',
+						type: ConfigManifestEntryType.INT,
+					},
+					{
+						id: 'type',
+						name: 'Type (TCP or UDP)',
+						type: ConfigManifestEntryType.ENUM,
+						values: OSCDeviceType,
+						defaultVal: OSCDeviceType.UDP,
+					},
+				],
+			},
+		},
+		{
+			id: 'options.timeBetweenCommands',
+			name: 'Time between commands in ms',
+			type: ConfigManifestEntryType.INT,
+		},
+	],
 }
 
 // TODO: should come from types
