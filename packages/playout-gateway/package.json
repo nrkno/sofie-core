@@ -56,7 +56,6 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "1.49.0-in-development",
 		"@sofie-automation/server-core-integration": "1.49.0-in-development",
 		"@sofie-automation/shared-lib": "1.49.0-in-development",
 		"debug": "^4.3.3",
