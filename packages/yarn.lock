@@ -3381,35 +3381,35 @@
   resolved "https://registry.yarnpkg.com/@mdx-js/util/-/util-1.6.22.tgz#219dfd89ae5b97a8801f015323ffa4b62f45718b"
   integrity sha512-H1rQc1ZOHANWBvPcW+JpGwr+juXSxM8Q8YCkm3GhZd8REu1fHR3z99CErO1p9pkcfcxZnMdIZdIsXkOHY0NilA==
 
-"@mos-connection/connector@2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0":
-  version "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0"
-  resolved "https://registry.yarnpkg.com/@mos-connection/connector/-/connector-2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0.tgz#f47dce814aebd6ec1c47d3fbce081e1ef4d4dc5d"
-  integrity sha512-RhBK24pCfPXtJoAgs4d/Iay3+FQbee5Et08lQ0z4Pa/YjR3rx/uS02zqRzdePgNkFlz78Wlw0F0hIIq4d/3/Xg==
+"@mos-connection/connector@3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0":
+  version "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
+  resolved "https://registry.yarnpkg.com/@mos-connection/connector/-/connector-3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0.tgz#643fee668f23cd1bf28c6d1094ec3533861b13d8"
+  integrity sha512-1/WY5h9drh+mv7g93iS9NsCke6ZYrU++bLWJMAk6sb815XhR0eJuZV8VIxE0Ai+CDwoJh0EVqTHtYRVemG0p2A==
   dependencies:
-    "@mos-connection/helper" "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0"
-    "@mos-connection/model" "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0"
+    "@mos-connection/helper" "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
+    "@mos-connection/model" "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
     iconv-lite "^0.6.2"
     moment "^2.29.4"
     tslib "^2.2.0"
     xml-js "^1.6.11"
     xmlbuilder "^15.1.1"
 
-"@mos-connection/helper@2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0":
-  version "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0"
-  resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0.tgz#4eeee3f5db4fd6b4e24f86566ce0b1927f75522b"
-  integrity sha512-Tbd0+yCQBZTC8ugiR0bFuwxyTFb3LtbNmPFbWQhZ0dSF0aVqNfnAb04wA5GeFa9tOoaei5VGSSKainT26Z+tmg==
+"@mos-connection/helper@3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0":
+  version "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
+  resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0.tgz#9f0b1ebc46021dcfe8721496422b71549fd9d1ed"
+  integrity sha512-SBkDCOSgAEL8D43n4GD9oQmEJwjFQ9H3cw49pElvseyCAJrMaizpe95BpH//chBITyjJCOl/0FzOx/guWJPKrg==
   dependencies:
-    "@mos-connection/model" "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0"
+    "@mos-connection/model" "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
     iconv-lite "^0.6.2"
     moment "^2.29.4"
     tslib "^2.2.0"
     xml-js "^1.6.11"
     xmlbuilder "^15.1.1"
 
-"@mos-connection/model@2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0":
-  version "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0"
-  resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0.tgz#c8206fcd95b404ea2b3a755d343e4af3129a2c93"
-  integrity sha512-tOn7+5DQ+eV4VYpUZZ8E/cxOFAkLFpyCycwzRKxNPYvTzR8JkL47fQY6I7wpfnBZZUn8ZGazvhugoEkHOxGm1w==
+"@mos-connection/model@3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0":
+  version "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
+  resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0.tgz#3a585cca7dd867edda65035f558bd903c6318fe1"
+  integrity sha512-jb6rDgU+Q9Ztor8veJ8WyyEhcua8hnw2dx1cpGhBJznxoAaLezECqCK7wwdbNK48hhg9DgW5165pjmg7OF+GNg==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -3918,7 +3918,7 @@
 "@sofie-automation/corelib@link:corelib":
   version "1.49.0-in-development"
   dependencies:
-    "@mos-connection/helper" "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0"
+    "@mos-connection/model" "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     "@sofie-automation/shared-lib" "link:shared-lib"
     fast-clone "^1.5.13"
@@ -3934,7 +3934,7 @@
 "@sofie-automation/shared-lib@link:shared-lib":
   version "1.49.0-in-development"
   dependencies:
-    "@mos-connection/model" "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0"
+    "@mos-connection/model" "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
     tslib "^2.4.0"
     type-fest "^3.1.0"
 

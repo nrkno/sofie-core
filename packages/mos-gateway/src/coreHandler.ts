@@ -6,8 +6,6 @@ import {
 	IMOSConnectionStatus,
 	IMOSDevice,
 	IMOSListMachInfo,
-	MosString128,
-	MosTime,
 	IMOSRunningOrder,
 	IMOSRunningOrderBase,
 	IMOSRunningOrderStatus,
@@ -20,9 +18,11 @@ import {
 	IMOSItem,
 	IMOSROReadyToAir,
 	IMOSROFullStory,
-	MosDuration,
 	IMOSObjectStatus,
 	IMOSROAck,
+	getMosTypes,
+	MosTypes,
+	IMOSString128,
 } from '@mos-connection/connector'
 import * as _ from 'underscore'
 import { MosHandler } from './mosHandler'
@@ -79,6 +79,7 @@ export class CoreMosDeviceHandler {
 
 	private _pendingStoryItemChanges: Array<IStoryItemChange> = []
 	private _pendingChangeTimeout: number = 60 * 1000
+	private mosTypes: MosTypes
 
 	constructor(parent: CoreHandler, mosDevice: IMOSDevice, mosHandler: MosHandler) {
 		this._coreParentHandler = parent
@@ -92,6 +93,8 @@ export class CoreMosDeviceHandler {
 				'Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString())
 			)
 		})
+
+		this.mosTypes = getMosTypes(this._mosHandler.strict)
 	}
 	async init(): Promise<void> {
 		return this.core
@@ -170,15 +173,15 @@ export class CoreMosDeviceHandler {
 	}
 	async getMachineInfo(): Promise<IMOSListMachInfo> {
 		const info: IMOSListMachInfo = {
-			manufacturer: new MosString128('SuperFly.tv'),
-			model: new MosString128('Core'),
-			hwRev: new MosString128('0'),
-			swRev: new MosString128('0'),
-			DOM: new MosTime('2018-01-01'),
-			SN: new MosString128('0000'),
-			ID: new MosString128('0000'),
-			time: new MosTime(new Date()),
-			mosRev: new MosString128('0'),
+			manufacturer: this.mosTypes.mosString128.create('SuperFly.tv'),
+			model: this.mosTypes.mosString128.create('Core'),
+			hwRev: this.mosTypes.mosString128.create('0'),
+			swRev: this.mosTypes.mosString128.create('0'),
+			DOM: this.mosTypes.mosTime.create('2018-01-01'),
+			SN: this.mosTypes.mosString128.create('0000'),
+			ID: this.mosTypes.mosString128.create('0000'),
+			time: this.mosTypes.mosTime.create(new Date()),
+			mosRev: this.mosTypes.mosString128.create('0'),
 			supportedProfiles: {
 				deviceType: 'MOS', // MOS, NCS
 				profile0: this._mosHandler?.mosOptions?.self.profiles['0'],
@@ -199,7 +202,7 @@ export class CoreMosDeviceHandler {
 	async mosRoReplace(ro: IMOSRunningOrder): Promise<void> {
 		return this._coreMosManipulate('mosRoReplace', ro)
 	}
-	async mosRoDelete(runningOrderId: MosString128): Promise<void> {
+	async mosRoDelete(runningOrderId: IMOSString128): Promise<void> {
 		return this._coreMosManipulate('mosRoDelete', runningOrderId)
 	}
 	async mosRoMetadata(metadata: IMOSRunningOrderBase): Promise<void> {
@@ -223,10 +226,12 @@ export class CoreMosDeviceHandler {
 		if (this._pendingStoryItemChanges.length > 0) {
 			Stories.forEach((story) => {
 				const pendingChange = this._pendingStoryItemChanges.find(
-					(change) => change.storyID === story.ID.toString()
+					(change) => change.storyID === this.mosTypes.mosString128.stringify(story.ID)
 				)
 				if (pendingChange) {
-					const pendingChangeItem = story.Items.find((item) => pendingChange.itemID === item.ID.toString())
+					const pendingChangeItem = story.Items.find(
+						(item) => pendingChange.itemID === this.mosTypes.mosString128.stringify(item.ID)
+					)
 					if (pendingChangeItem && deepMatch(pendingChangeItem, pendingChange.itemDiff, true)) {
 						pendingChange.resolve()
 					}
@@ -235,13 +240,13 @@ export class CoreMosDeviceHandler {
 		}
 		return result
 	}
-	async mosRoStoryMove(Action: IMOSStoryAction, Stories: Array<MosString128>): Promise<void> {
+	async mosRoStoryMove(Action: IMOSStoryAction, Stories: Array<IMOSString128>): Promise<void> {
 		return this._coreMosManipulate('mosRoStoryMove', Action, Stories)
 	}
-	async mosRoStoryDelete(Action: IMOSROAction, Stories: Array<MosString128>): Promise<void> {
+	async mosRoStoryDelete(Action: IMOSROAction, Stories: Array<IMOSString128>): Promise<void> {
 		return this._coreMosManipulate('mosRoStoryDelete', Action, Stories)
 	}
-	async mosRoStorySwap(Action: IMOSROAction, StoryID0: MosString128, StoryID1: MosString128): Promise<void> {
+	async mosRoStorySwap(Action: IMOSROAction, StoryID0: IMOSString128, StoryID1: IMOSString128): Promise<void> {
 		return this._coreMosManipulate('mosRoStorySwap', Action, StoryID0, StoryID1)
 	}
 	async mosRoItemInsert(Action: IMOSItemAction, Items: Array<IMOSItem>): Promise<void> {
@@ -253,7 +258,9 @@ export class CoreMosDeviceHandler {
 		if (this._pendingStoryItemChanges.length > 0) {
 			Items.forEach((item) => {
 				const pendingChange = this._pendingStoryItemChanges.find(
-					(change) => Action.StoryID.toString() === change.storyID && change.itemID === item.ID.toString()
+					(change) =>
+						this.mosTypes.mosString128.stringify(Action.StoryID) === change.storyID &&
+						change.itemID === this.mosTypes.mosString128.stringify(item.ID)
 				)
 				if (pendingChange && deepMatch(item, pendingChange.itemDiff, true)) {
 					pendingChange.resolve()
@@ -263,13 +270,13 @@ export class CoreMosDeviceHandler {
 
 		return result
 	}
-	async mosRoItemMove(Action: IMOSItemAction, Items: Array<MosString128>): Promise<void> {
+	async mosRoItemMove(Action: IMOSItemAction, Items: Array<IMOSString128>): Promise<void> {
 		return this._coreMosManipulate('mosRoItemMove', Action, Items)
 	}
-	async mosRoItemDelete(Action: IMOSStoryAction, Items: Array<MosString128>): Promise<void> {
+	async mosRoItemDelete(Action: IMOSStoryAction, Items: Array<IMOSString128>): Promise<void> {
 		return this._coreMosManipulate('mosRoItemDelete', Action, Items)
 	}
-	async mosRoItemSwap(Action: IMOSStoryAction, ItemID0: MosString128, ItemID1: MosString128): Promise<void> {
+	async mosRoItemSwap(Action: IMOSStoryAction, ItemID0: IMOSString128, ItemID1: IMOSString128): Promise<void> {
 		return this._coreMosManipulate('mosRoItemSwap', Action, ItemID0, ItemID1)
 	}
 	async mosRoReadyToAir(Action: IMOSROReadyToAir): Promise<void> {
@@ -279,7 +286,9 @@ export class CoreMosDeviceHandler {
 		const result = this._coreMosManipulate('mosRoFullStory', story)
 
 		if (this._pendingStoryItemChanges.length > 0) {
-			const pendingChange = this._pendingStoryItemChanges.find((change) => change.storyID === story.ID.toString())
+			const pendingChange = this._pendingStoryItemChanges.find(
+				(change) => change.storyID === this.mosTypes.mosString128.stringify(story.ID)
+			)
 			if (pendingChange) {
 				const pendingChangeItem = story.Body.find(
 					(item) => item.Type === 'storyItem' && pendingChange.itemID === item.Content.ID.toString()
@@ -309,7 +318,7 @@ export class CoreMosDeviceHandler {
 	async triggerGetRunningOrder(roId: string): Promise<any> {
 		// console.log('triggerGetRunningOrder ' + roId)
 		return this._mosDevice
-			.sendRequestRunningOrder(new MosString128(roId))
+			.sendRequestRunningOrder(this.mosTypes.mosString128.create(roId))
 			.then((ro) => {
 				// console.log('GOT REPLY', results)
 				return this.fixMosData(ro)
@@ -323,9 +332,9 @@ export class CoreMosDeviceHandler {
 		// console.log('setStoryStatus')
 		return this._mosDevice
 			.sendRunningOrderStatus({
-				ID: new MosString128(roId),
+				ID: this.mosTypes.mosString128.create(roId),
 				Status: status,
-				Time: new MosTime(),
+				Time: this.mosTypes.mosTime.create(undefined),
 			})
 			.then((result) => {
 				// console.log('got result', result)
@@ -336,10 +345,10 @@ export class CoreMosDeviceHandler {
 		// console.log('setStoryStatus')
 		return this._mosDevice
 			.sendStoryStatus({
-				RunningOrderId: new MosString128(roId),
-				ID: new MosString128(storyId),
+				RunningOrderId: this.mosTypes.mosString128.create(roId),
+				ID: this.mosTypes.mosString128.create(storyId),
 				Status: status,
-				Time: new MosTime(),
+				Time: this.mosTypes.mosTime.create(undefined),
 			})
 			.then((result) => {
 				// console.log('got result', result)
@@ -350,11 +359,11 @@ export class CoreMosDeviceHandler {
 		// console.log('setStoryStatus')
 		return this._mosDevice
 			.sendItemStatus({
-				RunningOrderId: new MosString128(roId),
-				StoryId: new MosString128(storyId),
-				ID: new MosString128(itemId),
+				RunningOrderId: this.mosTypes.mosString128.create(roId),
+				StoryId: this.mosTypes.mosString128.create(storyId),
+				ID: this.mosTypes.mosString128.create(itemId),
 				Status: status,
-				Time: new MosTime(),
+				Time: this.mosTypes.mosTime.create(undefined),
 			})
 			.then((result) => {
 				// console.log('got result', result)
@@ -370,8 +379,8 @@ export class CoreMosDeviceHandler {
 		// console.log(roID, storyID, item)
 		return this._mosDevice
 			.sendItemReplace({
-				roID: new MosString128(roID),
-				storyID: new MosString128(storyID),
+				roID: this.mosTypes.mosString128.create(roID),
+				storyID: this.mosTypes.mosString128.create(storyID),
 				item,
 			})
 			.then((result) => this.fixMosData(result))
@@ -396,7 +405,7 @@ export class CoreMosDeviceHandler {
 						const pendingChange: IStoryItemChange = {
 							roID,
 							storyID,
-							itemID: item.ID.toString(),
+							itemID: this.mosTypes.mosString128.stringify(item.ID),
 							timestamp: Date.now(),
 
 							resolve: () => {
@@ -465,18 +474,21 @@ export class CoreMosDeviceHandler {
 	 * @param o the object to convert
 	 */
 	private fixMosData(o: any): any {
-		if (_.isObject(o) && (o instanceof MosTime || o instanceof MosDuration || o instanceof MosString128)) {
-			return o.toString()
-		}
-		if (_.isArray(o)) {
-			return _.map(o, (val) => {
-				return this.fixMosData(val)
+		if (this.mosTypes.mosTime.is(o)) return this.mosTypes.mosTime.stringify(o)
+		if (this.mosTypes.mosDuration.is(o)) return this.mosTypes.mosDuration.stringify(o)
+		if (this.mosTypes.mosString128.is(o)) return this.mosTypes.mosString128.stringify(o)
+
+		if (Array.isArray(o)) {
+			return o.map((val) => {
+				this.fixMosData(val)
 			})
-		} else if (_.isObject(o)) {
+		} else if (typeof o === null) {
+			return null
+		} else if (typeof o === 'object') {
 			const o2: any = {}
-			_.each(o, (val, key) => {
-				o2[key] = this.fixMosData(val)
-			})
+			for (const [key, value] of Object.entries(o)) {
+				o2[key] = this.fixMosData(value)
+			}
 			return o2
 		} else {
 			return o
@@ -495,7 +507,8 @@ export class CoreMosDeviceHandler {
 			// Log info about the sent command:
 			let msg = 'Command: ' + methodName
 			if (attrs[0] && attrs[0].ID) msg = `${methodName}: ${attrs[0].ID}`
-			else if (attrs[0] && attrs[0] instanceof MosString128) msg = `${methodName}: ${attrs[0].toString()}`
+			else if (attrs[0] && this.mosTypes.mosString128.is(attrs[0]))
+				msg = `${methodName}: ${this.mosTypes.mosString128.stringify(attrs[0])}`
 			else if (attrs[0] && attrs[0].ObjectId) msg = `${methodName}: ${attrs[0].ObjectId}`
 			else if (attrs[0] && attrs[0].StoryId) msg = `${methodName}: ${attrs[0].StoryId}`
 			else if (attrs[0] && attrs[0].StoryID) msg = `${methodName}: ${attrs[0].StoryID}`

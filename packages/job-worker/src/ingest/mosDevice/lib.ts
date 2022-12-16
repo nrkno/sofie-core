@@ -32,7 +32,9 @@ export function fixIllegalObject(o: unknown): void {
 	}
 }
 
-export function parseMosString(str: MOS.MosString128 | MOS.IMOSString128): string {
+const mosTypes = MOS.getMosTypes(false)
+export function parseMosString(str: MOS.IMOSString128): string {
 	if (!str) throw new Error('parseMosString: str parameter missing!')
-	return MOS.MosString128.getString(str) ?? str.toString()
+	if (mosTypes.mosString128.is(str)) return mosTypes.mosString128.stringify(str)
+	return (str as any).toString()
 }

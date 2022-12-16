@@ -41,7 +41,7 @@
 	"dependencies": {
 		"tslib": "^2.4.0",
 		"type-fest": "^3.1.0",
-		"@mos-connection/model": "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0"
+		"@mos-connection/model": "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

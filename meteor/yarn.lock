@@ -1423,22 +1423,22 @@
     semver "^7.3.5"
     tar "^6.1.11"
 
-"@mos-connection/helper@2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0":
-  version "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0"
-  resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0.tgz#4eeee3f5db4fd6b4e24f86566ce0b1927f75522b"
-  integrity sha512-Tbd0+yCQBZTC8ugiR0bFuwxyTFb3LtbNmPFbWQhZ0dSF0aVqNfnAb04wA5GeFa9tOoaei5VGSSKainT26Z+tmg==
+"@mos-connection/helper@3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0":
+  version "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
+  resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0.tgz#9f0b1ebc46021dcfe8721496422b71549fd9d1ed"
+  integrity sha512-SBkDCOSgAEL8D43n4GD9oQmEJwjFQ9H3cw49pElvseyCAJrMaizpe95BpH//chBITyjJCOl/0FzOx/guWJPKrg==
   dependencies:
-    "@mos-connection/model" "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0"
+    "@mos-connection/model" "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
     iconv-lite "^0.6.2"
     moment "^2.29.4"
     tslib "^2.2.0"
     xml-js "^1.6.11"
     xmlbuilder "^15.1.1"
 
-"@mos-connection/model@2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0":
-  version "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0"
-  resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0.tgz#c8206fcd95b404ea2b3a755d343e4af3129a2c93"
-  integrity sha512-tOn7+5DQ+eV4VYpUZZ8E/cxOFAkLFpyCycwzRKxNPYvTzR8JkL47fQY6I7wpfnBZZUn8ZGazvhugoEkHOxGm1w==
+"@mos-connection/model@3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0":
+  version "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
+  resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0.tgz#3a585cca7dd867edda65035f558bd903c6318fe1"
+  integrity sha512-jb6rDgU+Q9Ztor8veJ8WyyEhcua8hnw2dx1cpGhBJznxoAaLezECqCK7wwdbNK48hhg9DgW5165pjmg7OF+GNg==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"

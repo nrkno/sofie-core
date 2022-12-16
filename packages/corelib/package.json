@@ -44,7 +44,7 @@
 		"fast-clone": "^1.5.13",
 		"i18next": "^21.9.1",
 		"influx": "^5.9.3",
-		"@mos-connection/helper": "2.1.0-nightly-feat-mono-repo-20221209-133133-04b92a9.0",
+		"@mos-connection/model": "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0",
 		"nanoid": "^3.3.4",
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",

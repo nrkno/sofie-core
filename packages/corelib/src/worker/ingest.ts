@@ -11,7 +11,7 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '../dataModel/Ids'
-import type * as MOS from '@mos-connection/helper'
+import type * as MOS from '@mos-connection/model'
 import { IngestAdlib, IngestPart, IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibAction } from '../dataModel/BucketAdLibAction'
 
@@ -120,20 +120,20 @@ export interface MosFullStoryProps extends IngestPropsBase {
 	story: MOS.IMOSROFullStory
 }
 export interface MosDeleteStoryProps extends IngestPropsBase {
-	stories: MOS.MosString128[]
+	stories: MOS.IMOSString128[]
 }
 export interface MosInsertStoryProps extends IngestPropsBase {
-	insertBeforeStoryId: MOS.MosString128 | null
+	insertBeforeStoryId: MOS.IMOSString128 | null
 	replace: boolean
 	newStories: MOS.IMOSROStory[]
 }
 export interface MosMoveStoryProps extends IngestPropsBase {
-	insertBeforeStoryId: MOS.MosString128 | null
-	stories: MOS.MosString128[]
+	insertBeforeStoryId: MOS.IMOSString128 | null
+	stories: MOS.IMOSString128[]
 }
 export interface MosSwapStoryProps extends IngestPropsBase {
-	story0: MOS.MosString128
-	story1: MOS.MosString128
+	story0: MOS.IMOSString128
+	story1: MOS.IMOSString128
 }
 
 export interface ExpectedPackagesRegenerateProps {
