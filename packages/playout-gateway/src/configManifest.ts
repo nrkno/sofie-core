@@ -723,6 +723,13 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 			includeInSummary: true,
 		},
 	],
+	[TSRDeviceType.MULTI_OSC]: [
+		{
+			id: 'connectionId',
+			type: ConfigManifestEntryType.STRING,
+			name: 'Connection ID',
+		},
+	],
 }
 
 export const PLAYOUT_DEVICE_CONFIG: DeviceConfigManifest = {
