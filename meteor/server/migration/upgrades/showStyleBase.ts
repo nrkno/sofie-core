@@ -31,7 +31,7 @@ export async function validateConfigForShowStyleBase(
 		| undefined
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found!`)
 
-	if (!showStyleBase.blueprintConfigPresetId) throw new Error('Studio is missing config preset')
+	if (!showStyleBase.blueprintConfigPresetId) throw new Meteor.Error(500, 'ShowStyleBase is missing config preset')
 
 	const blueprint = showStyleBase.blueprintId
 		? await Blueprints.findOneAsync({
@@ -41,12 +41,12 @@ export async function validateConfigForShowStyleBase(
 		: undefined
 	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found!`)
 
-	if (!blueprint.blueprintHash) throw new Error('Blueprint is not valid')
+	if (!blueprint.blueprintHash) throw new Meteor.Error(500, 'Blueprint is not valid')
 
 	const blueprintManifest = evalBlueprint(blueprint) as ShowStyleBlueprintManifest
 
 	if (typeof blueprintManifest.validateConfig !== 'function')
-		throw new Error('Blueprint does not support this config flow')
+		throw new Meteor.Error(500, 'Blueprint does not support this config flow')
 
 	const blueprintContext = new CommonContext(
 		'applyConfig',
@@ -79,7 +79,7 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 		| undefined
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found!`)
 
-	if (!showStyleBase.blueprintConfigPresetId) throw new Error('Studio is missing config preset')
+	if (!showStyleBase.blueprintConfigPresetId) throw new Meteor.Error(500, 'ShowStyleBase is missing config preset')
 
 	const blueprint = showStyleBase.blueprintId
 		? await Blueprints.findOneAsync({
@@ -89,12 +89,12 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 		: undefined
 	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found!`)
 
-	if (!blueprint.blueprintHash) throw new Error('Blueprint is not valid')
+	if (!blueprint.blueprintHash) throw new Meteor.Error(500, 'Blueprint is not valid')
 
 	const blueprintManifest = evalBlueprint(blueprint) as ShowStyleBlueprintManifest
 
 	if (typeof blueprintManifest.applyConfig !== 'function')
-		throw new Error('Blueprint does not support this config flow')
+		throw new Meteor.Error(500, 'Blueprint does not support this config flow')
 
 	const blueprintContext = new CommonContext(
 		'applyConfig',
