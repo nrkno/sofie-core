@@ -160,15 +160,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				})
 			}
 		}
-		private pushBlueprintConfigOverride = (newOp: SomeObjectOverrideOp) => {
-			if (this.props.studio) {
-				Studios.update(this.props.studio._id, {
-					$push: {
-						'blueprintConfigWithOverrides.overrides': newOp,
-					},
-				})
-			}
-		}
 
 		render() {
 			return this.props.studio ? (
@@ -197,7 +188,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 											layerMappings={this.getLayerMappingsFlat()}
 											configObject={this.props.studio.blueprintConfigWithOverrides}
 											saveOverrides={this.saveBlueprintConfigOverrides}
-											pushOverride={this.pushBlueprintConfigOverride}
 											alternateConfig={undefined}
 										/>
 									</Route>

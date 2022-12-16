@@ -5,7 +5,7 @@ import { Blueprint } from '../../../lib/collections/Blueprints'
 import { SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
-export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
+export function evalBlueprint(blueprint: Pick<Blueprint, '_id' | 'name' | 'code'>): SomeBlueprintManifest {
 	const vm = new VM({
 		sandbox: {},
 	})

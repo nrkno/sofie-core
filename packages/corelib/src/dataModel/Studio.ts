@@ -2,6 +2,7 @@ import { BlueprintMapping, IBlueprintConfig, PackageContainer, TSR } from '@sofi
 import { ObjectWithOverrides } from '../settings/objectWithOverrides'
 import { ProtectedString } from '../protectedString'
 import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, PeripheralDeviceId } from './Ids'
+import { LastBlueprintConfig } from './Blueprint'
 
 export interface MappingsExt {
 	[layerName: string]: MappingExt
@@ -62,6 +63,10 @@ export interface DBStudio {
 	name: string
 	/** Id of the blueprint used by this studio-installation */
 	blueprintId?: BlueprintId
+	/** Id of the blueprint config preset */
+	blueprintConfigPresetId?: string
+	/** Whether blueprintConfigPresetId is invalid, and does not match a currently exposed preset from the Blueprint */
+	blueprintConfigPresetIdUnlinked?: boolean
 
 	/** Mappings between the physical devices / outputs and logical ones */
 	mappingsWithOverrides: ObjectWithOverrides<MappingsExt>
@@ -92,6 +97,9 @@ export interface DBStudio {
 	/** Which package containers is used for media previews in GUI */
 	previewContainerIds: string[]
 	thumbnailContainerIds: string[]
+
+	/** Details on the last blueprint used to generate the defaults values for this */
+	lastBlueprintConfig: LastBlueprintConfig | undefined
 }
 export interface StudioPackageContainer {
 	/** List of which peripheraldevices uses this packageContainer */

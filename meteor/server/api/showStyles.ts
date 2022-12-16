@@ -14,6 +14,7 @@ import deepmerge from 'deepmerge'
 import { ShowStyleBaseLight } from '../../lib/collections/optimizations'
 import {
 	applyAndValidateOverrides,
+	ObjectWithOverrides,
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
@@ -36,18 +37,28 @@ export async function getShowStyleCompound(
 	return createShowStyleCompound(showStyleBase, showStyleVariant)
 }
 
+export function createBlueprintConfigCompound(
+	baseConfig: ObjectWithOverrides<IBlueprintConfig>,
+	variantConfig: ObjectWithOverrides<IBlueprintConfig>
+) {
+	const baseConfig2 = applyAndValidateOverrides(baseConfig).obj
+	const variantConfig2 = applyAndValidateOverrides(variantConfig).obj
+
+	return deepmerge<IBlueprintConfig>(baseConfig2, variantConfig2, {
+		arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
+	})
+}
+
 export function createShowStyleCompound(
 	showStyleBase: ShowStyleBase,
 	showStyleVariant: ShowStyleVariant
 ): ShowStyleCompound | undefined {
 	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
 
-	const baseConfig = applyAndValidateOverrides(showStyleBase.blueprintConfigWithOverrides).obj
-	const variantConfig = applyAndValidateOverrides(showStyleVariant.blueprintConfigWithOverrides).obj
-
-	const configs = deepmerge<IBlueprintConfig>(baseConfig, variantConfig, {
-		arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
-	})
+	const configs = createBlueprintConfigCompound(
+		showStyleBase.blueprintConfigWithOverrides,
+		showStyleVariant.blueprintConfigWithOverrides
+	)
 
 	return {
 		...omit(showStyleBase, 'blueprintConfigWithOverrides'),
@@ -73,6 +84,7 @@ export async function insertShowStyleBaseInner(organizationId: OrganizationId | 
 		sourceLayersWithOverrides: wrapDefaultObject({}),
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
+		lastBlueprintConfig: undefined,
 	}
 	ShowStyleBases.insert(showStyleBase)
 	await insertShowStyleVariantInner(showStyleBase, 'Default')

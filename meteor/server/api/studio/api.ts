@@ -47,6 +47,7 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 			packageContainers: {},
 			thumbnailContainerIds: [],
 			previewContainerIds: [],
+			lastBlueprintConfig: undefined,
 		})
 	)
 }

@@ -6,12 +6,11 @@ import {
 	parseVersion,
 	GENESIS_SYSTEM_VERSION,
 } from '../../lib/collections/CoreSystem'
-import { getCurrentTime, waitForPromise, waitForPromiseAll } from '../../lib/lib'
+import { getCurrentTime, waitForPromise } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from '../migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import * as _ from 'underscore'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studios } from '../../lib/collections/Studios'
 import { getEnvLogLevel, logger, LogLevel, setLogLevel } from '../logging'
@@ -25,6 +24,7 @@ import * as fs from 'fs/promises'
 import path from 'path'
 import { queueCheckBlueprintsConfig } from './checkBlueprintsConfig'
 import { checkDatabaseVersions } from './checkDatabaseVersions'
+import PLazy from 'p-lazy'
 
 export { PackageInfo }
 
@@ -133,11 +133,7 @@ function onCoreSystemChanged() {
 	updateLoggerLevel(false)
 }
 
-let SYSTEM_VERSIONS: { [name: string]: string } | undefined
-export function getRelevantSystemVersions(): { [name: string]: string } {
-	if (SYSTEM_VERSIONS) {
-		return SYSTEM_VERSIONS
-	}
+export const RelevantSystemVersions = PLazy.from(async () => {
 	const versions: { [name: string]: string } = {}
 
 	const dependencies: any = PackageInfo.dependencies
@@ -154,7 +150,7 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 			}
 		}
 
-		waitForPromiseAll([
+		await Promise.all([
 			...libNames.map(async (name) => {
 				versions[name] = await getRealVersion(name, dependencies[name])
 			}),
@@ -165,9 +161,9 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 		logger.error(`Core package dependencies missing`)
 	}
 
-	SYSTEM_VERSIONS = versions
 	return versions
-}
+})
+
 function startupMessage() {
 	if (!Meteor.isTest) {
 		console.log('process started') // This is a message all Sofie processes log upon startup
@@ -184,10 +180,10 @@ function startupMessage() {
 			)
 		}
 
-		const versions = getRelevantSystemVersions()
-		_.each(versions, (version, name) => {
+		const versions = waitForPromise(RelevantSystemVersions)
+		for (const [name, version] of Object.entries(versions)) {
 			logger.info(`Core package ${name} version: "${version}"`)
-		})
+		}
 	}
 }
 
