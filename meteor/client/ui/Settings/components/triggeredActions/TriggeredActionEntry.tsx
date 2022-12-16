@@ -417,7 +417,11 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 							onRemove={removeAction}
 						/>
 					) : (
-						<button className="triggered-action-entry__action-add clickable" onClick={() => restoreAction(item.id)}>
+						<button
+							key={item.id}
+							className="triggered-action-entry__action-add clickable"
+							onClick={() => restoreAction(item.id)}
+						>
 							{t('Restore Deleted Action')}
 						</button>
 					)
