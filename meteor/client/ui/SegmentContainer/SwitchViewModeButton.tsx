@@ -1,7 +1,6 @@
 import Tooltip from 'rc-tooltip'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { getUseOnePartPerLine } from '../../lib/localStorage'
 import { SegmentViewMode as SegmentViewModeIcon } from '../../lib/ui/icons/listView'
 
 import { SegmentViewMode } from './SegmentViewModes'
@@ -12,7 +11,7 @@ export function getNextMode(currentMode: SegmentViewMode | undefined): SegmentVi
 		case SegmentViewMode.Timeline:
 			return SegmentViewMode.Storyboard
 		case SegmentViewMode.Storyboard:
-			return getUseOnePartPerLine() ? SegmentViewMode.List : SegmentViewMode.Timeline
+			return SegmentViewMode.List
 		case SegmentViewMode.List:
 			return SegmentViewMode.Timeline
 	}
