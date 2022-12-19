@@ -88,6 +88,10 @@ export type PreviewWrappedAdLib = Omit<IWrappedAdLib, '_id'> & {
 	triggeredActionId: TriggeredActionId
 	actionId: DeviceActionId
 	sourceLayerType?: SourceLayerType
+	sourceLayerName?: {
+		name?: string
+		abbreviation?: string
+	}
 	isCurrent?: boolean
 	isNext?: boolean
 }

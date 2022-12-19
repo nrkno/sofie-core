@@ -100,6 +100,12 @@ export class StudioDeviceTriggerManager {
 							studioId,
 							showStyleBaseId,
 							sourceLayerType: adLib.sourceLayerId ? sourceLayers[adLib.sourceLayerId]?.type : undefined,
+							sourceLayerName: adLib.sourceLayerId
+								? {
+										name: sourceLayers[adLib.sourceLayerId]?.name,
+										abbreviation: sourceLayers[adLib.sourceLayerId]?.abbreviation,
+								  }
+								: undefined,
 						},
 					})
 					addedPreviewIds.push(adLibPreviewId)

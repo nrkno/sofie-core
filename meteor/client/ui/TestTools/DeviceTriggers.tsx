@@ -104,7 +104,9 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 											.filter((preview) => preview.actionId === entry.actionId)
 											.map((preview) => (
 												<span key={unprotectString(preview._id)}>
-													{JSON.stringify(preview.label)}: {preview.type} {preview.sourceLayerType}
+													{JSON.stringify(preview.label)}: {preview.type} {preview.sourceLayerType}{' '}
+													{preview.sourceLayerName?.name}{' '}
+													{preview.sourceLayerName?.abbreviation ? `(${preview.sourceLayerName.abbreviation})` : null}
 												</span>
 											))}
 									</td>
