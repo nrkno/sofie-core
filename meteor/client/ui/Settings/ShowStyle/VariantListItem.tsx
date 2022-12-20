@@ -99,9 +99,7 @@ export const VariantListItem = ({
 				onDragCancel()
 				return
 			}
-
-			// TODO: Modify the item
-			onDragEnd(item.id, result.overId)
+			onDragEnd(item.id)
 		},
 	})
 
