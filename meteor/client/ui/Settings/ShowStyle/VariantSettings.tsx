@@ -16,7 +16,6 @@ import { doModalDialog } from '../../../lib/ModalDialog'
 import { SourceLayerDropdownOption } from '../BlueprintConfigManifest'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { NoticeLevel, NotificationCenter, Notification } from '../../../lib/notifications/notifications'
-import { logger } from '../../../../lib/logging'
 import { UploadButton } from '../../../lib/uploadButton'
 import update from 'immutability-helper'
 import { VariantListItem } from './VariantListItem'
@@ -131,7 +130,7 @@ export const ShowStyleVariantsSettings = ({
 					NotificationCenter.push(
 						new Notification(
 							undefined,
-							NoticeLevel.WARNING,
+							NoticeLevel.CRITICAL,
 							t('Failed to import new Show Style Variants: {{errorMessage}}', { errorMessage: error + '' }),
 							'VariantSettings'
 						)
@@ -150,7 +149,16 @@ export const ShowStyleVariantsSettings = ({
 		(showStyleVariant: ShowStyleVariant): void => {
 			showStyleVariant.name = `Copy of ${showStyleVariant.name}`
 			showStyleVariant._rank = localVariants.length
-			MeteorCall.showstyles.importShowStyleVariantAsNew(showStyleVariant).catch(logger.warn)
+			MeteorCall.showstyles.importShowStyleVariantAsNew(showStyleVariant).catch((error) => {
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.CRITICAL,
+						t('Failed to copy Show Style Variant: {{errorMessage}}', { errorMessage: error + '' }),
+						'VariantSettings'
+					)
+				)
+			})
 		},
 		[localVariants]
 	)
@@ -171,8 +179,15 @@ export const ShowStyleVariantsSettings = ({
 	}, [localVariants, showStyleBase._id])
 
 	const onAddShowStyleVariant = useCallback((): void => {
-		MeteorCall.showstyles.insertShowStyleVariant(showStyleBase._id).catch(() => {
-			// TODO: Add error message
+		MeteorCall.showstyles.insertShowStyleVariant(showStyleBase._id).catch((error) => {
+			NotificationCenter.push(
+				new Notification(
+					undefined,
+					NoticeLevel.CRITICAL,
+					t('Failed to add a new Show Style Variant: {{errorMessage}}', { errorMessage: error + '' }),
+					'VariantSettings'
+				)
+			)
 		})
 	}, [showStyleBase._id])
 
@@ -182,7 +197,16 @@ export const ShowStyleVariantsSettings = ({
 			no: t('Cancel'),
 			yes: t('Remove'),
 			onAccept: () => {
-				MeteorCall.showstyles.removeShowStyleVariant(showStyleVariant._id).catch(logger.warn)
+				MeteorCall.showstyles.removeShowStyleVariant(showStyleVariant._id).catch((error) => {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.CRITICAL,
+							t('Failed to delete Show Style Variant: {{errorMessage}}', { errorMessage: error + '' }),
+							'VariantSettings'
+						)
+					)
+				})
 			},
 			message: (
 				<p>
@@ -196,8 +220,15 @@ export const ShowStyleVariantsSettings = ({
 
 	const removeAllShowStyleVariants = useCallback((): void => {
 		localVariants.forEach((variant) => {
-			MeteorCall.showstyles.removeShowStyleVariant(variant._id).catch(() => {
-				// TODO: Show error message
+			MeteorCall.showstyles.removeShowStyleVariant(variant._id).catch((error) => {
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.CRITICAL,
+						t('Failed to remove all Show Style Variants: {{errorMessage}}', { errorMessage: error + '' }),
+						'VariantSettings'
+					)
+				)
 			})
 		})
 	}, [localVariants])
@@ -210,11 +241,7 @@ export const ShowStyleVariantsSettings = ({
 			onAccept: () => {
 				removeAllShowStyleVariants()
 			},
-			message: (
-				<React.Fragment>
-					<p>{t('Are you sure you want to remove all Variants in the table?')}</p>
-				</React.Fragment>
-			),
+			message: <p>{t('Are you sure you want to remove all Variants in the table?')}</p>,
 		})
 	}, [removeAllShowStyleVariants])
 
@@ -275,8 +302,15 @@ export const ShowStyleVariantsSettings = ({
 				newRank = itemAfter._rank - 1
 			}
 
-			MeteorCall.showstyles.reorderShowStyleVariant(draggedVariantId, newRank).catch(() => {
-				// TODO: Show error
+			MeteorCall.showstyles.reorderShowStyleVariant(draggedVariantId, newRank).catch((error) => {
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.CRITICAL,
+						t('Failed to reorderShow Style Variant: {{errorMessage}}', { errorMessage: error + '' }),
+						'VariantSettings'
+					)
+				)
 			})
 		},
 		[localVariants]
