@@ -24,6 +24,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			)
 		},
 		migrate: () => {
+			// This version introduces ShowStyleVariant sorting, this means we need to create them now
 			ShowStyleVariants.find({
 				_rank: { $exists: false },
 			}).forEach((variant: ShowStyleVariant, index: number) => {

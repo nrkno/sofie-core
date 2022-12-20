@@ -85,6 +85,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					{
 						sort: {
 							_rank: 1,
+							_id: 1,
 						},
 					}
 			  ).fetch()

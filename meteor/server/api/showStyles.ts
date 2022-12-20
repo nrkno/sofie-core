@@ -66,7 +66,7 @@ export async function insertShowStyleBase(context: MethodContext | Credentials):
 export async function insertShowStyleBaseInner(organizationId: OrganizationId | null): Promise<ShowStyleBaseId> {
 	const showStyleBase: ShowStyleBase = {
 		_id: getRandomId(),
-		name: 'New show style',
+		name: 'New Show Style',
 		organizationId: organizationId,
 		blueprintId: protectString(''),
 		outputLayersWithOverrides: wrapDefaultObject({}),
@@ -74,17 +74,9 @@ export async function insertShowStyleBaseInner(organizationId: OrganizationId | 
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
 	}
-	ShowStyleBases.insert(showStyleBase)
+	await ShowStyleBases.insertAsync(showStyleBase)
 
-	const showStyleVariant: ShowStyleVariant = {
-		_id: getRandomId(),
-		name: 'Default',
-		blueprintConfigWithOverrides: wrapDefaultObject({}),
-		_rundownVersionHash: '',
-		_rank: 500,
-		showStyleBaseId: showStyleBase._id,
-	}
-	await insertShowStyleVariant(showStyleVariant)
+	await insertShowStyleVariantInner(showStyleBase._id, 'Default')
 	return showStyleBase._id
 }
 async function assertShowStyleBaseAccess(context: MethodContext | Credentials, showStyleBaseId: ShowStyleBaseId) {
@@ -95,34 +87,48 @@ async function assertShowStyleBaseAccess(context: MethodContext | Credentials, s
 	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
 }
 
-export async function createDefaultShowStyleVariant(
+export async function insertShowStyleVariant(
 	context: MethodContext | Credentials,
 	showStyleBaseId: ShowStyleBaseId,
 	name?: string
 ): Promise<ShowStyleVariantId> {
 	await assertShowStyleBaseAccess(context, showStyleBaseId)
+	return insertShowStyleVariantInner(showStyleBaseId, name)
+}
 
-	const highestRank = ShowStyleVariants.find(
-		{},
-		{
-			sort: {
-				_rank: -1,
-			},
-			limit: 1,
-		}
-	).fetch()[0]?._rank
-	const rank = highestRank !== undefined ? highestRank + 1 : 0
+async function insertShowStyleVariantInner(
+	showStyleBaseId: ShowStyleBaseId,
+	name?: string
+): Promise<ShowStyleVariantId> {
+	const highestRank =
+		(
+			await ShowStyleVariants.findOneAsync(
+				{
+					showStyleBaseId,
+				},
+				{
+					projection: {
+						_rank: 1,
+					},
+					sort: {
+						_rank: -1,
+					},
+					limit: 1,
+				}
+			)
+		)?._rank ?? -1
+	const rank = highestRank + 1
 
 	const showStyleVariant: ShowStyleVariant = {
 		_id: getRandomId(),
-		name: name || 'Variant',
+		name: name || 'New Variant',
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
 		_rank: rank,
 		showStyleBaseId: showStyleBaseId,
 	}
 
-	return insertShowStyleVariant(showStyleVariant)
+	return ShowStyleVariants.insertAsync(showStyleVariant)
 }
 
 export async function importShowStyleVariant(
@@ -131,22 +137,21 @@ export async function importShowStyleVariant(
 ): Promise<ShowStyleVariantId> {
 	await assertShowStyleBaseAccess(context, showStyleVariant.showStyleBaseId)
 
-	return insertShowStyleVariant(showStyleVariant)
+	return ShowStyleVariants.insertAsync(showStyleVariant)
 }
 
 export async function importShowStyleVariantAsNew(
 	context: MethodContext | Credentials,
-	showStyleVariant: ShowStyleVariant
+	showStyleVariant: Omit<ShowStyleVariant, '_id'>
 ): Promise<ShowStyleVariantId> {
 	await assertShowStyleBaseAccess(context, showStyleVariant.showStyleBaseId)
 
-	showStyleVariant._id = getRandomId()
+	const newShowStyleVariant: ShowStyleVariant = {
+		...showStyleVariant,
+		_id: getRandomId(),
+	}
 
-	return insertShowStyleVariant(showStyleVariant)
-}
-
-async function insertShowStyleVariant(showStyleVariant: ShowStyleVariant): Promise<ShowStyleVariantId> {
-	return ShowStyleVariants.insertAsync(showStyleVariant)
+	return ShowStyleVariants.insertAsync(newShowStyleVariant)
 }
 
 export async function removeShowStyleBase(context: MethodContext, showStyleBaseId: ShowStyleBaseId): Promise<void> {
@@ -155,10 +160,10 @@ export async function removeShowStyleBase(context: MethodContext, showStyleBaseI
 	await Promise.allSettled([
 		ShowStyleBases.removeAsync(showStyleBaseId),
 		ShowStyleVariants.removeAsync({
-			showStyleBaseId: showStyleBaseId,
+			showStyleBaseId,
 		}),
 		RundownLayouts.removeAsync({
-			showStyleBaseId: showStyleBaseId,
+			showStyleBaseId,
 		}),
 	])
 }
@@ -176,38 +181,36 @@ export async function removeShowStyleVariant(
 	await ShowStyleVariants.removeAsync(showStyleVariant._id)
 }
 
-export async function reorderAllShowStyleVariants(
+export async function reorderShowStyleVariant(
 	context: MethodContext,
-	showStyleBaseId: ShowStyleBaseId,
-	orderedVariants: ShowStyleVariant[]
+	showStyleVariantId: ShowStyleVariantId,
+	rank: number
 ): Promise<void> {
-	await assertShowStyleBaseAccess(context, showStyleBaseId)
-	await reassignShowStyleVariantIndexes(orderedVariants)
-}
+	check(showStyleVariantId, String)
+	check(rank, Number)
 
-async function reassignShowStyleVariantIndexes(orderedVariants: ShowStyleVariant[]): Promise<void> {
-	await Promise.all(
-		orderedVariants.map(async (variant: ShowStyleVariant, index: number) => {
-			return ShowStyleVariants.upsertAsync(variant._id, {
-				$set: {
-					_rank: index,
-				},
-			})
-		})
-	)
+	const access = await ShowStyleContentWriteAccess.showStyleVariant(context, showStyleVariantId)
+	const showStyleVariant = access.showStyleVariant
+	if (!showStyleVariant) throw new Meteor.Error(404, `showStyleVariant "${showStyleVariantId}" not found`)
+
+	await ShowStyleVariants.updateAsync(showStyleVariantId, {
+		$set: {
+			_rank: rank,
+		},
+	})
 }
 
 class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	async insertShowStyleBase() {
 		return insertShowStyleBase(this)
 	}
-	async createDefaultShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
-		return createDefaultShowStyleVariant(this, showStyleBaseId)
+	async insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
+		return insertShowStyleVariant(this, showStyleBaseId)
 	}
 	async importShowStyleVariant(showStyleVariant: ShowStyleVariant) {
 		return importShowStyleVariant(this, showStyleVariant)
 	}
-	async importShowStyleVariantAsNew(showStyleVariant: ShowStyleVariant) {
+	async importShowStyleVariantAsNew(showStyleVariant: Omit<ShowStyleVariant, '_id'>) {
 		return importShowStyleVariantAsNew(this, showStyleVariant)
 	}
 	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
@@ -216,8 +219,8 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	async removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId) {
 		return removeShowStyleVariant(this, showStyleVariantId)
 	}
-	async reorderAllShowStyleVariants(showStyleBaseId: ShowStyleBaseId, orderedVariants: ShowStyleVariant[]) {
-		return reorderAllShowStyleVariants(this, showStyleBaseId, orderedVariants)
+	async reorderShowStyleVariant(showStyleVariantId: ShowStyleVariantId, newRank: number) {
+		return reorderShowStyleVariant(this, showStyleVariantId, newRank)
 	}
 }
 registerClassToMeteorMethods(ShowStylesAPIMethods, ServerShowStylesAPI, false)
