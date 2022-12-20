@@ -27,7 +27,6 @@ import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
 import * as _ from 'underscore'
-import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
@@ -60,7 +59,7 @@ export interface TSRConfig {}
 // interface copied from Core lib/collections/Timeline.ts
 
 export type TimelineEnableExt = TimelineTypes.TimelineEnable & { setFromNow?: boolean }
-export interface TimelineObjGeneric extends TimelineObjectCoreExt<any> {
+export interface TimelineObjGeneric extends TSRTimelineObj<any> {
 	/** Unique within a timeline (ie within a studio) */
 	id: string
 	/** Set when the id of the object is prefixed */

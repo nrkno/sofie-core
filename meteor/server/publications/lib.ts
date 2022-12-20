@@ -44,7 +44,7 @@ export function meteorPublish<K extends keyof PubSubTypes>(
 
 	MeteorPublications[name] = callback
 
-	Meteor.publish(name, function (...args: any[]) {
+	Meteor.publish(name, function (...args: any[]): any {
 		return waitForPromise(callback.apply(protectStringObject<Subscription, 'userId'>(this), args as any)) || []
 	})
 }

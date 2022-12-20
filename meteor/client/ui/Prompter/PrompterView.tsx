@@ -699,7 +699,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					top: top - scrollAnchor[0],
 				})
 			} else {
-				console.warn(`Read anchor could not be found: #${scrollAnchor[1]}`)
+				console.error(`Read anchor could not be found after update: #${scrollAnchor[1]}`)
 			}
 		}
 

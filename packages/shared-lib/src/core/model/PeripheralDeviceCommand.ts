@@ -5,8 +5,11 @@ export interface PeripheralDeviceCommand {
 	_id: PeripheralDeviceCommandId
 
 	deviceId: PeripheralDeviceId
-	functionName: string
-	args: Array<any>
+
+	functionName?: string
+	args?: Array<any>
+	actionId?: string
+	payload?: Record<string, any>
 
 	hasReply: boolean
 	reply?: any

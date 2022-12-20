@@ -1,7 +1,7 @@
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { PeripheralDeviceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, PeripheralDeviceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SegmentNote, PartNote, RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Piece, serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
@@ -11,7 +11,7 @@ import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataMod
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { StudioUserContext, SegmentUserContext, GetRundownContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
@@ -38,6 +38,7 @@ import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { ReadonlyDeep } from 'type-fest'
 import { BlueprintResultRundown, BlueprintResultSegment, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export interface UpdateSegmentsResult {
 	segments: DBSegment[]
@@ -147,10 +148,12 @@ export async function calculateSegmentsFromIngestData(
 					notes: [
 						{
 							type: NoteSeverity.ERROR,
-							message: {
-								key: 'Internal Error generating segment',
-								namespaces: [unprotectString(blueprint.blueprintId)],
-							},
+							message: wrapTranslatableMessageFromBlueprints(
+								{
+									key: 'Internal Error generating segment',
+								},
+								[blueprint.blueprintId]
+							),
 							origin: {
 								name: '', // TODO
 							},
@@ -173,10 +176,7 @@ export async function calculateSegmentsFromIngestData(
 					segmentNotes.push(
 						literal<SegmentNote>({
 							type: note.type,
-							message: {
-								...note.message,
-								namespaces: [unprotectString(blueprint.blueprintId)],
-							},
+							message: wrapTranslatableMessageFromBlueprints(note.message, [blueprint.blueprintId]),
 							origin: {
 								name: '', // TODO
 							},
@@ -206,10 +206,7 @@ export async function calculateSegmentsFromIngestData(
 						notes.push(
 							literal<PartNote>({
 								type: note.type,
-								message: {
-									...note.message,
-									namespaces: [unprotectString(blueprint.blueprintId)],
-								},
+								message: wrapTranslatableMessageFromBlueprints(note.message, [blueprint.blueprintId]),
 								origin: {
 									name: '', // TODO
 								},
@@ -229,10 +226,10 @@ export async function calculateSegmentsFromIngestData(
 					invalidReason: blueprintPart.part.invalidReason
 						? {
 								...blueprintPart.part.invalidReason,
-								message: {
-									...blueprintPart.part.invalidReason.message,
-									namespaces: [unprotectString(blueprint.blueprintId)],
-								},
+								message: wrapTranslatableMessageFromBlueprints(
+									blueprintPart.part.invalidReason.message,
+									[blueprint.blueprintId]
+								),
 						  }
 						: undefined,
 
@@ -622,22 +619,19 @@ export async function getRundownFromIngestData(
 		return null
 	}
 
-	const translationNamespaces: string[] = []
+	const translationNamespaces: BlueprintId[] = []
 	if (showStyleBlueprint.blueprintId) {
-		translationNamespaces.push(unprotectString(showStyleBlueprint.blueprintId))
+		translationNamespaces.push(showStyleBlueprint.blueprintId)
 	}
 	if (context.studio.blueprintId) {
-		translationNamespaces.push(unprotectString(context.studio.blueprintId))
+		translationNamespaces.push(context.studio.blueprintId)
 	}
 
 	// Ensure the ids in the notes are clean
 	const rundownNotes = blueprintContext.notes.map((note) =>
 		literal<RundownNote>({
 			type: note.type,
-			message: {
-				...note.message,
-				namespaces: translationNamespaces,
-			},
+			message: wrapTranslatableMessageFromBlueprints(note.message, translationNamespaces),
 			origin: {
 				name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			},

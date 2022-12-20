@@ -21,6 +21,7 @@ import {
 	LabelAndOverridesForMultiLineText,
 	LabelAndOverridesProps,
 } from '../../../lib/Components/LabelAndOverrides'
+import { assertNever } from '@sofie-automation/corelib/dist/lib'
 
 interface ConfigManifestEntryWithOverridesProps {
 	configField: ConfigManifestEntry
@@ -135,16 +136,11 @@ export function ManifestEntryWithOverrides({
 				)}
 			</LabelAndOverridesForMultiLineText>
 		)
-
-		// TODO: Handle these?
-		// } else if (configField.type === ConfigManifestEntryType.TABLE) {
-		// 	// not handled here, handled by GenericDeviceSettingsComponent
-		// } else if (configField.type === ConfigManifestEntryType.LABEL) {
-		// 	// todo ?
-		// } else if (configField.type === ConfigManifestEntryType.LINK) {
-		// 	// todo ?
+	} else if (configField.type === ConfigManifestEntryType.TABLE) {
+		// not handled here, handled by GenericDeviceSettingsComponent
+		return <p>{t('Unknown table type')}</p>
 	} else {
-		// assertNever(configField.type)
+		assertNever(configField)
 		return <p>{t('Unknown type')}</p>
 	}
 }
@@ -248,8 +244,8 @@ export function ConfigManifestEntryComponent({
 					{t(configField.name)}
 					{renderEditAttribute(collection || PeripheralDevices, configField, obj, prefix)}
 					{configField.hint && <span className="text-s dimmed">{t(configField.hint)}</span>}
-					{configField.hint && configField.defaultVal && <span className="text-s dimmed"> - </span>}
-					{configField.defaultVal && (
+					{configField.hint && hasDefaultVal(configField) && <span className="text-s dimmed"> - </span>}
+					{hasDefaultVal(configField) && (
 						<span className="text-s dimmed">
 							{t("Defaults to '{{defaultVal}}' if left empty", { defaultVal: configField.defaultVal })}
 						</span>
@@ -258,4 +254,14 @@ export function ConfigManifestEntryComponent({
 			</div>
 		</div>
 	)
+}
+
+function hasDefaultVal(
+	configField: ConfigManifestEntry | BlueprintConfigManifestEntry
+): configField is ConfigManifestEntry {
+	if (configField['defaultVal']) {
+		return true
+	}
+
+	return false
 }

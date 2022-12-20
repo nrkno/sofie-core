@@ -1,7 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { faTrash, faPlus, faDownload, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintManifestType,
+	ConfigManifestEntry,
+	IShowStyleConfigPreset,
+} from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useTranslation } from 'react-i18next'
@@ -18,11 +22,14 @@ import update from 'immutability-helper'
 import { VariantListItem } from './VariantListItem'
 import { downloadBlob } from '../../../lib/downloadBlob'
 import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
+import { Blueprints } from '../../../../lib/collections/Blueprints'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
 	showStyleVariants: ShowStyleVariant[]
 	blueprintConfigManifest: ConfigManifestEntry[]
+	blueprintConfigPreset: IShowStyleConfigPreset | undefined // TODO - use this
 
 	layerMappings?: { [studioId: string]: MappingsExt }
 	sourceLayers?: Array<SourceLayerDropdownOption>
@@ -43,6 +50,38 @@ export const ShowStyleVariantsSettings = ({
 	useEffect(() => {
 		setLocalVariants(showStyleVariants.slice())
 	}, [showStyleVariants])
+
+	const blueprintPresetConfigOptions = useTracker<
+		{ name: string; value: string | null }[],
+		{ name: string; value: string | null }[]
+	>(
+		() => {
+			const options: { name: string; value: string | null }[] = []
+
+			if (showStyleBase.blueprintId && showStyleBase.blueprintConfigPresetId) {
+				const blueprint = Blueprints.findOne({
+					blueprintType: BlueprintManifestType.SHOWSTYLE,
+					_id: showStyleBase.blueprintId,
+				})
+
+				if (blueprint && blueprint.showStyleConfigPresets) {
+					const basePreset = blueprint.showStyleConfigPresets[showStyleBase.blueprintConfigPresetId]
+					if (basePreset) {
+						for (const [id, preset] of Object.entries(basePreset.variants)) {
+							options.push({
+								value: id,
+								name: preset.name,
+							})
+						}
+					}
+				}
+			}
+
+			return options
+		},
+		[showStyleBase],
+		[]
+	)
 
 	const importShowStyleVariantsFromArray = useCallback(
 		(showStyleVariants: ShowStyleVariant[]): void => {
@@ -275,6 +314,7 @@ export const ShowStyleVariantsSettings = ({
 							onDragVariant={onDragVariant}
 							onDragEnd={onDragEnd}
 							onDragCancel={onDragCancel}
+							blueprintPresetConfigOptions={blueprintPresetConfigOptions}
 							baseBlueprintConfigWithOverrides={showStyleBase.blueprintConfigWithOverrides}
 							blueprintConfigManifest={blueprintConfigManifest}
 							layerMappings={layerMappings}

@@ -37,6 +37,28 @@ export const ShowStyleGenericProperties = withTranslation()(
 				})
 		}
 
+		getBlueprintConfigPresetOptions() {
+			const options: { name: string; value: string | null }[] = []
+
+			if (this.props.showStyleBase.blueprintId) {
+				const blueprint = Blueprints.findOne({
+					blueprintType: BlueprintManifestType.SHOWSTYLE,
+					_id: this.props.showStyleBase.blueprintId,
+				})
+
+				if (blueprint && blueprint.showStyleConfigPresets) {
+					for (const [id, preset] of Object.entries(blueprint.showStyleConfigPresets)) {
+						options.push({
+							value: id,
+							name: preset.name,
+						})
+					}
+				}
+			}
+
+			return options
+		}
+
 		render() {
 			const { t, showStyleBase } = this.props
 
@@ -84,6 +106,34 @@ export const ShowStyleGenericProperties = withTranslation()(
 									obj={this.props.showStyleBase}
 									type="blueprint"
 								></SettingsNavigation>
+								<span className="mdfx"></span>
+							</div>
+						</label>
+						<label className="field">
+							{t('Blueprint config preset')}
+							{!this.props.showStyleBase.blueprintConfigPresetId && (
+								<div className="error-notice inline">
+									{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+								</div>
+							)}
+							{this.props.showStyleBase.blueprintConfigPresetIdUnlinked &&
+								this.props.showStyleBase.blueprintConfigPresetId && (
+									<div className="error-notice inline">
+										{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
+									</div>
+								)}
+							<div className="mdi">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="blueprintConfigPresetId"
+									obj={this.props.showStyleBase}
+									type="dropdown"
+									options={this.getBlueprintConfigPresetOptions()}
+									mutateDisplayValue={(v) => v || ''}
+									mutateUpdateValue={(v) => (v === '' ? undefined : v)}
+									collection={ShowStyleBases}
+									className="mdinput"
+								/>
 								<span className="mdfx"></span>
 							</div>
 						</label>

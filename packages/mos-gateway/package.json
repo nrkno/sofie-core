@@ -1,6 +1,6 @@
 {
 	"name": "mos-gateway",
-	"version": "1.48.0-in-development",
+	"version": "1.49.0-in-development",
 	"private": true,
 	"description": "MOS-Gateway for the Sofie project",
 	"license": "MIT",
@@ -48,7 +48,7 @@
 		"dev": "yarn start -id localDevMos"
 	},
 	"engines": {
-		"node": "^14.19 || ^16.14"
+		"node": "^14.19 || ^16.14 || ^18.12"
 	},
 	"keywords": [
 		"mos",
@@ -65,8 +65,8 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/server-core-integration": "1.48.0-in-development",
-		"@sofie-automation/shared-lib": "1.48.0-in-development",
+		"@sofie-automation/server-core-integration": "1.49.0-in-development",
+		"@sofie-automation/shared-lib": "1.49.0-in-development",
 		"mos-connection": "^2.0.1",
 		"tslib": "^2.4.0",
 		"type-fest": "^3.1.0",

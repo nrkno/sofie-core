@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { faCopy, faPencilAlt, faPlus, faRefresh, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faCopy, faPencilAlt, faPlus, faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PlayoutActions, SomeAction, SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
@@ -291,11 +291,13 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 		TriggeredActions.update(triggeredAction?._id, {
 			$set: {
-				'actionsWithOverrides.overrides': literal<ObjectOverrideSetOp>({
-					op: 'set',
-					path: id,
-					value: newAction,
-				}),
+				'actionsWithOverrides.overrides': [
+					literal<ObjectOverrideSetOp>({
+						op: 'set',
+						path: id,
+						value: newAction,
+					}),
+				],
 			},
 		})
 
@@ -415,7 +417,11 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 							onRemove={removeAction}
 						/>
 					) : (
-						<button className="triggered-action-entry__action-add clickable" onClick={() => restoreAction(item.id)}>
+						<button
+							key={item.id}
+							className="triggered-action-entry__action-add clickable"
+							onClick={() => restoreAction(item.id)}
+						>
 							{t('Restore Deleted Action')}
 						</button>
 					)
@@ -431,7 +437,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 			<div className="triggered-action-entry__modify">
 				{!!sortedWrappedActions.find((action) => action.overrideOps.length > 0) && (
 					<button className="action-btn" onClick={onResetActions} title={t('Reset Action')}>
-						<FontAwesomeIcon icon={faRefresh} />
+						<FontAwesomeIcon icon={faSync} />
 					</button>
 				)}
 				<button

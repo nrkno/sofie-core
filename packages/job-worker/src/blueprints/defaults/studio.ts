@@ -23,6 +23,13 @@ export const DefaultStudioBlueprint: ReadonlyDeep<StudioBlueprintManifest> = dee
 	studioConfigManifest: [],
 	studioMigrations: [],
 
+	configPresets: {
+		0: {
+			name: 'Default',
+			config: {},
+		},
+	},
+
 	/** Returns the items used to build the baseline (default state) of a studio, this is the baseline used when there's no active rundown */
 	getBaseline(_context: IStudioBaselineContext): BlueprintResultStudioBaseline {
 		return {

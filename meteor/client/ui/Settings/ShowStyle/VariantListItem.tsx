@@ -8,7 +8,14 @@ import { EditAttribute } from '../../../lib/EditAttribute'
 import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from '../BlueprintConfigManifest'
 import { ShowStyleDragDropTypes } from './DragDropTypesShowStyle'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faCopy, faDownload, faPencilAlt, faTrash } from '@fortawesome/free-solid-svg-icons'
+import {
+	faCheck,
+	faCopy,
+	faDownload,
+	faExclamationTriangle,
+	faPencilAlt,
+	faTrash,
+} from '@fortawesome/free-solid-svg-icons'
 import {
 	applyAndValidateOverrides,
 	ObjectWithOverrides,
@@ -39,6 +46,7 @@ export const VariantListItem = ({
 
 	blueprintConfigManifest,
 	baseBlueprintConfigWithOverrides,
+	blueprintPresetConfigOptions,
 	layerMappings,
 	sourceLayers,
 
@@ -57,7 +65,7 @@ export const VariantListItem = ({
 	isEdited: boolean
 	blueprintConfigManifest: ConfigManifestEntry[]
 	baseBlueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
-
+	blueprintPresetConfigOptions: { name: string; value: string | null }[]
 	layerMappings?: { [studioId: string]: MappingsExt }
 	sourceLayers?: Array<SourceLayerDropdownOption>
 
@@ -122,7 +130,10 @@ export const VariantListItem = ({
 				>
 					<th className="settings-studio-showStyleVariant__name c3">
 						<span className="settings-studio-showStyleVariants-table__drag">{iconDragHandle()}</span>
-						{showStyleVariant.name || t('Unnamed variant')}
+						{showStyleVariant.name || t('Unnamed variant')}&nbsp;
+						{(!showStyleVariant.blueprintConfigPresetId || showStyleVariant.blueprintConfigPresetIdUnlinked) && (
+							<FontAwesomeIcon icon={faExclamationTriangle} />
+						)}
 					</th>
 					<td className="settings-studio-showStyleVariant__actions table-item-actions c3">
 						<button className="action-btn" onClick={() => onDownload(showStyleVariant)}>
@@ -159,6 +170,33 @@ export const VariantListItem = ({
 									</label>
 								</div>
 							</div>
+							<label className="field">
+								{t('Blueprint config preset')}
+								{!showStyleVariant.blueprintConfigPresetId && (
+									<div className="error-notice inline">
+										{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+									</div>
+								)}
+								{showStyleVariant.blueprintConfigPresetIdUnlinked && showStyleVariant.blueprintConfigPresetId && (
+									<div className="error-notice inline">
+										{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
+									</div>
+								)}
+								<div className="mdi">
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute="blueprintConfigPresetId"
+										obj={showStyleVariant}
+										type="dropdown"
+										options={blueprintPresetConfigOptions}
+										mutateDisplayValue={(v) => v || ''}
+										mutateUpdateValue={(v) => (v === '' ? undefined : v)}
+										collection={ShowStyleVariants}
+										className="mdinput"
+									/>
+									<span className="mdfx"></span>
+								</div>
+							</label>
 							<div className="row">
 								<div className="col c12 r1-c12 phs">
 									<BlueprintConfigManifestSettings

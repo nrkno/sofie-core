@@ -185,55 +185,58 @@ export function RundownRightHandControls(props: IProps) {
 				>
 					<SegmentViewMode />
 				</button>
-				{props.isStudioMode && props.studioRouteSets && props.onStudioRouteSetSwitch && availableRouteSets.length > 0 && (
-					<>
-						<button
-							className={classNames(
-								'status-bar__controls__button',
-								'status-bar__controls__button--switchboard-panel',
-								'notifications-s notifications-text',
-								{
-									'status-bar__controls__button--open': switchboardOpen,
-								}
-							)}
-							role="button"
-							onClick={onRouteSetsToggle}
-							tabIndex={0}
-							aria-label={t('Toggle Switchboard Panel')}
-							aria-haspopup="dialog"
-							aria-pressed={switchboardOpen ? 'true' : 'false'}
-						>
-							<SwitchboardIcon />
-							{nonDefaultRoutes > 0 && (
-								<RouteSetOverrideIcon className="status-bar__controls__button--switchboard-panel__notification" />
-							)}
-						</button>
-						<VelocityReact.VelocityTransitionGroup
-							enter={{
-								animation: {
-									width: ['28rem', '0rem'],
-								},
-								easing: 'ease-out',
-								duration: 300,
-							}}
-							leave={{
-								animation: {
-									width: ['0rem'],
-								},
-								easing: 'ease-in',
-								duration: 500,
-							}}
-						>
-							{switchboardOpen && (
-								<SwitchboardPopUp
-									availableRouteSets={availableRouteSets}
-									studioRouteSetExclusivityGroups={props.studioRouteSetExclusivityGroups}
-									onStudioRouteSetSwitch={props.onStudioRouteSetSwitch}
-								/>
-							)}
-						</VelocityReact.VelocityTransitionGroup>
-					</>
-				)}
+				{props.isStudioMode &&
+					props.studioRouteSets &&
+					props.onStudioRouteSetSwitch &&
+					availableRouteSets.length > 0 && (
+						<>
+							<button
+								className={classNames(
+									'status-bar__controls__button',
+									'status-bar__controls__button--switchboard-panel',
+									'notifications-s notifications-text',
+									{
+										'status-bar__controls__button--open': switchboardOpen,
+									}
+								)}
+								role="button"
+								onClick={onRouteSetsToggle}
+								tabIndex={0}
+								aria-label={t('Toggle Switchboard Panel')}
+								aria-haspopup="dialog"
+								aria-pressed={switchboardOpen ? 'true' : 'false'}
+							>
+								<SwitchboardIcon />
+								{nonDefaultRoutes > 0 && (
+									<RouteSetOverrideIcon className="status-bar__controls__button--switchboard-panel__notification" />
+								)}
+							</button>
+							<VelocityReact.VelocityTransitionGroup
+								enter={{
+									animation: {
+										width: ['28rem', '0rem'],
+									},
+									easing: 'ease-out',
+									duration: 300,
+								}}
+								leave={{
+									animation: {
+										width: ['0rem'],
+									},
+									easing: 'ease-in',
+									duration: 500,
+								}}
+							>
+								{switchboardOpen && (
+									<SwitchboardPopUp
+										availableRouteSets={availableRouteSets}
+										studioRouteSetExclusivityGroups={props.studioRouteSetExclusivityGroups}
+										onStudioRouteSetSwitch={props.onStudioRouteSetSwitch}
+									/>
+								)}
+							</VelocityReact.VelocityTransitionGroup>
+						</>
+					)}
 				<SupportPopUpToggle
 					onClick={props.onToggleSupportPanel}
 					isOpen={props.isSupportPanelOpen}

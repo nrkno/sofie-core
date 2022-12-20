@@ -89,6 +89,7 @@ export type TimelineObjId = ProtectedString<'TimelineObjId'>
 
 /** A string identifying a translations bundle */
 export type TranslationsBundleId = ProtectedString<'TranslationsBundleId'>
+export type TranslationsBundleOriginId = ProtectedString<'TranslationsBundleOriginId'>
 
 /** A string identifying a triggered action */
 export type TriggeredActionId = ProtectedString<'TriggeredActionId'>
