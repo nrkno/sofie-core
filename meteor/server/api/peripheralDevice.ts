@@ -623,6 +623,44 @@ PickerGET.route('/devices/:deviceId/oauthResponse', async (params, req: Incoming
 	res.end(content)
 })
 
+PickerPOST.route(
+	'/devices/:deviceId/resetAppCredentials',
+	async (params, _req: IncomingMessage, res: ServerResponse) => {
+		res.setHeader('Content-Type', 'text/plain')
+
+		let content = ''
+		try {
+			const deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+			check(deviceId, String)
+
+			if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
+
+			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
+			if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
+
+			PeripheralDevices.update(peripheralDevice._id, {
+				$unset: {
+					'secretSettings.credentials': true,
+					'secretSettings.accessToken': true,
+					'settings.secretCredentials': true,
+					'settings.secretAccessToken': true,
+					accessTokenUrl: true,
+				},
+			})
+
+			PeripheralDeviceAPI.executeFunction(deviceId, 'killProcess', 1).catch(logger.error)
+
+			res.statusCode = 200
+		} catch (e) {
+			res.statusCode = 500
+			content = e + ''
+			logger.error('Reset credentials failed: ' + e)
+		}
+
+		res.end(content)
+	}
+)
+
 PickerPOST.route('/devices/:deviceId/resetAuth', async (params, _req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
@@ -633,20 +671,18 @@ PickerPOST.route('/devices/:deviceId/resetAuth', async (params, _req: IncomingMe
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
 
-		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
+		const peripheralDevice = PeripheralDevices.findOne(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
 		PeripheralDevices.update(peripheralDevice._id, {
 			$unset: {
-				'secretSettings.credentials': true,
 				'secretSettings.accessToken': true,
-				'settings.secretCredentials': true,
 				'settings.secretAccessToken': true,
 				accessTokenUrl: true,
 			},
 		})
 
-		PeripheralDeviceAPI.executeFunction(deviceId, 'killProcess', 1).catch(logger.error)
+		// PeripheralDeviceAPI.executeFunction(deviceId, 'killProcess', 1).catch(logger.error)
 
 		res.statusCode = 200
 	} catch (e) {

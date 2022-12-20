@@ -67,7 +67,36 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 			}
 			reader.readAsText(file)
 		}
-		resetAuthentication() {
+
+		resetAppCredentials() {
+			const { t } = this.props
+
+			fetchFrom(`/devices/${this.props.device._id}/resetAppCredentials`, {
+				method: 'POST',
+			})
+				.then(() => {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.NOTIFICATION,
+							t('OAuth credentials successfuly reset'),
+							'ConfigManifestOAuthFlowComponent'
+						)
+					)
+				})
+				.catch((err) => {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.WARNING,
+							t('Failed to reset OAuth credentials: {{errorMessage}}', { errorMessage: err + '' }),
+							'ConfigManifestOAuthFlowComponent'
+						)
+					)
+				})
+		}
+
+		resetAuth() {
 			const { t } = this.props
 
 			fetchFrom(`/devices/${this.props.device._id}/resetAuth`, {
@@ -94,6 +123,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 					)
 				})
 		}
+
 		render() {
 			const { t } = this.props
 			const settings = (this.props.device.settings || {}) as IngestDeviceSettings
@@ -105,15 +135,23 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 						// If this is set, we have completed the authentication procedure.
 						// A reset button is provided to begin the flow again if authorization is revoked by the user.
 						<div className="mod mvs mhs">
-							<button className="btn btn-secondary" onClick={() => this.resetAuthentication()}>
-								{t('Reset Authentication')}
+							<button
+								className="btn btn-secondary btn-tight"
+								onClick={() => this.resetAppCredentials()}
+								style={{ marginRight: '10px' }}
+							>
+								{t('Reset App Credentials')}
+							</button>
+
+							<button className="btn btn-secondary btn-tight" onClick={() => this.resetAuth()}>
+								{t('Reset User Credentials')}
 							</button>
 						</div>
 					) : (
 						<div className="mod mvs mhs">
 							{!settings.secretCredentials ? (
 								<label className="field">
-									{t('Application credentials')}
+									<div className="mvs">{t('Application credentials')}</div>
 									<div className="mdi">
 										<div>{t(device.configManifest.deviceOAuthFlow!.credentialsHelp)}</div>
 										<div>
@@ -122,7 +160,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 											</a>
 										</div>
 
-										<div className="mdi">
+										<div className="mdi mvs">
 											<input
 												type="file"
 												accept="application/json,.json"
@@ -134,17 +172,21 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 								</label>
 							) : (
 								<label className="field">
-									{t('Access token')}
-									<div className="mdi">
-										<div>{t('Click on the link below and accept the permissions request.')}</div>
-										<div>
+									<div>
+										<div>{t('Click on the button below and accept the permissions request.')}</div>
+										<div className="mvs">
 											{device.accessTokenUrl ? (
 												<a href={device.accessTokenUrl} target="_blank" rel="noreferrer">
-													{device.accessTokenUrl}
+													<button className="btn btn-primary">{t('Authorize App Access')}</button>
 												</a>
 											) : (
 												t('Waiting for gateway to generate URL...')
 											)}
+										</div>
+										<div className="mvs">
+											<button className="btn btn-secondary btn-tight" onClick={() => this.resetAppCredentials()}>
+												{t('Reset App Credentials')}
+											</button>
 										</div>
 									</div>
 								</label>
