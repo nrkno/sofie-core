@@ -7,6 +7,10 @@ const REACTIVITY_DEBOUNCE = 20
 
 type ChangedHandler = (rundownIds: RundownId[]) => () => void
 
+/**
+ * A mongo observer/query for the RundownIds in a playlist.
+ * Note: Updates are debounced to avoid rapid updates firing
+ */
 export class RundownsObserver implements Meteor.LiveQueryHandle {
 	#rundownsLiveQuery: Meteor.LiveQueryHandle
 	#rundownIds: Set<RundownId> = new Set<RundownId>()

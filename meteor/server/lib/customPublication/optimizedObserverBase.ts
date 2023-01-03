@@ -1,8 +1,11 @@
 import deepmerge from 'deepmerge'
 import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { clone, createManualPromise, lazyIgnore, ProtectedString, stringifyError } from '../../../lib/lib'
 import { logger } from '../../logging'
+import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection'
+import { LiveQueryHandle } from '../lib'
 import { CustomPublish, CustomPublishChanges } from './publish'
 
 interface OptimizedObserverWrapper<TData extends { _id: ProtectedString<any> }, TArgs, TContext> {
@@ -27,10 +30,6 @@ interface OptimizedObserverWorker<TData extends { _id: ProtectedString<any> }, T
 
 /** Optimized observers */
 const optimizedObservers: Record<string, OptimizedObserverWrapper<any, unknown, unknown>> = {}
-
-export interface LiveQueryHandle {
-	stop(): void | Promise<void>
-}
 
 export type TriggerUpdate<UpdateProps extends Record<string, any>> = (updateProps: Partial<UpdateProps>) => void
 
@@ -84,7 +83,7 @@ export async function setUpOptimizedObserverInner<
 			logger.debug(`Remove subscriber from ${identifier} ${subCount} are left`)
 
 			// clean up if empty:
-			if (!subCount && thisObserverWrapper.subscribersChanged) {
+			if (subCount === 0 && thisObserverWrapper.subscribersChanged) {
 				thisObserverWrapper.subscribersChanged()
 			}
 		}
@@ -196,7 +195,18 @@ async function createOptimizedObserverWorker<
 	let pendingUpdate: Record<string, any> = {}
 	const triggerUpdate: TriggerUpdate<UpdateProps> = (updateProps) => {
 		// Combine the pending updates
-		pendingUpdate = deepmerge(pendingUpdate, updateProps)
+		pendingUpdate = deepmerge(pendingUpdate, updateProps, {
+			isMergeableObject: (obj) => {
+				// Ensure any Mongo collections aren't cloned, as they will break
+				if (obj instanceof Mongo.Collection || obj instanceof ReactiveCacheCollection) {
+					return false
+				}
+
+				return true
+			},
+			// Some things can't be cloned. But we know the ownership, so this is safe
+			clone: false,
+		})
 
 		// If already running, set it as pending to be done afterwards
 		if (updateIsRunning) {

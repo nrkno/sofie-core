@@ -2,71 +2,57 @@ import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { ReactiveCacheCollection } from '../lib/ReactiveCacheCollection'
-import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 
-export type SourceLayersDocId = ProtectedString<'SourceLayersDocId'>
-export interface SourceLayersDoc {
-	_id: SourceLayersDocId
-	sourceLayers: SourceLayers
-}
+export type RundownFields = '_id' | 'playlistId' | 'externalNRCSName'
+export const rundownFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownFields>>({
+	_id: 1,
+	playlistId: 1,
+	externalNRCSName: 1,
+})
 
-export type SegmentFields = '_id' | '_rank' | 'name'
+export type SegmentFields = '_id' | '_rank' | 'rundownId' | 'name' | 'notes' | 'orphaned'
 export const segmentFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<SegmentFields>>({
 	_id: 1,
 	_rank: 1,
+	rundownId: 1,
 	name: 1,
+	notes: 1,
+	orphaned: 1,
 })
 
-export type PartFields = '_id' | '_rank' | 'segmentId' | 'rundownId'
+export type PartFields = '_id' | '_rank' | 'segmentId' | 'rundownId' | 'notes' | 'title' | 'invalid' | 'invalidReason'
 export const partFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PartFields>>({
 	_id: 1,
 	_rank: 1,
 	segmentId: 1,
 	rundownId: 1,
+	notes: 1,
+	title: 1,
+	invalid: 1,
+	invalidReason: 1,
 })
 
-export type PieceFields =
-	| '_id'
-	| 'startPartId'
-	| 'startRundownId'
-	| 'name'
-	| 'sourceLayerId'
-	| 'content'
-	| 'expectedPackages'
-export const pieceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PieceFields>>({
+export type PartInstanceFields = '_id' | 'segmentId' | 'rundownId' | 'orphaned' | 'reset' | 'part'
+export const partInstanceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PartInstanceFields>>({
 	_id: 1,
-	startPartId: 1,
-	startRundownId: 1,
-	name: 1,
-	sourceLayerId: 1,
-	content: 1,
-	expectedPackages: 1,
-})
-
-export type RundownFields = '_id' | 'showStyleBaseId'
-export const rundownFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownFields>>({
-	_id: 1,
-	showStyleBaseId: 1,
-})
-
-export type ShowStyleBaseFields = '_id' | 'sourceLayersWithOverrides'
-export const showStyleBaseFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<ShowStyleBaseFields>>({
-	_id: 1,
-	sourceLayersWithOverrides: 1,
+	segmentId: 1,
+	rundownId: 1,
+	orphaned: 1,
+	reset: 1,
+	// @ts-expect-error Deep not supported
+	'part.title': 1,
 })
 
 export interface ContentCache {
 	Rundowns: ReactiveCacheCollection<Pick<Rundown, RundownFields>>
 	Segments: ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>
 	Parts: ReactiveCacheCollection<Pick<DBPart, PartFields>>
-	Pieces: ReactiveCacheCollection<Pick<Piece, PieceFields>>
-	ShowStyleSourceLayers: ReactiveCacheCollection<SourceLayersDoc>
+	DeletedPartInstances: ReactiveCacheCollection<Pick<PartInstance, PartInstanceFields>>
 }
 
 type ReactionWithCache = (cache: ContentCache) => void
@@ -91,8 +77,10 @@ export function createReactiveContentCache(
 		Rundowns: new ReactiveCacheCollection<Pick<Rundown, RundownFields>>('rundowns', innerReaction),
 		Segments: new ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>('segments', innerReaction),
 		Parts: new ReactiveCacheCollection<Pick<DBPart, PartFields>>('parts', innerReaction),
-		Pieces: new ReactiveCacheCollection<Pick<Piece, PieceFields>>('pieces', innerReaction),
-		ShowStyleSourceLayers: new ReactiveCacheCollection<SourceLayersDoc>('sourceLayers', innerReaction),
+		DeletedPartInstances: new ReactiveCacheCollection<Pick<PartInstance, PartInstanceFields>>(
+			'deletedPartInstances',
+			innerReaction
+		),
 	}
 
 	innerReaction()

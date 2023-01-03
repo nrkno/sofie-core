@@ -1,4 +1,3 @@
-// TODO - copied from https://github.com/nrkno/sofie-core/blob/feat/triggerGateways/meteor/server/api/deviceTriggers/ReactiveCacheCollection.ts
 import { omit } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Mongo } from 'meteor/mongo'

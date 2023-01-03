@@ -476,13 +476,10 @@ class RundownViewNotifier extends WithManagedTracker {
 
 		let oldPieceIds: PieceId[] = []
 
-		if (getIgnorePieceContentStatus())
+		if (!getIgnorePieceContentStatus())
 			this.autorun(() => {
 				const rundownIds = rRundowns.get().map((rd) => rd._id)
-
-				const allIssues = getIgnorePieceContentStatus()
-					? UIPieceContentStatuses.find({ rundownId: { $in: rundownIds } }).fetch()
-					: []
+				const allIssues = UIPieceContentStatuses.find({ rundownId: { $in: rundownIds } }).fetch()
 
 				const newPieceIds = _.unique(allIssues.map((item) => item.pieceId))
 				allIssues.forEach((issue) => {

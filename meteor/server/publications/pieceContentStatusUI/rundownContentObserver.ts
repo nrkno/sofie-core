@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Parts } from '../../../lib/collections/Parts'
 import { Segments } from '../../../lib/collections/Segments'
 import { logger } from '../../logging'
@@ -17,9 +17,10 @@ import {
 import { Pieces } from '../../../lib/collections/Pieces'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { ReactiveMongoObserverGroup } from '../../lib/customPublication'
-import { waitForPromise } from '../../../lib/lib'
+import { equivalentArrays, waitForPromise } from '../../../lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../lib/observerGroup'
+import _ from 'underscore'
 
 const REACTIVITY_DEBOUNCE = 20
 
@@ -37,6 +38,9 @@ export class RundownContentObserver {
 	#cancelCache: () => void
 	#cleanup: () => void
 
+	#showStyleBaseIds: ShowStyleBaseId[] = []
+	#showStyleBaseIdObserver: ReactiveMongoObserverGroupHandle
+
 	constructor(rundownIds: RundownId[], onChanged: ChangedHandler) {
 		logger.silly(`Creating RundownContentObserver for rundowns "${rundownIds.join(',')}"`)
 		const { cache, cancel: cancelCache } = createReactiveContentCache(() => {
@@ -46,20 +50,17 @@ export class RundownContentObserver {
 		this.#cache = cache
 		this.#cancelCache = cancelCache
 
-		const rundownGroup = waitForPromise(
+		// Run the ShowStyleBase query in a ReactiveMongoObserverGroup, so that it can be restarted whenever
+		this.#showStyleBaseIdObserver = waitForPromise(
 			ReactiveMongoObserverGroup(async () => {
-				// We can use the `cache.Rundowns` here, as this is restarted every time that collection changes
-				const showStyleBaseIds = cache.Rundowns.find({})
-					.fetch()
-					.map((rd) => rd.showStyleBaseId)
-
 				// Clear already cached data
 				cache.ShowStyleSourceLayers.remove({})
 
 				return [
 					ShowStyleBases.find(
 						{
-							_id: { $in: showStyleBaseIds },
+							// We can use the `this.#showStyleBaseIds` here, as this is restarted every time that property changes
+							_id: { $in: this.#showStyleBaseIds },
 						},
 						{
 							projection: showStyleBaseFieldSpecifier,
@@ -81,6 +82,7 @@ export class RundownContentObserver {
 			})
 		)
 
+		// Subscribe to the database, and pipe any updates into the ReactiveCacheCollections
 		this.#observers = [
 			Rundowns.find(
 				{
@@ -93,11 +95,11 @@ export class RundownContentObserver {
 				}
 			).observe(
 				cache.Rundowns.link(() => {
-					// trigger the rundown group to restart
-					waitForPromise(rundownGroup.restart())
+					// Check if the ShowStyleBaseIds needs updating
+					this.updateShowStyleBaseIds()
 				})
 			),
-			rundownGroup,
+			this.#showStyleBaseIdObserver,
 
 			Segments.find(
 				{
@@ -131,6 +133,15 @@ export class RundownContentObserver {
 			).observe(cache.Pieces.link()),
 		]
 	}
+
+	private updateShowStyleBaseIds = _.debounce(() => {
+		const newShowStyleBaseIds = this.#cache.Rundowns.find({}).map((rd) => rd.showStyleBaseId)
+
+		if (!equivalentArrays(newShowStyleBaseIds, this.#showStyleBaseIds)) {
+			// trigger the rundown group to restart
+			this.#showStyleBaseIdObserver.restart()
+		}
+	}, REACTIVITY_DEBOUNCE)
 
 	public get cache(): ContentCache {
 		return this.#cache

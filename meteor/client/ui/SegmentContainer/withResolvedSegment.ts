@@ -35,9 +35,7 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { UISegmentPartNotes } from '../Collections'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { UISegmentPartNote } from '../../../lib/api/rundownNotifications'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -240,25 +238,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				}
 			}
 
-			const segmentNoteCounts: SegmentNoteCounts = {
-				criticial: 0,
-				warning: 0,
-			}
-			const rawNotes = UISegmentPartNotes.find(
-				{ segmentId: props.segmentId },
-				{ fields: { note: 1 } }
-			).fetch() as Pick<UISegmentPartNote, 'note'>[]
-			for (const note of rawNotes) {
-				if (note.note.type === NoteSeverity.ERROR) {
-					segmentNoteCounts.criticial++
-				} else if (note.note.type === NoteSeverity.WARNING) {
-					segmentNoteCounts.warning++
-				}
-			}
-
-			const pieceNoteCounts = getReactivePieceNoteCountsForSegment(segment)
-			segmentNoteCounts.criticial += pieceNoteCounts.criticial
-			segmentNoteCounts.warning += pieceNoteCounts.warning
+			const segmentNoteCounts = getReactivePieceNoteCountsForSegment(segment)
 
 			let lastValidPartIndex = o.parts.length - 1
 

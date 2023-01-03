@@ -1,9 +1,8 @@
-// TODO - copied from https://raw.githubusercontent.com/nrkno/sofie-core/feat/triggerGateways/meteor/server/lib/observerChain.ts
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
-import { MongoCursor } from '../../lib/collections/lib'
+import { MongoCursor } from '../../../lib/collections/lib'
 import { Simplify } from 'type-fest'
-import { assertNever } from '../../lib/lib'
+import { assertNever } from '../../../lib/lib'
 
 /**
  * https://stackoverflow.com/a/66011942
