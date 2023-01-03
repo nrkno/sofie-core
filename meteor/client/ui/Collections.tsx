@@ -18,3 +18,15 @@ export const UIStudios = createCustomPublicationMongoCollection(CustomCollection
  * This has been stripped back to only useful properties, with any ObjectWithOverrides<T> pre-flattened
  */
 export const UITriggeredActions = createCustomPublicationMongoCollection(CustomCollectionName.UITriggeredActions)
+
+/**
+ * Pre-generated notes to be converted into notificiations.
+ */
+export const UISegmentPartNotes = createCustomPublicationMongoCollection(CustomCollectionName.UISegmentPartNotes)
+
+/**
+ * Pre-processed MediaObjectIssue for Pieces in the Rundowns
+ */
+export const UIPieceContentStatuses = createCustomPublicationMongoCollection(
+	CustomCollectionName.UIPieceContentStatuses
+)

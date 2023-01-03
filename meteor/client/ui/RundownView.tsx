@@ -1546,6 +1546,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
 			})
+			this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
+			this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 			this.subscribe(PubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -3009,11 +3011,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							</ErrorBoundary>
 							<ErrorBoundary>
 								{this.props.playlist && this.props.studio && this.props.showStyleBase && (
-									<RundownNotifier
-										playlistId={this.props.playlist._id}
-										studio={this.props.studio}
-										showStyleBase={this.props.showStyleBase}
-									/>
+									<RundownNotifier playlistId={this.props.playlist._id} studio={this.props.studio} />
 								)}
 							</ErrorBoundary>
 						</div>

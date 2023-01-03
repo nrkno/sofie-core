@@ -20,7 +20,7 @@ import {
 import { ReadonlyDeep } from 'type-fest'
 export * from '@sofie-automation/corelib/dist/dataModel/Studio'
 
-export function getActiveRoutes(routeSets: Record<string, StudioRouteSet>): ResultingMappingRoutes {
+export function getActiveRoutes(routeSets: ReadonlyDeep<Record<string, StudioRouteSet>>): ResultingMappingRoutes {
 	const routes: ResultingMappingRoutes = {
 		existing: {},
 		inserted: [],
@@ -112,7 +112,7 @@ export type MappingsExtWithPackage = {
 	[layerName: string]: MappingExt & { expectedPackages: (ExpectedPackage.Base & { rundownId?: string })[] }
 }
 export function routeExpectedPackages(
-	studio: Pick<Studio, 'routeSets'>,
+	studio: ReadonlyDeep<Pick<Studio, 'routeSets'>>,
 	studioMappings: ReadonlyDeep<MappingsExt>,
 	expectedPackages: (ExpectedPackageDB | ExpectedPackage.Base)[]
 ): MappingsExtWithPackage {

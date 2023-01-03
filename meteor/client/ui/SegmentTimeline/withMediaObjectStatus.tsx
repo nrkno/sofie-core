@@ -6,7 +6,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
 import { RundownUtils } from '../../lib/rundown'
-import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
+import { getMediaObjectMediaId } from '../../../lib/mediaObjects'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
 import { literal } from '../../../lib/lib'
@@ -17,6 +17,7 @@ import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { UIStudio } from '../../../lib/api/studios'
 import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { checkPieceContentStatus } from '../../lib/mediaObjects'
 
 type AnyPiece = {
 	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined

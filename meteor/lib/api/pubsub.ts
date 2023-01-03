@@ -53,6 +53,7 @@ import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
+import { UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
 
@@ -124,6 +125,8 @@ export enum PubSub {
 	uiShowStyleBase = 'uiShowStyleBase',
 	uiStudio = 'uiStudio',
 	uiTriggeredActions = 'uiTriggeredActions',
+	uiSegmentPartNotes = 'uiSegmentPartNotes',
+	uiPieceContentStatuses = 'uiPieceContentStatuses',
 }
 
 /**
@@ -232,6 +235,8 @@ export interface PubSubTypes {
 	/** Subscribe to one or all studios */
 	[PubSub.uiStudio]: (studioId: StudioId | null) => UIStudio
 	[PubSub.uiTriggeredActions]: (showStyleBaseId: ShowStyleBaseId | null) => UITriggeredActionsObj
+	[PubSub.uiSegmentPartNotes]: (playlistId: RundownPlaylistId | null) => UISegmentPartNote
+	[PubSub.uiPieceContentStatuses]: (rundownPlaylistId: RundownPlaylistId | null) => UIPieceContentStatus
 }
 
 /**
@@ -244,6 +249,8 @@ export enum CustomCollectionName {
 	UIShowStyleBase = 'uiShowStyleBase',
 	UIStudio = 'uiStudio',
 	UITriggeredActions = 'uiTriggeredActions',
+	UISegmentPartNotes = 'uiSegmentPartNotes',
+	UIPieceContentStatuses = 'uiPieceContentStatuses',
 }
 
 /**
@@ -257,6 +264,8 @@ export type CustomCollectionType = {
 	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
 	[CustomCollectionName.UIStudio]: UIStudio
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
+	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
+	[CustomCollectionName.UIPieceContentStatuses]: UIPieceContentStatus
 }
 
 /**
