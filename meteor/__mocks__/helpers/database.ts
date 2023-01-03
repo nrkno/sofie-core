@@ -287,6 +287,7 @@ export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<S
 		blueprintId: blueprintId,
 		// hotkeyLegend?: Array<HotkeyDefinition>
 		_rundownVersionHash: '',
+		lastBlueprintConfig: undefined,
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)
 	ShowStyleBases.insert(showStyleBase)
@@ -352,6 +353,13 @@ export async function setupMockStudioBlueprint(
 				integrationVersion: INTEGRATION_VERSION,
 				TSRVersion: TSR_VERSION,
 
+				configPresets: {
+					main: {
+						name: 'Main',
+						config: {},
+					},
+				},
+
 				studioConfigManifest: [],
 				studioMigrations: [],
 				getBaseline: () => {
@@ -394,6 +402,20 @@ export async function setupMockShowStyleBlueprint(
 				blueprintVersion: '0.0.0',
 				integrationVersion: INTEGRATION_VERSION,
 				TSRVersion: TSR_VERSION,
+
+				configPresets: {
+					main: {
+						name: 'Main',
+						config: {},
+
+						variants: {
+							main: {
+								name: 'Default',
+								config: {},
+							},
+						},
+					},
+				},
 
 				showStyleConfigManifest: [],
 				showStyleMigrations: [],

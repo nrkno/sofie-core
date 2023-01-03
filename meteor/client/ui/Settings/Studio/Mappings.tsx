@@ -12,7 +12,7 @@ import {
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash, faPencilAlt, faCheck, faPlus, faRefresh } from '@fortawesome/free-solid-svg-icons'
+import { faTrash, faPencilAlt, faCheck, faPlus, faSync } from '@fortawesome/free-solid-svg-icons'
 import { useTranslation } from 'react-i18next'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import {
@@ -189,7 +189,7 @@ function MappingDeletedEntry({ activeRoutes, manifest, mapping, layerId, doUndel
 			</td>
 			<td className="settings-studio-output-table__actions table-item-actions c3">
 				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
-					<FontAwesomeIcon icon={faRefresh} />
+					<FontAwesomeIcon icon={faSync} />
 				</button>
 			</td>
 		</tr>

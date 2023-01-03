@@ -135,10 +135,3 @@ export function unsetReportNotifications() {
 export function getReportNotifications(): string | null {
 	return libGetReportNotifications()
 }
-
-export function getUseOnePartPerLine(): boolean | null {
-	return localStorageGetCachedItem(LocalStorageProperty.PROTO_ONE_PART_PER_LINE) === '1'
-}
-export function setUseOnePartPerLine(useOnePartPerLine: boolean) {
-	localStorageSetCachedItem(LocalStorageProperty.PROTO_ONE_PART_PER_LINE, useOnePartPerLine ? '1' : '0')
-}

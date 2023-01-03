@@ -476,79 +476,80 @@ class RundownViewNotifier extends WithManagedTracker {
 
 		let oldPieceIds: PieceId[] = []
 
-		if (!getIgnorePieceContentStatus())
-			this.autorun(() => {
-				const rundownIds = rRundowns.get().map((rd) => rd._id)
-				const allIssues = UIPieceContentStatuses.find({ rundownId: { $in: rundownIds } }).fetch()
+		if (getIgnorePieceContentStatus()) return
 
-				const newPieceIds = _.unique(allIssues.map((item) => item.pieceId))
-				allIssues.forEach((issue) => {
-					const { status, messages } = issue.status
+		this.autorun(() => {
+			const rundownIds = rRundowns.get().map((rd) => rd._id)
+			const allIssues = UIPieceContentStatuses.find({ rundownId: { $in: rundownIds } }).fetch()
 
-					let newNotification: Notification | undefined = undefined
-					if (status !== PieceStatusCode.OK && status !== PieceStatusCode.UNKNOWN) {
-						const messagesStr = messages.length
-							? messages.map((msg) => translateMessage(msg, t)).join('; ')
-							: t('There is an unspecified problem with the source.')
+			const newPieceIds = _.unique(allIssues.map((item) => item.pieceId))
+			allIssues.forEach((issue) => {
+				const { status, messages } = issue.status
 
-						newNotification = new Notification(
-							issue.pieceId,
-							getNoticeLevelForPieceStatus(status) || NoticeLevel.WARNING,
-							(
-								<>
-									<h5>{`${issue.segmentName}${issue.name ? SEGMENT_DELIMITER + issue.name : ''}`}</h5>
-									<div>{messagesStr}</div>
-								</>
-							),
-							issue.segmentId ? issue.segmentId : 'line_' + issue.partId,
-							getCurrentTime(),
-							true,
-							[
-								{
-									label: t('Show issue'),
-									type: 'default',
-								},
-							],
-							issue.segmentRank * 1000 + issue.partRank
-						)
-						newNotification.on('action', (_notification, type) => {
-							if (type === 'default') {
-								const handler = onRONotificationClick.get()
-								if (handler && typeof handler === 'function') {
-									handler({
-										sourceLocator: {
-											name: issue.name,
-											rundownId: issue.rundownId,
-											pieceId: issue.pieceId,
-											partId: issue.partId,
-										},
-									})
-								}
+				let newNotification: Notification | undefined = undefined
+				if (status !== PieceStatusCode.OK && status !== PieceStatusCode.UNKNOWN) {
+					const messagesStr = messages.length
+						? messages.map((msg) => translateMessage(msg, t)).join('; ')
+						: t('There is an unspecified problem with the source.')
+
+					newNotification = new Notification(
+						issue.pieceId,
+						getNoticeLevelForPieceStatus(status) || NoticeLevel.WARNING,
+						(
+							<>
+								<h5>{`${issue.segmentName}${issue.name ? SEGMENT_DELIMITER + issue.name : ''}`}</h5>
+								<div>{messagesStr}</div>
+							</>
+						),
+						issue.segmentId ? issue.segmentId : 'line_' + issue.partId,
+						getCurrentTime(),
+						true,
+						[
+							{
+								label: t('Show issue'),
+								type: 'default',
+							},
+						],
+						issue.segmentRank * 1000 + issue.partRank
+					)
+					newNotification.on('action', (_notification, type) => {
+						if (type === 'default') {
+							const handler = onRONotificationClick.get()
+							if (handler && typeof handler === 'function') {
+								handler({
+									sourceLocator: {
+										name: issue.name,
+										rundownId: issue.rundownId,
+										pieceId: issue.pieceId,
+										partId: issue.partId,
+									},
+								})
 							}
-						})
-					}
+						}
+					})
+				}
 
-					if (
-						newNotification &&
-						!Notification.isEqual(this._mediaStatus[unprotectString(issue.pieceId)], newNotification)
-					) {
-						this._mediaStatus[unprotectString(issue.pieceId)] = newNotification
-						this._mediaStatusDep.changed()
-					} else if (!newNotification && this._mediaStatus[unprotectString(issue.pieceId)]) {
-						delete this._mediaStatus[unprotectString(issue.pieceId)]
-						this._mediaStatusDep.changed()
-					}
-				})
-
-				const removedPieceIds = _.difference(oldPieceIds, newPieceIds)
-				removedPieceIds.forEach((pieceId) => {
-					const pId = unprotectString(pieceId)
-					delete this._mediaStatus[pId]
-
+				if (
+					newNotification &&
+					!Notification.isEqual(this._mediaStatus[unprotectString(issue.pieceId)], newNotification)
+				) {
+					this._mediaStatus[unprotectString(issue.pieceId)] = newNotification
 					this._mediaStatusDep.changed()
-				})
-				oldPieceIds = newPieceIds
+				} else if (!newNotification && this._mediaStatus[unprotectString(issue.pieceId)]) {
+					delete this._mediaStatus[unprotectString(issue.pieceId)]
+					this._mediaStatusDep.changed()
+				}
 			})
+
+			const removedPieceIds = _.difference(oldPieceIds, newPieceIds)
+			removedPieceIds.forEach((pieceId) => {
+				const pId = unprotectString(pieceId)
+				delete this._mediaStatus[pId]
+
+				this._mediaStatusDep.changed()
+			})
+			oldPieceIds = newPieceIds
+		})
 	}
 
 	private reactiveVersionAndConfigStatus(playlistId: RundownPlaylistId) {

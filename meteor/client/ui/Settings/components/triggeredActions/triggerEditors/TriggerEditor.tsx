@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { isDeviceTrigger, isHotkeyTrigger } from '../../../../../../lib/api/triggers/triggerTypeSelectors'
 import { DeviceTrigger } from './DeviceTrigger'
 import { DeviceEditor } from './DeviceEditor'
-import { faCheck, faRefresh, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { DropdownInputControl, DropdownInputOption } from '../../../../../lib/Components/DropdownInput'
 
 interface IProps {
@@ -179,7 +179,7 @@ export const TriggerEditor = function TriggerEditor({ opened, canReset, isDelete
 						{isDeleted ? (
 							<>
 								<button className="btn btn-tight btn-secondary" onClick={onResetTrigger}>
-									<FontAwesomeIcon icon={faRefresh} />
+									<FontAwesomeIcon icon={faSync} />
 								</button>
 							</>
 						) : (
@@ -192,7 +192,7 @@ export const TriggerEditor = function TriggerEditor({ opened, canReset, isDelete
 								</button>
 								{canReset && (
 									<button className="btn btn-tight btn-secondary" onClick={onResetTrigger}>
-										<FontAwesomeIcon icon={faRefresh} />
+										<FontAwesomeIcon icon={faSync} />
 									</button>
 								)}
 							</>

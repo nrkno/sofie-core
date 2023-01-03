@@ -1,13 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import ClassNames from 'classnames'
-import {
-	faPencilAlt,
-	faTrash,
-	faCheck,
-	faExclamationTriangle,
-	faPlus,
-	faRefresh,
-} from '@fortawesome/free-solid-svg-icons'
+import { faPencilAlt, faTrash, faCheck, faExclamationTriangle, faPlus, faSync } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { assertNever, literal, getRandomString } from '@sofie-automation/corelib/dist/lib'
@@ -194,7 +187,7 @@ function SourceLayerDeletedEntry({ item, doUndelete }: DeletedEntryProps) {
 			</td>
 			<td className="settings-studio-output-table__actions table-item-actions c3">
 				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
-					<FontAwesomeIcon icon={faRefresh} />
+					<FontAwesomeIcon icon={faSync} />
 				</button>
 			</td>
 		</tr>
@@ -494,7 +487,7 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 						<div className="mod alright">
 							{item.defaults && (
 								<button className="btn btn-primary" onClick={doResetItem} title="Reset to defaults">
-									<FontAwesomeIcon icon={faRefresh} />
+									<FontAwesomeIcon icon={faSync} />
 								</button>
 							)}
 							&nbsp;

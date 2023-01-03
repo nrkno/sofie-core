@@ -38,6 +38,7 @@ import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { ReadonlyDeep } from 'type-fest'
 import { BlueprintResultRundown, BlueprintResultSegment, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export interface UpdateSegmentsResult {
 	segments: DBSegment[]
@@ -63,10 +64,6 @@ async function getWatchedPackagesHelper(
 			(p) => 'segmentId' in p && segmentIds.has(p.segmentId)
 		)
 	}
-}
-
-function translationNamespace(id: BlueprintId): string {
-	return 'blueprint_' + id
 }
 
 /**
@@ -151,10 +148,12 @@ export async function calculateSegmentsFromIngestData(
 					notes: [
 						{
 							type: NoteSeverity.ERROR,
-							message: {
-								key: 'Internal Error generating segment',
-								namespaces: [translationNamespace(blueprint.blueprintId)],
-							},
+							message: wrapTranslatableMessageFromBlueprints(
+								{
+									key: 'Internal Error generating segment',
+								},
+								[blueprint.blueprintId]
+							),
 							origin: {
 								name: '', // TODO
 							},
@@ -177,10 +176,7 @@ export async function calculateSegmentsFromIngestData(
 					segmentNotes.push(
 						literal<SegmentNote>({
 							type: note.type,
-							message: {
-								...note.message,
-								namespaces: [translationNamespace(blueprint.blueprintId)],
-							},
+							message: wrapTranslatableMessageFromBlueprints(note.message, [blueprint.blueprintId]),
 							origin: {
 								name: '', // TODO
 							},
@@ -210,10 +206,7 @@ export async function calculateSegmentsFromIngestData(
 						notes.push(
 							literal<PartNote>({
 								type: note.type,
-								message: {
-									...note.message,
-									namespaces: [translationNamespace(blueprint.blueprintId)],
-								},
+								message: wrapTranslatableMessageFromBlueprints(note.message, [blueprint.blueprintId]),
 								origin: {
 									name: '', // TODO
 								},
@@ -233,10 +226,10 @@ export async function calculateSegmentsFromIngestData(
 					invalidReason: blueprintPart.part.invalidReason
 						? {
 								...blueprintPart.part.invalidReason,
-								message: {
-									...blueprintPart.part.invalidReason.message,
-									namespaces: [translationNamespace(blueprint.blueprintId)],
-								},
+								message: wrapTranslatableMessageFromBlueprints(
+									blueprintPart.part.invalidReason.message,
+									[blueprint.blueprintId]
+								),
 						  }
 						: undefined,
 
@@ -626,22 +619,19 @@ export async function getRundownFromIngestData(
 		return null
 	}
 
-	const translationNamespaces: string[] = []
+	const translationNamespaces: BlueprintId[] = []
 	if (showStyleBlueprint.blueprintId) {
-		translationNamespaces.push(translationNamespace(showStyleBlueprint.blueprintId))
+		translationNamespaces.push(showStyleBlueprint.blueprintId)
 	}
 	if (context.studio.blueprintId) {
-		translationNamespaces.push(translationNamespace(context.studio.blueprintId))
+		translationNamespaces.push(context.studio.blueprintId)
 	}
 
 	// Ensure the ids in the notes are clean
 	const rundownNotes = blueprintContext.notes.map((note) =>
 		literal<RundownNote>({
 			type: note.type,
-			message: {
-				...note.message,
-				namespaces: translationNamespaces,
-			},
+			message: wrapTranslatableMessageFromBlueprints(note.message, translationNamespaces),
 			origin: {
 				name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			},

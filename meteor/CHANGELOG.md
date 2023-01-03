@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.48.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.48.0-in-testing.0) (2022-12-13)
+
+
+### Features
+
+* Highlight source-missing-zebra-stripes and status-icon on Pieces whose Part is currently Nexted or Live ([3fdd325](https://github.com/nrkno/tv-automation-server-core/commit/3fdd325f23fccdc06422a0ab16f6c8a5e81d15e9))
+* initial translations for tsr actions ([889fa04](https://github.com/nrkno/tv-automation-server-core/commit/889fa04b368d5bf34bd0acd5ad8c377b4f3af264))
+* move system storePath to an environment variable ([#778](https://github.com/nrkno/tv-automation-server-core/issues/778)) ([d75489f](https://github.com/nrkno/tv-automation-server-core/commit/d75489f4b9368e34a3c397554b7c2aa725eec55e))
+* refactor timeline types to work better with typescript 4.7 ([#793](https://github.com/nrkno/tv-automation-server-core/issues/793)) ([1ec87ef](https://github.com/nrkno/tv-automation-server-core/commit/1ec87ef5578e4341225957e43132ef6a8f452503))
+* remove initial system migrations with manual steps ([#779](https://github.com/nrkno/tv-automation-server-core/issues/779)) ([3f51952](https://github.com/nrkno/tv-automation-server-core/commit/3f519520fb0efdc36822982766bf780eed83bac7))
+* render from from json schema ([ce85248](https://github.com/nrkno/tv-automation-server-core/commit/ce85248eb21c3d507983de9931d9b99a27709d5d))
+* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+* tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
+
+
+### Bug Fixes
+
+* add namespace to action response server side ([df97c68](https://github.com/nrkno/tv-automation-server-core/commit/df97c68d08b1f2efdd45c7ad4ebf9e6bfb2c8cc1))
+* add removeTime property to PackageInfos ([562e8c9](https://github.com/nrkno/tv-automation-server-core/commit/562e8c946694f61925aa3068c0cdcebe58cbc682))
+* add translations to schemaForm component ([f63f79e](https://github.com/nrkno/tv-automation-server-core/commit/f63f79eb7ae8c6c59ac683400be40b868669637d))
+* adding TriggeredAction action fails ([0e9672e](https://github.com/nrkno/tv-automation-server-core/commit/0e9672eebca29c7b541b13afa995f0f89ea2c0da))
+* bug fix: change how to wait for other Fibers in collections.*Async methods. ([1b71153](https://github.com/nrkno/tv-automation-server-core/commit/1b71153a3bea6e25a907a4254787e04b6d7e39c8))
+* checkPieceContentStatus not translating ([7d693dc](https://github.com/nrkno/tv-automation-server-core/commit/7d693dca4675d708c344003ca5d1c494c674ffbb))
+* handle incomplete peripheralDeviceCommands ([40f691e](https://github.com/nrkno/tv-automation-server-core/commit/40f691e0e9fca1def233b67d2cd3f1cded7152ca))
+* modify zebra hightlights ([c9a33ca](https://github.com/nrkno/tv-automation-server-core/commit/c9a33cad851e70223ac053e9852c0ef28488fae8))
+* prefix blueprint translation namespace ([a1bad7e](https://github.com/nrkno/tv-automation-server-core/commit/a1bad7e3bd1dbea8a4da3173d8a50131fdd6bf15))
+* publications in rest api ([9f77988](https://github.com/nrkno/tv-automation-server-core/commit/9f7798883e213c062bdb687acf3e1b25bbd1f630))
+* update ErrorBoundrary message to be more user-friendly ([458ae5f](https://github.com/nrkno/tv-automation-server-core/commit/458ae5ff193508d6ff76b76aac5b38db54c44039))
+* use more optimal mongo observe method in custom publications ([be38e66](https://github.com/nrkno/tv-automation-server-core/commit/be38e66f2d5050580b3364989c599a7f8ccd3e2c))
+
 ## [1.47.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.1...v1.47.0-in-testing.3) (2022-11-30)
 
 ## [1.47.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)

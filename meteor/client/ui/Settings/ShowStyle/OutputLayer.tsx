@@ -1,13 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import ClassNames from 'classnames'
-import {
-	faPencilAlt,
-	faTrash,
-	faCheck,
-	faExclamationTriangle,
-	faPlus,
-	faRefresh,
-} from '@fortawesome/free-solid-svg-icons'
+import { faPencilAlt, faTrash, faCheck, faExclamationTriangle, faPlus, faSync } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IOutputLayer } from '@sofie-automation/blueprints-integration'
 import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
@@ -169,7 +162,7 @@ function OutputLayerDeletedEntry({ item, doUndelete }: DeletedEntryProps) {
 			</td>
 			<td className="settings-studio-output-table__actions table-item-actions c3">
 				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
-					<FontAwesomeIcon icon={faRefresh} />
+					<FontAwesomeIcon icon={faSync} />
 				</button>
 			</td>
 		</tr>
@@ -328,7 +321,7 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 						<div className="mod alright">
 							{item.defaults && (
 								<button className="btn btn-primary" onClick={doResetItem} title="Reset to defaults">
-									<FontAwesomeIcon icon={faRefresh} />
+									<FontAwesomeIcon icon={faSync} />
 								</button>
 							)}
 							&nbsp;

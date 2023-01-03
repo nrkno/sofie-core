@@ -134,14 +134,17 @@ export class RundownContentObserver {
 		]
 	}
 
-	private updateShowStyleBaseIds = _.debounce(() => {
-		const newShowStyleBaseIds = this.#cache.Rundowns.find({}).map((rd) => rd.showStyleBaseId)
+	private updateShowStyleBaseIds = _.debounce(
+		Meteor.bindEnvironment(() => {
+			const newShowStyleBaseIds = this.#cache.Rundowns.find({}).map((rd) => rd.showStyleBaseId)
 
-		if (!equivalentArrays(newShowStyleBaseIds, this.#showStyleBaseIds)) {
-			// trigger the rundown group to restart
-			this.#showStyleBaseIdObserver.restart()
-		}
-	}, REACTIVITY_DEBOUNCE)
+			if (!equivalentArrays(newShowStyleBaseIds, this.#showStyleBaseIds)) {
+				// trigger the rundown group to restart
+				this.#showStyleBaseIdObserver.restart()
+			}
+		}),
+		REACTIVITY_DEBOUNCE
+	)
 
 	public get cache(): ContentCache {
 		return this.#cache

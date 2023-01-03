@@ -1,5 +1,6 @@
 import { IBlueprintConfig, IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { ObjectWithOverrides } from '../settings/objectWithOverrides'
+import { LastBlueprintConfig } from './Blueprint'
 import { BlueprintId, OrganizationId, ShowStyleBaseId } from './Ids'
 
 export interface HotkeyDefinition {
@@ -31,6 +32,11 @@ export interface DBShowStyleBase {
 	name: string
 	/** Id of the blueprint used by this show-style */
 	blueprintId: BlueprintId
+	/** Id of the blueprint config preset */
+	blueprintConfigPresetId?: string
+	/** Whether blueprintConfigPresetId is invalid, and does not match a currently exposed preset from the Blueprint */
+	blueprintConfigPresetIdUnlinked?: boolean
+
 	/** If set, the Organization that owns this ShowStyleBase */
 	organizationId: OrganizationId | null
 
@@ -46,4 +52,7 @@ export interface DBShowStyleBase {
 	blueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
 
 	_rundownVersionHash: string
+
+	/** Details on the last blueprint used to generate the defaults values for this */
+	lastBlueprintConfig: LastBlueprintConfig | undefined
 }
