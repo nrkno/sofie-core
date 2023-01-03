@@ -1,15 +1,10 @@
 import { BlueprintMapping, IBlueprintConfig, PackageContainer, TSR } from '@sofie-automation/blueprints-integration'
 import { ObjectWithOverrides } from '../settings/objectWithOverrides'
-import { ProtectedString } from '../protectedString'
-import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, PeripheralDeviceId } from './Ids'
+import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, MappingsHash } from './Ids'
 import { LastBlueprintConfig } from './Blueprint'
+import { MappingsExt, MappingExt } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
-export interface MappingsExt {
-	[layerName: string]: MappingExt
-}
-export interface MappingExt extends Omit<BlueprintMapping, 'deviceId'> {
-	deviceId: PeripheralDeviceId
-}
+export { MappingsExt, MappingExt, MappingsHash }
 
 export interface IStudioSettings {
 	/** The framerate (frames per second) used to convert internal timing information (in milliseconds)
@@ -49,7 +44,6 @@ export interface IStudioSettings {
 	/** Preserve unsynced segments psoition in the rundown, relative to the other segments */
 	preserveOrphanedSegmentPositionInRundown?: boolean
 }
-export type MappingsHash = ProtectedString<'MappingsHash'>
 
 export type StudioLight = Omit<DBStudio, 'mappingsWithOverrides' | 'blueprintConfigWithOverrides'>
 

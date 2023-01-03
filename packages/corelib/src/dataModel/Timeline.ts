@@ -1,16 +1,12 @@
 import { TSR, OnGenerateTimelineObj, Time } from '@sofie-automation/blueprints-integration'
 import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { SetRequired } from 'type-fest'
-import { ProtectedString, protectString, unprotectString } from '../protectedString'
 import { PartInstanceId, PieceInstanceInfiniteId, BlueprintId, StudioId } from './Ids'
+import { TimelineEnableExt } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
-export enum TimelineContentTypeOther {
-	NOTHING = 'nothing',
-	GROUP = 'group',
-}
-
-import { TimelineHash } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-export { TimelineHash }
+export { deserializeTimelineBlob, serializeTimelineBlob } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
+import { TimelineHash, TimelineBlob } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+export { TimelineHash, TimelineBlob }
 import {
 	PartPlaybackCallbackData,
 	PiecePlaybackCallbackData,
@@ -18,9 +14,12 @@ import {
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 export { PartPlaybackCallbackData, PiecePlaybackCallbackData }
 
-export { TimelineObjGeneric, TimelineObjType }
+export { TimelineObjGeneric, TimelineObjType, TimelineEnableExt }
 
-export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
+export enum TimelineContentTypeOther {
+	NOTHING = 'nothing',
+	GROUP = 'group',
+}
 
 export interface OnGenerateTimelineObjExt<TMetadata = unknown, TKeyframeMetadata = unknown>
 	extends SetRequired<OnGenerateTimelineObj<TSR.TSRTimelineContent, TMetadata, TKeyframeMetadata>, 'metaData'> {
@@ -96,13 +95,4 @@ export interface TimelineComplete {
 	timelineBlob: TimelineBlob
 	/** Version numbers of sofie at the time the timeline was generated */
 	generationVersions: TimelineCompleteGenerationVersions
-}
-
-export type TimelineBlob = ProtectedString<'TimelineBlob'>
-
-export function deserializeTimelineBlob(timelineBlob: TimelineBlob): TimelineObjGeneric[] {
-	return JSON.parse(unprotectString(timelineBlob)) as Array<TimelineObjGeneric>
-}
-export function serializeTimelineBlob(timeline: TimelineObjGeneric[]): TimelineBlob {
-	return protectString(JSON.stringify(timeline))
 }

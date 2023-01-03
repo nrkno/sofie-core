@@ -38,9 +38,10 @@ import {
 	PeripheralDeviceStatusObject,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { protectString, unprotectObject } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { protectString, unprotectObject, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { StudioId, TimelineHash } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import {
+	deserializeTimelineBlob,
 	RoutedMappings,
 	RoutedTimeline,
 	TimelineObjGeneric,
@@ -396,11 +397,11 @@ export class TSRHandler {
 		}
 
 		const transformedTimeline = timeline.timelineBlob
-			? this._transformTimeline(JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>)
+			? this._transformTimeline(deserializeTimelineBlob(timeline.timelineBlob))
 			: timeline.timeline
 			? this._transformTimeline(clone(timeline.timeline))
 			: []
-		this.tsr.timelineHash = timeline.timelineHash
+		this.tsr.timelineHash = unprotectString(timeline.timelineHash)
 		this.tsr.setTimelineAndMappings(transformedTimeline, unprotectObject(mappingsObject.mappings))
 	}
 	private _getPeripheralDevice(): PeripheralDevicePublic {

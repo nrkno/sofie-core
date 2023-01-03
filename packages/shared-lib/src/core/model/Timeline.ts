@@ -1,5 +1,6 @@
+import { unprotectString, protectString } from '../../lib/protectedString'
 import { TSR } from '../../tsr'
-import { PeripheralDeviceId, StudioId } from './Ids'
+import { MappingsHash, PeripheralDeviceId, StudioId, TimelineBlob, TimelineHash } from './Ids'
 
 export enum TimelineObjHoldMode {
 	/** Default: The object is played as usual (behaviour is not affected by Hold)  */
@@ -54,13 +55,13 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt<TSR.TSRTimelin
 export interface RoutedTimeline {
 	_id: StudioId
 	/** Hash of the studio mappings */
-	mappingsHash: string
+	mappingsHash: MappingsHash | undefined
 
 	/** Hash of the Timeline */
-	timelineHash: string
+	timelineHash: TimelineHash
 
 	/** serialized JSON Array containing all timeline-objects */
-	timelineBlob: string
+	timelineBlob: TimelineBlob
 	generated: number
 
 	// this is the old way of storing the timeline, kept for backwards-compatibility
@@ -94,6 +95,13 @@ export interface MappingExt extends Omit<BlueprintMapping, 'deviceId'> {
 }
 export interface RoutedMappings {
 	_id: StudioId
-	mappingsHash: string | undefined
+	mappingsHash: MappingsHash | undefined
 	mappings: MappingsExt
+}
+
+export function deserializeTimelineBlob(timelineBlob: TimelineBlob): TimelineObjGeneric[] {
+	return JSON.parse(unprotectString(timelineBlob)) as Array<TimelineObjGeneric>
+}
+export function serializeTimelineBlob(timeline: TimelineObjGeneric[]): TimelineBlob {
+	return protectString(JSON.stringify(timeline))
 }

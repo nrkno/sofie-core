@@ -35,3 +35,7 @@ export type ExpectedPackageWorkStatusId = ProtectedString<'ExpectedPackageStatus
 
 /** A string, identifying a TimelineDatastore entry */
 export type TimelineDatastoreEntryId = ProtectedString<'TimelineDatastoreEntryId'>
+
+export type MappingsHash = ProtectedString<'MappingsHash'>
+
+export type TimelineBlob = ProtectedString<'TimelineBlob'>
