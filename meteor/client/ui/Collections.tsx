@@ -19,7 +19,9 @@ export const UIStudios = createCustomPublicationMongoCollection(CustomCollection
  */
 export const UITriggeredActions = createCustomPublicationMongoCollection(CustomCollectionName.UITriggeredActions)
 
-export const DeviceTriggersPreviews = createCustomPublicationMongoCollection(CustomCollectionName.UIDeviceTriggerPreviews)
+export const DeviceTriggersPreviews = createCustomPublicationMongoCollection(
+	CustomCollectionName.UIDeviceTriggerPreviews
+)
 /**
  * Pre-generated notes to be converted into notificiations.
  */
