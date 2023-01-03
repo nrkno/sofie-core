@@ -20,7 +20,6 @@ import {
 	StatusCode,
 } from 'timeline-state-resolver'
 import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
-import clone = require('fast-clone')
 import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
@@ -396,11 +395,7 @@ export class TSRHandler {
 			})
 		}
 
-		const transformedTimeline = timeline.timelineBlob
-			? this._transformTimeline(deserializeTimelineBlob(timeline.timelineBlob))
-			: timeline.timeline
-			? this._transformTimeline(clone(timeline.timeline))
-			: []
+		const transformedTimeline = this._transformTimeline(deserializeTimelineBlob(timeline.timelineBlob))
 		this.tsr.timelineHash = unprotectString(timeline.timelineHash)
 		this.tsr.setTimelineAndMappings(transformedTimeline, unprotectObject(mappingsObject.mappings))
 	}

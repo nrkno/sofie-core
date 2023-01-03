@@ -63,9 +63,6 @@ export interface RoutedTimeline {
 	/** serialized JSON Array containing all timeline-objects */
 	timelineBlob: TimelineBlob
 	generated: number
-
-	// this is the old way of storing the timeline, kept for backwards-compatibility
-	timeline?: TimelineObjGeneric[]
 }
 
 export enum LookaheadMode {
