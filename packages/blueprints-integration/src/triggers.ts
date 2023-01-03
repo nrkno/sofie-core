@@ -1,5 +1,10 @@
 import { SourceLayerType } from './content'
 import { ITranslatableMessage } from './translations'
+import {
+	SomeActionIdentifier,
+	ClientActions,
+	PlayoutActions,
+} from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 
 export enum TriggerType {
 	hotkey = 'hotkey',
@@ -92,30 +97,8 @@ export type DeviceTriggerArguments = Record<string, string | number | boolean>
 
 export type SomeBlueprintTrigger = IBlueprintHotkeyTrigger | IBlueprintDeviceTrigger
 
-export enum PlayoutActions {
-	adlib = 'adlib',
-	activateRundownPlaylist = 'activateRundownPlaylist',
-	deactivateRundownPlaylist = 'deactivateRundownPlaylist',
-	take = 'take',
-	hold = 'hold',
-	createSnapshotForDebug = 'createSnapshotForDebug',
-	resyncRundownPlaylist = 'resyncRundownPlaylist',
-	moveNext = 'moveNext',
-	resetRundownPlaylist = 'resetRundownPlaylist',
-	reloadRundownPlaylistData = 'reloadRundownPlaylistData',
-	disableNextPiece = 'disableNextPiece',
-}
-
-export enum ClientActions {
-	'shelf' = 'shelf',
-	'goToOnAirLine' = 'goToOnAirLine',
-	'rewindSegments' = 'rewindSegments',
-	'showEntireCurrentSegment' = 'showEntireCurrentSegment',
-	'miniShelfQueueAdLib' = 'miniShelfQueueAdLib',
-}
-
 export interface ITriggeredActionBase {
-	action: PlayoutActions | ClientActions
+	action: SomeActionIdentifier
 	filterChain: IBaseFilterLink[]
 }
 
@@ -327,3 +310,5 @@ export interface IBlueprintTriggeredActions {
 	/** A list of actions to execute */
 	actions: Record<string, SomeAction>
 }
+
+export { SomeActionIdentifier, ClientActions, PlayoutActions }

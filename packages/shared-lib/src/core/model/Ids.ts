@@ -35,3 +35,12 @@ export type ExpectedPackageWorkStatusId = ProtectedString<'ExpectedPackageStatus
 
 /** A string, identifying a TimelineDatastore entry */
 export type TimelineDatastoreEntryId = ProtectedString<'TimelineDatastoreEntryId'>
+
+/** A string, identifying a Part */
+export type PartId = ProtectedString<'PartId'>
+
+/** A string, identifying a ShowStyleBase */
+export type ShowStyleBaseId = ProtectedString<'ShowStyleBaseId'>
+
+/** A string identifying a triggered action */
+export type TriggeredActionId = ProtectedString<'TriggeredActionId'>

@@ -23,6 +23,7 @@ import { sortAdlibs } from '../../Rundown'
 import { ReactivePlaylistActionContext } from './actionFactory'
 import { FindOptions } from '../../collections/lib'
 import { PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { IWrappedAdLibBase } from '@sofie-automation/shared-lib/dist/input-gateway/deviceTriggerPreviews'
 import { memoizedIsolatedAutorun } from './reactiveLib'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
@@ -48,7 +49,7 @@ type CompiledFilter<T> = {
 
 type SomeAdLib = RundownBaselineAdLibItem | RundownBaselineAdLibAction | AdLibPiece | AdLibAction
 
-interface IWrappedAdLibType<T extends SomeAdLib, typeName extends string> {
+interface IWrappedAdLibType<T extends SomeAdLib, typeName extends string> extends IWrappedAdLibBase {
 	_id: T['_id']
 	_rank: number
 	partId: PartId | null
