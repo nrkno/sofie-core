@@ -12,14 +12,12 @@ import * as _ from 'underscore'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { MeteorCall } from '../../../lib/api/methods'
 import { checkForOldDataAndCleanUp } from './SystemManagement'
+import { UpgradesView } from './Upgrades'
 
 interface IProps {}
 interface IState {
 	errorMessage?: string
-	// systemVersion: string
-	// databaseVersion: string
 	migrationNeeded: boolean
-	databasePreviousVersion: string | null
 	showAllSteps: boolean
 
 	migration?: {
@@ -54,7 +52,6 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 			super(props)
 
 			this.state = {
-				databasePreviousVersion: null,
 				showAllSteps: false,
 				migrationNeeded: false,
 				warnings: [],
@@ -89,7 +86,6 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 		updateVersions() {
 			this.setState({
 				errorMessage: '',
-				databasePreviousVersion: '',
 				migrationNeeded: false,
 			})
 			MeteorCall.migration
@@ -112,9 +108,6 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 					})
 
 					this.setState({
-						// systemVersion: r.systemVersion,
-						// databaseVersion: r.databaseVersion,
-						// databasePreviousVersion: r.databasePreviousVersion,
 						migrationNeeded: r.migrationNeeded,
 						migration: r.migration,
 						inputValues: inputValues,
@@ -128,15 +121,6 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 		runMigration() {
 			const inputResults: Array<MigrationStepInputResult> = []
 
-			// _.each(this.state.inputValues, (iv, stepId: string) => {
-			// 	_.each(iv, (value: any, attribute: string) => {
-			// 		inputResults.push({
-			// 			stepId: stepId,
-			// 			attribute: attribute,
-			// 			value: value
-			// 		})
-			// 	})
-			// })
 			if (this.state.migration) {
 				_.each(this.state.migration.manualInputs, (manualInput) => {
 					if (manualInput.stepId && manualInput.attribute) {
@@ -297,21 +281,6 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 									<span>{t('Re-check')}</span>
 								</button>
 
-								{/* {
-								this.state.chunks &&
-								this.state.databasePreviousVersion &&
-								this.state.databasePreviousVersion !== '0.0.0' &&
-								this.state.databaseVersion !== this.state.databasePreviousVersion ?
-									<button className='btn mod mhm' onClick={() => {
-										if (this.state.databasePreviousVersion) {
-											this.setDatabaseVersion(this.state.databasePreviousVersion)
-										}
-									}}>
-										<FontAwesomeIcon icon={faDatabase} />
-										{t('Reset Version to') + ` ${this.state.databasePreviousVersion}`}
-									</button>
-								: null
-							} */}
 								{
 									<button
 										className="btn mrm"
@@ -466,6 +435,8 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 							</div>
 						) : null}
 					</div>
+
+					<UpgradesView />
 				</div>
 			)
 		}

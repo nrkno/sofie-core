@@ -1,12 +1,13 @@
 import * as _ from 'underscore'
 import path from 'path'
 import { promises as fsp } from 'fs'
-import { getCurrentTime, protectString, unprotectString, getRandomId } from '../../../lib/lib'
+import { getCurrentTime, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
 import {
 	BlueprintManifestType,
+	IShowStyleConfigPreset,
 	SomeBlueprintManifest,
 	TranslationsBundle,
 } from '@sofie-automation/blueprints-integration'
@@ -23,8 +24,11 @@ import { Credentials, isResolvedCredentials } from '../../security/lib/credentia
 import { Settings } from '../../../lib/Settings'
 import { generateTranslationBundleOriginId, upsertBundles } from '../translationsBundles'
 import { BlueprintLight, fetchBlueprintLight } from '../../../lib/collections/optimizations'
-import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, OrganizationId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getSystemStorePath } from '../../coreSystem'
+import { Studio, Studios } from '../../../lib/collections/Studios'
+import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 
 export async function insertBlueprint(
 	methodContext: MethodContext,
@@ -46,7 +50,7 @@ export async function insertBlueprint(
 		modified: getCurrentTime(),
 		created: getCurrentTime(),
 
-		blueprintId: protectString(''),
+		blueprintId: '',
 		blueprintType: type,
 
 		studioConfigManifest: [],
@@ -61,6 +65,8 @@ export async function insertBlueprint(
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
+
+		blueprintHash: getRandomId(),
 	})
 }
 export async function removeBlueprint(methodContext: MethodContext, blueprintId: BlueprintId): Promise<void> {
@@ -154,12 +160,13 @@ async function innerUploadBlueprint(
 					showStyle: {},
 					system: undefined,
 			  },
-		blueprintId: protectString(''),
+		blueprintId: '',
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
 		disableVersionChecks: false,
 		blueprintType: undefined,
+		blueprintHash: getRandomId(),
 	}
 
 	let blueprintManifest: SomeBlueprintManifest | undefined
@@ -179,7 +186,7 @@ async function innerUploadBlueprint(
 		)
 	}
 
-	newBlueprint.blueprintId = protectString(blueprintManifest.blueprintId || '')
+	newBlueprint.blueprintId = blueprintManifest.blueprintId || ''
 	newBlueprint.blueprintType = blueprintManifest.blueprintType
 	newBlueprint.blueprintVersion = blueprintManifest.blueprintVersion
 	newBlueprint.integrationVersion = blueprintManifest.integrationVersion
@@ -213,10 +220,18 @@ async function innerUploadBlueprint(
 
 	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
 		newBlueprint.showStyleConfigManifest = blueprintManifest.showStyleConfigManifest
-	}
-	if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
+		newBlueprint.showStyleConfigPresets = blueprintManifest.configPresets
+	} else if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
 		newBlueprint.studioConfigManifest = blueprintManifest.studioConfigManifest
+		newBlueprint.studioConfigPresets = blueprintManifest.configPresets
 	}
+
+	// Parse the versions, just to verify that the format is correct:
+	parseVersion(blueprintManifest.blueprintVersion)
+	parseVersion(blueprintManifest.integrationVersion)
+	parseVersion(blueprintManifest.TSRVersion)
+
+	await Blueprints.upsertAsync(newBlueprint._id, newBlueprint)
 
 	// check for translations on the manifest and store them if they exist
 	if (
@@ -234,13 +249,113 @@ async function innerUploadBlueprint(
 		await upsertBundles(translations, generateTranslationBundleOriginId(blueprintId, 'blueprints'))
 	}
 
-	// Parse the versions, just to verify that the format is correct:
-	parseVersion(blueprintManifest.blueprintVersion)
-	parseVersion(blueprintManifest.integrationVersion)
-	parseVersion(blueprintManifest.TSRVersion)
+	// Ensure anywhere that uses this blueprint has their configPreset updated
+	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
+		await syncConfigPresetsToShowStyles(newBlueprint)
+	} else if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
+		await syncConfigPresetsToStudios(newBlueprint)
+	}
 
-	await Blueprints.upsertAsync(newBlueprint._id, newBlueprint)
 	return newBlueprint
+}
+
+async function syncConfigPresetsToShowStyles(blueprint: Blueprint): Promise<void> {
+	const showStyles = (await ShowStyleBases.findFetchAsync(
+		{ blueprintId: blueprint._id },
+		{
+			fields: {
+				_id: 1,
+				blueprintConfigPresetId: 1,
+			},
+		}
+	)) as Pick<ShowStyleBase, '_id' | 'blueprintConfigPresetId'>[]
+
+	const configPresets = blueprint.showStyleConfigPresets || {}
+
+	const presetForShowStyle = new Map<ShowStyleBaseId, IShowStyleConfigPreset | undefined>()
+
+	await Promise.all(
+		showStyles.map(async (showStyle) => {
+			const configPreset = showStyle.blueprintConfigPresetId
+				? configPresets[showStyle.blueprintConfigPresetId]
+				: undefined
+			presetForShowStyle.set(showStyle._id, configPreset)
+
+			return ShowStyleBases.updateAsync(showStyle._id, {
+				$set: configPreset
+					? {
+							'blueprintConfigWithOverrides.defaults': configPreset.config,
+							blueprintConfigPresetIdUnlinked: false,
+					  }
+					: {
+							blueprintConfigPresetIdUnlinked: true,
+					  },
+			})
+		})
+	)
+
+	const variants = (await ShowStyleVariants.findFetchAsync(
+		{ showStyleBaseId: { $in: showStyles.map((s) => s._id) } },
+		{
+			fields: {
+				_id: 1,
+				showStyleBaseId: 1,
+				blueprintConfigPresetId: 1,
+			},
+		}
+	)) as Pick<ShowStyleVariant, '_id' | 'blueprintConfigPresetId' | 'showStyleBaseId'>[]
+
+	await Promise.all(
+		variants.map(async (variant) => {
+			const baseConfig = presetForShowStyle.get(variant.showStyleBaseId)
+			const configPreset =
+				baseConfig && variant.blueprintConfigPresetId
+					? baseConfig.variants[variant.blueprintConfigPresetId]
+					: undefined
+
+			return ShowStyleVariants.updateAsync(variant._id, {
+				$set: configPreset
+					? {
+							'blueprintConfigWithOverrides.defaults': configPreset.config,
+							blueprintConfigPresetIdUnlinked: false,
+					  }
+					: {
+							blueprintConfigPresetIdUnlinked: true,
+					  },
+			})
+		})
+	)
+}
+async function syncConfigPresetsToStudios(blueprint: Blueprint): Promise<void> {
+	const studios = (await Studios.findFetchAsync(
+		{ blueprintId: blueprint._id },
+		{
+			fields: {
+				_id: 1,
+				blueprintConfigPresetId: 1,
+			},
+		}
+	)) as Pick<Studio, '_id' | 'blueprintConfigPresetId'>[]
+
+	const configPresets = blueprint.studioConfigPresets || {}
+
+	await Promise.all(
+		studios.map(async (studio) => {
+			const configPreset = studio.blueprintConfigPresetId
+				? configPresets[studio.blueprintConfigPresetId]
+				: undefined
+			return Studios.updateAsync(studio._id, {
+				$set: configPreset
+					? {
+							'blueprintConfigWithOverrides.defaults': configPreset.config,
+							blueprintConfigPresetIdUnlinked: false,
+					  }
+					: {
+							blueprintConfigPresetIdUnlinked: true,
+					  },
+			})
+		})
+	)
 }
 
 async function assignSystemBlueprint(methodContext: MethodContext, blueprintId: BlueprintId | null): Promise<void> {

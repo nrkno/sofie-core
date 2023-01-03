@@ -6,7 +6,6 @@ import { TFunction } from 'i18next'
 import { BucketAdLibAction } from './dataModel/BucketAdLibAction'
 import { BlueprintId } from './dataModel/Ids'
 import { ArrayElement } from './lib'
-import { unprotectString } from './protectedString'
 
 /**
  * @enum - A translatable message (i18next)
@@ -100,6 +99,16 @@ export function isTranslatableMessage(obj: unknown): obj is ITranslatableMessage
 	return true
 }
 
+export function wrapTranslatableMessageFromBlueprints(
+	message: IBlueprintTranslatableMessage,
+	blueprintIds: BlueprintId[]
+): ITranslatableMessage {
+	return {
+		...message,
+		namespaces: blueprintIds.map((id) => `blueprint_${id}`),
+	}
+}
+
 /**
  * A utility function to add namespaces to ITranslatableMessages found in AdLib Actions
  *
@@ -131,18 +140,13 @@ export function processAdLibActionITranslatableMessages<
 		display: {
 			...itemOrig.display,
 			_rank: rank ?? itemOrig.display._rank,
-			label: {
-				...itemOrig.display.label,
-				namespaces: [unprotectString(blueprintId)],
-			},
-			triggerLabel: itemOrig.display.triggerLabel && {
-				...itemOrig.display.triggerLabel,
-				namespaces: [unprotectString(blueprintId)],
-			},
-			description: itemOrig.display.description && {
-				...itemOrig.display.description,
-				namespaces: [unprotectString(blueprintId)],
-			},
+			label: wrapTranslatableMessageFromBlueprints(itemOrig.display.label, [blueprintId]),
+			triggerLabel:
+				itemOrig.display.triggerLabel &&
+				wrapTranslatableMessageFromBlueprints(itemOrig.display.triggerLabel, [blueprintId]),
+			description:
+				itemOrig.display.description &&
+				wrapTranslatableMessageFromBlueprints(itemOrig.display.description, [blueprintId]),
 		},
 		triggerModes:
 			itemOrig.triggerModes &&
@@ -151,14 +155,10 @@ export function processAdLibActionITranslatableMessages<
 					...triggerMode,
 					display: {
 						...triggerMode.display,
-						label: {
-							...triggerMode.display.label,
-							namespaces: [unprotectString(blueprintId)],
-						},
-						description: triggerMode.display.description && {
-							...triggerMode.display.description,
-							namespaces: [unprotectString(blueprintId)],
-						},
+						label: wrapTranslatableMessageFromBlueprints(triggerMode.display.label, [blueprintId]),
+						description:
+							triggerMode.display.description &&
+							wrapTranslatableMessageFromBlueprints(triggerMode.display.description, [blueprintId]),
 					},
 				})
 			),

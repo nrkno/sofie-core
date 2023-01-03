@@ -28,6 +28,7 @@ import '../lib/main'
 // Import all files that register Meteor methods:
 import './api/blueprints/api'
 import './api/blueprints/http'
+import './api/blueprintConfigPresets'
 import './api/client'
 import './api/ExternalMessageQueue'
 import './api/ingest/debug'

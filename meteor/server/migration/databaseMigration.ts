@@ -185,6 +185,9 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 			if (blueprint.blueprintType === BlueprintManifestType.SHOWSTYLE) {
 				const bp = blueprintManifest as ShowStyleBlueprintManifest
 
+				// If blueprint uses the new flow, don't attempt migrations
+				if (typeof bp.applyConfig === 'function') return
+
 				// Find all showStyles that uses this blueprint:
 				ShowStyleBases.find({
 					blueprintId: blueprint._id,
@@ -223,6 +226,10 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 				})
 			} else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
 				const bp = blueprintManifest as StudioBlueprintManifest
+
+				// If blueprint uses the new flow, don't attempt migrations
+				if (typeof bp.applyConfig === 'function') return
+
 				// Find all studios that use this blueprint
 				Studios.find({
 					blueprintId: blueprint._id,

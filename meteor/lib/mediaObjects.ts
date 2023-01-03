@@ -405,7 +405,7 @@ function checkPieceContentExpectedPackageStatus(
 					expectedPackage.content.guid ||
 					expectedPackage._id
 
-				const warningMessage = getPackageWarningMessage(packageOnPackageContainer, packageName, sourceLayer)
+				const warningMessage = getPackageWarningMessage(packageOnPackageContainer, sourceLayer)
 				if (warningMessage) {
 					messages.push(warningMessage)
 				} else {
@@ -493,7 +493,6 @@ function checkPieceContentExpectedPackageStatus(
 
 function getPackageWarningMessage(
 	packageOnPackageContainer: PackageContainerPackageStatusDB | undefined,
-	packageName: string,
 	sourceLayer: ISourceLayer
 ): ContentMessage | null {
 	if (
@@ -503,12 +502,7 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation(
-				`Clip "{{fileName}}" can't be played because it doesn't exist on the playout system`,
-				{
-					fileName: packageName,
-				}
-			),
+			message: generateTranslation(`Clip can't be played because it doesn't exist on the playout system`),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===

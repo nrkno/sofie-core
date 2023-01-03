@@ -97,6 +97,7 @@ export class MockJobContext implements JobContext {
 
 	get studioBlueprint(): ReadonlyDeep<WrappedStudioBlueprint> {
 		return {
+			blueprintDoc: undefined,
 			blueprintId: this.studio.blueprintId || protectString('fake'),
 			blueprint: this.#studioBlueprint,
 		}
@@ -230,6 +231,13 @@ const MockStudioBlueprint: () => StudioBlueprintManifest = () => ({
 	integrationVersion: '0.0.0',
 	TSRVersion: '0.0.0',
 
+	configPresets: {
+		defaults: {
+			name: 'Defaults',
+			config: {},
+		},
+	},
+
 	studioConfigManifest: [],
 	studioMigrations: [],
 	getBaseline: () => {
@@ -247,6 +255,20 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 	blueprintVersion: '0.0.0',
 	integrationVersion: '0.0.0',
 	TSRVersion: '0.0.0',
+
+	configPresets: {
+		defaults: {
+			name: 'Defaults',
+			config: {},
+
+			variants: {
+				0: {
+					name: 'Variant 0',
+					config: {},
+				},
+			},
+		},
+	},
 
 	showStyleConfigManifest: [],
 	showStyleMigrations: [],
