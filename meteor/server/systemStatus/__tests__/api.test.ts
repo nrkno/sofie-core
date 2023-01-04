@@ -12,7 +12,7 @@ import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 
 // we don't want the deviceTriggers observer to start up at this time
-jest.mock('../../api/DeviceTriggers/observer')
+jest.mock('../../api/deviceTriggers/observer')
 
 require('../api')
 require('../../coreSystem/index')
