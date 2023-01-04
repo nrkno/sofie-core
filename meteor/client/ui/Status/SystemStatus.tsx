@@ -34,8 +34,8 @@ import { StatusCodePill } from './StatusCodePill'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { SchemaForm } from '../../lib/forms/schemaForm'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { DebugStateTable } from './DebugState'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -186,48 +186,6 @@ export const DeviceItem = reacti18next.withTranslation()(
 			}
 		}
 
-		private getDebugStateTableBody(debugState: object) {
-			/**
-			 * Flattens object such that deeply-nested keys are moved to the top-level and are prefixed by
-			 *   their parent keys.
-			 *
-			 * # Example
-			 *
-			 * { "key1": { "key2": [ { "key3": "example" } ] } }
-			 *
-			 * becomes
-			 *
-			 * { "key1.key2.0.key3": "example" }
-			 * @param acc Accumulator object, should be passed an empty object to begin
-			 * @param obj Object to recurse
-			 * @param currentKey Current key within the object being recursed (initially blank)
-			 * @returns "Flattened" object
-			 */
-			function toDotNotation(acc: object, obj: object, currentKey?: string): object {
-				for (const key in obj) {
-					const value = obj[key]
-					const newKey = currentKey ? currentKey + '.' + key : key // joined key with dot
-					if (value && typeof value === 'object' && Object.keys(value).length) {
-						acc = toDotNotation(acc, value, newKey) // it's a nested object, so do it again
-					} else {
-						acc[newKey] = value // it's not an object, so set the property
-					}
-				}
-
-				return acc
-			}
-
-			const objectInDotNotation = toDotNotation({}, debugState)
-			return Object.entries(objectInDotNotation).map(([key, value]) => {
-				return (
-					<tr key={key}>
-						<td>{key}</td>
-						<td>{JSON.stringify(value)}</td>
-					</tr>
-				)
-			})
-		}
-
 		render() {
 			const { t } = this.props
 
@@ -279,14 +237,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 						</div>
 					) : null}
 
-					{this.props.debugState ? (
-						<div className="device-item__debugState">
-							<label>{t('Debug State')}</label>
-							<table className="table">
-								<tbody>{this.getDebugStateTableBody(this.props.debugState)}</tbody>
-							</table>
-						</div>
-					) : null}
+					{this.props.debugState ? <DebugStateTable debugState={this.props.debugState} /> : null}
 
 					<div className="actions-container">
 						<div className="device-item__actions">
@@ -634,31 +585,20 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 		}
 
 		refreshDebugStates = () => {
-			const { t } = this.props
-
 			for (const device of this.props.devices) {
 				if (device.type === PeripheralDeviceType.PLAYOUT && device.settings && device.settings['debugState']) {
-					doUserAction(
-						t,
-						'Debug States Refresh Timer',
-						UserAction.PERIPHERAL_DEVICE_REFRESH_DEBUG_STATES,
-						(e, ts) => MeteorCall.userAction.getDebugStates(e, ts, device._id),
-						(err, res) => {
-							if (err) {
-								console.log(`Error fetching device states: ${err}`)
-							} else if (res) {
-								const states: Map<PeripheralDeviceId, object> = new Map()
-								for (const [key, state] of Object.entries(res)) {
-									states.set(protectString(key), state)
-								}
-								this.setState({
-									deviceDebugState: states,
-								})
+					MeteorCall.systemStatus
+						.getDebugStates(device._id)
+						.then((res) => {
+							const states: Map<PeripheralDeviceId, object> = new Map()
+							for (const [key, state] of Object.entries(res)) {
+								states.set(protectString(key), state)
 							}
-
-							return true
-						}
-					)
+							this.setState({
+								deviceDebugState: states,
+							})
+						})
+						.catch((err) => console.log(`Error fetching device states: ${err}`))
 				}
 			}
 		}

@@ -649,7 +649,6 @@ export class TSRHandler {
 			}
 		}
 		await Promise.all(debugLoggingPs)
-		await Promise.all(ps)
 
 		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
 		this.logger.debug('updateDevices end')

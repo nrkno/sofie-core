@@ -315,11 +315,6 @@ export interface NewUserActionAPI extends MethodContext {
 		subDeviceId: string,
 		disable: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
-	getDebugStates(
-		userEvent: string,
-		eventTIme: Time,
-		peripheralDeviceId: PeripheralDeviceId
-	): Promise<ClientAPI.ClientResponse<object>>
 }
 
 export enum UserActionAPIMethods {
@@ -399,8 +394,6 @@ export enum UserActionAPIMethods {
 	'switchRouteSet' = 'userAction.switchRouteSet',
 
 	'disablePeripheralSubDevice' = 'userAction.system.disablePeripheralSubDevice',
-
-	'getDebugStates' = 'userAction.playout.getDebugStates',
 }
 
 export interface ReloadRundownPlaylistResponse {
