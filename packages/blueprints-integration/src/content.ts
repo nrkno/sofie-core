@@ -1,6 +1,5 @@
-import { TSRTimelineContent } from 'timeline-state-resolver-types'
 import { Time } from './common'
-import { TimelineObjectCoreExt } from './timeline'
+import { TSR, TimelineObjectCoreExt } from './timeline'
 
 /** The type of the source layer, used to enable specific functions for special-type layers */
 export enum SourceLayerType {
@@ -31,7 +30,7 @@ export enum SourceLayerType {
 }
 
 export type WithTimeline<T extends BaseContent> = T & {
-	timelineObjects: TimelineObjectCoreExt<TSRTimelineContent>[]
+	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
 }
 
 export interface BaseContent {

@@ -1,6 +1,6 @@
-import { DeviceType } from 'timeline-state-resolver-types'
 import { BasicConfigItemValue } from './common'
 import { SourceLayerType } from './content'
+import { TSR } from './timeline'
 
 export enum ConfigManifestEntryType {
 	STRING = 'string',
@@ -112,6 +112,6 @@ export interface ConfigManifestEntryLayerMappings<Multiple extends boolean>
 	extends ConfigManifestEntrySelectBase<Multiple> {
 	type: ConfigManifestEntryType.LAYER_MAPPINGS
 	filters?: {
-		deviceTypes?: DeviceType[]
+		deviceTypes?: TSR.DeviceType[]
 	}
 }

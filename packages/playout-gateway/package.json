@@ -59,7 +59,6 @@
 		"@sofie-automation/server-core-integration": "1.49.0-in-development",
 		"@sofie-automation/shared-lib": "1.49.0-in-development",
 		"debug": "^4.3.3",
-		"fast-clone": "^1.5.13",
 		"influx": "^5.9.3",
 		"timeline-state-resolver": "8.0.0-release48.0",
 		"tslib": "^2.4.0",

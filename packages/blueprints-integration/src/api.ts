@@ -1,5 +1,3 @@
-import { TSRTimelineContent, TSRTimelineObj } from 'timeline-state-resolver-types'
-
 import { ActionUserData, IBlueprintActionManifest } from './action'
 import { ConfigManifestEntry } from './config'
 import {
@@ -37,7 +35,7 @@ import {
 	ExpectedPlayoutItemGeneric,
 } from './rundown'
 import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant, IOutputLayer, ISourceLayer } from './showStyle'
-import { OnGenerateTimelineObj } from './timeline'
+import { TSR, OnGenerateTimelineObj } from './timeline'
 import { IBlueprintConfig } from './common'
 import { ExpectedPackage } from './package'
 import { ReadonlyDeep } from 'type-fest'
@@ -252,7 +250,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	/** Called after the timeline has been generated, used to manipulate the timeline */
 	onTimelineGenerate?: (
 		context: ITimelineEventContext,
-		timeline: OnGenerateTimelineObj<TSRTimelineContent>[],
+		timeline: OnGenerateTimelineObj<TSR.TSRTimelineContent>[],
 		previousPersistentState: TimelinePersistentState | undefined,
 		previousPartEndState: PartEndState | undefined,
 		resolvedPieces: IBlueprintResolvedPieceInstance[]
@@ -283,11 +281,11 @@ export type PartEndState = unknown
 export type TimelinePersistentState = unknown
 
 export interface BlueprintResultTimeline {
-	timeline: OnGenerateTimelineObj<TSRTimelineContent>[]
+	timeline: OnGenerateTimelineObj<TSR.TSRTimelineContent>[]
 	persistentState: TimelinePersistentState
 }
 export interface BlueprintResultBaseline {
-	timelineObjects: TSRTimelineObj<TSRTimelineContent>[]
+	timelineObjects: TSR.TSRTimelineObj<TSR.TSRTimelineContent>[]
 	/** @deprecated */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	expectedPackages?: ExpectedPackage.Any[]

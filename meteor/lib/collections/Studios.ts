@@ -5,20 +5,19 @@ import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { ExpectedPackageDB } from './ExpectedPackages'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import {
 	ResultingMappingRoutes,
 	DBStudio,
 	MappingExt,
-	MappingsHash,
 	StudioRouteType,
 	MappingsExt,
 	StudioRouteSet,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ReadonlyDeep } from 'type-fest'
 export * from '@sofie-automation/corelib/dist/dataModel/Studio'
+export { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
 export function getActiveRoutes(routeSets: ReadonlyDeep<Record<string, StudioRouteSet>>): ResultingMappingRoutes {
 	const routes: ResultingMappingRoutes = {
@@ -137,12 +136,6 @@ export function routeExpectedPackages(
 	// Route the mappings
 	const routes = getActiveRoutes(studio.routeSets)
 	return getRoutedMappings(mappingsWithPackages, routes)
-}
-
-export interface RoutedMappings {
-	_id: StudioId
-	mappingsHash: MappingsHash | undefined
-	mappings: MappingsExt
 }
 
 export type Studio = DBStudio
