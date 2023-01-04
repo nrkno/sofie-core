@@ -132,6 +132,7 @@ export enum PubSub {
 	mountedTriggersForDevice = 'mountedTriggersForDevice',
 	mountedTriggersForDevicePreview = 'mountedTriggersForDevicePreview',
 	deviceTriggersPreview = 'deviceTriggersPreview',
+
 	uiSegmentPartNotes = 'uiSegmentPartNotes',
 	uiPieceContentStatuses = 'uiPieceContentStatuses',
 }
@@ -250,6 +251,7 @@ export interface PubSubTypes {
 	) => DeviceTriggerMountedAction
 	[PubSub.mountedTriggersForDevicePreview]: (deviceId: PeripheralDeviceId, token?: string) => PreviewWrappedAdLib
 	[PubSub.deviceTriggersPreview]: (studioId: StudioId, token?: string) => UIDeviceTriggerPreview
+
 	[PubSub.uiSegmentPartNotes]: (playlistId: RundownPlaylistId | null) => UISegmentPartNote
 	[PubSub.uiPieceContentStatuses]: (rundownPlaylistId: RundownPlaylistId | null) => UIPieceContentStatus
 }
@@ -264,9 +266,9 @@ export enum CustomCollectionName {
 	UIShowStyleBase = 'uiShowStyleBase',
 	UIStudio = 'uiStudio',
 	UITriggeredActions = 'uiTriggeredActions',
+	UIDeviceTriggerPreviews = 'deviceTriggerPreviews',
 	MountedTriggers = 'mountedTriggers',
 	MountedTriggersPreviews = 'mountedTriggersPreviews',
-	UIDeviceTriggerPreviews = 'deviceTriggerPreviews',
 	UISegmentPartNotes = 'uiSegmentPartNotes',
 	UIPieceContentStatuses = 'uiPieceContentStatuses',
 }
@@ -283,9 +285,9 @@ export type CustomCollectionType = {
 	[CustomCollectionName.UIStudio]: UIStudio
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
 	[CustomCollectionName.UIDeviceTriggerPreviews]: UIDeviceTriggerPreview
-	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
 	[CustomCollectionName.MountedTriggers]: DeviceTriggerMountedAction
 	[CustomCollectionName.MountedTriggersPreviews]: PreviewWrappedAdLib
+	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
 	[CustomCollectionName.UIPieceContentStatuses]: UIPieceContentStatus
 }
 
