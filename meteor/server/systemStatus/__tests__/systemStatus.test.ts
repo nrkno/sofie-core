@@ -12,6 +12,9 @@ import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDeviceStatusObject } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
+// we don't want the deviceTriggers observer to start up at this time
+jest.mock('../../api/deviceTriggers/observer')
+
 require('../api')
 const PackageInfo = require('../../../package.json')
 

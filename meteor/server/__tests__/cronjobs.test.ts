@@ -41,6 +41,8 @@ import {
 let mockCurrentTime = 0
 let origGetCurrentTime
 jest.mock('../logging')
+// we don't want the deviceTriggers observer to start up at this time
+jest.mock('../api/deviceTriggers/observer')
 
 import '../cronjobs'
 

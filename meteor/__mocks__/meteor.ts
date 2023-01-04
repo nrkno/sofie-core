@@ -254,6 +254,8 @@ export namespace MeteorMock {
 		}
 	}
 
+	export function publish(): any {}
+
 	export function bindEnvironment(fcn: Function): any {
 		{
 			// the outer bindEnvironment must be called from a fiber
