@@ -135,11 +135,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 						// If this is set, we have completed the authentication procedure.
 						// A reset button is provided to begin the flow again if authorization is revoked by the user.
 						<div className="mod mvs mhs">
-							<button
-								className="btn btn-secondary btn-tight"
-								onClick={() => this.resetAppCredentials()}
-								style={{ marginRight: '10px' }}
-							>
+							<button className="btn btn-secondary btn-tight mrs" onClick={() => this.resetAppCredentials()}>
 								{t('Reset App Credentials')}
 							</button>
 
@@ -173,11 +169,10 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 							) : (
 								<label className="field">
 									<div>
-										<div>{t('Click on the button below and accept the permissions request.')}</div>
 										<div className="mvs">
 											{device.accessTokenUrl ? (
-												<a href={device.accessTokenUrl} target="_blank" rel="noreferrer">
-													<button className="btn btn-primary">{t('Authorize App Access')}</button>
+												<a className="btn btn-primary" href={device.accessTokenUrl} target="_blank" rel="noreferrer">
+													{t('Authorize App Access')}
 												</a>
 											) : (
 												t('Waiting for gateway to generate URL...')
