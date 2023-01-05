@@ -1,7 +1,7 @@
 import { omit } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Mongo } from 'meteor/mongo'
-import { ObserveCallbacks } from '../../../lib/collections/lib'
+import { ObserveChangesCallbacks } from '../../../lib/collections/lib'
 
 type Reaction = () => void
 
@@ -104,16 +104,21 @@ export class ReactiveCacheCollection<
 		return result
 	}
 
-	link(): ObserveCallbacks<Document> {
+	link(): ObserveChangesCallbacks<Document> {
 		return {
-			added: (doc: Document) => {
-				this.upsert(doc._id, { $set: omit(doc, '_id') as Partial<Document> })
+			added: (id: Document['_id'], fields: Partial<Document>) => {
+				this.upsert(id, { $set: omit(fields, '_id') as Partial<Document> })
 			},
-			changed: (doc: Document) => {
-				this.upsert(doc._id, { $set: omit(doc, '_id') as Partial<Document> })
+			changed: (id: Document['_id'], fields: Partial<Document>) => {
+				const unset: Partial<Record<keyof Document, 1>> = {}
+				for (const [key, value] of Object.entries(fields)) {
+					if (value !== undefined) continue
+					unset[key] = 1
+				}
+				this.upsert(id, { $set: omit(fields, '_id') as Partial<Document>, $unset: unset })
 			},
-			removed: (doc: Document) => {
-				this.remove(doc._id)
+			removed: (id: Document['_id']) => {
+				this.remove(id)
 			},
 		}
 	}

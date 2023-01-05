@@ -55,13 +55,13 @@ export class RundownContentObserver {
 		this.#observers = [
 			RundownPlaylists.find(rundownPlaylistId, {
 				projection: rundownPlaylistFieldSpecifier,
-			}).observe(cache.RundownPlaylists.link()),
-			ShowStyleBases.find(showStyleBaseId).observe(cache.ShowStyleBases.link()),
+			}).observeChanges(cache.RundownPlaylists.link()),
+			ShowStyleBases.find(showStyleBaseId).observeChanges(cache.ShowStyleBases.link()),
 			TriggeredActions.find({
 				showStyleBaseId: {
 					$in: [showStyleBaseId, null],
 				},
-			}).observe(cache.TriggeredActions.link()),
+			}).observeChanges(cache.TriggeredActions.link()),
 			Segments.find(
 				{
 					rundownId: {
@@ -71,7 +71,7 @@ export class RundownContentObserver {
 				{
 					projection: segmentFieldSpecifier,
 				}
-			).observe(cache.Segments.link()),
+			).observeChanges(cache.Segments.link()),
 			Parts.find(
 				{
 					rundownId: {
@@ -81,7 +81,7 @@ export class RundownContentObserver {
 				{
 					projection: partFieldSpecifier,
 				}
-			).observe(cache.Parts.link()),
+			).observeChanges(cache.Parts.link()),
 			PartInstances.find(
 				{
 					playlistActivationId: activationId,
@@ -92,7 +92,7 @@ export class RundownContentObserver {
 				{
 					projection: partInstanceFieldSpecifier,
 				}
-			).observe(cache.PartInstances.link()),
+			).observeChanges(cache.PartInstances.link()),
 			RundownBaselineAdLibActions.find(
 				{
 					rundownId: {
@@ -102,7 +102,7 @@ export class RundownContentObserver {
 				{
 					projection: adLibActionFieldSpecifier,
 				}
-			).observe(cache.RundownBaselineAdLibActions.link()),
+			).observeChanges(cache.RundownBaselineAdLibActions.link()),
 			RundownBaselineAdLibPieces.find(
 				{
 					rundownId: {
@@ -112,7 +112,7 @@ export class RundownContentObserver {
 				{
 					projection: adLibPieceFieldSpecifier,
 				}
-			).observe(cache.RundownBaselineAdLibPieces.link()),
+			).observeChanges(cache.RundownBaselineAdLibPieces.link()),
 			AdLibActions.find(
 				{
 					rundownId: {
@@ -122,7 +122,7 @@ export class RundownContentObserver {
 				{
 					projection: adLibActionFieldSpecifier,
 				}
-			).observe(cache.AdLibActions.link()),
+			).observeChanges(cache.AdLibActions.link()),
 			AdLibPieces.find(
 				{
 					rundownId: {
@@ -132,7 +132,7 @@ export class RundownContentObserver {
 				{
 					projection: adLibPieceFieldSpecifier,
 				}
-			).observe(cache.AdLibPieces.link()),
+			).observeChanges(cache.AdLibPieces.link()),
 		]
 	}
 
