@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.47.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.3...v1.47.0-in-testing.4) (2023-01-05)
+
+
+### Bug Fixes
+
+* bug fix: change how to wait for other Fibers in collections.*Async methods. ([e1506a3](https://github.com/nrkno/sofie-core/commit/e1506a36b759481b0d401ba9caadd9e91da30238))
+
 ## [1.47.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.1...v1.47.0-in-testing.3) (2022-11-30)
 
 ## [1.47.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
