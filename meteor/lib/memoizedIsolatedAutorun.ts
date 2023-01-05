@@ -9,9 +9,6 @@ const isolatedAutorunsMem: {
 	}
 } = {}
 
-// TODO: This is copied from the reactiveDataHelper, but relinking everything to use the function from the lib directory
-// was too much work for now
-
 /**
  * Create a reactive computation that will be run independently of the outer one. If the same function (using the same
  * name and parameters) will be used again, this computation will only be computed once on invalidation and it's

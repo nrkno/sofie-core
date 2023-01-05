@@ -1,6 +1,7 @@
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Tracker } from 'meteor/tracker'
-import { memoizedIsolatedAutorun, slowDownReactivity } from '../reactiveDataHelper'
+import { slowDownReactivity } from '../reactiveDataHelper'
+import { memoizedIsolatedAutorun } from '../../../../lib/memoizedIsolatedAutorun'
 import { sleep } from '../../../../lib/lib'
 
 describe('client/lib/reactiveData/reactiveDataHelper', () => {

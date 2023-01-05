@@ -20,7 +20,7 @@ import {
 	RundownLayoutFilterBase,
 } from '../../../lib/collections/RundownLayouts'
 import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
-import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
+import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import {

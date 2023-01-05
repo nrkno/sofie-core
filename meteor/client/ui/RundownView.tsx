@@ -92,7 +92,7 @@ import { documentTitle } from '../lib/DocumentTitleProvider'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
-import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
+import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
 import RundownViewEventBus, {
 	ActivateRundownPlaylistEvent,
 	DeactivateRundownPlaylistEvent,

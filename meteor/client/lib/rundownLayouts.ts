@@ -8,7 +8,7 @@ import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../lib/lib'
 import { invalidateAt } from './../../lib/invalidatingTime'
-import { memoizedIsolatedAutorun } from './reactiveData/reactiveDataHelper'
+import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
 
 /**
  * If the conditions of the filter are met, activePieceInstance will include the first piece instance found that matches the filter, otherwise it will be undefined.

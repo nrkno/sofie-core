@@ -24,7 +24,7 @@ import { ReactivePlaylistActionContext } from './actionFactory'
 import { FindOptions } from '../../collections/lib'
 import { PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IWrappedAdLibBase } from '@sofie-automation/shared-lib/dist/input-gateway/deviceTriggerPreviews'
-import { memoizedIsolatedAutorun } from './reactiveLib'
+import { memoizedIsolatedAutorun } from '../../memoizedIsolatedAutorun'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 
