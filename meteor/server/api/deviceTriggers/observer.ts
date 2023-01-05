@@ -12,7 +12,7 @@ import {
 import { Studios } from '../../../lib/collections/Studios'
 import { logger } from '../../logging'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
-import { GlobalTriggerManager } from './GlobalTriggerManager'
+import { StudioActionManagers } from './StudioActionManagers'
 import { JobQueue } from './JobQueue'
 import { ReactiveCacheCollection } from './ReactiveCacheCollection'
 import { StudioDeviceTriggerManager } from './StudioDeviceTriggerManager'
@@ -104,19 +104,24 @@ export async function receiveInputDeviceTrigger(
 		}`
 	)
 
+	const actionManager = StudioActionManagers.get(studioId)
+
+	if (!actionManager)
+		throw new Meteor.Error(500, `No Studio Action Manager available to handle trigger in Studio "${studioId}"`)
+
 	DeviceTriggerMountedActions.find({
 		deviceId,
 		deviceTriggerId: triggerId,
 	}).forEach((mountedAction) => {
 		if (values && !_.isMatch(values, mountedAction.values)) return
-		const executableAction = GlobalTriggerManager.getAction(mountedAction.actionId)
+		const executableAction = actionManager.getAction(mountedAction.actionId)
 		if (!executableAction)
 			throw new Meteor.Error(
 				500,
 				`Executable action not found when processing trigger "${deviceId}" "${triggerId}"`
 			)
 
-		const context = GlobalTriggerManager.getStudioContext(studioId)
+		const context = actionManager.getContext()
 		if (!context) throw new Meteor.Error(500, `Undefined Device Trigger context for studio "${studioId}"`)
 
 		executableAction.execute((t: ITranslatableMessage) => t.key ?? t, `${deviceId}: ${triggerId}`, context)

@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor'
 import { ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Complete, literal } from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
@@ -11,14 +12,22 @@ import { DeviceTriggerMountedActionId, PreviewWrappedAdLibId } from '../../../li
 import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { DummyReactiveVar, protectString } from '../../../lib/lib'
-import { GlobalTriggerManager } from './GlobalTriggerManager'
+import { StudioActionManager, StudioActionManagers } from './StudioActionManagers'
 import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from './observer'
 import { ContentCache } from './reactiveContentCache'
+import { logger } from '../../logging'
 
 export class StudioDeviceTriggerManager {
 	#lastShowStyleBaseId: ShowStyleBaseId | null = null
 
-	constructor(public studioId: StudioId) {}
+	constructor(public studioId: StudioId) {
+		if (StudioActionManagers.get(studioId)) {
+			logger.error(`A StudioActionManager for "${studioId}" already exists`)
+			return
+		}
+
+		StudioActionManagers.set(studioId, new StudioActionManager())
+	}
 
 	updateTriggers(cache: ContentCache, showStyleBaseId: ShowStyleBaseId): void {
 		const studioId = this.studioId
@@ -34,7 +43,13 @@ export class StudioDeviceTriggerManager {
 		}
 
 		const context = createCurrentContextFromCache(cache)
-		GlobalTriggerManager.setStudioContext(studioId, context)
+		const actionManager = StudioActionManagers.get(studioId)
+		if (!actionManager)
+			throw new Meteor.Error(
+				500,
+				`No Studio Action Manager available to handle action context in Studio "${studioId}"`
+			)
+		actionManager.setContext(context)
 
 		const showStyleBase = cache.ShowStyleBases.findOne(showStyleBaseId)
 		if (!showStyleBase) {
@@ -60,7 +75,7 @@ export class StudioDeviceTriggerManager {
 			Object.entries(triggeredAction.actions).forEach(([key, action]) => {
 				const compiledAction = createAction(action, sourceLayers)
 				const actionId = protectString(`${studioId}_${triggeredAction._id}_${key}`)
-				GlobalTriggerManager.setAction(actionId, compiledAction)
+				actionManager.setAction(actionId, compiledAction)
 
 				Object.entries(triggeredAction.triggers).forEach(([key, trigger]) => {
 					if (!isDeviceTrigger(trigger)) {
@@ -137,11 +152,18 @@ export class StudioDeviceTriggerManager {
 			return
 		}
 
+		const actionManager = StudioActionManagers.get(studioId)
+		if (!actionManager)
+			throw new Meteor.Error(
+				500,
+				`No Studio Action Manager available to handle action context in Studio "${studioId}"`
+			)
+
 		DeviceTriggerMountedActions.find({
 			studioId,
 			showStyleBaseId,
 		}).forEach((mountedAction) => {
-			GlobalTriggerManager.deleteAction(mountedAction.actionId)
+			actionManager.deleteAction(mountedAction.actionId)
 		})
 		DeviceTriggerMountedActions.remove({
 			studioId,
@@ -151,13 +173,14 @@ export class StudioDeviceTriggerManager {
 			studioId,
 			showStyleBaseId,
 		})
-		GlobalTriggerManager.deleteStudioContext(studioId)
+		actionManager.deleteContext()
 
 		this.#lastShowStyleBaseId = null
 	}
 
 	stop() {
 		this.clearTriggers()
+		StudioActionManagers.delete(this.studioId)
 	}
 }
 
