@@ -63,7 +63,7 @@ import {
 	NewPeripheralDeviceAPI,
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import { insertInputDeviceTriggerToPreview } from '../publications/deviceTriggersPreview'
+import { insertInputDeviceTriggerIntoPreview } from '../publications/deviceTriggersPreview'
 import { receiveInputDeviceTrigger } from './deviceTriggers/observer'
 import { upsertBundles, generateTranslationBundleOriginId } from './translationsBundles'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -1184,7 +1184,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		values?: Record<string, string | number | boolean> | null
 	) {
 		await receiveInputDeviceTrigger(this, deviceId, deviceToken, triggerDeviceId, triggerId, values ?? undefined)
-		await insertInputDeviceTriggerToPreview(deviceId, triggerDeviceId, triggerId, values ?? undefined)
+		await insertInputDeviceTriggerIntoPreview(deviceId, triggerDeviceId, triggerId, values ?? undefined)
 	}
 }
 registerClassToMeteorMethods(PeripheralDeviceAPIMethods, ServerPeripheralDeviceAPIClass, false)

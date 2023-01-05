@@ -11,7 +11,7 @@ import { QueueForceClearAllCaches, QueueStudioJob } from '../../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { fetchStudioIds } from '../../../lib/collections/optimizations'
 import { PeripheralDeviceId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { insertInputDeviceTriggerToPreview } from '../../publications/deviceTriggersPreview'
+import { insertInputDeviceTriggerIntoPreview } from '../../publications/deviceTriggersPreview'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -149,7 +149,7 @@ if (!Settings.enableUserAccounts) {
 		) {
 			logger.info('previewTrigger')
 
-			waitForPromise(insertInputDeviceTriggerToPreview(peripheralDeviceId, triggerDeviceId, triggerId, values))
+			waitForPromise(insertInputDeviceTriggerIntoPreview(peripheralDeviceId, triggerDeviceId, triggerId, values))
 		},
 	})
 }

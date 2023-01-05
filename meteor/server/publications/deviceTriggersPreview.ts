@@ -33,8 +33,6 @@ meteorCustomPublish(
 
 		if (!studioId) throw new Meteor.Error(400, 'One of studioId must be provided')
 
-		// If values were provided, they must have values
-
 		if (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token })) {
 			await createObserverForDeviceTriggersPreviewsPublication(pub, PubSub.mountedTriggersForDevice, studioId)
 		}
@@ -42,7 +40,7 @@ meteorCustomPublish(
 	}
 )
 
-export async function insertInputDeviceTriggerToPreview(
+export async function insertInputDeviceTriggerIntoPreview(
 	deviceId: PeripheralDeviceId,
 	triggerDeviceId: string,
 	triggerId: string,
@@ -56,7 +54,7 @@ export async function insertInputDeviceTriggerToPreview(
 	const studioId = unprotectString(pDevice.studioId)
 	if (!studioId) throw new Meteor.Error(501, `Device "${pDevice._id}" is not assigned to any studio`)
 
-	const lastTriggersStudio = prepareBufferForStudio(studioId)
+	const lastTriggersStudio = prepareTriggerBufferForStudio(studioId)
 	lastTriggersStudio.triggers.push({
 		_id: getRandomId(),
 		peripheralDeviceId: deviceId,
@@ -71,13 +69,11 @@ export async function insertInputDeviceTriggerToPreview(
 	lastTriggersStudio.updated?.()
 }
 
-function prepareBufferForStudio(studioId: string) {
+function prepareTriggerBufferForStudio(studioId: string) {
 	if (lastTriggers[studioId] === undefined) {
 		lastTriggers[studioId] = {
 			triggers: [],
-			updated: () => {
-				// temporary noop
-			},
+			updated: undefined,
 		}
 	}
 
@@ -89,13 +85,12 @@ async function setupDeviceTriggersPreviewsObservers(
 	triggerUpdate: TriggerUpdate<DeviceTriggersUpdateProps>
 ): Promise<Meteor.LiveQueryHandle[]> {
 	const studioId = unprotectString(args.studioId)
-	const lastTriggersStudio = prepareBufferForStudio(studioId)
+	const lastTriggersStudio = prepareTriggerBufferForStudio(studioId)
 
 	lastTriggersStudio.updated = () => {
 		triggerUpdate(lastTriggersStudio)
 	}
 
-	// console.log(lastTriggersStudio.triggers)
 	triggerUpdate(lastTriggersStudio)
 
 	return [
@@ -112,8 +107,6 @@ async function createObserverForDeviceTriggersPreviewsPublication(
 	observerId: PubSub,
 	studioId: StudioId
 ) {
-	// console.log(JSON.stringify(lastTriggers))
-
 	return setUpOptimizedObserverArray<
 		UIDeviceTriggerPreview,
 		DeviceTriggersPreviewArgs,
