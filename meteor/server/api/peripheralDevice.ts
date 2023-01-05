@@ -1176,6 +1176,10 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		await PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId)
 	}
 	// --- Triggers ---
+	/**
+	 * This receives an arbitrary input from an Input-handling Peripheral Device. See
+	 * shared-lib\src\peripheralDevice\methodsAPI.ts inputDeviceTrigger for more info
+	 */
 	async inputDeviceTrigger(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
