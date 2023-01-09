@@ -13,7 +13,7 @@ import { Studios } from '../../../lib/collections/Studios'
 import { logger } from '../../logging'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { StudioActionManagers } from './StudioActionManagers'
-import { JobQueue } from './JobQueue'
+import { JobQueueWithClasses } from '@sofie-automation/shared-lib/dist/lib/JobQueueWithClasses'
 import { ReactiveCacheCollection } from './ReactiveCacheCollection'
 import { StudioDeviceTriggerManager } from './StudioDeviceTriggerManager'
 import { StudioObserver } from './StudioObserver'
@@ -26,7 +26,11 @@ type ObserverAndManager = {
 Meteor.startup(() => {
 	if (!Meteor.isServer) return
 	const studioObserversAndManagers = new Map<StudioId, ObserverAndManager>()
-	const jobQueue = new JobQueue()
+	const jobQueue = new JobQueueWithClasses({
+		autoStart: true,
+		executionWrapper: Meteor.bindEnvironment,
+		resolutionWrapper: Meteor.defer,
+	})
 
 	function workInQueue(fnc: () => Promise<void>) {
 		jobQueue.add(fnc).catch((e) => {

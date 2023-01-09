@@ -1,5 +1,3 @@
-import { Meteor } from 'meteor/meteor'
-
 type AsyncFunction = () => Promise<void>
 
 interface JobDescription {
@@ -13,34 +11,57 @@ type AddOptions = {
 	className?: string
 }
 
+type WrapperFunction<T> = (fnc: () => T) => () => T
+type DeferFunction = (fnc: () => void) => void
+
 type Options = {
 	autoStart: boolean
+	executionWrapper?: WrapperFunction<any>
+	resolutionWrapper?: DeferFunction
 }
 
-// TODO: Move to shared-lib?
-
-export class JobQueue {
+export class JobQueueWithClasses {
 	#queue: JobDescription[] = []
 	#autoStart: boolean
 	#paused = true
+	#executionWrapper?: WrapperFunction<any>
+	#resolutionWrapper?: DeferFunction
 
 	constructor(opts?: Options) {
 		this.#autoStart = opts?.autoStart ?? true
+		this.#executionWrapper = opts?.executionWrapper
+		this.#resolutionWrapper = opts?.resolutionWrapper
 	}
 
 	async add(fn: AsyncFunction, options?: AddOptions): Promise<void> {
 		return new Promise((resolve, reject) => {
-			const wrappedFn = Meteor.bindEnvironment(async () => {
-				return new Promise<void>((resolve, reject) => {
-					fn()
-						.then(() => {
-							Meteor.defer(() => resolve())
-						})
-						.catch((err) => {
-							Meteor.defer(() => reject(err))
-						})
+			const handlePromise = (p: Promise<void>, resolve: () => void, reject: (err: any) => void) => {
+				if (this.#resolutionWrapper) {
+					const wrapper = this.#resolutionWrapper
+					p.then(() => {
+						wrapper(() => resolve())
+					}).catch((err) => {
+						wrapper(() => reject(err))
+					})
+				} else {
+					p.then(resolve).catch(reject)
+				}
+			}
+
+			let wrappedFn: () => Promise<void>
+			if (this.#executionWrapper) {
+				wrappedFn = this.#executionWrapper(async () => {
+					return new Promise<void>((resolve, reject) => {
+						handlePromise(fn(), resolve, reject)
+					})
 				})
-			})
+			} else {
+				wrappedFn = async () => {
+					new Promise<void>((resolve, reject) => {
+						handlePromise(fn(), resolve, reject)
+					}).catch(reject)
+				}
+			}
 
 			this.#queue.push({
 				className: options?.className,
