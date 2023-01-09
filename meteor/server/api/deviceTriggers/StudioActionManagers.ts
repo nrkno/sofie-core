@@ -6,7 +6,10 @@ import { DeviceActionId } from '../../../lib/api/triggers/MountedTriggers'
  * `StudioActionManager` allows to store the current, runtime ReactivePlaylistActionContext for a given studio
  * and also store the functions that need to be executed server-side, once an action is triggered. These functions
  * are compiled runtime, based on TriggeredAction configuration and it doesn't make sense to compile them when
- * they are triggered.
+ * they are triggered, which potentially can mean a lot of database queries.
+ *
+ * This also allows to store the "current" context, which is then injected into the actions so that they have a
+ * summary of the state of a given Studio/Rundown Playlist.
  */
 export class StudioActionManager {
 	private allDeviceActions = new Map<DeviceActionId, ExecutableAction>()
