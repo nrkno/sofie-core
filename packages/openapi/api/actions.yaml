@@ -1,0 +1,40 @@
+openapi: '3.0.3'
+info:
+  title: 'Sofie User Actions API'
+  description: 'The Sofie User Actions API provides paths to allow a device to control a Sofie and query health information'
+  version: '0.0.1'
+  license:
+    name: 'MIT License'
+    url: 'http://opensource.org/licenses/MIT'
+servers:
+  - url: http://localhost:3000/api2
+    description: Initial release of UserActions API - http - for use during development only!
+tags:
+  - name: userActions
+    description: Provides the ability to control the Sofie application
+paths:
+  # user actions
+  /:
+    $ref: 'definitions/userActions.yaml#/resources/index'
+  /activate/{playlistId}:
+    $ref: 'definitions/userActions.yaml#/resources/activate'
+  /deactivate/{playlistId}:
+    $ref: 'definitions/userActions.yaml#/resources/deactivate'
+  /executeAction/{playlistId}/{actionId}:
+    $ref: 'definitions/userActions.yaml#/resources/executeAction'
+  /executeAdLib/{playlistId}/{adLibId}:
+    $ref: 'definitions/userActions.yaml#/resources/executeAdLib'
+  /moveNextPart/{playlistId}/{delta}:
+    $ref: 'definitions/userActions.yaml#/resources/moveNextPart'
+  /moveNextSegment/{playlistId}/{delta}:
+    $ref: 'definitions/userActions.yaml#/resources/moveNextSegment'
+  /reloadPlaylist/{playlistId}:
+    $ref: 'definitions/userActions.yaml#/resources/reloadPlaylist'
+  /resetPlaylist/{playlistId}:
+    $ref: 'definitions/userActions.yaml#/resources/resetPlaylist'
+  /setNextPart/{playlistId}/{partId}:
+    $ref: 'definitions/userActions.yaml#/resources/setNextPart'
+  /setNextSegment/{playlistId}/{segmentId}:
+    $ref: 'definitions/userActions.yaml#/resources/setNextSegment'
+  /take/{playlistId}:
+    $ref: 'definitions/userActions.yaml#/resources/take'

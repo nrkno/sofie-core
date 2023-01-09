@@ -1,0 +1,55 @@
+{
+	"name": "@sofie-automation/openapi",
+	"version": "1.49.0-in-development",
+	"private": true,
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"directory": "packages/openapi"
+	},
+	"scripts": {
+		"prepare": "yarn genclient:ts && yarn build",
+		"build": "rimraf dist && yarn build:main",
+		"build:main": "tsc -p tsconfig.build.json",
+		"cov": "yarn unit && open-cli coverage/lcov-report/index.html",
+		"cov-open": "open-cli coverage/lcov-report/index.html",
+		"ci": "yarn genserver && node --experimental-fetch run_server_tests.mjs",
+		"lint:raw": "eslint . --ext .ts --ext .js --ext .yaml --ignore-pattern dist",
+		"lint": "yarn lint:raw .",
+		"lint-fix": "yarn lint --fix",
+		"genclient:ts": "rimraf client/ts && openapi-generator-cli generate -i ./api/actions.yaml -o client/ts -g typescript-fetch -p supportsES6=true",
+		"genclient:rs": "rimraf client/rs && openapi-generator-cli generate -i ./api/actions.yaml -o client/rs -g rust",
+		"gendocs": "rimraf docs && node install_swagger.js && java -jar ./jars/swagger-codegen-cli.jar generate -i ./api/actions.yaml -l html2 -o ./docs",
+		"genserver": "rimraf server && node install_swagger.js && java -jar ./jars/swagger-codegen-cli.jar generate -i ./api/actions.yaml -l nodejs-server -o server && cd server && npm install && cd ../",
+		"runserver": "yarn genserver && cd server && node index.js",
+		"test": "yarn lint",
+		"unit": "node --experimental-fetch ../node_modules/jest/bin/jest.js --detectOpenHandles --forceExit"
+	},
+	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
+	"engines": {
+		"node": ">=16.0.0"
+	},
+	"files": [
+		"/api",
+		"/dist",
+		"install_swagger.js"
+	],
+	"dependencies": {
+		"tslib": "^2.4.0"
+	},
+	"devDependencies": {
+		"@openapitools/openapi-generator-cli": "^2.5.2",
+		"eslint-plugin-yml": "^1.2.0",
+		"jest-teamcity-reporter": "0.9.0",
+		"wget-improved": "^3.3.1"
+  },
+  "lint-staged": {
+	"*.{css,json,md,scss}": [
+		"prettier"
+	],
+	"*.{ts,tsx,js,jsx,yaml}": [
+		"yarn lint:raw"
+	]
+}
+}

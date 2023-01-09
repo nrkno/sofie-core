@@ -59,6 +59,7 @@ import './api/serviceMessages/api'
 import './webmanifest'
 
 // import all files that calls Meteor.startup:
+import './api/rest/api'
 import './api/rest/rest'
 import './api/systemTime/startup'
 import './Connections'

@@ -72,6 +72,7 @@ jobs:
           - shared-lib
           - playout-gateway
           - mos-gateway
+          - live-status-gateway
 
     steps:
       - uses: actions/checkout@v3

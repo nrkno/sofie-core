@@ -1,0 +1,107 @@
+title: Active Playlist
+description: Active Playlist schema for websocket subscriptions
+$defs:
+  activePlaylist:
+    type: object
+    properties:
+      event:
+        type: string
+        const: activePlaylist
+      id:
+        description: Unique id of the active playlist
+        type: string
+      name:
+        description: User-presentable name for the active playlist
+        type: string
+      rundownIds:
+        description: The set of rundownIds in the active playlist
+        type: array
+        items:
+          type: string
+      currentPart:
+        description: The current Part - if empty, no part in the active playlist is live
+        $ref: '#/$defs/part'
+      nextPart:
+        description: The next Part - if empty, no part will follow live part
+        $ref: '#/$defs/part'
+      adLibActions:
+        description: The available AdLibActions for this playlist
+        type: array
+        items:
+          $ref: '#/$defs/adLibAction'
+      globalAdLibActions:
+        description: The available Global AdLibActions for this playlist
+        type: array
+        items:
+          $ref: '#/$defs/adLibAction'
+    required: [event, id, name, rundownIds, currentPart, nextPart, adLibActions, globalAdLibActions]
+    additionalProperties: false
+    examples:
+      - event: activePlaylist
+        id: 'OKAgZmZ0Buc99lE_2uPPSKVbMrQ_'
+        name: 'Playlist 0'
+        rundownIds: ['y9HauyWkcxQS3XaAOsW40BRLLsI_']
+        currentPart:
+          $ref: '#/$defs/part/examples'
+        nextPart:
+          $ref: '#/$defs/part/examples'
+        adLibActions:
+          $ref: '#/$defs/adLibAction/examples'
+        globalAdLibActions:
+          $ref: '#/$defs/adLibAction/examples'
+  part:
+    oneOf:
+      - type: object
+        properties:
+          id:
+            description: Unique id of the part
+            type: string
+          name:
+            description: User name of the part
+            type: string
+          autoNext:
+            description: Should this part progress to the next automatically
+            type: boolean
+            default: false
+        required: [id, name]
+        additionalProperties: false
+      - type: 'null'
+    examples:
+      - id: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
+        name: 'Intro'
+        autoNext: false
+  adLibAction:
+    type: object
+    properties:
+      id:
+        description: Unique id of the AdLibAction
+        type: string
+      name:
+        description: The user defined AdLibAction name
+        type: string
+      sourceLayer:
+        description: The source layer name for this AdLibAction
+        type: string
+      actionType:
+        description: The available action type names that can be used to modify the execution of the AdLibAction
+        type: array
+        items:
+          type: object
+          properties:
+            name:
+              description: The string to be passed to the ExecuteAdlib function
+              type: string
+            label:
+              description: The label for the AdLibAction type
+              type: string
+          required: [name, label]
+          additionalProperties: false
+    required: [id, name, sourceLayer, actionType]
+    additionalProperties: false
+    examples:
+      - id: 'C6K_yIMuGFUk8X_L9A9_jRT6aq4_'
+        name: Music video clip
+        sourceLayer: Video Clip
+        actionType:
+          - name: pvw
+            label: Preview

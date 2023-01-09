@@ -87,7 +87,8 @@ export function getExternalNRCSName(device: PeripheralDevice | undefined): strin
 			} else if (
 				device.type === PeripheralDeviceType.PLAYOUT ||
 				device.type === PeripheralDeviceType.MEDIA_MANAGER ||
-				device.type === PeripheralDeviceType.PACKAGE_MANAGER
+				device.type === PeripheralDeviceType.PACKAGE_MANAGER ||
+				device.type === PeripheralDeviceType.LIVE_STATUS
 			) {
 				// These aren't ingest gateways
 			} else {

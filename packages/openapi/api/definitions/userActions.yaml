@@ -1,0 +1,460 @@
+title: userActions
+description: Definitions for user actions to control the Sofie application
+resources:
+  index:
+    get:
+      operationId: index
+      tags:
+        - userActions
+      summary: Returns the current version of Sofie.
+      responses:
+        200:
+          description: Command successfully handled - returns a string with the version number
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                        example: '1.44.0'
+  activate:
+    post:
+      operationId: activate
+      tags:
+        - userActions
+      summary: Activates a Playlist.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to activate.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Whether to activate into rehearsal mode.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rehearsal:
+                  type: boolean
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: There is already an active Playlist for the studio that the Playlist belongs to.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  deactivate:
+    post:
+      operationId: deactivate
+      tags:
+        - userActions
+      summary: Deactivates a Playlist.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to deactivate.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: The target Playlist is not currently active, there is no on-air Part or there has been a blueprint error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  executeAction:
+    post:
+      operationId: executeAction
+      tags:
+        - userActions
+      summary: Executes the requested action by passing `actionId` directly to the blueprints `executeAction` function.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to execute action in.
+          required: true
+          schema:
+            type: string
+        - name: actionId
+          in: path
+          description: Action Id string, should match something inside the blueprints.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Any value, recommended to be a relatively simple object, as it may need to survive a round of serialization.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        200:
+          $ref: '#/components/responses/executeActionSuccess'
+        412:
+          description: Specified Playlist is not active or there is not an on-air Part instance.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  executeAdLib:
+    post:
+      operationId: executeAdLib
+      tags:
+        - userActions
+      summary: Executes the requested AdLib/AdLib Action. This is a "planned" AdLib (Action) that has been produced by the blueprints during the ingest process.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to execute adLib in.
+          required: true
+          schema:
+            type: string
+        - name: adLibId
+          in: path
+          description: AdLib to execute.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: An object containing an actionType string to specify a particular variation for the AdLibAction, valid strings are to be read from the status API
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                actionType:
+                  type: string
+              example:
+                actionType: pvw
+      responses:
+        200:
+          $ref: '#/components/responses/executeActionSuccess'
+        412:
+          description: Specified Playlist is not active, there is not an on-air Part instance or an adLib for the provided `adLibId` cannot be found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  moveNextPart:
+    post:
+      operationId: moveNextPart
+      tags:
+        - userActions
+      summary: Moves the next point by `delta` places. Negative values are allowed to move "backwards" in the script.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to target.
+          required: true
+          schema:
+            type: string
+        - name: delta
+          in: path
+          description: Amount to move next point by (+/-). If delta results in an index that is greater than the number of Parts available, no action will be taken.
+          required: true
+          schema:
+            type: number
+      responses:
+        200:
+          description: Command successfully handled - returns a string with the new PartID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: string
+                    example: '3Y9at66pZipxE8Kkn850LLV9Cz0_'
+        412:
+          description: Specified Playlist is not active or there is no next Part set (e.g. Playlist is empty).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  moveNextSegment:
+    post:
+      operationId: moveNextSegment
+      tags:
+        - userActions
+      summary: Moves the next Segment point by `delta` places. Negative values are allowed to move "backwards" in the script.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to target.
+          required: true
+          schema:
+            type: string
+        - name: delta
+          in: path
+          description: Amount to move next Segment point by (+/-). If delta results in an index that is greater than the number of Segments available, no action will be taken.
+          required: true
+          schema:
+            type: number
+      responses:
+        200:
+          description: Command successfully handled - returns a string with the new PartID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: string
+                    example: 'YjGd_1dWjta_E1ZuDaOczP1lsgk_'
+        412:
+          description: Specified Playlist is not active or there is no next Part set (e.g. Playlist is empty).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  reloadPlaylist:
+    post:
+      operationId: reloadPlaylist
+      tags:
+        - userActions
+      summary: Reloads a Playlist from its ingest source (e.g. MOS/Spreadsheet etc.)
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to reload.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: The target Playlist does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  resetPlaylist:
+    post:
+      operationId: resetPlaylist
+      tags:
+        - userActions
+      summary: Resets a Playlist back to its pre-played state.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to reset.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: The target Playlist is currently active (reset while on-air can be enabled in core settings).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  setNextPart:
+    post:
+      operationId: setNextPart
+      tags:
+        - userActions
+      summary: Sets the next Part to a given PartId.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Target playlist.
+          required: true
+          schema:
+            type: string
+        - name: partId
+          in: path
+          description: Part to set as next.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: Specified Playlist is not active, if the specified Part does not exist or if the specified Part is not playable.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  setNextSegment:
+    post:
+      operationId: setNextSegment
+      tags:
+        - userActions
+      summary: Sets the next Segment to a given SegmentId.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Target playlist.
+          required: true
+          schema:
+            type: string
+        - name: segmentId
+          in: path
+          description: Segment to set as next.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: Specified Playlist is not active, if the specified Segment does not exist or if the specified Segment does not contain any playable parts.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  take:
+    post:
+      operationId: take
+      tags:
+        - userActions
+      summary: Performs a take in the given Playlist.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Target playlist.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: Specified Playlist is not active or specified Playlist does not have a next Part.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  switchRouteSet:
+    post:
+      operationId: switchRouteSet
+      tags:
+        - userActions
+      summary: Sets the state of a route set.
+      parameters:
+        - name: studioId
+          in: path
+          description: Target studio.
+          required: true
+          schema:
+            type: string
+        - name: routeSetId
+          in: path
+          description: Target route set.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Whether route set should be active.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                active:
+                  type: boolean
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: Studio does not exist, or route set does not exist, or route set exists but cannot be deactivated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+components:
+  responses:
+    postSuccess:
+      description: Action successfully sent
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: number
+                example: 200
+    executeActionSuccess:
+      description: Command successfully handled - returns an object that informs whether a part was queued by the action and/or if the next part was automatically taken
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: number
+                example: 200
+              result:
+                type: object
+                properties:
+                  queuedPartInstanceId:
+                    type: string
+                    example: 'YjGd_1dWjta_E1ZuDaOczP1lsgk_'
+                  taken:
+                    type: boolean
+                    example: false

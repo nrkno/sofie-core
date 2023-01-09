@@ -15,6 +15,7 @@ Together with the _Sofie&nbsp;Core_ there are several _gateways_ which are separ
 
 * [**Playout Gateway**](https://github.com/nrkno/sofie-core/tree/master/packages/playout-gateway) Handles the playout from _Sofie_. Connects to and controls a multitude of devices, such as vision mixers, graphics, light controllers, audio mixers etc..
 * [**MOS Gateway**](https://github.com/nrkno/sofie-core/tree/master/packages/mos-gateway) Connects _Sofie_ to a newsroom system \(NRCS\) and ingests rundowns via the [MOS protocol](http://mosprotocol.com/).
+* [**Live Status Gateway**](https://github.com/nrkno/sofie-core/tree/master/packages/live-status-gateway) Allows external systems to subscribe to state changes in Sofie.
 * [**iNEWS Gateway**](https://github.com/tv2/inews-ftp-gateway) Connects _Sofie_ to an Avid iNEWS newsroom system.
 * [**Quantel Gateway**](https://github.com/nrkno/sofie-quantel-gateway) CORBA to REST gateway for _Quantel/ISA_ playback. 
 * [**Spreadsheet Gateway**](https://github.com/SuperFlyTV/spreadsheet-gateway) Connects _Sofie_ to a _Google Drive_ folder and ingests rundowns from _Google Sheets_.

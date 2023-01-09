@@ -169,6 +169,8 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		so.documentation = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
 	} else if (device.type === PeripheralDeviceType.PACKAGE_MANAGER) {
 		so.documentation = 'https://github.com/nrkno/tv-automation-package-manager'
+	} else if (device.type === PeripheralDeviceType.LIVE_STATUS) {
+		so.documentation = 'https://github.com/nrkno/sofie-core'
 	} else {
 		assertNever(device.type)
 	}
