@@ -5,10 +5,15 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import {
 	createAction,
+	ExecutableAction,
 	isPreviewableAction,
 	ReactivePlaylistActionContext,
 } from '../../../lib/api/triggers/actionFactory'
-import { DeviceTriggerMountedActionId, PreviewWrappedAdLibId } from '../../../lib/api/triggers/MountedTriggers'
+import {
+	DeviceActionId,
+	DeviceTriggerMountedActionId,
+	PreviewWrappedAdLibId,
+} from '../../../lib/api/triggers/MountedTriggers'
 import { isDeviceTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { DummyReactiveVar, protectString } from '../../../lib/lib'
@@ -68,26 +73,37 @@ export class StudioDeviceTriggerManager {
 		)
 
 		const upsertedDeviceTriggerMountedActionIds: DeviceTriggerMountedActionId[] = []
+		const touchedActionIds: DeviceActionId[] = []
 
 		for (const triggeredAction of triggeredActions) {
 			const addedPreviewIds: PreviewWrappedAdLibId[] = []
 
 			Object.entries(triggeredAction.actions).forEach(([key, action]) => {
-				const compiledAction = createAction(action, sourceLayers)
-				const actionId = protectString(`${studioId}_${triggeredAction._id}_${key}`)
-				actionManager.setAction(actionId, compiledAction)
+				const actionId = protectString<DeviceActionId>(`${studioId}_${triggeredAction._id}_${key}`)
+				const existingAction = actionManager.getAction(actionId)
+				let thisAction: ExecutableAction
+				if (existingAction) {
+					thisAction = existingAction
+				} else {
+					const compiledAction = createAction(action, sourceLayers)
+					actionManager.setAction(actionId, compiledAction)
+					thisAction = compiledAction
+				}
+				touchedActionIds.push(actionId)
 
 				Object.entries(triggeredAction.triggers).forEach(([key, trigger]) => {
 					if (!isDeviceTrigger(trigger)) {
 						return
 					}
 
-					const deviceTriggerMountedActionId = protectString(`${actionId}_${key}`)
+					const deviceTriggerMountedActionId = protectString<DeviceTriggerMountedActionId>(
+						`${actionId}_${key}`
+					)
 					DeviceTriggerMountedActions.upsert(deviceTriggerMountedActionId, {
 						$set: {
 							studioId,
 							showStyleBaseId,
-							actionType: compiledAction.action,
+							actionType: thisAction.action,
 							actionId,
 							deviceId: trigger.deviceId,
 							deviceTriggerId: trigger.triggerId,
@@ -98,9 +114,9 @@ export class StudioDeviceTriggerManager {
 					upsertedDeviceTriggerMountedActionIds.push(deviceTriggerMountedActionId)
 				})
 
-				if (!isPreviewableAction(compiledAction)) return
+				if (!isPreviewableAction(thisAction)) return
 
-				const previewedAdLibs = compiledAction.preview(context)
+				const previewedAdLibs = thisAction.preview(context)
 
 				previewedAdLibs.forEach((adLib) => {
 					const adLibPreviewId = protectString<PreviewWrappedAdLibId>(
@@ -142,6 +158,8 @@ export class StudioDeviceTriggerManager {
 				$nin: upsertedDeviceTriggerMountedActionIds,
 			},
 		})
+
+		actionManager.deleteActionsOtherThan(touchedActionIds)
 	}
 
 	clearTriggers(): void {

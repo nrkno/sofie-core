@@ -24,6 +24,15 @@ export class StudioActionManager {
 		return this.allDeviceActions.get(actionId)
 	}
 
+	deleteActionsOtherThan(actionId: DeviceActionId[]) {
+		const presentIds = this.allDeviceActions.keys()
+		for (const id of presentIds) {
+			if (!actionId.includes(id)) {
+				this.allDeviceActions.delete(id)
+			}
+		}
+	}
+
 	setContext(context: ReactivePlaylistActionContext) {
 		this.currentStudioContext = context
 	}

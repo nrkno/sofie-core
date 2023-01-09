@@ -14,6 +14,8 @@ import { StudioReadAccess } from '../security/studio'
 
 type DeviceTriggerPreviewId = ProtectedString<'deviceTriggerPreviewId'>
 
+/** IDEA: This could potentially be a Capped Collection, thus enabling scaling Core horizontally:
+ *  https://www.mongodb.com/docs/manual/core/capped-collections/ */
 const lastTriggers: Record<string, { triggers: UIDeviceTriggerPreview[]; updated?: (() => void) | undefined }> = {}
 
 export interface UIDeviceTriggerPreview {
