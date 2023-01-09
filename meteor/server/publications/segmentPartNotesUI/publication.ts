@@ -1,15 +1,13 @@
-import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import { UISegmentPartNote } from '../../../lib/api/rundownNotifications'
 import { DBPartInstance } from '../../../lib/collections/PartInstances'
 import { DBPart } from '../../../lib/collections/Parts'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { DBSegment, Segment, SegmentOrphanedReason } from '../../../lib/collections/Segments'
-import { generateTranslation, groupByToMap, literal, normalizeArrayToMap, protectString } from '../../../lib/lib'
+import { DBSegment } from '../../../lib/collections/Segments'
+import { groupByToMap, literal, normalizeArrayToMap, protectString } from '../../../lib/lib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,
@@ -25,6 +23,7 @@ import { ContentCache, PartFields, PartInstanceFields, RundownFields, SegmentFie
 import { RundownsObserver } from '../lib/rundownsObserver'
 import { RundownContentObserver } from './rundownContentObserver'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { generateNotesForSegment } from './generateNotesForSegment'
 
 interface UISegmentPartNotesArgs {
 	readonly playlistId: RundownPlaylistId
@@ -185,7 +184,7 @@ function updateNotesForSegment(
 	collection: CustomPublishCollection<UISegmentPartNote>,
 	segment: Pick<DBSegment, SegmentFields>
 ) {
-	const notesForSegment = getBasicNotesForSegment(
+	const notesForSegment = generateNotesForSegment(
 		args.playlistId,
 		segment,
 		state.rundownsCache.get(segment.rundownId)?.externalNRCSName ?? 'NRCS',
@@ -197,145 +196,6 @@ function updateNotesForSegment(
 	for (const note of notesForSegment) {
 		collection.replace(note)
 	}
-}
-
-function getBasicNotesForSegment(
-	playlistId: RundownPlaylistId,
-	segment: Pick<Segment, SegmentFields>,
-	nrcsName: string,
-	parts: Pick<DBPart, PartFields>[],
-	partInstances: Pick<DBPartInstance, PartInstanceFields>[]
-): Array<UISegmentPartNote> {
-	const notes: Array<UISegmentPartNote> = []
-
-	if (segment.notes) {
-		notes.push(
-			...segment.notes.map((note, i) =>
-				literal<UISegmentPartNote>({
-					_id: protectString(`${segment._id}_segment_${i}`),
-					playlistId,
-					rundownId: segment.rundownId,
-					segmentId: segment._id,
-					note: {
-						rank: segment._rank,
-						...note,
-						origin: {
-							...note.origin,
-							segmentId: segment._id,
-							rundownId: segment.rundownId,
-							name: note.origin.name || segment.name,
-						},
-					},
-				})
-			)
-		)
-	}
-
-	if (segment.orphaned) {
-		let message: ITranslatableMessage
-		switch (segment.orphaned) {
-			case SegmentOrphanedReason.DELETED:
-				message = generateTranslation('Segment no longer exists in {{nrcs}}', {
-					nrcs: nrcsName,
-				})
-				break
-			case SegmentOrphanedReason.HIDDEN:
-				message = generateTranslation('Segment was hidden in {{nrcs}}', {
-					nrcs: nrcsName,
-				})
-				break
-		}
-		notes.push({
-			_id: protectString(`${segment._id}_segment_orphaned`),
-			playlistId,
-			rundownId: segment.rundownId,
-			segmentId: segment._id,
-			note: {
-				type: NoteSeverity.WARNING,
-				message,
-				rank: segment._rank,
-				origin: {
-					segmentId: segment._id,
-					rundownId: segment.rundownId,
-					name: segment.name,
-				},
-			},
-		})
-	} else {
-		const deletedPartInstances = partInstances.filter((p) => p.orphaned === 'deleted' && !p.reset)
-		if (deletedPartInstances.length > 0) {
-			notes.push({
-				_id: protectString(`${segment._id}_partinstances_deleted`),
-				playlistId,
-				rundownId: segment.rundownId,
-				segmentId: segment._id,
-				note: {
-					type: NoteSeverity.WARNING,
-					message: generateTranslation('The following parts no longer exist in {{nrcs}}: {{partNames}}', {
-						nrcs: nrcsName,
-						partNames: deletedPartInstances.map((p) => p.part.title).join(', '),
-					}),
-					rank: segment._rank,
-					origin: {
-						segmentId: segment._id,
-						rundownId: segment.rundownId,
-						name: segment.name,
-					},
-				},
-			})
-		}
-	}
-
-	for (const part of parts) {
-		const commonOrigin = {
-			segmentId: part.segmentId,
-			partId: part._id,
-			rundownId: part.rundownId,
-			segmentName: segment.name,
-		}
-
-		if (part.invalidReason) {
-			notes.push({
-				_id: protectString(`${segment._id}_part_${part._id}_invalid`),
-				playlistId,
-				rundownId: segment.rundownId,
-				segmentId: segment._id,
-				note: {
-					type: part.invalidReason.severity ?? NoteSeverity.ERROR,
-					message: part.invalidReason.message,
-					rank: segment._rank,
-					origin: {
-						...commonOrigin,
-						name: part.title,
-					},
-				},
-			})
-		}
-
-		if (part.notes && part.notes.length > 0) {
-			notes.push(
-				...part.notes.map((n, i) =>
-					literal<UISegmentPartNote>({
-						_id: protectString(`${segment._id}_part_${part._id}_${i}`),
-						playlistId,
-						rundownId: segment.rundownId,
-						segmentId: segment._id,
-						note: {
-							...n,
-							rank: segment._rank,
-							origin: {
-								...n.origin,
-								...commonOrigin,
-								name: n.origin.name || part.title,
-							},
-						},
-					})
-				)
-			)
-		}
-	}
-
-	return notes
 }
 
 meteorCustomPublish(
