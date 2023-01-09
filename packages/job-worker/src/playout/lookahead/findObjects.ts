@@ -1,9 +1,4 @@
-import {
-	IBlueprintPieceType,
-	Timeline as TimelineTypes,
-	TimelineObjectCoreExt,
-	TSR,
-} from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, TimelineObjectCoreExt, TSR } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { literal } from '@sofie-automation/corelib/dist/lib'
@@ -34,7 +29,7 @@ function tryActivateKeyframesForObject(
 ): TSR.TSRTimelineContent {
 	// Try and find a keyframe that is used when in a transition
 	if (hasTransition) {
-		let transitionKF: TimelineTypes.TimelineKeyframe | undefined
+		let transitionKF: TSR.Timeline.TimelineKeyframe | undefined
 		if (obj.keyframes) {
 			transitionKF = obj.keyframes.find((kf) => !Array.isArray(kf.enable) && kf.enable.while === '.is_transition')
 

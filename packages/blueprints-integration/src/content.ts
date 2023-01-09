@@ -1,10 +1,9 @@
-import { TSRTimelineContent } from 'timeline-state-resolver-types'
 import { Time } from './common'
-import { TimelineObjectCoreExt } from './timeline'
+import { TSR, TimelineObjectCoreExt } from './timeline'
 import { SourceLayerType } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 
 export type WithTimeline<T extends BaseContent> = T & {
-	timelineObjects: TimelineObjectCoreExt<TSRTimelineContent>[]
+	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
 }
 
 export interface BaseContent {

@@ -1,10 +1,10 @@
-import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContent } from 'timeline-state-resolver-types'
 import { ActionUserData } from './action'
 import { PartEndState } from './api'
 import { Time } from './common'
 import { SomeContent, WithTimeline } from './content'
 import { NoteSeverity } from './lib'
 import { ExpectedPackage } from './package'
+import { TSR } from './timeline'
 import { ITranslatableMessage } from './translations'
 import { PieceLifespan } from '@sofie-automation/shared-lib/dist/core/model/Rundown'
 
@@ -447,12 +447,14 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 /** @deprecated */
 export interface ExpectedPlayoutItemGeneric {
 	/** What type of playout device this item should be handled by */
-	deviceSubType: TSR_DeviceType // subset of PeripheralDeviceAPI.DeviceSubType
+	deviceSubType: TSR.DeviceType // subset of PeripheralDeviceAPI.DeviceSubType
 	/** Which playout device this item should be handled by */
 	// deviceId: string // Todo: implement deviceId support (later)
 	/** Content of the expectedPlayoutItem */
-	content: ExpectedPlayoutItemContent
+	content: TSR.ExpectedPlayoutItemContent
 }
+
+type ExpectedPlayoutItemContent = TSR.ExpectedPlayoutItemContent
 export { ExpectedPlayoutItemContent }
 
 /** Special types of pieces. Some are not always used in all circumstances */

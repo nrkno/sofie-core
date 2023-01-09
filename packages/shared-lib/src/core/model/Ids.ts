@@ -44,3 +44,9 @@ export type ShowStyleBaseId = ProtectedString<'ShowStyleBaseId'>
 
 /** A string identifying a triggered action */
 export type TriggeredActionId = ProtectedString<'TriggeredActionId'>
+
+/** A string identifying a particular set of Mappings currently set in a Studio */
+export type MappingsHash = ProtectedString<'MappingsHash'>
+
+/** A Timeline JSON Blob */
+export type TimelineBlob = ProtectedString<'TimelineBlob'>
