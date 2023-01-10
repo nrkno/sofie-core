@@ -225,13 +225,13 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// @ts-ignore
-					await expect(context.getPartInstance()).rejects.toThrowError('Unknown part "undefined"')
+					await expect(context.getPartInstance()).rejects.toThrow('Unknown part "undefined"')
 					// @ts-ignore
-					await expect(context.getPartInstance('abc')).rejects.toThrowError('Unknown part "abc"')
+					await expect(context.getPartInstance('abc')).rejects.toThrow('Unknown part "abc"')
 					// @ts-ignore
-					await expect(context.getPartInstance(6)).rejects.toThrowError('Unknown part "6"')
+					await expect(context.getPartInstance(6)).rejects.toThrow('Unknown part "6"')
 					// @ts-ignore
-					await expect(context.getPartInstance('previous')).rejects.toThrowError('Unknown part "previous"')
+					await expect(context.getPartInstance('previous')).rejects.toThrow('Unknown part "previous"')
 				})
 			})
 
@@ -286,13 +286,13 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// @ts-ignore
-					await expect(context.getPieceInstances()).rejects.toThrowError('Unknown part "undefined"')
+					await expect(context.getPieceInstances()).rejects.toThrow('Unknown part "undefined"')
 					// @ts-ignore
-					await expect(context.getPieceInstances('abc')).rejects.toThrowError('Unknown part "abc"')
+					await expect(context.getPieceInstances('abc')).rejects.toThrow('Unknown part "abc"')
 					// @ts-ignore
-					await expect(context.getPieceInstances(6)).rejects.toThrowError('Unknown part "6"')
+					await expect(context.getPieceInstances(6)).rejects.toThrow('Unknown part "6"')
 					// @ts-ignore
-					await expect(context.getPieceInstances('previous')).rejects.toThrowError('Unknown part "previous"')
+					await expect(context.getPieceInstances('previous')).rejects.toThrow('Unknown part "previous"')
 				})
 			})
 
@@ -343,13 +343,13 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// @ts-ignore
-					await expect(context.getResolvedPieceInstances()).rejects.toThrowError('Unknown part "undefined"')
+					await expect(context.getResolvedPieceInstances()).rejects.toThrow('Unknown part "undefined"')
 					// @ts-ignore
-					await expect(context.getResolvedPieceInstances('abc')).rejects.toThrowError('Unknown part "abc"')
+					await expect(context.getResolvedPieceInstances('abc')).rejects.toThrow('Unknown part "abc"')
 					// @ts-ignore
-					await expect(context.getResolvedPieceInstances(6)).rejects.toThrowError('Unknown part "6"')
+					await expect(context.getResolvedPieceInstances(6)).rejects.toThrow('Unknown part "6"')
 					// @ts-ignore
-					await expect(context.getResolvedPieceInstances('previous')).rejects.toThrowError(
+					await expect(context.getResolvedPieceInstances('previous')).rejects.toThrow(
 						'Unknown part "previous"'
 					)
 				})
@@ -892,15 +892,15 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// @ts-ignore
-					await expect(context.getPartInstanceForPreviousPiece()).rejects.toThrowError(
+					await expect(context.getPartInstanceForPreviousPiece()).rejects.toThrow(
 						'Cannot find PartInstance from invalid PieceInstance'
 					)
 					// @ts-ignore
-					await expect(context.getPartInstanceForPreviousPiece({})).rejects.toThrowError(
+					await expect(context.getPartInstanceForPreviousPiece({})).rejects.toThrow(
 						'Cannot find PartInstance from invalid PieceInstance'
 					)
 					// @ts-ignore
-					await expect(context.getPartInstanceForPreviousPiece('abc')).rejects.toThrowError(
+					await expect(context.getPartInstanceForPreviousPiece('abc')).rejects.toThrow(
 						'Cannot find PartInstance from invalid PieceInstance'
 					)
 					await expect(
@@ -908,13 +908,13 @@ describe('Test blueprint api context', () => {
 							// @ts-ignore
 							partInstanceId: 6,
 						})
-					).rejects.toThrowError('Cannot find PartInstance for PieceInstance')
+					).rejects.toThrow('Cannot find PartInstance for PieceInstance')
 					await expect(
 						// @ts-ignore
 						context.getPartInstanceForPreviousPiece({
 							partInstanceId: 'abc',
 						})
-					).rejects.toThrowError('Cannot find PartInstance for PieceInstance')
+					).rejects.toThrow('Cannot find PartInstance for PieceInstance')
 				})
 			})
 
@@ -973,15 +973,15 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// @ts-ignore
-					await expect(context.getPartForPreviousPiece()).rejects.toThrowError(
+					await expect(context.getPartForPreviousPiece()).rejects.toThrow(
 						'Cannot find Part from invalid Piece'
 					)
 					// @ts-ignore
-					await expect(context.getPartForPreviousPiece({})).rejects.toThrowError(
+					await expect(context.getPartForPreviousPiece({})).rejects.toThrow(
 						'Cannot find Part from invalid Piece'
 					)
 					// @ts-ignore
-					await expect(context.getPartForPreviousPiece('abc')).rejects.toThrowError(
+					await expect(context.getPartForPreviousPiece('abc')).rejects.toThrow(
 						'Cannot find Part from invalid Piece'
 					)
 					await expect(
@@ -989,13 +989,13 @@ describe('Test blueprint api context', () => {
 							// @ts-ignore
 							partInstanceId: 6,
 						})
-					).rejects.toThrowError('Cannot find Part from invalid Piece')
+					).rejects.toThrow('Cannot find Part from invalid Piece')
 					await expect(
 						// @ts-ignore
 						context.getPartForPreviousPiece({
 							_id: 'abc',
 						})
-					).rejects.toThrowError('Cannot find Piece abc')
+					).rejects.toThrow('Cannot find Piece abc')
 				})
 			})
 
@@ -1051,13 +1051,11 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// @ts-ignore
-					await expect(context.insertPiece()).rejects.toThrowError('Unknown part "undefined"')
+					await expect(context.insertPiece()).rejects.toThrow('Unknown part "undefined"')
 					// @ts-ignore
-					await expect(context.insertPiece('previous')).rejects.toThrowError('Unknown part "previous"')
+					await expect(context.insertPiece('previous')).rejects.toThrow('Unknown part "previous"')
 					// @ts-ignore
-					await expect(context.insertPiece('next')).rejects.toThrowError(
-						'Cannot insert piece when no active part'
-					)
+					await expect(context.insertPiece('next')).rejects.toThrow('Cannot insert piece when no active part')
 
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(0)
 					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
@@ -1065,7 +1063,7 @@ describe('Test blueprint api context', () => {
 					postProcessPiecesMock.mockImplementationOnce(() => {
 						throw new Error('Mock process error')
 					})
-					await expect(context.insertPiece('current', {} as any)).rejects.toThrowError('Mock process error')
+					await expect(context.insertPiece('current', {} as any)).rejects.toThrow('Mock process error')
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
 					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
 				})
@@ -1138,21 +1136,21 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					await expect(context.updatePieceInstance('abc', {})).rejects.toThrowError(
+					await expect(context.updatePieceInstance('abc', {})).rejects.toThrow(
 						'Some valid properties must be defined'
 					)
-					await expect(
-						context.updatePieceInstance('abc', { _id: 'bad', nope: 'ok' } as any)
-					).rejects.toThrowError('Some valid properties must be defined')
-					await expect(context.updatePieceInstance('abc', { sourceLayerId: 'new' })).rejects.toThrowError(
+					await expect(context.updatePieceInstance('abc', { _id: 'bad', nope: 'ok' } as any)).rejects.toThrow(
+						'Some valid properties must be defined'
+					)
+					await expect(context.updatePieceInstance('abc', { sourceLayerId: 'new' })).rejects.toThrow(
 						'PieceInstance could not be found'
 					)
 					await expect(
 						context.updatePieceInstance(unprotectString(pieceInstance._id), { sourceLayerId: 'new' })
-					).rejects.toThrowError('Can only update piece instances in current or next part instance')
+					).rejects.toThrow('Can only update piece instances in current or next part instance')
 					await expect(
 						context.updatePieceInstance(unprotectString(pieceInstanceOther._id), { sourceLayerId: 'new' })
-					).rejects.toThrowError('PieceInstance could not be found')
+					).rejects.toThrow('PieceInstance could not be found')
 				})
 
 				// Set a current part instance
@@ -1164,7 +1162,7 @@ describe('Test blueprint api context', () => {
 				})
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
-					await expect(context.updatePieceInstance('abc', { sourceLayerId: 'new' })).rejects.toThrowError(
+					await expect(context.updatePieceInstance('abc', { sourceLayerId: 'new' })).rejects.toThrow(
 						'PieceInstance could not be found'
 					)
 					await expect(
@@ -1172,7 +1170,7 @@ describe('Test blueprint api context', () => {
 					).resolves.toBeTruthy()
 					await expect(
 						context.updatePieceInstance(unprotectString(pieceInstanceOther._id), { sourceLayerId: 'new' })
-					).rejects.toThrowError('Can only update piece instances in current or next part instance')
+					).rejects.toThrow('Can only update piece instances in current or next part instance')
 				})
 
 				// Set as next part instance
@@ -1185,7 +1183,7 @@ describe('Test blueprint api context', () => {
 				})
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
-					await expect(context.updatePieceInstance('abc', { sourceLayerId: 'new' })).rejects.toThrowError(
+					await expect(context.updatePieceInstance('abc', { sourceLayerId: 'new' })).rejects.toThrow(
 						'PieceInstance could not be found'
 					)
 					await expect(
@@ -1193,7 +1191,7 @@ describe('Test blueprint api context', () => {
 					).resolves.toBeTruthy()
 					await expect(
 						context.updatePieceInstance(unprotectString(pieceInstanceOther._id), { sourceLayerId: 'new' })
-					).rejects.toThrowError('Can only update piece instances in current or next part instance')
+					).rejects.toThrow('Can only update piece instances in current or next part instance')
 				})
 			})
 
@@ -1286,9 +1284,7 @@ describe('Test blueprint api context', () => {
 
 					// No next-part
 					// @ts-ignore
-					await expect(context.queuePart()).rejects.toThrowError(
-						'Cannot queue part when no current partInstance'
-					)
+					await expect(context.queuePart()).rejects.toThrow('Cannot queue part when no current partInstance')
 				})
 
 				const partInstance = (await jobContext.directCollections.PartInstances.findOne({
@@ -1305,12 +1301,12 @@ describe('Test blueprint api context', () => {
 					// Next part has already been modified
 					context.nextPartState = ActionPartChange.SAFE_CHANGE
 					// @ts-ignore
-					await expect(context.queuePart('previous')).rejects.toThrowError(
+					await expect(context.queuePart('previous')).rejects.toThrow(
 						'Cannot queue part when next part has already been modified'
 					)
 					context.nextPartState = ActionPartChange.NONE
 
-					await expect(context.queuePart({} as any, [])).rejects.toThrowError(
+					await expect(context.queuePart({} as any, [])).rejects.toThrow(
 						'New part must contain at least one piece'
 					)
 
@@ -1340,7 +1336,7 @@ describe('Test blueprint api context', () => {
 					postProcessPiecesMock.mockImplementationOnce(() => {
 						throw new Error('Mock process error')
 					})
-					await expect(context.queuePart({} as any, [{}] as any)).rejects.toThrowError('Mock process error')
+					await expect(context.queuePart({} as any, [{}] as any)).rejects.toThrow('Mock process error')
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
 					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
 					expect(innerStartQueuedAdLibMock).toHaveBeenCalledTimes(0)
@@ -1356,7 +1352,7 @@ describe('Test blueprint api context', () => {
 					cache.PartInstances.replace(partInstance)
 
 					expect(isTooCloseToAutonext(partInstance, true)).toBeTruthy()
-					await expect(context.queuePart({} as any, [{}] as any)).rejects.toThrowError(
+					await expect(context.queuePart({} as any, [{}] as any)).rejects.toThrow(
 						'Too close to an autonext to queue a part'
 					)
 
@@ -1443,7 +1439,7 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// Bad instance id
-					await expect(context.stopPiecesOnLayers(['lay1'], 34)).rejects.toThrowError(
+					await expect(context.stopPiecesOnLayers(['lay1'], 34)).rejects.toThrow(
 						'Cannot stop pieceInstances when no current partInstance'
 					)
 				})
@@ -1519,7 +1515,7 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// Bad instance id
-					await expect(context.stopPieceInstances(['lay1'], 34)).rejects.toThrowError(
+					await expect(context.stopPieceInstances(['lay1'], 34)).rejects.toThrow(
 						'Cannot stop pieceInstances when no current partInstance'
 					)
 				})
@@ -1594,7 +1590,7 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// No instance id
-					await expect(context.removePieceInstances('next', ['lay1'])).rejects.toThrowError(
+					await expect(context.removePieceInstances('next', ['lay1'])).rejects.toThrow(
 						'Cannot remove pieceInstances when no selected partInstance'
 					)
 				})
@@ -1670,13 +1666,13 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					await expect(context.updatePartInstance('current', {})).rejects.toThrowError(
+					await expect(context.updatePartInstance('current', {})).rejects.toThrow(
 						'Some valid properties must be defined'
 					)
 					await expect(
 						context.updatePartInstance('current', { _id: 'bad', nope: 'ok' } as any)
-					).rejects.toThrowError('Some valid properties must be defined')
-					await expect(context.updatePartInstance('current', { title: 'new' })).rejects.toThrowError(
+					).rejects.toThrow('Some valid properties must be defined')
+					await expect(context.updatePartInstance('current', { title: 'new' })).rejects.toThrow(
 						'PartInstance could not be found'
 					)
 				})
@@ -1687,7 +1683,7 @@ describe('Test blueprint api context', () => {
 				})
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
-					await expect(context.updatePartInstance('next', { title: 'new' })).rejects.toThrowError(
+					await expect(context.updatePartInstance('next', { title: 'new' })).rejects.toThrow(
 						'PartInstance could not be found'
 					)
 					await context.updatePartInstance('current', { title: 'new' })
