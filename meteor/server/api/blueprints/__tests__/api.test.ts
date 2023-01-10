@@ -136,7 +136,7 @@ describe('Test blueprint management api', () => {
 
 	describe('removeBlueprint', () => {
 		testInFiber('undefined id', async () => {
-			await expect(MeteorCall.blueprint.removeBlueprint(undefined as any)).rejects.toThrowError(
+			await expect(MeteorCall.blueprint.removeBlueprint(undefined as any)).rejects.toThrow(
 				'Match error: Expected string, got undefined'
 			)
 		})
