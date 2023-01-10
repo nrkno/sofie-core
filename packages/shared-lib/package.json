@@ -39,9 +39,9 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"timeline-state-resolver-types": "8.0.0-release48.0",
+		"timeline-state-resolver-types": "8.0.0-nightly-release49-20230110-165023-914016e7b.0",
 		"tslib": "^2.4.0",
-		"type-fest": "^2.19.0"
+		"type-fest": "^3.5.1"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
