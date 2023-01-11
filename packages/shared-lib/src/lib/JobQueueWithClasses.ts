@@ -1,25 +1,22 @@
-type AsyncFunction = () => Promise<void>
-
-interface JobDescription {
-	className?: string
-	resolve: () => void
-	reject: (error?: any) => void
-	fn: AsyncFunction
-}
-
-type AddOptions = {
-	className?: string
-}
-
-type WrapperFunction<T> = (fnc: () => T) => () => T
-type DeferFunction = (fnc: () => void) => void
-
-type Options = {
+export type Options = {
+	/** If true, newly added jobs will automatically start. If false, .start() needs to be called for the queue to start executing. (Defaults to true) */
 	autoStart: boolean
 	executionWrapper?: WrapperFunction<any>
 	resolutionWrapper?: DeferFunction
 }
+export type WrapperFunction<T> = (fnc: () => T) => () => T
+export type DeferFunction = (fnc: () => void) => void
 
+export type AsyncFunction = () => Promise<void>
+export type JobOptions = {
+	/** (Optional) The className is used to categorize jobs, so that they can be removed by .remove(className) */
+	className?: string
+}
+
+/**
+ * A simple Job-queue runner with the added benefit of being able to set a `className` to a job.
+ * By calling .remove(className) all jobs with a certain className is discarded from the queue.
+ */
 export class JobQueueWithClasses {
 	#queue: JobDescription[] = []
 	#autoStart: boolean
@@ -33,7 +30,10 @@ export class JobQueueWithClasses {
 		this.#resolutionWrapper = opts?.resolutionWrapper
 	}
 
-	async add(fn: AsyncFunction, options?: AddOptions): Promise<void> {
+	/**
+	 * Add a job to the queue.
+	 */
+	async add(fn: AsyncFunction, options?: JobOptions): Promise<void> {
 		return new Promise((resolve, reject) => {
 			const handlePromise = (p: Promise<void>, resolve: () => void, reject: (err: any) => void) => {
 				if (this.#resolutionWrapper) {
@@ -72,15 +72,16 @@ export class JobQueueWithClasses {
 			if (this.#autoStart && this.#paused) this.start()
 		})
 	}
-
+	/** Clear queue */
 	clear(): void {
 		this.#queue.length = 0
 	}
-
+	/** Remove all jobs with a certain className */
 	remove(className?: string): void {
 		this.#queue = this.#queue.filter((job) => job.className !== className)
 	}
 
+	/** Start executing the queue */
 	start(): void {
 		if (this.#paused === false) return
 		;(async () => {
@@ -101,4 +102,11 @@ export class JobQueueWithClasses {
 			console.error(error)
 		})
 	}
+}
+
+interface JobDescription {
+	fn: AsyncFunction
+	className?: string
+	resolve: () => void
+	reject: (error?: any) => void
 }
