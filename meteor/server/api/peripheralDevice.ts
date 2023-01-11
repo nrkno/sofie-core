@@ -645,8 +645,6 @@ PickerPOST.route('/devices/:deviceId/resetAuth', async (params, _req: IncomingMe
 			},
 		})
 
-		// PeripheralDeviceAPI.executeFunction(deviceId, 'killProcess', 1).catch(logger.error)
-
 		res.statusCode = 200
 	} catch (e) {
 		res.statusCode = 500
