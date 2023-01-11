@@ -2,7 +2,7 @@ import React from 'react'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspector'
 import { IDefaultRendererProps } from './DefaultRenderer'
-import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../../../../lib/notifications/notifications'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export function VTRenderer({

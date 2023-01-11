@@ -20,6 +20,13 @@ export const UIStudios = createCustomPublicationMongoCollection(CustomCollection
 export const UITriggeredActions = createCustomPublicationMongoCollection(CustomCollectionName.UITriggeredActions)
 
 /**
+ * A preview of the latest issued device triggers for a given Studio
+ */
+export const DeviceTriggersPreviews = createCustomPublicationMongoCollection(
+	CustomCollectionName.UIDeviceTriggerPreviews
+)
+
+/**
  * Pre-generated notes to be converted into notificiations.
  */
 export const UISegmentPartNotes = createCustomPublicationMongoCollection(CustomCollectionName.UISegmentPartNotes)

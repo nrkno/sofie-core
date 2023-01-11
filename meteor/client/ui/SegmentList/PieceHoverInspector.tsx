@@ -6,7 +6,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import React from 'react'
-import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { RundownUtils } from '../../lib/rundown'
 import { FloatingInspector } from '../FloatingInspector'
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'

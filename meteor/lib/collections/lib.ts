@@ -148,6 +148,7 @@ export function createCustomPublicationMongoCollection<K extends keyof CustomCol
 	name: K
 ): MongoCollection<CustomCollectionType[K]> {
 	const collection = new Mongo.Collection<CustomCollectionType[K]>(name)
+
 	return new WrappedMongoCollection<CustomCollectionType[K]>(collection, name)
 }
 

@@ -65,6 +65,7 @@ import './Connections'
 import './coreSystem'
 import './cronjobs'
 import './email'
+import './api/deviceTriggers/observer'
 // import './performanceMonitor' // called above
 
 // Setup publications and security:

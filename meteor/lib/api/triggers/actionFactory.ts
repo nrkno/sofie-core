@@ -18,9 +18,9 @@ import { Parts } from '../../collections/Parts'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../collections/RundownPlaylists'
 import { ShowStyleBase, SourceLayers } from '../../collections/ShowStyleBases'
 import { Studio } from '../../collections/Studios'
-import { assertNever } from '../../lib'
+import { assertNever, DummyReactiveVar } from '../../lib'
 import { logger } from '../../logging'
-import RundownViewEventBus, { RundownViewEvents } from '../../../client/ui/RundownView/RundownViewEventBus'
+import RundownViewEventBus, { RundownViewEvents } from './RundownViewEventBus'
 import { UserAction } from '../../userAction'
 import { doUserAction } from './universalDoUserActionAdapter'
 import {
@@ -37,20 +37,6 @@ import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-aut
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
 // eslint-disable-next-line @typescript-eslint/ban-types
 type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
-
-/**
- * This just looks like a ReactiveVar, but is not reactive.
- * It's used to use the same interface/typings, but when code is run on both client and server side.
- * */
-class DummyReactiveVar<T> implements ReactiveVar<T> {
-	constructor(private value: T) {}
-	public get(): T {
-		return this.value
-	}
-	public set(newValue: T): void {
-		this.value = newValue
-	}
-}
 
 export interface ReactivePlaylistActionContext {
 	rundownPlaylistId: ReactiveVar<RundownPlaylistId>
@@ -91,7 +77,7 @@ type ActionExecutor = (t: TFunction, e: any, ctx: ActionContext) => void
  *
  * @interface ExecutableAction
  */
-interface ExecutableAction {
+export interface ExecutableAction {
 	action: ITriggeredActionBase['action']
 	/** Execute the action */
 	execute: ActionExecutor

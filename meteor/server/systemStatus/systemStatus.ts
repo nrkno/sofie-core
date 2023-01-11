@@ -158,17 +158,19 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		checks: checks,
 	}
 	if (device.type === PeripheralDeviceType.MOS) {
-		so.documentation = 'https://github.com/nrkno/tv-automation-mos-gateway'
+		so.documentation = 'https://github.com/nrkno/sofie-core'
 	} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
 		so.documentation = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
 	} else if (device.type === PeripheralDeviceType.PLAYOUT) {
-		so.documentation = 'https://github.com/nrkno/tv-automation-playout-gateway'
+		so.documentation = 'https://github.com/nrkno/sofie-core'
 	} else if (device.type === PeripheralDeviceType.MEDIA_MANAGER) {
-		so.documentation = 'https://github.com/nrkno/tv-automation-media-management'
+		so.documentation = 'https://github.com/nrkno/sofie-media-management'
 	} else if (device.type === PeripheralDeviceType.INEWS) {
 		so.documentation = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
 	} else if (device.type === PeripheralDeviceType.PACKAGE_MANAGER) {
-		so.documentation = 'https://github.com/nrkno/tv-automation-package-manager'
+		so.documentation = 'https://github.com/nrkno/sofie-package-manager'
+	} else if (device.type === PeripheralDeviceType.INPUT) {
+		so.documentation = 'https://github.com/nrkno/sofie-input-gateway'
 	} else {
 		assertNever(device.type)
 	}

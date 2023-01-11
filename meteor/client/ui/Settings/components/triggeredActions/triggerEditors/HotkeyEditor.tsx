@@ -1,18 +1,18 @@
+import { IBlueprintHotkeyTrigger } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
 import React, { useContext, useState } from 'react'
 import { useLayoutEffect } from 'react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DBBlueprintTrigger } from '../../../../../../lib/collections/TriggeredActions'
 import { EditAttribute } from '../../../../../lib/EditAttribute'
 import { SorensenContext } from '../../../../../lib/SorensenContext'
 import { codesToKeyLabels } from '../../../../../lib/triggers/codesToKeyLabels'
 
 interface IProps {
-	trigger: DBBlueprintTrigger
+	trigger: IBlueprintHotkeyTrigger
 	modified?: boolean
 	readonly?: boolean
-	onChange: (newVal: DBBlueprintTrigger) => void
+	onChange: (newVal: IBlueprintHotkeyTrigger) => void
 }
 
 export const MODIFIER_MAP = {
@@ -61,7 +61,7 @@ export const HotkeyEditor = function HotkeyEditor({ trigger, modified, readonly,
 	}
 
 	useEffect(() => {
-		let processedKeys = trigger.keys
+		let processedKeys = trigger.keys ?? ''
 		if (sorensen) {
 			processedKeys = codesToKeyLabels(processedKeys, sorensen)
 		}

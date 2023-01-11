@@ -1,10 +1,7 @@
-import * as _ from 'underscore'
-import { logger } from '../../lib/logging'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { MeteorCall } from '../../lib/api/methods'
-import { Time } from '../../lib/lib'
-import { getEventTimestamp } from './lib'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { eventContextForLog } from '../../lib/clientUserAction'
 
 export async function callPeripheralDeviceFunction(
 	e: any,
@@ -46,42 +43,4 @@ export namespace PeripheralDevicesAPI {
 	): Promise<any> {
 		return callPeripheralDeviceFunction(e, dev._id, undefined, 'troubleshoot', 1)
 	}
-}
-
-export function eventContextForLog(e: any): [string, Time] {
-	const timeStamp = getEventTimestamp(e)
-	if (!e) return ['', timeStamp]
-	let str: string = ''
-	if (_.isString(e)) {
-		return [e, timeStamp]
-	} else if (e.currentTarget && e.currentTarget.localName && !e.key && !e.code) {
-		let contents = ''
-		if (e.currentTarget.localName !== 'body' && e.currentTarget.innerText) {
-			contents = ` "${e.currentTarget.innerText}"`
-		}
-		str =
-			e.type + ': ' + e.currentTarget.localName + (e.currentTarget.id ? '#' + e.currentTarget.id : '') + contents
-	} else if (e.key && e.code) {
-		str = e.type + ': ' + keyboardEventToShortcut(e as KeyboardEvent)
-	} else {
-		str = e.type
-	}
-	if (!str) {
-		logger.error('Unknown event', e)
-		console.error(e)
-		str = 'N/A'
-	}
-
-	return [str, timeStamp]
-}
-
-function keyboardEventToShortcut(e: KeyboardEvent): string {
-	const combo = _.compact([
-		e.ctrlKey ? 'Control' : undefined,
-		e.shiftKey ? 'Shift' : undefined,
-		e.altKey ? 'Alt' : undefined,
-		e.metaKey ? 'Meta' : undefined,
-		e.code,
-	])
-	return combo.join('+')
 }

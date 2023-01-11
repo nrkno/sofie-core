@@ -3,7 +3,7 @@ import Tooltip from 'rc-tooltip'
 import { useTranslation } from 'react-i18next'
 import { PackageContainerStatusDB } from '../../../../lib/collections/PackageContainerStatus'
 import { StatusCodePill } from '../StatusCodePill'
-import { doUserAction, UserAction } from '../../../lib/userAction'
+import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 import { MeteorCall } from '../../../../lib/api/methods'
 
 interface IPackageContainerStatusProps {

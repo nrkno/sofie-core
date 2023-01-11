@@ -3,12 +3,10 @@ import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-import { PeripheralDeviceId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ObjectWithOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
-export type DBBlueprintTrigger = SomeBlueprintTrigger & {
-	deviceId?: PeripheralDeviceId
-}
+export type DBBlueprintTrigger = SomeBlueprintTrigger
 
 export interface UITriggeredActionsObj {
 	_id: TriggeredActionId

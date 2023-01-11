@@ -63,6 +63,8 @@ import {
 	NewPeripheralDeviceAPI,
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
+import { insertInputDeviceTriggerIntoPreview } from '../publications/deviceTriggersPreview'
+import { receiveInputDeviceTrigger } from './deviceTriggers/observer'
 import { upsertBundles, generateTranslationBundleOriginId } from './translationsBundles'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
@@ -1209,6 +1211,21 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		packageId: ExpectedPackageId
 	) {
 		await PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId)
+	}
+	// --- Triggers ---
+	/**
+	 * This receives an arbitrary input from an Input-handling Peripheral Device. See
+	 * shared-lib\src\peripheralDevice\methodsAPI.ts inputDeviceTrigger for more info
+	 */
+	async inputDeviceTrigger(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		triggerDeviceId: string,
+		triggerId: string,
+		values?: Record<string, string | number | boolean> | null
+	) {
+		await receiveInputDeviceTrigger(this, deviceId, deviceToken, triggerDeviceId, triggerId, values ?? undefined)
+		await insertInputDeviceTriggerIntoPreview(deviceId, triggerDeviceId, triggerId, values ?? undefined)
 	}
 }
 registerClassToMeteorMethods(PeripheralDeviceAPIMethods, ServerPeripheralDeviceAPIClass, false)

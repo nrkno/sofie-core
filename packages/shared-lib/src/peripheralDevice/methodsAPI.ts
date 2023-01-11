@@ -319,6 +319,29 @@ export interface NewPeripheralDeviceAPI {
 		removeDelay?: number
 	): Promise<void>
 
+	/**
+	 * This method is being called by a Peripheral Device handling external triggers when it receives an external
+	 * trigger event or an external input changes it's state (a knob changes it's rotation, a joystick is moved, etc.)
+	 *
+	 * @param {PeripheralDeviceId} deviceId
+	 * @param {string} deviceToken
+	 * @param {string} triggerDeviceId The ID of the actual input device providing this input.
+	 * Can be shared across multiple physical devices in the system with the same characteristics: a primary and
+	 * backup hardware controller, etc.
+	 * @param {string} triggerId The ID of the trigger within the input device providing the input. An identifier of a
+	 * button, control knob, GPI port, etc.
+	 * @param {(Record<string, string | number | boolean> | null)} [values] An arbitrary map of values acompanying this
+	 * input: voltage, pressure, position, etc.
+	 * @memberof NewPeripheralDeviceAPI
+	 */
+	inputDeviceTrigger(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		triggerDeviceId: string,
+		triggerId: string,
+		values: Record<string, string | number | boolean> | null
+	): Promise<void>
+
 	determineDiffTime(): Promise<DiffTimeResult>
 	getTimeDiff(): Promise<TimeDiff>
 	getTime(): Promise<number>
@@ -411,4 +434,6 @@ export enum PeripheralDeviceAPIMethods {
 
 	'requestUserAuthToken' = 'peripheralDevice.spreadsheet.requestUserAuthToken',
 	'storeAccessToken' = 'peripheralDevice.spreadsheet.storeAccessToken',
+
+	'inputDeviceTrigger' = 'peripheralDevice.input.inputDeviceTrigger',
 }

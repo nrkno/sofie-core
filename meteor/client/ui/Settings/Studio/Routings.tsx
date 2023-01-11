@@ -21,7 +21,7 @@ import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-s
 import { withTranslation } from 'react-i18next'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../../lib/api/methods'
-import { doUserAction, UserAction } from '../../../lib/userAction'
+import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { DeviceMappingSettings } from './Mappings'
 import { ReadonlyDeep } from 'type-fest'

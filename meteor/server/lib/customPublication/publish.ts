@@ -5,7 +5,7 @@ import { ProtectedString, protectString, protectStringObject, unprotectString, w
 import { SubscriptionContext } from '../../publications/lib'
 
 export interface CustomPublishChanges<T extends { _id: ProtectedString<any> }> {
-	added: T[]
+	added: Array<T>
 	changed: Array<Pick<T, '_id'> & Partial<T>>
 	removed: T['_id'][]
 }
@@ -55,15 +55,15 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	changed(changes: CustomPublishChanges<DBObj>): void {
 		if (!this.#isReady) throw new Meteor.Error(500, 'CustomPublish has not been initialised')
 
-		for (const doc of changes.added) {
+		for (const doc of changes.added.values()) {
 			this._meteorSubscription.added(this._collectionName, unprotectString(doc._id), doc)
 		}
 
-		for (const doc of changes.changed) {
+		for (const doc of changes.changed.values()) {
 			this._meteorSubscription.changed(this._collectionName, unprotectString(doc._id), doc)
 		}
 
-		for (const id of changes.removed) {
+		for (const id of changes.removed.values()) {
 			this._meteorSubscription.removed(this._collectionName, unprotectString(id))
 		}
 	}

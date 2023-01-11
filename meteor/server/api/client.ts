@@ -32,7 +32,7 @@ import {
 	VerifiedRundownPlaylistContentAccess,
 } from './lib'
 import { BasicAccessContext } from '../security/organization'
-import { NoticeLevel } from '../../client/lib/notifications/notifications'
+import { NoticeLevel } from '../../lib/notifications/notifications'
 
 function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
 	let userError: UserError

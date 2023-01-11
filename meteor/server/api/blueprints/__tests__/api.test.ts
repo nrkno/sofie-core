@@ -9,6 +9,9 @@ import { insertBlueprint, uploadBlueprint } from '../api'
 import { MeteorCall, MethodContext } from '../../../../lib/api/methods'
 import '../../../../__mocks__/_extendJest'
 
+// we don't want the deviceTriggers observer to start up at this time
+jest.mock('../../deviceTriggers/observer')
+
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
 const DEFAULT_CONTEXT: MethodContext = {

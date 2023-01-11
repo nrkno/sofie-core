@@ -23,12 +23,7 @@ type Link<T> = {
 	end: (complete: (state: T | null) => void) => Meteor.LiveQueryHandle
 }
 
-export function observerChain(): {
-	next: <L extends string, K extends { _id: ProtectedString<any> }>(
-		key: L,
-		cursorChain: () => MongoCursor<K> | null
-	) => Link<{ [P in StringLiteral<L>]: K }>
-} {
+export function observerChain(): Pick<Link<{}>, 'next'> {
 	function createNextLink(baseCollectorObject: Record<string, any>, liveQueryHandle: Meteor.LiveQueryHandle) {
 		let mode: 'next' | 'end' | undefined
 		let chainedCursor: (state: Record<string, any>) => MongoCursor<any> | null
