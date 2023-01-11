@@ -17,19 +17,6 @@ export * from '@sofie-automation/corelib/dist/protectedString'
 export * from '@sofie-automation/corelib/dist/lib'
 
 /**
- * Convenience method to convert a Meteor.call() into a Promise
- * @param  {string} Method name
- * @return {Promise<any>}
- */
-export async function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any> {
-	return new Promise((resolve, reject) => {
-		Meteor.call(callName, ...args, (err, res) => {
-			if (err) reject(err)
-			else resolve(res)
-		})
-	})
-}
-/**
  * Convenience method to convert a Meteor.apply() into a Promise
  * @param callName {string} Method name
  * @param args {Array<any>} An array of arguments for the method call
