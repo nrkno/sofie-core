@@ -169,6 +169,10 @@ class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
 		return this.#collection._isMock
 	}
 
+	public get mockCollection() {
+		return this.#collection
+	}
+
 	private wrapMongoError(e: any): never {
 		const str = (e && e.reason) || e.toString() || e || 'Unknown MongoDB Error'
 		throw new Meteor.Error((e && e.error) || 500, `Collection "${this.name}": ${str}`)

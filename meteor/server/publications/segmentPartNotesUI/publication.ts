@@ -29,7 +29,7 @@ interface UISegmentPartNotesArgs {
 	readonly playlistId: RundownPlaylistId
 }
 
-interface UISegmentPartNotesState {
+export interface UISegmentPartNotesState {
 	contentCache: ReadonlyDeep<ContentCache>
 }
 
@@ -102,7 +102,7 @@ async function setupUISegmentPartNotesPublicationObservers(
 	return [rundownsObserver]
 }
 
-async function manipulateUISegmentPartNotesPublicationData(
+export async function manipulateUISegmentPartNotesPublicationData(
 	args: UISegmentPartNotesArgs,
 	state: Partial<UISegmentPartNotesState>,
 	collection: CustomPublishCollection<UISegmentPartNote>,
@@ -126,7 +126,7 @@ async function manipulateUISegmentPartNotesPublicationData(
 
 	const updateContext = compileUpdateNotesData(state.contentCache)
 
-	const updateAll = !updateProps
+	const updateAll = !updateProps || !!updateProps?.newCache
 	if (updateAll) {
 		// Remove all the notes
 		collection.remove(null)

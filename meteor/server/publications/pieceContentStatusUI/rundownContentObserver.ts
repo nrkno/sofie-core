@@ -43,7 +43,7 @@ export class RundownContentObserver {
 
 	constructor(rundownIds: RundownId[], onChanged: ChangedHandler) {
 		logger.silly(`Creating RundownContentObserver for rundowns "${rundownIds.join(',')}"`)
-		const { cache, cancel: cancelCache } = createReactiveContentCache(() => {
+		const { cache, cancel: cancelCache } = createReactiveContentCache((cache) => {
 			this.#cleanup = onChanged(cache)
 		}, REACTIVITY_DEBOUNCE)
 

@@ -1,8 +1,8 @@
-import '../../../__mocks__/_extendJest'
+import '../../../../__mocks__/_extendJest'
 
 import { sleep } from '@sofie-automation/corelib/dist/lib'
-import { ReactiveMongoObserverGroup } from '../../publications/lib/observerGroup'
-import { LiveQueryHandle } from '../lib'
+import { ReactiveMongoObserverGroup } from '..//observerGroup'
+import { LiveQueryHandle } from '../../../lib/lib'
 
 describe('ReactiveMongoObserverGroup', () => {
 	beforeEach(() => {
