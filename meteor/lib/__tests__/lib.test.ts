@@ -3,7 +3,6 @@ import { Mongo } from 'meteor/mongo'
 import { afterEachInFiber, testInFiber } from '../../__mocks__/helpers/jest'
 import { setLogLevel } from '../../server/logging'
 import {
-	MeteorPromiseCall,
 	waitForPromise,
 	getCurrentTime,
 	systemTime,
@@ -26,28 +25,6 @@ describe('lib/lib', () => {
 		MeteorMock.mockSetServerEnvironment()
 	})
 
-	testInFiber('MeteorPromiseCall', () => {
-		// set up method:
-		Meteor.methods({
-			myMethod: (value: any) => {
-				// Do an async operation, to ensure that asynchronous operations work:
-				const v = waitForPromise(
-					new Promise((resolve) => {
-						setTimeout(() => {
-							resolve(value)
-						}, 10)
-					})
-				)
-				return v
-			},
-		})
-		const pValue: any = MeteorPromiseCall('myMethod', 'myValue').catch((e) => {
-			throw e
-		})
-		expect(pValue).toHaveProperty('then') // be a promise
-		const value = waitForPromise(pValue)
-		expect(value).toEqual('myValue')
-	})
 	testInFiber('MeteorPromiseApply', () => {
 		// set up method:
 		Meteor.methods({
