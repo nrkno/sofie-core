@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.47.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.4...v1.47.0-in-testing.5) (2023-01-11)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
 # [1.47.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.47.0-in-testing.4) (2023-01-05)
 
 **Note:** Version bump only for package mos-gateway

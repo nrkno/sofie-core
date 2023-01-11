@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.47.0-in-testing.5](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.4...v1.47.0-in-testing.5) (2023-01-11)
+
+
+### Features
+
+* push images to ghcr ([32f98f4](https://github.com/nrkno/sofie-core/commit/32f98f4c4e915242114bac9866ef52b176ddfc92))
+
+
+### Bug Fixes
+
+* in the event of multiple tags they should all have the correct name ([056de09](https://github.com/nrkno/sofie-core/commit/056de09e22337b0d7be39abb093653e8c6811ac1))
+
 ## [1.47.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.3...v1.47.0-in-testing.4) (2023-01-05)
 
 
