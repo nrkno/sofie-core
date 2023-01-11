@@ -15,6 +15,7 @@ import {
 	equalSets,
 	equivalentArrays,
 	LogLevel,
+	MeteorPromiseApply,
 } from '../lib'
 import { MeteorMock } from '../../__mocks__/meteor'
 
@@ -46,6 +47,28 @@ describe('lib/lib', () => {
 		expect(pValue).toHaveProperty('then') // be a promise
 		const value = waitForPromise(pValue)
 		expect(value).toEqual('myValue')
+	})
+	testInFiber('MeteorPromiseApply', () => {
+		// set up method:
+		Meteor.methods({
+			myMethod: (value1: string, value2: string) => {
+				// Do an async operation, to ensure that asynchronous operations work:
+				const v = waitForPromise(
+					new Promise((resolve) => {
+						setTimeout(() => {
+							resolve(value1 + value2)
+						}, 10)
+					})
+				)
+				return v
+			},
+		})
+		const pValue: any = MeteorPromiseApply('myMethod', ['myValue', 'AAA']).catch((e) => {
+			throw e
+		})
+		expect(pValue).toHaveProperty('then') // be a promise
+		const value = waitForPromise(pValue)
+		expect(value).toEqual('myValueAAA')
 	})
 	testInFiber('getCurrentTime', () => {
 		systemTime.diff = 5439
