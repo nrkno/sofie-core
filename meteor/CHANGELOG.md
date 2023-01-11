@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.48.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.48.0-in-testing.0...v1.48.0-in-testing.1) (2023-01-11)
+
+
+### Features
+
+* Adds information on SSL for WebMidi + update prefixed url params ([6dd983f](https://github.com/nrkno/sofie-core/commit/6dd983f6ef20612c004bb0fe74331202c7e4a053))
+* push images to ghcr ([32f98f4](https://github.com/nrkno/sofie-core/commit/32f98f4c4e915242114bac9866ef52b176ddfc92))
+
+
+### Bug Fixes
+
+* **EditAttribute:** Number(0) values are shown as String("") instead. ([b50c053](https://github.com/nrkno/sofie-core/commit/b50c05309290d1d7a4ada822cc792affcacf95af))
+* improve NB/NN translation ([71974c8](https://github.com/nrkno/sofie-core/commit/71974c87082286283e5e0e966a38fe5587941cf9))
+* in the event of multiple tags they should all have the correct name ([056de09](https://github.com/nrkno/sofie-core/commit/056de09e22337b0d7be39abb093653e8c6811ac1))
+* Removed clip filename and path from notification and hover pop-up, since it was superfluous. Updated translations for nb and nn. ([78c8adb](https://github.com/nrkno/sofie-core/commit/78c8adba7466b5826478c7df3c645aba02678c65))
+* Removed incorrect formatting. ([5d0a117](https://github.com/nrkno/sofie-core/commit/5d0a1178ccf820b27a4c693ac0d9dc07f170b6f5))
+
 ## [1.48.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.48.0-in-testing.0) (2022-12-13)
 
 
