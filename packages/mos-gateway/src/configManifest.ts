@@ -8,7 +8,11 @@ import {
 	DEFAULT_MOS_HEARTBEAT_INTERVAL,
 } from '@sofie-automation/shared-lib/dist/core/constants'
 
+import ConfigSchema = require('./configSchema.json')
+import ConfigSchemaSubDevice = require('./configSchemaSubDevice.json')
+
 export const MOS_DEVICE_CONFIG_MANIFEST: DeviceConfigManifest = {
+	deviceConfigSchema: JSON.stringify(ConfigSchema),
 	deviceConfig: [
 		{
 			id: 'mosId',
@@ -46,20 +50,17 @@ export const MOS_DEVICE_CONFIG_MANIFEST: DeviceConfigManifest = {
 					{
 						id: 'primary.dontUseQueryPort',
 						name: `Don't use the Query port`,
-						columnName: 'No query',
 						type: ConfigManifestEntryType.BOOLEAN,
 					},
 					{
 						id: 'primary.timeout',
 						name: '(Optional) Timeout (ms)',
-						columnName: 'Timeout',
 						type: ConfigManifestEntryType.INT,
 						hint: `Timeout for sent messages, default is ${DEFAULT_MOS_TIMEOUT_TIME}`,
 					},
 					{
 						id: 'primary.heartbeatInterval',
 						name: '(Optional) Heartbeat interval (ms)',
-						columnName: 'Heartbeat',
 						type: ConfigManifestEntryType.INT,
 						hint: `How often to ping NRCS to determine connection status, default is ${DEFAULT_MOS_HEARTBEAT_INTERVAL}`,
 					},
@@ -80,20 +81,17 @@ export const MOS_DEVICE_CONFIG_MANIFEST: DeviceConfigManifest = {
 					{
 						id: 'secondary.dontUseQueryPort',
 						name: `Secondary: Don't use the Query port`,
-						columnName: 'No query',
 						type: ConfigManifestEntryType.BOOLEAN,
 					},
 					{
 						id: 'secondary.timeout',
 						name: 'Secondary: (Optional) Timeout (ms)',
-						columnName: 'Timeout',
 						type: ConfigManifestEntryType.INT,
 						hint: `Timeout for sent messages, default is ${DEFAULT_MOS_TIMEOUT_TIME}`,
 					},
 					{
 						id: 'secondary.heartbeatInterval',
 						name: 'Secondary: (Optional) Heartbeat interval (ms)',
-						columnName: 'Heartbeat',
 						type: ConfigManifestEntryType.INT,
 						hint: `How often to ping NRCS to determine connection status, default is ${DEFAULT_MOS_HEARTBEAT_INTERVAL}`,
 					},
@@ -101,4 +99,9 @@ export const MOS_DEVICE_CONFIG_MANIFEST: DeviceConfigManifest = {
 			},
 		},
 	],
+	subdeviceManifest: {
+		default: {
+			configSchema: JSON.stringify(ConfigSchemaSubDevice),
+		},
+	},
 }

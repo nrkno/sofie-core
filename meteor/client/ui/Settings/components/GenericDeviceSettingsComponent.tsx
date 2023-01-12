@@ -13,6 +13,7 @@ import { DeviceItem } from '../../Status/SystemStatus'
 import {
 	ConfigManifestEntry,
 	ConfigManifestEntryType,
+	SubdeviceManifest,
 	TableConfigManifestEntry,
 	TableEntryConfigManifestEntry,
 } from '@sofie-automation/corelib/dist/deviceConfig'
@@ -20,6 +21,8 @@ import { ConfigManifestEntryComponent } from './ConfigManifestEntryComponent'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
 import { unprotectString } from '../../../../lib/lib'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { SchemaForm } from '../../../lib/forms/schemaForm'
+import { SubDevicesConfig } from './DeviceConfigSchemaSettings'
 
 type EditId = PeripheralDeviceId | string
 interface IGenericDeviceSettingsComponentState {
@@ -663,6 +666,37 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 						<ConfigManifestOAuthFlowComponent device={device}></ConfigManifestOAuthFlowComponent>
 					)}
 
+					{this.props.device.configManifest.deviceConfigSchema ? (
+						<SchemaForm
+							schema={JSON.parse(this.props.device.configManifest.deviceConfigSchema)}
+							object={device.settings}
+							attr=""
+							updateFunction={(path, val) => {
+								if (val === undefined) {
+									const m = {}
+									m[`settings.${path}`] = 1
+									PeripheralDevices.update(device._id, { $unset: m })
+								} else {
+									const m = {}
+									m[`settings.${path}`] = val
+									PeripheralDevices.update(device._id, { $set: m })
+								}
+							}}
+							// translationNamespaces?: string[]
+						/>
+					) : (
+						<p>Move the old one here</p>
+					)}
+
+					{this.props.device.configManifest.subdeviceManifest && (
+						<SubDevicesConfig
+							deviceId={device._id}
+							configSchema={this.props.device.configManifest.subdeviceManifest}
+							subDevices={(device.settings as any)?.devices ?? {}}
+						/>
+					)}
+
+					<hr />
 					{this.renderConfigFields(this.props.device.configManifest.deviceConfig, device, 'settings.')}
 
 					<ModalDialog

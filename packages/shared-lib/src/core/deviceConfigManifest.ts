@@ -14,6 +14,7 @@
 import { TranslationsBundle } from '../lib/translations'
 
 export interface DeviceConfigManifest {
+	deviceConfigSchema?: string
 	/**
 	 * A description of the config fields
 	 */
@@ -40,6 +41,7 @@ export interface DeviceConfigManifest {
 
 export interface SubdeviceManifest {
 	[deviceType: string | number]: {
+		configSchema?: string
 		actions?: SubdeviceAction[]
 	}
 }
@@ -148,13 +150,19 @@ export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
 	type: ConfigManifestEntryType.TABLE
 	/** Whether this follows the deviceId logic for updating */
 	isSubDevices?: boolean
-	/** The default name/id for any new devices */
+	/**
+	 * The default name/id for any new devices
+	 * @deprecated - unused
+	 */
 	subDeviceDefaultName?: string
 	/** The type any new entry gets by default */
 	defaultType: string
 	/** Used when the .config indexes are different from the type enum */
 	deviceTypesMapping?: any
-	/** The name of the the property used to decide the type of the entry */
+	/**
+	 * The name of the the property used to decide the type of the entry
+	 * @deprecated - never set
+	 * */
 	typeField?: string
 	/** Only one type means that the type option will not be present. When using this as a subDevice configuration object,
 	 * a property of type BOOLEAN and id `disable` has special meaning and can be operated on outside of the GUI

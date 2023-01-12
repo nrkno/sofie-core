@@ -1,14 +1,34 @@
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import React from 'react'
+import React, { useMemo } from 'react'
+import _ from 'underscore'
 import { i18nTranslator } from '../../ui/i18n'
+import { CheckboxControl } from '../Components/Checkbox'
+import { TextInputControl } from '../Components/TextInput'
 import { EditAttribute } from '../EditAttribute'
 import { type JSONSchema, TypeName } from './schema-types'
+
+export function getSchemaDefaultValues(schema: JSONSchema): any {
+	switch (schema.type) {
+		case TypeName.Object: {
+			const object: any = {}
+
+			for (const [index, prop] of Object.entries(schema.properties || {})) {
+				object[index] = getSchemaDefaultValues(prop)
+			}
+
+			return object
+		}
+		default:
+			return schema.default
+	}
+}
 
 export interface SchemaFormProps {
 	schema: JSONSchema
 	object: any
 	attr: string
 	translationNamespaces?: string[]
+	updateFunction?: (path: string, value: any) => void
 }
 export const SchemaForm = (props: SchemaFormProps) => {
 	switch (props.schema.type) {
@@ -28,11 +48,24 @@ export const SchemaForm = (props: SchemaFormProps) => {
 }
 
 export const ObjectForm = (props: SchemaFormProps) => {
+	const updateFunction2 = useMemo(() => {
+		const fn = props.updateFunction
+		if (fn) {
+			return (path: string, value: any) => {
+				const path2 = _.compact([props.attr, path])
+					.filter((v) => !!v)
+					.join('.')
+
+				return fn(path2, value)
+			}
+		}
+	}, [props.attr, props.updateFunction])
 	return (
 		<>
 			{' '}
 			{Object.entries(props.schema.properties || {}).map(([index, schema]) => {
-				return <SchemaForm key={index} {...props} attr={index} schema={schema} />
+				const object = props.attr ? (props.object || {})[props.attr] : props.object
+				return <SchemaForm key={index} attr={index} schema={schema} object={object} updateFunction={updateFunction2} />
 			})}
 		</>
 	)
@@ -61,50 +94,70 @@ export const WrappedAttribute = ({
 	)
 }
 
-export const IntegerForm = ({ object, attr }: SchemaFormProps) => {
+export const IntegerForm = ({ object, attr, updateFunction }: SchemaFormProps) => {
 	return (
 		<EditAttribute
 			type="int"
 			attribute={attr}
 			obj={object}
-			updateFunction={(_, v) => (object[attr] = v)}
+			updateFunction={(_, v) => {
+				if (updateFunction) {
+					updateFunction(attr, v)
+				} else {
+					object[attr] = v
+				}
+			}}
 			className="input text-input input-l"
 		/>
 	)
 }
 
-export const NumberForm = ({ object, attr }: SchemaFormProps) => {
+export const NumberForm = ({ object, attr, updateFunction }: SchemaFormProps) => {
 	return (
 		<EditAttribute
 			type="float"
 			attribute={attr}
 			obj={object}
-			updateFunction={(_, v) => (object[attr] = v)}
+			updateFunction={(_, v) => {
+				if (updateFunction) {
+					updateFunction(attr, v)
+				} else {
+					object[attr] = v
+				}
+			}}
 			className="input text-input input-l"
 		/>
 	)
 }
 
-export const BooleanForm = ({ object, attr }: SchemaFormProps) => {
+export const BooleanForm = ({ object, attr, updateFunction }: SchemaFormProps) => {
 	return (
-		<EditAttribute
-			type="checkbox"
-			attribute={attr}
-			obj={object}
-			updateFunction={(_, v) => (object[attr] = v)}
-			className="input input-l"
+		<CheckboxControl
+			classNames="input input-l"
+			value={object[attr]}
+			handleUpdate={(v) => {
+				if (updateFunction) {
+					updateFunction(attr, v)
+				} else {
+					object[attr] = v
+				}
+			}}
 		/>
 	)
 }
 
-export const StringForm = ({ object, attr }: SchemaFormProps) => {
+export const StringForm = ({ object, attr, updateFunction }: SchemaFormProps) => {
 	return (
-		<EditAttribute
-			type="text"
-			attribute={attr}
-			obj={object}
-			updateFunction={(_, v) => (object[attr] = v)}
-			className="input text-input input-l"
+		<TextInputControl
+			classNames="input text-input input-l"
+			value={object[attr]}
+			handleUpdate={(v) => {
+				if (updateFunction) {
+					updateFunction(attr, v)
+				} else {
+					object[attr] = v
+				}
+			}}
 		/>
 	)
 }
