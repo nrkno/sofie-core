@@ -178,7 +178,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push to GHCR
-        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true'
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
         uses: docker/build-push-action@v3
         with:
           context: .
@@ -290,7 +290,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push to GHCR
-        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true'
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
         uses: docker/build-push-action@v3
         with:
           context: ./packages
