@@ -4,12 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { JSONSchema } from '../../../lib/forms/schema-types'
-import { getSchemaDefaultValues, SchemaForm } from '../../../lib/forms/schemaForm'
+import { getSchemaDefaultValues, getSchemaSummaryFields, SchemaForm } from '../../../lib/forms/schemaForm'
 import { faCheck, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ClassNames from 'classnames'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import { TextInputControl } from '../../../lib/Components/TextInput'
+import { objectPathGet } from '@sofie-automation/corelib/dist/lib'
+import { doModalDialog } from '../../../lib/ModalDialog'
 
 interface SubDevicesConfigProps {
 	deviceId: PeripheralDeviceId
@@ -29,7 +31,6 @@ export function SubDevicesConfig({ deviceId, configSchema, subDevices }: SubDevi
 		}
 	}
 	const schemaTypes = Object.keys(parsedSchemas || {})
-	if (schemaTypes.length !== 1) return <p>TODO</p>
 
 	const addNewItem = useCallback(() => {
 		const selectedSchemaJson = parsedSchemas[schemaTypes[0]]
@@ -49,6 +50,8 @@ export function SubDevicesConfig({ deviceId, configSchema, subDevices }: SubDevi
 			},
 		})
 	}, [])
+
+	if (schemaTypes.length !== 1) return <p>TODO</p>
 
 	if (!configSchema || Object.keys(configSchema).length === 0) return <></>
 
@@ -74,21 +77,53 @@ interface SubDevicesTableProps {
 	subDevices: Record<string, any>
 }
 function SubDevicesTable({ parentId, parsedSchemas, subDevices }: SubDevicesTableProps) {
+	const { t } = useTranslation()
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
+
+	const confirmRemove = useCallback(
+		(subdeviceId: string) => {
+			doModalDialog({
+				title: t('Remove this item?'),
+				no: t('Cancel'),
+				yes: t('Remove'),
+				onAccept: () => {
+					PeripheralDevices.update(parentId, {
+						$unset: {
+							[`settings.devices.${subdeviceId}`]: 1,
+						},
+					})
+				},
+				message: (
+					<React.Fragment>
+						<p>
+							{t('Are you sure you want to remove {{type}} "{{deviceId}}"?', {
+								type: 'device',
+								deviceId: subdeviceId,
+							})}
+						</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</React.Fragment>
+				),
+			})
+		},
+		[t, parentId]
+	)
 
 	const schemaTypes = Object.keys(parsedSchemas)
 	if (schemaTypes.length !== 1) throw new Error('TODO')
 
 	const schema = Object.values(parsedSchemas)[0]!
 
-	const propNames = [] //config.map((col) => (col.columnName ? <th key={col.id}>{col.columnName}</th> : undefined))
+	const summaryFields = schemaTypes.length === 1 ? getSchemaSummaryFields(schema) : []
 
 	return (
 		<>
 			<thead>
 				<tr className="hl">
 					<th key="ID">ID</th>
-					{propNames}
+					{summaryFields.map((col) => (
+						<th key={col.attr}>{col.name}</th>
+					))}
 					<th key="action">&nbsp;</th>
 				</tr>
 			</thead>
@@ -96,10 +131,12 @@ function SubDevicesTable({ parentId, parsedSchemas, subDevices }: SubDevicesTabl
 				{Object.entries(subDevices).map(([id, device]) => (
 					<React.Fragment key={id}>
 						<SubDeviceSummaryRow
+							summaryFields={summaryFields}
 							subdeviceId={id}
+							object={device}
 							isEdited={isExpanded(id)}
 							editItem={toggleExpanded}
-							removeItem={() => null}
+							removeItem={confirmRemove}
 						/>
 						{isExpanded(id) && (
 							<SubDeviceEditRow
@@ -117,63 +154,35 @@ function SubDevicesTable({ parentId, parsedSchemas, subDevices }: SubDevicesTabl
 	)
 }
 
-// function getConfigSummaryFields(configManifest: TableConfigManifestEntry) {
-// 	const { t } = this.props
-// 	const fieldNames: { [field: string]: TableEntryConfigManifestEntry } = {}
-
-// 	_.each(configManifest.config, (c) => {
-// 		for (const field of c) {
-// 			if (field.columnName) {
-// 				fieldNames[field.id] = field
-// 			}
-// 		}
-// 	})
-
-// 	if (configManifest.config && Object.keys(configManifest.config).length > 1) {
-// 		fieldNames[configManifest.typeField || 'type'] = {
-// 			id: 'type',
-// 			name: t('Type'),
-// 			columnName: t('Type'),
-// 			type: ConfigManifestEntryType.STRING,
-// 		}
-// 	}
-
-// 	return fieldNames
-// }
-
 interface SubDeviceSummaryRowProps {
-	// configManifest: TableConfigManifestEntry
+	summaryFields: { attr: string; name: string }[]
 	subdeviceId: string
-	// obj: any
+	object: any
 	isEdited: boolean
 	editItem: (subdeviceId: string) => void
 	removeItem: (subdeviceId: string) => void
 }
 
-function SubDeviceSummaryRow({ subdeviceId, isEdited, editItem, removeItem }: SubDeviceSummaryRowProps) {
-	const els: Array<JSX.Element> = []
-	// const configSummaryFields = this.getConfigSummaryFields(configManifest)
+function SubDeviceSummaryRow({
+	summaryFields,
+	subdeviceId,
+	object,
+	isEdited,
+	editItem,
+	removeItem,
+}: SubDeviceSummaryRowProps) {
+	const els: Array<JSX.Element> = summaryFields.map((field) => {
+		// TODO - reimplement?
+		// 	if (field === (configManifest.typeField || 'type') && configManifest.deviceTypesMapping) {
+		// 		val = configManifest.deviceTypesMapping[val]
+		// 	}
 
-	// _.each(configSummaryFields, (_config, field) => {
-	// 	const fn = _.property(field.split('.'))
-	// 	let val = fn(obj)
-
-	// 	if (field === (configManifest.typeField || 'type') && configManifest.deviceTypesMapping) {
-	// 		val = configManifest.deviceTypesMapping[val]
-	// 	}
-
-	// 	// if (config.columnEditable) {
-	// 	// 	els.push(<td className='settings-studio-device__primary_id'>
-	// 	// 		{this.renderEditAttribute(config, obj)}
-	// 	// 	</td>)
-	// 	// }
-
-	// 	els.push(
-	// 		<td className="settings-studio-device__primary_id c4" key={field}>
-	// 			{val === undefined ? '' : val}
-	// 		</td>
-	// 	)
-	// })
+		return (
+			<td className="settings-studio-device__primary_id c4" key={field.attr}>
+				{objectPathGet(object, field.attr) ?? ''}
+			</td>
+		)
+	})
 
 	const editItem2 = useCallback(() => editItem(subdeviceId), [editItem, subdeviceId])
 	const removeItem2 = useCallback(() => removeItem(subdeviceId), [removeItem, subdeviceId])

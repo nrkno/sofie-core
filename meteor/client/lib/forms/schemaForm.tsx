@@ -1,11 +1,14 @@
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import React, { useMemo } from 'react'
-import _ from 'underscore'
 import { i18nTranslator } from '../../ui/i18n'
 import { CheckboxControl } from '../Components/Checkbox'
 import { TextInputControl } from '../Components/TextInput'
 import { EditAttribute } from '../EditAttribute'
 import { type JSONSchema, TypeName } from './schema-types'
+
+function joinFragments(...fragments: Array<string | undefined>): string {
+	return fragments.filter((v) => !!v).join('.')
+}
 
 export function getSchemaDefaultValues(schema: JSONSchema): any {
 	switch (schema.type) {
@@ -20,6 +23,35 @@ export function getSchemaDefaultValues(schema: JSONSchema): any {
 		}
 		default:
 			return schema.default
+	}
+}
+
+export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): { attr: string; name: string }[] {
+	switch (schema.type) {
+		case TypeName.Object: {
+			const fieldNames: { attr: string; name: string }[] = []
+
+			for (const [index, prop] of Object.entries(schema.properties || {})) {
+				const newPrefix = joinFragments(prefix, index)
+
+				fieldNames.push(...getSchemaSummaryFields(prop, newPrefix))
+			}
+
+			return fieldNames
+		}
+		default: {
+			const summaryTitle: string = (schema as any).sofieSummaryTitle
+			if (summaryTitle && prefix) {
+				return [
+					{
+						attr: prefix,
+						name: summaryTitle,
+					},
+				]
+			}
+
+			return []
+		}
 	}
 }
 
@@ -52,9 +84,7 @@ export const ObjectForm = (props: SchemaFormProps) => {
 		const fn = props.updateFunction
 		if (fn) {
 			return (path: string, value: any) => {
-				const path2 = _.compact([props.attr, path])
-					.filter((v) => !!v)
-					.join('.')
+				const path2 = joinFragments(props.attr, path)
 
 				return fn(path2, value)
 			}

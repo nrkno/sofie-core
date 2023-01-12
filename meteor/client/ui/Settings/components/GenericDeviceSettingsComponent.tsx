@@ -13,7 +13,6 @@ import { DeviceItem } from '../../Status/SystemStatus'
 import {
 	ConfigManifestEntry,
 	ConfigManifestEntryType,
-	SubdeviceManifest,
 	TableConfigManifestEntry,
 	TableEntryConfigManifestEntry,
 } from '@sofie-automation/corelib/dist/deviceConfig'
