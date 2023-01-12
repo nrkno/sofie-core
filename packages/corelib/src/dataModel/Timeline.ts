@@ -1,8 +1,11 @@
 import { TSR, OnGenerateTimelineObj, Time } from '@sofie-automation/blueprints-integration'
-import { TimelineObjGeneric, TimelineObjType } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
+import {
+	TimelineObjGeneric,
+	TimelineObjType,
+	TimelineEnableExt,
+} from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { SetRequired } from 'type-fest'
 import { PartInstanceId, PieceInstanceInfiniteId, BlueprintId, StudioId } from './Ids'
-import { TimelineEnableExt } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
 export { deserializeTimelineBlob, serializeTimelineBlob } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { TimelineHash, TimelineBlob } from '@sofie-automation/shared-lib/dist/core/model/Ids'

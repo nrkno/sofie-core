@@ -394,15 +394,10 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 			const bulkWriteResult = await rawCollection.bulkWrite(ops, {
 				ordered: false,
 			})
-			if (
-				bulkWriteResult &&
-				_.isArray(bulkWriteResult.result?.writeErrors) &&
-				bulkWriteResult.result.writeErrors.length
-			) {
-				throw new Meteor.Error(
-					500,
-					`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`
-				)
+
+			const writeErrors = bulkWriteResult?.getWriteErrors() ?? []
+			if (writeErrors.length) {
+				throw new Meteor.Error(500, `Errors in rawCollection.bulkWrite: ${writeErrors.join(',')}`)
 			}
 		}
 	}
