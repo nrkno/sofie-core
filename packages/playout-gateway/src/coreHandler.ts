@@ -5,7 +5,6 @@ import {
 	DeviceContainer,
 	MediaObject,
 	DeviceOptionsAny,
-	manifest,
 	ActionExecutionResult,
 } from 'timeline-state-resolver'
 
@@ -28,9 +27,6 @@ import { PeripheralDeviceId, StudioId } from '@sofie-automation/shared-lib/dist/
 import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/model/PeripheralDeviceCommand'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
-
-// @ts-expect-error: node is just fine importing this but our typescript version isn't quite there yet
-import Translations = require('timeline-state-resolver/dist/translations.json')
 
 export interface CoreConfig {
 	host: string
@@ -176,8 +172,6 @@ export class CoreHandler {
 
 			configManifest: {
 				...PLAYOUT_DEVICE_CONFIG,
-				subdeviceManifest: manifest,
-				translations: Translations,
 			},
 		}
 

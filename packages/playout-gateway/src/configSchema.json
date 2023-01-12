@@ -1,0 +1,40 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://example.com/product.schema.json",
+	"title": "Playout Gateway Configuration",
+	"type": "object",
+	"properties": {
+		"debugLogging": {
+			"type": "boolean",
+			"title": "Activate Debug Logging",
+			"default": false
+		},
+		"multiThreading": {
+			"type": "boolean",
+			"title": "Activate Multi-Threading",
+			"default": false
+		},
+		"multiThreadedResolver": {
+			"type": "boolean",
+			"title": "Activate Multi-Threaded Timeline Resolving",
+			"default": false
+		},
+		"useCacheWhenResolving": {
+			"type": "boolean",
+			"title": "Activate Partial resolving, when resolving the Timeline",
+			"default": false
+		},
+		"reportAllCommands": {
+			"type": "boolean",
+			"title": "Report command timings on all commands",
+			"default": false
+		},
+		"estimateResolveTimeMultiplier": {
+			"type": "boolean",
+			"title": "Adjust resolve-time estimation",
+			"default": false
+		}
+	},
+	"required": [],
+	"additionalProperties": false
+}

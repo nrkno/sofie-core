@@ -1,0 +1,41 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://example.com/product.schema.json",
+	"title": "CasparCG Device",
+	"type": "object",
+	"properties": {
+		"host": {
+			"type": "string",
+			"title": "Host",
+			"default": ""
+		},
+		"port": {
+			"type": "integer",
+			"title": "Port",
+			"default": 5250
+		},
+		"launcherHost": {
+			"type": "string",
+			"title": "Launcher Host",
+			"default": ""
+		},
+		"launcherPort": {
+			"type": "integer",
+			"title": "Launcher Port",
+			"default": 8005
+		},
+		"fps": {
+			"type": "number",
+			"title": "Frame rate",
+			"default": 25
+		},
+		"retryInterval": {
+			"type": "number",
+			"title": "Media retry interval",
+			"description": "Time between retries for media that could not be loaded on first try. Set to -1 to disable.",
+			"default": 0
+		}
+	},
+	"required": [],
+	"additionalProperties": false
+}

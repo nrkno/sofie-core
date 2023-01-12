@@ -690,7 +690,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 					{this.props.device.configManifest.subdeviceManifest && (
 						<SubDevicesConfig
 							deviceId={device._id}
-							configSchema={this.props.device.configManifest.subdeviceManifest}
+							commonSchema={device.configManifest.subdeviceConfigSchema}
+							configSchema={device.configManifest.subdeviceManifest}
 							subDevices={(device.settings as any)?.devices ?? {}}
 						/>
 					)}

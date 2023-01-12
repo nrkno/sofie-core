@@ -28,6 +28,7 @@ export interface DeviceConfigManifest {
 	 * A description of the layer mapping config fields
 	 */
 	layerMappings?: MappingsManifest
+	subdeviceConfigSchema?: string
 	/**
 	 * A description of how to interact with subdevices
 	 * For now this only includes information on actions but in the future mappings and config options should also live here
@@ -39,8 +40,8 @@ export interface DeviceConfigManifest {
 	translations?: TranslationsBundle[]
 }
 
-export interface SubdeviceManifest {
-	[deviceType: string | number]: {
+export type SubdeviceManifest<T extends string | number = string | number> = {
+	[deviceType in T]: {
 		configSchema?: string
 		actions?: SubdeviceAction[]
 	}

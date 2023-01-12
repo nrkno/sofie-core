@@ -12,17 +12,21 @@ import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import { TextInputControl } from '../../../lib/Components/TextInput'
 import { objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { doModalDialog } from '../../../lib/ModalDialog'
+import { DropdownInputControl, getDropdownInputOptions } from '../../../lib/Components/DropdownInput'
 
 interface SubDevicesConfigProps {
 	deviceId: PeripheralDeviceId
-	configSchema?: SubdeviceManifest
+	commonSchema: string | undefined
+	configSchema: SubdeviceManifest | undefined
 	subDevices: Record<string, any>
 }
 
-export function SubDevicesConfig({ deviceId, configSchema, subDevices }: SubDevicesConfigProps) {
+export function SubDevicesConfig({ deviceId, commonSchema, configSchema, subDevices }: SubDevicesConfigProps) {
 	const { t } = useTranslation()
 
 	// TODO - avoid hardcoding being at `settings.devices`
+
+	const parsedCommonSchema = commonSchema ? JSON.parse(commonSchema) : undefined
 
 	const parsedSchemas: Record<string, JSONSchema | undefined> = {}
 	for (const [id, obj] of Object.entries(configSchema || {})) {
@@ -30,11 +34,13 @@ export function SubDevicesConfig({ deviceId, configSchema, subDevices }: SubDevi
 			parsedSchemas[id] = JSON.parse(obj.configSchema) as JSONSchema
 		}
 	}
-	const schemaTypes = Object.keys(parsedSchemas || {})
+	const schemaTypes = Object.keys(parsedSchemas || {}).sort()
 
 	const addNewItem = useCallback(() => {
-		const selectedSchemaJson = parsedSchemas[schemaTypes[0]]
+		const selectedType = schemaTypes[0] // TODO - should this be more deterministic?
+		const selectedSchemaJson = parsedSchemas[selectedType]
 		const defaults = selectedSchemaJson ? getSchemaDefaultValues(selectedSchemaJson) : {}
+		defaults.type = selectedType
 
 		const existingDevices = new Set(Object.keys((PeripheralDevices.findOne(deviceId)?.settings as any)?.devices || {}))
 
@@ -51,15 +57,18 @@ export function SubDevicesConfig({ deviceId, configSchema, subDevices }: SubDevi
 		})
 	}, [])
 
-	if (schemaTypes.length !== 1) return <p>TODO</p>
-
 	if (!configSchema || Object.keys(configSchema).length === 0) return <></>
 
 	return (
 		<>
 			<h2 className="mhn">{t('Attached SubDevices')}</h2>
 			<table className="expando settings-studio-device-table table">
-				<SubDevicesTable parentId={deviceId} parsedSchemas={parsedSchemas} subDevices={subDevices} />
+				<SubDevicesTable
+					parentId={deviceId}
+					parsedSchemas={parsedSchemas}
+					parsedCommonSchema={parsedCommonSchema}
+					subDevices={subDevices}
+				/>
 			</table>
 
 			<div className="mod mhs">
@@ -74,9 +83,10 @@ export function SubDevicesConfig({ deviceId, configSchema, subDevices }: SubDevi
 interface SubDevicesTableProps {
 	parentId: PeripheralDeviceId
 	parsedSchemas: Record<string, JSONSchema | undefined>
+	parsedCommonSchema: JSONSchema | undefined
 	subDevices: Record<string, any>
 }
-function SubDevicesTable({ parentId, parsedSchemas, subDevices }: SubDevicesTableProps) {
+function SubDevicesTable({ parentId, parsedSchemas, parsedCommonSchema, subDevices }: SubDevicesTableProps) {
 	const { t } = useTranslation()
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
@@ -109,12 +119,18 @@ function SubDevicesTable({ parentId, parsedSchemas, subDevices }: SubDevicesTabl
 		[t, parentId]
 	)
 
-	const schemaTypes = Object.keys(parsedSchemas)
-	if (schemaTypes.length !== 1) throw new Error('TODO')
+	const singleSchemaMode = Object.keys(parsedSchemas).length === 1
 
 	const schema = Object.values(parsedSchemas)[0]!
 
-	const summaryFields = schemaTypes.length === 1 ? getSchemaSummaryFields(schema) : []
+	const summaryFields = singleSchemaMode
+		? getSchemaSummaryFields(schema)
+		: [
+				{
+					attr: 'type',
+					name: 'Type',
+				},
+		  ]
 
 	return (
 		<>
@@ -128,27 +144,30 @@ function SubDevicesTable({ parentId, parsedSchemas, subDevices }: SubDevicesTabl
 				</tr>
 			</thead>
 			<tbody>
-				{Object.entries(subDevices).map(([id, device]) => (
-					<React.Fragment key={id}>
-						<SubDeviceSummaryRow
-							summaryFields={summaryFields}
-							subdeviceId={id}
-							object={device}
-							isEdited={isExpanded(id)}
-							editItem={toggleExpanded}
-							removeItem={confirmRemove}
-						/>
-						{isExpanded(id) && (
-							<SubDeviceEditRow
-								parentId={parentId}
+				{Object.entries(subDevices).map(([id, device]) => {
+					return (
+						<React.Fragment key={id}>
+							<SubDeviceSummaryRow
+								summaryFields={summaryFields}
 								subdeviceId={id}
-								schema={schema}
 								object={device}
+								isEdited={isExpanded(id)}
 								editItem={toggleExpanded}
+								removeItem={confirmRemove}
 							/>
-						)}
-					</React.Fragment>
-				))}
+							{isExpanded(id) && (
+								<SubDeviceEditRow
+									parentId={parentId}
+									subdeviceId={id}
+									commonSchema={parsedCommonSchema}
+									schemas={parsedSchemas}
+									object={device}
+									editItem={toggleExpanded}
+								/>
+							)}
+						</React.Fragment>
+					)
+				})}
 			</tbody>
 		</>
 	)
@@ -210,12 +229,19 @@ function SubDeviceSummaryRow({
 interface SubDeviceEditRowProps {
 	parentId: PeripheralDeviceId
 	subdeviceId: string
-	schema: JSONSchema
+	commonSchema: JSONSchema | undefined
+	schemas: Record<string, JSONSchema | undefined>
 	object: any
 	editItem: (subdeviceId: string, forceState?: boolean) => void
 }
-function SubDeviceEditRow({ parentId, subdeviceId, schema, object, editItem }: SubDeviceEditRowProps) {
+function SubDeviceEditRow({ parentId, subdeviceId, commonSchema, schemas, object, editItem }: SubDeviceEditRowProps) {
 	const { t } = useTranslation()
+
+	const schemasArray = Object.values(schemas)
+	const schema = schemasArray.length === 1 ? schemasArray[0] : schemas[object?.type]
+	const schemaOptions = getDropdownInputOptions(Object.keys(schemas))
+
+	console.log(commonSchema, schema, schemas, object)
 
 	const finishEditItem = useCallback(() => editItem(subdeviceId, false), [editItem, subdeviceId])
 
@@ -254,6 +280,12 @@ function SubDeviceEditRow({ parentId, subdeviceId, schema, object, editItem }: S
 		},
 		[parentId, subdeviceId]
 	)
+	const updateType = useCallback(
+		(val: any) => {
+			updateFunction('type', val)
+		},
+		[updateFunction]
+	)
 
 	return (
 		<tr className="expando-details hl" key={subdeviceId + '-details'}>
@@ -270,7 +302,32 @@ function SubDeviceEditRow({ parentId, subdeviceId, schema, object, editItem }: S
 							/>
 						</label>
 					</div>
-					<SchemaForm schema={schema} object={object} attr={''} updateFunction={updateFunction} />
+					{(schemasArray.length > 1 || !schema) && (
+						<div className="mod mvs mhs">
+							<label className="field">
+								{t('Device Type')}
+								<DropdownInputControl
+									classNames="input text-input input-l"
+									value={object.type}
+									options={schemaOptions}
+									handleUpdate={updateType}
+								/>
+							</label>
+						</div>
+					)}
+					{commonSchema && (
+						<SchemaForm schema={commonSchema} object={object} attr={''} updateFunction={updateFunction} />
+					)}
+					{schema ? (
+						<SchemaForm
+							schema={schema}
+							object={object}
+							attr={commonSchema ? 'options' : '' /** TODO - hack because mos and playout gateway are different... */}
+							updateFunction={updateFunction}
+						/>
+					) : (
+						<p>{t('Device is of unknown type')}</p>
+					)}
 				</div>
 				<div className="mod alright">
 					<button className={ClassNames('btn btn-primary')} onClick={finishEditItem}>

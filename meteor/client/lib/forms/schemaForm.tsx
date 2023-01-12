@@ -40,6 +40,7 @@ export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): { a
 			return fieldNames
 		}
 		default: {
+			// TODO - can this be done without a messy cast?
 			const summaryTitle: string = (schema as any).sofieSummaryTitle
 			if (summaryTitle && prefix) {
 				return [
