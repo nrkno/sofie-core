@@ -203,6 +203,6 @@ export class ActivePlaylistTopic
 				throw new Error(`${this._name} received unsupported update from ${source}}`)
 		}
 
-		process.nextTick(() => this.sendStatus(this._subscribers))
+		this.sendStatus(this._subscribers)
 	}
 }
