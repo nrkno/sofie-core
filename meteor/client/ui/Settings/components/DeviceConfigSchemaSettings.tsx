@@ -1,18 +1,27 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { SubdeviceManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { useTranslation } from 'react-i18next'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { JSONSchema } from '../../../lib/forms/schema-types'
-import { getSchemaDefaultValues, getSchemaSummaryFields, SchemaForm } from '../../../lib/forms/schemaForm'
+import {
+	getSchemaDefaultValues,
+	getSchemaSummaryFields,
+	SchemaForm,
+	SchemaSummaryField,
+} from '../../../lib/forms/schemaForm'
 import { faCheck, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ClassNames from 'classnames'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import { TextInputControl } from '../../../lib/Components/TextInput'
-import { objectPathGet } from '@sofie-automation/corelib/dist/lib'
+import { literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { doModalDialog } from '../../../lib/ModalDialog'
-import { DropdownInputControl, getDropdownInputOptions } from '../../../lib/Components/DropdownInput'
+import { DropdownInputControl, DropdownInputOption } from '../../../lib/Components/DropdownInput'
+
+interface SchemaSummaryFieldExt extends SchemaSummaryField {
+	transform?: (val: any) => string
+}
 
 interface SubDevicesConfigProps {
 	deviceId: PeripheralDeviceId
@@ -35,6 +44,19 @@ export function SubDevicesConfig({ deviceId, commonSchema, configSchema, subDevi
 		}
 	}
 	const schemaTypes = Object.keys(parsedSchemas || {}).sort()
+
+	const subDeviceOptions = useMemo(() => {
+		const raw = Object.entries(configSchema || {})
+		raw.sort((a, b) => a[1].displayName.localeCompare(b[1].displayName))
+
+		return raw.map(([id, entry], i) =>
+			literal<DropdownInputOption<string | number>>({
+				value: id + '',
+				name: entry.displayName,
+				i,
+			})
+		)
+	}, [configSchema])
 
 	const addNewItem = useCallback(() => {
 		const selectedType = schemaTypes[0] // TODO - should this be more deterministic?
@@ -67,6 +89,7 @@ export function SubDevicesConfig({ deviceId, commonSchema, configSchema, subDevi
 					parentId={deviceId}
 					parsedSchemas={parsedSchemas}
 					parsedCommonSchema={parsedCommonSchema}
+					subDeviceOptions={subDeviceOptions}
 					subDevices={subDevices}
 				/>
 			</table>
@@ -84,9 +107,16 @@ interface SubDevicesTableProps {
 	parentId: PeripheralDeviceId
 	parsedSchemas: Record<string, JSONSchema | undefined>
 	parsedCommonSchema: JSONSchema | undefined
+	subDeviceOptions: DropdownInputOption<string | number>[]
 	subDevices: Record<string, any>
 }
-function SubDevicesTable({ parentId, parsedSchemas, parsedCommonSchema, subDevices }: SubDevicesTableProps) {
+function SubDevicesTable({
+	parentId,
+	parsedSchemas,
+	parsedCommonSchema,
+	subDeviceOptions,
+	subDevices,
+}: SubDevicesTableProps) {
 	const { t } = useTranslation()
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
@@ -123,12 +153,15 @@ function SubDevicesTable({ parentId, parsedSchemas, parsedCommonSchema, subDevic
 
 	const schema = Object.values(parsedSchemas)[0]!
 
-	const summaryFields = singleSchemaMode
+	console.log(subDeviceOptions)
+
+	const summaryFields: SchemaSummaryFieldExt[] = singleSchemaMode
 		? getSchemaSummaryFields(schema)
 		: [
 				{
 					attr: 'type',
 					name: 'Type',
+					transform: (val) => subDeviceOptions.find((d) => d.value == val)?.name ?? val,
 				},
 		  ]
 
@@ -161,6 +194,7 @@ function SubDevicesTable({ parentId, parsedSchemas, parsedCommonSchema, subDevic
 									subdeviceId={id}
 									commonSchema={parsedCommonSchema}
 									schemas={parsedSchemas}
+									subDeviceOptions={subDeviceOptions}
 									object={device}
 									editItem={toggleExpanded}
 								/>
@@ -174,7 +208,7 @@ function SubDevicesTable({ parentId, parsedSchemas, parsedCommonSchema, subDevic
 }
 
 interface SubDeviceSummaryRowProps {
-	summaryFields: { attr: string; name: string }[]
+	summaryFields: SchemaSummaryFieldExt[]
 	subdeviceId: string
 	object: any
 	isEdited: boolean
@@ -191,14 +225,12 @@ function SubDeviceSummaryRow({
 	removeItem,
 }: SubDeviceSummaryRowProps) {
 	const els: Array<JSX.Element> = summaryFields.map((field) => {
-		// TODO - reimplement?
-		// 	if (field === (configManifest.typeField || 'type') && configManifest.deviceTypesMapping) {
-		// 		val = configManifest.deviceTypesMapping[val]
-		// 	}
+		const rawValue = objectPathGet(object, field.attr)
+		const value = field.transform ? field.transform(rawValue) : rawValue
 
 		return (
 			<td className="settings-studio-device__primary_id c4" key={field.attr}>
-				{objectPathGet(object, field.attr) ?? ''}
+				{value ?? ''}
 			</td>
 		)
 	})
@@ -231,15 +263,23 @@ interface SubDeviceEditRowProps {
 	subdeviceId: string
 	commonSchema: JSONSchema | undefined
 	schemas: Record<string, JSONSchema | undefined>
+	subDeviceOptions: DropdownInputOption<string | number>[]
 	object: any
 	editItem: (subdeviceId: string, forceState?: boolean) => void
 }
-function SubDeviceEditRow({ parentId, subdeviceId, commonSchema, schemas, object, editItem }: SubDeviceEditRowProps) {
+function SubDeviceEditRow({
+	parentId,
+	subdeviceId,
+	commonSchema,
+	schemas,
+	subDeviceOptions,
+	object,
+	editItem,
+}: SubDeviceEditRowProps) {
 	const { t } = useTranslation()
 
 	const schemasArray = Object.values(schemas)
 	const schema = schemasArray.length === 1 ? schemasArray[0] : schemas[object?.type]
-	const schemaOptions = getDropdownInputOptions(Object.keys(schemas))
 
 	console.log(commonSchema, schema, schemas, object)
 
@@ -308,8 +348,8 @@ function SubDeviceEditRow({ parentId, subdeviceId, commonSchema, schemas, object
 								{t('Device Type')}
 								<DropdownInputControl
 									classNames="input text-input input-l"
-									value={object.type}
-									options={schemaOptions}
+									value={object.type + ''}
+									options={subDeviceOptions}
 									handleUpdate={updateType}
 								/>
 							</label>

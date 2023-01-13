@@ -29,10 +29,15 @@ export function getSchemaDefaultValues(schema: JSONSchema): any {
 	}
 }
 
-export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): { attr: string; name: string }[] {
+export interface SchemaSummaryField {
+	attr: string
+	name: string
+}
+
+export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): SchemaSummaryField[] {
 	switch (schema.type) {
 		case TypeName.Object: {
-			const fieldNames: { attr: string; name: string }[] = []
+			const fieldNames: SchemaSummaryField[] = []
 
 			for (const [index, prop] of Object.entries(schema.properties || {})) {
 				const newPrefix = joinFragments(prefix, index)

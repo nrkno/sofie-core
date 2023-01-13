@@ -43,6 +43,7 @@ export interface DeviceConfigManifest {
 
 export type SubdeviceManifest<T extends string | number = string | number> = {
 	[deviceType in T]: {
+		displayName: string
 		configSchema?: string
 		actions?: SubdeviceAction[]
 	}
