@@ -33,6 +33,8 @@ interface SubDevicesConfigProps {
 export function SubDevicesConfig({ deviceId, commonSchema, configSchema, subDevices }: SubDevicesConfigProps) {
 	const { t } = useTranslation()
 
+	const translationNamespaces = useMemo(() => ['peripheralDevice_' + deviceId], [deviceId])
+
 	// TODO - avoid hardcoding being at `settings.devices`
 
 	const parsedCommonSchema = commonSchema ? JSON.parse(commonSchema) : undefined
@@ -87,6 +89,7 @@ export function SubDevicesConfig({ deviceId, commonSchema, configSchema, subDevi
 			<table className="expando settings-studio-device-table table">
 				<SubDevicesTable
 					parentId={deviceId}
+					translationNamespaces={translationNamespaces}
 					parsedSchemas={parsedSchemas}
 					parsedCommonSchema={parsedCommonSchema}
 					subDeviceOptions={subDeviceOptions}
@@ -105,6 +108,7 @@ export function SubDevicesConfig({ deviceId, commonSchema, configSchema, subDevi
 
 interface SubDevicesTableProps {
 	parentId: PeripheralDeviceId
+	translationNamespaces: string[]
 	parsedSchemas: Record<string, JSONSchema | undefined>
 	parsedCommonSchema: JSONSchema | undefined
 	subDeviceOptions: DropdownInputOption<string | number>[]
@@ -112,6 +116,7 @@ interface SubDevicesTableProps {
 }
 function SubDevicesTable({
 	parentId,
+	translationNamespaces,
 	parsedSchemas,
 	parsedCommonSchema,
 	subDeviceOptions,
@@ -191,6 +196,7 @@ function SubDevicesTable({
 							{isExpanded(id) && (
 								<SubDeviceEditRow
 									parentId={parentId}
+									translationNamespaces={translationNamespaces}
 									subdeviceId={id}
 									commonSchema={parsedCommonSchema}
 									schemas={parsedSchemas}
@@ -260,6 +266,7 @@ function SubDeviceSummaryRow({
 
 interface SubDeviceEditRowProps {
 	parentId: PeripheralDeviceId
+	translationNamespaces: string[]
 	subdeviceId: string
 	commonSchema: JSONSchema | undefined
 	schemas: Record<string, JSONSchema | undefined>
@@ -275,6 +282,7 @@ function SubDeviceEditRow({
 	subDeviceOptions,
 	object,
 	editItem,
+	translationNamespaces,
 }: SubDeviceEditRowProps) {
 	const { t } = useTranslation()
 
@@ -356,7 +364,13 @@ function SubDeviceEditRow({
 						</div>
 					)}
 					{commonSchema && (
-						<SchemaForm schema={commonSchema} object={object} attr={''} updateFunction={updateFunction} />
+						<SchemaForm
+							schema={commonSchema}
+							object={object}
+							attr={''}
+							updateFunction={updateFunction}
+							translationNamespaces={translationNamespaces}
+						/>
 					)}
 					{schema ? (
 						<SchemaForm
@@ -364,6 +378,7 @@ function SubDeviceEditRow({
 							object={object}
 							attr={commonSchema ? 'options' : '' /** TODO - hack because mos and playout gateway are different... */}
 							updateFunction={updateFunction}
+							translationNamespaces={translationNamespaces}
 						/>
 					) : (
 						<p>{t('Device is of unknown type')}</p>

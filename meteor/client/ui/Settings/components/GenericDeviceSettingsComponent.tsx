@@ -659,6 +659,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 		render() {
 			const { t, subDevices, device } = this.props
 
+			const translationNamespaces = ['peripheralDevice_' + device._id]
+
 			return (
 				<div>
 					{this.props.device.configManifest.deviceOAuthFlow && (
@@ -681,20 +683,21 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 									PeripheralDevices.update(device._id, { $set: m })
 								}
 							}}
-							// translationNamespaces?: string[]
+							translationNamespaces={translationNamespaces}
 						/>
 					) : (
-						<p>Move the old one here</p>
+						<p>TEST</p>
 					)}
 
-					{this.props.device.configManifest.subdeviceManifest && (
-						<SubDevicesConfig
-							deviceId={device._id}
-							commonSchema={device.configManifest.subdeviceConfigSchema}
-							configSchema={device.configManifest.subdeviceManifest}
-							subDevices={(device.settings as any)?.devices ?? {}}
-						/>
-					)}
+					{this.props.device.configManifest.deviceConfigSchema &&
+						this.props.device.configManifest.subdeviceManifest && (
+							<SubDevicesConfig
+								deviceId={device._id}
+								commonSchema={device.configManifest.subdeviceConfigSchema}
+								configSchema={device.configManifest.subdeviceManifest}
+								subDevices={(device.settings as any)?.devices ?? {}}
+							/>
+						)}
 
 					<hr />
 					{this.renderConfigFields(this.props.device.configManifest.deviceConfig, device, 'settings.')}
