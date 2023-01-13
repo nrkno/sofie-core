@@ -7,7 +7,12 @@ import { runIngestOperation } from './lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 
 export function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: PackageInfoDB | null) {
-	logger.info(`PackageInfo updated "${packageId}"`)
+	let logStr = ''
+	if (_doc) {
+		logStr += `PackageInfo updated "${packageId}" (${_doc.type})`
+	} else {
+		logStr += `PackageInfo removed "${packageId}"`
+	}
 
 	const pkg = ExpectedPackages.findOne(packageId)
 	if (!pkg) {
@@ -27,8 +32,12 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: Package
 				if (existingEntry) {
 					// already queued, add to the batch
 					existingEntry.push(pkg._id)
+
+					logStr += ` (blueprints already queued: ${existingEntry.length})`
 				} else {
 					pendingPackageUpdates.set(pkg.rundownId, [pkg._id])
+
+					logStr += ` (blueprints queued)`
 				}
 
 				// TODO: Scaling - this won't batch correctly if package manager directs calls to multiple instances
@@ -57,6 +66,7 @@ export function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: Package
 				break
 		}
 	}
+	logger.info(logStr)
 }
 
 const pendingPackageUpdates = new Map<RundownId, Array<ExpectedPackageId>>()

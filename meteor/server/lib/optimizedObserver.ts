@@ -139,7 +139,7 @@ export async function setUpOptimizedObserver<
 
 							if (totalTime > SLOW_OBSERVE_TIME) {
 								logger.debug(
-									`Slow optimized observer ${identifier}. Total: ${totalTime}, manipulate: ${manipulateDuration}, publish: ${publishTime} (receivers: ${o.dataReceivers.length})`
+									`Slow optimized observer ${identifier}. Total: ${totalTime}ms, manipulate: ${manipulateDuration}ms, publish: ${publishTime}ms (receivers: ${o.dataReceivers.length}, count: ${result?.length})`
 								)
 							}
 						}
