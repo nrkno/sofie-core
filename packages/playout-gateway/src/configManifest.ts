@@ -19,7 +19,7 @@ import {
 	QuantelControlMode,
 	MappingVMixType,
 	MappingOBSType,
-	manifest2 as TSRManifest,
+	manifest as TSRManifest,
 } from 'timeline-state-resolver'
 
 import Translations = require('timeline-state-resolver/dist/translations.json')
@@ -732,7 +732,7 @@ export const PLAYOUT_DEVICE_CONFIG: DeviceConfigManifest = {
 	layerMappings: MAPPING_MANIFEST,
 
 	subdeviceConfigSchema: TSRManifest.commonOptions,
-	subdeviceManifest: TSRManifest.subdevices, // PLAYOUT_SUBDEVICE_MANIFEST || manifest, // TODO - pull from TSR only
+	subdeviceManifest: TSRManifest.subdevices,
 
 	translations: Translations as any,
 }

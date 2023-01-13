@@ -136,7 +136,7 @@ export const WrappedAttribute = ({
 	const schemaAny = schema as any // TODO - avoid cast
 
 	const title = schemaAny.sofieTitle || schema.title || attr
-	const description = schemaAny.sofieDescription || schema.description
+	const description = schemaAny.sofieDescription ?? schema.description
 
 	return (
 		<div className={'mod mvs mhs'}>
@@ -184,41 +184,25 @@ export const EnumForm = ({ object, attr, updateFunction, schema }: SchemaFormPro
 }
 
 export const IntegerForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
-	if (schema.enum) {
-		return (
-			<DropdownInputControl
-				classNames="input text-input input-l"
-				value={object[attr]}
-				options={[]}
-				handleUpdate={(v) => {
-					if (updateFunction) {
-						updateFunction(attr, v)
-					} else {
-						object[attr] = v
-					}
-				}}
-			/>
-		)
-	} else {
-		return (
-			<EditAttribute
-				type="int"
-				attribute={attr}
-				obj={object}
-				updateFunction={(_, v) => {
-					if (updateFunction) {
-						updateFunction(attr, v)
-					} else {
-						object[attr] = v
-					}
-				}}
-				className="input text-input input-l"
-			/>
-		)
-	}
+	return (
+		<EditAttribute
+			type="int"
+			attribute={attr}
+			obj={object}
+			updateFunction={(_, v) => {
+				if (updateFunction) {
+					updateFunction(attr, v)
+				} else {
+					object[attr] = v
+				}
+			}}
+			className="input text-input input-l"
+			label={schema.default}
+		/>
+	)
 }
 
-export const NumberForm = ({ object, attr, updateFunction }: SchemaFormProps) => {
+export const NumberForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
 	return (
 		<EditAttribute
 			type="float"
@@ -232,6 +216,7 @@ export const NumberForm = ({ object, attr, updateFunction }: SchemaFormProps) =>
 				}
 			}}
 			className="input text-input input-l"
+			label={schema.default}
 		/>
 	)
 }
@@ -252,7 +237,7 @@ export const BooleanForm = ({ object, attr, updateFunction }: SchemaFormProps) =
 	)
 }
 
-export const StringForm = ({ object, attr, updateFunction }: SchemaFormProps) => {
+export const StringForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
 	return (
 		<TextInputControl
 			classNames="input text-input input-l"
@@ -264,6 +249,7 @@ export const StringForm = ({ object, attr, updateFunction }: SchemaFormProps) =>
 					object[attr] = v
 				}
 			}}
+			placeholder={schema.default}
 		/>
 	)
 }
