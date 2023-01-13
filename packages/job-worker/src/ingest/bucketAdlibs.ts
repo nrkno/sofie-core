@@ -254,7 +254,12 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 				ps.push(
 					context.directCollections.BucketAdLibPieces.replace(adlib),
 					updateExpectedMediaItemForBucketAdLibPiece(context, adlib),
-					updateExpectedPackagesForBucketAdLibPiece(context, adlib)
+					// HACK: Only generate a single expectedPackage for the adlibAction.
+					// This is to NOT generate expected packages for all of the showstyle-variants, just one.
+					// This will break the zebra-stripes in the GUI, and is only a temporary hack. / Johan 2023-01-13
+					isFirstShowStyleVariant
+						? updateExpectedPackagesForBucketAdLibPiece(context, adlib)
+						: Promise.resolve()
 				)
 
 				// Preserve this one
@@ -316,6 +321,8 @@ export async function handleBucketActionModify(context: JobContext, data: Bucket
 	const actionsToUpdate = await getGroupedAdlibActions(context, orgAction)
 
 	for (const action of actionsToUpdate) {
+		const isOrgAction = orgAction._id === action._id
+
 		const newAction = {
 			...action,
 			...newProps,
@@ -325,7 +332,10 @@ export async function handleBucketActionModify(context: JobContext, data: Bucket
 				$set: newProps,
 			}),
 			updateExpectedMediaItemForBucketAdLibAction(context, newAction),
-			updateExpectedPackagesForBucketAdLibAction(context, newAction),
+			// HACK: Only generate a single expectedPackage for the adlibAction.
+			// This is to NOT generate expected packages for all of the showstyle-variants, just one.
+			// This will break the zebra-stripes in the GUI, and is only a temporary hack. / Johan 2023-01-13
+			isOrgAction ? updateExpectedPackagesForBucketAdLibAction(context, newAction) : Promise.resolve(),
 		])
 	}
 }
@@ -341,6 +351,8 @@ export async function handleBucketPieceModify(context: JobContext, data: BucketP
 	const piecesToUpdate = await getGroupedAdlibs(context, orgPiece)
 
 	for (const piece of piecesToUpdate) {
+		const isOrgPiece = orgPiece._id === piece._id
+
 		await context.directCollections.BucketAdLibPieces.update(piece._id, {
 			$set: newProps,
 		})
@@ -352,7 +364,10 @@ export async function handleBucketPieceModify(context: JobContext, data: BucketP
 
 		await Promise.all([
 			updateExpectedMediaItemForBucketAdLibPiece(context, newPiece),
-			updateExpectedPackagesForBucketAdLibPiece(context, newPiece),
+			// HACK: Only generate a single expectedPackage for the adlibAction.
+			// This is to NOT generate expected packages for all of the showstyle-variants, just one.
+			// This will break the zebra-stripes in the GUI, and is only a temporary hack. / Johan 2023-01-13
+			isOrgPiece ? updateExpectedPackagesForBucketAdLibPiece(context, newPiece) : Promise.resolve(),
 		])
 	}
 }
