@@ -1,8 +1,10 @@
+import { literal } from '@sofie-automation/corelib/dist/lib'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { i18nTranslator } from '../../ui/i18n'
 import { CheckboxControl } from '../Components/Checkbox'
+import { DropdownInputControl, DropdownInputOption } from '../Components/DropdownInput'
 import { TextInputControl } from '../Components/TextInput'
 import { EditAttribute } from '../EditAttribute'
 import { type JSONSchema, TypeName } from './schema-types'
@@ -71,13 +73,28 @@ export const SchemaForm = (props: SchemaFormProps) => {
 		case TypeName.Object:
 			return <ObjectForm {...props} />
 		case TypeName.Integer:
-			return <WrappedAttribute {...props} component={<IntegerForm {...props} />} />
+			return (
+				<WrappedAttribute
+					{...props}
+					component={props.schema.enum ? <EnumForm {...props} /> : <IntegerForm {...props} />}
+				/>
+			)
 		case TypeName.Number:
-			return <WrappedAttribute {...props} component={<NumberForm {...props} />} />
+			return (
+				<WrappedAttribute
+					{...props}
+					component={props.schema.enum ? <EnumForm {...props} /> : <NumberForm {...props} />}
+				/>
+			)
 		case TypeName.Boolean:
 			return <WrappedAttribute {...props} component={<BooleanForm {...props} />} />
 		case TypeName.String:
-			return <WrappedAttribute {...props} component={<StringForm {...props} />} />
+			return (
+				<WrappedAttribute
+					{...props}
+					component={props.schema.enum ? <EnumForm {...props} /> : <StringForm {...props} />}
+				/>
+			)
 		default:
 			return <>{t('Unsupported field type "{{ type }}"', { type: props.schema.type })}</>
 	}
@@ -111,39 +128,89 @@ export const WrappedAttribute = ({
 	translationNamespaces,
 	attr,
 }: SchemaFormProps & { component: any }) => {
+	const schemaAny = schema as any // TODO - avoid cast
+
+	const title = schemaAny.sofieTitle || schema.title || attr
+	const description = schemaAny.sofieDescription || schema.description
+
 	return (
 		<div className={'mod mvs mhs'}>
 			{translationNamespaces
-				? translateMessage({ key: schema.title || attr, namespaces: translationNamespaces }, i18nTranslator)
-				: schema.title || attr}
+				? translateMessage({ key: title, namespaces: translationNamespaces }, i18nTranslator)
+				: title}
 			<label className="field">{component}</label>
-			{schema.description && (
+			{description && (
 				<span className="text-s dimmed">
 					{translationNamespaces
-						? translateMessage({ key: schema.description, namespaces: translationNamespaces }, i18nTranslator)
-						: schema.description}
+						? translateMessage({ key: description, namespaces: translationNamespaces }, i18nTranslator)
+						: description}
 				</span>
 			)}
 		</div>
 	)
 }
 
-export const IntegerForm = ({ object, attr, updateFunction }: SchemaFormProps) => {
+export const EnumForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
+	const tsEnumNames = ((schema as any).tsEnumNames || []) as string[]
+	const options = useMemo(() => {
+		return (schema.enum || []).map((value, i) =>
+			literal<DropdownInputOption<any>>({
+				value,
+				name: tsEnumNames[i] || value,
+				i,
+			})
+		)
+	}, [schema.enum, tsEnumNames])
+
 	return (
-		<EditAttribute
-			type="int"
-			attribute={attr}
-			obj={object}
-			updateFunction={(_, v) => {
+		<DropdownInputControl
+			classNames="input text-input input-l"
+			value={object[attr]}
+			options={options}
+			handleUpdate={(v) => {
 				if (updateFunction) {
 					updateFunction(attr, v)
 				} else {
 					object[attr] = v
 				}
 			}}
-			className="input text-input input-l"
 		/>
 	)
+}
+
+export const IntegerForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
+	if (schema.enum) {
+		return (
+			<DropdownInputControl
+				classNames="input text-input input-l"
+				value={object[attr]}
+				options={[]}
+				handleUpdate={(v) => {
+					if (updateFunction) {
+						updateFunction(attr, v)
+					} else {
+						object[attr] = v
+					}
+				}}
+			/>
+		)
+	} else {
+		return (
+			<EditAttribute
+				type="int"
+				attribute={attr}
+				obj={object}
+				updateFunction={(_, v) => {
+					if (updateFunction) {
+						updateFunction(attr, v)
+					} else {
+						object[attr] = v
+					}
+				}}
+				className="input text-input input-l"
+			/>
+		)
+	}
 }
 
 export const NumberForm = ({ object, attr, updateFunction }: SchemaFormProps) => {
