@@ -1,5 +1,6 @@
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { i18nTranslator } from '../../ui/i18n'
 import { CheckboxControl } from '../Components/Checkbox'
 import { TextInputControl } from '../Components/TextInput'
@@ -64,6 +65,8 @@ export interface SchemaFormProps {
 	updateFunction?: (path: string, value: any) => void
 }
 export const SchemaForm = (props: SchemaFormProps) => {
+	const { t } = useTranslation()
+
 	switch (props.schema.type) {
 		case TypeName.Object:
 			return <ObjectForm {...props} />
@@ -76,7 +79,7 @@ export const SchemaForm = (props: SchemaFormProps) => {
 		case TypeName.String:
 			return <WrappedAttribute {...props} component={<StringForm {...props} />} />
 		default:
-			return <></>
+			return <>{t('Unsupported field type "{{ type }}"', { type: props.schema.type })}</>
 	}
 }
 

@@ -4,7 +4,6 @@ import {
 	SubDeviceConfigManifest,
 	MappingsManifest,
 	ConfigManifestEntry,
-	SubdeviceManifest,
 } from '@sofie-automation/server-core-integration'
 import {
 	DeviceType as TSRDeviceType,
@@ -20,15 +19,12 @@ import {
 	QuantelControlMode,
 	MappingVMixType,
 	MappingOBSType,
-	manifest,
+	manifest2 as TSRManifest,
 } from 'timeline-state-resolver'
 
 import Translations = require('timeline-state-resolver/dist/translations.json')
 
 import ConfigSchema = require('./configSchema.json')
-import ConfigSchemaCommon = require('./tmp/common.json')
-import ConfigSchemaAbstract = require('./tmp/abstract.json')
-import ConfigSchemaCasparcg = require('./tmp/casparcg.json')
 
 const PLAYOUT_SUBDEVICE_COMMON: ConfigManifestEntry[] = [
 	{
@@ -689,69 +685,6 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 	],
 }
 
-const PLAYOUT_SUBDEVICE_MANIFEST: SubdeviceManifest<TSRDeviceType> = {
-	[TSRDeviceType.ABSTRACT]: {
-		configSchema: JSON.stringify(ConfigSchemaAbstract),
-	},
-	[TSRDeviceType.CASPARCG]: {
-		configSchema: JSON.stringify(ConfigSchemaCasparcg),
-	},
-	[TSRDeviceType.ATEM]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.LAWO]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.HTTPSEND]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.PANASONIC_PTZ]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.TCPSEND]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.HYPERDECK]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.PHAROS]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.OSC]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.HTTPWATCHER]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.SISYFOS]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.QUANTEL]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.VIZMSE]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.SINGULAR_LIVE]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.SHOTOKU]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.VMIX]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.OBS]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.SOFIE_CHEF]: {
-		configSchema: undefined,
-	},
-	[TSRDeviceType.TELEMETRICS]: {
-		configSchema: undefined,
-	},
-}
-
 export const PLAYOUT_DEVICE_CONFIG: DeviceConfigManifest = {
 	deviceConfigSchema: JSON.stringify(ConfigSchema),
 	deviceConfig: [
@@ -798,8 +731,8 @@ export const PLAYOUT_DEVICE_CONFIG: DeviceConfigManifest = {
 	],
 	layerMappings: MAPPING_MANIFEST,
 
-	subdeviceConfigSchema: JSON.stringify(ConfigSchemaCommon),
-	subdeviceManifest: PLAYOUT_SUBDEVICE_MANIFEST || manifest, // TODO - pull from TSR only
+	subdeviceConfigSchema: TSRManifest.commonOptions,
+	subdeviceManifest: TSRManifest.subdevices, // PLAYOUT_SUBDEVICE_MANIFEST || manifest, // TODO - pull from TSR only
 
 	translations: Translations as any,
 }

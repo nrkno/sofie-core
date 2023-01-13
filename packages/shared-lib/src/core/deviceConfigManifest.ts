@@ -11,6 +11,7 @@
  * describe some properties to be rendered inside this table
  */
 
+import { SingleActionSchema } from 'timeline-state-resolver-types'
 import { TranslationsBundle } from '../lib/translations'
 
 export interface DeviceConfigManifest {
@@ -47,18 +48,20 @@ export type SubdeviceManifest<T extends string | number = string | number> = {
 	}
 }
 
-export interface SubdeviceAction {
-	/** Device-unique id of the action */
-	id: string
-	/** User readable name of the action */
-	name: string
-	/** A destructive action affects playout, users might get a confirmation dialog before executing it. */
-	destructive: boolean
-	/** Time in ms after which the action should be considered to have failed if it hasn't returned yet.  */
-	timeout?: number
-	/** The payload object is the first argument of the function */
-	payload?: string
-}
+// TODO - tidy
+export type SubdeviceAction = SingleActionSchema
+// export interface SubdeviceAction {
+// 	/** Device-unique id of the action */
+// 	id: string
+// 	/** User readable name of the action */
+// 	name: string
+// 	/** A destructive action affects playout, users might get a confirmation dialog before executing it. */
+// 	destructive: boolean
+// 	/** Time in ms after which the action should be considered to have failed if it hasn't returned yet.  */
+// 	timeout?: number
+// 	/** The payload object is the first argument of the function */
+// 	payload?: string
+// }
 
 export interface SubDeviceConfigManifest {
 	defaultType: string
