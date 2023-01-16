@@ -668,39 +668,37 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 					)}
 
 					{this.props.device.configManifest.deviceConfigSchema ? (
-						<SchemaForm
-							schema={JSON.parse(this.props.device.configManifest.deviceConfigSchema)}
-							object={device.settings}
-							attr=""
-							updateFunction={(path, val) => {
-								if (val === undefined) {
-									const m = {}
-									m[`settings.${path}`] = 1
-									PeripheralDevices.update(device._id, { $unset: m })
-								} else {
-									const m = {}
-									m[`settings.${path}`] = val
-									PeripheralDevices.update(device._id, { $set: m })
-								}
-							}}
-							translationNamespaces={translationNamespaces}
-						/>
-					) : (
-						<p>TEST</p>
-					)}
-
-					{this.props.device.configManifest.deviceConfigSchema &&
-						this.props.device.configManifest.subdeviceManifest && (
-							<SubDevicesConfig
-								deviceId={device._id}
-								commonSchema={device.configManifest.subdeviceConfigSchema}
-								configSchema={device.configManifest.subdeviceManifest}
-								subDevices={(device.settings as any)?.devices ?? {}}
+						<>
+							<SchemaForm
+								schema={JSON.parse(this.props.device.configManifest.deviceConfigSchema)}
+								object={device.settings}
+								attr=""
+								updateFunction={(path, val) => {
+									if (val === undefined) {
+										const m = {}
+										m[`settings.${path}`] = 1
+										PeripheralDevices.update(device._id, { $unset: m })
+									} else {
+										const m = {}
+										m[`settings.${path}`] = val
+										PeripheralDevices.update(device._id, { $set: m })
+									}
+								}}
+								translationNamespaces={translationNamespaces}
 							/>
-						)}
 
-					<hr />
-					{this.renderConfigFields(this.props.device.configManifest.deviceConfig, device, 'settings.')}
+							{this.props.device.configManifest.subdeviceManifest && (
+								<SubDevicesConfig
+									deviceId={device._id}
+									commonSchema={device.configManifest.subdeviceConfigSchema}
+									configSchema={device.configManifest.subdeviceManifest}
+									subDevices={(device.settings as any)?.devices ?? {}}
+								/>
+							)}
+						</>
+					) : (
+						this.renderConfigFields(this.props.device.configManifest.deviceConfig, device, 'settings.')
+					)}
 
 					<ModalDialog
 						title={t('Remove this item?')}
