@@ -6,13 +6,13 @@
 	"properties": {
 		"mosId": {
 			"type": "string",
-			"title": "MOS ID of Mos-Gateway (Sofie MOS ID)",
-			"description": "MOS ID of the Sofie MOS device (ie our ID). Example: sofie.mos",
+			"ui:title": "MOS ID of Mos-Gateway (Sofie MOS ID)",
+			"ui:description": "MOS ID of the Sofie MOS device (ie our ID). Example: sofie.mos",
 			"default": ""
 		},
 		"debugLogging": {
 			"type": "boolean",
-			"title": "Activate Debug Logging",
+			"ui:title": "Activate Debug Logging",
 			"default": false
 		}
 	},

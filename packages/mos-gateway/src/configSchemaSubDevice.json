@@ -1,79 +1,79 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"$id": "https://example.com/product.schema.json",
-	"title": "Mos Gateway Sub-device",
+	"ui:title": "Mos Gateway Sub-device",
 	"type": "object",
 	"properties": {
 		"primary": {
 			"type": "object",
-			"title": "Primary",
+			"ui:title": "Primary",
 			"properties": {
 				"id": {
 					"type": "string",
-					"title": "Primary ID",
-					"description": "MOS ID of the Newsroom System (NRCS) we connect to",
+					"ui:title": "Primary ID",
+					"ui:description": "MOS ID of the Newsroom System (NRCS) we connect to",
 					"ui:summaryTitle": "Primary ID",
 					"default": ""
 				},
 				"host": {
 					"type": "string",
-					"title": "Primary Host",
-					"description": "IP or Hostname",
+					"ui:title": "Primary Host",
+					"ui:description": "IP or Hostname",
 					"ui:summaryTitle": "Primary Host",
 					"default": ""
 				},
 				"dontUseQueryPort": {
 					"type": "boolean",
-					"title": "Primary: Don't use the Query port",
+					"ui:title": "Primary: Don't use the Query port",
 					"default": false
 				},
 				"timeout": {
 					"type": "integer",
-					"title": "Primary Timeout (ms)",
-					"description": "Timeout for sent messages",
+					"ui:title": "Primary Timeout (ms)",
+					"ui:description": "Timeout for sent messages",
 					"default": 10000
 				},
 				"heartbeatInterval": {
 					"type": "integer",
-					"title": "Primary Heartbeat interval (ms)",
-					"description": "How often to ping NRCS to determine connection status",
+					"ui:title": "Primary Heartbeat interval (ms)",
+					"ui:description": "How often to ping NRCS to determine connection status",
 					"default": 30000
 				}
 			}
 		},
 		"secondary": {
 			"type": "object",
-			"title": "Secondary",
+			"ui:title": "Secondary",
 			"properties": {
 				"id": {
 					"type": "string",
-					"title": "Secondary ID",
-					"description": "MOS ID of the Newsroom System (NRCS) we connect to",
+					"ui:title": "Secondary ID",
+					"ui:description": "MOS ID of the Newsroom System (NRCS) we connect to",
 					"ui:summaryTitle": "Secondary ID",
 					"default": ""
 				},
 				"host": {
 					"type": "string",
-					"title": "Secondary Host",
-					"description": "IP or Hostname",
+					"ui:title": "Secondary Host",
+					"ui:description": "IP or Hostname",
 					"ui:summaryTitle": "Secondary Host",
 					"default": ""
 				},
 				"dontUseQueryPort": {
 					"type": "boolean",
-					"title": "Secondary: Don't use the Query port",
+					"ui:title": "Secondary: Don't use the Query port",
 					"default": false
 				},
 				"timeout": {
 					"type": "integer",
-					"title": "Secondary Timeout (ms)",
-					"description": "Timeout for sent messages",
+					"ui:title": "Secondary Timeout (ms)",
+					"ui:description": "Timeout for sent messages",
 					"default": 10000
 				},
 				"heartbeatInterval": {
 					"type": "integer",
-					"title": "Secondary Heartbeat interval (ms)",
-					"description": "How often to ping NRCS to determine connection status",
+					"ui:title": "Secondary Heartbeat interval (ms)",
+					"ui:description": "How often to ping NRCS to determine connection status",
 					"default": 30000
 				}
 			}

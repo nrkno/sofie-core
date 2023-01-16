@@ -6,32 +6,32 @@
 	"properties": {
 		"debugLogging": {
 			"type": "boolean",
-			"title": "Activate Debug Logging",
+			"ui:title": "Activate Debug Logging",
 			"default": false
 		},
 		"multiThreading": {
 			"type": "boolean",
-			"title": "Activate Multi-Threading",
+			"ui:title": "Activate Multi-Threading",
 			"default": false
 		},
 		"multiThreadedResolver": {
 			"type": "boolean",
-			"title": "Activate Multi-Threaded Timeline Resolving",
+			"ui:title": "Activate Multi-Threaded Timeline Resolving",
 			"default": false
 		},
 		"useCacheWhenResolving": {
 			"type": "boolean",
-			"title": "Activate Partial resolving, when resolving the Timeline",
+			"ui:title": "Activate Partial resolving, when resolving the Timeline",
 			"default": false
 		},
 		"reportAllCommands": {
 			"type": "boolean",
-			"title": "Report command timings on all commands",
+			"ui:title": "Report command timings on all commands",
 			"default": false
 		},
 		"estimateResolveTimeMultiplier": {
 			"type": "boolean",
-			"title": "Adjust resolve-time estimation",
+			"ui:title": "Adjust resolve-time estimation",
 			"default": false
 		}
 	},

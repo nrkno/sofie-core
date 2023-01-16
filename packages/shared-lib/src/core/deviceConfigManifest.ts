@@ -45,6 +45,7 @@ export type SubdeviceManifest<T extends string | number = string | number> = {
 	[deviceType in T]: {
 		displayName: string
 		configSchema?: string
+		mappingSchema?: string
 		actions?: SubdeviceAction[]
 	}
 }
