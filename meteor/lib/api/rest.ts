@@ -80,7 +80,7 @@ export interface RestAPI extends MethodContext {
 	 * Moves the next point by `delta` places. Negative values are allowed to move "backwards" in the script.
 	 *
 	 * Throws if the target Playlist is not active.
-	 * Throws if there is not next Part set (e.g. rundown is empty)
+	 * Throws if no next Part could be set (e.g. Playlist is empty, delta is too high and overflows the bounds of the Playlist)
 	 * If delta results in an index that is greater than the number of Parts available, no action will be taken.
 	 * @param rundownPlaylistId Playlist to target.
 	 * @param delta Amount to move next point by (+/-)

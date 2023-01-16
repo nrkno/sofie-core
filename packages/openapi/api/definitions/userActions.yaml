@@ -199,7 +199,7 @@ resources:
                     type: string
                     example: '3Y9at66pZipxE8Kkn850LLV9Cz0_'
         412:
-          description: Specified Playlist is not active or there is no next Part set (e.g. Playlist is empty).
+          description: Specified Playlist is not active or no next Part could be set (e.g. Playlist is empty, delta is too high and overflows the bounds of the Playlist)
           content:
             application/json:
               schema:
