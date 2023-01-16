@@ -871,7 +871,16 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 												holdToDisplay={contextMenuHoldToDisplayTime()}
 											>
 												<BucketPieceButton
-													piece={adlib as any as IAdLibListItem}
+													piece={{
+														// HACK: Disable "zebra stripes" on Bucket items, because fb7a406 makes them unreliable
+														// in the case of Bucket AdLibs / Johan 2023-01-13
+
+														...(adlib as any as IAdLibListItem),
+														content: {
+															...adlib.content,
+															ignoreMediaObjectStatus: true,
+														},
+													}}
 													studio={this.props.studio}
 													bucketId={adlib.bucketId}
 													layer={this.props.sourceLayers[adlib.sourceLayerId]}
