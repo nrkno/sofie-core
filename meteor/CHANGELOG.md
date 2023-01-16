@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.47.0-in-testing.6](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
+
+
+### Bug Fixes
+
+* check if a push to GHCR is even possible ([f463528](https://github.com/nrkno/sofie-core/commit/f463528245c41689820867881947c48eca231a02))
+
 ## [1.47.0-in-testing.5](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.4...v1.47.0-in-testing.5) (2023-01-11)
 
 
