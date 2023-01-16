@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react'
 export function useToggleExpandHelper() {
 	const [expandedItemIds, setExpandedItemIds] = useState({})
 
-	const toggleExpanded = useCallback((id: string, forceState?: boolean) => {
+	const toggleExpanded = useCallback((id: string | number, forceState?: boolean) => {
 		setExpandedItemIds((oldExpanded) => {
 			// This will leak entries as layers are added and removed, but not fast enough to be a problem
 			return {
@@ -13,7 +13,7 @@ export function useToggleExpandHelper() {
 		})
 	}, [])
 
-	const isExpanded = (id: string): boolean => {
+	const isExpanded = (id: string | number): boolean => {
 		return !!expandedItemIds[id]
 	}
 

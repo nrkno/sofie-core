@@ -9,68 +9,15 @@ import { MultiLineTextInputControl } from '../Components/MultiLineTextInput'
 import { TextInputControl } from '../Components/TextInput'
 import { EditAttribute } from '../EditAttribute'
 import { type JSONSchema, TypeName } from './schema-types'
-
-function joinFragments(...fragments: Array<string | undefined>): string {
-	return fragments.filter((v) => !!v).join('.')
-}
-
-export function getSchemaDefaultValues(schema: JSONSchema): any {
-	switch (schema.type) {
-		case TypeName.Object: {
-			const object: any = {}
-
-			for (const [index, prop] of Object.entries(schema.properties || {})) {
-				object[index] = getSchemaDefaultValues(prop)
-			}
-
-			return object
-		}
-		default:
-			return schema.default
-	}
-}
-
-export interface SchemaSummaryField {
-	attr: string
-	name: string
-}
-
-export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): SchemaSummaryField[] {
-	switch (schema.type) {
-		case TypeName.Object: {
-			const fieldNames: SchemaSummaryField[] = []
-
-			for (const [index, prop] of Object.entries(schema.properties || {})) {
-				const newPrefix = joinFragments(prefix, index)
-
-				fieldNames.push(...getSchemaSummaryFields(prop, newPrefix))
-			}
-
-			return fieldNames
-		}
-		default: {
-			// TODO - can this be done without a messy cast?
-			const summaryTitle: string = (schema as any).sofieSummaryTitle
-			if (summaryTitle && prefix) {
-				return [
-					{
-						attr: prefix,
-						name: summaryTitle,
-					},
-				]
-			}
-
-			return []
-		}
-	}
-}
+import { SchemaFormTable } from './schemaFormTable'
+import { joinFragments, SchemaFormUpdateFunction } from './schemaFormUtil'
 
 export interface SchemaFormProps {
 	schema: JSONSchema
 	object: any
 	attr: string
-	translationNamespaces?: string[]
-	updateFunction?: (path: string, value: any) => void
+	translationNamespaces: string[] | undefined
+	updateFunction?: SchemaFormUpdateFunction
 }
 export const SchemaForm = (props: SchemaFormProps) => {
 	const { t } = useTranslation()
@@ -111,22 +58,42 @@ export const SchemaForm = (props: SchemaFormProps) => {
 export const ArrayForm = (props: SchemaFormProps) => {
 	const { t } = useTranslation()
 
+	const updateFunction2 = useMemo((): SchemaFormUpdateFunction | undefined => {
+		const fn = props.updateFunction
+		if (fn) {
+			return (path: string, value: any, mode) => {
+				const path2 = joinFragments(props.attr, path)
+
+				return fn(path2, value, mode)
+			}
+		}
+	}, [props.attr, props.updateFunction])
+
 	switch (props.schema.items?.type) {
 		case TypeName.String:
 			return <WrappedAttribute {...props} component={<StringArrayForm {...props} />} />
+		case TypeName.Object:
+			return (
+				<SchemaFormTable
+					schema={props.schema}
+					translationNamespaces={props.translationNamespaces}
+					object={props.object[props.attr]}
+					updateFunction={updateFunction2}
+				/>
+			)
 		default:
 			return <>{t('Unsupported array type "{{ type }}"', { type: props.schema.items?.type })}</>
 	}
 }
 
 export const ObjectForm = (props: SchemaFormProps) => {
-	const updateFunction2 = useMemo(() => {
+	const updateFunction2 = useMemo((): SchemaFormUpdateFunction | undefined => {
 		const fn = props.updateFunction
 		if (fn) {
-			return (path: string, value: any) => {
+			return (path: string, value: any, mode) => {
 				const path2 = joinFragments(props.attr, path)
 
-				return fn(path2, value)
+				return fn(path2, value, mode)
 			}
 		}
 	}, [props.attr, props.updateFunction])
@@ -136,7 +103,16 @@ export const ObjectForm = (props: SchemaFormProps) => {
 			{' '}
 			{Object.entries(props.schema.properties || {}).map(([index, schema]) => {
 				const object = props.attr ? (props.object || {})[props.attr] : props.object
-				return <SchemaForm key={index} attr={index} schema={schema} object={object} updateFunction={updateFunction2} />
+				return (
+					<SchemaForm
+						key={index}
+						attr={index}
+						schema={schema}
+						object={object}
+						updateFunction={updateFunction2}
+						translationNamespaces={props.translationNamespaces}
+					/>
+				)
 			})}
 		</>
 	)
@@ -148,10 +124,8 @@ export const WrappedAttribute = ({
 	translationNamespaces,
 	attr,
 }: SchemaFormProps & { component: any }) => {
-	const schemaAny = schema as any // TODO - avoid cast
-
-	const title = schemaAny.sofieTitle || schema.title || attr
-	const description = schemaAny.sofieDescription ?? schema.description
+	const title = schema['ui:title'] || attr
+	const description = schema['ui:description']
 
 	return (
 		<div className={'mod mvs mhs'}>

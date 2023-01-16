@@ -4,24 +4,17 @@ import { useTranslation } from 'react-i18next'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { JSONSchema } from '../../../lib/forms/schema-types'
-import {
-	getSchemaDefaultValues,
-	getSchemaSummaryFields,
-	SchemaForm,
-	SchemaSummaryField,
-} from '../../../lib/forms/schemaForm'
-import { faCheck, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { SchemaForm } from '../../../lib/forms/schemaForm'
+import { faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ClassNames from 'classnames'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import { TextInputControl } from '../../../lib/Components/TextInput'
-import { literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
+import { literal } from '@sofie-automation/corelib/dist/lib'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { DropdownInputControl, DropdownInputOption } from '../../../lib/Components/DropdownInput'
-
-interface SchemaSummaryFieldExt extends SchemaSummaryField {
-	transform?: (val: any) => string
-}
+import { SchemaTableSummaryRow } from '../../../lib/forms/schemaFormTable'
+import { getSchemaDefaultValues, SchemaSummaryField, getSchemaSummaryFields } from '../../../lib/forms/schemaFormUtil'
 
 interface SubDevicesConfigProps {
 	deviceId: PeripheralDeviceId
@@ -155,13 +148,10 @@ function SubDevicesTable({
 	)
 
 	const singleSchemaMode = Object.keys(parsedSchemas).length === 1
+	const defaultSchema = Object.values(parsedSchemas)[0]!
 
-	const schema = Object.values(parsedSchemas)[0]!
-
-	console.log(subDeviceOptions)
-
-	const summaryFields: SchemaSummaryFieldExt[] = singleSchemaMode
-		? getSchemaSummaryFields(schema)
+	const summaryFields: SchemaSummaryField[] = singleSchemaMode
+		? getSchemaSummaryFields(defaultSchema)
 		: [
 				{
 					attr: 'type',
@@ -185,9 +175,10 @@ function SubDevicesTable({
 				{Object.entries(subDevices).map(([id, device]) => {
 					return (
 						<React.Fragment key={id}>
-							<SubDeviceSummaryRow
+							<SchemaTableSummaryRow
 								summaryFields={summaryFields}
-								subdeviceId={id}
+								rowId={id}
+								showRowId={true}
 								object={device}
 								isEdited={isExpanded(id)}
 								editItem={toggleExpanded}
@@ -210,57 +201,6 @@ function SubDevicesTable({
 				})}
 			</tbody>
 		</>
-	)
-}
-
-interface SubDeviceSummaryRowProps {
-	summaryFields: SchemaSummaryFieldExt[]
-	subdeviceId: string
-	object: any
-	isEdited: boolean
-	editItem: (subdeviceId: string) => void
-	removeItem: (subdeviceId: string) => void
-}
-
-function SubDeviceSummaryRow({
-	summaryFields,
-	subdeviceId,
-	object,
-	isEdited,
-	editItem,
-	removeItem,
-}: SubDeviceSummaryRowProps) {
-	const els: Array<JSX.Element> = summaryFields.map((field) => {
-		const rawValue = objectPathGet(object, field.attr)
-		const value = field.transform ? field.transform(rawValue) : rawValue
-
-		return (
-			<td className="settings-studio-device__primary_id c4" key={field.attr}>
-				{value ?? ''}
-			</td>
-		)
-	})
-
-	const editItem2 = useCallback(() => editItem(subdeviceId), [editItem, subdeviceId])
-	const removeItem2 = useCallback(() => removeItem(subdeviceId), [removeItem, subdeviceId])
-
-	return (
-		<tr
-			className={ClassNames({
-				hl: isEdited,
-			})}
-		>
-			<th className="settings-studio-device__name c2">{subdeviceId}</th>
-			{els}
-			<td className="settings-studio-device__actions table-item-actions c1" key="action">
-				<button className="action-btn" onClick={editItem2}>
-					<FontAwesomeIcon icon={faPencilAlt} />
-				</button>
-				<button className="action-btn" onClick={removeItem2}>
-					<FontAwesomeIcon icon={faTrash} />
-				</button>
-			</td>
-		</tr>
 	)
 }
 
@@ -288,8 +228,6 @@ function SubDeviceEditRow({
 
 	const schemasArray = Object.values(schemas)
 	const schema = schemasArray.length === 1 ? schemasArray[0] : schemas[object?.type]
-
-	console.log(commonSchema, schema, schemas, object)
 
 	const finishEditItem = useCallback(() => editItem(subdeviceId, false), [editItem, subdeviceId])
 
@@ -319,12 +257,44 @@ function SubDeviceEditRow({
 	)
 
 	const updateFunction = useCallback(
-		(path: string, val: any) => {
-			PeripheralDevices.update(parentId, {
-				$set: {
-					[`settings.devices.${subdeviceId}.${path}`]: val,
-				},
-			})
+		(path: string, val: any, mode?: 'push' | 'pull') => {
+			if (mode === 'push') {
+				PeripheralDevices.update(parentId, {
+					$push: {
+						[`settings.devices.${subdeviceId}.${path}`]: val,
+					},
+				})
+			} else if (mode === 'pull') {
+				if (isNaN(val)) {
+					throw new Error("Can't pop a non-numeric array index!")
+				}
+				PeripheralDevices.update(parentId, {
+					$unset: {
+						[`settings.devices.${subdeviceId}.${path}.${val}`]: 1,
+					},
+				})
+
+				// clean up the array
+				PeripheralDevices.update(parentId, {
+					$pull: {
+						[`settings.devices.${subdeviceId}.${path}`]: null,
+					},
+				})
+			} else {
+				if (val === undefined) {
+					PeripheralDevices.update(parentId, {
+						$unset: {
+							[`settings.devices.${subdeviceId}.${path}`]: 1,
+						},
+					})
+				} else {
+					PeripheralDevices.update(parentId, {
+						$set: {
+							[`settings.devices.${subdeviceId}.${path}`]: val,
+						},
+					})
+				}
+			}
 		},
 		[parentId, subdeviceId]
 	)
