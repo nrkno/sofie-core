@@ -190,7 +190,8 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'test',
 			connectionId: 'test',
 			configManifest: {
-				deviceConfig: [],
+				deviceConfigSchema: '',
+				subdeviceManifest: {},
 			},
 		}
 		await MeteorCall.peripheralDevice.initialize(device._id, device.token, options)
@@ -521,7 +522,8 @@ describe('test peripheralDevice general API methods', () => {
 	// 		name: 'test',
 	// 		connectionId: 'test',
 	// 		configManifest: {
-	// 			deviceConfig: [],
+	// 			deviceConfigSchema: '',
+	//			subdeviceManifest: {}
 	// 		},
 	// 	}
 
@@ -589,7 +591,8 @@ describe('test peripheralDevice general API methods', () => {
 				settings: {},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: '',
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '0',
@@ -743,7 +746,8 @@ describe('test peripheralDevice general API methods', () => {
 				settings: {},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: '',
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '0',

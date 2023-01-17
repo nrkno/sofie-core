@@ -440,7 +440,8 @@ export async function setupMockPeripheralDevice(
 		connectionId: 'myConnectionId',
 		token: 'mockToken',
 		configManifest: {
-			deviceConfig: [],
+			deviceConfigSchema: '',
+			subdeviceManifest: {},
 		},
 		versions: {
 			'@sofie-automation/server-core-integration': getSystemVersion(),

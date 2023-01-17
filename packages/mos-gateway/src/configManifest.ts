@@ -2,105 +2,21 @@
  * This file contains the manifest for the config as displayed in the server-core
  * UI.
  */
-import { DeviceConfigManifest, ConfigManifestEntryType } from '@sofie-automation/server-core-integration'
-import {
-	DEFAULT_MOS_TIMEOUT_TIME,
-	DEFAULT_MOS_HEARTBEAT_INTERVAL,
-} from '@sofie-automation/shared-lib/dist/core/constants'
+import { DeviceConfigManifest } from '@sofie-automation/server-core-integration'
+// import {
+// 	DEFAULT_MOS_TIMEOUT_TIME,
+// 	DEFAULT_MOS_HEARTBEAT_INTERVAL,
+// } from '@sofie-automation/shared-lib/dist/core/constants'
 
 import ConfigSchema = require('./configSchema.json')
 import ConfigSchemaSubDevice = require('./configSchemaSubDevice.json')
 
 export const MOS_DEVICE_CONFIG_MANIFEST: DeviceConfigManifest = {
 	deviceConfigSchema: JSON.stringify(ConfigSchema),
-	deviceConfig: [
-		{
-			id: 'mosId',
-			name: 'MOS ID of Mos-Gateway (Sofie MOS ID)',
-			type: ConfigManifestEntryType.STRING,
-			hint: 'MOS ID of the Sofie MOS device (ie our ID). Example: sofie.mos',
-		},
-		{
-			id: 'debugLogging',
-			name: 'Activate Debug Logging',
-			type: ConfigManifestEntryType.BOOLEAN,
-		},
-		{
-			id: 'devices',
-			name: 'Attached SubDevices',
-			type: ConfigManifestEntryType.TABLE,
-			isSubDevices: true,
-			defaultType: 'default',
-			config: {
-				default: [
-					{
-						id: 'primary.id',
-						name: 'Primary ID',
-						columnName: 'Primary ID',
-						type: ConfigManifestEntryType.STRING,
-						hint: 'MOS ID of the Newsroom System (NRCS) we connect to',
-					},
-					{
-						id: 'primary.host',
-						name: 'Primary Host',
-						columnName: 'Host',
-						type: ConfigManifestEntryType.STRING,
-						hint: 'IP or Hostname',
-					},
-					{
-						id: 'primary.dontUseQueryPort',
-						name: `Don't use the Query port`,
-						type: ConfigManifestEntryType.BOOLEAN,
-					},
-					{
-						id: 'primary.timeout',
-						name: '(Optional) Timeout (ms)',
-						type: ConfigManifestEntryType.INT,
-						hint: `Timeout for sent messages, default is ${DEFAULT_MOS_TIMEOUT_TIME}`,
-					},
-					{
-						id: 'primary.heartbeatInterval',
-						name: '(Optional) Heartbeat interval (ms)',
-						type: ConfigManifestEntryType.INT,
-						hint: `How often to ping NRCS to determine connection status, default is ${DEFAULT_MOS_HEARTBEAT_INTERVAL}`,
-					},
-					{
-						id: 'secondary.id',
-						name: 'Secondary ID',
-						columnName: 'Secondary ID',
-						type: ConfigManifestEntryType.STRING,
-						hint: 'MOS ID of the Newsroom System (NRCS) we connect to',
-					},
-					{
-						id: 'secondary.host',
-						name: 'Secondary Host',
-						columnName: 'Host',
-						type: ConfigManifestEntryType.STRING,
-						hint: 'IP or Hostname',
-					},
-					{
-						id: 'secondary.dontUseQueryPort',
-						name: `Secondary: Don't use the Query port`,
-						type: ConfigManifestEntryType.BOOLEAN,
-					},
-					{
-						id: 'secondary.timeout',
-						name: 'Secondary: (Optional) Timeout (ms)',
-						type: ConfigManifestEntryType.INT,
-						hint: `Timeout for sent messages, default is ${DEFAULT_MOS_TIMEOUT_TIME}`,
-					},
-					{
-						id: 'secondary.heartbeatInterval',
-						name: 'Secondary: (Optional) Heartbeat interval (ms)',
-						type: ConfigManifestEntryType.INT,
-						hint: `How often to ping NRCS to determine connection status, default is ${DEFAULT_MOS_HEARTBEAT_INTERVAL}`,
-					},
-				],
-			},
-		},
-	],
+
 	subdeviceManifest: {
 		default: {
+			displayName: 'MOS Device',
 			configSchema: JSON.stringify(ConfigSchemaSubDevice),
 		},
 	},

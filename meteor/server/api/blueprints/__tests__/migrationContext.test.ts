@@ -432,7 +432,8 @@ describe('Test blueprint migrationContext', () => {
 						},
 					}),
 					configManifest: {
-						deviceConfig: [], // can be empty as it's only useful for UI.
+						deviceConfigSchema: '', // can be empty as it's only useful for UI.
+						subdeviceManifest: {},
 					},
 				})
 			}

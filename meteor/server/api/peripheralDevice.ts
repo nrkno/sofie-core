@@ -165,7 +165,8 @@ export namespace ServerPeripheralDeviceAPI {
 							translations: undefined,
 					  }
 					: literal<DeviceConfigManifest>({
-							deviceConfig: [],
+							deviceConfigSchema: '',
+							subdeviceManifest: {},
 					  }),
 			})
 		}

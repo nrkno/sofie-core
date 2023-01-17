@@ -394,7 +394,8 @@ describe('cronjobs', () => {
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: '',
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '',
@@ -418,7 +419,8 @@ describe('cronjobs', () => {
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.CASPARCG,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: '',
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '',
@@ -441,7 +443,8 @@ describe('cronjobs', () => {
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.ATEM,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: '',
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '',
@@ -494,7 +497,8 @@ describe('cronjobs', () => {
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: '',
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '',
@@ -518,7 +522,8 @@ describe('cronjobs', () => {
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.CASPARCG,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: '',
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '',
@@ -541,7 +546,8 @@ describe('cronjobs', () => {
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.ATEM,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: '',
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '',
