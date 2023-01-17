@@ -1,4 +1,11 @@
 import { PeripheralDeviceId, StudioId } from './Ids'
+import {
+	PeripheralDeviceStatusObject,
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+	PeripheralDeviceSubType,
+} from '../../peripheralDevice/peripheralDeviceAPI'
+import { SubdeviceAction } from '../deviceConfigManifest'
 
 export interface PeripheralDevicePublic {
 	_id: PeripheralDeviceId
@@ -6,10 +13,31 @@ export interface PeripheralDevicePublic {
 	/** Name of the device (set by the device, modifiable by user) */
 	name: string
 
+	/** Name of the device (set by the device) */
+	deviceName?: string
+
 	/** The studio this device is assigned to. Will be undefined for sub-devices */
 	studioId?: StudioId
 
+	category: PeripheralDeviceCategory
+	type: PeripheralDeviceType
+	subType: PeripheralDeviceSubType
+
+	parentDeviceId?: PeripheralDeviceId
+
+	/** When the device was initially created [unix-timestamp] */
+	created: number
+	status: PeripheralDeviceStatusObject
+
 	settings: PlayoutDeviceSettings | IngestDeviceSettings | { [key: string]: any }
+}
+
+/**
+ * An extension of PeripheralDevicePublic to expose the available actions to the blueprints.
+ */
+export interface PeripheralDevicePublicWithActions extends PeripheralDevicePublic {
+	/** Available actions for the device */
+	actions: SubdeviceAction[] | undefined
 }
 
 /**

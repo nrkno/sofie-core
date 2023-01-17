@@ -125,9 +125,7 @@ describe('Playout Actions', () => {
 			playoutDevice._id,
 			null,
 			'devicesMakeReady', // function
-			// args:
-			okToDestroyStuff,
-			playlist._id
+			[okToDestroyStuff, playlist._id]
 		)
 	})
 })
