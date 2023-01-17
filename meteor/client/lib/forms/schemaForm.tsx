@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { i18nTranslator } from '../../ui/i18n'
 import { CheckboxControl } from '../Components/Checkbox'
 import { DropdownInputControl, DropdownInputOption } from '../Components/DropdownInput'
+import { IntInputControl } from '../Components/IntInput'
 import { MultiLineTextInputControl } from '../Components/MultiLineTextInput'
 import { TextInputControl } from '../Components/TextInput'
 import { EditAttribute } from '../EditAttribute'
@@ -174,19 +175,18 @@ export const EnumForm = ({ object, attr, updateFunction, schema }: SchemaFormPro
 
 export const IntegerForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
 	return (
-		<EditAttribute
-			type="int"
-			attribute={attr}
-			obj={object}
-			updateFunction={(_, v) => {
+		<IntInputControl
+			classNames="input text-input input-l"
+			placeholder={schema.default}
+			value={object[attr]}
+			zeroBased={schema['ui:zeroBased']}
+			handleUpdate={(v) => {
 				if (updateFunction) {
 					updateFunction(attr, v)
 				} else {
 					object[attr] = v
 				}
 			}}
-			className="input text-input input-l"
-			label={schema.default}
 		/>
 	)
 }

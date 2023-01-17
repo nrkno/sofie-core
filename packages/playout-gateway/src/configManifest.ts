@@ -14,11 +14,11 @@ import {
 	MappingAtemType,
 	MappingHyperdeckType,
 	MappingLawoType,
-	MappingPanasonicPtzType,
+	MappingPanasonicPTZType,
 	MappingSisyfosType,
 	QuantelControlMode,
-	MappingVMixType,
-	MappingOBSType,
+	MappingVmixType,
+	MappingObsType,
 	manifest as TSRManifest,
 } from 'timeline-state-resolver'
 
@@ -522,11 +522,6 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 			optional: true,
 			hint: 'Whether to load to first frame',
 		},
-		{
-			id: 'options.retryInterval',
-			name: 'Media retry interval (ms), -1 disables, 0 default',
-			type: ConfigManifestEntryType.INT,
-		},
 	],
 	[TSRDeviceType.HYPERDECK]: [
 		{
@@ -565,7 +560,7 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 		{
 			id: 'mappingType',
 			type: ConfigManifestEntryType.ENUM,
-			values: MappingPanasonicPtzType,
+			values: MappingPanasonicPTZType,
 			name: 'Mapping Type',
 			includeInSummary: true,
 		},
@@ -633,7 +628,7 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 		{
 			id: 'mappingType',
 			type: ConfigManifestEntryType.ENUM,
-			values: MappingVMixType,
+			values: MappingVmixType,
 			name: 'Mapping Type',
 			includeInSummary: true,
 		},
@@ -656,7 +651,7 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 		{
 			id: 'mappingType',
 			type: ConfigManifestEntryType.ENUM,
-			values: MappingOBSType,
+			values: MappingObsType,
 			name: 'Mapping Type',
 			includeInSummary: true,
 		},

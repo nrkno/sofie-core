@@ -11,7 +11,7 @@
  * describe some properties to be rendered inside this table
  */
 
-import { SingleActionSchema } from 'timeline-state-resolver-types'
+import { TSRActionSchema } from 'timeline-state-resolver-types'
 import { TranslationsBundle } from '../lib/translations'
 
 export interface DeviceConfigManifest {
@@ -51,7 +51,7 @@ export type SubdeviceManifest<T extends string | number = string | number> = {
 }
 
 // TODO - tidy
-export type SubdeviceAction = SingleActionSchema
+export type SubdeviceAction = TSRActionSchema
 // export interface SubdeviceAction {
 // 	/** Device-unique id of the action */
 // 	id: string

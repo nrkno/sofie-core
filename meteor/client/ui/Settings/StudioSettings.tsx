@@ -13,7 +13,7 @@ import { Blueprints } from '../../../lib/collections/Blueprints'
 import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { StudioRoutings } from './Studio/Routings'
 import { StudioDevices } from './Studio/Devices'
-import { StudioMappings } from './Studio/Mappings'
+import { MappingsSettingsManifest, MappingsSettingsManifests, StudioMappings } from './Studio/Mappings'
 import { StudioPackageManagerSettings } from './Studio/PackageManager'
 import { StudioGenericProperties } from './Studio/Generic'
 import { Redirect, Route, Switch } from 'react-router-dom'
@@ -25,6 +25,7 @@ import {
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 interface IStudioSettingsProps {
 	match: {
@@ -53,6 +54,7 @@ interface IStudioSettingsTrackedProps {
 	availableDevices: Array<PeripheralDevice>
 	blueprintConfigManifest: ConfigManifestEntry[]
 	layerMappingsManifest: MappingsManifest | undefined
+	layerMappingsSchema: MappingsSettingsManifests | undefined
 }
 
 export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, IStudioSettingsTrackedProps>(
@@ -64,6 +66,34 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					blueprintType: BlueprintManifestType.STUDIO,
 			  })
 			: undefined
+
+		const firstPlayoutDevice = PeripheralDevices.findOne(
+			{
+				studioId: {
+					$eq: props.match.params.studioId,
+				},
+				parentDeviceId: {
+					$exists: false,
+				},
+				type: {
+					$eq: PeripheralDeviceType.PLAYOUT,
+				},
+			},
+			{
+				sort: {
+					lastConnected: -1,
+				},
+			}
+		)
+		const layerMappingsSchema: MappingsSettingsManifests = Object.fromEntries(
+			Object.entries(firstPlayoutDevice?.configManifest?.subdeviceManifest || {}).map(([id, val]) => [
+				id,
+				literal<MappingsSettingsManifest>({
+					displayName: val.displayName,
+					mappingsSchema: val.mappingSchema ? JSON.parse(val.mappingSchema) : undefined,
+				}),
+			])
+		)
 
 		return {
 			studio: studio,
@@ -117,24 +147,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			).fetch(),
 			blueprintConfigManifest: blueprint ? blueprint.studioConfigManifest || [] : [],
 			// TODO - these should come from the device the mapping is targeting but for now this will catch 99% of expected use cases
-			layerMappingsManifest: PeripheralDevices.findOne(
-				{
-					studioId: {
-						$eq: props.match.params.studioId,
-					},
-					parentDeviceId: {
-						$exists: false,
-					},
-					type: {
-						$eq: PeripheralDeviceType.PLAYOUT,
-					},
-				},
-				{
-					sort: {
-						lastConnected: -1,
-					},
-				}
-			)?.configManifest?.layerMappings,
+			layerMappingsManifest: firstPlayoutDevice?.configManifest?.layerMappings,
+			layerMappingsSchema: layerMappingsSchema,
 		}
 	}
 )(
@@ -192,7 +206,11 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/mappings`}>
-										<StudioMappings studio={this.props.studio} manifest={this.props.layerMappingsManifest} />
+										<StudioMappings
+											studio={this.props.studio}
+											manifest={this.props.layerMappingsManifest}
+											manifest2={this.props.layerMappingsSchema}
+										/>
 									</Route>
 									<Route path={`${this.props.match.path}/route-sets`}>
 										<StudioRoutings
