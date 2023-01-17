@@ -68,12 +68,13 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 	}
 	return (
 		<label className="field">
-			{children(item.computed[String(itemKey)] as any, setValue)}
 			{!labelAfter && label}
 
-			{hint && <span className="text-s dimmed">{hint}</span>}
+			{children(item.computed[String(itemKey)] as any, setValue)}
 
 			{labelAfter && label}
+
+			{hint && <span className="text-s dimmed">{hint}</span>}
 
 			{item.defaults && (
 				<>
