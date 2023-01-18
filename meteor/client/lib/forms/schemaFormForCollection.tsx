@@ -22,7 +22,10 @@ export function SchemaFormForCollection({
 	collection,
 	objectId,
 }: SchemaFormForCollectionProps) {
-	const helper = useMemo(() => new OverrideOpHelper2(collection, objectId, basePath), [collection, objectId, basePath])
+	const helper = useMemo(
+		() => new OverrideOpHelperCollection(collection, objectId, basePath),
+		[collection, objectId, basePath]
+	)
 
 	const wrappedItem = useMemo(
 		() =>
@@ -47,7 +50,11 @@ export function SchemaFormForCollection({
 	)
 }
 
-class OverrideOpHelper2 implements OverrideOpHelper {
+/**
+ * An alternate OverrideOpHelper designed to directly mutate a collection, instead of using the `ObjectWithOverrides` system.
+ * This allows us to have one SchemaForm implementation that can handle working with `ObjectWithOverrides`, and basic objects in mongodb
+ */
+class OverrideOpHelperCollection implements OverrideOpHelper {
 	readonly #collection: MongoCollection<any>
 	readonly #objectId: ProtectedString<any>
 	readonly #basePath: string
@@ -86,7 +93,6 @@ class OverrideOpHelper2 implements OverrideOpHelper {
 		}
 	}
 	replaceItem(_itemId: string, _value: any): void {
-		// TODO - is this needed?
-		throw new Error('Method not implemented.')
+		// Not supported as this is faking an item with overrides
 	}
 }

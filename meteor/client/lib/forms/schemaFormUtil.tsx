@@ -6,8 +6,6 @@ export function joinFragments(...fragments: Array<string | number | undefined>):
 	return fragments.filter((v) => v !== '' && v !== undefined && v !== null).join('.')
 }
 
-export type SchemaFormUpdateFunction = (path: string, val: any, mode?: 'push' | 'pull') => void
-
 export function translateStringIfHasNamespaces(str: string, translationNamespaces: string[] | undefined): string {
 	return translationNamespaces ? translateMessage({ key: str, namespaces: translationNamespaces }, i18nTranslator) : str
 }

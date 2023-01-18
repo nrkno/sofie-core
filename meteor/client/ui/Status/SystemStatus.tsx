@@ -33,7 +33,7 @@ import { SubdeviceAction } from '@sofie-automation/shared-lib/dist/core/deviceCo
 import { StatusCodePill } from './StatusCodePill'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
-import { SchemaForm } from '../../lib/forms/schemaForm'
+import { SchemaFormInPlace } from '../../lib/forms/schemaFormInPlace'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -154,10 +154,9 @@ export const DeviceItem = reacti18next.withTranslation()(
 					yes: t('Execute'),
 					no: t('Cancel'),
 					message: action.payload ? (
-						<SchemaForm
+						<SchemaFormInPlace
 							schema={JSON.parse(action.payload)}
 							object={payload}
-							attr={''}
 							translationNamespaces={namespaces}
 						/>
 					) : (
