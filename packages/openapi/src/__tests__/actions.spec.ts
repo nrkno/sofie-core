@@ -12,7 +12,7 @@ const httpLogging = false
 const runTests = false
 
 class TestError extends Error {
-	override name: 'TestError' = 'TestError'
+	override name: 'TestError' = 'TestError' as const
 	constructor(msg: string) {
 		super(msg)
 	}
