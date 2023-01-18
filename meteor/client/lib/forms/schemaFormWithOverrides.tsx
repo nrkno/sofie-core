@@ -15,6 +15,7 @@ import {
 import { MultiLineTextInputControl } from '../Components/MultiLineTextInput'
 import { TextInputControl } from '../Components/TextInput'
 import { JSONSchema, TypeName } from './schema-types'
+import { SchemaFormTable } from './schemaFormTable'
 import { joinFragments, translateStringIfHasNamespaces } from './schemaFormUtil'
 
 interface SchemaFormWithOverridesProps {
@@ -100,15 +101,8 @@ const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 	switch (props.schema.items?.type) {
 		case TypeName.String:
 			return <StringArrayFormWithOverrides {...childProps} />
-		// case TypeName.Object:
-		// 	return (
-		// 		<SchemaFormTable
-		// 			schema={props.schema}
-		// 			translationNamespaces={props.translationNamespaces}
-		// 			object={props.object[props.attr]}
-		// 			updateFunction={updateFunction2}
-		// 		/>
-		// 	)
+		case TypeName.Object:
+			return <SchemaFormTable {...props} />
 		default:
 			return <>{t('Unsupported array type "{{ type }}"', { type: props.schema.items?.type })}</>
 	}
@@ -215,7 +209,6 @@ const BooleanFormWithOverrides = ({ commonAttrs }: FormComponentProps) => {
 }
 
 const StringFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
-	console.log(commonAttrs, schema)
 	return (
 		<div className="mod mvs mhs">
 			<LabelAndOverrides {...commonAttrs}>

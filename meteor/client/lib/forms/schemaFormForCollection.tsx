@@ -71,7 +71,6 @@ class OverrideOpHelper2 implements OverrideOpHelper {
 		// Not supported as this is faking an item with overrides
 	}
 	setItemValue(_itemId: string, subPath: string, value: any): void {
-		console.log('set', `${this.#basePath}.${subPath}`, value)
 		if (value === undefined) {
 			this.#collection.update(this.#objectId, {
 				$unset: {
@@ -91,46 +90,3 @@ class OverrideOpHelper2 implements OverrideOpHelper {
 		throw new Error('Method not implemented.')
 	}
 }
-
-// const updateFunction = useCallback(
-// 	(path: string, val: any, mode?: 'push' | 'pull') => {
-// 		if (mode === 'push') {
-// 			PeripheralDevices.update(parentId, {
-// 				$push: {
-// 					[`settings.devices.${subdeviceId}.${path}`]: val,
-// 				},
-// 			})
-// 		} else if (mode === 'pull') {
-// 			if (isNaN(val)) {
-// 				throw new Error("Can't pop a non-numeric array index!")
-// 			}
-// 			PeripheralDevices.update(parentId, {
-// 				$unset: {
-// 					[`settings.devices.${subdeviceId}.${path}.${val}`]: 1,
-// 				},
-// 			})
-
-// 			// clean up the array
-// 			PeripheralDevices.update(parentId, {
-// 				$pull: {
-// 					[`settings.devices.${subdeviceId}.${path}`]: null,
-// 				},
-// 			})
-// 		} else {
-// 			if (val === undefined) {
-// 				PeripheralDevices.update(parentId, {
-// 					$unset: {
-// 						[`settings.devices.${subdeviceId}.${path}`]: 1,
-// 					},
-// 				})
-// 			} else {
-// 				PeripheralDevices.update(parentId, {
-// 					$set: {
-// 						[`settings.devices.${subdeviceId}.${path}`]: val,
-// 					},
-// 				})
-// 			}
-// 		}
-// 	},
-// 	[parentId, subdeviceId]
-// )

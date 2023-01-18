@@ -8,7 +8,6 @@ import { MultiLineTextInputControl } from '../Components/MultiLineTextInput'
 import { TextInputControl } from '../Components/TextInput'
 import { EditAttribute } from '../EditAttribute'
 import { type JSONSchema, TypeName } from './schema-types'
-import { SchemaFormTable } from './schemaFormTable'
 import { joinFragments, SchemaFormUpdateFunction, translateStringIfHasNamespaces } from './schemaFormUtil'
 
 export interface SchemaFormProps {
@@ -57,29 +56,29 @@ export const SchemaForm = (props: SchemaFormProps) => {
 const ArrayForm = (props: SchemaFormProps) => {
 	const { t } = useTranslation()
 
-	const updateFunction2 = useMemo((): SchemaFormUpdateFunction | undefined => {
-		const fn = props.updateFunction
-		if (fn) {
-			return (path: string, value: any, mode) => {
-				const path2 = joinFragments(props.attr, path)
+	// const updateFunction2 = useMemo((): SchemaFormUpdateFunction | undefined => {
+	// 	const fn = props.updateFunction
+	// 	if (fn) {
+	// 		return (path: string, value: any, mode) => {
+	// 			const path2 = joinFragments(props.attr, path)
 
-				return fn(path2, value, mode)
-			}
-		}
-	}, [props.attr, props.updateFunction])
+	// 			return fn(path2, value, mode)
+	// 		}
+	// 	}
+	// }, [props.attr, props.updateFunction])
 
 	switch (props.schema.items?.type) {
 		case TypeName.String:
 			return <WrappedAttribute {...props} component={<StringArrayForm {...props} />} />
-		case TypeName.Object:
-			return (
-				<SchemaFormTable
-					schema={props.schema}
-					translationNamespaces={props.translationNamespaces}
-					object={props.object[props.attr]}
-					updateFunction={updateFunction2}
-				/>
-			)
+		// case TypeName.Object:
+		// 	return (
+		// 		<SchemaFormTable
+		// 			schema={props.schema}
+		// 			translationNamespaces={props.translationNamespaces}
+		// 			object={props.object[props.attr]}
+		// 			updateFunction={updateFunction2}
+		// 		/>
+		// 	)
 		default:
 			return <>{t('Unsupported array type "{{ type }}"', { type: props.schema.items?.type })}</>
 	}

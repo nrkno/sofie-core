@@ -69,7 +69,6 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 	}
 
 	const value = objectPathGet(item.computed, String(itemKey))
-	console.log('get value', item.computed, itemKey, value)
 
 	return (
 		<label className="field">

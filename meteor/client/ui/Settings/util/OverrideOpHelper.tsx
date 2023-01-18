@@ -113,12 +113,14 @@ export interface OverrideOpHelper {
 	/**
 	 * Clear all of the overrides for an value inside of an item
 	 * This acts as a reset of property of its child properties
+	 * Has no effect if there are no `overrideOps` on the `WrappedOverridableItemNormal`
 	 */
 	clearItemOverrides(itemId: string, subPath: string): void
 
 	/**
 	 * Clear all of the overrides for an item
 	 * This acts as a reset to defaults or undelete
+	 * Has no effect if there are no `overrideOps` on the `WrappedOverridableItemNormal`
 	 */
 	resetItem(itemId: string): void
 
@@ -130,6 +132,7 @@ export interface OverrideOpHelper {
 	/**
 	 * Change the id of an item.
 	 * This is only possible for ones which were created by an override, and does not exist in the defaults
+	 * Only possible when the item being renamed does not exist in the defaults
 	 */
 	changeItemId(oldItemId: string, newItemId: string): void
 
@@ -140,11 +143,12 @@ export interface OverrideOpHelper {
 	setItemValue(itemId: string, subPath: string, value: any): void
 
 	/**
-	 * TODO
+	 * Replace a whole item with a new object
+	 * Note: the id cannot be changed in this way
 	 */
 	replaceItem(itemId: string, value: any): void
 }
-export class OverrideOpHelperImpl implements OverrideOpHelper {
+class OverrideOpHelperImpl implements OverrideOpHelper {
 	readonly #saveOverrides: SaveOverridesFunction
 	readonly #objectWithOverridesRef: MutableRefObject<ObjectWithOverrides<any>>
 
