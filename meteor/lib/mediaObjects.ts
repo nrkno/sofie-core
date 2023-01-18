@@ -42,13 +42,13 @@ export function buildFormatString(
 	}
 	if (stream.r_frame_rate) {
 		// More accurate method, for package-manager
-		const formattedFramerate = /(\d+)\/(\d+)/.exec(stream.r_frame_rate) as RegExpExecArray
+		const formattedFramerate = /^(\d+)\/(\d+)$/.exec(stream.r_frame_rate) as RegExpExecArray
 		let fps = Number(formattedFramerate[1]) / Number(formattedFramerate[2])
 		fps = Math.floor(fps * 100 * 100) / 100
 		format += fps
 	} else if (stream.codec_time_base) {
 		// Less accurate method, for media-manager
-		const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec_time_base) as RegExpExecArray
+		const formattedTimebase = /^(\d+)\/(\d+)$/.exec(stream.codec_time_base) as RegExpExecArray
 		let fps = Number(formattedTimebase[2]) / Number(formattedTimebase[1])
 		fps = Math.floor(fps * 100 * 100) / 100
 		format += fps

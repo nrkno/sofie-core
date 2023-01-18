@@ -15,7 +15,7 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { SourceLayerDropdownOption } from '../BlueprintConfigManifest'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { NoticeLevel, NotificationCenter, Notification } from '../../../lib/notifications/notifications'
+import { NoticeLevel, NotificationCenter, Notification } from '../../../../lib/notifications/notifications'
 import { UploadButton } from '../../../lib/uploadButton'
 import update from 'immutability-helper'
 import { VariantListItem } from './VariantListItem'
