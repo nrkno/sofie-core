@@ -390,6 +390,7 @@ describe('Migrations', () => {
 			showStyleBaseId: protectString('showStyle0'),
 			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',
+			_rank: 0,
 		})
 
 		Blueprints.insert(generateFakeBlueprint('studio0', BlueprintManifestType.STUDIO, studioManifest))

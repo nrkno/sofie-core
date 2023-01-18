@@ -54,7 +54,6 @@ const tsBase = {
 			},
 		],
 		'jest/no-standalone-expect': 'off', // testInFiber confuses the rule
-
 		...tmpRules,
 	},
 }

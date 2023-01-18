@@ -142,6 +142,7 @@ export async function setupMockShowStyleVariant(
 		showStyleBaseId: showStyleBaseId,
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
+		_rank: 0,
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)
 	await context.directCollections.ShowStyleVariants.insertOne(showStyleVariant)

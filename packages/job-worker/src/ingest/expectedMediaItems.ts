@@ -31,6 +31,7 @@ import { saveIntoDb } from '../db/changes'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 
 export enum PieceType {
 	PIECE = 'piece',
@@ -81,7 +82,7 @@ function generateExpectedMediaItemsFull(
 	rundownId: RundownId,
 	pieces: Piece[],
 	adlibs: AdLibPiece[],
-	actions: AdLibAction[]
+	actions: (AdLibAction | RundownBaselineAdLibAction)[]
 ): ExpectedMediaItem[] {
 	const eMIs: ExpectedMediaItem[] = []
 
@@ -217,11 +218,25 @@ export async function updateExpectedMediaItemForBucketAdLibAction(
 }
 
 /** @deprecated */
-export function updateExpectedMediaItemsOnRundown(context: JobContext, cache: CacheForIngest): void {
+export async function updateExpectedMediaItemsOnRundown(context: JobContext, cache: CacheForIngest): Promise<void> {
 	const pieces = cache.Pieces.findAll(null)
 	const adlibs = cache.AdLibPieces.findAll(null)
-	const actions = cache.AdLibActions.findAll(null)
+	const actions: (AdLibAction | RundownBaselineAdLibAction)[] = cache.AdLibActions.findAll(null)
 
-	const eMIs = generateExpectedMediaItemsFull(context.studio._id, cache.RundownId, pieces, adlibs, actions)
-	saveIntoCache<ExpectedMediaItem>(context, cache.ExpectedMediaItems, null, eMIs)
+	const [baselineAdlibPieces, baselineAdlibActions] = await Promise.all([
+		cache.RundownBaselineAdLibPieces.get(),
+		cache.RundownBaselineAdLibActions.get(),
+	])
+
+	adlibs.push(...baselineAdlibPieces.findAll(null))
+	actions.push(...baselineAdlibActions.findAll(null))
+
+	const expectedMediaItems = generateExpectedMediaItemsFull(
+		context.studio._id,
+		cache.RundownId,
+		pieces,
+		adlibs,
+		actions
+	)
+	saveIntoCache<ExpectedMediaItem>(context, cache.ExpectedMediaItems, null, expectedMediaItems)
 }

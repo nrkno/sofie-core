@@ -416,6 +416,7 @@ export class MigrationContextShowStyle
 				showStyleBaseId: this.showStyleBase._id,
 				blueprintConfigWithOverrides: wrapDefaultObject({}),
 				_rundownVersionHash: '',
+				_rank: 0,
 			})
 		)
 	}
