@@ -38,8 +38,8 @@ interface ActivePlaylistStatus {
 	rundownIds: string[]
 	currentPart: PartStatus | null
 	nextPart: PartStatus | null
-	adlibActions: AdLibActionStatus[]
-	globalAdlibActions: AdLibActionStatus[]
+	adLibs: AdLibActionStatus[]
+	globalAdLibs: AdLibActionStatus[]
 }
 
 export class ActivePlaylistTopic
@@ -95,7 +95,7 @@ export class ActivePlaylistTopic
 										autoNext: nextPart.autoNext,
 								  })
 								: null,
-							adlibActions: this._adLibActions
+							adLibs: this._adLibActions
 								? this._adLibActions.map((action) => {
 										const sourceLayerName = this._sourceLayersMap.get(
 											(action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
@@ -120,7 +120,7 @@ export class ActivePlaylistTopic
 										})
 								  })
 								: [],
-							globalAdlibActions: this._globalAdLibActions
+							globalAdLibs: this._globalAdLibActions
 								? this._globalAdLibActions.map((action) => {
 										const sourceLayerName = this._sourceLayersMap.get(
 											(action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
@@ -153,8 +153,8 @@ export class ActivePlaylistTopic
 							rundownIds: [],
 							currentPart: null,
 							nextPart: null,
-							adlibActions: [],
-							globalAdlibActions: [],
+							adLibs: [],
+							globalAdLibs: [],
 					  })
 			)
 		})

@@ -24,17 +24,17 @@ $defs:
       nextPart:
         description: The next Part - if empty, no part will follow live part
         $ref: '#/$defs/part'
-      adLibActions:
-        description: The available AdLibActions for this playlist
+      adLibs:
+        description: The available AdLibs for this playlist
         type: array
         items:
-          $ref: '#/$defs/adLibAction'
-      globalAdLibActions:
-        description: The available Global AdLibActions for this playlist
+          $ref: '#/$defs/adLib'
+      globalAdLibs:
+        description: The available Global AdLibs for this playlist
         type: array
         items:
-          $ref: '#/$defs/adLibAction'
-    required: [event, id, name, rundownIds, currentPart, nextPart, adLibActions, globalAdLibActions]
+          $ref: '#/$defs/adLib'
+    required: [event, id, name, rundownIds, currentPart, nextPart, adLibs, globalAdLibs]
     additionalProperties: false
     examples:
       - event: activePlaylist
@@ -45,10 +45,10 @@ $defs:
           $ref: '#/$defs/part/examples'
         nextPart:
           $ref: '#/$defs/part/examples'
-        adLibActions:
-          $ref: '#/$defs/adLibAction/examples'
-        globalAdLibActions:
-          $ref: '#/$defs/adLibAction/examples'
+        adLibs:
+          $ref: '#/$defs/adLib/examples'
+        globals:
+          $ref: '#/$defs/adLib/examples'
   part:
     oneOf:
       - type: object
@@ -70,23 +70,23 @@ $defs:
       - id: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
         name: 'Intro'
         autoNext: false
-  adLibAction:
+  adLib:
     type: object
     properties:
       id:
-        description: Unique id of the AdLibAction
+        description: Unique id of the AdLib
         type: string
       name:
-        description: The user defined AdLibAction name
+        description: The user defined AdLib name
         type: string
       sourceLayer:
-        description: The source layer name for this AdLibAction
+        description: The source layer name for this AdLib
         type: string
       outputLayer:
-        description: The output layer name for this AdLibAction
+        description: The output layer name for this AdLib
         type: string
       actionType:
-        description: The available action type names that can be used to modify the execution of the AdLibAction
+        description: The available action type names that can be used to modify the execution of the AdLib
         type: array
         items:
           type: object
@@ -95,7 +95,7 @@ $defs:
               description: The string to be passed to the ExecuteAdlib function
               type: string
             label:
-              description: The label for the AdLibAction type
+              description: The label for the AdLib type
               type: string
           required: [name, label]
           additionalProperties: false
