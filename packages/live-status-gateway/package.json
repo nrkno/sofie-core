@@ -52,10 +52,10 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
-		"@sofie-automation/server-core-integration": "link:../server-core-integration",
-		"@sofie-automation/corelib": "link:../corelib",
-		"@sofie-automation/shared-lib": "link:../shared-lib",
+		"@sofie-automation/blueprints-integration": "1.49.0-in-development",
+		"@sofie-automation/server-core-integration": "1.49.0-in-development",
+		"@sofie-automation/corelib": "1.49.0-in-development",
+		"@sofie-automation/shared-lib": "1.49.0-in-development",
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.2",
