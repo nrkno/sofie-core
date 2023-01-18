@@ -215,8 +215,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									<Route path={`${this.props.match.path}/mappings`}>
 										<StudioMappings
 											studio={this.props.studio}
-											manifest={this.props.layerMappingsManifest}
-											manifest2={this.props.layerMappingsSchema}
+											manifest={this.props.layerMappingsSchema}
 											translationNamespaces={this.props.layerMappingsTranslationNamespaces}
 										/>
 									</Route>

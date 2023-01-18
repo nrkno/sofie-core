@@ -14,11 +14,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus, faSync } from '@fortawesome/free-solid-svg-icons'
 import { useTranslation } from 'react-i18next'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
-import {
-	ConfigManifestEntryType,
-	MappingManifestEntry,
-	MappingsManifest,
-} from '@sofie-automation/corelib/dist/deviceConfig'
+import { MappingManifestEntry } from '@sofie-automation/corelib/dist/deviceConfig'
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
 import { MongoCollection } from '../../../../lib/collections/lib'
 import { renderEditAttribute } from '../components/ConfigManifestEntryComponent'
@@ -34,7 +30,7 @@ import {
 	ObjectOverrideSetOp,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TextInputControl } from '../../../lib/Components/TextInput'
 import { IntInputControl } from '../../../lib/Components/IntInput'
@@ -50,7 +46,11 @@ import {
 } from '../../../lib/Components/LabelAndOverrides'
 import { JSONSchema } from '../../../lib/forms/schema-types'
 import { SchemaFormWithOverrides } from '../../../lib/forms/schemaFormWithOverrides'
-import { translateStringIfHasNamespaces } from '../../../lib/forms/schemaFormUtil'
+import {
+	getSchemaSummaryFields,
+	SchemaSummaryField,
+	translateStringIfHasNamespaces,
+} from '../../../lib/forms/schemaFormUtil'
 
 export interface MappingsSettingsManifest {
 	displayName: string
@@ -60,24 +60,23 @@ export type MappingsSettingsManifests = Record<string | number, MappingsSettings
 
 interface IStudioMappingsProps {
 	studio: Studio
-	manifest: MappingsManifest | undefined
-	manifest2: MappingsSettingsManifests | undefined
+	manifest: MappingsSettingsManifests | undefined
 	translationNamespaces: string[]
 }
 
-export function StudioMappings({ manifest, manifest2, translationNamespaces, studio }: IStudioMappingsProps) {
+export function StudioMappings({ manifest, translationNamespaces, studio }: IStudioMappingsProps) {
 	const { t } = useTranslation()
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
 	const manifestNames = useMemo(() => {
 		return Object.fromEntries(
-			Object.entries(manifest2 || {}).map(([id, val]) => [
+			Object.entries(manifest || {}).map(([id, val]) => [
 				id,
 				translateStringIfHasNamespaces(val.displayName, translationNamespaces),
 			])
 		)
-	}, [manifest2, translationNamespaces])
+	}, [manifest, translationNamespaces])
 
 	const addNewLayer = useCallback(() => {
 		const resolvedMappings = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
@@ -151,6 +150,7 @@ export function StudioMappings({ manifest, manifest2, translationNamespaces, stu
 										layerId={item.id}
 										manifest={manifest[item.defaults.device]}
 										manifestNames={manifestNames}
+										translationNamespaces={translationNamespaces}
 										mapping={item.defaults}
 										doUndelete={overrideHelper.resetItem}
 									/>
@@ -162,7 +162,6 @@ export function StudioMappings({ manifest, manifest2, translationNamespaces, stu
 										toggleExpanded={toggleExpanded}
 										isExpanded={isExpanded(item.id)}
 										manifest={manifest[item.computed.device]}
-										manifest2={manifest2?.[item.computed.device]}
 										manifestNames={manifestNames}
 										translationNamespaces={translationNamespaces}
 										overrideHelper={overrideHelper}
@@ -184,8 +183,10 @@ export function StudioMappings({ manifest, manifest2, translationNamespaces, stu
 
 interface DeletedEntryProps {
 	activeRoutes: ResultingMappingRoutes
-	manifest: MappingManifestEntry[] | undefined
+	manifest: MappingsSettingsManifest | undefined
 	manifestNames: Record<string | number, string>
+	translationNamespaces: string[]
+
 	mapping: MappingExt
 	layerId: string
 	doUndelete: (itemId: string) => void
@@ -194,6 +195,7 @@ function MappingDeletedEntry({
 	activeRoutes,
 	manifest,
 	manifestNames,
+	translationNamespaces,
 	mapping,
 	layerId,
 	doUndelete,
@@ -201,6 +203,13 @@ function MappingDeletedEntry({
 	const { t } = useTranslation()
 
 	const doUndeleteItem = useCallback(() => doUndelete(layerId), [doUndelete, layerId])
+
+	// TODO - remove cast
+	const mappingSchema = manifest?.mappingsSchema?.['mappings']?.[(mapping as any).mappingType]
+	const mappingSummaryFields = useMemo(
+		() => (mappingSchema ? getSchemaSummaryFields(mappingSchema as JSONSchema) : []),
+		[mappingSchema]
+	)
 
 	return (
 		<tr>
@@ -221,7 +230,7 @@ function MappingDeletedEntry({
 			<td className="settings-studio-device__id c2 deleted">{manifestNames[mapping.device] ?? mapping.device}</td>
 			<td className="settings-studio-device__id c2 deleted">{mapping.deviceId}</td>
 			<td className="settings-studio-device__id c4 deleted">
-				<MappingSummary manifest={manifest} mapping={mapping} />
+				<MappingSummary translationNamespaces={translationNamespaces} fields={mappingSummaryFields} mapping={mapping} />
 			</td>
 			<td className="settings-studio-output-table__actions table-item-actions c3">
 				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
@@ -234,8 +243,7 @@ function MappingDeletedEntry({
 
 interface StudioMappingsEntryProps {
 	activeRoutes: ResultingMappingRoutes
-	manifest: MappingManifestEntry[] | undefined
-	manifest2: MappingsSettingsManifest | undefined
+	manifest: MappingsSettingsManifest | undefined
 	manifestNames: Record<string | number, string>
 	translationNamespaces: string[]
 
@@ -249,7 +257,6 @@ interface StudioMappingsEntryProps {
 function StudioMappingsEntry({
 	activeRoutes,
 	manifest,
-	manifest2,
 	manifestNames,
 	translationNamespaces,
 	toggleExpanded,
@@ -299,7 +306,7 @@ function StudioMappingsEntry({
 	}, [manifestNames])
 
 	const mappingTypeOptions = useMemo(() => {
-		const raw: Array<[string, JSONSchema]> = Object.entries(manifest2?.mappingsSchema?.['mappings'] || {})
+		const raw: Array<[string, JSONSchema]> = Object.entries(manifest?.mappingsSchema?.['mappings'] || {})
 		// raw.sort((a, b) => a[1]?.localeCompare(b[1])) // TODO ?
 
 		return raw.map(([id, entry], i) =>
@@ -309,15 +316,19 @@ function StudioMappingsEntry({
 				i,
 			})
 		)
-	}, [manifest2?.mappingsSchema])
+	}, [manifest?.mappingsSchema])
 
 	// TODO - remove cast
-	const mappingSchema = manifest2?.mappingsSchema?.['mappings']?.[(item.computed as any).mappingType]
+	const mappingSchema = manifest?.mappingsSchema?.['mappings']?.[(item.computed as any).mappingType]
+	const mappingSummaryFields = useMemo(
+		() => (mappingSchema ? getSchemaSummaryFields(mappingSchema as JSONSchema) : []),
+		[mappingSchema]
+	)
 
 	const hasMappingTypeChangedFromDefault =
 		item.defaults &&
 		(item.computed.device !== item.defaults?.device ||
-			(item.computed as any)?.mappingType !== (item.defaults as any)?.mappingType) // TODO - avoid cast
+			(item.computed as any).mappingType !== (item.defaults as any)?.mappingType) // TODO - avoid cast
 	// TODO - should be `.options.mappingType`
 	const mappingSchemaItem = hasMappingTypeChangedFromDefault
 		? literal<WrappedOverridableItemNormal<MappingExt>>({
@@ -351,7 +362,11 @@ function StudioMappingsEntry({
 				<td className="settings-studio-device__id c2">{manifestNames[item.computed.device] ?? item.computed.device}</td>
 				<td className="settings-studio-device__id c2">{item.computed.deviceId}</td>
 				<td className="settings-studio-device__id c4">
-					<MappingSummary manifest={manifest} mapping={item.computed} />
+					<MappingSummary
+						translationNamespaces={translationNamespaces}
+						fields={mappingSummaryFields}
+						mapping={item.computed}
+					/>
 				</td>
 
 				<td className="settings-studio-device__actions table-item-actions c3">
@@ -544,28 +559,20 @@ function StudioMappingsEntry({
 }
 
 interface MappingSummaryProps {
-	manifest: MappingManifestEntry[] | undefined
+	translationNamespaces: string[]
+	fields: SchemaSummaryField[]
 	mapping: MappingExt
 }
-function MappingSummary({ manifest, mapping }: MappingSummaryProps) {
-	if (manifest) {
+function MappingSummary({ translationNamespaces, fields, mapping }: MappingSummaryProps) {
+	if (fields.length > 0) {
 		return (
 			<span>
-				{manifest
-					.filter((entry) => entry.includeInSummary)
+				{fields
 					.map((entry) => {
-						const summary = entry.name + ': '
+						const rawValue = objectPathGet(mapping, entry.attr)
+						const displayValue = entry.transform ? entry.transform(rawValue) : rawValue
 
-						let mappingValue = entry.values && entry.values[mapping[entry.id]]
-						if (!mappingValue) {
-							mappingValue = mapping[entry.id]
-						}
-
-						if (entry.type === ConfigManifestEntryType.INT && entry.zeroBased && !isNaN(mappingValue)) {
-							mappingValue += 1
-						}
-
-						return summary + mappingValue
+						return `${translateStringIfHasNamespaces(entry.name, translationNamespaces)}: ${displayValue}`
 					})
 					.join(' - ')}
 			</span>

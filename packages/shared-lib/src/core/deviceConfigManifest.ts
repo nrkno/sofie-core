@@ -25,7 +25,7 @@ export interface DeviceConfigManifest {
 	 */
 	deviceOAuthFlow?: DeviceOAuthFlow
 	/**
-	 * A description of the layer mapping config fields
+	 * @deprecated
 	 */
 	layerMappings?: MappingsManifest
 	/**

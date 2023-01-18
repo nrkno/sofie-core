@@ -53,10 +53,23 @@ export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): Sch
 		default: {
 			const summaryTitle: string = schema['ui:summaryTitle']
 			if (summaryTitle && prefix) {
+				let transform: SchemaSummaryField['transform']
+				if (schema.type === 'integer' && schema['ui:zeroBased']) {
+					// Int fields can be zero indexed
+					transform = (val) => {
+						if (!isNaN(val)) {
+							return `${Number(val) + 1}`
+						} else {
+							return val
+						}
+					}
+				}
+
 				return [
 					{
 						attr: prefix,
 						name: summaryTitle,
+						transform,
 					},
 				]
 			}
