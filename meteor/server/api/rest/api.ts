@@ -20,6 +20,7 @@ import {
 	AdLibActionId,
 	BucketAdLibId,
 	PartId,
+	PartInstanceId,
 	PieceId,
 	RundownBaselineAdLibActionId,
 	RundownPlaylistId,
@@ -325,7 +326,8 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 
 	async take(
 		connection: Meteor.Connection,
-		rundownPlaylistId: RundownPlaylistId
+		rundownPlaylistId: RundownPlaylistId,
+		fromPartInstanceId?: PartInstanceId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		triggerWriteAccess()
 		const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -342,7 +344,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 			StudioJobs.TakeNextPart,
 			{
 				playlistId: rundownPlaylistId,
-				fromPartInstanceId: rundownPlaylist.currentPartInstanceId,
+				fromPartInstanceId: fromPartInstanceId ?? rundownPlaylist.currentPartInstanceId,
 			}
 		)
 	}
@@ -594,11 +596,15 @@ koaRouter.post('/setNextSegment/:playlistId/:segmentId', async (ctx, next) => {
 
 koaRouter.post('/take/:playlistId', async (ctx, next) => {
 	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
+	const fromPartInstanceId = (ctx.req.body as { fromPartInstanceId: string }).fromPartInstanceId
 	check(rundownPlaylistId, String)
+	check(fromPartInstanceId, Match.Optional(String))
 	logger.info(`koa POST: take ${rundownPlaylistId}`)
 
 	try {
-		ctx.body = ClientAPI.responseSuccess(await MeteorCall.rest.take(makeConnection(ctx), rundownPlaylistId))
+		ctx.body = ClientAPI.responseSuccess(
+			await MeteorCall.rest.take(makeConnection(ctx), rundownPlaylistId, fromPartInstanceId)
+		)
 		ctx.status = 200
 	} catch (e) {
 		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message

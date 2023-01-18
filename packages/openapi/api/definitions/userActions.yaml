@@ -374,6 +374,16 @@ resources:
           required: true
           schema:
             type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromPartInstanceId:
+                  type: string
+                  description: May be specified to ensure that multiple take requests from the same Part do not result in multiple takes.
       responses:
         200:
           $ref: '#/components/responses/postSuccess'
