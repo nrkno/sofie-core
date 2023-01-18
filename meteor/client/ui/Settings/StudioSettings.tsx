@@ -26,8 +26,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { i18nTranslator } from '../i18n'
+import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
 
 interface IStudioSettingsProps {
 	match: {
@@ -95,7 +94,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				return [
 					id,
 					literal<MappingsSettingsManifest>({
-						displayName: translateMessage({ key: val.displayName, namespaces: translationNamespaces }, i18nTranslator),
+						displayName: translateStringIfHasNamespaces(val.displayName, translationNamespaces),
 						mappingsSchema: val.mappingSchema ? JSON.parse(val.mappingSchema) : undefined,
 					}),
 				]

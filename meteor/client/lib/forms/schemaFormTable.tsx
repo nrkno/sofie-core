@@ -1,11 +1,9 @@
 import { faCheck, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { objectPathGet } from '@sofie-automation/corelib/dist/lib'
-import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import classNames from 'classnames'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { i18nTranslator } from '../../ui/i18n'
 import { useToggleExpandHelper } from '../../ui/Settings/util/ToggleExpandedHelper'
 import { doModalDialog } from '../ModalDialog'
 import { JSONSchema } from './schema-types'
@@ -16,6 +14,7 @@ import {
 	joinFragments,
 	SchemaFormUpdateFunction,
 	SchemaSummaryField,
+	translateStringIfHasNamespaces,
 } from './schemaFormUtil'
 
 interface SchemaFormTableProps {
@@ -43,13 +42,7 @@ export const SchemaFormTable = ({ schema, translationNamespaces, object, updateF
 
 	return (
 		<>
-			{title && (
-				<h2 className="mhn">
-					{translationNamespaces
-						? translateMessage({ key: title, namespaces: translationNamespaces }, i18nTranslator)
-						: title}
-				</h2>
-			)}
+			{title && <h2 className="mhn">{translateStringIfHasNamespaces(title, translationNamespaces)}</h2>}
 			<table className={'expando setings-config-table table'}>
 				<SchemaFormTableContents
 					translationNamespaces={translationNamespaces}
@@ -119,13 +112,7 @@ function SchemaFormTableContents({
 			<thead>
 				<tr className="hl">
 					{summaryFields.map((col) => {
-						return (
-							<th key={col.attr}>
-								{translationNamespaces
-									? translateMessage({ key: col.name, namespaces: translationNamespaces }, i18nTranslator)
-									: col.name}
-							</th>
-						)
+						return <th key={col.attr}>{translateStringIfHasNamespaces(col.name, translationNamespaces)}</th>
 					})}
 					<th key="action">&nbsp;</th>
 				</tr>

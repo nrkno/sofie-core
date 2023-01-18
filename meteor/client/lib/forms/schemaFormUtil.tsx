@@ -1,3 +1,5 @@
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { i18nTranslator } from '../../ui/i18n'
 import { JSONSchema, TypeName } from './schema-types'
 
 export function joinFragments(...fragments: Array<string | number | undefined>): string {
@@ -5,6 +7,10 @@ export function joinFragments(...fragments: Array<string | number | undefined>):
 }
 
 export type SchemaFormUpdateFunction = (path: string, val: any, mode?: 'push' | 'pull') => void
+
+export function translateStringIfHasNamespaces(str: string, translationNamespaces: string[] | undefined): string {
+	return translationNamespaces ? translateMessage({ key: str, namespaces: translationNamespaces }, i18nTranslator) : str
+}
 
 export function getSchemaDefaultValues(schema: JSONSchema | undefined): any {
 	switch (schema?.type) {

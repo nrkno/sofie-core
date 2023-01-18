@@ -14,9 +14,12 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { DropdownInputControl, DropdownInputOption } from '../../../lib/Components/DropdownInput'
 import { SchemaTableSummaryRow } from '../../../lib/forms/schemaFormTable'
-import { getSchemaDefaultValues, SchemaSummaryField, getSchemaSummaryFields } from '../../../lib/forms/schemaFormUtil'
-import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { i18nTranslator } from '../../i18n'
+import {
+	getSchemaDefaultValues,
+	SchemaSummaryField,
+	getSchemaSummaryFields,
+	translateStringIfHasNamespaces,
+} from '../../../lib/forms/schemaFormUtil'
 
 interface SubDevicesConfigProps {
 	translationNamespaces: string[]
@@ -50,7 +53,7 @@ export function SubDevicesConfig({
 	const subDeviceOptions = useMemo(() => {
 		const raw = Object.entries(configSchema || {})
 		for (const [_id, obj] of raw) {
-			obj.displayName = translateMessage({ key: obj.displayName, namespaces: translationNamespaces }, i18nTranslator)
+			obj.displayName = translateStringIfHasNamespaces(obj.displayName, translationNamespaces)
 		}
 		raw.sort((a, b) => a[1].displayName.localeCompare(b[1].displayName))
 

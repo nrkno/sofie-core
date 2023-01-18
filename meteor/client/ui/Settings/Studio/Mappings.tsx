@@ -1,6 +1,5 @@
 import ClassNames from 'classnames'
 import React, { useCallback, useMemo } from 'react'
-import * as _ from 'underscore'
 import Tooltip from 'rc-tooltip'
 import {
 	Studio,
@@ -22,7 +21,7 @@ import {
 } from '@sofie-automation/corelib/dist/deviceConfig'
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
 import { MongoCollection } from '../../../../lib/collections/lib'
-import { ManifestEntryWithOverrides, renderEditAttribute } from '../components/ConfigManifestEntryComponent'
+import { renderEditAttribute } from '../components/ConfigManifestEntryComponent'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import {
 	getAllCurrentAndDeletedItemsFromOverrides,
@@ -50,9 +49,8 @@ import {
 	LabelAndOverridesForInt,
 } from '../../../lib/Components/LabelAndOverrides'
 import { JSONSchema } from '../../../lib/forms/schema-types'
-import { SchemaForm } from '../../../lib/forms/schemaForm'
-import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { i18nTranslator } from '../../i18n'
+import { SchemaFormWithOverrides } from '../../../lib/forms/schemaFormWithOverrides'
+import { translateStringIfHasNamespaces } from '../../../lib/forms/schemaFormUtil'
 
 export interface MappingsSettingsManifest {
 	displayName: string
@@ -76,11 +74,10 @@ export function StudioMappings({ manifest, manifest2, translationNamespaces, stu
 		return Object.fromEntries(
 			Object.entries(manifest2 || {}).map(([id, val]) => [
 				id,
-				translateMessage({ key: val.displayName, namespaces: translationNamespaces }, i18nTranslator),
+				translateStringIfHasNamespaces(val.displayName, translationNamespaces),
 			])
 		)
 	}, [manifest2, translationNamespaces])
-	console.log(manifestNames, translationNamespaces)
 
 	const addNewLayer = useCallback(() => {
 		const resolvedMappings = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
@@ -97,6 +94,7 @@ export function StudioMappings({ manifest, manifest2, translationNamespaces, stu
 			device: TSR.DeviceType.CASPARCG,
 			deviceId: protectString('newDeviceId'),
 			lookahead: LookaheadMode.NONE,
+			options: {},
 		})
 
 		const addOp = literal<ObjectOverrideSetOp>({
@@ -313,21 +311,21 @@ function StudioMappingsEntry({
 		)
 	}, [manifest2?.mappingsSchema])
 
-	const schemaUpdateFunction = useCallback((path: string, val: any) => {
-		// if (val === undefined) {
-		// 	const m = {}
-		// 	m[`settings.${path}`] = 1
-		// 	PeripheralDevices.update(device._id, { $unset: m })
-		// } else {
-		// 	const m = {}
-		// 	m[`settings.${path}`] = val
-		// 	PeripheralDevices.update(device._id, { $set: m })
-		// }
-		console.log('SCHEMA UPDATE', path, val)
-	}, [])
-
 	// TODO - remove cast
 	const mappingSchema = manifest2?.mappingsSchema?.['mappings']?.[(item.computed as any).mappingType]
+
+	const hasMappingTypeChangedFromDefault =
+		item.defaults &&
+		(item.computed.device !== item.defaults?.device ||
+			(item.computed as any)?.mappingType !== (item.defaults as any)?.mappingType) // TODO - avoid cast
+	// TODO - should be `.options.mappingType`
+	const mappingSchemaItem = hasMappingTypeChangedFromDefault
+		? literal<WrappedOverridableItemNormal<MappingExt>>({
+				...item,
+				// Trick the mapping schema into thinking it doesnt have defaults
+				defaults: undefined,
+		  })
+		: item
 
 	return (
 		<React.Fragment>
@@ -520,25 +518,18 @@ function StudioMappingsEntry({
 										</LabelAndOverridesForDropdown>
 									</div>
 									{mappingSchema ? (
-										<SchemaForm
+										<SchemaFormWithOverrides
 											schema={mappingSchema}
-											object={item.computed}
-											// TODO this needs to handle overrides too....
-											attr=""
-											updateFunction={schemaUpdateFunction}
 											translationNamespaces={translationNamespaces}
+											item={mappingSchemaItem}
+											attr="" // TODO - should this be options?
+											overrideHelper={overrideHelper}
 										/>
 									) : (
 										<p>{t('No schema has been provided for this mapping')}</p>
 									)}
 								</>
 							)}
-							{manifest &&
-								manifest.map((m) => (
-									<div className="mod mvs mhs" key={m.id}>
-										<ManifestEntryWithOverrides configField={m as any} item={item} overrideHelper={overrideHelper} />
-									</div>
-								))}
 						</div>
 						<div className="mod alright">
 							<button className={ClassNames('btn btn-primary')} onClick={toggleEditItem}>
@@ -570,7 +561,7 @@ function MappingSummary({ manifest, mapping }: MappingSummaryProps) {
 							mappingValue = mapping[entry.id]
 						}
 
-						if (entry.type === ConfigManifestEntryType.INT && entry.zeroBased && _.isNumber(mappingValue)) {
+						if (entry.type === ConfigManifestEntryType.INT && entry.zeroBased && !isNaN(mappingValue)) {
 							mappingValue += 1
 						}
 

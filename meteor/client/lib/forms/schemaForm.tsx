@@ -1,8 +1,6 @@
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { i18nTranslator } from '../../ui/i18n'
 import { CheckboxControl } from '../Components/Checkbox'
 import { DropdownInputControl, DropdownInputOption } from '../Components/DropdownInput'
 import { IntInputControl } from '../Components/IntInput'
@@ -11,7 +9,7 @@ import { TextInputControl } from '../Components/TextInput'
 import { EditAttribute } from '../EditAttribute'
 import { type JSONSchema, TypeName } from './schema-types'
 import { SchemaFormTable } from './schemaFormTable'
-import { joinFragments, SchemaFormUpdateFunction } from './schemaFormUtil'
+import { joinFragments, SchemaFormUpdateFunction, translateStringIfHasNamespaces } from './schemaFormUtil'
 
 export interface SchemaFormProps {
 	schema: JSONSchema
@@ -130,16 +128,10 @@ export const WrappedAttribute = ({
 
 	return (
 		<div className={'mod mvs mhs'}>
-			{translationNamespaces
-				? translateMessage({ key: title, namespaces: translationNamespaces }, i18nTranslator)
-				: title}
+			{translateStringIfHasNamespaces(title, translationNamespaces)}
 			<label className="field">{component}</label>
 			{description && (
-				<span className="text-s dimmed">
-					{translationNamespaces
-						? translateMessage({ key: description, namespaces: translationNamespaces }, i18nTranslator)
-						: description}
-				</span>
+				<span className="text-s dimmed">{translateStringIfHasNamespaces(description, translationNamespaces)}</span>
 			)}
 		</div>
 	)
@@ -230,7 +222,7 @@ export const StringForm = ({ object, attr, updateFunction, schema }: SchemaFormP
 	return (
 		<TextInputControl
 			classNames="input text-input input-l"
-			value={object[attr]}
+			value={object[attr] ?? false}
 			handleUpdate={(v) => {
 				if (updateFunction) {
 					updateFunction(attr, v)
