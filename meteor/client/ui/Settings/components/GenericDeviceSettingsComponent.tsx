@@ -1,12 +1,11 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PeripheralDevices, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { DeviceItem } from '../../Status/SystemStatus'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
 import { unprotectString } from '../../../../lib/lib'
-import { SchemaForm } from '../../../lib/forms/schemaForm'
 import { SubDevicesConfig } from './DeviceConfigSchemaSettings'
-import { SchemaFormUpdateFunction } from '../../../lib/forms/schemaFormUtil'
+import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollection'
 
 interface IGenericDeviceSettingsComponentProps {
 	device: PeripheralDevice
@@ -22,29 +21,6 @@ export function GenericDeviceSettingsComponent({ device, subDevices }: IGenericD
 		[device.configManifest.deviceConfigSchema]
 	)
 
-	const updateFunction: SchemaFormUpdateFunction = useCallback(
-		(path, val, mode) => {
-			if (mode === 'push') {
-				console.log('NOT IMPLEMENTED', mode)
-			} else if (mode === 'pull') {
-				console.log('NOT IMPLEMENTED', mode)
-			} else if (val === undefined) {
-				PeripheralDevices.update(device._id, {
-					$unset: {
-						[`settings.${path}`]: 1,
-					},
-				})
-			} else {
-				PeripheralDevices.update(device._id, {
-					$set: {
-						[`settings.${path}`]: val,
-					},
-				})
-			}
-		},
-		[device._id]
-	)
-
 	return (
 		<div>
 			{device.configManifest.deviceOAuthFlow && (
@@ -53,11 +29,12 @@ export function GenericDeviceSettingsComponent({ device, subDevices }: IGenericD
 
 			{device.configManifest.deviceConfigSchema ? (
 				<>
-					<SchemaForm
+					<SchemaFormForCollection
 						schema={parsedSchema}
 						object={device.settings}
-						attr=""
-						updateFunction={updateFunction}
+						collection={PeripheralDevices}
+						objectId={device._id}
+						basePath="settings"
 						translationNamespaces={translationNamespaces}
 					/>
 

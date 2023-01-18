@@ -54,7 +54,7 @@ export const SchemaForm = (props: SchemaFormProps) => {
 	}
 }
 
-export const ArrayForm = (props: SchemaFormProps) => {
+const ArrayForm = (props: SchemaFormProps) => {
 	const { t } = useTranslation()
 
 	const updateFunction2 = useMemo((): SchemaFormUpdateFunction | undefined => {
@@ -85,7 +85,7 @@ export const ArrayForm = (props: SchemaFormProps) => {
 	}
 }
 
-export const ObjectForm = (props: SchemaFormProps) => {
+const ObjectForm = (props: SchemaFormProps) => {
 	const updateFunction2 = useMemo((): SchemaFormUpdateFunction | undefined => {
 		const fn = props.updateFunction
 		if (fn) {
@@ -117,12 +117,7 @@ export const ObjectForm = (props: SchemaFormProps) => {
 	)
 }
 
-export const WrappedAttribute = ({
-	schema,
-	component,
-	translationNamespaces,
-	attr,
-}: SchemaFormProps & { component: any }) => {
+const WrappedAttribute = ({ schema, component, translationNamespaces, attr }: SchemaFormProps & { component: any }) => {
 	const title = schema['ui:title'] || attr
 	const description = schema['ui:description']
 
@@ -137,7 +132,7 @@ export const WrappedAttribute = ({
 	)
 }
 
-export const EnumForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
+const EnumForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
 	const tsEnumNames = ((schema as any).tsEnumNames || []) as string[]
 	const options = useMemo(() => {
 		return (schema.enum || []).map((value: any, i: number) =>
@@ -165,7 +160,7 @@ export const EnumForm = ({ object, attr, updateFunction, schema }: SchemaFormPro
 	)
 }
 
-export const IntegerForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
+const IntegerForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
 	return (
 		<IntInputControl
 			classNames="input text-input input-l"
@@ -183,7 +178,7 @@ export const IntegerForm = ({ object, attr, updateFunction, schema }: SchemaForm
 	)
 }
 
-export const NumberForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
+const NumberForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
 	return (
 		<EditAttribute
 			type="float"
@@ -202,7 +197,7 @@ export const NumberForm = ({ object, attr, updateFunction, schema }: SchemaFormP
 	)
 }
 
-export const BooleanForm = ({ object, attr, updateFunction }: SchemaFormProps) => {
+const BooleanForm = ({ object, attr, updateFunction }: SchemaFormProps) => {
 	return (
 		<CheckboxControl
 			classNames="input input-l"
@@ -218,7 +213,7 @@ export const BooleanForm = ({ object, attr, updateFunction }: SchemaFormProps) =
 	)
 }
 
-export const StringForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
+const StringForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
 	return (
 		<TextInputControl
 			classNames="input text-input input-l"
@@ -235,7 +230,7 @@ export const StringForm = ({ object, attr, updateFunction, schema }: SchemaFormP
 	)
 }
 
-export const StringArrayForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
+const StringArrayForm = ({ object, attr, updateFunction, schema }: SchemaFormProps) => {
 	return (
 		<MultiLineTextInputControl
 			classNames="input text-input input-l"

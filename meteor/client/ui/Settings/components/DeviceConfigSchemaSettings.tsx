@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { JSONSchema } from '../../../lib/forms/schema-types'
-import { SchemaForm } from '../../../lib/forms/schemaForm'
 import { faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ClassNames from 'classnames'
@@ -20,6 +19,7 @@ import {
 	getSchemaSummaryFields,
 	translateStringIfHasNamespaces,
 } from '../../../lib/forms/schemaFormUtil'
+import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollection'
 
 interface SubDevicesConfigProps {
 	translationNamespaces: string[]
@@ -246,6 +246,8 @@ function SubDeviceEditRow({
 
 	const updateObjectId = useCallback(
 		(newId: string) => {
+			if (subdeviceId === newId) return
+
 			const parentDevice = PeripheralDevices.findOne(parentId)
 			if (!parentDevice) throw new Error('Parent device does not exist!')
 
@@ -347,20 +349,23 @@ function SubDeviceEditRow({
 						</div>
 					)}
 					{commonSchema && (
-						<SchemaForm
+						<SchemaFormForCollection
 							schema={commonSchema}
 							object={object}
-							attr={''}
-							updateFunction={updateFunction}
+							collection={PeripheralDevices}
+							objectId={parentId}
+							basePath={`settings.devices.${subdeviceId}`}
 							translationNamespaces={translationNamespaces}
 						/>
 					)}
 					{schema ? (
-						<SchemaForm
+						/** TODO - hack around with using the options property mos and playout gateway are different... */
+						<SchemaFormForCollection
 							schema={schema}
-							object={object}
-							attr={commonSchema ? 'options' : '' /** TODO - hack because mos and playout gateway are different... */}
-							updateFunction={updateFunction}
+							object={commonSchema ? object.options : object}
+							collection={PeripheralDevices}
+							objectId={parentId}
+							basePath={commonSchema ? `settings.devices.${subdeviceId}.options` : `settings.devices.${subdeviceId}`}
 							translationNamespaces={translationNamespaces}
 						/>
 					) : (

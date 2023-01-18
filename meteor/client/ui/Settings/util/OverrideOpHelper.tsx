@@ -109,7 +109,42 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 
 type SaveOverridesFunction = (newOps: SomeObjectOverrideOp[]) => void
 
-export class OverrideOpHelper {
+export interface OverrideOpHelper {
+	/**
+	 * Clear all of the overrides for an value inside of an item
+	 * This acts as a reset of property of its child properties
+	 */
+	clearItemOverrides(itemId: string, subPath: string): void
+
+	/**
+	 * Clear all of the overrides for an item
+	 * This acts as a reset to defaults or undelete
+	 */
+	resetItem(itemId: string): void
+
+	/**
+	 * Delete an item from the object
+	 */
+	deleteItem(itemId: string): void
+
+	/**
+	 * Change the id of an item.
+	 * This is only possible for ones which were created by an override, and does not exist in the defaults
+	 */
+	changeItemId(oldItemId: string, newItemId: string): void
+
+	/**
+	 * Set the value of a property of an item.
+	 * Note: the id cannot be changed in this way
+	 */
+	setItemValue(itemId: string, subPath: string, value: any): void
+
+	/**
+	 * TODO
+	 */
+	replaceItem(itemId: string, value: any): void
+}
+export class OverrideOpHelperImpl implements OverrideOpHelper {
 	readonly #saveOverrides: SaveOverridesFunction
 	readonly #objectWithOverridesRef: MutableRefObject<ObjectWithOverrides<any>>
 
@@ -121,10 +156,6 @@ export class OverrideOpHelper {
 		this.#objectWithOverridesRef = objectWithOverridesRef
 	}
 
-	/**
-	 * Clear all of the overrides for an value inside of an item
-	 * This acts as a reset of property of its child properties
-	 */
 	clearItemOverrides = (itemId: string, subPath: string): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
@@ -135,10 +166,6 @@ export class OverrideOpHelper {
 		this.#saveOverrides(newOps)
 	}
 
-	/**
-	 * Clear all of the overrides for an item
-	 * This acts as a reset to defaults or undelete
-	 */
 	resetItem = (itemId: string): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
@@ -147,9 +174,6 @@ export class OverrideOpHelper {
 		this.#saveOverrides(newOps)
 	}
 
-	/**
-	 * Delete an item from the object
-	 */
 	deleteItem = (itemId: string): void => {
 		const newOps = filterOverrideOpsForPrefix(this.#objectWithOverridesRef.current.overrides, itemId).otherOps
 		if (this.#objectWithOverridesRef.current.defaults[itemId]) {
@@ -165,10 +189,6 @@ export class OverrideOpHelper {
 		this.#saveOverrides(newOps)
 	}
 
-	/**
-	 * Change the id of an item.
-	 * This is only possible for ones which were created by an override, and does not exist in the defaults
-	 */
 	changeItemId = (oldItemId: string, newItemId: string): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
@@ -208,10 +228,6 @@ export class OverrideOpHelper {
 		}
 	}
 
-	/**
-	 * Set the value of a property of an item.
-	 * Note: the id cannot be changed in this way
-	 */
 	setItemValue = (itemId: string, subPath: string, value: any): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
@@ -256,9 +272,6 @@ export class OverrideOpHelper {
 		}
 	}
 
-	/**
-	 * TODO
-	 */
 	replaceItem = (itemId: string, value: any): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
@@ -289,7 +302,7 @@ export function useOverrideOpHelper<T extends object>(
 	const objectWithOverridesRef = useRef(objectWithOverrides)
 
 	const helper = useMemo(
-		() => new OverrideOpHelper(saveOverrides, objectWithOverridesRef),
+		() => new OverrideOpHelperImpl(saveOverrides, objectWithOverridesRef),
 		[saveOverrides, objectWithOverridesRef]
 	)
 

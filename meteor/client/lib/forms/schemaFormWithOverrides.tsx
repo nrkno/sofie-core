@@ -12,6 +12,7 @@ import {
 	LabelAndOverridesForDropdown,
 	LabelAndOverridesForInt,
 } from '../Components/LabelAndOverrides'
+import { MultiLineTextInputControl } from '../Components/MultiLineTextInput'
 import { TextInputControl } from '../Components/TextInput'
 import { JSONSchema, TypeName } from './schema-types'
 import { joinFragments, translateStringIfHasNamespaces } from './schemaFormUtil'
@@ -40,28 +41,34 @@ interface FormComponentProps {
 	}
 }
 
+function useChildPropsForFormComponent(props: SchemaFormWithOverridesProps) {
+	return useMemo(() => {
+		const title = props.schema['ui:title'] || props.attr
+		const description = props.schema['ui:description']
+
+		return {
+			schema: props.schema,
+			translationNamespaces: props.translationNamespaces,
+			commonAttrs: {
+				label: translateStringIfHasNamespaces(title, props.translationNamespaces),
+				hint: description ? translateStringIfHasNamespaces(description, props.translationNamespaces) : undefined,
+				item: props.item,
+				itemKey: props.attr,
+				opPrefix: props.item.id,
+				overrideHelper: props.overrideHelper,
+			},
+		}
+	}, [props.schema, props.translationNamespaces, props.attr, props.item, props.overrideHelper])
+}
+
 export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps) {
 	const { t } = useTranslation()
 
-	const title = props.schema['ui:title'] || props.attr
-	const description = props.schema['ui:description']
-
-	const childProps: FormComponentProps = {
-		schema: props.schema,
-		translationNamespaces: props.translationNamespaces,
-		commonAttrs: {
-			label: translateStringIfHasNamespaces(title, props.translationNamespaces),
-			hint: description ? translateStringIfHasNamespaces(description, props.translationNamespaces) : undefined,
-			item: props.item,
-			itemKey: props.attr,
-			opPrefix: props.item.id,
-			overrideHelper: props.overrideHelper,
-		},
-	}
+	const childProps = useChildPropsForFormComponent(props)
 
 	switch (props.schema.type) {
-		// case TypeName.Array:
-		// 	return <ArrayForm {...props} />
+		case TypeName.Array:
+			return <ArrayFormWithOverrides {...props} />
 		case TypeName.Object:
 			return <ObjectFormWithOverrides {...props} />
 		case TypeName.Integer:
@@ -82,6 +89,28 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps) {
 			}
 		default:
 			return <>{t('Unsupported field type "{{ type }}"', { type: props.schema.type })}</>
+	}
+}
+
+const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
+	const { t } = useTranslation()
+
+	const childProps = useChildPropsForFormComponent(props)
+
+	switch (props.schema.items?.type) {
+		case TypeName.String:
+			return <StringArrayFormWithOverrides {...childProps} />
+		// case TypeName.Object:
+		// 	return (
+		// 		<SchemaFormTable
+		// 			schema={props.schema}
+		// 			translationNamespaces={props.translationNamespaces}
+		// 			object={props.object[props.attr]}
+		// 			updateFunction={updateFunction2}
+		// 		/>
+		// 	)
+		default:
+			return <>{t('Unsupported array type "{{ type }}"', { type: props.schema.items?.type })}</>
 	}
 }
 
@@ -178,7 +207,7 @@ const BooleanFormWithOverrides = ({ commonAttrs }: FormComponentProps) => {
 		<div className="mod mvs mhs">
 			<LabelAndOverridesForCheckbox {...commonAttrs}>
 				{(value, handleUpdate) => (
-					<CheckboxControl classNames="input input-l" value={value ?? false} handleUpdate={handleUpdate} />
+					<CheckboxControl classNames="input" value={value ?? false} handleUpdate={handleUpdate} />
 				)}
 			</LabelAndOverridesForCheckbox>
 		</div>
@@ -186,6 +215,7 @@ const BooleanFormWithOverrides = ({ commonAttrs }: FormComponentProps) => {
 }
 
 const StringFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
+	console.log(commonAttrs, schema)
 	return (
 		<div className="mod mvs mhs">
 			<LabelAndOverrides {...commonAttrs}>
@@ -203,20 +233,20 @@ const StringFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) =>
 	)
 }
 
-// const StringArrayFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
-// 	return (
-// 		<div className="mod mvs mhs">
-// 			<LabelAndOverrides {...commonAttrs}>
-// 				{(value, handleUpdate) => (
-// 					<MultiLineTextInputControl
-// 						modifiedClassName="bghl"
-// 						classNames="input text-input input-l"
-// 						placeholder={schema.default?.join('\n')}
-// 						value={value || []}
-// 						handleUpdate={handleUpdate}
-// 					/>
-// 				)}
-// 			</LabelAndOverrides>
-// 		</div>
-// 	)
-// }
+const StringArrayFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
+	return (
+		<div className="mod mvs mhs">
+			<LabelAndOverrides {...commonAttrs}>
+				{(value, handleUpdate) => (
+					<MultiLineTextInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						placeholder={schema.default?.join('\n')}
+						value={value || []}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</LabelAndOverrides>
+		</div>
+	)
+}
