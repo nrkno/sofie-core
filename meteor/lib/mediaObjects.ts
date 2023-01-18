@@ -614,8 +614,8 @@ function checkPieceContentExpectedPackageStatus(
 				for (const stream of scan.streams) {
 					if (stream.width && stream.height) {
 						if (stream.codec_time_base) {
-							const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec_time_base) as RegExpExecArray
-							timebase = (1000 * Number(formattedTimebase[1])) / Number(formattedTimebase[2])
+							const formattedTimebase = /^(\d+)\/(\d+)$/.exec(stream.codec_time_base) as RegExpExecArray
+							timebase = (1000 * Number(formattedTimebase[1])) / Number(formattedTimebase[2]) || 0
 						}
 
 						if (deepScan) {
