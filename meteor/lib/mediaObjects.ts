@@ -291,10 +291,11 @@ function checkPieceContentMediaObjectStatus(
 							for (const stream of mediaObject.mediainfo.streams) {
 								if (stream.width && stream.height) {
 									if (stream.codec.time_base) {
-										const formattedTimebase = /(\d+)\/(\d+)/.exec(
+										const formattedTimebase = /^(\d+)\/(\d+)$/.exec(
 											stream.codec.time_base
 										) as RegExpExecArray
-										timebase = (1000 * Number(formattedTimebase[1])) / Number(formattedTimebase[2])
+										timebase =
+											(1000 * Number(formattedTimebase[1])) / Number(formattedTimebase[2]) || 0
 									}
 
 									const format = buildFormatString(mediaObject.mediainfo, stream)
