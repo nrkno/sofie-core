@@ -152,9 +152,17 @@ export class MockJobContext implements JobContext {
 		return processShowStyleBase(doc)
 	}
 	async getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<ProcessedShowStyleVariant>>> {
-		const docs = await this.directCollections.ShowStyleVariants.findFetch({
-			showStyleBaseId: id,
-		})
+		const docs = await this.directCollections.ShowStyleVariants.findFetch(
+			{
+				showStyleBaseId: id,
+			},
+			{
+				sort: {
+					_rank: 1,
+					_id: 1,
+				},
+			}
+		)
 
 		return docs.map(processShowStyleVariant)
 	}
