@@ -82,6 +82,9 @@ $defs:
       sourceLayer:
         description: The source layer name for this AdLibAction
         type: string
+      outputLayer:
+        description: The output layer name for this AdLibAction
+        type: string
       actionType:
         description: The available action type names that can be used to modify the execution of the AdLibAction
         type: array
