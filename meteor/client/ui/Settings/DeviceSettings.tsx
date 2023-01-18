@@ -30,8 +30,8 @@ interface IDeviceSettingsProps {
 }
 interface IDeviceSettingsState {}
 interface IDeviceSettingsTrackedProps {
-	device?: PeripheralDevice
-	subDevices?: PeripheralDevice[]
+	device: PeripheralDevice | undefined
+	subDevices: PeripheralDevice[] | undefined
 }
 export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, IDeviceSettingsTrackedProps>(
 	(props: IDeviceSettingsProps) => {

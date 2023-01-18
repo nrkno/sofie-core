@@ -118,9 +118,15 @@ function SchemaFormTableContents({
 		<>
 			<thead>
 				<tr className="hl">
-					{summaryFields.map((col) => (
-						<th key={col.attr}>{col.name}</th>
-					))}
+					{summaryFields.map((col) => {
+						return (
+							<th key={col.attr}>
+								{translationNamespaces
+									? translateMessage({ key: col.name, namespaces: translationNamespaces }, i18nTranslator)
+									: col.name}
+							</th>
+						)
+					})}
 					<th key="action">&nbsp;</th>
 				</tr>
 			</thead>

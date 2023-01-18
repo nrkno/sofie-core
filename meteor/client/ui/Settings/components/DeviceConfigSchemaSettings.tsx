@@ -15,18 +15,25 @@ import { doModalDialog } from '../../../lib/ModalDialog'
 import { DropdownInputControl, DropdownInputOption } from '../../../lib/Components/DropdownInput'
 import { SchemaTableSummaryRow } from '../../../lib/forms/schemaFormTable'
 import { getSchemaDefaultValues, SchemaSummaryField, getSchemaSummaryFields } from '../../../lib/forms/schemaFormUtil'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { i18nTranslator } from '../../i18n'
 
 interface SubDevicesConfigProps {
+	translationNamespaces: string[]
 	deviceId: PeripheralDeviceId
 	commonSchema: string | undefined
 	configSchema: SubdeviceManifest | undefined
 	subDevices: Record<string, any>
 }
 
-export function SubDevicesConfig({ deviceId, commonSchema, configSchema, subDevices }: SubDevicesConfigProps) {
+export function SubDevicesConfig({
+	translationNamespaces,
+	deviceId,
+	commonSchema,
+	configSchema,
+	subDevices,
+}: SubDevicesConfigProps) {
 	const { t } = useTranslation()
-
-	const translationNamespaces = useMemo(() => ['peripheralDevice_' + deviceId], [deviceId])
 
 	// TODO - avoid hardcoding being at `settings.devices`
 
@@ -42,6 +49,9 @@ export function SubDevicesConfig({ deviceId, commonSchema, configSchema, subDevi
 
 	const subDeviceOptions = useMemo(() => {
 		const raw = Object.entries(configSchema || {})
+		for (const [_id, obj] of raw) {
+			obj.displayName = translateMessage({ key: obj.displayName, namespaces: translationNamespaces }, i18nTranslator)
+		}
 		raw.sort((a, b) => a[1].displayName.localeCompare(b[1].displayName))
 
 		return raw.map(([id, entry], i) =>
@@ -51,7 +61,7 @@ export function SubDevicesConfig({ deviceId, commonSchema, configSchema, subDevi
 				i,
 			})
 		)
-	}, [configSchema])
+	}, [configSchema, translationNamespaces])
 
 	const addNewItem = useCallback(() => {
 		const selectedType = schemaTypes[0] // TODO - should this be more deterministic?

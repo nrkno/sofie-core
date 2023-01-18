@@ -51,6 +51,8 @@ import {
 } from '../../../lib/Components/LabelAndOverrides'
 import { JSONSchema } from '../../../lib/forms/schema-types'
 import { SchemaForm } from '../../../lib/forms/schemaForm'
+import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { i18nTranslator } from '../../i18n'
 
 export interface MappingsSettingsManifest {
 	displayName: string
@@ -62,16 +64,23 @@ interface IStudioMappingsProps {
 	studio: Studio
 	manifest: MappingsManifest | undefined
 	manifest2: MappingsSettingsManifests | undefined
+	translationNamespaces: string[]
 }
 
-export function StudioMappings({ manifest, manifest2, studio }: IStudioMappingsProps) {
+export function StudioMappings({ manifest, manifest2, translationNamespaces, studio }: IStudioMappingsProps) {
 	const { t } = useTranslation()
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
 	const manifestNames = useMemo(() => {
-		return Object.fromEntries(Object.entries(manifest2 || {}).map(([id, val]) => [id, val.displayName]))
-	}, [manifest2])
+		return Object.fromEntries(
+			Object.entries(manifest2 || {}).map(([id, val]) => [
+				id,
+				translateMessage({ key: val.displayName, namespaces: translationNamespaces }, i18nTranslator),
+			])
+		)
+	}, [manifest2, translationNamespaces])
+	console.log(manifestNames, translationNamespaces)
 
 	const addNewLayer = useCallback(() => {
 		const resolvedMappings = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
@@ -157,6 +166,7 @@ export function StudioMappings({ manifest, manifest2, studio }: IStudioMappingsP
 										manifest={manifest[item.computed.device]}
 										manifest2={manifest2?.[item.computed.device]}
 										manifestNames={manifestNames}
+										translationNamespaces={translationNamespaces}
 										overrideHelper={overrideHelper}
 									/>
 								)
@@ -229,6 +239,7 @@ interface StudioMappingsEntryProps {
 	manifest: MappingManifestEntry[] | undefined
 	manifest2: MappingsSettingsManifest | undefined
 	manifestNames: Record<string | number, string>
+	translationNamespaces: string[]
 
 	toggleExpanded: (layerId: string, force?: boolean) => void
 	isExpanded: boolean
@@ -242,6 +253,7 @@ function StudioMappingsEntry({
 	manifest,
 	manifest2,
 	manifestNames,
+	translationNamespaces,
 	toggleExpanded,
 	isExpanded,
 	item,
@@ -301,8 +313,6 @@ function StudioMappingsEntry({
 		)
 	}, [manifest2?.mappingsSchema])
 
-	const translationNamespaces = [] // ['peripheralDevice_' + device._id] // TODO and useMemo
-
 	const schemaUpdateFunction = useCallback((path: string, val: any) => {
 		// if (val === undefined) {
 		// 	const m = {}
@@ -318,8 +328,6 @@ function StudioMappingsEntry({
 
 	// TODO - remove cast
 	const mappingSchema = manifest2?.mappingsSchema?.['mappings']?.[(item.computed as any).mappingType]
-
-	console.log('render', item.id, manifest2)
 
 	return (
 		<React.Fragment>

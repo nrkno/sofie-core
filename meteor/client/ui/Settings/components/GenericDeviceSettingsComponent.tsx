@@ -63,6 +63,7 @@ export function GenericDeviceSettingsComponent({ device, subDevices }: IGenericD
 
 					{device.configManifest.subdeviceManifest && (
 						<SubDevicesConfig
+							translationNamespaces={translationNamespaces}
 							deviceId={device._id}
 							commonSchema={device.configManifest.subdeviceConfigSchema}
 							configSchema={device.configManifest.subdeviceManifest}

@@ -75,7 +75,7 @@ export enum LookaheadMode {
 export interface BlueprintMappings extends TSR.Mappings {
 	[layerName: string]: BlueprintMapping
 }
-export interface BlueprintMapping extends TSR.Mapping {
+export interface BlueprintMapping extends TSR.Mapping<unknown> {
 	/** What method core should use to create lookahead objects for this layer */
 	lookahead: LookaheadMode
 	/** How many lookahead objects to create for this layer. Default = 1 */
