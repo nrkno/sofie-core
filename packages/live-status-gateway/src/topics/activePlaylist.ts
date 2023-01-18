@@ -6,11 +6,13 @@ import { DBShowStyleBase, OutputLayers, SourceLayers } from '@sofie-automation/c
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { IBlueprintActionManifestDisplayContent } from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WsTopicBase, WsTopic, CollectionObserver } from '../wsHandler'
 import { PartInstanceName } from '../collections/partInstances'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 
 interface PartStatus {
 	id: string
@@ -23,7 +25,7 @@ interface AdLibActionType {
 	label: string
 }
 
-interface AdLibActionStatus {
+interface AdLibStatus {
 	id: string
 	name: string
 	sourceLayer: string
@@ -38,8 +40,8 @@ interface ActivePlaylistStatus {
 	rundownIds: string[]
 	currentPart: PartStatus | null
 	nextPart: PartStatus | null
-	adLibs: AdLibActionStatus[]
-	globalAdLibs: AdLibActionStatus[]
+	adLibs: AdLibStatus[]
+	globalAdLibs: AdLibStatus[]
 }
 
 export class ActivePlaylistTopic
@@ -58,7 +60,9 @@ export class ActivePlaylistTopic
 	_currentPartInstance: DBPartInstance | undefined
 	_nextPartInstance: DBPartInstance | undefined
 	_adLibActions: AdLibAction[] | undefined
+	_abLibs: AdLibPiece[] | undefined
 	_globalAdLibActions: RundownBaselineAdLibAction[] | undefined
+	_globalAdLibs: RundownBaselineAdLibItem[] | undefined
 
 	constructor(logger: Logger) {
 		super('ActivePlaylistTopic', logger)
@@ -72,6 +76,97 @@ export class ActivePlaylistTopic
 	sendStatus(subscribers: Set<WebSocket>): void {
 		const currentPart = this._currentPartInstance ? this._currentPartInstance.part : null
 		const nextPart = this._nextPartInstance ? this._nextPartInstance.part : null
+		const adLibs: AdLibStatus[] = []
+		const globalAdLibs: AdLibStatus[] = []
+
+		if (this._adLibActions) {
+			adLibs.push(
+				...this._adLibActions.map((action) => {
+					const sourceLayerName = this._sourceLayersMap.get(
+						(action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
+					)
+					const outputLayerName = this._outputLayersMap.get(
+						(action.display as IBlueprintActionManifestDisplayContent).outputLayerId
+					)
+					const triggerModes = action.triggerModes
+						? action.triggerModes.map((t) =>
+								literal<AdLibActionType>({
+									name: t.data,
+									label: t.display.label.key,
+								})
+						  )
+						: []
+					return literal<AdLibStatus>({
+						id: unprotectString(action._id),
+						name: action.display.label.key,
+						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
+						outputLayer: outputLayerName ? outputLayerName : 'invalid',
+						actionType: triggerModes,
+					})
+				})
+			)
+		}
+
+		if (this._abLibs) {
+			adLibs.push(
+				...this._abLibs.map((adLib) => {
+					const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
+					const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
+					return literal<AdLibStatus>({
+						id: unprotectString(adLib._id),
+						name: adLib.name,
+						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
+						outputLayer: outputLayerName ? outputLayerName : 'invalid',
+						actionType: [],
+					})
+				})
+			)
+		}
+
+		if (this._globalAdLibActions) {
+			globalAdLibs.push(
+				...this._globalAdLibActions.map((action) => {
+					const sourceLayerName = this._sourceLayersMap.get(
+						(action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
+					)
+					const outputLayerName = this._outputLayersMap.get(
+						(action.display as IBlueprintActionManifestDisplayContent).outputLayerId
+					)
+					const triggerModes = action.triggerModes
+						? action.triggerModes.map((t) =>
+								literal<AdLibActionType>({
+									name: t.data,
+									label: t.display.label.key,
+								})
+						  )
+						: []
+					return literal<AdLibStatus>({
+						id: unprotectString(action._id),
+						name: action.display.label.key,
+						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
+						outputLayer: outputLayerName ? outputLayerName : 'invalid',
+						actionType: triggerModes,
+					})
+				})
+			)
+		}
+
+		if (this._globalAdLibs) {
+			globalAdLibs.push(
+				...this._globalAdLibs.map((adLibs) => {
+					const sourceLayerName = this._sourceLayersMap.get(adLibs.sourceLayerId)
+					const outputLayerName = this._outputLayersMap.get(adLibs.outputLayerId)
+					return literal<AdLibStatus>({
+						id: unprotectString(adLibs._id),
+						name: adLibs.name,
+						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
+						outputLayer: outputLayerName ? outputLayerName : 'invalid',
+						actionType: [],
+					})
+				})
+			)
+		}
+
 		subscribers.forEach((ws) => {
 			this.sendMessage(
 				ws,
@@ -95,56 +190,8 @@ export class ActivePlaylistTopic
 										autoNext: nextPart.autoNext,
 								  })
 								: null,
-							adLibs: this._adLibActions
-								? this._adLibActions.map((action) => {
-										const sourceLayerName = this._sourceLayersMap.get(
-											(action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
-										)
-										const outputLayerName = this._outputLayersMap.get(
-											(action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-										)
-										const triggerModes = action.triggerModes
-											? action.triggerModes.map((t) =>
-													literal<AdLibActionType>({
-														name: t.data,
-														label: t.display.label.key,
-													})
-											  )
-											: []
-										return literal<AdLibActionStatus>({
-											id: unprotectString(action._id),
-											name: action.display.label.key,
-											sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
-											outputLayer: outputLayerName ? outputLayerName : 'invalid',
-											actionType: triggerModes,
-										})
-								  })
-								: [],
-							globalAdLibs: this._globalAdLibActions
-								? this._globalAdLibActions.map((action) => {
-										const sourceLayerName = this._sourceLayersMap.get(
-											(action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
-										)
-										const outputLayerName = this._outputLayersMap.get(
-											(action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-										)
-										const triggerModes = action.triggerModes
-											? action.triggerModes.map((t) =>
-													literal<AdLibActionType>({
-														name: t.data,
-														label: t.display.label.key,
-													})
-											  )
-											: []
-										return literal<AdLibActionStatus>({
-											id: unprotectString(action._id),
-											name: action.display.label.key,
-											sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
-											outputLayer: outputLayerName ? outputLayerName : 'invalid',
-											actionType: triggerModes,
-										})
-								  })
-								: [],
+							adLibs,
+							globalAdLibs,
 					  })
 					: literal<ActivePlaylistStatus>({
 							event: 'activePlaylist',
@@ -168,6 +215,8 @@ export class ActivePlaylistTopic
 			| Map<PartInstanceName, DBPartInstance | undefined>
 			| AdLibAction[]
 			| RundownBaselineAdLibAction[]
+			| AdLibPiece[]
+			| RundownBaselineAdLibItem[]
 			| undefined
 	): void {
 		const rundownPlaylist = data ? (data as DBRundownPlaylist) : undefined
