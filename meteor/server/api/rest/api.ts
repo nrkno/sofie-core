@@ -45,9 +45,9 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		return ClientAPI.responseSuccess({ version: CURRENT_SYSTEM_VERSION })
 	}
 	async activate(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
-		rehearsal: boolean,
-		connection: Meteor.Connection
+		rehearsal: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			{ ...this, connection: connection },
@@ -66,8 +66,8 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		)
 	}
 	async deactivate(
-		rundownPlaylistId: RundownPlaylistId,
-		connection: Meteor.Connection
+		connection: Meteor.Connection,
+		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			{ ...this, connection: connection },
@@ -84,10 +84,10 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		)
 	}
 	async executeAction(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
-		userData: any,
-		connection: Meteor.Connection
+		userData: any
 	): Promise<ClientAPI.ClientResponse<ExecuteActionResult>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			{ ...this, connection: connection },
@@ -108,9 +108,9 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		)
 	}
 	async executeAdLib(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
 		adLibId: AdLibActionId | RundownBaselineAdLibActionId | PieceId | BucketAdLibId,
-		connection: Meteor.Connection,
 		triggerMode?: string | null
 	): Promise<ClientAPI.ClientResponse<object>> {
 		const baselineAdLibPiece = RundownBaselineAdLibPieces.findOneAsync(adLibId as PieceId, {
@@ -189,9 +189,9 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		}
 	}
 	async moveNextPart(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
-		delta: number,
-		connection: Meteor.Connection
+		delta: number
 	): Promise<ClientAPI.ClientResponse<PartId | null>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			{ ...this, connection: connection },
@@ -211,9 +211,9 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		)
 	}
 	async moveNextSegment(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
-		delta: number,
-		connection: Meteor.Connection
+		delta: number
 	): Promise<ClientAPI.ClientResponse<PartId | null>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			{ ...this, connection: connection },
@@ -234,8 +234,8 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 	}
 
 	async reloadPlaylist(
-		rundownPlaylistId: RundownPlaylistId,
-		connection: Meteor.Connection
+		connection: Meteor.Connection,
+		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<object>> {
 		return ServerClientAPI.runUserActionInLogForPlaylist<object>(
 			{ ...this, connection: connection },
@@ -263,8 +263,8 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 	}
 
 	async resetPlaylist(
-		rundownPlaylistId: RundownPlaylistId,
-		connection: Meteor.Connection
+		connection: Meteor.Connection,
+		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			{ ...this, connection: connection },
@@ -281,9 +281,9 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		)
 	}
 	async setNextSegment(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
-		segmentId: SegmentId,
-		connection: Meteor.Connection
+		segmentId: SegmentId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			{ ...this, connection: connection },
@@ -302,9 +302,9 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		)
 	}
 	async setNextPart(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
-		partId: PartId,
-		connection: Meteor.Connection
+		partId: PartId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			{ ...this, connection: connection },
@@ -324,8 +324,8 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 	}
 
 	async take(
-		rundownPlaylistId: RundownPlaylistId,
-		connection: Meteor.Connection
+		connection: Meteor.Connection,
+		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		triggerWriteAccess()
 		const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -347,7 +347,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		)
 	}
 
-	async switchRouteSet(studioId: StudioId, routeSetId: string, state: boolean, connection: Meteor.Connection) {
+	async switchRouteSet(connection: Meteor.Connection, studioId: StudioId, routeSetId: string, state: boolean) {
 		return ServerClientAPI.runUserActionInLog(
 			{ ...this, connection: connection },
 			REST_API_USER_EVENT,
@@ -384,7 +384,7 @@ koaRouter.post('/activate/:playlistId', async (ctx, next) => {
 
 	try {
 		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.activate(rundownPlaylistId, rehearsal, makeConnection(ctx))
+			await MeteorCall.rest.activate(makeConnection(ctx), rundownPlaylistId, rehearsal)
 		)
 		ctx.status = 200
 	} catch (e) {
@@ -403,7 +403,7 @@ koaRouter.post('/deactivate/:playlistId', async (ctx, next) => {
 	logger.info(`koa POST: deactivate ${rundownPlaylistId}`)
 
 	try {
-		ctx.body = ClientAPI.responseSuccess(await MeteorCall.rest.deactivate(rundownPlaylistId, makeConnection(ctx)))
+		ctx.body = ClientAPI.responseSuccess(await MeteorCall.rest.deactivate(makeConnection(ctx), rundownPlaylistId))
 		ctx.status = 200
 	} catch (e) {
 		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
@@ -425,7 +425,7 @@ koaRouter.post('/executeAction/:playlistId/:actionId', async (ctx, next) => {
 
 	try {
 		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.executeAction(rundownPlaylistId, actionId, userData, makeConnection(ctx))
+			await MeteorCall.rest.executeAction(makeConnection(ctx), rundownPlaylistId, actionId, userData)
 		)
 		ctx.status = 200
 	} catch (e) {
@@ -451,7 +451,7 @@ koaRouter.post('/executeAdLib/:playlistId/:adLibId', async (ctx, next) => {
 
 	try {
 		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.executeAdLib(rundownPlaylistId, adLibId, makeConnection(ctx), triggerMode)
+			await MeteorCall.rest.executeAdLib(makeConnection(ctx), rundownPlaylistId, adLibId, triggerMode)
 		)
 		ctx.status = 200
 	} catch (e) {
@@ -473,7 +473,7 @@ koaRouter.post('/moveNextPart/:playlistId/:delta', async (ctx, next) => {
 
 	try {
 		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.moveNextPart(rundownPlaylistId, delta, makeConnection(ctx))
+			await MeteorCall.rest.moveNextPart(makeConnection(ctx), rundownPlaylistId, delta)
 		)
 		ctx.status = 200
 	} catch (e) {
@@ -495,7 +495,7 @@ koaRouter.post('/moveNextSegment/:playlistId/:delta', async (ctx, next) => {
 
 	try {
 		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.moveNextSegment(rundownPlaylistId, delta, makeConnection(ctx))
+			await MeteorCall.rest.moveNextSegment(makeConnection(ctx), rundownPlaylistId, delta)
 		)
 		ctx.status = 200
 	} catch (e) {
@@ -515,7 +515,7 @@ koaRouter.post('/reloadPlaylist/:playlistId', async (ctx, next) => {
 
 	try {
 		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.reloadPlaylist(rundownPlaylistId, makeConnection(ctx))
+			await MeteorCall.rest.reloadPlaylist(makeConnection(ctx), rundownPlaylistId)
 		)
 		ctx.status = 200
 	} catch (e) {
@@ -535,7 +535,7 @@ koaRouter.post('/resetPlaylist/:playlistId', async (ctx, next) => {
 
 	try {
 		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.resetPlaylist(rundownPlaylistId, makeConnection(ctx))
+			await MeteorCall.rest.resetPlaylist(makeConnection(ctx), rundownPlaylistId)
 		)
 		ctx.status = 200
 	} catch (e) {
@@ -557,7 +557,7 @@ koaRouter.post('/setNextPart/:playlistId/:partId', async (ctx, next) => {
 
 	try {
 		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.setNextPart(rundownPlaylistId, partId, makeConnection(ctx))
+			await MeteorCall.rest.setNextPart(makeConnection(ctx), rundownPlaylistId, partId)
 		)
 		ctx.status = 200
 	} catch (e) {
@@ -579,7 +579,7 @@ koaRouter.post('/setNextSegment/:playlistId/:segmentId', async (ctx, next) => {
 
 	try {
 		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.setNextSegment(rundownPlaylistId, segmentId, makeConnection(ctx))
+			await MeteorCall.rest.setNextSegment(makeConnection(ctx), rundownPlaylistId, segmentId)
 		)
 		ctx.status = 200
 	} catch (e) {
@@ -598,7 +598,7 @@ koaRouter.post('/take/:playlistId', async (ctx, next) => {
 	logger.info(`koa POST: take ${rundownPlaylistId}`)
 
 	try {
-		ctx.body = ClientAPI.responseSuccess(await MeteorCall.rest.take(rundownPlaylistId, makeConnection(ctx)))
+		ctx.body = ClientAPI.responseSuccess(await MeteorCall.rest.take(makeConnection(ctx), rundownPlaylistId))
 		ctx.status = 200
 	} catch (e) {
 		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
@@ -621,7 +621,7 @@ koaRouter.post('/switchRouteSet/:studioId/:routeSetId', async (ctx, next) => {
 
 	try {
 		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.switchRouteSet(studioId, routeSetId, active, makeConnection(ctx))
+			await MeteorCall.rest.switchRouteSet(makeConnection(ctx), studioId, routeSetId, active)
 		)
 		ctx.status = 200
 	} catch (e) {

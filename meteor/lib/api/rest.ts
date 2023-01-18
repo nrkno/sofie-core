@@ -26,9 +26,9 @@ export interface RestAPI extends MethodContext {
 	 * @param connection Connection data including client and header details
 	 */
 	activate(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
-		rehearsal: boolean,
-		connection: Meteor.Connection
+		rehearsal: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
 	 * Deactivates a Playlist.
@@ -38,8 +38,8 @@ export interface RestAPI extends MethodContext {
 	 * @param connection Connection data including client and header details
 	 */
 	deactivate(
-		rundownPlaylistId: RundownPlaylistId,
-		connection: Meteor.Connection
+		connection: Meteor.Connection,
+		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
 	 * Executes the requested action by passing `actionId` directly to the blueprints `executeAction` function.
@@ -54,10 +54,10 @@ export interface RestAPI extends MethodContext {
 	 * @param connection Connection data including client and header details
 	 */
 	executeAction(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
-		userData: any,
-		connection: Meteor.Connection
+		userData: any
 	): Promise<ClientAPI.ClientResponse<object>>
 	/**
 	 * Executes the requested AdLib/AdLib Action. This is a "planned" AdLib (Action) that has been produced by the blueprints during the ingest process.
@@ -71,9 +71,9 @@ export interface RestAPI extends MethodContext {
 	 * @param triggerMode A string to specify a particular variation for the AdLibAction, valid actionType strings are to be read from the status API.
 	 */
 	executeAdLib(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
 		adLibId: AdLibActionId | RundownBaselineAdLibActionId | PieceId | BucketAdLibId,
-		connection: Meteor.Connection,
 		triggerMode?: string
 	): Promise<ClientAPI.ClientResponse<object>>
 	/**
@@ -87,9 +87,9 @@ export interface RestAPI extends MethodContext {
 	 * @param connection Connection data including client and header details
 	 */
 	moveNextPart(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
-		delta: number,
-		connection: Meteor.Connection
+		delta: number
 	): Promise<ClientAPI.ClientResponse<PartId | null>>
 	/**
 	 * Moves the next Segment point by `delta` places. Negative values are allowed to move "backwards" in the script.
@@ -102,9 +102,9 @@ export interface RestAPI extends MethodContext {
 	 * @param connection Connection data including client and header details
 	 */
 	moveNextSegment(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
-		delta: number,
-		connection: Meteor.Connection
+		delta: number
 	): Promise<ClientAPI.ClientResponse<PartId | null>>
 	/**
 	 * Reloads a Playlist from its ingest source (e.g. MOS/Spreadsheet etc.)
@@ -115,8 +115,8 @@ export interface RestAPI extends MethodContext {
 	 * @param connection Connection data including client and header details
 	 */
 	reloadPlaylist(
-		rundownPlaylistId: RundownPlaylistId,
-		connection: Meteor.Connection
+		connection: Meteor.Connection,
+		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<object>>
 	/**
 	 * Resets a Playlist back to its pre-played state.
@@ -126,8 +126,8 @@ export interface RestAPI extends MethodContext {
 	 * @param connection Connection data including client and header details
 	 */
 	resetPlaylist(
-		rundownPlaylistId: RundownPlaylistId,
-		connection: Meteor.Connection
+		connection: Meteor.Connection,
+		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
 	 * Sets the next Part to a given PartId.
@@ -140,9 +140,9 @@ export interface RestAPI extends MethodContext {
 	 * @param connection Connection data including client and header details
 	 */
 	setNextPart(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
-		partId: PartId,
-		connection: Meteor.Connection
+		partId: PartId
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
 	 * Sets the next Segment to a given SegmentId.
@@ -155,9 +155,9 @@ export interface RestAPI extends MethodContext {
 	 * @param connection Connection data including client and header details
 	 */
 	setNextSegment(
+		connection: Meteor.Connection,
 		rundownPlaylistId: RundownPlaylistId,
-		segmentId: SegmentId,
-		connection: Meteor.Connection
+		segmentId: SegmentId
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
 	 * Performs a take in the given Playlist.
@@ -167,7 +167,7 @@ export interface RestAPI extends MethodContext {
 	 * @param rundownPlaylistId Target Playlist.
 	 * @param connection Connection data including client and header details
 	 */
-	take(rundownPlaylistId: RundownPlaylistId, connection: Meteor.Connection): Promise<ClientAPI.ClientResponse<void>>
+	take(connection: Meteor.Connection, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	/**
 	 * Sets a route set to the described state
 	 *
@@ -180,10 +180,10 @@ export interface RestAPI extends MethodContext {
 	 * @param connection Connection data including client and header details
 	 */
 	switchRouteSet(
+		connection: Meteor.Connection,
 		studioId: StudioId,
 		routeSetId: string,
-		state: boolean,
-		connection: Meteor.Connection
+		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
 }
 
