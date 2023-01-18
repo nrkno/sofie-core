@@ -66,13 +66,6 @@ export function statusCodeToString(t: i18next.TFunction, statusCode: StatusCode)
 
 export const DeviceItem = reacti18next.withTranslation()(
 	class DeviceItem extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
-		constructor(props: Translated<IDeviceItemProps>) {
-			super(props)
-			this.state = {
-				showDeleteDeviceConfirm: null,
-				showKillDeviceConfirm: null,
-			}
-		}
 		deviceTypeString() {
 			const t = this.props.t
 
@@ -184,6 +177,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 		render() {
 			const { t } = this.props
 
+			const namespaces = ['peripheralDevice_' + this.props.device._id]
+
 			return (
 				<div key={unprotectString(this.props.device._id)} className="device-item">
 					<div className="status-container">
@@ -234,7 +229,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 
 					<div className="actions-container">
 						<div className="device-item__actions">
-							{this.props.device.configManifest.subdeviceManifest?.[this.props.device.subType] &&
+							{this.props.device.configManifest?.subdeviceManifest?.[this.props.device.subType] &&
 								this.props.device.configManifest.subdeviceManifest[this.props.device.subType].actions?.map((action) => (
 									<React.Fragment key={action.id}>
 										<button
@@ -245,7 +240,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 												this.onExecuteAction(e, this.props.device, action)
 											}}
 										>
-											{t(action.name)}
+											{translateMessage({ key: action.name, namespaces }, i18nTranslator)}
 										</button>
 									</React.Fragment>
 								))}

@@ -1,5 +1,5 @@
 import { literal, objectPathSet } from '@sofie-automation/corelib/dist/lib'
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { WrappedOverridableItemNormal, OverrideOpHelper } from '../../ui/Settings/util/OverrideOpHelper'
 import { JSONSchema } from './schema-types'
 import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
@@ -10,9 +10,11 @@ interface SchemaFormInPlaceProps {
 	translationNamespaces: string[]
 }
 export function SchemaFormInPlace({ schema, object, translationNamespaces }: SchemaFormInPlaceProps) {
-	const helper = useMemo(() => new OverrideOpHelperInPlace(object), [object])
+	// This is a hack to avoid issues with the UI re-rendering as 'nothing' changed
+	const [_editCount, setEditCount] = useState(0)
+	const forceRender = useCallback(() => setEditCount((v) => v + 1), [])
 
-	// TODO - how does the reactivity work here?
+	const helper = useMemo(() => new OverrideOpHelperInPlace(object, forceRender), [object, forceRender])
 
 	const wrappedItem = useMemo(
 		() =>
@@ -43,9 +45,11 @@ export function SchemaFormInPlace({ schema, object, translationNamespaces }: Sch
  */
 class OverrideOpHelperInPlace implements OverrideOpHelper {
 	readonly #object: any
+	readonly #forceRender: () => void
 
-	constructor(object: any) {
+	constructor(object: any, forceRender: () => void) {
 		this.#object = object
+		this.#forceRender = forceRender
 	}
 
 	clearItemOverrides(_itemId: string, _subPath: string): void {
@@ -62,6 +66,7 @@ class OverrideOpHelperInPlace implements OverrideOpHelper {
 	}
 	setItemValue(_itemId: string, subPath: string, value: any): void {
 		objectPathSet(this.#object, subPath, value)
+		this.#forceRender()
 	}
 	replaceItem(_itemId: string, _value: any): void {
 		// Not supported as this is faking an item with overrides
