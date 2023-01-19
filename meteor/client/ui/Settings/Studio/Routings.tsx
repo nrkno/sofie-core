@@ -435,7 +435,6 @@ export const StudioRoutings = withTranslation()(
 												studio={this.props.studio}
 												attribute={`routeSets.${routeSetId}.routes.${index}.remapping`}
 												mappedLayer={mappedLayer}
-												route={route}
 												manifest={routeMappingSchema}
 											/>
 										</>
@@ -751,27 +750,11 @@ export const StudioRoutings = withTranslation()(
 	}
 )
 
-function renderOptionalInput(attribute: string, obj: any, collection: MongoCollection<any>) {
-	return (
-		<EditAttribute
-			modifiedClassName="bghl"
-			attribute={attribute}
-			obj={obj}
-			type="checkbox"
-			collection={collection}
-			className="mod mvn mhs"
-			mutateDisplayValue={(v) => (v === undefined ? false : true)}
-			mutateUpdateValue={() => undefined}
-		/>
-	)
-}
-
 interface IDeviceMappingSettingsProps {
 	translationNamespaces: string[]
 	studio: Studio
 	attribute: string
 	manifest: MappingsSettingsManifest | undefined
-	route: RouteMapping
 	mappedLayer: ReadonlyDeep<MappingExt> | undefined
 }
 
@@ -780,11 +763,9 @@ function DeviceMappingSettings({
 	attribute,
 	manifest,
 	studio,
-	route,
 	mappedLayer,
 }: IDeviceMappingSettingsProps) {
 	const routeRemapping = objectPathGet(studio, attribute)
-	console.log(attribute, manifest, studio, routeRemapping, mappedLayer, route)
 
 	// TODO - remove cast
 	const mappingType = routeRemapping?.mappingType ?? (mappedLayer as any)?.mappingType
@@ -799,6 +780,7 @@ function DeviceMappingSettings({
 				translationNamespaces={translationNamespaces}
 				collection={Studios}
 				objectId={studio._id}
+				partialOverridesForObject={mappedLayer}
 			/>
 		)
 	} else {

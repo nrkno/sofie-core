@@ -27,12 +27,6 @@ interface SchemaFormWithOverridesProps {
 
 	item: WrappedOverridableItemNormal<any>
 	overrideHelper: OverrideOpHelper
-
-	/**
-	 * If set, the form will run in a mode to generate a `Partial<T>` of overrides for the provided object.
-	 * Each input field will be provided with a way to clear its value,
-	 */
-	// partialOverridesFor?: any // TODO - or would using the ObjectWithOverrides logic be reasonable?
 }
 
 interface FormComponentProps {

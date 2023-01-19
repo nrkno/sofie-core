@@ -1,5 +1,9 @@
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import {
+	ObjectOverrideDeleteOp,
+	ObjectOverrideSetOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import React, { useMemo } from 'react'
 import { MongoCollection } from '../../../lib/collections/lib'
 import { WrappedOverridableItemNormal, OverrideOpHelper } from '../../ui/Settings/util/OverrideOpHelper'
@@ -13,6 +17,12 @@ interface SchemaFormForCollectionProps {
 	collection: MongoCollection<any>
 	objectId: ProtectedString<any>
 	basePath: string
+
+	/**
+	 * If set, this form is to build a Partial object of overrides to apply over the provided object
+	 * Note: this requires the schema to be shallow, and to not use any sub-objects
+	 */
+	partialOverridesForObject?: any
 }
 export function SchemaFormForCollection({
 	schema,
@@ -21,23 +31,54 @@ export function SchemaFormForCollection({
 	translationNamespaces,
 	collection,
 	objectId,
+	partialOverridesForObject,
 }: SchemaFormForCollectionProps) {
 	const helper = useMemo(
 		() => new OverrideOpHelperCollection(collection, objectId, basePath),
 		[collection, objectId, basePath]
 	)
 
-	const wrappedItem = useMemo(
-		() =>
-			literal<WrappedOverridableItemNormal<any>>({
+	const wrappedItem = useMemo(() => {
+		if (partialOverridesForObject) {
+			// Note: this assumes it to be using a shallow object. If it is not then the logic becomes a lot more complex, and more than we want to handle here
+			const computed = {
+				...partialOverridesForObject,
+				...object,
+			}
+
+			// Note: these ops use a prefix of `0.` to satisfy how the objectWithOverrides expects them to look
+			const overrideOps = Object.entries(object).map(([key, val]) =>
+				val === undefined
+					? literal<ObjectOverrideDeleteOp>({
+							op: 'delete',
+							path: `0.${key}`,
+					  })
+					: literal<ObjectOverrideSetOp>({
+							op: 'set',
+							path: `0.${key}`,
+							value: val,
+					  })
+			)
+
+			return literal<WrappedOverridableItemNormal<any>>({
+				type: 'normal',
+				id: '0',
+				computed: computed,
+				defaults: partialOverridesForObject,
+				overrideOps,
+			})
+		} else {
+			return literal<WrappedOverridableItemNormal<any>>({
 				type: 'normal',
 				id: 'not-used',
 				computed: object,
 				defaults: undefined,
 				overrideOps: [],
-			}),
-		[object]
-	)
+			})
+		}
+	}, [object, partialOverridesForObject])
+
+	console.log(wrappedItem, object, partialOverridesForObject)
 
 	return (
 		<SchemaFormWithOverrides
@@ -65,8 +106,12 @@ class OverrideOpHelperCollection implements OverrideOpHelper {
 		this.#basePath = basePath
 	}
 
-	clearItemOverrides(_itemId: string, _subPath: string): void {
-		// Not supported as this is faking an item with overrides
+	clearItemOverrides(_itemId: string, subPath: string): void {
+		this.#collection.update(this.#objectId, {
+			$unset: {
+				[`${this.#basePath}.${subPath}`]: 1,
+			},
+		})
 	}
 	resetItem(_itemId: string): void {
 		// Not supported as this is faking an item with overrides
