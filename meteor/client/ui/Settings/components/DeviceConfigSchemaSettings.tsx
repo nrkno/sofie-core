@@ -359,13 +359,12 @@ function SubDeviceEditRow({
 						/>
 					)}
 					{schema ? (
-						/** TODO - hack around with using the options property mos and playout gateway are different... */
 						<SchemaFormForCollection
 							schema={schema}
-							object={commonSchema ? object.options : object}
+							object={object.options}
 							collection={PeripheralDevices}
 							objectId={parentId}
-							basePath={commonSchema ? `settings.devices.${subdeviceId}.options` : `settings.devices.${subdeviceId}`}
+							basePath={`settings.devices.${subdeviceId}.options`}
 							translationNamespaces={translationNamespaces}
 						/>
 					) : (

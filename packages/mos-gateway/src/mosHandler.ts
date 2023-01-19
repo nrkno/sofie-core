@@ -36,7 +36,10 @@ export interface MosConfig {
 export interface MosDeviceSettings {
 	mosId: string
 	devices: {
-		[deviceId: string]: MosDeviceSettingsDevice
+		[deviceId: string]: {
+			type: 'default'
+			options: MosDeviceSettingsDevice
+		}
 	}
 	debugLogging: boolean
 }
@@ -401,14 +404,15 @@ export class MosHandler {
 
 			const devices = settings.devices || {}
 
-			const devicesToAdd: { [id: string]: MosDeviceSettingsDevice } = {}
+			const devicesToAdd: { [id: string]: { options: MosDeviceSettingsDevice } } = {}
 			const devicesToRemove: { [id: string]: true } = {}
 
 			for (const [deviceId, device] of Object.entries(devices)) {
 				if (device) {
-					if (device.secondary) {
+					if (device.options.secondary) {
 						// If the host isn't set, don't use secondary:
-						if (!device.secondary.host || !device.secondary.id) delete device.secondary
+						if (!device.options.secondary.host || !device.options.secondary.id)
+							delete device.options.secondary
 					}
 
 					const oldDevice: MosDevice | null = this._getDevice(deviceId)
@@ -418,10 +422,10 @@ export class MosHandler {
 						devicesToAdd[deviceId] = device
 					} else {
 						if (
-							(oldDevice.primaryId || '') !== device.primary.id ||
-							(oldDevice.primaryHost || '') !== device.primary.host ||
-							(oldDevice.secondaryId || '') !== ((device.secondary || { id: '' }).id || '') ||
-							(oldDevice.secondaryHost || '') !== ((device.secondary || { host: '' }).host || '')
+							(oldDevice.primaryId || '') !== device.options.primary.id ||
+							(oldDevice.primaryHost || '') !== device.options.primary.host ||
+							(oldDevice.secondaryId || '') !== ((device.options.secondary || { id: '' }).id || '') ||
+							(oldDevice.secondaryHost || '') !== ((device.options.secondary || { host: '' }).host || '')
 						) {
 							this._logger.info('Re-initializing device: ' + deviceId)
 							devicesToRemove[deviceId] = true
@@ -446,7 +450,7 @@ export class MosHandler {
 
 			await Promise.all(
 				Object.entries(devicesToAdd).map(async ([deviceId, device]) => {
-					return this._addDevice(deviceId, device)
+					return this._addDevice(deviceId, device.options)
 				})
 			)
 		}
