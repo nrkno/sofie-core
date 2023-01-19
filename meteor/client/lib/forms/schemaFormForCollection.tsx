@@ -78,8 +78,6 @@ export function SchemaFormForCollection({
 		}
 	}, [object, partialOverridesForObject])
 
-	console.log(wrappedItem, object, partialOverridesForObject)
-
 	return (
 		<SchemaFormWithOverrides
 			schema={schema}
