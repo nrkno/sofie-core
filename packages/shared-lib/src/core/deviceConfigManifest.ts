@@ -25,10 +25,6 @@ export interface DeviceConfigManifest {
 	 */
 	deviceOAuthFlow?: DeviceOAuthFlow
 	/**
-	 * @deprecated
-	 */
-	layerMappings?: MappingsManifest
-	/**
 	 * A description of common properties for each subdevice
 	 */
 	subdeviceConfigSchema?: string
@@ -46,7 +42,7 @@ export type SubdeviceManifest<T extends string | number = string | number> = {
 	[deviceType in T]: {
 		displayName: string
 		configSchema?: string
-		mappingSchema?: string
+		playoutMappings?: Record<string, string>
 		actions?: SubdeviceAction[]
 	}
 }
@@ -183,22 +179,3 @@ export interface TableEntryBaseConfigManifestEntry {
 export type SubDeviceConfigManifestEntry = ConfigManifestEntry
 // export type TableEntryConfigManifestEntry = ConfigManifestEntry // TableEntryBaseConfigManifestEntry & ConfigManifestEntry
 export type TableEntryConfigManifestEntry = TableEntryBaseConfigManifestEntry & ConfigManifestEntry // TableEntryBaseConfigManifestEntry & ConfigManifestEntry
-
-export type MappingsManifest = Record<string | number, MappingManifestEntry[]>
-
-export interface MappingManifestEntryProps {
-	optional?: boolean
-	includeInSummary?: boolean
-}
-
-export interface ConfigManifestEntryDefault extends ConfigManifestEntryBase {
-	type: Exclude<
-		ConfigManifestEntryType,
-		| ConfigManifestEntryType.ENUM
-		| ConfigManifestEntryType.INT
-		| ConfigManifestEntryType.FLOAT
-		| ConfigManifestEntryType.TABLE
-	>
-}
-export type MappingManifestEntry = MappingManifestEntryProps &
-	(ConfigManifestEntryDefault | ConfigManifestEnumEntry | ConfigManifestIntEntry | ConfigManifestFloatEntry)

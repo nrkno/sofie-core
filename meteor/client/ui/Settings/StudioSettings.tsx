@@ -10,7 +10,6 @@ import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyl
 import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { BlueprintConfigManifestSettings } from './BlueprintConfigManifest'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { StudioRoutings } from './Studio/Routings'
 import { StudioDevices } from './Studio/Devices'
 import { MappingsSettingsManifest, MappingsSettingsManifests, StudioMappings } from './Studio/Mappings'
@@ -54,7 +53,6 @@ interface IStudioSettingsTrackedProps {
 	}>
 	availableDevices: Array<PeripheralDevice>
 	blueprintConfigManifest: ConfigManifestEntry[]
-	layerMappingsManifest: MappingsManifest | undefined
 	layerMappingsSchema: MappingsSettingsManifests | undefined
 	layerMappingsTranslationNamespaces: string[]
 }
@@ -91,11 +89,15 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		const translationNamespaces = [`peripheralDevice_${firstPlayoutDevice?._id}`]
 		const layerMappingsSchema: MappingsSettingsManifests = Object.fromEntries(
 			Object.entries(firstPlayoutDevice?.configManifest?.subdeviceManifest || {}).map(([id, val]) => {
+				const mappingsSchema = val.playoutMappings
+					? Object.fromEntries(Object.entries(val.playoutMappings).map(([id, schema]) => [id, JSON.parse(schema)]))
+					: undefined
+
 				return [
 					id,
 					literal<MappingsSettingsManifest>({
 						displayName: translateStringIfHasNamespaces(val.displayName, translationNamespaces),
-						mappingsSchema: val.mappingSchema ? JSON.parse(val.mappingSchema) : undefined,
+						mappingsSchema,
 					}),
 				]
 			})
@@ -153,7 +155,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			).fetch(),
 			blueprintConfigManifest: blueprint ? blueprint.studioConfigManifest || [] : [],
 			// TODO - these should come from the device the mapping is targeting but for now this will catch 99% of expected use cases
-			layerMappingsManifest: firstPlayoutDevice?.configManifest?.layerMappings,
 			layerMappingsTranslationNamespaces: translationNamespaces,
 			layerMappingsSchema: layerMappingsSchema,
 		}
@@ -221,9 +222,10 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									</Route>
 									<Route path={`${this.props.match.path}/route-sets`}>
 										<StudioRoutings
+											translationNamespaces={this.props.layerMappingsTranslationNamespaces}
 											studio={this.props.studio}
 											studioMappings={this.props.studioMappings}
-											manifest={this.props.layerMappingsManifest}
+											manifest={this.props.layerMappingsSchema}
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/package-manager`}>

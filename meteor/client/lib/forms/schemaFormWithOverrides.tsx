@@ -6,6 +6,7 @@ import { CheckboxControl } from '../Components/Checkbox'
 import { DropdownInputOption, DropdownInputControl } from '../Components/DropdownInput'
 import { FloatInputControl } from '../Components/FloatInput'
 import { IntInputControl } from '../Components/IntInput'
+import { JsonTextInputControl } from '../Components/JsonTextInput'
 import {
 	LabelAndOverrides,
 	LabelAndOverridesForCheckbox,
@@ -26,6 +27,12 @@ interface SchemaFormWithOverridesProps {
 
 	item: WrappedOverridableItemNormal<any>
 	overrideHelper: OverrideOpHelper
+
+	/**
+	 * If set, the form will run in a mode to generate a `Partial<T>` of overrides for the provided object.
+	 * Each input field will be provided with a way to clear its value,
+	 */
+	// partialOverridesFor?: any // TODO - or would using the ObjectWithOverrides logic be reasonable?
 }
 
 interface FormComponentProps {
@@ -71,7 +78,11 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps) {
 		case TypeName.Array:
 			return <ArrayFormWithOverrides {...props} />
 		case TypeName.Object:
-			return <ObjectFormWithOverrides {...props} />
+			if (props.schema['ui:displayType'] === 'json') {
+				return <JsonFormWithOverrides {...childProps} />
+			} else {
+				return <ObjectFormWithOverrides {...props} />
+			}
 		case TypeName.Integer:
 			if (props.schema.enum) {
 				return <EnumFormWithOverrides {...childProps} />
@@ -236,6 +247,24 @@ const StringArrayFormWithOverrides = ({ schema, commonAttrs }: FormComponentProp
 						classNames="input text-input input-l"
 						placeholder={schema.default?.join('\n')}
 						value={value || []}
+						handleUpdate={handleUpdate}
+					/>
+				)}
+			</LabelAndOverrides>
+		</div>
+	)
+}
+
+const JsonFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
+	return (
+		<div className="mod mvs mhs">
+			<LabelAndOverrides {...commonAttrs}>
+				{(value, handleUpdate) => (
+					<JsonTextInputControl
+						modifiedClassName="bghl"
+						classNames="input text-input input-l"
+						placeholder={JSON.stringify(schema.default)}
+						value={value}
 						handleUpdate={handleUpdate}
 					/>
 				)}

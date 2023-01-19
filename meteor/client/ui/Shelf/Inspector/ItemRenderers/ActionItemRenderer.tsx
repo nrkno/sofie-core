@@ -170,7 +170,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 								obj={obj}
 								prefix={prefix}
 								className=""
-							></ConfigManifestEntryComponent>
+							/>
 						)
 					)}
 				</div>

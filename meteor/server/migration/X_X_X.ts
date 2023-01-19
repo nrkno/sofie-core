@@ -37,4 +37,26 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			}
 		},
 	},
+
+	// {
+	// 	id: `Blueprints ensure blueprintHash is set`,
+	// 	canBeRunAutomatically: true,
+	// 	validate: () => {
+	// 		const objects = Blueprints.find({ blueprintHash: { $exists: false } }).count()
+	// 		if (objects > 0) {
+	// 			return `object needs to be converted`
+	// 		}
+	// 		return false
+	// 	},
+	// 	migrate: () => {
+	// 		const objects = Blueprints.find({ blueprintHash: { $exists: false } }).fetch()
+	// 		for (const obj of objects) {
+	// 			Blueprints.update(obj._id, {
+	// 				$set: {
+	// 					blueprintHash: getRandomId(),
+	// 				},
+	// 			})
+	// 		}
+	// 	},
+	// },
 ])

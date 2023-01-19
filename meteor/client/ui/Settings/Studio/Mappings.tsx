@@ -8,16 +8,12 @@ import {
 	getActiveRoutes,
 	ResultingMappingRoutes,
 } from '../../../../lib/collections/Studios'
-import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus, faSync } from '@fortawesome/free-solid-svg-icons'
 import { useTranslation } from 'react-i18next'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
-import { MappingManifestEntry } from '@sofie-automation/corelib/dist/deviceConfig'
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
-import { MongoCollection } from '../../../../lib/collections/lib'
-import { renderEditAttribute } from '../components/ConfigManifestEntryComponent'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import {
 	getAllCurrentAndDeletedItemsFromOverrides,
@@ -54,7 +50,7 @@ import {
 
 export interface MappingsSettingsManifest {
 	displayName: string
-	mappingsSchema?: JSONSchema
+	mappingsSchema?: Record<string, JSONSchema>
 }
 export type MappingsSettingsManifests = Record<string | number, MappingsSettingsManifest>
 
@@ -205,9 +201,9 @@ function MappingDeletedEntry({
 	const doUndeleteItem = useCallback(() => doUndelete(layerId), [doUndelete, layerId])
 
 	// TODO - remove cast
-	const mappingSchema = manifest?.mappingsSchema?.['mappings']?.[(mapping as any).mappingType]
+	const mappingSchema = manifest?.mappingsSchema?.[(mapping as any).mappingType]
 	const mappingSummaryFields = useMemo(
-		() => (mappingSchema ? getSchemaSummaryFields(mappingSchema as JSONSchema) : []),
+		() => (mappingSchema ? getSchemaSummaryFields(mappingSchema) : []),
 		[mappingSchema]
 	)
 
@@ -306,7 +302,7 @@ function StudioMappingsEntry({
 	}, [manifestNames])
 
 	const mappingTypeOptions = useMemo(() => {
-		const raw: Array<[string, JSONSchema]> = Object.entries(manifest?.mappingsSchema?.['mappings'] || {})
+		const raw: Array<[string, JSONSchema]> = Object.entries(manifest?.mappingsSchema || {})
 		// raw.sort((a, b) => a[1]?.localeCompare(b[1])) // TODO ?
 
 		return raw.map(([id, entry], i) =>
@@ -319,9 +315,9 @@ function StudioMappingsEntry({
 	}, [manifest?.mappingsSchema])
 
 	// TODO - remove cast
-	const mappingSchema = manifest?.mappingsSchema?.['mappings']?.[(item.computed as any).mappingType]
+	const mappingSchema = manifest?.mappingsSchema?.[(item.computed as any).mappingType]
 	const mappingSummaryFields = useMemo(
-		() => (mappingSchema ? getSchemaSummaryFields(mappingSchema as JSONSchema) : []),
+		() => (mappingSchema ? getSchemaSummaryFields(mappingSchema) : []),
 		[mappingSchema]
 	)
 
@@ -580,48 +576,4 @@ function MappingSummary({ translationNamespaces, fields, mapping }: MappingSumma
 	} else {
 		return <span>-</span>
 	}
-}
-
-function renderOptionalInput(attribute: string, obj: any, collection: MongoCollection<any>) {
-	return (
-		<EditAttribute
-			modifiedClassName="bghl"
-			attribute={attribute}
-			obj={obj}
-			type="checkbox"
-			collection={collection}
-			className="mod mvn mhs"
-			mutateDisplayValue={(v) => (v === undefined ? false : true)}
-			mutateUpdateValue={() => undefined}
-		/>
-	)
-}
-
-interface IDeviceMappingSettingsProps {
-	studio: Studio
-	attribute: string
-	showOptional?: boolean
-	manifest: MappingManifestEntry[] | undefined
-}
-
-export function DeviceMappingSettings({ attribute, showOptional, manifest, studio }: IDeviceMappingSettingsProps) {
-	if (manifest) {
-		return (
-			<React.Fragment>
-				{manifest.map((m) => (
-					<div className="mod mvs mhs" key={m.id}>
-						<label className="field">
-							{m.name}
-							{showOptional && renderOptionalInput(attribute + '.' + m.id, studio, Studios)}
-
-							{renderEditAttribute(Studios, m as any, studio, attribute + '.')}
-							{m.hint && <span className="text-s dimmed">{m.hint}</span>}
-						</label>
-					</div>
-				))}
-			</React.Fragment>
-		)
-	}
-
-	return null
 }
