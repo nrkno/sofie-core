@@ -405,11 +405,11 @@ koaRouter.get('/', async (ctx, next) => {
 
 koaRouter.post('/activate/:playlistId', async (ctx, next) => {
 	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	check(rundownPlaylistId, String)
 	const rehearsal = (ctx.req.body as { rehearsal: boolean }).rehearsal
 	logger.info(`koa POST: activate ${rundownPlaylistId} - ${rehearsal ? 'rehearsal' : 'live'}`)
 
 	try {
+		check(rundownPlaylistId, String)
 		ctx.body = ClientAPI.responseSuccess(
 			await MeteorCall.rest.activate(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId, rehearsal)
 		)
@@ -426,10 +426,10 @@ koaRouter.post('/activate/:playlistId', async (ctx, next) => {
 
 koaRouter.post('/deactivate/:playlistId', async (ctx, next) => {
 	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	check(rundownPlaylistId, String)
 	logger.info(`koa POST: deactivate ${rundownPlaylistId}`)
 
 	try {
+		check(rundownPlaylistId, String)
 		ctx.body = ClientAPI.responseSuccess(
 			await MeteorCall.rest.deactivate(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId)
 		)
@@ -446,16 +446,16 @@ koaRouter.post('/deactivate/:playlistId', async (ctx, next) => {
 
 koaRouter.post('/executeAdLib/:playlistId/:adLibId', async (ctx, next) => {
 	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	check(rundownPlaylistId, String)
 	const adLibId = protectString<AdLibActionId | RundownBaselineAdLibActionId | PieceId | BucketAdLibId>(
 		ctx.params.adLibId
 	)
-	check(adLibId, String)
 	const actionTypeObj = ctx.req.body
 	const triggerMode = actionTypeObj ? (actionTypeObj as { actionType: string }).actionType : undefined
 	logger.info(`koa POST: executeAdLib ${rundownPlaylistId} ${adLibId} - triggerMode: ${triggerMode}`)
 
 	try {
+		check(adLibId, String)
+		check(rundownPlaylistId, String)
 		ctx.body = ClientAPI.responseSuccess(
 			await MeteorCall.rest.executeAdLib(
 				makeConnection(ctx),
@@ -478,12 +478,12 @@ koaRouter.post('/executeAdLib/:playlistId/:adLibId', async (ctx, next) => {
 
 koaRouter.post('/moveNextPart/:playlistId/:delta', async (ctx, next) => {
 	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	check(rundownPlaylistId, String)
 	const delta = parseInt(ctx.params.delta)
-	check(delta, Number)
 	logger.info(`koa POST: moveNextPart ${rundownPlaylistId} ${delta}`)
 
 	try {
+		check(rundownPlaylistId, String)
+		check(delta, Number)
 		ctx.body = ClientAPI.responseSuccess(
 			await MeteorCall.rest.moveNextPart(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId, delta)
 		)
@@ -500,12 +500,12 @@ koaRouter.post('/moveNextPart/:playlistId/:delta', async (ctx, next) => {
 
 koaRouter.post('/moveNextSegment/:playlistId/:delta', async (ctx, next) => {
 	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	check(rundownPlaylistId, String)
 	const delta = parseInt(ctx.params.delta)
-	check(delta, Number)
 	logger.info(`koa POST: moveNextSegment ${rundownPlaylistId} ${delta}`)
 
 	try {
+		check(rundownPlaylistId, String)
+		check(delta, Number)
 		ctx.body = ClientAPI.responseSuccess(
 			await MeteorCall.rest.moveNextSegment(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId, delta)
 		)
@@ -522,10 +522,10 @@ koaRouter.post('/moveNextSegment/:playlistId/:delta', async (ctx, next) => {
 
 koaRouter.post('/reloadPlaylist/:playlistId', async (ctx, next) => {
 	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	check(rundownPlaylistId, String)
 	logger.info(`koa POST: reloadPlaylist ${rundownPlaylistId}`)
 
 	try {
+		check(rundownPlaylistId, String)
 		ctx.body = ClientAPI.responseSuccess(
 			await MeteorCall.rest.reloadPlaylist(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId)
 		)
@@ -542,10 +542,10 @@ koaRouter.post('/reloadPlaylist/:playlistId', async (ctx, next) => {
 
 koaRouter.post('/resetPlaylist/:playlistId', async (ctx, next) => {
 	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	check(rundownPlaylistId, String)
 	logger.info(`koa POST: resetPlaylist ${rundownPlaylistId}`)
 
 	try {
+		check(rundownPlaylistId, String)
 		ctx.body = ClientAPI.responseSuccess(
 			await MeteorCall.rest.resetPlaylist(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId)
 		)
@@ -562,12 +562,12 @@ koaRouter.post('/resetPlaylist/:playlistId', async (ctx, next) => {
 
 koaRouter.post('/setNextPart/:playlistId/:partId', async (ctx, next) => {
 	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	check(rundownPlaylistId, String)
 	const partId = protectString<PartId>(ctx.params.partId)
-	check(partId, String)
 	logger.info(`koa POST: setNextPart ${rundownPlaylistId} ${partId}`)
 
 	try {
+		check(rundownPlaylistId, String)
+		check(partId, String)
 		ctx.body = ClientAPI.responseSuccess(
 			await MeteorCall.rest.setNextPart(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId, partId)
 		)
@@ -584,12 +584,12 @@ koaRouter.post('/setNextPart/:playlistId/:partId', async (ctx, next) => {
 
 koaRouter.post('/setNextSegment/:playlistId/:segmentId', async (ctx, next) => {
 	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	check(rundownPlaylistId, String)
 	const segmentId = protectString<SegmentId>(ctx.params.segmentId)
-	check(segmentId, String)
 	logger.info(`koa POST: setNextSegment ${rundownPlaylistId} ${segmentId}`)
 
 	try {
+		check(rundownPlaylistId, String)
+		check(segmentId, String)
 		ctx.body = ClientAPI.responseSuccess(
 			await MeteorCall.rest.setNextSegment(
 				makeConnection(ctx),
@@ -612,11 +612,11 @@ koaRouter.post('/setNextSegment/:playlistId/:segmentId', async (ctx, next) => {
 koaRouter.post('/take/:playlistId', async (ctx, next) => {
 	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
 	const fromPartInstanceId = (ctx.req.body as { fromPartInstanceId: string }).fromPartInstanceId
-	check(rundownPlaylistId, String)
-	check(fromPartInstanceId, Match.Optional(String))
 	logger.info(`koa POST: take ${rundownPlaylistId}`)
 
 	try {
+		check(rundownPlaylistId, String)
+		check(fromPartInstanceId, Match.Optional(String))
 		ctx.body = ClientAPI.responseSuccess(
 			await MeteorCall.rest.take(
 				makeConnection(ctx),
@@ -640,12 +640,12 @@ koaRouter.post('/switchRouteSet/:studioId/:routeSetId', async (ctx, next) => {
 	const studioId = protectString<StudioId>(ctx.params.studioId)
 	const routeSetId = ctx.params.routeSetId
 	const active = (ctx.req.body as { active: boolean }).active
-	check(studioId, String)
-	check(routeSetId, String)
-	check(active, Boolean)
 	logger.info(`koa POST: switchRouteSet ${studioId} ${routeSetId} ${active}`)
 
 	try {
+		check(studioId, String)
+		check(routeSetId, String)
+		check(active, Boolean)
 		ctx.body = ClientAPI.responseSuccess(
 			await MeteorCall.rest.switchRouteSet(
 				makeConnection(ctx),
