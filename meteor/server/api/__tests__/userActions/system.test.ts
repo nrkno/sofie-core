@@ -1,4 +1,4 @@
-import { ConfigManifestEntryType } from '@sofie-automation/corelib/dist/deviceConfig'
+import { DeviceConfigManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { MeteorCall } from '../../../../lib/api/methods'
 import {
 	PeripheralDevice,
@@ -17,6 +17,30 @@ import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 
 require('../../userActions') // include in order to create the Meteor methods needed
+
+const mockConfigManifestWithDisableField: DeviceConfigManifest = {
+	deviceConfigSchema: '', // unused
+	subdeviceManifest: {
+		dummy: {
+			displayName: 'Test device',
+		},
+	},
+	subdeviceConfigSchema: JSON.stringify({
+		// Based on 'common-options' from TSR
+		$schema: 'https://json-schema.org/draft/2020-12/schema',
+		title: 'Device Common Options',
+		type: 'object',
+		properties: {
+			disable: {
+				type: 'boolean',
+				'ui:title': 'Disable',
+				default: false,
+			},
+		},
+		required: [],
+		additionalProperties: false,
+	}),
+}
 
 describe('User Actions - Disable Peripheral SubDevice', () => {
 	let env: DefaultEnvironment
@@ -41,27 +65,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 						},
 					},
 				},
-				configManifest: {
-					deviceConfig: [
-						{
-							id: 'devices',
-							type: ConfigManifestEntryType.TABLE,
-							isSubDevices: true,
-							defaultType: 'dummy',
-							typeField: 'type',
-							name: 'Devices',
-							config: {
-								dummy: [
-									{
-										id: 'disable',
-										type: ConfigManifestEntryType.BOOLEAN,
-										name: 'Disable',
-									},
-								],
-							},
-						},
-					],
-				},
+				configManifest: mockConfigManifestWithDisableField,
 			}
 		)
 		jest.resetAllMocks()
@@ -159,27 +163,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 						},
 					},
 				},
-				configManifest: {
-					deviceConfig: [
-						{
-							id: 'devices',
-							type: ConfigManifestEntryType.TABLE,
-							isSubDevices: true,
-							defaultType: 'dummy',
-							typeField: 'type',
-							name: 'Devices',
-							config: {
-								dummy: [
-									{
-										id: 'disable',
-										type: ConfigManifestEntryType.STRING,
-										name: 'A property mislabeled as Disable',
-									},
-								],
-							},
-						},
-					],
-				},
+				configManifest: mockConfigManifestWithDisableField,
 			}
 		)
 

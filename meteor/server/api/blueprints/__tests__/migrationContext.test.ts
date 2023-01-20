@@ -71,10 +71,11 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('getMapping: good', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const rawMapping = {
+				const rawMapping: MappingExt<TSR.SomeMappingAbstract> = {
 					device: TSR.DeviceType.ABSTRACT,
 					deviceId: protectString('dev1'),
 					lookahead: LookaheadMode.NONE,
+					options: {},
 				}
 				studio.mappingsWithOverrides.defaults['mapping1'] = rawMapping
 
@@ -89,10 +90,11 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertMapping: good', () => {
 				const ctx = getContext()
 
-				const rawMapping = {
+				const rawMapping: BlueprintMapping<TSR.SomeMappingAbstract> = {
 					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
 					lookahead: LookaheadMode.NONE,
+					options: {},
 				}
 
 				const mappingId = ctx.insertMapping('mapping2', rawMapping)
@@ -109,10 +111,11 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertMapping: no id', () => {
 				const ctx = getContext()
 
-				const rawMapping = {
+				const rawMapping: BlueprintMapping<TSR.SomeMappingAbstract> = {
 					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
 					lookahead: LookaheadMode.NONE,
+					options: {},
 				}
 
 				expect(() => ctx.insertMapping('', rawMapping)).toThrow(`[500] Mapping id "" is invalid`)
@@ -130,10 +133,11 @@ describe('Test blueprint migrationContext', () => {
 				const existingMapping = ctx.getMapping('mapping2')
 				expect(existingMapping).toBeTruthy()
 
-				const rawMapping = {
+				const rawMapping: BlueprintMapping<TSR.SomeMappingAbstract> = {
 					device: TSR.DeviceType.ATEM,
 					deviceId: 'dev2',
 					lookahead: LookaheadMode.PRELOAD,
+					options: {},
 				}
 				expect(rawMapping).not.toEqual(existingMapping)
 

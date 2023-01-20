@@ -1,3 +1,4 @@
+import { TSR } from '../../tsr'
 import { PeripheralDeviceId, StudioId } from './Ids'
 
 export interface PeripheralDevicePublic {
@@ -18,7 +19,7 @@ export interface PeripheralDevicePublic {
  */
 export interface PlayoutDeviceSettings {
 	devices: {
-		[deviceId: string]: unknown // TSR.DeviceOptionsAny
+		[deviceId: string]: TSR.DeviceOptionsAny
 	}
 
 	/** Activate Debug Logging */

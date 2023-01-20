@@ -233,6 +233,7 @@ class OverrideOpHelperImpl implements OverrideOpHelper {
 	}
 
 	setItemValue = (itemId: string, subPath: string, value: any): void => {
+		console.log('set value', itemId, subPath, value)
 		if (!this.#objectWithOverridesRef.current) return
 
 		if (subPath === '_id') {
@@ -244,9 +245,6 @@ class OverrideOpHelperImpl implements OverrideOpHelper {
 				itemId
 			)
 
-			// Future: handle subPath being deeper
-			if (subPath.indexOf('.') !== -1) throw new Error('Deep subPath not yet implemented')
-
 			const setRootOp = opsForId.find((op) => op.path === itemId)
 			if (setRootOp && setRootOp.op === 'set') {
 				// This is as its base an override, so modify that instead
@@ -256,20 +254,37 @@ class OverrideOpHelperImpl implements OverrideOpHelper {
 
 				newOps.push(newOp)
 			} else {
-				const newOp = literal<ObjectOverrideSetOp>({
-					op: 'set',
-					path: `${itemId}.${subPath}`,
-					value: value,
-				})
+				let newOp: ObjectOverrideSetOp | undefined
 
-				// Preserve any other overrides
-				for (const op of opsForId) {
-					if (op.path !== newOp.path) {
-						newOps.push(op)
-					}
+				// Look for a op which encompasses this new value
+				const parentOp = findParentOpToUpdate(opsForId, subPath)
+				if (parentOp) {
+					// Found an op at a higher level that can be modified instead
+					objectPathSet(parentOp.op.value, parentOp.newSubPath, value)
+				} else {
+					// Insert new op
+					newOp = literal<ObjectOverrideSetOp>({
+						op: 'set',
+						path: `${itemId}.${subPath}`,
+						value: value,
+					})
 				}
-				// Add the new override
-				newOps.push(newOp)
+
+				if (newOp) {
+					const newOpAsPrefix = `${newOp.path}.`
+
+					// Preserve any other overrides
+					for (const op of opsForId) {
+						if (op.path === newOp.path || op.path.startsWith(newOpAsPrefix)) {
+							// ignore, as op has been replaced by the one at a higher path
+						} else {
+							// Retain unrelated op
+							newOps.push(op)
+						}
+					}
+					// Add the new override
+					newOps.push(newOp)
+				}
 			}
 
 			this.#saveOverrides(newOps)
@@ -316,4 +331,41 @@ export function useOverrideOpHelper<T extends object>(
 	}, [objectWithOverrides])
 
 	return helper
+}
+
+function findParentOpToUpdate(
+	opsForId: SomeObjectOverrideOp[],
+	subPath: string
+):
+	| {
+			op: ObjectOverrideSetOp
+			newSubPath: string
+	  }
+	| undefined {
+	const revOps = [...opsForId].reverse()
+
+	for (const op of revOps) {
+		if (subPath === op.path) {
+			// There is an op at the same path, this should be replaced by the current one
+			return undefined
+		}
+
+		if (subPath.startsWith(`${op.path}.`)) {
+			// The new value is inside of this op
+			if (op.op === 'delete') {
+				// Can't mutate a delete op like this
+				return undefined
+			}
+
+			// It's a set op, so we would be better to modify in place rather than add another mutate op
+			return {
+				op,
+				newSubPath: subPath.slice(op.path.length + 1),
+			}
+		}
+	}
+	//
+
+	// Nothing matched
+	return undefined
 }

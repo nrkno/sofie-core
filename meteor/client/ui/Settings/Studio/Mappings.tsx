@@ -201,7 +201,7 @@ function MappingDeletedEntry({
 	const doUndeleteItem = useCallback(() => doUndelete(layerId), [doUndelete, layerId])
 
 	// TODO - remove cast
-	const mappingSchema = manifest?.mappingsSchema?.[(mapping as any).mappingType]
+	const mappingSchema = manifest?.mappingsSchema?.[(mapping.options as any).mappingType]
 	const mappingSummaryFields = useMemo(
 		() => (mappingSchema ? getSchemaSummaryFields(mappingSchema) : []),
 		[mappingSchema]
@@ -315,7 +315,7 @@ function StudioMappingsEntry({
 	}, [manifest?.mappingsSchema])
 
 	// TODO - remove cast
-	const mappingSchema = manifest?.mappingsSchema?.[(item.computed as any).mappingType]
+	const mappingSchema = manifest?.mappingsSchema?.[(item.computed.options as any).mappingType]
 	const mappingSummaryFields = useMemo(
 		() => (mappingSchema ? getSchemaSummaryFields(mappingSchema) : []),
 		[mappingSchema]
@@ -324,8 +324,7 @@ function StudioMappingsEntry({
 	const hasMappingTypeChangedFromDefault =
 		item.defaults &&
 		(item.computed.device !== item.defaults?.device ||
-			(item.computed as any).mappingType !== (item.defaults as any)?.mappingType) // TODO - avoid cast
-	// TODO - should be `.options.mappingType`
+			(item.computed.options as any).mappingType !== (item.defaults.options as any)?.mappingType) // TODO - avoid cast
 	const mappingSchemaItem = hasMappingTypeChangedFromDefault
 		? literal<WrappedOverridableItemNormal<MappingExt>>({
 				...item,
@@ -513,7 +512,7 @@ function StudioMappingsEntry({
 											label={t('Mapping Type')}
 											hint={t('The type of mapping to use')}
 											item={item}
-											itemKey={'mappingType'}
+											itemKey={'options.mappingType'}
 											opPrefix={item.id}
 											overrideHelper={overrideHelper}
 											options={mappingTypeOptions}
@@ -533,7 +532,7 @@ function StudioMappingsEntry({
 											schema={mappingSchema}
 											translationNamespaces={translationNamespaces}
 											item={mappingSchemaItem}
-											attr="" // TODO - should this be options?
+											attr="options" // TODO - should this be options?
 											overrideHelper={overrideHelper}
 										/>
 									) : (
@@ -565,7 +564,7 @@ function MappingSummary({ translationNamespaces, fields, mapping }: MappingSumma
 			<span>
 				{fields
 					.map((entry) => {
-						const rawValue = objectPathGet(mapping, entry.attr)
+						const rawValue = objectPathGet(mapping.options, entry.attr)
 						const displayValue = entry.transform ? entry.transform(rawValue) : rawValue
 
 						return `${translateStringIfHasNamespaces(entry.name, translationNamespaces)}: ${displayValue}`
