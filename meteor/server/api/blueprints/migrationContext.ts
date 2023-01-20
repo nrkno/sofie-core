@@ -155,7 +155,12 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	getMapping(mappingId: string): BlueprintMapping | undefined {
 		check(mappingId, String)
 		const mapping = this.studio.mappingsWithOverrides.defaults[mappingId]
-		if (mapping) return unprotectObject(clone(mapping))
+		if (mapping) {
+			return clone({
+				...mapping,
+				deviceId: unprotectString(mapping.deviceId),
+			})
+		}
 	}
 	insertMapping(mappingId: string, mapping: OmitId<BlueprintMapping>): string {
 		check(mappingId, String)

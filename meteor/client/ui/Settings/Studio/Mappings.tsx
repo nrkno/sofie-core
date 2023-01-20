@@ -200,8 +200,7 @@ function MappingDeletedEntry({
 
 	const doUndeleteItem = useCallback(() => doUndelete(layerId), [doUndelete, layerId])
 
-	// TODO - remove cast
-	const mappingSchema = manifest?.mappingsSchema?.[(mapping.options as any).mappingType]
+	const mappingSchema = manifest?.mappingsSchema?.[mapping.options?.mappingType]
 	const mappingSummaryFields = useMemo(
 		() => (mappingSchema ? getSchemaSummaryFields(mappingSchema) : []),
 		[mappingSchema]
@@ -303,7 +302,6 @@ function StudioMappingsEntry({
 
 	const mappingTypeOptions = useMemo(() => {
 		const raw: Array<[string, JSONSchema]> = Object.entries(manifest?.mappingsSchema || {})
-		// raw.sort((a, b) => a[1]?.localeCompare(b[1])) // TODO ?
 
 		return raw.map(([id, entry], i) =>
 			literal<DropdownInputOption<string | number>>({
@@ -314,8 +312,7 @@ function StudioMappingsEntry({
 		)
 	}, [manifest?.mappingsSchema])
 
-	// TODO - remove cast
-	const mappingSchema = manifest?.mappingsSchema?.[(item.computed.options as any).mappingType]
+	const mappingSchema = manifest?.mappingsSchema?.[item.computed.options?.mappingType]
 	const mappingSummaryFields = useMemo(
 		() => (mappingSchema ? getSchemaSummaryFields(mappingSchema) : []),
 		[mappingSchema]
@@ -324,7 +321,7 @@ function StudioMappingsEntry({
 	const hasMappingTypeChangedFromDefault =
 		item.defaults &&
 		(item.computed.device !== item.defaults?.device ||
-			(item.computed.options as any).mappingType !== (item.defaults.options as any)?.mappingType) // TODO - avoid cast
+			item.computed.options?.mappingType !== item.defaults.options?.mappingType)
 	const mappingSchemaItem = hasMappingTypeChangedFromDefault
 		? literal<WrappedOverridableItemNormal<MappingExt>>({
 				...item,
@@ -532,7 +529,7 @@ function StudioMappingsEntry({
 											schema={mappingSchema}
 											translationNamespaces={translationNamespaces}
 											item={mappingSchemaItem}
-											attr="options" // TODO - should this be options?
+											attr="options"
 											overrideHelper={overrideHelper}
 										/>
 									) : (

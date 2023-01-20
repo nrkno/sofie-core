@@ -38,8 +38,6 @@ export function SubDevicesConfig({
 }: SubDevicesConfigProps) {
 	const { t } = useTranslation()
 
-	// TODO - avoid hardcoding being at `settings.devices`
-
 	const parsedCommonSchema = commonSchema ? JSON.parse(commonSchema) : undefined
 
 	const parsedSchemas: Record<string, JSONSchema | undefined> = {}
@@ -67,7 +65,7 @@ export function SubDevicesConfig({
 	}, [configSchema, translationNamespaces])
 
 	const addNewItem = useCallback(() => {
-		const selectedType = schemaTypes[0] // TODO - should this be more deterministic?
+		const selectedType = schemaTypes[0] // Future: This is slightly 'random' but will be consistent
 		const selectedSchemaJson = parsedSchemas[selectedType]
 		const defaults = selectedSchemaJson ? getSchemaDefaultValues(selectedSchemaJson) : {}
 		defaults.type = selectedType

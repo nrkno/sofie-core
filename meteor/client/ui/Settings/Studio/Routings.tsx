@@ -300,8 +300,6 @@ export const StudioRoutings = withTranslation()(
 						const rawMappingTypeOptions: Array<[string, JSONSchema]> = Object.entries(
 							routeMappingSchema?.mappingsSchema || {}
 						)
-						// raw.sort((a, b) => a[1]?.localeCompare(b[1])) // TODO ?
-
 						const mappingTypeOptions = rawMappingTypeOptions.map(([id, entry], i) =>
 							literal<DropdownInputOption<string | number>>({
 								value: id + '',
@@ -393,7 +391,7 @@ export const StudioRoutings = withTranslation()(
 												{t('Mapping Type')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={`routeSets.${routeSetId}.routes.${index}.remapping.mappingType`} // TODO - options path?
+													attribute={`routeSets.${routeSetId}.routes.${index}.remapping.options.mappingType`}
 													obj={this.props.studio}
 													type="dropdown"
 													options={mappingTypeOptions}
@@ -766,8 +764,7 @@ function DeviceMappingSettings({
 }: IDeviceMappingSettingsProps) {
 	const routeRemapping = objectPathGet(studio, attribute)
 
-	// TODO - remove cast
-	const mappingType = routeRemapping?.mappingType ?? (mappedLayer as any)?.mappingType
+	const mappingType = routeRemapping?.mappingType ?? mappedLayer?.options?.mappingType
 	const mappingSchema = manifest?.mappingsSchema?.[mappingType]
 
 	if (mappingSchema && routeRemapping) {

@@ -75,7 +75,7 @@ export enum LookaheadMode {
 export interface BlueprintMappings extends TSR.Mappings {
 	[layerName: string]: BlueprintMapping
 }
-export interface BlueprintMapping<TOptions extends { mappingType: string } | unknown = unknown>
+export interface BlueprintMapping<TOptions extends { mappingType: string } | unknown = TSR.TSRMappingOptions>
 	extends TSR.Mapping<TOptions> {
 	/** What method core should use to create lookahead objects for this layer */
 	lookahead: LookaheadMode
@@ -88,7 +88,7 @@ export interface BlueprintMapping<TOptions extends { mappingType: string } | unk
 export interface MappingsExt {
 	[layerName: string]: MappingExt
 }
-export interface MappingExt<TOptions extends { mappingType: string } | unknown = unknown>
+export interface MappingExt<TOptions extends { mappingType: string } | unknown = TSR.TSRMappingOptions>
 	extends Omit<BlueprintMapping<TOptions>, 'deviceId'> {
 	deviceId: PeripheralDeviceId
 }
