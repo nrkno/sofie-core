@@ -10,7 +10,6 @@ module.exports = {
 	},
 	testMatch: ['**/__tests__/**/*.spec.(ts|js)'],
 	testEnvironment: 'node',
-	testResultsProcessor: 'jest-teamcity-reporter',
 	coverageThreshold: {
 		global: {
 			branches: 0,

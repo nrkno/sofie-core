@@ -41,7 +41,6 @@
 	"devDependencies": {
 		"@openapitools/openapi-generator-cli": "^2.5.2",
 		"eslint-plugin-yml": "^1.2.0",
-		"jest-teamcity-reporter": "0.9.0",
 		"wget-improved": "^3.3.1"
   },
   "lint-staged": {
