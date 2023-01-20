@@ -84,44 +84,6 @@ resources:
                 properties:
                   message:
                     type: string
-  executeAction:
-    post:
-      operationId: executeAction
-      tags:
-        - userActions
-      summary: Executes the requested action by passing `actionId` directly to the blueprints `executeAction` function.
-      parameters:
-        - name: playlistId
-          in: path
-          description: Playlist to execute action in.
-          required: true
-          schema:
-            type: string
-        - name: actionId
-          in: path
-          description: Action Id string, should match something inside the blueprints.
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Any value, recommended to be a relatively simple object, as it may need to survive a round of serialization.
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        200:
-          $ref: '#/components/responses/executeActionSuccess'
-        412:
-          description: Specified Playlist is not active or there is not an on-air Part instance.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
   executeAdLib:
     post:
       operationId: executeAdLib

@@ -20,8 +20,6 @@ paths:
     $ref: 'definitions/userActions.yaml#/resources/activate'
   /deactivate/{playlistId}:
     $ref: 'definitions/userActions.yaml#/resources/deactivate'
-  /executeAction/{playlistId}/{actionId}:
-    $ref: 'definitions/userActions.yaml#/resources/executeAction'
   /executeAdLib/{playlistId}/{adLibId}:
     $ref: 'definitions/userActions.yaml#/resources/executeAdLib'
   /moveNextPart/{playlistId}/{delta}:

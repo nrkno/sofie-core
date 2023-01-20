@@ -47,26 +47,6 @@ export interface RestAPI extends MethodContext {
 		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
-	 * Executes the requested action by passing `actionId` directly to the blueprints `executeAction` function.
-	 *
-	 * Throws if the target Playlist is not currently active.
-	 * Throws if there is not an on-air Part.
-	 * Throws if the `executeAction` method of the blueprints throws - blueprint error will be returned to caller.
-	 * @returns An object in the form {queuedPartInstanceId?: PartInstanceId, taken?: boolean} (if a part was queued by the action/if the next part was automatically taken)
-	 * @param connection Connection data including client and header details
-	 * @param event User event string
-	 * @param rundownPlaylistId Playlist to execute action in.
-	 * @param actionId Action Id string, should match something inside the blueprints.
-	 * @param userData Any value, recommended to be a relatively simple { [key: string]: string }-style object, as the object may need to survive a round of serialization.
-	 */
-	executeAction(
-		connection: Meteor.Connection,
-		event: string,
-		rundownPlaylistId: RundownPlaylistId,
-		actionId: string,
-		userData: any
-	): Promise<ClientAPI.ClientResponse<object>>
-	/**
 	 * Executes the requested AdLib/AdLib Action. This is a "planned" AdLib (Action) that has been produced by the blueprints during the ingest process.
 	 *
 	 * Throws if the target Playlist is not active.

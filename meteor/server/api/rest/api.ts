@@ -444,35 +444,6 @@ koaRouter.post('/deactivate/:playlistId', async (ctx, next) => {
 	await next()
 })
 
-koaRouter.post('/executeAction/:playlistId/:actionId', async (ctx, next) => {
-	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	check(rundownPlaylistId, String)
-	const actionId = ctx.params.actionId
-	check(actionId, String)
-	const userData = ctx.req.body
-	logger.info(`koa POST: executeAction ${rundownPlaylistId} ${actionId} - ${userData}`)
-
-	try {
-		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.executeAction(
-				makeConnection(ctx),
-				restAPIUserEvent(ctx),
-				rundownPlaylistId,
-				actionId,
-				userData
-			)
-		)
-		ctx.status = 200
-	} catch (e) {
-		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
-		logger.error('POST executeAction failed - ' + errMsg)
-		ctx.type = 'application/json'
-		ctx.body = JSON.stringify({ message: errMsg })
-		ctx.status = 412
-	}
-	await next()
-})
-
 koaRouter.post('/executeAdLib/:playlistId/:adLibId', async (ctx, next) => {
 	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
 	check(rundownPlaylistId, String)
