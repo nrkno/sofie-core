@@ -1,4 +1,3 @@
-import { DeviceConfigManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { MeteorCall } from '../../../../lib/api/methods'
 import {
 	PeripheralDevice,
