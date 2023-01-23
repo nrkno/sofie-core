@@ -25,6 +25,7 @@ meteorPublish(PubSub.showStyleBases, async function (selector0, token) {
 	}
 	return null
 })
+
 meteorPublish(PubSub.showStyleVariants, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 

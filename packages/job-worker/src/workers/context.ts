@@ -174,6 +174,8 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		}
 
 		loadedDocs.sort((a, b) => {
+			if (a._rank > b._rank) return 1
+			if (a._rank < b._rank) return -1
 			if (a.name > b.name) return 1
 			if (a.name < b.name) return -1
 			if (a._id > b._id) return 1

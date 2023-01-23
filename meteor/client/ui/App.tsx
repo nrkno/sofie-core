@@ -200,7 +200,6 @@ export const App = translateWithTracker(() => {
 
 					// Use Keyboard API to lock the keyboard and disable all browser shortcuts
 					if ('keyboard' in navigator) {
-						// @ts-expect-error: Keyboard API isn't yet available in TypeScript DOM library,
 						// but we check for its availability, so it should be fine.
 						// Keyboard Lock: https://wicg.github.io/keyboard-lock/
 						navigator.keyboard

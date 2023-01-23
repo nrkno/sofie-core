@@ -244,7 +244,7 @@ export namespace Accessor {
 
 		/** Zone id, defaults to 'default' */
 		zoneId?: string
-		/** Server id. Can be omitted for sources, as clip-searches are zone-wide */
+		/** Server id. Should be omitted for sources, as clip-searches are zone-wide. */
 		serverId?: number
 
 		/** Name/Id of the network the share exists on. Used to differ between different networks. Leave empty if globally accessible. */

@@ -677,6 +677,7 @@ describe('Test blueprint migrationContext', () => {
 				showStyleBaseId: showStyle._id,
 				blueprintConfigWithOverrides: wrapDefaultObject(config || {}),
 				_rundownVersionHash: '',
+				_rank: 0,
 			})
 			ShowStyleVariants.insert(rawVariant)
 
@@ -777,6 +778,7 @@ describe('Test blueprint migrationContext', () => {
 						name: 'test2',
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
+						_rank: 0,
 					}) as any as IBlueprintShowStyleVariant
 				)
 				expect(ctx.getAllVariants()).toEqual(initialVariants)
