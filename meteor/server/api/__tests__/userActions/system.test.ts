@@ -23,6 +23,7 @@ const mockConfigManifestWithDisableField: DeviceConfigManifest = {
 	subdeviceManifest: {
 		dummy: {
 			displayName: 'Test device',
+			configSchema: '', // unused
 		},
 	},
 	subdeviceConfigSchema: JSON.stringify({

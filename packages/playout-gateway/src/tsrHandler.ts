@@ -475,7 +475,7 @@ export class TSRHandler {
 			const settings: PlayoutDeviceSettings = peripheralDevice.settings as PlayoutDeviceSettings
 
 			for (const [deviceId, device0] of Object.entries(settings.devices)) {
-				const device = device0 as DeviceOptionsAny
+				const device = device0
 				if (!device.disable) {
 					deviceOptions.set(deviceId, device)
 				}
