@@ -6,10 +6,28 @@
  */
 
 export interface PlayoutGatewayConfig {
+	/**
+	 * Activate Debug Logging
+	 */
 	debugLogging?: boolean
+	/**
+	 * Activate Multi-Threading
+	 */
 	multiThreading?: boolean
+	/**
+	 * Activate Multi-Threaded Timeline Resolving
+	 */
 	multiThreadedResolver?: boolean
+	/**
+	 * Activate Partial resolving, when resolving the Timeline
+	 */
 	useCacheWhenResolving?: boolean
+	/**
+	 * Report command timings on all commands
+	 */
 	reportAllCommands?: boolean
+	/**
+	 * Adjust resolve-time estimation
+	 */
 	estimateResolveTimeMultiplier?: boolean
 }

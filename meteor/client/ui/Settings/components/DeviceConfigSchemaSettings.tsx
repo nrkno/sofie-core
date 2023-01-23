@@ -274,53 +274,15 @@ function SubDeviceEditRow({
 		[parentId, subdeviceId, editItem]
 	)
 
-	const updateFunction = useCallback(
-		(path: string, val: any, mode?: 'push' | 'pull') => {
-			if (mode === 'push') {
-				PeripheralDevices.update(parentId, {
-					$push: {
-						[`settings.devices.${subdeviceId}.${path}`]: val,
-					},
-				})
-			} else if (mode === 'pull') {
-				if (isNaN(val)) {
-					throw new Error("Can't pop a non-numeric array index!")
-				}
-				PeripheralDevices.update(parentId, {
-					$unset: {
-						[`settings.devices.${subdeviceId}.${path}.${val}`]: 1,
-					},
-				})
-
-				// clean up the array
-				PeripheralDevices.update(parentId, {
-					$pull: {
-						[`settings.devices.${subdeviceId}.${path}`]: null,
-					},
-				})
-			} else {
-				if (val === undefined) {
-					PeripheralDevices.update(parentId, {
-						$unset: {
-							[`settings.devices.${subdeviceId}.${path}`]: 1,
-						},
-					})
-				} else {
-					PeripheralDevices.update(parentId, {
-						$set: {
-							[`settings.devices.${subdeviceId}.${path}`]: val,
-						},
-					})
-				}
-			}
-		},
-		[parentId, subdeviceId]
-	)
 	const updateType = useCallback(
 		(val: any) => {
-			updateFunction('type', val)
+			PeripheralDevices.update(parentId, {
+				$set: {
+					[`settings.devices.${subdeviceId}.type`]: val,
+				},
+			})
 		},
-		[updateFunction]
+		[parentId, subdeviceId]
 	)
 
 	return (

@@ -146,13 +146,11 @@ export const StudioPackageManagerSettings = withTranslation()(
 					device.settings
 				) {
 					const settings = device.settings
-					if ('devices' in settings) {
-						for (const deviceId of Object.keys(settings.devices || {})) {
-							deviceIds.push({
-								name: deviceId,
-								value: deviceId,
-							})
-						}
+					for (const deviceId of Object.keys(settings.devices || {})) {
+						deviceIds.push({
+							name: deviceId,
+							value: deviceId,
+						})
 					}
 				}
 			})
