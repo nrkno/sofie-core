@@ -18,31 +18,6 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 
 require('../../userActions') // include in order to create the Meteor methods needed
 
-const mockConfigManifestWithDisableField: DeviceConfigManifest = {
-	deviceConfigSchema: '', // unused
-	subdeviceManifest: {
-		dummy: {
-			displayName: 'Test device',
-			configSchema: '', // unused
-		},
-	},
-	subdeviceConfigSchema: JSON.stringify({
-		// Based on 'common-options' from TSR
-		$schema: 'https://json-schema.org/draft/2020-12/schema',
-		title: 'Device Common Options',
-		type: 'object',
-		properties: {
-			disable: {
-				type: 'boolean',
-				'ui:title': 'Disable',
-				default: false,
-			},
-		},
-		required: [],
-		additionalProperties: false,
-	}),
-}
-
 describe('User Actions - Disable Peripheral SubDevice', () => {
 	let env: DefaultEnvironment
 	let pDevice: PeripheralDevice
@@ -66,7 +41,30 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 						},
 					},
 				},
-				configManifest: mockConfigManifestWithDisableField,
+				configManifest: {
+					deviceConfigSchema: '', // unused
+					subdeviceManifest: {
+						dummy: {
+							displayName: 'Test device',
+							configSchema: '', // unused
+						},
+					},
+					subdeviceConfigSchema: JSON.stringify({
+						// Based on 'common-options' from TSR
+						$schema: 'https://json-schema.org/draft/2020-12/schema',
+						title: 'Device Common Options',
+						type: 'object',
+						properties: {
+							disable: {
+								type: 'boolean',
+								'ui:title': 'Disable',
+								default: false,
+							},
+						},
+						required: [],
+						additionalProperties: false,
+					}),
+				},
 			}
 		)
 		jest.resetAllMocks()
@@ -166,7 +164,30 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 						},
 					},
 				},
-				configManifest: mockConfigManifestWithDisableField,
+				configManifest: {
+					deviceConfigSchema: '', // unused
+					subdeviceManifest: {
+						dummy: {
+							displayName: 'Test device',
+							configSchema: '', // unused
+						},
+					},
+					subdeviceConfigSchema: JSON.stringify({
+						// Based on 'common-options' from TSR
+						$schema: 'https://json-schema.org/draft/2020-12/schema',
+						title: 'Device Common Options',
+						type: 'object',
+						properties: {
+							disable: {
+								type: 'string',
+								'ui:title': 'Mislabeled property',
+								default: false,
+							},
+						},
+						required: [],
+						additionalProperties: false,
+					}),
+				},
 			}
 		)
 
