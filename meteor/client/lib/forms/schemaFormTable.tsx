@@ -253,6 +253,7 @@ function SchemaFormTableEditRow({
 								attr={id}
 								overrideHelper={overrideHelper}
 								translationNamespaces={translationNamespaces}
+								allowTables={false}
 							/>
 						) : (
 							''

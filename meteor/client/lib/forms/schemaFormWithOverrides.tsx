@@ -19,10 +19,18 @@ import { JSONSchema, TypeName } from './schema-types'
 import { SchemaFormTable } from './schemaFormTable'
 import { joinObjectPathFragments, translateStringIfHasNamespaces } from './schemaFormUtil'
 
-interface SchemaFormWithOverridesProps {
+export interface SchemaFormCommonProps {
 	schema: JSONSchema
 	translationNamespaces: string[]
 
+	/**
+	 * In some situations, it is desirable to not allow tables to be used by a schema
+	 * For example, a table inside a table will not display properly so this gets set automatically
+	 */
+	allowTables?: boolean
+}
+
+interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
 	attr: string
 
 	item: WrappedOverridableItemNormal<any>
@@ -107,7 +115,11 @@ const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 		case TypeName.String:
 			return <StringArrayFormWithOverrides {...childProps} />
 		case TypeName.Object:
-			return <SchemaFormTable {...props} />
+			if (props.allowTables) {
+				return <SchemaFormTable {...props} />
+			} else {
+				return <>{t('Tables are not supported here')}</>
+			}
 		default:
 			return <>{t('Unsupported array type "{{ type }}"', { type: props.schema.items?.type })}</>
 	}
@@ -127,6 +139,7 @@ const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 						item={props.item}
 						overrideHelper={props.overrideHelper}
 						translationNamespaces={props.translationNamespaces}
+						allowTables={props.allowTables}
 					/>
 				)
 			})}

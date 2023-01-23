@@ -36,6 +36,7 @@ export function GenericDeviceSettingsComponent({ device, subDevices }: IGenericD
 						objectId={device._id}
 						basePath="settings"
 						translationNamespaces={translationNamespaces}
+						allowTables
 					/>
 
 					{device.configManifest.subdeviceManifest && (

@@ -1,15 +1,12 @@
 import { literal, objectPathSet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback, useMemo, useState } from 'react'
 import { WrappedOverridableItemNormal, OverrideOpHelper } from '../../ui/Settings/util/OverrideOpHelper'
-import { JSONSchema } from './schema-types'
-import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
+import { SchemaFormCommonProps, SchemaFormWithOverrides } from './schemaFormWithOverrides'
 
-interface SchemaFormInPlaceProps {
-	schema: JSONSchema
+interface SchemaFormInPlaceProps extends SchemaFormCommonProps {
 	object: any
-	translationNamespaces: string[]
 }
-export function SchemaFormInPlace({ schema, object, translationNamespaces }: SchemaFormInPlaceProps) {
+export function SchemaFormInPlace({ object, ...commonProps }: SchemaFormInPlaceProps) {
 	// This is a hack to avoid issues with the UI re-rendering as 'nothing' changed
 	const [editCount, setEditCount] = useState(0)
 	const forceRender = useCallback(() => setEditCount((v) => v + 1), [])
@@ -28,15 +25,7 @@ export function SchemaFormInPlace({ schema, object, translationNamespaces }: Sch
 		[object, editCount]
 	)
 
-	return (
-		<SchemaFormWithOverrides
-			schema={schema}
-			translationNamespaces={translationNamespaces}
-			attr={''}
-			item={wrappedItem}
-			overrideHelper={helper}
-		/>
-	)
+	return <SchemaFormWithOverrides {...commonProps} attr={''} item={wrappedItem} overrideHelper={helper} />
 }
 
 /**

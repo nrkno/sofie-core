@@ -359,6 +359,7 @@ function SubDeviceEditRow({
 							objectId={parentId}
 							basePath={`settings.devices.${subdeviceId}`}
 							translationNamespaces={translationNamespaces}
+							allowTables
 						/>
 					)}
 					{schema ? (
@@ -369,6 +370,7 @@ function SubDeviceEditRow({
 							objectId={parentId}
 							basePath={`settings.devices.${subdeviceId}.options`}
 							translationNamespaces={translationNamespaces}
+							allowTables
 						/>
 					) : (
 						<p>{t('Device is of unknown type')}</p>

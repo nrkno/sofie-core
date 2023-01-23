@@ -7,13 +7,10 @@ import {
 import React, { useMemo } from 'react'
 import { MongoCollection } from '../../../lib/collections/lib'
 import { WrappedOverridableItemNormal, OverrideOpHelper } from '../../ui/Settings/util/OverrideOpHelper'
-import { JSONSchema } from './schema-types'
-import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
+import { SchemaFormCommonProps, SchemaFormWithOverrides } from './schemaFormWithOverrides'
 
-interface SchemaFormForCollectionProps {
-	schema: JSONSchema
+interface SchemaFormForCollectionProps extends SchemaFormCommonProps {
 	object: any
-	translationNamespaces: string[]
 	collection: MongoCollection<any>
 	objectId: ProtectedString<any>
 	basePath: string
@@ -24,14 +21,14 @@ interface SchemaFormForCollectionProps {
 	 */
 	partialOverridesForObject?: any
 }
+
 export function SchemaFormForCollection({
-	schema,
 	object,
 	basePath,
-	translationNamespaces,
 	collection,
 	objectId,
 	partialOverridesForObject,
+	...commonProps
 }: SchemaFormForCollectionProps) {
 	const helper = useMemo(
 		() => new OverrideOpHelperCollection(collection, objectId, basePath),
@@ -78,15 +75,7 @@ export function SchemaFormForCollection({
 		}
 	}, [object, partialOverridesForObject])
 
-	return (
-		<SchemaFormWithOverrides
-			schema={schema}
-			translationNamespaces={translationNamespaces}
-			attr={''}
-			item={wrappedItem}
-			overrideHelper={helper}
-		/>
-	)
+	return <SchemaFormWithOverrides {...commonProps} attr={''} item={wrappedItem} overrideHelper={helper} />
 }
 
 /**
