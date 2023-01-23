@@ -1,5 +1,4 @@
 import { ClientAPI } from '../api/client'
-import { MethodContext } from './methods'
 import {
 	AdLibActionId,
 	BucketAdLibId,
@@ -13,7 +12,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Meteor } from 'meteor/meteor'
 
-export interface RestAPI extends MethodContext {
+export interface RestAPI {
 	/**
 	 * Returns the current version of Sofie
 	 */

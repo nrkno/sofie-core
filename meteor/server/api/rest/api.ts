@@ -7,8 +7,8 @@ import { check, Match } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../../lib/api/client'
 import { getCurrentTime, getRandomString, protectString } from '../../../lib/lib'
-import { RestAPI, RestAPIMethods } from '../../../lib/api/rest'
-import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../../methods'
+import { RestAPI } from '../../../lib/api/rest'
+import { ReplaceOptionalWithNullInMethodArguments } from '../../methods'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { MethodContextAPI } from '../../../lib/api/methods'
 import { ServerClientAPI } from '../client'
@@ -37,6 +37,7 @@ import { StudioContentWriteAccess } from '../../security/studio'
 import { ServerPlayoutAPI } from '../playout/playout'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { Credentials } from '../../security/lib/credentials'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
@@ -48,7 +49,15 @@ function restAPIUserEvent(
 	return `rest_api_${ctx.method}_${ctx.URL.toString()}`
 }
 
-class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullInMethodArguments<RestAPI> {
+class ServerRestAPI implements ReplaceOptionalWithNullInMethodArguments<RestAPI> {
+	static getMethodContext(connection: Meteor.Connection): MethodContextAPI {
+		return { userId: null, connection, isSimulation: false, setUserId: () => {}, unblock: () => {} }
+	}
+
+	static getCredentials(_connection: Meteor.Connection): Credentials {
+		return { userId: null }
+	}
+
 	async index(): Promise<ClientAPI.ClientResponse<{ version: string }>> {
 		triggerWriteAccess()
 
@@ -61,7 +70,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		rehearsal: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
-			{ ...this, connection: connection },
+			ServerRestAPI.getMethodContext(connection),
 			event,
 			getCurrentTime(),
 			rundownPlaylistId,
@@ -82,7 +91,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
-			{ ...this, connection: connection },
+			ServerRestAPI.getMethodContext(connection),
 			event,
 			getCurrentTime(),
 			rundownPlaylistId,
@@ -103,7 +112,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		userData: any
 	): Promise<ClientAPI.ClientResponse<ExecuteActionResult>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
-			{ ...this, connection: connection },
+			ServerRestAPI.getMethodContext(connection),
 			event,
 			getCurrentTime(),
 			rundownPlaylistId,
@@ -158,7 +167,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 				throw new Error(`No active Part in ${rundownPlaylistId}`)
 
 			const result = await ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
-				{ ...this, connection: connection },
+				ServerRestAPI.getMethodContext(connection),
 				event,
 				getCurrentTime(),
 				rundownPlaylistId,
@@ -179,7 +188,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		} else if (adLibActionDoc) {
 			// This is an AdLib Action
 			return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
-				{ ...this, connection: connection },
+				ServerRestAPI.getMethodContext(connection),
 				event,
 				getCurrentTime(),
 				rundownPlaylistId,
@@ -209,7 +218,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		delta: number
 	): Promise<ClientAPI.ClientResponse<PartId | null>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
-			{ ...this, connection: connection },
+			ServerRestAPI.getMethodContext(connection),
 			event,
 			getCurrentTime(),
 			rundownPlaylistId,
@@ -232,7 +241,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		delta: number
 	): Promise<ClientAPI.ClientResponse<PartId | null>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
-			{ ...this, connection: connection },
+			ServerRestAPI.getMethodContext(connection),
 			event,
 			getCurrentTime(),
 			rundownPlaylistId,
@@ -255,7 +264,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<object>> {
 		return ServerClientAPI.runUserActionInLogForPlaylist<object>(
-			{ ...this, connection: connection },
+			ServerRestAPI.getMethodContext(connection),
 			event,
 			getCurrentTime(),
 			rundownPlaylistId,
@@ -285,7 +294,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		rundownPlaylistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
-			{ ...this, connection: connection },
+			ServerRestAPI.getMethodContext(connection),
 			event,
 			getCurrentTime(),
 			rundownPlaylistId,
@@ -305,7 +314,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		segmentId: SegmentId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
-			{ ...this, connection: connection },
+			ServerRestAPI.getMethodContext(connection),
 			event,
 			getCurrentTime(),
 			rundownPlaylistId,
@@ -327,7 +336,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		partId: PartId
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
-			{ ...this, connection: connection },
+			ServerRestAPI.getMethodContext(connection),
 			event,
 			getCurrentTime(),
 			rundownPlaylistId,
@@ -354,7 +363,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		if (!rundownPlaylist) throw new Error(`Rundown playlist ${rundownPlaylistId} does not exist`)
 
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
-			{ ...this, connection: connection },
+			ServerRestAPI.getMethodContext(connection),
 			event,
 			getCurrentTime(),
 			rundownPlaylistId,
@@ -377,7 +386,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		state: boolean
 	) {
 		return ServerClientAPI.runUserActionInLog(
-			{ ...this, connection: connection },
+			ServerRestAPI.getMethodContext(connection),
 			event,
 			getCurrentTime(),
 			'switchRouteSet',
@@ -387,13 +396,15 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 				check(routeSetId, String)
 				check(state, Boolean)
 
-				const access = await StudioContentWriteAccess.routeSet(this, studioId)
+				const access = await StudioContentWriteAccess.routeSet(
+					ServerRestAPI.getCredentials(connection),
+					studioId
+				)
 				return ServerPlayoutAPI.switchRouteSet(access, routeSetId, state)
 			}
 		)
 	}
 }
-registerClassToMeteorMethods(RestAPIMethods, ServerRestAPI, false)
 
 const koaRouter = new KoaRouter()
 
