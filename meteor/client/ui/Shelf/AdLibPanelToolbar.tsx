@@ -20,7 +20,8 @@ export function AdLibPanelToolbar(props: IToolbarPropsHeader) {
 
 	function searchInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.key === 'Escape' || e.key === 'Enter') {
-			document.querySelector('button')?.focus()
+			if (!(document.activeElement instanceof HTMLElement)) return
+			document.activeElement.blur()
 		} else if (e.key.match(/^F\d+$/)) {
 			e.preventDefault()
 		}
