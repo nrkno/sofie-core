@@ -174,7 +174,7 @@ export interface RestAPI extends MethodContext {
 		connection: Meteor.Connection,
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
-		fromPartInstanceId: PartInstanceId
+		fromPartInstanceId: PartInstanceId | undefined
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
 	 * Sets a route set to the described state

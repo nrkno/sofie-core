@@ -10,7 +10,7 @@ import { getCurrentTime, getRandomString, protectString } from '../../../lib/lib
 import { RestAPI, RestAPIMethods } from '../../../lib/api/rest'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../../methods'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { MeteorCall, MethodContextAPI } from '../../../lib/api/methods'
+import { MethodContextAPI } from '../../../lib/api/methods'
 import { ServerClientAPI } from '../client'
 import { ServerRundownAPI } from '../rundown'
 import { triggerWriteAccess } from '../../security/lib/securityVerify'
@@ -346,7 +346,7 @@ class ServerRestAPI extends MethodContextAPI implements ReplaceOptionalWithNullI
 		connection: Meteor.Connection,
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
-		fromPartInstanceId?: PartInstanceId
+		fromPartInstanceId: PartInstanceId | null
 	): Promise<ClientAPI.ClientResponse<void>> {
 		triggerWriteAccess()
 		const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -396,275 +396,202 @@ registerClassToMeteorMethods(RestAPIMethods, ServerRestAPI, false)
 
 const koaRouter = new KoaRouter()
 
+async function sofieAPIRequest<Params, Body, Response>(
+	method: 'get' | 'post',
+	route: string,
+	handler: (
+		serverAPI: ReplaceOptionalWithNullInMethodArguments<RestAPI>,
+		connection: Meteor.Connection,
+		event: string,
+		params: Params,
+		body: Body
+	) => Promise<ClientAPI.ClientResponse<Response>>
+) {
+	koaRouter[method](route, async (ctx, next) => {
+		try {
+			let serverAPI = new ServerRestAPI()
+			let response = await handler(
+				serverAPI,
+				makeConnection(ctx),
+				restAPIUserEvent(ctx),
+				ctx.params as Params,
+				ctx.req.body as Body
+			)
+			if (ClientAPI.isClientResponseError(response)) throw response.error
+			ctx.body = response
+			ctx.status = 200
+		} catch (e) {
+			const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
+			logger.error('POST activate failed - ' + errMsg)
+			ctx.type = 'application/json'
+			ctx.body = JSON.stringify({ message: errMsg })
+			ctx.status = 412
+		}
+		await next()
+	})
+}
+
 koaRouter.get('/', async (ctx, next) => {
 	ctx.type = 'application/json'
-	ctx.body = ClientAPI.responseSuccess(await MeteorCall.rest.index())
+	let server = new ServerRestAPI()
+	ctx.body = ClientAPI.responseSuccess(await server.index())
 	ctx.status = 200
 	await next()
 })
 
-koaRouter.post('/activate/:playlistId', async (ctx, next) => {
-	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	const rehearsal = (ctx.req.body as { rehearsal: boolean }).rehearsal
-	logger.info(`koa POST: activate ${rundownPlaylistId} - ${rehearsal ? 'rehearsal' : 'live'}`)
+sofieAPIRequest<{ playlistId: string }, { rehearsal: boolean }, void>(
+	'post',
+	'/activate/:playlistId',
+	async (serverAPI, connection, event, params, body) => {
+		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+		const rehearsal = body.rehearsal
+		logger.info(`koa POST: activate ${rundownPlaylistId} - ${rehearsal ? 'rehearsal' : 'live'}`)
 
-	try {
 		check(rundownPlaylistId, String)
-		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.activate(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId, rehearsal)
-		)
-		ctx.status = 200
-	} catch (e) {
-		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
-		logger.error('POST activate failed - ' + errMsg)
-		ctx.type = 'application/json'
-		ctx.body = JSON.stringify({ message: errMsg })
-		ctx.status = 412
+		return await serverAPI.activate(connection, event, rundownPlaylistId, rehearsal)
 	}
-	await next()
-})
+)
 
-koaRouter.post('/deactivate/:playlistId', async (ctx, next) => {
-	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	logger.info(`koa POST: deactivate ${rundownPlaylistId}`)
+sofieAPIRequest<{ playlistId: string }, never, void>(
+	'post',
+	'/deactivate/:playlistId',
+	async (serverAPI, connection, event, params, _) => {
+		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+		logger.info(`koa POST: deactivate ${rundownPlaylistId}`)
 
-	try {
 		check(rundownPlaylistId, String)
-		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.deactivate(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId)
-		)
-		ctx.status = 200
-	} catch (e) {
-		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
-		logger.error('POST deactivate failed - ' + errMsg)
-		ctx.type = 'application/json'
-		ctx.body = JSON.stringify({ message: errMsg })
-		ctx.status = 412
+		return await serverAPI.deactivate(connection, event, rundownPlaylistId)
 	}
-	await next()
-})
+)
 
-koaRouter.post('/executeAdLib/:playlistId/:adLibId', async (ctx, next) => {
-	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	const adLibId = protectString<AdLibActionId | RundownBaselineAdLibActionId | PieceId | BucketAdLibId>(
-		ctx.params.adLibId
-	)
-	const actionTypeObj = ctx.req.body
-	const triggerMode = actionTypeObj ? (actionTypeObj as { actionType: string }).actionType : undefined
-	logger.info(`koa POST: executeAdLib ${rundownPlaylistId} ${adLibId} - triggerMode: ${triggerMode}`)
+sofieAPIRequest<{ playlistId: string; adLibId: string }, { actionType: string; [key: string]: any }, object>(
+	'post',
+	'/executeAdLib/:playlistId/:adLibId',
+	async (serverAPI, connection, event, params, body) => {
+		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+		const adLibId = protectString<AdLibActionId | RundownBaselineAdLibActionId | PieceId | BucketAdLibId>(
+			params.adLibId
+		)
+		const actionTypeObj = body
+		const triggerMode = actionTypeObj ? (actionTypeObj as { actionType: string }).actionType : undefined
+		logger.info(`koa POST: executeAdLib ${rundownPlaylistId} ${adLibId} - triggerMode: ${triggerMode}`)
 
-	try {
 		check(adLibId, String)
 		check(rundownPlaylistId, String)
-		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.executeAdLib(
-				makeConnection(ctx),
-				restAPIUserEvent(ctx),
-				rundownPlaylistId,
-				adLibId,
-				triggerMode
-			)
-		)
-		ctx.status = 200
-	} catch (e) {
-		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
-		logger.error('POST executeAdLib failed - ' + errMsg)
-		ctx.type = 'application/json'
-		ctx.body = JSON.stringify({ message: errMsg })
-		ctx.status = 412
+
+		return await serverAPI.executeAdLib(connection, event, rundownPlaylistId, adLibId, triggerMode)
 	}
-	await next()
-})
+)
 
-koaRouter.post('/moveNextPart/:playlistId/:delta', async (ctx, next) => {
-	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	const delta = parseInt(ctx.params.delta)
-	logger.info(`koa POST: moveNextPart ${rundownPlaylistId} ${delta}`)
+sofieAPIRequest<{ playlistId: string; delta: number }, never, PartId | null>(
+	'post',
+	'/moveNextPart/:playlistId/:delta',
+	async (serverAPI, connection, event, params, _) => {
+		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+		const delta = params.delta
+		logger.info(`koa POST: moveNextPart ${rundownPlaylistId} ${delta}`)
 
-	try {
 		check(rundownPlaylistId, String)
 		check(delta, Number)
-		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.moveNextPart(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId, delta)
-		)
-		ctx.status = 200
-	} catch (e) {
-		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
-		logger.error('POST moveNextPart failed - ' + errMsg)
-		ctx.type = 'application/json'
-		ctx.body = JSON.stringify({ message: errMsg })
-		ctx.status = 412
+		return await serverAPI.moveNextPart(connection, event, rundownPlaylistId, delta)
 	}
-	await next()
-})
+)
 
-koaRouter.post('/moveNextSegment/:playlistId/:delta', async (ctx, next) => {
-	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	const delta = parseInt(ctx.params.delta)
-	logger.info(`koa POST: moveNextSegment ${rundownPlaylistId} ${delta}`)
+sofieAPIRequest<{ playlistId: string; delta: number }, never, PartId | null>(
+	'post',
+	'/moveNextSegment/:playlistId/:delta',
+	async (serverAPI, connection, event, params, _) => {
+		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+		const delta = params.delta
+		logger.info(`koa POST: moveNextSegment ${rundownPlaylistId} ${delta}`)
 
-	try {
 		check(rundownPlaylistId, String)
 		check(delta, Number)
-		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.moveNextSegment(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId, delta)
-		)
-		ctx.status = 200
-	} catch (e) {
-		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
-		logger.error('POST moveNextSegment failed - ' + errMsg)
-		ctx.type = 'application/json'
-		ctx.body = JSON.stringify({ message: errMsg })
-		ctx.status = 412
+		return await serverAPI.moveNextSegment(connection, event, rundownPlaylistId, delta)
 	}
-	await next()
-})
+)
 
-koaRouter.post('/reloadPlaylist/:playlistId', async (ctx, next) => {
-	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	logger.info(`koa POST: reloadPlaylist ${rundownPlaylistId}`)
+sofieAPIRequest<{ playlistId: string }, never, object>(
+	'post',
+	'/reloadPlaylist/:playlistId',
+	async (serverAPI, connection, event, params, _) => {
+		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+		logger.info(`koa POST: reloadPlaylist ${rundownPlaylistId}`)
 
-	try {
 		check(rundownPlaylistId, String)
-		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.reloadPlaylist(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId)
-		)
-		ctx.status = 200
-	} catch (e) {
-		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
-		logger.error('POST reloadPlaylist failed - ' + errMsg)
-		ctx.type = 'application/json'
-		ctx.body = JSON.stringify({ message: errMsg })
-		ctx.status = 412
+		return await serverAPI.reloadPlaylist(connection, event, rundownPlaylistId)
 	}
-	await next()
-})
+)
 
-koaRouter.post('/resetPlaylist/:playlistId', async (ctx, next) => {
-	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	logger.info(`koa POST: resetPlaylist ${rundownPlaylistId}`)
+sofieAPIRequest<{ playlistId: string }, never, void>(
+	'post',
+	'/resetPlaylist/:playlistId',
+	async (serverAPI, connection, event, params, _) => {
+		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+		logger.info(`koa POST: resetPlaylist ${rundownPlaylistId}`)
 
-	try {
 		check(rundownPlaylistId, String)
-		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.resetPlaylist(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId)
-		)
-		ctx.status = 200
-	} catch (e) {
-		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
-		logger.error('POST resetPlaylist failed - ' + errMsg)
-		ctx.type = 'application/json'
-		ctx.body = JSON.stringify({ message: errMsg })
-		ctx.status = 412
+		return await serverAPI.resetPlaylist(connection, event, rundownPlaylistId)
 	}
-	await next()
-})
+)
 
-koaRouter.post('/setNextPart/:playlistId/:partId', async (ctx, next) => {
-	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	const partId = protectString<PartId>(ctx.params.partId)
-	logger.info(`koa POST: setNextPart ${rundownPlaylistId} ${partId}`)
+sofieAPIRequest<{ playlistId: string; partId: string }, never, void>(
+	'post',
+	'/setNextPart/:playlistId/:partId',
+	async (serverAPI, connection, event, params, _) => {
+		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+		const partId = protectString<PartId>(params.partId)
+		logger.info(`koa POST: setNextPart ${rundownPlaylistId} ${partId}`)
 
-	try {
 		check(rundownPlaylistId, String)
 		check(partId, String)
-		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.setNextPart(makeConnection(ctx), restAPIUserEvent(ctx), rundownPlaylistId, partId)
-		)
-		ctx.status = 200
-	} catch (e) {
-		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
-		logger.error('POST setNextPart failed - ' + errMsg)
-		ctx.type = 'application/json'
-		ctx.body = JSON.stringify({ message: errMsg })
-		ctx.status = 412
+		return await serverAPI.setNextPart(connection, event, rundownPlaylistId, partId)
 	}
-	await next()
-})
+)
 
-koaRouter.post('/setNextSegment/:playlistId/:segmentId', async (ctx, next) => {
-	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	const segmentId = protectString<SegmentId>(ctx.params.segmentId)
-	logger.info(`koa POST: setNextSegment ${rundownPlaylistId} ${segmentId}`)
+sofieAPIRequest<{ playlistId: string; segmentId: string }, never, void>(
+	'post',
+	'/setNextSegment/:playlistId/:segmentId',
+	async (serverAPI, connection, event, params, _) => {
+		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+		const segmentId = protectString<SegmentId>(params.segmentId)
+		logger.info(`koa POST: setNextSegment ${rundownPlaylistId} ${segmentId}`)
 
-	try {
 		check(rundownPlaylistId, String)
 		check(segmentId, String)
-		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.setNextSegment(
-				makeConnection(ctx),
-				restAPIUserEvent(ctx),
-				rundownPlaylistId,
-				segmentId
-			)
-		)
-		ctx.status = 200
-	} catch (e) {
-		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
-		logger.error('POST setNextSegment failed - ' + errMsg)
-		ctx.type = 'application/json'
-		ctx.body = JSON.stringify({ message: errMsg })
-		ctx.status = 412
+		return await serverAPI.setNextSegment(connection, event, rundownPlaylistId, segmentId)
 	}
-	await next()
-})
+)
 
-koaRouter.post('/take/:playlistId', async (ctx, next) => {
-	const rundownPlaylistId = protectString<RundownPlaylistId>(ctx.params.playlistId)
-	const fromPartInstanceId = (ctx.req.body as { fromPartInstanceId: string }).fromPartInstanceId
-	logger.info(`koa POST: take ${rundownPlaylistId}`)
+sofieAPIRequest<{ playlistId: string }, { fromPartInstanceId?: string }, void>(
+	'post',
+	'/take/:playlistId',
+	async (serverAPI, connection, event, params, body) => {
+		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+		const fromPartInstanceId = body.fromPartInstanceId
+		logger.info(`koa POST: take ${rundownPlaylistId}`)
 
-	try {
 		check(rundownPlaylistId, String)
 		check(fromPartInstanceId, Match.Optional(String))
-		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.take(
-				makeConnection(ctx),
-				restAPIUserEvent(ctx),
-				rundownPlaylistId,
-				protectString(fromPartInstanceId)
-			)
-		)
-		ctx.status = 200
-	} catch (e) {
-		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
-		logger.error('POST take failed - ' + errMsg)
-		ctx.type = 'application/json'
-		ctx.body = JSON.stringify({ message: errMsg })
-		ctx.status = 412
+		return await serverAPI.take(connection, event, rundownPlaylistId, protectString(fromPartInstanceId) ?? null)
 	}
-	await next()
-})
+)
 
-koaRouter.post('/switchRouteSet/:studioId/:routeSetId', async (ctx, next) => {
-	const studioId = protectString<StudioId>(ctx.params.studioId)
-	const routeSetId = ctx.params.routeSetId
-	const active = (ctx.req.body as { active: boolean }).active
-	logger.info(`koa POST: switchRouteSet ${studioId} ${routeSetId} ${active}`)
+sofieAPIRequest<{ studioId: string; routeSetId: string }, { active: boolean }, void>(
+	'post',
+	'/switchRouteSet/:studioId/:routeSetId',
+	async (serverAPI, connection, event, params, body) => {
+		const studioId = protectString<StudioId>(params.studioId)
+		const routeSetId = params.routeSetId
+		const active = body.active
+		logger.info(`koa POST: switchRouteSet ${studioId} ${routeSetId} ${active}`)
 
-	try {
 		check(studioId, String)
 		check(routeSetId, String)
 		check(active, Boolean)
-		ctx.body = ClientAPI.responseSuccess(
-			await MeteorCall.rest.switchRouteSet(
-				makeConnection(ctx),
-				restAPIUserEvent(ctx),
-				studioId,
-				routeSetId,
-				active
-			)
-		)
-		ctx.status = 200
-	} catch (e) {
-		const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
-		logger.error('POST switchRouteSet failed - ' + errMsg)
-		ctx.type = 'application/json'
-		ctx.body = JSON.stringify({ message: errMsg })
-		ctx.status = 412
+		return await serverAPI.switchRouteSet(connection, event, studioId, routeSetId, active)
 	}
-	await next()
-})
+)
 
 const makeConnection = (
 	ctx: Koa.ParameterizedContext<

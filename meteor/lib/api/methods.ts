@@ -22,7 +22,6 @@ import {
 	NewPeripheralDeviceAPI,
 	PeripheralDeviceAPIMethods,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import { RestAPI, RestAPIMethods } from './rest'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -35,7 +34,6 @@ interface IMeteorCall {
 	migration: NewMigrationAPI
 	peripheralDevice: NewPeripheralDeviceAPI
 	playout: NewPlayoutAPI
-	rest: RestAPI
 	rundown: NewRundownAPI
 	rundownLayout: NewRundownLayoutsAPI
 	snapshot: NewSnapshotAPI
@@ -55,7 +53,6 @@ export const MeteorCall: IMeteorCall = {
 	migration: makeMethods(MigrationAPIMethods),
 	peripheralDevice: makeMethods(PeripheralDeviceAPIMethods),
 	playout: makeMethods(PlayoutAPIMethods),
-	rest: makeMethods(RestAPIMethods),
 	rundown: makeMethods(RundownAPIMethods),
 	rundownLayout: makeMethods(RundownLayoutsAPIMethods),
 	snapshot: makeMethods(SnapshotAPIMethods),
