@@ -1,0 +1,56 @@
+title: studios
+description: Definitions for studios API
+resources:
+  switchRouteSet:
+    post:
+      operationId: switchRouteSet
+      tags:
+        - studios
+      summary: Activates / Deactivates a route set.
+      parameters:
+        - name: studioId
+          in: path
+          description: Studio the route set belongs to.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                routeSetId:
+                  type: string
+                  description: Route set to switch
+                active:
+                  type: boolean
+                  description: Whether the route set should be active
+              required:
+                - routeSetId
+                - active
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: There is already an active Playlist for the studio that the Playlist belongs to.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+components:
+  responses:
+    postSuccess:
+      description: Action successfully sent
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: number
+                example: 200

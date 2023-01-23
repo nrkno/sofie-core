@@ -1,0 +1,26 @@
+title: sofie
+description: Sofie-wide methods
+resources:
+  index:
+    get:
+      operationId: index
+      tags:
+        - sofie
+      summary: Returns the current version of Sofie.
+      responses:
+        200:
+          description: Command successfully handled - returns a string with the version number
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                        example: '1.44.0'

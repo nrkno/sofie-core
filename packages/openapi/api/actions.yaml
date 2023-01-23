@@ -13,26 +13,29 @@ tags:
   - name: userActions
     description: Provides the ability to control the Sofie application
 paths:
-  # user actions
   /:
-    $ref: 'definitions/userActions.yaml#/resources/index'
-  /activate/{playlistId}:
-    $ref: 'definitions/userActions.yaml#/resources/activate'
-  /deactivate/{playlistId}:
-    $ref: 'definitions/userActions.yaml#/resources/deactivate'
-  /executeAdLib/{playlistId}/{adLibId}:
-    $ref: 'definitions/userActions.yaml#/resources/executeAdLib'
-  /moveNextPart/{playlistId}/{delta}:
-    $ref: 'definitions/userActions.yaml#/resources/moveNextPart'
-  /moveNextSegment/{playlistId}/{delta}:
-    $ref: 'definitions/userActions.yaml#/resources/moveNextSegment'
-  /reloadPlaylist/{playlistId}:
-    $ref: 'definitions/userActions.yaml#/resources/reloadPlaylist'
-  /resetPlaylist/{playlistId}:
-    $ref: 'definitions/userActions.yaml#/resources/resetPlaylist'
-  /setNextPart/{playlistId}/{partId}:
-    $ref: 'definitions/userActions.yaml#/resources/setNextPart'
-  /setNextSegment/{playlistId}/{segmentId}:
-    $ref: 'definitions/userActions.yaml#/resources/setNextSegment'
-  /take/{playlistId}:
-    $ref: 'definitions/userActions.yaml#/resources/take'
+    $ref: 'definitions/sofie.yaml#/resources/index'
+  # playlist operations
+  /playlists/{playlistId}/activate:
+    $ref: 'definitions/playlists.yaml#/resources/activate'
+  /playlists/{playlistId}/deactivate:
+    $ref: 'definitions/playlists.yaml#/resources/deactivate'
+  /playlists/{playlistId}/executeAdLib:
+    $ref: 'definitions/playlists.yaml#/resources/executeAdLib'
+  /playlists/{playlistId}/moveNextPart:
+    $ref: 'definitions/playlists.yaml#/resources/moveNextPart'
+  /playlists/{playlistId}/moveNextSegment:
+    $ref: 'definitions/playlists.yaml#/resources/moveNextSegment'
+  /playlists/{playlistId}/reloadPlaylist:
+    $ref: 'definitions/playlists.yaml#/resources/reloadPlaylist'
+  /playlists/{playlistId}/resetPlaylist:
+    $ref: 'definitions/playlists.yaml#/resources/resetPlaylist'
+  /playlists/{playlistId}/setNextPart:
+    $ref: 'definitions/playlists.yaml#/resources/setNextPart'
+  /playlists/{playlistId}/setNextSegment:
+    $ref: 'definitions/playlists.yaml#/resources/setNextSegment'
+  /playlists/{playlistId}/take:
+    $ref: 'definitions/playlists.yaml#/resources/take'
+  # studio operations
+  /studios/{studioId}/switchRouteSet:
+    $ref: 'definitions/studios.yaml#/resources/switchRouteSet'

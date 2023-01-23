@@ -1,34 +1,11 @@
-title: userActions
-description: Definitions for user actions to control the Sofie application
+title: playlists
+description: Definitions for playlists API
 resources:
-  index:
-    get:
-      operationId: index
-      tags:
-        - userActions
-      summary: Returns the current version of Sofie.
-      responses:
-        200:
-          description: Command successfully handled - returns a string with the version number
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: number
-                    example: 200
-                  result:
-                    type: object
-                    properties:
-                      version:
-                        type: string
-                        example: '1.44.0'
   activate:
     post:
       operationId: activate
       tags:
-        - userActions
+        - playlists
       summary: Activates a Playlist.
       parameters:
         - name: playlistId
@@ -63,7 +40,7 @@ resources:
     post:
       operationId: deactivate
       tags:
-        - userActions
+        - playlists
       summary: Deactivates a Playlist.
       parameters:
         - name: playlistId
@@ -88,7 +65,7 @@ resources:
     post:
       operationId: executeAdLib
       tags:
-        - userActions
+        - playlists
       summary: Executes the requested AdLib/AdLib Action. This is a "planned" AdLib (Action) that has been produced by the blueprints during the ingest process.
       parameters:
         - name: playlistId
@@ -97,15 +74,8 @@ resources:
           required: true
           schema:
             type: string
-        - name: adLibId
-          in: path
-          description: AdLib to execute.
-          required: true
-          schema:
-            type: string
       requestBody:
-        description: An object containing an actionType string to specify a particular variation for the AdLibAction, valid strings are to be read from the status API
-        required: false
+        required: true
         content:
           application/json:
             schema:
@@ -113,6 +83,12 @@ resources:
               properties:
                 actionType:
                   type: string
+                  description: An actionType string to specify a particular variation for the AdLibAction, valid strings are to be read from the status API
+                adLibId:
+                  type: string
+                  description: AdLib to execute
+              required:
+                - adLibId
               example:
                 actionType: pvw
       responses:
@@ -131,7 +107,7 @@ resources:
     post:
       operationId: moveNextPart
       tags:
-        - userActions
+        - playlists
       summary: Moves the next point by `delta` places. Negative values are allowed to move "backwards" in the script.
       parameters:
         - name: playlistId
@@ -140,12 +116,18 @@ resources:
           required: true
           schema:
             type: string
-        - name: delta
-          in: path
-          description: Amount to move next point by (+/-). If delta results in an index that is greater than the number of Parts available, no action will be taken.
-          required: true
-          schema:
-            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                delta:
+                  type: number
+                  description: Amount to move next point by (+/-). If delta results in an index that is greater than the number of Parts available, no action will be taken.
+              required:
+                - delta
       responses:
         200:
           description: Command successfully handled - returns a string with the new PartID
@@ -173,7 +155,7 @@ resources:
     post:
       operationId: moveNextSegment
       tags:
-        - userActions
+        - playlists
       summary: Moves the next Segment point by `delta` places. Negative values are allowed to move "backwards" in the script.
       parameters:
         - name: playlistId
@@ -182,12 +164,18 @@ resources:
           required: true
           schema:
             type: string
-        - name: delta
-          in: path
-          description: Amount to move next Segment point by (+/-). If delta results in an index that is greater than the number of Segments available, no action will be taken.
-          required: true
-          schema:
-            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                delta:
+                  type: number
+                  description: Amount to move next Segment point by (+/-). If delta results in an index that is greater than the number of Segments available, no action will be taken.
+              required:
+                - delta
       responses:
         200:
           description: Command successfully handled - returns a string with the new PartID
@@ -215,7 +203,7 @@ resources:
     post:
       operationId: reloadPlaylist
       tags:
-        - userActions
+        - playlists
       summary: Reloads a Playlist from its ingest source (e.g. MOS/Spreadsheet etc.)
       parameters:
         - name: playlistId
@@ -240,7 +228,7 @@ resources:
     post:
       operationId: resetPlaylist
       tags:
-        - userActions
+        - playlists
       summary: Resets a Playlist back to its pre-played state.
       parameters:
         - name: playlistId
@@ -265,7 +253,7 @@ resources:
     post:
       operationId: setNextPart
       tags:
-        - userActions
+        - playlists
       summary: Sets the next Part to a given PartId.
       parameters:
         - name: playlistId
@@ -274,12 +262,18 @@ resources:
           required: true
           schema:
             type: string
-        - name: partId
-          in: path
-          description: Part to set as next.
-          required: true
-          schema:
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                partId:
+                  type: string
+                  description: Part to set as next.
+              required:
+                - partId
       responses:
         200:
           $ref: '#/components/responses/postSuccess'
@@ -296,7 +290,7 @@ resources:
     post:
       operationId: setNextSegment
       tags:
-        - userActions
+        - playlists
       summary: Sets the next Segment to a given SegmentId.
       parameters:
         - name: playlistId
@@ -305,12 +299,18 @@ resources:
           required: true
           schema:
             type: string
-        - name: segmentId
-          in: path
-          description: Segment to set as next.
-          required: true
-          schema:
-            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                segmentId:
+                  type: string
+                  description: Segment to set as next.
+              required:
+                - segmentId
       responses:
         200:
           $ref: '#/components/responses/postSuccess'
@@ -327,7 +327,7 @@ resources:
     post:
       operationId: take
       tags:
-        - userActions
+        - playlists
       summary: Performs a take in the given Playlist.
       parameters:
         - name: playlistId
@@ -362,7 +362,7 @@ resources:
     post:
       operationId: switchRouteSet
       tags:
-        - userActions
+        - playlists
       summary: Sets the state of a route set.
       parameters:
         - name: studioId
@@ -378,15 +378,21 @@ resources:
           schema:
             type: string
       requestBody:
-        description: Whether route set should be active.
         required: true
         content:
           application/json:
             schema:
               type: object
               properties:
+                routeSetId:
+                  type: string
+                  description: Target route set.
                 active:
                   type: boolean
+                  description: Whether route set should be active.
+              required:
+                - routeSetId
+                - active
       responses:
         200:
           $ref: '#/components/responses/postSuccess'
