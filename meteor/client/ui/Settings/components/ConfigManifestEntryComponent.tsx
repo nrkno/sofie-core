@@ -2,13 +2,15 @@ import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../../lib/EditAttribute'
-import { ConfigManifestEntry, ConfigManifestEntryType } from '@sofie-automation/corelib/dist/deviceConfig'
-import { ConfigManifestEntry as BlueprintConfigManifestEntry } from '@sofie-automation/blueprints-integration'
+import {
+	ConfigManifestEntry as BlueprintConfigManifestEntry,
+	ConfigManifestEntryType,
+} from '@sofie-automation/blueprints-integration'
 import { MongoCollection } from '../../../../lib/collections/lib'
 
-export const renderEditAttribute = (
+const renderEditAttribute = (
 	collection: MongoCollection<any>,
-	configField: ConfigManifestEntry | BlueprintConfigManifestEntry,
+	configField: BlueprintConfigManifestEntry,
 	obj: object,
 	prefix?: string
 ) => {
@@ -18,7 +20,6 @@ export const renderEditAttribute = (
 		attribute,
 		obj,
 		collection,
-		label: (configField as ConfigManifestEntry).placeholder || '',
 	}
 
 	if (configField.type === ConfigManifestEntryType.FLOAT) {
@@ -42,17 +43,7 @@ export const renderEditAttribute = (
 			<EditAttribute
 				{...opts}
 				type="dropdown"
-				options={(configField as ConfigManifestEntry).values || []}
-				className="input text-input input-l"
-			></EditAttribute>
-		)
-	} else if (configField.type === ConfigManifestEntryType.OBJECT) {
-		return (
-			<EditAttribute
-				{...opts}
-				mutateDisplayValue={(v) => JSON.stringify(v, undefined, 2)}
-				mutateUpdateValue={(v) => JSON.parse(v)}
-				type="multiline"
+				options={configField.options || []}
 				className="input text-input input-l"
 			></EditAttribute>
 		)
@@ -78,13 +69,14 @@ export const renderEditAttribute = (
 }
 
 export interface IConfigManifestEntryComponentProps {
-	configField: ConfigManifestEntry | BlueprintConfigManifestEntry
+	configField: BlueprintConfigManifestEntry
 	obj: object
 	prefix?: string
 	collection?: MongoCollection<any>
 	className?: string
 }
 
+/** @deprecated */
 export function ConfigManifestEntryComponent({
 	configField,
 	obj,
