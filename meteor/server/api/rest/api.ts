@@ -36,6 +36,7 @@ import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/erro
 import { StudioContentWriteAccess } from '../../security/studio'
 import { ServerPlayoutAPI } from '../playout/playout'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
+import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
@@ -421,7 +422,9 @@ async function sofieAPIRequest<Params, Body, Response>(
 			ctx.body = response
 			ctx.status = 200
 		} catch (e) {
-			const errMsg = UserError.isUserError(e) ? e.message.key : (e as Error).message
+			const errMsg = UserError.isUserError(e)
+				? translateMessage(e.message, interpollateTranslation)
+				: (e as Error).message
 			logger.error('POST activate failed - ' + errMsg)
 			ctx.type = 'application/json'
 			ctx.body = JSON.stringify({ message: errMsg })
