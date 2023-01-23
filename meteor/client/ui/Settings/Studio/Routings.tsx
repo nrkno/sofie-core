@@ -28,7 +28,7 @@ import { MappingsSettingsManifest, MappingsSettingsManifests } from './Mappings'
 import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollection'
 import { literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { DropdownInputOption } from '../../../lib/Components/DropdownInput'
-import { JSONSchema } from '../../../lib/forms/schema-types'
+import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 
 interface IStudioRoutingsProps {
 	translationNamespaces: string[]

@@ -15,7 +15,7 @@ import {
 } from '../Components/LabelAndOverrides'
 import { MultiLineTextInputControl } from '../Components/MultiLineTextInput'
 import { TextInputControl } from '../Components/TextInput'
-import { JSONSchema, TypeName } from './schema-types'
+import { JSONSchema, TypeName } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { SchemaFormTable } from './schemaFormTable'
 import { joinObjectPathFragments, translateStringIfHasNamespaces } from './schemaFormUtil'
 

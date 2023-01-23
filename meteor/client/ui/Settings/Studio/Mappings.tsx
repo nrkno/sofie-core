@@ -40,7 +40,7 @@ import {
 	LabelAndOverridesForDropdown,
 	LabelAndOverridesForInt,
 } from '../../../lib/Components/LabelAndOverrides'
-import { JSONSchema } from '../../../lib/forms/schema-types'
+import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { SchemaFormWithOverrides } from '../../../lib/forms/schemaFormWithOverrides'
 import {
 	getSchemaSummaryFields,

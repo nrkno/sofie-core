@@ -1,6 +1,6 @@
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../../ui/i18n'
-import { JSONSchema, TypeName } from './schema-types'
+import { JSONSchema, TypeName } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 
 export function joinObjectPathFragments(...fragments: Array<string | number | undefined>): string {
 	return fragments.filter((v) => v !== '' && v !== undefined && v !== null).join('.')
@@ -8,22 +8,6 @@ export function joinObjectPathFragments(...fragments: Array<string | number | un
 
 export function translateStringIfHasNamespaces(str: string, translationNamespaces: string[] | undefined): string {
 	return translationNamespaces ? translateMessage({ key: str, namespaces: translationNamespaces }, i18nTranslator) : str
-}
-
-export function getSchemaDefaultValues(schema: JSONSchema | undefined): any {
-	switch (schema?.type) {
-		case TypeName.Object: {
-			const object: any = {}
-
-			for (const [index, prop] of Object.entries(schema.properties || {})) {
-				object[index] = getSchemaDefaultValues(prop)
-			}
-
-			return object
-		}
-		default:
-			return schema?.default
-	}
 }
 
 export interface SchemaSummaryField {
