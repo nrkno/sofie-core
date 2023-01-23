@@ -356,6 +356,15 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice.configManifest)
 			throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not provide a configuration manifest`)
 
+		if (!('devices' in peripheralDevice.settings) || !peripheralDevice.settings.devices)
+			throw new Meteor.Error(500, `PeripheralDevice "${deviceId}" has a malformed settings object`)
+		const subDevices = peripheralDevice.settings?.devices
+
+		// check if the subDevice supports disabling using the magical 'disable' BOOLEAN property.
+		const subDeviceSettings = subDevices[subDeviceId] as Record<string, any> | undefined
+		if (!subDeviceSettings)
+			throw new Meteor.Error(404, `PeripheralDevice "${deviceId}", subDevice "${subDeviceId}" is not configured`)
+
 		// Check there is a common properties subdevice schema
 		const subDeviceCommonSchemaStr = peripheralDevice.configManifest.subdeviceConfigSchema
 		if (!subDeviceCommonSchemaStr)
