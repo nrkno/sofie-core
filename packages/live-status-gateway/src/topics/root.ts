@@ -1,7 +1,7 @@
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { WsTopicBase, WsTopic } from '../wsHandler'
+import { WebSocketTopicBase, WebSocketTopic } from '../wsHandler'
 
 enum PublishMsg {
 	ping = 'ping',
@@ -44,8 +44,8 @@ interface RootMsg {
 	}
 }
 
-export class RootChannel extends WsTopicBase implements WsTopic {
-	_topics: Map<string, WsTopic> = new Map()
+export class RootChannel extends WebSocketTopicBase implements WebSocketTopic {
+	_topics: Map<string, WebSocketTopic> = new Map()
 	_heartbeat: NodeJS.Timeout | undefined
 
 	constructor(logger: Logger) {
@@ -91,7 +91,7 @@ export class RootChannel extends WsTopicBase implements WsTopic {
 		}
 	}
 
-	addTopic(channel: string, topic: WsTopic): void {
+	addTopic(channel: string, topic: WebSocketTopic): void {
 		if (channel in StatusChannels) this._topics.set(channel, topic)
 	}
 

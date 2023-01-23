@@ -4,7 +4,7 @@ import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protected
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { WsTopicBase, WsTopic, CollectionObserver } from '../wsHandler'
+import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
 
 type PlaylistActivationStatus = 'deactivated' | 'rehearsal' | 'activated'
 
@@ -22,8 +22,8 @@ interface StudioStatus {
 }
 
 export class StudioTopic
-	extends WsTopicBase
-	implements WsTopic, CollectionObserver<DBStudio>, CollectionObserver<DBRundownPlaylist[]>
+	extends WebSocketTopicBase
+	implements WebSocketTopic, CollectionObserver<DBStudio>, CollectionObserver<DBRundownPlaylist[]>
 {
 	_observerName = 'StudioTopic'
 	_studio: DBStudio | undefined

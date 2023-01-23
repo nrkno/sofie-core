@@ -9,7 +9,7 @@ import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataM
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { IBlueprintActionManifestDisplayContent } from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { WsTopicBase, WsTopic, CollectionObserver } from '../wsHandler'
+import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
 import { PartInstanceName } from '../collections/partInstances'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
@@ -45,9 +45,9 @@ interface ActivePlaylistStatus {
 }
 
 export class ActivePlaylistTopic
-	extends WsTopicBase
+	extends WebSocketTopicBase
 	implements
-		WsTopic,
+		WebSocketTopic,
 		CollectionObserver<DBRundownPlaylist>,
 		CollectionObserver<Map<PartInstanceName, DBPartInstance | undefined>>,
 		CollectionObserver<AdLibAction[]>,

@@ -4,7 +4,7 @@ import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { CoreHandler } from './coreHandler'
 
-export abstract class WsTopicBase {
+export abstract class WebSocketTopicBase {
 	protected _name: string
 	protected _logger: Logger
 	protected _subscribers: Set<WebSocket> = new Set()
@@ -40,7 +40,7 @@ export abstract class WsTopicBase {
 	}
 }
 
-export interface WsTopic {
+export interface WebSocketTopic {
 	addSubscriber(ws: WebSocket): void
 	hasSubscriber(ws: WebSocket): boolean
 	removeSubscriber(ws: WebSocket): void
