@@ -430,7 +430,7 @@ export const StudioRoutings = withTranslation()(
 											<DeviceMappingSettings
 												translationNamespaces={this.props.translationNamespaces}
 												studio={this.props.studio}
-												attribute={`routeSets.${routeSetId}.routes.${index}.remapping`}
+												attribute={`routeSets.${routeSetId}.routes.${index}.remapping.options`}
 												mappedLayer={mappedLayer}
 												manifest={routeMappingSchema}
 											/>

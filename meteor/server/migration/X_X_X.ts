@@ -43,7 +43,6 @@ function convertMappingsOverrideOps(studio: Studio) {
 				..._.pick(overrideOp.value, ...mappingBaseOptions),
 				options: _.omit(overrideOp.value, ...mappingBaseOptions),
 			}
-			console.log('convert op', overrideOp)
 			changed = true
 		} else if (
 			parsedOp &&
@@ -53,11 +52,31 @@ function convertMappingsOverrideOps(studio: Studio) {
 			// Path looks to not be a common property, so adjust
 			overrideOp.path = `${parsedOp[1]}.options.${parsedOp[2]}`
 			changed = true
-			console.log('convert op2', overrideOp)
 		}
 	}
 
 	return changed && newOverrides
+}
+
+function convertRouteSetMappings(studio: Studio) {
+	let changed = false
+
+	const newRouteSets = clone(studio.routeSets || {})
+	for (const routeSet of Object.values(newRouteSets)) {
+		for (const route of routeSet.routes) {
+			if (route.remapping && !route.remapping.options) {
+				// Update the remapping for a route
+				route.remapping = {
+					..._.pick(route.remapping, ...mappingBaseOptions),
+					options: _.omit(route.remapping, ...mappingBaseOptions),
+				}
+				console.log('new route', route)
+				changed = true
+			}
+		}
+	}
+
+	return changed && newRouteSets
 }
 
 export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
@@ -154,6 +173,38 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					Studios.update(studio._id, {
 						$set: {
 							'mappingsWithOverrides.overrides': newOverrides,
+						},
+					})
+				}
+			}
+		},
+	},
+
+	{
+		id: `Fix up studio routesets`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const studios = Studios.find({ routeSets: { $exists: true } }).fetch()
+
+			for (const studio of studios) {
+				const newOverrides = convertRouteSetMappings(studio)
+				if (newOverrides) {
+					return `object needs to be updated`
+				}
+			}
+
+			return false
+		},
+		migrate: () => {
+			const studios = Studios.find({ routeSets: { $exists: true } }).fetch()
+
+			for (const studio of studios) {
+				const newRouteSets = convertRouteSetMappings(studio)
+
+				if (newRouteSets) {
+					Studios.update(studio._id, {
+						$set: {
+							routeSets: newRouteSets,
 						},
 					})
 				}
