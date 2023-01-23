@@ -8,8 +8,8 @@ import { DeviceConfigManifest } from '@sofie-automation/server-core-integration'
 // 	DEFAULT_MOS_HEARTBEAT_INTERVAL,
 // } from '@sofie-automation/shared-lib/dist/core/constants'
 
-import ConfigSchema = require('./configSchema.json')
-import ConfigSchemaSubDevice = require('./configSchemaSubDevice.json')
+import ConfigSchema = require('./$schemas/options.json')
+import ConfigSchemaSubDevice = require('./$schemas/devices.json')
 
 export const MOS_DEVICE_CONFIG_MANIFEST: DeviceConfigManifest = {
 	deviceConfigSchema: JSON.stringify(ConfigSchema),

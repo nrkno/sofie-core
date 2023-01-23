@@ -45,15 +45,17 @@ import {
 	RoutedTimeline,
 	TimelineObjGeneric,
 } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
-import {
-	PeripheralDevicePublic,
-	PlayoutDeviceSettings,
-} from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
 import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
+import { PlayoutGatewayConfig } from './generated/options'
 
 const debug = Debug('playout-gateway')
+
+export interface PlayoutGatewaySettings extends PlayoutGatewayConfig {
+	devices: Record<string, DeviceOptionsAny>
+}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface TSRConfig {}
@@ -128,7 +130,7 @@ export class TSRHandler {
 		this.logger.info('TSRHandler init')
 
 		const peripheralDevice = await coreHandler.core.getPeripheralDevice()
-		const settings: PlayoutDeviceSettings = peripheralDevice.settings as PlayoutDeviceSettings
+		const settings: PlayoutGatewaySettings = peripheralDevice.settings as PlayoutGatewaySettings
 
 		this.logger.info('Devices', settings.devices)
 		const c: ConductorOptions = {
@@ -492,7 +494,7 @@ export class TSRHandler {
 		const deviceOptions = new Map<string, DeviceOptionsAny>()
 
 		if (peripheralDevice) {
-			const settings: PlayoutDeviceSettings = peripheralDevice.settings as PlayoutDeviceSettings
+			const settings: PlayoutGatewaySettings = peripheralDevice.settings as PlayoutGatewaySettings
 
 			for (const [deviceId, device0] of Object.entries(settings.devices)) {
 				const device = device0

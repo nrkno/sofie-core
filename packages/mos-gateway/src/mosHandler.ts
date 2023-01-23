@@ -28,29 +28,21 @@ import {
 	DEFAULT_MOS_HEARTBEAT_INTERVAL,
 } from '@sofie-automation/shared-lib/dist/core/constants'
 import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { MosGatewayConfig } from './generated/options'
+import { MosDeviceConfig } from './generated/devices'
 
 export interface MosConfig {
 	self: IConnectionConfig
 	// devices: Array<IMOSDeviceConnectionOptions>
 }
-export interface MosDeviceSettings {
-	mosId: string
-	devices: {
-		[deviceId: string]: {
-			type: 'default'
-			options: MosDeviceSettingsDevice
+export interface MosDeviceSettings extends MosGatewayConfig {
+	devices: Record<
+		string,
+		{
+			type: ''
+			options: MosDeviceConfig
 		}
-	}
-	debugLogging: boolean
-}
-export interface MosDeviceSettingsDevice {
-	primary: MosDeviceSettingsDeviceOptions
-	secondary?: MosDeviceSettingsDeviceOptions
-}
-export interface MosDeviceSettingsDeviceOptions {
-	id: string
-	host: string
-	timeout?: number
+	>
 }
 
 export class MosHandler {
@@ -166,12 +158,12 @@ export class MosHandler {
 			if (this.debugLogging !== settings.debugLogging) {
 				this._logger.info('Changing debugLogging to ' + settings.debugLogging)
 
-				this.debugLogging = settings.debugLogging
+				this.debugLogging = !!settings.debugLogging
 
 				if (!this.mos) {
 					throw Error('mos is undefined!')
 				}
-				this.mos.setDebug(settings.debugLogging)
+				this.mos.setDebug(this.debugLogging)
 
 				if (settings.debugLogging) {
 					this._logger.level = 'debug'
@@ -404,7 +396,7 @@ export class MosHandler {
 
 			const devices = settings.devices || {}
 
-			const devicesToAdd: { [id: string]: { options: MosDeviceSettingsDevice } } = {}
+			const devicesToAdd: { [id: string]: { options: MosDeviceConfig } } = {}
 			const devicesToRemove: { [id: string]: true } = {}
 
 			for (const [deviceId, device] of Object.entries(devices)) {
@@ -422,10 +414,10 @@ export class MosHandler {
 						devicesToAdd[deviceId] = device
 					} else {
 						if (
-							(oldDevice.primaryId || '') !== device.options.primary.id ||
-							(oldDevice.primaryHost || '') !== device.options.primary.host ||
-							(oldDevice.secondaryId || '') !== ((device.options.secondary || { id: '' }).id || '') ||
-							(oldDevice.secondaryHost || '') !== ((device.options.secondary || { host: '' }).host || '')
+							(oldDevice.primaryId || '') !== device.options.primary?.id ||
+							(oldDevice.primaryHost || '') !== device.options.primary?.host ||
+							(oldDevice.secondaryId || '') !== (device.options.secondary?.id || '') ||
+							(oldDevice.secondaryHost || '') !== (device.options.secondary?.host || '')
 						) {
 							this._logger.info('Re-initializing device: ' + deviceId)
 							devicesToRemove[deviceId] = true

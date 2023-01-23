@@ -15,7 +15,6 @@ import {
 } from '../../../../lib/collections/PeripheralDevices'
 import { withTranslation } from 'react-i18next'
 import { Accessor } from '@sofie-automation/blueprints-integration'
-import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 
 interface IStudioPackageManagerSettingsProps {
 	studio: Studio
@@ -146,13 +145,14 @@ export const StudioPackageManagerSettings = withTranslation()(
 					device.type === PeripheralDeviceType.PLAYOUT &&
 					device.settings
 				) {
-					const settings = device.settings as PlayoutDeviceSettings
-
-					for (const deviceId of Object.keys(settings.devices || {})) {
-						deviceIds.push({
-							name: deviceId,
-							value: deviceId,
-						})
+					const settings = device.settings
+					if ('devices' in settings) {
+						for (const deviceId of Object.keys(settings.devices || {})) {
+							deviceIds.push({
+								name: deviceId,
+								value: deviceId,
+							})
+						}
 					}
 				}
 			})

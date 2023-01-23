@@ -2,6 +2,7 @@
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"$id": "https://example.com/product.schema.json",
 	"ui:title": "Mos Gateway Sub-device",
+	"title": "Mos Device Config",
 	"type": "object",
 	"properties": {
 		"primary": {
@@ -39,7 +40,9 @@
 					"ui:description": "How often to ping NRCS to determine connection status",
 					"default": 30000
 				}
-			}
+			},
+			"required": ["id", "host"],
+			"additionalProperties": false
 		},
 		"secondary": {
 			"type": "object",
@@ -76,9 +79,11 @@
 					"ui:description": "How often to ping NRCS to determine connection status",
 					"default": 30000
 				}
-			}
+			},
+			"required": ["id", "host"],
+			"additionalProperties": false
 		}
 	},
-	"required": ["mosId"],
+	"required": ["primary"],
 	"additionalProperties": false
 }

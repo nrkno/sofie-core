@@ -1,5 +1,9 @@
-import { TSR } from '../../tsr'
 import { PeripheralDeviceId, StudioId } from './Ids'
+
+export interface GenericPeripheralDeviceSettings {
+	devices?: Record<string, unknown>
+	[key: string]: unknown
+}
 
 export interface PeripheralDevicePublic {
 	_id: PeripheralDeviceId
@@ -10,33 +14,10 @@ export interface PeripheralDevicePublic {
 	/** The studio this device is assigned to. Will be undefined for sub-devices */
 	studioId?: StudioId
 
-	settings: PlayoutDeviceSettings | IngestDeviceSettings | { [key: string]: any }
+	settings: IngestDeviceSettings | GenericPeripheralDeviceSettings
 }
 
-/**
- * The basic PlayoutDevice settings structure.
- * Note: playout-gateway will likely have more than this here, but this is that core needs to know about
- */
-export interface PlayoutDeviceSettings {
-	devices: {
-		[deviceId: string]: TSR.DeviceOptionsAny
-	}
-
-	/** Activate Debug Logging */
-	debugLogging?: boolean
-	/** Activate Multi-Threading */
-	multiThreading?: boolean
-	/** Activate Multi-Threaded Timeline Resolving */
-	multiThreadedResolver?: boolean
-	/** Activate Partial resolving, when resolving the Timeline */
-	useCacheWhenResolving?: boolean
-	/** Report command timings on all commands */
-	reportAllCommands?: boolean
-	/** Adjust resolve-time estimation */
-	estimateResolveTimeMultiplier?: number
-}
-
-export interface IngestDeviceSettings {
+export interface IngestDeviceSettings extends GenericPeripheralDeviceSettings {
 	/** OAuth: Set to true when secret value exists */
 	secretCredentials: boolean
 	secretAccessToken: boolean

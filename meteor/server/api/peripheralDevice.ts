@@ -361,7 +361,7 @@ export namespace ServerPeripheralDeviceAPI {
 		const subDevices = peripheralDevice.settings?.devices
 
 		// check if the subDevice supports disabling using the magical 'disable' BOOLEAN property.
-		const subDeviceSettings = subDevices[subDeviceId] as Record<string, any> | undefined
+		const subDeviceSettings = subDevices[subDeviceId]
 		if (!subDeviceSettings)
 			throw new Meteor.Error(404, `PeripheralDevice "${deviceId}", subDevice "${subDeviceId}" is not configured`)
 

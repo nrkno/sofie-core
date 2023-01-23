@@ -81,7 +81,9 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 		const peripheralDevice = PeripheralDevices.findOne(pDevice._id)
 		expect(peripheralDevice).toBeDefined()
 		expect(peripheralDevice?.settings).toBeDefined()
-		expect(peripheralDevice?.settings && peripheralDevice?.settings['devices'][mockSubDeviceId].disable).toBe(true)
+		expect(
+			peripheralDevice?.settings && (peripheralDevice?.settings['devices']![mockSubDeviceId] as any).disable
+		).toBe(true)
 	})
 	testInFiber('enable existing subDevice', async () => {
 		{
@@ -100,9 +102,9 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			const peripheralDevice = PeripheralDevices.findOne(pDevice._id)
 			expect(peripheralDevice).toBeDefined()
 			expect(peripheralDevice?.settings).toBeDefined()
-			expect(peripheralDevice?.settings && peripheralDevice?.settings['devices'][mockSubDeviceId].disable).toBe(
-				true
-			)
+			expect(
+				peripheralDevice?.settings && (peripheralDevice?.settings['devices']![mockSubDeviceId] as any).disable
+			).toBe(true)
 		}
 
 		{
@@ -121,9 +123,9 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			const peripheralDevice = PeripheralDevices.findOne(pDevice._id)
 			expect(peripheralDevice).toBeDefined()
 			expect(peripheralDevice?.settings).toBeDefined()
-			expect(peripheralDevice?.settings && peripheralDevice?.settings['devices'][mockSubDeviceId].disable).toBe(
-				false
-			)
+			expect(
+				peripheralDevice?.settings && (peripheralDevice?.settings['devices']![mockSubDeviceId] as any).disable
+			).toBe(false)
 		}
 	})
 	testInFiber('edit missing subDevice throws an error', async () => {

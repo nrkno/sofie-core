@@ -31,7 +31,8 @@
 		"test": "lerna run --concurrency 2 --stream test -- --coverage=false",
 		"docs:typedoc": "yarn typedoc .",
 		"docs:serve": "lerna run --scope sofie-documentation --stream start",
-		"watch-for-worker-changes": "nodemon --delay 2.5 --watch job-worker/dist --watch corelib/dist --watch shared-lib/dist --watch blueprints-integration/dist --watch server-core-integration/dist ../scripts/meteor-force-restart.js"
+		"watch-for-worker-changes": "nodemon --delay 2.5 --watch job-worker/dist --watch corelib/dist --watch shared-lib/dist --watch blueprints-integration/dist --watch server-core-integration/dist ../scripts/meteor-force-restart.js",
+		"generate-schema-types": "node scripts/schema-types.mjs"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.19.1",

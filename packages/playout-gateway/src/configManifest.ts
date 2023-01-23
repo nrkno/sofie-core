@@ -3,7 +3,7 @@ import { manifest as TSRManifest } from 'timeline-state-resolver'
 
 import Translations = require('timeline-state-resolver/dist/translations.json')
 
-import ConfigSchema = require('./configSchema.json')
+import ConfigSchema = require('./$schemas/options.json')
 
 const subdeviceManifest: SubdeviceManifest = Object.fromEntries(
 	Object.entries(TSRManifest.subdevices).map(([id, dev]) => {

@@ -25,7 +25,6 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
-import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, ShowStyleBases, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 import { CoreSystem } from '../../../../lib/collections/CoreSystem'
@@ -427,14 +426,14 @@ describe('Test blueprint migrationContext', () => {
 					connected: false,
 					connectionId: null,
 					token: '',
-					settings: literal<PlayoutDeviceSettings>({
+					settings: {
 						devices: {
 							device01: {
 								type: TSR.DeviceType.ABSTRACT,
 								options: {},
 							},
 						},
-					}),
+					},
 					configManifest: {
 						deviceConfigSchema: '', // can be empty as it's only useful for UI.
 						subdeviceManifest: {},
@@ -527,15 +526,14 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertDevice: ok', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialSettings = getPlayoutDevice(studio).settings as PlayoutDeviceSettings
+				const initialSettings = getPlayoutDevice(studio).settings
 				expect(ctx.getDevice('device11')).toBeFalsy()
 
 				const rawDevice: any = { type: TSR.DeviceType.CASPARCG }
 
 				const deviceId = ctx.insertDevice('device11', rawDevice)
 				expect(deviceId).toEqual('device11')
-
-				initialSettings.devices[deviceId] = rawDevice
+				initialSettings.devices![deviceId] = rawDevice
 				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings)
 
 				const device = ctx.getDevice(deviceId)
@@ -585,14 +583,14 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('Device: good', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialSettings = getPlayoutDevice(studio).settings as PlayoutDeviceSettings
+				const initialSettings = getPlayoutDevice(studio).settings
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
 				const rawDevice: any = {
 					type: TSR.DeviceType.HYPERDECK,
 				}
 				const expectedDevice = {
-					...(initialSettings.devices['device01'] as any),
+					...(initialSettings.devices!['device01'] as any),
 					...rawDevice,
 				}
 
@@ -600,7 +598,7 @@ describe('Test blueprint migrationContext', () => {
 
 				expect(ctx.getDevice('device01')).toEqual(expectedDevice)
 
-				initialSettings.devices['device01'] = expectedDevice
+				initialSettings.devices!['device01'] = expectedDevice
 				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings)
 			})
 
@@ -644,14 +642,14 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('removeDevice: good', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialSettings = getPlayoutDevice(studio).settings as PlayoutDeviceSettings
+				const initialSettings = getPlayoutDevice(studio).settings
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
 				// Should not error
 				ctx.removeDevice('device01')
 
 				expect(ctx.getDevice('device01')).toBeFalsy()
-				delete initialSettings.devices['device01']
+				delete initialSettings.devices!['device01']
 				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings)
 			})
 		})
