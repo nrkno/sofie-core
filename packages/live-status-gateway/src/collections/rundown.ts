@@ -53,7 +53,7 @@ export class RundownHandler
 				break
 			case 'PartInstancesHandler':
 				this._logger.info(`${this._name} received partInstances update from ${source}`)
-				this._curRundownId = partInstances.get(PartInstanceName.cur)?.rundownId
+				this._curRundownId = partInstances.get(PartInstanceName.current)?.rundownId
 				break
 			default:
 				throw new Error(`${this._name} received unsupported update from ${source}}`)

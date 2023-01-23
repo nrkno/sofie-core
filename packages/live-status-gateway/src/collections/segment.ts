@@ -37,8 +37,8 @@ export class SegmentHandler
 		this._logger.info(`${this._name} received partInstances update from ${source}`)
 		const prevRundownId = this._curRundownId
 		const prevSegmentId = this._curSegmentId
-		this._curRundownId = data ? data.get(PartInstanceName.cur)?.rundownId : undefined
-		this._curSegmentId = data ? data.get(PartInstanceName.cur)?.segmentId : undefined
+		this._curRundownId = data ? data.get(PartInstanceName.current)?.rundownId : undefined
+		this._curSegmentId = data ? data.get(PartInstanceName.current)?.segmentId : undefined
 
 		process.nextTick(async () => {
 			if (!this._collection) return

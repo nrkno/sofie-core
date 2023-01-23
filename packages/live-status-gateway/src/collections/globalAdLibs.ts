@@ -35,7 +35,7 @@ export class GlobalAdLibsHandler
 	update(source: string, data: Map<PartInstanceName, DBPartInstance | undefined> | undefined): void {
 		this._logger.info(`${this._name} received globalAdLibs update from ${source}`)
 		const prevRundownId = this._curRundownId
-		this._curRundownId = data ? unprotectString(data.get(PartInstanceName.cur)?.rundownId) : undefined
+		this._curRundownId = data ? unprotectString(data.get(PartInstanceName.current)?.rundownId) : undefined
 
 		process.nextTick(async () => {
 			if (!this._collection) return

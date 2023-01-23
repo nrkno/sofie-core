@@ -260,7 +260,7 @@ export class ActivePlaylistTopic
 				break
 			case 'PartInstancesHandler':
 				this._logger.info(`${this._name} received partInstances update from ${source}`)
-				this._currentPartInstance = partInstances.get(PartInstanceName.cur)
+				this._currentPartInstance = partInstances.get(PartInstanceName.current)
 				this._nextPartInstance = partInstances.get(PartInstanceName.next)
 				break
 			case 'AdLibActionHandler':

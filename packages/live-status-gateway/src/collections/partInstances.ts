@@ -7,7 +7,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export enum PartInstanceName {
-	cur = 'cur',
+	current = 'current',
 	next = 'next',
 }
 
@@ -26,7 +26,7 @@ export class PartInstancesHandler
 		this._core = coreHandler.coreConnection
 		this._observerName = this._name
 		this._collectionData = new Map()
-		this._collectionData.set(PartInstanceName.cur, undefined)
+		this._collectionData.set(PartInstanceName.current, undefined)
 		this._collectionData.set(PartInstanceName.next, undefined)
 	}
 
@@ -39,7 +39,7 @@ export class PartInstancesHandler
 		const curPartInstance = partInstances.find((p) => p._id === this._curPlaylist?.currentPartInstanceId)
 		const nextPartInstance = partInstances.find((p) => p._id === this._curPlaylist?.nextPartInstanceId)
 		this._collectionData?.forEach((_pi, key) => {
-			if (PartInstanceName.cur === key) this._collectionData?.set(key, curPartInstance)
+			if (PartInstanceName.current === key) this._collectionData?.set(key, curPartInstance)
 			else if (PartInstanceName.next === key) this._collectionData?.set(key, nextPartInstance)
 		})
 
@@ -89,7 +89,7 @@ export class PartInstancesHandler
 					)
 					const nextPartInstance = partInstances.find((p) => p._id === this._curPlaylist?.nextPartInstanceId)
 					this._collectionData?.forEach((_pi, key) => {
-						if (PartInstanceName.cur === key) this._collectionData?.set(key, curPartInstance)
+						if (PartInstanceName.current === key) this._collectionData?.set(key, curPartInstance)
 						else if (PartInstanceName.next === key) this._collectionData?.set(key, nextPartInstance)
 					})
 					this.notify(this._collectionData)
@@ -101,7 +101,7 @@ export class PartInstancesHandler
 				const curPartInstance = partInstances.find((p) => p._id === this._curPlaylist?.currentPartInstanceId)
 				const nextPartInstance = partInstances.find((p) => p._id === this._curPlaylist?.nextPartInstanceId)
 				this._collectionData?.forEach((_pi, key) => {
-					if (PartInstanceName.cur === key) this._collectionData?.set(key, curPartInstance)
+					if (PartInstanceName.current === key) this._collectionData?.set(key, curPartInstance)
 					else if (PartInstanceName.next === key) this._collectionData?.set(key, nextPartInstance)
 				})
 				this.notify(this._collectionData)

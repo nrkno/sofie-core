@@ -50,7 +50,7 @@ export class PartHandler
 				break
 			case 'PartInstancesHandler':
 				this._logger.info(`${this._name} received partInstances update from ${source}`)
-				this._curPartInstance = partInstances.get(PartInstanceName.cur)
+				this._curPartInstance = partInstances.get(PartInstanceName.current)
 				break
 			default:
 				throw new Error(`${this._name} received unsupported update from ${source}}`)
