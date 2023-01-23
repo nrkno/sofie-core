@@ -2,7 +2,7 @@ import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMes
 import { i18nTranslator } from '../../ui/i18n'
 import { JSONSchema, TypeName } from './schema-types'
 
-export function joinFragments(...fragments: Array<string | number | undefined>): string {
+export function joinObjectPathFragments(...fragments: Array<string | number | undefined>): string {
 	return fragments.filter((v) => v !== '' && v !== undefined && v !== null).join('.')
 }
 
@@ -37,7 +37,7 @@ export function getSchemaSummaryFieldsForObject(schema: Record<string, JSONSchem
 
 	for (const [index, prop] of Object.entries(schema)) {
 		if (prop) {
-			const newPrefix = joinFragments(prefix, index)
+			const newPrefix = joinObjectPathFragments(prefix, index)
 
 			fieldNames.push(...getSchemaSummaryFields(prop, newPrefix))
 		}
@@ -54,6 +54,7 @@ export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): Sch
 			const summaryTitle: string = schema['ui:summaryTitle']
 			if (summaryTitle && prefix) {
 				let transform: SchemaSummaryField['transform']
+
 				if (schema.type === 'integer' && schema['ui:zeroBased']) {
 					// Int fields can be zero indexed
 					transform = (val) => {

@@ -40,9 +40,22 @@ export interface DeviceConfigManifest {
 
 export type SubdeviceManifest<T extends string | number = string | number> = {
 	[deviceType in T]: {
+		/**
+		 * Name to display to users for this device type.
+		 * This will be translated if supplied by the device.
+		 */
 		displayName: string
-		configSchema?: string
+		/**
+		 * Stringified JSON schema to use for the settings for this device
+		 */
+		configSchema: string
+		/**
+		 * Playout layer-mappings available for this device type
+		 */
 		playoutMappings?: Record<string, string>
+		/**
+		 * A description of each action that can be executed for this device type
+		 */
 		actions?: SubdeviceAction[]
 	}
 }

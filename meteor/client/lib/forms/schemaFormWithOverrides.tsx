@@ -17,7 +17,7 @@ import { MultiLineTextInputControl } from '../Components/MultiLineTextInput'
 import { TextInputControl } from '../Components/TextInput'
 import { JSONSchema, TypeName } from './schema-types'
 import { SchemaFormTable } from './schemaFormTable'
-import { joinFragments, translateStringIfHasNamespaces } from './schemaFormUtil'
+import { joinObjectPathFragments, translateStringIfHasNamespaces } from './schemaFormUtil'
 
 interface SchemaFormWithOverridesProps {
 	schema: JSONSchema
@@ -118,7 +118,7 @@ const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 		<>
 			{' '}
 			{Object.entries(props.schema.properties || {}).map(([index, schema]) => {
-				const path = joinFragments(props.attr, index)
+				const path = joinObjectPathFragments(props.attr, index)
 				return (
 					<SchemaFormWithOverrides
 						key={index}

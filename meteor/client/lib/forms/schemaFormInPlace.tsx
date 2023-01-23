@@ -11,7 +11,7 @@ interface SchemaFormInPlaceProps {
 }
 export function SchemaFormInPlace({ schema, object, translationNamespaces }: SchemaFormInPlaceProps) {
 	// This is a hack to avoid issues with the UI re-rendering as 'nothing' changed
-	const [_editCount, setEditCount] = useState(0)
+	const [editCount, setEditCount] = useState(0)
 	const forceRender = useCallback(() => setEditCount((v) => v + 1), [])
 
 	const helper = useMemo(() => new OverrideOpHelperInPlace(object, forceRender), [object, forceRender])
@@ -20,12 +20,12 @@ export function SchemaFormInPlace({ schema, object, translationNamespaces }: Sch
 		() =>
 			literal<WrappedOverridableItemNormal<any>>({
 				type: 'normal',
-				id: 'not-used',
+				id: 'not-used' + editCount,
 				computed: object,
 				defaults: undefined,
 				overrideOps: [],
 			}),
-		[object]
+		[object, editCount]
 	)
 
 	return (

@@ -233,7 +233,6 @@ class OverrideOpHelperImpl implements OverrideOpHelper {
 	}
 
 	setItemValue = (itemId: string, subPath: string, value: any): void => {
-		console.log('set value', itemId, subPath, value)
 		if (!this.#objectWithOverridesRef.current) return
 
 		if (subPath === '_id') {

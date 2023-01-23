@@ -170,9 +170,7 @@ export class CoreHandler {
 			deviceName: name,
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
 
-			configManifest: {
-				...PLAYOUT_DEVICE_CONFIG,
-			},
+			configManifest: PLAYOUT_DEVICE_CONFIG,
 		}
 
 		if (!options.deviceToken) {

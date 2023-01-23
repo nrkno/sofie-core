@@ -318,17 +318,24 @@ function StudioMappingsEntry({
 		[mappingSchema]
 	)
 
-	const hasMappingTypeChangedFromDefault =
+	const hasMappingTypeChangedFromDefault = !!(
 		item.defaults &&
 		(item.computed.device !== item.defaults?.device ||
 			item.computed.options?.mappingType !== item.defaults.options?.mappingType)
-	const mappingSchemaItem = hasMappingTypeChangedFromDefault
-		? literal<WrappedOverridableItemNormal<MappingExt>>({
+	)
+	const mappingSchemaItem = useMemo(() => {
+		if (hasMappingTypeChangedFromDefault) {
+			return literal<WrappedOverridableItemNormal<MappingExt>>({
 				...item,
-				// Trick the mapping schema into thinking it doesnt have defaults
+				// The mappingType has changed, so the 'default' values likely don't match up with this mapping at all.
+				// Trick the form into thinking it doesnt have defaults
 				defaults: undefined,
-		  })
-		: item
+			})
+		} else {
+			// The existing item is good still
+			return item
+		}
+	}, [item, hasMappingTypeChangedFromDefault])
 
 	return (
 		<React.Fragment>

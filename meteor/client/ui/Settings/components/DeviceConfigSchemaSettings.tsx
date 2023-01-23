@@ -158,18 +158,23 @@ function SubDevicesTable({
 		[t, parentId]
 	)
 
-	const singleSchemaMode = Object.keys(parsedSchemas).length === 1
-	const defaultSchema = Object.values(parsedSchemas)[0]!
+	const summaryFields: SchemaSummaryField[] = useMemo(() => {
+		const singleSchemaMode = Object.keys(parsedSchemas).length === 1
 
-	const summaryFields: SchemaSummaryField[] = singleSchemaMode
-		? getSchemaSummaryFields(defaultSchema)
-		: [
+		if (singleSchemaMode) {
+			const defaultSchema = Object.values(parsedSchemas)[0]!
+
+			return getSchemaSummaryFields(defaultSchema)
+		} else {
+			return [
 				{
 					attr: 'type',
 					name: 'Type',
 					transform: (val) => subDeviceOptions.find((d) => d.value == val)?.name ?? val,
 				},
-		  ]
+			]
+		}
+	}, [parsedSchemas, subDeviceOptions])
 
 	return (
 		<>

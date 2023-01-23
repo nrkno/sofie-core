@@ -67,6 +67,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			  })
 			: undefined
 
+		// TODO - these should come from the device the mapping is targeting but for now this will catch 99% of expected use cases
 		const firstPlayoutDevice = PeripheralDevices.findOne(
 			{
 				studioId: {
@@ -154,7 +155,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				}
 			).fetch(),
 			blueprintConfigManifest: blueprint ? blueprint.studioConfigManifest || [] : [],
-			// TODO - these should come from the device the mapping is targeting but for now this will catch 99% of expected use cases
 			layerMappingsTranslationNamespaces: translationNamespaces,
 			layerMappingsSchema: layerMappingsSchema,
 		}

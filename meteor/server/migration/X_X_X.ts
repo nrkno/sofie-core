@@ -157,25 +157,6 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 						},
 					})
 				}
-
-				// // Update the defaults. This is not necessary, but will help
-				// for (const [id, mapping] of Object.entries(newMappings.defaults)) {
-				// 	if (!mapping || mapping.options) continue
-
-				// 	const baseOptions: Array<keyof MappingExt> = [
-				// 		'device',
-				// 		'deviceId',
-				// 		'layerName',
-				// 		'lookahead',
-				// 		'lookaheadDepth',
-				// 		'lookaheadMaxSearchDistance',
-				// 	]
-
-				// 	newMappings.defaults[id] = {
-				// 		..._.pick(mapping, ...baseOptions),
-				// 		options: _.omit(mapping, ...baseOptions),
-				// 	}
-				// }
 			}
 		},
 	},

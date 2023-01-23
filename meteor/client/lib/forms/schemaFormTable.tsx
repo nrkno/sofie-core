@@ -174,17 +174,6 @@ export function SchemaTableSummaryRow<T extends string | number>({
 	editItem,
 	removeItem,
 }: SchemaTableSummaryRowProps<T>) {
-	const els: Array<JSX.Element> = summaryFields.map((field) => {
-		const rawValue = objectPathGet(object, field.attr)
-		const value = field.transform ? field.transform(rawValue) : rawValue
-
-		return (
-			<td className="settings-studio-device__primary_id c4" key={field.attr}>
-				{value ?? ''}
-			</td>
-		)
-	})
-
 	const editItem2 = useCallback(() => editItem(rowId), [editItem, rowId])
 	const removeItem2 = useCallback(() => removeItem(rowId), [removeItem, rowId])
 
@@ -195,7 +184,18 @@ export function SchemaTableSummaryRow<T extends string | number>({
 			})}
 		>
 			{showRowId && <th className="settings-studio-device__name c2">{rowId}</th>}
-			{els}
+
+			{summaryFields.map((field) => {
+				const rawValue = objectPathGet(object, field.attr)
+				const value = field.transform ? field.transform(rawValue) : rawValue
+
+				return (
+					<td className="settings-studio-device__primary_id c4" key={field.attr}>
+						{value ?? ''}
+					</td>
+				)
+			})}
+
 			<td className="settings-studio-device__actions table-item-actions c1" key="action">
 				<button className="action-btn" onClick={editItem2}>
 					<FontAwesomeIcon icon={faPencilAlt} />
@@ -237,7 +237,7 @@ function SchemaFormTableEditRow({
 				defaults: undefined,
 				overrideOps: [],
 			}),
-		[rowObject]
+		[rowObject, rowId]
 	)
 
 	return (
