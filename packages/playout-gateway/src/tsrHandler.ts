@@ -50,8 +50,8 @@ import {
 	PlayoutDeviceSettings,
 } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
-import { ConfigManifestEntry, TableConfigManifestEntry } from '@sofie-automation/server-core-integration'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
+import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 
 const debug = Debug('playout-gateway')
 
@@ -228,23 +228,13 @@ export class TSRHandler {
 	}
 
 	private loadSubdeviceConfigurations(): { [deviceType: string]: Record<string, any> } {
-		const playoutGatewayDevicesConfig: ConfigManifestEntry | undefined = PLAYOUT_DEVICE_CONFIG.deviceConfig.find(
-			(deviceConfig: ConfigManifestEntry) => deviceConfig.id === 'devices'
-		)
-		if (!playoutGatewayDevicesConfig) {
-			return {}
-		}
-		const tableConfig: TableConfigManifestEntry = playoutGatewayDevicesConfig as TableConfigManifestEntry
 		const defaultDeviceOptions: { [deviceType: string]: Record<string, any> } = {}
-		for (const deviceType in tableConfig.config) {
-			const configEntries = tableConfig.config[deviceType]
-				.filter((configManifestEntry: ConfigManifestEntry) => configManifestEntry.defaultVal)
-				.map((configManifestEntry: ConfigManifestEntry) => [
-					configManifestEntry.id.replace('options.', ''),
-					configManifestEntry.defaultVal,
-				])
-			defaultDeviceOptions[deviceType] = Object.fromEntries(configEntries)
+
+		for (const [deviceType, deviceManifest] of Object.entries(PLAYOUT_DEVICE_CONFIG.subdeviceManifest)) {
+			const schema = JSON.parse(deviceManifest.configSchema)
+			defaultDeviceOptions[deviceType] = getSchemaDefaultValues(schema)
 		}
+
 		return defaultDeviceOptions
 	}
 
