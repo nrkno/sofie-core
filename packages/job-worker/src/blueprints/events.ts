@@ -74,9 +74,10 @@ export function reportPartInstanceHasStarted(
 			}
 
 			// Unset stoppedPlayback if it is set:
-			if (instance.timings.reportedStoppedPlayback) {
+			if (instance.timings.reportedStoppedPlayback || instance.timings.duration) {
 				timestampUpdated = true
 				delete instance.timings.reportedStoppedPlayback
+				delete instance.timings.duration
 
 				if (!cache.isMultiGatewayMode) {
 					delete instance.timings.plannedStoppedPlayback
@@ -139,6 +140,7 @@ export function reportPartInstanceHasStopped(
 		cache.PartInstances.updateOne(partInstance._id, (instance) => {
 			if (!instance.timings) instance.timings = {}
 			instance.timings.reportedStoppedPlayback = timestamp
+			instance.timings.duration = timestamp - (instance.timings.reportedStartedPlayback || timestamp)
 
 			if (!cache.isMultiGatewayMode) {
 				instance.timings.plannedStoppedPlayback = timestamp
