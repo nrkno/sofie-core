@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.47.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.6...v1.47.0-in-testing.7) (2023-01-24)
+
+
+### Bug Fixes
+
+* logging of commandErrors ([75e6c64](https://github.com/nrkno/tv-automation-server-core/commit/75e6c64b9771e1b2c21d4feddc49278ce5ddd0c2))
+
+
+
+
+
 # [1.47.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
 
 **Note:** Version bump only for package playout-gateway
