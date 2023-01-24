@@ -6,6 +6,7 @@ import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
 import { unprotectString } from '../../../../lib/lib'
 import { SubDevicesConfig } from './DeviceConfigSchemaSettings'
 import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollection'
+import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 interface IGenericDeviceSettingsComponentProps {
 	device: PeripheralDevice
@@ -17,7 +18,8 @@ export function GenericDeviceSettingsComponent({ device, subDevices }: IGenericD
 
 	const translationNamespaces = useMemo(() => ['peripheralDevice_' + device._id], [device._id])
 	const parsedSchema = useMemo(
-		() => (device.configManifest.deviceConfigSchema ? JSON.parse(device.configManifest.deviceConfigSchema) : undefined),
+		() =>
+			device.configManifest.deviceConfigSchema ? JSONBlobParse(device.configManifest.deviceConfigSchema) : undefined,
 		[device.configManifest.deviceConfigSchema]
 	)
 
@@ -27,7 +29,7 @@ export function GenericDeviceSettingsComponent({ device, subDevices }: IGenericD
 				<ConfigManifestOAuthFlowComponent device={device}></ConfigManifestOAuthFlowComponent>
 			)}
 
-			{device.configManifest.deviceConfigSchema ? (
+			{parsedSchema ? (
 				<>
 					<SchemaFormForCollection
 						schema={parsedSchema}

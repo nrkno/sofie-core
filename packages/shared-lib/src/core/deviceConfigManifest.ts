@@ -11,14 +11,16 @@
  * describe some properties to be rendered inside this table
  */
 
+import { JSONBlob } from '../lib/JSONBlob'
 import { TSRActionSchema } from 'timeline-state-resolver-types'
 import { TranslationsBundle } from '../lib/translations'
+import { JSONSchema } from '../lib/JSONSchemaTypes'
 
 export interface DeviceConfigManifest {
 	/**
 	 * A description of the config fields
 	 */
-	deviceConfigSchema: string
+	deviceConfigSchema: JSONBlob<JSONSchema>
 	/**
 	 * If the device has an OAuthFlow (like spreadsheet gw) the instructions for
 	 * getting an authentication token go in here
@@ -27,7 +29,7 @@ export interface DeviceConfigManifest {
 	/**
 	 * A description of common properties for each subdevice
 	 */
-	subdeviceConfigSchema?: string
+	subdeviceConfigSchema?: JSONBlob<JSONSchema>
 	/**
 	 * A description of how to interact with subdevices
 	 */
@@ -48,11 +50,11 @@ export type SubdeviceManifest<T extends string | number = string | number> = {
 		/**
 		 * Stringified JSON schema to use for the settings for this device
 		 */
-		configSchema: string
+		configSchema: JSONBlob<JSONSchema>
 		/**
 		 * Playout layer-mappings available for this device type
 		 */
-		playoutMappings?: Record<string, string>
+		playoutMappings?: Record<string, JSONBlob<JSONSchema>>
 		/**
 		 * A description of each action that can be executed for this device type
 		 */
@@ -61,7 +63,9 @@ export type SubdeviceManifest<T extends string | number = string | number> = {
 }
 
 // Re-export from TSR
-export type SubdeviceAction = TSRActionSchema
+export interface SubdeviceAction extends Omit<TSRActionSchema, 'payload'> {
+	payload?: JSONBlob<JSONSchema>
+}
 
 export interface DeviceOAuthFlow {
 	credentialsHelp: string

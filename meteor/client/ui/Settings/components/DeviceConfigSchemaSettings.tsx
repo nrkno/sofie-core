@@ -20,11 +20,12 @@ import {
 } from '../../../lib/forms/schemaFormUtil'
 import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollection'
 import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
+import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 interface SubDevicesConfigProps {
 	translationNamespaces: string[]
 	deviceId: PeripheralDeviceId
-	commonSchema: string | undefined
+	commonSchema: JSONBlob<JSONSchema> | undefined
 	configSchema: SubdeviceManifest | undefined
 	subDevices: Record<string, any>
 }
@@ -38,12 +39,12 @@ export function SubDevicesConfig({
 }: SubDevicesConfigProps) {
 	const { t } = useTranslation()
 
-	const parsedCommonSchema = commonSchema ? JSON.parse(commonSchema) : undefined
+	const parsedCommonSchema = commonSchema ? JSONBlobParse(commonSchema) : undefined
 
 	const parsedSchemas: Record<string, JSONSchema | undefined> = {}
 	for (const [id, obj] of Object.entries(configSchema || {})) {
 		if (obj.configSchema) {
-			parsedSchemas[id] = JSON.parse(obj.configSchema) as JSONSchema
+			parsedSchemas[id] = JSONBlobParse(obj.configSchema)
 		}
 	}
 	const schemaTypes = Object.keys(parsedSchemas || {}).sort()

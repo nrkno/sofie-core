@@ -26,6 +26,7 @@ import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
+import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 interface IStudioSettingsProps {
 	match: {
@@ -91,7 +92,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		const layerMappingsSchema: MappingsSettingsManifests = Object.fromEntries(
 			Object.entries(firstPlayoutDevice?.configManifest?.subdeviceManifest || {}).map(([id, val]) => {
 				const mappingsSchema = val.playoutMappings
-					? Object.fromEntries(Object.entries(val.playoutMappings).map(([id, schema]) => [id, JSON.parse(schema)]))
+					? Object.fromEntries(Object.entries(val.playoutMappings).map(([id, schema]) => [id, JSONBlobParse(schema)]))
 					: undefined
 
 				return [

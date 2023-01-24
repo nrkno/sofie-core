@@ -50,6 +50,7 @@ import { DBTimelineDatastoreEntry } from '@sofie-automation/shared-lib/dist/core
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
 import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 import { PlayoutGatewayConfig } from './generated/options'
+import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 const debug = Debug('playout-gateway')
 
@@ -233,7 +234,7 @@ export class TSRHandler {
 		const defaultDeviceOptions: { [deviceType: string]: Record<string, any> } = {}
 
 		for (const [deviceType, deviceManifest] of Object.entries(PLAYOUT_DEVICE_CONFIG.subdeviceManifest)) {
-			const schema = JSON.parse(deviceManifest.configSchema)
+			const schema = JSONBlobParse(deviceManifest.configSchema)
 			defaultDeviceOptions[deviceType] = getSchemaDefaultValues(schema)
 		}
 
