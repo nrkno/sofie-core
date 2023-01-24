@@ -1,5 +1,6 @@
 ---
 title: Worker Threads & Locks
+sidebar_position: 9
 ---
 
 Starting with v1.40.0 (_[Release 40](/sofie-core/docs/releases#release-40)_), the core logic of Sofie is split across
