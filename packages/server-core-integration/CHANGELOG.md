@@ -3,12 +3,45 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.0...v1.48.0-in-testing.1) (2023-01-11)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
+
+
+
+
 # [1.48.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.48.0-in-testing.0) (2022-12-13)
 
 
 ### Features
 
 * stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+
+
+
+
+
+
+# [1.47.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
+
+
+
+
+# [1.47.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.4...v1.47.0-in-testing.5) (2023-01-11)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
+
+
+
+
+# [1.47.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.47.0-in-testing.4) (2023-01-05)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
 
 
 

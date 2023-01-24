@@ -175,7 +175,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					rundownId: {
 						$in: unorderedRundownIds,
 					},
-					startedPlayback: {
+					plannedStartedPlayback: {
 						$exists: true,
 					},
 					$and: [
@@ -196,12 +196,12 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						{
 							$or: [
 								{
-									stoppedPlayback: {
+									plannedStoppedPlayback: {
 										$eq: 0,
 									},
 								},
 								{
-									stoppedPlayback: {
+									plannedStoppedPlayback: {
 										$exists: false,
 									},
 								},

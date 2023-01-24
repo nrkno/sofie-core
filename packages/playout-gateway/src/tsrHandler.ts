@@ -816,8 +816,7 @@ export class TSRHandler {
 			}
 			const onCommandError = (error: any, context: any) => {
 				// todo: handle this better
-				this.logger.error(error)
-				this.logger.debug(context)
+				this.logger.error(fixError(error), context)
 			}
 			const onUpdateMediaObject = (collectionId: string, docId: string, doc: MediaObject | null) => {
 				coreTsrHandler.onUpdateMediaObject(collectionId, docId, doc)

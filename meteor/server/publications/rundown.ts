@@ -267,8 +267,8 @@ meteorPublish(PubSub.pieceInstancesSimple, async function (selector, token) {
 			// @ts-expect-error Mongo typings aren't clever enough yet
 			'piece.metaData': 0,
 			'piece.timelineObjectsString': 0,
-			startedPlayback: 0,
-			stoppedPlayback: 0,
+			plannedStartedPlayback: 0,
+			plannedStoppedPlayback: 0,
 		},
 	}
 
