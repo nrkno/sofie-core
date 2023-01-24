@@ -7,7 +7,12 @@ import { useTranslation } from 'react-i18next'
 import { WrappedOverridableItemNormal, OverrideOpHelper } from '../../ui/Settings/util/OverrideOpHelper'
 import { useToggleExpandHelper } from '../../ui/Settings/util/ToggleExpandedHelper'
 import { doModalDialog } from '../ModalDialog'
-import { getSchemaSummaryFieldsForObject, SchemaSummaryField, translateStringIfHasNamespaces } from './schemaFormUtil'
+import {
+	getSchemaSummaryFieldsForObject,
+	SchemaFormUIField,
+	SchemaSummaryField,
+	translateStringIfHasNamespaces,
+} from './schemaFormUtil'
 import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
@@ -44,7 +49,7 @@ export const SchemaFormTable = ({
 		[overrideHelper, item.id, rows, attr]
 	)
 
-	const title = schema['ui:title']
+	const title = schema[SchemaFormUIField.Title]
 
 	return (
 		<>

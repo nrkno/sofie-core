@@ -7,7 +7,8 @@ import {
 import React, { useMemo } from 'react'
 import { MongoCollection } from '../../../lib/collections/lib'
 import { WrappedOverridableItemNormal, OverrideOpHelper } from '../../ui/Settings/util/OverrideOpHelper'
-import { SchemaFormCommonProps, SchemaFormWithOverrides } from './schemaFormWithOverrides'
+import { SchemaFormCommonProps } from './schemaFormUtil'
+import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
 
 interface SchemaFormForCollectionProps extends SchemaFormCommonProps {
 	object: any

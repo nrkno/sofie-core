@@ -17,18 +17,12 @@ import { MultiLineTextInputControl } from '../Components/MultiLineTextInput'
 import { TextInputControl } from '../Components/TextInput'
 import { JSONSchema, TypeName } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { SchemaFormTable } from './schemaFormTable'
-import { joinObjectPathFragments, translateStringIfHasNamespaces } from './schemaFormUtil'
-
-export interface SchemaFormCommonProps {
-	schema: JSONSchema
-	translationNamespaces: string[]
-
-	/**
-	 * In some situations, it is desirable to not allow tables to be used by a schema
-	 * For example, a table inside a table will not display properly so this gets set automatically
-	 */
-	allowTables?: boolean
-}
+import {
+	joinObjectPathFragments,
+	SchemaFormCommonProps,
+	SchemaFormUIField,
+	translateStringIfHasNamespaces,
+} from './schemaFormUtil'
 
 interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
 	attr: string
@@ -53,8 +47,8 @@ interface FormComponentProps {
 
 function useChildPropsForFormComponent(props: SchemaFormWithOverridesProps) {
 	return useMemo(() => {
-		const title = props.schema['ui:title'] || props.attr
-		const description = props.schema['ui:description']
+		const title = props.schema[SchemaFormUIField.Title] || props.attr
+		const description = props.schema[SchemaFormUIField.Description]
 
 		return {
 			schema: props.schema,
@@ -80,7 +74,7 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps) {
 		case TypeName.Array:
 			return <ArrayFormWithOverrides {...props} />
 		case TypeName.Object:
-			if (props.schema['ui:displayType'] === 'json') {
+			if (props.schema[SchemaFormUIField.DisplayType] === 'json') {
 				return <JsonFormWithOverrides {...childProps} />
 			} else {
 				return <ObjectFormWithOverrides {...props} />
@@ -148,7 +142,7 @@ const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 }
 
 const EnumFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
-	const tsEnumNames = (schema['tsEnumNames'] || []) as string[]
+	const tsEnumNames = (schema[SchemaFormUIField.TsEnumNames] || []) as string[]
 	const options = useMemo(() => {
 		return (schema.enum || []).map((value: any, i: number) =>
 			literal<DropdownInputOption<any>>({
@@ -176,7 +170,7 @@ const EnumFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
 }
 
 const IntegerFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
-	const zeroBased = !!schema['ui:zeroBased']
+	const zeroBased = !!schema[SchemaFormUIField.ZeroBased]
 
 	return (
 		<div className="mod mvs mhs">
@@ -189,6 +183,8 @@ const IntegerFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) =
 						zeroBased={zeroBased}
 						value={value}
 						handleUpdate={handleUpdate}
+						min={schema['minimum']}
+						max={schema['maximum']}
 					/>
 				)}
 			</LabelAndOverridesForInt>
@@ -207,6 +203,8 @@ const NumberFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) =>
 						placeholder={schema.default}
 						value={value}
 						handleUpdate={handleUpdate}
+						min={schema['minimum']}
+						max={schema['maximum']}
 					/>
 				)}
 			</LabelAndOverrides>
