@@ -479,9 +479,7 @@ export class CoreMosDeviceHandler {
 		if (this.mosTypes.mosString128.is(o)) return this.mosTypes.mosString128.stringify(o)
 
 		if (Array.isArray(o)) {
-			return o.map((val) => {
-				this.fixMosData(val)
-			})
+			return o.map((val) => this.fixMosData(val))
 		} else if (typeof o === null) {
 			return null
 		} else if (typeof o === 'object') {
