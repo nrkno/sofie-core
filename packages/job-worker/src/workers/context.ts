@@ -17,7 +17,7 @@ import {
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getIngestQueueName, IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
-import { loadBlueprintById, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
+import { parseBlueprintDocument, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { ApmSpan, ApmTransaction } from '../profiler'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -174,6 +174,8 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		}
 
 		loadedDocs.sort((a, b) => {
+			if (a._rank > b._rank) return 1
+			if (a._rank < b._rank) return -1
 			if (a.name > b.name) return 1
 			if (a.name < b.name) return -1
 			if (a._id > b._id) return 1
@@ -394,14 +396,15 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 }
 
 async function loadShowStyleBlueprint(
-	context: IDirectCollections,
+	collections: IDirectCollections,
 	showStyleBase: Pick<ReadonlyDeep<DBShowStyleBase>, '_id' | 'blueprintId'>
 ): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>> {
 	if (!showStyleBase.blueprintId) {
 		throw new Error(`ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)
 	}
 
-	const blueprintManifest = await loadBlueprintById(context, showStyleBase.blueprintId)
+	const blueprintDoc = await collections.Blueprints.findOne(showStyleBase.blueprintId)
+	const blueprintManifest = await parseBlueprintDocument(blueprintDoc)
 	if (!blueprintManifest) {
 		throw new Error(
 			`Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`

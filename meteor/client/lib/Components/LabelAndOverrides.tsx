@@ -1,4 +1,4 @@
-import { faRefresh } from '@fortawesome/free-solid-svg-icons'
+import { faSync } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -83,7 +83,7 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 					<button className="btn btn-primary" onClick={clearOverride} title="Reset to default" disabled={!isOverridden}>
 						{t('Reset')}
 						&nbsp;
-						<FontAwesomeIcon icon={faRefresh} />
+						<FontAwesomeIcon icon={faSync} />
 					</button>
 				</>
 			)}

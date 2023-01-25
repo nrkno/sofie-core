@@ -64,7 +64,7 @@ describe('Playout API', () => {
 			})
 
 			// await supressLogging(async () => {
-			await expect(executeAction(context, { playlistId, actionDocId, actionId, userData })).rejects.toThrowError(
+			await expect(executeAction(context, { playlistId, actionDocId, actionId, userData })).rejects.toThrow(
 				'action execution threw'
 			)
 			// })

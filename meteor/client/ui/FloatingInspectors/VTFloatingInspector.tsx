@@ -3,7 +3,7 @@ import { TFunction, useTranslation } from 'react-i18next'
 
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { FloatingInspector } from '../FloatingInspector'
-import { NoticeLevel } from '../../lib/notifications/notifications'
+import { NoticeLevel } from '../../../lib/notifications/notifications'
 import { ExpectedPackage, VTContent } from '@sofie-automation/blueprints-integration'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'

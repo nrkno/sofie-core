@@ -289,7 +289,7 @@ describe('DatabaseCaches', () => {
 
 					expect(() => {
 						cache.assertNoChanges()
-					}).toThrowError(/failed .+ assertion,.+ was modified/gi)
+					}).toThrow(/failed .+ assertion,.+ was modified/gi)
 				}
 
 				{
@@ -302,7 +302,7 @@ describe('DatabaseCaches', () => {
 
 					expect(() => {
 						cache.assertNoChanges()
-					}).toThrowError(/failed .+ assertion,.+ deferred/gi)
+					}).toThrow(/failed .+ assertion,.+ deferred/gi)
 				}
 
 				{
@@ -315,7 +315,7 @@ describe('DatabaseCaches', () => {
 
 					expect(() => {
 						cache.assertNoChanges()
-					}).toThrowError(/failed .+ assertion,.+ after-save deferred/gi)
+					}).toThrow(/failed .+ assertion,.+ after-save deferred/gi)
 				}
 			} finally {
 				await lock.release()

@@ -7,7 +7,12 @@ import { OutputLayers, ShowStyleBase, ShowStyleBases, SourceLayers } from '../..
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
-import { BlueprintManifestType, ConfigManifestEntry, ISourceLayer } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintManifestType,
+	ConfigManifestEntry,
+	IShowStyleConfigPreset,
+	ISourceLayer,
+} from '@sofie-automation/blueprints-integration'
 import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from './BlueprintConfigManifest'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
@@ -46,6 +51,7 @@ interface ITrackedProps {
 	showStyleVariants: Array<ShowStyleVariant>
 	compatibleStudios: Array<Studio>
 	blueprintConfigManifest: ConfigManifestEntry[]
+	blueprintConfigPreset: IShowStyleConfigPreset | undefined
 	sourceLayersLight: Array<SourceLayerDropdownOption> | undefined
 	sourceLayers: SourceLayers
 	outputLayers: OutputLayers
@@ -78,12 +84,24 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	return {
 		showStyleBase: showStyleBase,
 		showStyleVariants: showStyleBase
-			? ShowStyleVariants.find({
-					showStyleBaseId: showStyleBase._id,
-			  }).fetch()
+			? ShowStyleVariants.find(
+					{
+						showStyleBaseId: showStyleBase._id,
+					},
+					{
+						sort: {
+							_rank: 1,
+							_id: 1,
+						},
+					}
+			  ).fetch()
 			: [],
 		compatibleStudios: compatibleStudios,
 		blueprintConfigManifest: blueprint ? blueprint.showStyleConfigManifest || [] : [],
+		blueprintConfigPreset:
+			blueprint && blueprint.showStyleConfigPresets && showStyleBase?.blueprintConfigPresetId
+				? blueprint.showStyleConfigPresets[showStyleBase.blueprintConfigPresetId]
+				: undefined,
 		sourceLayers,
 		outputLayers,
 		sourceLayersLight: sourceLayers
@@ -138,19 +156,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				})
 			}
 		}
-		private pushBlueprintConfigOverride = (newOp: SomeObjectOverrideOp) => {
-			if (this.props.showStyleBase) {
-				ShowStyleBases.update(this.props.showStyleBase._id, {
-					$push: {
-						'blueprintConfigWithOverrides.overrides': newOp,
-					},
-				})
-			}
-		}
 
 		renderEditForm(showStyleBase: ShowStyleBase) {
 			const { t } = this.props
-
 			return (
 				<div className="studio-edit mod mhl mvn">
 					<div className="row">
@@ -206,7 +214,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											sourceLayers={this.props.sourceLayersLight}
 											configObject={showStyleBase.blueprintConfigWithOverrides}
 											saveOverrides={this.saveBlueprintConfigOverrides}
-											pushOverride={this.pushBlueprintConfigOverride}
 											alternateConfig={undefined}
 										/>
 									</Route>
@@ -214,6 +221,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										<ShowStyleVariantsSettings
 											showStyleVariants={this.props.showStyleVariants}
 											blueprintConfigManifest={this.props.blueprintConfigManifest}
+											blueprintConfigPreset={this.props.blueprintConfigPreset}
 											showStyleBase={showStyleBase}
 											layerMappings={this.props.layerMappings}
 											sourceLayers={this.props.sourceLayersLight}

@@ -195,9 +195,7 @@ describe('Test blueprint api context', () => {
 			partInstance.playlistActivationId = protectString('something-else')
 
 			const context2 = await getContext(rundown, undefined, partInstance, undefined)
-			await expect(context2.getFirstPartInstanceInRundown()).rejects.toThrowError(
-				'No PartInstances found for Rundown'
-			)
+			await expect(context2.getFirstPartInstanceInRundown()).rejects.toThrow('No PartInstances found for Rundown')
 		})
 
 		test('getFirstPartInstanceInRundown - allowUntimed', async () => {

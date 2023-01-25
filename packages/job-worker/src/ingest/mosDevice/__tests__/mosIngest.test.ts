@@ -282,7 +282,7 @@ describe('Test recieved mos ingest payloads', () => {
 				peripheralDeviceId: device._id,
 				rundownExternalId: parseMosString(roData.ID),
 			})
-		).rejects.toThrowError(/Rundown.*not found/i)
+		).rejects.toThrow(/Rundown.*not found/i)
 	})
 
 	test('mosRoStatus: Update ro', async () => {
@@ -342,7 +342,7 @@ describe('Test recieved mos ingest payloads', () => {
 				rundownExternalId: externalId,
 				status: newStatus,
 			})
-		).rejects.toThrowError(/Rundown.*not found/i)
+		).rejects.toThrow(/Rundown.*not found/i)
 	})
 
 	test('mosRoReadyToAir: Update ro', async () => {
@@ -402,7 +402,7 @@ describe('Test recieved mos ingest payloads', () => {
 				rundownExternalId: externalId,
 				status: newStatus,
 			})
-		).rejects.toThrowError(/Rundown.*not found/i)
+		).rejects.toThrow(/Rundown.*not found/i)
 	})
 
 	test('mosRoStoryStatus: Update part', async () => {
@@ -446,7 +446,7 @@ describe('Test recieved mos ingest payloads', () => {
 				partExternalId: part.externalId,
 				status: newStatus,
 			})
-		).rejects.toThrowError(/Rundown.*not found/i)
+		).rejects.toThrow(/Rundown.*not found/i)
 	})
 
 	test('mosRoStoryStatus: Missing part', async () => {
@@ -464,7 +464,7 @@ describe('Test recieved mos ingest payloads', () => {
 				partExternalId: partExternalId,
 				status: newStatus,
 			})
-		).rejects.toThrowError(`Part ${partExternalId} in rundown ${rundown._id} not found`)
+		).rejects.toThrow(`Part ${partExternalId} in rundown ${rundown._id} not found`)
 	})
 
 	test('mosRoStoryInsert: Into segment', async () => {
@@ -583,7 +583,7 @@ describe('Test recieved mos ingest payloads', () => {
 				newStories: [newPartData],
 				replace: false,
 			})
-		).rejects.toThrowError(`Part ${beforeStoryId.toString()} in rundown ${rundown.externalId} not found`)
+		).rejects.toThrow(`Part ${beforeStoryId.toString()} in rundown ${rundown.externalId} not found`)
 
 		expect(await context.directCollections.Parts.findOne({ externalId: newPartData.ID.toString() })).toBeFalsy()
 	})
@@ -604,7 +604,7 @@ describe('Test recieved mos ingest payloads', () => {
 				newStories: [newPartData],
 				replace: false,
 			})
-		).rejects.toThrowError(`Parts ${newPartData.ID.toString()} already exist in rundown ${rundown.externalId}`)
+		).rejects.toThrow(`Parts ${newPartData.ID.toString()} already exist in rundown ${rundown.externalId}`)
 	})
 
 	// TODO - check if this should be allowed
@@ -707,7 +707,7 @@ describe('Test recieved mos ingest payloads', () => {
 				newStories: [newPartData],
 				replace: true,
 			})
-		).rejects.toThrowError(`Part ${beforeStoryId} in rundown ${rundown.externalId} not found`)
+		).rejects.toThrow(`Part ${beforeStoryId} in rundown ${rundown.externalId} not found`)
 
 		expect(await context.directCollections.Parts.findOne({ externalId: newPartData.ID.toString() })).toBeFalsy()
 	})
@@ -757,7 +757,7 @@ describe('Test recieved mos ingest payloads', () => {
 				rundownExternalId: rundown.externalId,
 				stories: partExternalIds.map((i) => new MOS.MosString128(i)),
 			})
-		).rejects.toThrowError(`Parts fakeId in rundown ${rundown.externalId} were not found`)
+		).rejects.toThrow(`Parts fakeId in rundown ${rundown.externalId} were not found`)
 
 		expect(await context.directCollections.Parts.findFetch({ externalId: { $in: partExternalIds } })).toHaveLength(
 			1
@@ -805,7 +805,7 @@ describe('Test recieved mos ingest payloads', () => {
 				rundownExternalId: rundown.externalId,
 				story: story,
 			})
-		).rejects.toThrowError(
+		).rejects.toThrow(
 			`handleMosFullStory: Missing MOS Story "${story.ID}" in Rundown ingest data for "${rundown.externalId}"`
 		)
 	})
@@ -826,7 +826,7 @@ describe('Test recieved mos ingest payloads', () => {
 				rundownExternalId: story.RunningOrderId.toString(),
 				story: story,
 			})
-		).rejects.toThrowError(`handleMosFullStory: Missing MOS Rundown "${story.RunningOrderId}"`)
+		).rejects.toThrow(`handleMosFullStory: Missing MOS Rundown "${story.RunningOrderId}"`)
 	})
 
 	test('mosRoStorySwap: Within same segment', async () => {
@@ -905,7 +905,7 @@ describe('Test recieved mos ingest payloads', () => {
 				story0,
 				story1: story0,
 			})
-		).rejects.toThrowError(`Cannot swap part ${story0} with itself in rundown ${rundown.externalId}`)
+		).rejects.toThrow(`Cannot swap part ${story0} with itself in rundown ${rundown.externalId}`)
 	})
 
 	test('mosRoStorySwap: Story not found', async () => {
@@ -922,7 +922,7 @@ describe('Test recieved mos ingest payloads', () => {
 				story0,
 				story1,
 			})
-		).rejects.toThrowError(`Story ${story1} not found in rundown ${rundown.externalId}`)
+		).rejects.toThrow(`Story ${story1} not found in rundown ${rundown.externalId}`)
 
 		await expect(
 			handleMosSwapStories(context, {
@@ -931,7 +931,7 @@ describe('Test recieved mos ingest payloads', () => {
 				story0: story1,
 				story1: story0,
 			})
-		).rejects.toThrowError(`Story ${story1} not found in rundown ${rundown.externalId}`)
+		).rejects.toThrow(`Story ${story1} not found in rundown ${rundown.externalId}`)
 	})
 
 	test('mosRoStorySwap: Swap across segments', async () => {
@@ -1075,7 +1075,7 @@ describe('Test recieved mos ingest payloads', () => {
 				insertBeforeStoryId: beforeStoryId,
 				stories,
 			})
-		).rejects.toThrowError(`Part ${beforeStoryId} was not found in rundown ${rundown.externalId}`)
+		).rejects.toThrow(`Part ${beforeStoryId} was not found in rundown ${rundown.externalId}`)
 	})
 
 	test('mosRoStoryMove: Invalid before self', async () => {
@@ -1096,7 +1096,7 @@ describe('Test recieved mos ingest payloads', () => {
 				insertBeforeStoryId: beforeStoryId,
 				stories,
 			})
-		).rejects.toThrowError(`Part ${beforeStoryId} was not found in rundown ${rundown.externalId}`)
+		).rejects.toThrow(`Part ${beforeStoryId} was not found in rundown ${rundown.externalId}`)
 	})
 
 	test('mosRoStoryMove: Bad ID', async () => {
@@ -1119,7 +1119,7 @@ describe('Test recieved mos ingest payloads', () => {
 				insertBeforeStoryId: beforeStoryId,
 				stories,
 			})
-		).rejects.toThrowError(`Parts ro1;s1;p999 were not found in rundown ${beforeStoryId.toString()}`)
+		).rejects.toThrow(`Parts ro1;s1;p999 were not found in rundown ${beforeStoryId.toString()}`)
 	})
 
 	test('mosRoStoryDelete: Remove first story in segment', async () => {

@@ -33,9 +33,9 @@
 		"test-all": "yarn install && yarn build:packages && yarn check-types:meteor && yarn lint:packages && yarn lint:meteor && yarn test:packages && yarn test:meteor"
 	},
 	"devDependencies": {
-		"concurrently": "^7.4.0",
+		"concurrently": "^7.6.0",
 		"rimraf": "^3.0.2",
-		"semver": "^7.3.7",
-		"snyk-nodejs-lockfile-parser": "^1.43.1"
+		"semver": "^7.3.8",
+		"snyk-nodejs-lockfile-parser": "^1.45.1"
 	}
 }

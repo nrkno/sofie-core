@@ -36,7 +36,12 @@ export function TextInputControl({
 	)
 	const handleBlur = useCallback(
 		(event: React.FocusEvent<HTMLInputElement>) => {
-			handleUpdate(event.target.value)
+			let value: string = event.target.value
+			if (value) {
+				value = value.trim()
+			}
+			handleUpdate(value)
+
 			setEditingValue(null)
 		},
 		[handleUpdate]

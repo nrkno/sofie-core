@@ -16,16 +16,10 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
-import {
-	filterOverrideOpsForPrefix,
-	useOverrideOpHelper,
-	WrappedOverridableItem,
-	WrappedOverridableItemDeleted,
-	WrappedOverridableItemNormal,
-} from '../util/OverrideOpHelper'
+import { filterOverrideOpsForPrefix, useOverrideOpHelper, WrappedOverridableItemNormal } from '../util/OverrideOpHelper'
 import { AddItemModalRef, AddItemModal } from './AddItemModal'
 import { SourceLayerDropdownOption } from './resolveColumns'
-import { BlueprintConfigManifestDeletedRow, BlueprintConfigManifestRow, WrappedOverridableExt } from './ConfigItemRow'
+import { BlueprintConfigManifestRow, WrappedOverridableExt } from './ConfigItemRow'
 import { doModalDialog } from '../../../lib/ModalDialog'
 
 export { SourceLayerDropdownOption }
@@ -46,7 +40,7 @@ interface IConfigManifestSettingsProps {
 
 	configObject: ObjectWithOverrides<IBlueprintConfig>
 	saveOverrides: (newOps: SomeObjectOverrideOp[]) => void
-	pushOverride: (newOp: SomeObjectOverrideOp) => void
+	pushOverride?: (newOp: SomeObjectOverrideOp) => void
 }
 
 /**
@@ -57,16 +51,19 @@ interface IConfigManifestSettingsProps {
  */
 function getAllCurrentAndDeletedItemsFromOverrides(
 	manifest: ConfigManifestEntry[],
-	rawConfig: ReadonlyDeep<ObjectWithOverrides<IBlueprintConfig>>
-): Array<WrappedOverridableItem<any> & WrappedOverridableExt> {
+	rawConfig: ReadonlyDeep<ObjectWithOverrides<IBlueprintConfig>>,
+	hideUnset: boolean
+): Array<WrappedOverridableItemNormal<any> & WrappedOverridableExt> {
 	const resolvedObject = applyAndValidateOverrides(rawConfig).obj
 
 	// Convert the items into an array
 	const validItems: Array<WrappedOverridableItemNormal<any> & WrappedOverridableExt> = []
 	for (const entry of manifest) {
 		const value = objectPathGet(resolvedObject, entry.id)
+		const overrideOps = filterOverrideOpsForPrefix(rawConfig.overrides, entry.id).opsForPrefix
+
 		// Only include the ones with values or if they are 'required'
-		if (value === undefined && !entry.required) continue
+		if (hideUnset && value === undefined && overrideOps.length === 0) continue
 
 		validItems.push(
 			literal<WrappedOverridableItemNormal<any> & WrappedOverridableExt>({
@@ -74,33 +71,13 @@ function getAllCurrentAndDeletedItemsFromOverrides(
 				id: entry.id,
 				computed: value,
 				defaults: objectPathGet(rawConfig.defaults, entry.id),
-				overrideOps: filterOverrideOpsForPrefix(rawConfig.overrides, entry.id).opsForPrefix,
+				overrideOps,
 				manifest: entry,
 			})
 		)
 	}
 
-	const removedOutputLayers: Array<WrappedOverridableItemDeleted<any> & WrappedOverridableExt> = []
-
-	// Find the items which have been deleted with an override
-	const computedOutputLayerIds = new Set(validItems.map((l) => l.id))
-	for (const entry of manifest) {
-		const value = objectPathGet(rawConfig.defaults, entry.id)
-		if (!computedOutputLayerIds.has(entry.id) && value !== undefined) {
-			removedOutputLayers.push(
-				literal<WrappedOverridableItemDeleted<any> & WrappedOverridableExt>({
-					type: 'deleted',
-					id: entry.id,
-					computed: undefined,
-					defaults: value,
-					overrideOps: filterOverrideOpsForPrefix(rawConfig.overrides, entry.id).opsForPrefix,
-					manifest: entry,
-				})
-			)
-		}
-	}
-
-	return [...validItems, ...removedOutputLayers]
+	return validItems
 }
 
 export function BlueprintConfigManifestSettings({
@@ -127,7 +104,7 @@ export function BlueprintConfigManifestSettings({
 
 	const doCreate = useCallback(
 		(id: string, value: any) => {
-			pushOverride(
+			pushOverride?.(
 				literal<ObjectOverrideSetOp>({
 					op: 'set',
 					path: id,
@@ -143,25 +120,25 @@ export function BlueprintConfigManifestSettings({
 	const resolvedConfig = useMemo(() => applyAndValidateOverrides(configObject).obj, [configObject])
 
 	const sortedManifestItems = useMemo(
-		() => getAllCurrentAndDeletedItemsFromOverrides(manifest, configObject),
-		[configObject, manifest]
+		() => getAllCurrentAndDeletedItemsFromOverrides(manifest, configObject, !!pushOverride),
+		[configObject, manifest, pushOverride]
 	)
 
 	const overrideHelper = useOverrideOpHelper(saveOverrides, configObject)
 
-	const showDelete = useCallback(
+	const showReset = useCallback(
 		(item: ConfigManifestEntry) => {
 			doModalDialog({
-				title: t('Delete this item?'),
-				yes: t('Delete'),
+				title: t('Reset this item?'),
+				yes: t('Reset'),
 				no: t('Cancel'),
 				onAccept: () => {
-					overrideHelper.deleteItem(item.id)
+					overrideHelper.resetItem(item.id)
 				},
 				message: (
 					<>
 						<p>
-							{t('Are you sure you want to delete this config item "{{configId}}"?', {
+							{t('Are you sure you want to reset this config item "{{configId}}"?', {
 								configId: item.name ?? '??',
 							})}
 						</p>
@@ -175,7 +152,13 @@ export function BlueprintConfigManifestSettings({
 
 	return (
 		<div className="scroll-x">
-			<AddItemModal ref={addRef} manifest={manifest} config={resolvedConfig} doCreate={doCreate} />
+			<AddItemModal
+				ref={addRef}
+				manifest={manifest}
+				config={resolvedConfig}
+				alternateConfig={alternateConfig}
+				doCreate={doCreate}
+			/>
 
 			{subPanel ? (
 				<h3 className="mhn">{t('Blueprint Configuration')}</h3>
@@ -185,58 +168,44 @@ export function BlueprintConfigManifestSettings({
 
 			<table className="table expando settings-studio-custom-config-table">
 				<tbody>
-					{sortedManifestItems.map((item) => {
-						if (item.type === 'deleted') {
-							return (
-								<BlueprintConfigManifestDeletedRow
-									key={item.id}
-									manifestEntry={item.manifest}
-									defaultValue={item.defaults}
-									doUndelete={overrideHelper.resetItem}
-									doCreate={doCreate}
-									subPanel={!!subPanel}
-								/>
-							)
-						} else {
-							return (
-								<BlueprintConfigManifestRow
-									configManifestId={configManifestId}
-									key={item.id}
-									wrappedItem={item}
-									overrideHelper={overrideHelper}
-									value={item.computed}
-									showDelete={showDelete}
-									doCreate={doCreate}
-									fullConfig={resolvedConfig} // This will react everytime the config is changed..
-									alternateConfig={alternateConfig}
-									layerMappings={layerMappings}
-									sourceLayers={sourceLayers}
-									subPanel={!!subPanel}
-									isExpanded={isExpanded(item.id)}
-									toggleExpanded={toggleExpanded}
-								/>
-							)
-						}
-					})}
+					{sortedManifestItems.map((item) => (
+						<BlueprintConfigManifestRow
+							configManifestId={configManifestId}
+							key={item.id}
+							wrappedItem={item}
+							overrideHelper={overrideHelper}
+							value={item.computed}
+							showReset={showReset}
+							fullConfig={resolvedConfig} // This will react everytime the config is changed..
+							alternateConfig={alternateConfig}
+							layerMappings={layerMappings}
+							sourceLayers={sourceLayers}
+							subPanel={!!subPanel}
+							isExpanded={isExpanded(item.id)}
+							toggleExpanded={toggleExpanded}
+						/>
+					))}
 				</tbody>
 			</table>
 
-			<div className="mod mhs">
-				<button
-					className={ClassNames('btn btn-primary', {
-						'btn-tight': subPanel,
-					})}
-					onClick={addItem}
-				>
-					<Tooltip
-						overlay={t('More settings specific to this studio can be found here')}
-						visible={getHelpMode()}
-						placement="right"
+			{!!pushOverride && (
+				<div className="mod mhs">
+					<button
+						className={ClassNames('btn btn-primary', {
+							'btn-tight': subPanel,
+						})}
+						onClick={addItem}
 					>
-						<FontAwesomeIcon icon={faPlus} />
-					</Tooltip>
-				</button>
-			</div>
+						<Tooltip
+							overlay={t('More settings specific to this studio can be found here')}
+							visible={getHelpMode()}
+							placement="right"
+						>
+							<FontAwesomeIcon icon={faPlus} />
+						</Tooltip>
+					</button>
+				</div>
+			)}
 		</div>
 	)
 }

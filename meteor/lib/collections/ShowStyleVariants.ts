@@ -1,9 +1,10 @@
 import { Meteor } from 'meteor/meteor'
-import { ObserveChangesForHash, createMongoCollection } from './lib'
+import { createMongoCollection, ObserveChangesForHash } from './lib'
 import { registerIndex } from '../database'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
+
 export * from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 
 export type ShowStyleVariant = DBShowStyleVariant
@@ -11,6 +12,7 @@ export const ShowStyleVariants = createMongoCollection<ShowStyleVariant>(Collect
 
 registerIndex(ShowStyleVariants, {
 	showStyleBaseId: 1,
+	_rank: 1,
 })
 
 Meteor.startup(() => {

@@ -4,7 +4,12 @@ import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
 import { translateWithTracker, Translated, withTracker } from '../ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../MeteorReactComponent'
-import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from './notifications'
+import {
+	NotificationCenter,
+	Notification,
+	NoticeLevel,
+	NotificationAction,
+} from '../../../lib/notifications/notifications'
 import { ContextMenuTrigger, ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
 import * as _ from 'underscore'
 import { translateMessage, isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'

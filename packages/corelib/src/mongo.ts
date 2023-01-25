@@ -28,7 +28,9 @@ export type IncludeAllMongoFieldSpecifier<T extends string> = { [key in T]: 1 }
 export interface FindOneOptions<TDoc> {
 	sort?: SortSpecifier<TDoc>
 	skip?: number
+	/** @deprecated */
 	fields?: MongoFieldSpecifier<TDoc>
+	projection?: MongoFieldSpecifier<TDoc>
 }
 export interface FindOptions<TDoc> extends FindOneOptions<TDoc> {
 	limit?: number
@@ -181,16 +183,19 @@ export function mongoFindOptions<TDoc extends { _id: ProtectedString<any> }>(
 			docs = _.take(docs, options.limit)
 		}
 
-		if (options.fields !== undefined) {
-			const fields = options.fields as any
-			const idVal = fields['_id']
-			const includeKeys = _.keys(fields).filter((key) => key !== '_id' && fields[key] !== 0)
-			const excludeKeys: string[] = _.keys(options.fields).filter((key) => key !== '_id' && fields[key] === 0)
+		if ('fields' in options && 'projection' in options) {
+			throw new Error(`Only one of 'fields' and 'projection' can be specified`)
+		}
+		const projection = (options.projection || options.fields) as any
+		if (projection !== undefined) {
+			const idVal = projection['_id']
+			const includeKeys = _.keys(projection).filter((key) => key !== '_id' && projection[key] !== 0)
+			const excludeKeys: string[] = _.keys(projection).filter((key) => key !== '_id' && projection[key] === 0)
 
 			// Mongo does allow mixed include and exclude (exception being excluding _id)
 			// https://docs.mongodb.com/manual/reference/method/db.collection.find/#projection
 			if (includeKeys.length !== 0 && excludeKeys.length !== 0) {
-				throw new Error(`options.fields cannot contain both include and exclude rules`)
+				throw new Error(`options.projection cannot contain both include and exclude rules`)
 			}
 
 			// TODO - does this need to use objectPath in some way?

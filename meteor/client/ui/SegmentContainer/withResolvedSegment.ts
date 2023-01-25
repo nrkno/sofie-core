@@ -14,16 +14,16 @@ import {
 import { IContextMenuContext } from '../RundownView'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { Part } from '../../../lib/collections/Parts'
-import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
+import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
+import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
-import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { RundownLayoutFilterBase, RundownViewLayout } from '../../../lib/collections/RundownLayouts'
-import { getReactivePieceNoteCountsForPart } from './getMinimumReactivePieceNotesForPart'
+import { getReactivePieceNoteCountsForSegment } from './getReactivePieceNoteCountsForSegment'
 import { SegmentViewMode } from './SegmentViewModes'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { AdlibSegmentUi } from '../../lib/shelf'
@@ -145,10 +145,6 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				}
 			}
 
-			const rundownNrcsName = Rundowns.findOne(segment.rundownId, {
-				fields: { externalNRCSName: 1 },
-			})?.externalNRCSName
-
 			// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
 			// re-evaluated when a piece like that appears.
 			PieceInstances.find({
@@ -243,33 +239,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				}
 			}
 
-			const segmentNoteCounts: SegmentNoteCounts = {
-				criticial: 0,
-				warning: 0,
-			}
-			const rawNotes = getBasicNotesForSegment(
-				segment,
-				rundownNrcsName ?? 'NRCS',
-				o.parts.map((p) => p.instance.part),
-				o.parts.map((p) => p.instance)
-			)
-			for (const note of rawNotes) {
-				if (note.type === NoteSeverity.ERROR) {
-					segmentNoteCounts.criticial++
-				} else if (note.type === NoteSeverity.WARNING) {
-					segmentNoteCounts.warning++
-				}
-			}
-
-			for (const part of o.parts) {
-				const pieceNoteCounts = getReactivePieceNoteCountsForPart(
-					props.studio,
-					props.showStyleBase,
-					part.instance.part
-				)
-				segmentNoteCounts.criticial += pieceNoteCounts.criticial
-				segmentNoteCounts.warning += pieceNoteCounts.warning
-			}
+			const segmentNoteCounts = getReactivePieceNoteCountsForSegment(segment)
 
 			let lastValidPartIndex = o.parts.length - 1
 

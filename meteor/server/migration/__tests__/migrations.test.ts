@@ -14,6 +14,7 @@ import {
 	PlaylistTimingType,
 	PlaylistTimingNone,
 	ShowStyleBlueprintManifest,
+	StudioBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Blueprints } from '../../../lib/collections/Blueprints'
@@ -134,6 +135,7 @@ describe('Migrations', () => {
 						packageContainers: {},
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
+						lastBlueprintConfig: undefined,
 					})
 				},
 			},
@@ -164,6 +166,7 @@ describe('Migrations', () => {
 						packageContainers: {},
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
+						lastBlueprintConfig: undefined,
 					})
 				},
 			},
@@ -194,6 +197,7 @@ describe('Migrations', () => {
 						packageContainers: {},
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
+						lastBlueprintConfig: undefined,
 					})
 				},
 			},
@@ -215,11 +219,18 @@ describe('Migrations', () => {
 		const studio = Studios.findOne() as Studio
 		expect(studio).toBeTruthy()
 
-		const studioManifest = () => ({
+		const studioManifest = (): StudioBlueprintManifest => ({
 			blueprintType: 'studio' as BlueprintManifestType.STUDIO,
 			blueprintVersion: '1.0.0',
 			integrationVersion: '0.0.0',
 			TSRVersion: '0.0.0',
+
+			configPresets: {
+				main: {
+					name: 'Main',
+					config: {},
+				},
+			},
 
 			studioConfigManifest: [],
 			studioMigrations: [
@@ -279,6 +290,20 @@ describe('Migrations', () => {
 			blueprintVersion: '1.0.0',
 			integrationVersion: '0.0.0',
 			TSRVersion: '0.0.0',
+
+			configPresets: {
+				main: {
+					name: 'Main',
+					config: {},
+
+					variants: {
+						main: {
+							name: 'Default',
+							config: {},
+						},
+					},
+				},
+			},
 
 			showStyleConfigManifest: [],
 			showStyleMigrations: [
@@ -356,6 +381,7 @@ describe('Migrations', () => {
 			hotkeyLegend: [],
 			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',
+			lastBlueprintConfig: undefined,
 		})
 
 		ShowStyleVariants.insert({
@@ -364,6 +390,7 @@ describe('Migrations', () => {
 			showStyleBaseId: protectString('showStyle0'),
 			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',
+			_rank: 0,
 		})
 
 		Blueprints.insert(generateFakeBlueprint('studio0', BlueprintManifestType.STUDIO, studioManifest))

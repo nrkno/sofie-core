@@ -28,7 +28,7 @@ import { literal, protectString, unprotectString } from '../../../lib/lib'
 import { isPartPlayable } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
-import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../../../lib/api/triggers/RundownViewEventBus'
 import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
 
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'

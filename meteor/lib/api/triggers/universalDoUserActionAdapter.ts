@@ -1,7 +1,7 @@
 import { TFunction } from 'i18next'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../client'
-import { doUserAction as clientDoUserAction } from '../../../client/lib/userAction'
+import { doUserAction as clientDoUserAction } from '../../clientUserAction'
 import { UserAction } from '../../userAction'
 import { getCurrentTime, Time } from '../../lib'
 

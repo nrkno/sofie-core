@@ -1,14 +1,10 @@
 import { BlueprintMapping, IBlueprintConfig, PackageContainer, TSR } from '@sofie-automation/blueprints-integration'
 import { ObjectWithOverrides } from '../settings/objectWithOverrides'
-import { ProtectedString } from '../protectedString'
-import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, PeripheralDeviceId } from './Ids'
+import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, MappingsHash } from './Ids'
+import { LastBlueprintConfig } from './Blueprint'
+import { MappingsExt, MappingExt } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
-export interface MappingsExt {
-	[layerName: string]: MappingExt
-}
-export interface MappingExt extends Omit<BlueprintMapping, 'deviceId'> {
-	deviceId: PeripheralDeviceId
-}
+export { MappingsExt, MappingExt, MappingsHash }
 
 export interface IStudioSettings {
 	/** The framerate (frames per second) used to convert internal timing information (in milliseconds)
@@ -48,7 +44,6 @@ export interface IStudioSettings {
 	/** Preserve unsynced segments psoition in the rundown, relative to the other segments */
 	preserveOrphanedSegmentPositionInRundown?: boolean
 }
-export type MappingsHash = ProtectedString<'MappingsHash'>
 
 export type StudioLight = Omit<DBStudio, 'mappingsWithOverrides' | 'blueprintConfigWithOverrides'>
 
@@ -62,6 +57,10 @@ export interface DBStudio {
 	name: string
 	/** Id of the blueprint used by this studio-installation */
 	blueprintId?: BlueprintId
+	/** Id of the blueprint config preset */
+	blueprintConfigPresetId?: string
+	/** Whether blueprintConfigPresetId is invalid, and does not match a currently exposed preset from the Blueprint */
+	blueprintConfigPresetIdUnlinked?: boolean
 
 	/** Mappings between the physical devices / outputs and logical ones */
 	mappingsWithOverrides: ObjectWithOverrides<MappingsExt>
@@ -92,6 +91,9 @@ export interface DBStudio {
 	/** Which package containers is used for media previews in GUI */
 	previewContainerIds: string[]
 	thumbnailContainerIds: string[]
+
+	/** Details on the last blueprint used to generate the defaults values for this */
+	lastBlueprintConfig: LastBlueprintConfig | undefined
 }
 export interface StudioPackageContainer {
 	/** List of which peripheraldevices uses this packageContainer */

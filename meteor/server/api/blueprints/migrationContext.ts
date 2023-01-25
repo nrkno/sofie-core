@@ -57,7 +57,7 @@ class AbstractMigrationContextWithTriggeredActions {
 		return getHash((this.showStyleBaseId ?? 'core') + '_' + triggeredActionId)
 	}
 	private getProtectedTriggeredActionId(triggeredActionId: string): TriggeredActionId {
-		return protectString<TriggeredActionId>(this.getTriggeredActionId(triggeredActionId))
+		return protectString(this.getTriggeredActionId(triggeredActionId))
 	}
 	getAllTriggeredActions(): IBlueprintTriggeredActions[] {
 		return TriggeredActions.find({
@@ -416,6 +416,7 @@ export class MigrationContextShowStyle
 				showStyleBaseId: this.showStyleBase._id,
 				blueprintConfigWithOverrides: wrapDefaultObject({}),
 				_rundownVersionHash: '',
+				_rank: 0,
 			})
 		)
 	}

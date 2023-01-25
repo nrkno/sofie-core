@@ -1,9 +1,9 @@
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import { getRelevantSystemVersions } from '../coreSystem'
+import { RelevantSystemVersions } from '../coreSystem'
 
 describe('coreSystem', () => {
-	testInFiber('getRelevantSystemVersions', () => {
-		const versions = getRelevantSystemVersions()
+	testInFiber('RelevantSystemVersions', async () => {
+		const versions = await RelevantSystemVersions
 
 		expect(versions).toEqual({
 			core: expect.stringMatching(/^(\d+)\.(\d+)\.(\d+)/),

@@ -244,8 +244,24 @@ export function ConfigManifestEntryComponent({
 					{t(configField.name)}
 					{renderEditAttribute(collection || PeripheralDevices, configField, obj, prefix)}
 					{configField.hint && <span className="text-s dimmed">{t(configField.hint)}</span>}
+					{configField.hint && hasDefaultVal(configField) && <span className="text-s dimmed"> - </span>}
+					{hasDefaultVal(configField) && (
+						<span className="text-s dimmed">
+							{t("Defaults to '{{defaultVal}}' if left empty", { defaultVal: configField.defaultVal })}
+						</span>
+					)}
 				</label>
 			</div>
 		</div>
 	)
+}
+
+function hasDefaultVal(
+	configField: ConfigManifestEntry | BlueprintConfigManifestEntry
+): configField is ConfigManifestEntry {
+	if (configField['defaultVal']) {
+		return true
+	}
+
+	return false
 }

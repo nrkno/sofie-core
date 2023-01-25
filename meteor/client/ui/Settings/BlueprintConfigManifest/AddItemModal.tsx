@@ -8,6 +8,7 @@ import { ModalDialog } from '../../../lib/ModalDialog'
 export interface AddItemModalProps {
 	manifest: ConfigManifestEntry[]
 	config: IBlueprintConfig
+	alternateConfig: IBlueprintConfig | undefined
 
 	doCreate: (itemId: string, value: any) => void
 }
@@ -15,7 +16,7 @@ export interface AddItemModalRef {
 	show: () => void
 }
 export const AddItemModal = forwardRef(function AddItemModal(
-	{ manifest, config, doCreate }: AddItemModalProps,
+	{ manifest, config, alternateConfig, doCreate }: AddItemModalProps,
 	ref: React.ForwardedRef<AddItemModalRef>
 ) {
 	const { t } = useTranslation()
@@ -32,8 +33,7 @@ export const AddItemModal = forwardRef(function AddItemModal(
 	})
 
 	const addOptions = useMemo(() => {
-		let addOptions: DropdownInputOption<string>[] = []
-		addOptions = manifest.map((c, i) => ({ value: c.id, name: c.name, i }))
+		const addOptions: DropdownInputOption<string>[] = manifest.map((c, i) => ({ value: c.id, name: c.name, i }))
 
 		return addOptions.filter((o) => objectPathGet(config, o.value) === undefined)
 	}, [manifest, config])
@@ -56,9 +56,9 @@ export const AddItemModal = forwardRef(function AddItemModal(
 	}, [])
 
 	const handleConfirmAddItemAccept = useCallback(() => {
-		const item = manifest.find((c) => c.id === selectedItem)
-		if (selectedItem && item) {
-			doCreate(item.id, item.defaultVal ?? '')
+		if (selectedItem) {
+			const alternateValue = alternateConfig ? objectPathGet(alternateConfig, selectedItem) : undefined
+			doCreate(selectedItem, alternateValue)
 		}
 
 		setShow(false)

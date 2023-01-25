@@ -1,5 +1,3 @@
-import { TSRTimelineContent, TSRTimelineObj } from 'timeline-state-resolver-types'
-
 import { ActionUserData, IBlueprintActionManifest } from './action'
 import { ConfigManifestEntry } from './config'
 import {
@@ -36,11 +34,15 @@ import {
 	IBlueprintPartDB,
 	ExpectedPlayoutItemGeneric,
 } from './rundown'
-import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant } from './showStyle'
-import { OnGenerateTimelineObj } from './timeline'
+import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant, IOutputLayer, ISourceLayer } from './showStyle'
+import { TSR, OnGenerateTimelineObj } from './timeline'
 import { IBlueprintConfig } from './common'
 import { ExpectedPackage } from './package'
 import { ReadonlyDeep } from 'type-fest'
+import { ITranslatableMessage } from './translations'
+import { NoteSeverity } from './lib'
+import { BlueprintMappings } from './studio'
+import { IBlueprintTriggeredActions } from './triggers'
 
 export enum BlueprintManifestType {
 	SYSTEM = 'system',
@@ -82,13 +84,17 @@ export interface SystemBlueprintManifest extends BlueprintManifestBase {
 	translations?: string
 }
 
-export interface StudioBlueprintManifest extends BlueprintManifestBase {
+export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcessedConfig = unknown>
+	extends BlueprintManifestBase {
 	blueprintType: BlueprintManifestType.STUDIO
 
 	/** A list of config items this blueprint expects to be available on the Studio */
 	studioConfigManifest: ConfigManifestEntry[]
 	/** A list of Migration steps related to a Studio */
 	studioMigrations: MigrationStep[]
+
+	/** The config presets exposed by this blueprint */
+	configPresets: Record<string, IStudioConfigPreset<TRawConfig>>
 
 	/** Translations connected to the studio (as stringified JSON) */
 	translations?: string
@@ -110,21 +116,42 @@ export interface StudioBlueprintManifest extends BlueprintManifestBase {
 		playlistExternalId: string
 	) => BlueprintResultRundownPlaylist | null
 
+	/**
+	 * Validate the config passed to this blueprint
+	 * In this you should do various sanity checks of the config and return a list of messages to display to the user.
+	 * These messages do not stop `applyConfig` from being called.
+	 */
+	validateConfig?: (context: ICommonContext, config: TRawConfig) => Array<IConfigMessage>
+
+	/**
+	 * Apply the config by generating the data to be saved into the db.
+	 * This should be written to give a predictable and stable result, it can be called with the same config multiple times
+	 */
+	applyConfig?: (
+		context: ICommonContext,
+		config: TRawConfig,
+		coreConfig: BlueprintConfigCoreConfig
+	) => BlueprintResultApplyStudioConfig
+
 	/** Preprocess config before storing it by core to later be returned by context's getStudioConfig. If not provided, getStudioConfig will return unprocessed blueprint config */
 	preprocessConfig?: (
 		context: ICommonContext,
-		config: IBlueprintConfig,
+		config: TRawConfig,
 		coreConfig: BlueprintConfigCoreConfig
-	) => unknown
+	) => TProcessedConfig
 }
 
-export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
+export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProcessedConfig = unknown>
+	extends BlueprintManifestBase {
 	blueprintType: BlueprintManifestType.SHOWSTYLE
 
 	/** A list of config items this blueprint expects to be available on the ShowStyle */
 	showStyleConfigManifest: ConfigManifestEntry[]
 	/** A list of Migration steps related to a ShowStyle */
 	showStyleMigrations: MigrationStep[]
+
+	/** The config presets exposed by this blueprint */
+	configPresets: Record<string, IShowStyleConfigPreset<TRawConfig>>
 
 	/** Translations connected to the studio (as stringified JSON) */
 	translations?: string
@@ -190,12 +217,25 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 		ingestItem: IngestAdlib
 	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
 
+	/**
+	 * Validate the config passed to this blueprint
+	 * In this you should do various sanity checks of the config and return a list of messages to display to the user.
+	 * These messages do not stop `applyConfig` from being called.
+	 */
+	validateConfig?: (context: ICommonContext, config: TRawConfig) => Array<IConfigMessage>
+
+	/**
+	 * Apply the config by generating the data to be saved into the db.
+	 * This should be written to give a predictable and stable result, it can be called with the same config multiple times
+	 */
+	applyConfig?: (context: ICommonContext, config: TRawConfig) => BlueprintResultApplyShowStyleConfig
+
 	/** Preprocess config before storing it by core to later be returned by context's getShowStyleConfig. If not provided, getShowStyleConfig will return unprocessed blueprint config */
 	preprocessConfig?: (
 		context: ICommonContext,
-		config: IBlueprintConfig,
+		config: TRawConfig,
 		coreConfig: BlueprintConfigCoreConfig
-	) => unknown
+	) => TProcessedConfig
 
 	// Events
 
@@ -210,7 +250,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	/** Called after the timeline has been generated, used to manipulate the timeline */
 	onTimelineGenerate?: (
 		context: ITimelineEventContext,
-		timeline: OnGenerateTimelineObj<TSRTimelineContent>[],
+		timeline: OnGenerateTimelineObj<TSR.TSRTimelineContent>[],
 		previousPersistentState: TimelinePersistentState | undefined,
 		previousPartEndState: PartEndState | undefined,
 		resolvedPieces: IBlueprintResolvedPieceInstance[]
@@ -241,11 +281,11 @@ export type PartEndState = unknown
 export type TimelinePersistentState = unknown
 
 export interface BlueprintResultTimeline {
-	timeline: OnGenerateTimelineObj<TSRTimelineContent>[]
+	timeline: OnGenerateTimelineObj<TSR.TSRTimelineContent>[]
 	persistentState: TimelinePersistentState
 }
 export interface BlueprintResultBaseline {
-	timelineObjects: TSRTimelineObj<TSRTimelineContent>[]
+	timelineObjects: TSR.TSRTimelineObj<TSR.TSRTimelineContent>[]
 	/** @deprecated */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	expectedPackages?: ExpectedPackage.Any[]
@@ -314,4 +354,40 @@ export interface BlueprintResultRundownPlaylist {
 
 export interface BlueprintConfigCoreConfig {
 	hostUrl: string
+}
+
+export interface IConfigMessage {
+	level: NoteSeverity
+	message: ITranslatableMessage
+}
+
+export interface BlueprintResultApplyStudioConfig {
+	mappings: BlueprintMappings
+}
+
+export interface BlueprintResultApplyShowStyleConfig {
+	sourceLayers: ISourceLayer[]
+	outputLayers: IOutputLayer[]
+
+	triggeredActions: IBlueprintTriggeredActions[]
+}
+
+export interface IStudioConfigPreset<TConfig = IBlueprintConfig> {
+	name: string
+
+	config: TConfig
+}
+
+export interface IShowStyleConfigPreset<TConfig = IBlueprintConfig> {
+	name: string
+
+	config: TConfig
+
+	variants: Record<string, IShowStyleVariantConfigPreset<TConfig>>
+}
+
+export interface IShowStyleVariantConfigPreset<TConfig = IBlueprintConfig> {
+	name: string
+
+	config: Partial<TConfig>
 }

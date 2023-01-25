@@ -41,6 +41,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				packageContainers: {},
 				thumbnailContainerIds: [],
 				previewContainerIds: [],
+				lastBlueprintConfig: undefined,
 			})
 		},
 	},
@@ -71,6 +72,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					hotkeyLegend: [],
 					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
+					lastBlueprintConfig: undefined,
 				})
 
 				const variantId: ShowStyleVariantId = getRandomId()
@@ -80,6 +82,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					showStyleBaseId: id,
 					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
+					_rank: 0,
 				})
 
 				if (!studio.supportedShowStyleBase || studio.supportedShowStyleBase.length === 0) {
@@ -103,6 +106,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					sourceLayersWithOverrides: wrapDefaultObject({}),
 					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
+					lastBlueprintConfig: undefined,
 				})
 
 				ShowStyleVariants.insert({
@@ -111,6 +115,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					showStyleBaseId: id,
 					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
+					_rank: 0,
 				})
 			}
 		},

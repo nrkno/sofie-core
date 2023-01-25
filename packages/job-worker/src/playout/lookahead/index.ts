@@ -3,11 +3,7 @@ import { findLookaheadForLayer, LookaheadResult } from './findForLayer'
 import { CacheForPlayout, getRundownIDsFromCache } from '../cache'
 import { sortPieceInstancesByStart } from '../pieces'
 import { MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import {
-	Timeline as TimelineTypes,
-	LookaheadMode,
-	OnGenerateTimelineObj,
-} from '@sofie-automation/blueprints-integration'
+import { TSR, LookaheadMode, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'
 import { SelectedPartInstancesTimelineInfo, SelectedPartInstanceTimelineInfo } from '../timeline/generate'
 import {
 	OnGenerateTimelineObjExt,
@@ -180,7 +176,7 @@ const getStartOfObjectRef = (obj: TimelineObjRundown & OnGenerateTimelineObj<any
 	`#${prefixSingleObjectId(obj, obj.pieceInstanceId ?? '')}.start`
 const calculateStartAfterPreviousObj = (
 	prevObj: TimelineObjRundown & OnGenerateTimelineObj<any>
-): TimelineTypes.TimelineEnable => {
+): TSR.Timeline.TimelineEnable => {
 	const prevHasDelayFlag = (prevObj.classes || []).indexOf('_lookahead_start_delay') !== -1
 
 	// Start with previous piece
@@ -226,7 +222,7 @@ function processResult(lookaheadObjs: LookaheadResult, mode: ValidLookaheadMode)
 
 	// Add the objects that have some timing info
 	lookaheadObjs.timed.forEach((obj, i) => {
-		let enable: TimelineTypes.TimelineEnable = {
+		let enable: TSR.Timeline.TimelineEnable = {
 			start: 1, // Absolute 0 without a group doesnt work
 		}
 		if (i !== 0) {

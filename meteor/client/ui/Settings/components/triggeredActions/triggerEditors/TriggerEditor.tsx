@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { TFunction } from 'i18next'
-import { TriggerType } from '@sofie-automation/blueprints-integration'
+import { SomeBlueprintTrigger, TriggerType } from '@sofie-automation/blueprints-integration'
 import { DBBlueprintTrigger } from '../../../../../../lib/collections/TriggeredActions'
 import { HotkeyTrigger } from './HotkeyTrigger'
 import { usePopper } from 'react-popper'
@@ -8,7 +8,10 @@ import { sameWidth } from '../../../../../lib/popperUtils'
 import { useTranslation } from 'react-i18next'
 import { HotkeyEditor } from './HotkeyEditor'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck, faRefresh, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { isDeviceTrigger, isHotkeyTrigger } from '../../../../../../lib/api/triggers/triggerTypeSelectors'
+import { DeviceTrigger } from './DeviceTrigger'
+import { DeviceEditor } from './DeviceEditor'
+import { faCheck, faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { DropdownInputControl, DropdownInputOption } from '../../../../../lib/Components/DropdownInput'
 
 interface IProps {
@@ -30,6 +33,11 @@ function getTriggerTypes(t: TFunction): DropdownInputOption<TriggerType>[] {
 			name: t('Hotkey'),
 			value: TriggerType.hotkey,
 			i: 0,
+		},
+		{
+			name: t('Device'),
+			value: TriggerType.device,
+			i: 1,
 		},
 	]
 }
@@ -81,29 +89,49 @@ export const TriggerEditor = function TriggerEditor({ opened, canReset, isDelete
 		}
 	}, [popperElement, referenceElement, opened, trigger])
 
-	const triggerPreview =
-		trigger.type === TriggerType.hotkey ? (
-			<HotkeyTrigger
-				innerRef={setReferenceElement}
-				keys={trigger.keys}
-				up={trigger.up || false}
-				onClick={onFocus}
-				selected={opened}
-				deleted={isDeleted}
-			/>
-		) : (
-			<div ref={setReferenceElement}>Unknown trigger type: {trigger.type}</div>
-		)
+	const triggerPreview = isHotkeyTrigger(trigger) ? (
+		<HotkeyTrigger
+			innerRef={setReferenceElement}
+			keys={trigger.keys || ''}
+			up={trigger.up || false}
+			onClick={onFocus}
+			selected={opened}
+			deleted={isDeleted}
+		/>
+	) : isDeviceTrigger(trigger) ? (
+		<DeviceTrigger
+			innerRef={setReferenceElement}
+			deviceId={trigger.deviceId || ''}
+			trigger={trigger.triggerId || ''}
+			onClick={onFocus}
+			selected={opened}
+			deleted={isDeleted}
+		/>
+	) : (
+		// @ts-expect-error trigger.type is `never`, but runtime it can be something else
+		<div ref={setReferenceElement}>Unknown trigger type: {trigger.type}</div>
+	)
 
-	const triggerEditor =
-		trigger.type === TriggerType.hotkey ? (
-			<HotkeyEditor
-				trigger={localTrigger}
-				onChange={(newVal) => setLocalTrigger(newVal)}
-				modified={trigger.keys !== localTrigger.keys}
-				readonly={isDeleted}
-			/>
-		) : null
+	const triggerEditor = isHotkeyTrigger(localTrigger) ? (
+		<HotkeyEditor
+			trigger={localTrigger}
+			onChange={(newVal) => setLocalTrigger(newVal)}
+			modified={!isHotkeyTrigger(trigger) || trigger.keys !== localTrigger.keys}
+			readonly={isDeleted}
+		/>
+	) : isDeviceTrigger(localTrigger) ? (
+		<DeviceEditor
+			trigger={localTrigger}
+			onChange={(newVal) => setLocalTrigger(newVal)}
+			modified={
+				!isDeviceTrigger(trigger) ||
+				trigger.deviceId !== localTrigger.deviceId ||
+				trigger.triggerId !== localTrigger.triggerId ||
+				JSON.stringify(trigger.values) !== JSON.stringify(localTrigger.values)
+			}
+			readonly={isDeleted}
+		/>
+	) : null
 
 	useLayoutEffect(() => {
 		update && update().catch(console.error)
@@ -113,8 +141,14 @@ export const TriggerEditor = function TriggerEditor({ opened, canReset, isDelete
 		setLocalTrigger(trigger)
 	}, [opened])
 
-	function onChangeType(_newValue: string) {
-		// Nothing
+	function onChangeType(newValue: string) {
+		if (!(newValue in TriggerType)) {
+			return
+		}
+
+		setLocalTrigger({
+			type: newValue as TriggerType,
+		} as SomeBlueprintTrigger)
 	}
 
 	function onConfirm() {
@@ -134,7 +168,7 @@ export const TriggerEditor = function TriggerEditor({ opened, canReset, isDelete
 					<div>
 						<DropdownInputControl
 							classNames="form-control input text-input input-m"
-							value={trigger.type}
+							value={localTrigger.type}
 							options={getTriggerTypes(t)}
 							handleUpdate={onChangeType}
 							disabled={isDeleted}
@@ -145,7 +179,7 @@ export const TriggerEditor = function TriggerEditor({ opened, canReset, isDelete
 						{isDeleted ? (
 							<>
 								<button className="btn btn-tight btn-secondary" onClick={onResetTrigger}>
-									<FontAwesomeIcon icon={faRefresh} />
+									<FontAwesomeIcon icon={faSync} />
 								</button>
 							</>
 						) : (
@@ -158,7 +192,7 @@ export const TriggerEditor = function TriggerEditor({ opened, canReset, isDelete
 								</button>
 								{canReset && (
 									<button className="btn btn-tight btn-secondary" onClick={onResetTrigger}>
-										<FontAwesomeIcon icon={faRefresh} />
+										<FontAwesomeIcon icon={faSync} />
 									</button>
 								)}
 							</>

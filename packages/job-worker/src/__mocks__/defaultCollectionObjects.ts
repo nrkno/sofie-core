@@ -99,12 +99,13 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			frameRate: 25,
 			mediaPreviewsUrl: '',
 		},
-		_rundownVersionHash: '',
 		routeSets: {},
 		routeSetExclusivityGroups: {},
 		packageContainers: {},
 		previewContainerIds: [],
 		thumbnailContainerIds: [],
+		_rundownVersionHash: '',
+		lastBlueprintConfig: undefined,
 	}
 }
 

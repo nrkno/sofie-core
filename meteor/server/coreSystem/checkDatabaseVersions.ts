@@ -1,18 +1,18 @@
 import { StatusCode } from '@sofie-automation/blueprints-integration'
+import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import _ from 'underscore'
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import {
-	getCoreSystem,
+	getCoreSystemAsync,
 	parseVersion,
 	compareSemverVersions,
 	parseRange,
 	isPrerelease,
 	parseCoreIntegrationCompatabilityRange,
 } from '../../lib/collections/CoreSystem'
-import { fetchShowStyleBasesLight } from '../../lib/collections/optimizations'
+import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { waitForPromise } from '../../lib/lib'
+import { lazyIgnore } from '../../lib/lib'
 import { logger } from '../logging'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { setSystemStatus, removeSystemStatus } from '../systemStatus/systemStatus'
@@ -21,106 +21,150 @@ const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
 const integrationVersionAllowPrerelease = isPrerelease(PackageInfo.version)
 
-let lastDatabaseVersionBlueprintIds: { [id: string]: true } = {}
+function getBlueprintCompatabilityMessageId(id: BlueprintId) {
+	return `blueprintCompability_${id}`
+}
+
+const MESSAGE_KEY_DATABASE_VERSION = 'databaseVersion'
+
+let lastDatabaseVersionBlueprintIds = new Set<BlueprintId>()
 export function checkDatabaseVersions() {
-	// Core system
-	logger.debug('checkDatabaseVersions...')
+	lazyIgnore(
+		'coreSystem.checkDatabaseVersions',
+		async () => {
+			// Core system
+			logger.debug('checkDatabaseVersions...')
 
-	const databaseSystem = getCoreSystem()
-	if (!databaseSystem) {
-		setSystemStatus('databaseVersion', { statusCode: StatusCode.BAD, messages: ['Database not set up'] })
-	} else {
-		const dbVersion = parseVersion(databaseSystem.version)
-		const currentVersion = parseVersion(CURRENT_SYSTEM_VERSION)
-
-		setSystemStatus(
-			'databaseVersion',
-			compareSemverVersions(currentVersion, dbVersion, false, 'to fix, run migration', 'core', 'system database')
-		)
-
-		// Blueprints:
-		const blueprintIds: { [id: string]: true } = {}
-		Blueprints.find(
-			{},
-			{
-				fields: {
-					code: 0, // Optimization, reduce bandwidth because the .code property is large
-				},
-			}
-		).forEach((blueprint) => {
-			if (blueprint.hasCode) {
-				blueprintIds[unprotectString(blueprint._id)] = true
-
-				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion))
-					blueprint.databaseVersion = { showStyle: {}, studio: {}, system: undefined }
-				if (!blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {}
-				if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
-
-				let o: {
-					statusCode: StatusCode
-					messages: string[]
-				} = {
+			const databaseSystem = await getCoreSystemAsync()
+			if (!databaseSystem) {
+				setSystemStatus(MESSAGE_KEY_DATABASE_VERSION, {
 					statusCode: StatusCode.BAD,
-					messages: [],
-				}
+					messages: ['Database not set up'],
+				})
+			} else {
+				const dbVersion = parseVersion(databaseSystem.version)
+				const currentVersion = parseVersion(CURRENT_SYSTEM_VERSION)
 
-				const studioIds: { [studioId: string]: true } = {}
-				waitForPromise(
-					fetchShowStyleBasesLight({
-						blueprintId: blueprint._id,
-					})
-				).forEach((showStyleBase) => {
-					if (o.statusCode === StatusCode.GOOD) {
-						o = compareSemverVersions(
-							parseVersion(blueprint.blueprintVersion),
-							parseRange(blueprint.databaseVersion.showStyle[unprotectString(showStyleBase._id)]),
-							false,
-							'to fix, run migration',
-							'blueprint version',
-							`showStyle "${showStyleBase._id}" migrations`
-						)
+				setSystemStatus(
+					MESSAGE_KEY_DATABASE_VERSION,
+					compareSemverVersions(
+						currentVersion,
+						dbVersion,
+						false,
+						'to fix, run migration',
+						'core',
+						'system database'
+					)
+				)
+
+				// Blueprints:
+				const blueprintIds = new Set<BlueprintId>()
+				const blueprints = (await Blueprints.findFetchAsync(
+					{},
+					{
+						fields: {
+							_id: 1,
+							blueprintVersion: 1,
+							databaseVersion: 1,
+							hasCode: 1,
+							disableVersionChecks: 1,
+							integrationVersion: 1,
+						},
 					}
+				)) as Array<
+					Pick<
+						Blueprint,
+						| '_id'
+						| 'blueprintVersion'
+						| 'databaseVersion'
+						| 'hasCode'
+						| 'disableVersionChecks'
+						| 'integrationVersion'
+					>
+				>
 
-					// TODO - is this correct for the current relationships? What about studio blueprints?
-					Studios.find(
-						{ supportedShowStyleBase: showStyleBase._id },
-						{
-							fields: { _id: 1 },
+				for (const blueprint of blueprints) {
+					if (blueprint.hasCode) {
+						blueprintIds.add(blueprint._id)
+
+						if (!blueprint.databaseVersion || typeof blueprint.databaseVersion === 'string')
+							blueprint.databaseVersion = { showStyle: {}, studio: {}, system: undefined }
+						if (!blueprint.databaseVersion.showStyle) blueprint.databaseVersion.showStyle = {}
+						if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
+
+						let o: {
+							statusCode: StatusCode
+							messages: string[]
+						} = {
+							statusCode: StatusCode.BAD,
+							messages: [],
 						}
-					).forEach((studio: Pick<Studio, '_id'>) => {
-						if (!studioIds[unprotectString(studio._id)]) {
-							// only run once per blueprint and studio
-							studioIds[unprotectString(studio._id)] = true
 
+						const checkedStudioIds = new Set<StudioId>()
+
+						const showStylesForBlueprint = (await ShowStyleBases.findFetchAsync(
+							{ blueprintId: blueprint._id },
+							{
+								fields: { _id: 1 },
+							}
+						)) as Array<Pick<ShowStyleBase, '_id'>>
+						for (const showStyleBase of showStylesForBlueprint) {
 							if (o.statusCode === StatusCode.GOOD) {
 								o = compareSemverVersions(
 									parseVersion(blueprint.blueprintVersion),
-									parseRange(blueprint.databaseVersion.studio[unprotectString(studio._id)]),
+									parseRange(blueprint.databaseVersion.showStyle[unprotectString(showStyleBase._id)]),
 									false,
 									'to fix, run migration',
 									'blueprint version',
-									`studio "${studio._id}]" migrations`
+									`showStyle "${showStyleBase._id}" migrations`
 								)
 							}
-						}
-					})
-				})
 
-				checkBlueprintCompability(blueprint)
+							const studiosForShowStyleBase = (await Studios.findFetchAsync(
+								{ supportedShowStyleBase: showStyleBase._id },
+								{
+									fields: { _id: 1 },
+								}
+							)) as Array<Pick<Studio, '_id'>>
+							for (const studio of studiosForShowStyleBase) {
+								if (!checkedStudioIds.has(studio._id)) {
+									// only run once per blueprint and studio
+									checkedStudioIds.add(studio._id)
+
+									if (o.statusCode === StatusCode.GOOD) {
+										o = compareSemverVersions(
+											parseVersion(blueprint.blueprintVersion),
+											parseRange(blueprint.databaseVersion.studio[unprotectString(studio._id)]),
+											false,
+											'to fix, run migration',
+											'blueprint version',
+											`studio "${studio._id}]" migrations`
+										)
+									}
+								}
+							}
+						}
+
+						checkBlueprintCompability(blueprint)
+					}
+				}
+
+				// Ensure old blueprints are removed
+				for (const id of lastDatabaseVersionBlueprintIds) {
+					if (blueprintIds.has(id)) {
+						removeSystemStatus(getBlueprintCompatabilityMessageId(id))
+					}
+				}
+				lastDatabaseVersionBlueprintIds = blueprintIds
 			}
-		})
-		_.each(lastDatabaseVersionBlueprintIds, (_val, id: string) => {
-			if (!blueprintIds[id]) {
-				removeSystemStatus('blueprintVersion_' + id)
-			}
-		})
-		lastDatabaseVersionBlueprintIds = blueprintIds
-	}
-	logger.debug('checkDatabaseVersions done!')
+			logger.debug('checkDatabaseVersions done!')
+		},
+		100
+	)
 }
 
-function checkBlueprintCompability(blueprint: Blueprint) {
-	const systemStatusId = 'blueprintCompability_' + blueprint._id
+function checkBlueprintCompability(blueprint: Pick<Blueprint, '_id' | 'disableVersionChecks' | 'integrationVersion'>) {
+	const systemStatusId = getBlueprintCompatabilityMessageId(blueprint._id)
 
 	if (blueprint.disableVersionChecks) {
 		setSystemStatus(systemStatusId, {

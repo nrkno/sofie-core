@@ -108,10 +108,10 @@ describe('Test blueprint config', () => {
 
 			await expect(
 				retrieveBlueprintConfigRefs(jobContext, '${studio.one.two}_extra', modifier, true)
-			).rejects.toThrowError(`Ref "\${studio.one.two}": Studio "one" not valid`)
+			).rejects.toThrow(`Ref "\${studio.one.two}": Studio "one" not valid`)
 			await expect(
 				retrieveBlueprintConfigRefs(jobContext, '${showStyle.one.two}_extra', modifier, true)
-			).rejects.toThrowError(`Ref "\${showStyle.one.two}": Showstyle variant "one" not found`)
+			).rejects.toThrow(`Ref "\${showStyle.one.two}": Showstyle variant "one" not found`)
 
 			expect(modifier).toHaveBeenCalledTimes(0)
 		})

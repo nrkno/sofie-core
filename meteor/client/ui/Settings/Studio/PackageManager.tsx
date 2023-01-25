@@ -685,7 +685,9 @@ export const StudioPackageManagerSettings = withTranslation()(
 															className="input text-input input-l"
 														></EditAttribute>
 														<span className="text-s dimmed">
-															{t('Server id (Can be omitted for sources, as clip-searches are zone-wide.)')}
+															{t(
+																'Server ID. For sources, this should generally be omitted (or set to 0) so clip-searches are zone-wide. If set, clip-searches are limited to that server.'
+															)}
 														</span>
 													</label>
 												</div>

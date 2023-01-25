@@ -1,37 +1,9 @@
-import { TSRTimelineContent } from 'timeline-state-resolver-types'
 import { Time } from './common'
-import { TimelineObjectCoreExt } from './timeline'
-
-/** The type of the source layer, used to enable specific functions for special-type layers */
-export enum SourceLayerType {
-	UNKNOWN = 0,
-	/** Local camera sources (local to the studio, not requiring additional coordination) */
-	CAMERA = 1,
-	/** Video clips */
-	VT = 2,
-	/** Remote cameras & pre-produced sources */
-	REMOTE = 3,
-	/** Script and comments for the prompter */
-	SCRIPT = 4,
-	/** Fullscreen graphics */
-	GRAPHICS = 5,
-	/** Sources composed out of other sources, such as DVEs, "SuperSource", Additional M/Es, etc. */
-	SPLITS = 6,
-	/** Audio-only sources */
-	AUDIO = 7,
-	/** Graphical overlays on top of other video */
-	LOWER_THIRD = 10,
-	/** Video-only clips or clips with only environment audio */
-	LIVE_SPEAK = 11,
-	/** Transition effects, content object can use VTContent or TransitionContent */
-	TRANSITION = 13,
-	// LIGHTS = 14,
-	/** Uncontrolled local sources, such as PowerPoint presentation inputs, Weather systems, EVS replay machines, etc. */
-	LOCAL = 15,
-}
+import { TSR, TimelineObjectCoreExt } from './timeline'
+import { SourceLayerType } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 
 export type WithTimeline<T extends BaseContent> = T & {
-	timelineObjects: TimelineObjectCoreExt<TSRTimelineContent>[]
+	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
 }
 
 export interface BaseContent {
@@ -194,3 +166,5 @@ export interface TransitionContent extends BaseContent {
 }
 
 export type SomeTransitionContent = VTContent | TransitionContent
+
+export { SourceLayerType }

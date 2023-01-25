@@ -10,6 +10,9 @@ import { MeteorMethodSignatures } from '../../../methods'
 import { ClientAPI } from '../../../../lib/api/client'
 import '../../userActions.ts' // required to get the UserActionsAPI methods populated
 
+// we don't want the deviceTriggers observer to start up at this time
+jest.mock('../../deviceTriggers/observer')
+
 import '../rest.ts'
 
 describe('REST API', () => {

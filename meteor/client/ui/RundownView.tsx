@@ -62,11 +62,11 @@ import {
 	reloadRundownPlaylistClick,
 } from './RundownView/RundownNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
 import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
-import { doUserAction, UserAction } from '../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
@@ -92,14 +92,14 @@ import { documentTitle } from '../lib/DocumentTitleProvider'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
-import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
+import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
 import RundownViewEventBus, {
 	ActivateRundownPlaylistEvent,
 	DeactivateRundownPlaylistEvent,
 	IEventContext,
 	MiniShelfQueueAdLibEvent,
 	RundownViewEvents,
-} from './RundownView/RundownViewEventBus'
+} from '../../lib/api/triggers/RundownViewEventBus'
 import StudioContext from './RundownView/StudioContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'
@@ -1546,6 +1546,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
 			})
+			this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
+			this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 			this.subscribe(PubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -3009,11 +3011,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							</ErrorBoundary>
 							<ErrorBoundary>
 								{this.props.playlist && this.props.studio && this.props.showStyleBase && (
-									<RundownNotifier
-										playlistId={this.props.playlist._id}
-										studio={this.props.studio}
-										showStyleBase={this.props.showStyleBase}
-									/>
+									<RundownNotifier playlistId={this.props.playlist._id} studio={this.props.studio} />
 								)}
 							</ErrorBoundary>
 						</div>
