@@ -177,7 +177,7 @@ export class CoreMosDeviceHandler {
 			model: this.mosTypes.mosString128.create('Core'),
 			hwRev: this.mosTypes.mosString128.create('0'),
 			swRev: this.mosTypes.mosString128.create('0'),
-			DOM: this.mosTypes.mosTime.create('2018-01-01'),
+			DOM: this.mosTypes.mosString128.create('2018-01-01'),
 			SN: this.mosTypes.mosString128.create('0000'),
 			ID: this.mosTypes.mosString128.create('0000'),
 			time: this.mosTypes.mosTime.create(new Date()),

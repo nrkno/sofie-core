@@ -1423,22 +1423,21 @@
     semver "^7.3.5"
     tar "^6.1.11"
 
-"@mos-connection/helper@3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0":
-  version "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
-  resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0.tgz#9f0b1ebc46021dcfe8721496422b71549fd9d1ed"
-  integrity sha512-SBkDCOSgAEL8D43n4GD9oQmEJwjFQ9H3cw49pElvseyCAJrMaizpe95BpH//chBITyjJCOl/0FzOx/guWJPKrg==
+"@mos-connection/helper@3.0.0-nightly-feat-mono-repo-20230104-080359-17f8d94.0":
+  version "3.0.0-nightly-feat-mono-repo-20230104-080359-17f8d94.0"
+  resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-3.0.0-nightly-feat-mono-repo-20230104-080359-17f8d94.0.tgz#93a557272fc8efa966078160801138f2aabf7d41"
+  integrity sha512-Wl73unUeIO+kuKRGPKqgq4SuHMTq+TMm6sJY0LcXmzyXKSNZqMzcC9BW/8kFyZG2hoimSjANY1wgHz1WTlRqfA==
   dependencies:
-    "@mos-connection/model" "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
+    "@mos-connection/model" "3.0.0-nightly-feat-mono-repo-20230104-080359-17f8d94.0"
     iconv-lite "^0.6.2"
-    moment "^2.29.4"
     tslib "^2.2.0"
     xml-js "^1.6.11"
     xmlbuilder "^15.1.1"
 
-"@mos-connection/model@3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0":
-  version "3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0"
-  resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-3.0.0-nightly-feat-mono-repo-20221216-111645-0e02d70.0.tgz#3a585cca7dd867edda65035f558bd903c6318fe1"
-  integrity sha512-jb6rDgU+Q9Ztor8veJ8WyyEhcua8hnw2dx1cpGhBJznxoAaLezECqCK7wwdbNK48hhg9DgW5165pjmg7OF+GNg==
+"@mos-connection/model@3.0.0-nightly-feat-mono-repo-20230104-080359-17f8d94.0":
+  version "3.0.0-nightly-feat-mono-repo-20230104-080359-17f8d94.0"
+  resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-3.0.0-nightly-feat-mono-repo-20230104-080359-17f8d94.0.tgz#22cf1fcf0316f8b351a12349a07915f5b148104a"
+  integrity sha512-1BRyEWMqzsxA1GnfqHjQQWb/sx3Sgbw2mrO5b2HzxVOaLtsBlR82B9SVFOUEWsauD9Am5Ryfrk+gojxhAX9asQ==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -7392,7 +7391,7 @@ module-details-from-path@^1.0.3:
   resolved "https://registry.yarnpkg.com/module-details-from-path/-/module-details-from-path-1.0.3.tgz#114c949673e2a8a35e9d35788527aa37b679da2b"
   integrity sha512-ySViT69/76t8VhE1xXHK6Ch4NcDd26gx0MzKXLO+F7NOtnqH68d9zF94nT8ZWSxXh8ELOERsnJO/sWt1xZYw5A==
 
-moment@^2.29.2, moment@^2.29.4:
+moment@^2.29.2:
   version "2.29.4"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.4.tgz#3dbe052889fe7c1b2ed966fcb3a77328964ef108"
   integrity sha512-5LC9SOxjSc2HF6vO2CyuTDNivEdoz2IvyJJGj6X8DJ0eFyfszE0QiEd+iXmBvUP3WHxSjFH/vIsA0EN00cgr8w==

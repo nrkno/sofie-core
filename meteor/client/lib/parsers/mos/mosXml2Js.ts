@@ -1,6 +1,5 @@
-import { MOS } from '@sofie-automation/corelib'
+import * as MOS from '@mos-connection/helper'
 import * as XMLBuilder from 'xmlbuilder'
-import * as _ from 'underscore'
 
 /**
  * Client side MOS XML to JavaScript object conversion. Not exhaustive, might cut
@@ -9,19 +8,24 @@ import * as _ from 'underscore'
  */
 
 /** Copied from mos-gateway */
+const MOS_DATA_IS_STRICT = true
+const mosTypes = MOS.getMosTypes(MOS_DATA_IS_STRICT)
 export function fixMosData(o: any): any {
-	if (_.isObject(o) && (o instanceof MOS.MosTime || o instanceof MOS.MosDuration || o instanceof MOS.MosString128)) {
-		return o.toString()
-	}
-	if (_.isArray(o)) {
-		return _.map(o, (val) => {
-			return fixMosData(val)
+	if (mosTypes.mosTime.is(o)) return mosTypes.mosTime.stringify(o)
+	if (mosTypes.mosDuration.is(o)) return mosTypes.mosDuration.stringify(o)
+	if (mosTypes.mosString128.is(o)) return mosTypes.mosString128.stringify(o)
+
+	if (Array.isArray(o)) {
+		return o.map((val) => {
+			fixMosData(val)
 		})
-	} else if (_.isObject(o)) {
+	} else if (typeof o === null) {
+		return null
+	} else if (typeof o === 'object') {
 		const o2: any = {}
-		_.each(o, (val, key) => {
-			o2[key] = fixMosData(val)
-		})
+		for (const [key, value] of Object.entries(o)) {
+			o2[key] = fixMosData(value)
+		}
 		return o2
 	} else {
 		return o
@@ -34,7 +38,7 @@ export interface MosPluginMessage {
 }
 
 export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | undefined {
-	const doc: any = MOS.Utils.xml2js(xmlString)
+	const doc: any = MOS.xml2js(xmlString)
 
 	if (doc && doc.mos) {
 		const res: MosPluginMessage = {}
@@ -43,7 +47,7 @@ export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | 
 		}
 
 		if (doc.mos.ncsItem && doc.mos.ncsItem.item) {
-			res.item = MOS.MosModel.XMLMosItem.fromXML(doc.mos.ncsItem.item)
+			res.item = MOS.MosModel.XMLMosItem.fromXML(doc.mos.ncsItem.item, MOS_DATA_IS_STRICT)
 		}
 
 		return res
@@ -54,6 +58,6 @@ export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | 
 
 export function generateMosPluginItemXml(item: MOS.IMOSItem): string {
 	const builder = XMLBuilder.create('ncsItem')
-	MOS.MosModel.XMLMosItem.toXML(builder, item)
+	MOS.MosModel.XMLMosItem.toXML(builder, item, MOS_DATA_IS_STRICT)
 	return `<mos>${builder.toString()}</mos>`
 }
