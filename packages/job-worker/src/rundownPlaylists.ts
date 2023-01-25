@@ -498,7 +498,7 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 function sortDefaultRundownInPlaylistOrder(rundowns0: ReadonlyDeep<Array<DBRundown>>): ReadonlyDeep<Array<DBRundown>> {
 	const rundowns = [...rundowns0] // shallow clone array
 	return rundowns.sort((a, b) => {
-		const timingSorting = PlaylistTiming.sortTiminings(a, b)
+		const timingSorting = PlaylistTiming.sortTimings(a, b)
 		if (timingSorting !== 0) return timingSorting
 
 		const nameSorting = a.name.localeCompare(b.name)

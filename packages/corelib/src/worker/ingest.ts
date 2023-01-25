@@ -222,7 +222,7 @@ export type IngestJobFunc = {
 	[IngestJobs.BucketEmpty]: (data: BucketEmptyProps) => void
 }
 
-// TODO - there should probably be a queue per rundown or something. To be improved later
+// Future: there should probably be a queue per rundown or something. To be improved later
 export function getIngestQueueName(studioId: StudioId): string {
 	return `ingest:${studioId}`
 }
