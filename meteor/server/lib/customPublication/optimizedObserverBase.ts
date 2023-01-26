@@ -244,8 +244,6 @@ async function createOptimizedObserverWorker<
 						pendingUpdate = {}
 
 						const start = Date.now()
-						if ((newProps as any)?.timeline?.generated)
-							console.log('ign', JSON.stringify((newProps as any).timeline.generated))
 						const [newDocs, changes] = await manipulateData(
 							thisObserverWorker.args,
 							thisObserverWorker.context,
