@@ -1,3 +1,4 @@
+import '../../../__mocks__/_vm2'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
