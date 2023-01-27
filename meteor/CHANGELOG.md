@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.44.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2-1...v1.44.2) (2023-01-27)
+
+
+### Bug Fixes
+
+* limit number of Package-related items to include in Rundown-snapshot ([6a1861f](https://github.com/nrkno/tv-automation-server-core/commit/6a1861fb64256874593ee714b52cc663b9bbdf80))
+
 ### [1.44.2-1](https://github.com/nrkno/sofie-core/compare/v1.44.2-0...v1.44.2-1) (2023-01-23)
 
 
