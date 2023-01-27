@@ -1,34 +1,12 @@
 import * as MOS from '@mos-connection/helper'
 import * as XMLBuilder from 'xmlbuilder'
-import { mosTypes, MOS_DATA_IS_STRICT } from '../../../../lib/mos'
+import { MOS_DATA_IS_STRICT } from '../../../../lib/mos'
 
 /**
  * Client side MOS XML to JavaScript object conversion. Not exhaustive, might cut
  * corners to fit specific use cases.
  * Originally developed for use by the Nora editor in the shelf inspector.
  */
-
-/** Copied from mos-gateway */
-
-export function fixMosData(o: any): any {
-	if (mosTypes.mosTime.is(o)) return mosTypes.mosTime.stringify(o)
-	if (mosTypes.mosDuration.is(o)) return mosTypes.mosDuration.stringify(o)
-	if (mosTypes.mosString128.is(o)) return mosTypes.mosString128.stringify(o)
-
-	if (Array.isArray(o)) {
-		return o.map((val) => fixMosData(val))
-	} else if (typeof o === null) {
-		return null
-	} else if (typeof o === 'object') {
-		const o2: any = {}
-		for (const [key, value] of Object.entries(o)) {
-			o2[key] = fixMosData(value)
-		}
-		return o2
-	} else {
-		return o
-	}
-}
 
 export interface MosPluginMessage {
 	ncsReqAppInfo?: boolean

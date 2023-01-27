@@ -42,7 +42,7 @@
 		"timeline-state-resolver-types": "8.0.0-nightly-release49-20230110-165023-914016e7b.0",
 		"tslib": "^2.4.0",
 		"type-fest": "^3.5.1",
-		"@mos-connection/model": "3.0.0-nightly-feat-mono-repo-20230104-080359-17f8d94.0"
+		"@mos-connection/model": "3.0.0-nightly-feat-mono-repo-20230127-144135-8037b58.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

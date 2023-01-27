@@ -23,6 +23,7 @@ import {
 	getMosTypes,
 	MosTypes,
 	IMOSString128,
+	stringifyMosObject,
 } from '@mos-connection/connector'
 import * as _ from 'underscore'
 import { MosHandler } from './mosHandler'
@@ -474,23 +475,7 @@ export class CoreMosDeviceHandler {
 	 * @param o the object to convert
 	 */
 	private fixMosData(o: any): any {
-		if (this.mosTypes.mosTime.is(o)) return this.mosTypes.mosTime.stringify(o)
-		if (this.mosTypes.mosDuration.is(o)) return this.mosTypes.mosDuration.stringify(o)
-		if (this.mosTypes.mosString128.is(o)) return this.mosTypes.mosString128.stringify(o)
-
-		if (Array.isArray(o)) {
-			return o.map((val) => this.fixMosData(val))
-		} else if (typeof o === null) {
-			return null
-		} else if (typeof o === 'object') {
-			const o2: any = {}
-			for (const [key, value] of Object.entries(o)) {
-				o2[key] = this.fixMosData(value)
-			}
-			return o2
-		} else {
-			return o
-		}
+		return stringifyMosObject(o, this.mosTypes.strict)
 	}
 	private async _coreMosManipulate<K extends keyof ExternalPeripheralDeviceAPI>(
 		methodName: K,
