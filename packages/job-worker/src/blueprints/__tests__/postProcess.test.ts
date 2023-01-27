@@ -53,7 +53,7 @@ describe('Test blueprint post-process', () => {
 		const context = setupDefaultJobEnvironment()
 		test('no objects', () => {
 			// Ensure that an empty array works ok
-			const res = postProcessStudioBaselineObjects(context.studio, [])
+			const res = postProcessStudioBaselineObjects(context.studio.blueprintId, [])
 			expect(res).toHaveLength(0)
 		})
 
@@ -95,7 +95,7 @@ describe('Test blueprint post-process', () => {
 
 			// TODO - mock getHash?
 
-			const res = postProcessStudioBaselineObjects(context.studio, clone(rawObjects))
+			const res = postProcessStudioBaselineObjects(context.studio.blueprintId, clone(rawObjects))
 
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
@@ -151,7 +151,7 @@ describe('Test blueprint post-process', () => {
 				},
 			])
 
-			expect(() => postProcessStudioBaselineObjects(context.studio, clone(rawObjects))).toThrow(
+			expect(() => postProcessStudioBaselineObjects(context.studio.blueprintId, clone(rawObjects))).toThrow(
 				`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
 			)
 		})

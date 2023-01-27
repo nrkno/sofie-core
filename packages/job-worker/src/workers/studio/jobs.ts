@@ -10,10 +10,8 @@ import {
 	deactivateRundownPlaylist,
 	disableNextPiece,
 	executeAction,
-	handleTimelineTriggerTime,
 	handleUpdateTimelineAfterIngest,
 	moveNextPart,
-	onPlayoutPlaybackChanged,
 	prepareRundownPlaylistForBroadcast,
 	resetRundownPlaylist,
 	setNextPart,
@@ -37,6 +35,7 @@ import {
 } from '../../rundownPlaylists'
 import { handleGeneratePlaylistSnapshot, handleRestorePlaylistSnapshot } from '../../playout/snapshot'
 import { handleBlueprintUpgradeForStudio, handleBlueprintValidateConfigForStudio } from '../../playout/upgrade'
+import { handleTimelineTriggerTime, onPlayoutPlaybackChanged } from '../../playout/timings'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,

@@ -42,6 +42,9 @@ export interface WrappedShowStyleBlueprint {
 // 	}
 // }
 
+/**
+ * Parse a Blueprint document into executable code
+ */
 export async function parseBlueprintDocument(
 	blueprint: Blueprint | undefined
 ): Promise<ReadonlyDeep<SomeBlueprintManifest> | undefined> {

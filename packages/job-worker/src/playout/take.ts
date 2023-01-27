@@ -23,7 +23,7 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { PartEventContext, RundownContext } from '../blueprints/context'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { innerStopPieces } from './adlib'
-import { reportPartInstanceHasStarted, reportPartInstanceHasStopped } from '../blueprints/events'
+import { reportPartInstanceHasStarted, reportPartInstanceHasStopped } from './timings/partPlayback'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { calculatePartTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'

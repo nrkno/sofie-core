@@ -1,4 +1,4 @@
-import { PartId, PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
@@ -18,9 +18,7 @@ import {
 	TakeNextPartProps,
 	DisableNextPieceProps,
 	SetNextSegmentProps,
-	OnTimelineTriggerTimeProps,
 	UpdateTimelineAfterIngestProps,
-	OnPlayoutPlaybackChangedProps,
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { logger } from '../logging'
 import _ = require('underscore')
@@ -36,14 +34,13 @@ import { runJobWithPlayoutCache, runJobWithPlaylistLock, runWithPlaylistCache } 
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import {
 	resetRundownPlaylist as libResetRundownPlaylist,
-	selectNextPart,
 	setNextPart as libSetNextPart,
 	setNextSegment as libSetNextSegment,
 	updateExpectedDurationWithPrerollForPartInstance,
 } from './lib'
-import { saveTimeline, updateStudioTimeline, updateTimeline } from './timeline/generate'
+import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
-import { IBlueprintPieceType, PartHoldMode, Time } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PartHoldMode } from '@sofie-automation/blueprints-integration'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
 import {
 	activateRundownPlaylist as libActivateRundownPlaylist,
@@ -59,42 +56,19 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import {
-	applyToArray,
-	assertNever,
-	getRandomId,
-	groupByToMap,
-	stringifyError,
-} from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, groupByToMap, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import {
 	ActionExecutionContext,
 	ActionPartChange,
 	DatastoreActionExecutionContext,
 } from '../blueprints/context/adlibActions'
-import {
-	afterTake,
-	clearNextSegmentId,
-	resetPreviousSegment,
-	takeNextPartInnerSync,
-	updatePartInstanceOnTake,
-} from './take'
-import {
-	reportPartInstanceHasStarted,
-	reportPartInstanceHasStopped,
-	reportPieceHasStarted,
-	reportPieceHasStopped,
-} from '../blueprints/events'
+import { takeNextPartInnerSync } from './take'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { sortPieceInstancesByStart } from './pieces'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { runJobWithStudioCache } from '../studio/lock'
 import { shouldUpdateStudioBaselineInner as libShouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
 import { CacheForStudio } from '../studio/cache'
-import { DbCacheWriteCollection } from '../cache/CacheCollection'
-import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
-import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { INCORRECT_PLAYING_PART_DEBOUNCE, RESET_IGNORE_ERRORS } from './constants'
-import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number): void {
@@ -697,382 +671,6 @@ export async function disableNextPiece(context: JobContext, data: DisableNextPie
 			}
 		}
 	)
-}
-
-function _onPiecePlaybackStarted(
-	context: JobContext,
-	cache: CacheForPlayout,
-	data: {
-		pieceInstanceId: PieceInstanceId
-		startedPlayback: Time
-	}
-) {
-	const playlist = cache.Playlist.doc
-	const pieceInstance = cache.PieceInstances.findOne(data.pieceInstanceId)
-
-	if (pieceInstance) {
-		const isPlaying = !!(pieceInstance.reportedStartedPlayback && !pieceInstance.reportedStoppedPlayback)
-		if (!isPlaying) {
-			logger.debug(
-				`onPiecePlaybackStarted: Playout reports pieceInstance "${
-					data.pieceInstanceId
-				}" has started playback on timestamp ${new Date(data.startedPlayback).toISOString()}`
-			)
-			reportPieceHasStarted(context, cache, pieceInstance, data.startedPlayback)
-
-			// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
-		}
-	} else if (!playlist.activationId) {
-		logger.warn(`onPiecePlaybackStarted: Received for inactive RundownPlaylist "${playlist._id}"`)
-	} else {
-		throw new Error(`PieceInstance "${data.pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
-	}
-}
-
-function _onPiecePlaybackStopped(
-	context: JobContext,
-	cache: CacheForPlayout,
-	data: {
-		partInstanceId: PartInstanceId
-		pieceInstanceId: PieceInstanceId
-		stoppedPlayback: Time
-	}
-) {
-	const playlist = cache.Playlist.doc
-	const pieceInstance = cache.PieceInstances.findOne(data.pieceInstanceId)
-
-	if (pieceInstance) {
-		const isPlaying = !!(pieceInstance.reportedStartedPlayback && !pieceInstance.reportedStoppedPlayback)
-		if (isPlaying) {
-			logger.debug(
-				`onPiecePlaybackStopped: Playout reports pieceInstance "${
-					data.pieceInstanceId
-				}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
-			)
-
-			reportPieceHasStopped(context, cache, pieceInstance, data.stoppedPlayback)
-		}
-	} else if (!playlist.activationId) {
-		logger.warn(`onPiecePlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
-	} else {
-		const partInstance = cache.PartInstances.findOne(data.partInstanceId)
-		if (!partInstance) {
-			// PartInstance not found, so we can rely on the onPartPlaybackStopped callback erroring
-		} else {
-			throw new Error(`PieceInstance "${data.pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
-		}
-	}
-}
-
-async function _onPartPlaybackStarted(
-	context: JobContext,
-	cache: CacheForPlayout,
-	data: {
-		partInstanceId: PartInstanceId
-		startedPlayback: Time
-	}
-) {
-	const playingPartInstance = cache.PartInstances.findOne(data.partInstanceId)
-	if (!playingPartInstance)
-		throw new Error(`PartInstance "${data.partInstanceId}" in RundownPlayst "${cache.PlaylistId}" not found!`)
-
-	// make sure we don't run multiple times, even if TSR calls us multiple times
-	const hasStartedPlaying = !!playingPartInstance.timings?.reportedStartedPlayback
-	if (!hasStartedPlaying) {
-		logger.debug(
-			`Playout reports PartInstance "${data.partInstanceId}" has started playback on timestamp ${new Date(
-				data.startedPlayback
-			).toISOString()}`
-		)
-
-		const playlist = cache.Playlist.doc
-
-		const rundown = cache.Rundowns.findOne(playingPartInstance.rundownId)
-		if (!rundown) throw new Error(`Rundown "${playingPartInstance.rundownId}" not found!`)
-
-		const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-
-		if (playlist.currentPartInstanceId === data.partInstanceId) {
-			// this is the current part, it has just started playback
-			reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
-
-			// complete the take
-			await afterTake(context, cache, playingPartInstance)
-		} else if (playlist.nextPartInstanceId === data.partInstanceId) {
-			// this is the next part, clearly an autoNext has taken place
-
-			cache.Playlist.update((p) => {
-				p.previousPartInstanceId = p.currentPartInstanceId
-				p.currentPartInstanceId = playingPartInstance._id
-				p.holdState = RundownHoldState.NONE
-				return p
-			})
-
-			reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
-
-			// Update generated properties on the newly playing partInstance
-			const currentRundown = currentPartInstance
-				? cache.Rundowns.findOne(currentPartInstance.rundownId)
-				: undefined
-			const showStyleRundown = currentRundown ?? rundown
-			const showStyle = await context.getShowStyleCompound(
-				showStyleRundown.showStyleVariantId,
-				showStyleRundown.showStyleBaseId
-			)
-			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
-			updatePartInstanceOnTake(
-				context,
-				cache,
-				showStyle,
-				blueprint,
-				rundown,
-				playingPartInstance,
-				currentPartInstance
-			)
-
-			clearNextSegmentId(cache, currentPartInstance)
-			resetPreviousSegment(cache)
-
-			// Update the next partinstance
-			const nextPart = selectNextPart(
-				context,
-				playlist,
-				playingPartInstance,
-				null,
-				getOrderedSegmentsAndPartsFromPlayoutCache(cache)
-			)
-			await libSetNextPart(context, cache, nextPart)
-
-			// complete the take
-			await afterTake(context, cache, playingPartInstance)
-		} else {
-			// a part is being played that has not been selected for playback by Core
-
-			// I am pretty sure this is path is dead, I dont see how we could ever get here (in a way that we can recover from)
-			// If it is confirmed to be used, then perhaps we can do something better than this,
-			// but I dont think we can until we know what we are trying to solve
-
-			// 1) We could hit this if we remove the auto-nexted part and playout-gateway gets the new timeline too late.
-			//    We can't magically fix that, as the instance will no longer exist
-			// 2) Maybe some other edge cases around deleting partInstances (perhaps when doing a reset?).
-			//    Not much we can do about this though
-
-			const previousReported = playlist.lastIncorrectPartPlaybackReported
-			if (previousReported && Date.now() - previousReported > INCORRECT_PLAYING_PART_DEBOUNCE) {
-				// first time this has happened for a while, let's make sure it has the correct timeline
-				await updateTimeline(context, cache)
-			}
-
-			logger.error(
-				`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`
-			)
-		}
-	}
-}
-
-function _onPartPlaybackStopped(
-	context: JobContext,
-	cache: CacheForPlayout,
-	data: {
-		partInstanceId: PartInstanceId
-		stoppedPlayback: Time
-	}
-) {
-	const playlist = cache.Playlist.doc
-
-	const partInstance = cache.PartInstances.findOne(data.partInstanceId)
-	if (partInstance) {
-		// make sure we don't run multiple times, even if TSR calls us multiple times
-
-		const isPlaying =
-			partInstance.timings?.reportedStartedPlayback && !partInstance.timings?.reportedStoppedPlayback
-		if (isPlaying) {
-			logger.debug(
-				`onPartPlaybackStopped: Playout reports PartInstance "${
-					data.partInstanceId
-				}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
-			)
-
-			reportPartInstanceHasStopped(context, cache, partInstance, data.stoppedPlayback)
-		}
-	} else if (!playlist.activationId) {
-		logger.warn(`onPartPlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
-	} else if (getCurrentTime() - (playlist.resetTime ?? 0) > RESET_IGNORE_ERRORS) {
-		// Ignore errors that happen just after a reset, so do nothing here.
-	} else {
-		throw new Error(`PartInstance "${data.partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
-	}
-}
-
-export async function onPlayoutPlaybackChanged(
-	context: JobContext,
-	data: OnPlayoutPlaybackChangedProps
-): Promise<void> {
-	return runJobWithPlayoutCache(context, data, null, async (cache) => {
-		for (const change of data.changes) {
-			try {
-				if (change.type === PlayoutChangedType.PART_PLAYBACK_STARTED) {
-					await _onPartPlaybackStarted(context, cache, {
-						partInstanceId: change.data.partInstanceId,
-						startedPlayback: change.data.time,
-					})
-				} else if (change.type === PlayoutChangedType.PART_PLAYBACK_STOPPED) {
-					_onPartPlaybackStopped(context, cache, {
-						partInstanceId: change.data.partInstanceId,
-						stoppedPlayback: change.data.time,
-					})
-				} else if (change.type === PlayoutChangedType.PIECE_PLAYBACK_STARTED) {
-					_onPiecePlaybackStarted(context, cache, {
-						pieceInstanceId: change.data.pieceInstanceId,
-						startedPlayback: change.data.time,
-					})
-				} else if (change.type === PlayoutChangedType.PIECE_PLAYBACK_STOPPED) {
-					_onPiecePlaybackStopped(context, cache, {
-						partInstanceId: change.data.partInstanceId,
-						pieceInstanceId: change.data.pieceInstanceId,
-						stoppedPlayback: change.data.time,
-					})
-				} else {
-					assertNever(change)
-				}
-			} catch (err) {
-				logger.error(stringifyError(err))
-			}
-		}
-	})
-}
-
-/**
- * Called from Playout-gateway when the trigger-time of a timeline object has updated
- * ( typically when using the "now"-feature )
- */
-export async function handleTimelineTriggerTime(context: JobContext, data: OnTimelineTriggerTimeProps): Promise<void> {
-	if (data.results.length > 0) {
-		await runJobWithStudioCache(context, async (studioCache) => {
-			const activePlaylists = studioCache.getActiveRundownPlaylists()
-
-			if (studioCache.isMultiGatewayMode) {
-				logger.warn(`Ignoring timelineTriggerTime call for studio not using now times`)
-				return
-			}
-
-			if (activePlaylists.length === 1) {
-				const activePlaylist = activePlaylists[0]
-				const playlistId = activePlaylist._id
-				await runJobWithPlaylistLock(context, { playlistId }, async () => {
-					const rundownIDs = (
-						await context.directCollections.Rundowns.findFetch({ playlistId }, { projection: { _id: 1 } })
-					).map((r) => r._id)
-					const partInstanceIDs = [activePlaylist.currentPartInstanceId].filter(
-						(id): id is PartInstanceId => id !== null
-					)
-
-					// We only need the PieceInstances, so load just them
-					const pieceInstanceCache = await DbCacheWriteCollection.createFromDatabase(
-						context,
-						context.directCollections.PieceInstances,
-						{
-							rundownId: { $in: rundownIDs },
-							partInstanceId: {
-								$in: partInstanceIDs,
-							},
-						}
-					)
-
-					// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
-					timelineTriggerTimeInner(context, studioCache, data.results, pieceInstanceCache, activePlaylist)
-
-					await pieceInstanceCache.updateDatabaseWithData()
-				})
-			} else {
-				timelineTriggerTimeInner(context, studioCache, data.results, undefined, undefined)
-			}
-		})
-	}
-}
-
-function timelineTriggerTimeInner(
-	context: JobContext,
-	cache: CacheForStudio,
-	results: OnTimelineTriggerTimeProps['results'],
-	pieceInstanceCache: DbCacheWriteCollection<PieceInstance> | undefined,
-	activePlaylist: DBRundownPlaylist | undefined
-) {
-	let lastTakeTime: number | undefined
-
-	// ------------------------------
-	const timeline = cache.Timeline.doc
-	if (timeline) {
-		const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
-		let tlChanged = false
-
-		_.each(results, (o) => {
-			logger.debug(`Timeline: Setting time: "${o.id}": ${o.time}`)
-
-			const obj = timelineObjs.find((tlo) => tlo.id === o.id)
-			if (obj) {
-				applyToArray(obj.enable, (enable) => {
-					if (enable.start === 'now') {
-						enable.start = o.time
-						enable.setFromNow = true
-
-						tlChanged = true
-					}
-				})
-
-				// TODO - we should do the same for the partInstance.
-				// Or should we not update the now for them at all? as we should be getting the onPartPlaybackStarted immediately after
-
-				const objPieceInstanceId = (obj.metaData as Partial<PieceTimelineMetadata> | undefined)
-					?.triggerPieceInstanceId
-				if (objPieceInstanceId && activePlaylist && pieceInstanceCache) {
-					logger.debug('Update PieceInstance: ', {
-						pieceId: objPieceInstanceId,
-						time: new Date(o.time).toTimeString(),
-					})
-
-					const pieceInstance = pieceInstanceCache.findOne(objPieceInstanceId)
-					if (
-						pieceInstance &&
-						pieceInstance.dynamicallyInserted &&
-						pieceInstance.piece.enable.start === 'now'
-					) {
-						pieceInstanceCache.updateOne(pieceInstance._id, (p) => {
-							p.piece.enable.start = o.time
-							return p
-						})
-
-						const takeTime = pieceInstance.dynamicallyInserted
-						lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
-					}
-				}
-			}
-		})
-
-		if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
-			// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
-			const remainingNowPieces = pieceInstanceCache.findAll(
-				(p) =>
-					p.partInstanceId === activePlaylist.currentPartInstanceId &&
-					p.dynamicallyInserted !== undefined &&
-					!p.disabled
-			)
-			for (const piece of remainingNowPieces) {
-				const pieceTakeTime = piece.dynamicallyInserted
-				if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
-					// Disable and hide the instance
-					pieceInstanceCache.updateOne(piece._id, (p) => {
-						p.disabled = true
-						p.hidden = true
-						return p
-					})
-				}
-			}
-		}
-		if (tlChanged) {
-			saveTimeline(context, cache, timelineObjs, timeline.generationVersions)
-		}
-	}
 }
 
 export async function executeAction(context: JobContext, data: ExecuteActionProps): Promise<ExecuteActionResult> {
