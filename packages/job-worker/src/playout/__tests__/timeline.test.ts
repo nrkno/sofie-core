@@ -12,13 +12,7 @@ import {
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import {
-	activateHold,
-	activateRundownPlaylist,
-	deactivateRundownPlaylist,
-	handleTimelineTriggerTime,
-	takeNextPart,
-} from '../playout'
+import { activateHold, activateRundownPlaylist, deactivateRundownPlaylist, takeNextPart } from '../playout'
 import { fixSnapshot } from '../../__mocks__/helpers/snapshot'
 import { runJobWithPlayoutCache } from '../lock'
 import { updateTimeline } from '../timeline/generate'
@@ -60,6 +54,7 @@ import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '@sofie-automatio
 import { adjustFakeTime, useFakeCurrentTime, useRealCurrentTime } from '../../__mocks__/time'
 import { restartRandomId } from '../../__mocks__/nanoid'
 import { ProcessedShowStyleCompound } from '../../jobs'
+import { handleTimelineTriggerTime } from '../timings'
 
 interface PartTimelineTimings {
 	previousPart: TimelineEnableExt | null
