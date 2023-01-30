@@ -6,13 +6,13 @@ import { CollectionBase, Collection } from '../wsHandler'
 import { protectString, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 
 export class StudioHandler extends CollectionBase<DBStudio> implements Collection<DBStudio> {
-	_observerName: string
-	_core: CoreConnection
+	public observerName: string
+	private _core: CoreConnection
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super('StudioHandler', 'studios', logger, coreHandler)
 		this._core = coreHandler.coreConnection
-		this._observerName = this._name
+		this.observerName = this._name
 	}
 
 	async init(): Promise<void> {

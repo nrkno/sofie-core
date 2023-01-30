@@ -10,14 +10,14 @@ export class ShowStyleBaseHandler
 	extends CollectionBase<DBShowStyleBase>
 	implements Collection<DBShowStyleBase>, CollectionObserver<DBRundown>
 {
-	_observerName: string
-	_core: CoreConnection
-	_showStyleBaseId: ShowStyleBaseId | undefined
+	public observerName: string
+	private _core: CoreConnection
+	private _showStyleBaseId: ShowStyleBaseId | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super('ShowStyleBaseHandler', 'showStyleBases', logger, coreHandler)
 		this._core = coreHandler.coreConnection
-		this._observerName = this._name
+		this.observerName = this._name
 	}
 
 	async changed(id: string, changeType: string): Promise<void> {

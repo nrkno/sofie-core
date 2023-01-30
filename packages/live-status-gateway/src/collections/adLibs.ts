@@ -11,14 +11,14 @@ export class AdLibsHandler
 	extends CollectionBase<AdLibPiece[]>
 	implements Collection<AdLibPiece[]>, CollectionObserver<Map<PartInstanceName, DBPartInstance | undefined>>
 {
-	_observerName: string
-	_core: CoreConnection
-	_curRundownId: string | undefined
+	public observerName: string
+	private _core: CoreConnection
+	private _curRundownId: string | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super('AdLibHandler', 'adLibs', logger, coreHandler)
 		this._core = coreHandler.coreConnection
-		this._observerName = this._name
+		this.observerName = this._name
 	}
 
 	async changed(id: string, changeType: string): Promise<void> {

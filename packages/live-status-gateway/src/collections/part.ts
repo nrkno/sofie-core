@@ -12,15 +12,15 @@ export class PartHandler
 	extends CollectionBase<DBPart>
 	implements Collection<DBPart>, CollectionObserver<Map<PartInstanceName, DBPartInstance | undefined>>
 {
-	_observerName: string
-	_core: CoreConnection
-	_activePlaylist: DBRundownPlaylist | undefined
-	_curPartInstance: DBPartInstance | undefined
+	public observerName: string
+	private _core: CoreConnection
+	private _activePlaylist: DBRundownPlaylist | undefined
+	private _curPartInstance: DBPartInstance | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super('PartHandler', 'parts', logger, coreHandler)
 		this._core = coreHandler.coreConnection
-		this._observerName = this._name
+		this.observerName = this._name
 	}
 
 	async changed(id: string, changeType: string): Promise<void> {

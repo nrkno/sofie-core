@@ -80,13 +80,13 @@ export abstract class CollectionBase<T> {
 	}
 
 	async subscribe(observer: CollectionObserver<T>): Promise<void> {
-		this._logger.info(`${observer._observerName}' added observer for '${this._name}'`)
+		this._logger.info(`${observer.observerName}' added observer for '${this._name}'`)
 		if (this._collectionData) await observer.update(this._name, this._collectionData)
 		this._observers.add(observer)
 	}
 
 	async unsubscribe(observer: CollectionObserver<T>): Promise<void> {
-		this._logger.info(`${observer._observerName}' removed observer for '${this._name}'`)
+		this._logger.info(`${observer.observerName}' removed observer for '${this._name}'`)
 		this._observers.delete(observer)
 	}
 
@@ -106,6 +106,6 @@ export interface Collection<T> {
 }
 
 export interface CollectionObserver<T> {
-	_observerName: string
+	observerName: string
 	update(source: string, data: T | undefined): Promise<void>
 }

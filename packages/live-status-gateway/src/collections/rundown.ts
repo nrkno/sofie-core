@@ -16,15 +16,15 @@ export class RundownHandler
 		CollectionObserver<DBRundownPlaylist>,
 		CollectionObserver<Map<PartInstanceName, DBPartInstance | undefined>>
 {
-	_observerName: string
-	_core: CoreConnection
-	_curPlaylistId: RundownPlaylistId | undefined
-	_curRundownId: RundownId | undefined
+	public observerName: string
+	private _core: CoreConnection
+	private _curPlaylistId: RundownPlaylistId | undefined
+	private _curRundownId: RundownId | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super('RundownHandler', 'rundowns', logger, coreHandler)
 		this._core = coreHandler.coreConnection
-		this._observerName = this._name
+		this.observerName = this._name
 	}
 
 	async changed(id: string, changeType: string): Promise<void> {

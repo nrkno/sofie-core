@@ -53,16 +53,16 @@ export class ActivePlaylistTopic
 		CollectionObserver<AdLibAction[]>,
 		CollectionObserver<RundownBaselineAdLibAction[]>
 {
-	_observerName = 'ActivePlaylistTopic'
-	_sourceLayersMap: Map<string, string> = new Map()
-	_outputLayersMap: Map<string, string> = new Map()
-	_activePlaylist: DBRundownPlaylist | undefined
-	_currentPartInstance: DBPartInstance | undefined
-	_nextPartInstance: DBPartInstance | undefined
-	_adLibActions: AdLibAction[] | undefined
-	_abLibs: AdLibPiece[] | undefined
-	_globalAdLibActions: RundownBaselineAdLibAction[] | undefined
-	_globalAdLibs: RundownBaselineAdLibItem[] | undefined
+	public observerName = 'ActivePlaylistTopic'
+	private _sourceLayersMap: Map<string, string> = new Map()
+	private _outputLayersMap: Map<string, string> = new Map()
+	private _activePlaylist: DBRundownPlaylist | undefined
+	private _currentPartInstance: DBPartInstance | undefined
+	private _nextPartInstance: DBPartInstance | undefined
+	private _adLibActions: AdLibAction[] | undefined
+	private _abLibs: AdLibPiece[] | undefined
+	private _globalAdLibActions: RundownBaselineAdLibAction[] | undefined
+	private _globalAdLibs: RundownBaselineAdLibItem[] | undefined
 
 	constructor(logger: Logger) {
 		super('ActivePlaylistTopic', logger)

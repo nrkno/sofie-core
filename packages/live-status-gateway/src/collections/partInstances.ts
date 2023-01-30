@@ -15,16 +15,16 @@ export class PartInstancesHandler
 	extends CollectionBase<Map<PartInstanceName, DBPartInstance | undefined>>
 	implements Collection<Map<PartInstanceName, DBPartInstance | undefined>>, CollectionObserver<DBRundownPlaylist>
 {
-	_observerName: string
-	_core: CoreConnection
-	_curPlaylist: DBRundownPlaylist | undefined
-	_rundownIds: string[] = []
-	_activationId: string | undefined
+	public observerName: string
+	private _core: CoreConnection
+	private _curPlaylist: DBRundownPlaylist | undefined
+	private _rundownIds: string[] = []
+	private _activationId: string | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super('PartInstancesHandler', 'partInstances', logger, coreHandler)
 		this._core = coreHandler.coreConnection
-		this._observerName = this._name
+		this.observerName = this._name
 		this._collectionData = new Map()
 		this._collectionData.set(PartInstanceName.current, undefined)
 		this._collectionData.set(PartInstanceName.next, undefined)

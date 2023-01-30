@@ -11,15 +11,15 @@ export class SegmentHandler
 	extends CollectionBase<DBSegment>
 	implements Collection<DBSegment>, CollectionObserver<Map<PartInstanceName, DBPartInstance | undefined>>
 {
-	_observerName: string
-	_core: CoreConnection
-	_curRundownId: RundownId | undefined
-	_curSegmentId: SegmentId | undefined
+	public observerName: string
+	private _core: CoreConnection
+	private _curRundownId: RundownId | undefined
+	private _curSegmentId: SegmentId | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super('SegmentHandler', 'segments', logger, coreHandler)
 		this._core = coreHandler.coreConnection
-		this._observerName = this._name
+		this.observerName = this._name
 	}
 
 	async changed(id: string, changeType: string): Promise<void> {

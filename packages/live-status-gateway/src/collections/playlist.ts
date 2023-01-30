@@ -5,12 +5,12 @@ import { CoreConnection } from '@sofie-automation/server-core-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 export class PlaylistsHandler extends CollectionBase<DBRundownPlaylist[]> implements Collection<DBRundownPlaylist[]> {
-	_observerName: string
+	public observerName: string
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super('PlaylistsHandler', undefined, logger, coreHandler)
 		this._collection = this._name
-		this._observerName = this._name
+		this.observerName = this._name
 	}
 
 	async setPlaylists(playlists: DBRundownPlaylist[]): Promise<void> {
@@ -33,14 +33,14 @@ export class PlaylistsHandler extends CollectionBase<DBRundownPlaylist[]> implem
 }
 
 export class PlaylistHandler extends CollectionBase<DBRundownPlaylist> implements Collection<DBRundownPlaylist> {
-	_observerName: string
-	_core: CoreConnection
-	_playlistsHandler: PlaylistsHandler
+	public observerName: string
+	private _core: CoreConnection
+	private _playlistsHandler: PlaylistsHandler
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super('PlaylistHandler', 'rundownPlaylists', logger, coreHandler)
 		this._core = coreHandler.coreConnection
-		this._observerName = this._name
+		this.observerName = this._name
 		this._playlistsHandler = new PlaylistsHandler(this._logger, this._coreHandler)
 	}
 

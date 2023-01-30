@@ -25,9 +25,9 @@ export class StudioTopic
 	extends WebSocketTopicBase
 	implements WebSocketTopic, CollectionObserver<DBStudio>, CollectionObserver<DBRundownPlaylist[]>
 {
-	_observerName = 'StudioTopic'
-	_studio: DBStudio | undefined
-	_playlists: PlaylistStatus[] = []
+	public observerName = 'StudioTopic'
+	private _studio: DBStudio | undefined
+	private _playlists: PlaylistStatus[] = []
 
 	constructor(logger: Logger) {
 		super('StudioTopic', logger)
