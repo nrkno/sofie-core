@@ -433,7 +433,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						list: isList,
 						selected: this.props.isNext || this.props.isSelected,
 					},
-					this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type),
 					...(this.props.piece.tags ? this.props.piece.tags.map((tag) => `piece-tag--${tag}`) : [])
 				)}
 				style={{
@@ -477,6 +476,14 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 					{this.renderHotkey()}
 					<div className="dashboard-panel__panel__button__label-container">
+						<div
+							className={ClassNames(
+								'dashboard-panel__panel__button__tag-container',
+								this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)
+							)}
+						>
+							&nbsp;
+						</div>
 						{this.props.editableName ? (
 							<textarea
 								className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
@@ -486,7 +493,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 								ref={this.onRenameTextBoxShow}
 							></textarea>
 						) : (
-							<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
+							<div className="dashboard-panel__panel__button__label">{this.state.label}</div>
 						)}
 					</div>
 				</div>

@@ -150,7 +150,9 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 				onMouseMove={handleOnMouseMove}
 				onMouseLeave={handleOnMouseLeave}
 			>
-				{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
+				<div className="adlib-panel__list-view__list__table__cell--layer">
+					{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
+				</div>
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--shortcut">
 				<ActionAdLibHotkeyPreview targetId={props.adLibListItem._id as any} type={type} />
