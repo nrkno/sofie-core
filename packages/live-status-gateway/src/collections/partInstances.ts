@@ -35,9 +35,12 @@ export class PartInstancesHandler
 		if (!this._collection) return
 		const col = this._core.getCollection<DBPartInstance>(this._collection)
 		if (!col) throw new Error(`collection '${this._collection}' not found!`)
-		const partInstances = col.find(undefined)
-		const curPartInstance = partInstances.find((p) => p._id === this._curPlaylist?.currentPartInstanceId)
-		const nextPartInstance = partInstances.find((p) => p._id === this._curPlaylist?.nextPartInstanceId)
+		const curPartInstance = this._curPlaylist?.currentPartInstanceId
+			? col.findOne(this._curPlaylist?.currentPartInstanceId)
+			: undefined
+		const nextPartInstance = this._curPlaylist?.nextPartInstanceId
+			? col.findOne(this._curPlaylist?.nextPartInstanceId)
+			: undefined
 		this._collectionData?.forEach((_pi, key) => {
 			if (PartInstanceName.current === key) this._collectionData?.set(key, curPartInstance)
 			else if (PartInstanceName.next === key) this._collectionData?.set(key, nextPartInstance)
@@ -83,11 +86,12 @@ export class PartInstancesHandler
 
 					const col = this._core.getCollection<DBPartInstance>(this._collection)
 					if (!col) throw new Error(`collection '${this._collection}' not found!`)
-					const partInstances = col.find(undefined)
-					const curPartInstance = partInstances.find(
-						(p) => p._id === this._curPlaylist?.currentPartInstanceId
-					)
-					const nextPartInstance = partInstances.find((p) => p._id === this._curPlaylist?.nextPartInstanceId)
+					const curPartInstance = this._curPlaylist?.currentPartInstanceId
+						? col.findOne(this._curPlaylist?.currentPartInstanceId)
+						: undefined
+					const nextPartInstance = this._curPlaylist?.nextPartInstanceId
+						? col.findOne(this._curPlaylist?.nextPartInstanceId)
+						: undefined
 					this._collectionData?.forEach((_pi, key) => {
 						if (PartInstanceName.current === key) this._collectionData?.set(key, curPartInstance)
 						else if (PartInstanceName.next === key) this._collectionData?.set(key, nextPartInstance)
@@ -97,9 +101,12 @@ export class PartInstancesHandler
 			} else if (this._subscriptionId) {
 				const col = this._core.getCollection<DBPartInstance>(this._collection)
 				if (!col) throw new Error(`collection '${this._collection}' not found!`)
-				const partInstances = col.find(undefined)
-				const curPartInstance = partInstances.find((p) => p._id === this._curPlaylist?.currentPartInstanceId)
-				const nextPartInstance = partInstances.find((p) => p._id === this._curPlaylist?.nextPartInstanceId)
+				const curPartInstance = this._curPlaylist?.currentPartInstanceId
+					? col.findOne(this._curPlaylist?.currentPartInstanceId)
+					: undefined
+				const nextPartInstance = this._curPlaylist?.nextPartInstanceId
+					? col.findOne(this._curPlaylist?.nextPartInstanceId)
+					: undefined
 				this._collectionData?.forEach((_pi, key) => {
 					if (PartInstanceName.current === key) this._collectionData?.set(key, curPartInstance)
 					else if (PartInstanceName.next === key) this._collectionData?.set(key, nextPartInstance)
