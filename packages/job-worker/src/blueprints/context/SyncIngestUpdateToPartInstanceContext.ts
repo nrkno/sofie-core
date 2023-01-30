@@ -8,7 +8,8 @@ import { CacheForPlayout } from '../../playout/cache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
-import { ContextInfo, RundownUserContext } from './context'
+import { ContextInfo } from './CommonContext'
+import { RundownUserContext } from './RundownUserContext'
 import {
 	ISyncIngestUpdateToPartInstanceContext,
 	IBlueprintPiece,

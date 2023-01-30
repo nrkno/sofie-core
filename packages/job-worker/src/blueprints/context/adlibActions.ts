@@ -21,7 +21,8 @@ import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/l
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
-import { getMediaObjectDuration, ShowStyleUserContext, UserContextInfo } from './context'
+import { UserContextInfo } from './CommonContext'
+import { ShowStyleUserContext } from './ShowStyleUserContext'
 import { WatchedPackagesHelper } from './watchedPackages'
 import { getCurrentTime } from '../../lib'
 import {
@@ -52,6 +53,7 @@ import {
 	convertPieceInstanceToBlueprints,
 	convertPieceToBlueprints,
 	convertResolvedPieceInstanceToBlueprints,
+	getMediaObjectDuration,
 	IBlueprintMutatablePartSampleKeys,
 	IBlueprintPieceObjectsSampleKeys,
 } from './lib'
@@ -634,6 +636,6 @@ export class ActionExecutionContext
 	}
 
 	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
-		return getMediaObjectDuration(this._context, mediaId, this.studioId)
+		return getMediaObjectDuration(this._context, mediaId)
 	}
 }

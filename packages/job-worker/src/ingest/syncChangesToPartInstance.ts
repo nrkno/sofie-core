@@ -18,7 +18,7 @@ import {
 } from '../playout/infinites'
 import { isTooCloseToAutonext, updateExpectedDurationWithPrerollForPartInstance } from '../playout/lib'
 import _ = require('underscore')
-import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context/syncIngestUpdateToPartInstance'
+import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import {
 	convertAdLibActionToBlueprints,

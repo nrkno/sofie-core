@@ -17,7 +17,8 @@ import { LocalIngestRundown, makeNewIngestPart, makeNewIngestRundown, makeNewIng
 import { canRundownBeUpdated, canSegmentBeUpdated, extendIngestRundownCore, getRundown, getSegmentId } from './lib'
 import { CommitIngestData, runIngestJob, runWithRundownLock, UpdateIngestRundownAction } from './lock'
 import { removeRundownFromDb } from '../rundownPlaylists'
-import { rundownToSegmentRundown, StudioUserContext } from '../blueprints/context'
+import { StudioUserContext } from '../blueprints/context'
+import { convertRundownToBlueprintSegmentRundown } from '../blueprints/context/lib'
 import { selectShowStyleVariant } from './rundown'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -229,7 +230,12 @@ export async function handleUpdatedRundownMetaDataInner(
 
 	let segmentChanges: UpdateSegmentsResult | undefined
 	let removedSegments: DBSegment[] | undefined
-	if (!_.isEqual(rundownToSegmentRundown(existingRundown), rundownToSegmentRundown(dbRundown))) {
+	if (
+		!_.isEqual(
+			convertRundownToBlueprintSegmentRundown(existingRundown, true),
+			convertRundownToBlueprintSegmentRundown(dbRundown, true)
+		)
+	) {
 		logger.info(`MetaData of rundown ${dbRundown.externalId} has been modified, regenerating segments`)
 		const changes = await resolveSegmentChangesForUpdatedRundown(
 			context,
