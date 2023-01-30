@@ -27,12 +27,16 @@ export class StudioHandler extends CollectionBase<DBStudio> implements Collectio
 			const studio = col.findOne(this._studioId)
 			if (!studio) throw new Error(`studio '${this._studioId}' not found!`)
 			this._collectionData = studio
-			this._dbObserver.added = (id: string) => this.changed(id, 'added')
-			this._dbObserver.changed = (id: string) => this.changed(id, 'changed')
+			this._dbObserver.added = (id: string) => {
+				void this.changed(id, 'added').catch(this._logger.error)
+			}
+			this._dbObserver.changed = (id: string) => {
+				void this.changed(id, 'changed').catch(this._logger.error)
+			}
 		}
 	}
 
-	changed(id: string, changeType: string): void {
+	async changed(id: string, changeType: string): Promise<void> {
 		this._logger.info(`${this._name} ${changeType} ${id}`)
 		if (!(id === unprotectString(this._studioId) && this._collection)) return
 		const col = this._core.getCollection<DBStudio>(this._collection)
@@ -40,6 +44,6 @@ export class StudioHandler extends CollectionBase<DBStudio> implements Collectio
 		const studio = col.findOne(protectString(id))
 		if (!studio) throw new Error(`studio '${this._studioId}' not found on changed!`)
 		this._collectionData = studio
-		this.notify(this._collectionData)
+		await this.notify(this._collectionData)
 	}
 }

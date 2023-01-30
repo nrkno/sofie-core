@@ -13,18 +13,22 @@ export class PlaylistsHandler extends CollectionBase<DBRundownPlaylist[]> implem
 		this._observerName = this._name
 	}
 
-	setPlaylists(playlists: DBRundownPlaylist[]): void {
+	async setPlaylists(playlists: DBRundownPlaylist[]): Promise<void> {
 		this._logger.info(`'${this._collection}' handler received playlists update with ${playlists.length} playlists`)
 		this._collectionData = playlists
-		this.notify(this._collectionData)
+		await this.notify(this._collectionData)
 	}
 
 	// override notify to implement empty array handling
-	notify(data: DBRundownPlaylist[] | undefined): void {
+	async notify(data: DBRundownPlaylist[] | undefined): Promise<void> {
 		this._logger.info(
 			`${this._collection} notifying all observers of an update with ${this._collectionData?.length} playlists`
 		)
-		this._observers.forEach((o) => (data ? o.update(this._name, data) : []))
+		if (data !== undefined) {
+			for (const observer of this._observers) {
+				await observer.update(this._name, data)
+			}
+		}
 	}
 }
 
@@ -50,21 +54,25 @@ export class PlaylistHandler extends CollectionBase<DBRundownPlaylist> implement
 			if (!col) throw new Error(`collection '${this._collection}' not found!`)
 			const playlists = col.find(undefined)
 			this._collectionData = playlists.find((p) => p.activationId)
-			this._playlistsHandler.setPlaylists(playlists)
-			this._dbObserver.added = (id: string) => this.changed(id, 'added')
-			this._dbObserver.changed = (id: string) => this.changed(id, 'changed')
+			await this._playlistsHandler.setPlaylists(playlists)
+			this._dbObserver.added = (id: string) => {
+				void this.changed(id, 'added').catch(this._logger.error)
+			}
+			this._dbObserver.changed = (id: string) => {
+				void this.changed(id, 'changed').catch(this._logger.error)
+			}
 		}
 	}
 
-	changed(id: string, changeType: string): void {
+	async changed(id: string, changeType: string): Promise<void> {
 		this._logger.info(`${this._name} ${changeType} ${id}`)
 		if (!this._collection) return
 		const col = this._core.getCollection<DBRundownPlaylist>(this._collection)
 		if (!col) throw new Error(`collection '${this._collection}' not found!`)
 		const playlists = col.find(undefined)
-		this._playlistsHandler.setPlaylists(playlists)
+		await this._playlistsHandler.setPlaylists(playlists)
 		this._collectionData = playlists.find((p) => p.activationId)
-		this.notify(this._collectionData)
+		await this.notify(this._collectionData)
 	}
 
 	get playlistsHandler(): PlaylistsHandler {

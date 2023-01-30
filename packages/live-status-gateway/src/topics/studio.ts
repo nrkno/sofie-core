@@ -64,7 +64,7 @@ export class StudioTopic
 		})
 	}
 
-	update(source: string, data: DBStudio | DBRundownPlaylist[] | undefined): void {
+	async update(source: string, data: DBStudio | DBRundownPlaylist[] | undefined): Promise<void> {
 		const prevPlaylistsStatus = this._playlists
 		const rundownPlaylists = data ? (data as DBRundownPlaylist[]) : []
 		const studio = data ? (data as DBStudio) : undefined

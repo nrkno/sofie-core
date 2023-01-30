@@ -207,7 +207,7 @@ export class ActivePlaylistTopic
 		})
 	}
 
-	update(
+	async update(
 		source: string,
 		data:
 			| DBRundownPlaylist
@@ -218,7 +218,7 @@ export class ActivePlaylistTopic
 			| AdLibPiece[]
 			| RundownBaselineAdLibItem[]
 			| undefined
-	): void {
+	): Promise<void> {
 		const rundownPlaylist = data ? (data as DBRundownPlaylist) : undefined
 		const sourceLayers: SourceLayers = data
 			? applyAndValidateOverrides((data as DBShowStyleBase).sourceLayersWithOverrides).obj
@@ -239,11 +239,13 @@ export class ActivePlaylistTopic
 			case 'ShowStyleBaseHandler':
 				this._logger.info(
 					`${this._name} received showStyleBase update with sourceLayers [${Object.values(sourceLayers).map(
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						(s) => s!.name
 					)}]`
 				)
 				this._logger.info(
 					`${this._name} received showStyleBase update with outputLayers [${Object.values(outputLayers).map(
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						(s) => s!.name
 					)}]`
 				)
