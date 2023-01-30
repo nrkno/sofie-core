@@ -8,7 +8,6 @@ import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../../lib/api/client'
 import { getCurrentTime, getRandomString, protectString } from '../../../lib/lib'
 import { RestAPI } from '../../../lib/api/rest'
-import { ReplaceOptionalWithNullInMethodArguments } from '../../methods'
 import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { MethodContextAPI } from '../../../lib/api/methods'
 import { ServerClientAPI } from '../client'
@@ -49,7 +48,7 @@ function restAPIUserEvent(
 	return `rest_api_${ctx.method}_${ctx.URL.toString()}`
 }
 
-class ServerRestAPI implements ReplaceOptionalWithNullInMethodArguments<RestAPI> {
+class ServerRestAPI implements RestAPI {
 	static getMethodContext(connection: Meteor.Connection): MethodContextAPI {
 		return { userId: null, connection, isSimulation: false, setUserId: () => {}, unblock: () => {} }
 	}
@@ -356,7 +355,7 @@ class ServerRestAPI implements ReplaceOptionalWithNullInMethodArguments<RestAPI>
 		connection: Meteor.Connection,
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
-		fromPartInstanceId: PartInstanceId | null
+		fromPartInstanceId: PartInstanceId | undefined
 	): Promise<ClientAPI.ClientResponse<void>> {
 		triggerWriteAccess()
 		const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -412,7 +411,7 @@ async function sofieAPIRequest<Params, Body, Response>(
 	method: 'get' | 'post',
 	route: string,
 	handler: (
-		serverAPI: ReplaceOptionalWithNullInMethodArguments<RestAPI>,
+		serverAPI: RestAPI,
 		connection: Meteor.Connection,
 		event: string,
 		params: Params,
@@ -587,7 +586,7 @@ sofieAPIRequest<{ playlistId: string }, { fromPartInstanceId?: string }, void>(
 
 		check(rundownPlaylistId, String)
 		check(fromPartInstanceId, Match.Optional(String))
-		return await serverAPI.take(connection, event, rundownPlaylistId, protectString(fromPartInstanceId) ?? null)
+		return await serverAPI.take(connection, event, rundownPlaylistId, protectString(fromPartInstanceId))
 	}
 )
 
