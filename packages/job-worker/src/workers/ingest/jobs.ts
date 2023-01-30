@@ -5,13 +5,15 @@ import {
 	handleMosFullStory,
 	handleMosInsertStories,
 	handleMosMoveStories,
+	handleMosStoryStatus,
+	handleMosSwapStories,
+} from '../../ingest/mosDevice/mosStoryJobs'
+import {
 	handleMosRundownData,
 	handleMosRundownMetadata,
 	handleMosRundownReadyToAir,
 	handleMosRundownStatus,
-	handleMosStoryStatus,
-	handleMosSwapStories,
-} from '../../ingest/mosDevice/ingest'
+} from '../../ingest/mosDevice/mosRundownJobs'
 import {
 	handleRegenerateRundown,
 	handleRegenerateSegment,

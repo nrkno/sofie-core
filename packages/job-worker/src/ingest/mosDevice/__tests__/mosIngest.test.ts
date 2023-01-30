@@ -11,12 +11,10 @@ import {
 	handleMosFullStory,
 	handleMosInsertStories,
 	handleMosMoveStories,
-	handleMosRundownData,
-	handleMosRundownReadyToAir,
-	handleMosRundownStatus,
 	handleMosStoryStatus,
 	handleMosSwapStories,
-} from '../ingest'
+} from '../mosStoryJobs'
+import { handleMosRundownData, handleMosRundownReadyToAir, handleMosRundownStatus } from '../mosRundownJobs'
 import { parseMosString } from '../lib'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../../__mocks__/context'
 import { setupMockIngestDevice, setupMockShowStyleCompound } from '../../../__mocks__/presetCollections'
@@ -81,7 +79,7 @@ describe('Test recieved mos ingest payloads', () => {
 			peripheralDeviceId: device._id,
 			rundownExternalId: parseMosString(roData.ID),
 			mosRunningOrder: roData,
-			isCreateAction: true,
+			isUpdateOperation: false,
 		})
 
 		ensureNextPartIsValidMock.mockClear()
@@ -144,7 +142,7 @@ describe('Test recieved mos ingest payloads', () => {
 			peripheralDeviceId: device._id,
 			rundownExternalId: parseMosString(roData.ID),
 			mosRunningOrder: roData,
-			isCreateAction: true,
+			isUpdateOperation: false,
 		})
 
 		const { rundown, rundownPlaylist, segments, parts } = await getRundownData()
@@ -176,7 +174,7 @@ describe('Test recieved mos ingest payloads', () => {
 			peripheralDeviceId: device._id,
 			rundownExternalId: parseMosString(roData.ID),
 			mosRunningOrder: roData,
-			isCreateAction: true,
+			isUpdateOperation: false,
 		})
 
 		const { rundown, rundownPlaylist, segments, parts } = await getRundownData()
@@ -211,7 +209,7 @@ describe('Test recieved mos ingest payloads', () => {
 			peripheralDeviceId: device._id,
 			rundownExternalId: parseMosString(roData.ID),
 			mosRunningOrder: roData,
-			isCreateAction: true,
+			isUpdateOperation: false,
 		})
 
 		const { rundown, rundownPlaylist } = await getRundownData()
@@ -1315,7 +1313,7 @@ describe('Test recieved mos ingest payloads', () => {
 				peripheralDeviceId: device._id,
 				rundownExternalId: rundown.externalId,
 				mosRunningOrder: mosRO,
-				isCreateAction: true,
+				isUpdateOperation: false,
 			})
 
 			{
@@ -1362,7 +1360,7 @@ describe('Test recieved mos ingest payloads', () => {
 			peripheralDeviceId: device._id,
 			rundownExternalId: roData1.ID.toString(),
 			mosRunningOrder: roData1,
-			isCreateAction: true,
+			isUpdateOperation: false,
 		})
 
 		const roData2 = mockRO.roCreate()
@@ -1373,7 +1371,7 @@ describe('Test recieved mos ingest payloads', () => {
 			peripheralDeviceId: device._id,
 			rundownExternalId: roData2.ID.toString(),
 			mosRunningOrder: roData2,
-			isCreateAction: true,
+			isUpdateOperation: false,
 		})
 
 		const rundown1 = (await context.directCollections.Rundowns.findOne({ externalId: 'Rundown1' })) as DBRundown
@@ -1420,7 +1418,7 @@ describe('Test recieved mos ingest payloads', () => {
 			peripheralDeviceId: device._id,
 			rundownExternalId: mosRO.ID.toString(),
 			mosRunningOrder: mosRO,
-			isCreateAction: true,
+			isUpdateOperation: false,
 		})
 
 		const playlist = (await context.directCollections.RundownPlaylists.findOne()) as DBRundownPlaylist

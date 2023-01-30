@@ -178,6 +178,10 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 	}
 }
 
+/**
+ * Minimal wrapper around a MongoDB ChangeStream
+ * This allows us to alter how errors are handled and to perform additional checks
+ */
 class WrappedChangeStream<TDoc extends { _id: ProtectedString<any> }>
 	extends EventEmitter<IChangeStreamEvents<TDoc>>
 	implements IChangeStream<TDoc>
@@ -203,6 +207,12 @@ class WrappedChangeStream<TDoc extends { _id: ProtectedString<any> }>
 	}
 }
 
+/**
+ * Wrap an existing MongoCollection into our wrapper
+ * @param rawCollection Collection to wrap
+ * @param allowWatchers Whether watchers are allowed in this context
+ * @returns Wrapped collection
+ */
 export function wrapMongoCollection<TDoc extends { _id: ProtectedString<any> }>(
 	rawCollection: MongoCollection<TDoc>,
 	allowWatchers: boolean

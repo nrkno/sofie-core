@@ -19,7 +19,7 @@ import { CommitIngestData, runIngestJob, runWithRundownLock, UpdateIngestRundown
 import { removeRundownFromDb } from '../rundownPlaylists'
 import { StudioUserContext } from '../blueprints/context'
 import { convertRundownToBlueprintSegmentRundown } from '../blueprints/context/lib'
-import { selectShowStyleVariant } from './rundown'
+import { selectShowStyleVariant } from './selectShowStyleVariant'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'

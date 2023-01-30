@@ -16,6 +16,13 @@ export interface SelectedShowStyleVariant {
 	compound: ReadonlyDeep<ProcessedShowStyleCompound>
 }
 
+/**
+ * Using the appropriate Blueprints, select the ShowStyleVariant and ShowStyleBase for a rundown
+ * @param context Context of the job being run
+ * @param blueprintContext Blueprint Context to use for Blueprint methods
+ * @param ingestRundown Rundown being ingested
+ * @returns The selected ShowStyleVariant, or null if none was selected and the Rundown should be rejected
+ */
 export async function selectShowStyleVariant(
 	context: JobContext,
 	blueprintContext: StudioUserContext,

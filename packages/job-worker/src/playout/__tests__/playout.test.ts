@@ -18,7 +18,6 @@ import {
 	activateRundownPlaylist,
 	deactivateRundownPlaylist,
 	moveNextPart,
-	onPlayoutPlaybackChanged,
 	prepareRundownPlaylistForBroadcast,
 	resetRundownPlaylist,
 	setMinimumTakeSpan,
@@ -52,6 +51,7 @@ import { adjustFakeTime, getCurrentTime, useFakeCurrentTime } from '../../__mock
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { ProcessedShowStyleCompound } from '../../jobs'
+import { onPlayoutPlaybackChanged } from '../timings'
 
 // const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
 const mockExecutePeripheralDeviceFunction = jest
