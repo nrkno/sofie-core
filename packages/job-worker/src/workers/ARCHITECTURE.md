@@ -37,7 +37,7 @@ The workers assume that if a task is on a queue, then it has already been valida
 
 This keeps it simpler, with the worker needing no knowledge of users, sessions or authentication.
 
-Meteor or any other ui providing work must verify user authorization before queueing the work.
+Meteor or any other api providing work must verify user authorization before queueing the work.
 
 ### Errors
 

@@ -413,16 +413,16 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 	}
 }
 
-export function getOrderedSegmentsAndPartsFromPlayoutCache(cache: CacheForPlayout): {
+export function getOrderedSegmentsAndPartsFromPlayoutCache(cache: ReadOnlyCache<CacheForPlayout>): {
 	segments: DBSegment[]
 	parts: DBPart[]
 } {
 	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, cache.Playlist.doc)
 }
-export function getRundownIDsFromCache(cache: CacheForPlayout): RundownId[] {
+export function getRundownIDsFromCache(cache: ReadOnlyCache<CacheForPlayout>): RundownId[] {
 	return cache.Rundowns.findAll(null).map((r) => r._id)
 }
-export function getSelectedPartInstancesFromCache(cache: CacheForPlayout): {
+export function getSelectedPartInstancesFromCache(cache: ReadOnlyCache<CacheForPlayout>): {
 	currentPartInstance: DBPartInstance | undefined
 	nextPartInstance: DBPartInstance | undefined
 	previousPartInstance: DBPartInstance | undefined
@@ -441,7 +441,9 @@ export function getSelectedPartInstancesFromCache(cache: CacheForPlayout): {
 			: undefined,
 	}
 }
-export function getShowStyleIdsRundownMappingFromCache(cache: CacheForPlayout): Map<RundownId, ShowStyleBaseId> {
+export function getShowStyleIdsRundownMappingFromCache(
+	cache: ReadOnlyCache<CacheForPlayout>
+): Map<RundownId, ShowStyleBaseId> {
 	const rundowns = cache.Rundowns.findAll(null)
 	const ret = new Map()
 

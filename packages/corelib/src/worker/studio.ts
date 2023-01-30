@@ -18,7 +18,14 @@ import { ITranslatableMessage } from '../TranslatableMessage'
 
 /** List of all Jobs performed by the Worker related to a certain Studio */
 export enum StudioJobs {
+	/**
+	 * Debug: Regenerate the timeline for the Studio
+	 */
 	UpdateTimeline = 'updateTimeline',
+	/**
+	 * Regenerate the timeline for the specified Playlist in the Studio
+	 * Has no effect if specified Playlist is not active
+	 */
 	UpdateTimelineAfterIngest = 'updateTimelineAfterIngest',
 
 	AdlibPieceStart = 'adLibPieceStart',
@@ -43,18 +50,40 @@ export enum StudioJobs {
 	OnPlayoutPlaybackChanged = 'onPlayoutPlaybackChanged',
 	OnTimelineTriggerTime = 'onTimelineTriggerTime',
 
+	/**
+	 * Update the timeline with a regenerated Studio Baseline
+	 * Has no effect if a Playlist is active
+	 */
 	UpdateStudioBaseline = 'updateStudioBaseline',
+	/**
+	 * Cleanup any RundownPlaylists that contain no Rundowns
+	 */
 	CleanupEmptyPlaylists = 'cleanupEmptyPlaylists',
 
 	OrderRestoreToDefault = 'orderRestoreToDefault',
 	OrderMoveRundownToPlaylist = 'orderMoveRundownToPlaylist',
 
+	/**
+	 * Debug: Regenerate the nexted-partinstance from its part.
+	 */
 	DebugRegenerateNextPartInstance = 'debugRegenerateNextPartInstance',
+	/**
+	 * Debug: Ensure that the infinite pieces on the nexted-part are correct
+	 */
 	DebugSyncInfinitesForNextPartInstance = 'debugSyncInfinitesForNextPartInstance',
-
-	GeneratePlaylistSnapshot = 'generatePlaylistSnapshot',
-	RestorePlaylistSnapshot = 'restorePlaylistSnapshot',
+	/**
+	 * Debug: Force the worker to throw an error
+	 */
 	DebugCrash = 'debugCrash',
+
+	/**
+	 * Generate the Playlist owned portions of a Playlist snapshot
+	 */
+	GeneratePlaylistSnapshot = 'generatePlaylistSnapshot',
+	/**
+	 * Restore the Playlist owned portions of a Playlist snapshot
+	 */
+	RestorePlaylistSnapshot = 'restorePlaylistSnapshot',
 
 	BlueprintUpgradeForStudio = 'blueprintUpgradeForStudio',
 	BlueprintValidateConfigForStudio = 'blueprintValidateConfigForStudio',

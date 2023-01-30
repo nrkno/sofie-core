@@ -62,7 +62,7 @@ import {
 	ActionPartChange,
 	DatastoreActionExecutionContext,
 } from '../blueprints/context/adlibActions'
-import { takeNextPartInnerSync } from './take'
+import { performTakeToNextedPart } from './take'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { sortPieceInstancesByStart } from './pieces'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
@@ -271,7 +271,7 @@ export async function takeNextPart(context: JobContext, data: TakeNextPartProps)
 				throw UserError.create(UserErrorMessage.TakeRateLimit, { duration: MINIMUM_TAKE_SPAN })
 			}
 
-			return takeNextPartInnerSync(context, cache, now)
+			return performTakeToNextedPart(context, cache, now)
 		}
 	)
 }
@@ -869,7 +869,7 @@ export async function executeActionInner(
  * This exists for the purpose of mocking this call for testing.
  */
 export async function callTakeWithCache(context: JobContext, cache: CacheForPlayout, now: number): Promise<void> {
-	return takeNextPartInnerSync(context, cache, now)
+	return performTakeToNextedPart(context, cache, now)
 }
 export async function stopPiecesOnSourceLayers(
 	context: JobContext,
@@ -942,6 +942,10 @@ async function shouldUpdateStudioBaselineInner(context: JobContext, cache: Cache
 	return libShouldUpdateStudioBaselineInner(getSystemVersion(), studio, timeline, blueprint)
 }
 
+/**
+ * Regenerate the timeline for the specified Playlist in the Studio
+ * Has no effect if specified Playlist is not active
+ */
 export async function handleUpdateTimelineAfterIngest(
 	context: JobContext,
 	data: UpdateTimelineAfterIngestProps

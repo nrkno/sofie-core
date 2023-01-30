@@ -28,7 +28,7 @@ export interface CommitIngestData {
 	 */
 	renamedSegments: Map<SegmentId, SegmentId>
 
-	/** Whether the rundown should be removed or orphaned */
+	/** Set to true if the rundown should be removed or orphaned */
 	removeRundown: boolean
 }
 

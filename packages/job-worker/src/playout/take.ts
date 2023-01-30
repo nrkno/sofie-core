@@ -29,7 +29,13 @@ import { calculatePartTimings } from '@sofie-automation/corelib/dist/playout/tim
 import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 
-export async function takeNextPartInnerSync(context: JobContext, cache: CacheForPlayout, now: number): Promise<void> {
+/**
+ * Perform a Take into the nexted Part, and prepare a new nexted Part
+ * @param context Context for current job
+ * @param cache Cache for the active Playlist
+ * @param now Current timestamp
+ */
+export async function performTakeToNextedPart(context: JobContext, cache: CacheForPlayout, now: number): Promise<void> {
 	const span = context.startSpan('takeNextPartInner')
 
 	if (!cache.Playlist.doc.activationId) throw new Error(`Rundown Playlist "${cache.Playlist.doc._id}" is not active!`)
@@ -190,6 +196,11 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	if (span) span.end()
 }
 
+/**
+ * Clear the nexted Segment, if taking into the provided Part will consume it
+ * @param cache Cache for the active Playlist
+ * @param takeOrCurrentPartInstance PartInstance to check
+ */
 export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInstance?: DBPartInstance): void {
 	if (
 		takeOrCurrentPartInstance?.consumesNextSegmentId &&
@@ -203,6 +214,10 @@ export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInst
 	}
 }
 
+/**
+ * Reset the Segment of the previousPartInstance, if playback has left that Segment and the Rundown is looping
+ * @param cache Cache for the active Playlist
+ */
 export function resetPreviousSegment(cache: CacheForPlayout): void {
 	const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 

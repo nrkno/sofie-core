@@ -1,5 +1,3 @@
-import { runJobWithPlayoutCache } from '../../playout/lock'
-import { updateTimeline, updateStudioTimeline } from '../../playout/timeline/generate'
 import { JobContext } from '../../jobs'
 import { adLibPieceStart, startStickyPieceOnSourceLayer, takePieceAsAdlibNow } from '../../playout/adlib'
 import { StudioJobs, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
@@ -20,11 +18,11 @@ import {
 	takeNextPart,
 	updateStudioBaseline,
 } from '../../playout/playout'
-import { runJobWithStudioCache } from '../../studio/lock'
 import {
 	handleDebugSyncPlayheadInfinitesForNextPartInstance,
 	handleDebugRegenerateNextPartInstance,
 	handleDebugCrash,
+	handleDebugUpdateTimeline,
 } from '../../playout/debug'
 import { removeEmptyPlaylists } from '../../studio/cleanup'
 import {
@@ -47,7 +45,7 @@ export type StudioJobHandlers = {
 }
 
 export const studioJobHandlers: StudioJobHandlers = {
-	[StudioJobs.UpdateTimeline]: updateTimelineDebug,
+	[StudioJobs.UpdateTimeline]: handleDebugUpdateTimeline,
 	[StudioJobs.UpdateTimelineAfterIngest]: handleUpdateTimelineAfterIngest,
 
 	[StudioJobs.AdlibPieceStart]: adLibPieceStart,
@@ -87,22 +85,4 @@ export const studioJobHandlers: StudioJobHandlers = {
 
 	[StudioJobs.BlueprintUpgradeForStudio]: handleBlueprintUpgradeForStudio,
 	[StudioJobs.BlueprintValidateConfigForStudio]: handleBlueprintValidateConfigForStudio,
-}
-
-async function updateTimelineDebug(context: JobContext, _data: void): Promise<void> {
-	await runJobWithStudioCache(context, async (studioCache) => {
-		const activePlaylists = studioCache.getActiveRundownPlaylists()
-		if (activePlaylists.length > 1) {
-			throw new Error(`Too many active playlists`)
-		} else if (activePlaylists.length > 0) {
-			const playlist = activePlaylists[0]
-
-			await runJobWithPlayoutCache(context, { playlistId: playlist._id }, null, async (playoutCache) => {
-				await updateTimeline(context, playoutCache)
-			})
-		} else {
-			await updateStudioTimeline(context, studioCache)
-			await studioCache.saveAllToDatabase()
-		}
-	})
 }
