@@ -403,12 +403,64 @@ class ServerRestAPI implements RestAPI {
 			}
 		)
 	}
+
+	async clearSourceLayer(
+		connection: Meteor.Connection,
+		event: string,
+		rundownPlaylistId: RundownPlaylistId,
+		sourceLayerId: string
+	): Promise<ClientAPI.ClientResponse<void>> {
+		const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+		if (!rundownPlaylist) throw new Error(`Rundown playlist ${rundownPlaylistId} does not exist`)
+		if (!rundownPlaylist.currentPartInstanceId || !rundownPlaylist.activationId)
+			throw new Error(`Rundown playlist ${rundownPlaylistId} is not currently active`)
+
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			ServerRestAPI.getMethodContext(connection),
+			event,
+			getCurrentTime(),
+			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(sourceLayerId, String)
+			},
+			StudioJobs.StopPiecesOnSourceLayers,
+			{
+				playlistId: rundownPlaylistId,
+				partInstanceId: rundownPlaylist.currentPartInstanceId,
+				sourceLayerIds: [sourceLayerId],
+			}
+		)
+	}
+
+	recallStickyPiece(
+		connection: Meteor.Connection,
+		event: string,
+		rundownPlaylistId: RundownPlaylistId,
+		sourceLayerId: string
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			ServerRestAPI.getMethodContext(connection),
+			event,
+			getCurrentTime(),
+			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(sourceLayerId, String)
+			},
+			StudioJobs.StartStickyPieceOnSourceLayer,
+			{
+				playlistId: rundownPlaylistId,
+				sourceLayerId,
+			}
+		)
+	}
 }
 
 const koaRouter = new KoaRouter()
 
 async function sofieAPIRequest<Params, Body, Response>(
-	method: 'get' | 'post',
+	method: 'get' | 'post' | 'delete',
 	route: string,
 	handler: (
 		serverAPI: RestAPI,
@@ -603,6 +655,34 @@ sofieAPIRequest<{ studioId: string }, { routeSetId: string; active: boolean }, v
 		check(routeSetId, String)
 		check(active, Boolean)
 		return await serverAPI.switchRouteSet(connection, event, studioId, routeSetId, active)
+	}
+)
+
+sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
+	'delete',
+	'/playlists/{playlistId}/sourceLayer/{sourceLayerId}',
+	async (serverAPI, connection, event, params, _) => {
+		const playlistId = protectString<RundownPlaylistId>(params.playlistId)
+		const sourceLayerId = params.sourceLayerId
+		logger.info(`koa DELETE: sourceLayer ${playlistId} ${sourceLayerId}`)
+
+		check(playlistId, String)
+		check(sourceLayerId, String)
+		return await serverAPI.clearSourceLayer(connection, event, playlistId, sourceLayerId)
+	}
+)
+
+sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
+	'post',
+	'/playlists/{playlistId}/sourceLayer/{sourceLayerId}/recallSticky',
+	async (serverAPI, connection, event, params, _) => {
+		const playlistId = protectString<RundownPlaylistId>(params.playlistId)
+		const sourceLayerId = params.sourceLayerId
+		logger.info(`koa POST: sourceLayer recallSticky ${playlistId} ${sourceLayerId}`)
+
+		check(playlistId, String)
+		check(sourceLayerId, String)
+		return await serverAPI.recallStickyPiece(connection, event, playlistId, sourceLayerId)
 	}
 )
 

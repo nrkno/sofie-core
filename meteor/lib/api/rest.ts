@@ -194,6 +194,38 @@ export interface RestAPI {
 		routeSetId: string,
 		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
+	/**
+	 * Clears the specified SourceLayer.
+	 *
+	 * Throws if specified playlist is not active.
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 * @param rundownPlaylistId Target Playlist.
+	 * @param sourceLayerId Target SourceLayer.
+	 */
+	clearSourceLayer(
+		connection: Meteor.Connection,
+		event: string,
+		rundownPlaylistId: RundownPlaylistId,
+		sourceLayerId: string
+	): Promise<ClientAPI.ClientResponse<void>>
+	/**
+	 * Recalls the last sticky Piece on the specified SourceLayer, if there is any.
+	 *
+	 * Throws if specified playlist is not active.
+	 * Throws if specified SourceLayer is not sticky.
+	 * Throws if there is no sticky piece for this SourceLayer.
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 * @param rundownPlaylistId Target Playlist.
+	 * @param sourceLayerId Target SourceLayer.
+	 */
+	recallStickyPiece(
+		connection: Meteor.Connection,
+		event: string,
+		rundownPlaylistId: RundownPlaylistId,
+		sourceLayerId: string
+	): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum RestAPIMethods {

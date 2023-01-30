@@ -405,6 +405,71 @@ resources:
                 properties:
                   message:
                     type: string
+  sourceLayer:
+    delete:
+      operationId: clearSourceLayer
+      tags:
+        - playlists
+        - sourceLayers
+      summary: Clears the target SourceLayer.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Target playlist.
+          required: true
+          schema:
+            type: string
+        - name: sourceLayerId
+          in: path
+          description: Target SourceLayer.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: Playlist is not active.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  recallSticky:
+    post:
+      operationId: recallSticky
+      tags:
+        - playlists
+        - sourceLayers
+      summary: Recalls the last sticky Piece on the specified SourceLayer, if there is any.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Target playlist.
+          required: true
+          schema:
+            type: string
+        - name: sourceLayerId
+          in: path
+          description: Target sourcelayer.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: Playlist is not active, SourceLayer is not sticky, or there is no sticky piece for this SourceLayer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
 components:
   responses:
     postSuccess:
