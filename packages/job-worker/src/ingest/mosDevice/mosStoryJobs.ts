@@ -10,7 +10,7 @@ import {
 import { logger } from '../../logging'
 import _ = require('underscore')
 import { JobContext } from '../../jobs'
-import { updateSegmentFromIngestData } from '../generation'
+import { updateSegmentFromIngestData } from '../generationSegment'
 import { LocalIngestRundown } from '../ingestCache'
 import { canRundownBeUpdated, getRundownId } from '../lib'
 import { runIngestJob, runWithRundownLock } from '../lock'

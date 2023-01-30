@@ -22,17 +22,18 @@ import { MongoQuery } from '../../db'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { setupMockPeripheralDevice, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import {
-	handleRemovedPart,
 	handleRemovedRundown,
-	handleRemovedSegment,
-	handleRemoveOrphanedSegemnts,
-	handleUpdatedPart,
 	handleUpdatedRundown,
 	handleUpdatedRundownMetaData,
+	handleUserRemoveRundown,
+} from '../../ingest/ingestRundownJobs'
+import { handleRemovedPart, handleUpdatedPart } from '../../ingest/ingestPartJobs'
+import {
+	handleRemovedSegment,
+	handleRemoveOrphanedSegemnts,
 	handleUpdatedSegment,
 	handleUpdatedSegmentRanks,
-	handleUserRemoveRundown,
-} from '../rundownInput'
+} from '../../ingest/ingestSegmentJobs'
 import { activateRundownPlaylist, setMinimumTakeSpan, takeNextPart } from '../../playout/playout'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getSelectedPartInstances } from '../../playout/__tests__/lib'

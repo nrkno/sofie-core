@@ -13,10 +13,10 @@ import _ = require('underscore')
 import { LocalIngestRundown } from '../ingestCache'
 import { getRundownId, getPartId, canRundownBeUpdated } from '../lib'
 import { runIngestJob, CommitIngestData, runWithRundownLock } from '../lock'
-import { handleUpdatedRundownInner, handleUpdatedRundownMetaDataInner } from '../rundownInput'
 import { diffAndUpdateSegmentIds } from './diff'
 import { parseMosString } from './lib'
 import { groupedPartsToSegments, groupIngestParts, storiesToIngestParts } from './mosToIngest'
+import { updateRundownFromIngestData, updateRundownMetadataFromIngestData } from '../generationRundown'
 
 /**
  * Insert or update a mos rundown
@@ -76,7 +76,7 @@ export async function handleMosRundownData(context: JobContext, data: MosRundown
 				renamedSegments = diffAndUpdateSegmentIds(context, cache, oldIngestRundown, newIngestRundown)
 			}
 
-			const res = await handleUpdatedRundownInner(
+			const res = await updateRundownFromIngestData(
 				context,
 				cache,
 				newIngestRundown,
@@ -116,7 +116,7 @@ export async function handleMosRundownMetadata(context: JobContext, data: MosRun
 		async (context, cache, ingestRundown) => {
 			if (!ingestRundown) throw new Error(`handleMosRundownMetadata lost the IngestRundown...`)
 
-			return handleUpdatedRundownMetaDataInner(context, cache, ingestRundown, data.peripheralDeviceId)
+			return updateRundownMetadataFromIngestData(context, cache, ingestRundown, data.peripheralDeviceId)
 		}
 	)
 }
@@ -168,7 +168,7 @@ export async function handleMosRundownReadyToAir(context: JobContext, data: MosR
 				return rd
 			})
 
-			return handleUpdatedRundownMetaDataInner(context, cache, ingestRundown, data.peripheralDeviceId)
+			return updateRundownMetadataFromIngestData(context, cache, ingestRundown, data.peripheralDeviceId)
 		}
 	)
 }

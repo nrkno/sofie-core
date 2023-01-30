@@ -1,44 +1,25 @@
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { BlueprintId, PeripheralDeviceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { SegmentNote, PartNote, RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { SegmentNote, PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { Piece, serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
-import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { StudioUserContext, SegmentUserContext, GetRundownContext } from '../blueprints/context'
+import { literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { SegmentUserContext } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
-import {
-	postProcessAdLibActions,
-	postProcessAdLibPieces,
-	postProcessGlobalAdLibActions,
-	postProcessPieces,
-	postProcessRundownBaselineItems,
-} from '../blueprints/postProcess'
+import { postProcessAdLibActions, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
 import { saveIntoCache, logChanges } from '../cache/lib'
-import { sumChanges, anythingChanged } from '../db/changes'
-import { getCurrentTime, getSystemVersion } from '../lib'
 import { logger } from '../logging'
-import _ = require('underscore')
 import { CacheForIngest } from './cache'
 import { LocalIngestSegment, LocalIngestRundown } from './ingestCache'
-import { getSegmentId, getPartId, getRundown, canSegmentBeUpdated, extendIngestRundownCore } from './lib'
+import { getSegmentId, getPartId, getRundown, canSegmentBeUpdated } from './lib'
 import { JobContext } from '../jobs'
 import { CommitIngestData } from './lock'
-import { SelectedShowStyleVariant, selectShowStyleVariant } from './selectShowStyleVariant'
-import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
-import { ReadonlyDeep } from 'type-fest'
-import { BlueprintResultRundown, BlueprintResultSegment, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { BlueprintResultSegment, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { ReadOnlyCache } from '../cache/CacheBase'
 
 export interface UpdateSegmentsResult {
 	segments: DBSegment[]
@@ -51,7 +32,7 @@ export interface UpdateSegmentsResult {
 async function getWatchedPackagesHelper(
 	context: JobContext,
 	allRundownWatchedPackages0: WatchedPackagesHelper | null,
-	cache: CacheForIngest,
+	cache: ReadOnlyCache<CacheForIngest>,
 	ingestSegments: LocalIngestSegment[]
 ): Promise<WatchedPackagesHelper> {
 	if (allRundownWatchedPackages0) {
@@ -67,14 +48,16 @@ async function getWatchedPackagesHelper(
 }
 
 /**
- * Generate the content for some segments
+ * Generate and return the content for an array segments
+ * @param context Context for the running job
  * @param cache The ingest cache of the rundown
- * @param rundown The rundown being updated/generated
  * @param ingestSegments The segments to regenerate
+ * @param allRundownWatchedPackages0 Optional WatchedPackagesHelper for all Packages in the Rundown. If not provided, packages will be loaded from the database
+ * @returns Newly generated documents
  */
 export async function calculateSegmentsFromIngestData(
 	context: JobContext,
-	cache: CacheForIngest,
+	cache: ReadOnlyCache<CacheForIngest>,
 	ingestSegments: LocalIngestSegment[],
 	allRundownWatchedPackages0: WatchedPackagesHelper | null
 ): Promise<UpdateSegmentsResult> {
@@ -280,9 +263,22 @@ export async function calculateSegmentsFromIngestData(
 	return res
 }
 
-function preserveOrphanedSegmentPositionInRundown(context: JobContext, cache: CacheForIngest, newSegment: DBSegment) {
-	// Note: This has been written and tested only for the iNews gateway.
-	// It may work for mos-gateway, but this has not yet been tested and so is behind a feature/config field until it has been verified or adapted
+/**
+ * Preserve the position of `orphaned: deleted` segments in the Rundown, when regenerating
+ * Danger: This has been written and tested only for the iNews gateway.
+ * It may work for mos-gateway, but this has not yet been tested and so is behind a feature/config field until it has been verified or adapted
+ * @param context Context for the running job
+ * @param cache The ingest cache of the rundown
+ * @param newSegment The changed Segment that could affect ordering
+ */
+function preserveOrphanedSegmentPositionInRundown(
+	context: JobContext,
+	cache0: ReadOnlyCache<CacheForIngest>,
+	newSegment: DBSegment
+) {
+	// TODO - is this safe? The caller does not mutate the Cache!
+	const cache = cache0 as CacheForIngest
+
 	if (context.studio.settings.preserveOrphanedSegmentPositionInRundown) {
 		// When we have orphaned segments, try to keep the order correct when adding and removing other segments
 		const orphanedDeletedSegments = cache.Segments.findAll((s) => s.orphaned === SegmentOrphanedReason.DELETED)
@@ -338,6 +334,7 @@ function preserveOrphanedSegmentPositionInRundown(context: JobContext, cache: Ca
 /**
  * Save the calculated UpdateSegmentsResult into the cache
  * Note: this will NOT remove any segments, it is expected for that to be done later
+ * @param context Context for the running job
  * @param cache The cache to save into
  * @param data The data to save
  * @param isWholeRundownUpdate Whether this is a whole rundown change (This will remove any stray items)
@@ -394,6 +391,14 @@ export function saveSegmentChangesToCache(
 	}
 }
 
+/**
+ * Regenerate and save the content for a Segment
+ * @param context Context for the running job
+ * @param cache The ingest cache of the rundown
+ * @param ingestSegment The segment to regenerate
+ * @param isNewSegment True if the segment is being created.
+ * @returns Details on the changes
+ */
 export async function updateSegmentFromIngestData(
 	context: JobContext,
 	cache: CacheForIngest,
@@ -423,6 +428,14 @@ export async function updateSegmentFromIngestData(
 	}
 }
 
+/**
+ * Regenerate and save the content for all list of Segment Ids in a Rundown
+ * @param context Context for the running job
+ * @param cache The ingest cache of the rundown
+ * @param ingestRundown The rundown to regenerate
+ * @param segmentIds Ids of the segments to regenerate
+ * @returns Details on the changes, and any SegmentIds that were not found in the ingestRundown
+ */
 export async function regenerateSegmentsFromIngestData(
 	context: JobContext,
 	cache: CacheForIngest,
@@ -475,263 +488,15 @@ export async function regenerateSegmentsFromIngestData(
 	}
 }
 
-export async function updateRundownFromIngestData(
-	context: JobContext,
-	cache: CacheForIngest,
-	ingestRundown: LocalIngestRundown,
-	peripheralDeviceId: PeripheralDeviceId | null
-): Promise<CommitIngestData | null> {
-	const span = context.startSpan('ingest.rundownInput.updateRundownFromIngestData')
-
-	// canBeUpdated is to be run by the callers
-
-	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
-
-	const pPeripheralDevice = peripheralDeviceId
-		? context.directCollections.PeripheralDevices.findOne(peripheralDeviceId)
-		: undefined
-
-	const selectShowStyleContext = new StudioUserContext(
-		{
-			name: 'selectShowStyleVariant',
-			identifier: `studioId=${context.studio._id},rundownId=${cache.RundownId},ingestRundownId=${cache.RundownExternalId}`,
-			tempSendUserNotesIntoBlackHole: true,
-		},
-		context.studio,
-		context.getStudioBlueprintConfig()
-	)
-	// TODO-CONTEXT save any user notes from selectShowStyleContext
-	const showStyle = await selectShowStyleVariant(context, selectShowStyleContext, extendedIngestRundown)
-	if (!showStyle) {
-		logger.debug('Blueprint rejected the rundown')
-		throw new Error('Blueprint rejected the rundown')
-	}
-
-	const pAllRundownWatchedPackages = WatchedPackagesHelper.createForIngest(context, cache, undefined)
-
-	const showStyleBlueprint = await context.getShowStyleBlueprint(showStyle.base._id)
-	const allRundownWatchedPackages = await pAllRundownWatchedPackages
-
-	// Call blueprints, get rundown
-	const rundownData = await getRundownFromIngestData(
-		context,
-		cache,
-		ingestRundown,
-		pPeripheralDevice,
-		showStyle,
-		showStyleBlueprint,
-		allRundownWatchedPackages
-	)
-	if (!rundownData) {
-		// We got no rundown, abort:
-		return null
-	}
-
-	const { dbRundownData, rundownRes } = rundownData
-
-	// Save rundown and baseline
-	const dbRundown = await saveChangesForRundown(context, cache, dbRundownData, rundownRes, showStyle)
-
-	// TODO - store notes from rundownNotesContext
-
-	const { segmentChanges, removedSegments } = await resolveSegmentChangesForUpdatedRundown(
-		context,
-		cache,
-		ingestRundown,
-		allRundownWatchedPackages
-	)
-
-	updateBaselineExpectedPackagesOnRundown(context, cache, rundownRes.baseline)
-
-	saveSegmentChangesToCache(context, cache, segmentChanges, true)
-
-	logger.info(`Rundown ${dbRundown._id} update complete`)
-
-	span?.end()
-	return literal<CommitIngestData>({
-		changedSegmentIds: segmentChanges.segments.map((s) => s._id),
-		removedSegmentIds: removedSegments.map((s) => s._id),
-		renamedSegments: new Map(),
-
-		removeRundown: false,
-	})
-}
-export async function getRundownFromIngestData(
-	context: JobContext,
-	cache: CacheForIngest,
-	ingestRundown: LocalIngestRundown,
-	pPeripheralDevice: Promise<PeripheralDevice | undefined> | undefined,
-	showStyle: SelectedShowStyleVariant,
-	showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
-	allRundownWatchedPackages: WatchedPackagesHelper
-): Promise<{ dbRundownData: DBRundown; rundownRes: BlueprintResultRundown } | null> {
-	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
-
-	const rundownBaselinePackages = allRundownWatchedPackages.filter(
-		context,
-		(pkg) =>
-			pkg.fromPieceType === ExpectedPackageDBType.BASELINE_ADLIB_ACTION ||
-			pkg.fromPieceType === ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS
-	)
-
-	const blueprintContext = new GetRundownContext(
-		{
-			name: `${showStyle.base.name}-${showStyle.variant.name}`,
-			identifier: `showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
-		},
-		context,
-		showStyle.compound,
-		rundownBaselinePackages,
-		async () => {
-			// Note: This can cause a mild race-condition, in the case of two Rundowns being created at the same time.
-			// But we're just ignoreing that for now.
-			return context.directCollections.RundownPlaylists.findFetch({
-				studioId: context.studioId,
-			})
-		},
-		async () => {
-			return context.directCollections.Rundowns.findFetch(
-				{
-					studioId: context.studioId,
-				},
-				{
-					projection: {
-						_id: 1,
-						playlistId: 1,
-					},
-				}
-			) as Promise<Pick<DBRundown, '_id' | 'playlistId'>[]>
-		},
-		async () => {
-			return cache.Rundown.doc
-		}
-	)
-	let rundownRes: BlueprintResultRundown | null = null
-	try {
-		rundownRes = await showStyleBlueprint.blueprint.getRundown(blueprintContext, extendedIngestRundown)
-	} catch (err) {
-		logger.error(`Error in showStyleBlueprint.getRundown: ${stringifyError(err)}`)
-		rundownRes = null
-	}
-
-	if (rundownRes === null) {
-		// There was an error in the blueprint, abort:
-		return null
-	}
-
-	const translationNamespaces: BlueprintId[] = []
-	if (showStyleBlueprint.blueprintId) {
-		translationNamespaces.push(showStyleBlueprint.blueprintId)
-	}
-	if (context.studio.blueprintId) {
-		translationNamespaces.push(context.studio.blueprintId)
-	}
-
-	// Ensure the ids in the notes are clean
-	const rundownNotes = blueprintContext.notes.map((note) =>
-		literal<RundownNote>({
-			type: note.type,
-			message: wrapTranslatableMessageFromBlueprints(note.message, translationNamespaces),
-			origin: {
-				name: `${showStyle.base.name}-${showStyle.variant.name}`,
-			},
-		})
-	)
-
-	const peripheralDevice = await pPeripheralDevice
-	const dbRundownData = literal<DBRundown>({
-		...rundownRes.rundown,
-		notes: rundownNotes,
-		_id: cache.RundownId,
-		externalId: ingestRundown.externalId,
-		organizationId: context.studio.organizationId,
-		studioId: context.studio._id,
-		showStyleVariantId: showStyle.variant._id,
-		showStyleBaseId: showStyle.base._id,
-		orphaned: undefined,
-
-		importVersions: {
-			studio: context.studio._rundownVersionHash,
-			showStyleBase: showStyle.base._rundownVersionHash,
-			showStyleVariant: showStyle.variant._rundownVersionHash,
-			blueprint: showStyleBlueprint.blueprint.blueprintVersion,
-			core: getSystemVersion(),
-		},
-
-		created: cache.Rundown.doc?.created ?? getCurrentTime(),
-		modified: getCurrentTime(),
-
-		peripheralDeviceId: peripheralDevice?._id,
-		externalNRCSName: getExternalNRCSName(peripheralDevice),
-
-		// validated later
-		playlistId: protectString(''),
-		...(cache.Rundown.doc
-			? _.pick(cache.Rundown.doc, 'playlistId', 'baselineModifyHash', 'airStatus', 'status')
-			: {}),
-	})
-
-	return { dbRundownData, rundownRes }
-}
-
-export async function saveChangesForRundown(
-	context: JobContext,
-	cache: CacheForIngest,
-	dbRundownData: DBRundown,
-	rundownRes: BlueprintResultRundown,
-	showStyle: SelectedShowStyleVariant
-): Promise<ReadonlyDeep<DBRundown>> {
-	const dbRundown = cache.Rundown.replace(dbRundownData)
-
-	// Save the baseline
-	logger.info(`Building baseline objects for ${dbRundown._id}...`)
-	logger.info(`... got ${rundownRes.baseline.timelineObjects.length} objects from baseline.`)
-	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
-	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
-
-	const { baselineObjects, baselineAdlibPieces, baselineAdlibActions } = await cache.loadBaselineCollections()
-	const rundownBaselineChanges = sumChanges(
-		saveIntoCache<RundownBaselineObj>(context, baselineObjects, null, [
-			{
-				_id: getRandomId(7),
-				rundownId: dbRundown._id,
-				timelineObjectsString: serializePieceTimelineObjectsBlob(
-					postProcessRundownBaselineItems(showStyle.base.blueprintId, rundownRes.baseline.timelineObjects)
-				),
-			},
-		]),
-		// Save the global adlibs
-		saveIntoCache<RundownBaselineAdLibItem>(
-			context,
-			baselineAdlibPieces,
-			null,
-			postProcessAdLibPieces(
-				context,
-				showStyle.base.blueprintId,
-				dbRundown._id,
-				undefined,
-				rundownRes.globalAdLibPieces
-			)
-		),
-		saveIntoCache<RundownBaselineAdLibAction>(
-			context,
-			baselineAdlibActions,
-			null,
-			postProcessGlobalAdLibActions(showStyle.base.blueprintId, dbRundown._id, rundownRes.globalActions || [])
-		)
-	)
-	if (anythingChanged(rundownBaselineChanges)) {
-		// If any of the rundown baseline datas was modified, we'll update the baselineModifyHash of the rundown
-		cache.Rundown.update((rd) => {
-			rd.baselineModifyHash = getCurrentTime() + ''
-			return rd
-		})
-	}
-
-	return dbRundown
-}
-
-export async function resolveSegmentChangesForUpdatedRundown(
+/**
+ * Generate and return the content for all Segments in a Rundown, along with Segments which should be removed
+ * @param context Context for the running job
+ * @param cache The ingest cache of the rundown
+ * @param ingestRundown The Rundown to regenerate
+ * @param allRundownWatchedPackages0 WatchedPackagesHelper for all Packages used in the Rundown
+ * @returns Newly generated documents, and list of those to remove
+ */
+export async function calculateSegmentsAndRemovalsFromIngestData(
 	context: JobContext,
 	cache: CacheForIngest,
 	ingestRundown: LocalIngestRundown,

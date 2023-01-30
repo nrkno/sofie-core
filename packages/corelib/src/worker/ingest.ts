@@ -45,7 +45,7 @@ export enum IngestJobs {
 	 */
 	RemovePart = 'removePart',
 	/**
-	 * Insert or update a Pat in a Segment
+	 * Insert or update a Part in a Segment
 	 */
 	UpdatePart = 'updatePart',
 	/**
@@ -91,7 +91,7 @@ export enum IngestJobs {
 	 */
 	MosDeleteStory = 'mosDeleteStory',
 	/**
-	 * Insert a mos story
+	 * Insert a mos story before the referenced existing story
 	 */
 	MosInsertStory = 'mosInsertStory',
 	/**

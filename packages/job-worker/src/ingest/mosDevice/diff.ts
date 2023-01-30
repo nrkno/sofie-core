@@ -3,7 +3,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { CacheForIngest } from '../cache'
 import { LocalIngestRundown, LocalIngestSegment } from '../ingestCache'
 import { canRundownBeUpdated, getRundown, getSegmentId } from '../lib'
-import { calculateSegmentsFromIngestData, saveSegmentChangesToCache } from '../generation'
+import { calculateSegmentsFromIngestData, saveSegmentChangesToCache } from '../generationSegment'
 import _ = require('underscore')
 import { clone, deleteAllUndefinedProperties, literal, normalizeArray } from '@sofie-automation/corelib/dist/lib'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
