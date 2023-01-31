@@ -2,7 +2,7 @@
 
 HOLD is a feature in Sofie to allow for a special form of take between two parts. It allows for the new part to start with some portions of the old part being retained, with the next 'take' stopping the remaining portions of the old part and not performing a true take.
 
-For example, it could be setup to hold back the video when going between two clips. The first take would start the audio from the second clip, but keep the video from the first clip. The second take would stop the first clip, and show the video for the second clip.
+For example, it could be setup to hold back the video when going between two clips, creating what is known in film editing as a [split edit](https://en.wikipedia.org/wiki/Split_edit) or [J-cut](https://en.wikipedia.org/wiki/J_cut). The first _Take_ would start the audio from an _A-Roll_ (second clip), but keep the video playing from a _B-Roll_ (first clip). The second _Take_ would stop the first clip entirely, and join the audio and video for the second clip.
 
 ## Flow
 
@@ -13,7 +13,7 @@ It is not possible to run any adlibs while a hold is active, or to change the ne
 
 When the part to be held is playing, with the correct part as next, the flow for the users is:
 
-- Activate HOLD (By hotkey or other source)
+- Activate HOLD (By hotkey or other user action)
 - Perform a take into the HOLD
 - Perform a take to complete the HOLD
 
@@ -21,11 +21,13 @@ Before the first take in the HOLD, it can be cancelled in the same way it was ac
 
 ## Supporting HOLD in blueprints
 
-The functionality here is a bit limited, as it was originally written for one situation and has not been expanded to support more complex scenarios.
+:::note
+The functionality here is a bit limited, as it was originally written for one particular use-case and has not been expanded to support more complex scenarios.
 Some unanswered questions we have are:
 
-- Should HOLD be rewritten to be done with adlib-actions instead to allow for more complex scenarios?
-- Should there be a way to more intelligently check if HOLD can be done between two Parts? (perhaps a new blueprint method?)
+- Should _Hold_ be rewritten to be done with adlib-actions instead to allow for more complex scenarios?
+- Should there be a way to more intelligently check if _Hold_ can be done between two Parts? (perhaps a new blueprint method?)
+:::
 
 The blueprints have to label parts as supporting HOLD.  
 You can do this with the [`holdMode`](https://nrkno.github.io/sofie-core/typedoc/interfaces/_sofie_automation_blueprints_integration.IBlueprintPart.html#holdMode) property, and labelling it possible to HOLD from or to the part.

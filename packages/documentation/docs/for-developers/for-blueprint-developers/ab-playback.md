@@ -1,11 +1,11 @@
 # AB Playback
 
 :::caution
-This page talks about various sections that are in NRK's blueprints which are not yet public. Other blueprints (such as those from [TV2](https://github.com/tv2/sofie-blueprints-inews)) make use of AB playback, but may not match up completely with what is documented here.  
+This page talks about various sections that are in NRK's blueprints which are not yet public. Other blueprints (such as those from [TV 2 Danmark](https://github.com/tv2/sofie-blueprints-inews)) make use of AB playback, but may not match up completely with what is documented here.  
 We are looking into pushing more of this logic into Sofie to aid reusability.
 :::
 
-AB Playback is a common technique for clip playback. The aim is to be able to play multiple clips back to back, alternating which player is used for each clip.  
+_AB Playback_ is a common technique for clip playback. The aim is to be able to play multiple clips back to back, alternating which player is used for each clip.  
 At first glance it sounds simple to handle, but it quickly becomes complicated when we consider the need to allow users to run adlibs and that the system needs to seamlessly update pre-programmed clips when this happens.
 
 To avoid this problem, we take an approach of simply labelling pieces as needing an AB assignment and leaving timeline objects to have some unresolved values during the ingest blueprint operations, and use the `onTimelineGenerate` blueprint function to do the assignment and modify the timeline as needed at the time of playout.
@@ -21,10 +21,10 @@ There are other challenges to think about too:
 ## Defining
 
 :::info
-This method of defining sessions is completely optional, it could be done in many other ways depending on how you wish to implement it.
+This method of defining sessions is just a suggestion, it could be done in many other ways depending on how you wish to implement it.
 :::
 
-As AB playback is currently mostly blueprints driven, core is unaware of which pieces want AB playback. Instead, we track AB session requests in the `metaData` field on each Piece using the structure:
+As AB playback is currently mostly blueprints driven, Sofie Core is unaware of which pieces want AB playback. Instead, we track AB session requests in the `metaData` field on each Piece using the structure:
 
 ```ts
 export interface AbSessionInfo {
@@ -39,7 +39,7 @@ export interface IPieceMetaData {
 }
 ```
 
-This allows each piece to request multiple AB sessions, with the information we need about each session. In the simplest form, `pool` and `optional` are not required. `pool` allows us to have multiple AB pools for different purposes (eg clips and supersource). `optional` allows us to know that it is safe to ignore this request if there is no available player. For example, if there are not enough players to allocate one to the studio monitor, it can be left on the holding loop.
+This allows each piece to request multiple AB sessions, with the information we need about each session. In the simplest form, `pool` and `optional` are not required. `pool` allows us to have multiple AB pools for different purposes (eg clips and DVE channels). `optional` allows us to know that it is safe to ignore this request if there is no available player. For example, if there are not enough players to allocate one to the studio monitor, it can be left on the holding loop.
 
 `name` is used as an identifier for this session. It is used to allow for multiple sessions to exist in the same Piece or Part, while being able to match up Pieces which should be using the same session. Make sure you don't reuse a name accidentally within a Segment, or it will be treated as the same session.
 
