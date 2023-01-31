@@ -4,6 +4,8 @@ HOLD is a feature in Sofie to allow for a special form of take between two parts
 
 For example, it could be setup to hold back the video when going between two clips, creating what is known in film editing as a [split edit](https://en.wikipedia.org/wiki/Split_edit) or [J-cut](https://en.wikipedia.org/wiki/J_cut). The first _Take_ would start the audio from an _A-Roll_ (second clip), but keep the video playing from a _B-Roll_ (first clip). The second _Take_ would stop the first clip entirely, and join the audio and video for the second clip.
 
+![A timeline of a J-Cut in a Non-Linear Video Editor](/img/docs/video_edit_hold_j-cut.png)
+
 ## Flow
 
 While HOLD is active or in progress, an indicator is shown in the header of the UI.  
