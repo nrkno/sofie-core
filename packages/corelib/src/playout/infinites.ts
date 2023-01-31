@@ -334,6 +334,24 @@ export function isPiecePotentiallyActiveInPart(
 	}
 }
 
+/**
+ * Calculate all of the onEnd PieceInstances for a PartInstance
+ * @param playlistActivationId The current playlist ActivationId
+ * @param playingPartInstance The current PartInstance, if there is one
+ * @param playingPieceInstances The PieceInstances from the current PartInstance
+ * @param rundown The Rundown the Part belongs to
+ * @param part The Part the PartInstance is based on
+ * @param partsBeforeThisInSegmentSet Set of PartIds that exist in the Segment before the part being processed
+ * @param segmentsBeforeThisInRundownSet Set of SegmentIds that exist in the Rundown before the part being processed
+ * @param rundownsBeforeThisInPlaylist Set of RundownIds that exist in the Playlist before the part being processed
+ * @param rundownsToShowstyles Lookup of RundownIds in the Playlist, to their ShowStyleBase id
+ * @param possiblePieces Array of Pieces that should be considered for being a PieceInstance in the new PartInstance
+ * @param orderedPartIds Ordered array of all PartId in the Rundown
+ * @param newInstanceId Id of the PartInstance
+ * @param nextPartIsAfterCurrentPart Whether the new Part existing after the playlingPartInstane in the Rundown
+ * @param isTemporary Whether to mark these PieceInstances as temporary
+ * @returns Array of PieceInstances for the specified PartInstance
+ */
 export function getPieceInstancesForPart(
 	playlistActivationId: RundownPlaylistActivationId,
 	playingPartInstance: DBPartInstance | undefined,

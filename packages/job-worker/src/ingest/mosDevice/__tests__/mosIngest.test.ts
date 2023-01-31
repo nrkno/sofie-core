@@ -28,7 +28,12 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { getPartId } from '../../lib'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { activateRundownPlaylist, deactivateRundownPlaylist, setNextPart, takeNextPart } from '../../../playout/playout'
+import {
+	activateRundownPlaylist,
+	deactivateRundownPlaylist,
+	handleSetNextPart,
+	takeNextPart,
+} from '../../../playout/playout'
 import { removeRundownPlaylistFromDb } from '../../__tests__/lib'
 
 jest.mock('../../updateNext')
@@ -1241,7 +1246,7 @@ describe('Test recieved mos ingest payloads', () => {
 			rehearsal: true,
 		})
 		try {
-			await setNextPart(context, {
+			await handleSetNextPart(context, {
 				playlistId: rundown.playlistId,
 				nextPartId: getPartId(rundown._id, 'ro1;s2;p1'),
 			})
@@ -1288,7 +1293,7 @@ describe('Test recieved mos ingest payloads', () => {
 			rehearsal: true,
 		})
 		try {
-			await setNextPart(context, {
+			await handleSetNextPart(context, {
 				playlistId: rundown.playlistId,
 				nextPartId: getPartId(rundown._id, 'ro1;s2;p1'),
 			})

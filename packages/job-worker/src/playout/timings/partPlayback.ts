@@ -7,7 +7,8 @@ import {
 	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getSelectedPartInstancesFromCache,
 } from '../cache'
-import { selectNextPart, setNextPart as libSetNextPart } from '../lib'
+import { selectNextPart } from '../lib'
+import { setNextPart } from '../setNext'
 import { updateTimeline } from '../timeline/generate'
 import { getCurrentTime } from '../../lib'
 import { afterTake, clearNextSegmentId, resetPreviousSegment, updatePartInstanceOnTake } from '../take'
@@ -101,7 +102,7 @@ export async function _onPartPlaybackStarted(
 				null,
 				getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 			)
-			await libSetNextPart(context, cache, nextPart)
+			await setNextPart(context, cache, nextPart)
 
 			// complete the take
 			await afterTake(context, cache, playingPartInstance)

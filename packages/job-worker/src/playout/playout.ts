@@ -34,10 +34,9 @@ import { runJobWithPlayoutCache, runJobWithPlaylistLock, runWithPlaylistCache } 
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import {
 	resetRundownPlaylist as libResetRundownPlaylist,
-	setNextPart as libSetNextPart,
-	setNextSegment as libSetNextSegment,
 	updateExpectedDurationWithPrerollForPartInstance,
 } from './lib'
+import { setNextPart, setNextSegment } from './setNext'
 import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { IBlueprintPieceType, PartHoldMode } from '@sofie-automation/blueprints-integration'
@@ -276,7 +275,7 @@ export async function takeNextPart(context: JobContext, data: TakeNextPartProps)
 	)
 }
 
-export async function setNextPart(context: JobContext, data: SetNextPartProps): Promise<void> {
+export async function handleSetNextPart(context: JobContext, data: SetNextPartProps): Promise<void> {
 	return runJobWithPlayoutCache(
 		context,
 		// 'setNextPart',
@@ -346,10 +345,10 @@ export async function setNextPartInner(
 	}
 
 	if (clearNextSegment) {
-		libSetNextSegment(context, cache, null)
+		setNextSegment(context, cache, null)
 	}
 
-	await libSetNextPart(context, cache, nextPart ? { part: nextPart } : null, setManually, nextTimeOffset)
+	await setNextPart(context, cache, nextPart ? { part: nextPart } : null, setManually, nextTimeOffset)
 
 	// update lookahead and the next part when we have an auto-next
 	await updateTimeline(context, cache)
@@ -475,7 +474,7 @@ export async function moveNextPartInner(
 		throw new Error(`Missing delta to move by!`)
 	}
 }
-export async function setNextSegment(context: JobContext, data: SetNextSegmentProps): Promise<void> {
+export async function handleSetNextSegment(context: JobContext, data: SetNextSegmentProps): Promise<void> {
 	return runJobWithPlayoutCache(
 		context,
 		// 'setNextSegment',
@@ -495,7 +494,7 @@ export async function setNextSegment(context: JobContext, data: SetNextSegmentPr
 				if (!nextSegment) throw new Error(`Segment "${data.nextSegmentId}" not found!`)
 			}
 
-			libSetNextSegment(context, cache, nextSegment)
+			setNextSegment(context, cache, nextSegment)
 
 			// Update any future lookaheads
 			await updateTimeline(context, cache)

@@ -7,7 +7,7 @@ import { JobContext } from '../jobs'
 import { logger } from '../logging'
 import { getSelectedPartInstancesFromCache } from './cache'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
-import { setNextPart } from './lib'
+import { setNextPart } from './setNext'
 import { runJobWithPlayoutCache } from './lock'
 import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 

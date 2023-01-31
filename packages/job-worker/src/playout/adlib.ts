@@ -24,7 +24,8 @@ import {
 } from './cache'
 import { runJobWithPlayoutCache } from './lock'
 import { updateTimeline } from './timeline/generate'
-import { selectNextPart, setNextPart } from './lib'
+import { selectNextPart } from './lib'
+import { setNextPart } from './setNext'
 import { getCurrentTime } from '../lib'
 import {
 	convertAdLibToPieceInstance,
@@ -578,8 +579,7 @@ export async function innerStartQueuedAdLib(
 		rundown,
 		newPartInstance.part,
 		possiblePieces,
-		newPartInstance._id,
-		false
+		newPartInstance._id
 	)
 	for (const pieceInstance of infinitePieceInstances) {
 		cache.PieceInstances.insert(pieceInstance)

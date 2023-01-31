@@ -128,8 +128,7 @@ export async function syncChangesToPartInstances(
 					rundown,
 					newPart ?? existingPartInstance.part,
 					await piecesThatMayBeActive,
-					existingPartInstance._id,
-					false
+					existingPartInstance._id
 				)
 
 				logger.info(`Syncing ingest changes for part: ${partId} (orphaned: ${!!newPart})`)

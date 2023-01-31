@@ -21,7 +21,7 @@ import {
 	prepareRundownPlaylistForBroadcast,
 	resetRundownPlaylist,
 	setMinimumTakeSpan,
-	setNextPart,
+	handleSetNextPart,
 	takeNextPart,
 } from '../playout'
 import { getSelectedPartInstances } from './lib'
@@ -474,7 +474,7 @@ describe('Playout API', () => {
 		// Setting as next a part that is previous
 
 		// set and take first Part again
-		await setNextPart(context, {
+		await handleSetNextPart(context, {
 			playlistId: playlistId1,
 			nextPartId: (await getAllParts(rundownId1))[0]._id,
 		})
@@ -524,7 +524,7 @@ describe('Playout API', () => {
 		// Setting as next a non-previous and non-current part:
 
 		// set and take first Part again
-		await setNextPart(context, {
+		await handleSetNextPart(context, {
 			playlistId: playlistId1,
 			nextPartId: (await getAllParts(rundownId1))[0]._id,
 		})
