@@ -25,7 +25,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
  * @param cache DB cache for the current playlist
  * @param data Details on the part start event
  */
-export async function _onPartPlaybackStarted(
+export async function onPartPlaybackStarted(
 	context: JobContext,
 	cache: CacheForPlayout,
 	data: {
@@ -137,7 +137,7 @@ export async function _onPartPlaybackStarted(
  * @param cache DB cache for the current playlist
  * @param data Details on the part stop event
  */
-export function _onPartPlaybackStopped(
+export function onPartPlaybackStopped(
 	context: JobContext,
 	cache: CacheForPlayout,
 	data: {

@@ -12,7 +12,7 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
  * @param cache DB cache for the current playlist
  * @param data Details on the piece start event
  */
-export function _onPiecePlaybackStarted(
+export function onPiecePlaybackStarted(
 	context: JobContext,
 	cache: CacheForPlayout,
 	data: {
@@ -48,7 +48,7 @@ export function _onPiecePlaybackStarted(
  * @param cache DB cache for the current playlist
  * @param data Details on the piece stop event
  */
-export function _onPiecePlaybackStopped(
+export function onPiecePlaybackStopped(
 	context: JobContext,
 	cache: CacheForPlayout,
 	data: {

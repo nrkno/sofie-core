@@ -28,12 +28,9 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { getPartId } from '../../lib'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import {
-	activateRundownPlaylist,
-	deactivateRundownPlaylist,
-	handleSetNextPart,
-	takeNextPart,
-} from '../../../playout/playout'
+import { handleSetNextPart } from '../../../playout/setNextJobs'
+import { handleTakeNextPart } from '../../../playout/take'
+import { handleActivateRundownPlaylist, handleDeactivateRundownPlaylist } from '../../../playout/activePlaylistJobs'
 import { removeRundownPlaylistFromDb } from '../../__tests__/lib'
 
 jest.mock('../../updateNext')
@@ -1241,7 +1238,7 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(rundown).toBeTruthy()
 
 		// activate and set on air
-		await activateRundownPlaylist(context, {
+		await handleActivateRundownPlaylist(context, {
 			playlistId: rundown.playlistId,
 			rehearsal: true,
 		})
@@ -1250,7 +1247,7 @@ describe('Test recieved mos ingest payloads', () => {
 				playlistId: rundown.playlistId,
 				nextPartId: getPartId(rundown._id, 'ro1;s2;p1'),
 			})
-			await takeNextPart(context, {
+			await handleTakeNextPart(context, {
 				playlistId: rundown.playlistId,
 				fromPartInstanceId: null,
 			})
@@ -1272,7 +1269,7 @@ describe('Test recieved mos ingest payloads', () => {
 			expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0) || [])
 		} finally {
 			// cleanup
-			await deactivateRundownPlaylist(context, {
+			await handleDeactivateRundownPlaylist(context, {
 				playlistId: rundown.playlistId,
 			})
 		}
@@ -1288,7 +1285,7 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(rundown.orphaned).toBeFalsy()
 
 		// activate and set on air
-		await activateRundownPlaylist(context, {
+		await handleActivateRundownPlaylist(context, {
 			playlistId: rundown.playlistId,
 			rehearsal: true,
 		})
@@ -1297,7 +1294,7 @@ describe('Test recieved mos ingest payloads', () => {
 				playlistId: rundown.playlistId,
 				nextPartId: getPartId(rundown._id, 'ro1;s2;p1'),
 			})
-			await takeNextPart(context, {
+			await handleTakeNextPart(context, {
 				playlistId: rundown.playlistId,
 				fromPartInstanceId: null,
 			})
@@ -1339,7 +1336,7 @@ describe('Test recieved mos ingest payloads', () => {
 			expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0) || [])
 		} finally {
 			// cleanup
-			await deactivateRundownPlaylist(context, {
+			await handleDeactivateRundownPlaylist(context, {
 				playlistId: rundown.playlistId,
 			})
 		}

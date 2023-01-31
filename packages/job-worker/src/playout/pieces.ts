@@ -301,6 +301,8 @@ export function getResolvedPiecesFromFullTimeline(
  * Replace any start:'now' in the timeline with concrete times.
  * This assumes that the structure is of a typical timeline, with 'now' being present at the root level, and one level deep.
  * If the parent group of a 'now' is not using a numeric start value, it will not be fixed
+ * @param transformedObjs Timeline objects to consider
+ * @param nowTime Time to substitute in instead of 'now'
  */
 function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: number): void {
 	for (const obj of transformedObjs) {
@@ -344,6 +346,12 @@ function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: num
 	}
 }
 
+/**
+ * Wrap a Piece into an AdLibPiece, so that it can be re-played as an AdLib
+ * @param context Context of the current job
+ * @param piece The Piece to wrap
+ * @returns AdLibPiece
+ */
 export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstancePiece): AdLibPiece {
 	const span = context.startSpan('convertPieceToAdLibPiece')
 	const newAdLibPiece = literal<AdLibPiece>({
@@ -358,6 +366,15 @@ export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstan
 	return newAdLibPiece
 }
 
+/**
+ * Convert some form of Piece into a PieceInstance, played as an AdLib
+ * @param context Context of the current job
+ * @param playlistActivationId ActivationId for the active current playlist
+ * @param adLibPiece The piece or AdLibPiece to convert
+ * @param partInstance The PartInstance the Adlibbed PieceInstance will belong to
+ * @param queue Whether this is being queued as a new PartInstance, or adding to the already playing PartInstance
+ * @returns The PieceInstance that was constructed
+ */
 export function convertAdLibToPieceInstance(
 	context: JobContext,
 	playlistActivationId: RundownPlaylistActivationId,
@@ -399,6 +416,10 @@ export function convertAdLibToPieceInstance(
 	return newPieceInstance
 }
 
+/**
+ * Setup a PieceInstance to be the start of an infinite chain
+ * @param pieceInstance PieceInstance to setup
+ */
 export function setupPieceInstanceInfiniteProperties(pieceInstance: PieceInstance): void {
 	if (pieceInstance.piece.lifespan !== PieceLifespan.WithinPart) {
 		// Set it up as an infinite

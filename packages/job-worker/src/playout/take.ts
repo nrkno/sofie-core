@@ -23,12 +23,71 @@ import {
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartEventContext, RundownContext } from '../blueprints/context'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { innerStopPieces } from './adlib'
+import { innerStopPieces } from './adlibUtils'
 import { reportPartInstanceHasStarted, reportPartInstanceHasStopped } from './timings/partPlayback'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { calculatePartTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
+import { TakeNextPartProps } from '@sofie-automation/corelib/dist/worker/studio'
+import { runJobWithPlayoutCache } from './lock'
+
+let MINIMUM_TAKE_SPAN = 1000
+export function setMinimumTakeSpan(span: number): void {
+	// Used in tests
+	MINIMUM_TAKE_SPAN = span
+}
+
+/**
+ * Take the currently Next:ed Part (start playing it)
+ */
+export async function handleTakeNextPart(context: JobContext, data: TakeNextPartProps): Promise<void> {
+	const now = getCurrentTime()
+
+	return runJobWithPlayoutCache(
+		context,
+		data,
+		async (cache) => {
+			const playlist = cache.Playlist.doc
+
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
+
+			if (!playlist.nextPartInstanceId && playlist.holdState !== RundownHoldState.ACTIVE)
+				throw UserError.create(UserErrorMessage.TakeNoNextPart)
+
+			if (playlist.currentPartInstanceId !== data.fromPartInstanceId)
+				throw UserError.create(UserErrorMessage.TakeFromIncorrectPart)
+		},
+		async (cache) => {
+			const playlist = cache.Playlist.doc
+
+			let lastTakeTime = playlist.lastTakeTime ?? 0
+
+			if (playlist.currentPartInstanceId) {
+				const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
+				if (currentPartInstance && currentPartInstance.timings?.plannedStartedPlayback) {
+					lastTakeTime = Math.max(lastTakeTime, currentPartInstance.timings.plannedStartedPlayback)
+				} else {
+					// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
+					logger.error(
+						`PartInstance "${playlist.currentPartInstanceId}", set as currentPart in "${playlist._id}", not found!`
+					)
+				}
+			}
+
+			if (lastTakeTime && now - lastTakeTime < MINIMUM_TAKE_SPAN) {
+				logger.debug(
+					`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${playlist.currentPartInstanceId}: ${
+						now - lastTakeTime
+					}`
+				)
+				throw UserError.create(UserErrorMessage.TakeRateLimit, { duration: MINIMUM_TAKE_SPAN })
+			}
+
+			return performTakeToNextedPart(context, cache, now)
+		}
+	)
+}
 
 /**
  * Perform a Take into the nexted Part, and prepare a new nexted Part

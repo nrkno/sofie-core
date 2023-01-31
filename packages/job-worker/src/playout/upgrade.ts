@@ -9,6 +9,9 @@ import { compileCoreConfigValues } from '../blueprints/config'
 import { CommonContext } from '../blueprints/context'
 import { JobContext } from '../jobs'
 
+/**
+ * Run the Blueprint applyConfig for the studio
+ */
 export async function handleBlueprintUpgradeForStudio(context: JobContext, _data: unknown): Promise<void> {
 	const blueprint = context.studioBlueprint
 	if (typeof blueprint.blueprint.applyConfig !== 'function')
@@ -54,6 +57,9 @@ function translateMappings(rawMappings: BlueprintMappings): MappingsExt {
 	return mappings
 }
 
+/**
+ * Validate the blueprintConfig for the Studio, with the Blueprint validateConfig
+ */
 export async function handleBlueprintValidateConfigForStudio(
 	context: JobContext,
 	_data: unknown

@@ -41,7 +41,7 @@ import {
 	innerStartAdLibPiece,
 	innerStartQueuedAdLib,
 	innerStopPieces,
-} from '../../playout/adlib'
+} from '../../playout/adlibUtils'
 import {
 	Piece,
 	PieceTimelineObjectsBlob,
@@ -60,7 +60,7 @@ import {
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { moveNextPartInner } from '../../playout/playout'
+import { moveNextPartInner } from '../../playout/setNext'
 import _ = require('underscore')
 import { ProcessedShowStyleConfig } from '../config'
 import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'

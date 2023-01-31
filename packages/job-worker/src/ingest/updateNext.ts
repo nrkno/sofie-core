@@ -5,7 +5,7 @@ import {
 	getSelectedPartInstancesFromCache,
 } from '../playout/cache'
 import { JobContext } from '../jobs'
-import { setNextPartInner } from '../playout/playout'
+import { setNextPartInner } from '../playout/setNext'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 /**

@@ -1,39 +1,39 @@
 import { JobContext } from '../../jobs'
-import { adLibPieceStart, startStickyPieceOnSourceLayer, takePieceAsAdlibNow } from '../../playout/adlib'
-import { StudioJobs, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import {
-	activateHold,
-	activateRundownPlaylist,
-	deactivateHold,
-	deactivateRundownPlaylist,
-	disableNextPiece,
-	executeAction,
-	handleUpdateTimelineAfterIngest,
-	moveNextPart,
-	prepareRundownPlaylistForBroadcast,
-	resetRundownPlaylist,
-	handleSetNextPart,
-	handleSetNextSegment,
-	stopPiecesOnSourceLayers,
-	takeNextPart,
-	updateStudioBaseline,
-} from '../../playout/playout'
+	handleAdLibPieceStart,
+	handleStartStickyPieceOnSourceLayer,
+	handleTakePieceAsAdlibNow,
+	handleStopPiecesOnSourceLayers,
+	handleDisableNextPiece,
+} from '../../playout/adlibJobs'
+import { StudioJobs, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
+import { handleUpdateTimelineAfterIngest, handleUpdateStudioBaseline } from '../../playout/timelineJobs'
+import { handleMoveNextPart, handleSetNextPart, handleSetNextSegment } from '../../playout/setNextJobs'
+import {
+	handleActivateRundownPlaylist,
+	handleDeactivateRundownPlaylist,
+	handlePrepareRundownPlaylistForBroadcast,
+	handleResetRundownPlaylist,
+} from '../../playout/activePlaylistJobs'
 import {
 	handleDebugSyncPlayheadInfinitesForNextPartInstance,
 	handleDebugRegenerateNextPartInstance,
 	handleDebugCrash,
 	handleDebugUpdateTimeline,
 } from '../../playout/debug'
+import { handleActivateHold, handleDeactivateHold } from '../../playout/holdJobs'
 import { removeEmptyPlaylists } from '../../studio/cleanup'
 import {
 	handleRegenerateRundownPlaylist,
 	handleRemoveRundownPlaylist,
-	moveRundownIntoPlaylist,
-	restoreRundownsInPlaylistToDefaultOrder,
+	handleMoveRundownIntoPlaylist,
+	handleRestoreRundownsInPlaylistToDefaultOrder,
 } from '../../rundownPlaylists'
 import { handleGeneratePlaylistSnapshot, handleRestorePlaylistSnapshot } from '../../playout/snapshot'
 import { handleBlueprintUpgradeForStudio, handleBlueprintValidateConfigForStudio } from '../../playout/upgrade'
-import { handleTimelineTriggerTime, onPlayoutPlaybackChanged } from '../../playout/timings'
+import { handleTimelineTriggerTime, handleOnPlayoutPlaybackChanged } from '../../playout/timings'
+import { handleExecuteAdlibAction } from '../../playout/adlibAction'
+import { handleTakeNextPart } from '../../playout/take'
 
 type ExecutableFunction<T extends keyof StudioJobFunc> = (
 	context: JobContext,
@@ -48,33 +48,33 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.UpdateTimeline]: handleDebugUpdateTimeline,
 	[StudioJobs.UpdateTimelineAfterIngest]: handleUpdateTimelineAfterIngest,
 
-	[StudioJobs.AdlibPieceStart]: adLibPieceStart,
-	[StudioJobs.TakePieceAsAdlibNow]: takePieceAsAdlibNow,
-	[StudioJobs.StartStickyPieceOnSourceLayer]: startStickyPieceOnSourceLayer,
-	[StudioJobs.StopPiecesOnSourceLayers]: stopPiecesOnSourceLayers,
-	[StudioJobs.MoveNextPart]: moveNextPart,
-	[StudioJobs.ActivateHold]: activateHold,
-	[StudioJobs.DeactivateHold]: deactivateHold,
-	[StudioJobs.PrepareRundownForBroadcast]: prepareRundownPlaylistForBroadcast,
-	[StudioJobs.ResetRundownPlaylist]: resetRundownPlaylist,
-	[StudioJobs.ActivateRundownPlaylist]: activateRundownPlaylist,
-	[StudioJobs.DeactivateRundownPlaylist]: deactivateRundownPlaylist,
+	[StudioJobs.AdlibPieceStart]: handleAdLibPieceStart,
+	[StudioJobs.TakePieceAsAdlibNow]: handleTakePieceAsAdlibNow,
+	[StudioJobs.StartStickyPieceOnSourceLayer]: handleStartStickyPieceOnSourceLayer,
+	[StudioJobs.StopPiecesOnSourceLayers]: handleStopPiecesOnSourceLayers,
+	[StudioJobs.MoveNextPart]: handleMoveNextPart,
+	[StudioJobs.ActivateHold]: handleActivateHold,
+	[StudioJobs.DeactivateHold]: handleDeactivateHold,
+	[StudioJobs.PrepareRundownForBroadcast]: handlePrepareRundownPlaylistForBroadcast,
+	[StudioJobs.ResetRundownPlaylist]: handleResetRundownPlaylist,
+	[StudioJobs.ActivateRundownPlaylist]: handleActivateRundownPlaylist,
+	[StudioJobs.DeactivateRundownPlaylist]: handleDeactivateRundownPlaylist,
 	[StudioJobs.SetNextPart]: handleSetNextPart,
 	[StudioJobs.SetNextSegment]: handleSetNextSegment,
-	[StudioJobs.ExecuteAction]: executeAction,
-	[StudioJobs.TakeNextPart]: takeNextPart,
-	[StudioJobs.DisableNextPiece]: disableNextPiece,
+	[StudioJobs.ExecuteAction]: handleExecuteAdlibAction,
+	[StudioJobs.TakeNextPart]: handleTakeNextPart,
+	[StudioJobs.DisableNextPiece]: handleDisableNextPiece,
 	[StudioJobs.RemovePlaylist]: handleRemoveRundownPlaylist,
 	[StudioJobs.RegeneratePlaylist]: handleRegenerateRundownPlaylist,
 
-	[StudioJobs.OnPlayoutPlaybackChanged]: onPlayoutPlaybackChanged,
+	[StudioJobs.OnPlayoutPlaybackChanged]: handleOnPlayoutPlaybackChanged,
 	[StudioJobs.OnTimelineTriggerTime]: handleTimelineTriggerTime,
 
-	[StudioJobs.UpdateStudioBaseline]: updateStudioBaseline,
+	[StudioJobs.UpdateStudioBaseline]: handleUpdateStudioBaseline,
 	[StudioJobs.CleanupEmptyPlaylists]: removeEmptyPlaylists,
 
-	[StudioJobs.OrderRestoreToDefault]: restoreRundownsInPlaylistToDefaultOrder,
-	[StudioJobs.OrderMoveRundownToPlaylist]: moveRundownIntoPlaylist,
+	[StudioJobs.OrderRestoreToDefault]: handleRestoreRundownsInPlaylistToDefaultOrder,
+	[StudioJobs.OrderMoveRundownToPlaylist]: handleMoveRundownIntoPlaylist,
 
 	[StudioJobs.DebugSyncInfinitesForNextPartInstance]: handleDebugSyncPlayheadInfinitesForNextPartInstance,
 	[StudioJobs.DebugRegenerateNextPartInstance]: handleDebugRegenerateNextPartInstance,
