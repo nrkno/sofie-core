@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 1.5
 ---
 # Supported Playout Devices
 
@@ -28,7 +28,7 @@ Tested and developed against [a fork of version 2.1](https://github.com/nrkno/so
 
 ## HTTP Protocol <a id="http-protocol"></a>
 
-* Get/post/put/delete methods
+* GET/POST/PUT/DELETE methods
 * Interval based watcher for status monitoring
 
 ## Blackmagic Design HyperDeck <a id="blackmagic-design-hyperdeck"></a>
@@ -64,7 +64,7 @@ Can be configured in TCP or UDP mode.
 * Looping
 * Cloning
 
-_Note: some features are controlled through the media-manager_
+_Note: some features are controlled through the Package Manager_
 
 ## Shotoku Camera Robotics <a id="shotoku-camera-robotics"></a>
 
@@ -105,3 +105,14 @@ _Note: this is not currently used in production by anyone we know of_
 * Transforms
 * Transitions
 
+## OBS <a id="obs"></a>
+
+*Through OBS WebSocket v4 RPC API*
+
+* Current / Preview Scene
+* Current Transition
+* Recording
+* Streaming
+* Scene Item visibility
+* Source Settings (FFmpeg source)
+* Source Mute
