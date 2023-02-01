@@ -489,15 +489,16 @@ export class CoreMosDeviceHandler {
 		return this.core.putOnQueue('mos', async () => {
 			// Log info about the sent command:
 			let msg = 'Command: ' + methodName
-			if (attrs[0] && attrs[0].ID) msg = `${methodName}: ${attrs[0].ID}`
-			else if (attrs[0] && this.mosTypes.mosString128.is(attrs[0]))
-				msg = `${methodName}: ${this.mosTypes.mosString128.stringify(attrs[0])}`
-			else if (attrs[0] && attrs[0].ObjectId) msg = `${methodName}: ${attrs[0].ObjectId}`
-			else if (attrs[0] && attrs[0].StoryId) msg = `${methodName}: ${attrs[0].StoryId}`
-			else if (attrs[0] && attrs[0].StoryID) msg = `${methodName}: ${attrs[0].StoryID}`
-			else if (attrs[0] && attrs[0].ItemID) msg = `${methodName}: ${attrs[0].ItemID}`
-			else if (attrs[0] && attrs[0].RunningOrderID) msg = `${methodName}: ${attrs[0].RunningOrderID}`
-			else if (attrs[0] && attrs[0].toString) msg = `${methodName}: ${attrs[0].toString()}`
+			const attr0 = attrs[0] as any | undefined
+			if (attr0?.ID) msg = `${methodName}: ${attr0.ID}`
+			else if (attr0 && this.mosTypes.mosString128.is(attr0))
+				msg = `${methodName}: ${this.mosTypes.mosString128.stringify(attr0)}`
+			else if (attr0?.ObjectId) msg = `${methodName}: ${attr0.ObjectId}`
+			else if (attr0?.StoryId) msg = `${methodName}: ${attr0.StoryId}`
+			else if (attr0?.StoryID) msg = `${methodName}: ${attr0.StoryID}`
+			else if (attr0?.ItemID) msg = `${methodName}: ${attr0.ItemID}`
+			else if (attr0?.RunningOrderID) msg = `${methodName}: ${attr0.RunningOrderID}`
+			else if (attr0?.toString) msg = `${methodName}: ${attr0.toString()}`
 
 			this._coreParentHandler.logger.info('Recieved MOS command: ' + msg)
 
