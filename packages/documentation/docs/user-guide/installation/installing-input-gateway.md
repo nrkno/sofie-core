@@ -11,7 +11,7 @@ You can now open the _Sofie&nbsp;Core_, `http://localhost:3000`,  and navigate t
 Currently, input gateway supports:
 
 * Stream Deck panels
-* Skaarhoj panels - _Raw Panel_ mode
+* Skaarhoj panels - _TCP Raw Panel_ mode
 * X-Keys panels
 * MIDI controllers
 * OSC
