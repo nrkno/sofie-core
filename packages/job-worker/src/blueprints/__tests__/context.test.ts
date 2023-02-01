@@ -3,7 +3,9 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { getShowStyleConfigRef, getStudioConfigRef } from '../config'
-import { CommonContext, ShowStyleContext, StudioContext } from '../context/context'
+import { CommonContext } from '../context/CommonContext'
+import { StudioContext } from '../context/StudioContext'
+import { ShowStyleContext } from '../context/ShowStyleContext'
 
 describe('Test blueprint api context', () => {
 	let jobContext: MockJobContext

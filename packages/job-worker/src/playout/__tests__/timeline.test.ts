@@ -12,13 +12,9 @@ import {
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import {
-	activateHold,
-	activateRundownPlaylist,
-	deactivateRundownPlaylist,
-	handleTimelineTriggerTime,
-	takeNextPart,
-} from '../playout'
+import { handleTakeNextPart } from '../take'
+import { handleActivateHold } from '../holdJobs'
+import { handleActivateRundownPlaylist, handleDeactivateRundownPlaylist } from '../activePlaylistJobs'
 import { fixSnapshot } from '../../__mocks__/helpers/snapshot'
 import { runJobWithPlayoutCache } from '../lock'
 import { updateTimeline } from '../timeline/generate'
@@ -55,11 +51,12 @@ import {
 } from './helpers/rundowns'
 import { defaultRundownPlaylist } from '../../__mocks__/defaultCollectionObjects'
 import { ReadonlyDeep } from 'type-fest'
-import { innerStartOrQueueAdLibPiece } from '../adlib'
+import { innerStartOrQueueAdLibPiece } from '../adlibUtils'
 import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { adjustFakeTime, useFakeCurrentTime, useRealCurrentTime } from '../../__mocks__/time'
 import { restartRandomId } from '../../__mocks__/nanoid'
 import { ProcessedShowStyleCompound } from '../../jobs'
+import { handleTimelineTriggerTime } from '../timings'
 
 interface PartTimelineTimings {
 	previousPart: TimelineEnableExt | null
@@ -247,7 +244,7 @@ async function doTakePart(
 		const playlist = (await context.directCollections.RundownPlaylists.findOne(playlistId)) as DBRundownPlaylist
 		expect(playlist).toBeTruthy()
 
-		await takeNextPart(context, {
+		await handleTakeNextPart(context, {
 			playlistId: playlistId,
 			fromPartInstanceId: playlist.currentPartInstanceId,
 		})
@@ -289,7 +286,7 @@ async function doTakePart(
 async function doActivatePlaylist(context: MockJobContext, playlistId: RundownPlaylistId, nextPartId: PartId) {
 	adjustFakeTime(1000)
 
-	await activateRundownPlaylist(context, {
+	await handleActivateRundownPlaylist(context, {
 		playlistId: playlistId,
 		rehearsal: false,
 	})
@@ -313,7 +310,7 @@ async function doActivatePlaylist(context: MockJobContext, playlistId: RundownPl
 async function doDeactivatePlaylist(context: MockJobContext, playlistId: RundownPlaylistId) {
 	adjustFakeTime(1000)
 
-	await deactivateRundownPlaylist(context, {
+	await handleDeactivateRundownPlaylist(context, {
 		playlistId: playlistId,
 	})
 
@@ -403,7 +400,7 @@ describe('Timeline', () => {
 
 		{
 			// Prepare and activate in rehersal:
-			await activateRundownPlaylist(context, { playlistId: playlistId0, rehearsal: false })
+			await handleActivateRundownPlaylist(context, { playlistId: playlistId0, rehearsal: false })
 			const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
 				context,
 				await getPlaylist0()
@@ -421,7 +418,7 @@ describe('Timeline', () => {
 
 		{
 			// Take the first Part:
-			await takeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
+			await handleTakeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
 			const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
 				context,
 				await getPlaylist0()
@@ -444,7 +441,7 @@ describe('Timeline', () => {
 
 		{
 			// Deactivate rundown:
-			await deactivateRundownPlaylist(context, { playlistId: playlistId0 })
+			await handleDeactivateRundownPlaylist(context, { playlistId: playlistId0 })
 			await expect(getPlaylist0()).resolves.toMatchObject({
 				activationId: undefined,
 				currentPartInstanceId: null,
@@ -780,7 +777,7 @@ describe('Timeline', () => {
 					await doTakePart(context, playlistId, null, parts[0]._id, parts[1]._id)
 
 					// activate hold mode
-					await activateHold(context, { playlistId: playlistId })
+					await handleActivateHold(context, { playlistId: playlistId })
 
 					await doTakePart(context, playlistId, parts[0]._id, parts[1]._id, null)
 
@@ -941,7 +938,7 @@ describe('Timeline', () => {
 					await doTakePart(context, playlistId, null, parts[0]._id, parts[1]._id)
 
 					// activate hold mode
-					await activateHold(context, { playlistId: playlistId })
+					await handleActivateHold(context, { playlistId: playlistId })
 
 					await doTakePart(context, playlistId, parts[0]._id, parts[1]._id, null)
 

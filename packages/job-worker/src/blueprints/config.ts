@@ -29,6 +29,14 @@ export function getShowStyleConfigRef(showStyleVariantId: ShowStyleVariantId, co
 	return '${showStyle.' + showStyleVariantId + '.' + configKey + '}'
 }
 
+/**
+ * Parse a string containing BlueprintConfigRefs (`${studio.studio0.myConfigField}`) to replace the refs with the current values
+ * @param context The studio context this is being run in
+ * @param stringWithReferences String to resolve
+ * @param modifier Modify the value before performing the replacement
+ * @param bailOnError If true, errors will be thrown. If false, replacements will be skipped instead of throwing an error
+ * @returns string with BlueprintConfigRefs replaced with values
+ */
 export async function retrieveBlueprintConfigRefs(
 	context: StudioCacheContext,
 	stringWithReferences: string,
@@ -89,12 +97,20 @@ export interface ProcessedStudioConfig {
 	_studioConfig: never
 }
 
+/**
+ * Get the `BlueprintConfigCoreConfig`
+ * This is a set of values provided to the blueprints about the environment, such as the url to access sofie ui
+ */
 export function compileCoreConfigValues(): BlueprintConfigCoreConfig {
 	return {
 		hostUrl: getSofieHostUrl(),
 	}
 }
 
+/**
+ * Compile the complete Studio config
+ * Resolves any overrides defined by the user, and run the result through the `preprocessConfig` blueprint method
+ */
 export function preprocessStudioConfig(
 	studio: ReadonlyDeep<DBStudio>,
 	blueprint: ReadonlyDeep<StudioBlueprintManifest>
@@ -116,6 +132,10 @@ export function preprocessStudioConfig(
 	return res
 }
 
+/**
+ * Compile the complete ShowStyle config
+ * Resolves any overrides defined by the user, and run the result through the `preprocessConfig` blueprint method
+ */
 export function preprocessShowStyleConfig(
 	showStyle: Pick<ReadonlyDeep<ProcessedShowStyleCompound>, '_id' | 'combinedBlueprintConfig' | 'showStyleVariantId'>,
 	blueprint: ReadonlyDeep<ShowStyleBlueprintManifest>
@@ -137,6 +157,12 @@ export function preprocessShowStyleConfig(
 	return res
 }
 
+/**
+ * Find any config manifest keys marked as `required` that do not have values specified
+ * @param manifest Blueprint Config Manifest to validate for
+ * @param config Blueprint Config to check
+ * @returns Array of manifest entry names that are missing values
+ */
 export function findMissingConfigs(
 	manifest: ReadonlyDeep<ConfigManifestEntry[]> | undefined,
 	config: ReadonlyDeep<IBlueprintConfig>

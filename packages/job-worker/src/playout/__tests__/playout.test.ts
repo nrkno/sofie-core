@@ -14,17 +14,14 @@ import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/cont
 import { PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { fixSnapshot } from '../../__mocks__/helpers/snapshot'
 import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
+import { handleSetNextPart, handleMoveNextPart } from '../setNextJobs'
+import { setMinimumTakeSpan, handleTakeNextPart } from '../take'
 import {
-	activateRundownPlaylist,
-	deactivateRundownPlaylist,
-	moveNextPart,
-	onPlayoutPlaybackChanged,
-	prepareRundownPlaylistForBroadcast,
-	resetRundownPlaylist,
-	setMinimumTakeSpan,
-	setNextPart,
-	takeNextPart,
-} from '../playout'
+	handleActivateRundownPlaylist,
+	handleDeactivateRundownPlaylist,
+	handlePrepareRundownPlaylistForBroadcast,
+	handleResetRundownPlaylist,
+} from '../activePlaylistJobs'
 import { getSelectedPartInstances } from './lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MockMongoCollection } from '../../__mocks__/collection'
@@ -52,6 +49,7 @@ import { adjustFakeTime, getCurrentTime, useFakeCurrentTime } from '../../__mock
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { ProcessedShowStyleCompound } from '../../jobs'
+import { handleOnPlayoutPlaybackChanged } from '../timings'
 
 // const mockGetCurrentTime = jest.spyOn(lib, 'getCurrentTime')
 const mockExecutePeripheralDeviceFunction = jest
@@ -148,7 +146,7 @@ describe('Playout API', () => {
 
 		expect(Timeline.operations).toHaveLength(0)
 
-		await resetRundownPlaylist(context, { playlistId: playlistId0 })
+		await handleResetRundownPlaylist(context, { playlistId: playlistId0 })
 
 		expect(Timeline.operations).toMatchObject([{ args: ['mockStudio0', undefined], type: 'findOne' }])
 		Timeline.clearOpLog()
@@ -157,7 +155,7 @@ describe('Playout API', () => {
 
 		{
 			// Prepare and activate:
-			await activateRundownPlaylist(context, { playlistId: playlistId0, rehearsal: false })
+			await handleActivateRundownPlaylist(context, { playlistId: playlistId0, rehearsal: false })
 
 			const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
 				context,
@@ -183,7 +181,7 @@ describe('Playout API', () => {
 
 		{
 			// Take the first Part:
-			await takeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
+			await handleTakeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
 
 			const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
 				context,
@@ -204,14 +202,14 @@ describe('Playout API', () => {
 		expect(fixSnapshot(await Timeline.findFetch())).toMatchSnapshot()
 		expect(fixSnapshot(await getRundown0())).toMatchSnapshot()
 
-		await expect(resetRundownPlaylist(context, { playlistId: playlistId0 })).rejects.toMatchUserError(
+		await expect(handleResetRundownPlaylist(context, { playlistId: playlistId0 })).rejects.toMatchUserError(
 			UserErrorMessage.RundownResetWhileActive
 		)
 
 		Timeline.clearOpLog()
 
 		// Deactivate rundown:
-		await deactivateRundownPlaylist(context, { playlistId: playlistId0 })
+		await handleDeactivateRundownPlaylist(context, { playlistId: playlistId0 })
 		await expect(getPlaylist0()).resolves.toMatchObject({
 			activationId: undefined,
 			currentPartInstanceId: null,
@@ -229,7 +227,7 @@ describe('Playout API', () => {
 		expect(fixSnapshot(await getRundown0())).toMatchSnapshot()
 
 		// lastly: reset rundown
-		await resetRundownPlaylist(context, { playlistId: playlistId0 })
+		await handleResetRundownPlaylist(context, { playlistId: playlistId0 })
 
 		// Verify that the data is back to as it was before any of the operations:
 		const rundownData = await getAllRundownData(await getRundown0())
@@ -257,7 +255,7 @@ describe('Playout API', () => {
 		// await expect(getPeripheralDeviceCommands(playoutDevice)).resolves.toHaveLength(0)
 
 		// Prepare and activate in rehersal:
-		await prepareRundownPlaylistForBroadcast(context, { playlistId: playlistId0 })
+		await handlePrepareRundownPlaylistForBroadcast(context, { playlistId: playlistId0 })
 
 		await expect(getPlaylist0()).resolves.toMatchObject({
 			activationId: expect.stringMatching(/^randomId/),
@@ -275,14 +273,14 @@ describe('Playout API', () => {
 			playlistId0
 		)
 
-		await expect(prepareRundownPlaylistForBroadcast(context, { playlistId: playlistId0 })).rejects.toMatchUserError(
-			UserErrorMessage.RundownAlreadyActive
-		)
+		await expect(
+			handlePrepareRundownPlaylistForBroadcast(context, { playlistId: playlistId0 })
+		).rejects.toMatchUserError(UserErrorMessage.RundownAlreadyActive)
 
 		const { playlistId: playlistId1 } = await setupDefaultRundownPlaylist(context)
-		await expect(prepareRundownPlaylistForBroadcast(context, { playlistId: playlistId1 })).rejects.toMatchUserError(
-			UserErrorMessage.RundownAlreadyActiveNames
-		)
+		await expect(
+			handlePrepareRundownPlaylistForBroadcast(context, { playlistId: playlistId1 })
+		).rejects.toMatchUserError(UserErrorMessage.RundownAlreadyActiveNames)
 	})
 	test('resetAndActivateRundownPlaylist, forceResetAndActivateRundownPlaylist & deactivateRundownPlaylist', async () => {
 		const { rundownId: rundownId0, playlistId: playlistId0 } = await setupDefaultRundownPlaylist(context)
@@ -325,7 +323,7 @@ describe('Playout API', () => {
 		expect(mockExecutePeripheralDeviceFunction).not.toHaveBeenCalled()
 
 		// Prepare and activate in rehersal:
-		await resetRundownPlaylist(context, { playlistId: playlistId0, activate: 'rehearsal' })
+		await handleResetRundownPlaylist(context, { playlistId: playlistId0, activate: 'rehearsal' })
 
 		await expect(getPlaylist0()).resolves.toMatchObject({
 			activationId: expect.stringMatching(/^randomId/),
@@ -349,7 +347,7 @@ describe('Playout API', () => {
 
 		{
 			// Take the first Part:
-			await takeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
+			await handleTakeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
 
 			const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
 				context,
@@ -359,7 +357,11 @@ describe('Playout API', () => {
 			expect(nextPartInstance).toBeTruthy()
 		}
 
-		await resetRundownPlaylist(context, { playlistId: playlistId1, activate: 'rehearsal', forceActivate: true })
+		await handleResetRundownPlaylist(context, {
+			playlistId: playlistId1,
+			activate: 'rehearsal',
+			forceActivate: true,
+		})
 		await expect(getPlaylist0()).resolves.toMatchObject({
 			activationId: undefined,
 		})
@@ -382,11 +384,11 @@ describe('Playout API', () => {
 
 		// Attempt to take the first Part of inactive playlist0, should throw
 		await expect(
-			takeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
+			handleTakeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
 		).rejects.toMatchUserError(UserErrorMessage.InactiveRundown)
 
 		// Take the first Part of active playlist1:
-		await takeNextPart(context, { playlistId: playlistId1, fromPartInstanceId: null })
+		await handleTakeNextPart(context, { playlistId: playlistId1, fromPartInstanceId: null })
 
 		expect(
 			(await getAllPartInstances()).filter(
@@ -399,10 +401,10 @@ describe('Playout API', () => {
 			)
 		).toHaveLength(1)
 
-		await resetRundownPlaylist(context, { playlistId: playlistId1, activate: 'rehearsal' })
+		await handleResetRundownPlaylist(context, { playlistId: playlistId1, activate: 'rehearsal' })
 
 		// Take the first Part of active playlist1 again:
-		await takeNextPart(context, { playlistId: playlistId1, fromPartInstanceId: null })
+		await handleTakeNextPart(context, { playlistId: playlistId1, fromPartInstanceId: null })
 
 		// still should only contain a single taken instance, as rehearsal partInstances should be removed
 		expect(
@@ -416,25 +418,25 @@ describe('Playout API', () => {
 			)
 		).toHaveLength(1)
 
-		await resetRundownPlaylist(context, { playlistId: playlistId1, activate: 'active' })
+		await handleResetRundownPlaylist(context, { playlistId: playlistId1, activate: 'active' })
 
 		// Take the first Part of active playlist1 once more:
-		await takeNextPart(context, { playlistId: playlistId1, fromPartInstanceId: null })
+		await handleTakeNextPart(context, { playlistId: playlistId1, fromPartInstanceId: null })
 
 		// Take the second Part of active playlist1 so that we have more pieceInstances to reset
-		await takeNextPart(context, {
+		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
 			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
 		})
 
 		// should throw with 402 code, as resetting the rundown when active is forbidden, with default configuration
 		await expect(
-			resetRundownPlaylist(context, { playlistId: playlistId1, activate: 'active' })
+			handleResetRundownPlaylist(context, { playlistId: playlistId1, activate: 'active' })
 		).rejects.toMatchUserError(UserErrorMessage.RundownResetWhileActive)
 
-		await deactivateRundownPlaylist(context, { playlistId: playlistId1 })
+		await handleDeactivateRundownPlaylist(context, { playlistId: playlistId1 })
 
-		await resetRundownPlaylist(context, { playlistId: playlistId1, activate: 'rehearsal' })
+		await handleResetRundownPlaylist(context, { playlistId: playlistId1, activate: 'rehearsal' })
 
 		// should contain two nonreset pieceInstance (from the first part)
 		await expect(
@@ -443,7 +445,7 @@ describe('Playout API', () => {
 			)
 		).resolves.toHaveLength(2)
 
-		await takeNextPart(context, {
+		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
 			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
 		})
@@ -466,7 +468,7 @@ describe('Playout API', () => {
 		).resolves.toHaveLength(3)
 
 		// take the second part
-		await takeNextPart(context, {
+		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
 			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
 		})
@@ -474,17 +476,17 @@ describe('Playout API', () => {
 		// Setting as next a part that is previous
 
 		// set and take first Part again
-		await setNextPart(context, {
+		await handleSetNextPart(context, {
 			playlistId: playlistId1,
 			nextPartId: (await getAllParts(rundownId1))[0]._id,
 		})
-		await takeNextPart(context, {
+		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
 			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
 		})
 
 		// take the second part to check if we reset all previous partInstances correctly
-		await takeNextPart(context, {
+		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
 			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
 		})
@@ -516,7 +518,7 @@ describe('Playout API', () => {
 			)
 		).resolves.toHaveLength(3)
 
-		await takeNextPart(context, {
+		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
 			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
 		})
@@ -524,11 +526,11 @@ describe('Playout API', () => {
 		// Setting as next a non-previous and non-current part:
 
 		// set and take first Part again
-		await setNextPart(context, {
+		await handleSetNextPart(context, {
 			playlistId: playlistId1,
 			nextPartId: (await getAllParts(rundownId1))[0]._id,
 		})
-		await takeNextPart(context, {
+		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
 			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
 		})
@@ -584,7 +586,7 @@ describe('Playout API', () => {
 		}
 
 		// Prepare and activate in rehersal:
-		await resetRundownPlaylist(context, { playlistId: playlistId0, activate: 'rehearsal' })
+		await handleResetRundownPlaylist(context, { playlistId: playlistId0, activate: 'rehearsal' })
 
 		await expect(getPlaylist0()).resolves.toMatchObject({
 			activationId: expect.stringMatching(/^randomId/),
@@ -600,7 +602,7 @@ describe('Playout API', () => {
 			const now = getCurrentTime()
 
 			// Take the first Part:
-			await takeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
+			await handleTakeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
 
 			const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
 				context,
@@ -617,7 +619,7 @@ describe('Playout API', () => {
 			const currentPartInstanceId = currentPartInstance?._id || protectString('')
 			const pieceInstances = await getAllPieceInstancesForPartInstance(currentPartInstanceId)
 			expect(pieceInstances).toHaveLength(2)
-			await onPlayoutPlaybackChanged(context, {
+			await handleOnPlayoutPlaybackChanged(context, {
 				playlistId: playlistId0,
 				changes: [
 					{
@@ -679,7 +681,10 @@ describe('Playout API', () => {
 			adjustFakeTime((currentPartInstance?.part.expectedDuration ?? 0) - 500)
 			// try to take just before an autonext
 			await expect(
-				takeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: currentPartInstance?._id ?? null })
+				handleTakeNextPart(context, {
+					playlistId: playlistId0,
+					fromPartInstanceId: currentPartInstance?._id ?? null,
+				})
 			).rejects.toMatchUserError(UserErrorMessage.TakeCloseToAutonext)
 			useFakeCurrentTime(nowBuf)
 		}
@@ -698,7 +703,7 @@ describe('Playout API', () => {
 			const pieceInstances = await getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId)
 			expect(pieceInstances).toHaveLength(2)
 			const now = adjustFakeTime(currentPartInstanceBeforeTake?.part.expectedDuration ?? 0)
-			await onPlayoutPlaybackChanged(context, {
+			await handleOnPlayoutPlaybackChanged(context, {
 				playlistId: playlistId0,
 
 				changes: [
@@ -779,7 +784,7 @@ describe('Playout API', () => {
 		const { parts } = await getAllRundownData(await getRundown0())
 
 		// Prepare and activate in rehersal:
-		await resetRundownPlaylist(context, { playlistId: playlistId0, activate: 'rehearsal' })
+		await handleResetRundownPlaylist(context, { playlistId: playlistId0, activate: 'rehearsal' })
 
 		{
 			const playlist = await getPlaylist0()
@@ -795,7 +800,7 @@ describe('Playout API', () => {
 
 		{
 			// move horizontally +1
-			await moveNextPart(context, { playlistId: playlistId0, partDelta: 1, segmentDelta: 0 })
+			await handleMoveNextPart(context, { playlistId: playlistId0, partDelta: 1, segmentDelta: 0 })
 			const { nextPartInstance } = await getSelectedPartInstances(context, await getPlaylist0())
 			// expect second part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[1]._id)
@@ -803,7 +808,7 @@ describe('Playout API', () => {
 
 		{
 			// move horizontally -1
-			await moveNextPart(context, { playlistId: playlistId0, partDelta: -1, segmentDelta: 0 })
+			await handleMoveNextPart(context, { playlistId: playlistId0, partDelta: -1, segmentDelta: 0 })
 			const { nextPartInstance } = await getSelectedPartInstances(context, await getPlaylist0())
 			// expect first part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[0]._id)
@@ -811,7 +816,7 @@ describe('Playout API', () => {
 
 		{
 			// move vertically +1
-			await moveNextPart(context, { playlistId: playlistId0, partDelta: 0, segmentDelta: 1 })
+			await handleMoveNextPart(context, { playlistId: playlistId0, partDelta: 0, segmentDelta: 1 })
 			const { nextPartInstance } = await getSelectedPartInstances(context, await getPlaylist0())
 			// expect 3rd part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[2]._id)
@@ -819,7 +824,7 @@ describe('Playout API', () => {
 
 		{
 			// move vertically -1
-			await moveNextPart(context, { playlistId: playlistId0, partDelta: 0, segmentDelta: -1 })
+			await handleMoveNextPart(context, { playlistId: playlistId0, partDelta: 0, segmentDelta: -1 })
 			const { nextPartInstance } = await getSelectedPartInstances(context, await getPlaylist0())
 			// expect 1st part to be selected as next
 			expect(nextPartInstance?.part._id).toBe(parts[0]._id)

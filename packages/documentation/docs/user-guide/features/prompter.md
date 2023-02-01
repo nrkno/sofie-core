@@ -28,6 +28,7 @@ The prompter UI can be configured using query parameters:
 | `showmarker`    | 0 / 1  | If the marker is not set to "hide", control if the marker is hidden or not                                                                                          | `1`     |
 | `showscroll`    | 0 / 1  | Whether the scroll bar should be shown                                                                                                                              | `1`     |
 | `followtake`    | 0 / 1  | Whether the prompter should automatically scroll to current segment when the operator TAKE:s it                                                                     | `1`     |
+| `showoverunder`    | 0 / 1  | The timer in the top-right of the prompter, showing the overtime/undertime of the current show.                                                                     | `1`     |
 | `debug`         | 0 / 1  | Whether to display a debug box showing controller input values and the calculated speed the prompter is currently scrolling at. Used to tweak speedMaps and ranges. | `0`     |
 
 Example: [http://127.0.0.1/prompter/studio0/?mode=mouse&followtake=0&fontsize=20](http://127.0.0.1/prompter/studio0/?mode=mouse&followtake=0&fontsize=20)
@@ -116,7 +117,7 @@ If you want to use traditional analogue pedals with 5 volt TRS connection, a con
 - `pedal_rangeNeutralMax` has to be greater than `pedal_rangeNeutralMin`
 - `pedal_rangeFwdMax` has to be greater than `pedal_rangeNeutralMax`
 
-![Yamaha FC7 mapped for both a forward (80-127) and backwards (0-35) range.](/img/docs/main/features/yamaha-fc7.png)
+![Yamaha FC7 mapped for both a forward \(80-127\) and backwards \(0-35\) range.](/img/docs/main/features/yamaha-fc7.jpg)
 
 The default values allow for both going forwards and backwards. This matches the _Yamaha FC7_ expression pedal. The default values create a forward-range from 80-127, a neutral zone from 35-80 and a reverse-range from 0-35.
 
@@ -162,7 +163,7 @@ The Joycons can operate in 3 modes, the L-stick, the R-stick or both L+R sticks 
 - `joycon_rangeNeutralMax` has to be greater than `joycon_rangeNeutralMin`
 - `joycon_rangeFwdMax` has to be greater than `joycon_rangeNeutralMax`
 
-![Nintendo Swith Joycons](/img/docs/main/features/nintendo-switch-joycons.png)
+![Nintendo Swith Joycons](/img/docs/main/features/nintendo-switch-joycons.jpg)
 
 You can turn on `?debug=1` to see how your input maps to an output.
 

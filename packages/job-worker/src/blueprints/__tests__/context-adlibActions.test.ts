@@ -32,8 +32,11 @@ import {
 	EmptyPieceTimelineObjectsBlob,
 	serializePieceTimelineObjectsBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { ReadOnlyCache } from '../../cache/CacheBase'
+import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints } from '../context/lib'
+import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
-import * as PlayoutAdlib from '../../playout/adlib'
+import * as PlayoutAdlib from '../../playout/adlibUtils'
 type TinnerStopPieces = jest.MockedFunction<typeof PlayoutAdlib.innerStopPieces>
 const innerStopPiecesMock = jest.spyOn(PlayoutAdlib, 'innerStopPieces') as TinnerStopPieces
 
@@ -52,8 +55,6 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints } from '../context/lib'
-import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 const { postProcessPieces: postProcessPiecesOrig, postProcessTimelineObjects: postProcessTimelineObjectsOrig } =
 	jest.requireActual('../postProcess')
 
@@ -374,7 +375,7 @@ describe('Test blueprint api context', () => {
 				getResolvedPiecesMock.mockImplementation(
 					(
 						context2: JobContext,
-						cache2: CacheForPlayout,
+						cache2: ReadOnlyCache<CacheForPlayout>,
 						sourceLayers: SourceLayers,
 						partInstance: DBPartInstance
 					) => {

@@ -5,7 +5,8 @@ import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/erro
 import { logger } from '../logging'
 import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
-import { isTooCloseToAutonext, selectNextPart, setNextPart } from './lib'
+import { isTooCloseToAutonext, selectNextPart } from './lib'
+import { setNextPart } from './setNext'
 import { getCurrentTime } from '../lib'
 import { PartEndState, VTContent } from '@sofie-automation/blueprints-integration'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -22,14 +23,79 @@ import {
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartEventContext, RundownContext } from '../blueprints/context'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
-import { innerStopPieces } from './adlib'
-import { reportPartInstanceHasStarted, reportPartInstanceHasStopped } from '../blueprints/events'
+import { innerStopPieces } from './adlibUtils'
+import { reportPartInstanceHasStarted, reportPartInstanceHasStopped } from './timings/partPlayback'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { calculatePartTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
+import { TakeNextPartProps } from '@sofie-automation/corelib/dist/worker/studio'
+import { runJobWithPlayoutCache } from './lock'
 
-export async function takeNextPartInnerSync(context: JobContext, cache: CacheForPlayout, now: number): Promise<void> {
+let MINIMUM_TAKE_SPAN = 1000
+export function setMinimumTakeSpan(span: number): void {
+	// Used in tests
+	MINIMUM_TAKE_SPAN = span
+}
+
+/**
+ * Take the currently Next:ed Part (start playing it)
+ */
+export async function handleTakeNextPart(context: JobContext, data: TakeNextPartProps): Promise<void> {
+	const now = getCurrentTime()
+
+	return runJobWithPlayoutCache(
+		context,
+		data,
+		async (cache) => {
+			const playlist = cache.Playlist.doc
+
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
+
+			if (!playlist.nextPartInstanceId && playlist.holdState !== RundownHoldState.ACTIVE)
+				throw UserError.create(UserErrorMessage.TakeNoNextPart)
+
+			if (playlist.currentPartInstanceId !== data.fromPartInstanceId)
+				throw UserError.create(UserErrorMessage.TakeFromIncorrectPart)
+		},
+		async (cache) => {
+			const playlist = cache.Playlist.doc
+
+			let lastTakeTime = playlist.lastTakeTime ?? 0
+
+			if (playlist.currentPartInstanceId) {
+				const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
+				if (currentPartInstance && currentPartInstance.timings?.plannedStartedPlayback) {
+					lastTakeTime = Math.max(lastTakeTime, currentPartInstance.timings.plannedStartedPlayback)
+				} else {
+					// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
+					logger.error(
+						`PartInstance "${playlist.currentPartInstanceId}", set as currentPart in "${playlist._id}", not found!`
+					)
+				}
+			}
+
+			if (lastTakeTime && now - lastTakeTime < MINIMUM_TAKE_SPAN) {
+				logger.debug(
+					`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${playlist.currentPartInstanceId}: ${
+						now - lastTakeTime
+					}`
+				)
+				throw UserError.create(UserErrorMessage.TakeRateLimit, { duration: MINIMUM_TAKE_SPAN })
+			}
+
+			return performTakeToNextedPart(context, cache, now)
+		}
+	)
+}
+
+/**
+ * Perform a Take into the nexted Part, and prepare a new nexted Part
+ * @param context Context for current job
+ * @param cache Cache for the active Playlist
+ * @param now Current timestamp
+ */
+export async function performTakeToNextedPart(context: JobContext, cache: CacheForPlayout, now: number): Promise<void> {
 	const span = context.startSpan('takeNextPartInner')
 
 	if (!cache.Playlist.doc.activationId) throw new Error(`Rundown Playlist "${cache.Playlist.doc._id}" is not active!`)
@@ -190,6 +256,11 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	if (span) span.end()
 }
 
+/**
+ * Clear the nexted Segment, if taking into the provided Part will consume it
+ * @param cache Cache for the active Playlist
+ * @param takeOrCurrentPartInstance PartInstance to check
+ */
 export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInstance?: DBPartInstance): void {
 	if (
 		takeOrCurrentPartInstance?.consumesNextSegmentId &&
@@ -203,6 +274,10 @@ export function clearNextSegmentId(cache: CacheForPlayout, takeOrCurrentPartInst
 	}
 }
 
+/**
+ * Reset the Segment of the previousPartInstance, if playback has left that Segment and the Rundown is looping
+ * @param cache Cache for the active Playlist
+ */
 export function resetPreviousSegment(cache: CacheForPlayout): void {
 	const { previousPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 

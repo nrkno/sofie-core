@@ -69,7 +69,7 @@
 		"@sofie-automation/shared-lib": "1.49.0-in-development",
 		"@mos-connection/connector": "3.0.0-nightly-feat-mono-repo-20230127-144135-8037b58.0",
 		"tslib": "^2.4.0",
-		"type-fest": "^3.5.1",
+		"type-fest": "^3.5.3",
 		"underscore": "^1.13.4",
 		"winston": "^3.8.2"
 	},

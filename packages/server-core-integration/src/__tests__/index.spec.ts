@@ -128,12 +128,12 @@ describe('coreConnection', () => {
 		// Call a method which will throw error:
 		await expect(core.callMethodRaw('peripheralDevice.testMethod', ['abcd', true])).rejects.toMatchObject({
 			error: 418,
-			reason: /error/,
+			reason: expect.stringContaining('error'),
 		})
 		// Call an unknown method
 		await expect(core.callMethodRaw('myunknownMethod123', ['a', 'b'])).rejects.toMatchObject({
 			error: 404,
-			reason: /error/,
+			reason: expect.stringContaining('error'),
 		})
 
 		// Unsubscribe:

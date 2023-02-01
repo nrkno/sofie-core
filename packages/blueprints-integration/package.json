@@ -40,7 +40,7 @@
 	"dependencies": {
 		"@sofie-automation/shared-lib": "link:../shared-lib",
 		"tslib": "^2.4.0",
-		"type-fest": "^3.5.1"
+		"type-fest": "^3.5.3"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

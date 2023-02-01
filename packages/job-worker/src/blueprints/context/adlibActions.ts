@@ -21,7 +21,8 @@ import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/l
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
-import { getMediaObjectDuration, ShowStyleUserContext, UserContextInfo } from './context'
+import { UserContextInfo } from './CommonContext'
+import { ShowStyleUserContext } from './ShowStyleUserContext'
 import { WatchedPackagesHelper } from './watchedPackages'
 import { getCurrentTime } from '../../lib'
 import {
@@ -40,7 +41,7 @@ import {
 	innerStartAdLibPiece,
 	innerStartQueuedAdLib,
 	innerStopPieces,
-} from '../../playout/adlib'
+} from '../../playout/adlibUtils'
 import {
 	Piece,
 	PieceTimelineObjectsBlob,
@@ -52,13 +53,14 @@ import {
 	convertPieceInstanceToBlueprints,
 	convertPieceToBlueprints,
 	convertResolvedPieceInstanceToBlueprints,
+	getMediaObjectDuration,
 	IBlueprintMutatablePartSampleKeys,
 	IBlueprintPieceObjectsSampleKeys,
 } from './lib'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { moveNextPartInner } from '../../playout/playout'
+import { moveNextPartInner } from '../../playout/setNext'
 import _ = require('underscore')
 import { ProcessedShowStyleConfig } from '../config'
 import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
@@ -634,6 +636,6 @@ export class ActionExecutionContext
 	}
 
 	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
-		return getMediaObjectDuration(this._context, mediaId, this.studioId)
+		return getMediaObjectDuration(this._context, mediaId)
 	}
 }

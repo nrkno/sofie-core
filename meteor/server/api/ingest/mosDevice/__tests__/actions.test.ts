@@ -115,7 +115,7 @@ describe('Test sending mos actions', () => {
 			literal<MosRundownProps>({
 				rundownExternalId: fakeRundown.externalId,
 				peripheralDeviceId: device._id,
-				isCreateAction: false,
+				isUpdateOperation: true,
 				mosRunningOrder: roData,
 			})
 		)

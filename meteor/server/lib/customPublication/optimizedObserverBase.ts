@@ -28,6 +28,10 @@ interface OptimizedObserverWorker<TData extends { _id: ProtectedString<any> }, T
 	stopObservers: () => Promise<void>
 }
 
+/** Based on the default behaviour of deepmerge */
+const isMergeableObject = (obj: object): boolean =>
+	!!obj && typeof obj === 'object' && !(obj instanceof Date || obj instanceof RegExp)
+
 /** Optimized observers */
 const optimizedObservers: Record<string, OptimizedObserverWrapper<any, unknown, unknown>> = {}
 
@@ -202,7 +206,7 @@ async function createOptimizedObserverWorker<
 					return false
 				}
 
-				return true
+				return isMergeableObject(obj)
 			},
 			// Some things can't be cloned. But we know the ownership, so this is safe
 			clone: false,

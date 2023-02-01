@@ -63,7 +63,7 @@ export const findNextPlaylist = (props: IProps) => {
 				}
 			).fetch() as Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'>[]
 		)
-			.sort(PlaylistTiming.sortTiminings)
+			.sort(PlaylistTiming.sortTimings)
 			.find((rundownPlaylist) => {
 				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 				const expectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)

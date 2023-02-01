@@ -44,7 +44,7 @@ export namespace MOSDeviceActions {
 				rundownExternalId: rundown.externalId,
 				peripheralDeviceId: peripheralDevice._id,
 				mosRunningOrder: mosRunningOrder,
-				isCreateAction: false,
+				isUpdateOperation: true,
 			})
 
 			// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
