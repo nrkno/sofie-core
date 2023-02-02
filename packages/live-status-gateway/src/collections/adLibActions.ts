@@ -26,7 +26,7 @@ export class AdLibActionsHandler
 		if (!this._collection) return
 		const col = this._core.getCollection<AdLibAction>(this._collection)
 		if (!col) throw new Error(`collection '${this._collection}' not found!`)
-		this._collectionData = col.find(undefined)
+		this._collectionData = col.find({ rundownId: this._curRundownId })
 		await this.notify(this._collectionData)
 	}
 
