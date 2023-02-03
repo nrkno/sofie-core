@@ -59,10 +59,7 @@ import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
 import { saveIntoDb, sumChanges } from '../lib/database'
 import * as fs from 'fs'
-import {
-	ExpectedPackageWorkStatus,
-	ExpectedPackageWorkStatuses,
-} from '../../lib/collections/ExpectedPackageWorkStatuses'
+import { ExpectedPackageWorkStatus } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import {
 	PackageContainerPackageStatusDB,
 	PackageContainerPackageStatuses,
@@ -85,7 +82,7 @@ import {
 	SnapshotId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, RundownPlaylists } from '../serverCollections'
+import { Blueprints, ExpectedPackageWorkStatuses, RundownPlaylists } from '../serverCollections'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined

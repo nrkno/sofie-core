@@ -5,11 +5,13 @@ import Moment from 'react-moment'
 import { Time, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Evaluations, Evaluation } from '../../../lib/collections/Evaluations'
+import { Evaluation } from '../../../lib/collections/Evaluations'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
 import { getQuestionOptions } from '../AfterBroadcastForm'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { Evaluations } from '../../../lib/clientCollections'
+
 interface IEvaluationProps {}
 interface IEvaluationState {
 	dateFrom: Time

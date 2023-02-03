@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { allowAccessToStudio } from './lib/security'
 import { MongoQueryKey } from '../../lib/typings/meteor'
 import { logNotAllowed } from './lib/lib'
-import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
@@ -16,7 +16,7 @@ import {
 	StudioId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists } from '../serverCollections'
+import { ExternalMessageQueue, RundownPlaylists } from '../serverCollections'
 
 export namespace StudioReadAccess {
 	/** Handles read access for all studio document */

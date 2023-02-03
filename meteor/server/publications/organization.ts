@@ -1,14 +1,14 @@
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { Blueprint } from '../../lib/collections/Blueprints'
-import { Evaluation, Evaluations } from '../../lib/collections/Evaluations'
+import { Evaluation } from '../../lib/collections/Evaluations'
 import { SnapshotItem, Snapshots } from '../../lib/collections/Snapshots'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/collections/lib'
 import { Organizations, DBOrganization } from '../../lib/collections/Organization'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import { Blueprints } from '../serverCollections'
+import { Blueprints, Evaluations } from '../serverCollections'
 
 meteorPublish(PubSub.organization, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId(this.userId, selector0, token)

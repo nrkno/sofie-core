@@ -1,4 +1,4 @@
-import { Evaluations, EvaluationBase } from '../../lib/collections/Evaluations'
+import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { deferAsync, getCurrentTime, getRandomId, getSofieHostUrl } from '../../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
@@ -7,7 +7,7 @@ import { fetchStudioLight } from '../../lib/collections/optimizations'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { RundownPlaylists } from '../serverCollections'
+import { Evaluations, RundownPlaylists } from '../serverCollections'
 
 export async function saveEvaluation(
 	credentials: {

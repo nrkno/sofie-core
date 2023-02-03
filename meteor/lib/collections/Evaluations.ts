@@ -1,6 +1,4 @@
 import { Time } from '../lib'
-import { createMongoCollection } from './lib'
-import { registerIndex } from '../database'
 import {
 	EvaluationId,
 	StudioId,
@@ -9,7 +7,6 @@ import {
 	OrganizationId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 export interface Evaluation extends EvaluationBase {
 	_id: EvaluationId
@@ -25,10 +22,3 @@ export interface EvaluationBase {
 	}
 	snapshots?: Array<SnapshotId>
 }
-
-export const Evaluations = createMongoCollection<Evaluation>(CollectionName.Evaluations)
-
-registerIndex(Evaluations, {
-	organizationId: 1,
-	timestamp: 1,
-})

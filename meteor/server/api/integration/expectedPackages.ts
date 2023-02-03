@@ -2,12 +2,8 @@ import { check } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
-import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { ExpectedPackageStatusAPI, PackageInfo } from '@sofie-automation/blueprints-integration'
-import {
-	ExpectedPackageWorkStatus,
-	ExpectedPackageWorkStatuses,
-} from '../../../lib/collections/ExpectedPackageWorkStatuses'
+import { ExpectedPackageWorkStatus } from '../../../lib/collections/ExpectedPackageWorkStatuses'
 import { assertNever, getCurrentTime, literal, protectString } from '../../../lib/lib'
 import {
 	getPackageContainerPackageId,
@@ -29,6 +25,7 @@ import {
 	PackageContainerPackageId,
 	PeripheralDeviceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackages, ExpectedPackageWorkStatuses } from '../../serverCollections'
 
 export namespace PackageManagerIntegration {
 	export async function updateExpectedPackageWorkStatuses(

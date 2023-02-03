@@ -5,7 +5,7 @@ import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { Studios, DBStudio, getActiveRoutes, getRoutedMappings, RoutedMappings } from '../../lib/collections/Studios'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
-import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
@@ -17,11 +17,8 @@ import {
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
-import { ExpectedPackageDBBase, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
-import {
-	ExpectedPackageWorkStatus,
-	ExpectedPackageWorkStatuses,
-} from '../../lib/collections/ExpectedPackageWorkStatuses'
+import { ExpectedPackageDBBase } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageWorkStatus } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import {
 	PackageContainerPackageStatuses,
 	PackageContainerPackageStatusDB,
@@ -34,6 +31,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { FindOptions } from '../../lib/collections/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ExpectedPackageId, PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackages, ExpectedPackageWorkStatuses, ExternalMessageQueue } from '../serverCollections'
 
 meteorPublish(PubSub.studios, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)

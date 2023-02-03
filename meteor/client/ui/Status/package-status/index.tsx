@@ -1,12 +1,9 @@
 import React from 'react'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { PubSub } from '../../../../lib/api/pubsub'
-import {
-	ExpectedPackageWorkStatus,
-	ExpectedPackageWorkStatuses,
-} from '../../../../lib/collections/ExpectedPackageWorkStatuses'
+import { ExpectedPackageWorkStatus } from '../../../../lib/collections/ExpectedPackageWorkStatuses'
 import { unprotectString } from '../../../../lib/lib'
-import { ExpectedPackageDB, ExpectedPackages } from '../../../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDB } from '../../../../lib/collections/ExpectedPackages'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 import { Meteor } from 'meteor/meteor'
@@ -16,6 +13,7 @@ import { PackageContainerStatus } from './PackageContainerStatus'
 import { Spinner } from '../../../lib/Spinner'
 import { useTranslation } from 'react-i18next'
 import { UIStudios } from '../../Collections'
+import { ExpectedPackages, ExpectedPackageWorkStatuses } from '../../../../lib/clientCollections'
 
 export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesStatus(_props: {}) {
 	const { t } = useTranslation()
