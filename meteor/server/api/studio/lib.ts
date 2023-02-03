@@ -1,7 +1,8 @@
 import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { protectString } from '../../../lib/lib'
-import { RundownPlaylists } from '../../serverCollections'
+import { getCurrentTime, protectString } from '../../../lib/lib'
+import { PackageInfos, RundownPlaylists } from '../../serverCollections'
 
 export async function getActiveRundownPlaylistsInStudioFromDb(
 	studioId: StudioId,
@@ -14,4 +15,10 @@ export async function getActiveRundownPlaylistsInStudioFromDb(
 			$ne: excludeRundownPlaylistId || protectString(''),
 		},
 	})
+}
+
+/** Returns a list of PackageInfos which are no longer valid */
+export async function getRemovedPackageInfos(): Promise<PackageInfoDB['_id'][]> {
+	const docs = await PackageInfos.findFetchAsync({ removeTime: { $lte: getCurrentTime() } }, { fields: { _id: 1 } })
+	return docs.map((p) => p._id)
 }

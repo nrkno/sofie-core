@@ -6,7 +6,7 @@ import { Pieces, Piece } from '../../../lib/collections/Pieces'
 import { PubSub } from '../../../lib/api/pubsub'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { VideoEditMonitor } from './VideoEditMonitor'
-import { MediaObjects, MediaObject } from '../../../lib/collections/MediaObjects'
+import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { TimecodeEncoder } from './TimecodeEncoder'
 import { faUndo } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -14,6 +14,7 @@ import Tooltip from 'rc-tooltip'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { PartId, PieceId, RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MediaObjects } from '../../../lib/clientCollections'
 
 export interface IProps {
 	pieceId: PieceId

@@ -7,17 +7,12 @@ import { ExpectedPackageWorkStatus } from '../../../lib/collections/ExpectedPack
 import { assertNever, getCurrentTime, literal, protectString } from '../../../lib/lib'
 import {
 	getPackageContainerPackageId,
-	PackageContainerPackageStatuses,
 	PackageContainerPackageStatusDB,
 } from '../../../lib/collections/PackageContainerPackageStatus'
-import { getPackageInfoId, PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
+import { getPackageInfoId, PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import { onUpdatedPackageInfo } from '../ingest/packageInfo'
-import {
-	getPackageContainerId,
-	PackageContainerStatusDB,
-	PackageContainerStatuses,
-} from '../../../lib/collections/PackageContainerStatus'
+import { getPackageContainerId, PackageContainerStatusDB } from '../../../lib/collections/PackageContainerStatus'
 import {
 	ExpectedPackageId,
 	ExpectedPackageWorkStatusId,
@@ -25,7 +20,13 @@ import {
 	PackageContainerPackageId,
 	PeripheralDeviceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ExpectedPackages, ExpectedPackageWorkStatuses } from '../../serverCollections'
+import {
+	ExpectedPackages,
+	ExpectedPackageWorkStatuses,
+	PackageContainerPackageStatuses,
+	PackageContainerStatuses,
+	PackageInfos,
+} from '../../serverCollections'
 
 export namespace PackageManagerIntegration {
 	export async function updateExpectedPackageWorkStatuses(

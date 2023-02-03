@@ -20,11 +20,14 @@ import {
 	MediaStreamType,
 	MediaStream,
 } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
+import { Mongo } from 'meteor/mongo'
 import { UIStudio } from '../../../lib/api/studios'
-import { MediaObjects } from '../../../lib/collections/MediaObjects'
+import { MediaObjects } from '../../../lib/clientCollections'
 import { defaultStudio } from '../../../__mocks__/defaultCollectionObjects'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { checkPieceContentStatus } from '../mediaObjects'
+
+const mockMediaObjectsCollection = (MediaObjects as any).mockCollection as Mongo.Collection<MediaObject>
 
 describe('client/lib/mediaObjects', () => {
 	testInFiber('checkPieceContentStatus', () => {
@@ -42,7 +45,7 @@ describe('client/lib/mediaObjects', () => {
 			mappings: applyAndValidateOverrides(mockDefaultStudio.mappingsWithOverrides).obj,
 		}
 
-		MediaObjects.insert(
+		mockMediaObjectsCollection.insert(
 			literal<MediaObject>({
 				_id: protectString(''),
 				_attachments: {},
@@ -130,7 +133,7 @@ describe('client/lib/mediaObjects', () => {
 			type: SourceLayerType.LIVE_SPEAK,
 		})
 
-		MediaObjects.insert(
+		mockMediaObjectsCollection.insert(
 			literal<MediaObject>({
 				_id: protectString(''),
 				_attachments: {},

@@ -8,12 +8,15 @@ import { MeteorCall } from '../../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 import { Meteor } from 'meteor/meteor'
 import { PackageStatus } from './PackageStatus'
-import { PackageContainerStatuses } from '../../../../lib/collections/PackageContainerStatus'
 import { PackageContainerStatus } from './PackageContainerStatus'
 import { Spinner } from '../../../lib/Spinner'
 import { useTranslation } from 'react-i18next'
 import { UIStudios } from '../../Collections'
-import { ExpectedPackages, ExpectedPackageWorkStatuses } from '../../../../lib/clientCollections'
+import {
+	ExpectedPackages,
+	ExpectedPackageWorkStatuses,
+	PackageContainerStatuses,
+} from '../../../../lib/clientCollections'
 
 export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesStatus(_props: {}) {
 	const { t } = useTranslation()

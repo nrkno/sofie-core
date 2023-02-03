@@ -1,8 +1,8 @@
 import { ExpectedPackageId, PackageContainerPackageId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PackageContainerPackageStatuses } from './clientCollections'
 import {
 	PackageContainerPackageStatusDB,
 	getPackageContainerPackageId,
-	PackageContainerPackageStatuses,
 } from './collections/PackageContainerPackageStatus'
 import { ReactiveStore } from './ReactiveStore'
 

@@ -28,10 +28,10 @@ import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
-import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
-import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
+import { MediaObject } from '../../../lib/collections/MediaObjects'
 import {
 	IBlueprintPieceType,
 	PieceLifespan,
@@ -53,7 +53,7 @@ import {
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import { RundownPlaylists, Rundowns } from '../../serverCollections'
+import { MediaObjects, MediaWorkFlows, MediaWorkFlowSteps, RundownPlaylists, Rundowns } from '../../serverCollections'
 
 const DEBUG = false
 

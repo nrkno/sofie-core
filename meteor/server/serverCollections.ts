@@ -7,10 +7,16 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { ExpectedMediaItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
+import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
+import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
+import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
+import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
+import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { Bucket } from '../lib/collections/Buckets'
 import { Evaluation } from '../lib/collections/Evaluations'
 import { ExpectedPackageDB } from '../lib/collections/ExpectedPackages'
@@ -131,6 +137,70 @@ registerIndex(ExternalMessageQueue, {
 export const IngestDataCache = createAsyncMongoCollection<IngestDataCacheObj>(CollectionName.IngestDataCache)
 registerIndex(IngestDataCache, {
 	rundownId: 1,
+})
+
+export const MediaObjects = createAsyncMongoCollection<MediaObject>(CollectionName.MediaObjects)
+registerIndex(MediaObjects, {
+	studioId: 1,
+	collectionId: 1,
+	objId: 1,
+	mediaId: 1,
+})
+registerIndex(MediaObjects, {
+	studioId: 1,
+	mediaId: 1,
+})
+
+export const MediaWorkFlows = createAsyncMongoCollection<MediaWorkFlow>(CollectionName.MediaWorkFlows)
+registerIndex(MediaWorkFlows, {
+	// TODO: add deviceId: 1,
+	mediaObjectId: 1,
+})
+registerIndex(MediaWorkFlows, {
+	finished: 1,
+	success: 1,
+	priority: 1,
+})
+
+export const MediaWorkFlowSteps = createAsyncMongoCollection<MediaWorkFlowStep>(CollectionName.MediaWorkFlowSteps)
+registerIndex(MediaWorkFlowSteps, {
+	deviceId: 1,
+})
+registerIndex(MediaWorkFlowSteps, {
+	workFlowId: 1,
+})
+registerIndex(MediaWorkFlowSteps, {
+	status: 1,
+	priority: 1,
+})
+
+export const PackageContainerPackageStatuses = createAsyncMongoCollection<PackageContainerPackageStatusDB>(
+	CollectionName.PackageContainerPackageStatuses
+)
+registerIndex(PackageContainerPackageStatuses, {
+	studioId: 1,
+	containerId: 1,
+	packageId: 1,
+})
+registerIndex(PackageContainerPackageStatuses, {
+	deviceId: 1,
+})
+
+export const PackageContainerStatuses = createAsyncMongoCollection<PackageContainerStatusDB>(
+	CollectionName.PackageContainerStatuses
+)
+registerIndex(PackageContainerStatuses, {
+	studioId: 1,
+	containerId: 1,
+})
+registerIndex(PackageContainerStatuses, {
+	deviceId: 1,
+})
+
+export const PackageInfos = createAsyncMongoCollection<PackageInfoDB>(CollectionName.PackageInfos)
+registerIndex(PackageInfos, {
+	studioId: 1,
+	packageId: 1,
 })
 
 export const RundownBaselineObjs = createAsyncMongoCollection<RundownBaselineObj>(CollectionName.RundownBaselineObjects)

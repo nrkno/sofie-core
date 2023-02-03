@@ -1,4 +1,4 @@
-import { IngestDataCache, RundownPlaylists, Rundowns } from './serverCollections'
+import { IngestDataCache, PackageInfos, RundownPlaylists, Rundowns } from './serverCollections'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
@@ -18,7 +18,7 @@ import { Parts } from '../lib/collections/Parts'
 import { PartInstances } from '../lib/collections/PartInstances'
 import { PieceInstances } from '../lib/collections/PieceInstances'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
-import { getRemovedPackageInfos, PackageInfos } from '../lib/collections/PackageInfos'
+import { getRemovedPackageInfos } from './api/studio/lib'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:

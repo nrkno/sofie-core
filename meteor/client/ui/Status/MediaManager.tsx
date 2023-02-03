@@ -7,8 +7,8 @@ import ClassNames from 'classnames'
 import { MomentFromNow } from '../../lib/Moment'
 import { CircularProgressbar } from 'react-circular-progressbar'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
 import * as i18next from 'react-i18next'
 import { extendMandadory, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
@@ -22,6 +22,7 @@ import Tooltip from 'rc-tooltip'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { getAllowConfigure, getAllowStudio } from '../../lib/localStorage'
 import { MediaWorkFlowId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MediaWorkFlows, MediaWorkFlowSteps } from '../../../lib/clientCollections'
 
 interface IMediaManagerStatusProps {}
 

@@ -4,9 +4,6 @@ import { MongoMock } from '../../__mocks__/mongo'
 import { waitForPromise, protectString, waitTime, getRandomString } from '../../lib/lib'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { MediaObjects } from '../../lib/collections/MediaObjects'
-import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
 import { Parts } from '../../lib/collections/Parts'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
@@ -19,6 +16,9 @@ import {
 	ExpectedMediaItems,
 	ExternalMessageQueue,
 	IngestDataCache,
+	MediaObjects,
+	MediaWorkFlows,
+	MediaWorkFlowSteps,
 	RundownBaselineObjs,
 	Rundowns,
 } from '../serverCollections'

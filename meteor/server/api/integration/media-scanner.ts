@@ -4,8 +4,9 @@ import { protectString } from '../../../lib/lib'
 import { MediaObjectRevision } from '../../../lib/api/peripheralDevice'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { MethodContext } from '../../../lib/api/methods'
-import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
+import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { MediaObjId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MediaObjects } from '../../serverCollections'
 
 export namespace MediaScannerIntegration {
 	export async function getMediaObjectRevisions(

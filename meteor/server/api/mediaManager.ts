@@ -1,8 +1,9 @@
-import { MediaWorkFlow, MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { MediaWorkFlowContentAccess } from '../security/peripheralDevice'
 import { BasicAccessContext } from '../security/organization'
+import { MediaWorkFlows } from '../serverCollections'
 
 export namespace MediaManagerAPI {
 	export async function restartAllWorkflows(access: BasicAccessContext): Promise<void> {
