@@ -1,10 +1,9 @@
-import { ProtectedString, getCurrentTime, getCollectionKey } from '../../lib/lib'
+import { ProtectedString, getCurrentTime } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getActiveRundownPlaylistsInStudioFromDb, getRemovedPackageInfos } from './studio/lib'
 import { Settings } from '../../lib/Settings'
-import { AsyncMongoCollection } from '../../lib/collections/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import {
 	OrganizationId,
@@ -54,6 +53,8 @@ import {
 	TriggeredActions,
 	UserActionsLog,
 } from '../collections'
+import { AsyncMongoCollection } from '../collections/collection'
+import { getCollectionKey } from '../collections/lib'
 
 export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Promise<CollectionCleanupResult | string> {
 	if (actuallyCleanup) {

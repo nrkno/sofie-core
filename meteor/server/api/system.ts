@@ -9,12 +9,12 @@ import {
 	BenchmarkResult,
 	SystemBenchmarkResults,
 } from '../../lib/api/system'
-import { getTargetRegisteredIndexes } from '../../lib/database'
+import { getTargetRegisteredIndexes } from '../collections/indices'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import { SystemWriteAccess } from '../security/system'
 import { check } from '../../lib/check'
-import { AsyncMongoCollection, createAsyncMongoCollection, IndexSpecifier } from '../../lib/collections/lib'
+import { IndexSpecifier } from '../../lib/collections/lib'
 import { getBundle as getTranslationBundleInner } from './translationsBundles'
 import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
 import { OrganizationContentWriteAccess } from '../security/organization'
@@ -23,6 +23,7 @@ import { cleanupOldDataInner } from './cleanup'
 import { IndexSpecification } from 'mongodb'
 import { nightlyCronjobInner } from '../cronjobs'
 import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { AsyncMongoCollection, createAsyncMongoCollection } from '../collections/collection'
 
 async function setupIndexes(removeOldIndexes: boolean = false): Promise<Array<IndexSpecification>> {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.

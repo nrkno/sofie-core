@@ -29,12 +29,6 @@ import { Evaluation } from '../../lib/collections/Evaluations'
 import { ExpectedPackageDB } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatus } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import { ExpectedPlayoutItem } from '../../lib/collections/ExpectedPlayoutItems'
-import {
-	createAsyncOnlyMongoCollection,
-	createAsyncMongoCollection,
-	ObserveChangesForHash,
-	wrapMongoCollection,
-} from '../../lib/collections/lib'
 import { DBOrganization } from '../../lib/collections/Organization'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { Part } from '../../lib/collections/Parts'
@@ -52,8 +46,10 @@ import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { DBUser } from '../../lib/collections/Users'
 import { WorkerStatus } from '../../lib/collections/Workers'
-import { registerIndex } from '../../lib/database'
-import { getCurrentTime, registerCollection } from '../../lib/lib'
+import { registerIndex } from './indices'
+import { getCurrentTime } from '../../lib/lib'
+import { createAsyncMongoCollection, createAsyncOnlyMongoCollection, wrapMongoCollection } from './collection'
+import { ObserveChangesForHash, registerCollection } from './lib'
 
 export const AdLibActions = createAsyncMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 registerIndex(AdLibActions, {

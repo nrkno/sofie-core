@@ -1,6 +1,4 @@
 import * as _ from 'underscore'
-import { AsyncMongoCollection } from './collections/lib'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { Meteor } from 'meteor/meteor'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
@@ -111,16 +109,6 @@ export function stringifyObjects(objs: unknown): string {
 	} else {
 		return objs + ''
 	}
-}
-export const Collections = new Map<CollectionName, AsyncMongoCollection<any>>()
-export function registerCollection(name: CollectionName, collection: AsyncMongoCollection<any>): void {
-	if (Collections.has(name)) throw new Meteor.Error(`Cannot re-register collection "${name}"`)
-	Collections.set(name, collection)
-}
-export function getCollectionKey(collection: AsyncMongoCollection<any>): CollectionName {
-	const o = Array.from(Collections.entries()).find(([_key, col]) => col === collection)
-	if (!o) throw new Meteor.Error(500, `Collection "${collection.name}" not found in Collections!`)
-	return o[0] // collectionName
 }
 
 /** Convenience function, to be used when length of array has previously been verified */

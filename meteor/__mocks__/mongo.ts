@@ -6,7 +6,6 @@ import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import {
-	AsyncMongoCollection,
 	FindOneOptions,
 	FindOptions,
 	MongoReadOnlyCollection,
@@ -17,6 +16,7 @@ import {
 } from '../lib/collections/lib'
 import { mongoWhere, mongoFindOptions, mongoModify } from '@sofie-automation/corelib/dist/mongo'
 import { Mongo } from 'meteor/mongo'
+import { AsyncMongoCollection } from '../server/collections/collection'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
