@@ -15,7 +15,7 @@ import {
 	StudioId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists, Rundowns } from '../serverCollections'
+import { RundownPlaylists, Rundowns } from '../collections'
 
 export namespace RundownPlaylistReadAccess {
 	/** Handles read access for all playlist document */

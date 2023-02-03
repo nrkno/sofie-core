@@ -6,7 +6,7 @@ Like instead of fetching a full Blueprint or Studio it's enough to just fetch a 
 
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints } from './serverCollections'
+import { Blueprints } from './collections'
 
 export async function fetchBlueprintLight(blueprintId: BlueprintId): Promise<BlueprintLight | undefined> {
 	return Blueprints.findOneAsync(blueprintId, {

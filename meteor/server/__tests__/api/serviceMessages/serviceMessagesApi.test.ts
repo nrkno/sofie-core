@@ -7,7 +7,7 @@ import {
 	ICoreSystem,
 	ServiceMessage,
 } from '../../../../lib/collections/CoreSystem'
-import { CoreSystem } from '../../../serverCollections'
+import { CoreSystem } from '../../../collections'
 
 function convertExternalToServiceMessage(message: ExternalServiceMessage): ServiceMessage {
 	return {

@@ -38,7 +38,7 @@ import {
 	ShowStyleVariants,
 	Studios,
 	TriggeredActions,
-} from '../../../serverCollections'
+} from '../../../collections'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(async () => {

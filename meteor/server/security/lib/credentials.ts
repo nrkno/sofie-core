@@ -4,7 +4,7 @@ import { cacheResult, isProtectedString, clearCacheResult } from '../../../lib/l
 import { LIMIT_CACHE_TIME } from './security'
 import { profiler } from '../../api/profiler'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevices, Users } from '../../serverCollections'
+import { PeripheralDevices, Users } from '../../collections'
 
 export interface Credentials {
 	userId: UserId | null

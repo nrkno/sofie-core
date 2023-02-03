@@ -6,7 +6,7 @@ import { PackageInfo } from '../../coreSystem'
 import { StudioContentAccess } from '../../security/studio'
 import { shouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
 import { logger } from '../../logging'
-import { Blueprints, RundownPlaylists, Studios, Timeline } from '../../serverCollections'
+import { Blueprints, RundownPlaylists, Studios, Timeline } from '../../collections'
 
 export namespace ServerPlayoutAPI {
 	export async function shouldUpdateStudioBaseline(access: StudioContentAccess): Promise<string | false> {

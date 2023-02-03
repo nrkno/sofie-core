@@ -11,7 +11,7 @@ import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
 import { fetchShowStyleBaseLight } from '../optimizations'
 import { BlueprintId, RundownLayoutId, ShowStyleBaseId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownLayouts } from '../serverCollections'
+import { RundownLayouts } from '../collections'
 
 export async function createRundownLayout(
 	name: string,

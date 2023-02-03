@@ -8,7 +8,7 @@ import {
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { Meteor } from 'meteor/meteor'
-import { Blueprints, ShowStyleBases, TriggeredActions } from '../../serverCollections'
+import { Blueprints, ShowStyleBases, TriggeredActions } from '../../collections'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DBTriggeredActions } from '../../../lib/collections/TriggeredActions'
 import { evalBlueprint } from '../../api/blueprints/cache'

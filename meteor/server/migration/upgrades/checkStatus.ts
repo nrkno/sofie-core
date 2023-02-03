@@ -15,7 +15,7 @@ import {
 	GetUpgradeStatusResultStudio,
 	GetUpgradeStatusResultShowStyleBase,
 } from '../../../lib/api/migration'
-import { Blueprints, ShowStyleBases, Studios } from '../../serverCollections'
+import { Blueprints, ShowStyleBases, Studios } from '../../collections'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio } from '../../../lib/collections/Studios'
 import { generateTranslation } from '../../../lib/lib'

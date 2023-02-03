@@ -8,7 +8,7 @@ import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { StudioReadAccess } from '../security/studio'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import { BucketAdLibActions, BucketAdLibs, Buckets } from '../serverCollections'
+import { BucketAdLibActions, BucketAdLibs, Buckets } from '../collections'
 
 meteorPublish(PubSub.buckets, async function (selector, _token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')

@@ -24,7 +24,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ExpectedPackages, RundownPlaylists, Rundowns, PeripheralDevices, Studios } from '../serverCollections'
+import { ExpectedPackages, RundownPlaylists, Rundowns, PeripheralDevices, Studios } from '../collections'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId

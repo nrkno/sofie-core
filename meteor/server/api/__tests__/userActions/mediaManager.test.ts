@@ -4,7 +4,7 @@ import { getCurrentTime, getRandomId, protectString } from '../../../../lib/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { MediaWorkFlowId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MediaWorkFlows, PeripheralDeviceCommands, PeripheralDevices } from '../../../serverCollections'
+import { MediaWorkFlows, PeripheralDeviceCommands, PeripheralDevices } from '../../../collections'
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed

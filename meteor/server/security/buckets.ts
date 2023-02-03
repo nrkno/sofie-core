@@ -7,7 +7,7 @@ import { StudioReadAccess, StudioContentWriteAccess, StudioContentAccess } from 
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { AdLibActionId, BucketId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { BucketAdLibActions, BucketAdLibs, Buckets } from '../serverCollections'
+import { BucketAdLibActions, BucketAdLibs, Buckets } from '../collections'
 
 export namespace BucketSecurity {
 	export interface BucketContentAccess extends StudioContentAccess {

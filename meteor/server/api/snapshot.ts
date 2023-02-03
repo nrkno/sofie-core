@@ -92,7 +92,7 @@ import {
 	Timeline,
 	TriggeredActions,
 	UserActionsLog,
-} from '../serverCollections'
+} from '../collections'
 import { getCoreSystemAsync } from '../coreSystem/collection'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {

@@ -12,7 +12,7 @@ import { logger } from '../logging'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
 import { ShowStyleReadAccess } from '../security/showStyle'
-import { ShowStyleBases } from '../serverCollections'
+import { ShowStyleBases } from '../collections'
 import { AutoFillSelector } from './lib'
 
 interface UIShowStyleBaseArgs {

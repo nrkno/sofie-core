@@ -13,7 +13,7 @@ import {
 import { logger } from '../logging'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Blueprints, RundownPlaylists, Rundowns, TriggeredActions } from '../serverCollections'
+import { Blueprints, RundownPlaylists, Rundowns, TriggeredActions } from '../collections'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 

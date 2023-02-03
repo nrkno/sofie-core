@@ -3,7 +3,7 @@ import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
 import { generateTranslationBundleOriginId } from '../api/translationsBundles'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { TranslationsBundles } from '../serverCollections'
+import { TranslationsBundles } from '../collections'
 
 /*
  * **************************************************************************************

@@ -17,7 +17,7 @@ import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { StudioReadAccess } from '../security/studio'
-import { Studios } from '../serverCollections'
+import { Studios } from '../collections'
 
 interface UIStudioArgs {
 	readonly studioId: StudioId | null

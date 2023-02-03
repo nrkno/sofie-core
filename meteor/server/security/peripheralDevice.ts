@@ -18,7 +18,7 @@ import {
 	StudioId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MediaWorkFlows, PeripheralDevices } from '../serverCollections'
+import { MediaWorkFlows, PeripheralDevices } from '../collections'
 
 export namespace PeripheralDeviceReadAccess {
 	/** Check for read access for a peripheral device */

@@ -45,7 +45,7 @@ import {
 } from '../api/blueprints/migrationContext'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { SnapshotId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../serverCollections'
+import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../collections'
 import { getSystemStorePath } from '../coreSystem'
 import { getCoreSystem, setCoreSystemVersion } from '../coreSystem/collection'
 

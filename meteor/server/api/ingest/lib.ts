@@ -17,7 +17,7 @@ import {
 	SegmentId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevices } from '../../serverCollections'
+import { PeripheralDevices } from '../../collections'
 import { getStudioIdFromDevice } from '../studio/lib'
 
 /**

@@ -15,7 +15,7 @@ import { NoSecurityReadAccess } from '../noSecurity'
 import { OrganizationContentWriteAccess, OrganizationReadAccess } from '../organization'
 import { StudioContentWriteAccess } from '../studio'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Organizations, Users } from '../../serverCollections'
+import { Organizations, Users } from '../../collections'
 
 describe('Security', () => {
 	function getContext(cred: Credentials): MethodContext {

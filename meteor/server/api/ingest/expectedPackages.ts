@@ -17,7 +17,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
-import { PieceInstances } from '../../serverCollections'
+import { PieceInstances } from '../../collections'
 
 export async function generateExpectedPackagesForPartInstance(
 	studioId: StudioId,

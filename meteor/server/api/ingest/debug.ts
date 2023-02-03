@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
-import { RundownPlaylists, Rundowns, Segments } from '../../serverCollections'
+import { RundownPlaylists, Rundowns, Segments } from '../../collections'
 import { Settings } from '../../../lib/Settings'
 import { logger } from '../../logging'
 import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'

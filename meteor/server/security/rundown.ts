@@ -12,7 +12,7 @@ import { PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/Pe
 import { ExpectedPlayoutItem } from '../../lib/collections/ExpectedPlayoutItems'
 import { Settings } from '../../lib/Settings'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevices, Segments } from '../serverCollections'
+import { PeripheralDevices, Segments } from '../collections'
 import { getStudioIdFromDevice } from '../api/studio/lib'
 
 export namespace RundownReadAccess {

@@ -9,7 +9,7 @@ import {
 	Rundowns,
 	Snapshots,
 	UserActionsLog,
-} from './serverCollections'
+} from './collections'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'

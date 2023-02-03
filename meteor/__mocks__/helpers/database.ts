@@ -99,7 +99,7 @@ import {
 	TriggeredActions,
 	Workers,
 	WorkerThreadStatuses,
-} from '../../server/serverCollections'
+} from '../../server/collections'
 import { TSR_VERSION } from '@sofie-automation/shared-lib/dist/tsr'
 
 export enum LAYER_IDS {

@@ -1,6 +1,6 @@
 import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
 import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
-import { ExpectedPackages, Rundowns } from '../../serverCollections'
+import { ExpectedPackages, Rundowns } from '../../collections'
 import { assertNever, lazyIgnore } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { runIngestOperation } from './lib'

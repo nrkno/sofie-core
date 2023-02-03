@@ -9,7 +9,7 @@ import {
 	rundownFieldSpecifier,
 	segmentFieldSpecifier,
 } from './reactiveContentCache'
-import { PartInstances, Parts, Rundowns, Segments } from '../../serverCollections'
+import { PartInstances, Parts, Rundowns, Segments } from '../../collections'
 
 const REACTIVITY_DEBOUNCE = 20
 

@@ -2,7 +2,7 @@ import { Collections } from '../../../lib/lib'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 
 import '../../../lib/main' // include this in order to get all of the collection set up
-import '../../serverCollections' // include this in order to get all of the collection set up
+import '../../collections' // include this in order to get all of the collection set up
 
 import { cleanupOldDataInner } from '../cleanup'
 

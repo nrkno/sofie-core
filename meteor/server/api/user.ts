@@ -13,7 +13,7 @@ import { createOrganization } from './organizations'
 import { DBOrganizationBase } from '../../lib/collections/Organization'
 import { resetCredentials } from '../security/lib/credentials'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Organizations, Users } from '../serverCollections'
+import { Organizations, Users } from '../collections'
 
 async function enrollUser(email: string, name: string): Promise<UserId> {
 	triggerWriteAccessBecauseNoCheckNecessary()

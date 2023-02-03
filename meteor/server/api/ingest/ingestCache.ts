@@ -4,7 +4,7 @@ import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blue
 import { logger } from '../../../lib/logging'
 import { profiler } from '../profiler'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IngestDataCache } from '../../serverCollections'
+import { IngestDataCache } from '../../collections'
 import { IngestCacheType, IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 

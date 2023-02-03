@@ -32,7 +32,7 @@ import {
 	RundownBaselineAdLibPieces,
 	Rundowns,
 	Segments,
-} from '../serverCollections'
+} from '../collections'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 

@@ -9,7 +9,7 @@ import { insertStudioInner } from './studio/api'
 import { insertShowStyleBaseInner } from './showStyles'
 import { resetCredentials } from '../security/lib/credentials'
 import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, CoreSystem, Organizations, ShowStyleBases, Studios, Users } from '../serverCollections'
+import { Blueprints, CoreSystem, Organizations, ShowStyleBases, Studios, Users } from '../collections'
 import { getCoreSystemAsync } from '../coreSystem/collection'
 
 async function createDefaultEnvironmentForOrg(orgId: OrganizationId) {

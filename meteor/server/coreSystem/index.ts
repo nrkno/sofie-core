@@ -3,7 +3,7 @@ import { getCurrentTime, waitForPromise } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from '../migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
-import { Blueprints, CoreSystem, ShowStyleBases, ShowStyleVariants, Studios } from '../serverCollections'
+import { Blueprints, CoreSystem, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
 import { getEnvLogLevel, logger, LogLevel, setLogLevel } from '../logging'
 const PackageInfo = require('../../package.json')
 // import Agent from 'meteor/kschingiz:meteor-elastic-apm'

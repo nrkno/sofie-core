@@ -26,7 +26,7 @@ import {
 	PackageContainerPackageStatuses,
 	PackageContainerStatuses,
 	PackageInfos,
-} from '../../serverCollections'
+} from '../../collections'
 
 export namespace PackageManagerIntegration {
 	export async function updateExpectedPackageWorkStatuses(

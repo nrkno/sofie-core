@@ -8,7 +8,7 @@ import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/collections/lib'
 import { DBOrganization } from '../../lib/collections/Organization'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import { Blueprints, Evaluations, Organizations, Snapshots, UserActionsLog } from '../serverCollections'
+import { Blueprints, Evaluations, Organizations, Snapshots, UserActionsLog } from '../collections'
 
 meteorPublish(PubSub.organization, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId(this.userId, selector0, token)

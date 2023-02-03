@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
 import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
-import { PartInstances, PieceInstances, RundownPlaylists } from '../../serverCollections'
+import { PartInstances, PieceInstances, RundownPlaylists } from '../../collections'
 import { Settings } from '../../../lib/Settings'
 import { check } from 'meteor/check'
 import { profiler } from '../profiler'

@@ -20,7 +20,7 @@ import { observerChain } from '../../publications/lib/observerChain'
 import { ContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './RundownContentObserver'
 import { RundownsObserver } from './RundownsObserver'
-import { PartInstances, RundownPlaylists, Rundowns, ShowStyleBases } from '../../serverCollections'
+import { PartInstances, RundownPlaylists, Rundowns, ShowStyleBases } from '../../collections'
 
 type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) => () => void
 

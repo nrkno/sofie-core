@@ -16,7 +16,7 @@ import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { ShowStyleReadAccess } from '../security/showStyle'
-import { TriggeredActions } from '../serverCollections'
+import { TriggeredActions } from '../collections'
 
 interface UITriggeredActionsArgs {
 	readonly showStyleBaseId: ShowStyleBaseId | null

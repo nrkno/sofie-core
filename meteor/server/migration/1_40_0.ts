@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { Settings } from '../../lib/Settings'
-import { Studios } from '../serverCollections'
+import { Studios } from '../collections'
 
 // Release 40 (Skipped)
 

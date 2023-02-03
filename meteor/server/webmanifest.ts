@@ -15,7 +15,7 @@ import { generateTranslation } from '../lib/lib'
 import { ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { DBRundownPlaylist } from '../lib/collections/RundownPlaylists'
-import { Studios } from './serverCollections'
+import { Studios } from './collections'
 import { getCoreSystemAsync } from './coreSystem/collection'
 
 const appShortName = 'Sofie'

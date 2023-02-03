@@ -28,7 +28,7 @@ import {
 	Studios,
 	Timeline,
 	UserActionsLog,
-} from '../serverCollections'
+} from '../collections'
 import { DBStudio } from '../../lib/collections/Studios'
 import { isInFiber } from '../../__mocks__/Fibers'
 import { Mongo } from 'meteor/mongo'

@@ -8,7 +8,7 @@ import { StatusObject, setSystemStatus } from '../systemStatus/systemStatus'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { ExternalMessageQueueObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ExternalMessageQueue } from '../serverCollections'
+import { ExternalMessageQueue } from '../collections'
 
 let updateExternalMessageQueueStatusTimeout: number = 0
 function updateExternalMessageQueueStatus(): void {

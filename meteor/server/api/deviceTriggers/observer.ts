@@ -16,7 +16,7 @@ import { JobQueueWithClasses } from '@sofie-automation/shared-lib/dist/lib/JobQu
 import { ReactiveCacheCollection } from './ReactiveCacheCollection'
 import { StudioDeviceTriggerManager } from './StudioDeviceTriggerManager'
 import { StudioObserver } from './StudioObserver'
-import { Studios } from '../../serverCollections'
+import { Studios } from '../../collections'
 
 type ObserverAndManager = {
 	observer: StudioObserver

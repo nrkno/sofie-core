@@ -5,7 +5,7 @@ import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { MediaObjId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MediaObjects } from '../../serverCollections'
+import { MediaObjects } from '../../collections'
 import { getStudioIdFromDevice } from '../studio/lib'
 
 export namespace MediaScannerIntegration {

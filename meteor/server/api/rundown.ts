@@ -27,7 +27,7 @@ import { Blueprint } from '../../lib/collections/Blueprints'
 import { Studio } from '../../lib/collections/Studios'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, Rundowns, ShowStyleBases, ShowStyleVariants, Studios } from '../serverCollections'
+import { Blueprints, Rundowns, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
 import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 
 export namespace ServerRundownAPI {

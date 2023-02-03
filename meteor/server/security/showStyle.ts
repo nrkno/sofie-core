@@ -20,7 +20,7 @@ import {
 	TriggeredActionId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownLayouts, ShowStyleVariants, TriggeredActions } from '../serverCollections'
+import { RundownLayouts, ShowStyleVariants, TriggeredActions } from '../collections'
 
 export interface ShowStyleContentAccess {
 	userId: UserId | null

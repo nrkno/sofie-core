@@ -14,7 +14,7 @@ import {
 } from '../../../../__mocks__/helpers/database'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { PeripheralDevices } from '../../../serverCollections'
+import { PeripheralDevices } from '../../../collections'
 
 require('../../userActions') // include in order to create the Meteor methods needed
 

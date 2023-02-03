@@ -53,7 +53,7 @@ import {
 	Timeline,
 	TriggeredActions,
 	UserActionsLog,
-} from '../serverCollections'
+} from '../collections'
 
 export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Promise<CollectionCleanupResult | string> {
 	if (actuallyCleanup) {

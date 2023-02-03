@@ -17,7 +17,7 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { OrganizationId, ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownLayouts, ShowStyleBases, ShowStyleVariants } from '../serverCollections'
+import { RundownLayouts, ShowStyleBases, ShowStyleVariants } from '../collections'
 
 export interface ShowStyleCompound extends Omit<DBShowStyleBase, 'blueprintConfigWithOverrides'> {
 	showStyleVariantId: ShowStyleVariantId

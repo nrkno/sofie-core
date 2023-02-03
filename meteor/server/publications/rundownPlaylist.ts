@@ -6,7 +6,7 @@ import { OrganizationReadAccess } from '../security/organization'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { RundownPlaylists } from '../serverCollections'
+import { RundownPlaylists } from '../collections'
 
 meteorPublish(PubSub.rundownPlaylists, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBRundownPlaylist>(this.userId, selector0, token)

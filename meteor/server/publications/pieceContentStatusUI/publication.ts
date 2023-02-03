@@ -23,7 +23,7 @@ import {
 	PackageInfos,
 	RundownPlaylists,
 	Studios,
-} from '../../serverCollections'
+} from '../../collections'
 import { Studio } from '../../../lib/collections/Studios'
 import { literal, protectString } from '../../../lib/lib'
 import { checkPieceContentStatus, PieceContentStatusObj } from '../../../lib/mediaObjects'

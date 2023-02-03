@@ -3,7 +3,7 @@ import { BlueprintValidateConfigForStudioResult, StudioJobs } from '@sofie-autom
 import { Meteor } from 'meteor/meteor'
 import { Studio } from '../../../lib/collections/Studios'
 import { profiler } from '../../api/profiler'
-import { Studios } from '../../serverCollections'
+import { Studios } from '../../collections'
 import { QueueStudioJob } from '../../worker/worker'
 
 export async function validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {

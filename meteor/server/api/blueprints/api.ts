@@ -24,7 +24,7 @@ import { Credentials, isResolvedCredentials } from '../../security/lib/credentia
 import { Settings } from '../../../lib/Settings'
 import { generateTranslationBundleOriginId, upsertBundles } from '../translationsBundles'
 import { BlueprintId, OrganizationId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, CoreSystem, ShowStyleBases, ShowStyleVariants, Studios } from '../../serverCollections'
+import { Blueprints, CoreSystem, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { fetchBlueprintLight, BlueprintLight } from '../../serverOptimisations'
 import { getSystemStorePath } from '../../coreSystem'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'

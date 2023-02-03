@@ -12,7 +12,7 @@ import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib
 import { PeripheralDeviceCommandId, RundownId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CreateFakeResult, QueueIngestJobSpy } from '../../../../../__mocks__/worker'
 import { IngestJobs, MosRundownProps } from '@sofie-automation/corelib/dist/worker/ingest'
-import { PeripheralDeviceCommands } from '../../../../serverCollections'
+import { PeripheralDeviceCommands } from '../../../../collections'
 
 const mosTypes = MOS.getMosTypes(true)
 

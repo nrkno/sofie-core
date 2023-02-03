@@ -3,7 +3,7 @@ import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { SystemReadAccess } from '../security/system'
 import { OrganizationReadAccess } from '../security/organization'
-import { Users } from '../serverCollections'
+import { Users } from '../collections'
 import { getCoreSystemCursor } from '../coreSystem/collection'
 
 meteorPublish(PubSub.coreSystem, async function (token) {

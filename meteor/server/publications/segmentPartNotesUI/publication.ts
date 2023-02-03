@@ -24,7 +24,7 @@ import { RundownsObserver } from '../lib/rundownsObserver'
 import { RundownContentObserver } from './rundownContentObserver'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { generateNotesForSegment } from './generateNotesForSegment'
-import { RundownPlaylists } from '../../serverCollections'
+import { RundownPlaylists } from '../../collections'
 
 interface UISegmentPartNotesArgs {
 	readonly playlistId: RundownPlaylistId

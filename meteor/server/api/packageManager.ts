@@ -6,7 +6,7 @@ import {
 } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { StudioContentAccess } from '../security/studio'
-import { PeripheralDevices } from '../serverCollections'
+import { PeripheralDevices } from '../collections'
 
 export namespace PackageManagerAPI {
 	export async function restartExpectation(

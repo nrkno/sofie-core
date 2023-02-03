@@ -50,7 +50,7 @@ import {
 	Rundowns,
 	Snapshots,
 	UserActionsLog,
-} from '../serverCollections'
+} from '../collections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
 describe('cronjobs', () => {

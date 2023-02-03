@@ -1,4 +1,4 @@
-import { Parts } from '../serverCollections'
+import { Parts } from '../collections'
 import { addMigrationSteps } from './databaseMigration'
 
 // Release 39

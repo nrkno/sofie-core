@@ -8,7 +8,7 @@ import {
 	RundownBaselineObjs,
 	PieceInstances,
 	Pieces,
-} from '../serverCollections'
+} from '../collections'
 
 // Release 41
 export const addSteps = addMigrationSteps('1.41.0', [

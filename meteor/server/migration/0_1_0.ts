@@ -3,7 +3,7 @@ import { logger } from '../logging'
 import { getRandomId, protectString } from '../../lib/lib'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleBases, ShowStyleVariants, Studios } from '../serverCollections'
+import { ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
 
 /**
  * This file contains system specific migration steps.

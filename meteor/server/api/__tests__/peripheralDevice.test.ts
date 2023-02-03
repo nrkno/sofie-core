@@ -59,7 +59,7 @@ import {
 	RundownPlaylists,
 	Rundowns,
 	Segments,
-} from '../../serverCollections'
+} from '../../collections'
 
 const DEBUG = false
 

@@ -16,7 +16,7 @@ import {
 	StudioId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ExternalMessageQueue, RundownPlaylists } from '../serverCollections'
+import { ExternalMessageQueue, RundownPlaylists } from '../collections'
 
 export namespace StudioReadAccess {
 	/** Handles read access for all studio document */

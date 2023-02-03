@@ -19,7 +19,7 @@ const PackageInfo = require('../../../package.json')
 
 import * as checkUpgradeStatus from '../../migration/upgrades/checkStatus'
 import { GetUpgradeStatusResult } from '../../../lib/api/migration'
-import { PeripheralDevices } from '../../serverCollections'
+import { PeripheralDevices } from '../../collections'
 const getUpgradeStatusMock = jest.spyOn(checkUpgradeStatus, 'getUpgradeStatus')
 
 describe('systemStatus', () => {

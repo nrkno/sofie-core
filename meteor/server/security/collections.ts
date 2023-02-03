@@ -44,7 +44,7 @@ import {
 	TriggeredActions,
 	UserActionsLog,
 	Users,
-} from '../serverCollections'
+} from '../collections'
 import { SystemWriteAccess } from './system'
 import { StudioContentWriteAccess } from './studio'
 import { resolveCredentials } from './lib/credentials'

@@ -11,13 +11,7 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { profiler } from '../../api/profiler'
 import { fetchShowStyleBasesLight, fetchStudioLight, ShowStyleBaseLight, StudioLight } from '../../optimizations'
-import {
-	Organizations,
-	PeripheralDevices,
-	RundownPlaylists,
-	Rundowns,
-	ShowStyleVariants,
-} from '../../serverCollections'
+import { Organizations, PeripheralDevices, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
 import {
 	OrganizationId,
 	PeripheralDeviceId,

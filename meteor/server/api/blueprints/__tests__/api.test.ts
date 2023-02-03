@@ -8,7 +8,7 @@ import { SYSTEM_ID, ICoreSystem } from '../../../../lib/collections/CoreSystem'
 import { insertBlueprint, uploadBlueprint } from '../api'
 import { MeteorCall, MethodContext } from '../../../../lib/api/methods'
 import '../../../../__mocks__/_extendJest'
-import { Blueprints, CoreSystem } from '../../../serverCollections'
+import { Blueprints, CoreSystem } from '../../../collections'
 
 // we don't want the deviceTriggers observer to start up at this time
 jest.mock('../../deviceTriggers/observer')

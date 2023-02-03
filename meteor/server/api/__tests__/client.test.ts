@@ -14,7 +14,7 @@ import {
 import { setupMockPeripheralDevice, setupMockStudio } from '../../../__mocks__/helpers/database'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDeviceCommands, UserActionsLog } from '../../serverCollections'
+import { PeripheralDeviceCommands, UserActionsLog } from '../../collections'
 
 require('../client') // include in order to create the Meteor methods needed
 

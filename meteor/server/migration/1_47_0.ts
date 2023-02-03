@@ -6,7 +6,7 @@ import { DBShowStyleBase, OutputLayers, SourceLayers } from '../../lib/collectio
 import { DBBlueprintTrigger, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { getRandomString, normalizeArray } from '@sofie-automation/corelib/dist/lib'
 import { IBlueprintConfig, IOutputLayer, ISourceLayer, SomeAction } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../serverCollections'
+import { ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../collections'
 
 interface StudioOld {
 	mappings: MappingsExt

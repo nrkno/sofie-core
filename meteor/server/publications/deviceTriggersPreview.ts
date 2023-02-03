@@ -10,7 +10,7 @@ import { getCurrentTime } from '../../lib/lib'
 import { setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
 import { CustomPublish, meteorCustomPublish } from '../lib/customPublication/publish'
 import { StudioReadAccess } from '../security/studio'
-import { PeripheralDevices } from '../serverCollections'
+import { PeripheralDevices } from '../collections'
 
 type DeviceTriggerPreviewId = ProtectedString<'deviceTriggerPreviewId'>
 

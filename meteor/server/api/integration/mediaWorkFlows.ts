@@ -8,7 +8,7 @@ import { PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { MediaWorkFlowId, MediaWorkFlowStepId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MediaWorkFlows, MediaWorkFlowSteps } from '../../serverCollections'
+import { MediaWorkFlows, MediaWorkFlowSteps } from '../../collections'
 
 export namespace MediaManagerIntegration {
 	export async function getMediaWorkFlowStepRevisions(

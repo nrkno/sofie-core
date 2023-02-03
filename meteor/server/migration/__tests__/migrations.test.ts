@@ -20,7 +20,7 @@ import { Studio } from '../../../lib/collections/Studios'
 import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../serverCollections'
+import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { getCoreSystem } from '../../coreSystem/collection'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed

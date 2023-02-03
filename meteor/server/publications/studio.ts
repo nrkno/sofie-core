@@ -35,7 +35,7 @@ import {
 	PackageInfos,
 	PeripheralDevices,
 	Studios,
-} from '../serverCollections'
+} from '../collections'
 
 meteorPublish(PubSub.studios, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)

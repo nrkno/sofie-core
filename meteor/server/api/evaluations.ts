@@ -7,7 +7,7 @@ import { fetchStudioLight } from '../optimizations'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Evaluations, RundownPlaylists } from '../serverCollections'
+import { Evaluations, RundownPlaylists } from '../collections'
 
 export async function saveEvaluation(
 	credentials: {

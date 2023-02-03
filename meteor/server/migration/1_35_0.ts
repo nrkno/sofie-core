@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import * as semver from 'semver'
 import { dropDeprecatedDatabase, getDeprecatedDatabase } from './deprecatedDatabases/1_35_0'
-import { PackageContainerPackageStatuses } from '../serverCollections'
+import { PackageContainerPackageStatuses } from '../collections'
 import { getCoreSystem } from '../coreSystem/collection'
 
 // Release 35 (2021-07-13)

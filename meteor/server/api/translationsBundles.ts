@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Translation, TranslationsBundle as DBTranslationsBundle } from '../../lib/collections/TranslationsBundles'
-import { TranslationsBundles as TranslationsBundleCollection } from '../serverCollections'
+import { TranslationsBundles as TranslationsBundleCollection } from '../collections'
 import {
 	I18NextData,
 	TranslationsBundle as BlueprintTranslationsbundle,

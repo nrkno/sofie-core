@@ -20,7 +20,7 @@ import {
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { TriggeredActions } from '../serverCollections'
+import { TriggeredActions } from '../collections'
 
 export async function createTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null,

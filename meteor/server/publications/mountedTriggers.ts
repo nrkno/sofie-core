@@ -8,7 +8,7 @@ import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } 
 import { Mongo } from 'meteor/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import _ from 'underscore'
-import { PeripheralDevices } from '../serverCollections'
+import { PeripheralDevices } from '../collections'
 
 const PUBLICATION_DEBOUNCE = 20
 

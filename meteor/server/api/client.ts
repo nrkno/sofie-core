@@ -33,7 +33,7 @@ import {
 } from './lib'
 import { BasicAccessContext } from '../security/organization'
 import { NoticeLevel } from '../../lib/notifications/notifications'
-import { UserActionsLog } from '../serverCollections'
+import { UserActionsLog } from '../collections'
 
 function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
 	let userError: UserError

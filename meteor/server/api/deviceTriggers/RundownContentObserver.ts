@@ -16,7 +16,7 @@ import {
 	Segments,
 	ShowStyleBases,
 	TriggeredActions,
-} from '../../serverCollections'
+} from '../../collections'
 import { logger } from '../../logging'
 import {
 	adLibActionFieldSpecifier,

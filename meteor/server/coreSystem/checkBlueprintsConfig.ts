@@ -2,7 +2,7 @@ import { BlueprintManifestType, StatusCode } from '@sofie-automation/blueprints-
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprint } from '../../lib/collections/Blueprints'
-import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../serverCollections'
+import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../lib/collections/Studios'

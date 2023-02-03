@@ -1,7 +1,7 @@
 import { WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getWorkerId, WorkerStatus } from '../../lib/collections/Workers'
 import { getCurrentTime } from '../../lib/lib'
-import { Workers } from '../serverCollections'
+import { Workers } from '../collections'
 
 export function initializeWorkerStatus(name: string, instanceId: string): WorkerId {
 	const workerId = getWorkerId()

@@ -16,7 +16,7 @@ import {
 	Rundowns,
 	Studios,
 	Timeline,
-} from '../../serverCollections'
+} from '../../collections'
 import { MethodContextAPI, MethodContext } from '../../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../../security/organization'
 import { Credentials } from '../../security/lib/credentials'

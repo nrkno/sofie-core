@@ -18,7 +18,7 @@ import {
 	StudioId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, Snapshots } from '../serverCollections'
+import { Blueprints, Snapshots } from '../collections'
 
 export type BasicAccessContext = { organizationId: OrganizationId | null; userId: UserId | null }
 

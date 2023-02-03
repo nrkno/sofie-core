@@ -28,7 +28,7 @@ import { Time } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { TimelineDatastoreEntry } from '../../lib/collections/TimelineDatastore'
-import { PeripheralDevices, Studios, Timeline, TimelineDatastore } from '../serverCollections'
+import { PeripheralDevices, Studios, Timeline, TimelineDatastore } from '../collections'
 
 meteorPublish(PubSub.timeline, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
