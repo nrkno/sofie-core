@@ -6,9 +6,9 @@ import { SnapshotItem, Snapshots } from '../../lib/collections/Snapshots'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/collections/lib'
-import { Organizations, DBOrganization } from '../../lib/collections/Organization'
+import { DBOrganization } from '../../lib/collections/Organization'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import { Blueprints, Evaluations } from '../serverCollections'
+import { Blueprints, Evaluations, Organizations } from '../serverCollections'
 
 meteorPublish(PubSub.organization, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId(this.userId, selector0, token)

@@ -2,7 +2,7 @@ import { literal, getRandomId, getCurrentTime } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewOrganizationAPI, OrganizationAPIMethods } from '../../lib/api/organization'
 import { registerClassToMeteorMethods } from '../methods'
-import { Organizations, DBOrganization, DBOrganizationBase } from '../../lib/collections/Organization'
+import { DBOrganization, DBOrganizationBase } from '../../lib/collections/Organization'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { insertStudioInner } from './studio/api'
@@ -13,7 +13,7 @@ import { CoreSystem, getCoreSystemAsync } from '../../lib/collections/CoreSystem
 import { Users } from '../../lib/collections/Users'
 import { resetCredentials } from '../security/lib/credentials'
 import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints } from '../serverCollections'
+import { Blueprints, Organizations } from '../serverCollections'
 
 async function createDefaultEnvironmentForOrg(orgId: OrganizationId) {
 	let systemBlueprintId: BlueprintId | undefined

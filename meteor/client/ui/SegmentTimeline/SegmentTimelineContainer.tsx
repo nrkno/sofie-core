@@ -15,8 +15,6 @@ import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { Parts } from '../../../lib/collections/Parts'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
 import RundownViewEventBus, {
@@ -35,6 +33,7 @@ import {
 import { computeSegmentDuration, RundownTimingContext } from '../../lib/rundownTiming'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstances, Parts } from '../../../lib/clientCollections'
 
 // Kept for backwards compatibility
 export { SegmentUi, PartUi, PieceUi, ISourceLayerUi, IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'

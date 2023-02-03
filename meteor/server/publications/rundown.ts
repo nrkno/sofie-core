@@ -6,10 +6,10 @@ import { MongoQuery } from '../../lib/typings/meteor'
 import { AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { RundownReadAccess } from '../security/rundown'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
-import { DBPart, Parts } from '../../lib/collections/Parts'
+import { DBPart } from '../../lib/collections/Parts'
 import { Piece, Pieces } from '../../lib/collections/Pieces'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
-import { PartInstances, DBPartInstance } from '../../lib/collections/PartInstances'
+import { DBPartInstance } from '../../lib/collections/PartInstances'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
@@ -27,6 +27,8 @@ import {
 	ExpectedMediaItems,
 	ExpectedPlayoutItems,
 	IngestDataCache,
+	PartInstances,
+	Parts,
 	Rundowns,
 } from '../serverCollections'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'

@@ -2,7 +2,6 @@ import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import { getCurrentTime, getHash, Time } from '../../lib/lib'
-import { Parts } from '../../lib/collections/Parts'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/api/userActions'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
@@ -47,7 +46,7 @@ import {
 	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IngestDataCache, Rundowns } from '../serverCollections'
+import { IngestDataCache, Parts, Rundowns } from '../serverCollections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
 async function pieceSetInOutPoints(

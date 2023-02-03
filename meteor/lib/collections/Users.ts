@@ -1,10 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import { registerCollection, unprotectString } from '../lib'
-import { UserRoles, Organizations, DBOrganization } from './Organization'
+import { UserRoles, DBOrganization } from './Organization'
 import { registerIndex } from '../database'
 import { UserId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { wrapMongoCollection } from './lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { Organizations } from '../clientCollections'
 
 export interface UserProfile {
 	name: string

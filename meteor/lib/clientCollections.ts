@@ -18,6 +18,10 @@ import { Bucket } from './collections/Buckets'
 import { Evaluation } from './collections/Evaluations'
 import { ExpectedPackageDB } from './collections/ExpectedPackages'
 import { createSyncMongoCollection, createSyncReadOnlyMongoCollection } from './collections/lib'
+import { DBOrganization } from './collections/Organization'
+import { PartInstance } from './collections/PartInstances'
+import { Part } from './collections/Parts'
+import { PeripheralDeviceCommand } from './collections/PeripheralDeviceCommands'
 
 export const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 
@@ -53,6 +57,8 @@ export const MediaWorkFlowSteps = createSyncReadOnlyMongoCollection<MediaWorkFlo
 	CollectionName.MediaWorkFlowSteps
 )
 
+export const Organizations = createSyncMongoCollection<DBOrganization>(CollectionName.Organizations)
+
 export const PackageContainerPackageStatuses = createSyncReadOnlyMongoCollection<PackageContainerPackageStatusDB>(
 	CollectionName.PackageContainerPackageStatuses
 )
@@ -63,6 +69,13 @@ export const PackageContainerStatuses = createSyncReadOnlyMongoCollection<Packag
 
 export const PackageInfos = createSyncReadOnlyMongoCollection<PackageInfoDB>(CollectionName.PackageInfos)
 
+export const PartInstances = createSyncReadOnlyMongoCollection<PartInstance>(CollectionName.PartInstances)
+
+export const Parts = createSyncReadOnlyMongoCollection<Part>(CollectionName.Parts)
+
+export const PeripheralDeviceCommands = createSyncMongoCollection<PeripheralDeviceCommand>(
+	CollectionName.PeripheralDeviceCommands
+)
 export const Rundowns = createSyncReadOnlyMongoCollection<DBRundown>(CollectionName.Rundowns)
 
 export const RundownPlaylists = createSyncReadOnlyMongoCollection<DBRundownPlaylist>(CollectionName.RundownPlaylists)

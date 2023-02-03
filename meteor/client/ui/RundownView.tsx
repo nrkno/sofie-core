@@ -18,10 +18,8 @@ import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../lib/collec
 import { Rundown } from '../../lib/collections/Rundowns'
 import { DBSegment, Segment } from '../../lib/collections/Segments'
 import { StudioRouteSet } from '../../lib/collections/Studios'
-import { Part, Parts } from '../../lib/collections/Parts'
-
+import { Part } from '../../lib/collections/Parts'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
-
 import { RundownTimingProvider } from './RundownView/RundownTiming/RundownTimingProvider'
 import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming'
 import { CurrentPartRemaining } from './RundownView/RundownTiming/CurrentPartRemaining'
@@ -30,10 +28,8 @@ import { SegmentTimelineContainer, PieceUi, PartUi, SegmentUi } from './SegmentT
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { Shelf, ShelfTabs } from './Shelf/Shelf'
 import { RundownSystemStatus } from './RundownView/RundownSystemStatus'
-
 import { getCurrentTime, unprotectString, protectString } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
-
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
@@ -78,7 +74,7 @@ import {
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './FloatingInspectors/NoraFloatingInspector'
-import {  Bucket } from '../../lib/collections/Buckets'
+import { Bucket } from '../../lib/collections/Buckets'
 import { contextMenuHoldToDisplayTime, isEventInInputField } from '../lib/lib'
 import { OffsetPosition } from '../utils/positions'
 import { MeteorCall } from '../../lib/api/methods'
@@ -135,7 +131,7 @@ import {
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { Buckets, RundownPlaylists, Rundowns } from '../../lib/clientCollections'
+import { Buckets, Parts, RundownPlaylists, Rundowns } from '../../lib/clientCollections'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03

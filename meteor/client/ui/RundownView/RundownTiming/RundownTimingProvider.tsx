@@ -6,12 +6,13 @@ import { Part } from '../../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../../lib/lib'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
+import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { RundownTimingCalculator, RundownTimingContext } from '../../../lib/rundownTiming'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstances } from '../../../../lib/clientCollections'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15

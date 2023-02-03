@@ -1,7 +1,7 @@
 import '../../../__mocks__/_extendJest'
 
 import { MethodContext } from '../../../lib/api/methods'
-import { DBOrganization, Organizations } from '../../../lib/collections/Organization'
+import { DBOrganization } from '../../../lib/collections/Organization'
 import { User, Users } from '../../../lib/collections/Users'
 import { protectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
@@ -15,6 +15,7 @@ import { NoSecurityReadAccess } from '../noSecurity'
 import { OrganizationContentWriteAccess, OrganizationReadAccess } from '../organization'
 import { StudioContentWriteAccess } from '../studio'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Organizations } from '../../serverCollections'
 
 describe('Security', () => {
 	function getContext(cred: Credentials): MethodContext {

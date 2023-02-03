@@ -6,7 +6,7 @@ import { allAccess, noAccess, combineAccess, Access } from './access'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { isProtectedString } from '../../../lib/lib'
-import { Organizations, DBOrganization } from '../../../lib/collections/Organization'
+import { DBOrganization } from '../../../lib/collections/Organization'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { profiler } from '../../api/profiler'
@@ -16,7 +16,7 @@ import {
 	ShowStyleBaseLight,
 	StudioLight,
 } from '../../../lib/collections/optimizations'
-import { RundownPlaylists, Rundowns } from '../../serverCollections'
+import { Organizations, RundownPlaylists, Rundowns } from '../../serverCollections'
 import {
 	OrganizationId,
 	PeripheralDeviceId,

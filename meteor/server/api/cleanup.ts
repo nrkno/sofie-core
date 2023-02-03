@@ -1,10 +1,6 @@
 import { ProtectedString, getCurrentTime, getCollectionKey } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
-import { Organizations } from '../../lib/collections/Organization'
-import { PartInstances } from '../../lib/collections/PartInstances'
-import { Parts } from '../../lib/collections/Parts'
-import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Pieces } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibActions } from '../../lib/collections/RundownBaselineAdLibActions'
@@ -48,8 +44,12 @@ import {
 	MediaObjects,
 	MediaWorkFlows,
 	MediaWorkFlowSteps,
+	Organizations,
 	PackageContainerPackageStatuses,
 	PackageInfos,
+	PartInstances,
+	Parts,
+	PeripheralDeviceCommands,
 	RundownBaselineObjs,
 	RundownPlaylists,
 	Rundowns,

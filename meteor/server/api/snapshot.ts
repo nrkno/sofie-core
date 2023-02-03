@@ -35,7 +35,7 @@ import {
 } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
-import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
@@ -85,6 +85,7 @@ import {
 	MediaObjects,
 	PackageContainerPackageStatuses,
 	PackageInfos,
+	PeripheralDeviceCommands,
 	RundownPlaylists,
 } from '../serverCollections'
 

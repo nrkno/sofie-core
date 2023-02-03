@@ -31,7 +31,7 @@ import {
 } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { literal, unprotectString, protectString } from '../../../lib/lib'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
-import { PartInstances, findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
+import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibAction } from '../../../lib/collections/AdLibActions'
@@ -58,7 +58,7 @@ import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
 import { UIStudios } from '../Collections'
 import { PartId, PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { AdLibActions, AdLibPieces } from '../../../lib/clientCollections'
+import { AdLibActions, AdLibPieces, PartInstances } from '../../../lib/clientCollections'
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined

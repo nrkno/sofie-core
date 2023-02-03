@@ -51,7 +51,7 @@ import {
 } from '../../lib/lib'
 import { DBRundown } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
-import { DBPart, Parts } from '../../lib/collections/Parts'
+import { DBPart } from '../../lib/collections/Parts'
 import { EmptyPieceTimelineObjectsBlob, Piece, Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
@@ -84,7 +84,14 @@ import {
 	ShowStyleBaseId,
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { AdLibPieces, RundownPlaylists, Rundowns, Workers, WorkerThreadStatuses } from '../../server/serverCollections'
+import {
+	AdLibPieces,
+	Parts,
+	RundownPlaylists,
+	Rundowns,
+	Workers,
+	WorkerThreadStatuses,
+} from '../../server/serverCollections'
 import { TSR_VERSION } from '@sofie-automation/shared-lib/dist/tsr'
 
 export enum LAYER_IDS {

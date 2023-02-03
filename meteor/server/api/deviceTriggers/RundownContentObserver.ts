@@ -5,11 +5,9 @@ import {
 	RundownPlaylistId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { Parts } from '../../../lib/collections/Parts'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { RundownPlaylists, AdLibActions, AdLibPieces } from '../../serverCollections'
+import { PartInstances, Parts, RundownPlaylists, AdLibActions, AdLibPieces } from '../../serverCollections'
 import { Segments } from '../../../lib/collections/Segments'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { TriggeredActions } from '../../../lib/collections/TriggeredActions'

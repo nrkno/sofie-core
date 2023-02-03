@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Parts } from '../../../lib/collections/Parts'
 import { Segments } from '../../../lib/collections/Segments'
 import { logger } from '../../logging'
 import {
@@ -15,7 +14,7 @@ import {
 	SourceLayersDoc,
 } from './reactiveContentCache'
 import { Pieces } from '../../../lib/collections/Pieces'
-import { Rundowns } from '../../serverCollections'
+import { Parts, Rundowns } from '../../serverCollections'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { equivalentArrays, waitForPromise } from '../../../lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'

@@ -5,10 +5,11 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { getUser, User, Users, getUserRoles, DBUser } from '../../../lib/collections/Users'
 import { Spinner } from '../../lib/Spinner'
 import { PubSub } from '../../../lib/api/pubsub'
-import { Organizations, DBOrganization, UserRoles } from '../../../lib/collections/Organization'
+import { DBOrganization, UserRoles } from '../../../lib/collections/Organization'
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { EditAttribute } from '../../lib/EditAttribute'
+import { Organizations } from '../../../lib/clientCollections'
 
 interface OrganizationProps extends RouteComponentProps {
 	user: User | null

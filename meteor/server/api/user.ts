@@ -10,9 +10,10 @@ import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '.
 import { logNotAllowed } from '../../server/security/lib/lib'
 import { User, Users } from '../../lib/collections/Users'
 import { createOrganization } from './organizations'
-import { DBOrganizationBase, Organizations } from '../../lib/collections/Organization'
+import { DBOrganizationBase } from '../../lib/collections/Organization'
 import { resetCredentials } from '../security/lib/credentials'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Organizations } from '../serverCollections'
 
 async function enrollUser(email: string, name: string): Promise<UserId> {
 	triggerWriteAccessBecauseNoCheckNecessary()

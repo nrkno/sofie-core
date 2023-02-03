@@ -12,13 +12,16 @@ import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { defaultPartInstance, defaultPiece, defaultPieceInstance } from '../../../__mocks__/defaultCollectionObjects'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists } from '../../../lib/clientCollections'
+import { PartInstances, RundownPlaylists } from '../../../lib/clientCollections'
 import { createSyncMongoCollection } from '../../../lib/collections/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { MongoMock } from '../../../__mocks__/mongo'
+
+const mockPartInstancesCollection = MongoMock.getInnerMockCollection(PartInstances)
 
 describe('client/lib/rundown', () => {
 	let env: DefaultEnvironment
@@ -307,7 +310,7 @@ describe('client/lib/rundown', () => {
 					),
 				}
 
-				PartInstances.insert(mockCurrentPartInstance)
+				mockPartInstancesCollection.insert(mockCurrentPartInstance)
 
 				const infinitePieceInstance: PieceInstance = {
 					...defaultPieceInstance(

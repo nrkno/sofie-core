@@ -6,9 +6,7 @@ import {
 	PeripheralDevices,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { Segments } from '../../../lib/collections/Segments'
-import { Parts } from '../../../lib/collections/Parts'
 import { EmptyPieceTimelineObjectsBlob, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
@@ -20,7 +18,6 @@ import {
 	getRandomString,
 	sleep,
 } from '../../../lib/lib'
-
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'
@@ -53,7 +50,15 @@ import {
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import { MediaObjects, MediaWorkFlows, MediaWorkFlowSteps, RundownPlaylists, Rundowns } from '../../serverCollections'
+import {
+	MediaObjects,
+	MediaWorkFlows,
+	MediaWorkFlowSteps,
+	Parts,
+	PeripheralDeviceCommands,
+	RundownPlaylists,
+	Rundowns,
+} from '../../serverCollections'
 
 const DEBUG = false
 

@@ -10,6 +10,7 @@ import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/Ing
 import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
+import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -17,14 +18,19 @@ import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/Wor
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
+import { Meteor } from 'meteor/meteor'
 import { Bucket } from '../lib/collections/Buckets'
 import { Evaluation } from '../lib/collections/Evaluations'
 import { ExpectedPackageDB } from '../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatus } from '../lib/collections/ExpectedPackageWorkStatuses'
 import { ExpectedPlayoutItem } from '../lib/collections/ExpectedPlayoutItems'
 import { createAsyncOnlyMongoCollection, createAsyncMongoCollection } from '../lib/collections/lib'
+import { DBOrganization } from '../lib/collections/Organization'
+import { PartInstance } from '../lib/collections/PartInstances'
+import { Part } from '../lib/collections/Parts'
 import { WorkerStatus } from '../lib/collections/Workers'
 import { registerIndex } from '../lib/database'
+import { getCurrentTime } from '../lib/lib'
 
 export const AdLibActions = createAsyncMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 registerIndex(AdLibActions, {
@@ -174,6 +180,8 @@ registerIndex(MediaWorkFlowSteps, {
 	priority: 1,
 })
 
+export const Organizations = createAsyncMongoCollection<DBOrganization>(CollectionName.Organizations)
+
 export const PackageContainerPackageStatuses = createAsyncMongoCollection<PackageContainerPackageStatusDB>(
 	CollectionName.PackageContainerPackageStatuses
 )
@@ -203,6 +211,49 @@ registerIndex(PackageInfos, {
 	packageId: 1,
 })
 
+export const PartInstances = createAsyncMongoCollection<PartInstance>(CollectionName.PartInstances)
+registerIndex(PartInstances, {
+	rundownId: 1,
+	playlistActivationId: 1,
+	reset: 1,
+})
+registerIndex(PartInstances, {
+	rundownId: 1,
+	segmentId: 1,
+	takeCount: 1,
+	reset: 1,
+})
+registerIndex(PartInstances, {
+	rundownId: 1,
+	takeCount: 1,
+	reset: 1,
+})
+registerIndex(PartInstances, {
+	rundownId: 1,
+	// @ts-expect-error deep property
+	'part._id': 1,
+	takeCount: 1,
+	reset: 1,
+})
+
+export const Parts = createAsyncMongoCollection<Part>(CollectionName.Parts)
+registerIndex(Parts, {
+	rundownId: 1,
+	segmentId: 1,
+	_rank: 1,
+})
+registerIndex(Parts, {
+	rundownId: 1,
+	_rank: 1,
+})
+
+export const PeripheralDeviceCommands = createAsyncMongoCollection<PeripheralDeviceCommand>(
+	CollectionName.PeripheralDeviceCommands
+)
+registerIndex(PeripheralDeviceCommands, {
+	deviceId: 1,
+})
+
 export const RundownBaselineObjs = createAsyncMongoCollection<RundownBaselineObj>(CollectionName.RundownBaselineObjects)
 registerIndex(RundownBaselineObjs, {
 	rundownId: 1,
@@ -225,3 +276,20 @@ registerIndex(RundownPlaylists, {
 export const Workers = createAsyncMongoCollection<WorkerStatus>(CollectionName.Workers)
 
 export const WorkerThreadStatuses = createAsyncOnlyMongoCollection<WorkerThreadStatus>(CollectionName.WorkerThreads)
+
+// Monitor and remove old, lingering commands:
+const removeOldCommands = () => {
+	PeripheralDeviceCommands.find().forEach((cmd) => {
+		if (getCurrentTime() - (cmd.time || 0) > 20 * 1000) {
+			// timeout a long time ago
+			PeripheralDeviceCommands.remove(cmd._id)
+		}
+	})
+}
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		Meteor.setInterval(() => {
+			removeOldCommands()
+		}, 5 * 60 * 1000)
+	}
+})

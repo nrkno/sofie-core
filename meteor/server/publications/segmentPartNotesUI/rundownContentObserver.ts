@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Parts } from '../../../lib/collections/Parts'
 import { Segments } from '../../../lib/collections/Segments'
 import { logger } from '../../logging'
 import {
@@ -11,8 +10,7 @@ import {
 	rundownFieldSpecifier,
 	segmentFieldSpecifier,
 } from './reactiveContentCache'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { Rundowns } from '../../serverCollections'
+import { PartInstances, Parts, Rundowns } from '../../serverCollections'
 
 const REACTIVITY_DEBOUNCE = 20
 

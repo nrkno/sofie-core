@@ -6,15 +6,13 @@ import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
 import { MOSDeviceActions } from '../actions'
-import {
-	PeripheralDeviceCommands,
-	PeripheralDeviceCommand,
-} from '../../../../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDeviceCommand } from '../../../../../lib/collections/PeripheralDeviceCommands'
 import { TriggerReloadDataResponse } from '../../../../../lib/api/userActions'
 import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { PeripheralDeviceCommandId, RundownId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CreateFakeResult, QueueIngestJobSpy } from '../../../../../__mocks__/worker'
 import { IngestJobs, MosRundownProps } from '@sofie-automation/corelib/dist/worker/ingest'
+import { PeripheralDeviceCommands } from '../../../../serverCollections'
 
 const mosTypes = MOS.getMosTypes(true)
 

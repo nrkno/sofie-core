@@ -20,14 +20,14 @@ import {
 	MediaStreamType,
 	MediaStream,
 } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
-import { Mongo } from 'meteor/mongo'
 import { UIStudio } from '../../../lib/api/studios'
 import { MediaObjects } from '../../../lib/clientCollections'
 import { defaultStudio } from '../../../__mocks__/defaultCollectionObjects'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { MongoMock } from '../../../__mocks__/mongo'
 import { checkPieceContentStatus } from '../mediaObjects'
 
-const mockMediaObjectsCollection = (MediaObjects as any).mockCollection as Mongo.Collection<MediaObject>
+const mockMediaObjectsCollection = MongoMock.getInnerMockCollection(MediaObjects)
 
 describe('client/lib/mediaObjects', () => {
 	testInFiber('checkPieceContentStatus', () => {

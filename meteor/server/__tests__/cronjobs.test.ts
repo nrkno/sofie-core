@@ -12,7 +12,6 @@ import {
 	StatusCode,
 	TSR,
 } from '@sofie-automation/blueprints-integration'
-import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import {
 	PeripheralDevices,
 	PeripheralDeviceType,
@@ -20,8 +19,8 @@ import {
 } from '../../lib/collections/PeripheralDevices'
 import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
-import { DBPart, Parts } from '../../lib/collections/Parts'
-import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
+import { DBPart } from '../../lib/collections/Parts'
+import { PartInstance } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { Meteor } from 'meteor/meteor'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
@@ -45,7 +44,7 @@ jest.mock('../api/deviceTriggers/observer')
 import '../cronjobs'
 
 import '../api/peripheralDevice'
-import { IngestDataCache, Rundowns } from '../serverCollections'
+import { IngestDataCache, PartInstances, Parts, PeripheralDeviceCommands, Rundowns } from '../serverCollections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
 describe('cronjobs', () => {
