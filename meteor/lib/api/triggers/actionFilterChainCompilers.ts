@@ -18,12 +18,13 @@ import { SourceLayers } from '../../collections/ShowStyleBases'
 import { assertNever, generateTranslation } from '../../lib'
 import { MongoQuery } from '../../typings/meteor'
 import { DBRundown } from '../../collections/Rundowns'
-import { memoizedIsolatedAutorun } from '../../../client/lib/reactiveData/reactiveDataHelper'
 import { DBSegment, Segments } from '../../collections/Segments'
 import { sortAdlibs } from '../../Rundown'
 import { ReactivePlaylistActionContext } from './actionFactory'
 import { FindOptions } from '../../collections/lib'
 import { PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { IWrappedAdLibBase } from '@sofie-automation/shared-lib/dist/input-gateway/deviceTriggerPreviews'
+import { memoizedIsolatedAutorun } from '../../memoizedIsolatedAutorun'
 import { AdLibActions, AdLibPieces, RundownPlaylists, Rundowns } from '../../clientCollections'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
@@ -49,7 +50,7 @@ type CompiledFilter<T> = {
 
 type SomeAdLib = RundownBaselineAdLibItem | RundownBaselineAdLibAction | AdLibPiece | AdLibAction
 
-interface IWrappedAdLibType<T extends SomeAdLib, typeName extends string> {
+interface IWrappedAdLibType<T extends SomeAdLib, typeName extends string> extends IWrappedAdLibBase {
 	_id: T['_id']
 	_rank: number
 	partId: PartId | null
@@ -69,9 +70,9 @@ function wrapAdLibAction(adLib: AdLibAction, type: 'adLibAction'): IWrappedAdLib
 		_rank: adLib.display?._rank || 0,
 		partId: adLib.partId,
 		type: type,
-		label: adLib.display.label,
-		sourceLayerId: (adLib.display as IBlueprintActionManifestDisplayContent).sourceLayerId,
-		outputLayerId: (adLib.display as IBlueprintActionManifestDisplayContent).outputLayerId,
+		label: adLib.display?.label,
+		sourceLayerId: (adLib.display as IBlueprintActionManifestDisplayContent)?.sourceLayerId,
+		outputLayerId: (adLib.display as IBlueprintActionManifestDisplayContent)?.outputLayerId,
 		expectedDuration: undefined,
 		item: adLib,
 	}
@@ -86,9 +87,9 @@ function wrapRundownBaselineAdLibAction(
 		_rank: adLib.display?._rank ?? 0,
 		partId: adLib.partId ?? null,
 		type: type,
-		label: adLib.display.label,
-		sourceLayerId: (adLib.display as IBlueprintActionManifestDisplayContent).sourceLayerId,
-		outputLayerId: (adLib.display as IBlueprintActionManifestDisplayContent).outputLayerId,
+		label: adLib.display?.label,
+		sourceLayerId: (adLib.display as IBlueprintActionManifestDisplayContent)?.sourceLayerId,
+		outputLayerId: (adLib.display as IBlueprintActionManifestDisplayContent)?.outputLayerId,
 		expectedDuration: undefined,
 		item: adLib,
 	}

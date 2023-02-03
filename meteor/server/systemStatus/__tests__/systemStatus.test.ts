@@ -1,7 +1,7 @@
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { literal, unprotectString } from '../../../lib/lib'
+import { generateTranslation, literal, protectString, unprotectString } from '../../../lib/lib'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
 import { StatusResponse } from '../../../lib/api/systemStatus'
@@ -12,10 +12,31 @@ import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDeviceStatusObject } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
+// we don't want the deviceTriggers observer to start up at this time
+jest.mock('../../api/deviceTriggers/observer')
+
 require('../api')
 const PackageInfo = require('../../../package.json')
 
+import * as checkUpgradeStatus from '../../migration/upgrades/checkStatus'
+import { GetUpgradeStatusResult } from '../../../lib/api/migration'
+const getUpgradeStatusMock = jest.spyOn(checkUpgradeStatus, 'getUpgradeStatus')
+
 describe('systemStatus', () => {
+	beforeEach(() => {
+		getUpgradeStatusMock.mockReturnValue(
+			Promise.resolve(
+				literal<GetUpgradeStatusResult>({
+					studios: [],
+					showStyleBases: [],
+				})
+			)
+		)
+	})
+	afterEach(() => {
+		getUpgradeStatusMock.mockReset()
+	})
+
 	let env: DefaultEnvironment
 	testInFiber('getSystemStatus: before startup', async () => {
 		// Before starting the system up, the system status will be unknown
@@ -30,6 +51,7 @@ describe('systemStatus', () => {
 	testInFiber('getSystemStatus: after startup', async () => {
 		env = await setupDefaultStudioEnvironment()
 		MeteorMock.mockRunMeteorStartup()
+		await MeteorMock.sleepNoFakeTimers(200)
 
 		const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
@@ -218,5 +240,212 @@ describe('systemStatus', () => {
 			status: status2ExternalStatus(expectedStatus5),
 			_status: expectedStatus5,
 		})
+	})
+
+	testInFiber('getSystemStatus: blueprint upgrades need running', async () => {
+		{
+			// Ensure we start with a status of GOOD
+			const result: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
+			const expectedStatus = StatusCode.GOOD
+			expect(result).toMatchObject({
+				status: status2ExternalStatus(expectedStatus),
+				_status: expectedStatus,
+			})
+			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(1)
+		}
+
+		// Fake some studio upgrade errors
+		getUpgradeStatusMock.mockReturnValue(
+			Promise.resolve(
+				literal<GetUpgradeStatusResult>({
+					studios: [
+						{
+							studioId: protectString('studio0'),
+							name: 'Test Studio #0',
+							changes: [generateTranslation('something changed')],
+						},
+						{
+							studioId: protectString('studio1'),
+							name: 'Test Studio #1',
+							invalidReason: generateTranslation('some invalid reason'),
+							changes: [],
+						},
+					],
+					showStyleBases: [],
+				})
+			)
+		)
+
+		{
+			const result: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
+			// Expected status is BAD, because the studio upgrade has an invalidReason
+			const expectedStatus = StatusCode.WARNING_MAJOR
+			expect(result).toMatchObject({
+				status: status2ExternalStatus(expectedStatus),
+				_status: expectedStatus,
+			})
+			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(2)
+		}
+
+		// Just a minor studio warning
+		getUpgradeStatusMock.mockReturnValue(
+			Promise.resolve(
+				literal<GetUpgradeStatusResult>({
+					studios: [
+						{
+							studioId: protectString('studio0'),
+							name: 'Test Studio #0',
+							changes: [generateTranslation('something changed')],
+						},
+						{
+							studioId: protectString('studio1'),
+							name: 'Test Studio #1',
+							changes: [],
+						},
+					],
+					showStyleBases: [],
+				})
+			)
+		)
+
+		{
+			const result: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
+			// Expected status is BAD, because the studio upgrade has a change
+			const expectedStatus = StatusCode.WARNING_MINOR
+			expect(result).toMatchObject({
+				status: status2ExternalStatus(expectedStatus),
+				_status: expectedStatus,
+			})
+			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(3)
+		}
+
+		// Nothing wrong with a studio
+		getUpgradeStatusMock.mockReturnValue(
+			Promise.resolve(
+				literal<GetUpgradeStatusResult>({
+					studios: [
+						{
+							studioId: protectString('studio0'),
+							name: 'Test Studio #0',
+							changes: [],
+						},
+						{
+							studioId: protectString('studio1'),
+							name: 'Test Studio #1',
+							changes: [],
+						},
+					],
+					showStyleBases: [],
+				})
+			)
+		)
+
+		{
+			const result: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
+			// Expected status is GOOD, because the studios have no warnings
+			const expectedStatus = StatusCode.GOOD
+			expect(result).toMatchObject({
+				status: status2ExternalStatus(expectedStatus),
+				_status: expectedStatus,
+			})
+			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(4)
+		}
+
+		// Fake some showStyleBase upgrade errors
+		getUpgradeStatusMock.mockReturnValue(
+			Promise.resolve(
+				literal<GetUpgradeStatusResult>({
+					studios: [],
+					showStyleBases: [
+						{
+							showStyleBaseId: protectString('showStyleBase0'),
+							name: 'Test Show Style Base #0',
+							changes: [generateTranslation('something changed')],
+						},
+						{
+							showStyleBaseId: protectString('showStyleBase1'),
+							name: 'Test Show Style Base #1',
+							invalidReason: generateTranslation('some invalid reason'),
+							changes: [],
+						},
+					],
+				})
+			)
+		)
+
+		{
+			const result: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
+			// Expected status is BAD, because the showStyleBase upgrade has an invalidReason
+			const expectedStatus = StatusCode.WARNING_MAJOR
+			expect(result).toMatchObject({
+				status: status2ExternalStatus(expectedStatus),
+				_status: expectedStatus,
+			})
+			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(5)
+		}
+
+		// Just a minor showStyleBase warning
+		getUpgradeStatusMock.mockReturnValue(
+			Promise.resolve(
+				literal<GetUpgradeStatusResult>({
+					studios: [],
+					showStyleBases: [
+						{
+							showStyleBaseId: protectString('showStyleBase0'),
+							name: 'Test Show Style Base #0',
+							changes: [generateTranslation('something changed')],
+						},
+						{
+							showStyleBaseId: protectString('showStyleBase1'),
+							name: 'Test Show Style Base #1',
+							changes: [],
+						},
+					],
+				})
+			)
+		)
+
+		{
+			const result: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
+			// Expected status is BAD, because the showStyleBase upgrade has a change
+			const expectedStatus = StatusCode.WARNING_MINOR
+			expect(result).toMatchObject({
+				status: status2ExternalStatus(expectedStatus),
+				_status: expectedStatus,
+			})
+			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(6)
+		}
+
+		// Nothing wrong with a showStyleBase
+		getUpgradeStatusMock.mockReturnValue(
+			Promise.resolve(
+				literal<GetUpgradeStatusResult>({
+					studios: [],
+					showStyleBases: [
+						{
+							showStyleBaseId: protectString('showStyleBase0'),
+							name: 'Test Show Style Base #0',
+							changes: [],
+						},
+						{
+							showStyleBaseId: protectString('showStyleBase1'),
+							name: 'Test Show Style Base #1',
+							changes: [],
+						},
+					],
+				})
+			)
+		)
+
+		{
+			const result: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
+			// Expected status is GOOD, because the showStyleBase have no warnings
+			const expectedStatus = StatusCode.GOOD
+			expect(result).toMatchObject({
+				status: status2ExternalStatus(expectedStatus),
+				_status: expectedStatus,
+			})
+			expect(getUpgradeStatusMock).toHaveBeenCalledTimes(7)
+		}
 	})
 })

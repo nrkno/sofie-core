@@ -97,6 +97,7 @@ export class MockJobContext implements JobContext {
 
 	get studioBlueprint(): ReadonlyDeep<WrappedStudioBlueprint> {
 		return {
+			blueprintDoc: undefined,
 			blueprintId: this.studio.blueprintId || protectString('fake'),
 			blueprint: this.#studioBlueprint,
 		}
@@ -151,9 +152,17 @@ export class MockJobContext implements JobContext {
 		return processShowStyleBase(doc)
 	}
 	async getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<ProcessedShowStyleVariant>>> {
-		const docs = await this.directCollections.ShowStyleVariants.findFetch({
-			showStyleBaseId: id,
-		})
+		const docs = await this.directCollections.ShowStyleVariants.findFetch(
+			{
+				showStyleBaseId: id,
+			},
+			{
+				sort: {
+					_rank: 1,
+					_id: 1,
+				},
+			}
+		)
 
 		return docs.map(processShowStyleVariant)
 	}
@@ -230,6 +239,13 @@ const MockStudioBlueprint: () => StudioBlueprintManifest = () => ({
 	integrationVersion: '0.0.0',
 	TSRVersion: '0.0.0',
 
+	configPresets: {
+		defaults: {
+			name: 'Defaults',
+			config: {},
+		},
+	},
+
 	studioConfigManifest: [],
 	studioMigrations: [],
 	getBaseline: () => {
@@ -247,6 +263,20 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 	blueprintVersion: '0.0.0',
 	integrationVersion: '0.0.0',
 	TSRVersion: '0.0.0',
+
+	configPresets: {
+		defaults: {
+			name: 'Defaults',
+			config: {},
+
+			variants: {
+				0: {
+					name: 'Variant 0',
+					config: {},
+				},
+			},
+		},
+	},
 
 	showStyleConfigManifest: [],
 	showStyleMigrations: [],

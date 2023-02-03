@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundown } from '../../lib/collections/Rundowns'
-import { unprotectString, normalizeArray } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
@@ -29,6 +28,7 @@ import { Studio, Studios } from '../../lib/collections/Studios'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, Rundowns } from '../serverCollections'
+import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */
@@ -182,14 +182,14 @@ export namespace ClientRundownAPI {
 			}
 		)) as Array<Pick<Blueprint, '_id' | 'showStyleConfigManifest'>>
 
-		const showStyleBasesMap = normalizeArray(showStyleBases, '_id')
-		const showStyleVariantsMap = normalizeArray(showStyleVariants, '_id')
-		const showStyleBlueprintsMap = normalizeArray(showStyleBlueprints, '_id')
+		const showStyleBasesMap = normalizeArrayToMap(showStyleBases, '_id')
+		const showStyleVariantsMap = normalizeArrayToMap(showStyleVariants, '_id')
+		const showStyleBlueprintsMap = normalizeArrayToMap(showStyleBlueprints, '_id')
 
 		const showStyleWarnings: RundownPlaylistValidateBlueprintConfigResult['showStyles'] =
 			uniqueShowStyleCompounds.map((rundown) => {
-				const showStyleBase = showStyleBasesMap[unprotectString(rundown.showStyleBaseId)]
-				const showStyleVariant = showStyleVariantsMap[unprotectString(rundown.showStyleVariantId)]
+				const showStyleBase = showStyleBasesMap.get(rundown.showStyleBaseId)
+				const showStyleVariant = showStyleVariantsMap.get(rundown.showStyleVariantId)
 				const id = `${rundown.showStyleBaseId}-${rundown.showStyleVariantId}`
 				if (!showStyleBase || !showStyleVariant) {
 					return {
@@ -214,7 +214,7 @@ export namespace ClientRundownAPI {
 					}
 				}
 
-				const blueprint = showStyleBlueprintsMap[unprotectString(compound.blueprintId)]
+				const blueprint = showStyleBlueprintsMap.get(compound.blueprintId)
 				if (!blueprint) {
 					return {
 						id: id,

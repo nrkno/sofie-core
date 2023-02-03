@@ -37,6 +37,7 @@ export async function createRundownLayout(
 			icon: '',
 			iconColor: '#ffffff',
 			regionId,
+			isDefaultLayout: false,
 		})
 	)
 	return id

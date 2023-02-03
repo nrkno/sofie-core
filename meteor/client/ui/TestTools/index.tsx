@@ -7,6 +7,8 @@ import { TimelineView, TimelineStudioSelect } from './Timeline'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import { MappingsStudioSelect, MappingsView } from './Mappings'
+import { TimelineDatastoreStudioSelect, TimelineDatastoreView } from './TimelineDatastore'
+import { DeviceTriggersDeviceSelect, DeviceTriggersView } from './DeviceTriggers'
 
 interface IStatusMenuProps {
 	match?: any
@@ -29,9 +31,23 @@ const StatusMenu = withTranslation()(
 					<NavLink
 						activeClassName="selectable-selected"
 						className="testTools-menu__testTools-menu-item selectable clickable"
+						to={'/testTools/timelinedatastore'}
+					>
+						<h3>{t('Timeline Datastore')}</h3>
+					</NavLink>
+					<NavLink
+						activeClassName="selectable-selected"
+						className="testTools-menu__testTools-menu-item selectable clickable"
 						to={'/testTools/mappings'}
 					>
 						<h3>{t('Mappings')}</h3>
+					</NavLink>
+					<NavLink
+						activeClassName="selectable-selected"
+						className="testTools-menu__testTools-menu-item selectable clickable"
+						to={'/testTools/devicetriggers'}
+					>
+						<h3>{t('Device Triggers')}</h3>
 					</NavLink>
 				</div>
 			)
@@ -72,6 +88,10 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 								<Route path="/testTools/timeline" component={TimelineStudioSelect} />
 								<Route path="/testTools/mappings/:studioId" component={MappingsView} />
 								<Route path="/testTools/mappings" component={MappingsStudioSelect} />
+								<Route path="/testTools/timelinedatastore/:studioId" component={TimelineDatastoreView} />
+								<Route path="/testTools/timelinedatastore" component={TimelineDatastoreStudioSelect} />
+								<Route path="/testTools/devicetriggers/:peripheralDeviceId" component={DeviceTriggersView} />
+								<Route path="/testTools/devicetriggers" component={DeviceTriggersDeviceSelect} />
 								<Redirect to="/testTools/timeline" />
 							</Switch>
 						</div>

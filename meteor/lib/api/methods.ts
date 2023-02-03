@@ -15,7 +15,6 @@ import { StudiosAPIMethods, NewStudiosAPI } from './studios'
 import { NewOrganizationAPI, OrganizationAPIMethods } from './organization'
 import { NewUserAPI, UserAPIMethods } from './user'
 import { SystemAPIMethods, SystemAPI } from './system'
-import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
 import { Meteor } from 'meteor/meteor'
 import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from './triggeredActions'
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -45,7 +44,6 @@ interface IMeteorCall {
 	user: NewUserAPI
 	userAction: NewUserActionAPI
 	organization: NewOrganizationAPI
-	rundownNotifications: RundownNotificationsAPI
 	system: SystemAPI
 }
 export const MeteorCall: IMeteorCall = {
@@ -65,7 +63,6 @@ export const MeteorCall: IMeteorCall = {
 	user: makeMethods(UserAPIMethods),
 	userAction: makeMethods(UserActionAPIMethods),
 	organization: makeMethods(OrganizationAPIMethods),
-	rundownNotifications: makeMethods(RundownNotificationsAPIMethods),
 	system: makeMethods(SystemAPIMethods),
 }
 function makeMethods(methods: object): any {

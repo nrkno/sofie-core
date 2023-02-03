@@ -29,7 +29,7 @@ export namespace MosIntegration {
 		await runIngestOperation(studioId, IngestJobs.MosRundown, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
-			isCreateAction: true,
+			isUpdateOperation: false,
 			mosRunningOrder: rundown,
 		})
 		transaction?.end()
@@ -54,7 +54,7 @@ export namespace MosIntegration {
 		await runIngestOperation(studioId, IngestJobs.MosRundown, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
-			isCreateAction: true,
+			isUpdateOperation: false,
 			mosRunningOrder: rundown,
 		})
 

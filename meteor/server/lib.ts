@@ -31,6 +31,7 @@ const public_dir = path.join(process.cwd(), '../web.browser/app')
  * Get the i18next locale object for a given `languageCode`. If the translations file can not be found or it can't be
  * parsed, it will return an empty object.
  *
+ *
  * @export
  * @param {string} languageCode
  * @return {*}  {Promise<Translations>}

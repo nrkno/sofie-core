@@ -1,5 +1,5 @@
 import { Evaluations, EvaluationBase } from '../../lib/collections/Evaluations'
-import { deferAsync, getCurrentTime, getRandomId } from '../../lib/lib'
+import { deferAsync, getCurrentTime, getRandomId, getSofieHostUrl } from '../../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
@@ -68,7 +68,7 @@ export async function saveEvaluation(
 					},
 				})) as Pick<RundownPlaylist, '_id' | 'name'>
 
-				const hostUrl = studio.settings.sofieUrl
+				const hostUrl = getSofieHostUrl()
 
 				slackMessage +=
 					'rundown ' +

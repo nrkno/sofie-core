@@ -4,7 +4,7 @@ import { RundownUtils } from '../../../lib/rundown'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
 import { VTContent, LiveSpeakContent } from '@sofie-automation/blueprints-integration'
 import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
-import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
@@ -134,7 +134,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
 					itemElement={itemIcon.current}
 					contentMetaData={props.metadata || null}
-					noticeMessage={props.message || null}
+					noticeMessages={props.messages || null}
 					noticeLevel={
 						props.status !== null && props.status !== undefined ? getNoticeLevelForPieceStatus(props.status) : null
 					}

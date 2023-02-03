@@ -1,6 +1,6 @@
 {
 	"name": "mos-gateway",
-	"version": "1.47.0-in-development",
+	"version": "1.49.0-in-development",
 	"private": true,
 	"description": "MOS-Gateway for the Sofie project",
 	"license": "MIT",
@@ -30,7 +30,7 @@
 		"buildstart": "yarn build && yarn dev",
 		"buildinspect": "yarn build && yarn inspect",
 		"build:main": "tsc -p tsconfig.build.json",
-		"lint:raw": "eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
+		"lint:raw": "eslint --ext .ts --ext .tsx --ignore-pattern dist",
 		"lint": "yarn lint:raw .",
 		"lint-fix": "yarn lint --fix",
 		"unit": "jest",
@@ -48,7 +48,7 @@
 		"dev": "yarn start -id localDevMos"
 	},
 	"engines": {
-		"node": "^14.19 || ^16.14"
+		"node": "^14.19 || ^16.14 || ^18.12"
 	},
 	"keywords": [
 		"mos",
@@ -65,10 +65,11 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/server-core-integration": "1.47.0-in-development",
-		"@sofie-automation/shared-lib": "1.47.0-in-development",
+		"@sofie-automation/server-core-integration": "1.49.0-in-development",
+		"@sofie-automation/shared-lib": "1.49.0-in-development",
 		"mos-connection": "^2.0.1",
 		"tslib": "^2.4.0",
+		"type-fest": "^3.5.3",
 		"underscore": "^1.13.4",
 		"winston": "^3.8.2"
 	},

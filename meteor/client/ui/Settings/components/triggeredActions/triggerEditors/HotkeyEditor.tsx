@@ -1,17 +1,18 @@
+import { IBlueprintHotkeyTrigger } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
 import React, { useContext, useState } from 'react'
 import { useLayoutEffect } from 'react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DBBlueprintTrigger } from '../../../../../../lib/collections/TriggeredActions'
 import { EditAttribute } from '../../../../../lib/EditAttribute'
 import { SorensenContext } from '../../../../../lib/SorensenContext'
 import { codesToKeyLabels } from '../../../../../lib/triggers/codesToKeyLabels'
 
 interface IProps {
-	trigger: DBBlueprintTrigger
+	trigger: IBlueprintHotkeyTrigger
 	modified?: boolean
-	onChange: (newVal: DBBlueprintTrigger) => void
+	readonly?: boolean
+	onChange: (newVal: IBlueprintHotkeyTrigger) => void
 }
 
 export const MODIFIER_MAP = {
@@ -37,7 +38,7 @@ export function convertToLenientModifiers(keys: string[]): string[] {
 	})
 }
 
-export const HotkeyEditor = function HotkeyEditor({ trigger, modified, onChange }: IProps) {
+export const HotkeyEditor = function HotkeyEditor({ trigger, modified, readonly, onChange }: IProps) {
 	const sorensen = useContext(SorensenContext)
 	const [input, setInput] = useState<HTMLInputElement | null>(null)
 	const [displayValue, setDisplayValue] = useState(trigger.keys)
@@ -60,7 +61,7 @@ export const HotkeyEditor = function HotkeyEditor({ trigger, modified, onChange 
 	}
 
 	useEffect(() => {
-		let processedKeys = trigger.keys
+		let processedKeys = trigger.keys ?? ''
 		if (sorensen) {
 			processedKeys = codesToKeyLabels(processedKeys, sorensen)
 		}
@@ -95,6 +96,7 @@ export const HotkeyEditor = function HotkeyEditor({ trigger, modified, onChange 
 				onChange={() => {
 					// Do nothing
 				}}
+				disabled={readonly}
 			/>
 			<EditAttribute
 				type={'toggle'}
@@ -107,6 +109,7 @@ export const HotkeyEditor = function HotkeyEditor({ trigger, modified, onChange 
 					})
 				}
 				label={t('On release')}
+				disabled={readonly}
 			/>
 		</>
 	)

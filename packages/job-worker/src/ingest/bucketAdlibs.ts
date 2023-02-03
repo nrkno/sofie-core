@@ -221,7 +221,8 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 					delete rawAdlib.allVariants
 				}
 				const action: BucketAdLibAction = postProcessBucketAction(
-					contextForVariant,
+					context,
+					showStyleCompound,
 					rawAdlib,
 					data.payload.externalId,
 					blueprint.blueprintId,
@@ -240,7 +241,8 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 				actionIdsToRemove = actionIdsToRemove.filter((id) => id !== action._id)
 			} else {
 				const adlib = postProcessBucketAdLib(
-					contextForVariant,
+					context,
+					showStyleCompound,
 					rawAdlib,
 					data.payload.externalId,
 					blueprint.blueprintId,

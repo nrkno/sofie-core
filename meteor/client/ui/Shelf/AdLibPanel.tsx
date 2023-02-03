@@ -18,8 +18,8 @@ import {
 	IBlueprintActionTriggerMode,
 	SomeContent,
 } from '@sofie-automation/blueprints-integration'
-import { doUserAction, UserAction } from '../../lib/userAction'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import {
 	RundownLayoutFilter,
 	RundownLayoutFilterBase,
@@ -29,8 +29,8 @@ import {
 	RundownBaselineAdLibItem,
 	RundownBaselineAdLibPieces,
 } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
-import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
+import { literal, unprotectString, protectString } from '../../../lib/lib'
+import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { PartInstances, findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
@@ -42,7 +42,10 @@ import {
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
-import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	RevealInShelfEvent,
+} from '../../../lib/api/triggers/RundownViewEventBus'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
@@ -382,13 +385,13 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 				name: 1,
 			},
 		})
-		const rMap = normalizeArray(rundowns, '_id')
+
 		currentRundown = rundowns[0]
 		const partInstanceId = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
 		if (partInstanceId) {
 			const partInstance = PartInstances.findOne(partInstanceId)
 			if (partInstance) {
-				currentRundown = rMap[unprotectString(partInstance.rundownId)]
+				currentRundown = rundowns.find((rd) => rd._id === partInstance.rundownId)
 			}
 		}
 

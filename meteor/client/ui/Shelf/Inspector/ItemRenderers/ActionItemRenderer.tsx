@@ -5,6 +5,7 @@ import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
 import {
 	ConfigManifestEntry as BlueprintConfigManifestEntry,
+	ConfigManifestEntryType as BlueprintConfigManifestEntryType,
 	IBlueprintActionTriggerMode,
 } from '@sofie-automation/blueprints-integration'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
@@ -12,16 +13,15 @@ import { translateWithTracker, Translated } from '../../../../lib/ReactMeteorDat
 import { AdLibActionCommon } from '../../../../../lib/collections/AdLibActions'
 import { createInMemorySyncMongoCollection } from '../../../../../lib/collections/lib'
 import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
-import { ConfigManifestEntry, ConfigManifestEntryType } from '@sofie-automation/corelib/dist/deviceConfig'
 import { Spinner } from '../../../../lib/Spinner'
 import InspectorTitle from './InspectorTitle'
 import { ProtectedString } from '../../../../../lib/lib'
-import { doUserAction, UserAction } from '../../../../lib/userAction'
+import { doUserAction, UserAction } from '../../../../../lib/clientUserAction'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { BucketAdLibItem, BucketAdLibActionUi } from '../../RundownViewBuckets'
 import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
 import { actionToAdLibPieceUi } from '../../BucketPanel'
-import RundownViewEventBus, { RundownViewEvents } from '../../../RundownView/RundownViewEventBus'
+import RundownViewEventBus, { RundownViewEvents } from '../../../../../lib/api/triggers/RundownViewEventBus'
 import { IAdLibListItem } from '../../AdLibListItem'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { AdLibPieceUi } from '../../../../lib/shelf'
@@ -29,6 +29,7 @@ import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../../lib/api/studios'
 import { BucketId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Buckets } from '../../../../../lib/clientCollections'
+import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 
 export { isActionItem }
 
@@ -155,17 +156,13 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			return action
 		}
 
-		renderConfigFields(
-			configManifest: Array<ConfigManifestEntry | BlueprintConfigManifestEntry>,
-			obj: any,
-			prefix?: string
-		) {
+		renderConfigFields(configManifest: Array<BlueprintConfigManifestEntry>, obj: any, prefix?: string) {
 			const { t } = this.props
 
 			return configManifest.length ? (
 				<div>
 					{configManifest.map((configField) =>
-						configField.type === ConfigManifestEntryType.TABLE ? null : (
+						configField.type === BlueprintConfigManifestEntryType.TABLE ? null : (
 							<ConfigManifestEntryComponent
 								key={configField.id}
 								collection={LocalActionItems}
@@ -227,14 +224,12 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							this.props.bucketIds[0],
 							transformedAdLibActionToAction(targetAction)
 						),
-					(err, res) => {
+					(err, res: BucketAdLibAction | undefined) => {
 						if (err) return
-
-						if (res) {
-							onSelectPiece(
-								actionToAdLibPieceUi(res, this.props.showStyleBase.sourceLayers, this.props.showStyleBase.outputLayers)
-							)
-						}
+						if (!res) return
+						onSelectPiece(
+							actionToAdLibPieceUi(res, this.props.showStyleBase.sourceLayers, this.props.showStyleBase.outputLayers)
+						)
 					}
 				)
 			}

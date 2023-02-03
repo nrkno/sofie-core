@@ -5,6 +5,7 @@ import { Meteor } from 'meteor/meteor'
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
 
+jest.mock('../../deviceTriggers/observer')
 import * as api from '../api'
 jest.mock('../api.ts')
 

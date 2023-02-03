@@ -23,7 +23,10 @@ import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 
 import { IContextMenuContext } from '../../RundownView'
 import { CSSProperties } from '../../../styles/_cssVariables'
-import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../../RundownView/RundownViewEventBus'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	HighlightEvent,
+} from '../../../../lib/api/triggers/RundownViewEventBus'
 import { LoopingIcon } from '../../../lib/ui/icons/looping'
 import { SegmentEnd } from '../../../lib/ui/icons/segment'
 import { getShowHiddenSourceLayers } from '../../../lib/localStorage'

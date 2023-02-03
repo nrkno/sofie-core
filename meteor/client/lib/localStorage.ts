@@ -1,21 +1,10 @@
 import { Settings } from '../../lib/Settings'
 import { getUserRoles } from '../../lib/collections/Users'
-
-enum LocalStorageProperty {
-	STUDIO = 'studioMode',
-	CONFIGURE = 'configureMode',
-	DEVELOPER = 'developerMode',
-	TESTING = 'testingMode',
-	SPEAKING = 'speakingMode',
-	SERVICE = 'serviceMode',
-	SHELF_FOLLOWS_ON_AIR = 'shelfFollowsOnAir',
-	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers',
-	IGNORE_PIECE_CONTENT_STATUS = 'ignorePieceContentStatus',
-	UI_ZOOM_LEVEL = 'uiZoomLevel',
-	HELP_MODE = 'helpMode',
-	LOG_NOTIFICATIONS = 'logNotifications',
-	PROTO_ONE_PART_PER_LINE = 'proto:onePartPerLine',
-}
+import {
+	setReportNotifications as libSetReportNotifications,
+	getReportNotifications as libGetReportNotifications,
+} from '../../lib/notifications/notifications'
+import { LocalStorageProperty } from '../../lib/lib'
 
 const GUI_FLAGS: {
 	[key in LocalStorageProperty]?: string | null
@@ -136,18 +125,13 @@ export function getShelfFollowsOnAir(): boolean {
 }
 
 export function setReportNotifications(logNotifications: string) {
+	libSetReportNotifications(logNotifications)
 	localStorageSetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS, logNotifications)
 }
 export function unsetReportNotifications() {
+	libSetReportNotifications(null)
 	localStorageUnsetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS)
 }
 export function getReportNotifications(): string | null {
-	return localStorageGetCachedItem(LocalStorageProperty.LOG_NOTIFICATIONS)
-}
-
-export function getUseOnePartPerLine(): boolean | null {
-	return localStorageGetCachedItem(LocalStorageProperty.PROTO_ONE_PART_PER_LINE) === '1'
-}
-export function setUseOnePartPerLine(useOnePartPerLine: boolean) {
-	localStorageSetCachedItem(LocalStorageProperty.PROTO_ONE_PART_PER_LINE, useOnePartPerLine ? '1' : '0')
+	return libGetReportNotifications()
 }

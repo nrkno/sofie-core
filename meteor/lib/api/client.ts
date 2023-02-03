@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Time } from '../lib'
 import { UserError } from '@sofie-automation/corelib/dist/error'
-import { NoticeLevel } from '../../client/lib/notifications/notifications'
+import { NoticeLevel } from '../notifications/notifications'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface NewClientAPI {
@@ -14,12 +14,20 @@ export interface NewClientAPI {
 		functionName: string,
 		...args: any[]
 	): Promise<any>
+	callPeripheralDeviceAction(
+		context: string,
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		actionId: string,
+		payload?: Record<string, any>
+	): Promise<any>
 }
 
 export enum ClientAPIMethods {
 	'clientErrorReport' = 'client.clientErrorReport',
 	'clientLogNotification' = 'client.clientLogNotification',
 	'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction',
+	'callPeripheralDeviceAction' = 'client.callPeripheralDeviceAction',
 }
 
 export namespace ClientAPI {

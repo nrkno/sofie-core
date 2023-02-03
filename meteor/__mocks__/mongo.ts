@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { literal, ProtectedString, unprotectString, protectString, sleep } from '../lib/lib'
+import { literal, ProtectedString, unprotectString, protectString, sleep, getRandomString } from '../lib/lib'
 import { RandomMock } from './random'
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
@@ -42,13 +42,13 @@ export namespace MongoMock {
 		private _options: any = {}
 		// @ts-expect-error used in test to check that it's a mock
 		private _isMock = true as const
-		private observers: ObserverEntry<T>[] = []
+		public observers: ObserverEntry<T>[] = []
 
 		public asyncBulkWriteDelay = 100
 
-		constructor(name: string, options?: any) {
+		constructor(name: string | null, options?: any) {
 			this._options = options || {}
-			this._name = name
+			this._name = name || getRandomString() // If `null`, then its an in memory unique collection
 
 			if (this._options.transform) throw new Error('document transform is no longer supported')
 		}
@@ -57,7 +57,10 @@ export namespace MongoMock {
 			if (_.isString(query)) query = { _id: query }
 			query = query || {}
 
-			const unimplementedUsedOptions = _.without(_.keys(options), 'sort', 'limit', 'fields')
+			const unimplementedUsedOptions = _.without(_.keys(options), 'sort', 'limit', 'fields', 'projection')
+			if (options && 'fields' in options && 'projection' in options) {
+				throw new Error(`Only one of 'fields' and 'projection' can be specified`)
+			}
 			if (unimplementedUsedOptions.length > 0) {
 				throw new Error(`find being performed using unimplemented options: ${unimplementedUsedOptions}`)
 			}

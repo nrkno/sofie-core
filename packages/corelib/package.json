@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/corelib",
-	"version": "1.47.0-in-development",
+	"version": "1.49.0-in-development",
 	"private": true,
 	"description": "Internal library for some types shared by core and workers",
 	"main": "dist/index.js",
@@ -30,7 +30,7 @@
 		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.19 || ^16.14"
+		"node": "^14.19 || ^16.14 || ^18.12"
 	},
 	"files": [
 		"/dist",
@@ -49,11 +49,11 @@
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",
 		"tslib": "^2.4.0",
-		"type-fest": "^2.19.0",
+		"type-fest": "^3.5.3",
 		"underscore": "^1.13.4"
 	},
 	"peerDependencies": {
-		"mongodb": "^4.9.1"
+		"mongodb": "^4.13.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

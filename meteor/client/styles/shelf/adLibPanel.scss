@@ -49,6 +49,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 			}
 
 			&.live {
+				--missing-overlay-animated: 1;
 				background: $general-live-color;
 				font-weight: 400;
 				color: #fff;
@@ -60,6 +61,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 			}
 
 			&.next {
+				--missing-overlay-animated: 1;
 				background: $general-next-color;
 				color: #fff;
 				font-weight: 400;
@@ -295,6 +297,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 				}
 
 				&.live {
+					--missing-overlay-animated: 1;
 					border-left: 2px solid $general-live-color;
 
 					> .adlib-panel__list-view__list__seg-header > td {
@@ -306,6 +309,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 				}
 
 				&.next {
+					--missing-overlay-animated: 1;
 					border-left: 2px solid $general-next-color;
 
 					> .adlib-panel__list-view__list__seg-header > td {

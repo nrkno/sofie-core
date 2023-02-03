@@ -28,7 +28,7 @@ Package Manager is a suite of standalone applications, separate from _Sofie&nbsp
 
 ```bash
 git clone https://github.com/nrkno/sofie-package-manager.git
-cd tv-automation-package-manager
+cd sofie-package-manager
 yarn install
 yarn build
 yarn start:single-app -- -- --basePath "C:\your\path\to\casparcg-server\media-folder (i.e. sofie-demo-media)"

@@ -101,6 +101,10 @@
 	.settings-studio-package-containers-table {
 		width: 100%;
 
+		.deleted {
+			text-decoration: line-through;
+		}
+
 		> thead > tr {
 			> .actions {
 				text-align: right;
@@ -121,6 +125,17 @@
 			max-width: 0;
 		}
 	}
+
+  .settings-studio-showStyleVariants-table__drag {
+	color: #a2a2a2;
+	cursor: grab;
+	margin-right: 10px;
+
+	svg {
+		width: 10px;
+		position: relative;
+	}
+  }
 
 	.settings-studio-accessors {
 		border-left: 0.5em solid #999;
@@ -214,6 +229,14 @@
 		.svg-inline--fa {
 			color: $color-status-warning;
 		}
+	}
+
+	.option-missing {
+		text-decoration: line-through;
+	}
+
+	select.option-missing {
+		border-color: $color-status-fatal;
 	}
 }
 

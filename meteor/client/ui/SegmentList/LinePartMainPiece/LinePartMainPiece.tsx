@@ -13,7 +13,7 @@ import { getElementWidth } from '../../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { PieceHoverInspector } from '../PieceHoverInspector'
 import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 import { UIStudio } from '../../../../lib/api/studios'
 

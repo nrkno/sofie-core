@@ -3,6 +3,226 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.0...v1.48.0-in-testing.1) (2023-01-11)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+# [1.48.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.48.0-in-testing.0) (2022-12-13)
+
+
+### Features
+
+* initial translations for tsr actions ([889fa04](https://github.com/nrkno/tv-automation-server-core/commit/889fa04b368d5bf34bd0acd5ad8c377b4f3af264))
+* refactor timeline types to work better with typescript 4.7 ([#793](https://github.com/nrkno/tv-automation-server-core/issues/793)) ([1ec87ef](https://github.com/nrkno/tv-automation-server-core/commit/1ec87ef5578e4341225957e43132ef6a8f452503))
+* remove initial system migrations with manual steps ([#779](https://github.com/nrkno/tv-automation-server-core/issues/779)) ([3f51952](https://github.com/nrkno/tv-automation-server-core/commit/3f519520fb0efdc36822982766bf780eed83bac7))
+* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+* tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
+
+
+
+
+
+
+# [1.47.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+# [1.47.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.4...v1.47.0-in-testing.5) (2023-01-11)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+# [1.47.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.47.0-in-testing.4) (2023-01-05)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+# [1.47.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.1...v1.47.0-in-testing.3) (2022-11-30)
+
+
+
+# [1.47.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
+
+
+
+# [1.47.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
+
+
+### Bug Fixes
+
+* add an option to purge all Viz elements from the viz-rundown, in system-status view ([d22f0d6](https://github.com/nrkno/tv-automation-server-core/commit/d22f0d673e080fc7d9ca11ba7b9df1cb3e43c1d2))
+
+
+
+# [1.47.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+
+
+### Features
+
+* adlib actions can set timeline datastore ([0cd2f62](https://github.com/nrkno/tv-automation-server-core/commit/0cd2f62ba1a079ea0cc5b17c13846ead26ae7a21))
+* datastore table view ([83467af](https://github.com/nrkno/tv-automation-server-core/commit/83467afec8f52521b8af5ebe91287cafcb000953))
+* differentiate user/default settings datastructure changes ([#772](https://github.com/nrkno/tv-automation-server-core/issues/772)) ([b39067d](https://github.com/nrkno/tv-automation-server-core/commit/b39067d9e4e7b87e7e00a80bdca19aade8b3bc04))
+* multi gateway mode ([#760](https://github.com/nrkno/tv-automation-server-core/issues/760)) ([9f23148](https://github.com/nrkno/tv-automation-server-core/commit/9f231486c47f414008f0f0f80ed4b665a2115b4a))
+* SOF-978 add config manifest entry showing a (multi)select with values from a table's column ([34e96e0](https://github.com/nrkno/tv-automation-server-core/commit/34e96e0ba2e62c9b149daf2c42bc7198cd757cf9))
+
+
+
+
+
+# [1.47.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
+# [1.46.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.46.0-in-testing.1) (2022-11-30)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+# [1.47.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
+
+
+### Bug Fixes
+
+* add an option to purge all Viz elements from the viz-rundown, in system-status view ([d22f0d6](https://github.com/nrkno/tv-automation-server-core/commit/d22f0d673e080fc7d9ca11ba7b9df1cb3e43c1d2))
+
+
+
+# [1.47.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+
+
+### Features
+
+* adlib actions can set timeline datastore ([0cd2f62](https://github.com/nrkno/tv-automation-server-core/commit/0cd2f62ba1a079ea0cc5b17c13846ead26ae7a21))
+* datastore table view ([83467af](https://github.com/nrkno/tv-automation-server-core/commit/83467afec8f52521b8af5ebe91287cafcb000953))
+* differentiate user/default settings datastructure changes ([#772](https://github.com/nrkno/tv-automation-server-core/issues/772)) ([b39067d](https://github.com/nrkno/tv-automation-server-core/commit/b39067d9e4e7b87e7e00a80bdca19aade8b3bc04))
+* multi gateway mode ([#760](https://github.com/nrkno/tv-automation-server-core/issues/760)) ([9f23148](https://github.com/nrkno/tv-automation-server-core/commit/9f231486c47f414008f0f0f80ed4b665a2115b4a))
+* SOF-978 add config manifest entry showing a (multi)select with values from a table's column ([34e96e0](https://github.com/nrkno/tv-automation-server-core/commit/34e96e0ba2e62c9b149daf2c42bc7198cd757cf9))
+
+
+
+
+
+# [1.47.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+# [1.46.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.46.0-in-testing.0) (2022-10-31)
+
+
+### Bug Fixes
+
+* remove unused SourceLayerType.METADATA ([25dfc6d](https://github.com/nrkno/tv-automation-server-core/commit/25dfc6dd310ea07cfc933e8cc76cf5323b1d25d0))
+* SOF-954 make hackGetMediaObjectDuration return values ([e762b0d](https://github.com/nrkno/tv-automation-server-core/commit/e762b0da601489531b7fde01057a753926d37b95))
+* update TSR dep ([145bb57](https://github.com/nrkno/tv-automation-server-core/commit/145bb572c76e404d6effd4b3d1424ecf9b11e417))
+
+
+### Features
+
+* adlib actions can set timeline datastore ([0cd2f62](https://github.com/nrkno/tv-automation-server-core/commit/0cd2f62ba1a079ea0cc5b17c13846ead26ae7a21))
+* datastore table view ([83467af](https://github.com/nrkno/tv-automation-server-core/commit/83467afec8f52521b8af5ebe91287cafcb000953))
+* differentiate user/default settings datastructure changes ([#772](https://github.com/nrkno/tv-automation-server-core/issues/772)) ([b39067d](https://github.com/nrkno/tv-automation-server-core/commit/b39067d9e4e7b87e7e00a80bdca19aade8b3bc04))
+* multi gateway mode ([#760](https://github.com/nrkno/tv-automation-server-core/issues/760)) ([9f23148](https://github.com/nrkno/tv-automation-server-core/commit/9f231486c47f414008f0f0f80ed4b665a2115b4a))
+* prototype (WIP) ([01a2b8b](https://github.com/nrkno/tv-automation-server-core/commit/01a2b8bda9ad395f1a1bcdc2c246d16808240261))
+* **Segment List View:** show AdLibs as indicators on each Part ([c7aceec](https://github.com/nrkno/tv-automation-server-core/commit/c7aceece784c6857f688fba62e4e3f1f8f7f2359))
+* **Segment List:** rename One Part Per Line to SegmentList ([0e6b13e](https://github.com/nrkno/tv-automation-server-core/commit/0e6b13ef416029abda780633cf6f83ef6eeeef04))
+* SOF-978 add config manifest entry showing a (multi)select with values from a table's column ([34e96e0](https://github.com/nrkno/tv-automation-server-core/commit/34e96e0ba2e62c9b149daf2c42bc7198cd757cf9))
+* syncIngestUpdateToPartInstance is called when a Part is orphaned, and allows for removing the PartInstance ([#750](https://github.com/nrkno/tv-automation-server-core/issues/750)) ([fae7d3f](https://github.com/nrkno/tv-automation-server-core/commit/fae7d3f61c497b8d8e3048a966912aaa2b21cacf))
+
+
+
+## [1.42.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.4...v1.42.5) (2022-05-03)
+
+
+
+## [1.42.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0...v1.42.4) (2022-05-03)
+
+
+
+## [37.1.2](https://github.com/nrkno/tv-automation-server-core/compare/v37.1.1...v37.1.2) (2022-03-16)
+
+
+
+
+
+# [1.44.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.3...v1.44.0) (2022-10-24)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+# [1.44.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.2...v1.44.0-in-testing.3) (2022-10-24)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+# [1.44.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.4...v1.44.0-in-testing.2) (2022-10-13)
+
+
+
+# [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
+
+
+
+# [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
+
+
+### Bug Fixes
+
+* race condition on manual rundown move ([#728](https://github.com/nrkno/tv-automation-server-core/issues/728)) ([a12f7d8](https://github.com/nrkno/tv-automation-server-core/commit/a12f7d8082fe1c08b5c68d6d536cbc5b32c1aebf))
+* remove deprecated ConfigManifestEntryType.Number ([cb777aa](https://github.com/nrkno/tv-automation-server-core/commit/cb777aa1d7738a8b72da8aa21943c58bc9b5df9c))
+
+
+### Features
+
+* **Action Triggers:** Select AdLib Action Trigger Modes ([#740](https://github.com/nrkno/tv-automation-server-core/issues/740)) ([311b9e4](https://github.com/nrkno/tv-automation-server-core/commit/311b9e41b46025bdf759fccc1c97d94318661c83))
+
+
+
+# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0...v1.43.0-in-testing.0) (2022-05-18)
+
+
+### Features
+
+* move more logic into workers ([#718](https://github.com/nrkno/tv-automation-server-core/issues/718)) ([3376826](https://github.com/nrkno/tv-automation-server-core/commit/3376826e4029985e3975d6d5a85f9ab1f06a9dd4))
+
+
+
+# [1.39.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.39.0) (2022-04-29)
+
+
+
+# [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.42.0-in-testing.0) (2022-04-29)
+
+
+### Bug Fixes
+
+* update supertimeline ([#703](https://github.com/nrkno/tv-automation-server-core/issues/703)) ([897d81e](https://github.com/nrkno/tv-automation-server-core/commit/897d81ef2648947cd23caee6edf80d26e5a05de0))
+
+
+### Features
+
+* piece postroll ([674d7c5](https://github.com/nrkno/tv-automation-server-core/commit/674d7c588998e59a794b1da64276f73637ae8556))
+
+
+
+
+
 # [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration

@@ -75,11 +75,6 @@ export async function CommitIngestOperation(
 		return
 	}
 
-	const showStyle =
-		data.showStyle ?? (await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId))
-	const blueprint =
-		(data.showStyle ? data.blueprint : undefined) ?? (await context.getShowStyleBlueprint(showStyle._id))
-
 	const targetPlaylistId: PlaylistIdPair = (beforeRundown?.playlistIdIsSetInSofie
 		? {
 				id: beforeRundown.playlistId,
@@ -241,7 +236,7 @@ export async function CommitIngestOperation(
 			).map((segment) => segment._id)
 
 			// Do the segment removals
-			if (data.removedSegmentIds.length > 0 || segmentsChangedToHidden.length) {
+			{
 				const purgeSegmentIds = new Set<SegmentId>()
 				const orphanDeletedSegmentIds = new Set<SegmentId>()
 				const orphanHiddenSegmentIds = new Set<SegmentId>()
@@ -419,18 +414,15 @@ export async function CommitIngestOperation(
 			const pSaveIngest = ingestCache.saveAllToDatabase()
 
 			try {
-				// Get the final copy of the rundown
-				const newRundown = getRundown(ingestCache)
-
 				// sync changes to the 'selected' partInstances
-				await syncChangesToPartInstances(context, playoutCache, ingestCache, showStyle, blueprint, newRundown)
+				await syncChangesToPartInstances(context, playoutCache, ingestCache)
 
 				playoutCache.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this
 					context
 						.queueEventJob(EventsJobs.RundownDataChanged, {
 							playlistId: playoutCache.PlaylistId,
-							rundownId: newRundown._id,
+							rundownId: ingestCache.RundownId,
 						})
 						.catch((e) => {
 							logger.error(`Queue RundownDataChanged failed: ${e}`)

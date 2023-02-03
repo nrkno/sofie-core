@@ -15,7 +15,7 @@ import * as loopAnimation from './icon-loop.json'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
-import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
+import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
 import { ScanInfoForPackages } from '../../../../lib/mediaObjects'
 import { clone } from '../../../../lib/lib'
@@ -613,7 +613,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
 					typeClass={this.props.typeClass}
 					contentMetaData={this.props.piece.contentMetaData}
-					noticeMessage={this.props.piece.message || ''}
+					noticeMessages={this.props.piece.messages || []}
 					renderedDuration={this.props.piece.renderedDuration || undefined}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
 					pieceId={this.props.piece.instance.piece._id}

@@ -50,7 +50,7 @@ import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
 import { SourceLayers } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
+import { PeripheralDevicesAPI, callPeripheralDeviceAction } from '../lib/clientAPI'
 import {
 	RONotificationEvent,
 	onRONotificationClick as rundownNotificationHandler,
@@ -58,11 +58,11 @@ import {
 	reloadRundownPlaylistClick,
 } from './RundownView/RundownNotifier'
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
 import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
-import { doUserAction, UserAction } from '../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
@@ -88,20 +88,20 @@ import { documentTitle } from '../lib/DocumentTitleProvider'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
-import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
+import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
 import RundownViewEventBus, {
 	ActivateRundownPlaylistEvent,
 	DeactivateRundownPlaylistEvent,
 	IEventContext,
 	MiniShelfQueueAdLibEvent,
 	RundownViewEvents,
-} from './RundownView/RundownViewEventBus'
+} from '../../lib/api/triggers/RundownViewEventBus'
 import StudioContext from './RundownView/StudioContext'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { TriggersHandler } from '../lib/triggers/TriggersHandler'
 import { SorensenContext } from '../lib/SorensenContext'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { BreakSegment } from './SegmentTimeline/BreakSegment'
 import { PlaylistStartTiming } from './RundownView/RundownTiming/PlaylistStartTiming'
 import { RundownName } from './RundownView/RundownTiming/RundownName'
@@ -1433,21 +1433,23 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					selectedShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForShelf(i))
 				}
 
-				// TODOSYNC: This was added by TV2, but this is a backwards-incompatible change
-				//						-- Jan Starzak, 2022/04/08
-				// if (!selectedViewLayout) {
-				// 	selectedViewLayout = props.rundownLayouts.find((i) =>
-				// 		RundownLayoutsAPI.isLayoutForRundownView(i)
-				// 	) as RundownViewLayout
-				// }
+				if (!selectedViewLayout) {
+					selectedViewLayout = props.rundownLayouts.find(
+						(layout) => RundownLayoutsAPI.isLayoutForRundownView(layout) && RundownLayoutsAPI.isDefaultLayout(layout)
+					) as RundownViewLayout
+				}
 
-				// if (!selectedHeaderLayout) {
-				// 	selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownHeader(i))
-				// }
+				if (!selectedHeaderLayout) {
+					selectedHeaderLayout = props.rundownLayouts.find(
+						(layout) => RundownLayoutsAPI.isLayoutForRundownHeader(layout) && RundownLayoutsAPI.isDefaultLayout(layout)
+					)
+				}
 
-				// if (!selectedMiniShelfLayout) {
-				// 	selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForMiniShelf(i))
-				// }
+				if (!selectedMiniShelfLayout) {
+					selectedMiniShelfLayout = props.rundownLayouts.find(
+						(layout) => RundownLayoutsAPI.isLayoutForMiniShelf(layout) && RundownLayoutsAPI.isDefaultLayout(layout)
+					)
+				}
 			}
 
 			let currentRundown: Rundown | undefined = undefined
@@ -1541,6 +1543,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
 			})
+			this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
+			this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 			this.subscribe(PubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -2670,7 +2674,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				title: t('Restart CasparCG Server'),
 				message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
 				onAccept: () => {
-					callPeripheralDeviceFunction(e, device._id, CASPARCG_RESTART_TIME, 'restartCasparCG')
+					callPeripheralDeviceAction(e, device._id, DEFAULT_TSR_ACTION_TIMEOUT_TIME, TSR.CasparCGActions.RestartServer)
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(
@@ -3004,11 +3008,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							</ErrorBoundary>
 							<ErrorBoundary>
 								{this.props.playlist && this.props.studio && this.props.showStyleBase && (
-									<RundownNotifier
-										playlistId={this.props.playlist._id}
-										studio={this.props.studio}
-										showStyleBase={this.props.showStyleBase}
-									/>
+									<RundownNotifier playlistId={this.props.playlist._id} studio={this.props.studio} />
 								)}
 							</ErrorBoundary>
 						</div>

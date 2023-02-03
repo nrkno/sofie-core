@@ -39,6 +39,8 @@ import {
 let mockCurrentTime = 0
 let origGetCurrentTime
 jest.mock('../logging')
+// we don't want the deviceTriggers observer to start up at this time
+jest.mock('../api/deviceTriggers/observer')
 
 import '../cronjobs'
 
@@ -57,7 +59,6 @@ describe('cronjobs', () => {
 			modified: 0,
 			version: '0.0.0',
 			previousVersion: '0.0.0',
-			storePath: '',
 			serviceMessages: {},
 			cron: {
 				casparCGRestart: {
@@ -467,7 +468,7 @@ describe('cronjobs', () => {
 			expect(pendingCommands).toHaveLength(1)
 			expect(pendingCommands[0]).toMatchObject({
 				deviceId: mockCasparCg,
-				functionName: 'restartCasparCG',
+				actionId: 'restartServer',
 			})
 
 			// Emulate that the restart was successful:

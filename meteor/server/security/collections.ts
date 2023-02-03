@@ -36,6 +36,7 @@ import { StudioContentWriteAccess } from './studio'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { resolveCredentials } from './lib/credentials'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { TimelineDatastore } from '../../lib/collections/TimelineDatastore'
 
 // Set up direct collection write access
 
@@ -189,6 +190,17 @@ MediaObjects.allow({
 	},
 })
 Timeline.allow({
+	insert(_userId, _doc): boolean {
+		return false
+	},
+	update(_userId, _doc, _fields, _modifier) {
+		return false
+	},
+	remove(_userId, _doc) {
+		return false
+	},
+})
+TimelineDatastore.allow({
 	insert(_userId, _doc): boolean {
 		return false
 	},

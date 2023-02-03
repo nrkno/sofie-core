@@ -2,7 +2,7 @@ import React from 'react'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspector'
 import { IDefaultRendererProps } from './DefaultRenderer'
-import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../../../../lib/notifications/notifications'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export function VTRenderer({
@@ -39,7 +39,7 @@ export function VTRenderer({
 				typeClass={typeClass}
 				itemElement={null}
 				contentMetaData={pieceInstance.contentMetaData || null}
-				noticeMessage={pieceInstance.message || null}
+				noticeMessages={pieceInstance.messages || null}
 				noticeLevel={status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null}
 				mediaPreviewUrl={mediaPreviewUrl}
 				contentPackageInfos={pieceInstance.contentPackageInfos}

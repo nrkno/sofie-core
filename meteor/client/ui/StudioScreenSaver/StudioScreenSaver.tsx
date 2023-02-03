@@ -2,7 +2,7 @@ import * as React from 'react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../../lib/lib'
-import { invalidateAfter } from '../../lib/invalidatingTime'
+import { invalidateAfter } from '../../../lib/invalidatingTime'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import classNames from 'classnames'
@@ -64,7 +64,7 @@ export const findNextPlaylist = (props: IProps) => {
 				}
 			).fetch() as Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'>[]
 		)
-			.sort(PlaylistTiming.sortTiminings)
+			.sort(PlaylistTiming.sortTimings)
 			.find((rundownPlaylist) => {
 				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 				const expectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)

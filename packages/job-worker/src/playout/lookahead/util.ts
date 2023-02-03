@@ -19,7 +19,7 @@ export interface PartInstanceAndPieceInstances {
 }
 export interface PieceInstanceWithObjectMap extends PieceInstance {
 	/** Cache of objects built by findObjects. */
-	objectMap?: Map<string, TimelineObjectCoreExt>
+	objectMap?: Map<string, TimelineObjectCoreExt<any>>
 }
 export interface PartAndPieces {
 	part: DBPart

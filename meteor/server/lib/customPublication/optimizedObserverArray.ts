@@ -4,6 +4,7 @@ import { clone, ProtectedString } from '../../../lib/lib'
 import { TriggerUpdate, setUpOptimizedObserverInner } from './optimizedObserverBase'
 import { CustomPublish, CustomPublishChanges } from './publish'
 import { diffObject } from './lib'
+import { LiveQueryHandle } from '../lib'
 
 /**
  * This is an optimization to enable multiple listeners that observes (and manipulates) the same data, to only use one observer and manipulator,
@@ -28,7 +29,7 @@ export async function setUpOptimizedObserverArray<
 		args: ReadonlyDeep<Args>,
 		/** Trigger an update by mutating the context of manipulateData */
 		triggerUpdate: TriggerUpdate<UpdateProps>
-	) => Promise<Meteor.LiveQueryHandle[]>,
+	) => Promise<LiveQueryHandle[]>,
 	manipulateData: (
 		args: ReadonlyDeep<Args>,
 		state: Partial<State>,

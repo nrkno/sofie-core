@@ -23,7 +23,7 @@ import RundownViewEventBus, {
 	RundownViewEvents,
 	GoToPartEvent,
 	GoToPartInstanceEvent,
-} from '../RundownView/RundownViewEventBus'
+} from '../../../lib/api/triggers/RundownViewEventBus'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import {
 	PartUi,
@@ -703,7 +703,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 							segment={this.props.segmentui}
 							studio={this.props.studio}
 							parts={this.props.parts}
-							segmentNotes={this.props.segmentNotes}
+							segmentNoteCounts={this.props.segmentNoteCounts}
 							timeScale={this.state.timeScale}
 							maxTimeScale={this.state.maxTimeScale}
 							onRecalculateMaxTimeScale={this.updateMaxTimeScale}

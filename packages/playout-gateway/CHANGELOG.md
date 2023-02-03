@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
+# [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.0...v1.48.0-in-testing.1) (2023-01-11)
 
 **Note:** Version bump only for package playout-gateway
 
@@ -11,48 +11,208 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-# [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
+# [1.48.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.48.0-in-testing.0) (2022-12-13)
 
 
 ### Bug Fixes
 
-* limit debounces ([5028281](https://github.com/nrkno/tv-automation-server-core/commit/50282810b72a39671688b55de25fdb9ea5046421))
-* remove deprecated ConfigManifestEntryType.Number ([cb777aa](https://github.com/nrkno/tv-automation-server-core/commit/cb777aa1d7738a8b72da8aa21943c58bc9b5df9c))
-* update tsr dep ([73b9192](https://github.com/nrkno/tv-automation-server-core/commit/73b9192f509f7569e023b9e6552b7be06d370ddf))
+* handle incomplete peripheralDeviceCommands ([40f691e](https://github.com/nrkno/tv-automation-server-core/commit/40f691e0e9fca1def233b67d2cd3f1cded7152ca))
 
 
 ### Features
 
-* implement playoutPlaybackChanged, to send callbacks in batches to Core ([a8927de](https://github.com/nrkno/tv-automation-server-core/commit/a8927de72a2bf70fe38d38b045e377e7eea16550))
-* **Playout Gateway:** Report invalid configuration as state ([#739](https://github.com/nrkno/tv-automation-server-core/issues/739)) ([fc9ffde](https://github.com/nrkno/tv-automation-server-core/commit/fc9ffdea293c514771bdfd34bb5272bfa4215379))
-
-
-
-# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0...v1.43.0-in-testing.0) (2022-05-18)
-
-
-
-# [1.39.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.39.0) (2022-04-29)
-
-
-
-# [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.42.0-in-testing.0) (2022-04-29)
-
-
-### Bug Fixes
-
-* update playout-gateway copied typings, avoid unnecessary clones ([fa58130](https://github.com/nrkno/tv-automation-server-core/commit/fa58130593097aca2a5991aaf9deb13dc7b2192e))
-* update supertimeline ([#703](https://github.com/nrkno/tv-automation-server-core/issues/703)) ([897d81e](https://github.com/nrkno/tv-automation-server-core/commit/897d81ef2648947cd23caee6edf80d26e5a05de0))
+* initial translations for tsr actions ([889fa04](https://github.com/nrkno/tv-automation-server-core/commit/889fa04b368d5bf34bd0acd5ad8c377b4f3af264))
+* refactor timeline types to work better with typescript 4.7 ([#793](https://github.com/nrkno/tv-automation-server-core/issues/793)) ([1ec87ef](https://github.com/nrkno/tv-automation-server-core/commit/1ec87ef5578e4341225957e43132ef6a8f452503))
+* render from from json schema ([ce85248](https://github.com/nrkno/tv-automation-server-core/commit/ce85248eb21c3d507983de9931d9b99a27709d5d))
+* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+* tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
 
 
 
 
 
-# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.43.0-in-testing.0) (2022-05-18)
+
+# [1.47.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
 
 **Note:** Version bump only for package playout-gateway
 
 
+
+
+
+# [1.47.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.4...v1.47.0-in-testing.5) (2023-01-11)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.47.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.47.0-in-testing.4) (2023-01-05)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.47.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.1...v1.47.0-in-testing.3) (2022-11-30)
+
+
+
+# [1.47.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
+
+
+
+# [1.47.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
+
+
+### Bug Fixes
+
+* add an option to purge all Viz elements from the viz-rundown, in system-status view ([d22f0d6](https://github.com/nrkno/tv-automation-server-core/commit/d22f0d673e080fc7d9ca11ba7b9df1cb3e43c1d2))
+
+
+
+# [1.47.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+
+
+### Bug Fixes
+
+* **Playout Gateway:** remove uninitialized devices from the list to retry them later and keep the overall device status correct ([0bf9fef](https://github.com/nrkno/tv-automation-server-core/commit/0bf9fef6f8ea0e639ee0abf9c996882dd8b215fa))
+* Upgrade TSR to 2.1.8. ([d3f0e54](https://github.com/nrkno/tv-automation-server-core/commit/d3f0e5473b898449f1630f70b7ca90f9814a6078))
+
+
+### Features
+
+* adlib actions can set timeline datastore ([0cd2f62](https://github.com/nrkno/tv-automation-server-core/commit/0cd2f62ba1a079ea0cc5b17c13846ead26ae7a21))
+* tl datastore collection and testtool ([c4a7a17](https://github.com/nrkno/tv-automation-server-core/commit/c4a7a17bc0b4b7b2e5ff2af0f039d9674151d57f))
+
+
+
+
+
+# [1.47.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
+
+# [1.46.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.46.0-in-testing.1) (2022-11-30)
+
+**Note:** Version bump only for package playout-gateway
+
+# [1.47.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
+
+### Bug Fixes
+
+- add an option to purge all Viz elements from the viz-rundown, in system-status view ([d22f0d6](https://github.com/nrkno/tv-automation-server-core/commit/d22f0d673e080fc7d9ca11ba7b9df1cb3e43c1d2))
+
+# [1.47.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+
+### Bug Fixes
+
+- **Playout Gateway:** remove uninitialized devices from the list to retry them later and keep the overall device status correct ([0bf9fef](https://github.com/nrkno/tv-automation-server-core/commit/0bf9fef6f8ea0e639ee0abf9c996882dd8b215fa))
+- Upgrade TSR to 2.1.8. ([d3f0e54](https://github.com/nrkno/tv-automation-server-core/commit/d3f0e5473b898449f1630f70b7ca90f9814a6078))
+
+### Features
+
+- adlib actions can set timeline datastore ([0cd2f62](https://github.com/nrkno/tv-automation-server-core/commit/0cd2f62ba1a079ea0cc5b17c13846ead26ae7a21))
+- tl datastore collection and testtool ([c4a7a17](https://github.com/nrkno/tv-automation-server-core/commit/c4a7a17bc0b4b7b2e5ff2af0f039d9674151d57f))
+
+# [1.47.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+
+# [1.46.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.46.0-in-testing.0) (2022-10-31)
+
+### Bug Fixes
+
+- create rundownsForDevice publication for playout-gateway, as it needs to query on different criteria ([d80fdf8](https://github.com/nrkno/tv-automation-server-core/commit/d80fdf8dba7c500a22a93a0bb23dfd630deb99e5))
+- lowered logging level for a pair of log calls. ([9e6939d](https://github.com/nrkno/tv-automation-server-core/commit/9e6939de7acc2f656944db9a2d1240e9bd9f79a7))
+- SOF-1031 Downgrade superfly-timeline to 8.2.1 ([018f898](https://github.com/nrkno/tv-automation-server-core/commit/018f898700d91678a6b0e5b7320b7886059a9040))
+- update TSR dep ([145bb57](https://github.com/nrkno/tv-automation-server-core/commit/145bb572c76e404d6effd4b3d1424ecf9b11e417))
+
+### Features
+
+- adlib actions can set timeline datastore ([0cd2f62](https://github.com/nrkno/tv-automation-server-core/commit/0cd2f62ba1a079ea0cc5b17c13846ead26ae7a21))
+- remove data-store dependency from server-core-integration ([#738](https://github.com/nrkno/tv-automation-server-core/issues/738)) ([d715108](https://github.com/nrkno/tv-automation-server-core/commit/d7151084e1d96fdcf575864a439fe7a74087d740))
+- tl datastore collection and testtool ([c4a7a17](https://github.com/nrkno/tv-automation-server-core/commit/c4a7a17bc0b4b7b2e5ff2af0f039d9674151d57f))
+
+# [1.44.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.3...v1.44.0) (2022-10-24)
+
+## [1.41.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.6...v1.41.7) (2022-09-14)
+
+## [1.41.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.5...v1.41.6) (2022-08-26)
+
+## [1.41.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.4...v1.41.5) (2022-08-26)
+
+**Note:** Version bump only for package playout-gateway
+
+# [1.44.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.2...v1.44.0-in-testing.3) (2022-10-24)
+
+**Note:** Version bump only for package playout-gateway
+
+# [1.44.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.4...v1.44.0-in-testing.2) (2022-10-13)
+
+- docker images missing @sofie-automation/shared-lib ([cb25ac8](https://github.com/nrkno/tv-automation-server-core/commit/cb25ac8e3ce2b702554039787ab6bf083b77f443))
+- **Playout Gateway:** remove uninitialized devices from the list to retry them later and keep the overall device status correct ([2e4346b](https://github.com/nrkno/tv-automation-server-core/commit/2e4346ba852b92ea2936112fefb6e248a7f96d08))
+- remove the published timestamp from RoutedTimeline publication, since that's throwing off CustomPublishArray and causing extra timeline updates ([60049e8](https://github.com/nrkno/tv-automation-server-core/commit/60049e899e1df00fdb477fbfbde4ffc2bfab7e9c))
+- remove timeline.published property ([7d4220f](https://github.com/nrkno/tv-automation-server-core/commit/7d4220f42755cba2d25c27cce6d240abce5c1322))
+- update TSR ([aa083e5](https://github.com/nrkno/tv-automation-server-core/commit/aa083e591921b0260ac9c865ebc1cda4cbe1861f))
+
+### Features
+
+- simplify timeline callbacks batching ([6e5793e](https://github.com/nrkno/tv-automation-server-core/commit/6e5793e41b84f8247905de67e99d5c78a5163605))
+
+# [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
+
+# [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
+
+### Bug Fixes
+
+- limit debounces ([5028281](https://github.com/nrkno/tv-automation-server-core/commit/50282810b72a39671688b55de25fdb9ea5046421))
+- remove deprecated ConfigManifestEntryType.Number ([cb777aa](https://github.com/nrkno/tv-automation-server-core/commit/cb777aa1d7738a8b72da8aa21943c58bc9b5df9c))
+- update tsr dep ([73b9192](https://github.com/nrkno/tv-automation-server-core/commit/73b9192f509f7569e023b9e6552b7be06d370ddf))
+
+### Features
+
+- implement playoutPlaybackChanged, to send callbacks in batches to Core ([a8927de](https://github.com/nrkno/tv-automation-server-core/commit/a8927de72a2bf70fe38d38b045e377e7eea16550))
+- **Playout Gateway:** Report invalid configuration as state ([#739](https://github.com/nrkno/tv-automation-server-core/issues/739)) ([fc9ffde](https://github.com/nrkno/tv-automation-server-core/commit/fc9ffdea293c514771bdfd34bb5272bfa4215379))
+
+# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0...v1.43.0-in-testing.0) (2022-05-18)
+
+# [1.39.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.39.0) (2022-04-29)
+
+# [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.42.0-in-testing.0) (2022-04-29)
+
+### Bug Fixes
+
+- update playout-gateway copied typings, avoid unnecessary clones ([fa58130](https://github.com/nrkno/tv-automation-server-core/commit/fa58130593097aca2a5991aaf9deb13dc7b2192e))
+- update supertimeline ([#703](https://github.com/nrkno/tv-automation-server-core/issues/703)) ([897d81e](https://github.com/nrkno/tv-automation-server-core/commit/897d81ef2648947cd23caee6edf80d26e5a05de0))
+
+# [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
+
+# [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
+
+### Bug Fixes
+
+- limit debounces ([5028281](https://github.com/nrkno/tv-automation-server-core/commit/50282810b72a39671688b55de25fdb9ea5046421))
+- remove deprecated ConfigManifestEntryType.Number ([cb777aa](https://github.com/nrkno/tv-automation-server-core/commit/cb777aa1d7738a8b72da8aa21943c58bc9b5df9c))
+- update tsr dep ([73b9192](https://github.com/nrkno/tv-automation-server-core/commit/73b9192f509f7569e023b9e6552b7be06d370ddf))
+
+### Features
+
+- implement playoutPlaybackChanged, to send callbacks in batches to Core ([a8927de](https://github.com/nrkno/tv-automation-server-core/commit/a8927de72a2bf70fe38d38b045e377e7eea16550))
+- **Playout Gateway:** Report invalid configuration as state ([#739](https://github.com/nrkno/tv-automation-server-core/issues/739)) ([fc9ffde](https://github.com/nrkno/tv-automation-server-core/commit/fc9ffdea293c514771bdfd34bb5272bfa4215379))
+
+# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0...v1.43.0-in-testing.0) (2022-05-18)
+
+# [1.39.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.39.0) (2022-04-29)
+
+# [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.42.0-in-testing.0) (2022-04-29)
+
+### Bug Fixes
+
+- update playout-gateway copied typings, avoid unnecessary clones ([fa58130](https://github.com/nrkno/tv-automation-server-core/commit/fa58130593097aca2a5991aaf9deb13dc7b2192e))
+- update supertimeline ([#703](https://github.com/nrkno/tv-automation-server-core/issues/703)) ([897d81e](https://github.com/nrkno/tv-automation-server-core/commit/897d81ef2648947cd23caee6edf80d26e5a05de0))
+
+# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.43.0-in-testing.0) (2022-05-18)
+
+**Note:** Version bump only for package playout-gateway
 
 # [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.42.0-in-testing.0) (2022-04-29)
 
@@ -60,17 +220,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package playout-gateway
 
-
-
-
-
 ## [1.41.4-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.3...v1.41.4-0) (2022-08-17)
 
 **Note:** Version bump only for package playout-gateway
-
-
-
-
 
 ## [1.41.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.2...v1.41.3) (2022-08-10)
 

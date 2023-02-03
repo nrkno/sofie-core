@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-# [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
+# [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.0...v1.48.0-in-testing.1) (2023-01-11)
 
 **Note:** Version bump only for package mos-gateway
 
@@ -11,46 +11,144 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-# [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
+# [1.48.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.48.0-in-testing.0) (2022-12-13)
 
+
+### Features
+
+* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+* tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
+
+
+
+
+
+
+# [1.47.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
+# [1.47.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.4...v1.47.0-in-testing.5) (2023-01-11)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
+# [1.47.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.47.0-in-testing.4) (2023-01-05)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
+# [1.47.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.1...v1.47.0-in-testing.3) (2022-11-30)
+
+
+
+# [1.47.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
+
+
+
+# [1.47.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
+
+
+
+# [1.47.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
+# [1.47.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
+
+# [1.46.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.46.0-in-testing.1) (2022-11-30)
+
+**Note:** Version bump only for package mos-gateway
+
+# [1.47.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
+
+# [1.47.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+
+**Note:** Version bump only for package mos-gateway
+
+# [1.47.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+
+# [1.46.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.46.0-in-testing.0) (2022-10-31)
+
+### Features
+
+- remove data-store dependency from server-core-integration ([#738](https://github.com/nrkno/tv-automation-server-core/issues/738)) ([d715108](https://github.com/nrkno/tv-automation-server-core/commit/d7151084e1d96fdcf575864a439fe7a74087d740))
+
+# [1.44.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.3...v1.44.0) (2022-10-24)
+
+**Note:** Version bump only for package mos-gateway
+
+# [1.44.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.2...v1.44.0-in-testing.3) (2022-10-24)
+
+**Note:** Version bump only for package mos-gateway
+
+# [1.44.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.4...v1.44.0-in-testing.2) (2022-10-13)
 
 ### Bug Fixes
 
-* add shared-lib package to the mono-repo ([5002a66](https://github.com/nrkno/tv-automation-server-core/commit/5002a66b1c952123dba17ca4d80857a15603abc2))
-* issue in mos-gw where errors where logged like {0: 'T',1: 'h',2: 'i',3: 's'} ([3920637](https://github.com/nrkno/tv-automation-server-core/commit/39206375e791f3d03d6a1580e4dfe1d0d1d895ac))
-* MOS-Gateway: add support for heartbeatInterval ([7a48fd0](https://github.com/nrkno/tv-automation-server-core/commit/7a48fd0dd08153d0b4673583d5b8a71b1f8e85b7))
+- docker images missing @sofie-automation/shared-lib ([cb25ac8](https://github.com/nrkno/tv-automation-server-core/commit/cb25ac8e3ce2b702554039787ab6bf083b77f443))
 
+# [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
 
+# [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
+
+### Bug Fixes
+
+- add shared-lib package to the mono-repo ([5002a66](https://github.com/nrkno/tv-automation-server-core/commit/5002a66b1c952123dba17ca4d80857a15603abc2))
+- issue in mos-gw where errors where logged like {0: 'T',1: 'h',2: 'i',3: 's'} ([3920637](https://github.com/nrkno/tv-automation-server-core/commit/39206375e791f3d03d6a1580e4dfe1d0d1d895ac))
+- MOS-Gateway: add support for heartbeatInterval ([7a48fd0](https://github.com/nrkno/tv-automation-server-core/commit/7a48fd0dd08153d0b4673583d5b8a71b1f8e85b7))
 
 # [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0...v1.43.0-in-testing.0) (2022-05-18)
 
-
 ### Bug Fixes
 
-* set timeout times explicitly for MOS commands ([1cf5a4e](https://github.com/nrkno/tv-automation-server-core/commit/1cf5a4ed3e6e2786c9ad83df303b992e35c86a51))
-
-
+- set timeout times explicitly for MOS commands ([1cf5a4e](https://github.com/nrkno/tv-automation-server-core/commit/1cf5a4ed3e6e2786c9ad83df303b992e35c86a51))
 
 # [1.39.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.39.0) (2022-04-29)
 
-
-
 # [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.42.0-in-testing.0) (2022-04-29)
 
+# [1.44.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0-in-testing.0...v1.44.0-in-testing.1) (2022-07-05)
 
+**Note:** Version bump only for package mos-gateway
 
-
-
-# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.43.0-in-testing.0) (2022-05-18)
-
+# [1.44.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0...v1.44.0-in-testing.0) (2022-07-04)
 
 ### Bug Fixes
 
-* set timeout times explicitly for MOS commands ([1cf5a4e](https://github.com/nrkno/tv-automation-server-core/commit/1cf5a4ed3e6e2786c9ad83df303b992e35c86a51))
+- add shared-lib package to the mono-repo ([5002a66](https://github.com/nrkno/tv-automation-server-core/commit/5002a66b1c952123dba17ca4d80857a15603abc2))
+- issue in mos-gw where errors where logged like {0: 'T',1: 'h',2: 'i',3: 's'} ([3920637](https://github.com/nrkno/tv-automation-server-core/commit/39206375e791f3d03d6a1580e4dfe1d0d1d895ac))
+- MOS-Gateway: add support for heartbeatInterval ([7a48fd0](https://github.com/nrkno/tv-automation-server-core/commit/7a48fd0dd08153d0b4673583d5b8a71b1f8e85b7))
 
+# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.39.0...v1.43.0-in-testing.0) (2022-05-18)
 
+### Bug Fixes
 
+- set timeout times explicitly for MOS commands ([1cf5a4e](https://github.com/nrkno/tv-automation-server-core/commit/1cf5a4ed3e6e2786c9ad83df303b992e35c86a51))
 
+# [1.39.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.39.0) (2022-04-29)
+
+# [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.0-in-testing.1...v1.42.0-in-testing.0) (2022-04-29)
+
+# [1.43.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.42.0-in-testing.0...v1.43.0-in-testing.0) (2022-05-18)
+
+### Bug Fixes
+
+- set timeout times explicitly for MOS commands ([1cf5a4e](https://github.com/nrkno/tv-automation-server-core/commit/1cf5a4ed3e6e2786c9ad83df303b992e35c86a51))
 
 # [1.42.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.38.4...v1.42.0-in-testing.0) (2022-04-29)
 
@@ -58,17 +156,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 ## [1.41.4-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.3...v1.41.4-0) (2022-08-17)
 
 **Note:** Version bump only for package mos-gateway
-
-
-
-
 
 ## [1.41.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.41.2...v1.41.3) (2022-08-10)
 

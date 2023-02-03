@@ -1,5 +1,6 @@
 import {
 	IActionExecutionContext,
+	IDataStoreActionExecutionContext,
 	IBlueprintMutatablePart,
 	IBlueprintPart,
 	IBlueprintPartInstance,
@@ -20,7 +21,8 @@ import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/l
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
-import { getMediaObjectDuration, ShowStyleUserContext, UserContextInfo } from './context'
+import { UserContextInfo } from './CommonContext'
+import { ShowStyleUserContext } from './ShowStyleUserContext'
 import { WatchedPackagesHelper } from './watchedPackages'
 import { getCurrentTime } from '../../lib'
 import {
@@ -39,7 +41,7 @@ import {
 	innerStartAdLibPiece,
 	innerStartQueuedAdLib,
 	innerStopPieces,
-} from '../../playout/adlib'
+} from '../../playout/adlibUtils'
 import {
 	Piece,
 	PieceTimelineObjectsBlob,
@@ -51,24 +53,76 @@ import {
 	convertPieceInstanceToBlueprints,
 	convertPieceToBlueprints,
 	convertResolvedPieceInstanceToBlueprints,
+	getMediaObjectDuration,
 	IBlueprintMutatablePartSampleKeys,
 	IBlueprintPieceObjectsSampleKeys,
 } from './lib'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { moveNextPartInner } from '../../playout/playout'
+import { moveNextPartInner } from '../../playout/setNext'
 import _ = require('underscore')
 import { ProcessedShowStyleConfig } from '../config'
+import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
+import { getDatastoreId } from '../../playout/datastore'
 
 export enum ActionPartChange {
 	NONE = 0,
 	SAFE_CHANGE = 1,
 }
 
+export class DatastoreActionExecutionContext
+	extends ShowStyleUserContext
+	implements IDataStoreActionExecutionContext, IEventContext
+{
+	protected readonly _context: JobContext
+
+	constructor(
+		contextInfo: UserContextInfo,
+		context: JobContext,
+		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
+		watchedPackages: WatchedPackagesHelper
+	) {
+		super(contextInfo, context, showStyle, watchedPackages)
+		this._context = context
+	}
+
+	async setTimelineDatastoreValue(key: string, value: unknown, mode: DatastorePersistenceMode): Promise<void> {
+		const studioId = this._context.studioId
+		const id = protectString(`${studioId}_${key}`)
+		const collection = this._context.directCollections.TimelineDatastores
+
+		await collection.replace({
+			_id: id,
+			studioId: studioId,
+
+			key,
+			value,
+
+			modified: Date.now(),
+			mode,
+		})
+	}
+
+	async removeTimelineDatastoreValue(key: string): Promise<void> {
+		const studioId = this._context.studioId
+		const id = getDatastoreId(studioId, key)
+		const collection = this._context.directCollections.TimelineDatastores
+
+		await collection.remove({ _id: id })
+	}
+
+	getCurrentTime(): number {
+		return getCurrentTime()
+	}
+}
+
 /** Actions */
-export class ActionExecutionContext extends ShowStyleUserContext implements IActionExecutionContext, IEventContext {
-	private readonly _context: JobContext
+export class ActionExecutionContext
+	extends DatastoreActionExecutionContext
+	implements IActionExecutionContext, IEventContext
+{
+	// private readonly _context: JobContext
 	private readonly _cache: CacheForPlayout
 	private readonly rundown: DBRundown
 	private readonly playlistActivationId: RundownPlaylistActivationId
@@ -90,7 +144,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, context, showStyle, watchedPackages)
-		this._context = context
+		// this._context = context
 		this._cache = cache
 		this.rundown = rundown
 		this.takeAfterExecute = false
@@ -110,10 +164,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 				logger.warn(`Blueprint action requested unknown PartInstance "${part}"`)
 				throw new Error(`Unknown part "${part}"`)
 		}
-	}
-
-	getCurrentTime(): number {
-		return getCurrentTime()
 	}
 
 	async getPartInstance(part: 'current' | 'next'): Promise<IBlueprintPartInstance | undefined> {
@@ -586,6 +636,6 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 
 	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
-		return getMediaObjectDuration(this._context, mediaId, this.studioId)
+		return getMediaObjectDuration(this._context, mediaId)
 	}
 }

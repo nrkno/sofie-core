@@ -55,6 +55,7 @@ import {
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { SnapshotId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints } from '../serverCollections'
+import { getSystemStorePath } from '../coreSystem'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)
@@ -184,6 +185,9 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 			if (blueprint.blueprintType === BlueprintManifestType.SHOWSTYLE) {
 				const bp = blueprintManifest as ShowStyleBlueprintManifest
 
+				// If blueprint uses the new flow, don't attempt migrations
+				if (typeof bp.applyConfig === 'function') return
+
 				// Find all showStyles that uses this blueprint:
 				ShowStyleBases.find({
 					blueprintId: blueprint._id,
@@ -222,6 +226,10 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 				})
 			} else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
 				const bp = blueprintManifest as StudioBlueprintManifest
+
+				// If blueprint uses the new flow, don't attempt migrations
+				if (typeof bp.applyConfig === 'function') return
+
 				// Find all studios that use this blueprint
 				Studios.find({
 					blueprintId: blueprint._id,
@@ -569,8 +577,8 @@ export function runMigration(
 	let snapshotId: SnapshotId = protectString('')
 	if (isFirstOfPartialMigrations) {
 		// First, take a system snapshot:
-		const system = getCoreSystem()
-		if (system && system.storePath) {
+		const storePath = getSystemStorePath()
+		if (storePath) {
 			try {
 				snapshotId = waitForPromise(
 					internalStoreSystemSnapshot(null, null, `Automatic, taken before migration`)

@@ -1480,6 +1480,8 @@ svg.icon {
 			}
 
 			&.live {
+				--missing-overlay-animated: 1;
+
 				.segment-timeline__part__nextline:not(.segment-timeline__part__nextline--endline) {
 					&::after,
 					&::before {
@@ -1565,6 +1567,8 @@ svg.icon {
 			}
 
 			&.next {
+				--missing-overlay-animated: 1;
+
 				.segment-timeline__part__nextline:not(.offset) {
 					.segment-timeline__part__nextline__label {
 						> svg {
@@ -2145,7 +2149,7 @@ svg.icon {
 				}
 			}
 
-			.segment-timeline__piece:not(.infinite) .segment-timeline__piece__label.right-side {
+			.segment-timeline__piece:not(.infinite) > .segment-timeline__piece__label.right-side {
 				background: inherit;
 			}
 
@@ -2922,8 +2926,8 @@ svg.icon {
 		> .video-preview,
 		> .thumbnail {
 			display: block;
-			width: 160px;
-			height: 90px;
+			width: 320px;
+			height: 180px;
 			background: #000;
 		}
 

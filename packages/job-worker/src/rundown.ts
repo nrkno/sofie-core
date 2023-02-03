@@ -3,8 +3,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { normalizeArrayToMap, min } from '@sofie-automation/corelib/dist/lib'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { normalizeArrayToMap, min, groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import { AnyBulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
@@ -51,16 +50,16 @@ export async function updatePartInstanceRanks(
 	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
 	beforePartMap: BeforePartMap
 ): Promise<void> {
-	const groupedPartInstances = _.groupBy(
+	const groupedPartInstances = groupByToMap(
 		await context.directCollections.PartInstances.findFetch({
 			reset: { $ne: true },
 			segmentId: { $in: changedSegmentIds as SegmentId[] },
 		}),
-		(p) => unprotectString(p.segmentId)
+		'segmentId'
 	)
-	const groupedNewParts = _.groupBy(
+	const groupedNewParts = groupByToMap(
 		cache.Parts.findAll((p) => changedSegmentIds.includes(p.segmentId)),
-		(p) => unprotectString(p.segmentId)
+		'segmentId'
 	)
 
 	const writeOps: AnyBulkWriteOperation<DBPartInstance>[] = []
@@ -68,11 +67,8 @@ export async function updatePartInstanceRanks(
 	for (const segmentId of changedSegmentIds) {
 		const oldPartIdsAndRanks = beforePartMap.get(segmentId) ?? []
 
-		const newParts = groupedNewParts[unprotectString(segmentId)] || []
-		const segmentPartInstances = _.sortBy(
-			groupedPartInstances[unprotectString(segmentId)] || [],
-			(p) => p.part._rank
-		)
+		const newParts = groupedNewParts.get(segmentId) ?? []
+		const segmentPartInstances = _.sortBy(groupedPartInstances.get(segmentId) ?? [], (p) => p.part._rank)
 
 		const newRanks = calculateNewRanksForParts(segmentId, oldPartIdsAndRanks, newParts, segmentPartInstances)
 		for (const [instanceId, info] of newRanks.entries()) {

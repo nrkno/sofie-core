@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { NoticeLevel } from '../notifications/notifications'
+import { NoticeLevel } from '../../../lib/notifications/notifications'
 import { CriticalIconSmall, WarningIconSmall } from './icons/notifications'
 
 export interface IProps {

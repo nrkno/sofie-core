@@ -30,7 +30,7 @@ import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatuses } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import { PackageContainerPackageStatuses } from '../../lib/collections/PackageContainerPackageStatus'
-import { PackageInfos } from '../../lib/collections/PackageInfos'
+import { getRemovedPackageInfos, PackageInfos } from '../../lib/collections/PackageInfos'
 import { Settings } from '../../lib/Settings'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { AsyncMongoCollection } from '../../lib/collections/lib'
@@ -296,6 +296,14 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	{
 		ownedByStudioId(PackageInfos)
 		ownedByDeviceId(PackageInfos)
+
+		const removedPackageInfoIds = await getRemovedPackageInfos()
+		addToResult(CollectionName.PackageInfos, removedPackageInfoIds.length)
+		if (actuallyCleanup) {
+			PackageInfos.remove({
+				_id: { $in: removedPackageInfoIds },
+			})
+		}
 	}
 	// Parts
 	{

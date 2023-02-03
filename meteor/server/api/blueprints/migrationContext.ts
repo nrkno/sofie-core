@@ -57,7 +57,7 @@ class AbstractMigrationContextWithTriggeredActions {
 		return getHash((this.showStyleBaseId ?? 'core') + '_' + triggeredActionId)
 	}
 	private getProtectedTriggeredActionId(triggeredActionId: string): TriggeredActionId {
-		return protectString<TriggeredActionId>(this.getTriggeredActionId(triggeredActionId))
+		return protectString(this.getTriggeredActionId(triggeredActionId))
 	}
 	getAllTriggeredActions(): IBlueprintTriggeredActions[] {
 		return TriggeredActions.find({
@@ -111,7 +111,6 @@ class AbstractMigrationContextWithTriggeredActions {
 		if (!currentTriggeredAction) {
 			TriggeredActions.insert({
 				...newObj,
-				_rundownVersionHash: '',
 				showStyleBaseId: this.showStyleBaseId,
 				_id: this.getProtectedTriggeredActionId(triggeredActions._id),
 			})
@@ -296,7 +295,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		}
 
 		const settings = parentDevice.settings as PlayoutDeviceSettings | undefined
-		if (settings && settings.devices[deviceId]) {
+		if (settings && settings.devices && settings.devices[deviceId]) {
 			throw new Meteor.Error(404, `Device "${deviceId}" cannot be inserted as it already exists`)
 		}
 
@@ -417,6 +416,7 @@ export class MigrationContextShowStyle
 				showStyleBaseId: this.showStyleBase._id,
 				blueprintConfigWithOverrides: wrapDefaultObject({}),
 				_rundownVersionHash: '',
+				_rank: 0,
 			})
 		)
 	}

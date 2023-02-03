@@ -20,9 +20,9 @@ jobs:
           - shared-lib
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
       - name: Prepare Environment
@@ -51,12 +51,12 @@ jobs:
           - blueprints-integration
           - server-core-integration
           - shared-lib
-        node-version: [14.x, 16.x]
+        node-version: [14.x, 16.x, 18.x]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
       - name: Prepare Environment
@@ -90,9 +90,9 @@ jobs:
           - shared-lib
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
       - name: Check release is possible
@@ -102,7 +102,7 @@ jobs:
             echo "No Token"
           else
             echo "Publish prerelease"
-            echo ::set-output name=publish::"1"
+            echo "publish=1" >> $GITHUB_OUTPUT
           fi
       - name: Prepare Environment
         if: ${{ steps.do-publish.outputs.publish }}
@@ -111,11 +111,6 @@ jobs:
           yarn install
         env:
           CI: true
-      - name: Get the Prerelease tag
-        id: prerelease-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@2b0614b1338c8f19dd9d3ea433ca9bc0cc7057ba
-        with:
-          remove-version-tag-prefix: false
       - name: Bump version
         if: ${{ steps.do-publish.outputs.publish }}
         run: |
@@ -123,7 +118,7 @@ jobs:
           COMMIT_TIMESTAMP=$(git log -1 --pretty=format:%ct HEAD)
           COMMIT_DATE=$(date -d @$COMMIT_TIMESTAMP +%Y%m%d-%H%M%S)
           GIT_HASH=$(git rev-parse --short HEAD)
-          PRERELEASE_TAG=nightly-$(echo "${{ steps.prerelease-tag.outputs.tag }}" | sed -r 's/[^a-z0-9]+/-/gi')
+          PRERELEASE_TAG=nightly-$(echo "${{ github.ref_name }}" | sed -r 's/[^a-z0-9]+/-/gi')
           yarn set-version prerelease --preid $PRERELEASE_TAG-$COMMIT_DATE-$GIT_HASH
         env:
           CI: true
@@ -144,12 +139,12 @@ jobs:
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
           yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag nightly
-          echo ::set-output name=version::$NEW_VERSION
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
         env:
           CI: true
       - name: Post published prerelease lib version comment in PR
         if: ${{ steps.do-publish.outputs.publish }}
-        uses: mshick/add-pr-comment@v1
+        uses: mshick/add-pr-comment@v2
         with:
           message: |
             ⚡ Published prerelease version **${{ matrix.package-name }}@${{ steps.publish-npm.outputs.version }}** to NPM

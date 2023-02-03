@@ -9,8 +9,8 @@ import { LinePartIndicator } from './LinePartIndicator'
 import { useTranslation } from 'react-i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import StudioContext from '../../RundownView/StudioContext'
-import RundownViewEventBus, { RundownViewEvents } from '../../RundownView/RundownViewEventBus'
 import { AdLibActions, AdLibPieces } from '../../../../lib/clientCollections'
+import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/triggers/RundownViewEventBus'
 
 interface IProps {
 	sourceLayers: ISourceLayerExtended[]

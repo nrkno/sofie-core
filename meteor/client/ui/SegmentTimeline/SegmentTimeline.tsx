@@ -20,7 +20,6 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
-import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
@@ -29,7 +28,7 @@ import { literal, protectString, unprotectString } from '../../../lib/lib'
 import { isPartPlayable } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
-import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../../../lib/api/triggers/RundownViewEventBus'
 import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
 
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
@@ -42,6 +41,7 @@ import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 import { UIStudio } from '../../../lib/api/studios'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { SegmentNoteCounts } from '../SegmentContainer/withResolvedSegment'
 
 interface IProps {
 	id: string
@@ -51,7 +51,7 @@ interface IProps {
 	followLiveSegments: boolean
 	studio: UIStudio
 	parts: Array<PartUi>
-	segmentNotes: Array<SegmentNote>
+	segmentNoteCounts: SegmentNoteCounts
 	timeScale: number
 	maxTimeScale: number
 	onRecalculateMaxTimeScale: () => Promise<number>
@@ -900,18 +900,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	render() {
-		const notes: Array<SegmentNote> = this.props.segmentNotes
-
 		const { t } = this.props
 
-		const criticalNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteSeverity.ERROR) return ++prev
-			return prev
-		}, 0)
-		const warningNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteSeverity.WARNING) return ++prev
-			return prev
-		}, 0)
+		const criticalNotes = this.props.segmentNoteCounts.criticial
+		const warningNotes = this.props.segmentNoteCounts.warning
 
 		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts
 			.map((p) =>

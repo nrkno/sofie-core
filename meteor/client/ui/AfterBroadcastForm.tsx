@@ -3,7 +3,7 @@ import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { useTranslation } from 'react-i18next'
 import { EditAttribute } from '../lib/EditAttribute'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
-import { doUserAction, UserAction } from '../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { MeteorCall } from '../../lib/api/methods'
 import { SnapshotId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 

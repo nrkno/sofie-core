@@ -21,7 +21,7 @@ import {
 	SystemInstanceId,
 	Component,
 } from '../../lib/api/systemStatus'
-import { getRelevantSystemVersions } from '../coreSystem'
+import { RelevantSystemVersions } from '../coreSystem'
 import { Settings } from '../../lib/Settings'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
@@ -30,6 +30,7 @@ import { SystemReadAccess } from '../security/system'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { Workers, WorkerThreadStatuses } from '../serverCollections'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getUpgradeSystemStatusMessages } from '../migration/upgrades'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -156,17 +157,19 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		checks: checks,
 	}
 	if (device.type === PeripheralDeviceType.MOS) {
-		so.documentation = 'https://github.com/nrkno/tv-automation-mos-gateway'
+		so.documentation = 'https://github.com/nrkno/sofie-core'
 	} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
 		so.documentation = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
 	} else if (device.type === PeripheralDeviceType.PLAYOUT) {
-		so.documentation = 'https://github.com/nrkno/tv-automation-playout-gateway'
+		so.documentation = 'https://github.com/nrkno/sofie-core'
 	} else if (device.type === PeripheralDeviceType.MEDIA_MANAGER) {
-		so.documentation = 'https://github.com/nrkno/tv-automation-media-management'
+		so.documentation = 'https://github.com/nrkno/sofie-media-management'
 	} else if (device.type === PeripheralDeviceType.INEWS) {
 		so.documentation = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
 	} else if (device.type === PeripheralDeviceType.PACKAGE_MANAGER) {
-		so.documentation = 'https://github.com/nrkno/tv-automation-package-manager'
+		so.documentation = 'https://github.com/nrkno/sofie-package-manager'
+	} else if (device.type === PeripheralDeviceType.INPUT) {
+		so.documentation = 'https://github.com/nrkno/sofie-input-gateway'
 	} else {
 		assertNever(device.type)
 	}
@@ -215,12 +218,12 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 		},
 		checks: checks,
 	}
+	if (!statusObj.components) statusObj.components = []
 
 	// Check status of workers
 	const workerStatuses = await Workers.findFetchAsync({})
 	if (workerStatuses.length) {
 		for (const workerStatus of workerStatuses) {
-			if (!statusObj.components) statusObj.components = []
 			const status = workerStatus.connected ? StatusCode.GOOD : StatusCode.BAD
 			statusObj.components.push(
 				literal<Component>({
@@ -238,7 +241,6 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 
 			const statuses = await WorkerThreadStatuses.findFetchAsync({ workerId: workerStatus._id })
 			for (const wts of statuses) {
-				if (!statusObj.components) statusObj.components = []
 				statusObj.components.push(
 					literal<Component>({
 						name: `worker-${wts.name}`,
@@ -255,6 +257,9 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 			}
 		}
 	}
+
+	const blueprintUpgradeMessages = await getUpgradeSystemStatusMessages()
+	statusObj.components.push(...blueprintUpgradeMessages)
 
 	// Check status of devices:
 	let devices: PeripheralDevice[] = []
@@ -293,7 +298,7 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 		// statusCode: systemStatus,
 		statusCodeString: StatusCode[systemStatus],
 		messages: collectMesages(statusObj),
-		versions: getRelevantSystemVersions(),
+		versions: await RelevantSystemVersions,
 	}
 	statusObj.statusMessage = statusObj._internal.messages.join(', ')
 

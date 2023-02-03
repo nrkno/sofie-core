@@ -8,7 +8,7 @@ import {
 import { unprotectString } from '../../../../lib/lib'
 import { ExpectedPackageDB, ExpectedPackages } from '../../../../lib/collections/ExpectedPackages'
 import { MeteorCall } from '../../../../lib/api/methods'
-import { doUserAction, UserAction } from '../../../lib/userAction'
+import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 import { Meteor } from 'meteor/meteor'
 import { PackageStatus } from './PackageStatus'
 import { PackageContainerStatuses } from '../../../../lib/collections/PackageContainerStatus'

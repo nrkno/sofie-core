@@ -29,6 +29,7 @@ import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { Time } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { TimelineDatastore, TimelineDatastoreEntry } from '../../lib/collections/TimelineDatastore'
 
 meteorPublish(PubSub.timeline, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -37,6 +38,16 @@ meteorPublish(PubSub.timeline, async function (selector, token) {
 	}
 	if (await StudioReadAccess.studioContent(selector._id, { userId: this.userId, token })) {
 		return Timeline.find(selector, modifier)
+	}
+	return null
+})
+meteorPublish(PubSub.timelineDatastore, async function (studioId, token) {
+	if (!studioId) throw new Meteor.Error(400, 'selector argument missing')
+	const modifier: FindOptions<TimelineDatastoreEntry> = {
+		fields: {},
+	}
+	if (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token })) {
+		return TimelineDatastore.find({ studioId }, modifier)
 	}
 	return null
 })
@@ -57,6 +68,22 @@ meteorCustomPublish(
 		}
 	}
 )
+meteorPublish(PubSub.timelineDatastoreForDevice, async function (deviceId, token) {
+	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
+		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+
+		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
+
+		const studioId = peripheralDevice.studioId
+		if (!studioId) return null
+		const modifier: FindOptions<TimelineDatastoreEntry> = {
+			fields: {},
+		}
+
+		return TimelineDatastore.find({ studioId }, modifier)
+	}
+	return null
+})
 
 meteorCustomPublish(
 	PubSub.timelineForStudio,
@@ -102,7 +129,7 @@ async function setupTimelinePublicationObservers(
 				// change to the mappings or the routes
 				mappingsHash: 1,
 			},
-		}).observe({
+		}).observeChanges({
 			added: () => triggerUpdate({ invalidateStudio: true }),
 			changed: () => triggerUpdate({ invalidateStudio: true }),
 			removed: () => triggerUpdate({ invalidateStudio: true }),
@@ -175,7 +202,7 @@ async function manipulateTimelinePublicationData(
 
 	if (!state.routes) {
 		// Routes need recalculating
-		state.routes = getActiveRoutes(state.studio)
+		state.routes = getActiveRoutes(state.studio.routeSets)
 		invalidateTimeline = true
 	}
 

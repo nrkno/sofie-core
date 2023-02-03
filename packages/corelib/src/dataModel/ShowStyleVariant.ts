@@ -4,8 +4,17 @@ import { ShowStyleVariantId, ShowStyleBaseId } from './Ids'
 
 export interface DBShowStyleVariant {
 	_id: ShowStyleVariantId
+
+	/** A number used to sort the variants within their ShowStyleBase. */
+	_rank: number
+
 	/** Id of parent ShowStyleBase */
 	showStyleBaseId: ShowStyleBaseId
+
+	/** Id of the blueprint config preset */
+	blueprintConfigPresetId?: string
+	/** Whether blueprintConfigPresetId is invalid, and does not match a currently exposed preset from the Blueprint */
+	blueprintConfigPresetIdUnlinked?: boolean
 
 	name: string
 

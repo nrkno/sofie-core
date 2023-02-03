@@ -19,7 +19,7 @@ import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
 import { StyledTimecode } from '../../lib/StyledTimecode'
 import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
-import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { getThumbnailUrlForAdLibPieceUi } from '../../lib/ui/clipPreview'
@@ -169,7 +169,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={null}
 					contentMetaData={this.props.piece.contentMetaData || null}
-					noticeMessage={this.props.piece.message || null}
+					noticeMessages={this.props.piece.messages || null}
 					noticeLevel={
 						this.props.piece.status !== null && this.props.piece.status !== undefined
 							? getNoticeLevelForPieceStatus(this.props.piece.status)
@@ -397,7 +397,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 	private handleOnPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
 		const { toggleOnSingleClick } = this.props
-		if (e.pointerId !== this.pointerId) {
+		if (e.pointerType === 'mouse' || e.pointerId === null || e.pointerId !== this.pointerId) {
 			return
 		}
 		if (!toggleOnSingleClick) {

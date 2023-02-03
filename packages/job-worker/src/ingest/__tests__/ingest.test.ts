@@ -22,24 +22,27 @@ import { MongoQuery } from '../../db'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { setupMockPeripheralDevice, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import {
-	handleRemovedPart,
 	handleRemovedRundown,
-	handleRemovedSegment,
-	handleRemoveOrphanedSegemnts,
-	handleUpdatedPart,
 	handleUpdatedRundown,
 	handleUpdatedRundownMetaData,
+	handleUserRemoveRundown,
+} from '../../ingest/ingestRundownJobs'
+import { handleRemovedPart, handleUpdatedPart } from '../../ingest/ingestPartJobs'
+import {
+	handleRemovedSegment,
+	handleRemoveOrphanedSegemnts,
 	handleUpdatedSegment,
 	handleUpdatedSegmentRanks,
-} from '../rundownInput'
-import { activateRundownPlaylist, setMinimumTakeSpan, takeNextPart } from '../../playout/playout'
+} from '../../ingest/ingestSegmentJobs'
+import { setMinimumTakeSpan, handleTakeNextPart } from '../../playout/take'
+import { handleActivateRundownPlaylist } from '../../playout/activePlaylistJobs'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getSelectedPartInstances } from '../../playout/__tests__/lib'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { runJobWithPlayoutCache } from '../../playout/lock'
 import { getSelectedPartInstancesFromCache } from '../../playout/cache'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { innerStartQueuedAdLib } from '../../playout/adlib'
+import { innerStartQueuedAdLib } from '../../playout/adlibUtils'
 import { IngestJobs, RemoveOrphanedSegmentsProps } from '@sofie-automation/corelib/dist/worker/ingest'
 import { removeRundownPlaylistFromDb } from './lib'
 
@@ -1633,7 +1636,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(parts).toHaveLength(3)
 
 			// Activate the rundown, make data updates and verify that it gets unsynced properly
-			await activateRundownPlaylist(context, {
+			await handleActivateRundownPlaylist(context, {
 				playlistId: rundown.playlistId,
 				rehearsal: true,
 			})
@@ -1648,7 +1651,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			await resyncRundown()
 			await expect(getRundownOrphaned()).resolves.toBeUndefined()
 
-			await takeNextPart(context, { playlistId: rundown.playlistId, fromPartInstanceId: null })
+			await handleTakeNextPart(context, { playlistId: rundown.playlistId, fromPartInstanceId: null })
 			const partInstance = await context.directCollections.PartInstances.findFetch({ 'part._id': parts[0]._id })
 			expect(partInstance).toHaveLength(1)
 			await expect(getPlaylist()).resolves.toMatchObject({ currentPartInstanceId: partInstance[0]._id })
@@ -1792,14 +1795,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 			).resolves.toHaveLength(2)
 
 			// Activate the rundown, make data updates and verify that it gets unsynced properly
-			await activateRundownPlaylist(context, {
+			await handleActivateRundownPlaylist(context, {
 				playlistId: rundown.playlistId,
 				rehearsal: true,
 			})
 			await expect(getPlaylist()).resolves.toMatchObject({ currentPartInstanceId: null })
 
 			// Take the first part
-			await takeNextPart(context, { playlistId: rundown.playlistId, fromPartInstanceId: null })
+			await handleTakeNextPart(context, { playlistId: rundown.playlistId, fromPartInstanceId: null })
 			await expect(getPlaylist()).resolves.toMatchObject({
 				currentPartInstanceId: expect.stringContaining('random'),
 			})
@@ -1976,11 +1979,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(rundown).toBeTruthy()
 
 			// Take into first part
-			await activateRundownPlaylist(context, {
+			await handleActivateRundownPlaylist(context, {
 				playlistId: rundown.playlistId,
 				rehearsal: true,
 			})
-			await takeNextPart(context, {
+			await handleTakeNextPart(context, {
 				playlistId: rundown.playlistId,
 				fromPartInstanceId: null,
 			})
@@ -2033,7 +2036,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				)) as DBRundownPlaylist
 				expect(playlist).toBeTruthy()
 
-				await takeNextPart(context, {
+				await handleTakeNextPart(context, {
 					playlistId: rundown.playlistId,
 					fromPartInstanceId: playlist.currentPartInstanceId,
 				})
@@ -2117,7 +2120,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				)) as DBRundownPlaylist
 				expect(playlist).toBeTruthy()
 
-				await takeNextPart(context, {
+				await handleTakeNextPart(context, {
 					playlistId: rundown.playlistId,
 					fromPartInstanceId: playlist.currentPartInstanceId,
 				})
@@ -2319,14 +2322,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 			).resolves.toHaveLength(2)
 
 			// Activate the rundown
-			await activateRundownPlaylist(context, {
+			await handleActivateRundownPlaylist(context, {
 				playlistId: playlist._id,
 				rehearsal: true,
 			})
 			await expect(getCurrentPartInstanceId()).resolves.toBeNull()
 
 			// Take the first part
-			await takeNextPart(context, {
+			await handleTakeNextPart(context, {
 				playlistId: playlist._id,
 				fromPartInstanceId: null,
 			})
@@ -2464,12 +2467,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 			expect(context.queueIngestJob).toHaveBeenCalledTimes(0)
 
 			// Take Segment 1
-			await takeNextPart(context, {
+			await handleTakeNextPart(context, {
 				playlistId: playlist._id,
 				fromPartInstanceId: await getCurrentPartInstanceId(),
 			})
 			await expect(getCurrentPartInstanceId()).resolves.not.toBeNull()
-			await takeNextPart(context, {
+			await handleTakeNextPart(context, {
 				playlistId: playlist._id,
 				fromPartInstanceId: await getCurrentPartInstanceId(),
 			})
@@ -2627,14 +2630,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 			).resolves.toHaveLength(2)
 
 			// Activate the rundown
-			await activateRundownPlaylist(context, {
+			await handleActivateRundownPlaylist(context, {
 				playlistId: playlist._id,
 				rehearsal: true,
 			})
 			await expect(getCurrentPartInstanceId()).resolves.toBeNull()
 
 			// Take the first part
-			await takeNextPart(context, {
+			await handleTakeNextPart(context, {
 				playlistId: playlist._id,
 				fromPartInstanceId: null,
 			})
@@ -2700,5 +2703,107 @@ describe('Test ingest actions for rundowns and segments', () => {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen
 			await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
 		}
+	})
+	test('ensure rundown can be deleted if it has bad showstyle ids', async () => {
+		// Cleanup any rundowns / playlists
+		{
+			// Cleanup any rundowns / playlists
+			const playlists = await context.directCollections.RundownPlaylists.findFetch({})
+			await removeRundownPlaylistFromDb(
+				context,
+				playlists.map((p) => p._id)
+			)
+		}
+
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 0,
+					payload: {},
+					parts: [
+						{
+							externalId: 'part0',
+							name: 'Part 0',
+							rank: 0,
+							payload: {
+								pieces: [
+									literal<IBlueprintPiece>({
+										externalId: 'piece0',
+										name: '',
+										enable: { start: 0 },
+										sourceLayerId: '',
+										outputLayerId: '',
+										lifespan: PieceLifespan.WithinPart,
+										content: { timelineObjects: [] },
+									}),
+								],
+							},
+						},
+						{
+							externalId: 'part1',
+							name: 'Part 1',
+							rank: 1,
+							payload: {
+								pieces: [
+									literal<IBlueprintPiece>({
+										externalId: 'piece1',
+										name: '',
+										enable: { start: 0 },
+										sourceLayerId: '',
+										outputLayerId: '',
+										lifespan: PieceLifespan.WithinPart,
+										content: { timelineObjects: [] },
+									}),
+								],
+							},
+						},
+					],
+				},
+				{
+					externalId: 'segment1',
+					name: 'Segment 1',
+					rank: 1,
+					payload: {},
+					parts: [
+						{
+							externalId: 'part2',
+							name: 'Part 2',
+							rank: 0,
+						},
+					],
+				},
+			],
+		}
+
+		// Preparation: set up rundown
+		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+		await handleUpdatedRundown(context, {
+			peripheralDeviceId: device2._id,
+			rundownExternalId: rundownData.externalId,
+			ingestRundown: rundownData,
+			isCreateAction: true,
+		})
+		const rundown = (await context.directCollections.Rundowns.findOne()) as Rundown
+		expect(rundown).toMatchObject({
+			externalId: rundownData.externalId,
+		})
+
+		await context.directCollections.Rundowns.update(rundown._id, {
+			$set: {
+				showStyleVariantId: protectString('this-is-not-a-real-id'),
+			},
+		})
+
+		await handleUserRemoveRundown(context, {
+			rundownId: rundown._id,
+		})
+
+		const rundownAfter = await context.directCollections.Rundowns.findOne(rundown._id)
+		expect(rundownAfter).toBeUndefined()
 	})
 })

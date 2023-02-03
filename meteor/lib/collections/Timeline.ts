@@ -1,15 +1,14 @@
 import { createMongoCollection } from './lib'
-import { DBStudio, ResultingMappingRoutes } from './Studios'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ResultingMappingRoutes } from './Studios'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import {
 	TimelineComplete,
 	TimelineObjGeneric,
 	updateLookaheadLayer,
-	TimelineBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 export * from '@sofie-automation/corelib/dist/dataModel/Timeline'
+export { RoutedTimeline } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
 export function getRoutedTimeline(
 	inputTimelineObjs: TimelineObjGeneric[],
@@ -54,20 +53,6 @@ export function getRoutedTimeline(
 		}
 	}
 	return outputTimelineObjs
-}
-
-/** This is the data-object published from Core */
-export interface RoutedTimeline {
-	_id: StudioId
-	/** Hash of the studio mappings */
-	mappingsHash: DBStudio['mappingsHash']
-
-	/** Hash of the Timeline */
-	timelineHash: TimelineComplete['timelineHash']
-
-	/** serialized JSON Array containing all timeline-objects */
-	timelineBlob: TimelineBlob
-	generated: TimelineComplete['generated']
 }
 
 export const Timeline = createMongoCollection<TimelineComplete>(CollectionName.Timelines)

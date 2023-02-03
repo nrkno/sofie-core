@@ -1,20 +1,21 @@
 import { SegmentId, PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { getRundownsSegmentsAndPartsFromCache } from '../playout/lib'
 import { clone } from 'underscore'
-import _ = require('underscore')
 import { CacheForIngest } from './cache'
 import { BeforePartMap, CommitIngestOperation } from './commit'
 import { LocalIngestRundown, RundownIngestDataCache } from './ingestCache'
 import { getRundownId } from './lib'
-import { JobContext, ProcessedShowStyleCompound } from '../jobs'
+import { JobContext } from '../jobs'
 import { IngestPropsBase } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ReadonlyDeep } from 'type-fest'
 import { RundownLock } from '../jobs/lock'
+import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 
+/**
+ * The result of the initial stage of an Ingest operation
+ * This gets provided to the Commit stage, and informs it what has changed
+ */
 export interface CommitIngestData {
 	/** Segment Ids which had any changes */
 	changedSegmentIds: SegmentId[]
@@ -27,13 +28,8 @@ export interface CommitIngestData {
 	 */
 	renamedSegments: Map<SegmentId, SegmentId>
 
-	/** Whether the rundown should be removed or orphaned */
+	/** Set to true if the rundown should be removed or orphaned */
 	removeRundown: boolean
-
-	/** ShowStyle, if loaded to reuse */
-	showStyle: ReadonlyDeep<ProcessedShowStyleCompound> | undefined
-	/** Blueprint, if loaded to reuse */
-	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint> | undefined
 }
 
 export enum UpdateIngestRundownAction {
@@ -43,13 +39,12 @@ export enum UpdateIngestRundownAction {
 /**
  * Perform an ingest update operation on a rundown
  * This will automatically do some post-update data changes, to ensure the playout side (partinstances etc) is updated with the changes
- * @param context Contextual information for the call to this function. to aid debugging
+ * @param context Context of the job being run
  * @param studioId Id of the studio the rundown belongs to
  * @param rundownExternalId ExternalId of the rundown to lock
  * @param updateCacheFcn Function to mutate the ingestData. Throw if the requested change is not valid. Return undefined to indicate the ingestData should be deleted
  * @param calcFcn Function to run to update the Rundown. Return the blob of data about the change to help the post-update perform its duties. Return null to indicate that nothing changed
  */
-// runPlayoutOperationWithCacheFromStudioOperation
 export async function runIngestJob(
 	context: JobContext,
 	data: IngestPropsBase,
@@ -125,8 +120,12 @@ export async function runIngestJob(
 }
 
 /**
- * Run a minimal rundown job
- * This avoids loading the cache
+ * Run a minimal rundown job. This is an alternative to `runIngestJob`, for operations to operate on a Rundown without the full Ingest flow
+ * This automatically aquires the RundownLock, loads the Rundown and does a basic access check
+ * @param context Context of the job being run
+ * @param rundownId Id of the rundown to run for
+ * @param fcn Function to run inside the lock
+ * @returns Result of the provided function
  */
 export async function runWithRundownLock<TRes>(
 	context: JobContext,
@@ -173,12 +172,12 @@ function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {
 		// Feed fake data because we only care about the single rundown
 		rundownIdsInOrder: [cache.RundownId],
 	})
-	const existingRundownParts = _.groupBy(segmentsAndParts.parts, (part) => unprotectString(part.segmentId))
+	const existingRundownParts = groupByToMap(segmentsAndParts.parts, 'segmentId')
 
 	const res = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
-	for (const [segmentId, parts] of Object.entries(existingRundownParts)) {
+	for (const [segmentId, parts] of existingRundownParts.entries()) {
 		res.set(
-			protectString(segmentId),
+			segmentId,
 			parts.map((p) => ({ id: p._id, rank: p._rank }))
 		)
 	}

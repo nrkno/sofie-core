@@ -4,7 +4,7 @@ import { literal } from '../../../lib/lib'
 import { ReactNotification } from '../../lib/notifications/ReactNotification'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ToolTipStep } from '../RundownList'
-import { NotificationAction } from '../../lib/notifications/notifications'
+import { NotificationAction } from '../../../lib/notifications/notifications'
 
 export interface IRegisterHelpProps {
 	step: ToolTipStep

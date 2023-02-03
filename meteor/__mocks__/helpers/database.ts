@@ -85,6 +85,7 @@ import {
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { AdLibPieces, RundownPlaylists, Rundowns, Workers, WorkerThreadStatuses } from '../../server/serverCollections'
+import { TSR_VERSION } from '@sofie-automation/shared-lib/dist/tsr'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -97,15 +98,6 @@ export enum LAYER_IDS {
 function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VERSION: string } {
 	const INTEGRATION_VERSION =
 		require('../../node_modules/@sofie-automation/blueprints-integration/package.json').version
-
-	let TSR_VERSION = ''
-	try {
-		// eslint-disable-next-line node/no-missing-require
-		TSR_VERSION = require('../../node_modules/timeline-state-resolver-types/package.json').version
-	} catch (e) {
-		TSR_VERSION =
-			require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json').version
-	}
 
 	return {
 		INTEGRATION_VERSION,
@@ -168,7 +160,6 @@ export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
 		modified: 0,
 		version: '0.0.0',
 		previousVersion: '0.0.0',
-		storePath: '',
 		serviceMessages: {},
 	}
 	const coreSystem = _.extend(defaultCore, doc)
@@ -187,7 +178,6 @@ export function setupMockTriggeredActions(
 		const mock: DBTriggeredActions = {
 			_id: protectString(`mockTriggeredAction_${showStyleBaseId ?? 'core'}` + i),
 			_rank: i * 1000,
-			_rundownVersionHash: 'asdf',
 			showStyleBaseId,
 			blueprintUniqueId: null,
 			actionsWithOverrides: wrapDefaultObject({
@@ -289,6 +279,7 @@ export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<S
 		blueprintId: blueprintId,
 		// hotkeyLegend?: Array<HotkeyDefinition>
 		_rundownVersionHash: '',
+		lastBlueprintConfig: undefined,
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)
 	ShowStyleBases.insert(showStyleBase)
@@ -306,6 +297,7 @@ export function setupMockShowStyleVariant(
 		showStyleBaseId: showStyleBaseId,
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
+		_rank: 0,
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)
 	ShowStyleVariants.insert(showStyleVariant)
@@ -354,6 +346,13 @@ export async function setupMockStudioBlueprint(
 				integrationVersion: INTEGRATION_VERSION,
 				TSRVersion: TSR_VERSION,
 
+				configPresets: {
+					main: {
+						name: 'Main',
+						config: {},
+					},
+				},
+
 				studioConfigManifest: [],
 				studioMigrations: [],
 				getBaseline: () => {
@@ -396,6 +395,20 @@ export async function setupMockShowStyleBlueprint(
 				blueprintVersion: '0.0.0',
 				integrationVersion: INTEGRATION_VERSION,
 				TSRVersion: TSR_VERSION,
+
+				configPresets: {
+					main: {
+						name: 'Main',
+						config: {},
+
+						variants: {
+							main: {
+								name: 'Default',
+								config: {},
+							},
+						},
+					},
+				},
 
 				showStyleConfigManifest: [],
 				showStyleMigrations: [],
