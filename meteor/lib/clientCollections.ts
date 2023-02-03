@@ -16,10 +16,12 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
+import { Meteor } from 'meteor/meteor'
 import { Bucket } from './collections/Buckets'
+import { ICoreSystem, SYSTEM_ID } from './collections/CoreSystem'
 import { Evaluation } from './collections/Evaluations'
 import { ExpectedPackageDB } from './collections/ExpectedPackages'
-import { createSyncMongoCollection, createSyncReadOnlyMongoCollection } from './collections/lib'
+import { createSyncMongoCollection, createSyncReadOnlyMongoCollection, wrapMongoCollection } from './collections/lib'
 import { DBOrganization } from './collections/Organization'
 import { PartInstance } from './collections/PartInstances'
 import { Part } from './collections/Parts'
@@ -31,6 +33,12 @@ import { RundownLayoutBase } from './collections/RundownLayouts'
 import { Segment } from './collections/Segments'
 import { ShowStyleBase } from './collections/ShowStyleBases'
 import { ShowStyleVariant } from './collections/ShowStyleVariants'
+import { SnapshotItem } from './collections/Snapshots'
+import { Studio } from './collections/Studios'
+import { TranslationsBundle } from './collections/TranslationsBundles'
+import { DBTriggeredActions } from './collections/TriggeredActions'
+import { UserActionsLogItem } from './collections/UserActionsLog'
+import { DBUser } from './collections/Users'
 
 export const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 
@@ -45,6 +53,8 @@ export const BucketAdLibActions = createSyncReadOnlyMongoCollection<BucketAdLibA
 export const BucketAdLibs = createSyncReadOnlyMongoCollection<BucketAdLib>(CollectionName.BucketAdLibPieces)
 
 export const Buckets = createSyncReadOnlyMongoCollection<Bucket>(CollectionName.Buckets)
+
+export const CoreSystem = createSyncMongoCollection<ICoreSystem>(CollectionName.CoreSystem)
 
 export const Evaluations = createSyncReadOnlyMongoCollection<Evaluation>(CollectionName.Evaluations)
 
@@ -111,3 +121,22 @@ export const Segments = createSyncReadOnlyMongoCollection<Segment>(CollectionNam
 export const ShowStyleBases = createSyncMongoCollection<ShowStyleBase>(CollectionName.ShowStyleBases)
 
 export const ShowStyleVariants = createSyncMongoCollection<ShowStyleVariant>(CollectionName.ShowStyleVariants)
+
+export const Snapshots = createSyncMongoCollection<SnapshotItem>(CollectionName.Snapshots)
+
+export const Studios = createSyncMongoCollection<Studio>(CollectionName.Studios)
+
+export const TranslationsBundles = createSyncReadOnlyMongoCollection<TranslationsBundle>(
+	CollectionName.TranslationsBundles
+)
+
+export const TriggeredActions = createSyncMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions)
+
+export const UserActionsLog = createSyncReadOnlyMongoCollection<UserActionsLogItem>(CollectionName.UserActionsLog)
+
+// This is a somewhat special collection, as it draws from the Meteor.users collection from the Accounts package
+export const Users = wrapMongoCollection<DBUser>(Meteor.users as any, CollectionName.Users)
+
+export function getCoreSystem(): ICoreSystem | undefined {
+	return CoreSystem.findOne(SYSTEM_ID)
+}

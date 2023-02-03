@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { registerClassToMeteorMethods } from '../../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '../../../lib/api/studios'
-import { Studios, DBStudio } from '../../../lib/collections/Studios'
+import { DBStudio } from '../../../lib/collections/Studios'
 import { literal, getRandomId, lazyIgnore } from '../../../lib/lib'
 import {
 	ExpectedPackages,
@@ -14,10 +14,11 @@ import {
 	PeripheralDevices,
 	RundownPlaylists,
 	Rundowns,
+	Studios,
+	Timeline,
 } from '../../serverCollections'
 import { MethodContextAPI, MethodContext } from '../../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../../security/organization'
-import { Timeline } from '../../../lib/collections/Timeline'
 import { Credentials } from '../../security/lib/credentials'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { OrganizationId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'

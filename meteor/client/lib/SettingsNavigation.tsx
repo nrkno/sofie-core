@@ -3,9 +3,9 @@ import { Redirect } from 'react-router'
 import { Translated, withTracker } from './ReactMeteorData/ReactMeteorData'
 import { Mongo } from 'meteor/mongo'
 import { withTranslation } from 'react-i18next'
-import { Studios } from '../../lib/collections/Studios'
 import { MeteorCall } from '../../lib/api/methods'
 import { assertNever } from '../../lib/lib'
+import { Studios } from '../../lib/clientCollections'
 
 interface ISettingsNavigation extends ISettingsNavigationBaseProps {
 	type: SettingsNavigationType

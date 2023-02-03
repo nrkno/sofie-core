@@ -24,6 +24,7 @@ import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/Medi
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { Meteor } from 'meteor/meteor'
 import { Bucket } from '../lib/collections/Buckets'
+import { ICoreSystem } from '../lib/collections/CoreSystem'
 import { Evaluation } from '../lib/collections/Evaluations'
 import { ExpectedPackageDB } from '../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatus } from '../lib/collections/ExpectedPackageWorkStatuses'
@@ -32,6 +33,7 @@ import {
 	createAsyncOnlyMongoCollection,
 	createAsyncMongoCollection,
 	ObserveChangesForHash,
+	wrapMongoCollection,
 } from '../lib/collections/lib'
 import { DBOrganization } from '../lib/collections/Organization'
 import { PartInstance } from '../lib/collections/PartInstances'
@@ -41,9 +43,17 @@ import { RundownLayoutBase } from '../lib/collections/RundownLayouts'
 import { Segment } from '../lib/collections/Segments'
 import { ShowStyleBase } from '../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../lib/collections/ShowStyleVariants'
+import { SnapshotItem } from '../lib/collections/Snapshots'
+import { Studio } from '../lib/collections/Studios'
+import { TimelineComplete } from '../lib/collections/Timeline'
+import { TimelineDatastoreEntry } from '../lib/collections/TimelineDatastore'
+import { TranslationsBundle } from '../lib/collections/TranslationsBundles'
+import { DBTriggeredActions } from '../lib/collections/TriggeredActions'
+import { UserActionsLogItem } from '../lib/collections/UserActionsLog'
+import { DBUser } from '../lib/collections/Users'
 import { WorkerStatus } from '../lib/collections/Workers'
 import { registerIndex } from '../lib/database'
-import { getCurrentTime } from '../lib/lib'
+import { getCurrentTime, registerCollection } from '../lib/lib'
 
 export const AdLibActions = createAsyncMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 registerIndex(AdLibActions, {
@@ -79,6 +89,8 @@ export const Buckets = createAsyncMongoCollection<Bucket>(CollectionName.Buckets
 registerIndex(Buckets, {
 	studioId: 1,
 })
+
+export const CoreSystem = createAsyncMongoCollection<ICoreSystem>(CollectionName.CoreSystem)
 
 export const Evaluations = createAsyncMongoCollection<Evaluation>(CollectionName.Evaluations)
 registerIndex(Evaluations, {
@@ -364,6 +376,53 @@ registerIndex(ShowStyleVariants, {
 	_rank: 1,
 })
 
+export const Snapshots = createAsyncMongoCollection<SnapshotItem>(CollectionName.Snapshots)
+registerIndex(Snapshots, {
+	organizationId: 1,
+})
+registerIndex(Snapshots, {
+	created: 1,
+})
+
+export const Studios = createAsyncMongoCollection<Studio>(CollectionName.Studios)
+registerIndex(Studios, {
+	organizationId: 1,
+})
+
+export const Timeline = createAsyncMongoCollection<TimelineComplete>(CollectionName.Timelines)
+// Note: this index is always created by default, so it's not needed.
+// registerIndex(Timeline, {
+// 	_id: 1,
+// })
+
+export const TimelineDatastore = createAsyncMongoCollection<TimelineDatastoreEntry>(CollectionName.TimelineDatastore)
+registerIndex(TimelineDatastore, {
+	studioId: 1,
+})
+
+export const TranslationsBundles = createAsyncMongoCollection<TranslationsBundle>(CollectionName.TranslationsBundles)
+
+export const TriggeredActions = createAsyncMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions)
+registerIndex(TriggeredActions, {
+	showStyleBaseId: 1,
+})
+
+export const UserActionsLog = createAsyncMongoCollection<UserActionsLogItem>(CollectionName.UserActionsLog)
+registerIndex(UserActionsLog, {
+	organizationId: 1,
+	timestamp: 1,
+})
+registerIndex(UserActionsLog, {
+	timelineHash: 1,
+})
+
+// This is a somewhat special collection, as it draws from the Meteor.users collection from the Accounts package
+export const Users = wrapMongoCollection<DBUser>(Meteor.users as any, CollectionName.Users)
+registerCollection(CollectionName.Users, Users)
+registerIndex(Users, {
+	organizationId: 1,
+})
+
 export const Workers = createAsyncMongoCollection<WorkerStatus>(CollectionName.Workers)
 
 export const WorkerThreadStatuses = createAsyncOnlyMongoCollection<WorkerThreadStatus>(CollectionName.WorkerThreads)
@@ -385,4 +444,6 @@ Meteor.startup(() => {
 	ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['blueprintConfigWithOverrides', 'blueprintId'])
 
 	ObserveChangesForHash(ShowStyleVariants, '_rundownVersionHash', ['blueprintConfigWithOverrides', 'showStyleBaseId'])
+
+	ObserveChangesForHash(Studios, '_rundownVersionHash', ['blueprintConfigWithOverrides'])
 })

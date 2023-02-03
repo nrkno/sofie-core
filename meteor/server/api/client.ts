@@ -2,7 +2,7 @@ import { check } from '../../lib/check'
 import { literal, getCurrentTime, Time, getRandomId, stringifyError } from '../../lib/lib'
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
-import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
@@ -33,6 +33,7 @@ import {
 } from './lib'
 import { BasicAccessContext } from '../security/organization'
 import { NoticeLevel } from '../../lib/notifications/notifications'
+import { UserActionsLog } from '../serverCollections'
 
 function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
 	let userError: UserError

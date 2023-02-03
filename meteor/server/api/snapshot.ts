@@ -3,16 +3,15 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
 import { check, Match } from '../../lib/check'
-import { Studio, Studios } from '../../lib/collections/Studios'
+import { Studio } from '../../lib/collections/Studios'
 import {
-	Snapshots,
 	SnapshotType,
 	SnapshotSystem,
 	SnapshotDebug,
 	SnapshotBase,
 	SnapshotRundownPlaylist,
 } from '../../lib/collections/Snapshots'
-import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PieceGeneric } from '../../lib/collections/Pieces'
 import { MediaObject } from '../../lib/collections/MediaObjects'
 import {
@@ -30,12 +29,12 @@ import {
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
-import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
+import { TimelineComplete } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
-import { ICoreSystem, CoreSystem, parseVersion, getCoreSystemAsync } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
@@ -45,7 +44,7 @@ import { MongoQuery } from '../../lib/typings/meteor'
 import { importIngestRundown } from './ingest/http'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
+import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
@@ -77,6 +76,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	Blueprints,
+	CoreSystem,
 	ExpectedPackageWorkStatuses,
 	MediaObjects,
 	PackageContainerPackageStatuses,
@@ -87,7 +87,13 @@ import {
 	RundownPlaylists,
 	ShowStyleBases,
 	ShowStyleVariants,
+	Snapshots,
+	Studios,
+	Timeline,
+	TriggeredActions,
+	UserActionsLog,
 } from '../serverCollections'
+import { getCoreSystemAsync } from '../coreSystem/collection'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined

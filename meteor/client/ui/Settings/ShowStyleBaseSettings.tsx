@@ -5,7 +5,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { OutputLayers, ShowStyleBase, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
-import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
+import { Studio, MappingsExt } from '../../../lib/collections/Studios'
 import {
 	BlueprintManifestType,
 	ConfigManifestEntry,
@@ -27,7 +27,7 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, ShowStyleBases, ShowStyleVariants } from '../../../lib/clientCollections'
+import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../../lib/clientCollections'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 

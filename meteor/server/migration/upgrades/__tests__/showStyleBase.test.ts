@@ -19,8 +19,7 @@ import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib
 
 import * as blueprintCache from '../../../api/blueprints/cache'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { TriggeredActions } from '../../../../lib/collections/TriggeredActions'
-import { ShowStyleBases } from '../../../serverCollections'
+import { ShowStyleBases, TriggeredActions } from '../../../serverCollections'
 
 describe('ShowStyleBase upgrades', () => {
 	afterEach(() => {

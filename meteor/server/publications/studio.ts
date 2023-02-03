@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
-import { Studios, DBStudio, getActiveRoutes, getRoutedMappings, RoutedMappings } from '../../lib/collections/Studios'
+import { DBStudio, getActiveRoutes, getRoutedMappings, RoutedMappings } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { MediaObject } from '../../lib/collections/MediaObjects'
@@ -34,6 +34,7 @@ import {
 	PackageContainerStatuses,
 	PackageInfos,
 	PeripheralDevices,
+	Studios,
 } from '../serverCollections'
 
 meteorPublish(PubSub.studios, async function (selector0, token) {

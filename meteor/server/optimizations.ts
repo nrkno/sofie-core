@@ -1,8 +1,8 @@
 import { ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MongoQuery } from '../lib/typings/meteor'
 import { DBShowStyleBase } from '../lib/collections/ShowStyleBases'
-import { DBStudio, Studios, StudioLight } from '../lib/collections/Studios'
-import { ShowStyleBases } from './serverCollections'
+import { DBStudio, StudioLight } from '../lib/collections/Studios'
+import { ShowStyleBases, Studios } from './serverCollections'
 
 export { StudioLight } from '../lib/collections/Studios' // TODO: Legacy
 

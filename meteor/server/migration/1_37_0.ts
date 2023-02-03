@@ -11,10 +11,9 @@ import {
 	TriggerType,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../logging'
-import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Blueprints, RundownPlaylists, Rundowns } from '../serverCollections'
+import { Blueprints, RundownPlaylists, Rundowns, TriggeredActions } from '../serverCollections'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 

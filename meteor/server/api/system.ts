@@ -14,7 +14,7 @@ import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import { SystemWriteAccess } from '../security/system'
 import { check } from '../../lib/check'
-import { AsyncMongoCollection, createMongoCollection, IndexSpecifier } from '../../lib/collections/lib'
+import { AsyncMongoCollection, createAsyncMongoCollection, IndexSpecifier } from '../../lib/collections/lib'
 import { getBundle as getTranslationBundleInner } from './translationsBundles'
 import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
 import { OrganizationContentWriteAccess } from '../security/organization'
@@ -111,7 +111,7 @@ let mongoTest: AsyncMongoCollection<any> | undefined = undefined
 /** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
 async function doSystemBenchmarkInner() {
 	if (!mongoTest) {
-		mongoTest = createMongoCollection<any>('benchmark-test' as any)
+		mongoTest = createAsyncMongoCollection<any>('benchmark-test' as any)
 		mongoTest._ensureIndex({
 			indexedProp: 1,
 		})

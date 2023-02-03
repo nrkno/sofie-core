@@ -7,7 +7,7 @@ import { logger } from '../logging'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
-import { DBTriggeredActions, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import { DBTriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import {
 	CreateTriggeredActionsContent,
 	NewTriggeredActionsAPI,
@@ -20,6 +20,7 @@ import {
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { TriggeredActions } from '../serverCollections'
 
 export async function createTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null,

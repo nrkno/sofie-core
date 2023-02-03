@@ -4,7 +4,6 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import {
 	Studio,
-	Studios,
 	DBStudio,
 	StudioRouteSet,
 	StudioRouteBehavior,
@@ -25,6 +24,7 @@ import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { DeviceMappingSettings } from './Mappings'
 import { ReadonlyDeep } from 'type-fest'
+import { Studios } from '../../../../lib/clientCollections'
 
 interface IStudioRoutingsProps {
 	studio: Studio

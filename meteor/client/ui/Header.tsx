@@ -9,8 +9,8 @@ import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
 import * as VelocityReact from 'velocity-react'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { Settings } from '../../lib/Settings'
+import { CoreSystem } from '../../lib/clientCollections'
 
 interface IPropsHeader {
 	user: boolean

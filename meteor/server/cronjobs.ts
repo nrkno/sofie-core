@@ -7,6 +7,8 @@ import {
 	PieceInstances,
 	RundownPlaylists,
 	Rundowns,
+	Snapshots,
+	UserActionsLog,
 } from './serverCollections'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
@@ -15,16 +17,14 @@ import { getCurrentTime, stringifyError, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { UserActionsLog } from '../lib/collections/UserActionsLog'
-import { Snapshots } from '../lib/collections/Snapshots'
 import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
-import { getCoreSystem } from '../lib/collections/CoreSystem'
 import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { fetchStudioIds } from './optimizations'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
 import { getRemovedPackageInfos } from './api/studio/lib'
+import { getCoreSystem } from './coreSystem/collection'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:

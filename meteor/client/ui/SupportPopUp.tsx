@@ -2,10 +2,10 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { translateWithTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { SupportIcon } from '../lib/ui/icons/supportIcon'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { getHelpMode } from '../lib/localStorage'
+import { CoreSystem } from '../../lib/clientCollections'
 
 interface IProps {}
 

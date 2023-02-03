@@ -7,8 +7,7 @@ import { ShowStyleReadAccess } from '../security/showStyle'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/collections/lib'
 import { NoSecurityReadAccess } from '../security/noSecurity'
-import { TriggeredActions } from '../../lib/collections/TriggeredActions'
-import { RundownLayouts, ShowStyleBases, ShowStyleVariants } from '../serverCollections'
+import { RundownLayouts, ShowStyleBases, ShowStyleVariants, TriggeredActions } from '../serverCollections'
 
 meteorPublish(PubSub.showStyleBases, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<ShowStyleBase>(this.userId, selector0, token)

@@ -1,10 +1,7 @@
 import { Meteor } from 'meteor/meteor'
-import { registerCollection, unprotectString } from '../lib'
+import { unprotectString } from '../lib'
 import { UserRoles, DBOrganization } from './Organization'
-import { registerIndex } from '../database'
 import { UserId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { wrapMongoCollection } from './lib'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { Organizations } from '../clientCollections'
 
 export interface UserProfile {
@@ -34,14 +31,6 @@ export interface DBUser {
 }
 
 export type User = DBUser // to be replaced by a class somet ime later?
-
-// This is a somewhat special collection, as it draws from the Meteor.users collection from the Accounts package
-export const Users = wrapMongoCollection<DBUser>(Meteor.users as any, CollectionName.Users)
-registerCollection(CollectionName.Users, Users)
-
-registerIndex(Users, {
-	organizationId: 1,
-})
 
 /** Returns the currently logged in user, or null if not logged in */
 export function getUser(): User | null {

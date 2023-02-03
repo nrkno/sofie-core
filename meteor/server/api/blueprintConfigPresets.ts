@@ -1,11 +1,11 @@
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { Meteor } from 'meteor/meteor'
-import { Blueprints, ShowStyleBases, ShowStyleVariants } from '../serverCollections'
+import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../serverCollections'
 import { ObserveChangesHelper } from '../../lib/collections/lib'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
-import { Studio, Studios } from '../../lib/collections/Studios'
+import { Studio } from '../../lib/collections/Studios'
 
 const ObserveChangeBufferTimeout = 100
 

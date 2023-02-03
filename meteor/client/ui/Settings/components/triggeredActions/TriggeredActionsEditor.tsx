@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { PubSub } from '../../../../../lib/api/pubsub'
-import { TriggeredActions, TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
+import { TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
 import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
@@ -27,7 +27,13 @@ import { doModalDialog } from '../../../../lib/ModalDialog'
 import { MongoQuery } from '../../../../../lib/typings/meteor'
 import _ from 'underscore'
 import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances, Parts, RundownPlaylists, Rundowns } from '../../../../../lib/clientCollections'
+import {
+	PartInstances,
+	Parts,
+	RundownPlaylists,
+	Rundowns,
+	TriggeredActions,
+} from '../../../../../lib/clientCollections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 

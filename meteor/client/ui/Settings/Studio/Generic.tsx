@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Studio, Studios } from '../../../../lib/collections/Studios'
+import { Studio } from '../../../../lib/collections/Studios'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
@@ -11,7 +11,7 @@ import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { StudioBaselineStatus } from './Baseline'
 import { BlueprintId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { Blueprints } from '../../../../lib/clientCollections'
+import { Blueprints, Studios } from '../../../../lib/clientCollections'
 
 interface IStudioGenericPropertiesProps {
 	studio: Studio

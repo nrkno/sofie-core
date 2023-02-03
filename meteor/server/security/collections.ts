@@ -1,4 +1,3 @@
-import { CoreSystem } from '../../lib/collections/CoreSystem'
 import {
 	allowAccessToCoreSystem,
 	allowAccessToStudio,
@@ -6,10 +5,7 @@ import {
 	allowAccessToOrganization,
 } from './lib/security'
 import { logNotAllowed, allowOnlyFields, rejectFields } from './lib/lib'
-import { Users } from '../../lib/collections/Users'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { Snapshots } from '../../lib/collections/Snapshots'
-import { Studios, Studio } from '../../lib/collections/Studios'
+import { Studio } from '../../lib/collections/Studios'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
@@ -18,6 +14,7 @@ import {
 	AdLibPieces,
 	Blueprints,
 	Buckets,
+	CoreSystem,
 	Evaluations,
 	ExpectedMediaItems,
 	ExpectedPlayoutItems,
@@ -40,14 +37,18 @@ import {
 	Segments,
 	ShowStyleBases,
 	ShowStyleVariants,
+	Snapshots,
+	Studios,
+	Timeline,
+	TimelineDatastore,
+	TriggeredActions,
+	UserActionsLog,
+	Users,
 } from '../serverCollections'
-import { Timeline } from '../../lib/collections/Timeline'
 import { SystemWriteAccess } from './system'
 import { StudioContentWriteAccess } from './studio'
-import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { resolveCredentials } from './lib/credentials'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { TimelineDatastore } from '../../lib/collections/TimelineDatastore'
 
 // Set up direct collection write access
 

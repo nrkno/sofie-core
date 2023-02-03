@@ -134,22 +134,6 @@ export function createAsyncOnlyMongoCollection<DBInterface extends { _id: Protec
 }
 
 /**
- * @deprecated
- * Create a fully featured MongoCollection
- * @param name Name of the collection in mongodb
- * @param options Open options
- */
-export function createMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
-	name: CollectionName
-	// options?: {
-	// 	connection?: Object | null
-	// 	idGeneration?: string
-	// }
-): ServerMongoCollection<DBInterface> {
-	return createAsyncMongoCollection(name)
-}
-
-/**
  * Map of current collection objects.
  * Future: Could this weakly hold the collections?
  */

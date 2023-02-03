@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
+import { Studio, MappingsExt } from '../../../lib/collections/Studios'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
@@ -22,7 +22,13 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, PeripheralDevices, ShowStyleBases, ShowStyleVariants } from '../../../lib/clientCollections'
+import {
+	Blueprints,
+	PeripheralDevices,
+	ShowStyleBases,
+	ShowStyleVariants,
+	Studios,
+} from '../../../lib/clientCollections'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintConfigManifestSettings } from './BlueprintConfigManifest'
 

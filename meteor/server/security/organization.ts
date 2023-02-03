@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { Snapshots, SnapshotItem } from '../../lib/collections/Snapshots'
+import { SnapshotItem } from '../../lib/collections/Snapshots'
 import { Blueprint } from '../../lib/collections/Blueprints'
 import { logNotAllowed } from './lib/lib'
 import { MongoQueryKey } from '../../lib/typings/meteor'
@@ -18,7 +18,7 @@ import {
 	StudioId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints } from '../serverCollections'
+import { Blueprints, Snapshots } from '../serverCollections'
 
 export type BasicAccessContext = { organizationId: OrganizationId | null; userId: UserId | null }
 

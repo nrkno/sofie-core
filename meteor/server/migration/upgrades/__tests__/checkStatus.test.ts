@@ -11,9 +11,8 @@ import {
 	setupMockStudioBlueprint,
 } from '../../../../__mocks__/helpers/database'
 import { generateTranslation } from '../../../../lib/lib'
-import { Studios } from '../../../../lib/collections/Studios'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { ShowStyleBases } from '../../../serverCollections'
+import { ShowStyleBases, Studios } from '../../../serverCollections'
 
 describe('getUpgradeStatus', () => {
 	afterEach(() => {

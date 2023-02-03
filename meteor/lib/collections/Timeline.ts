@@ -1,12 +1,6 @@
-import { createMongoCollection } from './lib'
 import { ResultingMappingRoutes } from './Studios'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-import {
-	TimelineComplete,
-	TimelineObjGeneric,
-	updateLookaheadLayer,
-} from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { TimelineObjGeneric, updateLookaheadLayer } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 export * from '@sofie-automation/corelib/dist/dataModel/Timeline'
 export { RoutedTimeline } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
@@ -54,10 +48,3 @@ export function getRoutedTimeline(
 	}
 	return outputTimelineObjs
 }
-
-export const Timeline = createMongoCollection<TimelineComplete>(CollectionName.Timelines)
-
-// Note: this index is always created by default, so it's not needed.
-// registerIndex(Timeline, {
-// 	_id: 1,
-// })

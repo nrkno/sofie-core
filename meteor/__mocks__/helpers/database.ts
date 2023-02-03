@@ -6,7 +6,7 @@ import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceSubType,
 } from '../../lib/collections/PeripheralDevices'
-import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
+import { Studio, DBStudio } from '../../lib/collections/Studios'
 import {
 	PieceLifespan,
 	IOutputLayer,
@@ -36,7 +36,7 @@ import {
 import { ShowStyleBase, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, DBShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { Blueprint } from '../../lib/collections/Blueprints'
-import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import {
 	literal,
@@ -67,7 +67,7 @@ import {
 	defaultStudio,
 } from '../defaultCollectionObjects'
 import { PackageInfo } from '../../server/coreSystem'
-import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
+import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { WorkerStatus } from '../../lib/collections/Workers'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
 import {
@@ -85,6 +85,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	AdLibPieces,
+	CoreSystem,
 	Parts,
 	PeripheralDevices,
 	Pieces,
@@ -94,6 +95,8 @@ import {
 	Segments,
 	ShowStyleBases,
 	ShowStyleVariants,
+	Studios,
+	TriggeredActions,
 	Workers,
 	WorkerThreadStatuses,
 } from '../../server/serverCollections'

@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { setupEmptyEnvironment } from '../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
 import { clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../currentSystemVersion'
 import { RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
@@ -16,11 +16,12 @@ import {
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { Studios, Studio } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Blueprints, ShowStyleBases, ShowStyleVariants } from '../../serverCollections'
+import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../serverCollections'
+import { getCoreSystem } from '../../coreSystem/collection'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed

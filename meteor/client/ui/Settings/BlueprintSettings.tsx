@@ -7,9 +7,9 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprint } from '../../../lib/collections/Blueprints'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
@@ -19,7 +19,7 @@ import { faUpload, faExclamationTriangle } from '@fortawesome/free-solid-svg-ico
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, ShowStyleBases } from '../../../lib/clientCollections'
+import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../../lib/clientCollections'
 
 interface IProps {
 	match: {

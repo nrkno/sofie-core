@@ -17,7 +17,7 @@ import {
 	Time,
 	waitForPromise,
 } from '../../lib/lib'
-import { UserActionsLogItem, UserActionsLog } from '../../lib/collections/UserActionsLog'
+import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fastTrack'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { fetchStudioLight } from '../optimizations'
@@ -25,6 +25,7 @@ import * as path from 'path'
 import { LogEntry } from 'winston'
 import { initializeWorkerStatus, setWorkerStatus } from './workerStatus'
 import { MongoQuery } from '../../lib/typings/meteor'
+import { UserActionsLog } from '../serverCollections'
 
 const FREEZE_LIMIT = 1000 // how long to wait for a response to a Ping
 const RESTART_TIMEOUT = 30000 // how long to wait for a restart to complete before throwing an error

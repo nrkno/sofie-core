@@ -14,7 +14,7 @@ import {
 import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../../methods'
-import { parseVersion, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
+import { parseVersion, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
 import { evalBlueprint } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
 import { MethodContext, MethodContextAPI } from '../../../lib/api/methods'
@@ -24,12 +24,12 @@ import { Credentials, isResolvedCredentials } from '../../security/lib/credentia
 import { Settings } from '../../../lib/Settings'
 import { generateTranslationBundleOriginId, upsertBundles } from '../translationsBundles'
 import { BlueprintId, OrganizationId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, ShowStyleBases, ShowStyleVariants } from '../../serverCollections'
+import { Blueprints, CoreSystem, ShowStyleBases, ShowStyleVariants, Studios } from '../../serverCollections'
 import { fetchBlueprintLight, BlueprintLight } from '../../serverOptimisations'
 import { getSystemStorePath } from '../../coreSystem'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { Studios, Studio } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 
 export async function insertBlueprint(
 	methodContext: MethodContext,

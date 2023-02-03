@@ -22,18 +22,23 @@ import {
 	PlayoutActions,
 	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
-import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
+import { Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
-import { CoreSystem } from '../../../../lib/collections/CoreSystem'
-import { TriggeredActions } from '../../../../lib/collections/TriggeredActions'
 import {
 	applyAndValidateOverrides,
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { PeripheralDevices, ShowStyleBases, ShowStyleVariants } from '../../../serverCollections'
+import {
+	CoreSystem,
+	PeripheralDevices,
+	ShowStyleBases,
+	ShowStyleVariants,
+	Studios,
+	TriggeredActions,
+} from '../../../serverCollections'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(async () => {

@@ -22,7 +22,7 @@ import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } fro
 import { PubSub } from '../../../lib/api/pubsub'
 import ClassNames from 'classnames'
 import { StatusCode, TSR } from '@sofie-automation/blueprints-integration'
-import { CoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -33,7 +33,7 @@ import { StatusCodePill } from './StatusCodePill'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { SchemaForm } from '../../lib/forms/schemaForm'
-import { PeripheralDevices } from '../../../lib/clientCollections'
+import { CoreSystem, PeripheralDevices } from '../../../lib/clientCollections'
 
 interface IDeviceItemProps {
 	// key: string,

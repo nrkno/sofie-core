@@ -1,17 +1,9 @@
-import {
-	getCoreSystem,
-	CoreSystem,
-	SYSTEM_ID,
-	getCoreSystemCursor,
-	parseVersion,
-	GENESIS_SYSTEM_VERSION,
-} from '../../lib/collections/CoreSystem'
+import { SYSTEM_ID, parseVersion, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { getCurrentTime, waitForPromise } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from '../migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
-import { Blueprints, ShowStyleBases, ShowStyleVariants } from '../serverCollections'
-import { Studios } from '../../lib/collections/Studios'
+import { Blueprints, CoreSystem, ShowStyleBases, ShowStyleVariants, Studios } from '../serverCollections'
 import { getEnvLogLevel, logger, LogLevel, setLogLevel } from '../logging'
 const PackageInfo = require('../../package.json')
 // import Agent from 'meteor/kschingiz:meteor-elastic-apm'
@@ -23,6 +15,7 @@ import path from 'path'
 import { queueCheckBlueprintsConfig } from './checkBlueprintsConfig'
 import { checkDatabaseVersions } from './checkDatabaseVersions'
 import PLazy from 'p-lazy'
+import { getCoreSystem, getCoreSystemCursor } from './collection'
 
 export { PackageInfo }
 

@@ -2,13 +2,7 @@ import ClassNames from 'classnames'
 import React, { useCallback, useMemo } from 'react'
 import * as _ from 'underscore'
 import Tooltip from 'rc-tooltip'
-import {
-	Studio,
-	Studios,
-	MappingExt,
-	getActiveRoutes,
-	ResultingMappingRoutes,
-} from '../../../../lib/collections/Studios'
+import { Studio, MappingExt, getActiveRoutes, ResultingMappingRoutes } from '../../../../lib/collections/Studios'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -45,6 +39,7 @@ import {
 	LabelAndOverridesForDropdown,
 	LabelAndOverridesForInt,
 } from '../../../lib/Components/LabelAndOverrides'
+import { Studios } from '../../../../lib/clientCollections'
 
 interface IStudioMappingsProps {
 	studio: Studio

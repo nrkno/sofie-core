@@ -24,10 +24,10 @@ import {
 	VerifiedRundownPlaylistContentAccess,
 } from './lib'
 import { Blueprint } from '../../lib/collections/Blueprints'
-import { Studio, Studios } from '../../lib/collections/Studios'
+import { Studio } from '../../lib/collections/Studios'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, Rundowns, ShowStyleBases, ShowStyleVariants } from '../serverCollections'
+import { Blueprints, Rundowns, ShowStyleBases, ShowStyleVariants, Studios } from '../serverCollections'
 import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 
 export namespace ServerRundownAPI {

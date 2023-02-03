@@ -2,7 +2,7 @@ import ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { Studio, Studios, DBStudio, StudioPackageContainer } from '../../../../lib/collections/Studios'
+import { Studio, DBStudio, StudioPackageContainer } from '../../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -12,7 +12,7 @@ import { PeripheralDeviceCategory, PeripheralDeviceType } from '../../../../lib/
 import { withTranslation } from 'react-i18next'
 import { Accessor } from '@sofie-automation/blueprints-integration'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
-import { PeripheralDevices } from '../../../../lib/clientCollections'
+import { PeripheralDevices, Studios } from '../../../../lib/clientCollections'
 
 interface IStudioPackageManagerSettingsProps {
 	studio: Studio

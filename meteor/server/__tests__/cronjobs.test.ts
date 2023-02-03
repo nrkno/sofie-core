@@ -3,8 +3,7 @@ import { testInFiber, runAllTimers, beforeAllInFiber } from '../../__mocks__/hel
 import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { getRandomId, getRandomString, protectString } from '../../lib/lib'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { Snapshots, SnapshotType } from '../../lib/collections/Snapshots'
+import { SnapshotType } from '../../lib/collections/Snapshots'
 import {
 	IBlueprintPieceType,
 	PieceLifespan,
@@ -13,7 +12,7 @@ import {
 	TSR,
 } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceType, PeripheralDeviceCategory } from '../../lib/collections/PeripheralDevices'
-import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
 import { DBPart } from '../../lib/collections/Parts'
 import { PartInstance } from '../../lib/collections/PartInstances'
@@ -41,6 +40,7 @@ import '../cronjobs'
 
 import '../api/peripheralDevice'
 import {
+	CoreSystem,
 	IngestDataCache,
 	PartInstances,
 	Parts,
@@ -48,6 +48,8 @@ import {
 	PeripheralDevices,
 	PieceInstances,
 	Rundowns,
+	Snapshots,
+	UserActionsLog,
 } from '../serverCollections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 

@@ -3,10 +3,10 @@ import { RandomMock } from '../../__mocks__/random'
 import { MongoMock } from '../../__mocks__/mongo'
 import { waitForPromise, protectString, waitTime, getRandomString } from '../../lib/lib'
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
 import {
 	AdLibPieces,
 	Blueprints,
+	CoreSystem,
 	Evaluations,
 	ExpectedMediaItems,
 	ExternalMessageQueue,
@@ -24,11 +24,12 @@ import {
 	Segments,
 	ShowStyleBases,
 	ShowStyleVariants,
+	Snapshots,
+	Studios,
+	Timeline,
+	UserActionsLog,
 } from '../serverCollections'
-import { Snapshots } from '../../lib/collections/Snapshots'
-import { Studios, DBStudio } from '../../lib/collections/Studios'
-import { Timeline } from '../../lib/collections/Timeline'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog'
+import { DBStudio } from '../../lib/collections/Studios'
 import { isInFiber } from '../../__mocks__/Fibers'
 import { Mongo } from 'meteor/mongo'
 import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
