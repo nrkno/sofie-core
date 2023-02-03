@@ -41,7 +41,7 @@ const integrationVersionAllowPrerelease = isPrerelease(PackageInfo.version)
 const expectedLibraryVersions: { [libName: string]: string } = {
 	'superfly-timeline': stripVersion(require('superfly-timeline/package.json').version),
 	// eslint-disable-next-line node/no-extraneous-require
-	'mos-connection': stripVersion(require('mos-connection/package.json').version),
+	'@mos-connection/helper': stripVersion(require('@mos-connection/helper/package.json').version),
 }
 
 /**

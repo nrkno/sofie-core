@@ -37,17 +37,15 @@ exports[`Test recieved mos ingest payloads mosRoCreate 2`] = `
   "metaData": {
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -77,96 +75,79 @@ exports[`Test recieved mos ingest payloads mosRoCreate 2`] = `
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -350,17 +331,15 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 2`] = `
   "metaData": {
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -390,96 +369,79 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 2`] = `
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
       ],
@@ -656,17 +618,15 @@ exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 2`] = `
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -696,96 +656,79 @@ exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 2`] = `
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -918,12 +861,10 @@ exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 4`] = `
     "metaData": {
       "Body": [],
       "ID": {
-        "_str": "ro1;s1;p2",
-        "strict": true,
+        "_mosString128": "ro1;s1;p2",
       },
       "RunningOrderId": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
     },
     "notes": [],
@@ -985,17 +926,15 @@ exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 2`] = `
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -1025,96 +964,79 @@ exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 2`] = `
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -1299,17 +1221,15 @@ exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 2`] = `
   "metaData": {
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -1339,96 +1259,79 @@ exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 2`] = `
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -1615,17 +1518,15 @@ exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 2`] 
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -1655,96 +1556,79 @@ exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 2`] 
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -1896,17 +1780,15 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 2`] = 
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -1936,96 +1818,79 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 2`] = 
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -2224,17 +2089,15 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 2`] = `
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -2264,96 +2127,79 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 2`] = `
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -2561,17 +2407,15 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -2601,96 +2445,79 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -2880,17 +2707,15 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 2`] = 
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -2920,96 +2745,79 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 2`] = 
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -3199,17 +3007,15 @@ exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 2`] =
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -3239,96 +3045,79 @@ exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 2`] =
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -3496,17 +3285,15 @@ exports[`Test recieved mos ingest payloads mosRoStoryStatus: Update part 1`] = `
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -3536,96 +3323,79 @@ exports[`Test recieved mos ingest payloads mosRoStoryStatus: Update part 1`] = `
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -3815,17 +3585,15 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -3855,96 +3623,79 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -4125,17 +3876,15 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -4165,96 +3914,79 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -4471,17 +4203,15 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same se
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -4511,96 +4241,79 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same se
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
@@ -4790,17 +4503,15 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Within same segment 2
     "airStatus": "READY",
     "payload": {
       "EditorialDuration": {
-        "_duration": 540,
+        "_mosDuration": 540,
       },
       "EditorialStart": {
-        "_time": 2018-11-07T07:00:00.000Z,
+        "_mosTime": 1541574000000,
         "_timezone": "Z",
-        "_timezoneDeclaration": "",
-        "_timezoneZuluIndicator": "Z",
+        "_timezoneOffset": 0,
       },
       "ID": {
-        "_str": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-        "strict": true,
+        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
       },
       "MosExternalMetaData": [
         {
@@ -4830,96 +4541,79 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Within same segment 2
         },
       ],
       "Slug": {
-        "_str": "All effect1 into clip combinations",
-        "strict": true,
+        "_mosString128": "All effect1 into clip combinations",
       },
       "Stories": [
         {
           "ID": {
-            "_str": "ro1;s1;p1",
-            "strict": true,
+            "_mosString128": "ro1;s1;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p2",
-            "strict": true,
+            "_mosString128": "ro1;s1;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s1;p3",
-            "strict": true,
+            "_mosString128": "ro1;s1;p3",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT1;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT1;PART3",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p1",
-            "strict": true,
+            "_mosString128": "ro1;s2;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s2;p2",
-            "strict": true,
+            "_mosString128": "ro1;s2;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p1",
-            "strict": true,
+            "_mosString128": "ro1;s3;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART1",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART1",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s3;p2",
-            "strict": true,
+            "_mosString128": "ro1;s3;p2",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT3;PART2",
-            "strict": true,
+            "_mosString128": "SEGMENT3;PART2",
           },
         },
         {
           "ID": {
-            "_str": "ro1;s4;p1",
-            "strict": true,
+            "_mosString128": "ro1;s4;p1",
           },
           "Items": [],
           "Slug": {
-            "_str": "SEGMENT2;PART3",
-            "strict": true,
+            "_mosString128": "SEGMENT2;PART3",
           },
         },
       ],
