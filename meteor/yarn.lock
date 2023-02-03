@@ -1451,21 +1451,21 @@
     semver "^7.3.5"
     tar "^6.1.11"
 
-"@mos-connection/helper@3.0.0-nightly-feat-mono-repo-20230127-144135-8037b58.0":
-  version "3.0.0-nightly-feat-mono-repo-20230127-144135-8037b58.0"
-  resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-3.0.0-nightly-feat-mono-repo-20230127-144135-8037b58.0.tgz#59ed2f9962d9d9671ea61d728e9602b35f9f166d"
-  integrity sha512-rJSKeFN0QpLizwJOuFA6SWE4mjpDhd9Yy49RZkIhhXtXYZmvnH0DabhAopM8XUXWRDWEzb3J1+JSmx8Yt80L7A==
+"@mos-connection/helper@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-3.0.1.tgz#f18b954e2565410afd7c7f2b6e2094488a5a0e91"
+  integrity sha512-N6mzzcSyVfNNdSN0z5p/bMjuzEGJzlcv4nJRGczA/mRjkkEU8KY247YlDxuz4feXArT/gqZuBIHaCFLyrZunCQ==
   dependencies:
-    "@mos-connection/model" "3.0.0-nightly-feat-mono-repo-20230127-144135-8037b58.0"
+    "@mos-connection/model" "3.0.1"
     iconv-lite "^0.6.2"
     tslib "^2.2.0"
     xml-js "^1.6.11"
     xmlbuilder "^15.1.1"
 
-"@mos-connection/model@3.0.0-nightly-feat-mono-repo-20230127-144135-8037b58.0":
-  version "3.0.0-nightly-feat-mono-repo-20230127-144135-8037b58.0"
-  resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-3.0.0-nightly-feat-mono-repo-20230127-144135-8037b58.0.tgz#6b443348e44f04e380af22df46f38ca32b640b6e"
-  integrity sha512-WVZ0Lr1THaKYJ3EQTiXWul0OqTku0YI6o8k1xUtPqtBaZGIWgohQHCYsVpdi4xxu/DZc5R1xeQJU5fhNBLAI1w==
+"@mos-connection/model@3.0.1", "@mos-connection/model@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-3.0.1.tgz#38b41d6848e3af58715ce462c5e55ddf1c5c456f"
+  integrity sha512-e+vrLaghYayuzq5JZABbouofseMMnGmUk0mJcGzCG4aYK3YZ/9JoTe1mJBMecbEiqFQXld8idOHv/9rO8HRy4g==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
