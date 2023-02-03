@@ -22,7 +22,7 @@ import {
 	handleDebugUpdateTimeline,
 } from '../../playout/debug'
 import { handleActivateHold, handleDeactivateHold } from '../../playout/holdJobs'
-import { removeEmptyPlaylists } from '../../studio/cleanup'
+import { handleRemoveEmptyPlaylists } from '../../studio/cleanup'
 import {
 	handleRegenerateRundownPlaylist,
 	handleRemoveRundownPlaylist,
@@ -71,7 +71,7 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.OnTimelineTriggerTime]: handleTimelineTriggerTime,
 
 	[StudioJobs.UpdateStudioBaseline]: handleUpdateStudioBaseline,
-	[StudioJobs.CleanupEmptyPlaylists]: removeEmptyPlaylists,
+	[StudioJobs.CleanupEmptyPlaylists]: handleRemoveEmptyPlaylists,
 
 	[StudioJobs.OrderRestoreToDefault]: handleRestoreRundownsInPlaylistToDefaultOrder,
 	[StudioJobs.OrderMoveRundownToPlaylist]: handleMoveRundownIntoPlaylist,
